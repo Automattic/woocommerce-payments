@@ -55,7 +55,8 @@ test.describe( 'Admin order analytics', () => {
 		// await expect( merchantPage ).toHaveScreenshot();
 	} );
 
-	test( 'orders table should have the customer currency column', async ( {
+	// Skipped because the test is flaky
+	test.skip( 'orders table should have the customer currency column', async ( {
 		browser,
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );

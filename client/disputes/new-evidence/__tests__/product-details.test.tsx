@@ -9,6 +9,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import ProductDetails from '../product-details';
 
+// Mock wcpaySettings global
+declare const global: {
+	wcpaySettings: {
+		featureFlags: {
+			isDisputeAdditionalEvidenceTypesEnabled: boolean;
+		};
+	};
+};
+
 describe( 'ProductDetails', () => {
 	const baseProps = {
 		productType: 'physical_product',
@@ -17,6 +26,14 @@ describe( 'ProductDetails', () => {
 		onProductDescriptionChange: jest.fn(),
 		readOnly: false,
 	};
+
+	beforeEach( () => {
+		global.wcpaySettings = {
+			featureFlags: {
+				isDisputeAdditionalEvidenceTypesEnabled: false,
+			},
+		};
+	} );
 
 	it( 'renders product type selector and description', () => {
 		render( <ProductDetails { ...baseProps } /> );
@@ -49,5 +66,38 @@ describe( 'ProductDetails', () => {
 			target: { value: 'digital_product_or_service' },
 		} );
 		expect( baseProps.onProductTypeChange ).toHaveBeenCalled();
+	} );
+
+	it( 'does not show Booking/Reservation option when feature flag is disabled', () => {
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
+		render( <ProductDetails { ...baseProps } /> );
+		const select = screen.getByLabelText( /PRODUCT TYPE/i );
+		const options = Array.from( select.querySelectorAll( 'option' ) ).map(
+			( option ) => ( option as HTMLOptionElement ).value
+		);
+		expect( options ).not.toContain( 'booking_reservation' );
+		expect( options ).toEqual( [
+			'physical_product',
+			'digital_product_or_service',
+			'offline_service',
+			'multiple',
+		] );
+	} );
+
+	it( 'shows Booking/Reservation option when feature flag is enabled', () => {
+		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+		render( <ProductDetails { ...baseProps } /> );
+		const select = screen.getByLabelText( /PRODUCT OR SERVICE TYPE/i );
+		const options = Array.from( select.querySelectorAll( 'option' ) ).map(
+			( option ) => ( option as HTMLOptionElement ).value
+		);
+		expect( options ).toContain( 'booking_reservation' );
+		expect( options ).toEqual( [
+			'physical_product',
+			'digital_product_or_service',
+			'offline_service',
+			'booking_reservation',
+			'multiple',
+		] );
 	} );
 } );

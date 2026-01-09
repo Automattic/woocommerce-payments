@@ -14,7 +14,6 @@ import { Card, Notice, ExternalLink } from '@wordpress/components';
  * Internal dependencies.
  */
 import AccountBalances from 'components/account-balances';
-import AccountStatus from 'components/account-status';
 import AccountDetails from 'components/account-details';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
@@ -36,6 +35,7 @@ import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
 import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
+import SpotlightPromotion from 'promotions/spotlight';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -65,7 +65,6 @@ const OverviewPage = () => {
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
-		featureFlags: { isAccountDetailsEnabled },
 		accountDetails,
 	} = wcpaySettings;
 
@@ -376,18 +375,11 @@ const OverviewPage = () => {
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>
-				{ isAccountDetailsEnabled && accountDetails ? (
-					<AccountDetails
-						accountDetails={ accountDetails }
-						accountFees={ activeAccountFees }
-						accountLink={ accountStatus.accountLink }
-					/>
-				) : (
-					<AccountStatus
-						accountStatus={ accountStatus }
-						accountFees={ activeAccountFees }
-					/>
-				) }
+				<AccountDetails
+					accountDetails={ accountDetails }
+					accountFees={ activeAccountFees }
+					accountLink={ accountStatus.accountLink }
+				/>
 			</ErrorBoundary>
 			{ hasActiveLoan && (
 				<ErrorBoundary>
@@ -404,6 +396,9 @@ const OverviewPage = () => {
 					<ConnectionSuccessModal />
 				</ErrorBoundary>
 			) }
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

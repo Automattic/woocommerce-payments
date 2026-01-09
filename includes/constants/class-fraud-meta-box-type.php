@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * This class gives a list of all the possible fraud meta box type constants.
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Fraud_Meta_Box_Type extends Base_Constant {
 	const ALLOW            = 'allow';

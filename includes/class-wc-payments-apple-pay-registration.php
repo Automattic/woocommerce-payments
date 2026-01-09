@@ -49,11 +49,11 @@ class WC_Payments_Apple_Pay_Registration {
 	private $domain_name;
 
 	/**
-	 * Stores Apple Pay domain verification issues.
+	 * Option name for storing Apple Pay domain verification errors.
 	 *
 	 * @var string
 	 */
-	private $apple_pay_verify_notice;
+	const APPLE_PAY_DOMAIN_ERROR_OPTION = 'wcpay_apple_pay_domain_error';
 
 	/**
 	 * Initialize class actions.
@@ -63,11 +63,10 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param WC_Payment_Gateway_WCPay $gateway WooCommerce Payments gateway.
 	 */
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account, WC_Payment_Gateway_WCPay $gateway ) {
-		$this->domain_name             = wp_parse_url( get_site_url(), PHP_URL_HOST );
-		$this->apple_pay_verify_notice = '';
-		$this->payments_api_client     = $payments_api_client;
-		$this->account                 = $account;
-		$this->gateway                 = $gateway;
+		$this->domain_name         = wp_parse_url( get_site_url(), PHP_URL_HOST );
+		$this->payments_api_client = $payments_api_client;
+		$this->account             = $account;
+		$this->gateway             = $gateway;
 	}
 
 	/**
@@ -88,30 +87,47 @@ class WC_Payments_Apple_Pay_Registration {
 		add_action( 'admin_init', [ $this, 'verify_domain_on_domain_name_change' ] );
 
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_error_notice' ] );
-		add_action( 'add_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
-		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
+
+		// Listen to Apple Pay gateway settings changes for domain verification.
+		add_action( 'add_option_woocommerce_woocommerce_payments_apple_pay_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
+		add_action( 'update_option_woocommerce_woocommerce_payments_apple_pay_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
+
+		// Also listen to main gateway settings changes, since it's a prerequisite for Apple Pay.
+		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_main_gateway_settings' ], 10, 2 );
 	}
 
 	/**
-	 * Whether the gateway and Express Checkout Buttons (prerequisites for Apple Pay) are enabled.
+	 * Whether Apple Pay is enabled.
 	 *
-	 * @return bool Whether Apple Pay required settings are enabled.
+	 * Checks both the main gateway and the Apple Pay gateway are enabled.
+	 *
+	 * @return bool Whether Apple Pay is enabled.
 	 */
 	private function is_enabled() {
-		return $this->gateway->is_enabled() && 'yes' === $this->gateway->get_option( 'payment_request' );
+		// Check if the main gateway is enabled.
+		if ( ! $this->gateway->is_enabled() ) {
+			return false;
+		}
+
+		// Check if the Apple Pay gateway is enabled.
+		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
+
+		if ( ! $apple_pay_gateway ) {
+			return false;
+		}
+
+		return $apple_pay_gateway->is_enabled();
 	}
 
 	/**
-	 * Whether the gateway and Express Checkout Buttons were enabled in previous settings.
+	 * Whether Apple Pay was enabled in previous settings.
 	 *
-	 * @param array|null $prev_settings Gateway settings.
+	 * @param array|null $prev_settings Apple Pay gateway settings.
 	 *
-	 * @return bool Whether Apple Pay required settings are enabled.
+	 * @return bool Whether Apple Pay was enabled.
 	 */
 	private function was_enabled( $prev_settings ) {
-		$gateway_enabled         = 'yes' === ( $prev_settings['enabled'] ?? 'no' );
-		$payment_request_enabled = 'yes' === ( $prev_settings['payment_request'] ?? 'no' );
-		return $gateway_enabled && $payment_request_enabled;
+		return 'yes' === ( $prev_settings['enabled'] ?? 'no' );
 	}
 
 	/**
@@ -153,6 +169,7 @@ class WC_Payments_Apple_Pay_Registration {
 			if ( isset( $registration_response['id'] ) && ( isset( $registration_response['apple_pay']['status'] ) && 'active' === $registration_response['apple_pay']['status'] ) ) {
 				$this->gateway->update_option( 'apple_pay_verified_domain', $this->domain_name );
 				$this->gateway->update_option( 'apple_pay_domain_set', 'yes' );
+				delete_option( self::APPLE_PAY_DOMAIN_ERROR_OPTION );
 
 				Logger::log( __( 'Your domain has been verified with Apple Pay!', 'woocommerce-payments' ) );
 				Tracker::track_admin(
@@ -170,11 +187,10 @@ class WC_Payments_Apple_Pay_Registration {
 		} catch ( API_Exception $e ) {
 			$error = $e->getMessage();
 		}
-		// Display error message in notice.
-		$this->apple_pay_verify_notice = $error;
 
 		$this->gateway->update_option( 'apple_pay_verified_domain', $this->domain_name );
 		$this->gateway->update_option( 'apple_pay_domain_set', 'no' );
+		update_option( self::APPLE_PAY_DOMAIN_ERROR_OPTION, $error );
 
 		Logger::log( 'Error registering domain with Apple: ' . $error );
 		Tracker::track_admin(
@@ -192,7 +208,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 */
 	public function verify_domain_if_configured() {
 		// If Express Checkout Buttons are not enabled,
-		// do not attempt to register domain.
+		// do not attempt to register the domain.
 		if ( ! $this->is_enabled() ) {
 			return;
 		}
@@ -218,8 +234,23 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param array $settings      Settings after update.
 	 */
 	public function verify_domain_on_updated_settings( $prev_settings, $settings ) {
-		// If Gateway or Express Checkout Buttons weren't enabled, then might need to verify now.
+		// If Apple Pay wasn't enabled, then might need to verify now.
 		if ( ! $this->was_enabled( $prev_settings ) ) {
+			$this->verify_domain_if_configured();
+		}
+	}
+
+	/**
+	 * Conditionally process the Apple Pay domain verification after main gateway settings are updated.
+	 *
+	 * @param array $prev_settings Settings before update.
+	 * @param array $settings      Settings after update.
+	 */
+	public function verify_domain_on_updated_main_gateway_settings( $prev_settings, $settings ) {
+		$was_main_gateway_enabled = 'yes' === ( $prev_settings['enabled'] ?? 'no' );
+
+		// If main gateway wasn't enabled before, might need to verify now.
+		if ( ! $was_main_gateway_enabled ) {
 			$this->verify_domain_if_configured();
 		}
 	}
@@ -232,12 +263,19 @@ class WC_Payments_Apple_Pay_Registration {
 			return;
 		}
 
-		$empty_notice = empty( $this->apple_pay_verify_notice );
 		$domain_set   = $this->gateway->get_option( 'apple_pay_domain_set' );
+		$error_notice = get_option( self::APPLE_PAY_DOMAIN_ERROR_OPTION, '' );
+		$empty_notice = empty( $error_notice );
+
 		// Don't display error notice if verification notice is empty and
 		// apple_pay_domain_set option equals to '' or 'yes'.
 		if ( $empty_notice && 'no' !== $domain_set ) {
 			return;
+		}
+
+		// Clear the error after retrieving it so it only displays once.
+		if ( ! $empty_notice ) {
+			delete_option( self::APPLE_PAY_DOMAIN_ERROR_OPTION );
 		}
 
 		/**
@@ -245,16 +283,16 @@ class WC_Payments_Apple_Pay_Registration {
 		 * when setting screen is displayed. So if domain verification is not set,
 		 * something went wrong so lets notify user.
 		 */
-		$allowed_html                      = [
+		$allowed_html        = [
 			'a' => [
 				'href'  => [],
 				'title' => [],
 			],
 		];
-		$payment_request_button_text       = __( 'Express checkouts:', 'woocommerce-payments' );
-		$verification_failed_without_error = __( 'Apple Pay domain verification failed.', 'woocommerce-payments' );
-		$verification_failed_with_error    = __( 'Apple Pay domain verification failed with the following error:', 'woocommerce-payments' );
-		$check_log_text                    = WC_Payments_Utils::esc_interpolated_html(
+		$verification_failed = $empty_notice
+			? __( 'Apple Pay domain verification failed.', 'woocommerce-payments' )
+			: __( 'Apple Pay domain verification failed with the following error:', 'woocommerce-payments' );
+		$check_log_text      = WC_Payments_Utils::esc_interpolated_html(
 			/* translators: a: Link to the logs page */
 			__( 'Please check the <a>logs</a> for more details on this issue. Debug log must be enabled under <strong>Advanced settings</strong> to see recorded logs.', 'woocommerce-payments' ),
 			[
@@ -271,20 +309,14 @@ class WC_Payments_Apple_Pay_Registration {
 
 		?>
 		<div class="notice notice-error apple-pay-message">
-			<?php if ( $empty_notice ) : ?>
-				<p>
-					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
-					<?php echo esc_html( $verification_failed_without_error ); ?>
-					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
-				</p>
-<?php else : ?>
-				<p>
-					<strong><?php echo esc_html( $payment_request_button_text ); ?></strong>
-					<?php echo esc_html( $verification_failed_with_error ); ?>
-					<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
-				</p>
-				<p><i><?php echo wp_kses( make_clickable( esc_html( $this->apple_pay_verify_notice ) ), $allowed_html ); ?></i></p>
-<?php endif; ?>
+			<p>
+				<strong><?php esc_html_e( 'Express checkouts:', 'woocommerce-payments' ); ?></strong>
+				<?php echo esc_html( $verification_failed ); ?>
+				<?php echo $learn_more_text; /* @codingStandardsIgnoreLine */ ?>
+			</p>
+			<?php if ( ! $empty_notice ) : ?>
+				<p><i><?php echo wp_kses( make_clickable( esc_html( $error_notice ) ), $allowed_html ); ?></i></p>
+			<?php endif; ?>
 			<p><?php echo $check_log_text; /* @codingStandardsIgnoreLine */ ?></p>
 		</div>
 		<?php

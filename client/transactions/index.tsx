@@ -24,6 +24,8 @@ import {
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import BlockedList from './blocked';
 import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
+import ErrorBoundary from 'components/error-boundary';
+import SpotlightPromotion from 'promotions/spotlight';
 
 declare const window: any;
 
@@ -120,6 +122,9 @@ export const TransactionsPage: React.FC = () => {
 					);
 				} }
 			</TabPanel>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

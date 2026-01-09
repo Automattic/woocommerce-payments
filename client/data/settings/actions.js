@@ -219,14 +219,12 @@ export function* saveSettings() {
 	return error === null;
 }
 
-export function updatePaymentRequestLocations( locations ) {
-	return updateSettingsValues( {
-		payment_request_enabled_locations: [ ...locations ],
-	} );
-}
-
 export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
+}
+
+export function updateIsAmazonPayEnabled( isEnabled ) {
+	return updateSettingsValues( { is_amazon_pay_enabled: isEnabled } );
 }
 
 export function updateIsWooPayGlobalThemeSupportEnabled( isEnabled ) {
@@ -247,12 +245,6 @@ export function updateWooPayStoreLogo( storeLogo ) {
 	} );
 }
 
-export function updateWooPayLocations( locations ) {
-	return updateSettingsValues( {
-		woopay_enabled_locations: [ ...locations ],
-	} );
-}
-
 export function updateProtectionLevel( level ) {
 	return updateSettingsValues( { current_protection_level: level } );
 }
@@ -265,6 +257,24 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 
 export function updateIsStripeBillingEnabled( isEnabled ) {
 	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}
+
+export function updateExpressCheckoutProductMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_product_methods: [ ...methods ],
+	} );
+}
+
+export function updateExpressCheckoutCartMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_cart_methods: [ ...methods ],
+	} );
+}
+
+export function updateExpressCheckoutCheckoutMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_checkout_methods: [ ...methods ],
+	} );
 }
 
 export function* submitStripeBillingSubscriptionMigration() {

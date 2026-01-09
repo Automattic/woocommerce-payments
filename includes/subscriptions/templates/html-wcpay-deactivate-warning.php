@@ -22,7 +22,7 @@
 							printf(
 							// translators: $1 $2 $3 placeholders are opening and closing HTML link tags, linking to documentation. $4 $5 placeholders are opening and closing strong HTML tags. $6 is WooPayments.
 								esc_html__( 'Your store has active subscriptions using the built-in %6$s functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate %6$s%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
-								'<a href="https://woocommerce.com/document/woopayments/subscriptions/comparison/" target="_blank">',
+								'<a href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/" target="_blank">',
 								'<a href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/#deactivate-woopayments-plugin" target="_blank">',
 								'</a>',
 								'<strong>',

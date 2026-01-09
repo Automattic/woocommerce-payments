@@ -9,7 +9,6 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
-use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * Payment_Information unit tests.
@@ -17,7 +16,7 @@ use WCPay\Payment_Methods\CC_Payment_Gateway;
 class Payment_Information_Test extends WCPAY_UnitTestCase {
 	const PAYMENT_METHOD_REQUEST_KEY = 'wcpay-payment-method';
 	const PAYMENT_METHOD             = 'pm_mock';
-	const CARD_TOKEN_REQUEST_KEY     = 'wc-' . CC_Payment_Gateway::GATEWAY_ID . '-payment-token';
+	const CARD_TOKEN_REQUEST_KEY     = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
 	const TOKEN                      = 'pm_mock_token';
 
 	/**
@@ -130,7 +129,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_get_token_from_request_returns_null_when_new() {
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => 'new',
 			]
 		);
@@ -140,7 +139,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_get_token_from_request_returns_null_when_invalid() {
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() + 1,
 			]
 		);
@@ -152,7 +151,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->card_token->save();
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
 			]
 		);
@@ -164,7 +163,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->card_token->save();
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
 			]
 		);
@@ -181,7 +180,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_get_token_from_request_returns_token() {
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
 			]
 		);
@@ -191,7 +190,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_from_payment_request_with_token() {
 		$payment_information = Payment_Information::from_payment_request(
 			[
-				'payment_method'                 => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'                 => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
 				self::CARD_TOKEN_REQUEST_KEY     => $this->card_token->get_id(),
 			],
@@ -219,7 +218,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_from_payment_request_with_error() {
 		$payment_information = Payment_Information::from_payment_request(
 			[
-				'payment_method'                     => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'                     => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
 				'wcpay-payment-method-error-message' => 'Invalid Card',
 				'wcpay-payment-method-error-code'    => 'invalid_card',
@@ -238,7 +237,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_from_payment_request_with_error_no_details() {
 		$payment_information = Payment_Information::from_payment_request(
 			[
-				'payment_method'                 => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'                 => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::PAYMENT_METHOD_REQUEST_KEY => Payment_Information::PAYMENT_METHOD_ERROR,
 			]
 		);

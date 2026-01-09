@@ -127,4 +127,9 @@ export type MerchantEvent =
 	| 'payments_transactions_details_refund_full'
 	| 'payments_transactions_risk_review_list_review_button_click'
 	| 'payments_transactions_uncaptured_list_capture_charge_button_click'
+	| 'wcpay_payment_method_promotion_view'
+	| 'wcpay_payment_method_promotion_dismiss'
+	| 'wcpay_payment_method_promotion_activate_click'
+	| 'wcpay_payment_method_promotion_secondary_click'
+	| 'wcpay_payment_method_promotion_link_click'
 	| string;

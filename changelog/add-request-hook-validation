@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add validation to prevent Request classes from using empty hook names, which could cause fatal errors on PHP 8.0+

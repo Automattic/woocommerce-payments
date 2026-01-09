@@ -19,7 +19,6 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
  * WC_Payments_Express_Checkout_Button_Handler class.
  */
 class WC_Payments_Express_Checkout_Button_Handler {
-	const BUTTON_LOCATIONS            = 'payment_request_button_locations';
 	const DEFAULT_BORDER_RADIUS_IN_PX = 4;
 
 	/**
@@ -76,8 +75,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		// Checks if Payment Request is enabled.
-		if ( 'yes' !== $this->gateway->get_option( 'payment_request' ) ) {
+		// Checks if Google Pay or Apple Pay are enabled.
+		if ( ! $this->gateway->is_payment_request_enabled() ) {
 			return;
 		}
 
@@ -93,7 +92,6 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		add_filter( 'woocommerce_cart_needs_shipping_address', [ $this, 'filter_cart_needs_shipping_address' ], 11, 1 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
-		add_action( 'woocommerce_checkout_order_processed', [ $this->express_checkout_helper, 'add_order_payment_method_title' ], 10, 2 );
 
 		$this->express_checkout_ajax_handler->init();
 

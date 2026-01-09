@@ -72,6 +72,13 @@ jest.mock( 'wcpay/data', () => ( {
 		.fn()
 		.mockReturnValue( { overviews: { currencies: [] } } ),
 	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
+	usePmPromotionActions: jest.fn().mockReturnValue( {
+		activatePmPromotion: jest.fn(),
+		dismissPmPromotion: jest.fn(),
+	} ),
 } ) );
 
 select.mockReturnValue( {
@@ -108,6 +115,17 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 			accountLoans: {},
+			accountDetails: {
+				account_status: {
+					text: 'Complete',
+					background_color: 'green',
+				},
+				payout_status: {
+					text: 'Enabled',
+					background_color: 'green',
+				},
+				banner: null,
+			},
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );

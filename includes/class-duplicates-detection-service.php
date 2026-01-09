@@ -12,17 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WC_Payments;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Klarna_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -97,20 +87,7 @@ class Duplicates_Detection_Service {
 		 * FLAG: PAYMENT_METHODS_LIST
 		 * As payment methods are converted to use definitions, they need to be removed from the list below.
 		 */
-		$keywords = [
-			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'p24'        => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'przelewy24' => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'ideal'      => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'becs'       => Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'eps'        => Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'affirm'     => Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'afterpay'   => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'clearpay'   => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'grabpay'    => Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-		];
+		$keywords = [];
 
 		// Get all payment method definitions.
 		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
@@ -155,7 +132,10 @@ class Duplicates_Detection_Service {
 					if ( strpos( $gateway->id, $keyword ) !== false ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
-					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && in_array( $gateway->id, [ 'woocommerce_payments', 'stripe' ], true ) ) {
+					} elseif ( 'woocommerce_payments' === $gateway->id && method_exists( $gateway, 'is_payment_request_enabled' ) && $gateway->is_payment_request_enabled() ) {
+						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
+						break;
+					} elseif ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					} elseif ( 'yes' === $gateway->get_option( 'express_checkout_enabled' ) ) {

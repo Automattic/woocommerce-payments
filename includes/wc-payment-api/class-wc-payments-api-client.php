@@ -85,6 +85,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
 	const ADDRESS_AUTOCOMPLETE_TOKEN   = 'address-autocomplete-token';
 	const STORE_SETUP_API              = 'accounts/store_setup';
+	const PROMOTIONS_API               = 'payment_method_promotions';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -677,11 +678,29 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			);
 		}
 
+		// Fetch the dispute to check if it's a Visa compliance (noncompliant) dispute.
+		$dispute_details = $this->get_dispute( $dispute_id );
+		if ( is_wp_error( $dispute_details ) ) {
+			return $dispute_details;
+		}
+
 		$request = [
 			'evidence' => $evidence,
 			'submit'   => $submit,
 			'metadata' => $metadata,
 		];
+
+		// Add Visa compliance flag for noncompliant disputes.
+		if ( isset( $dispute_details['reason'] ) && 'noncompliant' === $dispute_details['reason'] ) {
+			$request['evidence']['enhanced_evidence'] = array_merge(
+				$request['evidence']['enhanced_evidence'] ?? [],
+				[
+					'visa_compliance' => [
+						'fee_acknowledged' => 'true',
+					],
+				]
+			);
+		}
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
 		// Invalidate the dispute caches.
@@ -2467,6 +2486,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Send store setup data to the Transact Platform.
 	 *
+	 * Use a non-blocking request as this is not critical data, and it should have minimal impact on the user experience.
+	 *
 	 * @param array $store_setup The store setup data.
 	 *
 	 * @return array Response from the API.
@@ -2480,7 +2501,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			],
 			self::STORE_SETUP_API,
 			self::POST,
-			true
+			true,
+			false,
+			false,
+			false,
+			false
 		);
 	}
 
@@ -2494,11 +2519,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 * @param bool   $raw_response     - If true, the raw response will be returned. Defaults to false.
 	 * @param bool   $use_v2_api       - If true, the request will be sent to the V2 API endpoint. Defaults to false.
+	 * @param bool   $blocking         - If true, the request will be blocking. Defaults to true.
 	 *
 	 * @return array
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
-	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false, bool $use_v2_api = false ) {
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false, bool $use_v2_api = false, bool $blocking = true ) {
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -2562,6 +2588,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'headers'         => $headers,
 				'timeout'         => self::API_TIMEOUT_SECONDS,
 				'connect_timeout' => self::API_TIMEOUT_SECONDS,
+				'blocking'        => $blocking,
 			];
 
 			$log_request_id = uniqid();
@@ -2954,9 +2981,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			return 'physical_product';
 		}
 
-		$virtual_products  = 0;
-		$physical_products = 0;
-		$product_count     = 0;
+		$virtual_products = 0;
+		$product_count    = 0;
+		$product_type     = null;
 
 		foreach ( $items as $item ) {
 			// Only process product items.
@@ -2971,11 +2998,19 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 			++$product_count;
 
+			// Capture first product's type (only used for single-product orders).
+			if ( null === $product_type ) {
+				$product_type = $product->get_type();
+			}
+
 			if ( $product->is_virtual() ) {
 				++$virtual_products;
-			} else {
-				++$physical_products;
 			}
+		}
+
+		// If no valid products found, default to physical.
+		if ( 0 === $product_count ) {
+			return 'physical_product';
 		}
 
 		// If more than one product, suggest multiple.
@@ -2983,8 +3018,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			return 'multiple';
 		}
 
-		// If only one product and it's virtual, suggest digital.
-		if ( 1 === $product_count && 1 === $virtual_products ) {
+		// At this point, we know there's exactly one product.
+		// Check for specific product types (gated by feature flag).
+		if ( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() && 'booking' === $product_type ) {
+			return 'booking_reservation';
+		}
+
+		// Check if it's virtual (digital product or service).
+		if ( 1 === $virtual_products ) {
 			return 'digital_product_or_service';
 		}
 

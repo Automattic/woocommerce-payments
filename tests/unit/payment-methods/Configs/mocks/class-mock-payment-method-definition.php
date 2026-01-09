@@ -42,27 +42,11 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return 'Mock payment method for testing';
 	}
 
-	public static function is_bnpl(): bool {
-		return false;
-	}
-
-	public static function is_reusable(): bool {
-		return true;
-	}
-
-	public static function accepts_only_domestic_payments(): bool {
-		return false;
-	}
-
-	public static function allows_manual_capture(): bool {
-		return true;
-	}
-
 	public static function get_supported_currencies(): array {
 		return [ 'USD', 'CAD' ];
 	}
 
-	public static function get_supported_countries(): array {
+	public static function get_supported_countries( ?string $account_country = null ): array {
 		return [ 'US', 'CA' ];
 	}
 
@@ -88,11 +72,7 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 
 	public static function is_available_for( string $currency, string $account_country ): bool {
 		return in_array( $currency, self::get_supported_currencies(), true ) &&
-			in_array( $account_country, self::get_supported_countries(), true );
-	}
-
-	public static function is_enabled_by_default(): bool {
-		return true;
+			in_array( $account_country, self::get_supported_countries( $account_country ), true );
 	}
 
 	public static function get_limits_per_currency(): array {
