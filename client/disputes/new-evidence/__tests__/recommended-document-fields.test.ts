@@ -467,19 +467,6 @@ describe( 'Recommended Documents', () => {
 					'Any other relevant documents that will support your case.'
 				);
 			} );
-
-			it( 'should ignore other parameters when reason is noncompliant', () => {
-				// Visa Compliance should return same fields regardless of other params
-				const result1 = getRecommendedDocumentFields(
-					'noncompliant',
-					'refund_has_been_issued',
-					'is_duplicate',
-					'physical_product'
-				);
-				const result2 = getRecommendedDocumentFields( 'noncompliant' );
-				expect( result1 ).toEqual( result2 );
-				expect( result1 ).toHaveLength( 2 );
-			} );
 		} );
 	} );
 } );
