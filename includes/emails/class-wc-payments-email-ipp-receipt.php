@@ -94,8 +94,8 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		/**
 		 * Get preview order data for email preview.
 		 *
-		 * @param WC_Order|false $order The dummy order instance or false for non-WCPay emails.
-		 * @return WC_Order|false
+		 * @param mixed $order The dummy order instance or false/null for non-WCPay emails.
+		 * @return mixed
 		 * @see WC_Email_Preview::get_dummy_order()
 		 */
 		public function get_preview_order( $order ) {
