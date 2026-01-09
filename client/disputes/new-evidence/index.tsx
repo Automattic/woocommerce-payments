@@ -150,6 +150,8 @@ export default ( { query }: { query: { id: string } } ) => {
 	} >( {} );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
+	const isVisaCompliance = isVisaComplianceDispute( dispute );
+
 	// --- Data loading ---
 	useEffect( () => {
 		const fetchDispute = async () => {
@@ -202,53 +204,62 @@ export default ( { query }: { query: { id: string } } ) => {
 				const savedCoverLetter = d.evidence?.uncategorized_text;
 				if ( savedCoverLetter ) {
 					setCoverLetter( savedCoverLetter );
-					// Create a dispute object with current evidence state for comparison
-					const disputeWithCurrentEvidence = {
-						...d,
-						evidence: {
-							...d.evidence,
-							product_description:
-								d.evidence?.product_description || '',
-							receipt: d.evidence?.receipt || '',
-							customer_communication:
-								d.evidence?.customer_communication || '',
-							customer_signature:
-								d.evidence?.customer_signature || '',
-							refund_policy: d.evidence?.refund_policy || '',
-							duplicate_charge_documentation:
-								d.evidence?.duplicate_charge_documentation ||
-								'',
-							shipping_documentation:
-								d.evidence?.shipping_documentation || '',
-							service_documentation:
-								d.evidence?.service_documentation || '',
-							cancellation_policy:
-								d.evidence?.cancellation_policy || '',
-							access_activity_log:
-								d.evidence?.access_activity_log || '',
-							uncategorized_file:
-								d.evidence?.uncategorized_file || '',
-							shipping_carrier:
-								d.evidence?.shipping_carrier || '',
-							shipping_date: d.evidence?.shipping_date || '',
-							shipping_tracking_number:
-								d.evidence?.shipping_tracking_number || '',
-							shipping_address:
-								d.evidence?.shipping_address || '',
-						},
-					};
-					// Only mark as manually edited if it differs from what would be auto-generated
-					const generatedContent = generateCoverLetter(
-						disputeWithCurrentEvidence,
-						getBusinessDetails(),
-						settings,
-						bankName,
-						refundStatus,
-						duplicateStatus
-					);
-					setIsCoverLetterManuallyEdited(
-						savedCoverLetter !== generatedContent
-					);
+					if ( isVisaCompliance ) {
+						// For Visa Compliance disputes, always consider the cover letter as manually edited
+						setIsCoverLetterManuallyEdited( true );
+					} else {
+						// Create a dispute object with current evidence state for comparison
+						const disputeWithCurrentEvidence = {
+							...d,
+							evidence: {
+								...d.evidence,
+								product_description:
+									d.evidence?.product_description || '',
+								receipt: d.evidence?.receipt || '',
+								customer_communication:
+									d.evidence?.customer_communication || '',
+								customer_signature:
+									d.evidence?.customer_signature || '',
+								refund_policy: d.evidence?.refund_policy || '',
+								duplicate_charge_documentation:
+									d.evidence
+										?.duplicate_charge_documentation || '',
+								shipping_documentation:
+									d.evidence?.shipping_documentation || '',
+								service_documentation:
+									d.evidence?.service_documentation || '',
+								cancellation_policy:
+									d.evidence?.cancellation_policy || '',
+								access_activity_log:
+									d.evidence?.access_activity_log || '',
+								uncategorized_file:
+									d.evidence?.uncategorized_file || '',
+								shipping_carrier:
+									d.evidence?.shipping_carrier || '',
+								shipping_date: d.evidence?.shipping_date || '',
+								shipping_tracking_number:
+									d.evidence?.shipping_tracking_number || '',
+								shipping_address:
+									d.evidence?.shipping_address || '',
+							},
+						};
+						// Only mark as manually edited if it differs from what would be auto-generated
+						const generatedContent = generateCoverLetter(
+							disputeWithCurrentEvidence,
+							getBusinessDetails(),
+							settings,
+							bankName,
+							refundStatus,
+							duplicateStatus
+						);
+						setIsCoverLetterManuallyEdited(
+							savedCoverLetter !== generatedContent
+						);
+					}
+				} else if ( isVisaCompliance ) {
+					setCoverLetter( '' );
+					// For Visa Compliance disputes, always consider the cover letter as manually edited
+					setIsCoverLetterManuallyEdited( true );
 				} else {
 					// Generate new cover letter
 					const generatedCoverLetter = generateCoverLetter(
@@ -392,7 +403,6 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Step logic ---
 	const disputeReason = dispute?.reason;
-	const isVisaCompliance = isVisaComplianceDispute( dispute );
 	const hasShipping = needsShipping( disputeReason, productType );
 	let panelHeadings = [ 'Purchase info', 'Review' ];
 	if ( isVisaCompliance ) {
@@ -990,7 +1000,8 @@ export default ( { query }: { query: { id: string } } ) => {
 							'Why do you disagree with this dispute?',
 							'woocommerce-payments'
 						) }
-						value="Please enter any relevant details here."
+						help="Please enter any relevant details here."
+						value={ coverLetter }
 						onChange={ ( newValue: string ) => {
 							if ( readOnly ) {
 								return;
