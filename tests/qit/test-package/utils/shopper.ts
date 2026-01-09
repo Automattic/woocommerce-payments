@@ -968,3 +968,29 @@ export const confirmCardAuthenticationWCB = async (
 	);
 	await confirmCardAuthentication( page, authorize );
 };
+
+/**
+ * Creates an order that will be disputed.
+ * Uses the disputed-fraudulent card to trigger automatic dispute creation.
+ *
+ * @param {Page} page The Playwright page object.
+ * @return {Promise<string>} The order ID.
+ */
+export const createDisputedOrder = async ( page: Page ): Promise< string > => {
+	await addToCartFromShopPage( page );
+
+	await navigation.goToCheckout( page );
+
+	await fillBillingAddress( page, config.addresses.customer.billing );
+
+	// Use disputed-fraudulent card to trigger automatic dispute creation
+	await fillCardDetails( page, config.cards[ 'disputed-fraudulent' ] );
+
+	await placeOrder( page );
+
+	// Extract order ID from confirmation page
+	const orderIdField = page.locator(
+		'.woocommerce-order-overview__order.order > strong'
+	);
+	return await orderIdField.innerText();
+};
