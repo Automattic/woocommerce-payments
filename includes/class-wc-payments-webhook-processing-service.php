@@ -865,6 +865,16 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		/**
+		 * Interact payment method should be always triggered from Terminal and Mobile App.
+		 *
+		 * @see https://github.com/Automattic/woocommerce-payments/pull/4041.
+		 */
+		$payment_method_type = $event_object['payment_method_details']['type'] ?? null;
+		if ( Payment_Method::INTERAC_PRESENT === $payment_method_type ) {
+			return;
+		}
+
 		// Fetch the details of the refund so that we can find the associated order and write a note.
 		$charge_id                     = $this->read_webhook_property( $event_object, 'id' );
 		$refund                        = $this->read_webhook_property( $event_object, 'refunds' )['data'][0]; // Most recent refund.

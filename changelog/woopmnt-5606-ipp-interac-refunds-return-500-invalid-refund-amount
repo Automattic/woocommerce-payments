@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Ignore handling refunds for payment method INTERAC_PRESENT from webhook events
