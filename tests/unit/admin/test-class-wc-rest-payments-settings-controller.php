@@ -1197,4 +1197,77 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $data['is_payment_request_enabled'] );
 	}
+
+	public function test_update_settings_enables_amazon_pay() {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )->method( 'enable' );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_amazon_pay_enabled', true );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_disables_amazon_pay() {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )->method( 'disable' );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_amazon_pay_enabled', false );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_does_not_toggle_amazon_pay_if_not_supplied() {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->never() )->method( 'enable' );
+		$amazon_pay_gateway->expects( $this->never() )->method( 'disable' );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$request = new WP_REST_Request();
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_get_settings_returns_is_amazon_pay_enabled_true(): void {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_amazon_pay_enabled', $response->get_data() );
+		$this->assertTrue( $response->get_data()['is_amazon_pay_enabled'] );
+	}
+
+	public function test_get_settings_returns_is_amazon_pay_enabled_false(): void {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_amazon_pay_enabled', $response->get_data() );
+		$this->assertFalse( $response->get_data()['is_amazon_pay_enabled'] );
+	}
+
+	public function test_get_settings_returns_is_amazon_pay_enabled_false_when_gateway_unavailable(): void {
+		$this->set_payment_gateway_map( [] );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_amazon_pay_enabled', $response->get_data() );
+		$this->assertFalse( $response->get_data()['is_amazon_pay_enabled'] );
+	}
 }

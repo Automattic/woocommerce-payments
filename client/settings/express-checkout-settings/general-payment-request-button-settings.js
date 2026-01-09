@@ -3,10 +3,9 @@
  * External dependencies
  */
 import React, { useMemo } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useContext } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -23,15 +22,12 @@ import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getExpressCheckoutConfig } from 'utils/express-checkout';
-import WCPaySettingsContext from '../wcpay-settings-context';
-import InlineNotice from 'wcpay/components/inline-notice';
+import ExpressCheckoutSettingsNotices from './express-checkout-settings-notices';
 import {
 	usePaymentRequestButtonType,
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	usePaymentRequestButtonBorderRadius,
-	usePaymentRequestEnabledSettings,
-	useWooPayEnabledSettings,
 } from 'wcpay/data';
 
 const makeButtonSizeText = ( string ) =>
@@ -125,11 +121,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 	const [ size, setSize ] = usePaymentRequestButtonSize();
 	const [ theme, setTheme ] = usePaymentRequestButtonTheme();
 	const [ radius, setRadius ] = usePaymentRequestButtonBorderRadius();
-	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
-	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
-	const {
-		featureFlags: { woopay: isWooPayFeatureFlagEnabled },
-	} = useContext( WCPaySettingsContext );
 
 	const stripePromise = useMemo( () => {
 		const stripeSettings = getExpressCheckoutConfig( 'stripe' );
@@ -139,45 +130,9 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		} );
 	}, [] );
 
-	const otherButtons =
-		type === 'woopay'
-			? __( 'Apple Pay / Google Pay buttons', 'woocommerce-payments' )
-			: __( 'WooPay button', 'woocommerce-payments' );
-
-	const showWarning =
-		isWooPayEnabled &&
-		isPaymentRequestEnabled &&
-		isWooPayFeatureFlagEnabled;
-
 	return (
 		<CardBody className="wcpay-card-body">
-			{ showWarning && (
-				<>
-					<InlineNotice
-						status="warning"
-						icon={ true }
-						isDismissible={ false }
-					>
-						{ sprintf(
-							/* translators: %s type of button to which the settings will be applied */
-							__(
-								'These settings will also apply to the %s on your store.',
-								'woocommerce-payments'
-							),
-							otherButtons
-						) }
-					</InlineNotice>
-					<InlineNotice
-						status="warning"
-						icon={ true }
-						isDismissible={ false }
-					>
-						{ __(
-							'Some appearance settings may be overridden in the express payment section of the Cart & Checkout blocks.'
-						) }
-					</InlineNotice>
-				</>
-			) }
+			<ExpressCheckoutSettingsNotices currentMethod={ type } />
 			<SelectControl
 				className="payment-method-settings__cta-selection"
 				label={ __( 'Call to action', 'woocommerce-payments' ) }
