@@ -1000,7 +1000,10 @@ export default ( { query }: { query: { id: string } } ) => {
 							'Why do you disagree with this dispute?',
 							'woocommerce-payments'
 						) }
-						help="Please enter any relevant details here."
+						help={ __(
+							'Please enter any relevant details here.',
+							'woocommerce-payments'
+						) }
 						value={ coverLetter }
 						onChange={ ( newValue: string ) => {
 							if ( readOnly ) {
