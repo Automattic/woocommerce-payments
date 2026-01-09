@@ -503,6 +503,9 @@ export const usePaymentRequestButtonBorderRadius = () => {
 	];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').SavingError | null}
+ */
 export const useGetSavingError = () => {
 	return useSelect( ( select ) => select( STORE_NAME ).getSavingError(), [] );
 };
@@ -568,6 +571,26 @@ export const useWooPayStoreLogo = () => {
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
  */
 export const useWooPayLocations = makeExpressCheckoutLocationHook( 'woopay' );
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useAmazonPayEnabledSettings = () => {
+	const { updateIsAmazonPayEnabled } = useDispatch( STORE_NAME );
+
+	const isAmazonPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsAmazonPayEnabled()
+	);
+
+	return [ isAmazonPayEnabled, updateIsAmazonPayEnabled ];
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+export const useAmazonPayLocations = makeExpressCheckoutLocationHook(
+	'amazon_pay'
+);
 
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
@@ -645,4 +668,17 @@ export const useStripeBillingMigration = () => {
 			hasResolved,
 		];
 	}, [] );
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
+export const useAccountCommunicationsEmail = () => {
+	const { updateAccountCommunicationsEmail } = useDispatch( STORE_NAME );
+
+	const accountCommunicationsEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountCommunicationsEmail()
+	);
+
+	return [ accountCommunicationsEmail, updateAccountCommunicationsEmail ];
 };

@@ -186,6 +186,10 @@ export const getIsWooPayEnabled = ( state ) => {
 	return getSettings( state ).is_woopay_enabled || false;
 };
 
+export const getIsAmazonPayEnabled = ( state ) => {
+	return getSettings( state ).is_amazon_pay_enabled || false;
+};
+
 export const getIsWooPayGlobalThemeSupportEnabled = ( state ) => {
 	return getSettings( state ).is_woopay_global_theme_support_enabled || false;
 };
@@ -226,6 +230,10 @@ export const getStripeBillingSubscriptionCount = ( state ) => {
 
 export const getStripeBillingMigratedCount = ( state ) => {
 	return getSettings( state ).stripe_billing_migrated_count || 0;
+};
+
+export const getAccountCommunicationsEmail = ( state ) => {
+	return getSettings( state ).account_communications_email || '';
 };
 
 export const getExpressCheckoutProductMethods = ( state ) => {

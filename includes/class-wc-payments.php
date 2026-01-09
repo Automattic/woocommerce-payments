@@ -320,6 +320,13 @@ class WC_Payments {
 	private static $payment_method_service;
 
 	/**
+	 * Instance of WC_Payments_Remediate_Canceled_Auth_Fees, created in init function
+	 *
+	 * @var WC_Payments_Remediate_Canceled_Auth_Fees
+	 */
+	private static $fee_remediation;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -486,6 +493,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-success-page.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
+		include_once __DIR__ . '/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
@@ -548,6 +556,7 @@ class WC_Payments {
 		self::$pm_promotions_service                = new WC_Payments_PM_Promotions_Service( null, self::$account );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
+		self::$fee_remediation                      = new WC_Payments_Remediate_Canceled_Auth_Fees();
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
@@ -561,6 +570,7 @@ class WC_Payments {
 		self::$compatibility_service->init_hooks();
 		self::$customer_service->init_hooks();
 		self::$token_service->init_hooks();
+		self::$fee_remediation->init();
 
 		/**
 		 * FLAG: PAYMENT_METHODS_LIST
@@ -1534,6 +1544,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
 			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-canceled-auth-remediation.php';
+			WC_Payments_Notes_Canceled_Auth_Remediation::possibly_add_note();
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
@@ -1600,6 +1613,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
 			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-canceled-auth-remediation.php';
+			WC_Payments_Notes_Canceled_Auth_Remediation::possibly_delete_note();
 		}
 	}
 

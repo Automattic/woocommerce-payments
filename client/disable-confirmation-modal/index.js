@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -11,6 +11,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import './styles.scss';
 import {
+	useAmazonPayEnabledSettings,
 	useEnabledPaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
@@ -21,14 +22,19 @@ import WooCardIcon from 'assets/images/cards/woo-card.svg?asset';
 import ConfirmationModal from '../components/confirmation-modal';
 import paymentMethodsMap from 'wcpay/payment-methods-map';
 import { WooIconShort } from 'wcpay/payment-methods-icons';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
+	const [ isAmazonPayEnabled ] = useAmazonPayEnabledSettings();
 	const isStripeLinkEnabled = Boolean(
 		enabledMethodIds.find( ( id ) => id === 'link' )
 	);
+	const {
+		featureFlags: { amazonPay: isAmazonPayFeatureFlagEnabled },
+	} = useContext( WCPaySettingsContext );
 
 	return (
 		<ConfirmationModal
@@ -115,6 +121,14 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 							/>
 						</li>
 					</>
+				) }
+				{ isAmazonPayEnabled && isAmazonPayFeatureFlagEnabled && (
+					<li>
+						<PaymentMethodIcon
+							Icon={ paymentMethodsMap.amazon_pay.icon }
+							label={ paymentMethodsMap.amazon_pay.label }
+						/>
+					</li>
 				) }
 				{ isStripeLinkEnabled && (
 					<li>
