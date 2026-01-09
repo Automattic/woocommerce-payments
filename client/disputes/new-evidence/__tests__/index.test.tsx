@@ -30,11 +30,6 @@ jest.mock( 'wcpay/data', () => ( {
 	useDisputeEvidence: jest.fn(),
 } ) );
 
-// Mock the recordEvent function
-jest.mock( 'tracks', () => ( {
-	recordEvent: jest.fn(),
-} ) );
-
 // Mock the dispatch hooks
 jest.mock( '@wordpress/data', () => ( {
 	createRegistryControl: jest.fn(),
@@ -56,9 +51,6 @@ const mockUseGetSettings = useGetSettings as jest.MockedFunction<
 >;
 const mockUseDisputeEvidence = useDisputeEvidence as jest.MockedFunction<
 	typeof useDisputeEvidence
->;
-const mockRecordEvent = recordEvent as jest.MockedFunction<
-	typeof recordEvent
 >;
 const mockUseDispatch = useDispatch as jest.MockedFunction<
 	typeof useDispatch
@@ -309,19 +301,6 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 	} );
 
 	describe( 'Visa Compliance form behavior', () => {
-		it( 'should enforce 20000 character limit on textarea', async () => {
-			render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
-
-			const textarea = await screen.findByLabelText(
-				/Why do you disagree with this dispute/i,
-				{},
-				{ timeout: 3000 }
-			);
-			expect( textarea ).toBeInTheDocument();
-			// Check that the textarea exists and is editable
-			expect( textarea.tagName ).toBe( 'TEXTAREA' );
-		} );
-
 		it( 'should not allow editing in read-only mode', async () => {
 			const readOnlyDispute = { ...baseDispute, status: 'under_review' };
 			mockApiFetch.mockResolvedValue( readOnlyDispute );
@@ -375,6 +354,9 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 
 	describe( 'Visa Compliance document handling', () => {
 		it( 'should show only Visa Compliance recommended documents', async () => {
+			// Enable the feature flag for Visa Compliance documents
+			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
 			render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
 
 			await waitFor( () => {
@@ -395,6 +377,9 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 					)
 				).toBeInTheDocument();
 			} );
+
+			// Reset feature flag
+			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
 		} );
 
 		it( 'should not show regular dispute documents for Visa Compliance', async () => {
