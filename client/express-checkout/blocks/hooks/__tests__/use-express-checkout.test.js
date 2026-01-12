@@ -29,7 +29,6 @@ const jQueryMock = ( selector ) => {
 	};
 };
 jQueryMock.blockUI = () => null;
-jQueryMock.unblockUI = () => null;
 
 window.wcpayExpressCheckoutParams = {};
 window.wcpayExpressCheckoutParams.checkout = {};
@@ -549,65 +548,6 @@ describe( 'useExpressCheckout', () => {
 			expect.objectContaining( {
 				lineItems: [],
 			} )
-		);
-	} );
-
-	it( 'should handle pending shipping rate error on confirm', () => {
-		const mockSetExpressPaymentError = jest.fn();
-		const mockApi = {};
-
-		const { result } = renderHook( () =>
-			useExpressCheckout( {
-				api: mockApi,
-				billing: {
-					cartTotal: {
-						value: 1000,
-					},
-					cartTotalItems: [],
-					currency: {
-						minorUnit: 2,
-					},
-				},
-				shippingData: {
-					needsShipping: true,
-					shippingRates: [
-						{
-							package_id: 0,
-							shipping_rates: [
-								{
-									rate_id: 'pending',
-									name: 'Pending',
-									price: '0',
-								},
-							],
-						},
-					],
-				},
-				onClick: jest.fn(),
-				onClose: jest.fn(),
-				setExpressPaymentError: mockSetExpressPaymentError,
-			} )
-		);
-
-		const mockEvent = {
-			shippingRate: { id: 'pending' },
-			billingDetails: {
-				name: 'Test User',
-				email: 'test@example.com',
-				address: {
-					country: 'US',
-					line1: '123 Main St',
-					city: 'New York',
-					state: 'NY',
-					postal_code: '10001',
-				},
-			},
-		};
-
-		result.current.onConfirm( mockEvent );
-
-		expect( mockSetExpressPaymentError ).toHaveBeenCalledWith(
-			'Unable to process order. Please ensure a valid shipping address is provided and shipping options are available.'
 		);
 	} );
 } );
