@@ -190,12 +190,7 @@ export const transformCartDataForShippingRates = ( cartData ) => {
 	const displayPriceIncludingTax = getExpressCheckoutData( 'checkout' )
 		.display_prices_with_tax;
 
-	// Return empty array if no shipping rates available
-	if ( ! cartData.shipping_rates?.[ 0 ]?.shipping_rates ) {
-		return [];
-	}
-
-	return cartData.shipping_rates[ 0 ].shipping_rates
+	return cartData.shipping_rates?.[ 0 ]?.shipping_rates
 		.sort( ( rateA, rateB ) => {
 			if ( rateA.selected === rateB.selected ) {
 				return 0; // Keep relative order if both have the same value for 'selected'

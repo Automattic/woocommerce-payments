@@ -51,13 +51,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 		// when no shipping options are returned, the API still returns a 200 status code.
 		// We need to ensure that shipping options are present - otherwise the ECE dialog won't update correctly.
 		if ( shippingRates.length === 0 ) {
-			event.reject( {
-				code: 'no_shipping_options',
-				message: __(
-					'No shipping options are available. Please ensure shipping is configured for your address.',
-					'woocommerce-payments'
-				),
-			} );
+			event.reject();
 
 			return;
 		}
@@ -75,13 +69,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
 	} catch ( error ) {
-		event.reject( {
-			code: 'shipping_error',
-			message: __(
-				'There was an error processing the shipping address.',
-				'woocommerce-payments'
-			),
-		} );
+		event.reject();
 	}
 };
 
@@ -115,16 +103,6 @@ export const onConfirmHandler = async (
 	abortPayment,
 	event
 ) => {
-	// Validate shipping rate is not pending.
-	if ( event?.shippingRate?.id === 'pending' ) {
-		return abortPayment(
-			__(
-				'Unable to process order. Please ensure a valid shipping address is provided and shipping options are available.',
-				'woocommerce-payments'
-			)
-		);
-	}
-
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
 		return abortPayment( submitError.message );

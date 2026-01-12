@@ -306,13 +306,13 @@ jQuery( ( $ ) => {
 				}
 
 				const options = getOnClickOptions();
-
-				// For product pages with no shipping rates, provide a temporary pending rate
-				// The shippingaddresschange event will validate against the server
-				const initialShippingRates = options.shippingAddressRequired
-					? options.shippingRates?.length > 0
-						? options.shippingRates
-						: [
+				const shippingOptionsWithFallback =
+					// server-side data on the product page initialization doesn't provide any shipping rates.
+					! options.shippingRates ||
+					// but it can also happen that there are no rates in the array.
+					options.shippingRates.length === 0
+						? [
+								// fallback for initialization (and initialization _only_), before an address is provided by the ECE.
 								{
 									id: 'pending',
 									displayName: __(
@@ -322,7 +322,7 @@ jQuery( ( $ ) => {
 									amount: 0,
 								},
 						  ]
-					: undefined;
+						: options.shippingRates;
 
 				onClickHandler( event );
 				event.resolve( {
@@ -336,7 +336,9 @@ jQuery( ( $ ) => {
 					},
 					emailRequired: true,
 					...options,
-					shippingRates: initialShippingRates,
+					shippingRates: options.shippingAddressRequired
+						? shippingOptionsWithFallback
+						: undefined,
 					allowedShippingCountries: getExpressCheckoutData(
 						'checkout'
 					).allowed_shipping_countries,

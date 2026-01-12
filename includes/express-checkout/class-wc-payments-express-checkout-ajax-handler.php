@@ -58,15 +58,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			10,
 			2
 		);
-		add_action(
-			'woocommerce_store_api_checkout_update_order_from_request',
-			[
-				$this,
-				'validate_shipping_method',
-			],
-			10,
-			2
-		);
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
@@ -203,52 +194,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 
 		$order->set_payment_method_title( $payment_method_title . $suffix );
 		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_payment_type );
-	}
-
-	/**
-	 * Validates that the shipping method is not pending before order creation.
-	 *
-	 * @param \WC_Order        $order The order being created.
-	 * @param \WP_REST_Request $request Store API request.
-	 * @throws \Exception If shipping method is pending for orders that require shipping.
-	 */
-	public function validate_shipping_method( \WC_Order $order, \WP_REST_Request $request ) {
-		// Only validate for WooPayments express checkout requests.
-		if ( ! isset( $request['payment_method'] ) || 'woocommerce_payments' !== $request['payment_method'] ) {
-			return;
-		}
-
-		if ( empty( $request['payment_data'] ) ) {
-			return;
-		}
-
-		// Check if this is an express checkout request.
-		$payment_data = [];
-		foreach ( $request['payment_data'] as $data ) {
-			$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
-		}
-
-		if ( empty( $payment_data['express_payment_type'] ) ) {
-			return;
-		}
-
-		// If order needs shipping, validate the shipping method.
-		if ( $order->needs_shipping_address() ) {
-			$shipping_methods = $order->get_shipping_methods();
-
-			foreach ( $shipping_methods as $shipping_method ) {
-				$method_id = $shipping_method->get_method_id();
-
-				if ( 'pending' === $method_id ) {
-					throw new \Exception(
-						__(
-							'Unable to process order. Shipping method is invalid. Please ensure a valid shipping address is provided and shipping options are available.',
-							'woocommerce-payments'
-						)
-					);
-				}
-			}
-		}
 	}
 
 	/**

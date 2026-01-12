@@ -156,18 +156,6 @@ export const useExpressCheckout = ( {
 	);
 
 	const onConfirm = async ( event ) => {
-		// Validate shipping rate is not pending.
-		if ( event?.shippingRate?.id === 'pending' ) {
-			setExpressPaymentError(
-				__(
-					'Unable to process order. Please ensure a valid shipping address is provided and shipping options are available.',
-					'woocommerce-payments'
-				)
-			);
-			onAbortPaymentHandler();
-			return;
-		}
-
 		onConfirmHandler(
 			api,
 			stripe,
