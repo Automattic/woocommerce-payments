@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-refactor: convert Klarna payment method into a payment method definition

@@ -28,11 +28,7 @@ use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Grabpay_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -3765,12 +3761,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 
 		$this->assertEquals(
-			[
-				'product',
-				'cart',
-				'checkout',
-			],
-			$this->card_gateway->get_option( 'platform_checkout_button_locations' )
+			[ 'payment_request', 'woopay' ],
+			$this->card_gateway->get_option( 'express_checkout_product_methods' )
+		);
+
+		$this->assertEquals(
+			[ 'payment_request', 'woopay' ],
+			$this->card_gateway->get_option( 'express_checkout_cart_methods' )
+		);
+
+		$this->assertEquals(
+			[ 'payment_request', 'woopay' ],
+			$this->card_gateway->get_option( 'express_checkout_checkout_methods' )
 		);
 
 		$this->assertEquals(
@@ -4168,20 +4170,21 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GrabPayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\MultibancoDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 		];
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Becs_Payment_Method::class,
-			Link_Payment_Method::class,
-			Grabpay_Payment_Method::class,
 		];
 
 		foreach ( $payment_method_classes as $payment_method_class ) {

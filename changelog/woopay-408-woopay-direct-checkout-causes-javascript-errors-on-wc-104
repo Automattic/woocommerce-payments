@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Resolve JavaScript errors in WooPay Direct Checkout on sites with WooCommerce 10.4+

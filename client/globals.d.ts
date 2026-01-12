@@ -35,7 +35,6 @@ declare global {
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
-			isAccountDetailsEnabled: boolean;
 			amazonPay: boolean;
 		};
 		accountFees: Record< string, any >;

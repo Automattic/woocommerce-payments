@@ -13,11 +13,11 @@ import AccountDetails from '../index';
 import type { AccountDetailsType } from 'wcpay/types/account/account-details';
 
 // Mock the components that have external dependencies
-jest.mock( 'wcpay/components/account-status/account-tools', () => ( {
+jest.mock( '../account-tools', () => ( {
 	AccountTools: () => <div data-testid="account-tools">Account Tools</div>,
 } ) );
 
-jest.mock( 'wcpay/components/account-status/account-fees', () => ( {
+jest.mock( '../account-fees', () => ( {
 	__esModule: true,
 	default: () => <div data-testid="account-fees">Account Fees</div>,
 } ) );

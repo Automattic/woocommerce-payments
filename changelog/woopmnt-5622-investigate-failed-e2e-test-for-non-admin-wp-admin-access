@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix E2E test for non-admin WP-Admin access to expect 'Connected' instead of 'Complete' account status.

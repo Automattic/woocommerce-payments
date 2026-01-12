@@ -96,7 +96,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 		// Enqueue the WCPay common config script only if it hasn't been enqueued yet.
 		// This may happen when Direct Checkout is being enqueued on pages that are not the cart page,
 		// such as the home and shop pages.
-		if ( function_exists( 'did_filter' ) && did_filter( 'wcpay_payment_fields_js_config' ) === 0 ) {
+		if ( ! $this->is_cart_page() && ! $this->is_checkout_page() && WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
 			WC_Payments::enqueue_woopay_common_config_script();
 		}
 

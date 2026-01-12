@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Attempt to fix when items remain in the cart after successful checkout (Affirm).
