@@ -150,6 +150,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	} >( {} );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
+	const isFeatureFlagEnabled =
+		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
+		false;
 	const isVisaCompliance = isVisaComplianceDispute( dispute );
 
 	// --- Data loading ---
@@ -204,7 +207,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				const savedCoverLetter = d.evidence?.uncategorized_text;
 				if ( savedCoverLetter ) {
 					setCoverLetter( savedCoverLetter );
-					if ( isVisaCompliance ) {
+					if ( isVisaCompliance && isFeatureFlagEnabled ) {
 						// For Visa Compliance disputes, always consider the cover letter as manually edited
 						setIsCoverLetterManuallyEdited( true );
 					} else {
@@ -256,7 +259,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							savedCoverLetter !== generatedContent
 						);
 					}
-				} else if ( isVisaCompliance ) {
+				} else if ( isVisaCompliance && isFeatureFlagEnabled ) {
 					setCoverLetter( '' );
 					// For Visa Compliance disputes, always consider the cover letter as manually edited
 					setIsCoverLetterManuallyEdited( true );
@@ -405,7 +408,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const disputeReason = dispute?.reason;
 	const hasShipping = needsShipping( disputeReason, productType );
 	let panelHeadings = [ 'Purchase info', 'Review' ];
-	if ( isVisaCompliance ) {
+	if ( isVisaCompliance && isFeatureFlagEnabled ) {
 		panelHeadings = [ 'Dispute information' ];
 	} else if ( hasShipping ) {
 		panelHeadings = [ 'Purchase info', 'Shipping details', 'Review' ];
@@ -1031,7 +1034,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Step content ---
 	const renderStepContent = () => {
-		if ( isVisaCompliance ) {
+		if ( isVisaCompliance && isFeatureFlagEnabled ) {
 			return renderVisaComplianceContent();
 		}
 		if ( currentStep === 0 ) {
@@ -1230,7 +1233,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	// --- Button rendering ---
 	const renderButtons = () => {
 		const reviewStep = hasShipping ? 2 : 1;
-		if ( isVisaCompliance ) {
+		if ( isVisaCompliance && isFeatureFlagEnabled ) {
 			return (
 				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button
@@ -1424,7 +1427,7 @@ export default ( { query }: { query: { id: string } } ) => {
 			<ErrorBoundary>
 				<div className="wcpay-dispute-evidence-new">
 					{ /* Section 1: Accordion (hidden for Visa Compliance) */ }
-					{ ! isVisaCompliance && (
+					{ ! ( isVisaCompliance && isFeatureFlagEnabled ) && (
 						<Accordion highDensity>
 							<AccordionBody
 								title={ __(

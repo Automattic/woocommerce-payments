@@ -95,7 +95,7 @@ global.wcpaySettings = {
 		},
 	},
 	featureFlags: {
-		isDisputeAdditionalEvidenceTypesEnabled: false,
+		isDisputeAdditionalEvidenceTypesEnabled: true,
 	},
 };
 
@@ -353,9 +353,6 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 
 	describe( 'Visa Compliance document handling', () => {
 		it( 'should show only Visa Compliance recommended documents', async () => {
-			// Enable the feature flag for Visa Compliance documents
-			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
-
 			render( <NewEvidence query={ { id: 'dp_test_123' } } /> );
 
 			await waitFor( () => {
@@ -376,9 +373,6 @@ describe( 'NewEvidence - Visa Compliance Flow', () => {
 					)
 				).toBeInTheDocument();
 			} );
-
-			// Reset feature flag
-			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
 		} );
 
 		it( 'should not show regular dispute documents for Visa Compliance', async () => {
