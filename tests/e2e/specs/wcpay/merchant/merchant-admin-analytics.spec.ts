@@ -20,10 +20,16 @@ import { goToOrderAnalytics } from '../../../utils/merchant-navigation';
 test.describe( 'Admin order analytics', () => {
 	let orderId: string;
 
+	// Extend timeout for the entire test suite to allow order processing.
+	test.setTimeout( 120000 );
+
 	// Use the merchant user for this test suite.
 	useMerchant();
 
 	test.beforeAll( async ( { browser } ) => {
+		// Set explicit timeout for this beforeAll hook.
+		test.setTimeout( 120000 );
+
 		const { shopperPage } = await getShopper( browser );
 		const { merchantPage } = await getMerchant( browser );
 
@@ -34,6 +40,9 @@ test.describe( 'Admin order analytics', () => {
 		// Place an order to ensure the analytics data is correct.
 		orderId = await shopper.placeOrderWithCurrency( shopperPage, 'USD' );
 		await ensureOrderIsProcessed( merchantPage, orderId );
+
+		// Give analytics more time to process the order data.
+		await merchantPage.waitForTimeout( 2000 );
 	} );
 
 	test( 'should load without any errors', async ( { browser } ) => {
@@ -55,8 +64,7 @@ test.describe( 'Admin order analytics', () => {
 		// await expect( merchantPage ).toHaveScreenshot();
 	} );
 
-	// Skipped because the test is flaky
-	test.skip( 'orders table should have the customer currency column', async ( {
+	test( 'orders table should have the customer currency column', async ( {
 		browser,
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );
