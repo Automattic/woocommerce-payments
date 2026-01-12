@@ -5,6 +5,7 @@ import { test, expect } from '../../../fixtures/auth';
 import { config } from '../../../config/default';
 import {
 	addSubscriptionToCart,
+	emptyCart,
 	setupCheckout,
 	fillCardDetails,
 	placeOrder,
@@ -25,6 +26,7 @@ test.describe(
 			config.addresses[ 'subscriptions-customer' ].billing;
 
 		test.beforeAll( async ( { customerPage } ) => {
+			await emptyCart( customerPage );
 			await addSubscriptionToCart(
 				customerPage,
 				config.products.subscription_signup_fee
@@ -60,7 +62,8 @@ test.describe(
 				adminPage.getByText( actionSchedulerHook, { exact: true } )
 			).toBeVisible();
 
-			// Go to Subscriptions and verify the subscription renewal
+			// Go to Subscriptions and verify the subscription renewal.
+			// After renewal, the "Orders" column should show "2" (initial order + renewal order).
 			await goToSubscriptions( adminPage );
 
 			await expect(
