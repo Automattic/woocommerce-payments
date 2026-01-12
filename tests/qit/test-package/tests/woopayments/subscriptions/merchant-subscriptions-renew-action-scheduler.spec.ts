@@ -4,7 +4,7 @@
 import { test, expect } from '../../../fixtures/auth';
 import { config } from '../../../config/default';
 import {
-	addToCartFromShopPage,
+	addSubscriptionToCart,
 	setupCheckout,
 	fillCardDetails,
 	placeOrder,
@@ -25,7 +25,7 @@ test.describe(
 			config.addresses[ 'subscriptions-customer' ].billing;
 
 		test.beforeAll( async ( { customerPage } ) => {
-			await addToCartFromShopPage(
+			await addSubscriptionToCart(
 				customerPage,
 				config.products.subscription_signup_fee
 			);
