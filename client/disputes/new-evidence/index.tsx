@@ -1031,7 +1031,6 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Step content ---
 	const renderStepContent = () => {
-		// if ( ! fields.length ) return null;
 		if ( isVisaCompliance ) {
 			return renderVisaComplianceContent();
 		}
@@ -1080,9 +1079,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
 					/>
-					{ isVisaCompliance
-						? inlineNoticeVisaCompliance()
-						: inlineNotice( bankName ) }
+					{ inlineNotice( bankName ) }
 				</>
 			);
 		}

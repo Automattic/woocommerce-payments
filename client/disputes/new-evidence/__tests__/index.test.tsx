@@ -19,7 +19,6 @@ import NewEvidence from '../index';
 import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
 import type { DisputeReason } from 'wcpay/types/disputes';
 import { useGetSettings, useDisputeEvidence } from 'wcpay/data';
-import { recordEvent } from 'tracks';
 
 // Mock the API fetch calls
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
