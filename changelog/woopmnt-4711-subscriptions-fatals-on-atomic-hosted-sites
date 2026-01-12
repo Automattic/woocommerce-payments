@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent fatal error on sites running WooCommerce Subscriptions < 5.0.0 by not instantiating the Stripe Billing migrator when required functions are unavailable.
