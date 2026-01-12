@@ -239,7 +239,10 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'currency_code'              => strtolower( get_woocommerce_currency() ),
 						'currency_decimals'          => WC_Payments::get_localization_service()->get_currency_format( get_woocommerce_currency() )['num_decimals'],
 						'country_code'               => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-						'needs_shipping'             => WC()->cart->needs_shipping(),
+						// Use our custom method that checks product shipping requirements,
+						// bypassing WooCommerce's check for shipping method availability.
+						'needs_shipping'             => $this->cart_products_need_shipping(),
+						'has_shipping_methods'       => wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ),
 						// Defaults to 'required' to match how core initializes this option.
 						'needs_payer_phone'          => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 						'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
@@ -415,6 +418,28 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		return $title;
+	}
+
+	/**
+	 * Check if any product in the cart requires shipping.
+	 * This bypasses WooCommerce's check for shipping method availability,
+	 * which would return false if no shipping methods are configured.
+	 *
+	 * @return bool Whether any cart product needs shipping.
+	 */
+	private function cart_products_need_shipping() {
+		$cart = WC()->cart;
+		if ( ! $cart || ! wc_shipping_enabled() ) {
+			return false;
+		}
+
+		foreach ( $cart->get_cart_contents() as $cart_item ) {
+			if ( $cart_item['data']->needs_shipping() ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

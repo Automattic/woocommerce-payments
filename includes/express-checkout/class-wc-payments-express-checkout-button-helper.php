@@ -410,6 +410,26 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
+		// Shipping is required but no shipping methods are configured.
+		// This prevents the ECE dialog from opening with a "Pending" placeholder rate
+		// that cannot be fulfilled, which would allow orders to complete without valid shipping.
+		// Note: We don't use WC()->cart->needs_shipping() because it returns false when no shipping methods are configured.
+		$product_needs_shipping = $this->is_product() && $this->get_product() && $this->get_product()->needs_shipping();
+		$cart_needs_shipping    = false;
+		if ( ( $this->is_cart() || $this->is_checkout() ) && WC()->cart && wc_shipping_enabled() ) {
+			foreach ( WC()->cart->get_cart_contents() as $cart_item ) {
+				if ( $cart_item['data']->needs_shipping() ) {
+					$cart_needs_shipping = true;
+					break;
+				}
+			}
+		}
+
+		if ( ( $product_needs_shipping || $cart_needs_shipping ) && 0 === wc_get_shipping_method_count( true ) ) {
+			Logger::log( 'Shipping required but no shipping methods configured ( Express Checkout Element button disabled )' );
+			return false;
+		}
+
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
 			return $this->is_pay_for_order_supported();

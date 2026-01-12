@@ -10,7 +10,24 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/con
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
+import { getExpressCheckoutData } from '../utils';
 import '../compatibility/wc-order-attribution';
+
+/**
+ * Check if shipping is required but no shipping methods are configured.
+ * This prevents the ECE dialog from opening with a "Pending" placeholder rate
+ * that cannot be fulfilled, which would allow orders to complete without valid shipping.
+ *
+ * @param {Object} cart Cart data from WooCommerce Blocks.
+ * @return {boolean} True if shipping configuration is invalid.
+ */
+const hasInvalidShippingConfiguration = () => {
+	const checkoutData = getExpressCheckoutData( 'checkout' );
+	const needsShipping = checkoutData?.needs_shipping ?? false;
+	const hasShippingMethods = checkoutData?.has_shipping_methods ?? true;
+
+	return needsShipping && ! hasShippingMethods;
+};
 
 export const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
@@ -37,6 +54,11 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 	},
 	canMakePayment: ( { cart } ) => {
 		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
+
+		// Don't show if shipping is required but no shipping methods are configured.
+		if ( hasInvalidShippingConfiguration() ) {
 			return false;
 		}
 
@@ -72,6 +94,11 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 	},
 	canMakePayment: ( { cart } ) => {
 		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
+
+		// Don't show if shipping is required but no shipping methods are configured.
+		if ( hasInvalidShippingConfiguration() ) {
 			return false;
 		}
 

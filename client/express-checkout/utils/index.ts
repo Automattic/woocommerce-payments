@@ -38,6 +38,7 @@ export interface WCPayExpressCheckoutParams {
 		currency_code: string;
 		needs_payer_phone: boolean;
 		needs_shipping: boolean;
+		has_shipping_methods: boolean;
 		currency_decimals: number;
 	};
 
