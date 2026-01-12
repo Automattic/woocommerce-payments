@@ -6,11 +6,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Get the directory where this script is located (for resolving relative paths).
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 echo "Setting up WooPayments for E2E testing..."
-echo "Script directory: $SCRIPT_DIR"
 
 # Ensure environment is marked as development so dev-only CLI commands are available.
 wp config set WP_ENVIRONMENT_TYPE development --quiet 2>/dev/null || true
@@ -50,10 +46,9 @@ if wp plugin is-installed woocommerce-subscriptions 2>/dev/null; then
 
     # Import subscription products.
     echo "Importing subscription products..."
-    WC_SUBSCRIPTIONS_DATA_PATH="$SCRIPT_DIR/wc-subscription-products.xml"
+    WC_SUBSCRIPTIONS_DATA_PATH="./bootstrap/wc-subscription-products.xml"
 
     if [ -f "$WC_SUBSCRIPTIONS_DATA_PATH" ]; then
-        echo "Found subscription products at: $WC_SUBSCRIPTIONS_DATA_PATH"
         wp import "$WC_SUBSCRIPTIONS_DATA_PATH" --authors=skip
         echo "Subscription products imported successfully."
     else
@@ -176,7 +171,7 @@ wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled
 # Check required environment variables for Jetpack authentication.
 if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2E_JP_USER_TOKEN:-}" ]; then
     echo "Configuring WooPayments with Jetpack authentication..."
-    wp eval-file "$SCRIPT_DIR/qit-jetpack-connection.php"
+    wp eval-file ./bootstrap/qit-jetpack-connection.php
     echo "WooPayments connection configured - account data fetched from server."
 else
     echo "No Jetpack credentials configured - WooPayments will show Connect screen."
@@ -191,7 +186,7 @@ fi
 # Display current setup status.
 echo ""
 echo "Current WooPayments setup status:"
-wp eval-file "$SCRIPT_DIR/qit-jetpack-status.php"
+wp eval-file ./bootstrap/qit-jetpack-status.php
 
 # Enable development/test mode for better testing experience.
 wp option set wcpay_dev_mode 1 --quiet 2>/dev/null || true
