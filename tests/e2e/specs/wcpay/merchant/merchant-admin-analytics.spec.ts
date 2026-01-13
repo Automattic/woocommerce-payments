@@ -55,18 +55,7 @@ test.describe( 'Admin order analytics', () => {
 		// await expect( merchantPage ).toHaveScreenshot();
 	} );
 
-	/**
-	 * This test is skipped because the E2E environment's order sync mechanism
-	 * (via Action Scheduler UI) is unreliable for analytics data availability.
-	 *
-	 * The equivalent test in QIT (tests/qit/test-package/tests/woopayments/merchant/merchant-admin-analytics.spec.ts)
-	 * uses direct PHP calls to sync order data, which is more reliable.
-	 *
-	 * Prefer running QIT tests for this functionality.
-	 *
-	 * @see https://linear.app/a8c/issue/WOOPMNT-5612
-	 */
-	test.skip( 'orders table should have the customer currency column', async ( {
+	test( 'orders table should have the customer currency column', async ( {
 		browser,
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );

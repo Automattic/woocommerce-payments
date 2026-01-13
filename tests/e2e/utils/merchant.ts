@@ -380,10 +380,29 @@ export const disablePaymentMethods = async (
 
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 	await navigation.goToActionScheduler( page, 'pending', orderId );
-	await page.$eval(
-		'td:has-text("wc-admin_import_orders") a:has-text("Run")',
-		( el: HTMLLinkElement ) => el.click()
+
+	const runLink = page.locator(
+		'td:has-text("wc-admin_import_orders") a:has-text("Run")'
 	);
+
+	// Check if the action exists in pending status
+	const actionExists = ( await runLink.count() ) > 0;
+
+	if ( actionExists ) {
+		// Click the run link - this triggers a page reload
+		await runLink.click();
+
+		// Wait for the page to reload and stabilize
+		await page.waitForLoadState( 'domcontentloaded' );
+
+		// Verify the action was executed successfully
+		await expect(
+			page.locator( 'text=Successfully executed action' )
+		).toBeVisible( { timeout: 10000 } );
+	}
+
+	// Give analytics time to process the synced data
+	await page.waitForTimeout( 2000 );
 };
 
 export const isWooPayEnabled = async ( page: Page ) => {
