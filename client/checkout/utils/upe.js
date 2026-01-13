@@ -225,6 +225,19 @@ export function dispatchChangeEventFor( element ) {
 }
 
 /**
+ * Check whether Stripe Link is enabled.
+ *
+ * @param {Object} paymentMethodsConfig Checkout payment methods configuration settings object.
+ * @return {boolean} True, if enabled; false otherwise.
+ */
+export const isLinkEnabled = ( paymentMethodsConfig ) => {
+	return (
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined
+	);
+};
+
+/**
  * Returns the prepared set of options needed to initialize the Stripe elements for UPE in Block Checkout.
  * The initial options have all the fields set to 'never' to hide them from the UPE, because all the
  * information is already collected in the checkout form. Additionally, the options are updated with
@@ -258,7 +271,7 @@ export const getStripeElementOptions = (
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
-			link: 'never',
+			link: isLinkEnabled( paymentMethodsConfig ) ? 'auto' : 'never',
 		},
 	};
 
@@ -270,19 +283,6 @@ export const getStripeElementOptions = (
 	options.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	return options;
-};
-
-/**
- * Check whether Stripe Link is enabled.
- *
- * @param {Object} paymentMethodsConfig Checkout payment methods configuration settings object.
- * @return {boolean} True, if enabled; false otherwise.
- */
-export const isLinkEnabled = ( paymentMethodsConfig ) => {
-	return (
-		paymentMethodsConfig.link !== undefined &&
-		paymentMethodsConfig.card !== undefined
-	);
 };
 
 /**
@@ -300,44 +300,6 @@ export const getPaymentMethodTypes = ( paymentMethodType ) => {
 		paymentMethodTypes.push( 'link' );
 	}
 	return paymentMethodTypes;
-};
-
-/**
- * Returns the email value from store API.
- *
- * @return {string} The email value.
- */
-export const getBlocksEmailValue = () => {
-	// .wcpay-payment-element container is rendered only when new payment method is selected
-	return document
-		.querySelector( '.wcpay-payment-element' )
-		?.closest( 'form' )
-		?.querySelector( '#email' )?.value;
-};
-
-/**
- * Function to initialise Stripe Link button on email input field.
- *
- * @param {Object} linkAutofill Stripe Link Autofill instance.
- */
-export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
-	const upeContainer = document.querySelector( '.wcpay-payment-element' );
-	if ( ! upeContainer ) return;
-
-	const emailInput = upeContainer
-		.closest( 'form' )
-		?.querySelector( '#email' );
-	if ( ! emailInput ) return;
-
-	const stripeLinkButton = document.createElement( 'button' );
-	stripeLinkButton.setAttribute( 'class', 'wcpay-stripelink-modal-trigger' );
-	stripeLinkButton.style.display = emailInput.value ? 'inline-block' : 'none';
-	stripeLinkButton.addEventListener( 'click', ( event ) => {
-		event.preventDefault();
-		linkAutofill.launch( { email: emailInput.value } );
-	} );
-
-	emailInput.parentNode.appendChild( stripeLinkButton );
 };
 
 /**

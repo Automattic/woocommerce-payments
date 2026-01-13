@@ -94,3 +94,28 @@ export interface RecommendedDocumentsProps {
 	fields: DocumentField[];
 	readOnly?: boolean;
 }
+
+export interface BaseEvidence {
+	product_description: string;
+	receipt: string;
+	customer_communication: string;
+	customer_signature: string;
+	refund_policy: string;
+	duplicate_charge_documentation: string;
+	shipping_documentation: string;
+	service_documentation: string;
+	cancellation_policy: string;
+	access_activity_log: string;
+	uncategorized_file: string;
+	uncategorized_text: string;
+	shipping_carrier: string;
+	shipping_date: string;
+	shipping_tracking_number: string;
+	shipping_address: string;
+	customer_purchase_ip: string;
+	[ key: string ]: string;
+}
+
+export type EvidenceState = Partial< BaseEvidence > & {
+	[ key: string ]: string | undefined;
+};

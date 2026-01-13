@@ -21,7 +21,7 @@
 		width: 38px;
 		height: 24px;
 		background-color: rgba( $gray-700, 0.1 );
-		color: $gray-900;
+		color: var( --wp--preset--color--contrast, $gray-900 );
 		text-align: center;
 		line-height: 24px;
 		border-radius: 3px;
@@ -51,5 +51,11 @@
 		width: 38px;
 		height: 24px;
 		box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
+	}
+}
+
+.payment-methods--logos-popover {
+	> img {
+		object-position: center !important;
 	}
 }

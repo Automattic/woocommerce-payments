@@ -266,24 +266,15 @@ class WC_Payments_Checkout {
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
-			$payment_fields['isOrderPay'] = true;
-			$order_id                     = absint( get_query_var( 'order-pay' ) );
-			$payment_fields['orderId']    = $order_id;
-			$order                        = wc_get_order( $order_id );
+			$order_id = absint( get_query_var( 'order-pay' ) );
+			$order    = wc_get_order( $order_id );
 
-			if ( is_a( $order, 'WC_Order' ) ) {
-				$order_currency                   = $order->get_currency();
-				$payment_fields['currency']       = $order_currency;
-				$payment_fields['cartTotal']      = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );
-				$payment_fields['orderReturnURL'] = esc_url_raw(
-					add_query_arg(
-						[
-							'wc_payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
-						],
-						$this->gateway->get_return_url( $order )
-					)
-				);
+			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
+				$payment_fields['isOrderPay'] = true;
+				$payment_fields['orderId']    = $order_id;
+				$order_currency               = $order->get_currency();
+				$payment_fields['currency']   = $order_currency;
+				$payment_fields['cartTotal']  = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );
 			}
 		}
 
@@ -308,7 +299,7 @@ class WC_Payments_Checkout {
 	 */
 	public function get_enabled_payment_method_config() {
 		$settings                = [];
-		$enabled_payment_methods = $this->gateway->get_upe_enabled_payment_method_ids_based_on_manual_capture();
+		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			// Link by Stripe should be validated with available fees.
@@ -351,7 +342,12 @@ class WC_Payments_Checkout {
 	 */
 	private function get_config_for_payment_method( $payment_method_id, $account_country ) {
 		$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
-		$config         = [
+
+		if ( ! $payment_method ) {
+			return [];
+		}
+
+		$config = [
 			'isReusable'     => $payment_method->is_reusable(),
 			'isBnpl'         => $payment_method->is_bnpl(),
 			'title'          => $payment_method->get_title( $account_country ),

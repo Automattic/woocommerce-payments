@@ -13,6 +13,7 @@ import utils from 'iti/utils';
 
 interface PhoneNumberInputProps {
 	value: string;
+	id: string;
 	onValidationChange: ( isValid: boolean ) => void;
 	onValueChange: ( value: string ) => void;
 	onCountryDropdownClick?: () => void;
@@ -27,6 +28,7 @@ interface PhoneNumberInputProps {
 const PhoneNumberInput = ( {
 	onValueChange,
 	value,
+	id,
 	onValidationChange = ( validation ) => validation,
 	onCountryDropdownClick,
 	inputProps = {
@@ -207,6 +209,7 @@ const PhoneNumberInput = ( {
 			<input
 				type="tel"
 				ref={ inputRef }
+				id={ id }
 				value={ removeInternationalPrefix( value ) }
 				onBlur={ () => {
 					setFocusLost( true );

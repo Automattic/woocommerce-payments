@@ -55,6 +55,8 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_update_compatibility_data_hook_registered() {
+		$this->action_scheduler_service->init_hooks();
+
 		$this->assertEquals( 10, has_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->mock_compatibility_service, 'update_compatibility_data_hook' ] ) );
 	}
 

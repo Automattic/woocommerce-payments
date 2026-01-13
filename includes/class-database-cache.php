@@ -16,12 +16,13 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A class for caching data as an option in the database.
  */
 class Database_Cache implements MultiCurrencyCacheInterface {
-	const ACCOUNT_KEY                 = 'wcpay_account_data';
-	const ONBOARDING_FIELDS_DATA_KEY  = 'wcpay_onboarding_fields_data';
-	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
-	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
-	const FRAUD_SERVICES_KEY          = 'wcpay_fraud_services_data';
-	const RECOMMENDED_PAYMENT_METHODS = 'wcpay_recommended_payment_methods';
+	const ACCOUNT_KEY                  = 'wcpay_account_data';
+	const ONBOARDING_FIELDS_DATA_KEY   = 'wcpay_onboarding_fields_data';
+	const BUSINESS_TYPES_KEY           = 'wcpay_business_types_data';
+	const PAYMENT_PROCESS_FACTORS_KEY  = 'wcpay_payment_process_factors';
+	const FRAUD_SERVICES_KEY           = 'wcpay_fraud_services_data';
+	const RECOMMENDED_PAYMENT_METHODS  = 'wcpay_recommended_payment_methods';
+	const ADDRESS_AUTOCOMPLETE_JWT_KEY = 'wcpay_address_autocomplete_jwt';
 
 	/**
 	 * Refresh during AJAX calls is avoided, but white-listing
@@ -44,6 +45,13 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @var string
 	 */
 	const DISPUTE_STATUS_COUNTS_KEY = 'wcpay_dispute_status_counts_cache';
+
+	/**
+	 * Dispute status counts cache key for test mode.
+	 *
+	 * @var string
+	 */
+	const DISPUTE_STATUS_COUNTS_KEY_TEST_MODE = 'wcpay_test_dispute_status_counts_cache';
 
 	/**
 	 * Active disputes cache key.
@@ -245,6 +253,36 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	}
 
 	/**
+	 * Delete all known cache entries.
+	 */
+	public function delete_all() {
+		$keys = [
+			self::ACCOUNT_KEY,
+			self::ONBOARDING_FIELDS_DATA_KEY,
+			self::BUSINESS_TYPES_KEY,
+			self::PAYMENT_PROCESS_FACTORS_KEY,
+			self::FRAUD_SERVICES_KEY,
+			self::RECOMMENDED_PAYMENT_METHODS,
+			self::DISPUTE_STATUS_COUNTS_KEY,
+			self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE,
+			self::ACTIVE_DISPUTES_KEY,
+			self::AUTHORIZATION_SUMMARY_KEY,
+			self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
+			self::CONNECT_INCENTIVE_KEY,
+			self::TRACKING_INFO_KEY,
+		];
+
+		foreach ( $keys as $key ) {
+			$this->delete( $key );
+		}
+
+		// Delete prefix-based keys.
+		$this->delete_by_prefix( self::PAYMENT_METHODS_KEY_PREFIX );
+		$this->delete_by_prefix( self::ONBOARDING_FIELDS_DATA_KEY ); // It can be prefixed with the locale.
+		$this->delete_by_prefix( self::RECOMMENDED_PAYMENT_METHODS ); // It can be prefixed with the locale.
+	}
+
+	/**
 	 * Hook function allowing the cache refresh to be selectively disabled in certain situations
 	 * (such as while running an Action Scheduler job). While the refresh is disabled, get_or_add
 	 * will only return the cached value and never regenerate it, even if it's expired.
@@ -253,6 +291,18 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 */
 	public function disable_refresh() {
 		$this->refresh_disabled = true;
+	}
+
+	/**
+	 * Delete all dispute-related cache entries.
+	 * This ensures both live and test mode dispute counts are refreshed.
+	 *
+	 * @return void
+	 */
+	public function delete_dispute_caches() {
+		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY );
+		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE );
+		$this->delete( self::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
@@ -439,6 +489,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 			case self::TRACKING_INFO_KEY:
 				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;
+				break;
+			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
+				$ttl = 12 * HOUR_IN_SECONDS;
 				break;
 			default:
 				// Default to 24h.

@@ -7,7 +7,6 @@
 		.express-checkout {
 			margin: 0;
 			padding: 24px;
-			background: #fff;
 
 			.loadable-checkbox__icon .gridicons-notice-outline {
 				fill: #f0b849;
@@ -34,6 +33,7 @@
 				justify-content: flex-start;
 				align-items: center;
 				flex-wrap: nowrap;
+				background: #fff;
 			}
 
 			&__notice {
@@ -150,28 +150,6 @@
 				@include breakpoint( '<660px' ) {
 					align-items: flex-start;
 					flex-wrap: wrap;
-				}
-			}
-		}
-	}
-}
-
-body {
-	&.woocommerce-payments-checkout-section {
-		.express-checkouts {
-			.express-checkouts-list {
-				.express-checkout {
-					padding-left: 0;
-					padding-right: 0;
-					&:first-child {
-						padding-top: 0;
-					}
-					&:last-child {
-						padding-bottom: 0;
-					}
-				}
-				.express-checkout__label-container {
-					display: block;
 				}
 			}
 		}

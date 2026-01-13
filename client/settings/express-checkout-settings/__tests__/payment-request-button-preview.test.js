@@ -36,6 +36,7 @@ jest.mock( 'wcpay/data', () => {
 		...actual,
 		useWooPayEnabledSettings: () => [ false, jest.fn() ],
 		usePaymentRequestEnabledSettings: () => [ true, jest.fn() ],
+		usePmPromotions: () => ( { pmPromotions: [], isLoading: false } ),
 	};
 } );
 

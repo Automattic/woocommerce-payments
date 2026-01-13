@@ -55,6 +55,12 @@ get_db_connection_flags() {
 			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp"
 		fi
 	fi
+
+	# Add --skip-ssl flag for local development (not in CI)
+	if [ -z "$CI" ] && [ -z "$GITHUB_ACTIONS" ]; then
+		EXTRA_FLAGS="$EXTRA_FLAGS --skip-ssl"
+	fi
+
 	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS";
 }
 

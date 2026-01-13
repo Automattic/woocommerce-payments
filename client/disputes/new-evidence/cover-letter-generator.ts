@@ -59,15 +59,54 @@ const isEvidenceString = (
 	return typeof evidence === 'string';
 };
 
-export const generateAttachments = ( dispute: ExtendedDispute ): string => {
+export const generateAttachments = (
+	dispute: ExtendedDispute,
+	duplicateStatus?: string
+): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
 
-	// Standard attachment logic for other dispute reasons
-	const standardAttachments = [
+	// For duplicate disputes with is_duplicate status, check for refund receipt first (uses uncategorized_file)
+	// This ensures it shows as "Refund receipt" rather than "Other documents"
+	if (
+		dispute.reason === 'duplicate' &&
+		duplicateStatus === 'is_duplicate'
+	) {
+		const refundReceipt =
+			dispute.evidence?.[
+				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION
+			];
+		if ( refundReceipt && isEvidenceString( refundReceipt ) ) {
+			attachmentCount++;
+			attachments.push(
+				sprintf(
+					/* translators: %1$s: label, %2$s: attachment letter */
+					__( '• %1$s (Attachment %2$s)', 'woocommerce-payments' ),
+					__( 'Refund receipt', 'woocommerce-payments' ),
+					String.fromCharCode( 64 + attachmentCount )
+				)
+			);
+		}
+	}
+
+	// Standard attachment definitions with optional restriction rules
+	// Each attachment can specify:
+	// - `onlyForReasons`: only include for these dispute reasons
+	// - `excludeWhen`: exclude when this condition is true (for complex conditions)
+	const standardAttachments: Array< {
+		key: string;
+		label: string;
+		onlyForReasons?: string[];
+		excludeWhen?: ( reason: string, status?: string ) => boolean;
+	} > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+			label: __( 'Any additional receipts', 'woocommerce-payments' ),
+			onlyForReasons: [ 'duplicate' ],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
@@ -95,28 +134,48 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-			label: __( 'Proof of active subscription', 'woocommerce-payments' ),
+			label: __( 'Subscription logs', 'woocommerce-payments' ),
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			label: __( 'Other documents', 'woocommerce-payments' ),
+			// Skip for duplicate + is_duplicate since we already processed it as refund receipt above
+			excludeWhen: ( reason, status ) =>
+				reason === 'duplicate' && status === 'is_duplicate',
 		},
-	] as const;
+	];
 
-	standardAttachments.forEach( ( { key, label } ) => {
-		const evidence = dispute.evidence?.[ key ];
-		if ( evidence && isEvidenceString( evidence ) ) {
-			attachmentCount++;
-			attachments.push(
-				sprintf(
-					/* translators: %1$s: label, %2$s: attachment letter */
-					__( '• %1$s (Attachment %2$s)', 'woocommerce-payments' ),
-					label,
-					String.fromCharCode( 64 + attachmentCount )
-				)
-			);
+	standardAttachments.forEach(
+		( { key, label, onlyForReasons, excludeWhen } ) => {
+			const evidence = dispute.evidence?.[ key ];
+
+			// Check if this attachment should be skipped based on rules
+			if (
+				onlyForReasons &&
+				! onlyForReasons.includes( dispute.reason )
+			) {
+				return;
+			}
+			if ( excludeWhen?.( dispute.reason, duplicateStatus ) ) {
+				return;
+			}
+
+			if ( evidence && isEvidenceString( evidence ) ) {
+				attachmentCount++;
+				attachments.push(
+					sprintf(
+						/* translators: %1$s: label, %2$s: attachment letter */
+						__(
+							'• %1$s (Attachment %2$s)',
+							'woocommerce-payments'
+						),
+						label,
+						String.fromCharCode( 64 + attachmentCount )
+					)
+				);
+			}
 		}
-	} );
+	);
 
 	// If no attachments were provided, use default list
 	if ( attachments.length === 0 ) {
@@ -592,7 +651,7 @@ export const generateCoverLetter = (
 		duplicateStatus: duplicateStatus,
 	};
 
-	const attachmentsList = generateAttachments( dispute );
+	const attachmentsList = generateAttachments( dispute, duplicateStatus );
 	const header = generateHeader( data );
 	const recipient = generateRecipient( data );
 	const greeting = __(

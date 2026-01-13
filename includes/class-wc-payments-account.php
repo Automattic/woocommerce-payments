@@ -40,7 +40,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 	const TRACKS_EVENT_ACCOUNT_REFERRAL                         = 'wcpay_account_referral';
-	const NOX_PROFILE_OPTION_KEY                                = 'woocommerce_woopayments_nox_profile';
+	// NOX-related constants from the WooCommerce core.
+	const NOX_PROFILE_OPTION_KEY    = 'woocommerce_woopayments_nox_profile';
+	const NOX_ONBOARDING_LOCKED_KEY = 'woocommerce_woopayments_nox_onboarding_locked';
+
+	const STORE_SETUP_SYNC_ACTION = 'wcpay_store_setup_sync';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -130,6 +134,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
+		// Hook into the recurring store setup sync action and do the store setup sync.
+		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
+		// Also do a store setup sync when the client is updated to a new version.
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'store_setup_sync' ] );
 	}
 
 	/**
@@ -362,6 +370,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Test-drive accounts don't have access to the Stripe dashboard.
 			'accountLink'         => empty( $account['is_test_drive'] ) ? $this->get_login_url() : false,
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
+			'isDocumentsEnabled'  => $account['is_documents_enabled'] ?? false,
+			'communicationsEmail' => $account['communications_email'] ?? '',
 			'requirements'        => [
 				'errors' => $account['requirements']['errors'] ?? [],
 			],
@@ -375,6 +385,24 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'wporgReview2025' => $account['eligibility_wporg_review_campaign_2025'] ?? false,
 			],
 		];
+	}
+
+	/**
+	 * Get structured account details including status, payout info, and banners for frontend display.
+	 *
+	 * @return null|array Account details array with nested status objects, or null if unavailable.
+	 */
+	public function get_account_details(): ?array {
+		$account = $this->get_cached_account_data();
+		if ( empty( $account['account_details'] ) ) {
+			return null;
+		}
+
+		$account_details = $account['account_details'];
+		$is_valid        = is_array( $account_details )
+							&& isset( $account_details['account_status'], $account_details['payout_status'] )
+							&& array_key_exists( 'banner', $account_details );
+		return $is_valid ? $account_details : null;
 	}
 
 	/**
@@ -455,6 +483,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_business_support_phone(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_phone'] ) ? $account['business_profile']['support_phone'] : '';
+	}
+
+	/**
+	 * Gets the communications email.
+	 *
+	 * @return string Communications email.
+	 */
+	public function get_communications_email(): string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['communications_email'] ) ? $account['communications_email'] : '';
 	}
 
 	/**
@@ -2610,6 +2648,279 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		return $account['card_testing_protection_eligible'] ?? false;
 	}
 
+	/**
+	 * Gather the latest store setup state and send it to the Transact Platform.
+	 *
+	 * @return void
+	 */
+	public function store_setup_sync() {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return;
+		}
+
+		try {
+			// This is a fire-and-forget operation, so we don't care about the result.
+			$this->payments_api_client->send_store_setup( $this->get_store_setup_details() );
+		} catch ( Throwable $e ) {
+			Logger::error( 'Failed to sync store setup state with the Transact Platform: ' . $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Gathers the current store setup details.
+	 *
+	 * This overlaps heavily with the extension settings, but it is not limited to it.
+	 *
+	 * @see WC_REST_Payments_Settings_Controller::get_settings().
+	 *
+	 * @return array Store setup details.
+	 * @throws Exception In case things are not properly initialized yet.
+	 */
+	private function get_store_setup_details(): array {
+		$gateway = WC_Payments::get_gateway();
+		// If the gateway is not available, return an empty array.
+		// This should never happen, but better safe than sorry.
+		if ( empty( $gateway ) || ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
+			return [];
+		}
+
+		$gateway_form_fields = $gateway->get_form_fields();
+
+		$payment_methods_available = $gateway->get_upe_available_payment_methods();
+		$payment_methods_enabled   = $gateway->get_upe_enabled_payment_method_ids();
+		$payment_methods_disabled  = array_values( array_diff( $payment_methods_available, $payment_methods_enabled ) );
+
+		// Map enabled payment methods to capabilities.
+		// This is needed because the capabilities in the Transact Platform are named differently.
+		// E.g. 'card_payments' capability corresponds to 'card' payment method.
+		$provider_capabilities_enabled  = [];
+		$provider_capabilities_disabled = [];
+		$pm_to_capability_key_map       = $gateway->get_payment_method_capability_key_map();
+		foreach ( $payment_methods_enabled as $pm_id ) {
+			if ( isset( $pm_to_capability_key_map[ $pm_id ] ) ) {
+				$provider_capabilities_enabled[] = $pm_to_capability_key_map[ $pm_id ];
+			}
+		}
+		foreach ( $payment_methods_disabled as $pm_id ) {
+			if ( isset( $pm_to_capability_key_map[ $pm_id ] ) ) {
+				$provider_capabilities_disabled[] = $pm_to_capability_key_map[ $pm_id ];
+			}
+		}
+		$provider_capabilities_available = array_unique( array_merge( $provider_capabilities_enabled, $provider_capabilities_disabled ) );
+
+		return [
+			// The WooPayments setup details.
+			'gateway'                => [
+				'enabled'              => $gateway->is_enabled(),
+				'test_mode'            => WC_Payments::mode()->is_test(),
+				'test_mode_onboarding' => WC_Payments::mode()->is_test_mode_onboarding(),
+			],
+
+			// Payment methods setup.
+			'payment_methods'        => [
+				'available'  => $payment_methods_available,
+				'enabled'    => $payment_methods_enabled,
+				'disabled'   => $payment_methods_disabled,
+				'duplicates' => $gateway->find_duplicates(),
+			],
+			// Payment methods mapped to capabilities, for flexibility with the Transact Platform.
+			// E.g. 'card_payments' capability corresponds to 'card' payment method.
+			'provider_capabilities'  => [
+				'available' => $provider_capabilities_available,
+				'enabled'   => $provider_capabilities_enabled,
+				'disabled'  => $provider_capabilities_disabled,
+			],
+			'apple_google_pay_in_payment_methods_options_enabled' => $gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
+
+			'saved_cards_enabled'    => $gateway->is_saved_cards_enabled(),
+			'manual_capture_enabled' => 'yes' === $gateway->get_option( 'manual_capture' ),
+			'debug_log_enabled'      => 'yes' === $gateway->get_option( 'enable_logging' ),
+
+			'payment_request'        => [
+				'enabled'              => $gateway->is_payment_request_enabled(),
+				'enabled_locations'    => $this->get_express_checkout_method_locations( $gateway, 'payment_request' ),
+				'button_type'          => $gateway->get_option( 'payment_request_button_type' ),
+				'button_size'          => $gateway->get_option( 'payment_request_button_size' ),
+				'button_theme'         => $gateway->get_option( 'payment_request_button_theme' ),
+				'button_border_radius' => $gateway->get_option( 'payment_request_button_border_radius' ),
+			],
+
+			'woopay'                 => [
+				'enabled'                 => WC_Payments_Features::is_woopay_enabled(),
+				'enabled_locations'       => $this->get_express_checkout_method_locations( $gateway, 'woopay' ),
+				'store_logo'              => $gateway->get_option( 'platform_checkout_store_logo' ),
+				'custom_message'          => $gateway->get_option( 'platform_checkout_custom_message' ),
+				'invalid_extension_found' => (bool) get_option( 'woopay_invalid_extension_found', false ),
+			],
+
+			// WooPayments features.
+			'multi_currency_enabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'stripe_billing_enabled' => WC_Payments_Features::is_stripe_billing_enabled(),
+
+			// Other WooPayments details.
+			'plugin'                 => [
+				'version'              => defined( 'WCPAY_VERSION_NUMBER' ) ? explode( '-', WCPAY_VERSION_NUMBER, 2 )[0] : '',
+				'activation_timestamp' => get_option( 'wcpay_activation_timestamp', null ),
+			],
+
+			// Other store setup details.
+			'wp_setup'               => [
+				'name'           => get_bloginfo( 'name' ),
+				'url'            => home_url(),
+				'active_theme'   => $this->get_store_theme_details(),
+				'active_plugins' => $this->get_store_active_plugins(),
+				'version'        => get_bloginfo( 'version' ),
+				'locale'         => get_locale(),
+			],
+			'wc_setup'               => [
+				'version'                     => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
+				'store_id'                    => ( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) ) ? get_option( \WC_Install::STORE_ID_OPTION, null ) : null,
+				'currency'                    => get_woocommerce_currency(),
+				'tracking_enabled'            => WC_Site_Tracking::is_tracking_enabled(),
+				'registered_payment_gateways' => $this->get_store_registered_gateway_ids(),
+				'enabled_payment_gateways'    => $this->get_store_enabled_gateway_ids(),
+				'wc_subscriptions_active'     => $gateway->is_subscriptions_plugin_active(),
+				'wc_subscriptions_version'    => $gateway->get_subscriptions_plugin_version(),
+			],
+		];
+	}
+
+	/**
+	 * Gathers the current store theme details.
+	 *
+	 * @return array Store theme details.
+	 */
+	private function get_store_theme_details(): array {
+		$theme_data = wp_get_theme();
+
+		return [
+			'name'        => $theme_data->Name, // @phpcs:ignore
+			'version'     => $theme_data->Version, // @phpcs:ignore
+			'child_theme' => is_child_theme(),
+			'wc_support'  => current_theme_supports( 'woocommerce' ),
+			'block_theme' => wp_is_block_theme(),
+		];
+	}
+
+	/**
+	 * Gathers the current store active (and valid) plugins.
+	 *
+	 * @return array Store active plugins details with each plugin slug and version.
+	 */
+	private function get_store_active_plugins(): array {
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$all_plugins = get_plugins();
+		if ( empty( $all_plugins ) ) {
+			return [];
+		}
+
+		// Get active plugins using the PluginUtil from WC, if available.
+		$wc_plugin_util = null;
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\PluginUtil' ) ) {
+			try {
+				$wc_plugin_util = wc_get_container()->get( '\Automattic\WooCommerce\Utilities\PluginUtil' );
+			} catch ( Throwable $e ) {
+				// If we can't get the PluginUtil, we won't be able to accurately get the active plugins.
+				// This is not a critical failure, so we can log it and continue.
+				Logger::error( 'Failed to get PluginUtil: ' . $e->getMessage() );
+			}
+		}
+
+		$plugins_list = [];
+
+		$active_plugin_ids = ( is_object( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'get_all_active_valid_plugins' ] ) ) ? $wc_plugin_util->get_all_active_valid_plugins() : wp_get_active_and_valid_plugins();
+		foreach ( $active_plugin_ids as $plugin_file ) {
+			if ( isset( $all_plugins[ $plugin_file ] ) ) {
+				$plugin_data                  = $all_plugins[ $plugin_file ];
+				$plugins_list[ $plugin_file ] = [
+					'name'     => $plugin_data['Name'],
+					'slug'     => dirname( $plugin_file ),
+					'version'  => $plugin_data['Version'],
+					'wc_aware' => ( is_object( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'is_woocommerce_aware_plugin' ] ) ) ? $wc_plugin_util->is_woocommerce_aware_plugin( $plugin_data ) : null,
+				];
+			}
+		}
+
+		return array_values( $plugins_list );
+	}
+
+	/**
+	 * Gets the IDs of all payment gateways registered in the store.
+	 *
+	 * @return array Array of payment gateway IDs.
+	 */
+	private function get_store_registered_gateway_ids(): array {
+		$payment_gateways = WC()->payment_gateways()->payment_gateways();
+		if ( empty( $payment_gateways ) ) {
+			return [];
+		}
+
+		// Go through the gateways and get their IDs.
+		return array_unique(
+			array_values(
+				array_filter(
+					array_map(
+						function ( $gateway ) {
+							return $gateway->id ?? null;
+						},
+						$payment_gateways
+					)
+				)
+			)
+		);
+	}
+
+	/**
+	 * Gets the IDs of all enabled payment gateways registered in the store.
+	 *
+	 * @return array Array of enabled payment gateway IDs.
+	 */
+	private function get_store_enabled_gateway_ids(): array {
+		$payment_gateways = WC()->payment_gateways()->payment_gateways();
+		if ( empty( $payment_gateways ) ) {
+			return [];
+		}
+
+		// Go through the gateways and get the IDs of enabled ones.
+		return array_unique(
+			array_values(
+				array_filter(
+					array_map(
+						function ( $gateway ) {
+							return ( $gateway instanceof WC_Payment_Gateway && wc_string_to_bool( $gateway->enabled ) ) ? $gateway->id : null;
+						},
+						$payment_gateways
+					)
+				)
+			)
+		);
+	}
+
+	/**
+	 * Gets the locations where a specific express checkout method is enabled.
+	 *
+	 * Derives the locations from the location-centric express checkout settings.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway   The WCPay gateway instance.
+	 * @param string                   $method_id The method identifier (e.g., 'payment_request', 'woopay').
+	 *
+	 * @return array Array of location identifiers where the method is enabled.
+	 */
+	private function get_express_checkout_method_locations( WC_Payment_Gateway_WCPay $gateway, string $method_id ): array {
+		$locations         = [ 'product', 'cart', 'checkout' ];
+		$enabled_locations = [];
+
+		foreach ( $locations as $location ) {
+			$enabled_methods = $gateway->get_option( "express_checkout_{$location}_methods", [] );
+			if ( is_array( $enabled_methods ) && in_array( $method_id, $enabled_methods, true ) ) {
+				$enabled_locations[] = $location;
+			}
+		}
+
+		return $enabled_locations;
+	}
 
 	/**
 	 * Gets tracking info from the server and caches it.

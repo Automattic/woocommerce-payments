@@ -22,6 +22,9 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
+	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true, jest.fn() ] ),
 	useWooPayCustomMessage: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
 	useWooPayStoreLogo: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
@@ -36,6 +39,10 @@ jest.mock( '../../../data', () => ( {
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
+	useAmazonPayEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
+	useAmazonPayLocations: jest.fn().mockReturnValue( [ [], jest.fn() ] ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -108,6 +115,7 @@ describe( 'ExpressCheckoutSettings', () => {
 			restUrl: 'http://example.com/wp-json/',
 			featureFlags: {
 				woopayExpressCheckout: true,
+				isDynamicCheckoutPlaceOrderButtonEnabled: true,
 			},
 		};
 	} );

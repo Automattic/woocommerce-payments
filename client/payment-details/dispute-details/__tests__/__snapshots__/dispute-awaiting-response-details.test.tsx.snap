@@ -1,0 +1,573 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa compliance dispute with NonCompliantDisputeSteps 1`] = `
+.emotion-2 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-2>* {
+  min-width: 0;
+}
+
+.emotion-4 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-16 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-16 *,
+.emotion-16 *::before,
+.emotion-16 *::after {
+  box-sizing: inherit;
+}
+
+.components-panel__row .emotion-18 {
+  margin-bottom: inherit;
+}
+
+.emotion-20 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: 0;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: start;
+  justify-content: start;
+  width: 100%;
+}
+
+.emotion-20>* {
+  min-width: 0;
+}
+
+<div>
+  <div
+    class="transaction-details-dispute-details-wrapper"
+  >
+    <hr />
+    <h2
+      class="transaction-details-dispute-details-title"
+    >
+      Dispute details
+    </h2>
+    <div
+      class="transaction-details-dispute-details-body"
+    >
+      <div
+        class="wcpay-inline-notice wcpay-inline-error-notice dispute-notice components-notice is-error"
+      >
+        <div
+          class="components-visually-hidden emotion-0 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="VisuallyHidden"
+          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+        >
+          Error notice
+        </div>
+        <div
+          class="components-notice__content"
+        >
+          <div
+            class="components-flex emotion-2 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="Flex"
+          >
+            <div
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-4 emotion-1"
+              data-wp-c16t="true"
+              data-wp-component="FlexItem"
+            >
+              <svg
+                class="gridicon gridicons-notice-outline"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                  />
+                </g>
+              </svg>
+            </div>
+            <div
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-4 emotion-1"
+              data-wp-c16t="true"
+              data-wp-component="FlexItem"
+            >
+              Your customer’s bank, Chase Bank, claims this payment violates Visa’s rules. 
+              <strong>
+                You can challenge the dispute by 7:59 PM on September 9, 2023, or accept it.
+              </strong>
+               If you accept the dispute, you will forfeit the funds and pay the dispute fee. Challenging adds an additional $500 USD dispute fee that is only returned to you if you win.
+            </div>
+          </div>
+          <div
+            class="components-notice__actions"
+          />
+        </div>
+      </div>
+      <div
+        class="dispute-summary-row"
+      >
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
+        >
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Dispute Amount
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  $50.00
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Disputed On
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  000000830f36830
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Reason
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Non-compliant
+                  <button
+                    class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+                    type="button"
+                  >
+                    <div
+                      class="wcpay-tooltip__content-wrapper"
+                    >
+                      <div
+                        aria-label="Learn more"
+                        role="button"
+                        tabindex="0"
+                      >
+                        <svg
+                          class="gridicon gridicons-help-outline"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          width="16"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <g>
+                            <path
+                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                            />
+                          </g>
+                        </svg>
+                      </div>
+                    </div>
+                  </button>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Respond By
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="dispute-steps__steps__response-date"
+                  >
+                    September 9, 2023 7:59 PM
+                    <span
+                      class="dispute-steps__steps__response-date--urgent"
+                    >
+                       (Past due)
+                    </span>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div
+        class="dispute-steps"
+      >
+        <div
+          class="wcpay-accordion"
+        >
+          <div
+            class="wcpay-accordion__body is-opened"
+          >
+            <h2
+              class="wcpay-accordion__body-title"
+            >
+              <button
+                class="components-button wcpay-accordion__body-toggle is-md is-lg"
+                type="button"
+              >
+                <span
+                  aria-hidden="true"
+                >
+                  <svg
+                    aria-hidden="true"
+                    class="wcpay-accordion__arrow"
+                    focusable="false"
+                    size="24"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
+                    />
+                  </svg>
+                </span>
+                <div
+                  class="wcpay-accordion__title-content"
+                >
+                  Steps you can take
+                  <div
+                    class="wcpay-accordion__subtitle"
+                  >
+                    We recommend reviewing your options before responding by the deadline. 
+                  </div>
+                </div>
+              </button>
+            </h2>
+            <div
+              class="wcpay-accordion__row"
+            >
+              <div
+                class="dispute-steps__content"
+              >
+                <div
+                  class="dispute-steps__items"
+                >
+                  <div
+                    class="dispute-steps__item"
+                  >
+                    <div
+                      class="dispute-steps__item-icon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        size="24"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M15.5 7.5h-7V9h7V7.5Zm-7 3.5h7v1.5h-7V11Zm7 3.5h-7V16h7v-1.5Z"
+                        />
+                        <path
+                          d="M17 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2ZM7 5.5h10a.5.5 0 0 1 .5.5v12a.5.5 0 0 1-.5.5H7a.5.5 0 0 1-.5-.5V6a.5.5 0 0 1 .5-.5Z"
+                        />
+                      </svg>
+                    </div>
+                    <div
+                      class="dispute-steps__item-content"
+                    >
+                      <div
+                        class="dispute-steps__item-name"
+                      >
+                        Accepting the dispute
+                      </div>
+                      <div
+                        class="dispute-steps__item-description"
+                      >
+                        Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa fee.
+                      </div>
+                    </div>
+                    <div
+                      class="dispute-steps__item-action"
+                    >
+                      <a
+                        class="components-button is-secondary"
+                        href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        Learn more
+                      </a>
+                    </div>
+                  </div>
+                  <div
+                    class="dispute-steps__item"
+                  >
+                    <div
+                      class="dispute-steps__item-icon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        size="24"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          clip-rule="evenodd"
+                          d="M3 7c0-1.1.9-2 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Zm2-.5h14c.3 0 .5.2.5.5v1L12 13.5 4.5 7.9V7c0-.3.2-.5.5-.5Zm-.5 3.3V17c0 .3.2.5.5.5h14c.3 0 .5-.2.5-.5V9.8L12 15.4 4.5 9.8Z"
+                          fill-rule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div
+                      class="dispute-steps__item-content"
+                    >
+                      <div
+                        class="dispute-steps__item-name"
+                      >
+                        Challenge the dispute
+                      </div>
+                      <div
+                        class="dispute-steps__item-description"
+                      >
+                        Challenging the dispute will incur a $500 USD network fee, charged by our partner Stripe when you submit evidence. This fee will be refunded if you win the dispute.
+                      </div>
+                    </div>
+                    <div
+                      class="dispute-steps__item-action"
+                    >
+                      <a
+                        class="components-button is-secondary"
+                        href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                      >
+                        Learn more
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="dispute-steps__notice"
+                >
+                  <div
+                    class="wcpay-inline-notice wcpay-inline-info-notice dispute-steps__notice-content components-notice is-info"
+                  >
+                    <div
+                      class="components-visually-hidden emotion-0 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="VisuallyHidden"
+                      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                    >
+                      Information notice
+                    </div>
+                    <div
+                      class="components-notice__content"
+                    >
+                      <div
+                        class="components-flex emotion-2 emotion-1"
+                        data-wp-c16t="true"
+                        data-wp-component="Flex"
+                      >
+                        <div
+                          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-4 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="FlexItem"
+                        >
+                          <svg
+                            class="gridicon gridicons-info-outline"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <g>
+                              <path
+                                d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+                              />
+                            </g>
+                          </svg>
+                        </div>
+                        <div
+                          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-4 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="FlexItem"
+                        >
+                          <strong>
+                            The outcome of this dispute will be determined by Visa.
+                          </strong>
+                           WooPayments has no influence over the decision and is not liable for any chargebacks.
+                        </div>
+                      </div>
+                      <div
+                        class="components-notice__actions"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="transaction-details-dispute-details-body__help-link"
+      >
+        <a
+          class="components-external-link"
+          href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
+          rel="external noreferrer noopener"
+          target="_blank"
+        >
+          <span
+            class="components-external-link__contents"
+          >
+            Learn more about Visa compliance disputes
+          </span>
+          <span
+            aria-label="(opens in a new tab)"
+            class="components-external-link__icon"
+          >
+            ↗
+          </span>
+        </a>
+      </div>
+      <div
+        class="transaction-details-dispute-details-body__visa-compliance-checkbox"
+      >
+        <div
+          class="components-base-control components-checkbox-control emotion-16 emotion-17"
+        >
+          <div
+            class="components-base-control__field emotion-18 emotion-19"
+          >
+            <div
+              class="components-flex components-h-stack emotion-20 emotion-1"
+              data-wp-c16t="true"
+              data-wp-component="HStack"
+            >
+              <span
+                class="components-checkbox-control__input-container"
+              >
+                <input
+                  class="components-checkbox-control__input"
+                  id="inspector-checkbox-control-0"
+                  type="checkbox"
+                  value="1"
+                />
+              </span>
+              <label
+                class="components-checkbox-control__label"
+                for="inspector-checkbox-control-0"
+              >
+                By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a $500 USD fee, which will be refunded only if you win the case.
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="transaction-details-dispute-details-body__actions"
+      >
+        <a
+          data-link-type="wc-admin"
+          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_visa_compliance_1"
+        >
+          <button
+            class="components-button is-next-40px-default-size is-primary"
+            data-testid="challenge-dispute-button"
+            disabled=""
+            type="button"
+          >
+            Challenge dispute
+          </button>
+        </a>
+        <button
+          class="components-button is-next-40px-default-size is-tertiary"
+          data-testid="open-accept-dispute-modal-button"
+          type="button"
+        >
+          Accept dispute
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

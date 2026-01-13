@@ -71,6 +71,10 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_wcpay_gateway = $this->make_wcpay_gateway();
 
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_product_methods', [ 'payment_request', 'woopay' ] );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'payment_request', 'woopay' ] );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request', 'woopay' ] );
+
 		$this->system_under_test = new WC_Payments_Express_Checkout_Button_Helper( $this->mock_wcpay_gateway, $this->mock_wcpay_account );
 
 		WC_Helper_Shipping::delete_simple_flat_rate();
@@ -131,6 +135,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$mock_payment_method           = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method->method( 'get_id' )->willReturn( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID );
 
 		return new WC_Payment_Gateway_WCPay(
 			$mock_api_client,

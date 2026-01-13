@@ -323,4 +323,26 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 			remove_all_filters( 'pre_option_' . $option );
 		}
 	}
+
+	public function test_is_amazon_pay_enabled_returns_false_when_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '0' );
+
+		$result = WC_Payments_Features::is_amazon_pay_enabled();
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_is_amazon_pay_enabled_returns_true_when_enabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '1' );
+
+		$result = WC_Payments_Features::is_amazon_pay_enabled();
+
+		$this->assertTrue( $result );
+	}
+
+	public function test_is_amazon_pay_enabled_returns_false_by_default() {
+		$result = WC_Payments_Features::is_amazon_pay_enabled();
+
+		$this->assertFalse( $result );
+	}
 }

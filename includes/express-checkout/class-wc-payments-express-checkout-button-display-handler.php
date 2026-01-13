@@ -82,7 +82,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 		$this->express_checkout_button_handler->init();
 
 		$is_woopay_enabled          = WC_Payments_Features::is_woopay_enabled();
-		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
+		$is_payment_request_enabled = $this->gateway->is_payment_request_enabled();
 
 		if ( $is_woopay_enabled ) {
 			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_ajax_handler, 'ajax_add_to_cart' ] );
