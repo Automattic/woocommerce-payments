@@ -389,9 +389,9 @@ export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 	const actionExists = ( await runLink.count() ) > 0;
 
 	if ( actionExists ) {
-		// Scroll into view and click - use force to bypass viewport issues with table layouts
-		await runLink.scrollIntoViewIfNeeded();
-		await runLink.click( { force: true } );
+		// Use JavaScript click to bypass Playwright's viewport checks
+		// The Action Scheduler table has layout issues that prevent normal clicking
+		await runLink.evaluate( ( el: HTMLAnchorElement ) => el.click() );
 
 		// Wait for the page to reload and stabilize
 		await page.waitForLoadState( 'domcontentloaded' );
