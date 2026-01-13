@@ -20,16 +20,10 @@ import { goToOrderAnalytics } from '../../../utils/merchant-navigation';
 test.describe( 'Admin order analytics', () => {
 	let orderId: string;
 
-	// Extend timeout for the entire test suite to allow order processing.
-	test.setTimeout( 120000 );
-
 	// Use the merchant user for this test suite.
 	useMerchant();
 
 	test.beforeAll( async ( { browser } ) => {
-		// Set explicit timeout for this beforeAll hook.
-		test.setTimeout( 120000 );
-
 		const { shopperPage } = await getShopper( browser );
 		const { merchantPage } = await getMerchant( browser );
 
@@ -40,9 +34,6 @@ test.describe( 'Admin order analytics', () => {
 		// Place an order to ensure the analytics data is correct.
 		orderId = await shopper.placeOrderWithCurrency( shopperPage, 'USD' );
 		await ensureOrderIsProcessed( merchantPage, orderId );
-
-		// Give analytics more time to process the order data.
-		await merchantPage.waitForTimeout( 2000 );
 	} );
 
 	test( 'should load without any errors', async ( { browser } ) => {
@@ -64,7 +55,18 @@ test.describe( 'Admin order analytics', () => {
 		// await expect( merchantPage ).toHaveScreenshot();
 	} );
 
-	test( 'orders table should have the customer currency column', async ( {
+	/**
+	 * This test is skipped because the E2E environment's order sync mechanism
+	 * (via Action Scheduler UI) is unreliable for analytics data availability.
+	 *
+	 * The equivalent test in QIT (tests/qit/test-package/tests/woopayments/merchant/merchant-admin-analytics.spec.ts)
+	 * uses direct PHP calls to sync order data, which is more reliable.
+	 *
+	 * Prefer running QIT tests for this functionality.
+	 *
+	 * @see https://linear.app/a8c/issue/WOOPMNT-5612
+	 */
+	test.skip( 'orders table should have the customer currency column', async ( {
 		browser,
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );
