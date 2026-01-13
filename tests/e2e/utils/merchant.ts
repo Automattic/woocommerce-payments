@@ -389,8 +389,9 @@ export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 	const actionExists = ( await runLink.count() ) > 0;
 
 	if ( actionExists ) {
-		// Click the run link - this triggers a page reload
-		await runLink.click();
+		// Scroll into view and click - use force to bypass viewport issues with table layouts
+		await runLink.scrollIntoViewIfNeeded();
+		await runLink.click( { force: true } );
 
 		// Wait for the page to reload and stabilize
 		await page.waitForLoadState( 'domcontentloaded' );
