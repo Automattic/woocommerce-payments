@@ -59,7 +59,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 							) }
 							content={
 								<div className="dispute-reason-tooltip">
-									<Paragraphs>
+									<p>
 										{ disputeReasonSummary }{ ' ' }
 										<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/">
 											{ __(
@@ -67,7 +67,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 												'woocommerce-payments'
 											) }
 										</ExternalLink>
-									</Paragraphs>
+									</p>
 								</div>
 							}
 						/>
