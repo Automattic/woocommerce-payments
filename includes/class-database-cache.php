@@ -77,6 +77,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 */
 	const ALL_KEYS = [
 		self::ACCOUNT_KEY,
+		self::ADDRESS_AUTOCOMPLETE_JWT_KEY,
 		self::ONBOARDING_FIELDS_DATA_KEY,
 		self::BUSINESS_TYPES_KEY,
 		self::FRAUD_SERVICES_KEY,
