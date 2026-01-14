@@ -52,6 +52,18 @@
                     "run": ["npx playwright test --project=merchant"]
                 }
             }
+        },
+        "woocommerce-payments/subscriptions": {
+            "description": "Subscription flow tests for WooPayments",
+            "tags": ["woopayments", "subscriptions", "woocommerce-subscriptions"],
+            "requires": {
+                "plugins": ["woocommerce-subscriptions"]
+            },
+            "test": {
+                "phases": {
+                    "run": ["npx playwright test --project=subscriptions"]
+                }
+            }
         }
     },
     "timeout": 1800

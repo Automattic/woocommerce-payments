@@ -306,7 +306,7 @@ export function* submitStripeBillingSubscriptionMigration() {
 }
 
 export function saveOption( optionName, value ) {
-	directApiFetch( {
+	return directApiFetch( {
 		path: `${ NAMESPACE }/settings/${ optionName }`,
 		method: 'post',
 		data: { value },
