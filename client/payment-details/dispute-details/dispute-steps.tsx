@@ -75,7 +75,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 					lg
 					title={ __( 'Steps you can take', 'woocommerce-payments' ) }
 					subtitle={ __(
-						'We recommend reviewing your options before responding by the deadline. ',
+						'We recommend reviewing your options before responding before the deadline. ',
 						'woocommerce-payments'
 					) }
 				>
@@ -238,7 +238,7 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 										</div>
 										<div className="dispute-steps__item-description">
 											{ __(
-												'Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa fee.',
+												'Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa network fee.',
 												'woocommerce-payments'
 											) }
 										</div>
@@ -271,7 +271,7 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 										</div>
 										<div className="dispute-steps__item-description">
 											{ __(
-												'Challenging the dispute will incur a $500 USD network fee, charged by our partner Stripe when you submit evidence. This fee will be refunded if you win the dispute.',
+												'Challenging the dispute will incur a $500 USD Visa network fee, which is charged when you submit evidence. This fee will be refunded if you win the dispute.',
 												'woocommerce-payments'
 											) }
 										</div>

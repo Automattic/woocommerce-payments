@@ -119,7 +119,7 @@ exports[`NonCompliantDisputeSteps renders the Visa compliance dispute steps 1`] 
                   <div
                     class="dispute-steps__item-description"
                   >
-                    Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa fee.
+                    Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa network fee.
                   </div>
                 </div>
                 <div
@@ -166,7 +166,7 @@ exports[`NonCompliantDisputeSteps renders the Visa compliance dispute steps 1`] 
                   <div
                     class="dispute-steps__item-description"
                   >
-                    Challenging the dispute will incur a $500 USD network fee, charged by our partner Stripe when you submit evidence. This fee will be refunded if you win the dispute.
+                    Challenging the dispute will incur a $500 USD Visa network fee, which is charged when you submit evidence. This fee will be refunded if you win the dispute.
                   </div>
                 </div>
                 <div
