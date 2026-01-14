@@ -1139,22 +1139,31 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
 
 		if ( ! is_array( $session ) ) {
-			Logger::error(
-				'Failed to initialize embedded KYC: Invalid API response.',
-				[ 'response_type' => gettype( $session ) ]
-			);
+			// Log directly to WC logger to ensure this is captured even when WCPay logging is disabled.
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				$logger->error(
+					sprintf( 'Failed to initialize embedded KYC: Invalid API response type %s.', gettype( $session ) ),
+					[ 'source' => 'woopayments' ]
+				);
+			}
 			return [];
 		}
 
 		// Log a warning if the session is missing critical fields that indicate a server-side issue.
 		if ( empty( $session['publishable_key'] ) || empty( $session['client_secret'] ) ) {
-			Logger::warning(
-				'Embedded KYC session missing required fields.',
-				[
-					'has_publishable_key' => ! empty( $session['publishable_key'] ),
-					'has_client_secret'   => ! empty( $session['client_secret'] ),
-				]
-			);
+			// Log directly to WC logger to ensure this is captured even when WCPay logging is disabled.
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				$logger->warning(
+					sprintf(
+						'Embedded KYC session missing required fields: publishable_key=%s, client_secret=%s.',
+						empty( $session['publishable_key'] ) ? 'missing' : 'set',
+						empty( $session['client_secret'] ) ? 'missing' : 'set'
+					),
+					[ 'source' => 'woopayments' ]
+				);
+			}
 		}
 
 		return $session;

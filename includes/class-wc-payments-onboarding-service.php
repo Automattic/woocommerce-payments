@@ -286,7 +286,14 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			Logger::error( 'Failed to create embedded KYC session: Jetpack connection not available.' );
+			// Log directly to WC logger to ensure this is captured even when WCPay logging is disabled.
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				$logger->error(
+					'Failed to create embedded KYC session: Jetpack connection not available.',
+					[ 'source' => 'woopayments' ]
+				);
+			}
 			return [];
 		}
 
@@ -342,7 +349,14 @@ class WC_Payments_Onboarding_Service {
 		} catch ( API_Exception $e ) {
 			$this->clear_onboarding_init_in_progress();
 
-			Logger::error( 'Failed to create embedded KYC session: ' . $e->getMessage() );
+			// Log directly to WC logger to ensure this is captured even when WCPay logging is disabled.
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				$logger->error(
+					'Failed to create embedded KYC session: ' . $e->getMessage(),
+					[ 'source' => 'woopayments' ]
+				);
+			}
 
 			// If we fail to create the session, return an empty array.
 			return [];
@@ -388,7 +402,14 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function finalize_embedded_kyc( string $locale, string $source, array $actioned_notes ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			Logger::error( 'Failed to finalize embedded KYC: Jetpack connection not available.' );
+			// Log directly to WC logger to ensure this is captured even when WCPay logging is disabled.
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				$logger->error(
+					'Failed to finalize embedded KYC: Jetpack connection not available.',
+					[ 'source' => 'woopayments' ]
+				);
+			}
 			return [
 				'success' => false,
 			];

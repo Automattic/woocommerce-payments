@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Logger;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -225,19 +223,21 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			$capabilities
 		);
 
-		if ( empty( $account_session ) ) {
-			Logger::error(
-				'Failed to create embedded KYC session: Empty response from onboarding service.',
-				[
-					'has_self_assessment' => ! empty( $self_assessment_data ),
-					'has_capabilities'    => ! empty( $capabilities ),
-				]
-			);
-		} elseif ( empty( $account_session['publishableKey'] ) ) {
-			Logger::warning(
-				'Embedded KYC session missing publishableKey.',
-				[ 'session_keys' => array_keys( $account_session ) ]
-			);
+		// Log directly to WC logger to ensure this is captured even when WCPay logging is disabled.
+		if ( function_exists( 'wc_get_logger' ) ) {
+			if ( empty( $account_session ) ) {
+				$logger = wc_get_logger();
+				$logger->error(
+					'Failed to create embedded KYC session: Empty response from onboarding service.',
+					[ 'source' => 'woopayments' ]
+				);
+			} elseif ( empty( $account_session['publishableKey'] ) ) {
+				$logger = wc_get_logger();
+				$logger->warning(
+					sprintf( 'Embedded KYC session missing publishableKey. Session keys: %s.', implode( ', ', array_keys( $account_session ) ) ),
+					[ 'source' => 'woopayments' ]
+				);
+			}
 		}
 
 		if ( $account_session ) {
