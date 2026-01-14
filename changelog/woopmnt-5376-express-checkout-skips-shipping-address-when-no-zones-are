@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide the Express Checkout buttons entirely when products require shipping and no shipping methods are configured.
