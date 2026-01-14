@@ -77,6 +77,15 @@ E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>'
 # Available projects are defined in playwright.config.js
 ```
 
+#### Subscription Tests
+
+Subscription tests require the WooCommerce Subscriptions plugin. A dedicated npm script handles this automatically:
+
+```bash
+# Run subscription tests (automatically installs WooCommerce Subscriptions)
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:subscriptions
+```
+
 > [!TIP]
 > You can export the variables once per shell session instead of prepending each command:
 
