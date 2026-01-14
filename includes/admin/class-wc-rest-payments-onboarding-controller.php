@@ -225,6 +225,21 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			$capabilities
 		);
 
+		if ( empty( $account_session ) ) {
+			Logger::error(
+				'Failed to create embedded KYC session: Empty response from onboarding service.',
+				[
+					'has_self_assessment' => ! empty( $self_assessment_data ),
+					'has_capabilities'    => ! empty( $capabilities ),
+				]
+			);
+		} elseif ( empty( $account_session['publishableKey'] ) ) {
+			Logger::warning(
+				'Embedded KYC session missing publishableKey.',
+				[ 'session_keys' => array_keys( $account_session ) ]
+			);
+		}
+
 		if ( $account_session ) {
 			$account_session['locale'] = get_user_locale();
 		}

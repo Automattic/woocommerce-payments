@@ -1139,7 +1139,22 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
 
 		if ( ! is_array( $session ) ) {
+			Logger::error(
+				'Failed to initialize embedded KYC: Invalid API response.',
+				[ 'response_type' => gettype( $session ) ]
+			);
 			return [];
+		}
+
+		// Log a warning if the session is missing critical fields that indicate a server-side issue.
+		if ( empty( $session['publishable_key'] ) || empty( $session['client_secret'] ) ) {
+			Logger::warning(
+				'Embedded KYC session missing required fields.',
+				[
+					'has_publishable_key' => ! empty( $session['publishable_key'] ),
+					'has_client_secret'   => ! empty( $session['client_secret'] ),
+				]
+			);
 		}
 
 		return $session;
