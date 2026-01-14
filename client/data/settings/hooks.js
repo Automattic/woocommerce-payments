@@ -503,6 +503,9 @@ export const usePaymentRequestButtonBorderRadius = () => {
 	];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').SavingError | null}
+ */
 export const useGetSavingError = () => {
 	return useSelect( ( select ) => select( STORE_NAME ).getSavingError(), [] );
 };
@@ -665,4 +668,17 @@ export const useStripeBillingMigration = () => {
 			hasResolved,
 		];
 	}, [] );
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
+export const useAccountCommunicationsEmail = () => {
+	const { updateAccountCommunicationsEmail } = useDispatch( STORE_NAME );
+
+	const accountCommunicationsEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountCommunicationsEmail()
+	);
+
+	return [ accountCommunicationsEmail, updateAccountCommunicationsEmail ];
 };

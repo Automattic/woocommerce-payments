@@ -1118,6 +1118,58 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * Tests account communications email validator
+	 *
+	 * @dataProvider account_communications_email_validation_provider
+	 */
+	public function test_validate_account_communications_email( $value, $request, $param, $expected ) {
+		$return = $this->controller->validate_account_communications_email( $value, $request, $param );
+		$this->assertEquals( $return, $expected );
+	}
+
+	/**
+	 * Provider for test_validate_account_communications_email.
+	 * @return array[] test method params.
+	 */
+	public function account_communications_email_validation_provider() {
+		$request = new WP_REST_Request();
+		return [
+			[
+				'test@test.com',
+				$request,
+				'account_communications_email',
+				true,
+			],
+			[
+				'', // Empty value should trigger error.
+				$request,
+				'account_communications_email',
+				new WP_Error( 'rest_invalid_pattern', 'Error: Communications email is required.' ),
+			],
+			[
+				'invalid-email',
+				$request,
+				'account_communications_email',
+				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid email address: invalid-email' ),
+			],
+		];
+	}
+
+	public function test_get_settings_returns_account_communications_email() {
+		$test_email = 'test@example.com';
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+		$this->mock_wcpay_account
+			->method( 'get_communications_email' )
+			->willReturn( $test_email );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertEquals( $test_email, $response->get_data()['account_communications_email'] );
+	}
+
 	public function test_update_is_payment_request_enabled_updates_google_pay_and_apple_pay() {
 		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$google_pay_gateway->expects( $this->once() )->method( 'enable' );

@@ -30,7 +30,6 @@ class WC_Payments_Features {
 	const DISPUTE_ADDITIONAL_EVIDENCE_TYPES                   = '_wcpay_feature_dispute_additional_evidence_types';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
-	const ACCOUNT_DETAILS_FLAG_NAME                           = '_wcpay_feature_account_details';
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 
 	/**
@@ -355,15 +354,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Account Details feature is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_account_details_enabled(): bool {
-		return '1' === get_option( self::ACCOUNT_DETAILS_FLAG_NAME, '1' );
-	}
-
-	/**
 	 * Checks whether Amazon Pay is enabled.
 	 *
 	 * @return bool
@@ -388,7 +378,6 @@ class WC_Payments_Features {
 				'isDisputeAdditionalEvidenceTypesEnabled'  => self::is_dispute_additional_evidence_types_enabled(),
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
-				'isAccountDetailsEnabled'                  => self::is_account_details_enabled(),
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
 			]
 		);
