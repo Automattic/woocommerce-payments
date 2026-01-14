@@ -147,7 +147,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account                = $this->createMock( WC_Payments_Account::class );
 		$this->mock_session_service              = $this->createMock( WC_Payments_Session_Service::class );
 		$order_service                           = new WC_Payments_Order_Service( $this->mock_api_client );
-		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_cache, $this->mock_session_service, $order_service );
+		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_session_service, $order_service );
 		$token_service                           = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$compatibility_service                   = new Compatibility_Service( $this->mock_api_client );
 		$action_scheduler_service                = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service, $compatibility_service );

@@ -137,6 +137,7 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
  */
 function wcpay_init_subscriptions_core() {
 	require_once __DIR__ . '/helpers/class-wcs-helper-background-repairer.php';
+	require_once __DIR__ . '/helpers/class-wc-helper-subscriptions.php';
 }
 
 // Placeholder for the test container.

@@ -45,10 +45,17 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	protected $mock_cache;
 
 	/**
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $original_gateway;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		$this->original_gateway = WC_Payments::get_gateway();
 
 		$this->user_id = get_current_user_id();
 		wp_set_current_user( 1 );
@@ -70,6 +77,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( $this->user_id );
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+		WC_Payments::set_gateway( $this->original_gateway );
 		parent::tear_down();
 	}
 
@@ -798,6 +806,286 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$token->set_email( 'test@test.com' );
 		$token->save();
 		return $token;
+	}
+
+	/**
+	 * Test clear_cached_payment_methods_for_user method.
+	 */
+	public function test_clear_cached_payment_methods_for_user() {
+		$user_id     = 1;
+		$cache_key   = '_wcpay_payment_methods';
+		$cached_data = [
+			'customer_id'         => 'cus_12345',
+			'payment_method_card' => [
+				$this->generate_card_pm_response( 'pm_test1' ),
+				$this->generate_card_pm_response( 'pm_test2' ),
+			],
+		];
+
+		// Add cached data to user meta.
+		update_user_meta( $user_id, $cache_key, $cached_data );
+
+		// Clear cached payment methods for user.
+		$this->token_service->clear_cached_payment_methods_for_user( $user_id );
+
+		// Verify cached data is cleared.
+		$this->assertEmpty( get_user_meta( $user_id, $cache_key, true ) );
+	}
+
+	public function provider_clearing_with_network_saved_cards_enabled(): array {
+		return [
+			'clear_cached_payment_methods_for_user' => [
+				'user_id' => 1, // specific user.
+			],
+			'clear_all_cached_payment_methods'      => [
+				'user_id' => null, // all users.
+			],
+		];
+	}
+
+	/**
+	 * Test `clear_cached_payment_methods_for_user` and `clear_all_cached_payment_methods` with network saved cards enabled.
+	 *
+	 * @dataProvider provider_clearing_with_network_saved_cards_enabled
+	 * @param int|null $user_id The user ID.
+	 */
+	public function test_clearing_with_network_saved_cards_enabled( ?int $user_id = null ) {
+		$user_id     = 1;
+		$cached_data = [
+			'customer_id'         => 'cus_12345',
+			'payment_method_card' => [
+				$this->generate_card_pm_response( 'pm_test1' ),
+			],
+		];
+
+		// Add cached data to user meta.
+		update_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
+
+		// Mock network saved cards enabled using the filter.
+		add_filter( 'wcpay_force_network_saved_cards', '__return_true' );
+
+		if ( $user_id > 0 ) {
+			// Clear cached payment methods for user.
+			$this->token_service->clear_cached_payment_methods_for_user( $user_id );
+		} else {
+			// Clear all cached payment methods for all users.
+			$this->token_service->clear_all_cached_payment_methods();
+		}
+
+		// Verify cached data still exists (should not be cleared when network saved cards is enabled).
+		$this->assertEquals( $cached_data, get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
+
+		// Clean up the filter.
+		remove_filter( 'wcpay_force_network_saved_cards', '__return_true' );
+	}
+
+	/**
+	 * Test clear_all_cached_payment_methods method.
+	 */
+	public function test_clear_all_cached_payment_methods() {
+		$user_id_1     = 1;
+		$user_id_2     = 2;
+		$cached_data_1 = [
+			'customer_id'         => 'cus_12345',
+			'payment_method_card' => [
+				$this->generate_card_pm_response( 'pm_test1' ),
+			],
+		];
+		$cached_data_2 = [
+			'customer_id'         => 'cus_67890',
+			'payment_method_card' => [
+				$this->generate_card_pm_response( 'pm_test2' ),
+			],
+		];
+
+		// Add cached data to multiple users.
+		update_user_meta( $user_id_1, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data_1 );
+		update_user_meta( $user_id_2, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data_2 );
+
+		// Add some legacy cached data in options table.
+		update_option( 'wcpay_pm_legacy_1', 'legacy_data_1' );
+		update_option( 'wcpay_pm_legacy_2', 'legacy_data_2' );
+		update_option( 'wcpay_other_option', 'should_not_be_deleted' );
+
+		// Clear all cached payment methods.
+		$this->token_service->clear_all_cached_payment_methods();
+
+		// Clear WordPress object cache to ensure we get fresh data from database.
+		wp_cache_flush();
+
+		// Verify all cached data is cleared.
+		$this->assertEmpty( get_user_meta( $user_id_1, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
+		$this->assertEmpty( get_user_meta( $user_id_2, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
+		$this->assertFalse( get_option( 'wcpay_pm_legacy_1' ) );
+		$this->assertFalse( get_option( 'wcpay_pm_legacy_2' ) );
+		// Verify non-payment method options are not deleted.
+		$this->assertEquals( 'should_not_be_deleted', get_option( 'wcpay_other_option' ) );
+	}
+
+	/**
+	 * Test get_payment_methods_from_stripe method with cached data.
+	 */
+	public function test_get_payment_methods_from_stripe_with_cached_data() {
+		$user_id                = 1;
+		$customer_id            = 'cus_12345';
+		$gateway_id             = 'woocommerce_payments';
+		$cached_payment_methods = [
+			$this->generate_card_pm_response( 'pm_cached1' ),
+			$this->generate_card_pm_response( 'pm_cached2' ),
+		];
+		$cached_data            = [
+			'customer_id'         => $customer_id,
+			'payment_method_card' => $cached_payment_methods,
+		];
+
+		// Add cached data to user meta.
+		update_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
+
+		// Mock gateway to return only card payment methods.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::CARD ] );
+		WC_Payments::set_gateway( $mock_gateway );
+
+		// Verify customer service is not called (since we're using cached data).
+		$this->mock_customer_service
+			->expects( $this->never() )
+			->method( 'get_payment_methods_for_customer' );
+
+		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
+
+		// Verify cached data is returned.
+		$this->assertEquals( $cached_payment_methods, $result );
+	}
+
+	/**
+	 * Test get_payment_methods_from_stripe method with different customer ID (cache miss).
+	 */
+	public function test_get_payment_methods_from_stripe_with_different_customer_id() {
+		$user_id                = 1;
+		$customer_id            = 'cus_12345';
+		$new_customer_id        = 'cus_67890';
+		$gateway_id             = 'woocommerce_payments';
+		$cached_payment_methods = [
+			$this->generate_card_pm_response( 'pm_cached1' ),
+		];
+		$cached_data            = [
+			'customer_id'         => $customer_id,
+			'payment_method_card' => $cached_payment_methods,
+		];
+
+		// Add cached data with different customer ID.
+		update_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
+
+		$new_payment_methods = [
+			$this->generate_card_pm_response( 'pm_new1' ),
+			$this->generate_card_pm_response( 'pm_new2' ),
+		];
+
+		// Mock gateway to return enabled payment methods.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::CARD ] );
+		WC_Payments::set_gateway( $mock_gateway );
+
+		// Mock customer service to return new payment methods.
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( $new_customer_id, Payment_Method::CARD )
+			->willReturn( $new_payment_methods );
+
+		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $new_customer_id, $gateway_id );
+
+		// Verify new payment methods are returned.
+		$this->assertEquals( $new_payment_methods, $result );
+
+		// Verify cache is updated with new customer ID and payment methods.
+		$updated_cache = get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true );
+		$this->assertEquals( $new_customer_id, $updated_cache['customer_id'] );
+		$this->assertEquals( $new_payment_methods, $updated_cache['payment_method_card'] );
+	}
+
+	/**
+	 * Test get_payment_methods_from_stripe method with no cached data.
+	 */
+	public function test_get_payment_methods_from_stripe_with_no_cached_data() {
+		$user_id      = 1;
+		$customer_id  = 'cus_12345';
+		$gateway_id   = 'woocommerce_payments';
+		$card_methods = [ $this->generate_card_pm_response( 'pm_new1' ) ];
+		$link_methods = [ $this->generate_link_pm_response( 'pm_new2' ) ];
+
+		// Mock gateway to return enabled payment methods.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::CARD, Payment_Method::LINK ] );
+		WC_Payments::set_gateway( $mock_gateway );
+
+		// Mock customer service to return payment methods.
+		$this->mock_customer_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_payment_methods_for_customer' )
+			->withConsecutive(
+				[ $customer_id, Payment_Method::CARD ],
+				[ $customer_id, Payment_Method::LINK ]
+			)
+			->willReturnOnConsecutiveCalls(
+				$card_methods,
+				$link_methods
+			);
+
+		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
+
+		// Verify payment methods are returned.
+		$this->assertEquals( array_merge( $card_methods, $link_methods ), $result );
+
+		// Verify cache is created with payment methods by type.
+		$cached_data = get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true );
+		$this->assertEquals( $customer_id, $cached_data['customer_id'] );
+		$this->assertEquals( $card_methods, $cached_data['payment_method_card'] );
+		$this->assertEquals( $link_methods, $cached_data['payment_method_link'] );
+	}
+
+	/**
+	 * Test get_payment_methods_from_stripe method with SEPA gateway.
+	 */
+	public function test_get_payment_methods_from_stripe_with_sepa_gateway() {
+		$user_id         = 1;
+		$customer_id     = 'cus_12345';
+		$gateway_id      = 'woocommerce_payments_sepa_debit';
+		$payment_methods = [
+			$this->generate_sepa_pm_response( 'pm_sepa1' ),
+		];
+
+		// Mock gateway to return enabled payment methods.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::SEPA ] );
+		WC_Payments::set_gateway( $mock_gateway );
+
+		// Mock customer service to return SEPA payment methods.
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_payment_methods_for_customer' )
+			->with( $customer_id, Payment_Method::SEPA )
+			->willReturn( $payment_methods );
+
+		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
+
+		// Verify SEPA payment methods are returned.
+		$this->assertEquals( $payment_methods, $result );
+
+		// Verify cache is created with correct payment method type key.
+		$cached_data = get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true );
+		$this->assertEquals( $customer_id, $cached_data['customer_id'] );
+		$this->assertEquals( $payment_methods, $cached_data['payment_method_sepa_debit'] );
+	}
+
+	private function call_sut_method( $method_name, $user_id, $customer_id, $gateway_id ) {
+		// Use reflection to access private method.
+		$reflection = new ReflectionClass( $this->token_service );
+		$method     = $reflection->getMethod( $method_name );
+		$method->setAccessible( true );
+
+		// Call the private method.
+		return $method->invoke( $this->token_service, $user_id, $customer_id, $gateway_id );
 	}
 
 	/**

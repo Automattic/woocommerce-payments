@@ -1880,7 +1880,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $this->is_setup_intent_success_creation_redirection() ) {
 					wc_add_notice( __( 'Payment method successfully added.', 'woocommerce-payments' ) );
 					$user = wp_get_current_user();
-					$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
+					$this->token_service->clear_cached_payment_methods_for_user( $user->ID );
 			}
 			return;
 		}
