@@ -75,63 +75,27 @@ export const waitAndSkipTourComponent = async (
 	}
 };
 
-export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
-	// Navigate to action scheduler to manually run order import
-	await page.goto(
-		`/wp-admin/tools.php?page=action-scheduler&status=pending&s=${ orderId }`,
-		{ waitUntil: 'load' }
-	);
-
-	// Wait for page content to load
-	await page.waitForLoadState( 'networkidle' );
-
-	// Try multiple times to find and run the import action
-	let attempts = 0;
-	const maxAttempts = 2;
-
-	while ( attempts < maxAttempts ) {
-		try {
-			// Check if the run button exists
-			const runButton = page.locator(
-				'td:has-text("wc-admin_import_orders") a:has-text("Run")'
-			);
-
-			if ( ( await runButton.count() ) > 0 ) {
-				await runButton.first().click( { timeout: 10000 } );
-
-				// Wait for action to process
-				await page.waitForTimeout( 2000 );
-
-				// Check if the action is no longer pending (successfully processed)
-				await page.reload();
-				await page.waitForLoadState( 'networkidle' );
-
-				const stillPending = await page
-					.locator(
-						'td:has-text("wc-admin_import_orders") a:has-text("Run")'
-					)
-					.count();
-
-				if ( stillPending === 0 ) {
-					// Action processed successfully
-					break;
-				}
-			} else {
-				// No pending import actions found
-				break;
-			}
-		} catch ( error ) {
-			// Continue to next attempt
+export const ensureOrderIsProcessed = async ( page: Page ) => {
+	// Sync the most recent order to WooCommerce Analytics tables.
+	// We call the sync functions directly via PHP eval since the 'wc admin' CLI
+	// command no longer exists in current WooCommerce versions.
+	const syncCommand = `
+		$order = wc_get_orders( array( 'limit' => 1, 'orderby' => 'date', 'order' => 'DESC' ) )[0];
+		if ( $order ) {
+			$id = $order->get_id();
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Orders\\Stats\\DataStore::sync_order( $id );
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Products\\DataStore::sync_order_products( $id );
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Customers\\DataStore::sync_order_customer( $id );
 		}
+	`;
 
-		attempts++;
-		if ( attempts < maxAttempts ) {
-			// Wait before retrying
-			await page.waitForTimeout( 1000 );
-		}
+	try {
+		await qit.wp( `eval '${ syncCommand.replace( /'/g, `'"'"'` ) }'`, true );
+	} catch ( error ) {
+		// Sync may fail in some environments, continue anyway
 	}
 
-	// Final wait for analytics data to be processed
+	// Brief wait for analytics to update
 	await page.waitForTimeout( 2000 );
 };
 
@@ -173,6 +137,45 @@ export const goToPaymentsOverview = async ( page: Page ) => {
 		{ waitUntil: 'load' }
 	);
 	await dataHasLoaded( page );
+};
+
+export const goToWooCommerceSettings = async ( page: Page, tab?: string ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-settings' + ( tab ? '&tab=' + tab : '' ),
+		{ waitUntil: 'load' }
+	);
+};
+
+export const goToSubscriptions = async ( page: Page ) => {
+	await page.goto( '/wp-admin/admin.php?page=wc-orders--shop_subscription', {
+		waitUntil: 'load',
+	} );
+};
+
+export const goToSubscriptionPage = async (
+	page: Page,
+	subscriptionId: string
+) => {
+	await goToSubscriptions( page );
+	await page.getByRole( 'link', { name: `#${ subscriptionId }` } ).click();
+	await dataHasLoaded( page );
+};
+
+export const goToActionScheduler = async (
+	page: Page,
+	status?: string,
+	search?: string
+) => {
+	let pageUrl = '/wp-admin/tools.php?page=action-scheduler';
+	if ( status ) {
+		pageUrl += `&status=${ status }`;
+	}
+	if ( search ) {
+		pageUrl += `&s=${ search }`;
+	}
+	await page.goto( pageUrl, {
+		waitUntil: 'load',
+	} );
 };
 
 export const goToMultiCurrencyOnboarding = async ( page: Page ) => {
@@ -261,9 +264,11 @@ const expectSnackbarWithText = async (
 	text: string,
 	timeout = 10_000
 ) => {
-	const snackbar = page.locator( '.components-snackbar__content', {
-		hasText: text,
-	} );
+	const snackbar = page
+		.locator( '.components-snackbar__content', {
+			hasText: text,
+		} )
+		.first();
 	await expect( snackbar ).toBeVisible( { timeout } );
 	await page.waitForTimeout( 2_000 );
 };

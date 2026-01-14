@@ -95,6 +95,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'account_branding_icon'              => 'branding_icon',
 		'account_branding_primary_color'     => 'branding_primary_color',
 		'account_branding_secondary_color'   => 'branding_secondary_color',
+		'account_communications_email'       => 'communications_email',
 
 		'deposit_schedule_interval'          => 'deposit_schedule_interval',
 		'deposit_schedule_weekly_anchor'     => 'deposit_schedule_weekly_anchor',
@@ -108,7 +109,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @type int
 	 */
-
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
 	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE        = 'upe_process_redirect_order_id_mismatched';
@@ -2486,6 +2486,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_branding_secondary_color();
 			case 'account_domestic_currency':
 				return $this->get_account_domestic_currency();
+			case 'account_communications_email':
+				return $this->get_account_communications_email();
 			case 'deposit_schedule_interval':
 				return $this->get_deposit_schedule_interval();
 			case 'deposit_schedule_weekly_anchor':
@@ -2849,6 +2851,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to get account\'s branding secondary color.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account communications email.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch communications email.
+	 *
+	 * @return string Communications email or default value.
+	 */
+	protected function get_account_communications_email( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_communications_email();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account\'s communication email.' . $e );
 		}
 
 		return $default_value;

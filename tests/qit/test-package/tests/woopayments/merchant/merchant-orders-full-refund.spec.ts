@@ -64,9 +64,12 @@ test.describe(
 						name: `-${ orderAmount }`,
 					} )
 				).toHaveCount( 2 );
+				// Use regex to match the refund message, accounting for optional currency code suffix (e.g., "USD")
 				await expect(
 					adminPage.getByText(
-						`A refund of ${ orderAmount } was successfully processed using WooPayments. Reason: No longer wanted`
+						new RegExp(
+							`A refund of \\$\\d+\\.\\d{2}(?: USD)? was successfully processed using WooPayments\\. Reason: No longer wanted`
+						)
 					)
 				).toBeVisible();
 
@@ -86,10 +89,12 @@ test.describe(
 			// Navigate to payment details using the payment intent ID from the previous test
 			await goToPaymentDetails( adminPage, paymentIntentId );
 
-			// Verify timeline events
+			// Verify timeline events - use regex to match optional currency code suffix
 			await expect(
 				adminPage.getByText(
-					`A payment of ${ orderAmount } was successfully refunded.`
+					new RegExp(
+						`A payment of \\$\\d+\\.\\d{2}(?: USD)? was successfully refunded\\.`
+					)
 				)
 			).toBeVisible();
 

@@ -232,6 +232,10 @@ export const getStripeBillingMigratedCount = ( state ) => {
 	return getSettings( state ).stripe_billing_migrated_count || 0;
 };
 
+export const getAccountCommunicationsEmail = ( state ) => {
+	return getSettings( state ).account_communications_email || '';
+};
+
 export const getExpressCheckoutProductMethods = ( state ) => {
 	return getSettings( state ).express_checkout_product_methods || EMPTY_ARR;
 };

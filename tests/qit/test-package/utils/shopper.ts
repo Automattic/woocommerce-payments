@@ -487,6 +487,42 @@ export const addToCartFromShopPage = async (
 	}
 };
 
+/**
+ * Adds a subscription product to the cart from its product page.
+ * Subscription products don't show an "Add to cart" button on the shop page listing,
+ * so we need to navigate directly to the product page.
+ *
+ * @param {Page} page The Playwright page object.
+ * @param {Product} product The subscription product to add to cart (must have slug).
+ */
+export const addSubscriptionToCart = async (
+	page: Page,
+	product: Product
+) => {
+	if ( ! product.slug ) {
+		throw new Error(
+			`Product "${ product.name }" must have a slug defined to use addSubscriptionToCart`
+		);
+	}
+
+	await navigation.goToProductPageBySlug( page, product.slug );
+
+	// Wait for the product page to load
+	await page.waitForLoadState( 'domcontentloaded' );
+
+	// Click the "Add to cart" or "Sign up now" button on the product page
+	const addToCartButton = page.locator(
+		'button.single_add_to_cart_button, .single_add_to_cart_button'
+	);
+	await expect( addToCartButton ).toBeVisible( { timeout: 10000 } );
+	await addToCartButton.click();
+
+	// Wait for cart to update - check for either view cart link or updated cart count
+	await expect(
+		page.locator( '.woocommerce-message' ).filter( { hasText: /cart/ } )
+	).toBeVisible( { timeout: 10000 } );
+};
+
 export const selectPaymentMethod = async (
 	page: Page,
 	paymentMethod = 'Card'
@@ -589,7 +625,13 @@ export async function setupProductCheckout(
 		let [ product, qty ] = line;
 
 		while ( qty-- ) {
-			await addToCartFromShopPage( page, product, currency );
+			// Use addSubscriptionToCart for subscription products (those with a slug),
+			// since they don't show "Add to cart" buttons on the shop page listing.
+			if ( product.slug ) {
+				await addSubscriptionToCart( page, product );
+			} else {
+				await addToCartFromShopPage( page, product, currency );
+			}
 
 			// Make sure the number of items in the cart is incremented before adding another item.
 			await expect( page.locator( '.cart-contents .count' ) ).toHaveText(
@@ -967,4 +1009,30 @@ export const confirmCardAuthenticationWCB = async (
 		/\bwc-block-components-(?:[-\w]+-)?button--loading\b/
 	);
 	await confirmCardAuthentication( page, authorize );
+};
+
+/**
+ * Creates an order that will be disputed.
+ * Uses the disputed-fraudulent card to trigger automatic dispute creation.
+ *
+ * @param {Page} page The Playwright page object.
+ * @return {Promise<string>} The order ID.
+ */
+export const createDisputedOrder = async ( page: Page ): Promise< string > => {
+	await addToCartFromShopPage( page );
+
+	await navigation.goToCheckout( page );
+
+	await fillBillingAddress( page, config.addresses.customer.billing );
+
+	// Use disputed-fraudulent card to trigger automatic dispute creation
+	await fillCardDetails( page, config.cards[ 'disputed-fraudulent' ] );
+
+	await placeOrder( page );
+
+	// Extract order ID from confirmation page
+	const orderIdField = page.locator(
+		'.woocommerce-order-overview__order.order > strong'
+	);
+	return await orderIdField.innerText();
 };
