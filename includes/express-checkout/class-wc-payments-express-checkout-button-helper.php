@@ -643,9 +643,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
 
-		$data['currency']       = strtolower( $currency );
-		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
-		$data['product_type']   = $product->get_type();
+		$data['currency']     = strtolower( $currency );
+		$data['country_code'] = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+		$data['product_type'] = $product->get_type();
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
