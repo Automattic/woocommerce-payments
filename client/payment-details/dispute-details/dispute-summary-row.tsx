@@ -16,7 +16,6 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { reasons } from 'wcpay/disputes/strings';
 import { formatStringValue } from 'wcpay/utils';
 import { ClickTooltip } from 'wcpay/components/tooltip';
-import Paragraphs from 'wcpay/components/paragraphs';
 import DisputeDueByDate from './dispute-due-by-date';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { ExternalLink } from '@wordpress/components';

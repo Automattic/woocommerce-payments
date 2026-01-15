@@ -30,6 +30,8 @@ interface Props {
 	bankName: string | null;
 }
 
+const learnMoreButtonText = __( 'Learn more', 'woocommerce-payments' ) + ' ↗';
+
 export const DisputeSteps: React.FC< Props > = ( {
 	dispute,
 	customer,
@@ -144,10 +146,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
+											{ learnMoreButtonText }
 										</Button>
 									</div>
 								</div>
@@ -250,10 +249,7 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
+											{ learnMoreButtonText }
 										</Button>
 									</div>
 								</div>
@@ -283,10 +279,7 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
+											{ learnMoreButtonText }
 										</Button>
 									</div>
 								</div>
@@ -437,10 +430,7 @@ export const InquirySteps: React.FC< Props > = ( {
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
+											{ learnMoreButtonText }
 										</Button>
 									</div>
 								</div>
@@ -620,10 +610,7 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 											target="_blank"
 											rel="noopener noreferrer"
 										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
+											{ learnMoreButtonText }
 										</Button>
 									</div>
 								</div>
