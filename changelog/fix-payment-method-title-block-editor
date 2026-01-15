@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: payment method title displayed on page editor for block-based checkout page
