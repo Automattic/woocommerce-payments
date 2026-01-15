@@ -31,7 +31,11 @@ import {
 	generateCoverLetter,
 	getBusinessDetails,
 } from './cover-letter-generator';
-import { useGetSettings, useDisputeEvidence } from 'wcpay/data';
+import {
+	useGetSettings,
+	useDisputeEvidence,
+	WCPAY_STORE_NAME,
+} from 'wcpay/data';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
@@ -136,6 +140,9 @@ export default ( { query }: { query: { id: string } } ) => {
 		createErrorNotice,
 		createInfoNotice,
 	} = useDispatch( 'core/notices' );
+	const storeDispatch = useDispatch( WCPAY_STORE_NAME ) as {
+		invalidateResolutionForStoreSelector: ( selector: string ) => void;
+	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 	const settings = useGetSettings();
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
@@ -577,6 +584,13 @@ export default ( { query }: { query: { id: string } } ) => {
 				handleSaveSuccess( submit );
 			}
 			updateDisputeInStore( updatedDispute as any );
+
+			// Invalidate payment intent cache so that payment details page shows updated dispute info
+			if ( dispute.charge?.payment_intent ) {
+				storeDispatch.invalidateResolutionForStoreSelector(
+					'getPaymentIntent'
+				);
+			}
 
 			if ( submit ) {
 				setEvidence( {} );
