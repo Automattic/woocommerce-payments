@@ -89,12 +89,12 @@ test.describe(
 
 			await goToSubscriptions( customerPage );
 
-			const latestSubscriptionRow = customerPage.getByRole( 'row', {
+			const subscriptionRow = customerPage.getByRole( 'row', {
 				name: `subscription number ${ subscriptionId }`,
 			} );
 
-			await expect( latestSubscriptionRow ).toBeVisible();
-			await latestSubscriptionRow
+			await expect( subscriptionRow ).toBeVisible();
+			await subscriptionRow
 				.getByRole( 'link', {
 					name: 'View',
 				} )

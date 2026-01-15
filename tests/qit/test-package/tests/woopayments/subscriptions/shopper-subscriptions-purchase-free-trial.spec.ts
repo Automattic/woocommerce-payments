@@ -135,9 +135,10 @@ test.describe(
 			await customerPage
 				.getByRole( 'button', { name: 'Place order', exact: true } )
 				.click();
-			await customerPage.frames()[ 0 ].waitForLoadState( 'load' );
+			const firstFrame = customerPage.frames()[ 0 ];
+			await firstFrame.waitForLoadState( 'load' );
 			await confirmCardAuthentication( customerPage, true );
-			await customerPage.frames()[ 0 ].waitForLoadState( 'networkidle' );
+			await firstFrame.waitForLoadState( 'networkidle' );
 			await customerPage.waitForLoadState( 'networkidle' );
 			await expect(
 				customerPage.getByRole( 'heading', {
