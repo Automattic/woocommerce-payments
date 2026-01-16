@@ -12,6 +12,7 @@ export const DOCUMENT_FIELD_KEYS = {
 	REFUND_RECEIPT_DOCUMENTATION: 'uncategorized_file',
 	DUPLICATE_CHARGE_DOCUMENTATION: 'duplicate_charge_documentation',
 	CANCELLATION_POLICY: 'cancellation_policy',
+	CANCELLATION_REBUTTAL: 'cancellation_rebuttal',
 	ACCESS_ACTIVITY_LOG: 'access_activity_log',
 	SERVICE_DOCUMENTATION: 'service_documentation',
 	SHIPPING_DOCUMENTATION: 'shipping_documentation',
