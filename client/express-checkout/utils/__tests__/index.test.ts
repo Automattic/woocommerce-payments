@@ -62,7 +62,7 @@ describe( 'getExpressCheckoutButtonStyleSettings', () => {
 				theme: 'dark',
 				height: '48',
 			},
-			enabled_express_checkout_methods: [ 'google_apple_pay' ],
+			enabled_methods: [ 'google_apple_pay' ],
 		} as WCPayExpressCheckoutParams;
 
 		const settings = getExpressCheckoutButtonStyleSettings();
@@ -79,7 +79,7 @@ describe( 'getExpressCheckoutButtonStyleSettings', () => {
 				theme: 'dark',
 				height: '48',
 			},
-			enabled_express_checkout_methods: [ 'amazon_pay' ],
+			enabled_methods: [ 'amazon_pay' ],
 		} as WCPayExpressCheckoutParams;
 
 		const settings = getExpressCheckoutButtonStyleSettings();
@@ -97,10 +97,7 @@ describe( 'getExpressCheckoutButtonStyleSettings', () => {
 				theme: 'dark',
 				height: '48',
 			},
-			enabled_express_checkout_methods: [
-				'google_apple_pay',
-				'amazon_pay',
-			],
+			enabled_methods: [ 'google_apple_pay', 'amazon_pay' ],
 		} as WCPayExpressCheckoutParams;
 
 		const settings = getExpressCheckoutButtonStyleSettings();
@@ -118,7 +115,7 @@ describe( 'getExpressCheckoutButtonStyleSettings', () => {
 				theme: 'dark',
 				height: '48',
 			},
-			enabled_express_checkout_methods: [] as WCPayExpressCheckoutParams[ 'enabled_express_checkout_methods' ],
+			enabled_methods: [] as WCPayExpressCheckoutParams[ 'enabled_methods' ],
 		} as WCPayExpressCheckoutParams;
 
 		const settings = getExpressCheckoutButtonStyleSettings();
@@ -135,10 +132,7 @@ describe( 'getExpressCheckoutButtonStyleSettings', () => {
 				theme: 'dark',
 				height: '48',
 			},
-			enabled_express_checkout_methods: [
-				'google_apple_pay',
-				'amazon_pay',
-			],
+			enabled_methods: [ 'google_apple_pay', 'amazon_pay' ],
 		} as WCPayExpressCheckoutParams;
 
 		const settings = getExpressCheckoutButtonStyleSettings();

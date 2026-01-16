@@ -93,9 +93,7 @@ export interface WCPayExpressCheckoutParams {
 	 * Array of enabled express checkout methods for the current page context.
 	 * Possible values: 'google_apple_pay', 'amazon_pay'
 	 */
-	enabled_express_checkout_methods: Array<
-		'google_apple_pay' | 'amazon_pay'
-	>;
+	enabled_methods: Array< 'google_apple_pay' | 'amazon_pay' >;
 }
 
 declare global {
@@ -214,8 +212,7 @@ export const getExpressCheckoutButtonAppearance = (
  */
 export const getExpressCheckoutButtonStyleSettings = () => {
 	const buttonSettings = getExpressCheckoutData( 'button' );
-	const enabledMethods =
-		getExpressCheckoutData( 'enabled_express_checkout_methods' ) ?? [];
+	const enabledMethods = getExpressCheckoutData( 'enabled_methods' ) ?? [];
 
 	const mapWooPaymentsThemeToButtonTheme = (
 		buttonType: string,

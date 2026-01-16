@@ -158,7 +158,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			mode: 'payment',
 			amount: 1100,
 			currency: 'usd',
-			paymentMethodCreation: 'manual',
+			// paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
 		} );
@@ -187,7 +187,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			mode: 'payment',
 			amount: 1100,
 			currency: 'usd',
-			paymentMethodCreation: 'manual',
+			// paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
 		} );

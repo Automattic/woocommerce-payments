@@ -24,7 +24,7 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const options = {
 		mode: 'payment',
-		paymentMethodCreation: 'manual',
+		// paymentMethodCreation: 'manual',
 		// ensuring that the total amount is transformed to the correct format.
 		amount: ! isPreview
 			? transformPrice( billing.cartTotal.value, {

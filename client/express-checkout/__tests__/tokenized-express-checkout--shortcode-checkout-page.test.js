@@ -135,7 +135,7 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			mode: 'payment',
 			amount: 3697,
 			currency: 'usd',
-			paymentMethodCreation: 'manual',
+			// paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
 		} );
