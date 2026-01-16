@@ -77,7 +77,11 @@ const checkPaymentMethodIsAvailableInternal = (
 								paymentMethod === 'googlePay'
 									? 'always'
 									: 'never',
-							amazonPay: 'never',
+							amazonPay:
+								// amazon pay can be "auto" or "never", but not "always"
+								paymentMethod === 'amazonPay'
+									? 'auto'
+									: 'never',
 							link: 'never',
 							paypal: 'never',
 							klarna: 'never',

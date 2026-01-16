@@ -88,6 +88,14 @@ export interface WCPayExpressCheckoutParams {
 	};
 	total_label: string;
 	wc_ajax_url: string;
+
+	/**
+	 * Array of enabled express checkout methods for the current page context.
+	 * Possible values: 'google_apple_pay', 'amazon_pay'
+	 */
+	enabled_express_checkout_methods: Array<
+		'google_apple_pay' | 'amazon_pay'
+	>;
 }
 
 declare global {
@@ -206,6 +214,8 @@ export const getExpressCheckoutButtonAppearance = (
  */
 export const getExpressCheckoutButtonStyleSettings = () => {
 	const buttonSettings = getExpressCheckoutData( 'button' );
+	const enabledMethods =
+		getExpressCheckoutData( 'enabled_express_checkout_methods' ) ?? [];
 
 	const mapWooPaymentsThemeToButtonTheme = (
 		buttonType: string,
@@ -237,11 +247,17 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 			? 'plain'
 			: buttonSettings?.type ?? 'plain';
 
+	const isGoogleApplePayEnabled = enabledMethods.includes(
+		'google_apple_pay'
+	);
+
 	return {
 		paymentMethods: {
-			applePay: 'always',
-			googlePay: 'always',
-			amazonPay: 'never',
+			applePay: isGoogleApplePayEnabled ? 'always' : 'never',
+			googlePay: isGoogleApplePayEnabled ? 'always' : 'never',
+			amazonPay: enabledMethods.includes( 'amazon_pay' )
+				? 'auto'
+				: 'never',
 			link: 'never',
 			paypal: 'never',
 			klarna: 'never',

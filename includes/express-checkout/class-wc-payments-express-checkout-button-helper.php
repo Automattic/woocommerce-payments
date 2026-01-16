@@ -248,6 +248,78 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Checks if the Amazon Pay payment gateway is enabled.
+	 *
+	 * @return boolean
+	 */
+	public function is_amazon_pay_gateway_enabled() {
+		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
+		return $amazon_pay_gateway && $amazon_pay_gateway->is_enabled();
+	}
+
+	/**
+	 * Checks if any express checkout method (Google/Apple Pay or Amazon Pay) is enabled at a given location in settings.
+	 *
+	 * This only checks location settings (express_checkout_{location}_methods), not feature flags.
+	 * Feature flags are checked at initialization and in get_enabled_express_checkout_methods_for_context().
+	 *
+	 * @param string $location Location (product, cart, checkout).
+	 * @return boolean
+	 */
+	public function is_any_express_checkout_method_enabled_at( $location ) {
+		// Check Google Pay / Apple Pay (payment_request).
+		if ( $this->is_express_checkout_method_enabled_at( $location, 'payment_request' ) ) {
+			return true;
+		}
+
+		// Check Amazon Pay.
+		if ( $this->is_express_checkout_method_enabled_at( $location, 'amazon_pay' ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Gets the list of enabled express checkout methods for the current page context.
+	 *
+	 * This method checks:
+	 * 1. The current page context (product, cart, checkout)
+	 * 2. The location settings (express_checkout_{location}_methods)
+	 * 3. The feature flags (is_payment_request_enabled, is_amazon_pay_enabled)
+	 *
+	 * @return array Array of enabled method IDs (e.g., ['google_apple_pay', 'amazon_pay']).
+	 */
+	public function get_enabled_express_checkout_methods_for_context() {
+		$enabled_methods = [];
+		$context         = $this->get_button_context();
+
+		// If no valid context, return empty array.
+		if ( empty( $context ) ) {
+			return $enabled_methods;
+		}
+
+		// Check Google Pay / Apple Pay (payment_request).
+		if (
+			$this->gateway->is_payment_request_enabled() &&
+			$this->is_express_checkout_method_enabled_at( $context, 'payment_request' )
+		) {
+			$enabled_methods[] = 'google_apple_pay';
+		}
+
+		// Check Amazon Pay.
+		if (
+			WC_Payments_Features::is_amazon_pay_enabled() &&
+			$this->is_amazon_pay_gateway_enabled() &&
+			$this->is_express_checkout_method_enabled_at( $context, 'amazon_pay' )
+		) {
+			$enabled_methods[] = 'amazon_pay';
+		}
+
+		return $enabled_methods;
+	}
+
+	/**
 	 * Gets settings that are shared between the Express Checkout button and the WooPay button.
 	 *
 	 * @return array
@@ -386,18 +458,18 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Product page, but not available in settings.
-		if ( $this->is_product() && ! $this->is_express_checkout_method_enabled_at( 'product', 'payment_request' ) ) {
+		// Product page, but no express checkout methods available in settings.
+		if ( $this->is_product() && ! $this->is_any_express_checkout_method_enabled_at( 'product' ) ) {
 			return false;
 		}
 
-		// Checkout page, but not available in settings.
-		if ( $this->is_checkout() && ! $this->is_express_checkout_method_enabled_at( 'checkout', 'payment_request' ) ) {
+		// Checkout page, but no express checkout methods available in settings.
+		if ( $this->is_checkout() && ! $this->is_any_express_checkout_method_enabled_at( 'checkout' ) ) {
 			return false;
 		}
 
-		// Cart page, but not available in settings.
-		if ( $this->is_cart() && ! $this->is_express_checkout_method_enabled_at( 'cart', 'payment_request' ) ) {
+		// Cart page, but no express checkout methods available in settings.
+		if ( $this->is_cart() && ! $this->is_any_express_checkout_method_enabled_at( 'cart' ) ) {
 			return false;
 		}
 
