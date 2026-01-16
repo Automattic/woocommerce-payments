@@ -95,6 +95,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'account_branding_icon'              => 'branding_icon',
 		'account_branding_primary_color'     => 'branding_primary_color',
 		'account_branding_secondary_color'   => 'branding_secondary_color',
+		'account_communications_email'       => 'communications_email',
 
 		'deposit_schedule_interval'          => 'deposit_schedule_interval',
 		'deposit_schedule_weekly_anchor'     => 'deposit_schedule_weekly_anchor',
@@ -108,7 +109,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 *
 	 * @type int
 	 */
-
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
 	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE        = 'upe_process_redirect_order_id_mismatched';
@@ -376,6 +376,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->method_title = "WooPayments ($this->title)";
 		}
 		return parent::get_title();
+	}
+
+	/**
+	 * Return the gateway's method title.
+	 * Constructs the title in the format "WooPayments (Payment Method Name)".
+	 *
+	 * @return string
+	 */
+	public function get_method_title() {
+		$payment_method_title = $this->payment_method->get_title( $this->get_account_country() );
+		return "WooPayments ($payment_method_title)";
 	}
 
 	/**
@@ -1032,13 +1043,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// that script interferes with merchant actions.
 		wp_dequeue_script( 'woocommerce_settings' );
 
-		$method_title = $this->get_method_title();
+		$method_title = 'WooPayments';
 		$return_url   = 'admin.php?page=wc-settings&tab=checkout';
 		if ( ! empty( $_GET['method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			// Override the title and return url for method-specific pages in WooPayments settings.
-			$method       = sanitize_text_field( wp_unslash( $_GET['method'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$method_title = 'payment_request' === $method ? 'Apple Pay / Google Pay' : ( 'woopay' === $method ? 'WooPay' : $this->get_method_title() );
-			$return_url   = 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments';
+			$method     = sanitize_text_field( wp_unslash( $_GET['method'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$return_url = 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments';
+
+			switch ( $method ) {
+				case 'payment_request':
+					$method_title = 'Apple Pay / Google Pay';
+					break;
+				case 'woopay':
+					$method_title = 'WooPay';
+					break;
+				case 'amazon_pay':
+					$method_title = 'Amazon Pay';
+					break;
+			}
 		}
 
 		if ( function_exists( 'wc_back_header' ) ) {
@@ -1880,7 +1902,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( $this->is_setup_intent_success_creation_redirection() ) {
 					wc_add_notice( __( 'Payment method successfully added.', 'woocommerce-payments' ) );
 					$user = wp_get_current_user();
-					$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
+					$this->token_service->clear_cached_payment_methods_for_user( $user->ID );
 			}
 			return;
 		}
@@ -2486,6 +2508,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_account_branding_secondary_color();
 			case 'account_domestic_currency':
 				return $this->get_account_domestic_currency();
+			case 'account_communications_email':
+				return $this->get_account_communications_email();
 			case 'deposit_schedule_interval':
 				return $this->get_deposit_schedule_interval();
 			case 'deposit_schedule_weekly_anchor':
@@ -2849,6 +2873,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to get account\'s branding secondary color.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account communications email.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch communications email.
+	 *
+	 * @return string Communications email or default value.
+	 */
+	protected function get_account_communications_email( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_communications_email();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account\'s communication email.' . $e );
 		}
 
 		return $default_value;
@@ -4401,11 +4444,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Get the right method description if WooPay is eligible.
+	 * Get the gateway's method description.
+	 * Returns payment method specific description for non-card gateways,
+	 * or the general WooPayments description for the main card gateway.
 	 *
 	 * @return string
 	 */
 	public function get_method_description() {
+		// For non-card payment methods, return the specific payment method description.
+		if ( 'card' !== $this->stripe_id ) {
+			return $this->payment_method->get_description( $this->get_account_country() );
+		}
+
+		// For the main card gateway, return the general WooPayments description.
 		$description = sprintf(
 			/* translators: %1$s: WooPayments */
 			__(

@@ -223,6 +223,10 @@ export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
 }
 
+export function updateIsAmazonPayEnabled( isEnabled ) {
+	return updateSettingsValues( { is_amazon_pay_enabled: isEnabled } );
+}
+
 export function updateIsWooPayGlobalThemeSupportEnabled( isEnabled ) {
 	return updateSettingsValues( {
 		is_woopay_global_theme_support_enabled: isEnabled,
@@ -253,6 +257,10 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 
 export function updateIsStripeBillingEnabled( isEnabled ) {
 	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}
+
+export function updateAccountCommunicationsEmail( email ) {
+	return updateSettingsValues( { account_communications_email: email } );
 }
 
 export function updateExpressCheckoutProductMethods( methods ) {
@@ -298,7 +306,7 @@ export function* submitStripeBillingSubscriptionMigration() {
 }
 
 export function saveOption( optionName, value ) {
-	directApiFetch( {
+	return directApiFetch( {
 		path: `${ NAMESPACE }/settings/${ optionName }`,
 		method: 'post',
 		data: { value },

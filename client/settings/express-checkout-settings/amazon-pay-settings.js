@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -14,8 +14,13 @@ import {
 	BaseControl,
 	RadioControl,
 } from '@wordpress/components';
-import { usePaymentRequestButtonSize } from 'wcpay/data';
+import {
+	usePaymentRequestButtonSize,
+	useAmazonPayEnabledSettings,
+	useAmazonPayLocations,
+} from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
+import ExpressCheckoutSettingsNotices from './express-checkout-settings-notices';
 
 const makeButtonSizeText = ( string ) =>
 	interpolateComponents( {
@@ -62,6 +67,7 @@ const GeneralSettings = () => {
 
 	return (
 		<CardBody className="wcpay-card-body">
+			<ExpressCheckoutSettingsNotices currentMethod="amazon_pay" />
 			<RadioControl
 				label={ __( 'Button size', 'woocommerce-payments' ) }
 				selected={ size }
@@ -73,21 +79,17 @@ const GeneralSettings = () => {
 };
 
 const AmazonPaySettings = ( { section } ) => {
-	const [ isAmazonPayEnabled, setIsAmazonPayEnabled ] = useState( false );
-	const [ amazonPayLocations, setAmazonPayLocations ] = useState( [
-		'product',
-		'cart',
-		'checkout',
-	] );
+	const [
+		isAmazonPayEnabled,
+		updateIsAmazonPayEnabled,
+	] = useAmazonPayEnabledSettings();
+	const [
+		amazonPayLocations,
+		updateAmazonPayLocations,
+	] = useAmazonPayLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
-		if ( isChecked ) {
-			setAmazonPayLocations( [ ...amazonPayLocations, location ] );
-		} else {
-			setAmazonPayLocations(
-				amazonPayLocations.filter( ( name ) => name !== location )
-			);
-		}
+		updateAmazonPayLocations( location, isChecked );
 	};
 
 	return (
@@ -98,7 +100,7 @@ const AmazonPaySettings = ( { section } ) => {
 						<CheckboxControl
 							className="wcpay-payment-request-settings__enable__checkbox"
 							checked={ isAmazonPayEnabled }
-							onChange={ setIsAmazonPayEnabled }
+							onChange={ updateIsAmazonPayEnabled }
 							label={ __(
 								'Enable Amazon Pay as an express payment button',
 								'woocommerce-payments'

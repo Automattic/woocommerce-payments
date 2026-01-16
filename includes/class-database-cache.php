@@ -19,25 +19,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const ACCOUNT_KEY                  = 'wcpay_account_data';
 	const ONBOARDING_FIELDS_DATA_KEY   = 'wcpay_onboarding_fields_data';
 	const BUSINESS_TYPES_KEY           = 'wcpay_business_types_data';
-	const PAYMENT_PROCESS_FACTORS_KEY  = 'wcpay_payment_process_factors';
 	const FRAUD_SERVICES_KEY           = 'wcpay_fraud_services_data';
 	const RECOMMENDED_PAYMENT_METHODS  = 'wcpay_recommended_payment_methods';
 	const ADDRESS_AUTOCOMPLETE_JWT_KEY = 'wcpay_address_autocomplete_jwt';
-
-	/**
-	 * Refresh during AJAX calls is avoided, but white-listing
-	 * a key here will allow the refresh to happen.
-	 *
-	 * @var string[]
-	 */
-	const AJAX_ALLOWED_KEYS = [
-		self::PAYMENT_PROCESS_FACTORS_KEY,
-	];
-
-	/**
-	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
-	 */
-	const PAYMENT_METHODS_KEY_PREFIX = 'wcpay_pm_';
 
 	/**
 	 * Dispute status counts cache key.
@@ -85,6 +69,27 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @var string
 	 */
 	const TRACKING_INFO_KEY = 'wcpay_tracking_info_cache';
+
+	/**
+	 * All cache keys.
+	 *
+	 * @var string[]
+	 */
+	const ALL_KEYS = [
+		self::ACCOUNT_KEY,
+		self::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+		self::ONBOARDING_FIELDS_DATA_KEY,
+		self::BUSINESS_TYPES_KEY,
+		self::FRAUD_SERVICES_KEY,
+		self::RECOMMENDED_PAYMENT_METHODS,
+		self::DISPUTE_STATUS_COUNTS_KEY,
+		self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE,
+		self::ACTIVE_DISPUTES_KEY,
+		self::AUTHORIZATION_SUMMARY_KEY,
+		self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
+		self::CONNECT_INCENTIVE_KEY,
+		self::TRACKING_INFO_KEY,
+	];
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -215,71 +220,12 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	}
 
 	/**
-	 * Deletes all cache entries that are keyed with a certain prefix.
-	 *
-	 * This is useful when you use dynamic cache keys.
-	 *
-	 * Note: Only key prefixes with known, static prefixes are allowed, for protection purposes.
-	 *
-	 * @param string $key_prefix The cache key prefix.
-	 *
-	 * @return void
-	 */
-	public function delete_by_prefix( string $key_prefix ) {
-		// Protection against accidentally deleting all options or options that are not related to WCPay caching.
-		// Feel free to update this statement as more prefix cache keys are used.
-		$allowed_base_prefixes = [
-			self::PAYMENT_METHODS_KEY_PREFIX,
-			self::ONBOARDING_FIELDS_DATA_KEY,
-			self::RECOMMENDED_PAYMENT_METHODS,
-		];
-		$is_allowed            = false;
-		foreach ( $allowed_base_prefixes as $allowed_base_prefix ) {
-			if ( strncmp( $key_prefix, $allowed_base_prefix, strlen( $allowed_base_prefix ) ) === 0 ) {
-				$is_allowed = true;
-				break;
-			}
-		}
-		if ( ! $is_allowed ) {
-			return; // Maybe throw exception here...
-		}
-
-		global $wpdb;
-
-		$options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key_prefix . '%' ) );
-		foreach ( $options as $option ) {
-			$this->delete( $option->option_name );
-		}
-	}
-
-	/**
 	 * Delete all known cache entries.
 	 */
 	public function delete_all() {
-		$keys = [
-			self::ACCOUNT_KEY,
-			self::ONBOARDING_FIELDS_DATA_KEY,
-			self::BUSINESS_TYPES_KEY,
-			self::PAYMENT_PROCESS_FACTORS_KEY,
-			self::FRAUD_SERVICES_KEY,
-			self::RECOMMENDED_PAYMENT_METHODS,
-			self::DISPUTE_STATUS_COUNTS_KEY,
-			self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE,
-			self::ACTIVE_DISPUTES_KEY,
-			self::AUTHORIZATION_SUMMARY_KEY,
-			self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
-			self::CONNECT_INCENTIVE_KEY,
-			self::TRACKING_INFO_KEY,
-		];
-
-		foreach ( $keys as $key ) {
+		foreach ( self::ALL_KEYS as $key ) {
 			$this->delete( $key );
 		}
-
-		// Delete prefix-based keys.
-		$this->delete_by_prefix( self::PAYMENT_METHODS_KEY_PREFIX );
-		$this->delete_by_prefix( self::ONBOARDING_FIELDS_DATA_KEY ); // It can be prefixed with the locale.
-		$this->delete_by_prefix( self::RECOMMENDED_PAYMENT_METHODS ); // It can be prefixed with the locale.
 	}
 
 	/**
@@ -325,7 +271,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		// Do not refresh if doing ajax or the refresh has been disabled (running an AS job).
 		if (
 			defined( 'DOING_CRON' )
-			|| ( wp_doing_ajax() && ! in_array( $key, self::AJAX_ALLOWED_KEYS, true ) )
+			|| ( wp_doing_ajax() )
 			|| $this->refresh_disabled ) {
 			return false;
 		}
@@ -483,9 +429,6 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				// If the store has orders, cache for 90 days since it won't change.
 				// If no orders, cache for an hour to check again soon.
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
-				break;
-			case self::PAYMENT_PROCESS_FACTORS_KEY:
-				$ttl = 2 * HOUR_IN_SECONDS;
 				break;
 			case self::TRACKING_INFO_KEY:
 				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;

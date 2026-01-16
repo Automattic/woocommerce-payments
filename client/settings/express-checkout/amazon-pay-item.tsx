@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 
@@ -11,9 +11,13 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import methodsConfiguration from '../../payment-methods-map';
+import { useAmazonPayEnabledSettings } from 'wcpay/data';
 
 const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
-	const [ isAmazonPayEnabled, setIsAmazonPayEnabled ] = useState( false );
+	const [
+		isAmazonPayEnabled,
+		updateIsAmazonPayEnabled,
+	] = useAmazonPayEnabledSettings();
 
 	const {
 		icon: AmazonPayIcon,
@@ -28,7 +32,7 @@ const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 					<CheckboxControl
 						label={ label }
 						checked={ isAmazonPayEnabled }
-						onChange={ setIsAmazonPayEnabled }
+						onChange={ updateIsAmazonPayEnabled }
 						data-testid="amazon-pay-toggle"
 						__nextHasNoMarginBottom
 					/>

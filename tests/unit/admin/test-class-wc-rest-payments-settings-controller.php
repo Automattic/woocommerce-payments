@@ -147,7 +147,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_account                = $this->createMock( WC_Payments_Account::class );
 		$this->mock_session_service              = $this->createMock( WC_Payments_Session_Service::class );
 		$order_service                           = new WC_Payments_Order_Service( $this->mock_api_client );
-		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_cache, $this->mock_session_service, $order_service );
+		$customer_service                        = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_wcpay_account, $this->mock_session_service, $order_service );
 		$token_service                           = new WC_Payments_Token_Service( $this->mock_api_client, $customer_service );
 		$compatibility_service                   = new Compatibility_Service( $this->mock_api_client );
 		$action_scheduler_service                = new WC_Payments_Action_Scheduler_Service( $this->mock_api_client, $order_service, $compatibility_service );
@@ -1118,6 +1118,58 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	/**
+	 * Tests account communications email validator
+	 *
+	 * @dataProvider account_communications_email_validation_provider
+	 */
+	public function test_validate_account_communications_email( $value, $request, $param, $expected ) {
+		$return = $this->controller->validate_account_communications_email( $value, $request, $param );
+		$this->assertEquals( $return, $expected );
+	}
+
+	/**
+	 * Provider for test_validate_account_communications_email.
+	 * @return array[] test method params.
+	 */
+	public function account_communications_email_validation_provider() {
+		$request = new WP_REST_Request();
+		return [
+			[
+				'test@test.com',
+				$request,
+				'account_communications_email',
+				true,
+			],
+			[
+				'', // Empty value should trigger error.
+				$request,
+				'account_communications_email',
+				new WP_Error( 'rest_invalid_pattern', 'Error: Communications email is required.' ),
+			],
+			[
+				'invalid-email',
+				$request,
+				'account_communications_email',
+				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid email address: invalid-email' ),
+			],
+		];
+	}
+
+	public function test_get_settings_returns_account_communications_email() {
+		$test_email = 'test@example.com';
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+		$this->mock_wcpay_account
+			->method( 'get_communications_email' )
+			->willReturn( $test_email );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertEquals( $test_email, $response->get_data()['account_communications_email'] );
+	}
+
 	public function test_update_is_payment_request_enabled_updates_google_pay_and_apple_pay() {
 		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$google_pay_gateway->expects( $this->once() )->method( 'enable' );
@@ -1196,5 +1248,78 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$data     = $response->get_data();
 
 		$this->assertFalse( $data['is_payment_request_enabled'] );
+	}
+
+	public function test_update_settings_enables_amazon_pay() {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )->method( 'enable' );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_amazon_pay_enabled', true );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_disables_amazon_pay() {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )->method( 'disable' );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_amazon_pay_enabled', false );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_does_not_toggle_amazon_pay_if_not_supplied() {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->never() )->method( 'enable' );
+		$amazon_pay_gateway->expects( $this->never() )->method( 'disable' );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$request = new WP_REST_Request();
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_get_settings_returns_is_amazon_pay_enabled_true(): void {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_amazon_pay_enabled', $response->get_data() );
+		$this->assertTrue( $response->get_data()['is_amazon_pay_enabled'] );
+	}
+
+	public function test_get_settings_returns_is_amazon_pay_enabled_false(): void {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( false );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_amazon_pay_enabled', $response->get_data() );
+		$this->assertFalse( $response->get_data()['is_amazon_pay_enabled'] );
+	}
+
+	public function test_get_settings_returns_is_amazon_pay_enabled_false_when_gateway_unavailable(): void {
+		$this->set_payment_gateway_map( [] );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertArrayHasKey( 'is_amazon_pay_enabled', $response->get_data() );
+		$this->assertFalse( $response->get_data()['is_amazon_pay_enabled'] );
 	}
 }

@@ -38,7 +38,7 @@ test.describe( 'Order > Refund Failure', { tag: '@merchant' }, () => {
 		// Place an order to refund later
 		await emptyCart( customerPage );
 		orderId = await placeOrderWithCurrency( customerPage, 'USD' );
-		await ensureOrderIsProcessed( adminPage, orderId );
+		await ensureOrderIsProcessed( adminPage );
 	} );
 
 	dataTable.forEach( ( [ fieldName, valueDescription, selector, value ] ) => {
@@ -89,8 +89,7 @@ test.describe( 'Order > Refund Failure', { tag: '@merchant' }, () => {
 							state: 'visible',
 						}
 					);
-					const refundButtonText: string =
-						await refundButton.textContent();
+					const refundButtonText: string = await refundButton.textContent();
 					expect( refundButtonText ).toMatch(
 						/Refund .* via WooPayments.+/
 					);
