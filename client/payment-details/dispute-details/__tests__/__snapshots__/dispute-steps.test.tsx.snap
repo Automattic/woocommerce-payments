@@ -131,7 +131,8 @@ exports[`NonCompliantDisputeSteps renders the Visa compliance dispute steps 1`] 
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    Learn more ↗
+                    Learn more 
+                    ↗
                   </a>
                 </div>
               </div>
@@ -178,7 +179,8 @@ exports[`NonCompliantDisputeSteps renders the Visa compliance dispute steps 1`] 
                     rel="noopener noreferrer"
                     target="_blank"
                   >
-                    Learn more ↗
+                    Learn more 
+                    ↗
                   </a>
                 </div>
               </div>

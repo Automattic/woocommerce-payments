@@ -18,7 +18,11 @@ import { useDispatch } from '@wordpress/data';
 import NewEvidence from '../index';
 import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
 import type { DisputeReason } from 'wcpay/types/disputes';
-import { useGetSettings, useDisputeEvidence } from 'wcpay/data';
+import {
+	useGetSettings,
+	useDisputeEvidence,
+	WCPAY_STORE_NAME,
+} from 'wcpay/data';
 
 // Mock the API fetch calls
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -644,6 +648,181 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 			expect(
 				screen.queryByText( 'This is a compliance case' )
 			).not.toBeInTheDocument();
+		} );
+	} );
+} );
+
+describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
+	const mockInvalidateResolutionForStoreSelector = jest.fn();
+	const mockCreateSuccessNotice = jest.fn();
+	const mockCreateErrorNotice = jest.fn();
+	const mockCreateInfoNotice = jest.fn();
+
+	const createDisputeWithPaymentIntent = ( hasPaymentIntent: boolean ) => ( {
+		id: 'dp_test_cache',
+		amount: 1000,
+		currency: 'usd',
+		created: 1609459200,
+		reason: 'fraudulent',
+		status: 'needs_response',
+		evidence_details: {
+			due_by: 1610064000,
+		},
+		evidence: {},
+		metadata: {
+			__product_type: 'digital_product_or_service',
+		},
+		order: {
+			id: 123,
+			number: '123',
+			ip_address: '192.168.1.1',
+			suggested_product_type: 'digital_product_or_service',
+		},
+		charge: {
+			id: 'ch_test_123',
+			payment_method_details: {
+				type: 'card',
+				card: {
+					issuer: 'Test Bank',
+				},
+			},
+			...( hasPaymentIntent && { payment_intent: 'pi_test_123' } ),
+		},
+		enhanced_eligibility_types: [],
+		balance_transactions: [],
+	} );
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		mockUseGetSettings.mockReturnValue( {
+			account: {
+				business_details: {
+					name: 'Test Business',
+				},
+			},
+		} );
+		mockUseDisputeEvidence.mockReturnValue( { updateDispute: jest.fn() } );
+		( mockUseDispatch as jest.Mock ).mockImplementation(
+			( storeName: string ) => {
+				if ( storeName === WCPAY_STORE_NAME ) {
+					return {
+						invalidateResolutionForStoreSelector: mockInvalidateResolutionForStoreSelector,
+					};
+				}
+				if ( storeName === 'core/notices' ) {
+					return {
+						createSuccessNotice: mockCreateSuccessNotice,
+						createErrorNotice: mockCreateErrorNotice,
+						createInfoNotice: mockCreateInfoNotice,
+					};
+				}
+				return {};
+			}
+		);
+		( window as any ).location.href = '';
+		( global.confirm as jest.Mock ).mockReturnValue( true );
+	} );
+
+	it( 'invalidates payment intent cache when dispute is saved and has payment_intent', async () => {
+		const disputeWithPaymentIntent = createDisputeWithPaymentIntent( true );
+		mockApiFetch.mockResolvedValue( disputeWithPaymentIntent );
+
+		render( <NewEvidence query={ { id: 'dp_test_cache' } } /> );
+
+		// Wait for loading to complete
+		await waitFor( () => {
+			expect(
+				screen.queryByText( 'Loading dispute…' )
+			).not.toBeInTheDocument();
+		} );
+
+		// Find and click the "Save for later" button
+		const saveButton = await screen.findByRole( 'button', {
+			name: 'Save for later',
+		} );
+		fireEvent.click( saveButton );
+
+		// Wait for the save to complete and verify cache invalidation was called
+		await waitFor( () => {
+			expect(
+				mockInvalidateResolutionForStoreSelector
+			).toHaveBeenCalledWith( 'getPaymentIntent' );
+		} );
+	} );
+
+	it( 'does not invalidate payment intent cache when dispute has no payment_intent', async () => {
+		const disputeWithoutPaymentIntent = createDisputeWithPaymentIntent(
+			false
+		);
+		mockApiFetch.mockResolvedValue( disputeWithoutPaymentIntent );
+
+		render( <NewEvidence query={ { id: 'dp_test_cache' } } /> );
+
+		// Wait for loading to complete
+		await waitFor( () => {
+			expect(
+				screen.queryByText( 'Loading dispute…' )
+			).not.toBeInTheDocument();
+		} );
+
+		// Find and click the "Save for later" button
+		const saveButton = await screen.findByRole( 'button', {
+			name: 'Save for later',
+		} );
+		fireEvent.click( saveButton );
+
+		// Wait for the POST request to be made (save operation)
+		await waitFor( () => {
+			expect( mockApiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					method: 'post',
+				} )
+			);
+		} );
+
+		// Verify cache invalidation was NOT called
+		expect(
+			mockInvalidateResolutionForStoreSelector
+		).not.toHaveBeenCalled();
+	} );
+
+	it( 'invalidates payment intent cache when evidence is submitted', async () => {
+		const disputeWithPaymentIntent = createDisputeWithPaymentIntent( true );
+		mockApiFetch.mockResolvedValue( disputeWithPaymentIntent );
+
+		render( <NewEvidence query={ { id: 'dp_test_cache' } } /> );
+
+		// Wait for loading to complete
+		await waitFor( () => {
+			expect(
+				screen.queryByText( 'Loading dispute…' )
+			).not.toBeInTheDocument();
+		} );
+
+		// Navigate to the review step (for digital products - no shipping step)
+		const nextButton = await screen.findByRole( 'button', {
+			name: /Next/i,
+		} );
+		fireEvent.click( nextButton );
+
+		// Wait for the review step to render
+		await waitFor( () => {
+			expect(
+				screen.getByText( 'Review your cover letter' )
+			).toBeInTheDocument();
+		} );
+
+		// Find and click submit button
+		const submitButton = await screen.findByRole( 'button', {
+			name: /Submit/i,
+		} );
+		fireEvent.click( submitButton );
+
+		// Wait for submit to complete and verify cache invalidation was called
+		await waitFor( () => {
+			expect(
+				mockInvalidateResolutionForStoreSelector
+			).toHaveBeenCalledWith( 'getPaymentIntent' );
 		} );
 	} );
 } );
