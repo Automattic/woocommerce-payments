@@ -24,16 +24,11 @@ export const normalizeLineItems = ( displayItems ) => {
  * Normalize order data from Stripe's object to the expected format for WC.
  *
  * @param {Object} event Stripe's event object.
- * @param {string} paymentCredential Stripe's confirmation token or payment method id.
- * @param {boolean} useConfirmationTokens Whether to use confirmation tokens (true) or payment methods (false).
+ * @param {string} paymentMethodId Stripe's payment method id.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
-export const normalizeOrderData = (
-	event,
-	paymentCredential,
-	useConfirmationTokens = false
-) => {
+export const normalizeOrderData = ( event, paymentMethodId ) => {
 	const name = event?.billingDetails?.name;
 	const email = event?.billingDetails?.email ?? '';
 	const billing = event?.billingDetails?.address ?? {};
@@ -75,9 +70,7 @@ export const normalizeOrderData = (
 		payment_method: 'woocommerce_payments',
 		ship_to_different_address: 1,
 		terms: 1,
-		[ useConfirmationTokens
-			? 'wcpay-confirmation-token'
-			: 'wcpay-payment-method' ]: paymentCredential,
+		'wcpay-payment-method': paymentMethodId,
 		express_payment_type: event?.expressPaymentType,
 		'wcpay-fraud-prevention-token': fraudPreventionTokenValue,
 	};
@@ -87,21 +80,14 @@ export const normalizeOrderData = (
  * Normalize Pay for Order data from Stripe's object to the expected format for WC.
  *
  * @param {Object} event Stripe's event object.
- * @param {string} paymentCredential Stripe's confirmation token or payment method id.
- * @param {boolean} useConfirmationTokens Whether to use confirmation tokens (true) or payment methods (false).
+ * @param {string} paymentMethodId Stripe's payment method id.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
-export const normalizePayForOrderData = (
-	event,
-	paymentCredential,
-	useConfirmationTokens = false
-) => {
+export const normalizePayForOrderData = ( event, paymentMethodId ) => {
 	return {
 		payment_method: 'woocommerce_payments',
-		[ useConfirmationTokens
-			? 'wcpay-confirmation-token'
-			: 'wcpay-payment-method' ]: paymentCredential,
+		'wcpay-payment-method': paymentMethodId,
 		express_payment_type: event?.expressPaymentType,
 		'wcpay-fraud-prevention-token': window.wcpayFraudPreventionToken ?? '',
 	};
