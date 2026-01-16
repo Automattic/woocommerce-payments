@@ -264,6 +264,7 @@ class WC_Payments_Checkout {
 						$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
 					}
 				}
+
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
@@ -336,15 +337,15 @@ class WC_Payments_Checkout {
 		// It's a little heavier in computation, but it gives a more accurate result.
 		$js_config = $this->get_payment_fields_js_config();
 
-		$new_config = [
-			'paymentMethodsConfig' => $js_config['paymentMethodsConfig'],
-			'currency'             => $js_config['currency'],
-			'cartTotal'            => $js_config['cartTotal'],
-		];
-
 		$fragments['.woocommerce-checkout-payment'] .= sprintf(
 			'<script>window.wcpay_upe_config && Object.assign( window.wcpay_upe_config, %s );</script>',
-			wp_json_encode( $new_config )
+			wp_json_encode(
+				[
+					'paymentMethodsConfig' => $js_config['paymentMethodsConfig'],
+					'currency'             => $js_config['currency'],
+					'cartTotal'            => $js_config['cartTotal'],
+				]
+			)
 		);
 
 		return $fragments;
