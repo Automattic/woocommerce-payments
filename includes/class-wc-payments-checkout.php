@@ -284,6 +284,9 @@ class WC_Payments_Checkout {
 		// Get the WooCommerce Store API endpoint.
 		$payment_fields['storeApiURL'] = get_rest_url( null, 'wc/store' );
 
+		// Whether Apple Pay / Google Pay should be displayed in the payment methods list instead of as express buttons.
+		$payment_fields['isAppleGooglePayInPaymentMethodsOptionsEnabled'] = 'yes' === $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' );
+
 		/**
 		 * Allows filtering for the payment fields.
 		 *
@@ -311,6 +314,9 @@ class WC_Payments_Checkout {
 
 			$settings[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
 		}
+
+		$settings['google_pay'] = $this->get_config_for_payment_method( 'google_pay', $this->account->get_account_country() );
+		$settings['apple_pay']  = $this->get_config_for_payment_method( 'apple_pay', $this->account->get_account_country() );
 
 		return $settings;
 	}
@@ -348,13 +354,14 @@ class WC_Payments_Checkout {
 		}
 
 		$config = [
-			'isReusable'     => $payment_method->is_reusable(),
-			'isBnpl'         => $payment_method->is_bnpl(),
-			'title'          => $payment_method->get_title( $account_country ),
-			'icon'           => $payment_method->get_icon( $account_country ),
-			'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
-			'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
-			'countries'      => $payment_method->get_countries(),
+			'isReusable'        => $payment_method->is_reusable(),
+			'isBnpl'            => $payment_method->is_bnpl(),
+			'isExpressCheckout' => $payment_method->is_express_checkout(),
+			'title'             => $payment_method->get_title( $account_country ),
+			'icon'              => $payment_method->get_icon( $account_country ),
+			'darkIcon'          => $payment_method->get_dark_icon( $account_country ),
+			'showSaveOption'    => $this->should_upe_payment_method_show_save_option( $payment_method ),
+			'countries'         => $payment_method->get_countries(),
 		];
 
 		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );

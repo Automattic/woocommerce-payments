@@ -122,6 +122,12 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
+		// Skip express buttons on checkout if they're shown in payment methods list instead.
+		if ( $this->express_checkout_helper->is_checkout()
+			&& 'yes' === $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) ) {
+			return;
+		}
+
 		$should_show_woopay                  = $this->platform_checkout_button_handler->should_show_woopay_button();
 		$should_show_express_checkout_button = $this->express_checkout_helper->should_show_express_checkout_button();
 

@@ -4,6 +4,7 @@
  * Internal dependencies
  */
 import './style.scss';
+import { initExpressPaymentMethods } from './express-payment-methods';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	generateCheckoutEventNames,
@@ -64,6 +65,9 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
+	// Initialize express payment methods (Apple Pay, Google Pay) in payment methods list.
+	initExpressPaymentMethods( api );
+
 	blockUI( $forms );
 	showAuthenticationModalIfRequired( api ).finally( () => {
 		unblockUI( $forms );
@@ -72,6 +76,8 @@ jQuery( function ( $ ) {
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
 		injectPaymentMethodLogos();
+		// Re-attempt registration in case cart total changed from 0 to a positive amount.
+		initExpressPaymentMethods( api );
 	} );
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
@@ -365,6 +371,16 @@ jQuery( function ( $ ) {
 
 	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+
+		// Skip express checkout payment methods (Apple Pay, Google Pay) as they
+		// handle their own payment processing via the Custom Place Order Button API.
+		const paymentMethodConfig = getUPEConfig( 'paymentMethodsConfig' )?.[
+			paymentMethodType
+		];
+		if ( paymentMethodConfig?.isExpressCheckout ) {
+			return;
+		}
+
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			return processPayment( api, $form, paymentMethodType );
 		}
