@@ -329,6 +329,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// to have a map for it instead, just in case the pattern changes.
 		$this->payment_method_capability_key_map = [
 			'alipay'            => 'alipay_payments',
+			'amazon_pay'        => 'amazon_pay_payments',
 			'apple_pay'         => 'card_payments',
 			'sofort'            => 'sofort_payments',
 			'giropay'           => 'giropay_payments',
@@ -961,7 +962,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the setting to show the payment request buttons is enabled or not.
 	 */
 	public function is_payment_request_enabled() {
-		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::get_id() );
 		if ( $google_pay_gateway && $google_pay_gateway->is_enabled() ) {
 			return true;
 		}

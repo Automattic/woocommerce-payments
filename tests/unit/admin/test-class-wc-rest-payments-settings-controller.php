@@ -1212,7 +1212,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_is_payment_request_enabled_reads_from_google_pay() {
 		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$google_pay_gateway->expects( $this->once() )
+		$google_pay_gateway
 			->method( 'is_enabled' )
 			->willReturn( true );
 
@@ -1288,7 +1288,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_settings_returns_is_amazon_pay_enabled_true(): void {
 		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$amazon_pay_gateway->expects( $this->once() )
+		$amazon_pay_gateway
 			->method( 'is_enabled' )
 			->willReturn( true );
 
@@ -1302,7 +1302,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_settings_returns_is_amazon_pay_enabled_false(): void {
 		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$amazon_pay_gateway->expects( $this->once() )
+		$amazon_pay_gateway
 			->method( 'is_enabled' )
 			->willReturn( false );
 
@@ -1321,5 +1321,71 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertArrayHasKey( 'is_amazon_pay_enabled', $response->get_data() );
 		$this->assertFalse( $response->get_data()['is_amazon_pay_enabled'] );
+	}
+
+	public function test_update_settings_requests_amazon_pay_capability_when_unrequested() {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )->method( 'enable' );
+		$amazon_pay_gateway->method( 'is_enabled' )->willReturn( false );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		// pretending the Amazon Pay capability has an 'unrequested' status.
+		$this->mock_wcpay_account
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'amazon_pay_payments' => 'unrequested',
+						'card_payments'       => 'active',
+					],
+					'capability_requirements' => [],
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'request_capability' )
+			->with( 'amazon_pay_payments', true )
+			->willReturn( [ 'status' => 'pending' ] );
+
+		$this->mock_wcpay_account
+			->expects( $this->once() )
+			->method( 'refresh_account_data' );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_amazon_pay_enabled', true );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_settings_does_not_request_amazon_pay_capability_when_already_active() {
+		$amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$amazon_pay_gateway->expects( $this->once() )->method( 'enable' );
+		$amazon_pay_gateway->method( 'is_enabled' )->willReturn( false );
+
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $amazon_pay_gateway ] );
+
+		// pretending the Amazon Pay capability has an 'active' status.
+		$this->mock_wcpay_account
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'amazon_pay_payments' => 'active',
+						'card_payments'       => 'active',
+					],
+					'capability_requirements' => [],
+				]
+			);
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'request_capability' );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_amazon_pay_enabled', true );
+
+		$this->controller->update_settings( $request );
 	}
 }

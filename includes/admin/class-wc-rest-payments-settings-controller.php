@@ -1025,11 +1025,36 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		$is_amazon_pay_enabled = $request->get_param( 'is_amazon_pay_enabled' );
+		$is_amazon_pay_enabled     = $request->get_param( 'is_amazon_pay_enabled' );
+		$was_amazon_pay_enabled    = $amazon_pay_gateway->is_enabled();
+		$pm_to_capability_key_map  = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		$amazon_pay_capability_key = $pm_to_capability_key_map['amazon_pay'] ?? null;
+
 		if ( $is_amazon_pay_enabled ) {
+			$this->request_unrequested_payment_methods( [ 'amazon_pay' ] );
 			$amazon_pay_gateway->enable();
+
+			if ( ! $was_amazon_pay_enabled ) {
+				$this->tracks_event(
+					Track_Events::PAYMENT_METHOD_ENABLED,
+					[
+						'payment_method_id' => 'amazon_pay',
+						'capability_id'     => $amazon_pay_capability_key,
+					]
+				);
+			}
 		} else {
 			$amazon_pay_gateway->disable();
+
+			if ( $was_amazon_pay_enabled ) {
+				$this->tracks_event(
+					Track_Events::PAYMENT_METHOD_DISABLED,
+					[
+						'payment_method_id' => 'amazon_pay',
+						'capability_id'     => $amazon_pay_capability_key,
+					]
+				);
+			}
 		}
 	}
 
