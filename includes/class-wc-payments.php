@@ -949,10 +949,7 @@ class WC_Payments {
 
 			return $new_ordering;
 		} catch ( Exception $e ) {
-			if ( function_exists( 'wc_get_logger' ) ) {
-				$logger = wc_get_logger();
-				$logger->warning( 'Failed to order gateways: ' . $e->getMessage(), [ 'source' => 'woopayments' ] );
-			}
+			WC_Payments_Utils::log_to_wc( 'Failed to order gateways: ' . $e->getMessage(), 'warning' );
 			return $ordering;
 		}
 	}

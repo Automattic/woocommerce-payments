@@ -223,21 +223,13 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			$capabilities
 		);
 
-		// Log directly to WC logger to ensure this is captured even when WCPay logging is disabled.
-		if ( function_exists( 'wc_get_logger' ) ) {
-			if ( empty( $account_session ) ) {
-				$logger = wc_get_logger();
-				$logger->error(
-					'Failed to create embedded KYC session: Empty response from onboarding service.',
-					[ 'source' => 'woopayments' ]
-				);
-			} elseif ( empty( $account_session['publishableKey'] ) ) {
-				$logger = wc_get_logger();
-				$logger->warning(
-					sprintf( 'Embedded KYC session missing publishableKey. Session keys: %s.', implode( ', ', array_keys( $account_session ) ) ),
-					[ 'source' => 'woopayments' ]
-				);
-			}
+		if ( empty( $account_session ) ) {
+			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: Empty response from onboarding service.' );
+		} elseif ( empty( $account_session['publishableKey'] ) ) {
+			WC_Payments_Utils::log_to_wc(
+				sprintf( 'Embedded KYC session missing publishableKey. Session keys: %s.', implode( ', ', array_keys( $account_session ) ) ),
+				'warning'
+			);
 		}
 
 		if ( $account_session ) {
