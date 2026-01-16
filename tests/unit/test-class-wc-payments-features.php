@@ -325,18 +325,18 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_ece_confirmation_tokens_enabled_returns_true_when_enabled() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_enabled' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$this->assertTrue( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
 	}
 
 	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_disabled() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_enabled' => false ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => true ] );
 		$this->assertFalse( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
 	}
 
-	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_field_missing() {
+	public function test_is_ece_confirmation_tokens_enabled_returns_true_when_field_missing() {
 		$this->mock_cache->method( 'get' )->willReturn( [] );
-		$this->assertFalse( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
 	}
 
 	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_cache_not_set() {
@@ -345,14 +345,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_amazon_pay_enabled_returns_false_when_disabled() {
-		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$mock_wcpay_account
-			->method( 'is_account_under_review' )
-			->willReturn( true );
-
-		WC_Payments::set_account_service( $mock_wcpay_account );
-
-		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_enabled' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '0' );
 
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
@@ -362,14 +355,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_amazon_pay_enabled_returns_true_when_enabled() {
-		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$mock_wcpay_account
-			->method( 'is_account_under_review' )
-			->willReturn( true );
-
-		WC_Payments::set_account_service( $mock_wcpay_account );
-
-		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_enabled' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '1' );
 
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
@@ -379,14 +365,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_amazon_pay_enabled_returns_false_when_server_side_disabled() {
-		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$mock_wcpay_account
-			->method( 'is_account_under_review' )
-			->willReturn( true );
-
-		WC_Payments::set_account_service( $mock_wcpay_account );
-
-		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_enabled' => false ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => true ] );
 		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '1' );
 
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
@@ -396,14 +375,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_amazon_pay_enabled_returns_false_by_default() {
-		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-		$mock_wcpay_account
-			->method( 'is_account_under_review' )
-			->willReturn( true );
-
-		WC_Payments::set_account_service( $mock_wcpay_account );
-
-		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_enabled' => true ] );
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
 
 		$this->assertFalse( $result );

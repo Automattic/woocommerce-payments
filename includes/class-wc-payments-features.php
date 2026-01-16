@@ -372,8 +372,7 @@ class WC_Payments_Features {
 	public static function is_ece_confirmation_tokens_enabled(): bool {
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 
-		// Default to false (payment methods) if field is missing or account unavailable.
-		return is_array( $account ) && ( $account['ece_confirmation_tokens_enabled'] ?? false );
+		return is_array( $account ) && ! ( $account['ece_confirmation_tokens_disabled'] ?? false );
 	}
 
 	/**

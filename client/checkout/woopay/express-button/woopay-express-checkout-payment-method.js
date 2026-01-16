@@ -8,11 +8,13 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT } from '../../constants';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import { getConfig } from '../../../utils/checkout';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
+
+export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
+	'woocommerce_payments_woopay_express_checkout';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
