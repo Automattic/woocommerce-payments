@@ -88,9 +88,9 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 			foreach ( $log_files as $log_file ) {
 				$old_filename = basename( $log_file );
 				// Replace today's date with an old date (1 year ago) in the filename.
-				$old_date        = gmdate( 'Y-m-d', time() - YEAR_IN_SECONDS );
-				$new_filename    = preg_replace( '/\d{4}-\d{2}-\d{2}/', $old_date, $old_filename );
-				$new_file_path   = $log_dir . $new_filename;
+				$old_date      = gmdate( 'Y-m-d', time() - YEAR_IN_SECONDS );
+				$new_filename  = preg_replace( '/\d{4}-\d{2}-\d{2}/', $old_date, $old_filename );
+				$new_file_path = $log_dir . $new_filename;
 
 				// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
 				rename( $log_file, $new_file_path );
