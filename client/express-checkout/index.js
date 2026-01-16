@@ -214,6 +214,14 @@ jQuery( ( $ ) => {
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
 				// paymentMethodCreation: 'manual',
+				paymentMethodTypes: [
+					getExpressCheckoutData( 'enabled_methods' ).includes(
+						'google_apple_pay'
+					) && 'card',
+					getExpressCheckoutData( 'enabled_methods' ).includes(
+						'amazon_pay'
+					) && 'amazon_pay',
+				].filter( Boolean ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );

@@ -217,6 +217,9 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		};
 		global.wcpayExpressCheckoutParams.store_name = 'My fancy store';
 		global.wcpayExpressCheckoutParams.button_context = 'pay_for_order';
+		global.wcpayExpressCheckoutParams.enabled_methods = [
+			'google_apple_pay',
+		];
 
 		// just mocking some server-side-provided DOM elements.
 		render(
@@ -304,6 +307,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 			// paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
+			paymentMethodTypes: [ 'card' ],
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.

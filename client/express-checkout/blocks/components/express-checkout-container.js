@@ -24,6 +24,14 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const options = {
 		mode: 'payment',
+		paymentMethodTypes: [
+			getExpressCheckoutData( 'enabled_methods' ).includes(
+				'google_apple_pay'
+			) && 'card',
+			getExpressCheckoutData( 'enabled_methods' ).includes(
+				'amazon_pay'
+			) && 'amazon_pay',
+		].filter( Boolean ),
 		// paymentMethodCreation: 'manual',
 		// ensuring that the total amount is transformed to the correct format.
 		amount: ! isPreview

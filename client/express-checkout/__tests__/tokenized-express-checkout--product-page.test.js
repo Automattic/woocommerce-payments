@@ -46,6 +46,9 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			needs_shipping: true,
 			allowed_shipping_countries: [ 'US' ],
 		};
+		global.wcpayExpressCheckoutParams.enabled_methods = [
+			'google_apple_pay',
+		];
 		global.wcpayExpressCheckoutParams.store_name = 'My fancy store';
 		global.wcpayExpressCheckoutParams.button_context = 'product';
 		global.wcpayExpressCheckoutParams.product = {
@@ -161,6 +164,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			// paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
+			paymentMethodTypes: [ 'card' ],
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.
@@ -190,6 +194,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			// paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
+			paymentMethodTypes: [ 'card' ],
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.

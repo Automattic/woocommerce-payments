@@ -56,6 +56,11 @@ const checkPaymentMethodIsAvailableInternal = (
 				options={ {
 					mode: 'payment',
 					// paymentMethodCreation: 'manual',
+					paymentMethodTypes: [
+						[ 'applePay', 'googlePay' ].includes( paymentMethod ) &&
+							'card',
+						paymentMethod === 'amazonPay' && 'amazon_pay',
+					].filter( Boolean ) as string[],
 					amount: Number( totalPrice ),
 					currency: currencyCode.toLowerCase(),
 				} }
