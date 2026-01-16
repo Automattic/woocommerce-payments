@@ -136,222 +136,295 @@ describe( 'Express checkout normalization', () => {
 			delete window.wcpayFraudPreventionToken;
 		} );
 
-		test( 'should normalize order data with complete event and paymentMethodId', () => {
-			window.wcpayFraudPreventionToken = 'token123';
+		describe( 'when using payment methods (default)', () => {
+			test( 'should normalize order data with complete event', () => {
+				window.wcpayFraudPreventionToken = 'token123';
 
-			const event = {
-				billingDetails: {
-					name: 'John Doe',
-					email: 'john.doe@example.com',
-					address: {
+				const event = {
+					billingDetails: {
+						name: 'John Doe',
+						email: 'john.doe@example.com',
+						address: {
+							organization: 'Some Company',
+							country: 'US',
+							line1: '123 Main St',
+							line2: 'Apt 4B',
+							city: 'New York',
+							state: 'NY',
+							postal_code: '10001',
+						},
+						phone: '(123) 456-7890',
+					},
+					shippingAddress: {
+						name: 'John Doe',
 						organization: 'Some Company',
-						country: 'US',
-						line1: '123 Main St',
-						line2: 'Apt 4B',
-						city: 'New York',
-						state: 'NY',
-						postal_code: '10001',
+						address: {
+							country: 'US',
+							line1: '123 Main St',
+							line2: 'Apt 4B',
+							city: 'New York',
+							state: 'NY',
+							postal_code: '10001',
+						},
 					},
-					phone: '(123) 456-7890',
-				},
-				shippingAddress: {
-					name: 'John Doe',
-					organization: 'Some Company',
-					address: {
-						country: 'US',
-						line1: '123 Main St',
-						line2: 'Apt 4B',
-						city: 'New York',
-						state: 'NY',
-						postal_code: '10001',
+					shippingRate: { id: 'rate_1' },
+					expressPaymentType: 'express',
+				};
+
+				const paymentMethodId = 'pm_123456';
+
+				const expectedNormalizedData = {
+					billing_first_name: 'John',
+					billing_last_name: 'Doe',
+					billing_company: 'Some Company',
+					billing_email: 'john.doe@example.com',
+					billing_phone: '1234567890',
+					billing_country: 'US',
+					billing_address_1: '123 Main St',
+					billing_address_2: 'Apt 4B',
+					billing_city: 'New York',
+					billing_state: 'NY',
+					billing_postcode: '10001',
+					shipping_first_name: 'John',
+					shipping_last_name: 'Doe',
+					shipping_company: 'Some Company',
+					shipping_phone: '1234567890',
+					shipping_country: 'US',
+					shipping_address_1: '123 Main St',
+					shipping_address_2: 'Apt 4B',
+					shipping_city: 'New York',
+					shipping_state: 'NY',
+					shipping_postcode: '10001',
+					shipping_method: [ 'rate_1' ],
+					order_comments: '',
+					payment_method: 'woocommerce_payments',
+					ship_to_different_address: 1,
+					terms: 1,
+					'wcpay-payment-method': paymentMethodId,
+					express_payment_type: 'express',
+					'wcpay-fraud-prevention-token': 'token123',
+				};
+
+				expect(
+					normalizeOrderData( event, paymentMethodId, false )
+				).toEqual( expectedNormalizedData );
+			} );
+
+			test( 'should normalize order data with missing optional event fields', () => {
+				const event = {};
+				const paymentMethodId = 'pm_123456';
+
+				const expectedNormalizedData = {
+					billing_first_name: '',
+					billing_last_name: '-',
+					billing_company: '',
+					billing_email: '',
+					billing_phone: '',
+					billing_country: '',
+					billing_address_1: '',
+					billing_address_2: '',
+					billing_city: '',
+					billing_state: '',
+					billing_postcode: '',
+					shipping_first_name: '',
+					shipping_last_name: '',
+					shipping_company: '',
+					shipping_phone: '',
+					shipping_country: '',
+					shipping_address_1: '',
+					shipping_address_2: '',
+					shipping_city: '',
+					shipping_state: '',
+					shipping_postcode: '',
+					shipping_method: [ null ],
+					order_comments: '',
+					payment_method: 'woocommerce_payments',
+					ship_to_different_address: 1,
+					terms: 1,
+					'wcpay-payment-method': paymentMethodId,
+					express_payment_type: undefined,
+					'wcpay-fraud-prevention-token': '',
+				};
+
+				expect(
+					normalizeOrderData( event, paymentMethodId, false )
+				).toEqual( expectedNormalizedData );
+			} );
+
+			test( 'should normalize order data with minimum required fields', () => {
+				const event = {
+					billingDetails: {
+						name: 'John',
 					},
-				},
-				shippingRate: { id: 'rate_1' },
-				expressPaymentType: 'express',
-			};
+				};
+				const paymentMethodId = 'pm_123456';
 
-			const confirmationTokenId = 'ctoken_123456';
+				const expectedNormalizedData = {
+					billing_first_name: 'John',
+					billing_last_name: '',
+					billing_company: '',
+					billing_email: '',
+					billing_phone: '',
+					billing_country: '',
+					billing_address_1: '',
+					billing_address_2: '',
+					billing_city: '',
+					billing_state: '',
+					billing_postcode: '',
+					shipping_first_name: '',
+					shipping_last_name: '',
+					shipping_company: '',
+					shipping_phone: '',
+					shipping_country: '',
+					shipping_address_1: '',
+					shipping_address_2: '',
+					shipping_city: '',
+					shipping_state: '',
+					shipping_postcode: '',
+					shipping_method: [ null ],
+					order_comments: '',
+					payment_method: 'woocommerce_payments',
+					ship_to_different_address: 1,
+					terms: 1,
+					'wcpay-payment-method': paymentMethodId,
+					express_payment_type: undefined,
+					'wcpay-fraud-prevention-token': '',
+				};
 
-			const expectedNormalizedData = {
-				billing_first_name: 'John',
-				billing_last_name: 'Doe',
-				billing_company: 'Some Company',
-				billing_email: 'john.doe@example.com',
-				billing_phone: '1234567890',
-				billing_country: 'US',
-				billing_address_1: '123 Main St',
-				billing_address_2: 'Apt 4B',
-				billing_city: 'New York',
-				billing_state: 'NY',
-				billing_postcode: '10001',
-				shipping_first_name: 'John',
-				shipping_last_name: 'Doe',
-				shipping_company: 'Some Company',
-				shipping_phone: '1234567890',
-				shipping_country: 'US',
-				shipping_address_1: '123 Main St',
-				shipping_address_2: 'Apt 4B',
-				shipping_city: 'New York',
-				shipping_state: 'NY',
-				shipping_postcode: '10001',
-				shipping_method: [ 'rate_1' ],
-				order_comments: '',
-				payment_method: 'woocommerce_payments',
-				ship_to_different_address: 1,
-				terms: 1,
-				'wcpay-confirmation-token': confirmationTokenId,
-				express_payment_type: 'express',
-				'wcpay-fraud-prevention-token': 'token123',
-			};
-
-			expect( normalizeOrderData( event, confirmationTokenId ) ).toEqual(
-				expectedNormalizedData
-			);
+				expect(
+					normalizeOrderData( event, paymentMethodId, false )
+				).toEqual( expectedNormalizedData );
+			} );
 		} );
 
-		test( 'should normalize order data with missing optional event fields', () => {
-			const event = {};
-			const confirmationTokenId = 'ctoken_123456';
+		describe( 'when using confirmation tokens', () => {
+			test( 'should use wcpay-confirmation-token key', () => {
+				window.wcpayFraudPreventionToken = 'token123';
 
-			const expectedNormalizedData = {
-				billing_first_name: '',
-				billing_last_name: '-',
-				billing_company: '',
-				billing_email: '',
-				billing_phone: '',
-				billing_country: '',
-				billing_address_1: '',
-				billing_address_2: '',
-				billing_city: '',
-				billing_state: '',
-				billing_postcode: '',
-				shipping_first_name: '',
-				shipping_last_name: '',
-				shipping_company: '',
-				shipping_phone: '',
-				shipping_country: '',
-				shipping_address_1: '',
-				shipping_address_2: '',
-				shipping_city: '',
-				shipping_state: '',
-				shipping_postcode: '',
-				shipping_method: [ null ],
-				order_comments: '',
-				payment_method: 'woocommerce_payments',
-				ship_to_different_address: 1,
-				terms: 1,
-				'wcpay-confirmation-token': confirmationTokenId,
-				express_payment_type: undefined,
-				'wcpay-fraud-prevention-token': '',
-			};
+				const event = {
+					billingDetails: {
+						name: 'John Doe',
+						email: 'john.doe@example.com',
+						address: {
+							organization: 'Some Company',
+							country: 'US',
+							line1: '123 Main St',
+							line2: 'Apt 4B',
+							city: 'New York',
+							state: 'NY',
+							postal_code: '10001',
+						},
+						phone: '(123) 456-7890',
+					},
+					shippingAddress: {
+						name: 'John Doe',
+						organization: 'Some Company',
+						address: {
+							country: 'US',
+							line1: '123 Main St',
+							line2: 'Apt 4B',
+							city: 'New York',
+							state: 'NY',
+							postal_code: '10001',
+						},
+					},
+					shippingRate: { id: 'rate_1' },
+					expressPaymentType: 'express',
+				};
 
-			expect( normalizeOrderData( event, confirmationTokenId ) ).toEqual(
-				expectedNormalizedData
-			);
-		} );
+				const confirmationTokenId = 'ctoken_123456';
 
-		test( 'should normalize order data with minimum required fields', () => {
-			const event = {
-				billingDetails: {
-					name: 'John',
-				},
-			};
-			const confirmationTokenId = 'ctoken_123456';
+				const result = normalizeOrderData(
+					event,
+					confirmationTokenId,
+					true
+				);
 
-			const expectedNormalizedData = {
-				billing_first_name: 'John',
-				billing_last_name: '',
-				billing_company: '',
-				billing_email: '',
-				billing_phone: '',
-				billing_country: '',
-				billing_address_1: '',
-				billing_address_2: '',
-				billing_city: '',
-				billing_state: '',
-				billing_postcode: '',
-				shipping_first_name: '',
-				shipping_last_name: '',
-				shipping_company: '',
-				shipping_phone: '',
-				shipping_country: '',
-				shipping_address_1: '',
-				shipping_address_2: '',
-				shipping_city: '',
-				shipping_state: '',
-				shipping_postcode: '',
-				shipping_method: [ null ],
-				order_comments: '',
-				payment_method: 'woocommerce_payments',
-				ship_to_different_address: 1,
-				terms: 1,
-				'wcpay-confirmation-token': confirmationTokenId,
-				express_payment_type: undefined,
-				'wcpay-fraud-prevention-token': '',
-			};
-
-			expect( normalizeOrderData( event, confirmationTokenId ) ).toEqual(
-				expectedNormalizedData
-			);
+				expect( result[ 'wcpay-confirmation-token' ] ).toBe(
+					confirmationTokenId
+				);
+				expect( result[ 'wcpay-payment-method' ] ).toBeUndefined();
+			} );
 		} );
 	} );
 
 	describe( 'normalizePayForOrderData', () => {
-		test( 'should normalize pay for order data with complete event and paymentMethodId', () => {
-			window.wcpayFraudPreventionToken = 'token123';
+		describe( 'when using payment methods (default)', () => {
+			test( 'should normalize pay for order data with complete event', () => {
+				window.wcpayFraudPreventionToken = 'token123';
 
-			const event = {
-				billingDetails: {
-					name: 'John Doe',
-					email: 'john.doe@example.com',
-					address: {
+				const event = {
+					billingDetails: {
+						name: 'John Doe',
+						email: 'john.doe@example.com',
+						address: {
+							organization: 'Some Company',
+							country: 'US',
+							line1: '123 Main St',
+							line2: 'Apt 4B',
+							city: 'New York',
+							state: 'NY',
+							postal_code: '10001',
+						},
+						phone: '(123) 456-7890',
+					},
+					shippingAddress: {
+						name: 'John Doe',
 						organization: 'Some Company',
-						country: 'US',
-						line1: '123 Main St',
-						line2: 'Apt 4B',
-						city: 'New York',
-						state: 'NY',
-						postal_code: '10001',
+						address: {
+							country: 'US',
+							line1: '123 Main St',
+							line2: 'Apt 4B',
+							city: 'New York',
+							state: 'NY',
+							postal_code: '10001',
+						},
 					},
-					phone: '(123) 456-7890',
-				},
-				shippingAddress: {
-					name: 'John Doe',
-					organization: 'Some Company',
-					address: {
-						country: 'US',
-						line1: '123 Main St',
-						line2: 'Apt 4B',
-						city: 'New York',
-						state: 'NY',
-						postal_code: '10001',
-					},
-				},
-				shippingRate: { id: 'rate_1' },
-				expressPaymentType: 'express',
-			};
+					shippingRate: { id: 'rate_1' },
+					expressPaymentType: 'express',
+				};
 
-			expect(
-				normalizePayForOrderData( event, 'ctoken_123456' )
-			).toEqual( {
-				payment_method: 'woocommerce_payments',
-				'wcpay-confirmation-token': 'ctoken_123456',
-				'wcpay-fraud-prevention-token': 'token123',
-				express_payment_type: 'express',
+				expect(
+					normalizePayForOrderData( event, 'pm_123456', false )
+				).toEqual( {
+					payment_method: 'woocommerce_payments',
+					'wcpay-payment-method': 'pm_123456',
+					'wcpay-fraud-prevention-token': 'token123',
+					express_payment_type: 'express',
+				} );
+			} );
+
+			test( 'should normalize pay for order data with empty event and empty payment method', () => {
+				const event = {};
+				const paymentMethodId = '';
+
+				expect(
+					normalizePayForOrderData( event, paymentMethodId, false )
+				).toEqual( {
+					payment_method: 'woocommerce_payments',
+					'wcpay-payment-method': '',
+					'wcpay-fraud-prevention-token': 'token123',
+					express_payment_type: undefined,
+				} );
 			} );
 		} );
 
-		test( 'should normalize pay for order data with empty event and empty confirmation token', () => {
-			const event = {};
-			const confirmationTokenId = '';
+		describe( 'when using confirmation tokens', () => {
+			test( 'should use wcpay-confirmation-token key', () => {
+				window.wcpayFraudPreventionToken = 'token123';
 
-			expect(
-				normalizePayForOrderData( event, confirmationTokenId )
-			).toEqual( {
-				payment_method: 'woocommerce_payments',
-				'wcpay-confirmation-token': '',
-				'wcpay-fraud-prevention-token': 'token123',
-				express_payment_type: undefined,
+				const event = {
+					expressPaymentType: 'express',
+				};
+
+				expect(
+					normalizePayForOrderData( event, 'ctoken_123456', true )
+				).toEqual( {
+					payment_method: 'woocommerce_payments',
+					'wcpay-confirmation-token': 'ctoken_123456',
+					'wcpay-fraud-prevention-token': 'token123',
+					express_payment_type: 'express',
+				} );
 			} );
 		} );
 	} );

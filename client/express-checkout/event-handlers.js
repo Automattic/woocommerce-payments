@@ -108,12 +108,32 @@ export const onConfirmHandler = async (
 		return abortPayment( submitError.message );
 	}
 
-	const { confirmationToken, error } = await stripe.createConfirmationToken( {
-		elements,
-	} );
+	const useConfirmationTokens =
+		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
+		false;
 
-	if ( error ) {
-		return abortPayment( error.message );
+	let paymentCredential;
+	let credentialError;
+
+	if ( useConfirmationTokens ) {
+		const {
+			confirmationToken,
+			error,
+		} = await stripe.createConfirmationToken( {
+			elements,
+		} );
+		paymentCredential = confirmationToken?.id;
+		credentialError = error;
+	} else {
+		const { paymentMethod, error } = await stripe.createPaymentMethod( {
+			elements,
+		} );
+		paymentCredential = paymentMethod?.id;
+		credentialError = error;
+	}
+
+	if ( credentialError ) {
+		return abortPayment( credentialError.message );
 	}
 
 	try {
@@ -123,7 +143,8 @@ export const onConfirmHandler = async (
 			// so that we make it harder for external plugins to modify or intercept checkout data.
 			...transformStripePaymentMethodForStoreApi(
 				event,
-				confirmationToken.id
+				paymentCredential,
+				useConfirmationTokens
 			),
 			extensions: applyFilters(
 				'wcpay.express-checkout.cart-place-order-extension-data',
