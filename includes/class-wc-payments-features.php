@@ -359,7 +359,20 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_amazon_pay_enabled(): bool {
-		return '1' === get_option( self::AMAZON_PAY_FLAG_NAME, '0' );
+		return '1' === get_option( self::AMAZON_PAY_FLAG_NAME, '0' ) && self::is_ece_confirmation_tokens_enabled();
+	}
+
+	/**
+	 * Checks whether ECE should use confirmation tokens instead of payment methods.
+	 *
+	 * @see https://docs.stripe.com/payments/finalize-payments-on-the-server-migration
+	 *
+	 * @return bool
+	 */
+	public static function is_ece_confirmation_tokens_enabled(): bool {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ! ( $account['ece_confirmation_tokens_disabled'] ?? false );
 	}
 
 	/**
@@ -379,6 +392,7 @@ class WC_Payments_Features {
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
+				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 			]
 		);
 	}
