@@ -170,7 +170,7 @@ describe( 'Express checkout normalization', () => {
 				expressPaymentType: 'express',
 			};
 
-			const confirmationTokenId = 'ctoken_123456';
+			const paymentMethodId = 'pm_123456';
 
 			const expectedNormalizedData = {
 				billing_first_name: 'John',
@@ -199,19 +199,19 @@ describe( 'Express checkout normalization', () => {
 				payment_method: 'woocommerce_payments',
 				ship_to_different_address: 1,
 				terms: 1,
-				'wcpay-confirmation-token': confirmationTokenId,
+				'wcpay-payment-method': paymentMethodId,
 				express_payment_type: 'express',
 				'wcpay-fraud-prevention-token': 'token123',
 			};
 
-			expect( normalizeOrderData( event, confirmationTokenId ) ).toEqual(
+			expect( normalizeOrderData( event, paymentMethodId ) ).toEqual(
 				expectedNormalizedData
 			);
 		} );
 
 		test( 'should normalize order data with missing optional event fields', () => {
 			const event = {};
-			const confirmationTokenId = 'ctoken_123456';
+			const paymentMethodId = 'pm_123456';
 
 			const expectedNormalizedData = {
 				billing_first_name: '',
@@ -240,12 +240,12 @@ describe( 'Express checkout normalization', () => {
 				payment_method: 'woocommerce_payments',
 				ship_to_different_address: 1,
 				terms: 1,
-				'wcpay-confirmation-token': confirmationTokenId,
+				'wcpay-payment-method': paymentMethodId,
 				express_payment_type: undefined,
 				'wcpay-fraud-prevention-token': '',
 			};
 
-			expect( normalizeOrderData( event, confirmationTokenId ) ).toEqual(
+			expect( normalizeOrderData( event, paymentMethodId ) ).toEqual(
 				expectedNormalizedData
 			);
 		} );
@@ -256,7 +256,7 @@ describe( 'Express checkout normalization', () => {
 					name: 'John',
 				},
 			};
-			const confirmationTokenId = 'ctoken_123456';
+			const paymentMethodId = 'pm_123456';
 
 			const expectedNormalizedData = {
 				billing_first_name: 'John',
@@ -285,12 +285,12 @@ describe( 'Express checkout normalization', () => {
 				payment_method: 'woocommerce_payments',
 				ship_to_different_address: 1,
 				terms: 1,
-				'wcpay-confirmation-token': confirmationTokenId,
+				'wcpay-payment-method': paymentMethodId,
 				express_payment_type: undefined,
 				'wcpay-fraud-prevention-token': '',
 			};
 
-			expect( normalizeOrderData( event, confirmationTokenId ) ).toEqual(
+			expect( normalizeOrderData( event, paymentMethodId ) ).toEqual(
 				expectedNormalizedData
 			);
 		} );
@@ -331,25 +331,23 @@ describe( 'Express checkout normalization', () => {
 				expressPaymentType: 'express',
 			};
 
-			expect(
-				normalizePayForOrderData( event, 'ctoken_123456' )
-			).toEqual( {
+			expect( normalizePayForOrderData( event, 'pm_123456' ) ).toEqual( {
 				payment_method: 'woocommerce_payments',
-				'wcpay-confirmation-token': 'ctoken_123456',
+				'wcpay-payment-method': 'pm_123456',
 				'wcpay-fraud-prevention-token': 'token123',
 				express_payment_type: 'express',
 			} );
 		} );
 
-		test( 'should normalize pay for order data with empty event and empty confirmation token', () => {
+		test( 'should normalize pay for order data with empty event and empty payment method', () => {
 			const event = {};
-			const confirmationTokenId = '';
+			const paymentMethodId = '';
 
 			expect(
-				normalizePayForOrderData( event, confirmationTokenId )
+				normalizePayForOrderData( event, paymentMethodId )
 			).toEqual( {
 				payment_method: 'woocommerce_payments',
-				'wcpay-confirmation-token': '',
+				'wcpay-payment-method': '',
 				'wcpay-fraud-prevention-token': 'token123',
 				express_payment_type: undefined,
 			} );
