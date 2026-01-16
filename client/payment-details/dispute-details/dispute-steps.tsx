@@ -30,7 +30,23 @@ interface Props {
 	bankName: string | null;
 }
 
-const learnMoreButtonText = __( 'Learn more', 'woocommerce-payments' ) + ' ↗';
+interface LearnMoreButtonProps {
+	href: string;
+}
+
+const LearnMoreButton: React.FC< LearnMoreButtonProps > = ( { href } ) => {
+	return (
+		<Button
+			variant="secondary"
+			href={ href }
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			{ __( 'Learn more', 'woocommerce-payments' ) + ' ' }
+			&#8599;
+		</Button>
+	);
+};
 
 export const DisputeSteps: React.FC< Props > = ( {
 	dispute,
@@ -140,14 +156,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
-										<Button
-											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ learnMoreButtonText }
-										</Button>
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
 									</div>
 								</div>
 
@@ -243,14 +252,7 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
-										<Button
-											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ learnMoreButtonText }
-										</Button>
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes" />
 									</div>
 								</div>
 								{ /* Step 2: Challenge or accept the dispute */ }
@@ -273,14 +275,7 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
-										<Button
-											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ learnMoreButtonText }
-										</Button>
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes" />
 									</div>
 								</div>
 							</div>
@@ -424,14 +419,7 @@ export const InquirySteps: React.FC< Props > = ( {
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
-										<Button
-											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ learnMoreButtonText }
-										</Button>
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
 									</div>
 								</div>
 							</div>
@@ -604,14 +592,7 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
-										<Button
-											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ learnMoreButtonText }
-										</Button>
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns" />
 									</div>
 								</div>
 							</div>
