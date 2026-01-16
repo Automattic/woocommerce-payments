@@ -334,9 +334,9 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
 	}
 
-	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_field_missing() {
+	public function test_is_ece_confirmation_tokens_enabled_returns_true_when_field_missing() {
 		$this->mock_cache->method( 'get' )->willReturn( [] );
-		$this->assertFalse( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+		$this->assertTrue( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
 	}
 
 	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_cache_not_set() {
