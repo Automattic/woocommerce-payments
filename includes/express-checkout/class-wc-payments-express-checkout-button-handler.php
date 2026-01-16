@@ -259,6 +259,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 					'accountId'      => $this->account->get_stripe_account_id(),
 					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 				],
+				'flags'  => [
+					'isEceUsingConfirmationTokens' => WC_Payments_Features::is_ece_confirmation_tokens_enabled(),
+				],
 			]
 		);
 	}

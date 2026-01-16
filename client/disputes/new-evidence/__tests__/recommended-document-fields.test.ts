@@ -429,7 +429,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
 			} );
 
-			it( 'should fall back to trunk subscription_canceled fields for booking_reservation when feature flag is enabled', () => {
+			it( 'should return matrix fields for subscription_canceled + booking_reservation when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -439,14 +439,24 @@ describe( 'Recommended Documents', () => {
 					'booking_reservation'
 				);
 
-				// Should fall back to trunk subscription_canceled fields since no matrix entry for booking_reservation
-				expect( result ).toHaveLength( 6 );
+				// Matrix entry for subscription_canceled + booking_reservation
+				expect( result ).toHaveLength( 4 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 1 ].key ).toBe( 'customer_communication' );
-				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
-				expect( result[ 3 ].key ).toBe( 'refund_policy' );
-				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
-				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
+				expect( result[ 0 ].description ).toBe(
+					'Confirming billing was valid and expected.'
+				);
+				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
+				expect( result[ 2 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 2 ].label ).toBe( 'Terms of service' );
+				expect( result[ 2 ].description ).toBe(
+					'As accepted during checkout.'
+				);
+				expect( result[ 3 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 3 ].label ).toBe( 'Cancellation confirmation' );
+				expect( result[ 3 ].description ).toBe(
+					'Documents showing the product or service was cancelled, such as cancellation logs, confirmation emails, or account records.'
+				);
 			} );
 		} );
 	} );
