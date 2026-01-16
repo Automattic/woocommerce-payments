@@ -176,6 +176,36 @@ const getSubscriptionCanceledMatrix = (): {
 			order: 100,
 		},
 	],
+	// Booking/Reservation product type
+	booking_reservation: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				'Confirming billing was valid and expected.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Terms of service', 'woocommerce-payments' ),
+			description: __(
+				'As accepted during checkout.',
+				'woocommerce-payments'
+			),
+			order: 30,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Cancellation confirmation', 'woocommerce-payments' ),
+			description: __(
+				'Documents showing the product or service was cancelled, such as cancellation logs, confirmation emails, or account records.',
+				'woocommerce-payments'
+			),
+			order: 40,
+		},
+	],
 } );
 
 /**

@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add evidence matrix entry for subscription_canceled + booking_reservation dispute combination

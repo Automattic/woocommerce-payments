@@ -83,6 +83,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_onboarding_service;
 
 	/**
+	 * Mock token service.
+	 *
+	 * @var WC_Payments_Token_Service&MockObject
+	 */
+	private $mock_token_service;
+
+	/**
 	 * @var array
 	 */
 	private $event_body;
@@ -139,6 +146,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_onboarding_service = $this->createMock( WC_Payments_Onboarding_Service::class );
 
+		$this->mock_token_service = $this->createMock( WC_Payments_Token_Service::class );
+
 		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
 			$this->mock_api_client,
 			$this->mock_db_wrapper,
@@ -147,9 +156,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_receipt_service,
 			$this->mock_wcpay_gateway,
-			$this->mock_customer_service,
 			$this->mock_database_cache,
-			$this->mock_onboarding_service
+			$this->mock_onboarding_service,
+			$this->mock_token_service
 		);
 
 		// Build the event body data.
@@ -2212,9 +2221,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'refresh_account_data' );
 
-		$this->mock_customer_service
+		$this->mock_token_service
 			->expects( $this->once() )
-			->method( 'delete_cached_payment_methods' );
+			->method( 'clear_all_cached_payment_methods' );
 
 		// Create webhook processing service with the mocked account.
 		$webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
@@ -2225,9 +2234,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_receipt_service,
 			$this->mock_wcpay_gateway,
-			$this->mock_customer_service,
 			$this->mock_database_cache,
-			$this->mock_onboarding_service
+			$this->mock_onboarding_service,
+			$this->mock_token_service
 		);
 
 		// Run the test.
@@ -2269,9 +2278,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_receipt_service,
 			$this->mock_wcpay_gateway,
-			$this->mock_customer_service,
 			$this->mock_database_cache,
-			$this->mock_onboarding_service
+			$this->mock_onboarding_service,
+			$this->mock_token_service
 		);
 
 		// Run the test.

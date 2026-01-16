@@ -23,7 +23,7 @@
                 "npx playwright install chromium --with-deps"
             ],
             "run": [
-                "npx playwright test"
+                "npx playwright test --project=default --project=shopper --project=merchant"
             ],
             "teardown": [],
             "globalTeardown": []
@@ -50,6 +50,18 @@
             "test": {
                 "phases": {
                     "run": ["npx playwright test --project=merchant"]
+                }
+            }
+        },
+        "woocommerce-payments/subscriptions": {
+            "description": "Subscription flow tests for WooPayments",
+            "tags": ["woopayments", "subscriptions", "woocommerce-subscriptions"],
+            "requires": {
+                "plugins": ["woocommerce-subscriptions"]
+            },
+            "test": {
+                "phases": {
+                    "run": ["npx playwright test --project=subscriptions"]
                 }
             }
         }

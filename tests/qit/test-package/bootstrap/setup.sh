@@ -34,6 +34,30 @@ else
     fi
 fi
 
+# Import WooCommerce Subscriptions products if the plugin is installed.
+echo "Checking for WooCommerce Subscriptions plugin..."
+if wp plugin is-installed woocommerce-subscriptions 2>/dev/null; then
+    echo "WooCommerce Subscriptions detected - configuring settings..."
+
+    # Allow multiple subscriptions to be purchased in a single order.
+    # This is required for testing scenarios where customers buy multiple subscription products.
+    wp option update woocommerce_subscriptions_multiple_purchase "yes"
+    echo "Enabled multiple subscription purchases."
+
+    # Import subscription products.
+    echo "Importing subscription products..."
+    WC_SUBSCRIPTIONS_DATA_PATH="./bootstrap/wc-subscription-products.xml"
+
+    if [ -f "$WC_SUBSCRIPTIONS_DATA_PATH" ]; then
+        wp import "$WC_SUBSCRIPTIONS_DATA_PATH" --authors=skip
+        echo "Subscription products imported successfully."
+    else
+        echo "Warning: Subscription products XML not found at $WC_SUBSCRIPTIONS_DATA_PATH"
+    fi
+else
+    echo "WooCommerce Subscriptions not installed - skipping subscription products import."
+fi
+
 # Ensure WooCommerce core pages exist and configure checkout/cart.
 echo "Ensuring WooCommerce core pages exist..."
 wp wc --user=admin tool run install_pages >/dev/null 2>&1 || true

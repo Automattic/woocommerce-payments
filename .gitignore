@@ -104,3 +104,6 @@ docs/rest-api/build/*
 
 # Jurassic Tube files
 bin/jurassictube/
+
+# Git worktrees
+.worktrees/
