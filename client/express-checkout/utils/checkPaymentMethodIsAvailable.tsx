@@ -55,7 +55,7 @@ const checkPaymentMethodIsAvailableInternal = (
 				stripe={ api.loadStripeForExpressCheckout() }
 				options={ {
 					mode: 'payment',
-					paymentMethodCreation: 'manual',
+					paymentMethodTypes: [ 'card' ],
 					amount: Number( totalPrice ),
 					currency: currencyCode.toLowerCase(),
 				} }

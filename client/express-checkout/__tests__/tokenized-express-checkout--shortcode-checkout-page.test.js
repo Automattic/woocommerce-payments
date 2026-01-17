@@ -135,9 +135,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			mode: 'payment',
 			amount: 3697,
 			currency: 'usd',
-			paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
+			paymentMethodTypes: [ 'card' ],
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.
