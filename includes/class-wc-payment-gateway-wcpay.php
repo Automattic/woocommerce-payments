@@ -2141,6 +2141,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_method_types( $payment_information ): array {
+		// For Express Checkout payments, use the payment method types sent by the client.
+		// These must match the types used to initialize Stripe Elements on the frontend.
+		if ( $payment_information->is_using_confirmation_token() ) {
+			return [ 'card' ];
+		}
+
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
 
