@@ -5,15 +5,15 @@
  */
 import './style.scss';
 import { getUPEConfig } from 'wcpay/utils/checkout';
+import { isLinkEnabled } from '../utils/upe';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
-	isLinkEnabled,
 	hasPaymentMethodCountryRestrictions,
 	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
 	isBillingInformationMissing,
-} from '../utils/upe';
+} from './upe-utils';
 import {
 	processPayment,
 	mountStripePaymentElement,
@@ -30,7 +30,7 @@ import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
-import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
 import { getCardBrands } from 'wcpay/utils/card-brands';
 
 jQuery( function ( $ ) {
