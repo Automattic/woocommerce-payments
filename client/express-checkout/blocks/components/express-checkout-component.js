@@ -81,6 +81,7 @@ const ExpressCheckoutComponent = ( {
 	expressPaymentMethod = '',
 	buttonAttributes,
 	isPreview = false,
+	paymentMethodTypes = [],
 } ) => {
 	const {
 		buttonOptions,
@@ -96,6 +97,7 @@ const ExpressCheckoutComponent = ( {
 		onClick,
 		onClose,
 		setExpressPaymentError,
+		paymentMethodTypes,
 	} );
 	const onClickHandler = ! isPreview ? onButtonClick : () => {};
 	const onShippingAddressChange = ( event ) =>

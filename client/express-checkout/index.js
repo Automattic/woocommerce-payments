@@ -208,20 +208,23 @@ jQuery( ( $ ) => {
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
+			// Build the payment method types array based on enabled methods.
+			// This array is sent to the server to ensure PaymentIntent uses matching types.
+			const paymentMethodTypes = [
+				getExpressCheckoutData( 'enabled_methods' ).includes(
+					'google_apple_pay'
+				) && 'card',
+				getExpressCheckoutData( 'enabled_methods' ).includes(
+					'amazon_pay'
+				) && 'amazon_pay',
+			].filter( Boolean );
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
 				mode: 'payment',
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
 				// paymentMethodCreation: 'manual',
-				paymentMethodTypes: [
-					getExpressCheckoutData( 'enabled_methods' ).includes(
-						'google_apple_pay'
-					) && 'card',
-					getExpressCheckoutData( 'enabled_methods' ).includes(
-						'amazon_pay'
-					) && 'amazon_pay',
-				].filter( Boolean ),
+				paymentMethodTypes,
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );
@@ -383,7 +386,8 @@ jQuery( ( $ ) => {
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
-					event
+					event,
+					paymentMethodTypes
 				);
 			} );
 

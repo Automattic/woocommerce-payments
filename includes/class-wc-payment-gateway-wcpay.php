@@ -2142,6 +2142,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_method_types( $payment_information ): array {
+		// For Express Checkout payments, use the payment method types sent by the client.
+		// These must match the types used to initialize Stripe Elements on the frontend.
+		// phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! empty( $_POST['wcpay-express-payment-method-types'] ) ) {
+			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $_POST['wcpay-express-payment-method-types'] ) ), true );
+			if ( is_array( $express_payment_method_types ) && ! empty( $express_payment_method_types ) ) {
+				return $express_payment_method_types;
+			}
+		}
+
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
 
@@ -4528,9 +4538,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Determine whether redirection is needed for the non-card UPE payment method.
 	 *
 	 * @param array $payment_methods The list of payment methods used for the order processing, usually consists of one method only.
-	 * @return boolean True if the array consist of only one payment method which is not a card. False otherwise.
+	 * @return boolean True if the array contains a redirect-based payment method. False otherwise.
 	 */
 	private function upe_needs_redirection( $payment_methods ) {
+		// Payment methods that require redirect (customer leaves the site to authorize).
+		$redirect_payment_methods = [ 'amazon_pay' ];
+
+		// Check if any redirect-based payment method is in the array.
+		if ( array_intersect( $redirect_payment_methods, $payment_methods ) ) {
+			return true;
+		}
+
+		// Original logic: single non-card payment method.
 		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
 	}
 
