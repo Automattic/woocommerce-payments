@@ -64,6 +64,15 @@ class WooPay_Utilities {
 	}
 
 	/**
+	 * Check conditions to determine if woopay express checkout is enabled.
+	 *
+	 * @return boolean
+	 */
+	public function is_woopay_express_checkout_enabled() {
+		return WC_Payments_Features::is_woopay_express_checkout_enabled() && $this->is_country_available( WC_Payments::get_gateway() ); // Feature flag.
+	}
+
+	/**
 	 * Check conditions to determine if woopay first party auth is enabled.
 	 *
 	 * @return bool
