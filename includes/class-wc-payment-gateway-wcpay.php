@@ -1483,8 +1483,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_needed = $amount > 0;
 
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
+		// Note: For confirmation tokens (ctoken_*), we don't store them here as they are not valid
+		// payment method IDs. The real payment method ID will be stored after intent creation.
 		$payment_method = $payment_information->get_payment_method();
-		$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
+		if ( ! $payment_information->is_using_confirmation_token() ) {
+			$this->order_service->set_payment_method_id_for_order( $order, $payment_method );
+		}
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
@@ -1745,6 +1749,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! empty( $intent ) ) {
 			if ( ! $intent->is_authorized() ) {
 				$intent_failed = true;
+			}
+
+			// For confirmation tokens, we now have access to the real payment method ID from the intent.
+			// Store it so that other code can use it for displaying payment method details.
+			if ( $payment_information->is_using_confirmation_token() ) {
+				$intent_payment_method_id = $intent->get_payment_method_id();
+				if ( $intent_payment_method_id ) {
+					$this->order_service->set_payment_method_id_for_order( $order, $intent_payment_method_id );
+				}
 			}
 
 			if ( $save_payment_method_to_store && ! $intent_failed ) {
