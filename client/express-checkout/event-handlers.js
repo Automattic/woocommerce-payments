@@ -108,7 +108,7 @@ export const onConfirmHandler = async (
 		return abortPayment( submitError.message );
 	}
 
-	const { paymentMethod, error } = await stripe.createPaymentMethod( {
+	const { confirmationToken, error } = await stripe.createConfirmationToken( {
 		elements,
 	} );
 
@@ -123,7 +123,7 @@ export const onConfirmHandler = async (
 			// so that we make it harder for external plugins to modify or intercept checkout data.
 			...transformStripePaymentMethodForStoreApi(
 				event,
-				paymentMethod.id
+				confirmationToken.id
 			),
 			extensions: applyFilters(
 				'wcpay.express-checkout.cart-place-order-extension-data',

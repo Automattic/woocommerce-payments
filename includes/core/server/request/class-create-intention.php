@@ -60,6 +60,19 @@ class Create_Intention extends Request {
 	}
 
 	/**
+	 * Confirmation token setter.
+	 *
+	 * @param string $confirmation_token The confirmation token.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_confirmation_token( string $confirmation_token ) {
+		$this->validate_stripe_id( $confirmation_token, 'ctoken' );
+		$this->set_param( 'confirmation_token', $confirmation_token );
+	}
+
+	/**
 	 * Payment methods type setter.
 	 *
 	 * @param array $payment_methods List of payment methods.
