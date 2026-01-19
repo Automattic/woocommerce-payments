@@ -301,9 +301,9 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 			mode: 'payment',
 			amount: 6510,
 			currency: 'eur',
-			paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
+			paymentMethodTypes: [ 'card' ],
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.
