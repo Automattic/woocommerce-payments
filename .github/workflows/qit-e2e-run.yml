@@ -1,0 +1,77 @@
+name: QIT E2E Tests - Run
+
+on:
+  workflow_call:
+    inputs:
+      woocommerce-version:
+        description: 'WooCommerce version (nightly, or specific version like 9.6.0, 10.5.0-dev)'
+        required: true
+        type: string
+      php-version:
+        description: 'PHP version'
+        required: true
+        type: string
+      test-package:
+        description: 'QIT test subpackage (shopper, merchant, subscriptions)'
+        required: true
+        type: string
+    secrets:
+      QIT_CI_USER:
+        required: true
+      QIT_CI_SECRET:
+        required: true
+      E2E_JP_SITE_ID:
+        required: true
+      E2E_JP_BLOG_TOKEN:
+        required: true
+      E2E_JP_USER_TOKEN:
+        required: true
+
+jobs:
+  qit-e2e:
+    name: "QIT E2E - ${{ inputs.test-package }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up repository
+        uses: ./.github/actions/setup-repo
+
+      - name: Build the plugin
+        uses: ./.github/actions/build
+
+      - name: Install QIT CLI
+        run: composer global require woocommerce/qit-cli
+
+      - name: Authenticate QIT
+        run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
+
+      - name: Run QIT E2E Tests
+        env:
+          E2E_JP_SITE_ID: ${{ secrets.E2E_JP_SITE_ID }}
+          E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_JP_BLOG_TOKEN }}
+          E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
+        run: |
+          # Build the QIT command
+          QIT_CMD="qit run:e2e woocommerce-payments"
+          QIT_CMD="$QIT_CMD --zip=woocommerce-payments.zip"
+          QIT_CMD="$QIT_CMD --test-package=woocommerce-payments/${{ inputs.test-package }}"
+          QIT_CMD="$QIT_CMD --woo=${{ inputs.woocommerce-version }}"
+          QIT_CMD="$QIT_CMD --php=${{ inputs.php-version }}"
+
+          # Add WC Subscriptions plugin for subscriptions tests
+          if [[ "${{ inputs.test-package }}" == "subscriptions" ]]; then
+            QIT_CMD="$QIT_CMD --plugin=woocommerce-subscriptions"
+          fi
+
+          # Pass Jetpack secrets as environment variables
+          QIT_CMD="$QIT_CMD --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID"
+          QIT_CMD="$QIT_CMD --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN"
+          QIT_CMD="$QIT_CMD --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN"
+
+          # Wait for results
+          QIT_CMD="$QIT_CMD --wait"
+
+          echo "Running: $QIT_CMD"
+          eval $QIT_CMD
