@@ -236,7 +236,6 @@ class WC_Payments_Checkout {
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
-			$payment_fields['isChangingPayment'] = true;
 			if ( ! isset( $billing_field_options['enabled'] ) || $billing_field_options['enabled'] ) {
 				$enabled_billing_fields[ $billing_field ] = [
 					'required' => $billing_field_options['required'] ?? false,
@@ -247,6 +246,7 @@ class WC_Payments_Checkout {
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {
+				$payment_fields['isChangingPayment'] = true;
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
