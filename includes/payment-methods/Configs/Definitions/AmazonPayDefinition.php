@@ -81,9 +81,7 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[] Array of currency codes
 	 */
 	public static function get_supported_currencies(): array {
-		// Amazon Pay supports the same currencies as card payments.
-		// Return all available currencies.
-		return [];
+		return [ 'USD', 'AUD', 'GBP', 'DKK', 'EUR', 'HKD', 'JPY', 'NZD', 'NOK', 'ZAR', 'SEK', 'CHF' ];
 	}
 
 	/**
