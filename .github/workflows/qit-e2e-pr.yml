@@ -12,6 +12,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    name: Build plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up repository
+        uses: ./.github/actions/setup-repo
+
+      - name: Build the plugin
+        uses: ./.github/actions/build
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: woocommerce-payments-${{ github.run_id }}
+          path: woocommerce-payments.zip
+          retention-days: 1
+
   generate-matrix:
     name: Generate test matrix
     runs-on: ubuntu-latest
@@ -43,7 +63,7 @@ jobs:
 
   qit-e2e:
     name: "WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }} | ${{ matrix.test-package }}"
-    needs: generate-matrix
+    needs: [build, generate-matrix]
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
@@ -52,6 +72,7 @@ jobs:
       woocommerce-version: ${{ matrix.woocommerce }}
       php-version: ${{ matrix.php }}
       test-package: ${{ matrix.test-package }}
+      artifact-name: woocommerce-payments-${{ github.run_id }}
     secrets:
       QIT_CI_USER: ${{ secrets.QIT_CI_USER }}
       QIT_CI_SECRET: ${{ secrets.QIT_CI_SECRET }}

@@ -15,6 +15,10 @@ on:
         description: 'QIT test subpackage (shopper, merchant, subscriptions)'
         required: true
         type: string
+      artifact-name:
+        description: 'Name of the artifact containing the built plugin zip'
+        required: true
+        type: string
     secrets:
       QIT_CI_USER:
         required: true
@@ -32,14 +36,10 @@ jobs:
     name: "QIT E2E - ${{ inputs.test-package }}"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up repository
-        uses: ./.github/actions/setup-repo
-
-      - name: Build the plugin
-        uses: ./.github/actions/build
+      - name: Download plugin artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
 
       - name: Install QIT CLI
         run: composer global require woocommerce/qit-cli
