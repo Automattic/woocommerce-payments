@@ -57,7 +57,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		};
 		global.wcpayExpressCheckoutParams.store_name = 'My fancy store';
 		global.wcpayExpressCheckoutParams.button_context = 'checkout';
-		global.wcpayExpressCheckoutParams.enabled_methods = [ 'google_apple_pay' ];
+		global.wcpayExpressCheckoutParams.enabled_methods = [
+			'payment_request',
+		];
 
 		// just mocking some server-side-provided DOM elements.
 		render(

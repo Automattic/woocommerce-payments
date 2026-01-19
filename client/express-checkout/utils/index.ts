@@ -92,7 +92,7 @@ export interface WCPayExpressCheckoutParams {
 	/**
 	 * The available express checkout methods for the current page context.
 	 */
-	enabled_methods: Array< 'google_apple_pay' | 'amazon_pay' >;
+	enabled_methods: Array< 'payment_request' | 'amazon_pay' >;
 }
 
 declare global {
@@ -244,7 +244,7 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 			: buttonSettings?.type ?? 'plain';
 
 	const isGoogleApplePayEnabled = enabledMethods.includes(
-		'google_apple_pay'
+		'payment_request'
 	);
 
 	return {

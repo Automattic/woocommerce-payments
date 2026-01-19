@@ -304,7 +304,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		return $method->get_rate_id();
 	}
 
-	public function test_get_enabled_express_checkout_methods_for_context_returns_google_apple_pay_when_enabled_on_product_page() {
+	public function test_get_enabled_express_checkout_methods_for_context_returns_payment_request_when_enabled_on_product_page() {
 		// Enable payment_request on product page.
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( true );
@@ -331,7 +331,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
 
-		$this->assertContains( 'google_apple_pay', $enabled_methods );
+		$this->assertContains( 'payment_request', $enabled_methods );
 		$this->assertNotContains( 'amazon_pay', $enabled_methods );
 	}
 
@@ -427,7 +427,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
 
-		$this->assertContains( 'google_apple_pay', $enabled_methods );
+		$this->assertContains( 'payment_request', $enabled_methods );
 		$this->assertContains( 'amazon_pay', $enabled_methods );
 
 		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );

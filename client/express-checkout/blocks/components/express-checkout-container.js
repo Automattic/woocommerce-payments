@@ -29,7 +29,7 @@ const ExpressCheckoutContainer = ( props ) => {
 		const methods = enabledMethods || [];
 
 		return [
-			methods.includes( 'google_apple_pay' ) && 'card',
+			methods.includes( 'payment_request' ) && 'card',
 			methods.includes( 'amazon_pay' ) && 'amazon_pay',
 		].filter( Boolean );
 	}, [ enabledMethods ] );

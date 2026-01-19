@@ -213,7 +213,7 @@ jQuery( ( $ ) => {
 			const enabledMethods =
 				getExpressCheckoutData( 'enabled_methods' ) ?? [];
 			const paymentMethodTypes = [
-				enabledMethods.includes( 'google_apple_pay' ) && 'card',
+				enabledMethods.includes( 'payment_request' ) && 'card',
 				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
 			].filter( Boolean );
 			// https://docs.stripe.com/js/elements_object/create_without_intent

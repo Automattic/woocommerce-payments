@@ -323,7 +323,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * 3. The feature flags (is_payment_request_enabled, is_amazon_pay_enabled)
 	 * 4. Currency availability (e.g., Amazon Pay checks currency restrictions)
 	 *
-	 * @return array Array of enabled method IDs (e.g., ['google_apple_pay', 'amazon_pay']).
+	 * @return array Array of enabled method IDs (e.g., ['payment_request', 'amazon_pay']).
 	 */
 	public function get_enabled_express_checkout_methods_for_context() {
 		$enabled_methods = [];
@@ -339,7 +339,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			$this->gateway->is_payment_request_enabled() &&
 			$this->is_express_checkout_method_enabled_at( $context, 'payment_request' )
 		) {
-			$enabled_methods[] = 'google_apple_pay';
+			$enabled_methods[] = 'payment_request';
 		}
 
 		// Check Amazon Pay.
