@@ -377,6 +377,16 @@ describe( 'Classic checkout UPE utils', () => {
 			expect( upeContainer.style.display ).toBe( 'none' );
 			expect( cardPaymentMethod.click ).toHaveBeenCalled();
 		} );
+
+		it( 'should not throw when payment method container is not in the DOM', () => {
+			// Create an orphan element not attached to a .wc_payment_method container
+			const orphanElement = document.createElement( 'div' );
+			orphanElement.dataset.paymentMethodType = 'bancontact';
+
+			expect( () => {
+				togglePaymentMethodForCountry( orphanElement );
+			} ).not.toThrow();
+		} );
 	} );
 
 	describe( 'getUPESettings', () => {
