@@ -26,13 +26,13 @@ export const transformStripeShippingAddressForStoreApi = (
  * Transform order data from Stripe's object to the expected format for WC.
  *
  * @param {Object} paymentData Stripe's order object.
- * @param {string} paymentMethodId Stripe's payment method id.
+ * @param {string} confirmationTokenId Stripe's confirmation token id.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
 export const transformStripePaymentMethodForStoreApi = (
 	paymentData,
-	paymentMethodId
+	confirmationTokenId
 ) => {
 	const name = paymentData.billingDetails?.name || '';
 	const billing = paymentData.billingDetails?.address ?? {};
@@ -82,8 +82,8 @@ export const transformStripePaymentMethodForStoreApi = (
 				value: window.wcpayFraudPreventionToken ?? '',
 			},
 			{
-				key: 'wcpay-payment-method',
-				value: paymentMethodId,
+				key: 'wcpay-confirmation-token',
+				value: confirmationTokenId,
 			},
 			{
 				key: 'express_payment_type',

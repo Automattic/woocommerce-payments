@@ -213,7 +213,7 @@ jQuery( ( $ ) => {
 				mode: 'payment',
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
-				paymentMethodCreation: 'manual',
+				paymentMethodTypes: [ 'card' ],
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );

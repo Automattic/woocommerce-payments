@@ -14,19 +14,20 @@ import {
 	getFingerprint,
 } from 'wcpay/checkout/utils/fingerprint';
 import {
+	getPaymentMethodTypes,
+	getTerms,
+	isLinkEnabled,
+} from 'wcpay/checkout/utils/upe';
+import { validateElements } from 'wcpay/checkout/utils/validate-elements';
+import {
 	appendFraudPreventionTokenInputToForm,
 	appendPaymentMethodIdToForm,
 	appendPaymentMethodErrorDataToForm,
-	getPaymentMethodTypes,
 	getSelectedUPEGatewayPaymentMethod,
-	getTerms,
 	getUpeSettings,
-	isLinkEnabled,
-} from 'wcpay/checkout/utils/upe';
-import {
-	SHORTCODE_BILLING_ADDRESS_FIELDS,
-	PAYMENT_METHOD_ERROR,
-} from 'wcpay/checkout/constants';
+} from './upe-utils';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
@@ -90,22 +91,6 @@ export async function blockUI( $form ) {
  */
 export function unblockUI( $form ) {
 	$form.removeClass( 'processing' ).unblock();
-}
-
-/**
- * Validates the Stripe elements by submitting them and handling any errors that occur during submission.
- * If an error occurs, the function removes loading effect from the provided jQuery form and thus unblocks it,
- * and shows an error message in the checkout.
- *
- * @param {Object} elements The Stripe elements object to be validated.
- * @return {Promise} Promise for the checkout submission.
- */
-export function validateElements( elements ) {
-	return elements.submit().then( ( result ) => {
-		if ( result.error ) {
-			throw new Error( result.error.message );
-		}
-	} );
 }
 
 /**

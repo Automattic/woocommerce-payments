@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Logger;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -224,6 +222,15 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			$self_assessment_data,
 			$capabilities
 		);
+
+		if ( empty( $account_session ) ) {
+			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: Empty response from onboarding service.' );
+		} elseif ( empty( $account_session['publishableKey'] ) ) {
+			WC_Payments_Utils::log_to_wc(
+				sprintf( 'Embedded KYC session missing publishableKey. Session keys: %s.', implode( ', ', array_keys( $account_session ) ) ),
+				'warning'
+			);
+		}
 
 		if ( $account_session ) {
 			$account_session['locale'] = get_user_locale();

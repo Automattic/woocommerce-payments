@@ -735,11 +735,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
 			if ( ! $gateway ) {
-				if ( function_exists( 'wc_get_logger' ) ) {
-					$logger = wc_get_logger();
-					/* translators: 1: Payment method ID, 2: Error message */
-					$logger->warning( sprintf( 'Failed to enable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), [ 'source' => 'woopayments' ] );
-				}
+				/* translators: 1: Payment method ID, 2: Error message */
+				WC_Payments_Utils::log_to_wc( sprintf( 'Failed to enable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), 'warning' );
 				continue;
 			}
 
@@ -754,11 +751,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		foreach ( $disabled_payment_methods as $payment_method_id ) {
 			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
 			if ( ! $gateway ) {
-				if ( function_exists( 'wc_get_logger' ) ) {
-					$logger = wc_get_logger();
-					/* translators: 1: Payment method ID, 2: Error message */
-					$logger->warning( sprintf( 'Failed to disable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), [ 'source' => 'woopayments' ] );
-				}
+				/* translators: 1: Payment method ID, 2: Error message */
+				WC_Payments_Utils::log_to_wc( sprintf( 'Failed to disable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), 'warning' );
 				continue;
 			}
 			$gateway->disable();
