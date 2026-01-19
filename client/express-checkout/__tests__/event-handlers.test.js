@@ -388,6 +388,16 @@ describe( 'Express checkout event handlers', () => {
 					elements,
 				} );
 				expect( stripe.createConfirmationToken ).not.toHaveBeenCalled();
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						payment_data: expect.arrayContaining( [
+							expect.objectContaining( {
+								key: 'wcpay-payment-method',
+								value: 'pm_123',
+							} ),
+						] ),
+					} )
+				);
 			} );
 
 			it( 'should abort payment if stripe.createPaymentMethod fails', async () => {
@@ -441,6 +451,16 @@ describe( 'Express checkout event handlers', () => {
 					elements,
 				} );
 				expect( stripe.createPaymentMethod ).not.toHaveBeenCalled();
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						payment_data: expect.arrayContaining( [
+							expect.objectContaining( {
+								key: 'wcpay-confirmation-token',
+								value: 'ctoken_123',
+							} ),
+						] ),
+					} )
+				);
 			} );
 
 			it( 'should abort payment if stripe.createConfirmationToken fails', async () => {
