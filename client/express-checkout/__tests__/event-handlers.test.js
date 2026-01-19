@@ -16,6 +16,7 @@ describe( 'Express checkout event handlers', () => {
 		cartApiPlaceOrderMock = jest.fn();
 		cartApiSelectShippingRateMock = jest.fn();
 		global.window.wcpayFraudPreventionToken = 'token123';
+		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.checkout = {
 			display_prices_with_tax: false,
 		};
