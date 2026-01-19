@@ -48,6 +48,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		};
 		global.wcpayExpressCheckoutParams.store_name = 'My fancy store';
 		global.wcpayExpressCheckoutParams.button_context = 'product';
+		global.wcpayExpressCheckoutParams.enabled_methods = [ 'google_apple_pay' ];
 		global.wcpayExpressCheckoutParams.product = {
 			product_type: 'simple',
 			needs_shipping: true,
