@@ -344,6 +344,12 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			}
 		);
 
+		// Mock the database cache for is_ece_confirmation_tokens_enabled() to return true.
+		$mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		$mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
+		$original_cache = WC_Payments::get_database_cache();
+		WC_Payments::set_database_cache( $mock_cache );
+
 		// Create a mock gateway that returns amazon_pay in location settings.
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
@@ -374,6 +380,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertContains( 'amazon_pay', $enabled_methods );
 
 		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
+		WC_Payments::set_database_cache( $original_cache );
 	}
 
 	public function test_get_enabled_express_checkout_methods_for_context_returns_both_when_both_enabled() {
@@ -384,6 +391,12 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 				return '1';
 			}
 		);
+
+		// Mock the database cache for is_ece_confirmation_tokens_enabled() to return true.
+		$mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		$mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
+		$original_cache = WC_Payments::get_database_cache();
+		WC_Payments::set_database_cache( $mock_cache );
 
 		// Create a mock gateway that enables payment_request.
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
@@ -416,6 +429,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertContains( 'amazon_pay', $enabled_methods );
 
 		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
+		WC_Payments::set_database_cache( $original_cache );
 	}
 
 	public function test_get_enabled_express_checkout_methods_for_context_returns_empty_when_no_valid_context() {
