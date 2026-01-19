@@ -22,9 +22,24 @@ const ExpressCheckoutContainer = ( props ) => {
 		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
 
+	// Build the payment method types array based on enabled methods.
+	// This array is sent to the server to ensure PaymentIntent uses matching types.
+	const paymentMethodTypes = useMemo(
+		() =>
+			[
+				getExpressCheckoutData( 'enabled_methods' ).includes(
+					'google_apple_pay'
+				) && 'card',
+				getExpressCheckoutData( 'enabled_methods' ).includes(
+					'amazon_pay'
+				) && 'amazon_pay',
+			].filter( Boolean ),
+		[]
+	);
+
 	const options = {
 		mode: 'payment',
-		paymentMethodTypes: [ 'card' ],
+		paymentMethodTypes,
 		// ensuring that the total amount is transformed to the correct format.
 		amount: ! isPreview
 			? transformPrice( billing.cartTotal.value, {
@@ -39,7 +54,10 @@ const ExpressCheckoutContainer = ( props ) => {
 	return (
 		<div style={ { minHeight: '40px' } }>
 			<Elements stripe={ stripePromise } options={ options }>
-				<ExpressCheckoutComponent { ...props } />
+				<ExpressCheckoutComponent
+					{ ...props }
+					paymentMethodTypes={ paymentMethodTypes }
+				/>
 			</Elements>
 		</div>
 	);

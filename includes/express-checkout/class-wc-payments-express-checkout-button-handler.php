@@ -75,8 +75,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		// Checks if Google Pay or Apple Pay are enabled.
-		if ( ! $this->gateway->is_payment_request_enabled() ) {
+		// Checks if at least one express checkout method is enabled.
+		$is_amazon_pay_enabled = WC_Payments_Features::is_amazon_pay_enabled() && $this->express_checkout_helper->is_amazon_pay_gateway_enabled();
+		if ( ! $this->gateway->is_payment_request_enabled() && ! $is_amazon_pay_enabled ) {
 			return;
 		}
 
@@ -250,6 +251,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 					'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 					'product'            => $this->express_checkout_helper->get_product_data(),
 					'store_name'         => get_bloginfo( 'name' ),
+					'enabled_methods'    => $this->express_checkout_helper->get_enabled_express_checkout_methods_for_context(),
 				]
 			),
 			[

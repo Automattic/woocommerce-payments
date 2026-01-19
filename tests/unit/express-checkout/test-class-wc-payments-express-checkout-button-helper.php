@@ -303,4 +303,157 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		return $method->get_rate_id();
 	}
+
+	public function test_get_enabled_express_checkout_methods_for_context_returns_google_apple_pay_when_enabled_on_product_page() {
+		// Enable payment_request on product page.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( true );
+		$mock_gateway->method( 'get_option' )
+			->willReturnCallback(
+				function ( $option ) {
+					if ( 'express_checkout_product_methods' === $option ) {
+						return [ 'payment_request' ];
+					}
+					return null;
+				}
+			);
+
+		// Create a partial mock to control is_product().
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $mock_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
+
+		$this->assertContains( 'google_apple_pay', $enabled_methods );
+		$this->assertNotContains( 'amazon_pay', $enabled_methods );
+	}
+
+	public function test_get_enabled_express_checkout_methods_for_context_returns_amazon_pay_when_enabled() {
+		// Enable Amazon Pay feature flag (note: option name starts with underscore).
+		add_filter(
+			'pre_option__wcpay_feature_amazon_pay',
+			function () {
+				return '1';
+			}
+		);
+
+		// Create a mock gateway that returns amazon_pay in location settings.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
+		$mock_gateway->method( 'get_option' )
+			->willReturnCallback(
+				function ( $option ) {
+					if ( 'express_checkout_cart_methods' === $option ) {
+						return [ 'amazon_pay' ];
+					}
+					return null;
+				}
+			);
+
+		// Create a partial mock to control context methods and gateway check.
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $mock_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+		$helper->method( 'is_amazon_pay_gateway_enabled' )->willReturn( true );
+
+		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
+
+		$this->assertContains( 'amazon_pay', $enabled_methods );
+
+		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
+	}
+
+	public function test_get_enabled_express_checkout_methods_for_context_returns_both_when_both_enabled() {
+		// Enable Amazon Pay feature flag (note: option name starts with underscore).
+		add_filter(
+			'pre_option__wcpay_feature_amazon_pay',
+			function () {
+				return '1';
+			}
+		);
+
+		// Create a mock gateway that enables payment_request.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( true );
+		$mock_gateway->method( 'get_option' )
+			->willReturnCallback(
+				function ( $option ) {
+					if ( 'express_checkout_checkout_methods' === $option ) {
+						return [ 'payment_request', 'amazon_pay' ];
+					}
+					return null;
+				}
+			);
+
+		// Create a partial mock to control context methods and gateway check.
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $mock_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( true );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+		$helper->method( 'is_amazon_pay_gateway_enabled' )->willReturn( true );
+
+		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
+
+		$this->assertContains( 'google_apple_pay', $enabled_methods );
+		$this->assertContains( 'amazon_pay', $enabled_methods );
+
+		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
+	}
+
+	public function test_get_enabled_express_checkout_methods_for_context_returns_empty_when_no_valid_context() {
+		// Create a partial mock where no context is valid.
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
+
+		$this->assertEmpty( $enabled_methods );
+	}
+
+	public function test_get_enabled_express_checkout_methods_for_context_respects_location_settings() {
+		// Enable payment_request only on cart, not checkout.
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [ 'payment_request' ] );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [] );
+
+		// Create a partial mock for checkout page.
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( true );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+
+		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
+
+		// Should be empty because payment_request is not enabled on checkout.
+		$this->assertEmpty( $enabled_methods );
+	}
 }
