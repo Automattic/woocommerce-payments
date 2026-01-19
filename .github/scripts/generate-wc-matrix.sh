@@ -25,6 +25,14 @@ get_l1_version() {
     get_latest_stable_for_major "$l1_major"
 }
 
+# Function to get the L-2 version (two major versions back's latest stable)
+get_l2_version() {
+    local latest_version=$1
+    local major_version=$(echo "$latest_version" | cut -d. -f1)
+    local l2_major=$((major_version - 2))
+    get_latest_stable_for_major "$l2_major"
+}
+
 # Function to get specific major versions' latest stable
 get_major_versions_latest() {
     local latest_version=$1
@@ -68,6 +76,10 @@ echo "Latest WC version: $LATEST_WC_VERSION" >&2
 # Get the L-1 version
 L1_VERSION=$(get_l1_version "$LATEST_WC_VERSION")
 echo "L-1 version: $L1_VERSION" >&2
+
+# Get the L-2 version
+L2_VERSION=$(get_l2_version "$LATEST_WC_VERSION")
+echo "L-2 version: $L2_VERSION" >&2
 
 # Get major versions latest stable
 MAJOR_VERSIONS=($(get_major_versions_latest "$LATEST_WC_VERSION"))
@@ -128,6 +140,16 @@ if [[ ! "$L1_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
+if [[ -z "$L2_VERSION" || "$L2_VERSION" == "null" ]]; then
+    echo "Error: Could not extract L-2 version" >&2
+    exit 1
+fi
+
+if [[ ! "$L2_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Error: Invalid L-2 version: $L2_VERSION" >&2
+    exit 1
+fi
+
 # RC is optional; do not fail if not present or skipped
 
 # Only validate beta if it's available
@@ -143,12 +165,14 @@ fi
 RESULT=$(jq -n \
     --argjson versions "$(printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s .)" \
     --arg l1_version "$L1_VERSION" \
+    --arg l2_version "$L2_VERSION" \
     --arg rc_version "${INCLUDED_RC_VERSION}" \
     --arg beta_version "${LATEST_BETA_VERSION}" \
     '{
         versions: $versions,
         metadata: {
             l1_version: $l1_version,
+            l2_version: $l2_version,
             rc_version: (if ($rc_version // "") == "" or ($rc_version == "null") then null else $rc_version end),
             beta_version: (if ($beta_version // "") == "" or ($beta_version == "null") then null else $beta_version end)
         }
