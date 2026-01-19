@@ -459,5 +459,24 @@ describe( 'Recommended Documents', () => {
 				);
 			} );
 		} );
+
+		describe( 'Visa Compliance (noncompliant) reason', () => {
+			it( 'should return only customer communication and uncategorized file for noncompliant reason', () => {
+				// Enable the feature flag for Visa Compliance documents
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+				const result = getRecommendedDocumentFields( 'noncompliant' );
+				expect( result ).toHaveLength( 2 );
+				expect( result[ 0 ].key ).toBe( 'customer_communication' );
+				expect( result[ 0 ].label ).toBe( 'Upload evidence' );
+				expect( result[ 0 ].description ).toBe(
+					'Submit any files you find relevant to this dispute.'
+				);
+				expect( result[ 1 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 1 ].label ).toBe( 'Other documents' );
+				expect( result[ 1 ].description ).toBe(
+					'Any other relevant documents that will support your case.'
+				);
+			} );
+		} );
 	} );
 } );

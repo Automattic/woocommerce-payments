@@ -47,9 +47,10 @@ describe( 'ConfirmationScreen', () => {
 				)
 			).toBeInTheDocument();
 
-			// What's next section
+			// Section headings
+			expect( screen.getByText( 'What’s next?' ) ).toBeInTheDocument();
 			expect(
-				screen.getByRole( 'heading', { level: 3 } )
+				screen.getByText( 'Useful resources' )
 			).toBeInTheDocument();
 
 			// Action buttons
@@ -142,9 +143,6 @@ describe( 'ConfirmationScreen', () => {
 					/You'll be informed of any updates via email/
 				)
 			).toBeInTheDocument();
-			expect(
-				screen.getByText( /Want to know more about how disputes work/ )
-			).toBeInTheDocument();
 		} );
 
 		it( 'renders internal link to disputes page', () => {
@@ -160,11 +158,35 @@ describe( 'ConfirmationScreen', () => {
 			);
 		} );
 
-		it( 'renders external link to documentation', () => {
+		it( 'renders useful resources section with external links', () => {
 			render( <ConfirmationScreen { ...baseProps } /> );
 
+			// Check for resources heading
+			expect(
+				screen.getByText( 'Useful resources' )
+			).toBeInTheDocument();
+
+			// Check for preventing disputes link
+			const preventingDisputesLink = screen.getByRole( 'link', {
+				name: 'following the advice in our guide (opens in a new tab)',
+			} );
+			expect( preventingDisputesLink ).toBeInTheDocument();
+			expect( preventingDisputesLink ).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/'
+			);
+			expect( preventingDisputesLink ).toHaveAttribute(
+				'target',
+				'_blank'
+			);
+			expect( preventingDisputesLink ).toHaveAttribute(
+				'rel',
+				'external noreferrer noopener'
+			);
+
+			// Check for learning about disputes link
 			const learnMoreLink = screen.getByRole( 'link', {
-				name: 'Check out our resources (opens in a new tab)',
+				name: 'our resources (opens in a new tab)',
 			} );
 			expect( learnMoreLink ).toBeInTheDocument();
 			expect( learnMoreLink ).toHaveAttribute(
@@ -236,7 +258,7 @@ describe( 'ConfirmationScreen', () => {
 
 			expect(
 				screen.getByText(
-					'Your evidence has been sent to Visa for review.'
+					'Your response has been submitted under Visa’s compliance process.'
 				)
 			).toBeInTheDocument();
 
@@ -256,7 +278,15 @@ describe( 'ConfirmationScreen', () => {
 			);
 
 			expect(
-				screen.getByText( /Visa will review your response/i )
+				screen.getByText(
+					'Visa will review your submission under its network rules and determine the outcome of the dispute.'
+				)
+			).toBeInTheDocument();
+
+			expect(
+				screen.getByText(
+					'This review typically takes several weeks, but in some cases may take up to 3 months.'
+				)
 			).toBeInTheDocument();
 
 			expect(

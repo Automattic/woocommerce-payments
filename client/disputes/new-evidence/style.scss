@@ -191,6 +191,28 @@
 	}
 }
 
+// Visa Compliance section
+.wcpay-dispute-evidence-visa-compliance {
+	margin-bottom: 40px;
+	margin-top: 40px;
+
+	&__heading {
+		@include heading-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin-bottom: 8px;
+	}
+
+	&__subheading {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
+		margin-bottom: 24px;
+	}
+
+	&__textarea {
+		margin-bottom: 16px;
+	}
+}
+
 // Recommended documents section
 .wcpay-dispute-evidence-recommended-documents {
 	margin-bottom: 40px;
@@ -469,7 +491,8 @@
 		text-align: left;
 	}
 
-	&__next-steps {
+	&__next-steps,
+	&__resources {
 		text-align: left;
 		width: 100%;
 		margin-bottom: 24px;
