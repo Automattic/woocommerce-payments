@@ -258,6 +258,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'needs_payer_phone'          => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 						'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
 						'display_prices_with_tax'    => 'incl' === get_option( 'woocommerce_tax_display_cart' ),
+						// Amazon Pay does not support taxes based on billing address.
+						'taxes_based_on_billing'     => wc_tax_enabled() && 'billing' === get_option( 'woocommerce_tax_based_on' ),
 					],
 					'button'             => $this->get_button_settings(),
 					'login_confirmation' => $this->get_login_confirmation_settings(),
