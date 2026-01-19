@@ -101,7 +101,7 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 			Currency_Code::NEW_ZEALAND_DOLLAR,
 			Currency_Code::NORWEGIAN_KRONE,
 			Currency_Code::SWEDISH_KRONA,
-			Currency_Code::SWAZI_LILANGENI,
+			Currency_Code::SWISS_FRANC,
 			Currency_Code::SOUTH_AFRICAN_RAND,
 		];
 	}
