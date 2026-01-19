@@ -76,8 +76,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		// Checks if at least one express checkout method is enabled.
-		$is_amazon_pay_enabled = WC_Payments_Features::is_amazon_pay_enabled() && $this->express_checkout_helper->is_amazon_pay_gateway_enabled();
-		if ( ! $this->gateway->is_payment_request_enabled() && ! $is_amazon_pay_enabled ) {
+		if ( ! $this->gateway->is_payment_request_enabled() && ! $this->express_checkout_helper->is_amazon_pay_available_for_current_currency() ) {
 			return;
 		}
 
@@ -87,6 +86,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
+		add_action( 'wcpay_payment_fields_js_config', [ $this, 'payment_fields_js_config' ] );
 		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
 		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
@@ -99,6 +99,20 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			$this->register_ece_data_for_block_editor();
 		}
+	}
+
+	/**
+	 * Appends express-checkout-related data to the JS configuration used during checkout.
+	 *
+	 * @param array $config The configuration to be provided to the JS.
+	 *
+	 * @return mixed
+	 */
+	public function payment_fields_js_config( $config ) {
+		$config['isPaymentRequestEnabled'] = $this->gateway->is_payment_request_enabled() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'payment_request' );
+		$config['isAmazonPayEnabled']      = $this->express_checkout_helper->is_amazon_pay_available_for_current_currency() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'amazon_pay' );
+
+		return $config;
 	}
 
 	/**

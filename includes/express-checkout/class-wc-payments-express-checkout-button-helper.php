@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 
 /**
  * Express Checkout Button Helper class.
@@ -258,6 +259,34 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Checks if Amazon Pay is available for the current store currency.
+	 *
+	 * This validates that the current currency is supported by Amazon Pay
+	 * based on the merchant's account country.
+	 *
+	 * @return boolean
+	 */
+	public function is_amazon_pay_available_for_current_currency() {
+		if ( ! WC_Payments_Features::is_amazon_pay_enabled() ) {
+			return false;
+		}
+
+		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
+		if ( ! $amazon_pay_gateway ) {
+			return false;
+		}
+
+		if ( ! $amazon_pay_gateway->is_enabled() ) {
+			return false;
+		}
+
+		$currency        = get_woocommerce_currency();
+		$account_country = $this->account->get_account_country();
+
+		return AmazonPayDefinition::is_available_for( $currency, $account_country );
+	}
+
+	/**
 	 * Checks if any express checkout method (Google/Apple Pay or Amazon Pay) is enabled at a given location in settings.
 	 *
 	 * This only checks location settings (express_checkout_{location}_methods), not feature flags.
@@ -287,6 +316,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * 1. The current page context (product, cart, checkout)
 	 * 2. The location settings (express_checkout_{location}_methods)
 	 * 3. The feature flags (is_payment_request_enabled, is_amazon_pay_enabled)
+	 * 4. Currency availability (e.g., Amazon Pay checks currency restrictions)
 	 *
 	 * @return array Array of enabled method IDs (e.g., ['google_apple_pay', 'amazon_pay']).
 	 */
@@ -294,7 +324,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$enabled_methods = [];
 		$context         = $this->get_button_context();
 
-		// If no valid context, return empty array.
+		// If no valid context, return an empty array.
 		if ( empty( $context ) ) {
 			return $enabled_methods;
 		}
@@ -309,8 +339,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Check Amazon Pay.
 		if (
-			WC_Payments_Features::is_amazon_pay_enabled() &&
-			$this->is_amazon_pay_gateway_enabled() &&
+			$this->is_amazon_pay_available_for_current_currency() &&
 			$this->is_express_checkout_method_enabled_at( $context, 'amazon_pay' )
 		) {
 			$enabled_methods[] = 'amazon_pay';

@@ -366,7 +366,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		// Create a partial mock to control context methods and gateway check.
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $mock_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled' ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled', 'is_amazon_pay_available_for_current_currency' ] )
 			->getMock();
 
 		$helper->method( 'is_product' )->willReturn( false );
@@ -374,6 +374,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_checkout' )->willReturn( false );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
 		$helper->method( 'is_amazon_pay_gateway_enabled' )->willReturn( true );
+		$helper->method( 'is_amazon_pay_available_for_current_currency' )->willReturn( true );
 
 		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
 
@@ -414,7 +415,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		// Create a partial mock to control context methods and gateway check.
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $mock_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled' ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled', 'is_amazon_pay_available_for_current_currency' ] )
 			->getMock();
 
 		$helper->method( 'is_product' )->willReturn( false );
@@ -422,6 +423,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_checkout' )->willReturn( true );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
 		$helper->method( 'is_amazon_pay_gateway_enabled' )->willReturn( true );
+		$helper->method( 'is_amazon_pay_available_for_current_currency' )->willReturn( true );
 
 		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
 
@@ -469,5 +471,72 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		// Should be empty because payment_request is not enabled on checkout.
 		$this->assertEmpty( $enabled_methods );
+	}
+
+	public function test_get_enabled_express_checkout_methods_for_context_excludes_amazon_pay_when_currency_not_supported() {
+		// Enable Amazon Pay feature flag.
+		add_filter(
+			'pre_option__wcpay_feature_amazon_pay',
+			function () {
+				return '1';
+			}
+		);
+
+		// Mock the database cache for is_ece_confirmation_tokens_enabled() to return true.
+		$mock_cache = $this->createMock( WCPay\Database_Cache::class );
+		$mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
+		$original_cache = WC_Payments::get_database_cache();
+		WC_Payments::set_database_cache( $mock_cache );
+
+		// Set currency to EUR (not supported for US merchants).
+		add_filter( 'woocommerce_currency', [ $this, 'return_eur_currency' ] );
+
+		// Mock account to return US as account country.
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account->method( 'get_account_country' )->willReturn( 'US' );
+		$mock_account->method( 'get_cached_account_data' )->willReturn( [ 'country' => 'US' ] );
+
+		// Create a mock gateway that returns amazon_pay in location settings.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
+		$mock_gateway->method( 'get_option' )
+			->willReturnCallback(
+				function ( $option ) {
+					if ( 'express_checkout_cart_methods' === $option ) {
+						return [ 'amazon_pay' ];
+					}
+					return null;
+				}
+			);
+
+		// Create a partial mock to control context methods and gateway check.
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $mock_gateway, $mock_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( false );
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
+		$helper->method( 'is_amazon_pay_gateway_enabled' )->willReturn( true );
+
+		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
+
+		// Amazon Pay should NOT be in the enabled methods because EUR is not supported for US merchants.
+		$this->assertNotContains( 'amazon_pay', $enabled_methods );
+
+		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
+		remove_filter( 'woocommerce_currency', [ $this, 'return_eur_currency' ] );
+		WC_Payments::set_database_cache( $original_cache );
+	}
+
+	/**
+	 * Helper function to return EUR currency.
+	 *
+	 * @return string
+	 */
+	public function return_eur_currency() {
+		return 'EUR';
 	}
 }
