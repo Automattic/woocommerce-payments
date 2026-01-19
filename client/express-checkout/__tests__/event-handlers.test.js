@@ -16,13 +16,11 @@ describe( 'Express checkout event handlers', () => {
 		cartApiPlaceOrderMock = jest.fn();
 		cartApiSelectShippingRateMock = jest.fn();
 		global.window.wcpayFraudPreventionToken = 'token123';
-		global.wcpayExpressCheckoutParams = {
-			checkout: {
-				display_prices_with_tax: false,
-			},
-			flags: {
-				isEceUsingConfirmationTokens: true,
-			},
+		global.wcpayExpressCheckoutParams.checkout = {
+			display_prices_with_tax: false,
+		};
+		global.wcpayExpressCheckoutParams.flags = {
+			isEceUsingConfirmationTokens: true,
 		};
 
 		setCartApiHandler( {
@@ -365,9 +363,7 @@ describe( 'Express checkout event handlers', () => {
 
 		describe( 'when using payment methods (flag disabled)', () => {
 			beforeEach( () => {
-				global.wcpayExpressCheckoutParams.flags = {
-					isEceUsingConfirmationTokens: false,
-				};
+				global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = false;
 			} );
 
 			it( 'should call stripe.createPaymentMethod', async () => {
@@ -420,9 +416,7 @@ describe( 'Express checkout event handlers', () => {
 
 		describe( 'when using confirmation tokens (flag enabled)', () => {
 			beforeEach( () => {
-				global.wcpayExpressCheckoutParams.flags = {
-					isEceUsingConfirmationTokens: true,
-				};
+				global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
 			} );
 
 			it( 'should call stripe.createConfirmationToken', async () => {
