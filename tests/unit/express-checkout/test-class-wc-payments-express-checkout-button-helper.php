@@ -366,14 +366,13 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		// Create a partial mock to control context methods and gateway check.
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $mock_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled', 'is_amazon_pay_available_for_current_currency' ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_available_for_current_currency' ] )
 			->getMock();
 
 		$helper->method( 'is_product' )->willReturn( false );
 		$helper->method( 'is_cart' )->willReturn( true );
 		$helper->method( 'is_checkout' )->willReturn( false );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
-		$helper->method( 'is_amazon_pay_gateway_enabled' )->willReturn( true );
 		$helper->method( 'is_amazon_pay_available_for_current_currency' )->willReturn( true );
 
 		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
@@ -415,14 +414,13 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		// Create a partial mock to control context methods and gateway check.
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $mock_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled', 'is_amazon_pay_available_for_current_currency' ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_available_for_current_currency' ] )
 			->getMock();
 
 		$helper->method( 'is_product' )->willReturn( false );
 		$helper->method( 'is_cart' )->willReturn( false );
 		$helper->method( 'is_checkout' )->willReturn( true );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
-		$helper->method( 'is_amazon_pay_gateway_enabled' )->willReturn( true );
 		$helper->method( 'is_amazon_pay_available_for_current_currency' )->willReturn( true );
 
 		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
@@ -509,17 +507,16 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 				}
 			);
 
-		// Create a partial mock to control context methods and gateway check.
+		// Create a partial mock to control context methods.
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $mock_gateway, $mock_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_amazon_pay_gateway_enabled' ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
 			->getMock();
 
 		$helper->method( 'is_product' )->willReturn( false );
 		$helper->method( 'is_cart' )->willReturn( true );
 		$helper->method( 'is_checkout' )->willReturn( false );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
-		$helper->method( 'is_amazon_pay_gateway_enabled' )->willReturn( true );
 
 		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
 

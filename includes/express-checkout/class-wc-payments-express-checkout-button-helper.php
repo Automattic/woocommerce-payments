@@ -249,16 +249,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if the Amazon Pay payment gateway is enabled.
-	 *
-	 * @return boolean
-	 */
-	public function is_amazon_pay_gateway_enabled() {
-		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
-		return $amazon_pay_gateway && $amazon_pay_gateway->is_enabled();
-	}
-
-	/**
 	 * Checks if Amazon Pay is available for the current store currency.
 	 *
 	 * This validates that the current currency is supported by Amazon Pay
