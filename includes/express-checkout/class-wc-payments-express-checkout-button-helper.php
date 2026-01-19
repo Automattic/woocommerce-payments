@@ -280,6 +280,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
+		// Amazon Pay doesn't support taxes based on billing address.
+		if ( 'billing' !== get_option( 'woocommerce_tax_based_on' ) && wc_tax_enabled() ) {
+			return false;
+		}
+
 		$currency        = get_woocommerce_currency();
 		$account_country = $this->account->get_account_country();
 
