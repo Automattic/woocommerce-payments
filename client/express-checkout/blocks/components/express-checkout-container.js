@@ -24,17 +24,15 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	// Build the payment method types array based on enabled methods.
 	// This array is sent to the server to ensure PaymentIntent uses matching types.
-	const paymentMethodTypes = useMemo(
-		() => {
-			const enabledMethods = getExpressCheckoutData( 'enabled_methods' ) ?? [];
+	const paymentMethodTypes = useMemo( () => {
+		const enabledMethods =
+			getExpressCheckoutData( 'enabled_methods' ) ?? [];
 
-			return [
-				enabledMethods.includes( 'google_apple_pay' ) && 'card',
-				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
-			].filter( Boolean );
-		},
-		[]
-	);
+		return [
+			enabledMethods.includes( 'google_apple_pay' ) && 'card',
+			enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
+		].filter( Boolean );
+	}, [] );
 
 	const options = {
 		mode: 'payment',
