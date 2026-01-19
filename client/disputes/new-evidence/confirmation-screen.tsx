@@ -57,7 +57,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 					<p className="wcpay-dispute-evidence-confirmation__subtitle">
 						{ isVisaComplianceDispute
 							? __(
-									'Your evidence has been sent to Visa for review.',
+									'Your response has been submitted under Visa’s compliance process.',
 									'woocommerce-payments'
 							  )
 							: __(
@@ -75,7 +75,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 							<li>
 								{ isVisaComplianceDispute
 									? __(
-											'Visa will review your response. Please be patient — this usually takes a few weeks, but in some cases it can take up to 3 months.',
+											'Visa will review your submission under its network rules and determine the outcome of the dispute.',
 											'woocommerce-payments'
 									  )
 									: __(
@@ -83,6 +83,14 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 											'woocommerce-payments'
 									  ) }
 							</li>
+							{ isVisaComplianceDispute && (
+								<li>
+									{ __(
+										'This review typically takes several weeks, but in some cases may take up to 3 months.',
+										'woocommerce-payments'
+									) }
+								</li>
+							) }
 							<li>
 								{ createInterpolateElement(
 									__(
@@ -106,10 +114,35 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 									}
 								) }
 							</li>
+						</ul>
+					</div>
+					<div className="wcpay-dispute-evidence-confirmation__resources">
+						<h3>
+							{ __( 'Useful resources', 'woocommerce-payments' ) }
+						</h3>
+						<ul>
 							<li>
 								{ createInterpolateElement(
 									__(
-										'Want to know more about how disputes work? <learnMoreLink>Check out our resources</learnMoreLink>',
+										'Help prevent any further disputes by <learnMoreLink>following the advice in our guide</learnMoreLink>',
+										'woocommerce-payments'
+									),
+									{
+										learnMoreLink: (
+											<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
+												{ __(
+													'Learn more about preventing disputes',
+													'woocommerce-payments'
+												) }
+											</ExternalLink>
+										),
+									}
+								) }
+							</li>
+							<li>
+								{ createInterpolateElement(
+									__(
+										'Learn more about the dispute process using <learnMoreLink>our resources</learnMoreLink>',
 										'woocommerce-payments'
 									),
 									{

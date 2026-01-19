@@ -49,7 +49,7 @@ describe( 'NonCompliantDisputeSteps', () => {
 			el.textContent?.includes( 'forfeit the funds' )
 		);
 		expect( acceptDescription?.textContent ).toMatch(
-			/Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the \$500 USD Visa fee./i
+			/Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the \$500 USD Visa network fee./i
 		);
 
 		// Check for Learn more link
@@ -75,23 +75,7 @@ describe( 'NonCompliantDisputeSteps', () => {
 		// Check step description mentions $500 fee
 		expect(
 			screen.getByText(
-				/Challenging the dispute will incur a \$500 USD network fee/i,
-				{ exact: false }
-			)
-		).toBeInTheDocument();
-
-		// Check that it mentions the fee is charged by Stripe
-		expect(
-			screen.getByText( /charged by our partner Stripe/i, {
-				exact: false,
-			} )
-		).toBeInTheDocument();
-
-		// Check that it mentions the refund condition
-		expect(
-			screen.getByText(
-				/This fee will be refunded if you win the dispute/i,
-				{ exact: false }
+				'Challenging the dispute will incur a $500 USD Visa network fee, which is charged when you submit evidence. This fee will be refunded if you win the dispute.'
 			)
 		).toBeInTheDocument();
 	} );

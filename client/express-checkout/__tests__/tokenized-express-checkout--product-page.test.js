@@ -158,9 +158,9 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			mode: 'payment',
 			amount: 1100,
 			currency: 'usd',
-			paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
+			paymentMethodTypes: [ 'card' ],
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.
@@ -187,9 +187,9 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			mode: 'payment',
 			amount: 1100,
 			currency: 'usd',
-			paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
+			paymentMethodTypes: [ 'card' ],
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.

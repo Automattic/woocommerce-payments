@@ -295,8 +295,8 @@ describe( 'Express checkout event handlers', () => {
 				confirmIntent: jest.fn(),
 			};
 			stripe = {
-				createPaymentMethod: jest.fn().mockResolvedValue( {
-					paymentMethod: { id: 'pm_123' },
+				createConfirmationToken: jest.fn().mockResolvedValue( {
+					confirmationToken: { id: 'ctoken_123' },
 				} ),
 			};
 			elements = {
@@ -351,13 +351,13 @@ describe( 'Express checkout event handlers', () => {
 			);
 
 			expect( completePayment ).not.toHaveBeenCalled();
-			expect( stripe.createPaymentMethod ).not.toHaveBeenCalled();
+			expect( stripe.createConfirmationToken ).not.toHaveBeenCalled();
 			expect( abortPayment ).toHaveBeenCalledWith( 'Submit error' );
 		} );
 
-		it( 'should abort payment if stripe.createPaymentMethod fails', async () => {
-			stripe.createPaymentMethod.mockResolvedValue( {
-				error: { message: 'Payment method error' },
+		it( 'should abort payment if stripe.createConfirmationToken fails', async () => {
+			stripe.createConfirmationToken.mockResolvedValue( {
+				error: { message: 'Confirmation token error' },
 			} );
 
 			await onConfirmHandler(
@@ -370,11 +370,11 @@ describe( 'Express checkout event handlers', () => {
 			);
 
 			expect( completePayment ).not.toHaveBeenCalled();
-			expect( stripe.createPaymentMethod ).toHaveBeenCalledWith( {
+			expect( stripe.createConfirmationToken ).toHaveBeenCalledWith( {
 				elements,
 			} );
 			expect( abortPayment ).toHaveBeenCalledWith(
-				'Payment method error'
+				'Confirmation token error'
 			);
 		} );
 
