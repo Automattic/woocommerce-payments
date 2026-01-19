@@ -1493,7 +1493,21 @@ class WC_Payments {
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
+		require_once __DIR__ . '/class-wc-payments-blocks-apm-payment-method.php';
+
+		// Register main card gateway.
 		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
+
+		// Register each split APM gateway to prevent "incompatible extensions" warning in block editor.
+		foreach ( self::$payment_gateway_map as $payment_method_id => $gateway ) {
+			// Skip card (handled by main gateway) and link (not standalone in blocks).
+			if ( in_array( $payment_method_id, [ 'card', 'link' ], true ) ) {
+				continue;
+			}
+			$payment_method_registry->register(
+				new WC_Payments_Blocks_APM_Payment_Method( $payment_method_id )
+			);
+		}
 	}
 
 	/**

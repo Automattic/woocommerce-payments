@@ -301,6 +301,14 @@ class WC_Payments_Checkout {
 		$settings                = [];
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
+		// In admin context (block editor), include all UPE-enabled payment methods
+		// to prevent "incompatible extensions" warning. The client-side canMakePayment
+		// callback will still control actual availability at checkout.
+		if ( is_admin() ) {
+			$upe_enabled_methods     = $this->gateway->get_upe_enabled_payment_method_ids();
+			$enabled_payment_methods = array_unique( array_merge( $enabled_payment_methods, $upe_enabled_methods ) );
+		}
+
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			// Link by Stripe should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {

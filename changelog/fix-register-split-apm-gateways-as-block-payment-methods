@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Register split APM gateways as block payment methods to prevent 'incompatible extensions' warning in block editor
