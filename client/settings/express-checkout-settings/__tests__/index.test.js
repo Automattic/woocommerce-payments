@@ -16,6 +16,7 @@ jest.mock( '../../../data', () => ( {
 	useTestMode: jest.fn().mockReturnValue( [] ),
 	useGetSettings: jest.fn().mockReturnValue( {} ),
 	useSettings: jest.fn().mockReturnValue( {} ),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 	usePaymentRequestEnabledSettings: jest
 		.fn()
 		.mockReturnValue( [ true, jest.fn() ] ),

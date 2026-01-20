@@ -234,7 +234,11 @@ describe( 'ExpressCheckout', () => {
 			accountStatus: {},
 			featureFlags: { woopay: true, amazonPay: true },
 		};
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'link',
+			'card',
+			'amazon_pay',
+		] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
 		render(
