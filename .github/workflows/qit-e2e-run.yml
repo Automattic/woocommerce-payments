@@ -64,20 +64,20 @@ jobs:
           E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_JP_BLOG_TOKEN }}
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
         run: |
-          # Build command arguments array
-          # Use local config and specify the subpackage to run
+          # Build command following local npm script pattern:
+          # ./vendor/bin/qit run:e2e woocommerce-payments --config tests/qit/qit.json --profile=default -- --project=<name>
           QIT_ARGS=(
             "run:e2e"
             "woocommerce-payments"
             "--config" "tests/qit/qit.json"
-            "--test-package" "woocommerce-payments/${{ inputs.test-package }}"
+            "--profile=default"
             "--woo=${{ inputs.woocommerce-version }}"
             "--php=${{ inputs.php-version }}"
           )
 
           # Add WC Subscriptions plugin for subscriptions tests
           if [[ "${{ inputs.test-package }}" == "subscriptions" ]]; then
-            QIT_ARGS+=("--plugin=woocommerce-subscriptions")
+            QIT_ARGS+=("-p" "woocommerce-subscriptions")
           fi
 
           # Pass Jetpack secrets as environment variables
@@ -87,6 +87,9 @@ jobs:
 
           # Wait for results
           QIT_ARGS+=("--wait")
+
+          # Pass the Playwright project filter as passthrough arguments
+          QIT_ARGS+=("--" "--project=${{ inputs.test-package }}")
 
           echo "Running: qit ${QIT_ARGS[*]}"
           qit "${QIT_ARGS[@]}"
