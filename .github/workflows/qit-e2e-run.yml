@@ -64,13 +64,13 @@ jobs:
           E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_JP_BLOG_TOKEN }}
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
         run: |
-          # Build command following local npm script pattern:
-          # ./vendor/bin/qit run:e2e woocommerce-payments --config tests/qit/qit.json --profile=default -- --project=<name>
+          # Use --test-package to select the specific subpackage with its own run command
+          # The :local suffix indicates it's a local package (from --config)
           QIT_ARGS=(
             "run:e2e"
             "woocommerce-payments"
             "--config" "tests/qit/qit.json"
-            "--profile=default"
+            "--test-package" "woocommerce-payments/${{ inputs.test-package }}:local"
             "--woo=${{ inputs.woocommerce-version }}"
             "--php=${{ inputs.php-version }}"
           )
@@ -87,9 +87,6 @@ jobs:
 
           # Wait for results
           QIT_ARGS+=("--wait")
-
-          # Pass the Playwright project filter as passthrough arguments
-          QIT_ARGS+=("--" "--project=${{ inputs.test-package }}")
 
           echo "Running: qit ${QIT_ARGS[*]}"
           qit "${QIT_ARGS[@]}"
