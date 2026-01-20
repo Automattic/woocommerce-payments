@@ -238,7 +238,7 @@ const AccountBalances: React.FC = () => {
 					>
 						{ interpolateComponents( {
 							mixedString: __(
-								'Instant payouts are temporarily unavailable for your account. {{learnMoreLink}}Learn about eligibility requirements{{/learnMoreLink}}',
+								'Instant payouts are currently unavailable for your account. {{learnMoreLink}}Learn about eligibility requirements{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							components: {
