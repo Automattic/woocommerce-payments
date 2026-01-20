@@ -36,6 +36,9 @@ jobs:
     name: "QIT E2E - ${{ inputs.test-package }}"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Download plugin artifact
         uses: actions/download-artifact@v4
         with:
@@ -57,15 +60,13 @@ jobs:
 
       - name: Run QIT E2E Tests
         env:
-          E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
-          E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
-          E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
+          E2E_JP_SITE_ID: ${{ secrets.E2E_JP_SITE_ID }}
+          E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_JP_BLOG_TOKEN }}
+          E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
         run: |
-          # Build the QIT command
-          # Use --plugin with explicit slug format for local zip file (run:e2e doesn't have --zip option)
+          # Build the QIT command using local config (test packages are defined locally)
           QIT_CMD="qit run:e2e woocommerce-payments"
-          QIT_CMD="$QIT_CMD --plugin=woocommerce-payments@./woocommerce-payments.zip"
-          QIT_CMD="$QIT_CMD --test-package=woocommerce-payments/${{ inputs.test-package }}:latest"
+          QIT_CMD="$QIT_CMD --config tests/qit/qit.json"
           QIT_CMD="$QIT_CMD --woo=${{ inputs.woocommerce-version }}"
           QIT_CMD="$QIT_CMD --php=${{ inputs.php-version }}"
 
@@ -81,6 +82,9 @@ jobs:
 
           # Wait for results
           QIT_CMD="$QIT_CMD --wait"
+
+          # Pass the Playwright project filter as test arguments
+          QIT_CMD="$QIT_CMD -- --project=${{ inputs.test-package }}"
 
           echo "Running: $QIT_CMD"
           eval $QIT_CMD
