@@ -49,7 +49,8 @@ jobs:
           coverage: none
 
       - name: Install QIT CLI
-        run: composer global require woocommerce/qit-cli
+        # Use dev-trunk because test packages feature is not yet in stable releases
+        run: composer global require woocommerce/qit-cli:dev-trunk
 
       - name: Authenticate QIT
         run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
