@@ -508,6 +508,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
+		// Skip validation for subscriptions in terminal statuses.
+		// These subscriptions don't require a valid payment method since they won't have future automatic renewals.
+		$terminal_statuses = [ 'cancelled', 'expired', 'trash', 'pending-cancel' ];
+		if ( $subscription && is_callable( [ $subscription, 'get_status' ] )
+			&& in_array( $subscription->get_status(), $terminal_statuses, true ) ) {
+			return;
+		}
+
 		if ( empty( $payment_meta[ self::$payment_method_meta_table ][ self::$payment_method_meta_key ]['value'] ) ) {
 			throw new Invalid_Payment_Method_Exception(
 				__( 'A customer saved payment method was not selected for this order.', 'woocommerce-payments' ),

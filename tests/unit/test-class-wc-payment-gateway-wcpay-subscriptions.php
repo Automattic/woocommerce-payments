@@ -773,6 +773,57 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	/**
+	 * Test that validation is skipped for cancelled subscriptions.
+	 *
+	 * @dataProvider terminal_status_provider
+	 */
+	public function test_validate_subscription_payment_meta_skips_terminal_statuses( $status ) {
+		$subscription         = new WC_Subscription();
+		$subscription->status = $status;
+
+		// The validate method should return without throwing an exception for terminal statuses,
+		// even when no payment method is provided.
+		$this->assertNull(
+			$this->wcpay_gateway->validate_subscription_payment_meta(
+				$this->wcpay_gateway->id,
+				[ 'wc_order_tokens' => [ 'token' => [ 'value' => '' ] ] ],
+				$subscription
+			)
+		);
+	}
+
+	/**
+	 * Data provider for terminal subscription statuses.
+	 *
+	 * @return array
+	 */
+	public function terminal_status_provider() {
+		return [
+			'cancelled status'      => [ 'cancelled' ],
+			'expired status'        => [ 'expired' ],
+			'trash status'          => [ 'trash' ],
+			'pending-cancel status' => [ 'pending-cancel' ],
+		];
+	}
+
+	/**
+	 * Test that validation still works for active subscriptions.
+	 */
+	public function test_validate_subscription_payment_meta_validates_active_subscription() {
+		$this->expectException( Exception::class );
+		$this->expectExceptionMessage( 'A customer saved payment method was not selected for this order.' );
+
+		$subscription         = new WC_Subscription();
+		$subscription->status = 'active';
+
+		$this->wcpay_gateway->validate_subscription_payment_meta(
+			$this->wcpay_gateway->id,
+			[ 'wc_order_tokens' => [ 'token' => [ 'value' => '' ] ] ],
+			$subscription
+		);
+	}
+
 	public function test_save_meta_in_order_tokens_adds_token_to_order() {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
 		$token        = WC_Helper_Token::create_token( self::PAYMENT_METHOD_ID, self::USER_ID );
