@@ -339,7 +339,7 @@ describe( 'AccountBalances', () => {
 		render( <AccountBalances /> );
 
 		expect(
-			screen.queryByText( /Instant payouts are temporarily unavailable/ )
+			screen.queryByText( /Instant payouts are currently unavailable/ )
 		).not.toBeInTheDocument();
 	} );
 
