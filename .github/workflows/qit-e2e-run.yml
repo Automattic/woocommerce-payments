@@ -64,27 +64,30 @@ jobs:
           E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_JP_BLOG_TOKEN }}
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
         run: |
-          # Build the QIT command using local config (test packages are defined locally)
-          QIT_CMD="qit run:e2e woocommerce-payments"
-          QIT_CMD="$QIT_CMD --config tests/qit/qit.json"
-          QIT_CMD="$QIT_CMD --woo=${{ inputs.woocommerce-version }}"
-          QIT_CMD="$QIT_CMD --php=${{ inputs.php-version }}"
+          # Build command arguments array
+          QIT_ARGS=(
+            "run:e2e"
+            "woocommerce-payments"
+            "--config" "tests/qit/qit.json"
+            "--woo=${{ inputs.woocommerce-version }}"
+            "--php=${{ inputs.php-version }}"
+          )
 
           # Add WC Subscriptions plugin for subscriptions tests
           if [[ "${{ inputs.test-package }}" == "subscriptions" ]]; then
-            QIT_CMD="$QIT_CMD --plugin=woocommerce-subscriptions"
+            QIT_ARGS+=("--plugin=woocommerce-subscriptions")
           fi
 
           # Pass Jetpack secrets as environment variables
-          QIT_CMD="$QIT_CMD --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID"
-          QIT_CMD="$QIT_CMD --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN"
-          QIT_CMD="$QIT_CMD --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN"
+          QIT_ARGS+=("--env" "E2E_JP_SITE_ID=$E2E_JP_SITE_ID")
+          QIT_ARGS+=("--env" "E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN")
+          QIT_ARGS+=("--env" "E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN")
 
           # Wait for results
-          QIT_CMD="$QIT_CMD --wait"
+          QIT_ARGS+=("--wait")
 
           # Pass the Playwright project filter as test arguments
-          QIT_CMD="$QIT_CMD -- --project=${{ inputs.test-package }}"
+          QIT_ARGS+=("--" "--project=${{ inputs.test-package }}")
 
-          echo "Running: $QIT_CMD"
-          eval $QIT_CMD
+          echo "Running: qit ${QIT_ARGS[*]}"
+          qit "${QIT_ARGS[@]}"
