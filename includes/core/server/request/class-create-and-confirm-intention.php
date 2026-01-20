@@ -20,6 +20,7 @@ class Create_And_Confirm_Intention extends Create_Intention {
 		'amount',
 		'currency',
 		'payment_method',
+		'confirmation_token',
 		'payment_method_update_data',
 		'return_url',
 	];
@@ -27,7 +28,6 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	const REQUIRED_PARAMS = [
 		'amount',
 		'currency',
-		'payment_method',
 		'customer',
 		'metadata',
 	];
@@ -114,7 +114,7 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	/**
 	 * Return URL setter.
 	 *
-	 * @param string $return_url The URL to redirect the customer back to after they authenticate their payment on the payment method’s site.
+	 * @param string $return_url The URL to redirect the customer back to after they authenticate their payment on the payment method's site.
 	 */
 	public function set_return_url( $return_url ) {
 		$this->set_param( 'return_url', $return_url );
