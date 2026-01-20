@@ -308,6 +308,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
+			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: Jetpack connection not available.' );
 			return [];
 		}
 
@@ -363,6 +364,8 @@ class WC_Payments_Onboarding_Service {
 		} catch ( API_Exception $e ) {
 			$this->clear_onboarding_init_in_progress();
 
+			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: ' . $e->getMessage() );
+
 			// If we fail to create the session, return an empty array.
 			return [];
 		}
@@ -407,6 +410,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function finalize_embedded_kyc( string $locale, string $source, array $actioned_notes ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
+			WC_Payments_Utils::log_to_wc( 'Failed to finalize embedded KYC: Jetpack connection not available.' );
 			return [
 				'success' => false,
 			];

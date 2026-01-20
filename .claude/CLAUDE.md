@@ -105,7 +105,8 @@ npm run psalm                       # PHP static analysis
 
 ### Other
 ```bash
-npm run changelog                   # Add changelog entry
+npm run changelog                   # Add changelog entry (interactive)
+npm run changelog:add               # Add changelog entry (non-interactive, for automation)
 npm run i18n:pot                    # Generate translations
 ```
 
@@ -128,7 +129,9 @@ npm run i18n:pot                    # Generate translations
 - Release branch: `trunk`
 - Husky manages git hooks
 - **Before creating a PR:**
-  - Must run `npm run changelog add` and commit the changelog entry (choose 'patch' if change is not significant)
+  - Must add and commit a changelog entry (use 'patch' significance if change is not significant)
+  - For Claude/automation: `npm run changelog:add -- --type=<type> --entry="<description>"`
+  - For interactive use: `npm run changelog`
   - Changelog must be committed and pushed before creating the PR
 - Use PR template from `.github/PULL_REQUEST_TEMPLATE.md` when creating pull requests
   - Include testing instructions
@@ -148,8 +151,15 @@ npm run i18n:pot                    # Generate translations
 - Use npm for JavaScript dependencies
 
 ### Changelog
-- Use `npm run changelog` to add entries
-- Types: Add, Fix, Update, Dev
+- Use `npm run changelog` for interactive changelog entry creation
+- Use `npm run changelog:add` for non-interactive (automation/Claude) usage:
+  ```bash
+  npm run changelog:add -- --type=fix --entry="Fixed a bug"
+  npm run changelog:add -- --type=add --entry="Added feature" --significance=minor
+  # Or with positional args: npm run changelog:add -- patch fix "Fixed a bug"
+  ```
+- Types: add, fix, update, dev
+- Significances: patch (default), minor, major
 - Entries go in `changelog/` directory
 
 ## Important Configuration Files
