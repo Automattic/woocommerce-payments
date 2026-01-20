@@ -34,6 +34,7 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		instantDepositsPreviouslyEligible: boolean;
 	};
 };
 const mockWcPaySettings = {
@@ -52,6 +53,7 @@ const mockWcPaySettings = {
 			precision: 2,
 		},
 	},
+	instantDepositsPreviouslyEligible: false,
 };
 
 jest.mock( 'wcpay/data', () => ( {
@@ -323,6 +325,78 @@ describe( 'AccountBalances', () => {
 
 		expect(
 			screen.queryByRole( 'button', { name: 'Deposit available funds' } )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'does not render ineligibility notice when not previously eligible', () => {
+		global.wcpaySettings = {
+			...mockWcPaySettings,
+			instantDepositsPreviouslyEligible: false,
+		};
+		const mockOverview = createMockOverview( 'usd', 10000, 20000, 0 );
+		mockOverview.instant = undefined;
+		mockOverviews( [ mockOverview ] );
+		render( <AccountBalances /> );
+
+		expect(
+			screen.queryByText( /Instant payouts are currently unavailable/ )
+		).not.toBeInTheDocument();
+	} );
+
+	test( 'renders ineligibility notice when previously eligible and instant balance is undefined', () => {
+		global.wcpaySettings = {
+			...mockWcPaySettings,
+			instantDepositsPreviouslyEligible: true,
+		};
+		const mockOverview = createMockOverview( 'usd', 10000, 20000, 0 );
+		mockOverview.instant = undefined;
+		mockOverviews( [ mockOverview ] );
+		const { container } = render( <AccountBalances /> );
+
+		expect(
+			container.querySelector(
+				'.wcpay-account-balances__instant-deposit-unavailable'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', {
+				name: /Learn about eligibility requirements/,
+			} )
+		).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/payouts/instant-payouts/'
+		);
+	} );
+
+	test( 'renders ineligibility notice when previously eligible and instant balance amount is 0', () => {
+		global.wcpaySettings = {
+			...mockWcPaySettings,
+			instantDepositsPreviouslyEligible: true,
+		};
+		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 0 ) ] );
+		const { container } = render( <AccountBalances /> );
+
+		expect(
+			container.querySelector(
+				'.wcpay-account-balances__instant-deposit-unavailable'
+			)
+		).toBeInTheDocument();
+	} );
+
+	test( 'does not render ineligibility notice when eligible with funds', () => {
+		global.wcpaySettings = {
+			...mockWcPaySettings,
+			instantDepositsPreviouslyEligible: true,
+		};
+		mockOverviews( [ createMockOverview( 'usd', 10000, 20000, 30000 ) ] );
+		render( <AccountBalances /> );
+
+		// The button should be shown, not the ineligibility notice.
+		expect(
+			screen.getByRole( 'button', { name: 'Get $300.00 now' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText( /Instant payouts are currently unavailable/ )
 		).not.toBeInTheDocument();
 	} );
 } );
