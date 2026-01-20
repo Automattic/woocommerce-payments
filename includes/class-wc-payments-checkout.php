@@ -247,6 +247,7 @@ class WC_Payments_Checkout {
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {
+				$payment_fields['isChangingPayment'] = true;
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
