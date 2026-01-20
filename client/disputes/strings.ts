@@ -357,7 +357,7 @@ export const reasons: Record<
 		),
 		summary: [
 			__(
-				'The customer’s bank claims this transaction doesn’t conform to Visa’s network rules.',
+				'This transaction is being reviewed under Visa’s network compliance rules.',
 				'woocommerce-payments'
 			),
 		],

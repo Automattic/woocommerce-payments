@@ -360,7 +360,7 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                       <div
                         class="dispute-steps__item-description"
                       >
-                        Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa fee.
+                        Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa network fee.
                       </div>
                     </div>
                     <div
@@ -372,7 +372,8 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                         rel="noopener noreferrer"
                         target="_blank"
                       >
-                        Learn more
+                        Learn more 
+                        ↗
                       </a>
                     </div>
                   </div>
@@ -407,7 +408,7 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                       <div
                         class="dispute-steps__item-description"
                       >
-                        Challenging the dispute will incur a $500 USD network fee, charged by our partner Stripe when you submit evidence. This fee will be refunded if you win the dispute.
+                        Challenging the dispute will incur a $500 USD Visa network fee, which is charged when you submit evidence. This fee will be refunded if you win the dispute.
                       </div>
                     </div>
                     <div
@@ -419,7 +420,8 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                         rel="noopener noreferrer"
                         target="_blank"
                       >
-                        Learn more
+                        Learn more 
+                        ↗
                       </a>
                     </div>
                   </div>
@@ -537,7 +539,7 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                 class="components-checkbox-control__label"
                 for="inspector-checkbox-control-0"
               >
-                By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a $500 USD fee, which will be refunded only if you win the case.
+                By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a $500 USD network fee, which will be refunded if you win the dispute.
               </label>
             </div>
           </div>
