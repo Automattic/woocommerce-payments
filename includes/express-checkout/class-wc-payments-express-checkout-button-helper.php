@@ -7,7 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
