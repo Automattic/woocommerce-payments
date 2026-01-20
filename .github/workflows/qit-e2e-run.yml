@@ -42,7 +42,9 @@ jobs:
           name: ${{ inputs.artifact-name }}
 
       - name: Install QIT CLI
-        run: composer global require woocommerce/qit-cli
+        run: |
+          composer global require woocommerce/qit-cli
+          echo "$HOME/.composer/vendor/bin" >> $GITHUB_PATH
 
       - name: Authenticate QIT
         run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
