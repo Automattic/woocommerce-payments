@@ -529,7 +529,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'express_checkout_product_methods'  => [
 					'title'   => __( 'Express checkout methods on product page', 'woocommerce-payments' ),
 					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay' ],
+					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
 					'options' => [
 						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
 						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
@@ -540,7 +540,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'express_checkout_cart_methods'     => [
 					'title'   => __( 'Express checkout methods on cart page', 'woocommerce-payments' ),
 					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay' ],
+					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
 					'options' => [
 						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
 						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
@@ -551,7 +551,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				'express_checkout_checkout_methods' => [
 					'title'   => __( 'Express checkout methods on checkout page', 'woocommerce-payments' ),
 					'type'    => 'multiselect',
-					'default' => [ 'payment_request', 'woopay' ],
+					'default' => [ 'payment_request', 'woopay', 'amazon_pay' ],
 					'options' => [
 						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
 						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
