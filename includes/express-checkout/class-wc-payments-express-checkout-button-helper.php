@@ -249,24 +249,34 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if Amazon Pay is available for the current store currency.
+	 * Checks if Amazon Pay can be used in Express Checkout.
 	 *
-	 * This validates that the current currency is supported by Amazon Pay
-	 * based on the merchant's account country.
+	 * This validates:
+	 * - Feature flag is enabled
+	 * - Gateway exists and is enabled
+	 * - Account has Amazon Pay fees configured (indicates availability)
+	 * - Tax settings are compatible
+	 * - Currency is supported for the account country
 	 *
 	 * @return boolean
 	 */
-	public function is_amazon_pay_available_for_current_currency() {
+	public function can_use_amazon_pay() {
 		if ( ! WC_Payments_Features::is_amazon_pay_enabled() ) {
 			return false;
 		}
 
-		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
+		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
 		if ( ! $amazon_pay_gateway ) {
 			return false;
 		}
 
 		if ( ! $amazon_pay_gateway->is_enabled() ) {
+			return false;
+		}
+
+		// Check if Amazon Pay has fees configured (indicates it's actually available for the account).
+		$methods_with_fees = array_keys( $this->account->get_fees() );
+		if ( ! in_array( AmazonPayDefinition::get_id(), $methods_with_fees, true ) ) {
 			return false;
 		}
 
@@ -334,7 +344,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Check Amazon Pay.
 		if (
-			$this->is_amazon_pay_available_for_current_currency() &&
+			$this->can_use_amazon_pay() &&
 			$this->is_express_checkout_method_enabled_at( $context, 'amazon_pay' )
 		) {
 			$enabled_methods[] = 'amazon_pay';

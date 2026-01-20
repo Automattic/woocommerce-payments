@@ -76,7 +76,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		// Checks if at least one express checkout method is enabled.
-		if ( ! $this->gateway->is_payment_request_enabled() && ! $this->express_checkout_helper->is_amazon_pay_available_for_current_currency() ) {
+		if ( ! $this->gateway->is_payment_request_enabled() && ! $this->express_checkout_helper->can_use_amazon_pay() ) {
 			return;
 		}
 
@@ -110,7 +110,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 */
 	public function payment_fields_js_config( $config ) {
 		$config['isPaymentRequestEnabled'] = $this->gateway->is_payment_request_enabled() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'payment_request' );
-		$config['isAmazonPayEnabled']      = $this->express_checkout_helper->is_amazon_pay_available_for_current_currency() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'amazon_pay' );
+		$config['isAmazonPayEnabled']      = $this->express_checkout_helper->can_use_amazon_pay() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'amazon_pay' );
 
 		return $config;
 	}
