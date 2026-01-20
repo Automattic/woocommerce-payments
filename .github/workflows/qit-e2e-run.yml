@@ -11,10 +11,6 @@ on:
         description: 'PHP version'
         required: true
         type: string
-      test-package:
-        description: 'QIT test subpackage (shopper, merchant, subscriptions)'
-        required: true
-        type: string
       artifact-name:
         description: 'Name of the artifact containing the built plugin zip'
         required: true
@@ -33,7 +29,7 @@ on:
 
 jobs:
   qit-e2e:
-    name: "QIT E2E - ${{ inputs.test-package }}"
+    name: "QIT E2E - WC ${{ inputs.woocommerce-version }}"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -65,31 +61,12 @@ jobs:
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
         run: |
           # Match local npm script: ./vendor/bin/qit run:e2e woocommerce-payments --config tests/qit/qit.json --profile=default
-          # Pass --project via passthrough args to filter Playwright tests
-          QIT_ARGS=(
-            "run:e2e"
-            "woocommerce-payments"
-            "--config" "tests/qit/qit.json"
-            "--profile=default"
-            "--woo=${{ inputs.woocommerce-version }}"
-            "--php=${{ inputs.php-version }}"
-          )
-
-          # Add WC Subscriptions plugin for subscriptions tests
-          if [[ "${{ inputs.test-package }}" == "subscriptions" ]]; then
-            QIT_ARGS+=("-p" "woocommerce-subscriptions")
-          fi
-
-          # Pass Jetpack secrets as environment variables
-          QIT_ARGS+=("--env" "E2E_JP_SITE_ID=$E2E_JP_SITE_ID")
-          QIT_ARGS+=("--env" "E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN")
-          QIT_ARGS+=("--env" "E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN")
-
-          # Wait for results
-          QIT_ARGS+=("--wait")
-
-          # Pass Playwright project filter as passthrough arguments
-          QIT_ARGS+=("--" "--project=${{ inputs.test-package }}")
-
-          echo "Running: qit ${QIT_ARGS[*]}"
-          qit "${QIT_ARGS[@]}"
+          qit run:e2e woocommerce-payments \
+            --config tests/qit/qit.json \
+            --profile=default \
+            --woo=${{ inputs.woocommerce-version }} \
+            --php=${{ inputs.php-version }} \
+            --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
+            --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
+            --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
+            --wait

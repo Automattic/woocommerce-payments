@@ -41,19 +41,17 @@ jobs:
           WC_VERSION="${{ inputs.woocommerce-version }}"
           echo "WC version: $WC_VERSION" >&2
 
-          # Build pre-release matrix: user-specified WC version, PHP 8.1 + 8.3, all test packages
-          MATRIX_ENTRIES=()
-          for php_version in "8.1" "8.3"; do
-            for test_package in "shopper" "merchant" "subscriptions"; do
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$WC_VERSION\",\"php\":\"$php_version\",\"test-package\":\"$test_package\"}")
-            done
-          done
-
-          MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)
+          # Build pre-release matrix: user-specified WC version, PHP 8.1 + 8.3
+          MATRIX_JSON=$(jq -n -c '{
+            "include": [
+              {"woocommerce": "'"$WC_VERSION"'", "php": "8.1"},
+              {"woocommerce": "'"$WC_VERSION"'", "php": "8.3"}
+            ]
+          }')
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   qit-e2e:
-    name: "WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }} | ${{ matrix.test-package }}"
+    name: "WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
     needs: [build, generate-matrix]
     strategy:
       fail-fast: false
@@ -62,11 +60,10 @@ jobs:
     with:
       woocommerce-version: ${{ matrix.woocommerce }}
       php-version: ${{ matrix.php }}
-      test-package: ${{ matrix.test-package }}
       artifact-name: woocommerce-payments-${{ github.run_id }}
     secrets:
       QIT_CI_USER: ${{ secrets.QIT_CI_USER }}
       QIT_CI_SECRET: ${{ secrets.QIT_CI_SECRET }}
-      E2E_JP_SITE_ID: ${{ secrets.E2E_JP_SITE_ID }}
-      E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_JP_BLOG_TOKEN }}
-      E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
+      E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
+      E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
+      E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
