@@ -75,6 +75,7 @@
     "psalm": "./bin/run-psalm.sh",
     "xdebug:toggle": "docker compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh",
     "changelog": "./vendor/bin/changelogger add",
+    "changelog:add": "./bin/changelog-add.sh",
     "cli": "./bin/cli.sh"
   },
   "dependencies": {
