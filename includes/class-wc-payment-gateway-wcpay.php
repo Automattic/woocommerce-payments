@@ -1862,10 +1862,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $payment_needed ) {
 			$charge                 = $intent ? $intent->get_charge() : null;
 			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-			// For payment intents, get payment method type from the intent itself, fallback to charge details.
-			$payment_method_type = $intent ? $intent->get_payment_method_type() : null;
-			if ( ! $payment_method_type && $payment_method_details ) {
-				$payment_method_type = $payment_method_details['type'] ?? null;
+			// Get payment method type from charge details (actual payment method used).
+			// Fallback to intent's method only if charge details not available.
+			$payment_method_type = $payment_method_details['type'] ?? null;
+			if ( ! $payment_method_type && $intent ) {
+				$payment_method_type = $intent->get_payment_method_type();
 			}
 
 			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
@@ -1882,9 +1883,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
-		if ( empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-		}
+		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
 		if ( isset( $status ) && Intent_Status::REQUIRES_ACTION === $status && $this->is_changing_payment_method_for_subscription() ) {
 			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
@@ -2240,12 +2239,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
-		$payment_method_title = $payment_method->get_title( $this->get_account_country(), $payment_method_details );
+		// express checkout can be Amazon Pay/Google Pay/Apple Pay/Link,
+		// but Google Pay/Apple Pay/Link use the `card` gateway; Amazon Pay has its own gateway.
+		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
+		$effective_type        = $express_checkout_type ? $express_checkout_type : $payment_method_type;
 
-		$payment_gateway = in_array( $payment_method->get_id(), [ Payment_Method::CARD, Payment_Method::LINK ], true ) ? self::GATEWAY_ID : self::GATEWAY_ID . '_' . $payment_method_type;
+		$payment_methods_using_card = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::GOOGLE_PAY, Payment_Method::APPLE_PAY ];
+		$payment_gateway            = in_array( $effective_type, $payment_methods_using_card, true )
+			? self::GATEWAY_ID
+			: self::GATEWAY_ID . '_' . $effective_type;
 
+		// this will ensure that the refunds are handled by the correct split gateway class.
 		$order->set_payment_method( $payment_gateway );
-		$order->set_payment_method_title( $payment_method_title );
+
+		// the Express Checkout handler already set it the method's title in `tokenized_cart_set_payment_method_type`, earlier in the flow.
+		if ( ! $express_checkout_type ) {
+			$order->set_payment_method_title( $payment_method->get_title( $this->get_account_country(), $payment_method_details ) );
+		}
+
 		$order->save();
 	}
 
