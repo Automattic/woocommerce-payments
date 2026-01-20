@@ -74,10 +74,15 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 	public function test_extend_life_of_migration_file_logs() {
 		$message = 'Test message 1234567890';
 
+		// Set up the file log handler and ensure cleanup is hooked.
+		$file_handler = new WC_Log_Handler_File();
+		$file_logger  = new WC_Logger( [ $file_handler ] );
+		add_action( 'woocommerce_cleanup_logs', [ $file_logger, 'clear_expired_logs' ] );
+
 		// Log messages - Log to the migration file and a dummy log.
 		$logger = new WC_Payments_Subscription_Migration_Log_Handler();
 		$logger->log( $message );
-		wc_get_logger()->log( 'debug', $message, [ 'source' => $this->test_log_source ] );
+		$file_logger->log( 'debug', $message, [ 'source' => $this->test_log_source ] );
 
 		$log_files = $this->get_log_files();
 		$log_dir   = trailingslashit( WC_LOG_DIR );
