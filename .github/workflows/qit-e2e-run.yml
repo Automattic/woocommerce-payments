@@ -49,9 +49,9 @@ jobs:
 
       - name: Run QIT E2E Tests
         env:
-          E2E_JP_SITE_ID: ${{ secrets.E2E_JP_SITE_ID }}
-          E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_JP_BLOG_TOKEN }}
-          E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
+          E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
+          E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
+          E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
         run: |
           # Build the QIT command
           QIT_CMD="qit run:e2e woocommerce-payments"
