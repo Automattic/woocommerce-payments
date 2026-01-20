@@ -469,92 +469,174 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( null, $res );
 	}
 
-	public function test_correct_payment_method_title_for_order() {
+	/**
+	 * Data provider for payment method title tests.
+	 *
+	 * @return array[] Test cases with payment_details, expected_title, and expected_gateway.
+	 */
+	public function payment_method_title_provider() {
+		return [
+			'Visa credit card'  => [
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'funding' => 'credit',
+					],
+				],
+				'expected_title'   => 'Visa credit card',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+			'Visa debit card'   => [
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'funding' => 'debit',
+					],
+				],
+				'expected_title'   => 'Visa debit card',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+			'Mastercard credit' => [
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'mastercard',
+						'funding' => 'credit',
+					],
+				],
+				'expected_title'   => 'Mastercard credit card',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+			'giropay'           => [
+				'payment_details'  => [ 'type' => 'giropay' ],
+				'expected_title'   => 'giropay',
+				'expected_gateway' => 'woocommerce_payments_giropay',
+			],
+			'Sofort'            => [
+				'payment_details'  => [ 'type' => 'sofort' ],
+				'expected_title'   => 'Sofort',
+				'expected_gateway' => 'woocommerce_payments_sofort',
+			],
+			'Bancontact'        => [
+				'payment_details'  => [ 'type' => 'bancontact' ],
+				'expected_title'   => 'Bancontact',
+				'expected_gateway' => 'woocommerce_payments_bancontact',
+			],
+			'EPS'               => [
+				'payment_details'  => [ 'type' => 'eps' ],
+				'expected_title'   => 'EPS',
+				'expected_gateway' => 'woocommerce_payments_eps',
+			],
+			'Przelewy24 (P24)'  => [
+				'payment_details'  => [ 'type' => 'p24' ],
+				'expected_title'   => 'Przelewy24 (P24)',
+				'expected_gateway' => 'woocommerce_payments_p24',
+			],
+			'iDEAL'             => [
+				'payment_details'  => [ 'type' => 'ideal' ],
+				'expected_title'   => 'iDEAL',
+				'expected_gateway' => 'woocommerce_payments_ideal',
+			],
+			'SEPA Direct Debit' => [
+				'payment_details'  => [ 'type' => 'sepa_debit' ],
+				'expected_title'   => 'SEPA Direct Debit',
+				'expected_gateway' => 'woocommerce_payments_sepa_debit',
+			],
+			'BECS Direct Debit' => [
+				'payment_details'  => [ 'type' => 'au_becs_debit' ],
+				'expected_title'   => 'BECS Direct Debit',
+				'expected_gateway' => 'woocommerce_payments_au_becs_debit',
+			],
+			'GrabPay'           => [
+				'payment_details'  => [ 'type' => 'grabpay' ],
+				'expected_title'   => 'GrabPay',
+				'expected_gateway' => 'woocommerce_payments_grabpay',
+			],
+		];
+	}
+
+	/**
+	 * Test that payment methods set the correct title and gateway ID for orders.
+	 *
+	 * @dataProvider payment_method_title_provider
+	 *
+	 * @param array  $payment_details  The payment method details from Stripe.
+	 * @param string $expected_title   The expected payment method title.
+	 * @param string $expected_gateway The expected gateway ID.
+	 */
+	public function test_correct_payment_method_title_for_order( $payment_details, $expected_title, $expected_gateway ) {
 		$order = WC_Helper_Order::create_order();
 
-		$visa_credit_details       = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'visa',
-				'funding' => 'credit',
+		$this->card_gateway->set_payment_method_title_for_order( $order, $payment_details['type'], $payment_details );
+
+		$this->assertEquals( $expected_title, $order->get_payment_method_title(), "Payment method title mismatch for {$payment_details['type']}" );
+		$this->assertEquals( $expected_gateway, $order->get_payment_method(), "Payment method (gateway ID) mismatch for {$payment_details['type']}" );
+	}
+
+	/**
+	 * Data provider for Express Checkout payment method tests.
+	 *
+	 * @return array[] Test cases with express_type, stripe_type, expected_title, and payment_details.
+	 */
+	public function express_checkout_payment_method_provider() {
+		return [
+			'Google Pay' => [
+				'express_type'    => 'google_pay',
+				'stripe_type'     => 'card',
+				'expected_title'  => 'Google Pay (WooPayments)',
+				'payment_details' => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'funding' => 'credit',
+					],
+				],
+			],
+			'Apple Pay'  => [
+				'express_type'    => 'apple_pay',
+				'stripe_type'     => 'card',
+				'expected_title'  => 'Apple Pay (WooPayments)',
+				'payment_details' => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'funding' => 'credit',
+					],
+				],
+			],
+			'Link'       => [
+				'express_type'    => 'link',
+				'stripe_type'     => 'link',
+				'expected_title'  => 'Link (WooPayments)',
+				'payment_details' => [
+					'type' => 'link',
+				],
 			],
 		];
-		$visa_debit_details        = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'visa',
-				'funding' => 'debit',
-			],
-		];
-		$mastercard_credit_details = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'mastercard',
-				'funding' => 'credit',
-			],
-		];
-		$eps_details               = [
-			'type' => 'eps',
-		];
-		$giropay_details           = [
-			'type' => 'giropay',
-		];
-		$p24_details               = [
-			'type' => 'p24',
-		];
-		$sofort_details            = [
-			'type' => 'sofort',
-		];
-		$bancontact_details        = [
-			'type' => 'bancontact',
-		];
-		$sepa_details              = [
-			'type' => 'sepa_debit',
-		];
-		$ideal_details             = [
-			'type' => 'ideal',
-		];
-		$becs_details              = [
-			'type' => 'au_becs_debit',
-		];
-		$grabpay_details           = [
-			'type' => 'grabpay',
-		];
+	}
 
-		$charge_payment_method_details = [
-			$visa_credit_details,
-			$visa_debit_details,
-			$mastercard_credit_details,
-			$giropay_details,
-			$sofort_details,
-			$bancontact_details,
-			$eps_details,
-			$p24_details,
-			$ideal_details,
-			$sepa_details,
-			$becs_details,
-			$grabpay_details,
-		];
+	/**
+	 * Test that Express Checkout payments set the correct gateway ID and preserve title.
+	 *
+	 * @dataProvider express_checkout_payment_method_provider
+	 *
+	 * @param string $express_type    The express checkout type stored in order meta.
+	 * @param string $stripe_type     The Stripe payment method type.
+	 * @param string $expected_title  The expected payment method title to be preserved.
+	 * @param array  $payment_details The payment method details from Stripe.
+	 */
+	public function test_express_checkout_payment_method_for_order( $express_type, $stripe_type, $expected_title, $payment_details ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method_title( $expected_title );
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_type );
+		$order->save();
 
-		$expected_payment_method_titles = [
-			'Visa credit card',
-			'Visa debit card',
-			'Mastercard credit card',
-			'giropay',
-			'Sofort',
-			'Bancontact',
-			'EPS',
-			'Przelewy24 (P24)',
-			'iDEAL',
-			'SEPA Direct Debit',
-			'BECS Direct Debit',
-			'GrabPay',
-		];
+		$this->card_gateway->set_payment_method_title_for_order( $order, $stripe_type, $payment_details );
 
-		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
-			$this->card_gateway->set_payment_method_title_for_order( $order, $payment_method_details['type'], $payment_method_details );
-			$this->assertEquals( $expected_payment_method_titles[ $i ], $order->get_payment_method_title() );
-		}
+		$this->assertEquals( 'woocommerce_payments', $order->get_payment_method(), "$express_type should use main gateway" );
+		$this->assertEquals( $expected_title, $order->get_payment_method_title(), "$express_type title should be preserved" );
 	}
 
 	public function test_payment_methods_show_correct_default_outputs() {
