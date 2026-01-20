@@ -80,70 +80,46 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 		wc_get_logger()->log( 'debug', $message, [ 'source' => $this->test_log_source ] );
 
 		$log_files = $this->get_log_files();
+		$log_dir   = trailingslashit( WC_LOG_DIR );
 
-		// For WC >= 8.6, we need to rename files to have old dates in their filenames.
-		// For WC < 8.6, we just touch the files to update their modified timestamp.
-		if ( version_compare( WC_VERSION, '8.6.0', '>=' ) ) {
-			$log_dir = trailingslashit( WC_LOG_DIR );
-			foreach ( $log_files as $log_file ) {
-				$old_filename = basename( $log_file );
-				// Replace today's date with an old date (1 year ago) in the filename.
-				$old_date      = gmdate( 'Y-m-d', time() - YEAR_IN_SECONDS );
-				$new_filename  = preg_replace( '/\d{4}-\d{2}-\d{2}/', $old_date, $old_filename );
-				$new_file_path = $log_dir . $new_filename;
+		// Rename files to have old dates in their filenames to simulate aged log files.
+		foreach ( $log_files as $log_file ) {
+			$old_filename = basename( $log_file );
+			// Replace today's date with an old date (1 year ago) in the filename.
+			$old_date      = gmdate( 'Y-m-d', time() - YEAR_IN_SECONDS );
+			$new_filename  = preg_replace( '/\d{4}-\d{2}-\d{2}/', $old_date, $old_filename );
+			$new_file_path = $log_dir . $new_filename;
 
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
-				rename( $log_file, $new_file_path );
-			}
-
-			// Refresh the list of log files after renaming.
-			$log_files = $this->get_log_files();
-		} else {
-			// For WC < 8.6, mock the log files being very old (1 year old) by touching them.
-			foreach ( $log_files as $log_file ) {
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_touch
-				touch( $log_file, time() - YEAR_IN_SECONDS );
-			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
+			rename( $log_file, $new_file_path );
 		}
+
+		// Refresh the list of log files after renaming.
+		$log_files = $this->get_log_files();
 
 		// Trigger WC's log cleanup.
 		do_action( 'woocommerce_cleanup_logs' );
 
-		// For WC >= 8.6, we need to check for renamed migration files with today's date.
-		if ( version_compare( WC_VERSION, '8.6.0', '>=' ) ) {
-			$log_dir               = trailingslashit( WC_LOG_DIR );
-			$migration_file_exists = false;
+		$migration_file_exists = false;
 
-			// Check if any migration log file with today's date exists.
-			foreach ( WC_Log_Handler_File::get_log_files() as $log_file_name ) {
-				if ( strpos( $log_file_name, WC_Payments_Subscription_Migration_Log_Handler::HANDLE ) === 0 ) {
-					$migration_file_exists = true;
-					$migration_file_path   = $log_dir . $log_file_name;
-					$this->assertFileExists( $migration_file_path );
-					$this->assertStringContainsString( $message, file_get_contents( $migration_file_path ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-					// Verify the file has today's date in the filename.
-					$this->assertStringContainsString( gmdate( 'Y-m-d' ), $log_file_name );
-				}
+		// Check if any migration log file with today's date exists.
+		foreach ( WC_Log_Handler_File::get_log_files() as $log_file_name ) {
+			if ( strpos( $log_file_name, WC_Payments_Subscription_Migration_Log_Handler::HANDLE ) === 0 ) {
+				$migration_file_exists = true;
+				$migration_file_path   = $log_dir . $log_file_name;
+				$this->assertFileExists( $migration_file_path );
+				$this->assertStringContainsString( $message, file_get_contents( $migration_file_path ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+				// Verify the file has today's date in the filename.
+				$this->assertStringContainsString( gmdate( 'Y-m-d' ), $log_file_name );
 			}
+		}
 
-			$this->assertTrue( $migration_file_exists, 'Migration log file should exist after cleanup.' );
+		$this->assertTrue( $migration_file_exists, 'Migration log file should exist after cleanup.' );
 
-			// Confirm dummy log files with old dates are deleted.
-			foreach ( $log_files as $log_file ) {
-				if ( strpos( basename( $log_file ), $this->test_log_source ) === 0 ) {
-					$this->assertFileDoesNotExist( $log_file );
-				}
-			}
-		} else {
-			// For WC < 8.6, check the original file paths.
-			foreach ( $log_files as $log_file ) {
-				// Confirm our test mock log file is deleted and our migration files aren't.
-				if ( strpos( basename( $log_file ), $this->test_log_source ) === 0 ) {
-					$this->assertFileDoesNotExist( $log_file );
-				} else {
-					$this->assertFileExists( $log_file );
-					$this->assertStringContainsString( $message, file_get_contents( $log_file ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-				}
+		// Confirm dummy log files with old dates are deleted.
+		foreach ( $log_files as $log_file ) {
+			if ( strpos( basename( $log_file ), $this->test_log_source ) === 0 ) {
+				$this->assertFileDoesNotExist( $log_file );
 			}
 		}
 	}
