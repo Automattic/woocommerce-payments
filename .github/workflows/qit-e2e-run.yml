@@ -65,7 +65,7 @@ jobs:
           # Use --plugin with explicit slug format for local zip file (run:e2e doesn't have --zip option)
           QIT_CMD="qit run:e2e woocommerce-payments"
           QIT_CMD="$QIT_CMD --plugin=woocommerce-payments@./woocommerce-payments.zip"
-          QIT_CMD="$QIT_CMD --test-package=woocommerce-payments/${{ inputs.test-package }}"
+          QIT_CMD="$QIT_CMD --test-package=woocommerce-payments/${{ inputs.test-package }}:latest"
           QIT_CMD="$QIT_CMD --woo=${{ inputs.woocommerce-version }}"
           QIT_CMD="$QIT_CMD --php=${{ inputs.php-version }}"
 
