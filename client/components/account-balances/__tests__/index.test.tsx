@@ -396,7 +396,7 @@ describe( 'AccountBalances', () => {
 			screen.getByRole( 'button', { name: 'Get $300.00 now' } )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByText( /Instant payouts are temporarily unavailable/ )
+			screen.queryByText( /Instant payouts are currently unavailable/ )
 		).not.toBeInTheDocument();
 	} );
 } );
