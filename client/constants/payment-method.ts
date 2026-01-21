@@ -11,6 +11,7 @@ enum PAYMENT_METHOD_IDS {
 	AFFIRM = 'affirm',
 	AFTERPAY_CLEARPAY = 'afterpay_clearpay',
 	ALIPAY = 'alipay',
+	AMAZON_PAY = 'amazon_pay',
 	APPLE_PAY = 'apple_pay',
 	AU_BECS_DEBIT = 'au_becs_debit',
 	BANCONTACT = 'bancontact',
