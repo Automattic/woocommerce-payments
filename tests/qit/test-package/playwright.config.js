@@ -18,36 +18,27 @@ export default defineConfig( {
 	forbidOnly: !! process.env.CI,
 
 	/* Retry on CI only */
-	retries: process.env.CI ? 2 : 0,
+	retries: process.env.CI ? 1 : 0,
 
 	/* Opt out of parallel tests - run one at a time */
 	workers: 1,
 
 	/* Reporter configuration for QIT */
 	reporter: [
-		[ 'list' ],
-		[ 'html', { open: 'never', outputFolder: './results/html' } ],
 		[
-			'playwright-ctrf-json-reporter',
+			'ctrf-playwright',
 			{
-				outputDir: './results',
-				outputFile: 'ctrf.json',
+				outputFile: './test-results/ctrf.json'
 			},
 		],
 		[
-			'allure-playwright',
+			'html',
 			{
-				resultsDir: './results/allure',
-			},
-		],
-		[
-			'blob',
-			{
-				outputDir: './results/blob',
-			},
+   	   			outputFolder: './test-results/artifacts/html'
+			}
 		],
 	],
-
+	outputDir: './test-results/artifacts',
 	/* Shared settings for all projects */
 	use: {
 		/* Base URL from QIT environment */

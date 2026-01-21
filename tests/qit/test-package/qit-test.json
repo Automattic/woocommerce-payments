@@ -29,9 +29,8 @@
             "globalTeardown": []
         },
         "results": {
-            "ctrf-json": "./results/ctrf.json",
-            "blob-dir": "./results/blob",
-            "allure-dir": "./results/allure"
+            "ctrf-json": "./test-results/ctrf.json",
+            "blob-dir": "./test-results/artifacts"
         }
     },
     "subpackages": {
