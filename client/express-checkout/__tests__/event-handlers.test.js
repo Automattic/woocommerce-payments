@@ -20,6 +20,9 @@ describe( 'Express checkout event handlers', () => {
 		global.wcpayExpressCheckoutParams.checkout = {
 			display_prices_with_tax: false,
 		};
+		global.wcpayExpressCheckoutParams.flags = {
+			isEceUsingConfirmationTokens: true,
+		};
 
 		setCartApiHandler( {
 			updateCustomer: cartApiUpdateCustomerMock,
@@ -298,6 +301,9 @@ describe( 'Express checkout event handlers', () => {
 				createConfirmationToken: jest.fn().mockResolvedValue( {
 					confirmationToken: { id: 'ctoken_123' },
 				} ),
+				createPaymentMethod: jest.fn().mockResolvedValue( {
+					paymentMethod: { id: 'pm_123' },
+				} ),
 			};
 			elements = {
 				submit: jest.fn().mockResolvedValue( {} ),
@@ -352,30 +358,134 @@ describe( 'Express checkout event handlers', () => {
 
 			expect( completePayment ).not.toHaveBeenCalled();
 			expect( stripe.createConfirmationToken ).not.toHaveBeenCalled();
+			expect( stripe.createPaymentMethod ).not.toHaveBeenCalled();
 			expect( abortPayment ).toHaveBeenCalledWith( 'Submit error' );
 		} );
 
-		it( 'should abort payment if stripe.createConfirmationToken fails', async () => {
-			stripe.createConfirmationToken.mockResolvedValue( {
-				error: { message: 'Confirmation token error' },
+		describe( 'when using payment methods (flag disabled)', () => {
+			beforeEach( () => {
+				global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = false;
 			} );
 
-			await onConfirmHandler(
-				api,
-				stripe,
-				elements,
-				completePayment,
-				abortPayment,
-				event
-			);
+			it( 'should call stripe.createPaymentMethod', async () => {
+				cartApiPlaceOrderMock.mockResolvedValue( {
+					payment_result: {
+						payment_status: 'success',
+						redirect_url: 'https://example.com/success',
+					},
+				} );
+				api.confirmIntent.mockReturnValue( true );
 
-			expect( completePayment ).not.toHaveBeenCalled();
-			expect( stripe.createConfirmationToken ).toHaveBeenCalledWith( {
-				elements,
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					event
+				);
+
+				expect( stripe.createPaymentMethod ).toHaveBeenCalledWith( {
+					elements,
+				} );
+				expect( stripe.createConfirmationToken ).not.toHaveBeenCalled();
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						payment_data: expect.arrayContaining( [
+							expect.objectContaining( {
+								key: 'wcpay-payment-method',
+								value: 'pm_123',
+							} ),
+						] ),
+					} )
+				);
 			} );
-			expect( abortPayment ).toHaveBeenCalledWith(
-				'Confirmation token error'
-			);
+
+			it( 'should abort payment if stripe.createPaymentMethod fails', async () => {
+				stripe.createPaymentMethod.mockResolvedValue( {
+					error: { message: 'Payment method error' },
+				} );
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					event
+				);
+
+				expect( completePayment ).not.toHaveBeenCalled();
+				expect( stripe.createPaymentMethod ).toHaveBeenCalledWith( {
+					elements,
+				} );
+				expect( abortPayment ).toHaveBeenCalledWith(
+					'Payment method error'
+				);
+			} );
+		} );
+
+		describe( 'when using confirmation tokens (flag enabled)', () => {
+			beforeEach( () => {
+				global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+			} );
+
+			it( 'should call stripe.createConfirmationToken', async () => {
+				cartApiPlaceOrderMock.mockResolvedValue( {
+					payment_result: {
+						payment_status: 'success',
+						redirect_url: 'https://example.com/success',
+					},
+				} );
+				api.confirmIntent.mockReturnValue( true );
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					event
+				);
+
+				expect( stripe.createConfirmationToken ).toHaveBeenCalledWith( {
+					elements,
+				} );
+				expect( stripe.createPaymentMethod ).not.toHaveBeenCalled();
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						payment_data: expect.arrayContaining( [
+							expect.objectContaining( {
+								key: 'wcpay-confirmation-token',
+								value: 'ctoken_123',
+							} ),
+						] ),
+					} )
+				);
+			} );
+
+			it( 'should abort payment if stripe.createConfirmationToken fails', async () => {
+				stripe.createConfirmationToken.mockResolvedValue( {
+					error: { message: 'Confirmation token error' },
+				} );
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					event
+				);
+
+				expect( completePayment ).not.toHaveBeenCalled();
+				expect( stripe.createConfirmationToken ).toHaveBeenCalledWith( {
+					elements,
+				} );
+				expect( abortPayment ).toHaveBeenCalledWith(
+					'Confirmation token error'
+				);
+			} );
 		} );
 
 		it( 'should abort payment if cartApi.placeOrder throws an exception because of a network error', async () => {
