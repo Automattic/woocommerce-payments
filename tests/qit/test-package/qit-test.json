@@ -23,7 +23,7 @@
                 "npx playwright install chromium --with-deps"
             ],
             "run": [
-                "npx playwright test --project=default"
+                "npx playwright test --project=shopper --project=merchant"
             ],
             "teardown": [],
             "globalTeardown": []
