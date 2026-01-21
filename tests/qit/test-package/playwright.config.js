@@ -25,16 +25,24 @@ export default defineConfig( {
 
 	/* Reporter configuration for QIT */
 	reporter: [
+		[ 'list' ],
 		[
 			'playwright-ctrf-json-reporter',
 			{
-				outputFile: './test-results/ctrf.json'
+				outputDir: './test-results',
+				outputFile: 'ctrf.json'
 			},
 		],
 		[
 			'html',
 			{
 				outputFolder: './test-results/html'
+			}
+		],
+		[
+			'allure-playwright',
+			{
+				outputFolder: './test-results/allure'
 			}
 		],
 	],

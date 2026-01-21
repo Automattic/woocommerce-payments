@@ -23,14 +23,15 @@
                 "npx playwright install chromium --with-deps"
             ],
             "run": [
-                "npx playwright test --project=default --project=shopper --project=merchant"
+                "npx playwright test --project=default"
             ],
             "teardown": [],
             "globalTeardown": []
         },
         "results": {
             "ctrf-json": "./test-results/ctrf.json",
-            "blob-dir": "./test-results/artifacts"
+            "blob-dir": "./test-results/artifacts",
+            "allure-dir": "./test-results/allure"
         }
     },
     "subpackages": {
