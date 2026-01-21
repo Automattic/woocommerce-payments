@@ -29,21 +29,38 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	private $wc_payments_checkout;
 
 	/**
+	 * Constructor.
+	 *
+	 * @param WC_Payment_Gateway_WCPay|null $gateway Optional. The gateway to use. Defaults to main card gateway.
+	 */
+	public function __construct( $gateway = null ) {
+		// Set the gateway and name immediately in constructor because get_name()
+		// is called during register() before initialize() runs.
+		$this->gateway = $gateway ?? WC_Payments::get_gateway();
+		$this->name    = $this->gateway->id;
+	}
+
+	/**
 	 * Initializes the class.
 	 */
 	public function initialize() {
-		$this->name                 = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$this->gateway              = WC_Payments::get_gateway();
 		$this->wc_payments_checkout = WC_Payments::get_wc_payments_checkout();
 	}
 
 	/**
 	 * Checks whether the gateway is active.
 	 *
+	 * This uses is_enabled() instead of is_available() because is_available()
+	 * includes runtime checks (HTTPS, currency, account status) that can fail
+	 * in the block editor context, causing WooPayments to incorrectly appear
+	 * as "incompatible with block-based checkout". The is_enabled() method
+	 * simply checks if the gateway is enabled in settings, which aligns with
+	 * how WooCommerce core payment methods implement this check.
+	 *
 	 * @return boolean True when active.
 	 */
 	public function is_active() {
-		return $this->gateway->is_available();
+		return $this->gateway->is_enabled();
 	}
 
 	/**

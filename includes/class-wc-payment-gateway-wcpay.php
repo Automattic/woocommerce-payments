@@ -2628,7 +2628,36 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_settings() {
 		parent::init_settings();
-		$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
+
+		// Get the basic enabled value from settings.
+		$is_enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ];
+
+		// Express checkout methods (Apple Pay, Google Pay) are registered via registerExpressPaymentMethod()
+		// in JS with different names than their PHP gateway IDs. In the admin block editor, this causes
+		// WooCommerce to incorrectly flag them as "incompatible with block checkout" because it can't
+		// match the PHP gateway ID to a JS registerPaymentMethod() call. We set enabled='no' only in
+		// admin context to exclude them from that compatibility check while preserving normal behavior.
+		$express_checkout_methods = [ 'apple_pay', 'google_pay' ];
+		if ( is_admin() && in_array( $this->stripe_id, $express_checkout_methods, true ) ) {
+			$this->enabled = 'no';
+			return;
+		}
+
+		// For the main card gateway and express checkout (non-admin), just use the enabled setting.
+		if ( 'card' === $this->stripe_id || in_array( $this->stripe_id, $express_checkout_methods, true ) ) {
+			$this->enabled = $is_enabled ? 'yes' : 'no';
+			return;
+		}
+
+		// For split gateways, also verify the method is in the UPE enabled list.
+		// This prevents sync issues where a gateway has enabled=yes but isn't
+		// actually configured for checkout in the UPE settings.
+		if ( $is_enabled ) {
+			$upe_enabled_methods = $this->get_upe_enabled_payment_method_ids();
+			$this->enabled       = in_array( $this->stripe_id, $upe_enabled_methods, true ) ? 'yes' : 'no';
+		} else {
+			$this->enabled = 'no';
+		}
 	}
 
 	/**
@@ -3948,10 +3977,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks whether the gateway is enabled.
 	 *
+	 * For split gateways (non-card, non-express payment methods), this also verifies
+	 * that the payment method is in the UPE enabled payment methods list. This ensures
+	 * that gateway `enabled` status stays in sync with the UPE config.
+	 *
 	 * @return bool The result.
 	 */
 	public function is_enabled() {
-		return 'yes' === $this->get_option( 'enabled' );
+		$is_enabled = 'yes' === $this->get_option( 'enabled' );
+
+		// For the main card gateway and express checkout methods, just check the enabled option.
+		// Express checkout methods need is_enabled() to return true for domain verification etc.
+		$simple_check_methods = [ 'card', 'apple_pay', 'google_pay' ];
+		if ( in_array( $this->stripe_id, $simple_check_methods, true ) ) {
+			return $is_enabled;
+		}
+
+		// For split gateways, also verify the method is in the UPE enabled list.
+		// This prevents sync issues where a gateway has enabled=yes but isn't
+		// actually configured for checkout in the UPE settings.
+		if ( $is_enabled ) {
+			$upe_enabled_methods = $this->get_upe_enabled_payment_method_ids();
+			return in_array( $this->stripe_id, $upe_enabled_methods, true );
+		}
+
+		return false;
 	}
 
 	/**
@@ -4092,11 +4142,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
 				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
 
-				$skip_currency_check       = ! $force_currency_check && is_admin();
+				// In admin context (e.g., block editor), we skip runtime checks to allow
+				// payment methods to be displayed. This prevents false "incompatible with
+				// block-based checkout" warnings. On the frontend, full validation applies.
+				$is_admin_context          = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $is_admin_context ) && ( $is_admin_context || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
-					if ( 'active' === $status ) {
+					// In admin context, skip capability status check to allow all enabled
+					// methods to appear in the block editor's payment method list.
+					if ( $is_admin_context || 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
 					}
 				}
