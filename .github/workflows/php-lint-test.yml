@@ -7,7 +7,6 @@ on:
 env:
   WP_VERSION:        latest
   WC_MIN_SUPPORTED_VERSION: '7.6.0'
-  GUTENBERG_VERSION: latest
   PHP_MIN_SUPPORTED_VERSION: '7.3'
 
 concurrency:
@@ -41,8 +40,9 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"7.3\", \"7.4\"]" )
-          echo "matrix={\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
+          # PHP 7.3 requires Gutenberg 22.3.0 (last version supporting PHP 7.3)
+          # PHP 7.4+ can use latest Gutenberg
+          echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"22.3.0\"}]}" >> $GITHUB_OUTPUT
 
   test:
     name: PHP testing
@@ -69,3 +69,4 @@ jobs:
       - run: bash bin/run-ci-tests.bash
         env:
           WC_VERSION: ${{ env.WC_MIN_SUPPORTED_VERSION }}
+          GUTENBERG_VERSION: ${{ matrix.gutenberg }}

@@ -15,6 +15,29 @@ WooCommerce Payments (WCPay) is a WordPress plugin that provides payment process
 - See `woocommerce-payments.php` header for current version and WordPress/WooCommerce/PHP requirements
 - See `package.json` for Node.js version requirements (engines field)
 
+## WooCommerce Core Reference
+
+WooPayments is a separate plugin that integrates with WooCommerce core, leveraging its hooks, filters, and APIs. Having the WooCommerce codebase available locally provides useful context when working on WooPayments.
+
+**Location:** `../woocommerce` (or set `WOOCOMMERCE_DIR` env var to override)
+
+**Key paths within WooCommerce:**
+- `plugins/woocommerce/includes/` - Core WooCommerce PHP classes
+- `plugins/woocommerce/src/` - Modern PSR-4 WooCommerce code
+- `plugins/woocommerce-blocks/` - Checkout and cart blocks
+
+**When to reference WooCommerce core:**
+- When working with WC hooks/filters - check the core implementation to understand parameters, timing, and context
+- When using WC base classes (e.g., `WC_Payment_Gateway`) - understand the parent class behavior
+- When debugging issues that may involve core behavior
+- When implementing features that interact with WC APIs (orders, products, customers, etc.)
+
+**Auto-reference triggers:** Proactively check WooCommerce core when you encounter:
+- Classes using `WC_*` base classes
+- Hooks starting with `woocommerce_` or `wc_`
+- Usage of `WC()` singleton or WC helper functions
+- Order, product, or customer manipulation code
+
 ## Directory Structure
 
 ### PHP Code

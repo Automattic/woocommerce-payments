@@ -2555,6 +2555,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return;
 		}
 
+		// Track that this merchant has been eligible for instant deposits.
+		// Used to show an informative notice if they later become ineligible.
+		update_option( 'wcpay_instant_deposits_previously_eligible', true );
+
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
 		$this->maybe_add_instant_deposit_note_reminder();
