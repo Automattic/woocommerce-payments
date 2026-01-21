@@ -22,9 +22,14 @@ const ExpressCheckoutContainer = ( props ) => {
 		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
 
+	const useConfirmationToken =
+		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+
 	const options = {
 		mode: 'payment',
-		paymentMethodTypes: [ 'card' ],
+		...( useConfirmationToken
+			? { paymentMethodTypes: [ 'card' ] }
+			: { paymentMethodCreation: 'manual' } ),
 		// ensuring that the total amount is transformed to the correct format.
 		amount: ! isPreview
 			? transformPrice( billing.cartTotal.value, {
