@@ -141,6 +141,7 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		instantDepositsPreviouslyEligible: boolean;
 		isConnectionSuccessModalDismissed: boolean;
 		trackingInfo?: {
 			hosting_provider: string;
