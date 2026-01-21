@@ -26,7 +26,7 @@ export default defineConfig( {
 	/* Reporter configuration for QIT */
 	reporter: [
 		[
-			'ctrf-playwright',
+			'playwright-ctrf-json-reporter',
 			{
 				outputFile: './test-results/ctrf.json'
 			},

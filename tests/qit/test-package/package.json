@@ -10,7 +10,7 @@
     "devDependencies": {
         "@playwright/test": "^1.56.1",
         "@types/node": "^20.0.0",
-        "ctrf-playwright-reporter": "^1.0.0"
+        "playwright-ctrf-json-reporter": "^0.0.26"
     },
     "dependencies": {
         "@qit/helpers": "file:./qit-helpers"
