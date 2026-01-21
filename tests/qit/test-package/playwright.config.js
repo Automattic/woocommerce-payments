@@ -42,7 +42,7 @@ export default defineConfig( {
 		[
 			'allure-playwright',
 			{
-				outputFolder: './test-results/allure'
+				resultsDir: './test-results/allure'
 			}
 		],
 	],
