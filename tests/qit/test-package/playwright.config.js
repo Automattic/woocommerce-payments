@@ -34,7 +34,7 @@ export default defineConfig( {
 		[
 			'html',
 			{
-   	   			outputFolder: './test-results/artifacts/html'
+				outputFolder: './test-results/html'
 			}
 		],
 	],
