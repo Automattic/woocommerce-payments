@@ -76,6 +76,6 @@ jobs:
     secrets:
       QIT_CI_USER: ${{ secrets.QIT_CI_USER }}
       QIT_CI_SECRET: ${{ secrets.QIT_CI_SECRET }}
-      E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
-      E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
-      E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
+      E2E_QIT_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
+      E2E_QIT_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
+      E2E_QIT_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
