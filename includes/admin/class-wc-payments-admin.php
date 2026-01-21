@@ -1006,6 +1006,7 @@ class WC_Payments_Admin {
 			'storeName'                          => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
+			'instantDepositsPreviouslyEligible'  => get_option( 'wcpay_instant_deposits_previously_eligible', false ),
 			'dismissedDuplicateNotices'          => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
 			'isConnectionSuccessModalDismissed'  => get_option( WC_Payments_Onboarding_Service::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION, false ),
 			'isOverviewSurveySubmitted'          => get_option( 'wcpay_survey_payment_overview_submitted', false ),
