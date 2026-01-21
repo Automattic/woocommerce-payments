@@ -93,6 +93,9 @@ export interface WCPayExpressCheckoutParams {
 	 * The available express checkout methods for the current page context.
 	 */
 	enabled_methods: Array< 'payment_request' | 'amazon_pay' >;
+	flags: {
+		isEceUsingConfirmationTokens: boolean;
+	};
 }
 
 declare global {

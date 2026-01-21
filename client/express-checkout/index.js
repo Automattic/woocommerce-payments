@@ -208,6 +208,10 @@ jQuery( ( $ ) => {
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
+			const useConfirmationToken =
+				getExpressCheckoutData( 'flags' )
+					?.isEceUsingConfirmationTokens ?? true;
+
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
 			const enabledMethods =
@@ -216,12 +220,15 @@ jQuery( ( $ ) => {
 				enabledMethods.includes( 'payment_request' ) && 'card',
 				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
 			].filter( Boolean );
+
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
 				mode: 'payment',
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
-				paymentMethodTypes,
+				...( useConfirmationToken
+					? { paymentMethodTypes }
+					: { paymentMethodCreation: 'manual' } ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );

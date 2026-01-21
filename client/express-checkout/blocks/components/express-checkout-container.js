@@ -22,6 +22,9 @@ const ExpressCheckoutContainer = ( props ) => {
 		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
 
+	const useConfirmationToken =
+		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+
 	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
 	// to ensure PaymentIntent uses matching types.
@@ -36,7 +39,9 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const options = {
 		mode: 'payment',
-		paymentMethodTypes,
+		...( useConfirmationToken
+			? { paymentMethodTypes }
+			: { paymentMethodCreation: 'manual' } ),
 		// ensuring that the total amount is transformed to the correct format.
 		amount: ! isPreview
 			? transformPrice( billing.cartTotal.value, {
