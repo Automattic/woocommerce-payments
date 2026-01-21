@@ -20,11 +20,11 @@ on:
         required: true
       QIT_CI_SECRET:
         required: true
-      E2E_JP_SITE_ID:
+      E2E_QIT_JP_SITE_ID:
         required: true
-      E2E_JP_BLOG_TOKEN:
+      E2E_QIT_JP_BLOG_TOKEN:
         required: true
-      E2E_JP_USER_TOKEN:
+      E2E_QIT_JP_USER_TOKEN:
         required: true
 
 jobs:
@@ -56,9 +56,9 @@ jobs:
 
       - name: Run QIT E2E Tests
         env:
-          E2E_JP_SITE_ID: ${{ secrets.E2E_JP_SITE_ID }}
-          E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_JP_BLOG_TOKEN }}
-          E2E_JP_USER_TOKEN: ${{ secrets.E2E_JP_USER_TOKEN }}
+          E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
+          E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
+          E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
         run: |
           qit run:e2e woocommerce-payments \
             --config tests/qit/qit.json \
