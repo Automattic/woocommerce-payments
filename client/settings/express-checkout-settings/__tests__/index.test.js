@@ -11,11 +11,15 @@ import { render, screen } from '@testing-library/react';
 import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
+import { useGetPaymentMethodStatuses } from 'wcpay/data';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useTestMode: jest.fn().mockReturnValue( [] ),
 	useGetSettings: jest.fn().mockReturnValue( {} ),
 	useSettings: jest.fn().mockReturnValue( {} ),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
+	useGetPaymentMethodStatuses: jest.fn(),
 	usePaymentRequestEnabledSettings: jest
 		.fn()
 		.mockReturnValue( [ true, jest.fn() ] ),
@@ -118,6 +122,10 @@ describe( 'ExpressCheckoutSettings', () => {
 				isDynamicCheckoutPlaceOrderButtonEnabled: true,
 			},
 		};
+
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			amazon_pay_payments: upeCapabilityStatuses.ACTIVE,
+		} );
 	} );
 
 	test( 'renders error message for invalid method IDs', () => {
