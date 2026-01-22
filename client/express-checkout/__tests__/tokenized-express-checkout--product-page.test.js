@@ -613,10 +613,10 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		);
 	} );
 
-	it( 'should set setupFutureUsage to off_session when checkout has_subscription is true', async () => {
+	it( 'should set setupFutureUsage to off_session when has_subscription is true', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
 		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
-		global.wcpayExpressCheckoutParams.checkout.has_subscription = true;
+		global.wcpayExpressCheckoutParams.has_subscription = true;
 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );

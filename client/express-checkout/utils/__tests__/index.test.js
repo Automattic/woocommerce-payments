@@ -70,10 +70,10 @@ describe( 'Express checkout utils', () => {
 			} );
 		} );
 
-		test( 'returns setupFutureUsage when checkout has_subscription is true', () => {
+		test( 'returns setupFutureUsage when has_subscription is true', () => {
 			window.wcpayExpressCheckoutParams = {
 				product: { product_type: 'simple' },
-				checkout: { has_subscription: true },
+				has_subscription: true,
 			};
 
 			expect( getSetupFutureUsage() ).toEqual( {
@@ -84,7 +84,7 @@ describe( 'Express checkout utils', () => {
 		test( 'returns empty object for non-subscription products', () => {
 			window.wcpayExpressCheckoutParams = {
 				product: { product_type: 'simple' },
-				checkout: { has_subscription: false },
+				has_subscription: false,
 			};
 
 			expect( getSetupFutureUsage() ).toEqual( {} );

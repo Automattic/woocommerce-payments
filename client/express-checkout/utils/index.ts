@@ -39,8 +39,9 @@ export interface WCPayExpressCheckoutParams {
 		needs_payer_phone: boolean;
 		needs_shipping: boolean;
 		currency_decimals: number;
-		has_subscription?: boolean;
 	};
+
+	has_subscription?: boolean;
 
 	/**
 	 * Indicaters whether the page has a Cart or Checkout Block on it.
@@ -222,8 +223,7 @@ export const getSetupFutureUsage = ():
 	].includes( productType );
 
 	const hasSubscription =
-		getExpressCheckoutData( 'checkout' )?.has_subscription ||
-		isSubscriptionProduct;
+		getExpressCheckoutData( 'has_subscription' ) || isSubscriptionProduct;
 
 	return hasSubscription ? { setupFutureUsage: 'off_session' } : {};
 };
