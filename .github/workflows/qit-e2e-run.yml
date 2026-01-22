@@ -69,3 +69,13 @@ jobs:
             --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
             --verbose \
             --wait
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qit-e2e-results-wc${{ inputs.woocommerce-version }}-php${{ inputs.php-version }}
+          path: |
+            tests/qit/test-package/test-results/
+            qit-results/
+          retention-days: 7
