@@ -18,6 +18,7 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
+	getSetupFutureUsage,
 	displayLoginConfirmation,
 } from './utils';
 import {
@@ -227,7 +228,10 @@ jQuery( ( $ ) => {
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
 				...( useConfirmationToken
-					? { paymentMethodTypes }
+					? {
+							paymentMethodTypes,
+							...getSetupFutureUsage(),
+					  }
 					: { paymentMethodCreation: 'manual' } ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',

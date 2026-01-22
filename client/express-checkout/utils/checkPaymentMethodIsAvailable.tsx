@@ -11,7 +11,7 @@ import { memoize } from 'lodash';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getExpressCheckoutData } from '.';
+import { getExpressCheckoutData, getSetupFutureUsage } from '.';
 
 // types from https://github.com/woocommerce/woocommerce/blob/360d9bc0f5709e6cf13c646860360fca9968ebb0/plugins/woocommerce/client/blocks/assets/js/types/type-defs/cart.ts
 interface CartTotals {
@@ -57,6 +57,7 @@ const checkPaymentMethodIsAvailableInternal = (
 			[ 'applePay', 'googlePay' ].includes( paymentMethod ) && 'card',
 			paymentMethod === 'amazonPay' && 'amazon_pay',
 		].filter( Boolean ) as string[];
+
 		const root = createRoot( containerEl );
 		root.render(
 			<Elements
@@ -64,7 +65,10 @@ const checkPaymentMethodIsAvailableInternal = (
 				options={ {
 					mode: 'payment',
 					...( useConfirmationToken
-						? { paymentMethodTypes }
+						? {
+								paymentMethodTypes,
+								...getSetupFutureUsage(),
+						  }
 						: { paymentMethodCreation: 'manual' } ),
 					amount: Number( totalPrice ),
 					currency: currencyCode.toLowerCase(),
