@@ -18,6 +18,7 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
+	getSetupFutureUsage,
 	displayLoginConfirmation,
 } from './utils';
 import {
@@ -212,19 +213,6 @@ jQuery( ( $ ) => {
 				getExpressCheckoutData( 'flags' )
 					?.isEceUsingConfirmationTokens ?? true;
 
-			// For subscriptions, we need to set `setupFutureUsage` to save the payment method
-			// for future renewals
-			const productType =
-				getExpressCheckoutData( 'product' )?.product_type ?? '';
-			const isSubscriptionProduct = [
-				'subscription',
-				'variable-subscription',
-				'subscription_variation',
-			].includes( productType );
-			const hasSubscription =
-				getExpressCheckoutData( 'checkout' )?.has_subscription ||
-				isSubscriptionProduct;
-
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
 				mode: 'payment',
@@ -233,9 +221,7 @@ jQuery( ( $ ) => {
 				...( useConfirmationToken
 					? {
 							paymentMethodTypes: [ 'card' ],
-							...( hasSubscription && {
-								setupFutureUsage: 'off_session',
-							} ),
+							...getSetupFutureUsage(),
 					  }
 					: { paymentMethodCreation: 'manual' } ),
 				appearance: getExpressCheckoutButtonAppearance(),

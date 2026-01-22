@@ -39,6 +39,7 @@ export interface WCPayExpressCheckoutParams {
 		needs_payer_phone: boolean;
 		needs_shipping: boolean;
 		currency_decimals: number;
+		has_subscription?: boolean;
 	};
 
 	/**
@@ -202,6 +203,29 @@ export const getExpressCheckoutButtonAppearance = (
 			spacingUnit: '6px',
 		},
 	};
+};
+
+/**
+ * Returns Stripe Elements options for saving payment methods for subscriptions.
+ * If the current context involves a subscription product, returns
+ * `{ setupFutureUsage: 'off_session' }` to save the payment method for future renewals.
+ * Otherwise, returns an empty object.
+ */
+export const getSetupFutureUsage = ():
+	| { setupFutureUsage: 'off_session' }
+	| Record< string, never > => {
+	const productType = getExpressCheckoutData( 'product' )?.product_type ?? '';
+	const isSubscriptionProduct = [
+		'subscription',
+		'variable-subscription',
+		'subscription_variation',
+	].includes( productType );
+
+	const hasSubscription =
+		getExpressCheckoutData( 'checkout' )?.has_subscription ||
+		isSubscriptionProduct;
+
+	return hasSubscription ? { setupFutureUsage: 'off_session' } : {};
 };
 
 /**
