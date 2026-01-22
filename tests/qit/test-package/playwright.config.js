@@ -48,7 +48,7 @@ export default defineConfig( {
 		[
 			'html',
 			{
-				outputFolder: './test-results/html',
+				outputFolder: './playwright-report',
 			},
 		],
 		[
