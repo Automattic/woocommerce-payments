@@ -40,6 +40,12 @@ export default defineConfig( {
 			},
 		],
 		[
+			'blob',
+			{
+				outputDir: './test-results/blob-report',
+			},
+		],
+		[
 			'html',
 			{
 				outputFolder: './test-results/html',
@@ -52,7 +58,6 @@ export default defineConfig( {
 			},
 		],
 	],
-	outputDir: './test-results/artifacts',
 	/* Shared settings for all projects */
 	use: {
 		/* Base URL from QIT environment */

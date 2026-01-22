@@ -25,14 +25,14 @@
                 "mkdir -p ./test-results"
             ],
             "run": [
-                "npx playwright test --project=shopper --project=merchant"
+                "npx playwright test --project=shopper --project=merchant --grep 'Debug Tests'"
             ],
             "teardown": [],
             "globalTeardown": []
         },
         "results": {
             "ctrf-json": "./test-results/ctrf.json",
-            "blob-dir": "./test-results/artifacts",
+            "blob-dir": "./test-results/blob-report",
             "allure-dir": "./test-results/allure"
         }
     },
