@@ -66,37 +66,17 @@ export const generateAttachments = (
 	const attachments: string[] = [];
 	let attachmentCount = 0;
 
-	// For duplicate disputes with is_duplicate status, check for refund receipt first (uses uncategorized_file)
-	// This ensures it shows as "Refund receipt" rather than "Other documents"
-	if (
-		dispute.reason === 'duplicate' &&
-		duplicateStatus === 'is_duplicate'
-	) {
-		const refundReceipt =
-			dispute.evidence?.[
-				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION
-			];
-		if ( refundReceipt && isEvidenceString( refundReceipt ) ) {
-			attachmentCount++;
-			attachments.push(
-				sprintf(
-					/* translators: %1$s: label, %2$s: attachment letter */
-					__( '• %1$s (Attachment %2$s)', 'woocommerce-payments' ),
-					__( 'Refund receipt', 'woocommerce-payments' ),
-					String.fromCharCode( 64 + attachmentCount )
-				)
-			);
-		}
-	}
-
 	// Standard attachment definitions with optional restriction rules
 	// Each attachment can specify:
 	// - `onlyForReasons`: only include for these dispute reasons
 	// - `excludeWhen`: exclude when this condition is true (for complex conditions)
+	// - `labelForReasons`: use a different label for specific dispute reasons
+	// - `labelForStatus`: use a different label based on duplicateStatus
 	const standardAttachments: Array< {
 		key: string;
 		label: string;
 		labelForReasons?: { reasons: string[]; label: string };
+		labelForStatus?: { status: string; label: string };
 		onlyForReasons?: string[];
 		excludeWhen?: ( reason: string, status?: string ) => boolean;
 	} > = [
@@ -105,9 +85,16 @@ export const generateAttachments = (
 			label: __( 'Order receipt', 'woocommerce-payments' ),
 		},
 		{
+			// For duplicate disputes:
+			// - is_duplicate: shows as "Refund receipt" (REFUND_RECEIPT_DOCUMENTATION maps to this)
+			// - is_not_duplicate: shows as "Any additional receipts"
 			key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
 			label: __( 'Any additional receipts', 'woocommerce-payments' ),
 			onlyForReasons: [ 'duplicate' ],
+			labelForStatus: {
+				status: 'is_duplicate',
+				label: __( 'Refund receipt', 'woocommerce-payments' ),
+			},
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
@@ -150,14 +137,18 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			label: __( 'Other documents', 'woocommerce-payments' ),
-			// Skip for duplicate + is_duplicate since we already processed it as refund receipt above
-			excludeWhen: ( reason, status ) =>
-				reason === 'duplicate' && status === 'is_duplicate',
 		},
 	];
 
 	standardAttachments.forEach(
-		( { key, label, labelForReasons, onlyForReasons, excludeWhen } ) => {
+		( {
+			key,
+			label,
+			labelForReasons,
+			labelForStatus,
+			onlyForReasons,
+			excludeWhen,
+		} ) => {
 			const evidence = dispute.evidence?.[ key ];
 
 			// Check if this attachment should be skipped based on rules
@@ -173,12 +164,21 @@ export const generateAttachments = (
 
 			if ( evidence && isEvidenceString( evidence ) ) {
 				attachmentCount++;
-				// Use reason-specific label if defined and matches current dispute reason
-				const displayLabel = labelForReasons?.reasons.includes(
-					dispute.reason
-				)
-					? labelForReasons.label
-					: label;
+				// Determine the display label with priority:
+				// 1. Status-specific label (e.g., "Refund receipt" for is_duplicate)
+				// 2. Reason-specific label (e.g., "Terms of service" for subscription_canceled)
+				// 3. Default label
+				let displayLabel = label;
+				if (
+					labelForStatus &&
+					duplicateStatus === labelForStatus.status
+				) {
+					displayLabel = labelForStatus.label;
+				} else if (
+					labelForReasons?.reasons.includes( dispute.reason )
+				) {
+					displayLabel = labelForReasons.label;
+				}
 				attachments.push(
 					sprintf(
 						/* translators: %1$s: label, %2$s: attachment letter */
