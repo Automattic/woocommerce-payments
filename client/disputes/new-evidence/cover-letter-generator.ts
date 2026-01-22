@@ -137,6 +137,11 @@ export const generateAttachments = (
 			label: __( 'Subscription logs', 'woocommerce-payments' ),
 		},
 		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
+			label: __( 'Cancellation logs', 'woocommerce-payments' ),
+			onlyForReasons: [ 'subscription_canceled' ],
+		},
+		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			label: __( 'Other documents', 'woocommerce-payments' ),
 			// Skip for duplicate + is_duplicate since we already processed it as refund receipt above
