@@ -206,6 +206,8 @@ export default ( { query }: { query: { id: string } } ) => {
 					service_documentation:
 						d.evidence?.service_documentation || '',
 					cancellation_policy: d.evidence?.cancellation_policy || '',
+					cancellation_rebuttal:
+						d.evidence?.cancellation_rebuttal || '',
 					access_activity_log: d.evidence?.access_activity_log || '',
 					uncategorized_file: d.evidence?.uncategorized_file || '',
 				} ) );
@@ -240,6 +242,8 @@ export default ( { query }: { query: { id: string } } ) => {
 									d.evidence?.service_documentation || '',
 								cancellation_policy:
 									d.evidence?.cancellation_policy || '',
+								cancellation_rebuttal:
+									d.evidence?.cancellation_rebuttal || '',
 								access_activity_log:
 									d.evidence?.access_activity_log || '',
 								uncategorized_file:
@@ -369,6 +373,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				shipping_documentation: evidence.shipping_documentation,
 				service_documentation: evidence.service_documentation,
 				cancellation_policy: evidence.cancellation_policy,
+				cancellation_rebuttal: evidence.cancellation_rebuttal,
 				access_activity_log: evidence.access_activity_log,
 				uncategorized_file: evidence.uncategorized_file,
 				shipping_carrier: shippingCarrier,
@@ -517,6 +522,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					evidence.duplicate_charge_documentation,
 				service_documentation: evidence.service_documentation,
 				cancellation_policy: evidence.cancellation_policy,
+				cancellation_rebuttal: evidence.cancellation_rebuttal,
 				access_activity_log: evidence.access_activity_log,
 				uncategorized_file: evidence.uncategorized_file,
 				uncategorized_text: coverLetter,
@@ -1193,6 +1199,8 @@ export default ( { query }: { query: { id: string } } ) => {
 										evidence.service_documentation,
 									cancellation_policy:
 										evidence.cancellation_policy,
+									cancellation_rebuttal:
+										evidence.cancellation_rebuttal,
 									access_activity_log:
 										evidence.access_activity_log,
 									uncategorized_file:
