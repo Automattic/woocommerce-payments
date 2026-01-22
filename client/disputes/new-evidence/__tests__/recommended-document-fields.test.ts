@@ -170,7 +170,9 @@ describe( 'Recommended Documents', () => {
 				'is_duplicate',
 				'booking_reservation'
 			);
-			expect( fields ).toHaveLength( 5 );
+			// "Other documents" is excluded because it shares the same Stripe field (uncategorized_file)
+			// as "Refund receipt", which takes priority in this scenario
+			expect( fields ).toHaveLength( 4 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
 			expect( fields[ 0 ].label ).toBe( 'Order receipt' );
 			expect( fields[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
@@ -181,8 +183,6 @@ describe( 'Recommended Documents', () => {
 			expect( fields[ 2 ].key ).toBe( 'customer_communication' ); // Base field
 			expect( fields[ 3 ].key ).toBe( 'refund_policy' );
 			expect( fields[ 3 ].label ).toBe( 'Refund policy' );
-			expect( fields[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
-			expect( fields[ 4 ].label ).toBe( 'Other documents' );
 		} );
 
 		it( 'should return matrix fields for duplicate + booking_reservation + is_not_duplicate', () => {
