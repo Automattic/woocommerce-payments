@@ -96,6 +96,7 @@ export const generateAttachments = (
 	const standardAttachments: Array< {
 		key: string;
 		label: string;
+		labelForReasons?: { reasons: string[]; label: string };
 		onlyForReasons?: string[];
 		excludeWhen?: ( reason: string, status?: string ) => boolean;
 	} > = [
@@ -131,6 +132,11 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 			label: __( 'Cancellation policy', 'woocommerce-payments' ),
+			// For subscription_canceled disputes, this field is labeled "Terms of service" in the UI
+			labelForReasons: {
+				reasons: [ 'subscription_canceled' ],
+				label: __( 'Terms of service', 'woocommerce-payments' ),
+			},
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
@@ -151,7 +157,7 @@ export const generateAttachments = (
 	];
 
 	standardAttachments.forEach(
-		( { key, label, onlyForReasons, excludeWhen } ) => {
+		( { key, label, labelForReasons, onlyForReasons, excludeWhen } ) => {
 			const evidence = dispute.evidence?.[ key ];
 
 			// Check if this attachment should be skipped based on rules
@@ -167,6 +173,12 @@ export const generateAttachments = (
 
 			if ( evidence && isEvidenceString( evidence ) ) {
 				attachmentCount++;
+				// Use reason-specific label if defined and matches current dispute reason
+				const displayLabel = labelForReasons?.reasons.includes(
+					dispute.reason
+				)
+					? labelForReasons.label
+					: label;
 				attachments.push(
 					sprintf(
 						/* translators: %1$s: label, %2$s: attachment letter */
@@ -174,7 +186,7 @@ export const generateAttachments = (
 							'• %1$s (Attachment %2$s)',
 							'woocommerce-payments'
 						),
-						label,
+						displayLabel,
 						String.fromCharCode( 64 + attachmentCount )
 					)
 				);
