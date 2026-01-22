@@ -88,6 +88,9 @@ export interface WCPayExpressCheckoutParams {
 	};
 	total_label: string;
 	wc_ajax_url: string;
+	flags: {
+		isEceUsingConfirmationTokens: boolean;
+	};
 }
 
 declare global {

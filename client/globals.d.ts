@@ -35,7 +35,6 @@ declare global {
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
-			isAccountDetailsEnabled: boolean;
 			amazonPay: boolean;
 		};
 		accountFees: Record< string, any >;
@@ -142,6 +141,7 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		instantDepositsPreviouslyEligible: boolean;
 		isConnectionSuccessModalDismissed: boolean;
 		trackingInfo?: {
 			hosting_provider: string;

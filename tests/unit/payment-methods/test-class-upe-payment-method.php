@@ -81,20 +81,20 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		$payment_method_definitions = [
 			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
-			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 		];
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Becs_Payment_Method::class,
-			Link_Payment_Method::class,
 		];
 
 		foreach ( $payment_method_definitions as $definition_class ) {

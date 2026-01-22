@@ -23,8 +23,6 @@ use WCPay\WooPay\WooPay_Utilities;
  * WC_Payments_WooPay_Button_Handler class.
  */
 class WC_Payments_WooPay_Button_Handler {
-	const BUTTON_LOCATIONS = 'platform_checkout_button_locations';
-
 	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
@@ -126,16 +124,6 @@ class WC_Payments_WooPay_Button_Handler {
 		// Don't load for change payment method page.
 		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return;
-		}
-
-		// Create WooPay button location option if it doesn't exist and enable all locations by default.
-		if ( ! array_key_exists( self::BUTTON_LOCATIONS, get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
-			if ( isset( $this->gateway->get_form_fields()[ self::BUTTON_LOCATIONS ]['options'] ) ) {
-				$all_locations = $this->gateway->get_form_fields()[ self::BUTTON_LOCATIONS ]['options'];
-
-				$this->gateway->update_option( self::BUTTON_LOCATIONS, array_keys( $all_locations ) );
-				WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, array_keys( $all_locations ) );
-			}
 		}
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
@@ -271,17 +259,17 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Product page, but not available in settings.
-		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_available_at( 'product', self::BUTTON_LOCATIONS ) ) {
+		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'product', 'woopay' ) ) {
 			return false;
 		}
 
 		// Checkout page, but not available in settings.
-		if ( $this->express_checkout_helper->is_checkout() && ! $this->express_checkout_helper->is_available_at( 'checkout', self::BUTTON_LOCATIONS ) ) {
+		if ( $this->express_checkout_helper->is_checkout() && ! $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'woopay' ) ) {
 			return false;
 		}
 
 		// Cart page, but not available in settings.
-		if ( $this->express_checkout_helper->is_cart() && ! $this->express_checkout_helper->is_available_at( 'cart', self::BUTTON_LOCATIONS ) ) {
+		if ( $this->express_checkout_helper->is_cart() && ! $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'cart', 'woopay' ) ) {
 			return false;
 		}
 
@@ -403,11 +391,6 @@ class WC_Payments_WooPay_Button_Handler {
 	private function has_allowed_items_in_cart() {
 		$is_supported = true;
 
-		/**
-		 * Psalm throws an error here even though we check the class existence.
-		 *
-		 * @psalm-suppress UndefinedClass
-		 */
 		// We don't support pre-order products to be paid upon release.
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && class_exists( 'WC_Pre_Orders_Product' ) ) {
 			if (

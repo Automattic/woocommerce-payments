@@ -178,9 +178,9 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		Payment_Method::EPS        => \WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
 		Payment_Method::P24        => \WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 		Payment_Method::IDEAL      => \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
-		Payment_Method::SEPA       => Sepa_Payment_Method::class,
-		Payment_Method::BECS       => Becs_Payment_Method::class,
-		Payment_Method::LINK       => Link_Payment_Method::class,
+		Payment_Method::SEPA       => \WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
+		Payment_Method::BECS       => \WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
+		Payment_Method::LINK       => \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
 	];
 
 	/**

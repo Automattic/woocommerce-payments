@@ -75,13 +75,6 @@ class WC_Payments_Webhook_Processing_Service {
 	private $wcpay_gateway;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payments_Customer_Service
-	 */
-	private $customer_service;
-
-	/**
 	 * Database_Cache instance.
 	 *
 	 * @var Database_Cache
@@ -96,6 +89,13 @@ class WC_Payments_Webhook_Processing_Service {
 	private $onboarding_service;
 
 	/**
+	 * WC_Payments_Token_Service instance.
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private $token_service;
+
+	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client                          $api_client          WooCommerce Payments API client.
@@ -105,9 +105,9 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
 	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
 	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Customer_Service                    $customer_service    WC_Payments_Customer_Service instance.
 	 * @param Database_Cache                                  $database_cache      Database_Cache instance.
 	 * @param WC_Payments_Onboarding_Service                  $onboarding_service  WC_Payments_Onboarding_Service instance.
+	 * @param WC_Payments_Token_Service                       $token_service       WC_Payments_Token_Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -117,9 +117,9 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Customer_Service $customer_service,
 		Database_Cache $database_cache,
-		WC_Payments_Onboarding_Service $onboarding_service
+		WC_Payments_Onboarding_Service $onboarding_service,
+		WC_Payments_Token_Service $token_service
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
@@ -128,9 +128,9 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->api_client          = $api_client;
 		$this->receipt_service     = $receipt_service;
 		$this->wcpay_gateway       = $wcpay_gateway;
-		$this->customer_service    = $customer_service;
 		$this->database_cache      = $database_cache;
 		$this->onboarding_service  = $onboarding_service;
+		$this->token_service       = $token_service;
 	}
 
 	/**
@@ -192,7 +192,7 @@ class WC_Payments_Webhook_Processing_Service {
 				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
-				$this->customer_service->delete_cached_payment_methods();
+				$this->token_service->clear_all_cached_payment_methods();
 				break;
 			case 'account.deleted':
 				$this->onboarding_service->cleanup_on_account_reset();
@@ -204,6 +204,9 @@ class WC_Payments_Webhook_Processing_Service {
 
 				// Refetch the account data to allow the platform to drive the available next steps.
 				$this->account->refresh_account_data();
+
+				// Use the opportunity to clear cached payment methods.
+				$this->token_service->clear_all_cached_payment_methods();
 				break;
 			case 'wcpay.notification':
 				$this->process_wcpay_notification( $event_body );

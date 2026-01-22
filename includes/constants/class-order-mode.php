@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Enum saved in the order meta for the mode that the payment was processed in.
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Order_Mode extends Base_Constant {
 	const TEST       = 'test';

@@ -8,10 +8,10 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 10.3.0
+ * WC tested up to: 10.5.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 10.3.0
+ * Version: 10.4.0
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -142,7 +142,7 @@ function wcpay_jetpack_init() {
 		'woocommerce_woocommerce_payments_updated',
 		function () {
 			$version_check = version_compare( '3.8.0', get_option( 'woocommerce_woocommerce_payments_version' ), '>' );
-			$method_check  = method_exists( '\Automattic\Jetpack\Sync\Actions', 'do_only_first_initial_sync' );
+			$method_check  = class_exists( '\Automattic\Jetpack\Sync\Actions' ) && method_exists( \Automattic\Jetpack\Sync\Actions::class, 'do_only_first_initial_sync' );
 			if ( $version_check && $method_check ) {
 				\Automattic\Jetpack\Sync\Actions::do_only_first_initial_sync();
 			}

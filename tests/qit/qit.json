@@ -1,0 +1,29 @@
+{
+    "$schema": "https://qit.woo.com/json-schema/qit",
+    "sut": {
+        "type": "plugin",
+        "slug": "woocommerce-payments",
+        "source": {
+            "type": "local",
+            "path": "woocommerce-payments.zip"
+        }
+    },
+    "environments": {
+        "default": {
+            "plugins": [
+                { "slug": "woocommerce", "from": "wporg", "version": "stable" },
+                { "slug": "jetpack", "from": "wporg", "version": "stable" }
+            ]
+        }
+    },
+    "test_types": {
+        "e2e": {
+            "default": {
+                "environment": "default",
+                "test_packages": [
+                    "tests/qit/test-package"
+                ]
+            }
+        }
+    }
+}

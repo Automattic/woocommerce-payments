@@ -16,8 +16,8 @@ import {
 	AccountDetailsType,
 	AccountDetailsData,
 } from 'wcpay/types/account/account-details';
-import { AccountTools } from 'wcpay/components/account-status/account-tools';
-import AccountFees from 'wcpay/components/account-status/account-fees';
+import { AccountTools } from './account-tools';
+import AccountFees from './account-fees';
 import Banner from './banner';
 import PayoutStatusWrapper from './payout-status-wrapper';
 import HeaderTitle from './header-title';
