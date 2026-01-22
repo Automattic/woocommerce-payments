@@ -363,8 +363,8 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'Customer communication (Attachment B)'
 			);
-			expect( result ).toContain( 'Terms of service (Attachment C)' );
-			expect( result ).toContain( 'Cancellation logs (Attachment D)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment C)' );
+			expect( result ).toContain( 'Terms of service (Attachment D)' );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 	} );

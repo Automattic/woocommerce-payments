@@ -130,15 +130,6 @@ export const generateAttachments = (
 			label: __( 'Item condition', 'woocommerce-payments' ),
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
-			label: __( 'Cancellation policy', 'woocommerce-payments' ),
-			// For subscription_canceled disputes, this field is labeled "Terms of service" in the UI
-			labelForReasons: {
-				reasons: [ 'subscription_canceled' ],
-				label: __( 'Terms of service', 'woocommerce-payments' ),
-			},
-		},
-		{
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 			label: __( 'Subscription logs', 'woocommerce-payments' ),
 		},
@@ -146,6 +137,15 @@ export const generateAttachments = (
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
 			label: __( 'Cancellation logs', 'woocommerce-payments' ),
 			onlyForReasons: [ 'subscription_canceled' ],
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Cancellation policy', 'woocommerce-payments' ),
+			// For subscription_canceled disputes, this field is labeled "Terms of service" in the UI
+			labelForReasons: {
+				reasons: [ 'subscription_canceled' ],
+				label: __( 'Terms of service', 'woocommerce-payments' ),
+			},
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
