@@ -35,9 +35,6 @@ const getDuplicateMatrix = (): {
 	[ key: string ]: Array< RecommendedDocument >;
 } => ( {
 	// Booking/Reservation - It was a duplicate (Scenario A)
-	// Note: "Other documents" is intentionally excluded because REFUND_RECEIPT_DOCUMENTATION
-	// and UNCATEGORIZED_FILE both map to the same Stripe field (uncategorized_file).
-	// We prioritize showing "Refund receipt" as it's more specific to this scenario.
 	booking_reservation__is_duplicate: [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
@@ -65,6 +62,15 @@ const getDuplicateMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
 		},
 	],
 	// Booking/Reservation - It was not a duplicate (Scenario B)
