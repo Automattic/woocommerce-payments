@@ -1714,7 +1714,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request = Create_And_Confirm_Setup_Intention::create();
 				$request->set_customer( $customer_id );
 
-				// setting the credential based on what was provided.
+				// Setting the credential based on what was provided.
 				$payment_credential = $payment_information->get_payment_method();
 				if ( $payment_information->is_using_confirmation_token() ) {
 					$request->set_confirmation_token( $payment_credential );
