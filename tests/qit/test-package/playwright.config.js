@@ -30,20 +30,26 @@ export default defineConfig( {
 			'playwright-ctrf-json-reporter',
 			{
 				outputDir: './test-results',
-				outputFile: 'ctrf.json'
+				outputFile: 'ctrf.json',
+			},
+		],
+		[
+			'json',
+			{
+				outputFile: './test-results/playwright-results.json',
 			},
 		],
 		[
 			'html',
 			{
-				outputFolder: './test-results/html'
-			}
+				outputFolder: './test-results/html',
+			},
 		],
 		[
 			'allure-playwright',
 			{
-				resultsDir: './test-results/allure'
-			}
+				resultsDir: './test-results/allure',
+			},
 		],
 	],
 	outputDir: './test-results/artifacts',

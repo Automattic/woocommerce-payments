@@ -20,7 +20,8 @@
             ],
             "setup": [
                 "npm ci",
-                "npx playwright install chromium --with-deps"
+                "npx playwright install chromium --with-deps",
+                "mkdir -p ./test-results"
             ],
             "run": [
                 "npx playwright test --project=shopper --project=merchant"
