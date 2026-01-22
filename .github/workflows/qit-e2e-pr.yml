@@ -50,17 +50,19 @@ jobs:
 
           echo "L-1 version: $L1_VERSION" >&2
 
-          # Build PR matrix: L-1 + latest, PHP 8.3 only
-          MATRIX_JSON=$(jq -n -c '{
-            "include": [
-              {"woocommerce": "'"$L1_VERSION"'", "php": "8.3"},
-              {"woocommerce": "latest", "php": "8.3"}
-            ]
-          }')
+          # Build PR matrix: L-1 + latest, PHP 8.3 only, all projects
+          MATRIX_ENTRIES=()
+          for wc_version in "$L1_VERSION" "latest"; do
+            for project in "shopper" "merchant" "subscriptions"; do
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"php\":\"8.3\",\"project\":\"$project\"}")
+            done
+          done
+
+          MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   qit-e2e:
-    name: "WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
+    name: "${{ matrix.project }} | WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
     needs: [build, generate-matrix]
     strategy:
       fail-fast: false
@@ -70,6 +72,7 @@ jobs:
       woocommerce-version: ${{ matrix.woocommerce }}
       php-version: ${{ matrix.php }}
       artifact-name: woocommerce-payments-${{ github.run_id }}
+      playwright-project: ${{ matrix.project }}
     secrets:
       QIT_CI_USER: ${{ secrets.QIT_CI_USER }}
       QIT_CI_SECRET: ${{ secrets.QIT_CI_SECRET }}

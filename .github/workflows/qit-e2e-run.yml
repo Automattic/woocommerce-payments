@@ -15,6 +15,10 @@ on:
         description: 'Name of the artifact containing the built plugin zip'
         required: true
         type: string
+      playwright-project:
+        description: 'Playwright project to run (shopper, merchant, subscriptions)'
+        required: true
+        type: string
     secrets:
       QIT_CI_USER:
         required: true
@@ -29,7 +33,7 @@ on:
 
 jobs:
   qit-e2e:
-    name: "QIT E2E - WC ${{ inputs.woocommerce-version }}"
+    name: "QIT E2E - ${{ inputs.playwright-project }}"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -67,13 +71,15 @@ jobs:
             --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
             --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
             --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
-            --wait
+            --verbose \
+            --wait \
+            -- --project=${{ inputs.playwright-project }}
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qit-e2e-results-wc${{ inputs.woocommerce-version }}-php${{ inputs.php-version }}
+          name: qit-e2e-results-wc${{ inputs.woocommerce-version }}-php${{ inputs.php-version }}-${{ inputs.playwright-project }}
           path: |
             tests/qit/test-package/test-results/
             qit-results/

@@ -51,11 +51,13 @@ jobs:
           echo "L-1 version: $L1_VERSION" >&2
           echo "L-2 version: $L2_VERSION" >&2
 
-          # Build scheduled matrix: L-2 + L-1 + latest + nightly, PHP 8.1 + 8.3
+          # Build scheduled matrix: L-2 + L-1 + latest + nightly, PHP 8.1 + 8.3, all projects
           MATRIX_ENTRIES=()
           for wc_version in "$L2_VERSION" "$L1_VERSION" "latest" "nightly"; do
             for php_version in "8.1" "8.3"; do
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"php\":\"$php_version\"}")
+              for project in "shopper" "merchant" "subscriptions"; do
+                MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"php\":\"$php_version\",\"project\":\"$project\"}")
+              done
             done
           done
 
@@ -63,7 +65,7 @@ jobs:
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   qit-e2e:
-    name: "WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
+    name: "${{ matrix.project }} | WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
     needs: [build, generate-matrix]
     strategy:
       fail-fast: false
@@ -73,6 +75,7 @@ jobs:
       woocommerce-version: ${{ matrix.woocommerce }}
       php-version: ${{ matrix.php }}
       artifact-name: woocommerce-payments-${{ github.run_id }}
+      playwright-project: ${{ matrix.project }}
     secrets:
       QIT_CI_USER: ${{ secrets.QIT_CI_USER }}
       QIT_CI_SECRET: ${{ secrets.QIT_CI_SECRET }}
