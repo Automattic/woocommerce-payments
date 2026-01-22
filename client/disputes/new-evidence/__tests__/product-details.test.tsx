@@ -84,7 +84,7 @@ describe( 'ProductDetails', () => {
 		] );
 	} );
 
-	it( 'shows Booking/Reservation option when feature flag is enabled', () => {
+	it( 'shows Booking/Reservation and Other options when feature flag is enabled, without Multiple product types', () => {
 		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 		render( <ProductDetails { ...baseProps } /> );
 		const select = screen.getByLabelText( /PRODUCT OR SERVICE TYPE/i );
@@ -93,13 +93,13 @@ describe( 'ProductDetails', () => {
 		);
 		expect( options ).toContain( 'booking_reservation' );
 		expect( options ).toContain( 'other' );
+		expect( options ).not.toContain( 'multiple' );
 		expect( options ).toEqual( [
 			'physical_product',
 			'digital_product_or_service',
 			'offline_service',
 			'booking_reservation',
 			'other',
-			'multiple',
 		] );
 	} );
 } );
