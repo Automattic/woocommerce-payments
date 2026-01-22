@@ -26,11 +26,23 @@ const ExpressCheckoutContainer = ( props ) => {
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 
+	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
+	// Building the payment method types array to send to the server,
+	// to ensure PaymentIntent uses matching types.
+	const paymentMethodTypes = useMemo( () => {
+		const methods = enabledMethods || [];
+
+		return [
+			methods.includes( 'payment_request' ) && 'card',
+			methods.includes( 'amazon_pay' ) && 'amazon_pay',
+		].filter( Boolean );
+	}, [ enabledMethods ] );
+
 	const options = {
 		mode: 'payment',
 		...( useConfirmationToken
 			? {
-					paymentMethodTypes: [ 'card' ],
+					paymentMethodTypes,
 					...getSetupFutureUsage(),
 			  }
 			: { paymentMethodCreation: 'manual' } ),
@@ -48,7 +60,10 @@ const ExpressCheckoutContainer = ( props ) => {
 	return (
 		<div style={ { minHeight: '40px' } }>
 			<Elements stripe={ stripePromise } options={ options }>
-				<ExpressCheckoutComponent { ...props } />
+				<ExpressCheckoutComponent
+					{ ...props }
+					paymentMethodTypes={ paymentMethodTypes }
+				/>
 			</Elements>
 		</div>
 	);
