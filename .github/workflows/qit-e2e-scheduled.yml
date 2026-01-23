@@ -49,21 +49,27 @@ jobs:
 
           echo "L-1 version: $L1_VERSION" >&2
 
-          # Build scheduled matrix: L-1 + latest + nightly, PHP 8.1 + 8.3, all projects
+          # Build scheduled matrix: L-1 + latest + nightly WC, PHP 8.1 + 8.3, all projects
+          # All combinations use WP latest by default
           MATRIX_ENTRIES=()
           for wc_version in "$L1_VERSION" "latest" "nightly"; do
             for php_version in "8.1" "8.3"; do
               for project in "shopper" "merchant" "subscriptions"; do
-                MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"php\":\"$php_version\",\"project\":\"$project\"}")
+                MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"wordpress\":\"latest\",\"php\":\"$php_version\",\"project\":\"$project\"}")
               done
             done
+          done
+
+          # Add WP nightly tests (WP nightly + WC latest + PHP 8.3 only)
+          for project in "shopper" "merchant" "subscriptions"; do
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"wordpress\":\"nightly\",\"php\":\"8.3\",\"project\":\"$project\"}")
           done
 
           MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
 
   qit-e2e:
-    name: "${{ matrix.project }} | WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
+    name: "${{ matrix.project }} | WP ${{ matrix.wordpress }} | WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
     needs: [build, generate-matrix]
     strategy:
       fail-fast: false
@@ -71,6 +77,7 @@ jobs:
     uses: ./.github/workflows/qit-e2e-run.yml
     with:
       woocommerce-version: ${{ matrix.woocommerce }}
+      wordpress-version: ${{ matrix.wordpress }}
       php-version: ${{ matrix.php }}
       artifact-name: woocommerce-payments-${{ github.run_id }}
       playwright-project: ${{ matrix.project }}

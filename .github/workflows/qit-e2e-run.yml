@@ -7,6 +7,11 @@ on:
         description: 'WooCommerce version (nightly, or specific version like 9.6.0, 10.5.0-dev)'
         required: true
         type: string
+      wordpress-version:
+        description: 'WordPress version (latest, nightly, or specific version)'
+        required: false
+        type: string
+        default: 'latest'
       php-version:
         description: 'PHP version'
         required: true
@@ -33,7 +38,7 @@ on:
 
 jobs:
   qit-e2e:
-    name: "QIT E2E - ${{ inputs.playwright-project }}"
+    name: "QIT E2E - ${{ inputs.playwright-project }}${{ inputs.wordpress-version != 'latest' && format(' (WP {0})', inputs.wordpress-version) || '' }}"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -67,6 +72,7 @@ jobs:
           qit run:e2e woocommerce-payments \
             --config tests/qit/qit.json \
             --woo=${{ inputs.woocommerce-version }} \
+            --wp=${{ inputs.wordpress-version }} \
             --php=${{ inputs.php-version }} \
             --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
             --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
@@ -79,7 +85,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qit-e2e-results-wc${{ inputs.woocommerce-version }}-php${{ inputs.php-version }}-${{ inputs.playwright-project }}
+          name: qit-e2e-results-wp${{ inputs.wordpress-version }}-wc${{ inputs.woocommerce-version }}-php${{ inputs.php-version }}-${{ inputs.playwright-project }}
           path: |
             tests/qit/test-package/test-results/
             qit-results/
