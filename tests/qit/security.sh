@@ -13,11 +13,12 @@ EXIT_CODE=$?
 # QIT exit codes:
 # 0 = success
 # 1 = failure (critical security errors)
-# 3 = warning (non-critical issues that don't block marketplace listing)
+# 2 = warning (v0.10.0) - non-critical issues that don't block marketplace listing
+# 3 = warning (dev-trunk) - non-critical issues that don't block marketplace listing
 if [ $EXIT_CODE -eq 1 ]; then
     echo "Security test failed with critical errors. Exiting with status 1."
     exit 1
-elif [ $EXIT_CODE -eq 3 ]; then
+elif [ $EXIT_CODE -eq 2 ] || [ $EXIT_CODE -eq 3 ]; then
     echo "Security test completed with warnings (non-critical issues). CI will pass."
     exit 0
 elif [ $EXIT_CODE -ne 0 ]; then
