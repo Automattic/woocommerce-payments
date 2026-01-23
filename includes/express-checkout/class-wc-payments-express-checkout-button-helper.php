@@ -248,6 +248,32 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( $this->is_product() ) {
+			$product = $this->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		}
+
+		if ( $this->is_checkout() || $this->is_cart() ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Checks if Amazon Pay can be used in Express Checkout.
 	 *
 	 * This validates:

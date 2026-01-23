@@ -4,7 +4,7 @@
 import {
 	getErrorMessageFromNotice,
 	getExpressCheckoutData,
-	getSetupFutureUsage,
+	getStripeElementsMode,
 } from '..';
 
 describe( 'Express checkout utils', () => {
@@ -35,65 +35,57 @@ describe( 'Express checkout utils', () => {
 		);
 	} );
 
-	describe( 'getSetupFutureUsage', () => {
+	describe( 'getStripeElementsMode', () => {
 		beforeEach( () => {
 			window.wcpayExpressCheckoutParams = {};
 		} );
 
-		test( 'returns setupFutureUsage for subscription product type', () => {
+		test( 'returns subscription mode for subscription product type', () => {
 			window.wcpayExpressCheckoutParams = {
 				product: { product_type: 'subscription' },
 			};
 
-			expect( getSetupFutureUsage() ).toEqual( {
-				setupFutureUsage: 'off_session',
-			} );
+			expect( getStripeElementsMode() ).toBe( 'subscription' );
 		} );
 
-		test( 'returns setupFutureUsage for variable-subscription product type', () => {
+		test( 'returns subscription mode for variable-subscription product type', () => {
 			window.wcpayExpressCheckoutParams = {
 				product: { product_type: 'variable-subscription' },
 			};
 
-			expect( getSetupFutureUsage() ).toEqual( {
-				setupFutureUsage: 'off_session',
-			} );
+			expect( getStripeElementsMode() ).toBe( 'subscription' );
 		} );
 
-		test( 'returns setupFutureUsage for subscription_variation product type', () => {
+		test( 'returns subscription mode for subscription_variation product type', () => {
 			window.wcpayExpressCheckoutParams = {
 				product: { product_type: 'subscription_variation' },
 			};
 
-			expect( getSetupFutureUsage() ).toEqual( {
-				setupFutureUsage: 'off_session',
-			} );
+			expect( getStripeElementsMode() ).toBe( 'subscription' );
 		} );
 
-		test( 'returns setupFutureUsage when has_subscription is true', () => {
+		test( 'returns subscription mode when has_subscription is true', () => {
 			window.wcpayExpressCheckoutParams = {
 				product: { product_type: 'simple' },
 				has_subscription: true,
 			};
 
-			expect( getSetupFutureUsage() ).toEqual( {
-				setupFutureUsage: 'off_session',
-			} );
+			expect( getStripeElementsMode() ).toBe( 'subscription' );
 		} );
 
-		test( 'returns empty object for non-subscription products', () => {
+		test( 'returns payment mode for non-subscription products', () => {
 			window.wcpayExpressCheckoutParams = {
 				product: { product_type: 'simple' },
 				has_subscription: false,
 			};
 
-			expect( getSetupFutureUsage() ).toEqual( {} );
+			expect( getStripeElementsMode() ).toBe( 'payment' );
 		} );
 
-		test( 'returns empty object when product and checkout are not set', () => {
+		test( 'returns payment mode when product and checkout are not set', () => {
 			window.wcpayExpressCheckoutParams = {};
 
-			expect( getSetupFutureUsage() ).toEqual( {} );
+			expect( getStripeElementsMode() ).toBe( 'payment' );
 		} );
 	} );
 } );

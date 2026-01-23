@@ -11,7 +11,7 @@ import { memoize } from 'lodash';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getExpressCheckoutData, getSetupFutureUsage } from '.';
+import { getExpressCheckoutData, getStripeElementsMode } from '.';
 
 // types from https://github.com/woocommerce/woocommerce/blob/360d9bc0f5709e6cf13c646860360fca9968ebb0/plugins/woocommerce/client/blocks/assets/js/types/type-defs/cart.ts
 interface CartTotals {
@@ -63,12 +63,9 @@ const checkPaymentMethodIsAvailableInternal = (
 			<Elements
 				stripe={ api.loadStripeForExpressCheckout() }
 				options={ {
-					mode: 'payment',
+					mode: getStripeElementsMode(),
 					...( useConfirmationToken
-						? {
-								paymentMethodTypes,
-								...getSetupFutureUsage(),
-						  }
+						? { paymentMethodTypes }
 						: { paymentMethodCreation: 'manual' } ),
 					amount: Number( totalPrice ),
 					currency: currencyCode.toLowerCase(),

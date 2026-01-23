@@ -20,6 +20,7 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
@@ -186,6 +187,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
+
+		// Also register subscription hooks for Amazon Pay split gateway, which uses a different gateway ID.
+		$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+		add_action( 'woocommerce_scheduled_subscription_payment_' . $amazon_pay_gateway_id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
+		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $amazon_pay_gateway_id, [ $this, 'update_failing_payment_method' ], 10, 2 );
+
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
 
 		// Display the credit card used for a subscription in the "My Subscriptions" table.
@@ -1181,6 +1188,21 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$payment_method_id = $subscription->get_payment_method();
 		if ( 0 !== strpos( $payment_method_id, WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
 			return;
+		}
+
+		// Check if this is an Express Checkout payment that needs the gateway updated.
+		// ECE payments are initially processed by the base gateway, but Amazon Pay needs its own split gateway.
+		$parent_order = $subscription->get_parent();
+		if ( $parent_order ) {
+			$express_checkout_type = $parent_order->get_meta( '_wcpay_express_checkout_payment_method' );
+			if ( Payment_Method::AMAZON_PAY === $express_checkout_type ) {
+				// Update subscription to use the Amazon Pay split gateway.
+				$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+				$subscription->set_payment_method( $amazon_pay_gateway_id );
+				$subscription->set_payment_method_title( __( 'Amazon Pay', 'woocommerce-payments' ) . ' (WooPayments)' );
+				$subscription->save();
+				return;
+			}
 		}
 
 		// Check if this is a split UPE gateway (e.g., woocommerce_payments_ideal).

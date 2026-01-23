@@ -212,14 +212,9 @@ export const getExpressCheckoutButtonAppearance = (
 };
 
 /**
- * Returns Stripe Elements options for saving payment methods for subscriptions.
- * If the current context involves a subscription product, returns
- * `{ setupFutureUsage: 'off_session' }` to save the payment method for future renewals.
- * Otherwise, returns an empty object.
+ * Checks if the current cart or product context contains a subscription.
  */
-export const getSetupFutureUsage = ():
-	| { setupFutureUsage: 'off_session' }
-	| Record< string, never > => {
+const hasSubscriptionInContext = (): boolean => {
 	const productType = getExpressCheckoutData( 'product' )?.product_type ?? '';
 	const isSubscriptionProduct = [
 		'subscription',
@@ -227,10 +222,19 @@ export const getSetupFutureUsage = ():
 		'subscription_variation',
 	].includes( productType );
 
-	const hasSubscription =
-		getExpressCheckoutData( 'has_subscription' ) || isSubscriptionProduct;
+	return (
+		Boolean( getExpressCheckoutData( 'has_subscription' ) ) ||
+		isSubscriptionProduct
+	);
+};
 
-	return hasSubscription ? { setupFutureUsage: 'off_session' } : {};
+/**
+ * Returns the Stripe Elements mode based on the current context.
+ * Returns 'subscription' for subscription products (to handle payment method saving internally),
+ * or 'payment' for regular products.
+ */
+export const getStripeElementsMode = (): 'subscription' | 'payment' => {
+	return hasSubscriptionInContext() ? 'subscription' : 'payment';
 };
 
 /**

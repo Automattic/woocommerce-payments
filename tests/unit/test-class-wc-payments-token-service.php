@@ -287,6 +287,68 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_Link::class, $token );
 	}
 
+	/**
+	 * Test add Amazon Pay token to user.
+	 */
+	public function test_add_token_to_user_for_amazon_pay() {
+		$mock_payment_method = [
+			'id'              => 'pm_mock',
+			'amazon_pay'      => [],
+			'billing_details' => [
+				'email' => 'test@amazon.com',
+			],
+			'type'            => Payment_Method::AMAZON_PAY,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments_amazon_pay', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		// Email is stored in redacted format for privacy.
+		$this->assertEquals( '***test@amazon.com', $token->get_email() );
+		$this->assertInstanceOf( WC_Payment_Token_WCPay_Amazon_Pay::class, $token );
+	}
+
+	/**
+	 * Test add Amazon Pay token to user without email.
+	 */
+	public function test_add_token_to_user_for_amazon_pay_without_email() {
+		$mock_payment_method = [
+			'id'         => 'pm_mock',
+			'amazon_pay' => [],
+			'type'       => Payment_Method::AMAZON_PAY,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments_amazon_pay', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEmpty( $token->get_email() );
+		$this->assertInstanceOf( WC_Payment_Token_WCPay_Amazon_Pay::class, $token );
+	}
+
+	/**
+	 * Test Amazon Pay token email fallback to meta data.
+	 */
+	public function test_amazon_pay_token_email_fallback_to_meta() {
+		// Create a token without the email property but with meta data (simulating old tokens).
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_token( 'pm_mock' );
+		$token->set_gateway_id( 'woocommerce_payments_amazon_pay' );
+		$token->set_user_id( 1 );
+		// Simulate old behavior: email stored in meta instead of property.
+		// Old tokens stored the full email in meta, which will be returned as-is.
+		$token->add_meta_data( '_wcpay_amazon_pay_email', 'legacy@amazon.com', true );
+		$token->save();
+
+		// Retrieve the token and verify it reads email from meta fallback.
+		$retrieved_token = WC_Payment_Tokens::get( $token->get_id() );
+
+		$this->assertEquals( 'legacy@amazon.com', $retrieved_token->get_email() );
+	}
+
 	public function test_add_payment_method_to_user() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [

@@ -507,6 +507,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/woopay/class-woopay-adapted-extensions.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
+		include_once __DIR__ . '/class-wc-payment-token-wcpay-amazon-pay.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
