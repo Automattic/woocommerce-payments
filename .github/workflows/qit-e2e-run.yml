@@ -38,7 +38,7 @@ on:
 
 jobs:
   qit-e2e:
-    name: "QIT E2E - ${{ inputs.playwright-project }}${{ inputs.wordpress-version != 'latest' && format(' (WP {0})', inputs.wordpress-version) || '' }}"
+    name: "Run tests"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
