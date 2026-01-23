@@ -271,7 +271,7 @@ describe( 'Recommended Documents', () => {
 				);
 
 				expect( result ).toHaveLength( 3 );
-				expect( result[ 0 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 0 ].key ).toBe( 'access_activity_log' );
 				expect( result[ 0 ].label ).toBe(
 					'Prior undisputed transaction history'
 				);

@@ -243,7 +243,7 @@ const getFraudulentMatrix = (): {
 } => ( {
 	booking_reservation: [
 		{
-			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 			label: __(
 				'Prior undisputed transaction history',
 				'woocommerce-payments'

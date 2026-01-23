@@ -97,6 +97,16 @@ export const generateAttachments = (
 			},
 		},
 		{
+			// For fraudulent disputes, this shows as "Prior undisputed transaction history"
+			// and should appear before Customer communication.
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __(
+				'Prior undisputed transaction history',
+				'woocommerce-payments'
+			),
+			onlyForReasons: [ 'fraudulent' ],
+		},
+		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 			label: __( 'Customer communication', 'woocommerce-payments' ),
 		},
@@ -117,8 +127,10 @@ export const generateAttachments = (
 			label: __( 'Item condition', 'woocommerce-payments' ),
 		},
 		{
+			// For non-fraudulent disputes, "Subscription logs" appears in its original position
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 			label: __( 'Subscription logs', 'woocommerce-payments' ),
+			excludeWhen: ( reason: string ) => reason === 'fraudulent',
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
