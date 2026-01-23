@@ -46,14 +46,12 @@ jobs:
           # Get WC versions from matrix script
           SCRIPT_RESULT=$(.github/scripts/generate-wc-matrix.sh)
           L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
-          L2_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l2_version')
 
           echo "L-1 version: $L1_VERSION" >&2
-          echo "L-2 version: $L2_VERSION" >&2
 
-          # Build scheduled matrix: L-2 + L-1 + latest + nightly, PHP 8.1 + 8.3, all projects
+          # Build scheduled matrix: L-1 + latest + nightly, PHP 8.1 + 8.3, all projects
           MATRIX_ENTRIES=()
-          for wc_version in "$L2_VERSION" "$L1_VERSION" "latest" "nightly"; do
+          for wc_version in "$L1_VERSION" "latest" "nightly"; do
             for php_version in "8.1" "8.3"; do
               for project in "shopper" "merchant" "subscriptions"; do
                 MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"php\":\"$php_version\",\"project\":\"$project\"}")
