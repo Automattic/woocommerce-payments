@@ -49,20 +49,23 @@ jobs:
 
           echo "L-1 version: $L1_VERSION" >&2
 
-          # Build scheduled matrix: L-1 + latest + nightly WC, PHP 8.1 + 8.3, all projects
+          # Build scheduled matrix: L-1 + latest + nightly WC, PHP 8.3, all projects
           # All combinations use WP latest by default
           MATRIX_ENTRIES=()
           for wc_version in "$L1_VERSION" "latest" "nightly"; do
-            for php_version in "8.1" "8.3"; do
-              for project in "shopper" "merchant" "subscriptions"; do
-                MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"wordpress\":\"latest\",\"php\":\"$php_version\",\"project\":\"$project\"}")
-              done
+            for project in "shopper" "merchant" "subscriptions"; do
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"wordpress\":\"latest\",\"php\":\"8.3\",\"project\":\"$project\"}")
             done
           done
 
           # Add WP nightly tests (WP nightly + WC latest + PHP 8.3 only)
           for project in "shopper" "merchant" "subscriptions"; do
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"wordpress\":\"nightly\",\"php\":\"8.3\",\"project\":\"$project\"}")
+          done
+
+          # Add PHP 8.4 tests (WC nightly + PHP 8.4 to catch newest PHP compatibility issues)
+          for project in "shopper" "merchant" "subscriptions"; do
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"nightly\",\"wordpress\":\"latest\",\"php\":\"8.4\",\"project\":\"$project\"}")
           done
 
           MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)

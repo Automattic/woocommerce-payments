@@ -41,12 +41,10 @@ jobs:
           WC_VERSION="${{ inputs.woocommerce-version }}"
           echo "WC version: $WC_VERSION" >&2
 
-          # Build pre-release matrix: user-specified WC version, PHP 8.1 + 8.3, all projects
+          # Build pre-release matrix: user-specified WC version, PHP 8.3, all projects
           MATRIX_ENTRIES=()
-          for php_version in "8.1" "8.3"; do
-            for project in "shopper" "merchant" "subscriptions"; do
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$WC_VERSION\",\"php\":\"$php_version\",\"project\":\"$project\"}")
-            done
+          for project in "shopper" "merchant" "subscriptions"; do
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$WC_VERSION\",\"php\":\"8.3\",\"project\":\"$project\"}")
           done
 
           MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)
