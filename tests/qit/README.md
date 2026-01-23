@@ -69,7 +69,7 @@ This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests
 | `npm run test:qit-e2e:shopper` | Run shopper tests only |
 | `npm run test:qit-e2e:merchant` | Run merchant tests only |
 | `npm run test:qit-e2e:subscriptions` | Run subscription tests (installs WC Subscriptions automatically) |
-| `npm run test:qit-e2e:ci` | Run all tests with `CI=true` |
+| `npm run test:qit-e2e:ci` | Run tests locally the same way CI does (sets `CI=true`) |
 
 ##### Usage Examples
 
