@@ -182,8 +182,13 @@ export default class WCPayAPI {
 			// use the regular getStripe function.
 			const stripe = await this.getStripe();
 			if ( isSetupIntent ) {
-				return stripe.handleNextAction( {
+				// For SetupIntents created with confirmation tokens (Express Checkout Element),
+				// we need to use confirmSetup() instead of handleNextAction() because the
+				// SetupIntent might have requires_confirmation status rather than requires_action.
+				// The payment method is already attached from the confirmation token.
+				return stripe.confirmSetup( {
 					clientSecret: clientSecret,
+					redirect: 'if_required',
 				} );
 			}
 
