@@ -30,6 +30,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		global.jQuery.unblockUI = () => null;
 
 		global.wcpayExpressCheckoutParams = {};
+		global.wcpayExpressCheckoutParams.flags = {};
 		global.wcpayExpressCheckoutParams.nonce = {
 			store_api_nonce: 'store_api_nonce',
 		};
@@ -162,6 +163,11 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			locale: 'it',
 			paymentMethodTypes: [ 'card' ],
 		} );
+		expect( stripeInstance.elements ).not.toHaveBeenCalledWith(
+			expect.objectContaining( {
+				setupFutureUsage: expect.anything(),
+			} )
+		);
 
 		// triggering the `ready` event on the ECE button, to test its callback.
 		stripeElementMock.__getRegisteredEvent( 'ready' )( {
@@ -191,6 +197,11 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			locale: 'it',
 			paymentMethodTypes: [ 'card' ],
 		} );
+		expect( stripeInstance.elements ).not.toHaveBeenCalledWith(
+			expect.objectContaining( {
+				setupFutureUsage: expect.anything(),
+			} )
+		);
 
 		// triggering the `ready` event on the ECE button, to test its callback.
 		stripeElementMock.__getRegisteredEvent( 'ready' )( {
@@ -561,6 +572,61 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 				],
 				shippingAddressRequired: false,
 				shippingRates: undefined,
+			} )
+		);
+	} );
+
+	it( 'should set setupFutureUsage to off_session for subscription products', async () => {
+		global.wcpayExpressCheckoutParams.product.product_type = 'subscription';
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		expect( global.Stripe ).toHaveBeenCalled();
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				mode: 'payment',
+				amount: 1100,
+				currency: 'usd',
+				paymentMethodTypes: [ 'card' ],
+				setupFutureUsage: 'off_session',
+			} )
+		);
+	} );
+
+	it( 'should set setupFutureUsage to off_session for variable-subscription products', async () => {
+		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+		global.wcpayExpressCheckoutParams.product.product_type =
+			'variable-subscription';
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		expect( global.Stripe ).toHaveBeenCalled();
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				mode: 'payment',
+				setupFutureUsage: 'off_session',
+			} )
+		);
+	} );
+
+	it( 'should set setupFutureUsage to off_session when has_subscription is true', async () => {
+		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
+		global.wcpayExpressCheckoutParams.has_subscription = true;
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		expect( global.Stripe ).toHaveBeenCalled();
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				mode: 'payment',
+				setupFutureUsage: 'off_session',
 			} )
 		);
 	} );

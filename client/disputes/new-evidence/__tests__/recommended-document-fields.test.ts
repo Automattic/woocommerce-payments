@@ -170,10 +170,12 @@ describe( 'Recommended Documents', () => {
 				'is_duplicate',
 				'booking_reservation'
 			);
+			// "Refund receipt" uses duplicate_charge_documentation field, allowing "Other documents"
+			// (uncategorized_file) to be included as a separate field
 			expect( fields ).toHaveLength( 5 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
 			expect( fields[ 0 ].label ).toBe( 'Order receipt' );
-			expect( fields[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
+			expect( fields[ 1 ].key ).toBe( 'duplicate_charge_documentation' ); // Refund receipt
 			expect( fields[ 1 ].label ).toBe( 'Refund receipt' );
 			expect( fields[ 1 ].description ).toBe(
 				'A confirmation that a refund was issued.'
@@ -269,7 +271,7 @@ describe( 'Recommended Documents', () => {
 				);
 
 				expect( result ).toHaveLength( 3 );
-				expect( result[ 0 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 0 ].key ).toBe( 'access_activity_log' );
 				expect( result[ 0 ].label ).toBe(
 					'Prior undisputed transaction history'
 				);

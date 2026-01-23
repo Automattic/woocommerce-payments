@@ -1713,7 +1713,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// For $0 orders, we need to save the payment method using a setup intent.
 				$request = Create_And_Confirm_Setup_Intention::create();
 				$request->set_customer( $customer_id );
-				$request->set_payment_method( $payment_information->get_payment_method() );
+
+				// Setting the credential based on what was provided.
+				$payment_credential = $payment_information->get_payment_method();
+				if ( $payment_information->is_using_confirmation_token() ) {
+					$request->set_confirmation_token( $payment_credential );
+				} else {
+					$request->set_payment_method( $payment_credential );
+				}
 				$request->set_metadata( $metadata );
 				$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
 				$request->set_hook_args( $payment_information, false, $save_user_in_woopay );

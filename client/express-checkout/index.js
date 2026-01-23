@@ -18,6 +18,7 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
+	getSetupFutureUsage,
 	displayLoginConfirmation,
 } from './utils';
 import {
@@ -208,12 +209,21 @@ jQuery( ( $ ) => {
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
+			const useConfirmationToken =
+				getExpressCheckoutData( 'flags' )
+					?.isEceUsingConfirmationTokens ?? true;
+
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
 				mode: 'payment',
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
-				paymentMethodTypes: [ 'card' ],
+				...( useConfirmationToken
+					? {
+							paymentMethodTypes: [ 'card' ],
+							...getSetupFutureUsage(),
+					  }
+					: { paymentMethodCreation: 'manual' } ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );
