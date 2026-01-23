@@ -508,7 +508,7 @@ class WC_Payments_Token_Service {
 	/**
 	 * Controls the output for Amazon Pay tokens on the My Account page.
 	 *
-	 * @param  array                                            $item          Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  array                                              $item          Individual list item from woocommerce_saved_payment_methods_list.
 	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Amazon_Pay $payment_token The payment token associated with this method entry.
 	 * @return array                                            Filtered item.
 	 */

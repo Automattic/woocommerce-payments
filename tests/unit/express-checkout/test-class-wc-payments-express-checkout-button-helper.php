@@ -156,7 +156,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 	public function test_has_subscription_product() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
-		$this->assertTrue($this->system_under_test->has_subscription_product());
+		$this->assertTrue( $this->system_under_test->has_subscription_product() );
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 	}
 
