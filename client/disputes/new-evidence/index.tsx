@@ -97,8 +97,13 @@ const steps = [
 ];
 
 function needsShipping( reason: string | undefined, productType = '' ) {
-	// If product type is digital, no shipping is needed
-	if ( productType === 'digital_product_or_service' ) return false;
+	// If product type is digital or booking/reservation, no shipping is needed
+	if (
+		productType === 'digital_product_or_service' ||
+		productType === 'booking_reservation'
+	) {
+		return false;
+	}
 	// Check dispute reason logic
 	if ( ReasonsNoShipping.includes( reason || '' ) ) return false;
 	return true;
