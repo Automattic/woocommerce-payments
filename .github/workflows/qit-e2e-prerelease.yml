@@ -44,7 +44,7 @@ jobs:
           # Build pre-release matrix: user-specified WC version, PHP 8.3, all projects
           MATRIX_ENTRIES=()
           for project in "shopper" "merchant" "subscriptions"; do
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$WC_VERSION\",\"php\":\"8.3\",\"project\":\"$project\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$WC_VERSION\",\"wordpress\":\"latest\",\"php\":\"8.3\",\"project\":\"$project\"}")
           done
 
           MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)
@@ -59,6 +59,7 @@ jobs:
     uses: ./.github/workflows/qit-e2e-run.yml
     with:
       woocommerce-version: ${{ matrix.woocommerce }}
+      wordpress-version: ${{ matrix.wordpress }}
       php-version: ${{ matrix.php }}
       artifact-name: woocommerce-payments-${{ github.run_id }}
       playwright-project: ${{ matrix.project }}
