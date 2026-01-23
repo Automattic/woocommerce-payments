@@ -11,7 +11,7 @@ import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
-	getSetupFutureUsage,
+	getStripeElementsMode,
 } from '../../utils';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
@@ -27,12 +27,9 @@ const ExpressCheckoutContainer = ( props ) => {
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 
 	const options = {
-		mode: 'payment',
+		mode: getStripeElementsMode(),
 		...( useConfirmationToken
-			? {
-					paymentMethodTypes: [ 'card' ],
-					...getSetupFutureUsage(),
-			  }
+			? { paymentMethodTypes }
 			: { paymentMethodCreation: 'manual' } ),
 		// ensuring that the total amount is transformed to the correct format.
 		amount: ! isPreview
