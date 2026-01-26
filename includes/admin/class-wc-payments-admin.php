@@ -185,6 +185,8 @@ class WC_Payments_Admin {
 		add_action( 'admin_init', [ $this, 'add_css_classes' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payment_settings_spotlight' ] );
 		add_action( 'admin_footer', [ $this, 'inject_payment_settings_spotlight_container' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payments_review_prompt' ] );
+		add_action( 'admin_footer', [ $this, 'inject_review_prompt_container' ] );
 	}
 
 	/**
@@ -686,6 +688,17 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/wc-payments-settings-spotlight.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/wc-payments-settings-spotlight.css' ),
+			'all'
+		);
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_REVIEW_PROMPT', 'dist/wc-payments-review-prompt' );
+		wp_set_script_translations( 'WCPAY_REVIEW_PROMPT', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_REVIEW_PROMPT',
+			plugins_url( 'dist/wc-payments-review-prompt.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/wc-payments-review-prompt.css' ),
 			'all'
 		);
 	}
@@ -1487,5 +1500,32 @@ class WC_Payments_Admin {
 			! isset( $_REQUEST['section'] )
 			&& is_admin();
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	}
+
+	/**
+	 * Enqueue the review prompt script on WooCommerce Payments Settings page.
+	 */
+	public function enqueue_wc_payments_review_prompt() {
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
+			return;
+		}
+
+		if ( ! WC_Payments_Features::is_woopayments_review_prompt_enabled() ) {
+			return;
+		}
+
+		wp_enqueue_script( 'WCPAY_REVIEW_PROMPT' );
+		wp_enqueue_style( 'WCPAY_REVIEW_PROMPT' );
+	}
+
+	/**
+	 * Inject the container div for the review prompt on WooCommerce payment settings page.
+	 */
+	public function inject_review_prompt_container() {
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
+			return;
+		}
+
+		echo '<div id="wcpay-review-prompt"></div>';
 	}
 }
