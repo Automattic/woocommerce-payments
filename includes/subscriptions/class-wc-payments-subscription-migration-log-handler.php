@@ -86,18 +86,25 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 
 				// Only rename if the filename would actually change.
 				if ( $new_file_name !== $log_file_name && file_exists( $old_file_path ) ) {
-					// If target file already exists, prepend old content to maintain chronological order.
+					// If target file already exists, merge files maintaining chronological order.
+					// Uses stream-based operations for memory efficiency with large log files.
 					if ( file_exists( $new_file_path ) ) {
-						$old_content = file_get_contents( $old_file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-						$new_content = file_get_contents( $new_file_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
-						file_put_contents( $new_file_path, $old_content . $new_content );
+						// Append new file content to old file (preserves: old logs first, then new logs).
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+						$source_handle = fopen( $new_file_path, 'r' );
+						if ( false !== $source_handle ) {
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+							file_put_contents( $old_file_path, $source_handle, FILE_APPEND );
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+							fclose( $source_handle );
+						}
+						// Delete the new file since its content is now merged into old file.
 						// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
-						unlink( $old_file_path );
-					} else {
-						// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
-						rename( $old_file_path, $new_file_path );
+						unlink( $new_file_path );
 					}
+					// Rename old file to new filename (with today's date).
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
+					rename( $old_file_path, $new_file_path );
 				}
 			}
 		}

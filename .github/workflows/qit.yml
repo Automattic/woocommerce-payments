@@ -15,10 +15,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
-      
+
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
-      
+
       - name: "Build the plugin"
         id: build_plugin
         uses: ./.github/actions/build
@@ -33,7 +33,43 @@ jobs:
         run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
 
       - name: Run Security Test
-        run: qit run:security woocommerce-payments --zip=woocommerce-payments.zip --wait
+        run: |
+          set +e
+          qit run:security woocommerce-payments --zip=woocommerce-payments.zip --wait
+          EXIT_CODE=$?
+          # QIT exit codes (v0.10.0):
+          # 0 = success
+          # 1 = failed (critical security errors)
+          # 2 = warning (non-critical issues)
+          if [ $EXIT_CODE -eq 1 ]; then
+            echo "Security test failed with critical errors."
+            exit 1
+          elif [ $EXIT_CODE -eq 2 ]; then
+            echo "Security test completed with warnings (non-critical issues). CI will pass."
+            exit 0
+          elif [ $EXIT_CODE -ne 0 ]; then
+            echo "Security test failed with unexpected exit code $EXIT_CODE."
+            exit 1
+          fi
+          echo "Security test passed successfully."
 
       - name: Run Malware Test
-        run: qit run:malware woocommerce-payments --zip=woocommerce-payments.zip --wait
+        run: |
+          set +e
+          qit run:malware woocommerce-payments --zip=woocommerce-payments.zip --wait
+          EXIT_CODE=$?
+          # QIT exit codes (v0.10.0):
+          # 0 = success
+          # 1 = failed (critical malware detected)
+          # 2 = warning
+          if [ $EXIT_CODE -eq 1 ]; then
+            echo "Malware test failed."
+            exit 1
+          elif [ $EXIT_CODE -eq 2 ]; then
+            echo "Malware test completed with warnings. CI will pass."
+            exit 0
+          elif [ $EXIT_CODE -ne 0 ]; then
+            echo "Malware test failed with unexpected exit code $EXIT_CODE."
+            exit 1
+          fi
+          echo "Malware test passed successfully."

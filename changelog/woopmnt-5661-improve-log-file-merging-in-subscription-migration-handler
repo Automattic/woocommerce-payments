@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improved subscription migration log file merging to use stream-based operations for memory efficiency and preserve chronological order.
