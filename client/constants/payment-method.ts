@@ -48,6 +48,7 @@ export const TRANSACTION_PAYMENT_METHOD_TITLES = {
 	ach_credit_transfer: __( 'ACH Credit Transfer', 'woocommerce-payments' ),
 	ach_debit: __( 'ACH Debit', 'woocommerce-payments' ),
 	acss_debit: __( 'ACSS Debit', 'woocommerce-payments' ),
+	amazon_pay: __( 'Amazon Pay', 'woocommerce-payments' ),
 	amex: __( 'American Express', 'woocommerce-payments' ),
 	card: __( 'Card Payment', 'woocommerce-payments' ),
 	card_present: __( 'In-Person Card Payment', 'woocommerce-payments' ),

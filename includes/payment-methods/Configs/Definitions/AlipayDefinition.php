@@ -74,7 +74,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Alipay is a popular wallet in China, operated by Ant Financial Services Group, a financial services provider affiliated with Alibaba.', 'woocommerce-payments' );
+		return __( 'A digital wallet for customers with mainland China Alipay accounts. Regional versions like AlipayHK are not supported.', 'woocommerce-payments' );
 	}
 
 	/**
