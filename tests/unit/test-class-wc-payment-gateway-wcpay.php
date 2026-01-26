@@ -203,12 +203,20 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $original_payment_gateway_map;
 
 	/**
+	 * Backup of the original payment_method_map
+	 *
+	 * @var array
+	 */
+	private $original_payment_method_map;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
 		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
+		$this->original_payment_method_map  = $this->get_payment_method_map();
 
 		$this->mock_api_client = $this
 			->getMockBuilder( 'WC_Payments_API_Client' )
@@ -307,6 +315,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Restore the original payment gateway map to prevent test pollution.
 		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
+
+		// Restore the original payment method map to prevent test pollution.
+		$this->set_payment_method_map( $this->original_payment_method_map );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
@@ -583,10 +594,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function express_checkout_payment_method_provider() {
 		return [
 			'Google Pay' => [
-				'express_type'    => 'google_pay',
-				'stripe_type'     => 'card',
-				'expected_title'  => 'Google Pay (WooPayments)',
-				'payment_details' => [
+				'express_type'     => 'google_pay',
+				'stripe_type'      => 'card',
+				'expected_title'   => 'Google Pay (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments',
+				'payment_details'  => [
 					'type' => 'card',
 					'card' => [
 						'network' => 'visa',
@@ -595,10 +607,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'Apple Pay'  => [
-				'express_type'    => 'apple_pay',
-				'stripe_type'     => 'card',
-				'expected_title'  => 'Apple Pay (WooPayments)',
-				'payment_details' => [
+				'express_type'     => 'apple_pay',
+				'stripe_type'      => 'card',
+				'expected_title'   => 'Apple Pay (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments',
+				'payment_details'  => [
 					'type' => 'card',
 					'card' => [
 						'network' => 'visa',
@@ -607,11 +620,21 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				],
 			],
 			'Link'       => [
-				'express_type'    => 'link',
-				'stripe_type'     => 'link',
-				'expected_title'  => 'Link (WooPayments)',
-				'payment_details' => [
+				'express_type'     => 'link',
+				'stripe_type'      => 'link',
+				'expected_title'   => 'Link (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments',
+				'payment_details'  => [
 					'type' => 'link',
+				],
+			],
+			'Amazon Pay' => [
+				'express_type'     => 'amazon_pay',
+				'stripe_type'      => 'amazon_pay',
+				'expected_title'   => 'Amazon Pay (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments_amazon_pay',
+				'payment_details'  => [
+					'type' => 'amazon_pay',
 				],
 			],
 		];
@@ -622,12 +645,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider express_checkout_payment_method_provider
 	 *
-	 * @param string $express_type    The express checkout type stored in order meta.
-	 * @param string $stripe_type     The Stripe payment method type.
-	 * @param string $expected_title  The expected payment method title to be preserved.
-	 * @param array  $payment_details The payment method details from Stripe.
+	 * @param string $express_type     The express checkout type stored in order meta.
+	 * @param string $stripe_type      The Stripe payment method type.
+	 * @param string $expected_title   The expected payment method title to be preserved.
+	 * @param string $expected_gateway The expected gateway ID.
+	 * @param array  $payment_details  The payment method details from Stripe.
 	 */
-	public function test_express_checkout_payment_method_for_order( $express_type, $stripe_type, $expected_title, $payment_details ) {
+	public function test_express_checkout_payment_method_for_order( $express_type, $stripe_type, $expected_title, $expected_gateway, $payment_details ) {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method_title( $expected_title );
 		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_type );
@@ -635,7 +659,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->card_gateway->set_payment_method_title_for_order( $order, $stripe_type, $payment_details );
 
-		$this->assertEquals( 'woocommerce_payments', $order->get_payment_method(), "$express_type should use main gateway" );
+		$this->assertEquals( $expected_gateway, $order->get_payment_method(), "$express_type should use correct gateway" );
 		$this->assertEquals( $expected_title, $order->get_payment_method_title(), "$express_type title should be preserved" );
 	}
 
@@ -4251,6 +4275,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_method_definitions = [
 			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
@@ -4282,6 +4307,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		$this->payment_methods = $payment_methods;
+
+		// Also update WC_Payments::$payment_method_map so get_selected_payment_method works.
+		$current_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $current_map, $payment_methods ) );
 	}
 
 	private function init_gateways() {
