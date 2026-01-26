@@ -101,7 +101,8 @@ export const onConfirmHandler = async (
 	elements,
 	completePayment,
 	abortPayment,
-	event
+	event,
+	paymentMethodTypes = []
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
@@ -145,7 +146,8 @@ export const onConfirmHandler = async (
 			...transformStripePaymentMethodForStoreApi(
 				event,
 				paymentCredential.id,
-				useConfirmationToken
+				useConfirmationToken,
+				paymentMethodTypes
 			),
 			extensions: applyFilters(
 				'wcpay.express-checkout.cart-place-order-extension-data',

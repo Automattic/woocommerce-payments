@@ -213,6 +213,15 @@ jQuery( ( $ ) => {
 				getExpressCheckoutData( 'flags' )
 					?.isEceUsingConfirmationTokens ?? true;
 
+			// Build the payment method types array based on enabled methods.
+			// This array is sent to the server to ensure PaymentIntent uses matching types.
+			const enabledMethods =
+				getExpressCheckoutData( 'enabled_methods' ) ?? [];
+			const paymentMethodTypes = [
+				enabledMethods.includes( 'payment_request' ) && 'card',
+				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
+			].filter( Boolean );
+
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
 				mode: getStripeElementsMode(),
@@ -382,7 +391,8 @@ jQuery( ( $ ) => {
 					elements,
 					wcpayECE.completePayment,
 					wcpayECE.abortPayment,
-					event
+					event,
+					paymentMethodTypes
 				);
 			} );
 

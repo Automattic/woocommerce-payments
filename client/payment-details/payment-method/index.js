@@ -17,6 +17,7 @@ import CardPresentDetails from './card-present';
 import EpsDetails from './eps';
 import GiropayDetails from './giropay';
 import IdealDetails from './ideal';
+import AmazonPayDetails from './amazon-pay';
 import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
@@ -31,6 +32,7 @@ const detailsComponentMap = {
 	affirm: BasePaymentMethodDetails,
 	alipay: BasePaymentMethodDetails,
 	afterpay_clearpay: BasePaymentMethodDetails,
+	amazon_pay: AmazonPayDetails,
 	au_becs_debit: BecsDetails,
 	bancontact: BancontactDetails,
 	card: CardDetails,
