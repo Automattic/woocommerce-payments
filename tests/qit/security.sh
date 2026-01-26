@@ -7,8 +7,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 source "$DIR/common.sh"
 
 echo "Running security tests..."
+set +e
 $QIT_BINARY run:security woocommerce-payments --zip=woocommerce-payments.zip --wait
 EXIT_CODE=$?
+set -e
 
 # QIT exit codes (dev-trunk):
 # 0 = success
