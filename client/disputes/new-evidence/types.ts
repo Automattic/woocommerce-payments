@@ -105,6 +105,7 @@ export interface BaseEvidence {
 	shipping_documentation: string;
 	service_documentation: string;
 	cancellation_policy: string;
+	cancellation_rebuttal: string;
 	access_activity_log: string;
 	uncategorized_file: string;
 	uncategorized_text: string;
