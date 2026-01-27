@@ -28,13 +28,15 @@ export const transformStripeShippingAddressForStoreApi = (
  * @param {Object} paymentData Stripe's order object.
  * @param {string} paymentCredentialId Stripe's confirmation token id or payment method id.
  * @param {boolean} useConfirmationToken Whether the payment credential is a confirmation token.
+ * @param {string[]} paymentMethodTypes Array of Stripe payment method types used for Elements initialization.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
 export const transformStripePaymentMethodForStoreApi = (
 	paymentData,
 	paymentCredentialId,
-	useConfirmationToken = true
+	useConfirmationToken = true,
+	paymentMethodTypes = []
 ) => {
 	const name = paymentData.billingDetails?.name || '';
 	const billing = paymentData.billingDetails?.address ?? {};
@@ -92,6 +94,10 @@ export const transformStripePaymentMethodForStoreApi = (
 			{
 				key: 'express_payment_type',
 				value: paymentData.expressPaymentType,
+			},
+			{
+				key: 'wcpay-express-payment-method-types',
+				value: JSON.stringify( paymentMethodTypes ),
 			},
 		],
 	};
