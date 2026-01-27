@@ -53,6 +53,10 @@ const checkPaymentMethodIsAvailableInternal = (
 		const useConfirmationToken =
 			getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
 			true;
+		const paymentMethodTypes = [
+			[ 'applePay', 'googlePay' ].includes( paymentMethod ) && 'card',
+			paymentMethod === 'amazonPay' && 'amazon_pay',
+		].filter( Boolean ) as string[];
 
 		const root = createRoot( containerEl );
 		root.render(
@@ -62,7 +66,7 @@ const checkPaymentMethodIsAvailableInternal = (
 					mode: 'payment',
 					...( useConfirmationToken
 						? {
-								paymentMethodTypes: [ 'card' ],
+								paymentMethodTypes,
 								...getSetupFutureUsage(),
 						  }
 						: { paymentMethodCreation: 'manual' } ),
@@ -87,7 +91,11 @@ const checkPaymentMethodIsAvailableInternal = (
 								paymentMethod === 'googlePay'
 									? 'always'
 									: 'never',
-							amazonPay: 'never',
+							amazonPay:
+								// amazon pay can be "auto" or "never", but not "always"
+								paymentMethod === 'amazonPay'
+									? 'auto'
+									: 'never',
 							link: 'never',
 							paypal: 'never',
 							klarna: 'never',

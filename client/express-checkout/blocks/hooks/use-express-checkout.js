@@ -32,6 +32,7 @@ export const useExpressCheckout = ( {
 	onClick,
 	onClose,
 	setExpressPaymentError,
+	paymentMethodTypes = [],
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
@@ -167,7 +168,8 @@ export const useExpressCheckout = ( {
 				order_comments: wp?.data
 					?.select( 'wc/store/checkout' )
 					?.getOrderNotes(),
-			}
+			},
+			paymentMethodTypes
 		);
 	};
 

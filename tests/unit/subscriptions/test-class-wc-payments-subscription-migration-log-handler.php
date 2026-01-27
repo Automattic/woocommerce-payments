@@ -121,6 +121,57 @@ class WC_Payments_Subscription_Migration_Log_Handler_Test extends WCPAY_UnitTest
 	}
 
 	/**
+	 * Tests that when merging log files, chronological order is preserved (old logs first, then new logs).
+	 *
+	 * This ensures memory-efficient stream-based merging maintains proper log order.
+	 */
+	public function test_extend_life_of_migration_file_logs_merges_files_in_chronological_order() {
+		$log_dir       = trailingslashit( WC_LOG_DIR );
+		$old_message   = 'Old message from yesterday';
+		$new_message   = 'New message from today';
+		$today         = gmdate( 'Y-m-d' );
+		$old_date      = gmdate( 'Y-m-d', time() - DAY_IN_SECONDS );
+		$hash          = wp_hash( WC_Payments_Subscription_Migration_Log_Handler::HANDLE );
+		$old_file_name = WC_Payments_Subscription_Migration_Log_Handler::HANDLE . "-{$old_date}-{$hash}.log";
+		$new_file_name = WC_Payments_Subscription_Migration_Log_Handler::HANDLE . "-{$today}-{$hash}.log";
+		$old_file_path = $log_dir . $old_file_name;
+		$new_file_path = $log_dir . $new_file_name;
+
+		// Create an "old" log file with old date in filename.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		file_put_contents( $old_file_path, $old_message . "\n" );
+
+		// Create a "new" log file with today's date in filename.
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+		file_put_contents( $new_file_path, $new_message . "\n" );
+
+		// Verify both files exist before cleanup.
+		$this->assertFileExists( $old_file_path, 'Old log file should exist before cleanup.' );
+		$this->assertFileExists( $new_file_path, 'New log file should exist before cleanup.' );
+
+		// Trigger WC's log cleanup - our handler merges and renames files.
+		do_action( 'woocommerce_cleanup_logs' );
+
+		// Old file should be gone (merged into new file).
+		$this->assertFileDoesNotExist( $old_file_path, 'Old log file should be deleted after merge.' );
+
+		// New file should exist with merged content.
+		$this->assertFileExists( $new_file_path, 'New log file should exist after merge.' );
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$merged_content = file_get_contents( $new_file_path );
+
+		// Verify both messages are present.
+		$this->assertStringContainsString( $old_message, $merged_content, 'Old message should be in merged file.' );
+		$this->assertStringContainsString( $new_message, $merged_content, 'New message should be in merged file.' );
+
+		// Verify chronological order: old message should appear before new message.
+		$old_position = strpos( $merged_content, $old_message );
+		$new_position = strpos( $merged_content, $new_message );
+		$this->assertLessThan( $new_position, $old_position, 'Old logs should appear before new logs in merged file.' );
+	}
+
+	/**
 	 * Tests that log db entries that a created by WC_Payments_Subscription_Migration_Log_Handler are not deleted by WC's log cleanup.
 	 *
 	 * Confirms that our log entries are not deleted by WC's log cleanup and that mock log entries are deleted.
