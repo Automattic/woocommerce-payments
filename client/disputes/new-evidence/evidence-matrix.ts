@@ -265,7 +265,7 @@ const getProductNotReceivedMatrix = (): {
 			order: 25,
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
 			label: __( 'Cancellation confirmation', 'woocommerce-payments' ),
 			description: __(
 				'Documents showing the product or service was canceled, such as cancellation logs, confirmation emails, or account records.',

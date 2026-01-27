@@ -485,7 +485,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 2 ].description ).toBe(
 					'Any documents showing the service completion, attendance or reservation confirmation.'
 				);
-				expect( result[ 3 ].key ).toBe( 'uncategorized_file' ); // Cancellation confirmation
+				expect( result[ 3 ].key ).toBe( 'cancellation_rebuttal' ); // Cancellation confirmation
 				expect( result[ 3 ].label ).toBe( 'Cancellation confirmation' );
 				expect( result[ 3 ].description ).toBe(
 					'Documents showing the product or service was canceled, such as cancellation logs, confirmation emails, or account records.'
