@@ -21,6 +21,7 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 
 /**
  * Gateway class for WooPayments, with added compatibility with WooCommerce Subscriptions.
@@ -70,9 +71,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Returns a formatted token list for a user.
 	 *
-	 * @param int $user_id The user ID.
+	 * @param int         $user_id    The user ID.
+	 * @param string|null $gateway_id Optional gateway ID to filter tokens. Defaults to card gateway.
 	 */
-	abstract protected function get_user_formatted_tokens_array( $user_id );
+	abstract protected function get_user_formatted_tokens_array( $user_id, $gateway_id = null );
 
 	/**
 	 * Prepares the payment information object.
@@ -112,6 +114,56 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @var string|int
 	 */
 	private $order_pay_var;
+
+	/**
+	 * Get the list of WCPay gateway IDs that support reusable payment methods for subscriptions.
+	 * These gateways can be charged for recurring payments.
+	 *
+	 * @return array List of reusable gateway IDs.
+	 */
+	private function get_reusable_wcpay_gateway_ids() {
+		return [
+			WC_Payment_Gateway_WCPay::GATEWAY_ID, // Card gateway.
+			WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id(),
+		];
+	}
+
+	/**
+	 * Check if a gateway ID is a reusable WCPay gateway that supports subscription renewals.
+	 *
+	 * @param string $gateway_id The gateway ID to check.
+	 * @return bool True if the gateway is reusable.
+	 */
+	private function is_reusable_wcpay_gateway( $gateway_id ) {
+		return in_array( $gateway_id, $this->get_reusable_wcpay_gateway_ids(), true );
+	}
+
+	/**
+	 * Check if a subscription or order belongs to this specific gateway or a related WCPay gateway
+	 * that this gateway should handle (e.g., card gateway handling Amazon Pay display).
+	 *
+	 * @param WC_Order|WC_Subscription $order The order or subscription to check.
+	 * @return bool True if this gateway should handle the order.
+	 */
+	private function should_handle_order( $order ) {
+		$payment_method = $order->get_payment_method();
+
+		// Direct match - order uses this gateway.
+		if ( $payment_method === $this->id ) {
+			return true;
+		}
+
+		// For the base card gateway, also handle Amazon Pay subscriptions for display purposes.
+		// This is needed because some hooks are only registered once for the base gateway.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $this->id ) {
+			$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id();
+			if ( $payment_method === $amazon_pay_gateway_id ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**
 	 * Initialize subscription support and hooks.
@@ -163,39 +215,45 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Initializes this trait's WP hooks.
 	 *
-	 * The hooks are not initialized more than once or if the ID of the attached gateway is not 'woocommerce_payments'.
+	 * Generic hooks are registered once by the base gateway.
+	 * Gateway-specific hooks (for renewals) are registered by each reusable gateway.
+	 * Non-reusable gateways (iDEAL, Bancontact, etc.) do not register subscription hooks.
 	 *
 	 * @return void
 	 */
 	public function maybe_init_subscriptions_hooks() {
-		/**
-		 * The following callbacks are only attached once to avoid duplication.
-		 * The callbacks are also only intended to be attached for the WCPay core payment gateway ($this->id = 'woocommerce_payments').
-		 *
-		 * If new payment method IDs (eg 'sepa_debit') are added to this condition in the future, care should be taken to ensure duplication,
-		 * including double renewal charging, isn't introduced.
-		 */
-		if ( self::$has_attached_integration_hooks || 'woocommerce_payments' !== $this->id || ! $this->is_subscriptions_enabled() ) {
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return;
+		}
+
+		$this->maybe_init_subscription_hooks();
+	}
+
+	/**
+	 * Initialize subscription hooks. These hooks are registered once by the base gateway.
+	 *
+	 * @return void
+	 */
+	private function maybe_init_subscription_hooks() {
+		// Only the base gateway registers hooks to avoid duplication.
+		if ( self::$has_attached_integration_hooks || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $this->id ) {
 			return;
 		}
 
 		self::$has_attached_integration_hooks = true;
 
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
+		// TODO ~FR: this hook might not be needed anymore?
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
 
-		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
-		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
-		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
+		// Ensure all reusable WCPay gateways are available for admin subscription editing.
+		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'add_reusable_gateways_for_subscription_admin' ], 20 );
 
-		// Also register subscription hooks for Amazon Pay split gateway, which uses a different gateway ID.
-		$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
-		add_action( 'woocommerce_scheduled_subscription_payment_' . $amazon_pay_gateway_id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
-		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $amazon_pay_gateway_id, [ $this, 'update_failing_payment_method' ], 10, 2 );
+		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
 
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
 
-		// Display the credit card used for a subscription in the "My Subscriptions" table.
+		// Display the payment method used for a subscription in the "My Subscriptions" table.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
 
 		// Hide "Change payment" button for manual subscriptions with non-reusable payment methods.
@@ -239,6 +297,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// AJAX handler for fetching payment tokens when customer changes.
 		add_action( 'wp_ajax_wcpay_get_user_payment_tokens', [ $this, 'ajax_get_user_payment_tokens' ] );
+
+		// Register gateway-specific hooks for all reusable gateways.
+		foreach ( $this->get_reusable_wcpay_gateway_ids() as $gateway_id ) {
+			add_action( 'woocommerce_scheduled_subscription_payment_' . $gateway_id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
+			add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $gateway_id, [ $this, 'update_failing_payment_method' ], 10, 2 );
+		}
 	}
 
 	/**
@@ -300,6 +364,42 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_no_available_payment_methods_message', [ $this, 'change_no_available_methods_message' ] );
 
 		return [];
+	}
+
+	/**
+	 * Ensures all reusable WCPay gateways are available for admin subscription editing.
+	 *
+	 * When editing a subscription in admin, WC Subscriptions uses get_available_payment_gateways()
+	 * to populate the payment method dropdown. However, split gateways like Amazon Pay may not
+	 * pass is_available() checks in the admin context (no cart/checkout). This filter ensures
+	 * all reusable WCPay gateways appear in the dropdown.
+	 *
+	 * Note: WC Subscriptions already filters the dropdown to only show gateways that support
+	 * 'subscription_payment_method_change_admin', so adding the gateway here only affects
+	 * subscription-related admin screens.
+	 *
+	 * @param WC_Payment_Gateway[] $gateways A list of all available gateways.
+	 * @return WC_Payment_Gateway[]          The gateways list with reusable WCPay gateways added.
+	 */
+	public function add_reusable_gateways_for_subscription_admin( $gateways ) {
+		// Only apply in admin context.
+		// TODO ~FR: improve checks.
+		// TODO ~FR: this works for now, but in reality it's needed because the `get_upe_enabled_payment_method_ids()` array does not include amazon_pay - amazon_pay is controlled by the gateway's individual `enabled()` parameter.
+		if ( ! is_admin() ) {
+			return $gateways;
+		}
+
+		// Add Amazon Pay gateway if it exists, is enabled, and isn't already in the list.
+		$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id();
+		if ( ! isset( $gateways[ $amazon_pay_gateway_id ] ) ) {
+			// Use WC_Payments gateway map which has the gateway even if is_available() returns false.
+			$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
+			if ( $amazon_pay_gateway && $amazon_pay_gateway->is_enabled() ) {
+				$gateways[ $amazon_pay_gateway_id ] = $amazon_pay_gateway;
+			}
+		}
+
+		return $gateways;
 	}
 
 	/**
@@ -462,7 +562,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return array
 	 */
 	public function append_payment_meta( $payment_meta, $order, $subscription ) {
-		if ( $this->id !== $order->get_payment_method() || $this->id !== $subscription->get_payment_method() ) {
+		// Check if both order and subscription should be handled by this gateway.
+		if ( ! $this->should_handle_order( $order ) || ! $this->should_handle_order( $subscription ) ) {
 			return $payment_meta;
 		}
 
@@ -482,20 +583,23 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return array
 	 */
 	public function add_subscription_payment_meta( $payment_meta, $subscription ) {
-		$payment_meta[ $this->id ] = $this->get_payment_meta( $subscription );
+		// Add payment meta for all reusable WCPay gateways (card, Amazon Pay).
+		foreach ( $this->get_reusable_wcpay_gateway_ids() as $gateway_id ) {
+			$payment_meta[ $gateway_id ] = $this->get_payment_meta( $subscription );
 
-		// Display select element on newer Subscriptions versions.
-		add_action(
-			sprintf(
-				'woocommerce_subscription_payment_meta_input_%s_%s_%s',
-				WC_Payment_Gateway_WCPay::GATEWAY_ID,
-				self::$payment_method_meta_table,
-				self::$payment_method_meta_key
-			),
-			[ $this, 'render_custom_payment_meta_input' ],
-			10,
-			3
-		);
+			// Display select element on newer Subscriptions versions.
+			add_action(
+				sprintf(
+					'woocommerce_subscription_payment_meta_input_%s_%s_%s',
+					$gateway_id,
+					self::$payment_method_meta_table,
+					self::$payment_method_meta_key
+				),
+				[ $this, 'render_custom_payment_meta_input' ],
+				10,
+				3
+			);
+		}
 
 		return $payment_meta;
 	}
@@ -511,7 +615,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @throws Invalid_Payment_Method_Exception When $payment_meta is not valid.
 	 */
 	public function validate_subscription_payment_meta( $payment_gateway_id, $payment_meta, $subscription ) {
-		if ( $this->id !== $payment_gateway_id ) {
+		// Validate for all reusable WCPay gateways (card, Amazon Pay).
+		if ( ! $this->is_reusable_wcpay_gateway( $payment_gateway_id ) ) {
 			return;
 		}
 
@@ -610,7 +715,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 */
 	public function maybe_render_subscription_payment_method( $payment_method_to_display, $subscription ) {
 		try {
-			if ( $subscription->get_payment_method() !== $this->id ) {
+			// Use should_handle_order() to check if this gateway should render the payment method.
+			// This allows the base gateway to render payment methods for Amazon Pay subscriptions too.
+			if ( ! $this->should_handle_order( $subscription ) ) {
 				return $payment_method_to_display;
 			}
 
@@ -694,7 +801,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		$user_id = isset( $_POST['user_id'] ) ? absint( $_POST['user_id'] ) : 0;
+		$user_id    = isset( $_POST['user_id'] ) ? absint( $_POST['user_id'] ) : 0;
+		$gateway_id = isset( $_POST['gateway_id'] ) ? sanitize_text_field( wp_unslash( $_POST['gateway_id'] ) ) : null;
 
 		if ( $user_id <= 0 ) {
 			wp_send_json_success( [ 'tokens' => [] ] );
@@ -708,7 +816,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		$tokens = $this->get_user_formatted_tokens_array( $user_id );
+		// Validating the gateway_id - only allow reusable WCPay gateways.
+		if ( null !== $gateway_id && ! $this->is_reusable_wcpay_gateway( $gateway_id ) ) {
+			$gateway_id = null; // Fall back to the default card gateway.
+		}
+
+		$tokens = $this->get_user_formatted_tokens_array( $user_id, $gateway_id );
 		wp_send_json_success( [ 'tokens' => $tokens ] );
 	}
 
@@ -729,20 +842,33 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 					: null
 			);
 
-		$user_id       = $subscription->get_user_id();
+		$user_id = $subscription->get_user_id();
+
+		// Extract the gateway ID from the field_id which follows the pattern:
+		// _payment_method_meta[{gateway_id}][{table}][{key}]
+		// This ensures we show tokens for the gateway being rendered, not the subscription's current gateway.
+		$token_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID; // Default to card.
+		if ( preg_match( '/\[([^\]]+)\]/', $field_id, $matches ) ) {
+			$extracted_gateway_id = $matches[1];
+			if ( $this->is_reusable_wcpay_gateway( $extracted_gateway_id ) ) {
+				$token_gateway_id = $extracted_gateway_id;
+			}
+		}
+
 		$disabled      = false;
 		$selected      = null;
 		$options       = [];
 		$prepared_data = [
-			'value'   => $field_value,
-			'userId'  => $user_id,
-			'tokens'  => [],
-			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'nonce'   => wp_create_nonce( 'wcpay-subscription-edit' ),
+			'value'     => $field_value,
+			'userId'    => $user_id,
+			'tokens'    => [],
+			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+			'nonce'     => wp_create_nonce( 'wcpay-subscription-edit' ),
+			'gatewayId' => $token_gateway_id,
 		];
 
 		if ( $user_id > 0 ) {
-			$tokens = $this->get_user_formatted_tokens_array( $user_id );
+			$tokens = $this->get_user_formatted_tokens_array( $user_id, $token_gateway_id );
 			foreach ( $tokens as $token ) {
 				$options[ $token['tokenId'] ] = $token['displayName'];
 				if ( $field_value === $token['tokenId'] || ( ! $field_value && $token['isDefault'] ) ) {
@@ -786,8 +912,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return string
 	 */
 	public function get_specific_old_payment_method_title( $old_payment_method_title, $old_payment_method, $subscription ) {
-		// make sure payment method is wcpay's.
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $old_payment_method ) {
+		// Make sure payment method is a WCPay gateway (including split gateways like Amazon Pay).
+		if ( 0 !== strpos( $old_payment_method, WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
 			return $old_payment_method_title;
 		}
 
@@ -837,8 +963,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return string
 	 */
 	public function get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $subscription ) {
-		// make sure payment method is wcpay's.
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $new_payment_method ) {
+		// Make sure payment method is a WCPay gateway (including split gateways like Amazon Pay).
+		if ( 0 !== strpos( $new_payment_method, WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
 			return $new_payment_method_title;
 		}
 
@@ -1016,11 +1142,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool Whether this function updates the token or not.
 	 */
 	public function update_subscription_token( $updated, $subscription, $new_token ) {
-		if ( $this->id !== $new_token->get_gateway_id() ) {
+		$token_gateway_id = $new_token->get_gateway_id();
+
+		// Check if the token belongs to a reusable WCPay gateway.
+		// Only the base gateway processes this hook, so we handle all reusable gateway tokens.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $this->id || ! $this->is_reusable_wcpay_gateway( $token_gateway_id ) ) {
 			return $updated;
 		}
 
-		$subscription->set_payment_method( $this->id );
+		// Set the subscription payment method to match the token's gateway.
+		$subscription->set_payment_method( $token_gateway_id );
 		$subscription->update_meta_data( '_payment_method_id', $new_token->get_token() );
 		$subscription->add_payment_token( $new_token );
 		$subscription->save();
@@ -1195,21 +1326,17 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$parent_order = $subscription->get_parent();
 		if ( $parent_order ) {
 			$express_checkout_type = $parent_order->get_meta( '_wcpay_express_checkout_payment_method' );
-			if ( Payment_Method::AMAZON_PAY === $express_checkout_type ) {
-				// Update subscription to use the Amazon Pay split gateway.
-				$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+			if ( AmazonPayDefinition::get_id() === $express_checkout_type ) {
+				$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id();
 				$subscription->set_payment_method( $amazon_pay_gateway_id );
-				$subscription->set_payment_method_title( __( 'Amazon Pay', 'woocommerce-payments' ) . ' (WooPayments)' );
 				$subscription->save();
 				return;
 			}
 		}
 
-		// Check if this is a split UPE gateway (e.g., woocommerce_payments_ideal).
-		// Split UPE gateways are used for non-reusable payment methods like iDEAL, Bancontact, etc.
-		// The base gateway (woocommerce_payments) is used for cards, which are reusable.
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $payment_method_id ) {
-			// This is the base gateway (card), which is reusable - no action needed.
+		// Check if this is a reusable payment method (card, Amazon Pay).
+		// Reusable payment methods can be charged for subscription renewals, so no action needed.
+		if ( $this->is_reusable_wcpay_gateway( $payment_method_id ) ) {
 			return;
 		}
 

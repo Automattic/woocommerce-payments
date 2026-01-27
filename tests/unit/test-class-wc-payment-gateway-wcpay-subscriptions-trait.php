@@ -6,6 +6,7 @@
  */
 
 use WCPay\Constants\Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 
 /**
  * WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test unit tests.
@@ -112,7 +113,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Trait_Test extends WCPAY_UnitTestCa
 	 * Test that Amazon Pay subscription hooks are registered.
 	 */
 	public function test_amazon_pay_subscription_hooks_are_registered() {
-		$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+		$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id();
 
 		// Verify that the scheduled payment hook is registered for Amazon Pay gateway.
 		$this->assertNotFalse(

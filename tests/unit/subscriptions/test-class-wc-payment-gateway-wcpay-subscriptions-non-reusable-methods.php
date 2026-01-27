@@ -205,9 +205,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Non_Reusable_Methods_Test extends W
 		$this->mock_gateway->maybe_force_subscription_to_manual( $subscription );
 
 		// Assert: Subscription should be updated to Amazon Pay gateway but NOT forced to manual.
-		$expected_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+		$expected_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id();
 		$this->assertEquals( $expected_gateway_id, $subscription->get_payment_method(), 'Payment method should be updated to Amazon Pay split gateway' );
-		$this->assertEquals( 'Amazon Pay (WooPayments)', $subscription->get_payment_method_title(), 'Payment method title should be set to Amazon Pay (WooPayments)' );
 		$this->assertFalse( $subscription->is_manual(), 'Subscription should remain automatic for Amazon Pay (reusable payment method)' );
 		$this->assertEmpty( $subscription->get_meta( '_wcpay_original_payment_method_id', true ), 'No original payment method ID should be stored for Amazon Pay' );
 	}

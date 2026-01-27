@@ -297,7 +297,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			'billing_details' => [
 				'email' => 'test@amazon.com',
 			],
-			'type'            => Payment_Method::AMAZON_PAY,
+			'type'            => \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id(),
 		];
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
@@ -317,7 +317,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$mock_payment_method = [
 			'id'         => 'pm_mock',
 			'amazon_pay' => [],
-			'type'       => Payment_Method::AMAZON_PAY,
+			'type'       => \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id(),
 		];
 
 		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );

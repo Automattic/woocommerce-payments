@@ -134,6 +134,27 @@ if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 
 if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
 	registerExpressPaymentMethod( expressCheckoutElementAmazonPay( api ) );
+
+	// Register Amazon Pay for saved tokens only (not as a regular payment method).
+	// Amazon Pay is only available via Express Checkout, but we need to register
+	// it here so saved Amazon Pay tokens can be displayed on the checkout.
+	if ( getUPEConfig( 'isSavedCardsEnabled' ) ) {
+		registerPaymentMethod( {
+			name: 'woocommerce_payments_amazon_pay',
+			content: <div />,
+			edit: <div />,
+			savedTokenComponent: <SavedTokenHandler api={ api } />,
+			canMakePayment: () => true, // Never show as a new payment option.
+			paymentMethodId: 'woocommerce_payments_amazon_pay',
+			label: <span>Amazon Pay</span>,
+			ariaLabel: 'Amazon Pay',
+			supports: {
+				showSavedCards: true,
+				showSaveOption: false,
+				features: getUPEConfig( 'features' ),
+			},
+		} );
+	}
 }
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
