@@ -108,14 +108,35 @@ Navigate to the test package directory:
 cd tests/qit/test-package
 ```
 
-Common Playwright commands:
+#### Understanding Test Projects
+
+Tests are organized into Playwright **projects**:
+
+| Project | Description | Location |
+|---------|-------------|----------|
+| `default` | Basic connectivity tests | `tests/basic.spec.ts` |
+| `shopper` | Customer-facing flows | `tests/woopayments/shopper/` |
+| `merchant` | Admin/merchant flows | `tests/woopayments/merchant/` |
+| `subscriptions` | Subscription-specific tests | `tests/woopayments/subscriptions/` |
+
+By default, Playwright only shows/runs the `default` project (basic.spec.ts). To see all tests, you need to specify the projects.
+
+#### Common Playwright Commands
 
 ```bash
-# Interactive UI mode (recommended for development)
+# Interactive UI mode - default project only
 npx playwright test --ui
 
-# Run all tests headless
-npx playwright test
+# Interactive UI mode - all projects (shows all tests)
+npx playwright test --ui --project=default --project=shopper --project=merchant --project=subscriptions
+
+# Interactive UI mode - specific project
+npx playwright test --ui --project=shopper
+npx playwright test --ui --project=merchant
+npx playwright test --ui --project=subscriptions
+
+# Run all tests headless (all projects)
+npx playwright test --project=default --project=shopper --project=merchant --project=subscriptions
 
 # Run a specific test file
 npx playwright test tests/woopayments/shopper/shopper-checkout-purchase.spec.ts
@@ -128,9 +149,6 @@ npx playwright test --headed
 
 # Debug mode (step through tests)
 npx playwright test --debug
-
-# Run a specific project (shopper, merchant, subscriptions)
-npx playwright test --project=shopper
 ```
 
 ### Iterating on Tests
