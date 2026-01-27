@@ -78,11 +78,6 @@ class WC_Payment_Token_WCPay_Amazon_Pay extends WC_Payment_Token {
 	public function get_email( $context = 'view' ) {
 		$email = $this->get_prop( 'email', $context );
 
-		// Fallback to meta data for tokens created before email was added as a property.
-		if ( empty( $email ) ) {
-			$email = $this->get_meta( '_wcpay_amazon_pay_email' );
-		}
-
 		return $email ?? '';
 	}
 

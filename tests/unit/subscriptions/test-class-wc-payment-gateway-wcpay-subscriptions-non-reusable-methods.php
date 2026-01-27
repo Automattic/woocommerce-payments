@@ -198,7 +198,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Non_Reusable_Methods_Test extends W
 		$subscription = new WC_Subscription();
 		$subscription->set_payment_method( 'woocommerce_payments' );
 		$subscription->set_requires_manual_renewal( false ); // Start as automatic.
-		$subscription->set_parent_id( $parent_order->get_id() );
+		$subscription->set_parent( $parent_order );
 		$subscription->save();
 
 		// Act: Call the method.
@@ -226,7 +226,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Non_Reusable_Methods_Test extends W
 		$subscription = new WC_Subscription();
 		$subscription->set_payment_method( 'woocommerce_payments' );
 		$subscription->set_requires_manual_renewal( false ); // Automatic.
-		$subscription->set_parent_id( $parent_order->get_id() );
+		$subscription->set_parent( $parent_order );
 		$subscription->save();
 
 		// Act: Call the method.

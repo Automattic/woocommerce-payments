@@ -140,8 +140,10 @@ export default class WCPayAPI {
 	 * @return {Promise<string>|boolean} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
 	confirmIntent( redirectUrl, shouldSavePaymentMethod = false ) {
+		// The `confirmationToken` group is optional, it's needed for `SetupIntent`s through the ECE.
+		// Format: #wcpay-confirm-{si|pi}:{orderId}:{clientSecret}:{nonce}[:{confirmationToken}]
 		const partials = redirectUrl.match(
-			/#wcpay-confirm-(pi|si):(.+):(.+):(.+)$/
+			/#wcpay-confirm-(pi|si):([^:]+):([^:]+):([^:]+)(?::(.+))?$/
 		);
 
 		if ( ! partials ) {
@@ -152,6 +154,7 @@ export default class WCPayAPI {
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		const nonce = partials[ 4 ];
+		const confirmationToken = partials[ 5 ] || null;
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
 		const isOrderPage = orderPayIndex > -1;
 
@@ -182,13 +185,23 @@ export default class WCPayAPI {
 			// use the regular getStripe function.
 			const stripe = await this.getStripe();
 			if ( isSetupIntent ) {
-				// For SetupIntents created with confirmation tokens (Express Checkout Element),
-				// we need to use confirmSetup() instead of handleNextAction() because the
-				// SetupIntent might have requires_confirmation status rather than requires_action.
-				// The payment method is already attached from the confirmation token.
-				return stripe.confirmSetup( {
+				// For `SetupIntent`s with a confirmation token, use confirmSetup()
+				// to confirm the intent with the token. This is required because
+				// `SetupIntent`s created without a payment method need the confirmation
+				// token passed during the `confirm` step.
+				if ( confirmationToken ) {
+					return stripe.confirmSetup( {
+						clientSecret: clientSecret,
+						confirmParams: {
+							confirmation_token: confirmationToken,
+						},
+						redirect: 'if_required',
+					} );
+				}
+
+				// For regular `SetupIntent`s (already confirmed), just handle any next action.
+				return stripe.handleNextAction( {
 					clientSecret: clientSecret,
-					redirect: 'if_required',
 				} );
 			}
 

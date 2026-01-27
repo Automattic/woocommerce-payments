@@ -1719,18 +1719,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// For $0 orders, we need to save the payment method using a setup intent.
 				$payment_credential = $payment_information->get_payment_method();
 
-				// When using confirmation tokens (from Express Checkout Element), we need to use
-				// deferred confirmation. Stripe's SetupIntent API doesn't support confirmation tokens
-				// with confirm=true in the same way PaymentIntent does. We create the SetupIntent
-				// without confirming, and the frontend will confirm it using stripe.confirmSetup().
+				// For confirmation tokens (e.g.: through the ECE), we must create an unconfirmed `SetupIntent`
+				// and let the frontend confirm it with the confirmation token.
+				// Stripe's SetupIntent API doesn't support confirmation_token with confirm=true in the same way `PaymentIntent`s do.
 				if ( $payment_information->is_using_confirmation_token() ) {
 					$request = Create_Setup_Intention::create();
 					$request->set_customer( $customer_id );
 					$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
-					$request->set_confirmation_token( $payment_credential );
 					$request->set_metadata( $metadata );
 					$request->assign_hook( 'wcpay_create_setup_intention_request' );
-					$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 				} else {
 					$request = Create_And_Confirm_Setup_Intention::create();
 					$request->set_customer( $customer_id );
@@ -1821,7 +1818,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( Intent_Status::REQUIRES_ACTION === $status || Intent_Status::REQUIRES_CONFIRMATION === $status ) {
+			// For SetupIntents with confirmation tokens, the status will be 'requires_payment_method'
+			// since no payment method is attached yet (the confirmation token will be used on frontend).
+			$needs_frontend_confirmation = Intent_Status::REQUIRES_ACTION === $status
+				|| Intent_Status::REQUIRES_CONFIRMATION === $status
+				|| ( Intent_Status::REQUIRES_PAYMENT_METHOD === $status && $payment_information->is_using_confirmation_token() && ! $payment_needed );
+
+			if ( $needs_frontend_confirmation ) {
 				$next_action_type = $next_action['type'] ?? null;
 				if ( 'redirect_to_url' === $next_action_type && ! empty( $next_action[ $next_action_type ]['url'] ) ) {
 					$response = [
@@ -1837,17 +1840,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$next_action[ $next_action_type ]['expires_at']
 					);
 				} else {
+					// Build the redirect URL with the confirmation token for `SetupIntent`s requested through the ECE.
+					// Format: #wcpay-confirm-{si|pi}:{orderId}:{clientSecret}:{nonce}[:{confirmationToken}].
+					$redirect_hash_parts = [
+						$payment_needed ? 'pi' : 'si',
+						$order_id,
+						$client_secret,
+						wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+					];
+
+					// For ECE SetupIntents, include the confirmation token so the frontend can
+					// use it with confirmSetup() to complete the confirmation.
+					if ( ! $payment_needed && $payment_information->is_using_confirmation_token() ) {
+						$redirect_hash_parts[] = $payment_information->get_payment_method();
+					}
+
 					$response = [
 						'result'         => 'success',
 						// Include a new nonce for update_order_status to ensure the update order
 						// status call works when a guest user creates an account during checkout.
-						'redirect'       => sprintf(
-							'#wcpay-confirm-%s:%s:%s:%s',
-							$payment_needed ? 'pi' : 'si',
-							$order_id,
-							$client_secret,
-							wp_create_nonce( 'wcpay_update_order_status_nonce' ),
-						),
+						'redirect'       => '#wcpay-confirm-' . implode( ':', $redirect_hash_parts ),
 						// Include the payment method ID so the Blocks integration can save cards.
 						'payment_method' => $payment_information->get_payment_method(),
 					];
@@ -3685,9 +3697,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent    = $setup_intent_request->send();
-				$status    = $intent->get_status();
-				$charge_id = '';
+				$intent = $setup_intent_request->send();
+				$status = $intent->get_status();
+
+				// For $0 orders (free trials), directly complete the order when SetupIntent succeeds.
+				// This is similar to how WC Stripe Gateway handles it - calling payment_complete()
+				// directly ensures the order transitions to the correct status and activates subscriptions.
+				// Otherwise, the order would be in a "Pending payment" state and the subscription would be "Pending".
+				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() ) {
+					$order->payment_complete( $intent_id );
+
+					// Add a success note similar to mark_payment_completed().
+					$note = sprintf(
+						/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+						__( 'A payment of %1$s was successfully charged using %2$s (%3$s).', 'woocommerce-payments' ),
+						wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ),
+						'WooPayments',
+						$intent_id
+					);
+					$order->add_order_note( $note );
+					$this->order_service->set_intention_status_for_order( $order, $status );
+					$order->save();
+				}
 			}
 
 			$payment_method_id = $intent->get_payment_method_id();
