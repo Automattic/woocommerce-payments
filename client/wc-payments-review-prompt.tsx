@@ -9,7 +9,7 @@ import { createRoot } from 'react-dom/client';
  */
 import ReviewPrompt from 'review-prompt';
 
-const mountReviewPrompt = () => {
+const mountReviewPrompt = (): void => {
 	const container = document.getElementById( 'wcpay-review-prompt' );
 	if ( container ) {
 		const root = createRoot( container );
