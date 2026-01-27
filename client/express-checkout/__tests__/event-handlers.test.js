@@ -23,6 +23,9 @@ describe( 'Express checkout event handlers', () => {
 		global.wcpayExpressCheckoutParams.flags = {
 			isEceUsingConfirmationTokens: true,
 		};
+		global.wcpayExpressCheckoutParams.enabled_methods = [
+			'payment_request',
+		];
 
 		setCartApiHandler( {
 			updateCustomer: cartApiUpdateCustomerMock,
@@ -362,7 +365,7 @@ describe( 'Express checkout event handlers', () => {
 			expect( abortPayment ).toHaveBeenCalledWith( 'Submit error' );
 		} );
 
-		describe( 'when using payment methods (flag disabled)', () => {
+		describe( 'using legacy payment methods', () => {
 			beforeEach( () => {
 				global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = false;
 			} );
@@ -419,13 +422,14 @@ describe( 'Express checkout event handlers', () => {
 				expect( stripe.createPaymentMethod ).toHaveBeenCalledWith( {
 					elements,
 				} );
+				expect( stripe.createConfirmationToken ).not.toHaveBeenCalled();
 				expect( abortPayment ).toHaveBeenCalledWith(
 					'Payment method error'
 				);
 			} );
 		} );
 
-		describe( 'when using confirmation tokens (flag enabled)', () => {
+		describe( 'using confirmation tokens', () => {
 			beforeEach( () => {
 				global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
 			} );
@@ -482,8 +486,141 @@ describe( 'Express checkout event handlers', () => {
 				expect( stripe.createConfirmationToken ).toHaveBeenCalledWith( {
 					elements,
 				} );
+				expect( stripe.createPaymentMethod ).not.toHaveBeenCalled();
 				expect( abortPayment ).toHaveBeenCalledWith(
 					'Confirmation token error'
+				);
+			} );
+		} );
+
+		describe( 'paymentMethodTypes parameter', () => {
+			beforeEach( () => {
+				global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+			} );
+
+			it( 'should include paymentMethodTypes in payment_data for card payments', async () => {
+				// enabled_methods is set to ['payment_request'] in global beforeEach
+				cartApiPlaceOrderMock.mockResolvedValue( {
+					payment_result: {
+						payment_status: 'success',
+						redirect_url: 'https://example.com/success',
+					},
+				} );
+				api.confirmIntent.mockReturnValue( true );
+
+				const paymentMethodTypes = [ 'card' ];
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					event,
+					paymentMethodTypes
+				);
+
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						payment_data: expect.arrayContaining( [
+							expect.objectContaining( {
+								key: 'wcpay-express-payment-method-types',
+								value: JSON.stringify( [ 'card' ] ),
+							} ),
+						] ),
+					} )
+				);
+			} );
+
+			it( 'should include paymentMethodTypes in payment_data for Amazon Pay', async () => {
+				global.wcpayExpressCheckoutParams.enabled_methods = [
+					'payment_request',
+					'amazon_pay',
+				];
+				cartApiPlaceOrderMock.mockResolvedValue( {
+					payment_result: {
+						payment_status: 'success',
+						redirect_url: 'https://example.com/success',
+					},
+				} );
+				api.confirmIntent.mockReturnValue( true );
+
+				const amazonPayEvent = {
+					...event,
+					expressPaymentType: 'amazon_pay',
+				};
+				const paymentMethodTypes = [ 'card', 'amazon_pay' ];
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					amazonPayEvent,
+					paymentMethodTypes
+				);
+
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						payment_data: expect.arrayContaining( [
+							expect.objectContaining( {
+								key: 'wcpay-express-payment-method-types',
+								value: JSON.stringify( [
+									'card',
+									'amazon_pay',
+								] ),
+							} ),
+							expect.objectContaining( {
+								key: 'express_payment_type',
+								value: 'amazon_pay',
+							} ),
+						] ),
+					} )
+				);
+			} );
+
+			it( 'should include only amazon_pay in paymentMethodTypes when payment_request is disabled', async () => {
+				global.wcpayExpressCheckoutParams.enabled_methods = [
+					'amazon_pay',
+				];
+				cartApiPlaceOrderMock.mockResolvedValue( {
+					payment_result: {
+						payment_status: 'success',
+						redirect_url: 'https://example.com/success',
+					},
+				} );
+				api.confirmIntent.mockReturnValue( true );
+
+				const amazonPayEvent = {
+					...event,
+					expressPaymentType: 'amazon_pay',
+				};
+				const paymentMethodTypes = [ 'amazon_pay' ];
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					amazonPayEvent,
+					paymentMethodTypes
+				);
+
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						payment_data: expect.arrayContaining( [
+							expect.objectContaining( {
+								key: 'wcpay-express-payment-method-types',
+								value: JSON.stringify( [ 'amazon_pay' ] ),
+							} ),
+							expect.objectContaining( {
+								key: 'express_payment_type',
+								value: 'amazon_pay',
+							} ),
+						] ),
+					} )
 				);
 			} );
 		} );
