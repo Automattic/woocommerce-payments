@@ -1022,6 +1022,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_amazon_pay_enabled = $request->get_param( 'is_amazon_pay_enabled' );
 		if ( $is_amazon_pay_enabled ) {
 			$amazon_pay_gateway->enable();
+			$this->request_unrequested_payment_methods( [ 'amazon_pay' ] );
 		} else {
 			$amazon_pay_gateway->disable();
 		}
