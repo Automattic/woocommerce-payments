@@ -70,12 +70,10 @@ import './style.scss';
 import RefundStatus from './refund-status';
 import DuplicateStatus from './duplicate-status';
 import ConfirmationScreen from './confirmation-screen';
+import { needsShipping, ReasonsNoShipping } from './shipping-utils';
 
-const ReasonsNoShipping = [
-	'duplicate',
-	'subscription_canceled',
-	'credit_not_processed',
-];
+// Re-export for backwards compatibility
+export { needsShipping, ReasonsNoShipping };
 
 // Stepper headings/subheadings
 const steps = [
@@ -95,19 +93,6 @@ const steps = [
 			"Using the information you've provided, we've automatically generated a cover letter for you. Before submitting to your customer's bank, please check all of the details are correct and make any required changes.",
 	},
 ];
-
-function needsShipping( reason: string | undefined, productType = '' ) {
-	// If product type is digital or booking/reservation, no shipping is needed
-	if (
-		productType === 'digital_product_or_service' ||
-		productType === 'booking_reservation'
-	) {
-		return false;
-	}
-	// Check dispute reason logic
-	if ( ReasonsNoShipping.includes( reason || '' ) ) return false;
-	return true;
-}
 
 // --- Main Component ---
 export default ( { query }: { query: { id: string } } ) => {

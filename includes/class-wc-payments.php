@@ -648,11 +648,15 @@ class WC_Payments {
 				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Status_Sync::class, 'remove_webhook' ] );
 
 				self::maybe_register_woopay_hooks();
-				self::maybe_display_express_checkout_buttons();
 				self::maybe_init_woopay_direct_checkout();
 				self::maybe_enqueue_woopay_common_config_script( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 			}
 		);
+
+		// Initialize express checkout buttons at 'init' priority 15 (after Multi-Currency determines the
+		// customer's selected currency at priorities 11-12). This ensures can_use_amazon_pay() checks
+		// availability against the correct presentment currency, not the store's default currency.
+		add_action( 'init', [ __CLASS__, 'maybe_display_express_checkout_buttons' ], 15 );
 
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
@@ -695,6 +699,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
 		require_once __DIR__ . '/migrations/class-migrate-payment-request-to-express-checkout-enabled.php';
 		require_once __DIR__ . '/migrations/class-migrate-express-checkout-locations.php';
+		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -709,6 +714,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Payment_Request_To_Express_Checkout_Enabled(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Express_Checkout_Locations(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
