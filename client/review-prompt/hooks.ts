@@ -17,8 +17,6 @@ export const useReviewPromptState = () => {
 		...userPrefs
 	} = useUserPreferences() as UserPreferences;
 
-	const isFeatureEnabled =
-		wcpaySettings?.featureFlags?.woopaymentReviewPrompt;
 	const isAccountEligible =
 		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
 
@@ -43,7 +41,6 @@ export const useReviewPromptState = () => {
 	};
 
 	return {
-		isFeatureEnabled,
 		isAccountEligible,
 		hasUserDismissedPrompt,
 		isCooldownActive,

@@ -31,7 +31,6 @@ class WC_Payments_Features {
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
-	const WOOPAYMENTS_REVIEW_PROMPT_FLAG_NAME                 = '_wcpay_feature_woopayments_review_prompt';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -377,15 +376,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the WooPayments review prompt is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_woopayments_review_prompt_enabled(): bool {
-		return '1' === get_option( self::WOOPAYMENTS_REVIEW_PROMPT_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -403,7 +393,6 @@ class WC_Payments_Features {
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
-				'woopaymentReviewPrompt'                   => self::is_woopayments_review_prompt_enabled(),
 			]
 		);
 	}

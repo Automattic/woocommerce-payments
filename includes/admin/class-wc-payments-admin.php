@@ -1510,10 +1510,6 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		if ( ! WC_Payments_Features::is_woopayments_review_prompt_enabled() ) {
-			return;
-		}
-
 		wp_enqueue_script( 'WCPAY_REVIEW_PROMPT' );
 		wp_enqueue_style( 'WCPAY_REVIEW_PROMPT' );
 	}

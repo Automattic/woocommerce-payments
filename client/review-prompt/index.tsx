@@ -18,7 +18,6 @@ const marketplaceReviewUrl =
 
 const ReviewPrompt: React.FC = () => {
 	const {
-		isFeatureEnabled,
 		isAccountEligible,
 		hasUserDismissedPrompt,
 		isCooldownActive,
@@ -65,13 +64,8 @@ const ReviewPrompt: React.FC = () => {
 		dismissPrompt();
 	}, [ getEventProperties, dismissPrompt ] );
 
-	// Don't render if feature disabled, account not eligible, dismissed, or cooldown active
-	if (
-		! isFeatureEnabled ||
-		! isAccountEligible ||
-		hasUserDismissedPrompt ||
-		isCooldownActive
-	) {
+	// Don't render if account not eligible, dismissed, or cooldown active
+	if ( ! isAccountEligible || hasUserDismissedPrompt || isCooldownActive ) {
 		return null;
 	}
 
