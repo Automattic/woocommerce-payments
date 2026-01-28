@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix REST schema type for stripe_billing_subscription_count and stripe_billing_migrated_count from 'int' to 'integer'

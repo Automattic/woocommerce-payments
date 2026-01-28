@@ -170,17 +170,21 @@ describe( 'Recommended Documents', () => {
 				'is_duplicate',
 				'booking_reservation'
 			);
-			expect( fields ).toHaveLength( 4 );
+			// "Refund receipt" uses duplicate_charge_documentation field, allowing "Other documents"
+			// (uncategorized_file) to be included as a separate field
+			expect( fields ).toHaveLength( 5 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
 			expect( fields[ 0 ].label ).toBe( 'Order receipt' );
-			expect( fields[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
+			expect( fields[ 1 ].key ).toBe( 'duplicate_charge_documentation' ); // Refund receipt
 			expect( fields[ 1 ].label ).toBe( 'Refund receipt' );
 			expect( fields[ 1 ].description ).toBe(
-				'A confirmation that the refund was processed.'
+				'A confirmation that a refund was issued.'
 			);
-			expect( fields[ 2 ].key ).toBe( 'refund_policy' );
-			expect( fields[ 2 ].label ).toBe( 'Refund policy' );
-			expect( fields[ 3 ].key ).toBe( 'customer_communication' ); // Base field
+			expect( fields[ 2 ].key ).toBe( 'customer_communication' ); // Base field
+			expect( fields[ 3 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 3 ].label ).toBe( 'Refund policy' );
+			expect( fields[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
+			expect( fields[ 4 ].label ).toBe( 'Other documents' );
 		} );
 
 		it( 'should return matrix fields for duplicate + booking_reservation + is_not_duplicate', () => {
@@ -266,8 +270,8 @@ describe( 'Recommended Documents', () => {
 					'booking_reservation'
 				);
 
-				expect( result ).toHaveLength( 2 );
-				expect( result[ 0 ].key ).toBe( 'uncategorized_file' );
+				expect( result ).toHaveLength( 3 );
+				expect( result[ 0 ].key ).toBe( 'access_activity_log' );
 				expect( result[ 0 ].label ).toBe(
 					'Prior undisputed transaction history'
 				);
@@ -275,6 +279,8 @@ describe( 'Recommended Documents', () => {
 					'Proof of past undisputed transactions from the same customer, with matching billing and device details.'
 				);
 				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
+				expect( result[ 2 ].key ).toBe( 'uncategorized_file' ); // Other documents
+				expect( result[ 2 ].label ).toBe( 'Other documents' );
 			} );
 
 			it( 'should return default fraudulent fields when feature flag is disabled', () => {
@@ -357,13 +363,15 @@ describe( 'Recommended Documents', () => {
 					'other'
 				);
 
-				// Matrix entry for subscription_canceled + other (simplified fields + base Customer communication)
-				expect( result ).toHaveLength( 3 );
+				// Matrix entry for subscription_canceled + other (per specs + base Customer communication)
+				expect( result ).toHaveLength( 4 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 0 ].label ).toBe( 'Proof of Purchase' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
 				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
-				expect( result[ 2 ].key ).toBe( 'uncategorized_file' );
-				expect( result[ 2 ].label ).toBe( 'Order details' );
+				expect( result[ 2 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 2 ].label ).toBe( 'Terms of service' );
+				expect( result[ 3 ].key ).toBe( 'uncategorized_file' ); // Other documents
+				expect( result[ 3 ].label ).toBe( 'Other documents' );
 			} );
 
 			it( 'should fall back to trunk duplicate fields for physical_product when feature flag is enabled', () => {
@@ -440,23 +448,16 @@ describe( 'Recommended Documents', () => {
 				);
 
 				// Matrix entry for subscription_canceled + booking_reservation
-				expect( result ).toHaveLength( 4 );
+				expect( result ).toHaveLength( 5 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
 				expect( result[ 0 ].label ).toBe( 'Order receipt' );
-				expect( result[ 0 ].description ).toBe(
-					'Confirming billing was valid and expected.'
-				);
 				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
-				expect( result[ 2 ].key ).toBe( 'cancellation_policy' );
-				expect( result[ 2 ].label ).toBe( 'Terms of service' );
-				expect( result[ 2 ].description ).toBe(
-					'As accepted during checkout.'
-				);
-				expect( result[ 3 ].key ).toBe( 'uncategorized_file' );
-				expect( result[ 3 ].label ).toBe( 'Cancellation confirmation' );
-				expect( result[ 3 ].description ).toBe(
-					'Documents showing the product or service was cancelled, such as cancellation logs, confirmation emails, or account records.'
-				);
+				expect( result[ 2 ].key ).toBe( 'cancellation_rebuttal' );
+				expect( result[ 2 ].label ).toBe( 'Cancellation logs' );
+				expect( result[ 3 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 3 ].label ).toBe( 'Terms of service' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 		} );
 
