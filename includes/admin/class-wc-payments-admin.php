@@ -1503,35 +1503,49 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Enqueue the review prompt script on top-level Payments Settings page.
+	 * Check if the review prompt should be shown based on eligibility and user state.
+	 *
+	 * @return bool True if the prompt should be shown, false otherwise.
 	 */
-	public function enqueue_wc_payments_review_prompt() {
+	public function should_show_review_prompt() {
+		// Only show on top-level Payments Settings page.
 		if ( ! $this->is_wc_admin_payments_settings_page() ) {
-			return;
+			return false;
 		}
 
-		// Check account eligibility server-side to avoid loading JS unnecessarily.
+		// Check account eligibility.
 		if ( ! $this->account->is_review_prompt_eligible() ) {
-			return;
+			return false;
 		}
 
-		// Check user dismissal/cooldown state to avoid loading JS unnecessarily.
+		// Check user dismissal/cooldown state.
 		$user_id     = get_current_user_id();
 		$dismissed   = (int) get_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed', true );
 		$maybe_later = (int) get_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later', true );
 
-		// If dismissed permanently, don't load JS.
+		// If dismissed permanently, don't show.
 		if ( $dismissed > 0 ) {
-			return;
+			return false;
 		}
 
-		// If cooldown is active (within 10 days), don't load JS.
+		// If cooldown is active (within 10 days), don't show.
 		if ( $maybe_later > 0 ) {
 			$cooldown_seconds = 10 * DAY_IN_SECONDS;
 			$now              = time();
 			if ( $now < ( $maybe_later + $cooldown_seconds ) ) {
-				return;
+				return false;
 			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Enqueue the review prompt script on top-level Payments Settings page.
+	 */
+	public function enqueue_wc_payments_review_prompt() {
+		if ( ! $this->should_show_review_prompt() ) {
+			return;
 		}
 
 		wp_localize_script(
