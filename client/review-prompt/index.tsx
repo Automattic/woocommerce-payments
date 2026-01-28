@@ -69,7 +69,7 @@ const ReviewPrompt: React.FC = () => {
 		);
 	}, [] );
 
-	const handlePrimaryClick = useCallback( () => {
+	const handlePrimaryClick = useCallback( async () => {
 		// Determine destination based on connection state
 		const isLive = window.wcpayReviewPromptSettings?.isLive;
 		const destination = isLive ? 'wordpress_org' : 'marketplace';
@@ -93,8 +93,20 @@ const ReviewPrompt: React.FC = () => {
 			eventProps
 		);
 
-		window.open( reviewUrl, '_blank', 'noopener,noreferrer' );
-		dismissPrompt();
+		const windowOpened = window.open(
+			reviewUrl,
+			'_blank',
+			'noopener,noreferrer'
+		);
+		if ( ! windowOpened ) {
+			// Make sure the request completes before redirecting away.
+			await dismissPrompt();
+
+			// Fallback: navigate away from the current tab.
+			window.location.href = reviewUrl;
+		} else {
+			dismissPrompt();
+		}
 		setIsVisible( false );
 	}, [ viewTimestamp, dismissPrompt ] );
 

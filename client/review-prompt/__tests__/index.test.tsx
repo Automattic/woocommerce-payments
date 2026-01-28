@@ -14,6 +14,12 @@ import { recordEvent } from 'wcpay/tracks';
 const mockWindowOpen = jest.fn();
 window.open = mockWindowOpen;
 
+// Mock window.location.href
+Object.defineProperty( window, 'location', {
+	writable: true,
+	value: { href: '' },
+} );
+
 // Mock the recordEvent function
 jest.mock( 'wcpay/tracks', () => ( {
 	recordEvent: jest.fn(),
@@ -93,6 +99,9 @@ describe( 'ReviewPrompt', () => {
 		jest.clearAllMocks();
 		mockWindowOpen.mockClear();
 
+		// Mock window.open to return a truthy value (successful popup)
+		mockWindowOpen.mockReturnValue( {} );
+
 		// Reset preferences
 		preferences = {
 			wc_payments_review_prompt_dismissed: undefined,
@@ -137,7 +146,7 @@ describe( 'ReviewPrompt', () => {
 		);
 	} );
 
-	it( 'opens WordPress.org review URL when "Write a review" is clicked in live mode', () => {
+	it( 'opens WordPress.org review URL when "Write a review" is clicked in live mode', async () => {
 		global.wcpayReviewPromptSettings.isLive = true;
 
 		render( <ReviewPrompt /> );
@@ -145,14 +154,16 @@ describe( 'ReviewPrompt', () => {
 		const writeReviewButton = screen.getByText( 'Write a review' );
 		fireEvent.click( writeReviewButton );
 
-		expect( mockWindowOpen ).toHaveBeenCalledWith(
-			'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
-			'_blank',
-			'noopener,noreferrer'
-		);
+		await waitFor( () => {
+			expect( mockWindowOpen ).toHaveBeenCalledWith(
+				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
+				'_blank',
+				'noopener,noreferrer'
+			);
+		} );
 	} );
 
-	it( 'opens marketplace review URL when "Write a review" is clicked in test mode', () => {
+	it( 'opens marketplace review URL when "Write a review" is clicked in test mode', async () => {
 		global.wcpayReviewPromptSettings.isLive = false;
 
 		render( <ReviewPrompt /> );
@@ -160,37 +171,41 @@ describe( 'ReviewPrompt', () => {
 		const writeReviewButton = screen.getByText( 'Write a review' );
 		fireEvent.click( writeReviewButton );
 
-		expect( mockWindowOpen ).toHaveBeenCalledWith(
-			'https://woocommerce.com/products/woocommerce-payments/#reviews',
-			'_blank',
-			'noopener,noreferrer'
-		);
+		await waitFor( () => {
+			expect( mockWindowOpen ).toHaveBeenCalledWith(
+				'https://woocommerce.com/products/woocommerce-payments/#reviews',
+				'_blank',
+				'noopener,noreferrer'
+			);
+		} );
 	} );
 
-	it( 'records correct telemetry events when "Write a review" is clicked', () => {
+	it( 'records correct telemetry events when "Write a review" is clicked', async () => {
 		render( <ReviewPrompt /> );
 
 		const writeReviewButton = screen.getByText( 'Write a review' );
 		fireEvent.click( writeReviewButton );
 
-		// Should record action event
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_action',
-			expect.objectContaining( {
-				action: 'write_review',
-				destination: 'wordpress_org',
-				time_to_click_ms: expect.any( Number ),
-			} )
-		);
+		await waitFor( () => {
+			// Should record action event
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'payments_review_prompt_action',
+				expect.objectContaining( {
+					action: 'write_review',
+					destination: 'wordpress_org',
+					time_to_click_ms: expect.any( Number ),
+				} )
+			);
 
-		// Should record destination selected event
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_destination_selected',
-			expect.objectContaining( {
-				action: 'write_review',
-				destination: 'wordpress_org',
-			} )
-		);
+			// Should record destination selected event
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'payments_review_destination_selected',
+				expect.objectContaining( {
+					action: 'write_review',
+					destination: 'wordpress_org',
+				} )
+			);
+		} );
 	} );
 
 	it( 'hides prompt after "Write a review" is clicked', async () => {
@@ -256,7 +271,7 @@ describe( 'ReviewPrompt', () => {
 		} );
 	} );
 
-	it( 'tracks time_to_click_ms correctly', () => {
+	it( 'tracks time_to_click_ms correctly', async () => {
 		jest.useFakeTimers();
 		const startTime = Date.now();
 		jest.setSystemTime( startTime );
@@ -269,17 +284,19 @@ describe( 'ReviewPrompt', () => {
 		const writeReviewButton = screen.getByText( 'Write a review' );
 		fireEvent.click( writeReviewButton );
 
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_prompt_action',
-			expect.objectContaining( {
-				time_to_click_ms: 5000,
-			} )
-		);
+		await waitFor( () => {
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'payments_review_prompt_action',
+				expect.objectContaining( {
+					time_to_click_ms: 5000,
+				} )
+			);
+		} );
 
 		jest.useRealTimers();
 	} );
 
-	it( 'uses correct destination based on connection state', () => {
+	it( 'uses correct destination based on connection state', async () => {
 		// Test live mode
 		global.wcpayReviewPromptSettings.isLive = true;
 		const { unmount } = render( <ReviewPrompt /> );
@@ -287,12 +304,14 @@ describe( 'ReviewPrompt', () => {
 		let writeReviewButton = screen.getByText( 'Write a review' );
 		fireEvent.click( writeReviewButton );
 
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_destination_selected',
-			expect.objectContaining( {
-				destination: 'wordpress_org',
-			} )
-		);
+		await waitFor( () => {
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'payments_review_destination_selected',
+				expect.objectContaining( {
+					destination: 'wordpress_org',
+				} )
+			);
+		} );
 
 		// Unmount, reset, and test test mode with a fresh render
 		unmount();
@@ -303,11 +322,39 @@ describe( 'ReviewPrompt', () => {
 		writeReviewButton = screen.getByText( 'Write a review' );
 		fireEvent.click( writeReviewButton );
 
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'payments_review_destination_selected',
-			expect.objectContaining( {
-				destination: 'marketplace',
-			} )
-		);
+		await waitFor( () => {
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'payments_review_destination_selected',
+				expect.objectContaining( {
+					destination: 'marketplace',
+				} )
+			);
+		} );
+	} );
+
+	it( 'falls back to window.location when window.open fails', async () => {
+		// Mock window.open to return null (popup blocked)
+		mockWindowOpen.mockReturnValueOnce( null );
+
+		global.wcpayReviewPromptSettings.isLive = true;
+
+		render( <ReviewPrompt /> );
+
+		const writeReviewButton = screen.getByText( 'Write a review' );
+		fireEvent.click( writeReviewButton );
+
+		await waitFor( () => {
+			// Should have tried to open in new window
+			expect( mockWindowOpen ).toHaveBeenCalledWith(
+				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
+				'_blank',
+				'noopener,noreferrer'
+			);
+
+			// Should fall back to navigating current window
+			expect( window.location.href ).toBe(
+				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post'
+			);
+		} );
 	} );
 } );

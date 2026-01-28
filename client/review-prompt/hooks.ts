@@ -11,13 +11,12 @@ interface UserPreferences extends ReturnType< typeof useUserPreferences > {
 export const useReviewPromptState = () => {
 	const { updateUserPreferences } = useUserPreferences() as UserPreferences;
 
-	const dismissPrompt = () => {
+	const dismissPrompt = () =>
 		updateUserPreferences( {
 			wc_payments_review_prompt_dismissed: Math.floor(
 				Date.now() / 1000
 			),
 		} );
-	};
 
 	const setMaybeLater = () => {
 		updateUserPreferences( {

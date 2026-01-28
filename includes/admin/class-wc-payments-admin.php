@@ -186,7 +186,6 @@ class WC_Payments_Admin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payment_settings_spotlight' ] );
 		add_action( 'admin_footer', [ $this, 'inject_payment_settings_spotlight_container' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payments_review_prompt' ] );
-		add_action( 'admin_footer', [ $this, 'inject_review_prompt_container' ] );
 	}
 
 	/**
@@ -1547,6 +1546,8 @@ class WC_Payments_Admin {
 		if ( ! $this->should_show_review_prompt() ) {
 			return;
 		}
+
+		add_action( 'admin_footer', [ $this, 'inject_review_prompt_container' ] );
 
 		wp_localize_script(
 			'WCPAY_REVIEW_PROMPT',
