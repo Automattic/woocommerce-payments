@@ -24,8 +24,6 @@ import Chip, { ChipType } from 'components/chip';
 import { sanitizeHTML } from 'utils/sanitize';
 import './style.scss';
 
-const showDelayMs = 4000; // 4 seconds
-
 /**
  * Valid chip types for the badge.
  */
@@ -64,6 +62,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	onDismiss,
 	onView,
 	showImmediately = false,
+	showDelayMs = 4000,
 } ) => {
 	const validBadgeType = getValidBadgeType( badgeType );
 	const [ isVisible, setIsVisible ] = useState( false );
@@ -93,7 +92,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		}, showDelayMs );
 
 		return () => clearTimeout( timer );
-	}, [ showImmediately ] );
+	}, [ showImmediately, showDelayMs ] );
 
 	// Cleanup close timeout on unmount
 	useEffect( () => {

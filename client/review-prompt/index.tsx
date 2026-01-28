@@ -160,6 +160,7 @@ const ReviewPrompt: React.FC = () => {
 			onDismiss={ handleDismiss }
 			onView={ handleView }
 			showImmediately={ false }
+			showDelayMs={ 2000 }
 		/>
 	);
 };
