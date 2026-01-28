@@ -13,13 +13,17 @@ export const useReviewPromptState = () => {
 
 	const dismissPrompt = () => {
 		updateUserPreferences( {
-			wc_payments_review_prompt_dismissed: Date.now(),
+			wc_payments_review_prompt_dismissed: Math.floor(
+				Date.now() / 1000
+			),
 		} );
 	};
 
 	const setMaybeLater = () => {
 		updateUserPreferences( {
-			wc_payments_review_prompt_maybe_later: Date.now(),
+			wc_payments_review_prompt_maybe_later: Math.floor(
+				Date.now() / 1000
+			),
 		} );
 	};
 

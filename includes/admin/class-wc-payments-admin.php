@@ -1517,22 +1517,31 @@ class WC_Payments_Admin {
 
 		// Check user dismissal/cooldown state to avoid loading JS unnecessarily.
 		$user_id     = get_current_user_id();
-		$dismissed   = get_user_meta( $user_id, 'wc_payments_review_prompt_dismissed', true );
-		$maybe_later = get_user_meta( $user_id, 'wc_payments_review_prompt_maybe_later', true );
+		$dismissed   = (int) get_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed', true );
+		$maybe_later = (int) get_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later', true );
 
 		// If dismissed permanently, don't load JS.
-		if ( $dismissed ) {
+		if ( $dismissed > 0 ) {
 			return;
 		}
 
 		// If cooldown is active (within 10 days), don't load JS.
-		if ( $maybe_later ) {
-			$cooldown_ms = 10 * 24 * 60 * 60 * 1000; // 10 days in milliseconds.
-			$now_ms      = round( microtime( true ) * 1000 );
-			if ( $now_ms < ( $maybe_later + $cooldown_ms ) ) {
+		if ( $maybe_later > 0 ) {
+			$cooldown_seconds = 10 * DAY_IN_SECONDS;
+			$now              = time();
+			if ( $now < ( $maybe_later + $cooldown_seconds ) ) {
 				return;
 			}
 		}
+
+		wp_localize_script(
+			'WCPAY_REVIEW_PROMPT',
+			'wcpayReviewPromptSettings',
+			[
+				'isLive'  => WC_Payments::mode()->is_live(),
+				'version' => WCPAY_VERSION_NUMBER,
+			]
+		);
 
 		wp_enqueue_script( 'WCPAY_REVIEW_PROMPT' );
 		wp_enqueue_style( 'WCPAY_REVIEW_PROMPT' );
