@@ -247,6 +247,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
 
 		// Ensure all reusable WCPay gateways are available for admin subscription editing.
+		// TODO ~FR: remove after https://github.com/Automattic/woocommerce-payments/pull/11289 is merged.
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'add_reusable_gateways_for_subscription_admin' ], 20 );
 
 		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
