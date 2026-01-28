@@ -297,12 +297,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'stripe_billing_subscription_count'    => [
 						'description'       => __( 'The number of subscriptions using Stripe Billing', 'woocommerce-payments' ),
-						'type'              => 'int',
+						'type'              => 'integer',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'stripe_billing_migrated_count'        => [
 						'description'       => __( 'The number of subscriptions migrated from Stripe Billing to on-site billing.', 'woocommerce-payments' ),
-						'type'              => 'int',
+						'type'              => 'integer',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
 					'express_checkout_product_methods'     => [
