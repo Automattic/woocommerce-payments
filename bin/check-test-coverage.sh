@@ -2,6 +2,12 @@
 
 set -e
 
+# Source .env.local if available for worktree-specific config
+ENV_FILE_ARG=""
+if [ -f ".env.local" ]; then
+    ENV_FILE_ARG="--env-file .env.local"
+fi
+
 if [ "$1" == "src" ]; then
 	CONFIGURATION_FILE=phpunit-src.xml.dist
 	COVERAGE=100
@@ -12,12 +18,12 @@ fi
 
 echo "Installing the test environment..."
 
-docker compose exec -u www-data wordpress \
+docker compose ${ENV_FILE_ARG} exec -u www-data wordpress \
 	/var/www/html/wp-content/plugins/woocommerce-payments/bin/install-wp-tests.sh
 
 echo "Checking coverage..."
 
-docker-compose exec -u www-data wordpress \
+docker compose ${ENV_FILE_ARG} exec -u www-data wordpress \
         /var/www/html/wp-content/plugins/woocommerce-payments/vendor/bin/phpunit \
         --configuration "/var/www/html/wp-content/plugins/woocommerce-payments/$CONFIGURATION_FILE" \
         --coverage-html /var/www/html/php-test-coverage \

@@ -49,13 +49,23 @@ else
     > "${JT_DIR}/config.env"
 fi
 
-# Find the WordPress container section and get its port
-PORT=$(docker ps | grep woocommerce_payments_wordpress | sed -En "s/.*0:([0-9]+).*/\1/p")
+# Load port from .env.local if available
+if [ -f ".env.local" ]; then
+    source .env.local
+fi
 
-# Use default if extraction failed
-if [ -z "$PORT" ]; then
-    PORT=8082  # Default fallback
-    echo "Could not extract WordPress container port, using default: ${PORT}"
+# Use WP_PORT from .env.local, or try to detect from running container, or use default
+if [ -n "$WP_PORT" ]; then
+    PORT=$WP_PORT
+else
+    # Try to find running wcpay WordPress container
+    PORT=$(docker ps | grep "wcpay_wp_" | sed -En "s/.*0:([0-9]+).*/\1/p" | head -1)
+
+    # Use default if extraction failed
+    if [ -z "$PORT" ]; then
+        PORT=8082  # Default fallback
+        echo "Could not extract WordPress container port, using default: ${PORT}"
+    fi
 fi
 
 echo "username=${username}" >> "${JT_DIR}/config.env"

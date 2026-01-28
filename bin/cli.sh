@@ -11,4 +11,10 @@ fi
 
 command=${command:-bash}
 
-docker compose exec -u ${user} wordpress ${command}
+# Source .env.local if available for worktree-specific config
+ENV_FILE_ARG=""
+if [ -f ".env.local" ]; then
+    ENV_FILE_ARG="--env-file .env.local"
+fi
+
+docker compose ${ENV_FILE_ARG} exec -u ${user} wordpress ${command}

@@ -1,9 +1,16 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# using `--no-install` just in case it's the first time a person is checking out the repo and doesn't have yarnhook installed
-npx --no-install yarnhook
+# Run yarnhook if available (won't be available in fresh worktrees before npm install)
+# The || true ensures we don't fail the hook if yarnhook isn't installed yet
+npx --no-install yarnhook 2>/dev/null || true
 
-# make sure composer packages are installed and the autoload files are regenerated
+# Make sure composer packages are installed and the autoload files are regenerated
 # --ignore-platform-req=php allows dev-only packages (like qit-cli) that need PHP 7.4+
-composer install --ignore-platform-req=php
+# The || true ensures we don't fail the hook if composer fails (e.g., fresh worktree)
+composer install --ignore-platform-req=php 2>/dev/null || true
+
+# Auto-configure Docker port for new worktrees
+if [ -f "bin/docker-port-setup.sh" ]; then
+    bash bin/docker-port-setup.sh 2>/dev/null || true
+fi

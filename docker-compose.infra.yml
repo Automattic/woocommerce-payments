@@ -1,0 +1,35 @@
+networks:
+  wcpay-network:
+    name: wcpay-network
+
+services:
+  db:
+    container_name: wcpay_db
+    image: mariadb:10.5.8
+    restart: unless-stopped
+    ports:
+      - "5678:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: wordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+    volumes:
+      - ./docker/data:/var/lib/mysql
+    networks:
+      - wcpay-network
+
+  phpmyadmin:
+    container_name: wcpay_phpmyadmin
+    image: phpmyadmin:latest
+    restart: unless-stopped
+    ports:
+      - "8083:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: wordpress
+    depends_on:
+      - db
+    networks:
+      - wcpay-network

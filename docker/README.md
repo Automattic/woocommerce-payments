@@ -1,27 +1,102 @@
+### Quick Start
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Start shared infrastructure (database & phpMyAdmin) - first time only
+npm run infra:up
+
+# 3. Start WordPress container and set up the site
+npm run up:recreate
+
+# 4. Build JS assets (or use `npm start` to watch for changes)
+npm run build:client
+```
+
+After these steps, your site will be available at `http://localhost:<PORT>/wp-admin/` (check `.env.local` for your port).
+
+Login credentials: `admin` / `admin`
+
+---
+
 ### Setting up the Docker environment
 
-Make sure everything has been installed:
+#### Step 1: Install dependencies
 
-`npm install`
+```bash
+npm install
+```
 
-To create and start a local development environment with the plugin locally enter this command:
+#### Step 2: Start shared infrastructure (first time only)
 
-`npm run up:recreate`
+The database and phpMyAdmin are shared across all worktrees. Start them once from your main checkout:
 
-This will (re-)create all containers and run a setup script to ensure everything is configured. 
+```bash
+npm run infra:up
+```
 
-Once you've created the environment, you can quickly bring it back up with `npm run up`.
+This creates a shared Docker network (`wcpay-network`) that all WordPress containers will join.
 
-Remember to either build the JS (`npm run build`) or watch for JS changes (`npm start`)
+#### Step 3: Start WordPress and set up the site
+
+For first-time setup (creates container AND configures WordPress/WooPayments):
+
+```bash
+npm run up:recreate
+```
+
+This will:
+1. Auto-configure your port and worktree ID (saved to `.env.local`)
+2. Create/recreate the WordPress container
+3. Run the setup script to install WordPress, WooCommerce, and WooPayments
+
+For subsequent startups (container already configured):
+
+```bash
+npm run up
+```
+
+#### Step 4: Build JS assets
+
+Build once for production:
+
+```bash
+npm run build:client
+```
+
+Or watch for changes during development:
+
+```bash
+npm start
+```
+
+You can also combine container startup with watch mode:
+
+```bash
+npm run dev
+```
+
+#### Checking your port
+
+Your WordPress port is saved in `.env.local`. Check it with:
+
+```
+cat .env.local
+```
+
+Or it's displayed when you run `npm run up`.
 
 ### WordPress Admin
-Open http://localhost:8082/wp-admin/
+
+Open http://localhost:<YOUR_PORT>/wp-admin/ (check `.env.local` for your port, default is 8082)
 ```
 Username: admin
 Password: admin
 ```
 
 ### Connecting to MySQL
+
 Open phpMyAdmin at http://localhost:8083/, or connect using other MySQL clients with these credentials:
 ```
 Host: localhost
@@ -30,51 +105,113 @@ Username: wordpress
 Password: wordpress
 ```
 
-### Connect Jetpack by using Ngrok
+### Working with Git Worktrees
+
+The Docker setup is designed to work seamlessly with git worktrees. Each worktree gets its own WordPress container with a unique port.
+
+#### Creating a new worktree
+
+```bash
+# Create the worktree
+git worktree add ../my-feature-branch feature-branch
+
+# Navigate to it
+cd ../my-feature-branch
+
+# Install dependencies
+npm install
+
+# Start WordPress (port auto-configured on first run)
+npm run up
+```
+
+The `post-checkout` hook will automatically configure `.env.local` with a unique port.
+
+#### Removing a worktree
+
+Before removing a worktree, clean up its Docker resources:
+
+```bash
+cd /path/to/worktree
+npm run worktree:cleanup
+cd ..
+git worktree remove /path/to/worktree
+```
+
+#### Customizing your worktree config
+
+Edit `.env.local` to customize:
+```bash
+# Port for this worktree's WordPress instance
+WP_PORT=8086
+
+# Unique identifier (used in container names)
+WORKTREE_ID=my_feature
+```
+
+### Stopping the environment
+
+```bash
+# Stop this worktree's WordPress container
+npm run down
+
+# Stop all shared infrastructure (DB, phpMyAdmin)
+npm run infra:down
+```
+
+### Exposing Your Local Site (for Jetpack Connection)
+
+To connect WooPayments to Stripe or use Jetpack features, your local site needs to be accessible from the internet. Two options are available:
+
+#### Option 1: Jurassic Tube (recommended for A8C employees)
+
+Jurassic Tube is a tunneling service for a12s.
+
+**First-time setup:**
+
+```bash
+npm run tube:setup
+```
+
+This will:
+1. Download and install the Jurassic Tube client
+2. Generate SSH keys and guide you to register them at https://jurassic.tube/
+3. Prompt you to create a subdomain
+4. Save your configuration to `bin/jurassictube/config.env`
+
+**Starting the tunnel:**
+
+```bash
+npm run tube:start
+```
+
+**Stopping the tunnel:**
+
+```bash
+npm run tube:stop
+```
+
+Your site will be available at `https://<your-subdomain>.jurassic.tube/`
+
+#### Option 2: Ngrok
+
 You don't need a paid plan for this.
 
-In a new terminal window run:
+In a new terminal window run (replace PORT with your actual port from `.env.local`):
 
-```
-ngrok http 8082
+```bash
+ngrok http <PORT>
 ```
 
 You will see it give a forwarding address like this one:
  http://e0747cffd8a3.ngrok.io
- 
+
 You may need to temporarily set your `siteurl` and `home` `wp_option`s to the new url. You can do this with phpMyAdmin or WP-CLI.
 
-Visit the `<url>` , login and setup WCPay.
-
-### Setting up an additional Docker environment
-
-If you need to set up a different local environment alongside the default one, here are the steps to follow:
-1. Clone the repository to a new directory and navigate to it.
-2. Run `npm install && composer install` to install the dependencies.
-3. Create a `docker-compose.override.yml` file in the new directory with the following contents:
-    ```
-    services:
-      wordpress:
-        container_name: woopayments_2nd_wordpress # Change the container name.
-        build:
-          args:
-            - XDEBUG_REMOTE_PORT=9004 # Change the xDebug port.
-        ports: !override # This will override the default ports rather than appending to them.
-          - "8092:80" # Change the HTTP port.
-      db:
-        container_name: woopayments_2nd_mysql # Change the container name.
-        ports: !override # This will override the default ports rather than appending to them.
-          - "5690:3306" # Change the MySQL port.
-      phpMyAdmin:
-        container_name: woopayments_2nd_phpmyadmin # Change the container name.
-        ports: !override # This will override the default ports rather than appending to them.
-          - "8093:80" # Change the PHPMyAdmin HTTP port.
-    ```
-4. Run `npm run up` in the new directory to start the new environment.
-5. Run `WP_URL=localhost:8084 ./bin/docker-setup.sh woopayments_2nd_wordpress` to set up the new environment. Notice the use of the new container name and the new port for the WordPress container.
-6. You are all set! You can now access the new environment at `http://localhost:8092/wp-admin/` and PHPMyAdmin at `http://localhost:8093/`.
+Visit the `<url>`, login and setup WCPay.
 
 ### Changing default port for xDebug
+
 To change the default port for xDebug you should create `docker-compose.override.yml` with the following contents:
 ```
 services:
@@ -88,7 +225,7 @@ To apply the change, restart your containers using `npm run down && npm run up`
 
 ### Mapping WooCommerce development repo plugin folder
 
-If you also work on [WooCommerce core](https://github.com/woocommerce/woocommerce) that you want to use in your Docker environment, you can map it by adding a volume mapping to `docker-compose.override.yml`. 
+If you also work on [WooCommerce core](https://github.com/woocommerce/woocommerce) that you want to use in your Docker environment, you can map it by adding a volume mapping to `docker-compose.override.yml`.
 
 For example: if your WooCommerce core repo path is `/path/to/your/repo/woocommerce`, you should append `plugins/woocommerce` to this path and configure it like this.
 
@@ -99,13 +236,13 @@ services:
       - /path/to/your/repo/woocommerce/plugins/woocommerce:/var/www/html/wp-content/plugins/woocommerce
 ```
 
-To apply the change, restart your containers using `npm run down && npm run up`. In case, it's not working properly yet, ensure that you follow the WooCommerce code README.md and build the plugin there. 
+To apply the change, restart your containers using `npm run down && npm run up`. In case, it's not working properly yet, ensure that you follow the WooCommerce code README.md and build the plugin there.
 
 ### Adding local helper scripts/hacks
 
 You can add local PHP scripts in the `docker/mu-plugins` directory since it's mounted as the `wp-content/mu-plugins` WordPress directory in your Docker container. These PHP scripts will be loaded automatically because they are treated as [WordPress must-use plugins](https://developer.wordpress.org/advanced-administration/plugins/mu-plugins/).
 
-**Note:** Please make sure that you try to think of these scripts as _temporary solutions/helpers_ and not as permanent code to be run constantly (unless you are sure that is what you want). 
+**Note:** Please make sure that you try to think of these scripts as _temporary solutions/helpers_ and not as permanent code to be run constantly (unless you are sure that is what you want).
 
 One _recommended way_ of working with your collection of helper scripts is to take advantage of the fact that _WordPress will not automatically load PHP files_ in subdirectories of `wp-content/mu-plugins` (as it does with regular plugins in `wp-content/plugins`).
 
