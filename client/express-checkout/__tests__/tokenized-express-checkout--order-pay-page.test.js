@@ -217,6 +217,9 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		};
 		global.wcpayExpressCheckoutParams.store_name = 'My fancy store';
 		global.wcpayExpressCheckoutParams.button_context = 'pay_for_order';
+		global.wcpayExpressCheckoutParams.enabled_methods = [
+			'payment_request',
+		];
 
 		// just mocking some server-side-provided DOM elements.
 		render(
