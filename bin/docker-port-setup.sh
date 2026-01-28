@@ -5,7 +5,7 @@
 set -e
 
 ENV_FILE=".env.local"
-PORT_RANGE_START=8082
+PORT_RANGE_START=8084
 PORT_RANGE_END=8099
 
 # Get default worktree ID from directory basename
