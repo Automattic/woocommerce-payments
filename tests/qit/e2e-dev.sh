@@ -111,26 +111,13 @@ cmd_up() {
     # Run qit env:up with global-setup to run bootstrap/setup.sh
     "$QIT_BINARY" env:up \
         --config "$QIT_ROOT/qit.json" \
+        --test-package "$QIT_ROOT/test-package" \
         --global-setup \
+        --online \
         --env_file "$QIT_ROOT/config/local.env"
 
     echo ""
-    print_success "Environment ready!"
-    echo ""
-    echo "To run tests, first source the environment variables in your shell:"
-    echo ""
-    echo "  source \"\$(./vendor/bin/qit env:source)\""
-    echo ""
-    echo "Then navigate to the test package and run Playwright:"
-    echo ""
-    echo "  cd tests/qit/test-package"
-    echo "  npx playwright test --ui              # Interactive UI mode"
-    echo "  npx playwright test                    # Run all tests headless"
-    echo "  npx playwright test path/to/spec.ts   # Run specific test file"
-    echo ""
-    echo "When finished:"
-    echo ""
-    echo "  npm run test:qit-e2e-down"
+    echo "When finished, run: npm run test:qit-e2e-down"
     echo ""
 }
 
