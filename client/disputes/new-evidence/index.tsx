@@ -70,12 +70,10 @@ import './style.scss';
 import RefundStatus from './refund-status';
 import DuplicateStatus from './duplicate-status';
 import ConfirmationScreen from './confirmation-screen';
+import { needsShipping, ReasonsNoShipping } from './shipping-utils';
 
-const ReasonsNoShipping = [
-	'duplicate',
-	'subscription_canceled',
-	'credit_not_processed',
-];
+// Re-export for backwards compatibility
+export { needsShipping, ReasonsNoShipping };
 
 // Stepper headings/subheadings
 const steps = [
@@ -95,14 +93,6 @@ const steps = [
 			"Using the information you've provided, we've automatically generated a cover letter for you. Before submitting to your customer's bank, please check all of the details are correct and make any required changes.",
 	},
 ];
-
-function needsShipping( reason: string | undefined, productType = '' ) {
-	// If product type is digital, no shipping is needed
-	if ( productType === 'digital_product_or_service' ) return false;
-	// Check dispute reason logic
-	if ( ReasonsNoShipping.includes( reason || '' ) ) return false;
-	return true;
-}
 
 // --- Main Component ---
 export default ( { query }: { query: { id: string } } ) => {
@@ -206,6 +196,8 @@ export default ( { query }: { query: { id: string } } ) => {
 					service_documentation:
 						d.evidence?.service_documentation || '',
 					cancellation_policy: d.evidence?.cancellation_policy || '',
+					cancellation_rebuttal:
+						d.evidence?.cancellation_rebuttal || '',
 					access_activity_log: d.evidence?.access_activity_log || '',
 					uncategorized_file: d.evidence?.uncategorized_file || '',
 				} ) );
@@ -240,6 +232,8 @@ export default ( { query }: { query: { id: string } } ) => {
 									d.evidence?.service_documentation || '',
 								cancellation_policy:
 									d.evidence?.cancellation_policy || '',
+								cancellation_rebuttal:
+									d.evidence?.cancellation_rebuttal || '',
 								access_activity_log:
 									d.evidence?.access_activity_log || '',
 								uncategorized_file:
@@ -369,6 +363,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				shipping_documentation: evidence.shipping_documentation,
 				service_documentation: evidence.service_documentation,
 				cancellation_policy: evidence.cancellation_policy,
+				cancellation_rebuttal: evidence.cancellation_rebuttal,
 				access_activity_log: evidence.access_activity_log,
 				uncategorized_file: evidence.uncategorized_file,
 				shipping_carrier: shippingCarrier,
@@ -517,6 +512,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					evidence.duplicate_charge_documentation,
 				service_documentation: evidence.service_documentation,
 				cancellation_policy: evidence.cancellation_policy,
+				cancellation_rebuttal: evidence.cancellation_rebuttal,
 				access_activity_log: evidence.access_activity_log,
 				uncategorized_file: evidence.uncategorized_file,
 				uncategorized_text: coverLetter,
@@ -1193,6 +1189,8 @@ export default ( { query }: { query: { id: string } } ) => {
 										evidence.service_documentation,
 									cancellation_policy:
 										evidence.cancellation_policy,
+									cancellation_rebuttal:
+										evidence.cancellation_rebuttal,
 									access_activity_log:
 										evidence.access_activity_log,
 									uncategorized_file:
