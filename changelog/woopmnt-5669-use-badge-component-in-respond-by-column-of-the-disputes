@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Use badge component in 'Respond by' column of the Disputes table for consistency with the 'Response needed' status badge

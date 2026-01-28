@@ -49,7 +49,7 @@ const getDuplicateMatrix = (): {
 			key: DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
 			label: __( 'Refund receipt', 'woocommerce-payments' ),
 			description: __(
-				'A confirmation that the refund was processed.',
+				'A confirmation that a refund was issued.',
 				'woocommerce-payments'
 			),
 			order: 15,
@@ -61,7 +61,16 @@ const getDuplicateMatrix = (): {
 				"A screenshot of your store's refund policy.",
 				'woocommerce-payments'
 			),
-			order: 20,
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
 		},
 	],
 	// Booking/Reservation - It was not a duplicate (Scenario B)
@@ -116,25 +125,73 @@ const getDuplicateMatrix = (): {
 const getSubscriptionCanceledMatrix = (): {
 	[ productType: string ]: Array< RecommendedDocument >;
 } => ( {
-	// Other product type - simplified fields per specs
-	other: [
+	// Booking/Reservation product type
+	booking_reservation: [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
-			label: __( 'Proof of Purchase', 'woocommerce-payments' ),
+			label: __( 'Order receipt', 'woocommerce-payments' ),
 			description: __(
-				'Invoice and payment confirmation.',
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
 				'woocommerce-payments'
 			),
 			order: 10,
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
-			label: __( 'Order details', 'woocommerce-payments' ),
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
+			label: __( 'Cancellation logs', 'woocommerce-payments' ),
 			description: __(
-				'Description and terms of the product or service.',
+				'Records showing no cancellation attempt or request was made before the charge, such as account activity, subscription status, or communication history.',
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Terms of service', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's terms of service.",
 				'woocommerce-payments'
 			),
 			order: 30,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Other product type - per specs
+	other: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Terms of service', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's terms of service.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
 		},
 	],
 	// Multiple product type - no subscription logs
@@ -176,36 +233,6 @@ const getSubscriptionCanceledMatrix = (): {
 			order: 100,
 		},
 	],
-	// Booking/Reservation product type
-	booking_reservation: [
-		{
-			key: DOCUMENT_FIELD_KEYS.RECEIPT,
-			label: __( 'Order receipt', 'woocommerce-payments' ),
-			description: __(
-				'Confirming billing was valid and expected.',
-				'woocommerce-payments'
-			),
-			order: 10,
-		},
-		{
-			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
-			label: __( 'Terms of service', 'woocommerce-payments' ),
-			description: __(
-				'As accepted during checkout.',
-				'woocommerce-payments'
-			),
-			order: 30,
-		},
-		{
-			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
-			label: __( 'Cancellation confirmation', 'woocommerce-payments' ),
-			description: __(
-				'Documents showing the product or service was cancelled, such as cancellation logs, confirmation emails, or account records.',
-				'woocommerce-payments'
-			),
-			order: 40,
-		},
-	],
 } );
 
 /**
@@ -216,7 +243,7 @@ const getFraudulentMatrix = (): {
 } => ( {
 	booking_reservation: [
 		{
-			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 			label: __(
 				'Prior undisputed transaction history',
 				'woocommerce-payments'
@@ -226,6 +253,15 @@ const getFraudulentMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
 		},
 	],
 } );
