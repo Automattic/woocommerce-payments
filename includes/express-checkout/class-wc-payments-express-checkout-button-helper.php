@@ -269,7 +269,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		if ( ! $amazon_pay_gateway->is_available() ) {
+		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
 			return false;
 		}
 

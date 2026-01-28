@@ -582,7 +582,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		);
 
 		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$mock_amazon_pay_gateway->method( 'is_available' )->willReturn( $gateway_available );
+		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( $gateway_available );
 		$this->set_payment_gateway_map( [ 'amazon_pay' => $mock_amazon_pay_gateway ] );
 
 		$mock_account = $this->createMock( WC_Payments_Account::class );
