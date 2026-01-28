@@ -53,13 +53,7 @@ const WooPaySettings = ( { section } ) => {
 	const [ woopayLocations, updateWooPayLocations ] = useWooPayLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
-		if ( isChecked ) {
-			updateWooPayLocations( [ ...woopayLocations, location ] );
-		} else {
-			updateWooPayLocations(
-				woopayLocations.filter( ( name ) => name !== location )
-			);
-		}
+		updateWooPayLocations( location, isChecked );
 	};
 
 	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();

@@ -228,6 +228,32 @@ const AccountBalances: React.FC = () => {
 						</Flex>
 					</Flex>
 				) }
+			{ wcpaySettings.instantDepositsPreviouslyEligible &&
+				( ! selectedOverview.instantBalance ||
+					selectedOverview.instantBalance.amount === 0 ) && (
+					<InlineNotice
+						className="wcpay-account-balances__instant-deposit-unavailable"
+						status="warning"
+						isDismissible={ false }
+					>
+						{ interpolateComponents( {
+							mixedString: __(
+								'Instant payouts are currently unavailable for your account. {{learnMoreLink}}Learn about eligibility requirements{{/learnMoreLink}}',
+								'woocommerce-payments'
+							),
+							components: {
+								learnMoreLink: (
+									// @ts-expect-error: children is provided when interpolating the component
+									<ExternalLink
+										href={
+											'https://woocommerce.com/document/woopayments/payouts/instant-payouts/'
+										}
+									/>
+								),
+							},
+						} ) }
+					</InlineNotice>
+				) }
 		</>
 	);
 };

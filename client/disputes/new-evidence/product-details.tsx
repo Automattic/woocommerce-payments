@@ -50,12 +50,20 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 						),
 						value: 'booking_reservation',
 					},
+					{
+						label: __( 'Other', 'woocommerce-payments' ),
+						value: 'other',
+					},
 			  ]
-			: [] ),
-		{
-			label: __( 'Multiple product types', 'woocommerce-payments' ),
-			value: 'multiple',
-		},
+			: [
+					{
+						label: __(
+							'Multiple product types',
+							'woocommerce-payments'
+						),
+						value: 'multiple',
+					},
+			  ] ),
 	];
 
 	return (

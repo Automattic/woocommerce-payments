@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "10.3.0",
+  "version": "10.4.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -15,7 +15,7 @@
     "translate_project": "woocommerce/woocommerce-payments"
   },
   "scripts": {
-    "postinstall": "composer install",
+    "postinstall": "composer install --ignore-platform-req=php",
     "prepare": "is-ci || husky install",
     "build": "npm run build:deps && npm run build:release",
     "build:client": "NODE_ENV=production webpack",
@@ -48,7 +48,11 @@
     "test:qit-phpstan": "npm run build:release && ./tests/qit/phpstan.sh",
     "test:qit-phpstan-local": "npm run build:release && ./tests/qit/phpstan.sh --local",
     "test:qit-malware": "npm run build:release && ./tests/qit/malware.sh --local",
-    "test:qit-e2e": "./tests/qit/e2e-runner.sh",
+    "test:qit-e2e": "./vendor/bin/qit run:e2e woocommerce-payments --config tests/qit/qit.json",
+    "test:qit-e2e:shopper": "./vendor/bin/qit run:e2e woocommerce-payments --config tests/qit/qit.json -- --project=shopper",
+    "test:qit-e2e:merchant": "./vendor/bin/qit run:e2e woocommerce-payments --config tests/qit/qit.json -- --project=merchant",
+    "test:qit-e2e:subscriptions": "./vendor/bin/qit run:e2e woocommerce-payments --config tests/qit/qit.json -p woocommerce-subscriptions -- --project=subscriptions",
+    "test:qit-e2e:ci": "CI=true npm run test:qit-e2e",
     "watch": "webpack --watch",
     "hmr": "webpack server",
     "start": "npm run watch",
@@ -74,6 +78,7 @@
     "psalm": "./bin/run-psalm.sh",
     "xdebug:toggle": "docker compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh",
     "changelog": "./vendor/bin/changelogger add",
+    "changelog:add": "./bin/changelog-add.sh",
     "cli": "./bin/cli.sh"
   },
   "dependencies": {

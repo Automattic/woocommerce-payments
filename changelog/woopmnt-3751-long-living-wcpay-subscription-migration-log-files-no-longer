@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix migration log file cleanup compatibility with WooCommerce 8.6+.

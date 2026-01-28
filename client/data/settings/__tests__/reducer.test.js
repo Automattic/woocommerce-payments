@@ -7,7 +7,6 @@ import {
 	updateIsSavingSettings,
 	updateIsManualCaptureEnabled,
 	updateAccountStatementDescriptor,
-	updatePaymentRequestLocations,
 	updateIsPaymentRequestEnabled,
 	updateAccountBusinessSupportEmail,
 	updateAccountBusinessSupportPhone,
@@ -251,55 +250,6 @@ describe( 'Settings reducer tests', () => {
 					is_payment_request_enabled: true,
 					baz: 'quux',
 				},
-			} );
-		} );
-	} );
-
-	describe( 'SET_PAYMENT_REQUEST_LOCATIONS', () => {
-		const initPaymentRequestState = [ 'product' ];
-		const enableAllpaymentRequestState = [ 'product', 'checkout', 'cart' ];
-
-		test( 'toggle `data.payment_request_enabled_locations`', () => {
-			const oldState = {
-				data: {
-					payment_request_enabled_locations: initPaymentRequestState,
-				},
-			};
-
-			const state = reducer(
-				oldState,
-				updatePaymentRequestLocations( enableAllpaymentRequestState )
-			);
-
-			expect( state.data.payment_request_enabled_locations ).toEqual(
-				enableAllpaymentRequestState
-			);
-		} );
-
-		test( 'leaves other fields unchanged', () => {
-			const oldState = {
-				isDirty: false,
-				foo: 'bar',
-				data: {
-					payment_request_enabled_locations: initPaymentRequestState,
-					baz: 'quux',
-				},
-				savingError: {},
-			};
-
-			const state = reducer(
-				oldState,
-				updatePaymentRequestLocations( enableAllpaymentRequestState )
-			);
-
-			expect( state ).toEqual( {
-				isDirty: true,
-				foo: 'bar',
-				data: {
-					payment_request_enabled_locations: enableAllpaymentRequestState,
-					baz: 'quux',
-				},
-				savingError: null,
 			} );
 		} );
 	} );

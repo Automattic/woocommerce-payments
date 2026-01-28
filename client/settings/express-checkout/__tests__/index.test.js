@@ -17,6 +17,7 @@ import {
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
 	useGetDuplicatedPaymentMethodIds,
+	useAmazonPayEnabledSettings,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
@@ -28,6 +29,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
+	useAmazonPayEnabledSettings: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -48,6 +50,7 @@ describe( 'ExpressCheckout', () => {
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, jest.fn() )
 		);
+		useAmazonPayEnabledSettings.mockReturnValue( [ false, jest.fn() ] );
 
 		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
 

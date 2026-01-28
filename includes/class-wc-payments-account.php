@@ -371,6 +371,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'accountLink'         => empty( $account['is_test_drive'] ) ? $this->get_login_url() : false,
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
 			'isDocumentsEnabled'  => $account['is_documents_enabled'] ?? false,
+			'communicationsEmail' => $account['communications_email'] ?? '',
 			'requirements'        => [
 				'errors' => $account['requirements']['errors'] ?? [],
 			],
@@ -482,6 +483,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_business_support_phone(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_phone'] ) ? $account['business_profile']['support_phone'] : '';
+	}
+
+	/**
+	 * Gets the communications email.
+	 *
+	 * @return string Communications email.
+	 */
+	public function get_communications_email(): string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['communications_email'] ) ? $account['communications_email'] : '';
 	}
 
 	/**
@@ -2544,6 +2555,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return;
 		}
 
+		// Track that this merchant has been eligible for instant deposits.
+		// Used to show an informative notice if they later become ineligible.
+		update_option( 'wcpay_instant_deposits_previously_eligible', true );
+
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
 		$this->maybe_add_instant_deposit_note_reminder();
@@ -2727,7 +2742,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			'payment_request'        => [
 				'enabled'              => $gateway->is_payment_request_enabled(),
-				'enabled_locations'    => $gateway->get_option( 'payment_request_button_locations' ),
+				'enabled_locations'    => $this->get_express_checkout_method_locations( $gateway, 'payment_request' ),
 				'button_type'          => $gateway->get_option( 'payment_request_button_type' ),
 				'button_size'          => $gateway->get_option( 'payment_request_button_size' ),
 				'button_theme'         => $gateway->get_option( 'payment_request_button_theme' ),
@@ -2736,10 +2751,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			'woopay'                 => [
 				'enabled'                 => WC_Payments_Features::is_woopay_enabled(),
-				'enabled_locations'       => $gateway->get_option(
-					'platform_checkout_button_locations',
-					array_keys( $gateway_form_fields['payment_request_button_locations']['options'] )
-				),
+				'enabled_locations'       => $this->get_express_checkout_method_locations( $gateway, 'woopay' ),
 				'store_logo'              => $gateway->get_option( 'platform_checkout_store_logo' ),
 				'custom_message'          => $gateway->get_option( 'platform_checkout_custom_message' ),
 				'invalid_extension_found' => (bool) get_option( 'woopay_invalid_extension_found', false ),
@@ -2888,6 +2900,30 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				)
 			)
 		);
+	}
+
+	/**
+	 * Gets the locations where a specific express checkout method is enabled.
+	 *
+	 * Derives the locations from the location-centric express checkout settings.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway   The WCPay gateway instance.
+	 * @param string                   $method_id The method identifier (e.g., 'payment_request', 'woopay').
+	 *
+	 * @return array Array of location identifiers where the method is enabled.
+	 */
+	private function get_express_checkout_method_locations( WC_Payment_Gateway_WCPay $gateway, string $method_id ): array {
+		$locations         = [ 'product', 'cart', 'checkout' ];
+		$enabled_locations = [];
+
+		foreach ( $locations as $location ) {
+			$enabled_methods = $gateway->get_option( "express_checkout_{$location}_methods", [] );
+			if ( is_array( $enabled_methods ) && in_array( $method_id, $enabled_methods, true ) ) {
+				$enabled_locations[] = $location;
+			}
+		}
+
+		return $enabled_locations;
 	}
 
 	/**

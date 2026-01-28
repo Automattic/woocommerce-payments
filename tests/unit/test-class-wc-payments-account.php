@@ -3091,6 +3091,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'instant_deposits_eligible' => true,
 		];
 
+		// Ensure option is not set before.
+		delete_option( 'wcpay_instant_deposits_previously_eligible' );
+
 		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
@@ -3098,6 +3101,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Test to see if scheduled action was created.
 		$this->assertTrue( $this->mock_action_scheduler_service->pending_action_exists( $action_hook ) );
+
+		// Test that the previously eligible option is set.
+		$this->assertTrue( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
@@ -3111,10 +3117,16 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'instant_deposits_eligible' => false,
 		];
 
+		// Ensure option is not set before.
+		delete_option( 'wcpay_instant_deposits_previously_eligible' );
+
 		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+
+		// Test that the previously eligible option is NOT set when ineligible.
+		$this->assertFalse( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder_will_not_schedule_job_if_pending_action_exist() {
@@ -3649,14 +3661,15 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'apple_google_pay_in_payment_methods_options' => 'yes',
 					'manual_capture'                       => 'no',
 					'enable_logging'                       => 'no',
-					'payment_request_button_locations'     => [ 'product', 'cart' ],
 					'payment_request_button_type'          => 'default',
 					'payment_request_button_size'          => 'default',
 					'payment_request_button_theme'         => 'dark',
 					'payment_request_button_border_radius' => '4',
-					'platform_checkout_button_locations'   => [ 'product', 'cart' ],
 					'platform_checkout_store_logo'         => '',
 					'platform_checkout_custom_message'     => '',
+					'express_checkout_product_methods'     => [ 'payment_request', 'woopay' ],
+					'express_checkout_cart_methods'        => [ 'payment_request', 'woopay' ],
+					'express_checkout_checkout_methods'    => [],
 				];
 				return $options[ $key ] ?? $default;
 			}
@@ -3755,7 +3768,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'button_theme', $captured_data['payment_request'] );
 		$this->assertArrayHasKey( 'button_border_radius', $captured_data['payment_request'] );
 		$this->assertTrue( $captured_data['payment_request']['enabled'] );
-		$this->assertEquals( [ 'product', 'cart' ], $captured_data['payment_request']['enabled_locations'] );
+		$this->assertEquals( [ 'product', 'cart' ], $captured_data['payment_request']['enabled_locations'] ); // payment_request is in product and cart, not checkout.
 		$this->assertEquals( 'default', $captured_data['payment_request']['button_type'] );
 		$this->assertEquals( 'default', $captured_data['payment_request']['button_size'] );
 		$this->assertEquals( 'dark', $captured_data['payment_request']['button_theme'] );

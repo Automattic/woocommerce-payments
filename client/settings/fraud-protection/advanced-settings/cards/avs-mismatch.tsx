@@ -24,16 +24,16 @@ const AVSMismatchRuleCard: React.FC = () => {
 					'woocommerce-payments'
 				) }
 				description={ __(
-					'This filter compares the street number and the post code submitted by the customer against the data on ' +
-						'file with the card issuer. When enabled the payment will be blocked.',
+					'This filter compares the post code submitted by the customer against the post code on ' +
+						'file with the card issuer. The payment will be blocked if the two post codes do not match.',
 					'woocommerce-payments'
 				) }
 			/>
 
 			<FraudProtectionRuleDescription>
 				{ __(
-					'Buyers who can provide the street number and post code on file with the issuing bank ' +
-						'are more likely to be the actual account holder. AVS matches, however, are not a guarantee.',
+					'Buyers who can provide correct post code on file with the issuing bank ' +
+						'are more likely to be the actual account holder.',
 					'woocommerce-payments'
 				) }
 			</FraudProtectionRuleDescription>

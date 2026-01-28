@@ -5,7 +5,6 @@ import { upeRestrictedProperties } from './upe-styles';
 import {
 	generateHoverRules,
 	generateOutlineStyle,
-	dashedToCamelCase,
 	isColorLight,
 	getBackgroundColor,
 	maybeConvertRGBAtoRGB,
@@ -56,6 +55,8 @@ export const appearanceSelectors = {
 		upeThemeTextSelectors: [
 			'.wc-block-components-checkout-step__description',
 			'.wc-block-components-text-input',
+			'.wc-block-components-radio-control__label',
+			'.wc-block-checkout__terms',
 		],
 		rowElement: 'div',
 		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
@@ -413,13 +414,21 @@ const hiddenElementsForUPE = {
 	},
 };
 
+const toDashed = ( str ) =>
+	str.replace( /[A-Z]/g, ( m ) => `-${ m.toLowerCase() }` );
+
 export const getFieldStyles = (
 	selector,
 	upeElement,
 	backgroundColor = null,
 	scope
 ) => {
-	if ( ! scope.querySelector( selector ) ) {
+	// getting one element per selector to avoid performance issues with selectors matching too many elements.
+	const elements = ( Array.isArray( selector ) ? selector : [ selector ] )
+		.map( ( s ) => scope.querySelector( s ) )
+		.filter( Boolean );
+
+	if ( ! elements.length ) {
 		return {};
 	}
 
@@ -427,21 +436,45 @@ export const getFieldStyles = (
 
 	const validProperties = upeRestrictedProperties[ upeElement ];
 
-	const elem = scope.querySelector( selector );
+	const elem = elements[ 0 ];
 
 	const styles = windowObject.getComputedStyle( elem );
 
 	const filteredStyles = {};
-	for ( let i = 0; i < styles.length; i++ ) {
-		const camelCase = dashedToCamelCase( styles[ i ] );
-		if ( validProperties.includes( camelCase ) ) {
-			let propertyValue = styles.getPropertyValue( styles[ i ] );
-			if ( camelCase === 'color' ) {
-				propertyValue = maybeConvertRGBAtoRGB( propertyValue );
-			}
-			filteredStyles[ camelCase ] = propertyValue;
+	validProperties.forEach( ( camelCase ) => {
+		// Convert camelCase to dashed-case
+		const dashedName = toDashed( camelCase );
+		const propertyValue = styles.getPropertyValue( dashedName );
+		if ( ! propertyValue ) {
+			return;
 		}
-	}
+
+		if ( camelCase === 'color' ) {
+			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
+				propertyValue
+			);
+			return;
+		}
+
+		// `line-height: 0` values are no good - try and find an alternative.
+		if (
+			camelCase === 'lineHeight' &&
+			( propertyValue === '0' || propertyValue === '0px' )
+		) {
+			for ( let i = 1; i < elements.length; i++ ) {
+				const lh = windowObject
+					.getComputedStyle( elements[ i ] )
+					.getPropertyValue( 'line-height' );
+				if ( lh !== '0' && lh !== '0px' ) {
+					filteredStyles[ camelCase ] = lh;
+					break;
+				}
+			}
+			return;
+		}
+
+		filteredStyles[ camelCase ] = propertyValue;
+	} );
 
 	if ( upeElement === '.Input' || upeElement === '.Tab--selected' ) {
 		const outline = generateOutlineStyle(
