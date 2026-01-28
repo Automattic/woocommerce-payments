@@ -67,7 +67,10 @@ cd tests/qit/test-package
 # 4. Run tests with Playwright
 npx playwright test --ui
 
-# 5. When done, stop the environment
+# 5. Reset database between runs (optional, restores post-setup state)
+npm run test:qit-e2e-reset
+
+# 6. When done, stop the environment
 npm run test:qit-e2e-down
 ```
 
@@ -161,6 +164,16 @@ The environment persists between test runs. Your workflow:
 4. Repeat
 
 No need to restart the environment unless you need to reset the database state.
+
+### Resetting the Database
+
+If previous test runs left state that interferes with new runs (e.g., orders, changed settings), reset the database to the post-setup snapshot:
+
+```bash
+npm run test:qit-e2e-reset
+```
+
+This restores the database to the state right after setup completed — all users, products, and test data are preserved, but any changes from test runs are wiped. Much faster than stopping and restarting the full environment.
 
 ### Stopping the Environment
 
