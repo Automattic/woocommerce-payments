@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Make sure that nonces are loaded correctly for the Add Payment Method page.

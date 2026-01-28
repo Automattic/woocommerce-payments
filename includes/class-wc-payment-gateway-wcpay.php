@@ -2183,6 +2183,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order           = $payment_information->get_order();
 			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
+
+			// For saved Link tokens (e.g., subscription renewals), ensure Link is included in payment method types
+			// regardless of whether Link is currently enabled at checkout. The token was valid when saved
+			// and should continue to work for renewals.
+			if ( $token instanceof \WC_Payment_Token_WCPay_Link && ! in_array( Payment_Method::LINK, $payment_methods, true ) ) {
+				$payment_methods[] = Payment_Method::LINK;
+			}
 		}
 
 		return $payment_methods;
