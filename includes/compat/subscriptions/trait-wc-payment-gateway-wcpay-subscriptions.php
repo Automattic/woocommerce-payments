@@ -247,6 +247,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
 
+		// Register gateway-specific hooks for all reusable gateways.
+		foreach ( $this->get_reusable_wcpay_gateway_ids() as $gateway_id ) {
+			add_action( 'woocommerce_scheduled_subscription_payment_' . $gateway_id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
+			add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $gateway_id, [ $this, 'update_failing_payment_method' ], 10, 2 );
+		}
+
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
 
 		// Display the payment method used for a subscription in the "My Subscriptions" table.
@@ -293,12 +299,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// AJAX handler for fetching payment tokens when customer changes.
 		add_action( 'wp_ajax_wcpay_get_user_payment_tokens', [ $this, 'ajax_get_user_payment_tokens' ] );
-
-		// Register gateway-specific hooks for all reusable gateways.
-		foreach ( $this->get_reusable_wcpay_gateway_ids() as $gateway_id ) {
-			add_action( 'woocommerce_scheduled_subscription_payment_' . $gateway_id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
-			add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $gateway_id, [ $this, 'update_failing_payment_method' ], 10, 2 );
-		}
 	}
 
 	/**
