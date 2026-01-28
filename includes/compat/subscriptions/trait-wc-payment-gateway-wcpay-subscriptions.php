@@ -226,17 +226,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 
-		$this->maybe_init_subscription_hooks();
-	}
+		if ( self::$has_attached_integration_hooks ) {
+			return;
+		}
 
-	/**
-	 * Initialize subscription hooks. These hooks are registered once by the base gateway.
-	 *
-	 * @return void
-	 */
-	private function maybe_init_subscription_hooks() {
 		// Only the base gateway registers hooks to avoid duplication.
-		if ( self::$has_attached_integration_hooks || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $this->id ) {
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $this->id ) {
 			return;
 		}
 
