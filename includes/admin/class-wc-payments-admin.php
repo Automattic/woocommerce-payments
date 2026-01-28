@@ -1566,10 +1566,6 @@ class WC_Payments_Admin {
 	 * Inject the container div for the review prompt on top-level Payments settings page.
 	 */
 	public function inject_review_prompt_container() {
-		if ( ! $this->is_wc_admin_payments_settings_page() ) {
-			return;
-		}
-
 		echo '<div id="wcpay-review-prompt"></div>';
 	}
 }
