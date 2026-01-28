@@ -11,110 +11,117 @@ import Spotlight from 'components/spotlight';
 import { useReviewPromptState } from './hooks';
 import { recordEvent } from 'wcpay/tracks';
 
-const reviewUrl =
+const wordpressOrgReviewUrl =
+	'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post';
+const marketplaceReviewUrl =
 	'https://woocommerce.com/products/woocommerce-payments/#reviews';
 
+/**
+ * Helper to record an event with base properties and optional additional properties.
+ */
+const recordPromptEvent = (
+	eventName: string,
+	baseProperties: Record< string, unknown >,
+	additionalProperties?: Record< string, unknown >
+) => {
+	recordEvent( eventName, { ...baseProperties, ...additionalProperties } );
+};
+
+/**
+ * Helper to calculate time-to-click properties.
+ */
+const getTimeToClickProps = (
+	viewTimestamp: number | null
+): Record< string, number > => {
+	const timeToClickMs = viewTimestamp ? Date.now() - viewTimestamp : null;
+	return timeToClickMs !== null ? { time_to_click_ms: timeToClickMs } : {};
+};
+
+/**
+ * Helper to get base event properties per PRO2-35 telemetry requirements.
+ */
+const getBaseEventProperties = ( isAccountEligible: boolean | undefined ) => {
+	return {
+		prompt_id: 'phase0_payments_settings_001',
+		extension: 'woopayments',
+		location: 'payments_settings_top_level',
+		trigger: 'none',
+		flag_enabled: isAccountEligible,
+		version: wcpaySettings?.version || 'unknown',
+	};
+};
+
 const ReviewPrompt: React.FC = () => {
-	const {
-		isAccountEligible,
-		hasUserDismissedPrompt,
-		isCooldownActive,
-		dismissPrompt,
-		setMaybeLater,
-	} = useReviewPromptState();
+	const { dismissPrompt, setMaybeLater } = useReviewPromptState();
 
 	const [ viewTimestamp, setViewTimestamp ] = useState< number | null >(
 		null
 	);
 
-	// Base event properties per PRO2-35 telemetry requirements
-	const getBaseEventProperties = useCallback( () => {
-		return {
-			prompt_id: 'phase0_payments_settings_001',
-			extension: 'woopayments',
-			location: 'payments_settings_top_level',
-			trigger: 'none',
-			flag_enabled: isAccountEligible,
-			version: wcpaySettings?.version || 'unknown',
-		};
-	}, [ isAccountEligible ] );
+	// Eligibility is already checked server-side, so if this component renders, the prompt should show.
+	const isAccountEligible =
+		wcpaySettings?.accountStatus?.campaigns?.reviewPromptPhase0;
 
 	const handleView = useCallback( () => {
 		const timestamp = Date.now();
 		setViewTimestamp( timestamp );
-		recordEvent( 'payments_review_prompt_shown', getBaseEventProperties() );
-	}, [ getBaseEventProperties ] );
+		recordPromptEvent(
+			'payments_review_prompt_shown',
+			getBaseEventProperties( isAccountEligible )
+		);
+	}, [ isAccountEligible ] );
 
 	const handlePrimaryClick = useCallback( () => {
-		const timeToClickMs = viewTimestamp ? Date.now() - viewTimestamp : null;
+		// Determine destination based on connection state
+		const isLive = wcpaySettings?.accountStatus?.isLive;
+		const destination = isLive ? 'wordpress_org' : 'marketplace';
+		const reviewUrl = isLive ? wordpressOrgReviewUrl : marketplaceReviewUrl;
+
+		const baseProps = getBaseEventProperties( isAccountEligible );
 		const eventProps = {
-			...getBaseEventProperties(),
 			action: 'write_review',
-			destination: 'marketplace',
-			...( timeToClickMs !== null && {
-				time_to_click_ms: timeToClickMs,
-			} ),
+			destination,
+			...getTimeToClickProps( viewTimestamp ),
 		};
 
-		recordEvent( 'payments_review_prompt_action', eventProps );
-		recordEvent( 'payments_review_destination_selected', eventProps );
+		recordPromptEvent(
+			'payments_review_prompt_action',
+			baseProps,
+			eventProps
+		);
+		recordPromptEvent(
+			'payments_review_destination_selected',
+			baseProps,
+			eventProps
+		);
 
 		window.open( reviewUrl, '_blank', 'noopener,noreferrer' );
 		dismissPrompt();
-	}, [ viewTimestamp, getBaseEventProperties, dismissPrompt ] );
+	}, [ isAccountEligible, viewTimestamp, dismissPrompt ] );
 
 	const handleSecondaryClick = useCallback( () => {
-		const timeToClickMs = viewTimestamp ? Date.now() - viewTimestamp : null;
-		const eventProps = {
-			...getBaseEventProperties(),
-			action: 'maybe_later',
-			...( timeToClickMs !== null && {
-				time_to_click_ms: timeToClickMs,
-			} ),
-		};
-
-		recordEvent( 'payments_review_prompt_action', eventProps );
+		recordPromptEvent(
+			'payments_review_prompt_action',
+			getBaseEventProperties( isAccountEligible ),
+			{
+				action: 'maybe_later',
+				...getTimeToClickProps( viewTimestamp ),
+			}
+		);
 		setMaybeLater();
-	}, [ viewTimestamp, getBaseEventProperties, setMaybeLater ] );
+	}, [ isAccountEligible, viewTimestamp, setMaybeLater ] );
 
 	const handleDismiss = useCallback( () => {
-		const timeToClickMs = viewTimestamp ? Date.now() - viewTimestamp : null;
-		const eventProps = {
-			...getBaseEventProperties(),
-			action: 'dismiss_x',
-			...( timeToClickMs !== null && {
-				time_to_click_ms: timeToClickMs,
-			} ),
-		};
-
-		recordEvent( 'payments_review_prompt_action', eventProps );
+		recordPromptEvent(
+			'payments_review_prompt_action',
+			getBaseEventProperties( isAccountEligible ),
+			{
+				action: 'dismiss_x',
+				...getTimeToClickProps( viewTimestamp ),
+			}
+		);
 		dismissPrompt();
-	}, [ viewTimestamp, getBaseEventProperties, dismissPrompt ] );
-
-	// Track suppression reasons
-	if ( ! isAccountEligible ) {
-		recordEvent( 'payments_review_prompt_suppressed', {
-			...getBaseEventProperties(),
-			reason: 'not_eligible',
-		} );
-		return null;
-	}
-
-	if ( hasUserDismissedPrompt ) {
-		recordEvent( 'payments_review_prompt_suppressed', {
-			...getBaseEventProperties(),
-			reason: 'dismissed_permanent',
-		} );
-		return null;
-	}
-
-	if ( isCooldownActive ) {
-		recordEvent( 'payments_review_prompt_suppressed', {
-			...getBaseEventProperties(),
-			reason: 'cooldown_active',
-		} );
-		return null;
-	}
+	}, [ isAccountEligible, viewTimestamp, dismissPrompt ] );
 
 	return (
 		<Spotlight

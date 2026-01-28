@@ -1510,6 +1510,30 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		// Check account eligibility server-side to avoid loading JS unnecessarily.
+		if ( ! $this->account->is_review_prompt_eligible() ) {
+			return;
+		}
+
+		// Check user dismissal/cooldown state to avoid loading JS unnecessarily.
+		$user_id     = get_current_user_id();
+		$dismissed   = get_user_meta( $user_id, 'wc_payments_review_prompt_dismissed', true );
+		$maybe_later = get_user_meta( $user_id, 'wc_payments_review_prompt_maybe_later', true );
+
+		// If dismissed permanently, don't load JS.
+		if ( $dismissed ) {
+			return;
+		}
+
+		// If cooldown is active (within 10 days), don't load JS.
+		if ( $maybe_later ) {
+			$cooldown_ms = 10 * 24 * 60 * 60 * 1000; // 10 days in milliseconds.
+			$now_ms      = round( microtime( true ) * 1000 );
+			if ( $now_ms < ( $maybe_later + $cooldown_ms ) ) {
+				return;
+			}
+		}
+
 		wp_enqueue_script( 'WCPAY_REVIEW_PROMPT' );
 		wp_enqueue_style( 'WCPAY_REVIEW_PROMPT' );
 	}

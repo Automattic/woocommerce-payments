@@ -2655,6 +2655,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Checks if the account is eligible for the review prompt (Phase 0).
+	 *
+	 * @return bool
+	 */
+	public function is_review_prompt_eligible(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['eligibility_review_prompt_phase_0'] ?? false;
+	}
+
+	/**
 	 * Gather the latest store setup state and send it to the Transact Platform.
 	 *
 	 * @return void

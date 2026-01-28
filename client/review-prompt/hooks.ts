@@ -8,25 +8,8 @@ interface UserPreferences extends ReturnType< typeof useUserPreferences > {
 	wc_payments_review_prompt_maybe_later?: number;
 }
 
-const cooldownDays = 10;
-const cooldownMs = cooldownDays * 24 * 60 * 60 * 1000;
-
 export const useReviewPromptState = () => {
-	const {
-		updateUserPreferences,
-		...userPrefs
-	} = useUserPreferences() as UserPreferences;
-
-	const isAccountEligible =
-		wcpaySettings?.accountStatus?.campaigns?.reviewPromptPhase0;
-
-	const hasUserDismissedPrompt = !! userPrefs?.wc_payments_review_prompt_dismissed;
-
-	const maybeLaterTimestamp =
-		userPrefs?.wc_payments_review_prompt_maybe_later;
-	const isCooldownActive = maybeLaterTimestamp
-		? Date.now() < maybeLaterTimestamp + cooldownMs
-		: false;
+	const { updateUserPreferences } = useUserPreferences() as UserPreferences;
 
 	const dismissPrompt = () => {
 		updateUserPreferences( {
@@ -41,9 +24,6 @@ export const useReviewPromptState = () => {
 	};
 
 	return {
-		isAccountEligible,
-		hasUserDismissedPrompt,
-		isCooldownActive,
 		dismissPrompt,
 		setMaybeLater,
 	};
