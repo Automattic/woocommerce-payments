@@ -986,6 +986,10 @@ class WC_Payments {
 
 				// WPORG 2025 merchant feedback prompt user dismissed state.
 				'wc_payments_wporg_review_2025_prompt_dismissed',
+
+				// WooPayments review prompt user preferences.
+				'wc_payments_review_prompt_dismissed',
+				'wc_payments_review_prompt_maybe_later',
 			]
 		);
 	}
