@@ -8,7 +8,6 @@
  * Internal dependencies.
  */
 import strings from './strings';
-import { getVerifyBankAccountTask } from './tasks/po-task';
 import {
 	getDisputeResolutionTask,
 	getDisputesDueWithinDays,
@@ -28,7 +27,6 @@ interface TaskListProps {
 	wpcomReconnectUrl: string;
 	activeDisputes?: CachedDispute[];
 	showGoLiveTask: boolean;
-	showGetVerifyBankAccountTask: boolean;
 }
 
 export const getTasks = ( {
@@ -36,7 +34,6 @@ export const getTasks = ( {
 	wpcomReconnectUrl,
 	activeDisputes = [],
 	showGoLiveTask = false,
-	showGetVerifyBankAccountTask = true,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
 		status,
@@ -44,7 +41,6 @@ export const getTasks = ( {
 		pastDue,
 		accountLink,
 		requirements,
-		progressiveOnboarding,
 		detailsSubmitted,
 	} = wcpaySettings.accountStatus;
 
@@ -68,12 +64,9 @@ export const getTasks = ( {
 		return Array.from( new Set( errorMessages || [] ) );
 	};
 
-	const isPoEnabled = progressiveOnboarding?.isEnabled;
 	const errorMessages = getErrorMessagesFromRequirements();
 
-	const isUpdateDetailsTaskVisible =
-		showUpdateDetailsTask &&
-		( ! isPoEnabled || ( isPoEnabled && ! detailsSubmitted ) );
+	const isUpdateDetailsTaskVisible = showUpdateDetailsTask;
 
 	const isDisputeTaskVisible =
 		!! activeDisputes &&
@@ -84,9 +77,6 @@ export const getTasks = ( {
 		wcpaySettings.isAccountConnected &&
 		isInTestModeOnboarding( false ) &&
 		showGoLiveTask;
-
-	const isGetVerifyBankAccountTaskVisible =
-		showGetVerifyBankAccountTask && isPoEnabled && detailsSubmitted;
 
 	return [
 		isUpdateDetailsTaskVisible &&
@@ -100,9 +90,10 @@ export const getTasks = ( {
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
-		isGetVerifyBankAccountTaskVisible && getVerifyBankAccountTask(),
 		isGoLiveTaskVisible && getGoLiveTask(),
-	].filter( Boolean );
+	]
+		.filter( Boolean )
+		.filter( ( task ) => task !== null ) as TaskItemProps[];
 };
 
 export const taskSort = ( a: TaskItemProps, b: TaskItemProps ): number => {

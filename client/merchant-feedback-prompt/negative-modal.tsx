@@ -3,7 +3,7 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Modal } from '@wordpress/components';
+import { ExternalLink, Modal } from '@wordpress/components';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -62,36 +62,47 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 					) }
 				/>
 				<p className="wcpay-merchant-feedback-negative-modal__privacy">
-					{ __(
-						'Your feedback will be sent to the WooCommerce team. Your personal information is secure and will not be shared with third parties. For more details, please see our ',
-						'woocommerce-payments'
-					) }
-					<a href="https://automattic.com/privacy/">
-						{ __( 'privacy policy', 'woocommerce-payments' ) }
-					</a>
-					.
+					{ interpolateComponents( {
+						// translators: {{a}}: placeholders are opening and closing anchor tags.
+						mixedString: __(
+							'Your feedback will be sent to the WooCommerce team. Your personal information is secure and will not be shared with third parties. For more details, please see our {{a/}}.',
+							'woocommerce-payments'
+						),
+						components: {
+							a: (
+								<ExternalLink href="https://automattic.com/privacy/">
+									{ __(
+										'privacy policy',
+										'woocommerce-payments'
+									) }
+								</ExternalLink>
+							),
+						},
+					} ) }
 				</p>
 				<p>
 					{ interpolateComponents( {
 						// translators: {{a}}: placeholders are opening and closing anchor tags.
 						mixedString: __(
-							`Need help with a specific issue? {{a}}Contact our support team{{/a}} for personalized assistance.`,
+							`Need help with a specific issue? {{a/}} for personalized assistance.`,
 							'woocommerce-payments'
 						),
 						components: {
 							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- content is provided in the mixedString property above.
-								<a
+								<ExternalLink
 									// Link to the WooCommerce support form with WooPayments selected.
 									href="https://woocommerce.com/my-account/contact-support/?select=5278104"
-									target="_blank"
-									rel="noreferrer noopener"
 									onClick={ () => {
 										recordEvent(
 											'wcpay_merchant_feedback_prompt_negative_modal_contact_support_click'
 										);
 									} }
-								/>
+								>
+									{ __(
+										'Contact our support team',
+										'woocommerce-payments'
+									) }
+								</ExternalLink>
 							),
 						},
 					} ) }

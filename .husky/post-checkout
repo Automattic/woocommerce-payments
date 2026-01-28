@@ -5,4 +5,5 @@
 npx --no-install yarnhook
 
 # make sure composer packages are installed and the autoload files are regenerated
-composer install
+# --ignore-platform-req=php allows dev-only packages (like qit-cli) that need PHP 7.4+
+composer install --ignore-platform-req=php

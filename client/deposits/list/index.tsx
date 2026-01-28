@@ -218,7 +218,7 @@ export const DepositsList = (): JSX.Element => {
 		} );
 
 		const userEmail = wcpaySettings.currentUserEmail;
-		const userLocale = wcpaySettings.userLocale.code;
+		const locale = wcSettings.locale.userLocale;
 
 		const {
 			date_before: dateBefore,
@@ -232,7 +232,7 @@ export const DepositsList = (): JSX.Element => {
 
 		const exportRequestURL = getPayoutsCSVRequestURL( {
 			userEmail,
-			userLocale,
+			locale,
 			dateBefore,
 			dateAfter,
 			dateBetween,

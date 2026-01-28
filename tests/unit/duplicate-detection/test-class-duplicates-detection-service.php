@@ -7,8 +7,7 @@
 
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Klarna_Payment_Method;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * WCPay\Duplicates_Detection_Service_Test unit tests.
@@ -54,10 +53,21 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->cached_gateways                     = WC()->payment_gateways()->payment_gateways;
 		WC()->payment_gateways()->payment_gateways = [ $this->woopayments_gateway, $this->gateway_from_another_plugin ];
+
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		$registry->register_payment_method( \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class );
+		$registry->register_payment_method( \WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class );
 	}
 
 	public function tear_down() {
 		WC()->payment_gateways()->payment_gateways = $this->cached_gateways;
+
+		// resetting to prevent test pollution.
+		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
 	}
 
 	public function test_two_cc_both_enabled() {
@@ -78,28 +88,28 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_two_apms_enabled() {
-		$this->set_duplicates( Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::get_id(), 'yes', 'yes' );
 
 		$result = $this->service->find_duplicates();
 
 		$this->assertCount( 1, $result );
-		$this->assertEquals( Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID, array_keys( $result )[0] );
+		$this->assertEquals( \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::get_id(), array_keys( $result )[0] );
 	}
 
 	public function test_two_bnpls_enabled() {
-		$this->set_duplicates( Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( \WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::get_id(), 'yes', 'yes' );
 
 		$result = $this->service->find_duplicates();
 
 		$this->assertCount( 1, $result );
-		$this->assertEquals( Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID, array_keys( $result )[0] );
+		$this->assertEquals( \WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::get_id(), array_keys( $result )[0] );
 	}
 
 	public function test_two_prbs_enabled() {
 		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
-		$this->woopayments_gateway->update_option( 'payment_request', 'yes' );
-		$this->woopayments_gateway->enabled    = 'yes';
-		$this->gateway_from_another_plugin->id = 'apple_pay';
+		$this->woopayments_gateway->is_payment_request_enabled_value = true;
+		$this->woopayments_gateway->enabled                          = 'yes';
+		$this->gateway_from_another_plugin->id                       = 'apple_pay';
 
 		$result = $this->service->find_duplicates();
 

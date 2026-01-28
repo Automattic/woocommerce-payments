@@ -70,12 +70,12 @@ class OrderService {
 	/**
 	 * Generates payment metadata from order details.
 	 *
-	 * @param int          $order_id     ID of the order.
-	 * @param Payment_Type $payment_type Type of the payment (recurring or not).
-	 * @return array                     The metadat athat will be sent to the server.
+	 * @param int               $order_id     ID of the order.
+	 * @param Payment_Type|null $payment_type Type of the payment (recurring or not).
+	 * @return array                          The metadata that will be sent to the server.
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_payment_metadata( int $order_id, ?Payment_Type $payment_type = null ) {
+	public function get_payment_metadata( int $order_id, ?Payment_Type $payment_type = null ): array {
 		$order = $this->get_order( $order_id );
 
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );
@@ -117,7 +117,7 @@ class OrderService {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_mode( string $order_id, string $mode ): void {
-		$order = $this->get_order( $order_id );
+		$order = $this->get_order( (int) $order_id );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $mode );
 		$order->save_meta_data();
 	}
@@ -131,7 +131,7 @@ class OrderService {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_mode( string $order_id ): string {
-		$order = $this->get_order( $order_id );
+		$order = $this->get_order( (int) $order_id );
 		return $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, true );
 	}
 

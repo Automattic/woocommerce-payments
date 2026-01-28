@@ -266,11 +266,6 @@ class MultiCurrency {
 	public function init() {
 		$store_currency_updated = $this->check_store_currency_for_change();
 
-		// If the store currency has been updated, clear the cache to make sure we fetch fresh rates from the server.
-		if ( $store_currency_updated ) {
-			$this->clear_cache();
-		}
-
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
@@ -288,7 +283,7 @@ class MultiCurrency {
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
 		$this->tracking            = new Tracking( $this );
 
-		// Init all of the hooks.
+		// Init all the hooks.
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
 		$this->frontend_prices->init_hooks();
@@ -409,26 +404,18 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Wipes the cached currency data option, forcing to re-fetch the data from WPCOM.
-	 *
-	 * @return void
-	 */
-	public function clear_cache() {
-		Logger::debug( 'Clearing the cache to force new rates to be fetched from the server.' );
-		$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
-	}
-
-	/**
 	 * Gets and caches the data for the currency rates from the server.
-	 * Will be returned as an array with three keys, 'currencies' (the currencies), 'expires' (the expiry time)
-	 * and 'updated' (when this data was fetched from the API).
+	 * Will be returned as an array with two keys:
+	 * - 'currencies' (the currencies)
+	 * - 'updated' (when this data was fetched from the API).
 	 *
 	 * @return ?array
 	 */
 	public function get_cached_currencies() {
-		$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY, true );
-		// If connection to server cannot be established, or if payment provider is not connected, or if the account is rejected, return expired data or null.
+		// If connection to server cannot be established, payment provider is not connected, or the account is rejected,
+		// return any data we have cached (expired or not) or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
+			$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY, true );
 			return $cached_data ?? null;
 		}
 
@@ -1399,15 +1386,17 @@ class MultiCurrency {
 		$available_currencies = [];
 
 		$currencies = $this->get_account_available_currencies();
-		$cache_data = $this->get_cached_currencies();
+		if ( ! empty( $currencies ) ) {
+			$cache_data = $this->get_cached_currencies();
 
-		foreach ( $currencies as $currency_code ) {
-			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
-			$update_time   = $cache_data['updated'] ?? null;
-			$new_currency  = new Currency( $this->localization_service, $currency_code, $currency_rate, $update_time );
+			foreach ( $currencies as $currency_code ) {
+				$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
+				$update_time   = $cache_data['updated'] ?? null;
+				$new_currency  = new Currency( $this->localization_service, $currency_code, $currency_rate, $update_time );
 
-			// Add this to our list of available currencies.
-			$available_currencies[ $new_currency->get_name() ] = $new_currency;
+				// Add this to our list of available currencies.
+				$available_currencies[ $new_currency->get_name() ] = $new_currency;
+			}
 		}
 
 		ksort( $available_currencies );
@@ -1624,7 +1613,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function register_admin_scripts() {
-		$this->register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
+		$this->register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS', 'wp-components' ] );
 
 		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',

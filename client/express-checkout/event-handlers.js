@@ -101,19 +101,41 @@ export const onConfirmHandler = async (
 	elements,
 	completePayment,
 	abortPayment,
-	event
+	event,
+	paymentMethodTypes = []
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
 		return abortPayment( submitError.message );
 	}
 
-	const { paymentMethod, error } = await stripe.createPaymentMethod( {
-		elements,
-	} );
+	const useConfirmationToken =
+		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 
-	if ( error ) {
-		return abortPayment( error.message );
+	let paymentCredential;
+	if ( useConfirmationToken ) {
+		const {
+			confirmationToken,
+			error,
+		} = await stripe.createConfirmationToken( {
+			elements,
+		} );
+
+		if ( error ) {
+			return abortPayment( error.message );
+		}
+
+		paymentCredential = confirmationToken;
+	} else {
+		const { paymentMethod, error } = await stripe.createPaymentMethod( {
+			elements,
+		} );
+
+		if ( error ) {
+			return abortPayment( error.message );
+		}
+
+		paymentCredential = paymentMethod;
 	}
 
 	try {
@@ -123,7 +145,9 @@ export const onConfirmHandler = async (
 			// so that we make it harder for external plugins to modify or intercept checkout data.
 			...transformStripePaymentMethodForStoreApi(
 				event,
-				paymentMethod.id
+				paymentCredential.id,
+				useConfirmationToken,
+				paymentMethodTypes
 			),
 			extensions: applyFilters(
 				'wcpay.express-checkout.cart-place-order-extension-data',
@@ -143,17 +167,24 @@ export const onConfirmHandler = async (
 			);
 		}
 
-		const confirmationRequest = api.confirmIntent(
-			orderResponse.payment_result.redirect_url
-		);
+		// Extract redirect URL from payment_details if redirect_url is empty
+		let redirectUrl = orderResponse.payment_result.redirect_url;
+		if ( ! redirectUrl ) {
+			const redirectDetail = orderResponse.payment_result.payment_details?.find(
+				( detail ) => detail.key === 'redirect'
+			);
+			redirectUrl = redirectDetail?.value || '';
+		}
+
+		const confirmationRequest = api.confirmIntent( redirectUrl );
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
-			completePayment( orderResponse.payment_result.redirect_url );
-		} else {
-			const redirectUrl = await confirmationRequest;
-
 			completePayment( redirectUrl );
+		} else {
+			const authenticatedRedirectUrl = await confirmationRequest;
+
+			completePayment( authenticatedRedirectUrl );
 		}
 	} catch ( e ) {
 		// API errors are not parsed, so we need to do it ourselves.

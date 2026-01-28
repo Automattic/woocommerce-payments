@@ -40,13 +40,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_account;
 
 	/**
-	 * Mock Database_Cache.
-	 *
-	 * @var Database_Cache|MockObject
-	 */
-	private $mock_db_cache;
-
-	/**
 	 * Mock WC_Payments_Session_Service.
 	 *
 	 * @var WC_Payments_Session_Service|MockObject
@@ -68,10 +61,9 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_account         = $this->createMock( WC_Payments_Account::class );
-		$this->mock_db_cache        = $this->createMock( Database_Cache::class );
 		$this->mock_session_service = $this->createMock( WC_Payments_Session_Service::class );
 
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache, $this->mock_session_service, WC_Payments::get_order_service() );
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_session_service, WC_Payments::get_order_service() );
 	}
 
 	/**
@@ -440,39 +432,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $mock_payment_methods, $response );
 	}
 
-	public function test_get_payment_methods_for_customer_fetches_from_database_cache() {
-		$mock_payment_methods = [
-			[ 'id' => 'pm_mock1' ],
-			[ 'id' => 'pm_mock2' ],
-		];
-		$customer_id          = 'cus_12345';
-		$payment_method_name  = 'card';
-		$cache_key            = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $payment_method_name;
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_payment_methods' )
-			->with( $customer_id, $payment_method_name )
-			->willReturn( [ 'data' => $mock_payment_methods ] );
-
-		$this->mock_db_cache
-			->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->withConsecutive( [ $cache_key ], [ $cache_key ] )
-			->willReturnOnConsecutiveCalls( null, $mock_payment_methods );
-
-		$this->mock_db_cache
-			->expects( $this->once() )
-			->method( 'add' )
-			->with( $cache_key, $mock_payment_methods );
-
-		$response = $this->customer_service->get_payment_methods_for_customer( $customer_id );
-		$this->assertEquals( $mock_payment_methods, $response );
-
-		$response = $this->customer_service->get_payment_methods_for_customer( $customer_id );
-		$this->assertEquals( $mock_payment_methods, $response );
-	}
-
 	public function test_get_payment_methods_for_customer_no_customer() {
 		$this->mock_api_client
 			->expects( $this->never() )
@@ -734,24 +693,5 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 'wcpay_cus_test12345' );
 
 		$this->assertEquals( $this->customer_service->get_customer_id_for_order( $order ), 'wcpay_cus_test12345' );
-	}
-
-	public function test_clear_cached_payment_methods_for_user() {
-		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test12345' );
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
-
-		$expected_card_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_card';
-		$expected_link_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_link';
-		$expected_sepa_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_sepa_debit';
-
-		$this->mock_db_cache
-			->expects( $this->exactly( 3 ) )
-			->method( 'delete' )
-			->withConsecutive(
-				[ $expected_card_cache_key ],
-				[ $expected_link_cache_key ],
-				[ $expected_sepa_cache_key ]
-			);
-		$this->customer_service->clear_cached_payment_methods_for_user( 1 );
 	}
 }

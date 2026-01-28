@@ -58,6 +58,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 						setSubmitted( false );
 						onDismiss();
 					} }
+					__next40pxDefaultSize
 				>
 					{ strings.cancel }
 				</Button>
@@ -70,6 +71,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 						setSubmitted( true );
 						onSubmit();
 					} }
+					__next40pxDefaultSize
 				>
 					{ strings.reset }
 				</Button>

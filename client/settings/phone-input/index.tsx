@@ -13,6 +13,7 @@ import utils from 'iti/utils';
 
 interface PhoneNumberInputProps {
 	value: string;
+	id: string;
 	onValidationChange: ( isValid: boolean ) => void;
 	onValueChange: ( value: string ) => void;
 	onCountryDropdownClick?: () => void;
@@ -27,6 +28,7 @@ interface PhoneNumberInputProps {
 const PhoneNumberInput = ( {
 	onValueChange,
 	value,
+	id,
 	onValidationChange = ( validation ) => validation,
 	onCountryDropdownClick,
 	inputProps = {
@@ -58,6 +60,25 @@ const PhoneNumberInput = ( {
 			if (
 				[ '800', '805', '806', '807', '808', '809' ].includes(
 					instance.getNumber().substr( 3, 3 )
+				)
+			) {
+				return true;
+			}
+		}
+
+		// Special case for Hong Kong: the latest HK Telecom numbers have adopted new numbers starting with 4.
+		// Numbers starting from 7 and 8 also can be mobile numbers (as well as pager numbers and forwarding service).
+		if (
+			'852' === instance.getSelectedCountryData().dialCode &&
+			! instance.isValidNumber()
+		) {
+			if ( 12 !== instance.getNumber().length ) {
+				return false;
+			}
+
+			if (
+				[ '4', '7', '8' ].includes(
+					instance.getNumber().substr( 4, 1 )
 				)
 			) {
 				return true;
@@ -188,6 +209,7 @@ const PhoneNumberInput = ( {
 			<input
 				type="tel"
 				ref={ inputRef }
+				id={ id }
 				value={ removeInternationalPrefix( value ) }
 				onBlur={ () => {
 					setFocusLost( true );

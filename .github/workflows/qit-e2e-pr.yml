@@ -1,0 +1,82 @@
+name: QIT E2E Tests - Pull Request
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - trunk
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up repository
+        uses: ./.github/actions/setup-repo
+
+      - name: Build the plugin
+        uses: ./.github/actions/build
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: woocommerce-payments-${{ github.run_id }}
+          path: woocommerce-payments.zip
+          retention-days: 1
+
+  generate-matrix:
+    name: Generate test matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate matrix
+        id: generate
+        run: |
+          # Get WC versions from matrix script
+          SCRIPT_RESULT=$(.github/scripts/generate-wc-matrix.sh)
+          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+
+          echo "L-1 version: $L1_VERSION" >&2
+
+          # Build PR matrix: L-1 + latest, PHP 8.3 only, all projects
+          MATRIX_ENTRIES=()
+          for wc_version in "$L1_VERSION" "latest"; do
+            for project in "shopper" "merchant" "subscriptions"; do
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"wordpress\":\"latest\",\"php\":\"8.3\",\"project\":\"$project\"}")
+            done
+          done
+
+          MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+  qit-e2e:
+    name: "${{ matrix.project }} | WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
+    needs: [build, generate-matrix]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    uses: ./.github/workflows/qit-e2e-run.yml
+    with:
+      woocommerce-version: ${{ matrix.woocommerce }}
+      wordpress-version: ${{ matrix.wordpress }}
+      php-version: ${{ matrix.php }}
+      artifact-name: woocommerce-payments-${{ github.run_id }}
+      playwright-project: ${{ matrix.project }}
+    secrets:
+      QIT_CI_USER: ${{ secrets.QIT_CI_USER }}
+      QIT_CI_SECRET: ${{ secrets.QIT_CI_SECRET }}
+      E2E_QIT_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
+      E2E_QIT_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
+      E2E_QIT_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}

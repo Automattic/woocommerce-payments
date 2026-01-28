@@ -234,7 +234,7 @@ export const writeRuleset = (
 };
 
 const getRuleBlockStatus = ( outcome: string ) => {
-	const { isFRTReviewFeatureActive } = wcpaySettings;
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
 
 	if ( ! isFRTReviewFeatureActive ) {
 		return true;
@@ -246,7 +246,7 @@ const getRuleBlockStatus = ( outcome: string ) => {
 export const readRuleset = (
 	rulesetConfig: FraudProtectionRule[] | string
 ): ProtectionSettingsUI => {
-	const { isFRTReviewFeatureActive } = wcpaySettings;
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
 	const isAVSChecksEnabled =
 		wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure ||
 		false;

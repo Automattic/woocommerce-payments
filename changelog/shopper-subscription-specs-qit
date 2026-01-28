@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+[E2E][QIT] Migrate shopper subscription E2E test specs to QIT test-package

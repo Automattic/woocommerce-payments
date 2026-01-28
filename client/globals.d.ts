@@ -4,8 +4,21 @@
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 import { WCPayExpressCheckoutParams } from './express-checkout/utils';
+import { AccountDetailsType } from 'wcpay/types/account/account-details';
 
 declare global {
+	interface TosSettingsStripeConnected {
+		is_existing_stripe_account: boolean;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	const wcpay_tos_settings: {
+		settingsUrl: string;
+		tosAgreementDeclined: '' | '1';
+		tosAgreementRequired: '' | '1';
+		trackStripeConnected: TosSettingsStripeConnected | '';
+	};
+
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;
@@ -16,11 +29,13 @@ declare global {
 			woopay: boolean;
 			documents: boolean;
 			woopayExpressCheckout: boolean;
-			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isNewEvidenceSubmissionFormEnabled: boolean;
+			isDisputeAdditionalEvidenceTypesEnabled: boolean;
 			multiCurrency?: boolean;
+			isFRTReviewFeatureActive: boolean;
+			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
+			amazonPay: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -35,6 +50,7 @@ declare global {
 			email?: string;
 			created: string;
 			isLive?: boolean;
+			testDrive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -58,18 +74,13 @@ declare global {
 			pastDue?: boolean;
 			accountLink: string;
 			hasSubmittedVatData?: boolean;
+			isDocumentsEnabled?: boolean;
 			requirements?: {
 				errors?: {
 					code: string;
 					reason: string;
 					requirement: string;
 				}[];
-			};
-			progressiveOnboarding: {
-				isEnabled: boolean;
-				isComplete: boolean;
-				tpv: number;
-				firstTransactionDate?: string;
 			};
 			fraudProtection: {
 				declineOnAVSFailure: boolean;
@@ -91,6 +102,7 @@ declare global {
 			has_past_loans: boolean;
 			loans: Array< string >;
 		};
+		accountDetails: AccountDetailsType;
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
@@ -105,14 +117,8 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
-		progressiveOnboarding?: {
-			isEnabled: boolean;
-			isComplete: boolean;
-			isEligibilityModalDismissed: boolean;
-		};
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
-		isFRTReviewFeatureActive: boolean;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -135,30 +141,8 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		instantDepositsPreviouslyEligible: boolean;
 		isConnectionSuccessModalDismissed: boolean;
-		isWCReactifySettingsFeatureEnabled: boolean;
-		userLocale: {
-			/**
-			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
-			 *
-			 * @example 'es' // Spanish
-			 *
-			 * @see WC_Payments_Utils::convert_locale_to_language_code
-			 */
-			code: string;
-			/**
-			 * The English name of the locale.
-			 *
-			 * @example 'Spanish'
-			 */
-			english_name: string;
-			/**
-			 * The native name of the locale.
-			 *
-			 * @example 'Español'
-			 */
-			native_name: string;
-		};
 		trackingInfo?: {
 			hosting_provider: string;
 		};

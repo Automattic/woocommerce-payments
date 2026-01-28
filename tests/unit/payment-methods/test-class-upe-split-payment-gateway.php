@@ -36,6 +36,7 @@ use WCPay\Database_Cache;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
+use WC_Subscriptions;
 /**
  * WC_Payment_Gateway_WCPay unit tests
  */
@@ -165,21 +166,21 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	private $mock_duplicates_detection_service;
 
 	/**
-	 * Mapping for payment ID to payment method.
+	 * Mapping for payment ID to payment method definition or class.
 	 *
 	 * @var array
 	 */
 	private $payment_method_classes = [
 		Payment_Method::CARD       => CC_Payment_Method::class,
-		Payment_Method::GIROPAY    => Giropay_Payment_Method::class,
-		Payment_Method::SOFORT     => Sofort_Payment_Method::class,
-		Payment_Method::BANCONTACT => Bancontact_Payment_Method::class,
-		Payment_Method::EPS        => EPS_Payment_Method::class,
-		Payment_Method::P24        => P24_Payment_Method::class,
-		Payment_Method::IDEAL      => Ideal_Payment_Method::class,
-		Payment_Method::SEPA       => Sepa_Payment_Method::class,
-		Payment_Method::BECS       => Becs_Payment_Method::class,
-		Payment_Method::LINK       => Link_Payment_Method::class,
+		Payment_Method::GIROPAY    => \WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
+		Payment_Method::SOFORT     => \WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
+		Payment_Method::BANCONTACT => \WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
+		Payment_Method::EPS        => \WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
+		Payment_Method::P24        => \WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
+		Payment_Method::IDEAL      => \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+		Payment_Method::SEPA       => \WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
+		Payment_Method::BECS       => \WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
+		Payment_Method::LINK       => \WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
 	];
 
 	/**
@@ -266,11 +267,21 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 
 		$get_payment_gateway_by_id_return_value_map = [];
 
-		foreach ( $this->payment_method_classes as $payment_method_id => $payment_method_class ) {
-			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $this->mock_token_service ] )
-				->setMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
-				->getMock();
+		foreach ( $this->payment_method_classes as $payment_method_id => $payment_method_class_or_definition ) {
+			$interfaces    = class_implements( $payment_method_class_or_definition );
+			$is_definition = isset( $interfaces[ \WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface::class ] );
+
+			if ( $is_definition ) {
+				$mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+					->setConstructorArgs( [ $this->mock_token_service, $payment_method_class_or_definition ] )
+					->onlyMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
+					->getMock();
+			} else {
+				$mock_payment_method = $this->getMockBuilder( $payment_method_class_or_definition )
+					->setConstructorArgs( [ $this->mock_token_service ] )
+					->onlyMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
+					->getMock();
+			}
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
 
 			$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
@@ -1011,7 +1022,7 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$becs_method       = $this->mock_payment_methods['au_becs_debit'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
-		$this->assertEquals( 'Cards', $card_method->get_title( 'US' ) );
+		$this->assertEquals( 'Card', $card_method->get_title( 'US' ) );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
@@ -1071,6 +1082,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// Setup $this->mock_payment_methods.
 
 		$this->set_cart_contains_subscription_items( true );
+		// Disable manual renewals to test only reusable methods are enabled.
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
+			function () {
+				return false;
+			}
+		);
 
 		$card_method       = $this->mock_payment_methods['card'];
 		$giropay_method    = $this->mock_payment_methods['giropay'];

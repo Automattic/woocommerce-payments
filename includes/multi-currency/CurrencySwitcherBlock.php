@@ -58,7 +58,7 @@ class CurrencySwitcherBlock {
 	 */
 	public function init_block_widget() {
 		// Automatically load dependencies and version.
-		$this->multi_currency->register_script_with_dependencies( 'woocommerce-payments/multi-currency-switcher', 'dist/multi-currency-switcher-block' );
+		$this->multi_currency->register_script_with_dependencies( 'woocommerce-payments/multi-currency-switcher', 'dist/multi-currency-switcher-block', [ 'wp-components' ] );
 
 		register_block_type(
 			'woocommerce-payments/multi-currency-switcher',

@@ -20,7 +20,7 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_id(): string;
 
 	/**
-	 * Get the keywords for the payment method. These are used by the duplicates detection service.
+	 * Get the keywords for the payment method. These are used by the duplicate detection service.
 	 *
 	 * @return string[]
 	 */
@@ -58,34 +58,6 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_description( ?string $account_country = null ): string;
 
 	/**
-	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
-	 *
-	 * @return boolean
-	 */
-	public static function is_bnpl(): bool;
-
-	/**
-	 * Is the payment method a reusable payment method?
-	 *
-	 * @return boolean
-	 */
-	public static function is_reusable(): bool;
-
-	/**
-	 * Does the payment method accept only domestic payments?
-	 *
-	 * @return boolean
-	 */
-	public static function accepts_only_domestic_payments(): bool;
-
-	/**
-	 * Does the payment method allow manual capture?
-	 *
-	 * @return boolean
-	 */
-	public static function allows_manual_capture(): bool;
-
-	/**
 	 * Get the list of supported currencies
 	 * Empty array means all currencies are supported
 	 *
@@ -97,9 +69,16 @@ interface PaymentMethodDefinitionInterface {
 	 * Get the list of supported countries
 	 * Empty array means all countries are supported
 	 *
+	 * When account_country is provided, payment methods with domestic transaction
+	 * restrictions should return only that country (if supported), enabling
+	 * proper filtering at checkout.
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 *                                     Some payment methods (e.g. Klarna) have different
+	 *                                     supported countries based on the merchant's location.
 	 * @return string[] Array of country codes
 	 */
-	public static function get_supported_countries(): array;
+	public static function get_supported_countries( ?string $account_country = null ): array;
 
 	/**
 	 * Get the payment method capabilities
@@ -150,13 +129,6 @@ interface PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool;
-
-	/**
-	 * Whether this payment method is enabled by default
-	 *
-	 * @return bool
-	 */
-	public static function is_enabled_by_default(): bool;
 
 	/**
 	 * Get the currency limits for the payment method

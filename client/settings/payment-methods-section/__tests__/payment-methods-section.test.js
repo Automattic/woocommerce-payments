@@ -4,8 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
+import { userEvent as user } from 'jest-utils/user-event-timers';
 import { select } from '@wordpress/data';
 
 /**
@@ -41,6 +41,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useUnselectedPaymentMethod: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
 } ) );
 
 jest.mock( 'multi-currency/interface/data', () => ( {
@@ -175,7 +178,7 @@ describe( 'PaymentMethodsSection', () => {
 		).toEqual( 6 );
 	} );
 
-	it( 'renders the activation modal when requirements exist for the payment method', () => {
+	it( 'renders the activation modal when requirements exist for the payment method', async () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
@@ -199,11 +202,9 @@ describe( 'PaymentMethodsSection', () => {
 
 		jest.useFakeTimers();
 
-		act( () => {
-			// Enabling a PM with requirements should show the activation modal
-			user.click( bancontactCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
+		// Enabling a PM with requirements should show the activation modal
+		await user.click( bancontactCheckbox );
+		jest.runOnlyPendingTimers();
 
 		expect(
 			screen.queryByText(
@@ -214,7 +215,7 @@ describe( 'PaymentMethodsSection', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'renders the delete modal on an already active payment method', () => {
+	it( 'renders the delete modal on an already active payment method', async () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'bancontact' ],
 			jest.fn(),
@@ -237,11 +238,9 @@ describe( 'PaymentMethodsSection', () => {
 
 		jest.useFakeTimers();
 
-		act( () => {
-			// Disabling an already active PM should show the delete modal
-			user.click( bancontactCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
+		// Disabling an already active PM should show the delete modal
+		await user.click( bancontactCheckbox );
+		jest.runOnlyPendingTimers();
 
 		expect(
 			screen.queryByText(

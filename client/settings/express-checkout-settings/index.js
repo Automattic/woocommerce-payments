@@ -12,15 +12,13 @@ import './index.scss';
 import SettingsSection from '../settings-section';
 import PaymentRequestSettings from './payment-request-settings';
 import WooPaySettings from './woopay-settings';
+import AmazonPaySettings from './amazon-pay-settings';
 import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import {
-	ApplePayIcon,
-	GooglePayIcon,
-	WooIcon,
-} from 'wcpay/payment-methods-icons';
+import { WooIcon } from 'wcpay/payment-methods-icons';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 
 const methods = {
 	woopay: {
@@ -74,24 +72,33 @@ const methods = {
 		sections: [
 			{
 				section: 'enable',
-				description: () => (
-					<>
-						<div className="express-checkout-settings__icons">
-							<div className="express-checkout-settings__icon">
-								<ApplePayIcon />
+				description: () => {
+					const {
+						icon: ApplePayIcon,
+					} = methodsConfiguration.apple_pay;
+					const {
+						icon: GooglePayIcon,
+					} = methodsConfiguration.google_pay;
+
+					return (
+						<>
+							<div className="express-checkout-settings__icons">
+								<div className="express-checkout-settings__icon">
+									<ApplePayIcon />
+								</div>
+								<div className="express-checkout-settings__icon">
+									<GooglePayIcon />
+								</div>
 							</div>
-							<div className="express-checkout-settings__icon">
-								<GooglePayIcon />
-							</div>
-						</div>
-						<p>
-							{ __(
-								'Allow your customers to collect payments via Apple Pay and Google Pay.',
-								'woocommerce-payments'
-							) }
-						</p>
-					</>
-				),
+							<p>
+								{ __(
+									'Allow your customers to collect payments via Apple Pay and Google Pay.',
+									'woocommerce-payments'
+								) }
+							</p>
+						</>
+					);
+				},
 			},
 			{
 				section: 'general',
@@ -109,6 +116,48 @@ const methods = {
 			},
 		],
 		controls: ( props ) => <PaymentRequestSettings { ...props } />,
+	},
+	amazon_pay: {
+		title: 'Amazon Pay',
+		sections: [
+			{
+				section: 'enable',
+				description: () => {
+					const {
+						icon: AmazonPayIcon,
+					} = methodsConfiguration.amazon_pay;
+
+					return (
+						<>
+							<div className="express-checkout-settings__icon">
+								<AmazonPayIcon />
+							</div>
+							<p>
+								{ __(
+									'Allow your customers to collect payments via Amazon Pay.',
+									'woocommerce-payments'
+								) }
+							</p>
+						</>
+					);
+				},
+			},
+			{
+				section: 'general',
+				description: () => (
+					<>
+						<h2>{ __( 'Settings', 'woocommerce-payments' ) }</h2>
+						<p>
+							{ __(
+								'Configure the display of Amazon Pay buttons on your store.',
+								'woocommerce-payments'
+							) }
+						</p>
+					</>
+				),
+			},
+		],
+		controls: ( props ) => <AmazonPaySettings { ...props } />,
 	},
 };
 
@@ -141,7 +190,11 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 	return (
 		<SettingsLayout>
 			{ sections.map( ( { section, description } ) => (
-				<SettingsSection key={ section } description={ description }>
+				<SettingsSection
+					key={ section }
+					description={ description }
+					className={ `wcpay-express-checkout__${ section }` }
+				>
 					<LoadableSettingsSection numLines={ 30 }>
 						<ErrorBoundary>
 							<Controls section={ section } />

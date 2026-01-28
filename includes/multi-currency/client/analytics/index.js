@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 
 const getCustomerCurrencies = () => {
 	return (
-		wcSettings.customerCurrencies.sort( ( a, b ) => {
+		wcSettings.customerCurrencies?.sort( ( a, b ) => {
 			return a.label < b.label ? -1 : 1;
 		} ) ?? []
 	);
@@ -42,21 +42,13 @@ addFilter(
 					{
 						value: 'is',
 						/* translators: Sentence fragment, logical, "Is" refers to searching for orders matching a chosen currency. */
-						label: __(
-							'Is',
-							'customer currency',
-							'woocommerce-payments'
-						),
+						label: __( 'Is', 'woocommerce-payments' ),
 					},
 					{
 						value: 'is_not',
 						// eslint-disable-next-line max-len
 						/* translators: Sentence fragment, logical, "Is Not" refers to searching for orders not matching a chosen currency. */
-						label: __(
-							'Is Not',
-							'customer currency',
-							'woocommerce-payments'
-						),
+						label: __( 'Is Not', 'woocommerce-payments' ),
 					},
 				],
 				input: {
@@ -151,9 +143,9 @@ addFilter(
 	( config, { currency } ) => {
 		if ( ! currency ) return config;
 
-		const currencyData = Object.values( wcpaySettings.currencyData ).find(
-			( c ) => c.code === currency
-		);
+		const currencyData = Object.values(
+			wcpaySettings?.currencyData ?? {}
+		).find( ( c ) => c.code === currency );
 
 		if ( ! currencyData ) return config;
 

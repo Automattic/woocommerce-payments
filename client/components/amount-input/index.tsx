@@ -2,10 +2,13 @@
  * External dependencies
  */
 import React, { useCallback, useEffect } from 'react';
+// @ts-expect-error The component exists.
+import { TextControlWithAffixes } from '@woocommerce/components';
 import './style.scss';
 
 interface AmountInputProps {
 	id?: string;
+	label?: string;
 	prefix?: string;
 	value: string;
 	placeholder?: string;
@@ -16,6 +19,7 @@ interface AmountInputProps {
 const AmountInput: React.FC< AmountInputProps > = ( {
 	id,
 	prefix,
+	label,
 	value,
 	placeholder,
 	help,
@@ -39,9 +43,6 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 		}
 	}, [ validateInput, internalValue, onChange ] );
 
-	if ( isNaN( Number( value ) ) || null === value || '0' === value )
-		value = '';
-
 	const handleChange = ( inputValue: string ) => {
 		if ( validateInput( inputValue ) ) {
 			setInternalValue( inputValue );
@@ -50,24 +51,17 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 	};
 
 	return (
-		<div className="components-base-control components-amount-input__container">
-			<div className="components-base-control__field components-amount-input__input_container">
-				{ prefix && (
-					<span className="components-amount-input__prefix">
-						{ prefix }
-					</span>
-				) }
-				<input
-					id={ id }
-					placeholder={ placeholder }
-					value={ internalValue }
-					data-testid="amount-input"
-					onChange={ ( e ) => handleChange( e.target.value ) }
-					className="components-text-control__input components-amount-input__input"
-				/>
-			</div>
-			<span className="components-amount-input__help_text">{ help }</span>
-		</div>
+		<TextControlWithAffixes
+			id={ id }
+			className="wcpay-components-amount-input"
+			label={ label }
+			prefix={ prefix }
+			value={ internalValue }
+			data-testid="amount-input"
+			onChange={ handleChange }
+			placeholder={ placeholder }
+			help={ help }
+		/>
 	);
 };
 

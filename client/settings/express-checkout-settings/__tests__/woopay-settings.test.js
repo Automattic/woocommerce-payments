@@ -122,7 +122,7 @@ describe( 'WooPaySettings', () => {
 		expect( enableCheckbox ).toBeInTheDocument();
 	} );
 
-	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+	it( 'triggers the hooks when the enable setting is being interacted with', async () => {
 		const updateIsWooPayEnabledHandler = jest.fn();
 
 		useWooPayEnabledSettings.mockReturnValue(
@@ -133,11 +133,11 @@ describe( 'WooPaySettings', () => {
 
 		expect( updateIsWooPayEnabledHandler ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( /Enable WooPay/ ) );
+		await userEvent.click( screen.getByLabelText( /Enable WooPay/ ) );
 		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith( false );
 	} );
 
-	it( 'triggers the hooks when the custom message setting is being interacted with', () => {
+	it( 'triggers the hooks when the custom message setting is being interacted with', async () => {
 		const updateWooPayCustomMessageHandler = jest.fn();
 
 		useWooPayCustomMessage.mockReturnValue(
@@ -146,9 +146,9 @@ describe( 'WooPaySettings', () => {
 
 		render( <WooPaySettings section="appearance" /> );
 
-		// confirm settings headings
+		// confirm settings labels
 		expect(
-			screen.queryByRole( 'heading', {
+			screen.queryByRole( 'textbox', {
 				name: 'Checkout policies',
 			} )
 		).toBeInTheDocument();
@@ -160,8 +160,8 @@ describe( 'WooPaySettings', () => {
 
 		expect( updateWooPayCustomMessageHandler ).not.toHaveBeenCalled();
 
-		userEvent.type( screen.getByRole( 'textbox' ), 'test' );
-		expect( updateWooPayCustomMessageHandler ).toHaveBeenLastCalledWith(
+		await userEvent.paste( screen.getByRole( 'textbox' ), 'test' );
+		expect( updateWooPayCustomMessageHandler ).toHaveBeenCalledWith(
 			'test'
 		);
 	} );

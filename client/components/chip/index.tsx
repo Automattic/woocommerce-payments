@@ -4,6 +4,8 @@
  * External dependencies
  */
 import React from 'react';
+import { Icon } from '@wordpress/icons';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -18,25 +20,37 @@ interface Props {
 	type?: ChipType;
 	className?: string;
 	tooltip?: string;
+	icon?: React.JSX.Element;
 }
 const Chip: React.FC< React.PropsWithChildren< Props > > = ( {
 	message,
 	type = 'primary',
 	className,
 	tooltip,
+	icon,
 } ) => {
-	const classNames = [ 'chip', `chip-${ type }`, className ?? '' ];
+	const classNames = clsx(
+		'chip',
+		`chip-${ type }`,
+		icon && 'chip-has-icon',
+		className
+	);
+
+	const content = (
+		<>
+			{ icon && <Icon icon={ icon } size={ 16 } /> }
+			{ message }
+		</>
+	);
 
 	if ( tooltip ) {
 		return (
 			<HoverTooltip content={ tooltip }>
-				<span className={ classNames.join( ' ' ).trim() }>
-					{ message }
-				</span>
+				<span className={ classNames }>{ content }</span>
 			</HoverTooltip>
 		);
 	}
-	return <span className={ classNames.join( ' ' ).trim() }>{ message }</span>;
+	return <span className={ classNames }>{ content }</span>;
 };
 
 export default Chip;

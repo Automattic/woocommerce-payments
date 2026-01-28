@@ -114,9 +114,10 @@ export const getRiskReviewListRowContent = (
 		action: {
 			display: (
 				<Button
-					isSecondary
+					variant="secondary"
 					href={ detailsURL }
 					onClick={ handleActionButtonClick }
+					__next40pxDefaultSize
 				>
 					{ __( 'Review' ) }
 				</Button>

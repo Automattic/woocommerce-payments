@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         WCPay Live Branches
+// @name         WooPayments Live Branches
 // @namespace    https://wordpress.com/
-// @version      1.2
+// @version      1.3
 // @description  Adds links to PRs pointing to Jurassic Ninja sites for live-testing a changeset
 // @grant        GM_xmlhttpRequest
-// @connect      jurassic.ninja
+// @connect      betadownload.jetpack.me
 // @require      https://code.jquery.com/jquery-3.3.1.min.js
 // @match        https://github.com/Automattic/woocommerce-payments/pull/*
 // ==/UserScript==
@@ -99,18 +99,18 @@
 			);
 		} else {
 			if ( ! pluginsList ) {
-				pluginsList = dofetch( `${ host }/wp-json/jurassic.ninja/jetpack-beta/plugins` );
+				pluginsList = dofetch(`https://betadownload.jetpack.me/query-branch.php?repo=${ encodeURIComponent( repo ) }&branch=${ encodeURIComponent( currentBranch ) }` );
 			}
 			pluginsList
 				.then( body => {
 					const plugins = [];
 
-					if ( body.status === 'ok' ) {
+					if ( body.hasOwnProperty( 'plugins' ) ) {
 						const labels = new Set(
 							$.map( $( '.js-issue-labels a.IssueLabel' ), e => $( e ).data( 'name' ) )
 						);
-						Object.keys( body.data ).forEach( k => {
-							const data = body.data[ k ];
+						Object.keys( body.plugins ).forEach( k => {
+							const data = body.plugins[ k ];
 							if ( data.repo === repo ) {
 								plugins.push( {
 									name: `branches.${ k }`,
@@ -125,14 +125,6 @@
 							throw new Error( `No plugins are configured for ${ repo }` );
 						}
 						plugins.sort( ( a, b ) => a.label.localeCompare( b.label ) );
-					} else if ( body.code === 'rest_no_route' ) {
-						plugins.push( {
-							name: 'branch',
-							value: currentBranch,
-							label: 'Jetpack',
-							checked: true,
-							disabled: true,
-						} );
 					} else {
 						throw new Error( 'Invalid response from server' );
 					}
@@ -401,7 +393,7 @@
 			`);
 			const liveBranches = $( '<div id="wcpay-live-branches" />' ).append(
 				styles,
-				`<h2>🚀 WCPay Live Branches 🚀</h2>${ contents }`
+				`<h2>🚀 WooPayments Live Branches 🚀</h2>${ contents }`
 			);
 			$( '#wcpay-live-branches' ).remove();
 			$el.append( liveBranches );

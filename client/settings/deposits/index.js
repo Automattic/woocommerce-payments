@@ -4,12 +4,12 @@
 import React, { useContext } from 'react';
 import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { Card, SelectControl, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import { Card, SelectControl, ExternalLink } from '@wordpress/components';
 import { STORE_NAME } from 'wcpay/data/constants';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
@@ -110,6 +110,8 @@ const CustomizeDepositSchedule = () => {
 					value={ depositScheduleInterval }
 					onChange={ handleIntervalChange }
 					options={ depositIntervalsOptions }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 				{ depositScheduleInterval === 'monthly' && (
 					<SelectControl
@@ -117,6 +119,8 @@ const CustomizeDepositSchedule = () => {
 						value={ depositScheduleMonthlyAnchor }
 						onChange={ setDepositScheduleMonthlyAnchor }
 						options={ monthlyAnchors }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 				{ depositScheduleInterval === 'weekly' && (
@@ -125,6 +129,8 @@ const CustomizeDepositSchedule = () => {
 						value={ depositScheduleWeeklyAnchor }
 						onChange={ setDepositScheduleWeeklyAnchor }
 						options={ daysOfWeek }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 			</div>
@@ -183,8 +189,9 @@ const DepositsSchedule = () => {
 			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
-						'Your first payout will be held for 7-14 days. ' +
-							'Payout scheduling will be available after this period. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete.' +
+							' ' +
+							'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					components: {
@@ -219,47 +226,41 @@ const Deposits = () => {
 
 	return (
 		<Card className="deposits">
-			<CardBody>
+			<CardBody className="wcpay-card-body">
 				<h4>{ __( 'Payout schedule', 'woocommerce-payments' ) }</h4>
 
 				<DepositsSchedule />
 
-				<div className="deposits__bank-information">
-					<h4>
-						{ __( 'Payout bank account', 'woocommerce-payments' ) }
-					</h4>
-					{ hasErroredExternalAccount ? (
-						<DepositFailureNotice
-							updateAccountLink={ accountLink }
-						/>
-					) : (
-						<p className="deposits__bank-information-help">
-							{ __(
-								'Manage and update your bank account information to receive payouts.',
-								'woocommerce-payments'
-							) }{ ' ' }
-							{ accountLink && (
-								<ExternalLink
-									href={ accountLink }
-									onClick={ () => {
-										recordEvent(
-											'wcpay_settings_deposits_manage_in_stripe_click'
-										);
-										recordEvent(
-											'wcpay_account_details_link_clicked',
-											{ source: 'settings-deposits' }
-										);
-									} }
-								>
-									{ __(
-										'Manage in Stripe',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
-							) }
-						</p>
-					) }
-				</div>
+				<h4>{ __( 'Payout bank account', 'woocommerce-payments' ) }</h4>
+				{ hasErroredExternalAccount ? (
+					<DepositFailureNotice updateAccountLink={ accountLink } />
+				) : (
+					<p>
+						{ __(
+							'Manage and update your bank account information to receive payouts.',
+							'woocommerce-payments'
+						) }{ ' ' }
+						{ accountLink && (
+							<ExternalLink
+								href={ accountLink }
+								onClick={ () => {
+									recordEvent(
+										'wcpay_settings_deposits_manage_in_stripe_click'
+									);
+									recordEvent(
+										'wcpay_account_details_link_clicked',
+										{ source: 'settings-deposits' }
+									);
+								} }
+							>
+								{ __(
+									'Manage in Stripe',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						) }
+					</p>
+				) }
 			</CardBody>
 		</Card>
 	);

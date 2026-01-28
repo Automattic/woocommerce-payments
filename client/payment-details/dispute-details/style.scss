@@ -38,26 +38,21 @@
 		}
 
 		.dispute-summary-row {
+			font-size: 13px;
+			font-weight: 400;
+
 			margin-top: 40px;
 
 			@media screen and ( max-width: $break-small ) {
 				margin-top: 24px;
 			}
+		}
 
-			&__response-date {
-				display: flex;
-				align-items: center;
-				gap: var( --grid-unit-05, 4px );
-				flex-wrap: wrap;
-				&--warning {
-					color: $alert-red;
-					font-weight: 700;
-				}
-				&--urgent {
-					font-weight: 700;
-					color: $alert-red;
-				}
-			}
+		&__visa-compliance-checkbox {
+			margin: 0;
+		}
+		&__visa-compliance-checkbox input[type='checkbox'] {
+			appearance: checkbox;
 		}
 
 		&__actions {
@@ -103,9 +98,6 @@
 
 .dispute-reason-tooltip {
 	p {
-		&:first-child {
-			font-weight: bold;
-		}
 		&:last-child {
 			margin-bottom: 0;
 		}
@@ -121,7 +113,7 @@
 		display: flex;
 		align-items: center;
 		padding: 16px 0 16px;
-		border-bottom: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
+		border-bottom: 1px solid $gray-100;
 
 		&:first-child {
 			padding: 12px 0 16px;
@@ -146,7 +138,7 @@
 			height: 44px;
 			border-radius: var( --radius-s, 2px );
 			padding: 10px;
-			border: 1px solid rgba( 0, 0, 0, 0.1 );
+			border: 1px solid $gray-200;
 			margin-right: 12px;
 
 			@media screen and ( max-width: $break-small ) {
@@ -157,6 +149,7 @@
 				width: 24px;
 				height: 24px;
 				color: var( --Scales-Grays-gray-700, #757575 );
+				fill: currentColor;
 			}
 		}
 
@@ -190,7 +183,14 @@
 			font-weight: var( --Regular, 400 );
 			line-height: var( --s, 20px ); /* 153.846% */
 
-			width: 80%;
+			@media screen and ( max-width: $break-small ) {
+				margin-bottom: 8px;
+				width: 100%;
+			}
+		}
+
+		&-content:last-child &-description {
+			width: 90%;
 
 			@media screen and ( max-width: $break-small ) {
 				margin-bottom: 8px;
@@ -215,6 +215,16 @@
 					width: 100%;
 					justify-content: center;
 				}
+			}
+		}
+	}
+
+	&__steps {
+		&__response-date {
+			&--urgent {
+				color: var( --Gutenberg-Alert-Red, #cc1818 );
+				font-weight: 600;
+				font-size: 13px;
 			}
 		}
 	}
@@ -257,6 +267,7 @@
 }
 
 .transaction-details-dispute-footer {
+	color: $gray-700;
 	background-color: #f2f4f5;
 
 	&__actions {

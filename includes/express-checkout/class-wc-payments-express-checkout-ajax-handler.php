@@ -175,24 +175,41 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
 		}
 
-		if ( empty( $payment_data['payment_request_type'] ) ) {
+		if ( empty( $payment_data['express_payment_type'] ) ) {
 			return;
 		}
 
-		$payment_request_type = wc_clean( wp_unslash( $payment_data['payment_request_type'] ) );
+		$express_payment_type = wc_clean( wp_unslash( $payment_data['express_payment_type'] ) );
 
-		$payment_method_titles = [
-			'apple_pay'  => 'Apple Pay',
-			'google_pay' => 'Google Pay',
-		];
+		$payment_method_title = $this->get_payment_method_title_from_definition( $express_payment_type );
+		// fallback, just in case.
+		if ( ! $payment_method_title ) {
+			$payment_method_title = 'Payment Request';
+		}
 
 		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
 		if ( ! empty( $suffix ) ) {
 			$suffix = " ($suffix)";
 		}
 
-		$payment_method_title = isset( $payment_method_titles[ $payment_request_type ] ) ? $payment_method_titles[ $payment_request_type ] : 'Payment Request';
 		$order->set_payment_method_title( $payment_method_title . $suffix );
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_payment_type );
+	}
+
+	/**
+	 * Get the payment method title from the definition.
+	 *
+	 * @param string $payment_method_id The payment method ID (e.g., 'apple_pay', 'google_pay').
+	 * @return string|null The payment method title or null if not found.
+	 */
+	private function get_payment_method_title_from_definition( $payment_method_id ) {
+		$payment_method = WC_Payments::get_payment_method_by_id( $payment_method_id );
+
+		if ( $payment_method && method_exists( $payment_method, 'get_title' ) ) {
+			return $payment_method->get_title();
+		}
+
+		return null;
 	}
 
 	/**
@@ -454,14 +471,31 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 */
 	private function get_normalized_postal_code( $postcode, $country ) {
 		/**
-		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
+		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first few characters respectively
 		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
 		 * the postal code and not calculate shipping zones correctly.
 		 */
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
-			// Replaces a redacted string with something like N1C0000.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
+			$cleaned_postcode = substr( preg_replace( '/[^A-Za-z0-9]/', '', $postcode ), 0, 7 );
+			// the minimum length for a GB postcode is 5 (2 characters for the outward code, 3 for the inward code)
+			// if the postcode is not redacted, avoid padding it.
+			if ( strlen( $cleaned_postcode ) >= 5 ) {
+				return $cleaned_postcode;
+			}
+
+			// now, the juicy part: GB postcode units have a variable length, 5 to 7 characters (excluding the space).
+			// they consist of two main parts: the "outward code" and the "inward code".
+			// the "outward code" has a variable length, between two and four characters.
+			// the "inward code" always has 3 characters.
+			// Google Pay/Apple Pay might redact GB postcode units to just the "outward code".
+			// but WC Core expects a full postcode unit to return shipping rates.
+			// since we can't interfere with the rate calculation,
+			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
+			// to be used for shipping rates calculations.
+			// Replaces a redacted `N1C` string with something like `N1C000`.
+			return $cleaned_postcode . '000';
 		}
+
 		if ( Country_Code::CANADA === $country ) {
 			// Replaces a redacted string with something like H3B000.
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );

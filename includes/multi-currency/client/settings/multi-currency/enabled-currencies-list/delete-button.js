@@ -139,6 +139,7 @@ const DeleteButton = ( { code, label, symbol, onClick, className } ) => {
 				) }
 				className={ className }
 				onClick={ handleDeleteIconClick }
+				__next40pxDefaultSize
 			>
 				<Icon icon="trash" />
 			</Button>

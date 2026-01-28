@@ -3,30 +3,20 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { check, close, cloudUpload } from '@wordpress/icons';
+import { closeSmall, cloudUpload } from '@wordpress/icons';
 
 /**
  * Internal dependencies
  */
-import {
-	Button,
-	FormFileUpload,
-	Icon,
-} from 'wcpay/components/wp-components-wrapped';
-
-interface FileUploadControlProps {
-	fileName?: string;
-	onFileChange: ( file: File ) => void;
-	onFileRemove: () => void;
-	disabled?: boolean;
-	isDone?: boolean;
-	isBusy?: boolean;
-	accept?: string;
-	label: string;
-}
+import { Button, FormFileUpload } from '@wordpress/components';
+import { FileUploadControlProps } from './types';
+import { formatFileNameWithSize } from './utils';
+import { useViewport } from 'wcpay/hooks/use-viewport';
 
 const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 	fileName = '',
+	fileSize,
+	description,
 	onFileChange,
 	onFileRemove,
 	disabled = false,
@@ -35,38 +25,66 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 	accept = '.pdf, image/png, image/jpeg',
 	label,
 } ) => {
+	const { isVerySmallMobile } = useViewport();
+
+	// Render file chip component
+	const renderFileChip = () => {
+		if ( ! isDone || ! fileName ) {
+			return null;
+		}
+
+		return (
+			<div className="wcpay-dispute-evidence-file-upload-control__chip">
+				<span className="wcpay-dispute-evidence-file-upload-control__chip-filename">
+					{ fileSize ? (
+						<>
+							<div className="wcpay-dispute-evidence-file-upload-control__chip-filename-name">
+								{
+									formatFileNameWithSize( fileName, fileSize )
+										.namePart
+								}
+							</div>
+							<div className="wcpay-dispute-evidence-file-upload-control__chip-filename-extension">
+								{
+									formatFileNameWithSize( fileName, fileSize )
+										.extensionSizePart
+								}
+							</div>
+						</>
+					) : (
+						fileName
+					) }
+				</span>
+				<Button
+					className="wcpay-dispute-evidence-file-upload-control__chip-action"
+					icon={ closeSmall }
+					onClick={ onFileRemove }
+					disabled={ disabled }
+					aria-label={ __( 'Remove file', 'woocommerce-payments' ) }
+					variant="tertiary"
+				/>
+			</div>
+		);
+	};
+
 	return (
 		<div className="wcpay-dispute-evidence-file-upload-control">
-			{ isDone && fileName ? (
-				<Icon
-					className="wcpay-dispute-evidence-file-upload-control__check"
-					icon={ check }
-				/>
-			) : null }
-			<label className="wcpay-dispute-evidence-file-upload-control__label">
-				{ label }
-			</label>
-			{ isDone && fileName ? (
-				<span
-					className="wcpay-dispute-evidence-file-upload-control__filename"
-					title={ fileName }
-				>
-					<span className="wcpay-dispute-evidence-file-upload-control__filename-text">
-						{ fileName }
-					</span>
-					<Button
-						className="wcpay-dispute-evidence-file-upload-control__remove"
-						icon={ <Icon icon={ close } size={ 24 } /> }
-						onClick={ onFileRemove }
-						disabled={ disabled }
-						aria-label={ __(
-							'Remove file',
-							'woocommerce-payments'
-						) }
-						variant="tertiary"
-					/>
-				</span>
-			) : null }
+			<div className="wcpay-dispute-evidence-file-upload-control__info">
+				<div className="wcpay-dispute-evidence-file-upload-control__info-header">
+					<label className="wcpay-dispute-evidence-file-upload-control__label">
+						{ label }
+					</label>
+					{ /* Only show chip in header for larger screens */ }
+					{ ! isVerySmallMobile && renderFileChip() }
+				</div>
+				{ description && (
+					<p className="wcpay-dispute-evidence-file-upload-control__info-description">
+						{ description }
+					</p>
+				) }
+				{ /* Show chip after description for very small mobile screens */ }
+				{ isVerySmallMobile && renderFileChip() }
+			</div>
 			<div className="wcpay-dispute-evidence-file-upload-control__actions">
 				<FormFileUpload
 					accept={ accept }
@@ -81,7 +99,8 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 					render={ ( { openFileDialog } ) => (
 						<Button
 							className="wcpay-dispute-evidence-file-upload-control__upload"
-							icon={ <Icon icon={ cloudUpload } size={ 24 } /> }
+							icon={ cloudUpload }
+							iconSize={ 24 }
 							onClick={ openFileDialog }
 							disabled={ disabled || isBusy }
 							isBusy={ isBusy }

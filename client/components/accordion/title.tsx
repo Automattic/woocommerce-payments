@@ -3,17 +3,14 @@
  */
 import React, { forwardRef } from 'react';
 import clsx from 'clsx';
-/**
- * WordPress dependencies
- */
 import { chevronUp, chevronDown } from '@wordpress/icons';
+import { Button, Icon } from '@wordpress/components';
+import type { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
 
 /**
  * Internal dependencies
  */
 import type { AccordionTitleProps } from './types';
-import type { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
-import { Button, Icon } from 'wcpay/components/wp-components-wrapped';
 import AccordionSubtitle from './subtitle';
 import './style.scss';
 

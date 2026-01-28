@@ -75,18 +75,25 @@ class WC_Payments_Webhook_Processing_Service {
 	private $wcpay_gateway;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payments_Customer_Service
-	 */
-	private $customer_service;
-
-	/**
 	 * Database_Cache instance.
 	 *
 	 * @var Database_Cache
 	 */
 	private $database_cache;
+
+	/**
+	 * WC_Payments_Onboarding_Service instance.
+	 *
+	 * @var WC_Payments_Onboarding_Service
+	 */
+	private $onboarding_service;
+
+	/**
+	 * WC_Payments_Token_Service instance.
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private $token_service;
 
 	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
@@ -98,8 +105,9 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
 	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
 	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Customer_Service                    $customer_service    WC_Payments_Customer_Service instance.
 	 * @param Database_Cache                                  $database_cache      Database_Cache instance.
+	 * @param WC_Payments_Onboarding_Service                  $onboarding_service  WC_Payments_Onboarding_Service instance.
+	 * @param WC_Payments_Token_Service                       $token_service       WC_Payments_Token_Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -109,8 +117,9 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Customer_Service $customer_service,
-		Database_Cache $database_cache
+		Database_Cache $database_cache,
+		WC_Payments_Onboarding_Service $onboarding_service,
+		WC_Payments_Token_Service $token_service
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
@@ -119,8 +128,9 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->api_client          = $api_client;
 		$this->receipt_service     = $receipt_service;
 		$this->wcpay_gateway       = $wcpay_gateway;
-		$this->customer_service    = $customer_service;
 		$this->database_cache      = $database_cache;
+		$this->onboarding_service  = $onboarding_service;
+		$this->token_service       = $token_service;
 	}
 
 	/**
@@ -182,7 +192,21 @@ class WC_Payments_Webhook_Processing_Service {
 				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
-				$this->customer_service->delete_cached_payment_methods();
+				$this->token_service->clear_all_cached_payment_methods();
+				break;
+			case 'account.deleted':
+				$this->onboarding_service->cleanup_on_account_reset();
+				// Reset the WooCommerce NOX data, if it is not already.
+				delete_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY );
+				// NOX onboarding should be unlocked by the time we receive this event,
+				// but unlock it just in case, to maintain sanity.
+				delete_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY );
+
+				// Refetch the account data to allow the platform to drive the available next steps.
+				$this->account->refresh_account_data();
+
+				// Use the opportunity to clear cached payment methods.
+				$this->token_service->clear_all_cached_payment_methods();
 				break;
 			case 'wcpay.notification':
 				$this->process_wcpay_notification( $event_body );
@@ -562,8 +586,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status );
 
 		// Clear dispute caches to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**
@@ -593,8 +616,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
 
 		// Clear dispute caches to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**
@@ -649,8 +671,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$order->add_order_note( $note );
 
 		// Clear dispute caches to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**
@@ -722,6 +743,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id    = $this->read_webhook_property( $event_object, 'id' );
+		$order_key    = $this->read_webhook_property( $event_object, 'metadata' )['order_key'] ?? null;
 
 		// Look up the order related to this intent.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
@@ -744,6 +766,24 @@ class WC_Payments_Webhook_Processing_Service {
 				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
 				return null;
 			}
+		}
+
+		/**
+		 * If the order has been found, but there is an order key mismatch, it
+		 * could be caused by another site creating orders with the same IDs
+		 * while this site remains the primary webhook receiver.
+		 */
+		if ( null !== $order_key && $order instanceof WC_Order && $order->get_order_key() !== $order_key ) {
+			Logger::debug(
+				'Mismatching order key found while retrieving an order for webhook processing',
+				[
+					'intent_id'         => $intent_id,
+					'order_id'          => $order->get_id(),
+					'webhook_order_key' => $order_key,
+					'local_order_key'   => $order->get_order_key(),
+				]
+			);
+			return null;
 		}
 
 		if ( ! $order instanceof \WC_Order ) {
@@ -817,6 +857,14 @@ class WC_Payments_Webhook_Processing_Service {
 		$is_refunded_event = isset( $event_body['type'] ) && 'charge.refunded' === $event_body['type'];
 		$status            = $this->read_webhook_property( $event_object, 'status' );
 		if ( 'succeeded' !== $status || ! $is_refunded_event ) {
+			return;
+		}
+
+		// Check if the charge was actually captured before processing the refund.
+		// Stripe sends charge.refunded webhooks for cancelled authorizations even though no payment was captured.
+		// We should not create WooCommerce refund objects for these cases as they cause negative values in analytics.
+		$captured = $event_object['captured'] ?? false;
+		if ( ! $captured ) {
 			return;
 		}
 

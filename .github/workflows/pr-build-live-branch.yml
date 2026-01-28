@@ -108,11 +108,20 @@ jobs:
 
       - name: "Add/update the information as a comment in the PR"
         env:
-          GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_HEAD_REF: ${{ github.head_ref }}
         run: |
+          # Debug: Check environment variables
+          echo "=== Debug: Environment Variables ==="
+          echo "PR_NUMBER: ${PR_NUMBER}"
+          echo "PR_HEAD_REF: ${PR_HEAD_REF}"
+          echo "PR_HEAD_SHA: ${PR_HEAD_SHA}"
+          echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}"
+          echo "===================================="
+
+          echo "Creating comment body..."
           BODY="### Test the build 
           
           #### Option 1. Jetpack Beta
@@ -136,8 +145,25 @@ jobs:
           _Note: the build is updated when a new commit is pushed to this PR._"
           # End declaring variable BODY
 
-          # Try to update the last comment first. If not work, just create a new comment.
-          if ! gh pr comment ${PR_NUMBER} --body "${BODY}" --edit-last
-          then
-            gh pr comment ${PR_NUMBER} --body "${BODY}"
+          echo "Comment body created successfully"
+
+          # Find existing build comment with better error handling
+          echo "Searching for existing comment..."
+          COMMENT_ID=$(gh pr view ${PR_NUMBER} --json comments --jq '.comments[]? | select(.body | contains("### Test the build")) | .url' 2>/dev/null | head -1 | grep -o '[0-9]*$' || echo "")
+
+          if [ -n "$COMMENT_ID" ]; then
+            echo "Found existing comment ID: $COMMENT_ID"
+            echo "Updating existing comment..."
+            gh api repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID} -X PATCH -f body="${BODY}"  2>/dev/null || {
+              echo "ERROR: Failed to update existing comment"
+              exit 1
+            }
+            echo "Comment updated successfully"
+          else
+            echo "No existing comment found, creating new one..."
+            gh api repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments -f body="${BODY}" 2>/dev/null || {
+              echo "ERROR: Failed to create new comment"
+              exit 1
+            }
+            echo "New comment created successfully"
           fi

@@ -47,4 +47,76 @@ export interface CoverLetterData {
 	product: string;
 	orderDate: string;
 	deliveryDate: string;
+	refundStatus?: string;
+	duplicateStatus?: string;
 }
+
+export interface CoverLetterProps {
+	value: string;
+	onChange: ( value: string ) => void;
+	readOnly?: boolean;
+}
+
+export interface RecommendedDocument {
+	key: string;
+	label: string;
+	description: string | null;
+	order: number;
+}
+
+export interface DocumentField {
+	key: string;
+	label: string;
+	description: string | null;
+	fileName?: string;
+	fileSize?: number;
+	onFileChange: ( key: string, file: File ) => Promise< void >;
+	onFileRemove: () => Promise< void >;
+	uploaded?: boolean;
+	readOnly?: boolean;
+	isBusy?: boolean;
+}
+
+export interface FileUploadControlProps {
+	fileName?: string;
+	fileSize?: number;
+	description: string | null;
+	onFileChange: ( file: File ) => void;
+	onFileRemove: () => void;
+	disabled?: boolean;
+	isDone?: boolean;
+	isBusy?: boolean;
+	accept?: string;
+	label: string;
+}
+
+export interface RecommendedDocumentsProps {
+	fields: DocumentField[];
+	readOnly?: boolean;
+}
+
+export interface BaseEvidence {
+	product_description: string;
+	receipt: string;
+	customer_communication: string;
+	customer_signature: string;
+	refund_policy: string;
+	duplicate_charge_documentation: string;
+	shipping_documentation: string;
+	service_documentation: string;
+	cancellation_policy: string;
+	cancellation_rebuttal: string;
+	access_activity_log: string;
+	uncategorized_file: string;
+	uncategorized_text: string;
+	shipping_carrier: string;
+	shipping_date: string;
+	shipping_tracking_number: string;
+	shipping_address: string;
+	customer_purchase_ip: string;
+	[ key: string ]: string;
+}
+
+export type EvidenceState = Partial< BaseEvidence > & {
+	[ key: string ]: string | undefined;
+};

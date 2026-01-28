@@ -84,19 +84,17 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
-			<strong>Limits</strong>
+			<strong>{ __( 'Limits', 'woocommerce-components' ) }</strong>
 			<div className="fraud-protection-rule-toggle-children-horizontal-form">
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
-					<label htmlFor="fraud-protection-purchase-price-minimum">
-						{ __(
+					<AmountInput
+						id="fraud-protection-purchase-price-minimum"
+						label={ __(
 							'Minimum purchase price',
 							'woocommerce-payments'
 						) }
-					</label>
-					<AmountInput
-						id={ 'fraud-protection-purchase-price-minimum' }
 						prefix={ currencySymbol }
-						placeholder={ '0.00' }
+						placeholder="0.00"
 						value={ minAmount.toString() }
 						onChange={ handleAmountInputChange( 'min_amount' ) }
 						help={ __(
@@ -106,16 +104,14 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
-					<label htmlFor="fraud-protection-purchase-price-maximum">
-						{ __(
+					<AmountInput
+						id="fraud-protection-purchase-price-maximum"
+						label={ __(
 							'Maximum purchase price',
 							'woocommerce-payments'
 						) }
-					</label>
-					<AmountInput
-						id={ 'fraud-protection-purchase-price-maximum' }
 						prefix={ currencySymbol }
-						placeholder={ '0.00' }
+						placeholder="0.00"
 						value={ maxAmount.toString() }
 						onChange={ handleAmountInputChange( 'max_amount' ) }
 						help={ __(
@@ -127,8 +123,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 			</div>
 			{ areInputsEmpty && (
 				<div className="fraud-protection-rule-toggle-children-notice">
-					<br />
-					<FraudProtectionRuleCardNotice type={ 'warning' }>
+					<FraudProtectionRuleCardNotice type="warning">
 						{ __(
 							'A price range must be set for this filter to take effect.',
 							'woocommerce-payments'
@@ -138,8 +133,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 			) }
 			{ isMinGreaterThanMax ? (
 				<div className="fraud-protection-rule-toggle-children-notice">
-					<br />
-					<FraudProtectionRuleCardNotice type={ 'error' }>
+					<FraudProtectionRuleCardNotice type="error">
 						{ __(
 							'Maximum purchase price must be greater than the minimum purchase price.',
 							'woocommerce-payments'
@@ -157,7 +151,7 @@ const PurchasePriceThresholdRuleCard: React.FC = () => (
 		id="purchase-price-threshold-card"
 	>
 		<FraudProtectionRuleToggle
-			setting={ 'purchase_price_threshold' }
+			setting="purchase_price_threshold"
 			label={ __(
 				'Enable Purchase Price Threshold filter',
 				'woocommerce-payments'
@@ -168,10 +162,9 @@ const PurchasePriceThresholdRuleCard: React.FC = () => (
 				'woocommerce-payments'
 			) }
 		>
-			<PurchasePriceThresholdCustomForm
-				setting={ 'purchase_price_threshold' }
-			/>
+			<PurchasePriceThresholdCustomForm setting="purchase_price_threshold" />
 		</FraudProtectionRuleToggle>
+
 		<FraudProtectionRuleDescription>
 			{ __(
 				'An unusually high purchase amount, compared to the average for your business, ' +

@@ -54,11 +54,15 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 				'wcpay_fraud_protection_welcome_tour_dismissed',
 				true,
 			],
-			'invalid option: invalid_option'       => [
+			'valid option: wcpay_exit_survey_last_shown' => [
+				'wcpay_exit_survey_last_shown',
+				true,
+			],
+			'invalid option: invalid_option'             => [
 				'invalid_option',
 				false,
 			],
-			'invalid option: wcpay_invalid_option' => [
+			'invalid option: wcpay_invalid_option'       => [
 				'wcpay_invalid_option',
 				false,
 			],
@@ -72,34 +76,61 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 		$this->assertSame( $expected_result, $this->controller->validate_option_name( $option ) );
 	}
 
-	public function test_validate_value_with_valid_values() {
-		$valid_values = [
-			true,
-			false,
-			[],
-			[ 'key' => 'value' ],
-			[ 'key' => [ 'nested_key' => 'nested_value' ] ],
+	/**
+	 * Data provider for valid option values.
+	 *
+	 * @return array<string, array>
+	 */
+	public function provider_valid_values(): array {
+		return [
+			'bool option with true'          => [ 'wcpay_multi_currency_setup_completed', true ],
+			'bool option with false'         => [ 'wcpay_multi_currency_setup_completed', false ],
+			'array option with empty array'  => [ 'woocommerce_dismissed_todo_tasks', [] ],
+			'array option with array'        => [ 'woocommerce_dismissed_todo_tasks', [ 'key' => 'value' ] ],
+			'array option with nested array' => [ 'woocommerce_dismissed_todo_tasks', [ 'key' => [ 'nested' => 'value' ] ] ],
+			'string option with string'      => [ 'wcpay_exit_survey_last_shown', '2026-01-09T09:23:30.444Z' ],
 		];
-
-		foreach ( $valid_values as $value ) {
-			$result = $this->controller->validate_value( $value );
-			$this->assertTrue( $result );
-		}
 	}
 
-	public function test_validate_value_with_invalid_values() {
-		$invalid_values = [
-			'string',
-			123,
-			null,
-			(object) [],
-		];
+	/**
+	 * @dataProvider provider_valid_values
+	 */
+	public function test_validate_value_with_valid_values( string $option_name, $value ) {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'option_name', $option_name );
 
-		foreach ( $invalid_values as $value ) {
-			$result = $this->controller->validate_value( $value );
-			$this->assertInstanceOf( WP_Error::class, $result );
-			$this->assertEquals( 'rest_invalid_param', $result->get_error_code() );
-			$this->assertEquals( 400, $result->get_error_data()['status'] );
-		}
+		$result = $this->controller->validate_value( $value, $request );
+		$this->assertTrue( $result );
+	}
+
+	/**
+	 * Data provider for invalid option values.
+	 *
+	 * @return array<string, array>
+	 */
+	public function provider_invalid_values(): array {
+		return [
+			'bool option with string'  => [ 'wcpay_multi_currency_setup_completed', 'string' ],
+			'bool option with array'   => [ 'wcpay_multi_currency_setup_completed', [] ],
+			'bool option with int'     => [ 'wcpay_multi_currency_setup_completed', 123 ],
+			'array option with bool'   => [ 'woocommerce_dismissed_todo_tasks', true ],
+			'array option with string' => [ 'woocommerce_dismissed_todo_tasks', 'string' ],
+			'string option with bool'  => [ 'wcpay_exit_survey_last_shown', true ],
+			'string option with array' => [ 'wcpay_exit_survey_last_shown', [] ],
+			'string option with int'   => [ 'wcpay_exit_survey_last_shown', 123 ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_invalid_values
+	 */
+	public function test_validate_value_with_invalid_values( string $option_name, $value ) {
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'option_name', $option_name );
+
+		$result = $this->controller->validate_value( $value, $request );
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'rest_invalid_param', $result->get_error_code() );
+		$this->assertEquals( 400, $result->get_error_data()['status'] );
 	}
 }

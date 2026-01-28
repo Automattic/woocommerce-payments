@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -13,35 +13,18 @@ import MultiCurrencySettingsContext from './context';
 
 const MultiCurrencySettingsPage = () => {
 	const [
-		isSingleCurrencyScreenOpen,
-		setSingleCurrencyScreenOpen,
-	] = useState( false );
-
-	const [
 		currencyCodeToShowSettingsFor,
 		setCurrencyCodeToShowSettingsFor,
 	] = useState( null );
 
-	const handleOpenSingleCurrencySettings = ( code ) => {
-		setCurrencyCodeToShowSettingsFor( code );
-		setSingleCurrencyScreenOpen( true );
-	};
-
-	const handleCloseSingleCurrencySettings = () => {
-		setSingleCurrencyScreenOpen( false );
-		setCurrencyCodeToShowSettingsFor( null );
-	};
-
 	return (
 		<MultiCurrencySettingsContext.Provider
 			value={ {
-				isSingleCurrencyScreenOpen: isSingleCurrencyScreenOpen,
-				currencyCodeToShowSettingsFor: currencyCodeToShowSettingsFor,
-				openSingleCurrencySettings: handleOpenSingleCurrencySettings,
-				closeSingleCurrencySettings: handleCloseSingleCurrencySettings,
+				currencyCodeToShowSettingsFor,
+				setCurrencyCodeToShowSettingsFor,
 			} }
 		>
-			{ ! isSingleCurrencyScreenOpen ? (
+			{ ! currencyCodeToShowSettingsFor ? (
 				<MultiCurrencySettings />
 			) : (
 				<SingleCurrencySettings />
@@ -50,7 +33,8 @@ const MultiCurrencySettingsPage = () => {
 	);
 };
 
-ReactDOM.render(
-	<MultiCurrencySettingsPage />,
-	document.querySelector( '#wcpay_multi_currency_settings_container' )
+const container = document.querySelector(
+	'#wcpay_multi_currency_settings_container'
 );
+const root = createRoot( container );
+root.render( <MultiCurrencySettingsPage /> );

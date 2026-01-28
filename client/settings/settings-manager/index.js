@@ -2,10 +2,11 @@
 /**
  * External dependencies
  */
-import React, { useState, useLayoutEffect, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -22,6 +23,9 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
+import NotificationSettings, {
+	NotificationSettingsDescription,
+} from '../notification-settings';
 import {
 	useDepositDelayDays,
 	useGetDuplicatedPaymentMethodIds,
@@ -29,6 +33,8 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import VatFormModal from '../../vat/form-modal';
+import SpotlightPromotion from 'promotions/spotlight';
 import './style.scss';
 
 const ExpressCheckoutDescription = () => (
@@ -185,6 +191,43 @@ const SettingsManager = () => {
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
+	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+
+	useEffect( () => {
+		const urlParams = new URLSearchParams( window.location.search );
+		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
+			if ( ! wcpaySettings.accountStatus.isDocumentsEnabled ) {
+				dispatch( 'core/notices' ).createErrorNotice(
+					__(
+						'Tax details collection is not available for your account.',
+						'woocommerce-payments'
+					)
+				);
+			} else if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+				setVatFormModalOpen( true );
+			} else {
+				dispatch( 'core/notices' ).createInfoNotice(
+					__(
+						'Tax details are already submitted.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		}
+	}, [] );
+
+	const handleVatFormModalClose = () => {
+		setVatFormModalOpen( false );
+		// Remove the URL parameter when the modal is closed.
+		updateQueryString( { 'woopayments-vat-details-modal': undefined } );
+	};
+
+	const handleVatFormModalCompleted = () => {
+		dispatch( 'core/notices' ).createInfoNotice(
+			__( 'Tax details updated', 'woocommerce-payments' )
+		);
+		handleVatFormModalClose();
+	};
 
 	return (
 		<SettingsLayout>
@@ -242,6 +285,16 @@ const SettingsManager = () => {
 				</div>
 			</SettingsSection>
 			<SettingsSection
+				description={ NotificationSettingsDescription }
+				id="notification-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<NotificationSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
 				description={ FraudProtectionDescription }
 				id="fp-settings"
 			>
@@ -262,6 +315,14 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
+			<VatFormModal
+				isModalOpen={ isVatFormModalOpen }
+				setModalOpen={ handleVatFormModalClose }
+				onCompleted={ handleVatFormModalCompleted }
+			/>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</SettingsLayout>
 	);
 };

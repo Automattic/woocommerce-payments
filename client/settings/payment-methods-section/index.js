@@ -42,8 +42,10 @@ const PaymentMethodsSection = () => {
 			( id ) =>
 				methodsConfiguration[ id ] &&
 				! methodsConfiguration[ id ].allows_pay_later &&
-				// Stripe Link is displayed in the Express Checkout section
-				PAYMENT_METHOD_IDS.LINK !== id
+				// methods displayed in the Express Checkout section
+				PAYMENT_METHOD_IDS.LINK !== id &&
+				PAYMENT_METHOD_IDS.APPLE_PAY !== id &&
+				PAYMENT_METHOD_IDS.GOOGLE_PAY !== id
 		)
 		.reduce( ( acc, methodId ) => {
 			// Ensuring that card is at the top of the list

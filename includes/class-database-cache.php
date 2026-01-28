@@ -8,6 +8,7 @@
 namespace WCPay;
 
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+use WCPay\MultiCurrency\Utils;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -15,27 +16,12 @@ defined( 'ABSPATH' ) || exit; // block direct access.
  * A class for caching data as an option in the database.
  */
 class Database_Cache implements MultiCurrencyCacheInterface {
-	const ACCOUNT_KEY                 = 'wcpay_account_data';
-	const ONBOARDING_FIELDS_DATA_KEY  = 'wcpay_onboarding_fields_data';
-	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
-	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
-	const FRAUD_SERVICES_KEY          = 'wcpay_fraud_services_data';
-	const RECOMMENDED_PAYMENT_METHODS = 'wcpay_recommended_payment_methods';
-
-	/**
-	 * Refresh during AJAX calls is avoided, but white-listing
-	 * a key here will allow the refresh to happen.
-	 *
-	 * @var string[]
-	 */
-	const AJAX_ALLOWED_KEYS = [
-		self::PAYMENT_PROCESS_FACTORS_KEY,
-	];
-
-	/**
-	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
-	 */
-	const PAYMENT_METHODS_KEY_PREFIX = 'wcpay_pm_';
+	const ACCOUNT_KEY                  = 'wcpay_account_data';
+	const ONBOARDING_FIELDS_DATA_KEY   = 'wcpay_onboarding_fields_data';
+	const BUSINESS_TYPES_KEY           = 'wcpay_business_types_data';
+	const FRAUD_SERVICES_KEY           = 'wcpay_fraud_services_data';
+	const RECOMMENDED_PAYMENT_METHODS  = 'wcpay_recommended_payment_methods';
+	const ADDRESS_AUTOCOMPLETE_JWT_KEY = 'wcpay_address_autocomplete_jwt';
 
 	/**
 	 * Dispute status counts cache key.
@@ -43,6 +29,13 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @var string
 	 */
 	const DISPUTE_STATUS_COUNTS_KEY = 'wcpay_dispute_status_counts_cache';
+
+	/**
+	 * Dispute status counts cache key for test mode.
+	 *
+	 * @var string
+	 */
+	const DISPUTE_STATUS_COUNTS_KEY_TEST_MODE = 'wcpay_test_dispute_status_counts_cache';
 
 	/**
 	 * Active disputes cache key.
@@ -76,6 +69,27 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @var string
 	 */
 	const TRACKING_INFO_KEY = 'wcpay_tracking_info_cache';
+
+	/**
+	 * All cache keys.
+	 *
+	 * @var string[]
+	 */
+	const ALL_KEYS = [
+		self::ACCOUNT_KEY,
+		self::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+		self::ONBOARDING_FIELDS_DATA_KEY,
+		self::BUSINESS_TYPES_KEY,
+		self::FRAUD_SERVICES_KEY,
+		self::RECOMMENDED_PAYMENT_METHODS,
+		self::DISPUTE_STATUS_COUNTS_KEY,
+		self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE,
+		self::ACTIVE_DISPUTES_KEY,
+		self::AUTHORIZATION_SUMMARY_KEY,
+		self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
+		self::CONNECT_INCENTIVE_KEY,
+		self::TRACKING_INFO_KEY,
+	];
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -206,40 +220,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	}
 
 	/**
-	 * Deletes all cache entries that are keyed with a certain prefix.
-	 *
-	 * This is useful when you use dynamic cache keys.
-	 *
-	 * Note: Only key prefixes with known, static prefixes are allowed, for protection purposes.
-	 *
-	 * @param string $key_prefix The cache key prefix.
-	 *
-	 * @return void
+	 * Delete all known cache entries.
 	 */
-	public function delete_by_prefix( string $key_prefix ) {
-		// Protection against accidentally deleting all options or options that are not related to WCPay caching.
-		// Feel free to update this statement as more prefix cache keys are used.
-		$allowed_base_prefixes = [
-			self::PAYMENT_METHODS_KEY_PREFIX,
-			self::ONBOARDING_FIELDS_DATA_KEY,
-			self::RECOMMENDED_PAYMENT_METHODS,
-		];
-		$is_allowed            = false;
-		foreach ( $allowed_base_prefixes as $allowed_base_prefix ) {
-			if ( strncmp( $key_prefix, $allowed_base_prefix, strlen( $allowed_base_prefix ) ) === 0 ) {
-				$is_allowed = true;
-				break;
-			}
-		}
-		if ( ! $is_allowed ) {
-			return; // Maybe throw exception here...
-		}
-
-		global $wpdb;
-
-		$options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key_prefix . '%' ) );
-		foreach ( $options as $option ) {
-			$this->delete( $option->option_name );
+	public function delete_all() {
+		foreach ( self::ALL_KEYS as $key ) {
+			$this->delete( $key );
 		}
 	}
 
@@ -252,6 +237,18 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 */
 	public function disable_refresh() {
 		$this->refresh_disabled = true;
+	}
+
+	/**
+	 * Delete all dispute-related cache entries.
+	 * This ensures both live and test mode dispute counts are refreshed.
+	 *
+	 * @return void
+	 */
+	public function delete_dispute_caches() {
+		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY );
+		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE );
+		$this->delete( self::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
@@ -274,7 +271,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		// Do not refresh if doing ajax or the refresh has been disabled (running an AS job).
 		if (
 			defined( 'DOING_CRON' )
-			|| ( wp_doing_ajax() && ! in_array( $key, self::AJAX_ALLOWED_KEYS, true ) )
+			|| ( wp_doing_ajax() )
 			|| $this->refresh_disabled ) {
 			return false;
 		}
@@ -397,17 +394,28 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 						// Attempt to refresh the data quickly if the last fetch was an error.
 						$ttl = 2 * MINUTE_IN_SECONDS;
 					} else {
-						// If the data was fetched successfully, fetch it every 2h.
+						// If the data was fetched successfully, cache it for 2h.
 						$ttl = 2 * HOUR_IN_SECONDS;
 					}
 				} else {
-					// Non-admin requests should always refresh only after 24h since the last fetch.
+					// For performance reasons, non-admin requests should use cached data for longer (24h).
 					$ttl = DAY_IN_SECONDS;
 				}
 				break;
 			case self::CURRENCIES_KEY:
-				// Refresh the errored currencies quickly, otherwise cache for 6h.
-				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : 6 * HOUR_IN_SECONDS;
+				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
+					// Fetches triggered from the admin panel should be more frequent.
+					if ( $cache_contents['errored'] ) {
+						// Attempt to refresh the data quickly if the last fetch was an error.
+						$ttl = 2 * MINUTE_IN_SECONDS;
+					} else {
+						// If the data was fetched successfully, cache it for 3h.
+						$ttl = 3 * HOUR_IN_SECONDS;
+					}
+				} else {
+					// For performance reasons, non-admin requests should use cached data for longer (12h).
+					$ttl = 12 * HOUR_IN_SECONDS;
+				}
 				break;
 			case self::BUSINESS_TYPES_KEY:
 			case self::ONBOARDING_FIELDS_DATA_KEY:
@@ -418,15 +426,15 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
 				break;
 			case self::CONNECT_INCENTIVE_KEY . '_has_orders':
-				// If has orders, cache for 90 days since it won't change.
+				// If the store has orders, cache for 90 days since it won't change.
 				// If no orders, cache for an hour to check again soon.
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
-			case self::PAYMENT_PROCESS_FACTORS_KEY:
-				$ttl = 2 * HOUR_IN_SECONDS;
-				break;
 			case self::TRACKING_INFO_KEY:
 				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;
+				break;
+			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
+				$ttl = 12 * HOUR_IN_SECONDS;
 				break;
 			default:
 				// Default to 24h.

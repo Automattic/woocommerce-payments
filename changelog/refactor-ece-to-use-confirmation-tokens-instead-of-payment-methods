@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: ECE to use confirmation tokens instead of payment methods

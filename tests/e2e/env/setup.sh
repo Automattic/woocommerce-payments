@@ -208,11 +208,6 @@ cli wp plugin install wordpress-importer --activate
 
 # Install WooCommerce
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
-	# If specified version is 'beta', fetch the latest beta version from WordPress.org API
-	if [[ $E2E_WC_VERSION == 'beta' ]]; then
-		E2E_WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("beta";"i"))) | keys[-1]' --sort-keys)
-	fi
-
 	echo "Installing and activating specified WooCommerce version..."
 	cli wp plugin install woocommerce --version="$E2E_WC_VERSION" --activate
 else
@@ -415,6 +410,12 @@ cli_debug wp core version
 echo
 echo "WooCommerce version:"
 cli_debug wp plugin get woocommerce --field=version
+
+if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
+	echo
+    echo "WooCommerce Subscriptions version:"
+	cli_debug wp plugin get woocommerce-subscriptions --field=version
+fi
 
 echo
 echo "Docker environment:"

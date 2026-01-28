@@ -369,17 +369,85 @@ export const usePaymentRequestEnabledSettings = () => {
 };
 
 /**
- * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
-export const usePaymentRequestLocations = () => {
-	const { updatePaymentRequestLocations } = useDispatch( STORE_NAME );
+export const useAppleGooglePayInPaymentMethodsOptionsEnabledSettings = () => {
+	const {
+		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+	} = useDispatch( STORE_NAME );
 
-	const paymentRequestLocations = useSelect( ( select ) =>
-		select( STORE_NAME ).getPaymentRequestLocations()
+	const isAppleGooglePayInPaymentMethodsOptionsEnabled = useSelect(
+		( select ) =>
+			select(
+				STORE_NAME
+			).getIsAppleGooglePayInPaymentMethodsOptionsEnabled()
 	);
 
-	return [ paymentRequestLocations, updatePaymentRequestLocations ];
+	return [
+		isAppleGooglePayInPaymentMethodsOptionsEnabled,
+		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+	];
 };
+
+/**
+ * Factory function to create a hook for managing express checkout method locations.
+ *
+ * @param {string} methodId The method identifier (e.g., 'payment_request', 'woopay').
+ * @return {function(): import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+const makeExpressCheckoutLocationHook = ( methodId ) => () => {
+	const {
+		updateExpressCheckoutProductMethods,
+		updateExpressCheckoutCartMethods,
+		updateExpressCheckoutCheckoutMethods,
+	} = useDispatch( STORE_NAME );
+
+	const productMethods = useSelect( ( select ) =>
+		select( STORE_NAME ).getExpressCheckoutProductMethods()
+	);
+	const cartMethods = useSelect( ( select ) =>
+		select( STORE_NAME ).getExpressCheckoutCartMethods()
+	);
+	const checkoutMethods = useSelect( ( select ) =>
+		select( STORE_NAME ).getExpressCheckoutCheckoutMethods()
+	);
+
+	const methodsListMap = {
+		product: productMethods,
+		cart: cartMethods,
+		checkout: checkoutMethods,
+	};
+	const methodsUpdatersMap = {
+		product: updateExpressCheckoutProductMethods,
+		cart: updateExpressCheckoutCartMethods,
+		checkout: updateExpressCheckoutCheckoutMethods,
+	};
+
+	const enabledLocations = [
+		productMethods.includes( methodId ) && 'product',
+		cartMethods.includes( methodId ) && 'cart',
+		checkoutMethods.includes( methodId ) && 'checkout',
+	].filter( Boolean );
+
+	const locationUpdater = ( location, isChecked ) => {
+		methodsUpdatersMap[ location ](
+			isChecked
+				? [ ...methodsListMap[ location ], methodId ]
+				: methodsListMap[ location ].filter(
+						( method ) => method !== methodId
+				  )
+		);
+	};
+
+	return [ enabledLocations, locationUpdater ];
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+export const usePaymentRequestLocations = makeExpressCheckoutLocationHook(
+	'payment_request'
+);
 
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
@@ -435,6 +503,9 @@ export const usePaymentRequestButtonBorderRadius = () => {
 	];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').SavingError | null}
+ */
 export const useGetSavingError = () => {
 	return useSelect( ( select ) => select( STORE_NAME ).getSavingError(), [] );
 };
@@ -499,15 +570,27 @@ export const useWooPayStoreLogo = () => {
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
  */
-export const useWooPayLocations = () => {
-	const { updateWooPayLocations } = useDispatch( STORE_NAME );
+export const useWooPayLocations = makeExpressCheckoutLocationHook( 'woopay' );
 
-	const wooPayLocations = useSelect( ( select ) =>
-		select( STORE_NAME ).getWooPayLocations()
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useAmazonPayEnabledSettings = () => {
+	const { updateIsAmazonPayEnabled } = useDispatch( STORE_NAME );
+
+	const isAmazonPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsAmazonPayEnabled()
 	);
 
-	return [ wooPayLocations, updateWooPayLocations ];
+	return [ isAmazonPayEnabled, updateIsAmazonPayEnabled ];
 };
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+export const useAmazonPayLocations = makeExpressCheckoutLocationHook(
+	'amazon_pay'
+);
 
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
@@ -585,4 +668,17 @@ export const useStripeBillingMigration = () => {
 			hasResolved,
 		];
 	}, [] );
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
+export const useAccountCommunicationsEmail = () => {
+	const { updateAccountCommunicationsEmail } = useDispatch( STORE_NAME );
+
+	const accountCommunicationsEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountCommunicationsEmail()
+	);
+
+	return [ accountCommunicationsEmail, updateAccountCommunicationsEmail ];
 };

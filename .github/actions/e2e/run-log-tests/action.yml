@@ -1,4 +1,4 @@
-name: 'Run Tests'
+name: 'Run E2E Tests with Retry & Upload Logs'
 description: 'Runs E2E tests with retry & upload logs and screenshots'
 
 runs:
@@ -10,12 +10,17 @@ runs:
       shell: /bin/bash +e {0}
       run: |
         npm run test:e2e-ci
-        
-        if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
-          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.stats["unexpected"]')
-          echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
-          if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
-            echo "::notice::${E2E_NUM_FAILED_TEST_SUITES} test suite(s) failed in the first run but we will try (it) them again in the second run."
+        RESULTS_JSON="$E2E_RESULT_FILEPATH"
+        if [[ -f "$RESULTS_JSON" ]]; then
+          # Build unique list of spec files with any failed/unexpected/timedOut/interrupted result and count them.
+          FAILED_SPECS_COUNT=$( jq -r '[ .. | objects | select(has("specs")) | .specs[]
+              | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
+                        or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
+              | .file ] | unique | length' "$RESULTS_JSON" )
+          echo "FIRST_RUN_FAILED_TEST_SUITES=$FAILED_SPECS_COUNT" >> $GITHUB_OUTPUT
+          echo "RESULTS_JSON=$RESULTS_JSON" >> $GITHUB_OUTPUT
+          if [[ ${FAILED_SPECS_COUNT} -gt 0 ]]; then
+            echo "::notice::${FAILED_SPECS_COUNT} spec file(s) failed in the first run. We will re-run only the failed specs."
             exit 0
           fi
         else
@@ -27,9 +32,32 @@ runs:
     - name: Re-try Failed E2E Files
       if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
       shell: bash
-      # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
-        npm run test:e2e-ci $(cat $E2E_RESULT_FILEPATH | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]')
+        set -e
+        RESULTS_JSON="${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}"
+        echo "Using results file: $RESULTS_JSON"
+
+        # Build a unique list of spec files that had unexpected/failed outcomes.
+        # This uses a recursive jq search to find any node with a 'specs' array, then selects specs
+        # where any test result is marked unexpected/failed.
+        mapfile -t FAILED_SPECS < <( jq -r '[ .. | objects | select(has("specs")) | .specs[]
+          | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
+            or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
+          | .file ] | unique | .[]' "$RESULTS_JSON" )
+
+        if [[ ${#FAILED_SPECS[@]} -eq 0 ]]; then
+          echo "::notice::No failed specs found in results file. Re-running full suite instead."
+          npm run test:e2e-ci
+          exit 0
+        fi
+
+        echo "Retrying failed specs (${#FAILED_SPECS[@]}):"
+        for f in "${FAILED_SPECS[@]}"; do
+          echo " - $f"
+        done
+
+        # Re-run only the failed spec files.
+        npm run test:e2e-ci "${FAILED_SPECS[@]}"
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
@@ -41,5 +69,6 @@ runs:
             playwright-report/
             tests/e2e/test-results
             ${{ env.E2E_RESULT_FILEPATH }}
+            ${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}
           if-no-files-found: ignore
           retention-days: 14

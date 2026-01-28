@@ -131,6 +131,14 @@
 	background-image: url( '../images/payment-methods/afterpay-icon.svg' );
 }
 
+.payment-method__brand--afterpay_clearpay.account-country--gb {
+	background-image: url( '../images/payment-methods/clearpay.svg' );
+}
+
+.payment-method__brand--afterpay_clearpay.account-country--us {
+	background-image: url( '../images/payment-methods/afterpay-cashapp-icon.svg' );
+}
+
 .payment-method__brand--affirm {
 	background-image: url( '../images/payment-methods/affirm-icon.svg' );
 }
@@ -149,6 +157,10 @@
 
 .payment-method__brand--wechat_pay {
 	background-image: url( '../images/payment-methods/wechat-pay.svg' );
+}
+
+.payment-method__brand--amazon_pay {
+	background-image: url( '../images/payment-methods/amazon-pay.svg' );
 }
 
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {

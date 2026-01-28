@@ -27,8 +27,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
-		'_wcpay_feature_documents'               => 'documents',
-		'_wcpay_feature_auth_and_capture'        => 'isAuthAndCaptureEnabled',
 	];
 
 	public function set_up() {
@@ -324,5 +322,62 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		foreach ( $option_array as $option ) {
 			remove_all_filters( 'pre_option_' . $option );
 		}
+	}
+
+	public function test_is_ece_confirmation_tokens_enabled_returns_true_when_enabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
+		$this->assertTrue( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+	}
+
+	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_disabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => true ] );
+		$this->assertFalse( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+	}
+
+	public function test_is_ece_confirmation_tokens_enabled_returns_true_when_field_missing() {
+		$this->mock_cache->method( 'get' )->willReturn( [] );
+		$this->assertTrue( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+	}
+
+	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_cache_not_set() {
+		$this->mock_cache->method( 'get' )->willReturn( null );
+		$this->assertFalse( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+	}
+
+	public function test_is_amazon_pay_enabled_returns_false_when_disabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
+		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '0' );
+
+		$result = WC_Payments_Features::is_amazon_pay_enabled();
+
+		$this->assertFalse( $result );
+		$this->clear_feature_flag_options( [ WC_Payments_Features::AMAZON_PAY_FLAG_NAME ] );
+	}
+
+	public function test_is_amazon_pay_enabled_returns_true_when_enabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
+		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '1' );
+
+		$result = WC_Payments_Features::is_amazon_pay_enabled();
+
+		$this->assertTrue( $result );
+		$this->clear_feature_flag_options( [ WC_Payments_Features::AMAZON_PAY_FLAG_NAME ] );
+	}
+
+	public function test_is_amazon_pay_enabled_returns_false_when_server_side_disabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => true ] );
+		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '1' );
+
+		$result = WC_Payments_Features::is_amazon_pay_enabled();
+
+		$this->assertFalse( $result );
+		$this->clear_feature_flag_options( [ WC_Payments_Features::AMAZON_PAY_FLAG_NAME ] );
+	}
+
+	public function test_is_amazon_pay_enabled_returns_false_by_default() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
+		$result = WC_Payments_Features::is_amazon_pay_enabled();
+
+		$this->assertFalse( $result );
 	}
 }

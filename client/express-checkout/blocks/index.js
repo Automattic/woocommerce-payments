@@ -10,6 +10,7 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/con
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
+import '../compatibility/wc-order-attribution';
 
 export const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
@@ -75,5 +76,37 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 		}
 
 		return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
+	},
+} );
+
+export const expressCheckoutElementAmazonPay = ( api ) => ( {
+	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
+	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_amazonPay',
+	title: 'WooPayments - Amazon Pay',
+	description: __( 'Pay with your Amazon account.', 'woocommerce-payments' ),
+	gatewayId: 'woocommerce_payments',
+	content: (
+		<ExpressCheckoutContainer
+			api={ api }
+			expressPaymentMethod="amazonPay"
+		/>
+	),
+	edit: (
+		<ExpressCheckoutContainer
+			api={ api }
+			expressPaymentMethod="amazonPay"
+			isPreview
+		/>
+	),
+	supports: {
+		features: getConfig( 'features' ),
+		style: [ 'height', 'borderRadius' ],
+	},
+	canMakePayment: ( { cart } ) => {
+		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
+
+		return checkPaymentMethodIsAvailable( 'amazonPay', cart, api );
 	},
 } );

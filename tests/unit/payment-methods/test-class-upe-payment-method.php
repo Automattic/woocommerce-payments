@@ -13,6 +13,7 @@ use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WC_Payments_Token_Service;
 use WC_Payments;
+use WC_Subscriptions;
 
 /**
  * UPE_Payment_Method unit tests
@@ -55,6 +56,13 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 	private $original_account_service;
 
 	/**
+	 * Currency filter callback for removal in teardown.
+	 *
+	 * @var callable|null
+	 */
+	private $currency_filter_callback = null;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -70,21 +78,33 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			->onlyMethods( [ 'add_payment_method_to_user' ] )
 			->getMock();
 
+		$payment_method_definitions = [
+			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
+		];
+
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Giropay_Payment_Method::class,
-			Sofort_Payment_Method::class,
-			Bancontact_Payment_Method::class,
-			EPS_Payment_Method::class,
-			P24_Payment_Method::class,
-			Ideal_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Becs_Payment_Method::class,
-			Link_Payment_Method::class,
-			Affirm_Payment_Method::class,
-			Afterpay_Payment_Method::class,
-			Klarna_Payment_Method::class,
 		];
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			/** @var UPE_Payment_Method|MockObject */
+			$mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+				->setConstructorArgs( [ $this->mock_token_service, $definition_class ] )
+				->onlyMethods( [] )
+				->getMock();
+			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
+		}
 
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			/** @var UPE_Payment_Method|MockObject */
@@ -105,6 +125,10 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		wcpay_get_test_container()->reset_all_replacements();
 		WC_Payments::set_account_service( $this->original_account_service );
+		if ( null !== $this->currency_filter_callback ) {
+			remove_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
+			$this->currency_filter_callback = null;
+		}
 	}
 
 	/**
@@ -125,8 +149,12 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_klarna_get_countries_with_eu_country_and_eu_currency() {
-		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$payment_method                              = $this->mock_payment_methods['klarna'];
+		$this->currency_filter_callback = function () {
+			return 'EUR';
+		};
+		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
+
+		$payment_method = $this->mock_payment_methods['klarna'];
 
 		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
 			[
@@ -148,12 +176,15 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			],
 			$payment_method->get_countries()
 		);
-		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
 
 	public function test_klarna_get_countries_with_eu_country_and_non_eu_currency() {
-		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
-		$payment_method                              = $this->mock_payment_methods['klarna'];
+		$this->currency_filter_callback = function () {
+			return 'AUD';
+		};
+		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
+
+		$payment_method = $this->mock_payment_methods['klarna'];
 
 		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
 			[
@@ -167,7 +198,6 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			],
 			$payment_method->get_countries()
 		);
-		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
 
 	public function provider_test_get_countries() {
@@ -201,5 +231,63 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 				'account_country'   => Country_Code::CANADA,
 			],
 		];
+	}
+
+	/**
+	 * Test that non-reusable payment methods are enabled when manual renewals are accepted.
+	 */
+	public function test_is_enabled_at_checkout_allows_non_reusable_when_manual_renewals_accepted() {
+		// Arrange: Mock a non-reusable payment method (iDEAL).
+		$ideal_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->onlyMethods( [ 'is_reusable', 'is_subscription_item_in_cart' ] )
+			->disableOriginalConstructor()
+			->getMock();
+		$ideal_method->method( 'is_reusable' )->willReturn( false );
+		$ideal_method->method( 'is_subscription_item_in_cart' )->willReturn( true );
+
+		// Enable manual renewals.
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
+			function () {
+				return true;
+			}
+		);
+
+		// Act.
+		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS, true );
+
+		// Assert.
+		$this->assertTrue( $result, 'Non-reusable payment methods should be enabled when manual renewals are accepted' );
+
+		// Cleanup.
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( null );
+	}
+
+	/**
+	 * Test that non-reusable payment methods are disabled for subscription checkout when manual renewals are not accepted.
+	 */
+	public function test_is_enabled_at_checkout_disables_non_reusable_without_manual_renewals() {
+		// Arrange: Mock a non-reusable payment method.
+		$ideal_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->onlyMethods( [ 'is_reusable', 'is_subscription_item_in_cart' ] )
+			->disableOriginalConstructor()
+			->getMock();
+		$ideal_method->method( 'is_reusable' )->willReturn( false );
+		$ideal_method->method( 'is_subscription_item_in_cart' )->willReturn( true );
+
+		// Disable manual renewals.
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
+			function () {
+				return false;
+			}
+		);
+
+		// Act.
+		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS, true );
+
+		// Assert.
+		$this->assertFalse( $result, 'Non-reusable payment methods should be disabled for subscriptions when manual renewals are not accepted' );
+
+		// Cleanup.
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( null );
 	}
 }

@@ -112,27 +112,20 @@ test.describe( 'Shopper can save and delete cards', () => {
 		// Take note of the time when we added this card
 		cardTimingHelper.markCardAdded();
 
-		await expect(
-			shopperPage.getByText( 'Payment method successfully added.' )
-		).toBeVisible();
-
 		// Try to add a new card before 20 seconds have passed
 		await addSavedCard( shopperPage, config.cards.basic2, 'US', '94110' );
 
-		// Verify that the card was not added
-		try {
-			await expect(
-				shopperPage.getByText(
-					"We're not able to add this payment method. Please refresh the page and try again."
-				)
-			).toBeVisible( { timeout: 10000 } );
-		} catch ( error ) {
-			await expect(
-				shopperPage.getByText(
-					'You cannot add a new payment method so soon after the previous one.'
-				)
-			).toBeVisible();
-		}
+		// Verify that the second card was not added.
+		// The error could be shown on the add form; navigate to the list to assert state.
+		await goToMyAccount( shopperPage, 'payment-methods' );
+		await expect(
+			shopperPage
+				.getByRole( 'row', { name: config.cards.basic.label } )
+				.first()
+		).toBeVisible();
+		await expect(
+			shopperPage.getByRole( 'row', { name: config.cards.basic2.label } )
+		).toHaveCount( 0 );
 
 		// cleanup for the next tests
 		await goToMyAccount( shopperPage, 'payment-methods' );
@@ -169,19 +162,16 @@ test.describe( 'Shopper can save and delete cards', () => {
 
 						if ( cardName === '3ds' || cardName === '3ds2' ) {
 							await confirmCardAuthentication( shopperPage );
+							// After 3DS, wait for redirect back to Payment methods before asserting
+							await expect(
+								shopperPage.getByRole( 'heading', {
+									name: 'Payment methods',
+								} )
+							).toBeVisible( { timeout: 30000 } );
 						}
 
-						// Take note of the time when we added this card
+						// Record time of addition early to respect the 20s rule across tests
 						cardTimingHelper.markCardAdded();
-
-						// waiting for the new page to be loaded, since there is a redirect happening after the submission..
-						await shopperPage.waitForLoadState( 'networkidle' );
-
-						await expect(
-							shopperPage.getByText(
-								'Payment method successfully added.'
-							)
-						).toBeVisible();
 
 						// Verify that the card was added
 						await expect(
@@ -226,6 +216,12 @@ test.describe( 'Shopper can save and delete cards', () => {
 					{ tag: '@critical' },
 					async () => {
 						await goToMyAccount( shopperPage, 'payment-methods' );
+						// Ensure the saved methods table is present before interacting
+						await expect(
+							shopperPage.getByRole( 'heading', {
+								name: 'Payment methods',
+							} )
+						).toBeVisible();
 						// Make sure that at least 20s had already elapsed since the last card was added.
 						await cardTimingHelper.waitIfNeededBeforeAddingCard(
 							shopperPage

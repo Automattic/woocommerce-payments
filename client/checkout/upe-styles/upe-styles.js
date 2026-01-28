@@ -116,7 +116,7 @@ export const upeRestrictedProperties = {
 	'.Tab': [ ...restrictedTabProperties ],
 	'.Tab--selected': [
 		...restrictedTabSelectedProperties,
-		borderOutlineBackgroundProps,
+		...borderOutlineBackgroundProps,
 	],
 	'.TabIcon': upeSupportedProperties[ '.TabIcon' ],
 	'.TabIcon--selected': [ ...restrictedTabIconSelectedProperties ],

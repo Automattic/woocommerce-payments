@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
 
 /**
@@ -87,7 +88,7 @@ export const CurrencySelect: React.FC< {
 
 	return (
 		<InlineLabelSelect
-			label="Currency"
+			label={ __( 'Currency', 'woocommerce-payments' ) }
 			value={ currencyOptions.find(
 				( option ) => option.key === selectedCurrency
 			) }

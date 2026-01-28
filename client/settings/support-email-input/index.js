@@ -48,6 +48,8 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 				value={ supportEmail }
 				onChange={ setSupportEmail }
 				data-testid={ 'account-business-support-email-input' }
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
 			/>
 		</>
 	);

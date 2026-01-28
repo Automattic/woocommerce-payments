@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { find } from 'lodash';
+import { __ } from '@wordpress/i18n';
 
 /** Internal dependencies */
 import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
@@ -141,7 +142,10 @@ const FeesBreakdown: React.FC< {
 		<div
 			className="wcpay-transaction-breakdown__fees-container"
 			role="table"
-			aria-label="Transaction fees breakdown"
+			aria-label={ __(
+				'Transaction fees breakdown',
+				'woocommerce-payments'
+			) }
 		>
 			{ fees }
 		</div>

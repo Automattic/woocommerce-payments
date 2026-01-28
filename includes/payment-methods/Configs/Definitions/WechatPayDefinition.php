@@ -28,7 +28,7 @@ class WechatPayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Get the keywords for the payment method. These are used by the duplicates detection service.
+	 * Get the keywords for the payment method. These are used by the duplicate detection service.
 	 *
 	 * @return string[]
 	 */
@@ -74,43 +74,7 @@ class WechatPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'A digital wallet popular with customers from China.', 'woocommerce-payments' );
-	}
-
-	/**
-	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
-	 *
-	 * @return boolean
-	 */
-	public static function is_bnpl(): bool {
-		return PaymentMethodUtils::is_bnpl( self::get_capabilities() );
-	}
-
-	/**
-	 * Is the payment method a reusable payment method?
-	 *
-	 * @return boolean
-	 */
-	public static function is_reusable(): bool {
-		return PaymentMethodUtils::is_reusable( self::get_capabilities() );
-	}
-
-	/**
-	 * Does the payment method accept only domestic payments?
-	 *
-	 * @return boolean
-	 */
-	public static function accepts_only_domestic_payments(): bool {
-		return PaymentMethodUtils::accepts_only_domestic_payments( self::get_capabilities() );
-	}
-
-	/**
-	 * Does the payment method allow manual capture?
-	 *
-	 * @return boolean
-	 */
-	public static function allows_manual_capture(): bool {
-		return PaymentMethodUtils::allows_manual_capture( self::get_capabilities() );
+		return __( 'A digital wallet for customers with mainland China WeChat Pay wallets. Regional versions like WeChat Pay HK are not supported.', 'woocommerce-payments' );
 	}
 
 	/**
@@ -193,9 +157,10 @@ class WechatPayDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the list of supported countries
 	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string[] Array of country codes
 	 */
-	public static function get_supported_countries(): array {
+	public static function get_supported_countries( ?string $account_country = null ): array {
 		return [
 			Country_Code::UNITED_STATES,
 			Country_Code::AUSTRALIA,
@@ -295,20 +260,7 @@ class WechatPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
-		if ( ! PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Whether this payment method should be enabled by default
-	 *
-	 * @return bool
-	 */
-	public static function is_enabled_by_default(): bool {
-		return false;
+		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries( $account_country ), $currency, $account_country );
 	}
 
 	/**
