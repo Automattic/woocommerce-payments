@@ -1,6 +1,7 @@
 {
     "$schema": "https://qit.woo.com/json-schema/test-package",
     "package": "woocommerce-payments/woopayments-e2e-tests",
+    "package_type": "test",
     "test_type": "e2e",
     "description": "WooCommerce Payments E2E tests for checkout flows, payment methods, and Jetpack integration",
     "tags": ["woopayments", "checkout", "jetpack", "payments"],
@@ -11,7 +12,7 @@
             "E2E_JP_BLOG_TOKEN",
             "E2E_JP_USER_TOKEN"
         ],
-        "plugins": ["woocommerce", "jetpack"]
+        "plugins": ["woocommerce", "jetpack", "woocommerce-subscriptions"]
     },
     "test": {
         "phases": {
@@ -19,19 +20,20 @@
                 "./bootstrap/setup.sh"
             ],
             "setup": [
-                "npm ci",
-                "npx playwright install chromium --with-deps"
+                "[ -d node_modules ] || npm ci",
+                "npx playwright install chromium --with-deps",
+                "mkdir -p ./test-results"
             ],
             "run": [
-                "npx playwright test --project=default --project=shopper --project=merchant"
+                "npx playwright test"
             ],
             "teardown": [],
             "globalTeardown": []
         },
         "results": {
-            "ctrf-json": "./results/ctrf.json",
-            "blob-dir": "./results/blob",
-            "allure-dir": "./results/allure"
+            "ctrf-json": "./test-results/ctrf.json",
+            "blob-dir": "./test-results/blob-report",
+            "allure-dir": "./test-results/allure"
         }
     },
     "subpackages": {
