@@ -95,6 +95,11 @@ declare global {
 				 * Eligibility is determined per-account on transact-platform-server.
 				 */
 				wporgReview2025: boolean;
+				/**
+				 * The flag for the payments settings review prompt (Phase 0).
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				reviewPromptPhase0: boolean;
 			};
 		} >;
 		accountLoans: {

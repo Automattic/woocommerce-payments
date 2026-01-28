@@ -18,7 +18,7 @@ export const useReviewPromptState = () => {
 	} = useUserPreferences() as UserPreferences;
 
 	const isAccountEligible =
-		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
+		wcpaySettings?.accountStatus?.campaigns?.reviewPromptPhase0;
 
 	const hasUserDismissedPrompt = !! userPrefs?.wc_payments_review_prompt_dismissed;
 

@@ -1503,10 +1503,10 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Enqueue the review prompt script on WooPayments Settings page.
+	 * Enqueue the review prompt script on top-level Payments Settings page.
 	 */
 	public function enqueue_wc_payments_review_prompt() {
-		if ( ! WC_Payments_Utils::is_payments_settings_page() ) {
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
 			return;
 		}
 
@@ -1515,10 +1515,10 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Inject the container div for the review prompt on WooPayments settings page.
+	 * Inject the container div for the review prompt on top-level Payments settings page.
 	 */
 	public function inject_review_prompt_container() {
-		if ( ! WC_Payments_Utils::is_payments_settings_page() ) {
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
 			return;
 		}
 
