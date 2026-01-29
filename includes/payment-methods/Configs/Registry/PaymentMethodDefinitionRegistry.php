@@ -168,7 +168,6 @@ class PaymentMethodDefinitionRegistry {
 	 * @return string[] All available payment method definition classes.
 	 */
 	public function get_available_payment_method_definitions( string $account_country, string $currency ): array {
-		// TODO ~FR: is this used anywhere besides tests?
 		return array_filter(
 			$this->payment_methods,
 			function ( $definition_class ) use ( $account_country, $currency ) {

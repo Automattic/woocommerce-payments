@@ -238,12 +238,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		self::$has_attached_integration_hooks = true;
 
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
-		// TODO ~FR: this hook might not be needed anymore?
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
-
-		// Ensure all reusable WCPay gateways are available for admin subscription editing.
-		// TODO ~FR: remove after https://github.com/Automattic/woocommerce-payments/pull/11289 is merged.
-		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'add_reusable_gateways_for_subscription_admin' ], 20 );
 
 		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
 
@@ -360,42 +355,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_no_available_payment_methods_message', [ $this, 'change_no_available_methods_message' ] );
 
 		return [];
-	}
-
-	/**
-	 * Ensures all reusable WCPay gateways are available for admin subscription editing.
-	 *
-	 * When editing a subscription in admin, WC Subscriptions uses get_available_payment_gateways()
-	 * to populate the payment method dropdown. However, split gateways like Amazon Pay may not
-	 * pass is_available() checks in the admin context (no cart/checkout). This filter ensures
-	 * all reusable WCPay gateways appear in the dropdown.
-	 *
-	 * Note: WC Subscriptions already filters the dropdown to only show gateways that support
-	 * 'subscription_payment_method_change_admin', so adding the gateway here only affects
-	 * subscription-related admin screens.
-	 *
-	 * @param WC_Payment_Gateway[] $gateways A list of all available gateways.
-	 * @return WC_Payment_Gateway[]          The gateways list with reusable WCPay gateways added.
-	 */
-	public function add_reusable_gateways_for_subscription_admin( $gateways ) {
-		// Only apply in admin context.
-		// TODO ~FR: improve checks.
-		// TODO ~FR: this works for now, but in reality it's needed because the `get_upe_enabled_payment_method_ids()` array does not include amazon_pay - amazon_pay is controlled by the gateway's individual `enabled()` parameter.
-		if ( ! is_admin() ) {
-			return $gateways;
-		}
-
-		// Add Amazon Pay gateway if it exists, is enabled, and isn't already in the list.
-		$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id();
-		if ( ! isset( $gateways[ $amazon_pay_gateway_id ] ) ) {
-			// Use WC_Payments gateway map which has the gateway even if is_available() returns false.
-			$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
-			if ( $amazon_pay_gateway && $amazon_pay_gateway->is_enabled() ) {
-				$gateways[ $amazon_pay_gateway_id ] = $amazon_pay_gateway;
-			}
-		}
-
-		return $gateways;
 	}
 
 	/**
