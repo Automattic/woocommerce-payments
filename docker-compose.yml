@@ -18,17 +18,9 @@ services:
     image: wcpay_wp_${WORKTREE_ID:-default}
     restart: unless-stopped
     ports:
-      - "${WP_PORT:-8082}:80"
+      - "${WORDPRESS_PORT:-8082}:80"
     env_file:
       - default.env
-    environment:
-      WORDPRESS_DB_HOST: wcpay_db:3306
-      WORDPRESS_CONFIG_EXTRA: |
-        define('DOCKER_HOST', $$_SERVER['HTTP_X_FORWARDED_HOST'] ?? $$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? $$_SERVER['HTTP_HOST'] ?? 'localhost');
-        $$_SERVER['HTTP_HOST'] = DOCKER_HOST;
-        define('DOCKER_REQUEST_URL', ( ! empty( $$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST);
-        define('WP_SITEURL', DOCKER_REQUEST_URL);
-        define('WP_HOME', DOCKER_REQUEST_URL);
     volumes:
       - ./docker/wordpress:/var/www/html/
       - ./docker/mu-plugins:/var/www/html/wp-content/mu-plugins

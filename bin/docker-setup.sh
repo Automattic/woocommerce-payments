@@ -4,11 +4,11 @@
 set -e
 
 # Load worktree-specific config if available
-if [ -f ".env.local" ]; then
-    source .env.local
+if [ -f ".env" ]; then
+    source .env
 fi
 
-# Determine container name (from .env.local or parameter or default)
+# Determine container name (from .env or parameter or default)
 if [ -n "$WORKTREE_ID" ]; then
     DEFAULT_CONTAINER="wcpay_wp_${WORKTREE_ID}"
 else
@@ -16,8 +16,8 @@ else
 fi
 WP_CONTAINER=${1:-$DEFAULT_CONTAINER}
 
-# Determine site URL (from .env.local or environment or default)
-DEFAULT_PORT=${WP_PORT:-8082}
+# Determine site URL (from .env or environment or default)
+DEFAULT_PORT=${WORDPRESS_PORT:-8082}
 SITE_URL=${WP_URL:-"localhost:${DEFAULT_PORT}"}
 
 redirect_output() {
@@ -102,8 +102,10 @@ else
 fi
 
 # wp-config.php settings are per-worktree (file-based), so always set them
-echo "Configuring WordPress to work with ngrok (in order to allow creating a Jetpack-WPCOM connection)";
-cli wp config set DOCKER_HOST "\$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? \$_SERVER['HTTP_HOST'] ?? 'localhost'" --raw
+echo "Configuring WordPress to work with ngrok/jurassic tube (in order to allow creating a Jetpack-WPCOM connection)";
+cli wp config set DOCKER_HOST "\$_SERVER['HTTP_X_FORWARDED_HOST'] ?? \$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? \$_SERVER['HTTP_HOST'] ?? 'localhost'" --raw
+# Ensure $_SERVER['HTTP_HOST'] is overwritten with DOCKER_HOST (only adding this line if not already present)
+docker exec $WP_CONTAINER bash -c "grep -q '\\\$_SERVER\[.HTTP_HOST.\] = DOCKER_HOST' /var/www/html/wp-config.php || sed -i \"/define.*'DOCKER_HOST'/a \\\\\\\$_SERVER['HTTP_HOST'] = DOCKER_HOST;\" /var/www/html/wp-config.php"
 cli wp config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST" --raw
 cli wp config set WP_SITEURL DOCKER_REQUEST_URL --raw
 cli wp config set WP_HOME DOCKER_REQUEST_URL --raw

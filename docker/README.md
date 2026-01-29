@@ -14,7 +14,7 @@ npm run up:recreate
 npm run build:client
 ```
 
-After these steps, your site will be available at `http://localhost:<PORT>/wp-admin/` (check `.env.local` for your port).
+After these steps, your site will be available at `http://localhost:<PORT>/wp-admin/` (check `.env` for your port).
 
 Login credentials: `admin` / `admin`
 
@@ -47,7 +47,7 @@ npm run up:recreate
 ```
 
 This will:
-1. Auto-configure your port and worktree ID (saved to `.env.local`)
+1. Auto-configure your port and worktree ID (saved to `.env`)
 2. Create/recreate the WordPress container
 3. Run the setup script to install WordPress, WooCommerce, and WooPayments
 
@@ -79,17 +79,17 @@ npm run dev
 
 #### Checking your port
 
-Your WordPress port is saved in `.env.local`. Check it with:
+Your WordPress port is saved in `.env`. Check it with:
 
 ```
-cat .env.local
+cat .env
 ```
 
 Or it's displayed when you run `npm run up`.
 
 ### WordPress Admin
 
-Open http://localhost:<YOUR_PORT>/wp-admin/ (check `.env.local` for your port, default is 8082)
+Open http://localhost:<YOUR_PORT>/wp-admin/ (check `.env` for your port, default is 8082)
 ```
 Username: admin
 Password: admin
@@ -125,7 +125,7 @@ npm install
 npm run up
 ```
 
-The `post-checkout` hook will automatically configure `.env.local` with a unique port.
+The `post-checkout` hook will automatically configure `.env` with a unique port.
 
 #### Removing a worktree
 
@@ -140,10 +140,10 @@ git worktree remove /path/to/worktree
 
 #### Customizing your worktree config
 
-Edit `.env.local` to customize:
+Edit `.env` to customize:
 ```bash
 # Port for this worktree's WordPress instance
-WP_PORT=8086
+WORDPRESS_PORT=8086
 
 # Unique identifier (used in container names)
 WORKTREE_ID=my_feature
@@ -197,7 +197,7 @@ Your site will be available at `https://<your-subdomain>.jurassic.tube/`
 
 You don't need a paid plan for this.
 
-In a new terminal window run (replace PORT with your actual port from `.env.local`):
+In a new terminal window run (replace PORT with your actual port from `.env`):
 
 ```bash
 ngrok http <PORT>

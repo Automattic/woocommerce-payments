@@ -9,11 +9,8 @@ services:
     restart: unless-stopped
     ports:
       - "5678:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: wordpress
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpress
-      MYSQL_PASSWORD: wordpress
+    env_file:
+      - default.env
     volumes:
       - ./docker/data:/var/lib/mysql
     networks:
@@ -25,10 +22,8 @@ services:
     restart: unless-stopped
     ports:
       - "8083:80"
-    environment:
-      PMA_HOST: db
-      PMA_USER: root
-      PMA_PASSWORD: wordpress
+    env_file:
+      - default.env
     depends_on:
       - db
     networks:

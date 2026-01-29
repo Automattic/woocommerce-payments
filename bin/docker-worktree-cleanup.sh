@@ -4,17 +4,17 @@
 
 set -e
 
-if [[ ! -f ".env.local" ]]; then
-    echo "No .env.local found - nothing to clean up"
+if [[ ! -f ".env" ]]; then
+    echo "No .env found - nothing to clean up"
     exit 0
 fi
 
-source .env.local
+source .env
 
 echo "Stopping containers for worktree: $WORKTREE_ID"
-docker compose --env-file .env.local down
+docker compose --env-file .env down
 
-echo "Removing .env.local"
-rm .env.local
+echo "Removing .env"
+rm .env
 
 echo "Cleanup complete. You can now run: git worktree remove $(pwd)"
