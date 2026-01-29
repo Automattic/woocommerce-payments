@@ -194,6 +194,20 @@ cmd_create() {
     fi
     echo "done"
 
+    # Verify the branch has the new shared infrastructure Docker architecture
+    if ! grep -q "wcpay-network" "$worktree_path/docker-compose.yml" 2>/dev/null || \
+       ! grep -q "external: true" "$worktree_path/docker-compose.yml" 2>/dev/null; then
+        log_error "Branch '$base_branch' has the old Docker architecture (standalone db/phpMyAdmin)."
+        log_error "This command requires the new shared infrastructure setup."
+        log_error ""
+        log_error "Options:"
+        log_error "  1. Use a branch that has the new Docker architecture"
+        log_error "  2. Merge the Docker refactor into '$base_branch' first"
+        log_error "  3. Set up this worktree manually with the old architecture"
+        git -C "$REPO_ROOT" worktree remove "$worktree_path" --force 2>/dev/null
+        exit 1
+    fi
+
     # Step 3: Install npm dependencies
     log_step 3 $total_steps "Installing npm dependencies... "
     (cd "$worktree_path" && npm ci --silent) || {
