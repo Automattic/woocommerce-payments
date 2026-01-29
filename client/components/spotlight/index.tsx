@@ -55,6 +55,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	description,
 	footnote,
 	image,
+	icon,
 	primaryButtonLabel,
 	onPrimaryClick,
 	secondaryButtonLabel,
@@ -63,6 +64,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	onView,
 	showImmediately = false,
 	showDelayMs = 4000,
+	reverseButtons = false,
 } ) => {
 	const validBadgeType = getValidBadgeType( badgeType );
 	const [ isVisible, setIsVisible ] = useState( false );
@@ -205,6 +207,27 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		return null;
 	}
 
+	// Define buttons to avoid duplication
+	const primaryButton = (
+		<Button
+			className="wcpay-spotlight__primary-btn"
+			variant="primary"
+			onClick={ handlePrimaryClick }
+		>
+			{ primaryButtonLabel }
+		</Button>
+	);
+
+	const secondaryButton = secondaryButtonLabel && (
+		<Button
+			className="wcpay-spotlight__secondary-btn"
+			variant="tertiary"
+			onClick={ onSecondaryClick }
+		>
+			{ secondaryButtonLabel }
+		</Button>
+	);
+
 	return (
 		<div
 			className={ `wcpay-spotlight ${
@@ -222,7 +245,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 				<Card
 					className={ `wcpay-spotlight__card ${
 						image ? 'has-image' : ''
-					}` }
+					} ${ icon ? 'has-icon' : '' }` }
 					elevation={ 2 }
 				>
 					{ image && (
@@ -250,8 +273,8 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 							justify="space-between"
 							align="center"
 						>
-							{ /* When no image: show badge if available, otherwise show heading */ }
-							{ ! image && badge && (
+							{ /* When no image and no icon: show badge if available, otherwise show heading */ }
+							{ ! image && ! icon && badge && (
 								<div className="wcpay-spotlight__badge">
 									<Chip
 										message={ badge }
@@ -259,7 +282,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 									/>
 								</div>
 							) }
-							{ ! image && ! badge && (
+							{ ! image && ! icon && ! badge && (
 								<h2
 									id="spotlight-heading"
 									className="wcpay-spotlight__heading"
@@ -267,8 +290,8 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 									{ heading }
 								</h2>
 							) }
-							{ /* Spacer when image is present (header is overlaid) */ }
-							{ image && <span /> }
+							{ /* Spacer when image or icon is present */ }
+							{ ( image || icon ) && <span /> }
 							<Button
 								className="wcpay-spotlight__close-btn"
 								label={ __( 'Close', 'woocommerce-payments' ) }
@@ -285,6 +308,12 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 					</CardHeader>
 
 					<CardBody className="wcpay-spotlight__body" size="small">
+						{ /* Render icon if provided (small icon in corner, not full-width) */ }
+						{ icon && (
+							<div className="wcpay-spotlight__icon">
+								{ icon }
+							</div>
+						) }
 						{ /* When image present OR when no image but badge is in header: show badge in body only if image */ }
 						{ image && badge && (
 							<div className="wcpay-spotlight__badge">
@@ -294,10 +323,10 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 								/>
 							</div>
 						) }
-						{ /* When no image and badge shown in header: show heading in body */ }
-						{ /* When image present: always show heading in body */ }
-						{ /* When no image and no badge: heading already in header, don't duplicate */ }
-						{ ( image || badge ) && (
+						{ /* When no image/icon and badge shown in header: show heading in body */ }
+						{ /* When image or icon present: always show heading in body */ }
+						{ /* When no image/icon and no badge: heading already in header, don't duplicate */ }
+						{ ( image || icon || badge ) && (
 							<h2
 								id="spotlight-heading"
 								className="wcpay-spotlight__heading"
@@ -340,22 +369,17 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 						className="wcpay-spotlight__footer"
 					>
 						<Flex justify="flex-end" gap={ 3 }>
-							{ secondaryButtonLabel && (
-								<Button
-									className="wcpay-spotlight__secondary-btn"
-									variant="tertiary"
-									onClick={ onSecondaryClick }
-								>
-									{ secondaryButtonLabel }
-								</Button>
+							{ reverseButtons ? (
+								<>
+									{ primaryButton }
+									{ secondaryButton }
+								</>
+							) : (
+								<>
+									{ secondaryButton }
+									{ primaryButton }
+								</>
 							) }
-							<Button
-								className="wcpay-spotlight__primary-btn"
-								variant="primary"
-								onClick={ handlePrimaryClick }
-							>
-								{ primaryButtonLabel }
-							</Button>
 						</Flex>
 					</CardFooter>
 				</Card>
