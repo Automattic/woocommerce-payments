@@ -7,7 +7,7 @@ on:
 env:
   WP_VERSION:        latest
   WC_MIN_SUPPORTED_VERSION: '7.6.0'
-  PHP_MIN_SUPPORTED_VERSION: '7.3'
+  PHP_MIN_SUPPORTED_VERSION: '7.4'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,7 +40,6 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          # PHP 7.3 requires Gutenberg 22.3.0 (last version supporting PHP 7.3)
           # PHP 7.4+ can use latest Gutenberg
           echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"22.3.0\"}]}" >> $GITHUB_OUTPUT
 

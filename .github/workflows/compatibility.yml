@@ -6,7 +6,7 @@ on:
 env:
   WC_MIN_SUPPORTED_VERSION: '7.6.0'
   WP_MIN_SUPPORTED_VERSION: '6.0'
-  PHP_MIN_SUPPORTED_VERSION: '7.3'
+  PHP_MIN_SUPPORTED_VERSION: '7.4'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
