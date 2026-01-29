@@ -5,16 +5,20 @@
 set -e
 
 if [[ ! -f ".env" ]]; then
-    echo "No .env found - nothing to clean up"
-    exit 0
+    echo "No .env file detected, which means you might not be on a worktree."
+    read -p "Do you want to continue? (y/N) " -r
+    # Only continue if user explicitly confirms with: y or yes (case-insensitive)
+    if [[ ! ${REPLY,,} =~ ^y(es)?$ ]]; then
+        exit 0
+    fi
 fi
 
-source .env
+echo "Stopping containers for this worktree"
+npm run down
 
-echo "Stopping containers for worktree: $WORKTREE_ID"
-docker compose --env-file .env down
-
-echo "Removing .env"
-rm .env
+if [ -f ".env" ]; then
+	echo "Removing .env"
+    rm .env
+fi
 
 echo "Cleanup complete. You can now run: git worktree remove $(pwd)"

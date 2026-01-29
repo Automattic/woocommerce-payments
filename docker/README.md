@@ -89,7 +89,7 @@ Or it's displayed when you run `npm run up`.
 
 ### WordPress Admin
 
-Open http://localhost:<YOUR_PORT>/wp-admin/ (check `.env` for your port, default is 8082)
+Open http://localhost:<YOUR_PORT>/wp-admin/ (check `.env` for your port; default is 8082 for main checkout, worktrees get auto-assigned ports from 8084-8099)
 ```
 Username: admin
 Password: admin
@@ -121,11 +121,14 @@ cd ../my-feature-branch
 # Install dependencies
 npm install
 
-# Start WordPress (port auto-configured on first run)
-npm run up
+# Configure port and worktree ID (creates .env file)
+npm run worktree:setup
+
+# Start WordPress
+npm run up:recreate
 ```
 
-The `post-checkout` hook will automatically configure `.env` with a unique port.
+The `worktree:setup` command scans for an available port (8084-8099) and creates a `.env` file with `WORDPRESS_PORT` and `WORKTREE_ID`.
 
 #### Removing a worktree
 
