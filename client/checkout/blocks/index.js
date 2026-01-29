@@ -116,7 +116,7 @@ Object.entries( enabledPaymentMethodsConfig )
 			},
 			paymentMethodId: upeConfig.gatewayId,
 			label: <Label />,
-			icons,
+			icons: icons,
 			ariaLabel: 'WooPayments',
 			supports: {
 				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
