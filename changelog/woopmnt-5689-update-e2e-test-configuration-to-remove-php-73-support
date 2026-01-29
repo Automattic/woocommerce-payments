@@ -1,0 +1,3 @@
+Significance: patch
+Type: fix
+Comment: Update E2E test configuration to remove PHP 7.3 support and update minimum PHP version to 7.4
