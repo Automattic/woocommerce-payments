@@ -3,6 +3,7 @@
  */
 import React, { useCallback, useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import { Icon, external } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -10,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import Spotlight from 'components/spotlight';
 import { useReviewPromptState } from './hooks';
 import { recordEvent } from 'wcpay/tracks';
+import MegaphoneIcon from './megaphone-icon';
 
 const wordpressOrgReviewUrl =
 	'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post';
@@ -142,6 +144,7 @@ const ReviewPrompt: React.FC = () => {
 
 	return (
 		<Spotlight
+			icon={ <MegaphoneIcon /> }
 			heading={ __(
 				'Enjoying WooPayments so far?',
 				'woocommerce-payments'
@@ -150,10 +153,16 @@ const ReviewPrompt: React.FC = () => {
 				'Your feedback shapes our roadmap and supports the WooCommerce community. We are all ears!',
 				'woocommerce-payments'
 			) }
-			primaryButtonLabel={ __(
-				'Write a review',
-				'woocommerce-payments'
-			) }
+			primaryButtonLabel={
+				<>
+					{ __( 'Leave review', 'woocommerce-payments' ) }
+					<Icon
+						icon={ external }
+						size={ 20 }
+						style={ { marginLeft: '6px' } }
+					/>
+				</>
+			}
 			onPrimaryClick={ handlePrimaryClick }
 			secondaryButtonLabel={ __( 'Maybe later', 'woocommerce-payments' ) }
 			onSecondaryClick={ handleSecondaryClick }
@@ -161,6 +170,7 @@ const ReviewPrompt: React.FC = () => {
 			onView={ handleView }
 			showImmediately={ false }
 			showDelayMs={ 2000 }
+			reverseButtons={ true }
 		/>
 	);
 };
