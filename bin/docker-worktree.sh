@@ -186,10 +186,11 @@ cmd_create() {
     ensure_infra
     echo "done"
 
-    # Step 2: Create git worktree
+    # Step 2: Create git worktree with a new branch
     log_step 2 $total_steps "Creating git worktree... "
-    if ! git -C "$REPO_ROOT" worktree add "$worktree_path" "$base_branch" 2>/dev/null; then
-        log_error "Failed to create git worktree. Ensure '$base_branch' exists."
+    if ! git -C "$REPO_ROOT" worktree add -b "$name" "$worktree_path" "$base_branch" 2>/dev/null; then
+        log_error "Failed to create git worktree."
+        log_error "Ensure '$base_branch' exists and branch '$name' doesn't already exist."
         exit 1
     fi
     echo "done"
@@ -205,23 +206,26 @@ cmd_create() {
         log_error "  2. Merge the Docker refactor into '$base_branch' first"
         log_error "  3. Set up this worktree manually with the old architecture"
         git -C "$REPO_ROOT" worktree remove "$worktree_path" --force 2>/dev/null
+        git -C "$REPO_ROOT" branch -D "$name" 2>/dev/null
         exit 1
     fi
 
     # Step 3: Install npm dependencies
     log_step 3 $total_steps "Installing npm dependencies... "
-    (cd "$worktree_path" && npm ci --silent) || {
+    (cd "$worktree_path" && npm ci) || {
         log_error "Failed to install npm dependencies"
         git -C "$REPO_ROOT" worktree remove "$worktree_path" --force 2>/dev/null
+        git -C "$REPO_ROOT" branch -D "$name" 2>/dev/null
         exit 1
     }
     echo "done"
 
     # Step 4: Install composer dependencies
     log_step 4 $total_steps "Installing composer dependencies... "
-    (cd "$worktree_path" && composer install --quiet --ignore-platform-req=php) || {
+    (cd "$worktree_path" && composer install --ignore-platform-req=php) || {
         log_error "Failed to install composer dependencies"
         git -C "$REPO_ROOT" worktree remove "$worktree_path" --force 2>/dev/null
+        git -C "$REPO_ROOT" branch -D "$name" 2>/dev/null
         exit 1
     }
     echo "done"
@@ -234,6 +238,7 @@ cmd_create() {
         log_error "No available ports in range $PORT_RANGE_START-$PORT_RANGE_END"
         log_error "Occupied ports:$occupied"
         git -C "$REPO_ROOT" worktree remove "$worktree_path" --force 2>/dev/null
+        git -C "$REPO_ROOT" branch -D "$name" 2>/dev/null
         exit 1
     fi
 
