@@ -187,14 +187,30 @@ cli wp plugin install disable-wordpress-updates --activate --force
 
 echo "Installing dev tools plugin..."
 set +e
-if [[ ! -d "docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools" ]]; then
-	git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools
+# Check if plugin exists in the container (shared volume)
+DEV_TOOLS_EXISTS=$(docker exec $WP_CONTAINER test -d /var/www/html/wp-content/plugins/woocommerce-payments-dev-tools && echo "yes" || echo "no")
+if [[ "$DEV_TOOLS_EXISTS" == "no" ]]; then
+	echo "Dev tools plugin not found in shared volume, attempting to install..."
+	# Clone to a temp directory and copy into the container
+	TEMP_DIR=$(mktemp -d)
+	echo "Cloning dev tools to $TEMP_DIR..."
+	if git clone --depth 1 git@github.com:Automattic/woocommerce-payments-dev-tools.git "$TEMP_DIR/woocommerce-payments-dev-tools"; then
+		echo "Copying plugin to container..."
+		docker cp "$TEMP_DIR/woocommerce-payments-dev-tools" "$WP_CONTAINER:/var/www/html/wp-content/plugins/"
+		echo "Setting permissions..."
+		docker exec $WP_CONTAINER chown -R www-data:www-data /var/www/html/wp-content/plugins/woocommerce-payments-dev-tools
+		DEV_TOOLS_EXISTS="yes"
+		echo "Dev tools plugin installed successfully."
+	else
+		echo "WARN: git clone failed. You may need to set up SSH keys for github.com"
+	fi
+	rm -rf "$TEMP_DIR"
 fi
-if [[ -d "docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools" ]]; then
+if [[ "$DEV_TOOLS_EXISTS" == "yes" ]]; then
 	cli wp plugin activate woocommerce-payments-dev-tools
 else
 	echo
-	echo "WARN: Could not clone the dev tools repository. Skipping the install."
+	echo "WARN: Could not install the dev tools plugin. You can install it manually later."
 fi
 set -e
 
