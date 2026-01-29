@@ -4,13 +4,10 @@
 # 1. Install dependencies
 npm install
 
-# 2. Start shared infrastructure (database & phpMyAdmin) - first time only
-npm run infra:up
-
-# 3. Start WordPress container and set up the site
+# 2. Start WordPress container and set up the site
 npm run up:recreate
 
-# 4. Build JS assets (or use `npm start` to watch for changes)
+# 3. Build JS assets (or use `npm start` to watch for changes)
 npm run build:client
 ```
 
@@ -28,25 +25,17 @@ Login credentials: `admin` / `admin`
 npm install
 ```
 
-#### Step 2: Start shared infrastructure (first time only)
-
-The database and phpMyAdmin are shared across all worktrees. Start them once from your main checkout:
-
-```bash
-npm run infra:up
-```
-
-This creates:
-- A shared Docker network (`wcpay-network`) that all WordPress containers join
-- Shared Docker volumes for plugins, themes, and uploads (see [Shared vs Per-Worktree Resources](#shared-vs-per-worktree-resources))
-
-#### Step 3: Start WordPress and set up the site
+#### Step 2: Start WordPress and set up the site
 
 For first-time setup (creates container AND configures WordPress/WooPayments):
 
 ```bash
 npm run up:recreate
 ```
+
+This automatically starts the shared infrastructure (database, phpMyAdmin) if not already running, then:
+1. Creates/recreates the WordPress container
+2. Runs the setup script to install WordPress, WooCommerce, and WooPayments
 
 This will:
 1. Create/recreate the WordPress container (uses port 8082 and container ID "default" if `.env` doesn't exist)
@@ -60,7 +49,7 @@ For subsequent startups (container already configured):
 npm run up
 ```
 
-#### Step 4: Build JS assets
+#### Step 3: Build JS assets
 
 Build once for production:
 

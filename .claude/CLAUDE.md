@@ -166,7 +166,7 @@ npm run i18n:pot                    # Generate translations
 - phpMyAdmin: http://localhost:8083
 - MySQL: localhost:5678
 - Xdebug ready (requires IDE path mapping)
-- First-time setup: `npm run infra:up` then `npm run up:recreate`
+- First-time setup: `npm run up:recreate` (auto-starts infrastructure)
 - Subsequent runs: `npm run up`
 - For git worktrees: `npm run worktree:create <name> [branch]` to create a fully configured worktree
 
