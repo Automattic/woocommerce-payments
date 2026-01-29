@@ -6,8 +6,13 @@ This guide follows the [WooCommerce guide to unit tests](https://github.com/wooc
 
 1. Start the shared infrastructure (first time only): `npm run infra:up`
 2. Start the WordPress container: `npm run up` (or `npm run up:recreate` for first-time setup)
-3. Once the containers are up, run the tests from the plugin root directory using `npm test`
-  - Tests can be run in watch mode using `npm run test:watch` and `npm run test:php-watch` for JavaScript and PHP unit tests respectively
+3. Once the containers are up, run tests from the plugin root directory:
+   - `npm run test:php` - Run PHP unit tests only
+   - `npm run test:js` - Run JavaScript unit tests only
+   - `npm test` - Run both JS and PHP tests
+4. Watch mode for iterative development:
+   - `npm run test:php-watch` - PHP tests in watch mode
+   - `npm run test:watch` - JavaScript tests in watch mode
 
 ## Initial Setup for running tests locally
 

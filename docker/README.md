@@ -131,7 +131,7 @@ npm run worktree:setup
 npm run up:recreate
 ```
 
-The `worktree:setup` command scans for an available port (8084-8099) and creates a `.env` file with `WORDPRESS_PORT` and `WORKTREE_ID`.
+The `worktree:setup` command scans for an available port (8084-8099), derives a `WORKTREE_ID` from the directory name, and creates a `.env` file with both values.
 
 #### Removing a worktree
 
