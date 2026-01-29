@@ -95,6 +95,11 @@ declare global {
 				 * Eligibility is determined per-account on transact-platform-server.
 				 */
 				wporgReview2025: boolean;
+				/**
+				 * The flag for the payments settings review prompt (Phase 0).
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				reviewPromptPhase0: boolean;
 			};
 		} >;
 		accountLoans: {
@@ -246,6 +251,11 @@ declare global {
 		exitSurveyLastShown: string | null;
 	};
 
+	const wcpayReviewPromptSettings: {
+		isLive: boolean;
+		version: string;
+	};
+
 	interface WcSettings {
 		ece_data?: WCPayExpressCheckoutParams;
 		woocommerce_payments_data: typeof wcpaySettings;
@@ -268,5 +278,6 @@ declare global {
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
+		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
 	}
 }

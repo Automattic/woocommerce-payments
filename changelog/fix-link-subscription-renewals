@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Allow subscription renewals with saved Link payment tokens even when Link is disabled at checkout
