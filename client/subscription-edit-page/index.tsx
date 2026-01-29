@@ -129,10 +129,7 @@ export const addCustomerSelectListener = (
  * @param {string} gatewayId The gateway ID.
  * @return {number} The default token ID or 0 if no default token is found.
  */
-export const getDefaultUserToken = (
-	userId: number,
-	gatewayId: string
-): number => {
+const getDefaultUserToken = ( userId: number, gatewayId: string ): number => {
 	const cacheKey = getCacheKey( userId, gatewayId );
 	const userTokens = cachedTokens.get( cacheKey );
 	if ( undefined === userTokens ) {
