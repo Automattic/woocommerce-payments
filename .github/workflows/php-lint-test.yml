@@ -40,7 +40,6 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          # PHP 7.4 can use Gutenberg 22.3.0 or later
           # PHP 7.4+ can use latest Gutenberg
           echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"22.3.0\"}]}" >> $GITHUB_OUTPUT
 
