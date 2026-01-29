@@ -48,6 +48,9 @@ while [[ $? -ne 0 ]]; do
 	cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 done
 
+# Seed shared volumes from local directories if volumes are empty
+bash bin/docker-seed-volumes.sh
+
 # Check if WooCommerce plugin files exist (not just DB state)
 # This handles shared DB setups where DB says plugins are active but files don't exist in this worktree
 WOOCOMMERCE_EXISTS=$(docker exec $WP_CONTAINER test -d /var/www/html/wp-content/plugins/woocommerce && echo "yes" || echo "no")
