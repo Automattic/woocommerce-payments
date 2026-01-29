@@ -43,6 +43,7 @@ const PaymentMethodsSection = () => {
 				methodsConfiguration[ id ] &&
 				! methodsConfiguration[ id ].allows_pay_later &&
 				// methods displayed in the Express Checkout section
+				PAYMENT_METHOD_IDS.AMAZON_PAY !== id &&
 				PAYMENT_METHOD_IDS.LINK !== id &&
 				PAYMENT_METHOD_IDS.APPLE_PAY !== id &&
 				PAYMENT_METHOD_IDS.GOOGLE_PAY !== id
