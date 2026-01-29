@@ -59,6 +59,22 @@ WOOCOMMERCE_EXISTS=$(docker exec $WP_CONTAINER test -d /var/www/html/wp-content/
 cli wp core is-installed --path=/var/www/html > /dev/null 2>&1
 WP_INSTALLED=$?
 
+# wp-config.php settings are per-worktree (file-based), so always set them
+# This must run BEFORE the early exit check since each container has its own wp-config.php
+echo "Configuring wp-config.php for this worktree..."
+cli wp config set DOCKER_HOST "\$_SERVER['HTTP_X_FORWARDED_HOST'] ?? \$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? \$_SERVER['HTTP_HOST'] ?? 'localhost'" --raw
+# Ensure $_SERVER['HTTP_HOST'] is overwritten with DOCKER_HOST (only adding this line if not already present)
+docker exec $WP_CONTAINER bash -c "grep -q '\\\$_SERVER\[.HTTP_HOST.\] = DOCKER_HOST' /var/www/html/wp-config.php || sed -i \"/define.*'DOCKER_HOST'/a \\\\\\\$_SERVER['HTTP_HOST'] = DOCKER_HOST;\" /var/www/html/wp-config.php"
+cli wp config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST" --raw
+cli wp config set WP_SITEURL DOCKER_REQUEST_URL --raw
+cli wp config set WP_HOME DOCKER_REQUEST_URL --raw
+
+cli wp config set WP_DEBUG true --raw
+cli wp config set WP_DEBUG_DISPLAY false --raw
+cli wp config set WP_DEBUG_LOG true --raw
+cli wp config set SCRIPT_DEBUG true --raw
+cli wp config set WP_ENVIRONMENT_TYPE development
+
 # If WooPayments is active AND WooCommerce files exist, we can skip setup entirely
 cli wp plugin is-active woocommerce-payments > /dev/null
 if [[ $? -eq 0 ]] && [[ "$WOOCOMMERCE_EXISTS" == "yes" ]]; then
@@ -103,25 +119,6 @@ if [[ $WP_INSTALLED -ne 0 ]]; then
 else
 	echo "WordPress already installed, skipping core setup..."
 fi
-
-# wp-config.php settings are per-worktree (file-based), so always set them
-echo "Configuring WordPress to work with ngrok/jurassic tube (in order to allow creating a Jetpack-WPCOM connection)";
-cli wp config set DOCKER_HOST "\$_SERVER['HTTP_X_FORWARDED_HOST'] ?? \$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? \$_SERVER['HTTP_HOST'] ?? 'localhost'" --raw
-# Ensure $_SERVER['HTTP_HOST'] is overwritten with DOCKER_HOST (only adding this line if not already present)
-docker exec $WP_CONTAINER bash -c "grep -q '\\\$_SERVER\[.HTTP_HOST.\] = DOCKER_HOST' /var/www/html/wp-config.php || sed -i \"/define.*'DOCKER_HOST'/a \\\\\\\$_SERVER['HTTP_HOST'] = DOCKER_HOST;\" /var/www/html/wp-config.php"
-cli wp config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST" --raw
-cli wp config set WP_SITEURL DOCKER_REQUEST_URL --raw
-cli wp config set WP_HOME DOCKER_REQUEST_URL --raw
-
-echo "Enabling WordPress debug flags"
-cli wp config set WP_DEBUG true --raw
-# Disable display to prevent _load_textdomain_just_in_time errors from being displayed
-cli wp config set WP_DEBUG_DISPLAY false --raw
-cli wp config set WP_DEBUG_LOG true --raw
-cli wp config set SCRIPT_DEBUG true --raw
-
-echo "Enabling WordPress development environment (enforces Stripe testing mode)";
-cli wp config set WP_ENVIRONMENT_TYPE development
 
 # Only set DB-stored settings if this is a fresh install (not shared DB mode)
 if [[ "$SHARED_DB_MODE" == "no" ]]; then
