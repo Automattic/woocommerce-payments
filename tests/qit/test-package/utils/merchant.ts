@@ -139,6 +139,45 @@ export const goToPaymentsOverview = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
+export const goToWooCommerceSettings = async ( page: Page, tab?: string ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-settings' + ( tab ? '&tab=' + tab : '' ),
+		{ waitUntil: 'load' }
+	);
+};
+
+export const goToSubscriptions = async ( page: Page ) => {
+	await page.goto( '/wp-admin/admin.php?page=wc-orders--shop_subscription', {
+		waitUntil: 'load',
+	} );
+};
+
+export const goToSubscriptionPage = async (
+	page: Page,
+	subscriptionId: string
+) => {
+	await goToSubscriptions( page );
+	await page.getByRole( 'link', { name: `#${ subscriptionId }` } ).click();
+	await dataHasLoaded( page );
+};
+
+export const goToActionScheduler = async (
+	page: Page,
+	status?: string,
+	search?: string
+) => {
+	let pageUrl = '/wp-admin/tools.php?page=action-scheduler';
+	if ( status ) {
+		pageUrl += `&status=${ status }`;
+	}
+	if ( search ) {
+		pageUrl += `&s=${ search }`;
+	}
+	await page.goto( pageUrl, {
+		waitUntil: 'load',
+	} );
+};
+
 export const goToMultiCurrencyOnboarding = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup',

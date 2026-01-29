@@ -15,6 +15,29 @@ WooCommerce Payments (WCPay) is a WordPress plugin that provides payment process
 - See `woocommerce-payments.php` header for current version and WordPress/WooCommerce/PHP requirements
 - See `package.json` for Node.js version requirements (engines field)
 
+## WooCommerce Core Reference
+
+WooPayments is a separate plugin that integrates with WooCommerce core, leveraging its hooks, filters, and APIs. Having the WooCommerce codebase available locally provides useful context when working on WooPayments.
+
+**Location:** `../woocommerce` (or set `WOOCOMMERCE_DIR` env var to override)
+
+**Key paths within WooCommerce:**
+- `plugins/woocommerce/includes/` - Core WooCommerce PHP classes
+- `plugins/woocommerce/src/` - Modern PSR-4 WooCommerce code
+- `plugins/woocommerce-blocks/` - Checkout and cart blocks
+
+**When to reference WooCommerce core:**
+- When working with WC hooks/filters - check the core implementation to understand parameters, timing, and context
+- When using WC base classes (e.g., `WC_Payment_Gateway`) - understand the parent class behavior
+- When debugging issues that may involve core behavior
+- When implementing features that interact with WC APIs (orders, products, customers, etc.)
+
+**Auto-reference triggers:** Proactively check WooCommerce core when you encounter:
+- Classes using `WC_*` base classes
+- Hooks starting with `woocommerce_` or `wc_`
+- Usage of `WC()` singleton or WC helper functions
+- Order, product, or customer manipulation code
+
 ## Directory Structure
 
 ### PHP Code
@@ -105,7 +128,8 @@ npm run psalm                       # PHP static analysis
 
 ### Other
 ```bash
-npm run changelog                   # Add changelog entry
+npm run changelog                   # Add changelog entry (interactive)
+npm run changelog:add               # Add changelog entry (non-interactive, for automation)
 npm run i18n:pot                    # Generate translations
 ```
 
@@ -128,7 +152,9 @@ npm run i18n:pot                    # Generate translations
 - Release branch: `trunk`
 - Husky manages git hooks
 - **Before creating a PR:**
-  - Must run `npm run changelog add` and commit the changelog entry (choose 'patch' if change is not significant)
+  - Must add and commit a changelog entry (use 'patch' significance if change is not significant)
+  - For Claude/automation: `npm run changelog:add -- --type=<type> --entry="<description>"`
+  - For interactive use: `npm run changelog`
   - Changelog must be committed and pushed before creating the PR
 - Use PR template from `.github/PULL_REQUEST_TEMPLATE.md` when creating pull requests
   - Include testing instructions
@@ -148,8 +174,15 @@ npm run i18n:pot                    # Generate translations
 - Use npm for JavaScript dependencies
 
 ### Changelog
-- Use `npm run changelog` to add entries
-- Types: Add, Fix, Update, Dev
+- Use `npm run changelog` for interactive changelog entry creation
+- Use `npm run changelog:add` for non-interactive (automation/Claude) usage:
+  ```bash
+  npm run changelog:add -- --type=fix --entry="Fixed a bug"
+  npm run changelog:add -- --type=add --entry="Added feature" --significance=minor
+  # Or with positional args: npm run changelog:add -- patch fix "Fixed a bug"
+  ```
+- Types: add, fix, update, dev
+- Significances: patch (default), minor, major
 - Entries go in `changelog/` directory
 
 ## Important Configuration Files

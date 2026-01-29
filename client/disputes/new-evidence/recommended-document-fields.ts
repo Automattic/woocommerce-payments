@@ -34,8 +34,31 @@ const getRecommendedDocumentFields = (
 		false;
 
 	if ( isFeatureFlagEnabled ) {
-		// For duplicate disputes, use duplicateStatus for composite key lookup.
+		// Handle Visa Compliance (noncompliant) disputes
+		if ( reason === 'noncompliant' ) {
+			return [
+				{
+					key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+					label: __( 'Upload evidence', 'woocommerce-payments' ),
+					description: __(
+						'Submit any files you find relevant to this dispute.',
+						'woocommerce-payments'
+					),
+					order: 0,
+				},
+				{
+					key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+					label: __( 'Other documents', 'woocommerce-payments' ),
+					description: __(
+						'Any other relevant documents that will support your case.',
+						'woocommerce-payments'
+					),
+					order: 0,
+				},
+			];
+		}
 		// Use 'default' as placeholder to attempt matrix lookup (will fall back if no entry exists).
+		// For duplicate disputes, use duplicateStatus for composite key lookup.
 		const status = reason === 'duplicate' ? duplicateStatus : undefined;
 		const effectiveProductType =
 			productType || ( reason === 'duplicate' ? 'default' : undefined );
