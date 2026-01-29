@@ -3757,6 +3757,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			$payment_method_id = $intent->get_payment_method_id();
 
+			// For SetupIntents confirmed via frontend (e.g., ECE with confirmation tokens),
+			// store the payment method ID in order meta. This ensures subscription renewals
+			// can find the payment method even if token creation fails later.
+			if ( ! empty( $payment_method_id ) ) {
+				$this->order_service->set_payment_method_id_for_order( $order, $payment_method_id );
+			}
+
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 			}
@@ -3778,8 +3785,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 						}
 					} catch ( Exception $e ) {
-						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+
+						// For subscription orders, token creation failure is critical - renewals will fail.
+						// Re-throw the exception so the customer sees an error instead of a successful
+						// checkout that will fail on the first renewal.
+						if ( $is_subscription ) {
+							throw new Exception(
+								__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
+							);
+						}
 					}
 				}
 
