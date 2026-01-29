@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add single-command worktree workflow: worktree:create, worktree:status, worktree:remove

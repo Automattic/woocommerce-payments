@@ -81,6 +81,28 @@ if [[ $? -eq 0 ]] && [[ "$WOOCOMMERCE_EXISTS" == "yes" ]]; then
 	set -e
 	echo
 	echo "WooPayments is installed and active"
+
+	# Generate .worktree-info.json even for already-configured sites
+	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+	REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+	WORKTREE_NAME=$(basename "$REPO_ROOT")
+	BASE_BRANCH=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+	CREATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+	cat > "$REPO_ROOT/.worktree-info.json" << EOF
+{
+  "version": 1,
+  "worktree_id": "${WORKTREE_ID:-default}",
+  "port": ${DEFAULT_PORT},
+  "url": "http://localhost:${DEFAULT_PORT}",
+  "admin_url": "http://localhost:${DEFAULT_PORT}/wp-admin/",
+  "container_name": "${WP_CONTAINER}",
+  "created_at": "${CREATED_AT}",
+  "base_branch": "${BASE_BRANCH}",
+  "path": "${REPO_ROOT}"
+}
+EOF
+
 	echo "SUCCESS! You should now be able to access http://${SITE_URL}/wp-admin/"
 	echo "You can login by using the username and password both as 'admin'"
 	exit 0
@@ -213,6 +235,64 @@ else
 	echo "WARN: Could not install the dev tools plugin. You can install it manually later."
 fi
 set -e
+
+# Health check with retries
+HEALTH_CHECK_RETRIES=${HEALTH_CHECK_RETRIES:-3}
+HEALTH_CHECK_DELAY=${HEALTH_CHECK_DELAY:-10}
+HEALTH_CHECK_URL="http://${SITE_URL}/wp-admin/"
+
+echo "Running health check..."
+health_passed=false
+for i in $(seq 1 $HEALTH_CHECK_RETRIES); do
+    http_code=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_CHECK_URL" 2>/dev/null || echo "000")
+    if [[ "$http_code" == "200" ]] || [[ "$http_code" == "302" ]]; then
+        health_passed=true
+        break
+    fi
+    if [[ $i -lt $HEALTH_CHECK_RETRIES ]]; then
+        echo "Health check attempt $i failed (HTTP $http_code), retrying in ${HEALTH_CHECK_DELAY}s..."
+        sleep $HEALTH_CHECK_DELAY
+    fi
+done
+
+if [[ "$health_passed" != "true" ]]; then
+    echo
+    echo "ERROR: Health check failed after $HEALTH_CHECK_RETRIES attempts"
+    echo "Could not reach $HEALTH_CHECK_URL"
+    echo ""
+    echo "Troubleshooting:"
+    echo "  1. Check container logs: docker logs $WP_CONTAINER"
+    echo "  2. Verify port is not in use: lsof -i :$DEFAULT_PORT"
+    echo "  3. Try restarting: npm run down && npm run up:recreate"
+    exit 1
+fi
+
+# Generate .worktree-info.json
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+WORKTREE_NAME=$(basename "$REPO_ROOT")
+
+# Determine base branch (best effort - may not be accurate for all setups)
+BASE_BRANCH=$(git -C "$REPO_ROOT" log --oneline --decorate -1 2>/dev/null | grep -o 'origin/[^,)]*' | head -1 | sed 's|origin/||' || echo "unknown")
+if [[ -z "$BASE_BRANCH" ]] || [[ "$BASE_BRANCH" == "unknown" ]]; then
+    BASE_BRANCH=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+fi
+
+CREATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+cat > "$REPO_ROOT/.worktree-info.json" << EOF
+{
+  "version": 1,
+  "worktree_id": "${WORKTREE_ID:-default}",
+  "port": ${DEFAULT_PORT},
+  "url": "http://localhost:${DEFAULT_PORT}",
+  "admin_url": "http://localhost:${DEFAULT_PORT}/wp-admin/",
+  "container_name": "${WP_CONTAINER}",
+  "created_at": "${CREATED_AT}",
+  "base_branch": "${BASE_BRANCH}",
+  "path": "${REPO_ROOT}"
+}
+EOF
 
 echo
 echo "SUCCESS! You should now be able to access http://${SITE_URL}/wp-admin/"

@@ -52,7 +52,7 @@ This will:
 1. Create/recreate the WordPress container (uses port 8082 and container ID "default" if `.env` doesn't exist)
 2. Run the setup script to install WordPress, WooCommerce, and WooPayments
 
-**Note:** For custom port/container configuration, copy `.env.example` to `.env` and edit it, or run `npm run worktree:setup` to auto-generate one.
+**Note:** For custom port/container configuration, copy `.env.example` to `.env` and edit it. For git worktrees, use `npm run worktree:create` instead (see [Working with Git Worktrees](#working-with-git-worktrees)).
 
 For subsequent startups (container already configured):
 
@@ -90,7 +90,7 @@ cat .env
 
 Or it's displayed when you run `npm run up`.
 
-**Note:** If `.env` doesn't exist, Docker Compose uses defaults (port 8082, container ID "default"). Copy `.env.example` to `.env` and customize, or run `npm run worktree:setup` to auto-generate one.
+**Note:** If `.env` doesn't exist, Docker Compose uses defaults (port 8082, container ID "default"). For the main checkout, copy `.env.example` to `.env` and customize. For worktrees, use `npm run worktree:create` instead.
 
 ### WordPress Admin
 
@@ -114,53 +114,108 @@ Password: wordpress
 
 The Docker setup is designed to work seamlessly with git worktrees. Each worktree gets its own WordPress container with a unique port.
 
-#### Creating a new worktree
+#### Creating a Worktree
+
+Create a fully configured worktree with a single command:
 
 ```bash
-# Create the worktree
-git worktree add ../my-feature-branch feature-branch
-
-# Navigate to it
-cd ../my-feature-branch
-
-# Install dependencies
-npm install
-
-# Configure port and worktree ID (creates .env file)
-npm run worktree:setup
-
-# Start WordPress
-npm run up:recreate
+npm run worktree:create my-feature develop
 ```
 
-The `worktree:setup` command scans for an available port (8084-8099), derives a `WORKTREE_ID` from the directory name, and creates a `.env` file with both values.
+This handles everything automatically:
+1. Creates the git worktree from the specified branch (default: `develop`)
+2. Installs npm and composer dependencies
+3. Assigns an available port (8084-8099)
+4. Starts the Docker container
+5. Sets up WordPress, WooCommerce, and WooPayments
+6. Runs a health check to verify the site is accessible
+7. Creates a `.worktree-info.json` file with connection details
 
-#### Removing a worktree
+Example output:
+```
+Creating worktree 'my-feature' from 'develop'...
+  [1/7] Checking infrastructure... done
+  [2/7] Creating git worktree... done
+  [3/7] Installing npm dependencies... done
+  [4/7] Installing composer dependencies... done
+  [5/7] Configuring port (8086)... done
+  [6/7] Starting Docker container... done
+  [7/7] Setting up WordPress... done
 
-Before removing a worktree, clean up its Docker resources:
+SUCCESS! Worktree is ready.
+
+  URL:       http://localhost:8086
+  Admin:     http://localhost:8086/wp-admin/
+  Login:     admin / admin
+  Path:      /Users/you/projects/my-feature
+```
+
+#### Checking Worktree Status
+
+View the status of all worktrees and their containers:
 
 ```bash
-cd /path/to/worktree
-npm run worktree:cleanup
-cd ..
-git worktree remove /path/to/worktree
+npm run worktree:status
+```
+
+Example output:
+```
+Worktree Status
+===============
+  NAME              PORT   URL                      STATUS
+  wcpay (main)      8082   http://localhost:8082    running
+  my-feature        8086   http://localhost:8086    running
+
+Warnings:
+  - Orphan container: wcpay_wp_old (no matching worktree)
+```
+
+For machine-readable output (useful for scripts and agents):
+```bash
+npm run worktree:status -- --json
+```
+
+#### Removing a Worktree
+
+Remove a worktree and all its Docker resources with:
+
+```bash
+npm run worktree:remove my-feature
 ```
 
 This will:
-- Stop the worktree's WordPress container
-- Drop the worktree's test database (`wcpay_tests_<WORKTREE_ID>`) from the shared DB
-- Remove the `.env` file
+- Stop and remove the Docker container
+- Drop the test database (`wcpay_tests_<WORKTREE_ID>`)
+- Remove `.env` and `.worktree-info.json` files
+- Remove the git worktree
 
-#### Customizing your worktree config
-
-Edit `.env` to customize:
+Use `--force` if there are uncommitted changes:
 ```bash
-# Port for this worktree's WordPress instance
-WORDPRESS_PORT=8086
-
-# Unique identifier (used in container names)
-WORKTREE_ID=my_feature
+npm run worktree:remove my-feature -- --force
 ```
+
+#### Worktree Info File
+
+Each worktree generates a `.worktree-info.json` file with connection details:
+
+```json
+{
+  "version": 1,
+  "worktree_id": "my_feature",
+  "port": 8086,
+  "url": "http://localhost:8086",
+  "admin_url": "http://localhost:8086/wp-admin/",
+  "container_name": "wcpay_wp_my_feature",
+  "created_at": "2026-01-29T10:30:00Z",
+  "base_branch": "develop",
+  "path": "/Users/you/projects/my-feature"
+}
+```
+
+This file is useful for:
+- Scripts and automation tools
+- Claude agents working on multiple worktrees
+- Quick reference for connection details
 
 ### Stopping the environment
 

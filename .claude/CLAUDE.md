@@ -168,7 +168,7 @@ npm run i18n:pot                    # Generate translations
 - Xdebug ready (requires IDE path mapping)
 - First-time setup: `npm run infra:up` then `npm run up:recreate`
 - Subsequent runs: `npm run up`
-- For git worktrees: `npm run worktree:setup` to configure `.env` with unique port
+- For git worktrees: `npm run worktree:create <name> [branch]` to create a fully configured worktree
 
 ### Dependency Management
 - WordPress dependencies extracted automatically via webpack plugin

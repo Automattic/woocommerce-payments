@@ -108,3 +108,4 @@ bin/jurassictube/
 
 # Git worktrees
 .worktrees/
+.worktree-info.json
