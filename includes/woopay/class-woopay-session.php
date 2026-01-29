@@ -36,6 +36,20 @@ class WooPay_Session {
 	const WOOPAY_SESSION_KEY = 'woopay-user-data';
 
 	/**
+	 * Order ID used for error handling.
+	 *
+	 * @var int|null
+	 */
+	private static $checkout_error_order_id = null;
+
+	/**
+	 * Whether the error handler has been registered.
+	 *
+	 * @var bool
+	 */
+	private static $is_error_handler_registered = false;
+
+	/**
 	 * Init the hooks.
 	 *
 	 * @return void
@@ -46,6 +60,7 @@ class WooPay_Session {
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'woopay_order_payment_status_changed' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_trial_subscriptions_handler' ], 20, 3 );
+		add_action( 'woocommerce_store_api_checkout_order_processed', [ __CLASS__, 'catch_woopay_checkout_errors' ], 1, 1 );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
@@ -636,11 +651,6 @@ class WooPay_Session {
 			],
 		];
 
-		/**
-		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
-		 *
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
 		$response = \Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
 
 		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
@@ -778,23 +788,12 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Get the WooPay verified email address from the header.
-	 *
-	 * @return string|null The WooPay verified email address if it's set.
-	 */
-	private static function get_woopay_verified_email_address() {
-		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
-
-		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
-	}
-
-	/**
 	 * Returns true if the request that's currently being processed is from WooPay, false
 	 * otherwise.
 	 *
 	 * @return bool True if request is from WooPay.
 	 */
-	private static function is_request_from_woopay(): bool {
+	public static function is_request_from_woopay(): bool {
 		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
 	}
 
@@ -803,8 +802,19 @@ class WooPay_Session {
 	 *
 	 * @return bool True if the request signature is valid.
 	 */
-	private static function has_valid_request_signature() {
+	public static function has_valid_request_signature() {
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+	}
+
+	/**
+	 * Get the WooPay verified email address from the header.
+	 *
+	 * @return string|null The WooPay verified email address if it's set.
+	 */
+	private static function get_woopay_verified_email_address() {
+		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
+
+		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
 	}
 
 	/**
@@ -1062,5 +1072,71 @@ class WooPay_Session {
 		}
 
 		return $current_block['innerBlocks'][ $inner_block_index ];
+	}
+
+	/**
+	 * Catches and logs errors that occur during WooPay checkout processing.
+	 * This is particularly important for third-party plugin compatibility issues
+	 * (e.g., calling methods that don't exist on the WooPay SessionHandler).
+	 *
+	 * This method sets up an error handler that will catch PHP errors and add
+	 * them as order notes for debugging purposes.
+	 *
+	 * @param \WC_Order $order The order being processed.
+	 * @return void
+	 */
+	public static function catch_woopay_checkout_errors( $order ) {
+		if ( ! self::is_request_from_woopay() || ! ( $order instanceof \WC_Order ) ) {
+			return;
+		}
+
+		// Store the order ID so the error handler can access it.
+		self::$checkout_error_order_id = $order->get_id();
+
+		if ( self::$is_error_handler_registered ) {
+			return;
+		}
+
+		// Register shutdown function to catch fatal errors and restore previous handler.
+		register_shutdown_function(
+			function () {
+				$error = error_get_last();
+				if ( ! $error || ! self::is_request_from_woopay() ) {
+					return;
+				}
+
+				// Only handle fatal errors.
+				if ( ! in_array( $error['type'], [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR ], true ) ) {
+					return;
+				}
+
+				// Log the fatal error.
+				Logger::error(
+					sprintf(
+						'WooPay checkout fatal error: %s in %s on line %d',
+						$error['message'],
+						$error['file'],
+						$error['line']
+					)
+				);
+
+				// Add order note with the error details.
+				if ( self::$checkout_error_order_id ) {
+					$woopay_order = wc_get_order( self::$checkout_error_order_id );
+					if ( $woopay_order ) {
+						// Extract only the first line of the error message.
+						$error_first_line = strtok( $error['message'], "\n" );
+						$note             = sprintf(
+							/* translators: %s: error message */
+							__( 'WooPay checkout encountered a fatal error: %s', 'woocommerce-payments' ),
+							esc_html( $error_first_line )
+						);
+						$woopay_order->add_order_note( $note );
+					}
+				}
+			}
+		);
+
+		self::$is_error_handler_registered = true;
 	}
 }

@@ -27,23 +27,12 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
-use WCPay\Payment_Methods\Grabpay_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Klarna_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 // Need to use WC_Mock_Data_Store.
 require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
@@ -207,22 +196,35 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $wp_query_query_vars_backup;
 
 	/**
+	 * Backup of the original payment_gateway_map
+	 *
+	 * @var array
+	 */
+	private $original_payment_gateway_map;
+
+	/**
+	 * Backup of the original payment_method_map
+	 *
+	 * @var array
+	 */
+	private $original_payment_method_map;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
+		$this->original_payment_method_map  = $this->get_payment_method_map();
 
 		$this->mock_api_client = $this
 			->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
 			->setMethods(
 				[
-					'get_account_data',
 					'is_server_connected',
 					'get_blog_id',
-					'create_intention',
-					'create_and_confirm_intention',
-					'create_and_confirm_setup_intent',
 					'get_payment_method',
 					'get_timeline',
 					'get_latest_fraud_ruleset',
@@ -311,6 +313,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// Restore the gateway in the main class.
 		WC_Payments::set_gateway( $this->_gateway );
 
+		// Restore the original payment gateway map to prevent test pollution.
+		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
+
+		// Restore the original payment method map to prevent test pollution.
+		$this->set_payment_method_map( $this->original_payment_method_map );
+
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
 		$this->card_gateway->update_option( 'saved_cards', 'yes' );
@@ -337,6 +345,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp_query;
 		$wp->query_vars       = $this->wp_query_vars_backup;
 		$wp_query->query_vars = $this->wp_query_query_vars_backup;
+
+		// resetting to prevent test pollution.
+		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -465,92 +480,187 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( null, $res );
 	}
 
-	public function test_correct_payment_method_title_for_order() {
+	/**
+	 * Data provider for payment method title tests.
+	 *
+	 * @return array[] Test cases with payment_details, expected_title, and expected_gateway.
+	 */
+	public function payment_method_title_provider() {
+		return [
+			'Visa credit card'  => [
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'funding' => 'credit',
+					],
+				],
+				'expected_title'   => 'Visa credit card',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+			'Visa debit card'   => [
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'funding' => 'debit',
+					],
+				],
+				'expected_title'   => 'Visa debit card',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+			'Mastercard credit' => [
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'mastercard',
+						'funding' => 'credit',
+					],
+				],
+				'expected_title'   => 'Mastercard credit card',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+			'giropay'           => [
+				'payment_details'  => [ 'type' => 'giropay' ],
+				'expected_title'   => 'giropay',
+				'expected_gateway' => 'woocommerce_payments_giropay',
+			],
+			'Sofort'            => [
+				'payment_details'  => [ 'type' => 'sofort' ],
+				'expected_title'   => 'Sofort',
+				'expected_gateway' => 'woocommerce_payments_sofort',
+			],
+			'Bancontact'        => [
+				'payment_details'  => [ 'type' => 'bancontact' ],
+				'expected_title'   => 'Bancontact',
+				'expected_gateway' => 'woocommerce_payments_bancontact',
+			],
+			'EPS'               => [
+				'payment_details'  => [ 'type' => 'eps' ],
+				'expected_title'   => 'EPS',
+				'expected_gateway' => 'woocommerce_payments_eps',
+			],
+			'Przelewy24 (P24)'  => [
+				'payment_details'  => [ 'type' => 'p24' ],
+				'expected_title'   => 'Przelewy24 (P24)',
+				'expected_gateway' => 'woocommerce_payments_p24',
+			],
+			'iDEAL'             => [
+				'payment_details'  => [ 'type' => 'ideal' ],
+				'expected_title'   => 'iDEAL',
+				'expected_gateway' => 'woocommerce_payments_ideal',
+			],
+			'SEPA Direct Debit' => [
+				'payment_details'  => [ 'type' => 'sepa_debit' ],
+				'expected_title'   => 'SEPA Direct Debit',
+				'expected_gateway' => 'woocommerce_payments_sepa_debit',
+			],
+			'BECS Direct Debit' => [
+				'payment_details'  => [ 'type' => 'au_becs_debit' ],
+				'expected_title'   => 'BECS Direct Debit',
+				'expected_gateway' => 'woocommerce_payments_au_becs_debit',
+			],
+			'GrabPay'           => [
+				'payment_details'  => [ 'type' => 'grabpay' ],
+				'expected_title'   => 'GrabPay',
+				'expected_gateway' => 'woocommerce_payments_grabpay',
+			],
+		];
+	}
+
+	/**
+	 * Test that payment methods set the correct title and gateway ID for orders.
+	 *
+	 * @dataProvider payment_method_title_provider
+	 *
+	 * @param array  $payment_details  The payment method details from Stripe.
+	 * @param string $expected_title   The expected payment method title.
+	 * @param string $expected_gateway The expected gateway ID.
+	 */
+	public function test_correct_payment_method_title_for_order( $payment_details, $expected_title, $expected_gateway ) {
 		$order = WC_Helper_Order::create_order();
 
-		$visa_credit_details       = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'visa',
-				'funding' => 'credit',
+		$this->card_gateway->set_payment_method_title_for_order( $order, $payment_details['type'], $payment_details );
+
+		$this->assertEquals( $expected_title, $order->get_payment_method_title(), "Payment method title mismatch for {$payment_details['type']}" );
+		$this->assertEquals( $expected_gateway, $order->get_payment_method(), "Payment method (gateway ID) mismatch for {$payment_details['type']}" );
+	}
+
+	/**
+	 * Data provider for Express Checkout payment method tests.
+	 *
+	 * @return array[] Test cases with express_type, stripe_type, expected_title, and payment_details.
+	 */
+	public function express_checkout_payment_method_provider() {
+		return [
+			'Google Pay' => [
+				'express_type'     => 'google_pay',
+				'stripe_type'      => 'card',
+				'expected_title'   => 'Google Pay (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments',
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'funding' => 'credit',
+					],
+				],
+			],
+			'Apple Pay'  => [
+				'express_type'     => 'apple_pay',
+				'stripe_type'      => 'card',
+				'expected_title'   => 'Apple Pay (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments',
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'network' => 'visa',
+						'funding' => 'credit',
+					],
+				],
+			],
+			'Link'       => [
+				'express_type'     => 'link',
+				'stripe_type'      => 'link',
+				'expected_title'   => 'Link (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments',
+				'payment_details'  => [
+					'type' => 'link',
+				],
+			],
+			'Amazon Pay' => [
+				'express_type'     => 'amazon_pay',
+				'stripe_type'      => 'amazon_pay',
+				'expected_title'   => 'Amazon Pay (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments_amazon_pay',
+				'payment_details'  => [
+					'type' => 'amazon_pay',
+				],
 			],
 		];
-		$visa_debit_details        = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'visa',
-				'funding' => 'debit',
-			],
-		];
-		$mastercard_credit_details = [
-			'type' => 'card',
-			'card' => [
-				'network' => 'mastercard',
-				'funding' => 'credit',
-			],
-		];
-		$eps_details               = [
-			'type' => 'eps',
-		];
-		$giropay_details           = [
-			'type' => 'giropay',
-		];
-		$p24_details               = [
-			'type' => 'p24',
-		];
-		$sofort_details            = [
-			'type' => 'sofort',
-		];
-		$bancontact_details        = [
-			'type' => 'bancontact',
-		];
-		$sepa_details              = [
-			'type' => 'sepa_debit',
-		];
-		$ideal_details             = [
-			'type' => 'ideal',
-		];
-		$becs_details              = [
-			'type' => 'au_becs_debit',
-		];
-		$grabpay_details           = [
-			'type' => 'grabpay',
-		];
+	}
 
-		$charge_payment_method_details = [
-			$visa_credit_details,
-			$visa_debit_details,
-			$mastercard_credit_details,
-			$giropay_details,
-			$sofort_details,
-			$bancontact_details,
-			$eps_details,
-			$p24_details,
-			$ideal_details,
-			$sepa_details,
-			$becs_details,
-			$grabpay_details,
-		];
+	/**
+	 * Test that Express Checkout payments set the correct gateway ID and preserve title.
+	 *
+	 * @dataProvider express_checkout_payment_method_provider
+	 *
+	 * @param string $express_type     The express checkout type stored in order meta.
+	 * @param string $stripe_type      The Stripe payment method type.
+	 * @param string $expected_title   The expected payment method title to be preserved.
+	 * @param string $expected_gateway The expected gateway ID.
+	 * @param array  $payment_details  The payment method details from Stripe.
+	 */
+	public function test_express_checkout_payment_method_for_order( $express_type, $stripe_type, $expected_title, $expected_gateway, $payment_details ) {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method_title( $expected_title );
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_type );
+		$order->save();
 
-		$expected_payment_method_titles = [
-			'Visa credit card',
-			'Visa debit card',
-			'Mastercard credit card',
-			'giropay',
-			'Sofort',
-			'Bancontact',
-			'EPS',
-			'Przelewy24 (P24)',
-			'iDEAL',
-			'SEPA Direct Debit',
-			'BECS Direct Debit',
-			'GrabPay',
-		];
+		$this->card_gateway->set_payment_method_title_for_order( $order, $stripe_type, $payment_details );
 
-		foreach ( $charge_payment_method_details as $i => $payment_method_details ) {
-			$this->card_gateway->set_payment_method_title_for_order( $order, $payment_method_details['type'], $payment_method_details );
-			$this->assertEquals( $expected_payment_method_titles[ $i ], $order->get_payment_method_title() );
-		}
+		$this->assertEquals( $expected_gateway, $order->get_payment_method(), "$express_type should use correct gateway" );
+		$this->assertEquals( $expected_title, $order->get_payment_method_title(), "$express_type title should be preserved" );
 	}
 
 	public function test_payment_methods_show_correct_default_outputs() {
@@ -711,6 +821,12 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		WC_Subscriptions::set_wcs_is_subscription(
 			function ( $order ) {
 				return true;
+			}
+		);
+		// Disable manual renewals to test only reusable methods are enabled.
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
+			function () {
+				return false;
 			}
 		);
 
@@ -3044,6 +3160,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Create order with sufficient address data for BNPL.
 		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_last_name( 'Tribbiani' );
 		$order->set_shipping_address_1( '123 Main St' );
 		$order->set_shipping_city( 'New York' );
 		$order->set_shipping_state( 'NY' );
@@ -3061,6 +3178,85 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->prepare_gateway_for_availability_testing( $bnpl_gateway );
 
 		$this->assertTrue( $bnpl_gateway->is_available() );
+	}
+
+	public function test_affirm_gateway_disabled_on_order_pay_page_when_missing_name() {
+		global $wp;
+
+		// Create order with sufficient address data but missing name for Affirm.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( '' );
+		$order->set_shipping_last_name( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$affirm_gateway = $this->get_gateway( Payment_Method::AFFIRM );
+		$affirm_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFFIRM ] );
+		$this->prepare_gateway_for_availability_testing( $affirm_gateway );
+
+		$this->assertFalse( $affirm_gateway->is_available() );
+	}
+
+	public function test_affirm_gateway_enabled_on_order_pay_page_when_name_present() {
+		global $wp;
+
+		// Create order with sufficient address data and name for Affirm.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( 'John' );
+		$order->set_shipping_last_name( 'Doe' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$affirm_gateway = $this->get_gateway( Payment_Method::AFFIRM );
+		$affirm_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFFIRM ] );
+		$this->prepare_gateway_for_availability_testing( $affirm_gateway );
+
+		$this->assertTrue( $affirm_gateway->is_available() );
+	}
+
+	public function test_afterpay_gateway_not_affected_by_name_validation() {
+		global $wp;
+
+		// Create order with sufficient address data but missing name.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( '' );
+		$order->set_shipping_last_name( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$afterpay_gateway = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFTERPAY ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay_gateway );
+
+		// Afterpay should not be affected by missing name validation.
+		$this->assertTrue( $afterpay_gateway->is_available() );
 	}
 
 	public function test_non_bnpl_gateway_not_affected_by_order_pay_validation() {
@@ -3671,12 +3867,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 
 		$this->assertEquals(
-			[
-				'product',
-				'cart',
-				'checkout',
-			],
-			$this->card_gateway->get_option( 'platform_checkout_button_locations' )
+			[ 'payment_request', 'woopay', 'amazon_pay' ],
+			$this->card_gateway->get_option( 'express_checkout_product_methods' )
+		);
+
+		$this->assertEquals(
+			[ 'payment_request', 'woopay', 'amazon_pay' ],
+			$this->card_gateway->get_option( 'express_checkout_cart_methods' )
+		);
+
+		$this->assertEquals(
+			[ 'payment_request', 'woopay', 'amazon_pay' ],
+			$this->card_gateway->get_option( 'express_checkout_checkout_methods' )
 		);
 
 		$this->assertEquals(
@@ -3832,7 +4034,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
 		$order                         = WC_Helper_Order::create_order();
-		$_POST['payment_request_type'] = 'google_pay';
+		$_POST['express_payment_type'] = 'google_pay';
 		$_POST                         = [
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => 'woocommerce_payments',
@@ -4070,32 +4272,45 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private function init_payment_methods() {
 		$payment_methods = [];
 
-		/**
-		 * FLAG: PAYMENT_METHODS_LIST
-		 * As payment methods are converted to use definitions, they need to be removed from the list below.
-		 */
+		$payment_method_definitions = [
+			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GrabPayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\MultibancoDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
+		];
+
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Bancontact_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Giropay_Payment_Method::class,
-			Sofort_Payment_Method::class,
-			P24_Payment_Method::class,
-			Ideal_Payment_Method::class,
-			Becs_Payment_Method::class,
-			Eps_Payment_Method::class,
-			Link_Payment_Method::class,
-			Affirm_Payment_Method::class,
-			Afterpay_Payment_Method::class,
-			Klarna_Payment_Method::class,
-			Grabpay_Payment_Method::class,
 		];
 
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$payment_method                               = new $payment_method_class( $this->mock_token_service );
-			$payment_methods[ $payment_method->get_id() ] = new $payment_method_class( $this->mock_token_service );
+			$payment_methods[ $payment_method->get_id() ] = $payment_method;
 		}
+
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$registry->register_payment_method( $definition_class );
+			$payment_method                               = new UPE_Payment_Method( $this->mock_token_service, $definition_class );
+			$payment_methods[ $payment_method->get_id() ] = $payment_method;
+		}
+
 		$this->payment_methods = $payment_methods;
+
+		// Also update WC_Payments::$payment_method_map so get_selected_payment_method works.
+		$current_map = $this->get_payment_method_map();
+		$this->set_payment_method_map( array_merge( $current_map, $payment_methods ) );
 	}
 
 	private function init_gateways() {
@@ -4142,5 +4357,89 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				}
 			)
 		) )[0] ?? null;
+	}
+
+	public function test_is_payment_request_enabled_returns_true_when_google_pay_enabled() {
+		// Mock Google Pay gateway as enabled.
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->method( 'is_enabled' )
+			->willReturn( true );
+
+		// Mock WC_Payments::get_payment_gateway_by_id.
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+			]
+		);
+
+		$this->assertTrue( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	public function test_is_payment_request_enabled_returns_true_when_apple_pay_enabled() {
+		// Mock Google Pay gateway as unavailable.
+		// Mock Apple Pay gateway as enabled.
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->method( 'is_enabled' )
+			->willReturn( true );
+
+		// Mock WC_Payments::get_payment_gateway_by_id.
+		$this->set_payment_gateway_map(
+			[
+				'apple_pay' => $apple_pay_gateway,
+			]
+		);
+
+		$this->assertTrue( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	public function test_is_payment_request_enabled_returns_false_when_both_disabled() {
+		// Mock both gateways as disabled.
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->method( 'is_enabled' )
+			->willReturn( false );
+
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->method( 'is_enabled' )
+			->willReturn( false );
+
+		// Mock WC_Payments::get_payment_gateway_by_id.
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+				'apple_pay'  => $apple_pay_gateway,
+			]
+		);
+
+		$this->assertFalse( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	public function test_is_payment_request_enabled_returns_false_when_both_unavailable() {
+		// Mock both gateways as unavailable by setting empty map.
+		$this->set_payment_gateway_map( [] );
+
+		$this->assertFalse( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	public function test_is_payment_request_enabled_prioritizes_google_pay() {
+		// Mock both gateways as enabled.
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		// Apple Pay should not be checked since Google Pay returns true.
+		$apple_pay_gateway->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		// Mock WC_Payments::get_payment_gateway_by_id.
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+				'apple_pay'  => $apple_pay_gateway,
+			]
+		);
+
+		$this->assertTrue( $this->card_gateway->is_payment_request_enabled() );
 	}
 }

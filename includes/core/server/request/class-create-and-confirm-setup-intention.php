@@ -93,6 +93,22 @@ class Create_And_Confirm_Setup_Intention extends Request {
 	}
 
 	/**
+	 * Confirmation token setter.
+	 *
+	 * Used by Express Checkout Element (ECE) which provides a confirmation token
+	 * instead of a payment method ID.
+	 *
+	 * @param string $confirmation_token The confirmation token.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function set_confirmation_token( string $confirmation_token ) {
+		$this->validate_stripe_id( $confirmation_token, 'ctoken' );
+		$this->set_param( 'confirmation_token', $confirmation_token );
+	}
+
+	/**
 	 * Payment methods setter.
 	 *
 	 * @param  array $payment_methods               An array of payment methods that might be used for the payment.

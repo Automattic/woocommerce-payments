@@ -30,6 +30,24 @@ interface Props {
 	bankName: string | null;
 }
 
+interface LearnMoreButtonProps {
+	href: string;
+}
+
+const LearnMoreButton: React.FC< LearnMoreButtonProps > = ( { href } ) => {
+	return (
+		<Button
+			variant="secondary"
+			href={ href }
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			{ __( 'Learn more', 'woocommerce-payments' ) + ' ' }
+			&#8599;
+		</Button>
+	);
+};
+
 export const DisputeSteps: React.FC< Props > = ( {
 	dispute,
 	customer,
@@ -75,7 +93,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 					lg
 					title={ __( 'Steps you can take', 'woocommerce-payments' ) }
 					subtitle={ __(
-						'We recommend reviewing your options before responding by the deadline. ',
+						'We recommend reviewing your options before responding before the deadline. ',
 						'woocommerce-payments'
 					) }
 				>
@@ -138,17 +156,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
-										<Button
-											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
-										</Button>
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
 									</div>
 								</div>
 
@@ -195,6 +203,96 @@ export const DisputeSteps: React.FC< Props > = ( {
 													"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 													'woocommerce-payments'
 											  ),
+										{
+											strong: <strong />,
+										}
+									) }
+								</InlineNotice>
+							</div>
+						</div>
+					</AccordionRow>
+				</AccordionBody>
+			</Accordion>
+		</div>
+	);
+};
+
+export const NonCompliantDisputeSteps: React.FC = () => {
+	return (
+		<div className="dispute-steps">
+			<Accordion defaultExpanded={ true }>
+				<AccordionBody
+					lg
+					title={ __( 'Steps you can take', 'woocommerce-payments' ) }
+					subtitle={ __(
+						'We recommend reviewing your options before responding by the deadline. ',
+						'woocommerce-payments'
+					) }
+				>
+					<AccordionRow>
+						<div className="dispute-steps__content">
+							<div className="dispute-steps__items">
+								{ /* Step 1: Accept the dispute */ }
+								<div className="dispute-steps__item">
+									<div className="dispute-steps__item-icon">
+										<Icon icon={ page } />
+									</div>
+									<div className="dispute-steps__item-content">
+										<div className="dispute-steps__item-name">
+											{ __(
+												'Accepting the dispute',
+												'woocommerce-payments'
+											) }
+										</div>
+										<div className="dispute-steps__item-description">
+											{ __(
+												'Accepting the dispute means you’ll forfeit the funds, pay the standard dispute fee, and avoid the $500 USD Visa network fee.',
+												'woocommerce-payments'
+											) }
+										</div>
+									</div>
+									<div className="dispute-steps__item-action">
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes" />
+									</div>
+								</div>
+								{ /* Step 2: Challenge or accept the dispute */ }
+								<div className="dispute-steps__item">
+									<div className="dispute-steps__item-icon">
+										<Icon icon={ envelope } />
+									</div>
+									<div className="dispute-steps__item-content">
+										<div className="dispute-steps__item-name">
+											{ __(
+												'Challenge the dispute',
+												'woocommerce-payments'
+											) }
+										</div>
+										<div className="dispute-steps__item-description">
+											{ __(
+												'Challenging the dispute will incur a $500 USD Visa network fee, which is charged when you submit evidence. This fee will be refunded if you win the dispute.',
+												'woocommerce-payments'
+											) }
+										</div>
+									</div>
+									<div className="dispute-steps__item-action">
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes" />
+									</div>
+								</div>
+							</div>
+
+							{ /* Dispute notice */ }
+							<div className="dispute-steps__notice">
+								<InlineNotice
+									icon
+									isDismissible={ false }
+									status="info"
+									className="dispute-steps__notice-content"
+								>
+									{ createInterpolateElement(
+										__(
+											'<strong>The outcome of this dispute will be determined by Visa.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
+											'woocommerce-payments'
+										),
 										{
 											strong: <strong />,
 										}
@@ -321,17 +419,7 @@ export const InquirySteps: React.FC< Props > = ( {
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
-										<Button
-											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
-										</Button>
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
 									</div>
 								</div>
 							</div>
@@ -504,17 +592,7 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
-										<Button
-											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
-										</Button>
+										<LearnMoreButton href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns" />
 									</div>
 								</div>
 							</div>

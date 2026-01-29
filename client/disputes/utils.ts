@@ -81,6 +81,30 @@ export const isRefundable = ( status: DisputeStatus ): boolean => {
 };
 
 /**
+ * Returns true if a dispute is a Visa compliance dispute.
+ * A dispute is considered a Visa compliance dispute if:
+ * - The reason is 'noncompliant', OR
+ * - The enhanced_eligibility_types includes 'visa_compliance'
+ *
+ * @param {Pick<Dispute, 'reason' | 'enhanced_eligibility_types'>} dispute - The dispute object.
+ * @return {boolean} True if the dispute is a Visa compliance dispute.
+ */
+export const isVisaComplianceDispute = (
+	dispute: Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >
+): boolean => {
+	if ( ! dispute ) {
+		return false;
+	}
+
+	return (
+		dispute.reason === 'noncompliant' ||
+		( dispute.enhanced_eligibility_types || [] ).includes(
+			'visa_compliance'
+		)
+	);
+};
+
+/**
  * Returns the dispute fee balance transaction for a dispute if it exists
  * and the deduction has not been reversed.
  */

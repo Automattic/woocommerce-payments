@@ -21,6 +21,7 @@ import enqueueFraudScripts from 'fraud-scripts';
 import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
+	expressCheckoutElementAmazonPay,
 } from 'wcpay/express-checkout/blocks';
 
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
@@ -129,6 +130,10 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+}
+
+if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
+	registerExpressPaymentMethod( expressCheckoutElementAmazonPay( api ) );
 }
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );

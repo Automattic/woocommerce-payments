@@ -76,6 +76,20 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_database_cache;
 
 	/**
+	 * Mock onboarding service.
+	 *
+	 * @var WC_Payments_Onboarding_Service&MockObject
+	 */
+	private $mock_onboarding_service;
+
+	/**
+	 * Mock token service.
+	 *
+	 * @var WC_Payments_Token_Service&MockObject
+	 */
+	private $mock_token_service;
+
+	/**
 	 * @var array
 	 */
 	private $event_body;
@@ -130,6 +144,10 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
+		$this->mock_onboarding_service = $this->createMock( WC_Payments_Onboarding_Service::class );
+
+		$this->mock_token_service = $this->createMock( WC_Payments_Token_Service::class );
+
 		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
 			$this->mock_api_client,
 			$this->mock_db_wrapper,
@@ -138,8 +156,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->order_service,
 			$this->mock_receipt_service,
 			$this->mock_wcpay_gateway,
-			$this->mock_customer_service,
-			$this->mock_database_cache
+			$this->mock_database_cache,
+			$this->mock_onboarding_service,
+			$this->mock_token_service
 		);
 
 		// Build the event body data.
@@ -807,6 +826,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 							'type' => 'card',
 						],
 						'application_fee_amount' => 100,
+						'captured'               => true,
 					],
 				],
 			],
@@ -1641,6 +1661,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1698,6 +1719,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1745,6 +1767,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1847,6 +1870,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_db_wrapper
@@ -1877,6 +1901,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => -1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1911,6 +1936,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1924,6 +1950,50 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( $this->mock_order );
 
 		$this->expectException( Invalid_Webhook_Data_Exception::class );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_refund_ignores_uncaptured_charge(): void {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'status'              => Refund_Status::SUCCEEDED,
+						'amount'              => 1800,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+			'captured' => false, // Not captured - this is a canceled authorization.
+		];
+
+		// The webhook should return early before fetching the order since captured = false.
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_charge_id' );
+
+		// Refund processing should be skipped for uncaptured charges.
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'get_wcpay_refund_id_for_order' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'create_refund_for_order' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'add_note_and_metadata_for_created_refund' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -2130,5 +2200,96 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'An unknown error occurred while processing the refund',
 			],
 		];
+	}
+
+	/**
+	 * Tests that an account.updated webhook refreshes account data and clears cached payment methods.
+	 */
+	public function test_account_updated_webhook() {
+		// Setup test request data.
+		$this->event_body['type']     = 'account.updated';
+		$this->event_body['livemode'] = true;
+		$this->event_body['data']     = [
+			'object' => [
+				'id' => 'acct_test_account_id',
+			],
+		];
+
+		// Mock expectations.
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account
+			->expects( $this->once() )
+			->method( 'refresh_account_data' );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'clear_all_cached_payment_methods' );
+
+		// Create webhook processing service with the mocked account.
+		$webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$this->mock_db_wrapper,
+			$mock_account,
+			$this->mock_remote_note_service,
+			$this->order_service,
+			$this->mock_receipt_service,
+			$this->mock_wcpay_gateway,
+			$this->mock_database_cache,
+			$this->mock_onboarding_service,
+			$this->mock_token_service
+		);
+
+		// Run the test.
+		$webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an account.deleted webhook cleans up onboarding data, deletes options, and refreshes account data.
+	 */
+	public function test_account_deleted_webhook() {
+		// Setup test request data.
+		$this->event_body['type']     = 'account.deleted';
+		$this->event_body['livemode'] = true;
+		$this->event_body['data']     = [
+			'object' => [
+				'id' => 'acct_test_account_id',
+			],
+		];
+
+		update_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY, 'test_value' );
+		update_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY, 'yes' );
+
+		// Mock expectations.
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account
+			->expects( $this->once() )
+			->method( 'refresh_account_data' );
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'cleanup_on_account_reset' );
+
+		// Create webhook processing service with the mocked account.
+		$webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$this->mock_db_wrapper,
+			$mock_account,
+			$this->mock_remote_note_service,
+			$this->order_service,
+			$this->mock_receipt_service,
+			$this->mock_wcpay_gateway,
+			$this->mock_database_cache,
+			$this->mock_onboarding_service,
+			$this->mock_token_service
+		);
+
+		// Run the test.
+		$webhook_processing_service->process( $this->event_body );
+
+		// Verify that the options were deleted.
+		// Note: These are integration tests since we can't easily mock WordPress delete_option function
+		// but the important behavior (method calls) is tested above.
+		$this->assertFalse( get_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY ) );
+		$this->assertFalse( get_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY ) );
 	}
 }

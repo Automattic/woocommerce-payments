@@ -1194,6 +1194,7 @@ class Express_Checkout_Element_States {
 		Country_Code::PAKISTAN,
 		Country_Code::PARAGUAY,
 		Country_Code::ROMANIA,
+		Country_Code::SAUDI_ARABIA,
 		Country_Code::SOUTH_AFRICA,
 		Country_Code::TANZANIA,
 		Country_Code::UGANDA,

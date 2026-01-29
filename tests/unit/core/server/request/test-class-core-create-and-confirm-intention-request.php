@@ -66,14 +66,40 @@ class Create_And_Confirm_Intention_Test extends WCPAY_UnitTestCase {
 		$request->get_params();
 	}
 
-	public function test_exception_will_throw_if_payment_method_is_not_set() {
+	public function test_request_is_valid_with_payment_method() {
 		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
-		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request->set_amount( 1 );
 		$request->set_customer( 'cus_1' );
 		$request->set_metadata( [ 'order_number' => 1 ] );
 		$request->set_currency_code( 'usd' );
-		$request->get_params();
+		$request->set_payment_method( 'pm_1' );
+
+		$params = $request->get_params();
+
+		$this->assertIsArray( $params );
+		$this->assertArrayHasKey( 'payment_method', $params );
+		$this->assertSame( 'pm_1', $params['payment_method'] );
+	}
+
+	public function test_confirmation_token_can_replace_payment_method() {
+		$amount             = 1;
+		$currency           = 'usd';
+		$confirmation_token = 'ctoken_123';
+		$customer           = 'cus_1';
+
+		$request = new Create_And_Confirm_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_amount( $amount );
+		$request->set_currency_code( $currency );
+		$request->set_confirmation_token( $confirmation_token );
+		$request->set_customer( $customer );
+		$request->set_metadata( [ 'order_number' => 1 ] );
+
+		$params = $request->get_params();
+
+		$this->assertIsArray( $params );
+		$this->assertArrayHasKey( 'confirmation_token', $params );
+		$this->assertSame( $confirmation_token, $params['confirmation_token'] );
+		$this->assertArrayNotHasKey( 'payment_method', $params );
 	}
 
 	public function test_exception_will_throw_if_payment_method_is_invalid() {

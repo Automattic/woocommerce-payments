@@ -4,6 +4,7 @@
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 import { WCPayExpressCheckoutParams } from './express-checkout/utils';
+import { AccountDetailsType } from 'wcpay/types/account/account-details';
 
 declare global {
 	interface TosSettingsStripeConnected {
@@ -30,8 +31,11 @@ declare global {
 			woopayExpressCheckout: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
+			isDisputeAdditionalEvidenceTypesEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
+			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
+			amazonPay: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -46,6 +50,7 @@ declare global {
 			email?: string;
 			created: string;
 			isLive?: boolean;
+			testDrive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -90,6 +95,11 @@ declare global {
 				 * Eligibility is determined per-account on transact-platform-server.
 				 */
 				wporgReview2025: boolean;
+				/**
+				 * The flag for the payments settings review prompt (Phase 0).
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				reviewPromptPhase0: boolean;
 			};
 		} >;
 		accountLoans: {
@@ -97,6 +107,7 @@ declare global {
 			has_past_loans: boolean;
 			loans: Array< string >;
 		};
+		accountDetails: AccountDetailsType;
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
@@ -135,6 +146,7 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
+		instantDepositsPreviouslyEligible: boolean;
 		isConnectionSuccessModalDismissed: boolean;
 		trackingInfo?: {
 			hosting_provider: string;
@@ -239,6 +251,11 @@ declare global {
 		exitSurveyLastShown: string | null;
 	};
 
+	const wcpayReviewPromptSettings: {
+		isLive: boolean;
+		version: string;
+	};
+
 	interface WcSettings {
 		ece_data?: WCPayExpressCheckoutParams;
 		woocommerce_payments_data: typeof wcpaySettings;
@@ -261,5 +278,6 @@ declare global {
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
+		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
 	}
 }

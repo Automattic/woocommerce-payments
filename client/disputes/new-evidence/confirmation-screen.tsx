@@ -18,11 +18,13 @@ import DisputeEvidenceSubmittedIllustration from 'assets/images/dispute-evidence
 interface ConfirmationScreenProps {
 	disputeId: string;
 	bankName: string | null;
+	isVisaComplianceDispute: boolean;
 }
 
 const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 	disputeId,
 	bankName,
+	isVisaComplianceDispute,
 } ) => {
 	useEffect( () => {
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
@@ -53,10 +55,15 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 					</h2>
 
 					<p className="wcpay-dispute-evidence-confirmation__subtitle">
-						{ __(
-							"Your evidence has been sent to the cardholder's bank for review.",
-							'woocommerce-payments'
-						) }
+						{ isVisaComplianceDispute
+							? __(
+									'Your response has been submitted under Visa’s compliance process.',
+									'woocommerce-payments'
+							  )
+							: __(
+									"Your evidence has been sent to the cardholder's bank for review.",
+									'woocommerce-payments'
+							  ) }
 					</p>
 
 					{ /* What's next section */ }
@@ -66,11 +73,24 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 						</h3>
 						<ul>
 							<li>
-								{ __(
-									'The cardholder’s bank will review your response. Please be patient — this usually takes a few weeks, but in some cases it can take up to 3 months.',
-									'woocommerce-payments'
-								) }
+								{ isVisaComplianceDispute
+									? __(
+											'Visa will review your submission under its network rules and determine the outcome of the dispute.',
+											'woocommerce-payments'
+									  )
+									: __(
+											'The cardholder’s bank will review your response. Please be patient — this usually takes a few weeks, but in some cases it can take up to 3 months.',
+											'woocommerce-payments'
+									  ) }
 							</li>
+							{ isVisaComplianceDispute && (
+								<li>
+									{ __(
+										'This review typically takes several weeks, but in some cases may take up to 3 months.',
+										'woocommerce-payments'
+									) }
+								</li>
+							) }
 							<li>
 								{ createInterpolateElement(
 									__(
@@ -94,10 +114,35 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 									}
 								) }
 							</li>
+						</ul>
+					</div>
+					<div className="wcpay-dispute-evidence-confirmation__resources">
+						<h3>
+							{ __( 'Useful resources', 'woocommerce-payments' ) }
+						</h3>
+						<ul>
 							<li>
 								{ createInterpolateElement(
 									__(
-										'Want to know more about how disputes work? <learnMoreLink>Check out our resources</learnMoreLink>',
+										'Help prevent any further disputes by <learnMoreLink>following the advice in our guide</learnMoreLink>',
+										'woocommerce-payments'
+									),
+									{
+										learnMoreLink: (
+											<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/">
+												{ __(
+													'Learn more about preventing disputes',
+													'woocommerce-payments'
+												) }
+											</ExternalLink>
+										),
+									}
+								) }
+							</li>
+							<li>
+								{ createInterpolateElement(
+									__(
+										'Learn more about the dispute process using <learnMoreLink>our resources</learnMoreLink>',
 										'woocommerce-payments'
 									),
 									{
@@ -122,23 +167,33 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 						status="info"
 						className="wcpay-dispute-evidence-confirmation__notice"
 					>
-						{ createInterpolateElement(
-							bankName
-								? sprintf(
-										__(
-											'<strong>The outcome of this dispute will be determined by %1$s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
-											'woocommerce-payments'
-										),
-										bankName
-								  )
-								: __(
-										"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
+						{ isVisaComplianceDispute
+							? createInterpolateElement(
+									__(
+										'<strong>The outcome of this dispute will be determined by Visa.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
 										'woocommerce-payments'
-								  ),
-							{
-								strong: <strong />,
-							}
-						) }
+									),
+									{
+										strong: <strong />,
+									}
+							  )
+							: createInterpolateElement(
+									bankName
+										? sprintf(
+												__(
+													'<strong>The outcome of this dispute will be determined by %1$s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
+													'woocommerce-payments'
+												),
+												bankName
+										  )
+										: __(
+												"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
+												'woocommerce-payments'
+										  ),
+									{
+										strong: <strong />,
+									}
+							  ) }
 					</InlineNotice>
 
 					{ /* Action buttons */ }

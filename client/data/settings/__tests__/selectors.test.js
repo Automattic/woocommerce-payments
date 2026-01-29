@@ -8,8 +8,8 @@ import {
 	getIsManualCaptureEnabled,
 	getAccountStatementDescriptor,
 	isSavingSettings,
-	getPaymentRequestLocations,
 	getIsPaymentRequestEnabled,
+	getIsAppleGooglePayInPaymentMethodsOptionsEnabled,
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
 	getIsWooPayEnabled,
@@ -179,23 +179,19 @@ describe( 'Settings selectors tests', () => {
 		} );
 	} );
 
-	describe( 'getPaymentRequestLocations()', () => {
-		test( 'returns the value of state.settings.data.payment_request_enabled_locations', () => {
+	describe( 'getIsAppleGooglePayInPaymentMethodsOptionsEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_apple_google_pay_in_payment_methods_options_enabled', () => {
 			const state = {
 				settings: {
 					data: {
-						payment_request_enabled_locations: [
-							'product',
-							'cart',
-						],
+						is_apple_google_pay_in_payment_methods_options_enabled: true,
 					},
 				},
 			};
 
-			expect( getPaymentRequestLocations( state ) ).toEqual( [
-				'product',
-				'cart',
-			] );
+			expect(
+				getIsAppleGooglePayInPaymentMethodsOptionsEnabled( state )
+			).toBeTruthy();
 		} );
 
 		test.each( [
@@ -203,8 +199,10 @@ describe( 'Settings selectors tests', () => {
 			[ {} ],
 			[ { settings: {} } ],
 			[ { settings: { data: {} } } ],
-		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
-			expect( getPaymentRequestLocations( state ) ).toEqual( [] );
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect(
+				getIsAppleGooglePayInPaymentMethodsOptionsEnabled( state )
+			).toBeFalsy();
 		} );
 	} );
 

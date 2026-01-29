@@ -252,6 +252,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_subscription->set_requires_manual_renewal( true );
 		$mock_subscription->set_parent( $mock_order );
 		$mock_subscription->set_props( [ 'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID ] );
+		$mock_subscription->payment_tokens = [ uniqid( 'pm_' ) ];
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
 			function ( $id ) use ( $mock_subscription ) {

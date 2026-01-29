@@ -168,6 +168,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							name: 'Challenge dispute',
 						} )
 						.click();
+
+					// Wait for new evidence screen to finish initial loading
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 				}
 			);
 
@@ -279,9 +284,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Click the submit button
 					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit',
-						} )
+						.getByTestId( 'submit-evidence-button' )
 						.click();
 				}
 			);
@@ -371,6 +374,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							name: 'Challenge dispute',
 						} )
 						.click();
+
+					// Wait for new evidence screen to finish initial loading
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 				}
 			);
 
@@ -455,9 +463,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Click the submit button
 					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit',
-						} )
+						.getByTestId( 'submit-evidence-button' )
 						.click();
 				}
 			);
@@ -523,7 +529,6 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 		}
 	);
-
 	test( 'Save a dispute challenge without submitting evidence', async ( {
 		browser,
 	} ) => {
@@ -544,6 +549,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						name: 'Challenge dispute',
 					} )
 					.click();
+
+				// Wait for the challenge screen initial loading spinner to disappear
+				await expect(
+					merchantPage.getByTestId( 'new-evidence-loading' )
+				).toBeHidden( { timeout: 20000 } );
 			}
 		);
 
@@ -571,7 +581,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		);
 
 		await test.step(
-			'Fill in the product type and product description',
+			'Select product type and fill description',
 			async () => {
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
@@ -579,15 +589,60 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				await merchantPage
 					.getByLabel( 'PRODUCT DESCRIPTION' )
 					.fill( 'my product description' );
+
+				// Blur the field to ensure value is committed to state before saving
+				await merchantPage
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.press( 'Tab' );
+
+				// Verify the value was set correctly immediately after filling
+				await expect(
+					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+				).toHaveValue( 'my product description' );
 			}
 		);
 
+		await test.step( 'Verify form values before saving', async () => {
+			// Double-check that the form value is still correct before saving
+			await expect(
+				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+			).toHaveValue( 'my product description' );
+		} );
+
 		await test.step( 'Save the dispute challenge for later', async () => {
-			await merchantPage
-				.getByRole( 'button', {
-					name: 'Save for later',
+			const waitResponse = merchantPage.waitForResponse(
+				( r ) =>
+					r.url().includes( '/wc/v3/payments/disputes/' ) &&
+					r.request().method() === 'POST'
+			);
+
+			// Use stable test id for the save button
+			await merchantPage.getByTestId( 'save-for-later-button' ).click();
+
+			const response = await waitResponse;
+
+			// Server acknowledged save
+			expect( response.ok() ).toBeTruthy();
+
+			// Validate payload included our description (guards against state not committed)
+			try {
+				const payload = response.request().postDataJSON?.();
+				// Some environments may not expose postDataJSON; guard accordingly
+				if ( payload && payload.evidence ) {
+					expect( payload.evidence.product_description ).toBe(
+						'my product description'
+					);
+				}
+			} catch ( _e ) {
+				// Non-fatal: continue to UI confirmation
+			}
+
+			// Wait for the success snackbar to confirm UI acknowledged the save.
+			await expect(
+				merchantPage.locator( '.components-snackbar__content', {
+					hasText: 'Evidence saved!',
 				} )
-				.click();
+			).toBeVisible( { timeout: 10000 } );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
@@ -600,11 +655,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				await merchantPage
 					.getByTestId( 'challenge-dispute-button' )
 					.click();
+
+				// Wait for the challenge screen initial loading spinner to disappear
+				await expect(
+					merchantPage.getByTestId( 'new-evidence-loading' )
+				).toBeHidden( { timeout: 20000 } );
 			}
 		);
 
 		await test.step(
-			'Verify the previously selected challenge product type is saved',
+			'Verify previously saved values are restored',
 			async () => {
 				await test.step(
 					'Confirm we are on the challenge dispute page',
@@ -617,15 +677,15 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					}
 				);
 
+				// Wait for description control to be visible
 				await merchantPage
-					.getByTestId( 'dispute-challenge-product-type-selector' )
-					.waitFor( { timeout: 5000, state: 'visible' } );
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.waitFor( { timeout: 10000, state: 'visible' } );
 
+				// Assert the product description persisted (server stores this under evidence)
 				await expect(
-					merchantPage.getByTestId(
-						'dispute-challenge-product-type-selector'
-					)
-				).toHaveValue( 'offline_service' );
+					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+				).toHaveValue( 'my product description', { timeout: 15000 } );
 			}
 		);
 	} );

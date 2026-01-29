@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: allow server-side control of confirmation token logic

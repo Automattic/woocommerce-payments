@@ -11,10 +11,9 @@ import { Button, CheckboxControl } from '@wordpress/components';
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import { usePaymentRequestEnabledSettings } from 'wcpay/data';
-import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
-import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
+import methodsConfiguration from '../../payment-methods-map';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const id = 'apple_pay_google_pay';
@@ -30,6 +29,9 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 		setDismissedDuplicateNotices,
 	} = useContext( DuplicatedPaymentMethodsContext );
 	const isDuplicate = Object.keys( duplicates ).includes( id );
+
+	const { icon: ApplePayIcon } = methodsConfiguration.apple_pay;
+	const { icon: GooglePayIcon } = methodsConfiguration.google_pay;
 
 	return (
 		<li
@@ -55,51 +57,47 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 								<ApplePayIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
-								{ __( 'Apple Pay', 'woocommerce-payments' ) }
+								{ methodsConfiguration.apple_pay.label }
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label express-checkout__label-desktop">
-									{ __(
-										'Apple Pay',
-										'woocommerce-payments'
-									) }
+									{ methodsConfiguration.apple_pay.label }
 								</div>
 								<div className="express-checkout__description">
 									{
+										methodsConfiguration.apple_pay
+											.description
+									}
+									{ ! isPaymentRequestEnabled && ' ' }
+									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
-										isPaymentRequestEnabled
-											? __(
-													'Apple Pay is an easy and secure way for customers to pay on your store.',
+										! isPaymentRequestEnabled &&
+											interpolateComponents( {
+												mixedString: __(
+													/* eslint-disable-next-line max-len */
+													'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}} and' +
+														"{{appleLink}} Apple{{/appleLink}}'s terms of use.",
 													'woocommerce-payments'
-											  )
-											: interpolateComponents( {
-													mixedString: __(
-														/* eslint-disable-next-line max-len */
-														'Apple Pay is an easy and secure way for customers to pay on your store. ' +
-															/* eslint-disable-next-line max-len */
-															'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}} and' +
-															"{{appleLink}} Apple{{/appleLink}}'s terms of use.",
-														'woocommerce-payments'
+												),
+												components: {
+													stripeLink: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://stripe.com/apple-pay/legal"
+														/>
 													),
-													components: {
-														stripeLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://stripe.com/apple-pay/legal"
-															/>
-														),
-														appleLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																/* eslint-disable-next-line max-len */
-																href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
-															/>
-														),
-														br: <br />,
-													},
-											  } )
+													appleLink: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															/* eslint-disable-next-line max-len */
+															href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
+														/>
+													),
+													br: <br />,
+												},
+											} )
 										/* eslint-enable jsx-a11y/anchor-has-content */
 									}
 								</div>
@@ -110,50 +108,46 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 								<GooglePayIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
-								{ __( 'Google Pay', 'woocommerce-payments' ) }
+								{ methodsConfiguration.google_pay.label }
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label express-checkout__label-desktop">
-									{ __(
-										'Google Pay',
-										'woocommerce-payments'
-									) }
+									{ methodsConfiguration.google_pay.label }
 								</div>
 								<div className="express-checkout__description">
 									{
+										methodsConfiguration.google_pay
+											.description
+									}
+									{ ! isPaymentRequestEnabled && ' ' }
+									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
-										isPaymentRequestEnabled
-											? __(
-													'Offer customers a fast, secure checkout experience with Google Pay.',
+										! isPaymentRequestEnabled &&
+											interpolateComponents( {
+												mixedString: __(
+													/* eslint-disable-next-line max-len */
+													'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
+														"and {{googleLink}}Google{{/googleLink}}'s terms of use.",
 													'woocommerce-payments'
-											  )
-											: interpolateComponents( {
-													mixedString: __(
-														/* eslint-disable-next-line max-len */
-														'Offer customers a fast, secure checkout experience with Google Pay. ' +
-															/* eslint-disable-next-line max-len */
-															'By enabling this feature, you agree to {{stripeLink}}Stripe{{/stripeLink}}, ' +
-															"and {{googleLink}}Google{{/googleLink}}'s terms of use.",
-														'woocommerce-payments'
+												),
+												components: {
+													stripeLink: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://stripe.com/apple-pay/legal"
+														/>
 													),
-													components: {
-														stripeLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://stripe.com/apple-pay/legal"
-															/>
-														),
-														googleLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://androidpay.developers.google.com/terms/sellertos"
-															/>
-														),
-														br: <br />,
-													},
-											  } )
+													googleLink: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://androidpay.developers.google.com/terms/sellertos"
+														/>
+													),
+													br: <br />,
+												},
+											} )
 										/* eslint-enable jsx-a11y/anchor-has-content */
 									}
 								</div>
@@ -172,7 +166,6 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
-			<GooglePayTestModeCompatibilityNotice />
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }

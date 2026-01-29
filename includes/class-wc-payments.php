@@ -13,23 +13,12 @@ use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
-use WCPay\Payment_Methods\Klarna_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\Multibanco_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
-use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
@@ -43,7 +32,6 @@ use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\WC_Payments_Currency_Manager;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
@@ -290,6 +278,13 @@ class WC_Payments {
 	private static $incentives_service;
 
 	/**
+	 * Instance of WC_Payments_PM_Promotions_Service, created in init function.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service
+	 */
+	private static $pm_promotions_service;
+
+	/**
 	 * Instance of WC_Payments_Express_Checkout_Button_Helper, created in init function.
 	 *
 	 * @var WC_Payments_Express_Checkout_Button_Helper
@@ -323,6 +318,13 @@ class WC_Payments {
 	 * @var WC_Payments_Payment_Method_Service
 	 */
 	private static $payment_method_service;
+
+	/**
+	 * Instance of WC_Payments_Remediate_Canceled_Auth_Fees, created in init function
+	 *
+	 * @var WC_Payments_Remediate_Canceled_Auth_Fees
+	 */
+	private static $fee_remediation;
 
 	/**
 	 * Entry point to the initialization logic.
@@ -415,6 +417,8 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-list-charge-refunds.php';
 		include_once __DIR__ . '/core/server/request/class-get-request.php';
 		include_once __DIR__ . '/core/server/request/class-request-utils.php';
+		include_once __DIR__ . '/core/server/request/class-get-pm-promotions.php';
+		include_once __DIR__ . '/core/server/request/class-activate-pm-promotion.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 
@@ -431,23 +435,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-session-rate-limiter.php';
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
-		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-sepa-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-p24-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-eps-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-multibanco-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-grabpay-payment-method.php';
 		include_once __DIR__ . '/inline-script-payloads/class-woo-payments-payment-methods-config.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
@@ -504,6 +493,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-success-page.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
+		include_once __DIR__ . '/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
@@ -520,6 +510,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
+		include_once __DIR__ . '/class-wc-payments-pm-promotions-service.php';
 		include_once __DIR__ . '/class-compatibility-service.php';
 		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
 		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
@@ -550,7 +541,7 @@ class WC_Payments {
 		self::$redirect_service                     = new WC_Payments_Redirect_Service( self::$api_client );
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache, self::$session_service );
 		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service, self::$onboarding_service, self::$redirect_service );
-		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$database_cache, self::$session_service, self::$order_service );
+		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$session_service, self::$order_service );
 		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
 		self::$fraud_service                        = new WC_Payments_Fraud_Service( self::$api_client, self::$customer_service, self::$account, self::$session_service, self::$database_cache );
@@ -562,19 +553,24 @@ class WC_Payments {
 		self::$woopay_util                          = new WooPay_Utilities();
 		self::$woopay_tracker                       = new WooPay_Tracker( self::get_wc_payments_http() );
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
+		self::$pm_promotions_service                = new WC_Payments_PM_Promotions_Service( null, self::$account );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
+		self::$fee_remediation                      = new WC_Payments_Remediate_Canceled_Auth_Fees();
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$action_scheduler_service->init_hooks();
 		self::$account->init_hooks();
 		self::$fraud_service->init_hooks();
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
+		self::$pm_promotions_service->init_hooks();
 		self::$compatibility_service->init_hooks();
 		self::$customer_service->init_hooks();
 		self::$token_service->init_hooks();
+		self::$fee_remediation->init();
 
 		/**
 		 * FLAG: PAYMENT_METHODS_LIST
@@ -582,20 +578,6 @@ class WC_Payments {
 		 */
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Bancontact_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Giropay_Payment_Method::class,
-			Sofort_Payment_Method::class,
-			P24_Payment_Method::class,
-			Ideal_Payment_Method::class,
-			Becs_Payment_Method::class,
-			Eps_Payment_Method::class,
-			Link_Payment_Method::class,
-			Affirm_Payment_Method::class,
-			Afterpay_Payment_Method::class,
-			Klarna_Payment_Method::class,
-			Multibanco_Payment_Method::class,
-			Grabpay_Payment_Method::class,
 		];
 
 		$payment_methods = [];
@@ -636,10 +618,10 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
-		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
+		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service, self::$token_service );
 
 		self::$currency_manager = new WC_Payments_Currency_Manager( self::get_gateway() );
 		self::$currency_manager->init_hooks();
@@ -666,11 +648,15 @@ class WC_Payments {
 				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Status_Sync::class, 'remove_webhook' ] );
 
 				self::maybe_register_woopay_hooks();
-				self::maybe_display_express_checkout_buttons();
 				self::maybe_init_woopay_direct_checkout();
 				self::maybe_enqueue_woopay_common_config_script( WC_Payments_Features::is_woopay_direct_checkout_enabled() );
 			}
 		);
+
+		// Initialize express checkout buttons at 'init' priority 15 (after Multi-Currency determines the
+		// customer's selected currency at priorities 11-12). This ensures can_use_amazon_pay() checks
+		// availability against the correct presentment currency, not the store's default currency.
+		add_action( 'init', [ __CLASS__, 'maybe_display_express_checkout_buttons' ], 15 );
 
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
@@ -711,6 +697,9 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
 		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
 		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
+		require_once __DIR__ . '/migrations/class-migrate-payment-request-to-express-checkout-enabled.php';
+		require_once __DIR__ . '/migrations/class-migrate-express-checkout-locations.php';
+		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -718,11 +707,14 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID, '7.9.0' ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID, '8.9.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), GiropayDefinition::get_id(), '7.9.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), SofortDefinition::get_id(), '8.9.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Payment_Request_To_Express_Checkout_Enabled(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Express_Checkout_Locations(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -745,6 +737,7 @@ class WC_Payments {
 				self::$onboarding_service,
 				self::$order_service,
 				self::$incentives_service,
+				self::$pm_promotions_service,
 				self::$fraud_service,
 				self::$database_cache
 			);
@@ -887,8 +880,6 @@ class WC_Payments {
 	/**
 	 * Add the WooCommerce Payments address autocomplete provider, but only if a WCPay gateway is enabled.
 	 *
-	 * @psalm-suppress MissingDependency
-	 *
 	 * @param array $providers The address providers.
 	 * @return array The address providers.
 	 */
@@ -904,7 +895,7 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-wc-payments-address-provider.php';
 
-		$providers[] = new WC_Payments_Address_Provider( self::$api_client );
+		$providers[] = new WC_Payments_Address_Provider( self::$api_client, self::$account, self::$database_cache );
 
 		return $providers;
 	}
@@ -964,10 +955,7 @@ class WC_Payments {
 
 			return $new_ordering;
 		} catch ( Exception $e ) {
-			if ( function_exists( 'wc_get_logger' ) ) {
-				$logger = wc_get_logger();
-				$logger->warning( 'Failed to order gateways: ' . $e->getMessage(), [ 'source' => 'woopayments' ] );
-			}
+			WC_Payments_Utils::log_to_wc( 'Failed to order gateways: ' . $e->getMessage(), 'warning' );
 			return $ordering;
 		}
 	}
@@ -998,6 +986,10 @@ class WC_Payments {
 
 				// WPORG 2025 merchant feedback prompt user dismissed state.
 				'wc_payments_wporg_review_2025_prompt_dismissed',
+
+				// WooPayments review prompt user preferences.
+				'wc_payments_review_prompt_dismissed',
+				'wc_payments_review_prompt_maybe_later',
 			]
 		);
 	}
@@ -1137,7 +1129,7 @@ class WC_Payments {
 		$accounts_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account );
+		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account, self::$pm_promotions_service );
 		$settings_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
@@ -1155,6 +1147,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-capital-controller.php';
 		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
 		$capital_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
+		$promotions_controller = new WC_REST_Payments_PM_Promotions_Controller( self::$api_client, self::$pm_promotions_service );
+		$promotions_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
@@ -1355,7 +1351,7 @@ class WC_Payments {
 	/**
 	 * Sets the card gateway instance.
 	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway The card gateway instance..
+	 * @param WC_Payment_Gateway_WCPay $gateway The card gateway instance.
 	 */
 	public static function set_gateway( $gateway ) {
 		self::$card_gateway = $gateway;
@@ -1555,6 +1551,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
 			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-canceled-auth-remediation.php';
+			WC_Payments_Notes_Canceled_Auth_Remediation::possibly_add_note();
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
@@ -1621,6 +1620,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
 			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-canceled-auth-remediation.php';
+			WC_Payments_Notes_Canceled_Auth_Remediation::possibly_delete_note();
 		}
 	}
 
@@ -1716,7 +1718,7 @@ class WC_Payments {
 	 */
 	public static function validate_and_enqueue_woopay_common_config_script() {
 		$is_express_button_disabled_on_cart = self::get_express_checkout_helper()->is_cart()
-			&& ! self::get_express_checkout_helper()->is_available_at( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS );
+			&& ! self::get_express_checkout_helper()->is_express_checkout_method_enabled_at( 'cart', 'woopay' );
 
 		if ( $is_express_button_disabled_on_cart ) {
 			self::enqueue_woopay_common_config_script();
@@ -2130,8 +2132,10 @@ class WC_Payments {
 	 * Update the Stripe Billing deprecation note.
 	 */
 	public static function maybe_update_stripe_billing_deprecation_note() {
-		// If Stripe Billing is not enabled or WooCommerce Subscriptions is active, do not update the note.
-		if ( ! WC_Payments_Features::is_stripe_billing_enabled() || class_exists( 'WC_Subscriptions' ) ) {
+		// If bundled subscriptions are not enabled or WooCommerce Subscriptions is active, do not update the note.
+		$has_bundled_subs = WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled();
+
+		if ( ! $has_bundled_subs || class_exists( 'WC_Subscriptions' ) ) {
 			return;
 		}
 

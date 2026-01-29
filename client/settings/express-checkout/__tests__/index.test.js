@@ -17,6 +17,7 @@ import {
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
 	useGetDuplicatedPaymentMethodIds,
+	useAmazonPayEnabledSettings,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
 
@@ -28,6 +29,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
+	useAmazonPayEnabledSettings: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -48,6 +50,7 @@ describe( 'ExpressCheckout', () => {
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, jest.fn() )
 		);
+		useAmazonPayEnabledSettings.mockReturnValue( [ false, jest.fn() ] );
 
 		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
 
@@ -224,5 +227,45 @@ describe( 'ExpressCheckout', () => {
 				'One or more of your extensions are incompatible with WooPay.'
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'should render Amazon Pay when the feature flag is enabled', () => {
+		const context = {
+			accountStatus: {},
+			featureFlags: { woopay: true, amazonPay: true },
+		};
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect( screen.getByLabelText( 'Amazon Pay' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
+	} );
+
+	it( 'should not render Amazon Pay by default', () => {
+		const context = {
+			accountStatus: {},
+			featureFlags: { woopay: true },
+		};
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByLabelText( 'Amazon Pay' )
+		).not.toBeInTheDocument();
+		expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
 	} );
 } );

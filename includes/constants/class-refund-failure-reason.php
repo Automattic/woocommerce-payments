@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * This class gives a list of all the possible WCPay refund failure reason constants and their user-friendly messages.
  * Based on Stripe's refund failure reasons: https://docs.stripe.com/api/refunds/object#refund_object-failure_reason
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Refund_Failure_Reason extends Base_Constant {
 	const LOST_OR_STOLEN_CARD                = 'lost_or_stolen_card';

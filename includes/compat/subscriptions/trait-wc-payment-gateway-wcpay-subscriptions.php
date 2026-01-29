@@ -183,12 +183,19 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
 
+		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
 
 		// Display the credit card used for a subscription in the "My Subscriptions" table.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
+
+		// Hide "Change payment" button for manual subscriptions with non-reusable payment methods.
+		add_filter( 'wcs_view_subscription_actions', [ $this, 'maybe_hide_change_payment_for_manual_subscriptions' ], 10, 2 );
+
+		// Hide "Auto-renew" toggle for manual subscriptions with non-reusable payment methods.
+		add_filter( 'user_has_cap', [ $this, 'maybe_hide_auto_renew_toggle_for_manual_subscriptions' ], 100, 3 );
 
 		// Used to filter out unwanted metadata on new renewal orders.
 		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
@@ -208,11 +215,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_subscription_note_old_payment_method_title', [ $this, 'get_specific_old_payment_method_title' ], 10, 3 );
 		add_filter( 'woocommerce_subscription_note_new_payment_method_title', [ $this, 'get_specific_new_payment_method_title' ], 10, 3 );
 
-		// TODO: Remove admin payment method JS hack for Subscriptions <= 3.0.7 when we drop support for those versions.
-		// Enqueue JS hack when Subscriptions does not provide the meta input filter.
-		if ( $this->is_subscriptions_plugin_active() && version_compare( $this->get_subscriptions_plugin_version(), '3.0.7', '<=' ) ) {
-			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
-		}
+		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
 
 		/*
 		 * WC subscriptions hooks into the "template_redirect" hook with priority 100.
@@ -226,6 +229,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// Update subscriptions token when user sets a default payment method.
 		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
 		add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this, 'update_payment_method_for_subscriptions' ], 10, 3 );
+
+		// AJAX handler for fetching payment tokens when customer changes.
+		add_action( 'wp_ajax_wcpay_get_user_payment_tokens', [ $this, 'ajax_get_user_payment_tokens' ] );
 	}
 
 	/**
@@ -579,19 +585,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( ! wcs_is_subscription( $order ) ) {
 			return;
 		}
-		WC_Payments::register_script_with_dependencies( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'dist/subscription-edit-page' );
 
-		wp_localize_script(
-			'WCPAY_SUBSCRIPTION_EDIT_PAGE',
-			'wcpaySubscriptionEdit',
-			[
-				'gateway'           => $this->id,
-				'table'             => self::$payment_method_meta_table,
-				'metaKey'           => self::$payment_method_meta_key,
-				'tokens'            => $this->get_user_formatted_tokens_array( $order->get_user_id() ),
-				'defaultOptionText' => __( 'Please select a payment method', 'woocommerce-payments' ),
-			]
-		);
+		WC_Payments::register_script_with_dependencies( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'dist/subscription-edit-page' );
 
 		wp_set_script_translations( 'WCPAY_SUBSCRIPTION_EDIT_PAGE', 'woocommerce-payments' );
 
@@ -616,13 +611,98 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			if ( is_null( $token ) ) {
 				Logger::info( 'There is no saved payment token for subscription #' . $subscription->get_id() );
-				return $payment_method_to_display;
+			} else {
+				$payment_method_to_display = $token->get_display_name();
 			}
-			return $token->get_display_name();
+
+			return $payment_method_to_display;
 		} catch ( \Exception $e ) {
 			Logger::error( 'Failed to get payment method for subscription  #' . $subscription->get_id() . ' ' . $e );
 			return $payment_method_to_display;
 		}
+	}
+
+	/**
+	 * Hide "Change payment" button for manual subscriptions with non-reusable payment methods.
+	 * These subscriptions use the "Renew now" flow where customers choose a payment method at renewal time.
+	 *
+	 * @param array           $actions      The subscription actions.
+	 * @param WC_Subscription $subscription The subscription object.
+	 * @return array The modified actions array.
+	 */
+	public function maybe_hide_change_payment_for_manual_subscriptions( $actions, $subscription ) {
+		// Only process manual subscriptions with non-reusable payment methods.
+		$original_payment_method_id = $subscription->get_meta( '_wcpay_original_payment_method_id', true );
+
+		if ( $subscription->is_manual() && ! empty( $original_payment_method_id ) ) {
+			// Remove the "Change payment" action since they'll choose payment method during renewal.
+			unset( $actions['change_payment_method'] );
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * Hide "Auto renew" toggle for manual subscriptions with non-reusable payment methods.
+	 *
+	 * @param array $allcaps List of user capabilities.
+	 * @param array $caps    Which capabilities are being checked.
+	 * @param array $args    Arguments, in our case user ID and subscription ID.
+	 * @return array
+	 */
+	public function maybe_hide_auto_renew_toggle_for_manual_subscriptions( $allcaps, $caps, $args ) {
+		if ( ! isset( $caps[0] ) || 'toggle_shop_subscription_auto_renewal' !== $caps[0] ) {
+			// Do not interfere with other capabilities.
+			return $allcaps;
+		}
+
+		if ( ! isset( $args[2] ) ) {
+			return $allcaps;
+		}
+		$subscription = wcs_get_subscription( $args[2] );
+		if ( ! $subscription ) {
+			return $allcaps;
+		}
+		// Only process manual subscriptions with non-reusable payment methods.
+		$original_payment_method_id = $subscription->get_meta( '_wcpay_original_payment_method_id', true );
+
+		if ( $subscription->is_manual() && ! empty( $original_payment_method_id ) ) {
+			// Remove the capability as this subscription won't work with automatic renewals.
+			unset( $allcaps['toggle_shop_subscription_auto_renewal'] );
+		}
+
+		return $allcaps;
+	}
+
+	/**
+	 * AJAX handler to fetch payment tokens for a user.
+	 *
+	 * @return void
+	 */
+	public function ajax_get_user_payment_tokens() {
+		check_ajax_referer( 'wcpay-subscription-edit', 'nonce' );
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error( [ 'message' => __( 'You do not have permission to perform this action.', 'woocommerce-payments' ) ], 403 );
+			return;
+		}
+
+		$user_id = isset( $_POST['user_id'] ) ? absint( $_POST['user_id'] ) : 0;
+
+		if ( $user_id <= 0 ) {
+			wp_send_json_success( [ 'tokens' => [] ] );
+			return;
+		}
+
+		// Verify user exists.
+		$user = get_user_by( 'id', $user_id );
+		if ( ! $user ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid user ID.', 'woocommerce-payments' ) ], 400 );
+			return;
+		}
+
+		$tokens = $this->get_user_formatted_tokens_array( $user_id );
+		wp_send_json_success( [ 'tokens' => $tokens ] );
 	}
 
 	/**
@@ -633,23 +713,61 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param string          $field_value  The field_value to be selected by default.
 	 */
 	public function render_custom_payment_meta_input( $subscription, $field_id, $field_value ) {
-		$tokens         = $this->get_user_formatted_tokens_array( $subscription->get_user_id() );
-		$is_valid_value = false;
+		// Make sure that we are either working with integers or null.
+		$field_value = ctype_digit( $field_value )
+			? absint( $field_value )
+			: (
+				is_int( $field_value )
+					? $field_value
+					: null
+			);
 
-		foreach ( $tokens as $token ) {
-			$is_valid_value = $is_valid_value || (int) $field_value === $token['tokenId'];
-		}
+		$user_id       = $subscription->get_user_id();
+		$disabled      = false;
+		$selected      = null;
+		$options       = [];
+		$prepared_data = [
+			'value'   => $field_value,
+			'userId'  => $user_id,
+			'tokens'  => [],
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'nonce'   => wp_create_nonce( 'wcpay-subscription-edit' ),
+		];
 
-		echo '<select name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '">';
-		// If no token matches the selected ID, add a default option.
-		if ( ! $is_valid_value ) {
-			echo '<option value="" selected disabled>' . esc_html__( 'Please select a payment method', 'woocommerce-payments' ) . '</option>';
+		if ( $user_id > 0 ) {
+			$tokens = $this->get_user_formatted_tokens_array( $user_id );
+			foreach ( $tokens as $token ) {
+				$options[ $token['tokenId'] ] = $token['displayName'];
+				if ( $field_value === $token['tokenId'] || ( ! $field_value && $token['isDefault'] ) ) {
+					$selected = $token['tokenId'];
+				}
+			}
+
+			$prepared_data['tokens'] = $tokens;
+
+			if ( empty( $options ) ) {
+				$options[0] = __( 'No payment methods found for customer', 'woocommerce-payments' );
+				$disabled   = true;
+			}
+		} else {
+			$options[0] = __( 'Please select a customer first', 'woocommerce-payments' );
+			$selected   = 0;
+			$disabled   = true;
 		}
-		foreach ( $tokens as $token ) {
-			$is_selected = (int) $field_value === $token['tokenId'] ? 'selected' : '';
-			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
-		}
-		echo '</select>';
+		?>
+		<span class="wcpay-subscription-payment-method" data-wcpay-pm-selector="<?php echo esc_attr( wp_json_encode( $prepared_data ) ); ?>">
+			<select name="<?php echo esc_attr( $field_id ); ?>" id="<?php echo esc_attr( $field_id ); ?>">
+				<?php if ( $field_value && $field_value !== $selected ) : ?>
+					<option value="" selected disabled><?php echo esc_html__( 'Please select a payment method', 'woocommerce-payments' ); ?></option>
+				<?php endif; ?>
+				<?php foreach ( $options as $token_id => $display_name ) : ?>
+					<option value="<?php echo esc_attr( $token_id ); ?>" <?php selected( $token_id, $selected ); ?> <?php echo disabled( $disabled ); ?>>
+						<?php echo esc_html( $display_name ); ?>
+					</option>
+				<?php endforeach; ?>
+			</select>
+		</span>
+		<?php
 	}
 
 	/**
@@ -1050,5 +1168,48 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		return $mandate;
+	}
+
+	/**
+	 * Force subscription to manual renewal if non-reusable payment method was used.
+	 * This should be hooked into 'woocommerce_checkout_subscription_created' action.
+	 *
+	 * @param WC_Subscription $subscription The subscription being created.
+	 */
+	public function maybe_force_subscription_to_manual( $subscription ) {
+		// Only process WCPay subscriptions (including split UPE gateways like woocommerce_payments_ideal).
+		$payment_method_id = $subscription->get_payment_method();
+		if ( 0 !== strpos( $payment_method_id, WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
+			return;
+		}
+
+		// Check if this is a split UPE gateway (e.g., woocommerce_payments_ideal).
+		// Split UPE gateways are used for non-reusable payment methods like iDEAL, Bancontact, etc.
+		// The base gateway (woocommerce_payments) is used for cards, which are reusable.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $payment_method_id ) {
+			// This is the base gateway (card), which is reusable - no action needed.
+			return;
+		}
+
+		// This is a split UPE gateway (non-reusable payment method).
+		// Extract the payment method type from the gateway ID (e.g., "ideal" from "woocommerce_payments_ideal").
+		$payment_method_type = str_replace( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_', '', $payment_method_id );
+
+		// Store the original payment method ID for reference.
+		$subscription->update_meta_data( '_wcpay_original_payment_method_id', $payment_method_id );
+
+		// Set to manual renewal (keep the original split payment method ID).
+		$subscription->set_requires_manual_renewal( true );
+
+		$subscription->save();
+
+		// Add order note confirming the subscription was set to manual.
+		$subscription->add_order_note(
+			sprintf(
+				/* translators: %s: payment method type */
+				__( 'Subscription set to manual renewal because %s is a non-reusable payment method.', 'woocommerce-payments' ),
+				$payment_method_type
+			)
+		);
 	}
 }

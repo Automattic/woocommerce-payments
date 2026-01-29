@@ -30,7 +30,7 @@ import { config } from '../../../config/default';
 
 describeif( shouldRunWCBlocksTests )(
 	'WooCommerce Blocks > Saved cards',
-	{ tag: '@critical' },
+	{ tag: [ '@critical', '@blocks' ] },
 	() => {
 		let shopperPage: Page;
 		const card = config.cards.basic;

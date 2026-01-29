@@ -1246,4 +1246,33 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			)
 		);
 	}
+
+	/**
+	 * @dataProvider provider_get_dispute_reason_description
+	 */
+	public function test_get_dispute_reason_description( string $reason, string $expected ) {
+		$result = WC_Payments_Utils::get_dispute_reason_description( $reason );
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function provider_get_dispute_reason_description(): array {
+		return [
+			'bank_cannot_process'       => [ 'bank_cannot_process', 'Bank cannot process' ],
+			'check_returned'            => [ 'check_returned', 'Check returned' ],
+			'credit_not_processed'      => [ 'credit_not_processed', 'Credit not processed' ],
+			'customer_initiated'        => [ 'customer_initiated', 'Customer initiated' ],
+			'debit_not_authorized'      => [ 'debit_not_authorized', 'Debit not authorized' ],
+			'duplicate'                 => [ 'duplicate', 'Duplicate' ],
+			'fraudulent'                => [ 'fraudulent', 'Transaction unauthorized' ],
+			'incorrect_account_details' => [ 'incorrect_account_details', 'Incorrect account details' ],
+			'insufficient_funds'        => [ 'insufficient_funds', 'Insufficient funds' ],
+			'product_not_received'      => [ 'product_not_received', 'Product not received' ],
+			'product_unacceptable'      => [ 'product_unacceptable', 'Product unacceptable' ],
+			'subscription_canceled'     => [ 'subscription_canceled', 'Subscription canceled' ],
+			'unrecognized'              => [ 'unrecognized', 'Unrecognized' ],
+			'noncompliant'              => [ 'noncompliant', 'Non-compliant' ],
+			'general'                   => [ 'general', 'General' ],
+			'default case'              => [ 'unknown_reason', 'General' ],
+		];
+	}
 }
