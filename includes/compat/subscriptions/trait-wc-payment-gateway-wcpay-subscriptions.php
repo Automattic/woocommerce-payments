@@ -918,7 +918,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return string
 	 */
 	public function get_specific_new_payment_method_title( $new_payment_method_title, $new_payment_method, $subscription ) {
-		// Make sure payment method is a WCPay gateway (including split gateways like Amazon Pay).
+		// make sure payment method is wcpay's (including split gateways like Amazon Pay).
 		if ( 0 !== strpos( $new_payment_method, WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
 			return $new_payment_method_title;
 		}
