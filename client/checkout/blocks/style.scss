@@ -16,58 +16,44 @@
 	padding: 0;
 }
 
+// Test mode badge styling - shared between card and non-card payment methods
+.test-mode.badge {
+	background-color: #fff2d7;
+	border-radius: 4px;
+	padding: 4px 6px;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 16px;
+	color: #4d3716;
+	display: none; // Hidden by default, shown when payment method is selected
+}
+
 .wc-block-checkout__payment-method {
+	// Show test mode badge when payment method is selected
 	input:checked ~ div {
-		/* stylelint-disable-next-line selector-id-pattern */
-		.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] ) {
-			> .payment-method-label {
-				.test-mode.badge {
-					// hiding the badge when the payment method is not selected
-					display: inline-block;
-				}
-			}
+		.test-mode.badge {
+			display: inline-block;
 		}
 	}
 
-	/* stylelint-disable-next-line selector-id-pattern */
-	.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] ) {
+	// Card payment method label with card brand logos
+	.wcpay-card-label {
+		display: flex;
+		align-items: center;
+		gap: 8px;
 		width: 100%;
-		display: block !important;
 
-		> .payment-method-label {
-			display: grid !important;
-			justify-content: normal !important;
-			grid-template-columns: max-content auto;
-			grid-template-areas: 'label badge logos';
-			align-items: center;
-			gap: 8px;
-			width: 100%;
-
-			> .payment-method-label__label {
-				grid-area: label;
-				width: 100%;
-			}
-
-			> .payment-methods--logos {
-				grid-area: logos;
-				height: 24px;
-				justify-self: end;
-			}
-
-			> .test-mode.badge {
-				grid-area: badge;
-				background-color: #fff2d7;
-				border-radius: 4px;
-				padding: 4px 6px;
-				font-size: 12px;
-				font-weight: 400;
-				line-height: 16px;
-				color: #4d3716;
-				justify-self: start;
-				width: max-content;
-				display: none;
-			}
+		.payment-methods--logos {
+			margin-left: auto;
+			height: 24px;
 		}
+	}
+
+	// Standard payment method label
+	.wcpay-payment-method-label {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
 	}
 }
 

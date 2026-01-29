@@ -3,81 +3,69 @@
  */
 import { PaymentMethodsLogos } from './payment-methods-logos';
 import { getCardBrands } from 'wcpay/utils/card-brands';
-import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
-import { useEffect, useState, useRef } from '@wordpress/element';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
+
 const breakpointConfigs = [
 	{ breakpoint: 550, maxElements: 2 },
 	{ breakpoint: 330, maxElements: 1 },
 ];
 
-export default ( { api, title, iconLight, iconDark, upeName } ) => {
-	const containerRef = useRef( null );
+/**
+ * Standard payment method label component that uses the WooCommerce Blocks PaymentMethodLabel.
+ * This follows the standard pattern used by other payment extensions.
+ *
+ * @param {Object} props Component props passed by WooCommerce Blocks.
+ * @param {Object} props.components Components provided by WooCommerce Blocks, including PaymentMethodLabel.
+ * @param {string} props.title The payment method title to display.
+ * @return {JSX.Element} The payment method label component.
+ */
+export const StandardPaymentMethodLabel = ( { components, title } ) => {
+	const { PaymentMethodLabel } = components;
 	const isTestMode = getUPEConfig( 'testMode' );
-	const [ appearance, setAppearance ] = useState(
-		getUPEConfig( 'wcBlocksUPEAppearance' )
-	);
-
-	const [ upeAppearanceTheme, setUpeAppearanceTheme ] = useState(
-		getUPEConfig( 'wcBlocksUPEAppearanceTheme' )
-	);
-
-	useEffect( () => {
-		async function generateUPEAppearance() {
-			if ( ! containerRef.current ) {
-				return;
-			}
-			// Generate UPE input styles.
-			let upeAppearance = getAppearance(
-				'blocks_checkout',
-				false,
-				containerRef.current.ownerDocument
-			);
-			upeAppearance = await api.saveUPEAppearance(
-				upeAppearance,
-				'blocks_checkout'
-			);
-			setAppearance( upeAppearance );
-			setUpeAppearanceTheme( upeAppearance.theme );
-		}
-
-		if ( ! appearance ) {
-			generateUPEAppearance();
-		}
-	}, [ api, appearance ] );
-
-	const stripe = useStripeForUPE( api, upeName );
-
-	if ( ! stripe ) {
-		return null;
-	}
 
 	return (
-		<div ref={ containerRef } className="payment-method-label">
-			<span className="payment-method-label__label">{ title }</span>
+		<span className="wcpay-payment-method-label">
+			<PaymentMethodLabel text={ title } />
 			{ isTestMode && (
 				<span className="test-mode badge">
 					{ __( 'Test Mode', 'woocommerce-payments' ) }
 				</span>
 			) }
-			{ upeName === 'card' ? (
-				<PaymentMethodsLogos
-					maxElements={ 4 }
-					paymentMethods={ getCardBrands() }
-					breakpointConfigs={ breakpointConfigs }
-				/>
-			) : (
-				<img
-					className="payment-methods--logos"
-					src={
-						upeAppearanceTheme === 'night' ? iconDark : iconLight
-					}
-					alt={ title }
-				/>
-			) }
-		</div>
+		</span>
 	);
 };
+
+/**
+ * Card payment method label component with card brand logos.
+ * This is a special case that maintains the current card brands display.
+ *
+ * @param {Object} props Component props.
+ * @param {Object} props.components Components provided by WooCommerce Blocks, including PaymentMethodLabel.
+ * @param {string} props.title The payment method title to display.
+ * @return {JSX.Element} The card payment method label with logos.
+ */
+export const CardPaymentMethodLabel = ( { components, title } ) => {
+	const { PaymentMethodLabel } = components;
+	const isTestMode = getUPEConfig( 'testMode' );
+
+	return (
+		<span className="wcpay-card-label">
+			<PaymentMethodLabel text={ title } />
+			{ isTestMode && (
+				<span className="test-mode badge">
+					{ __( 'Test Mode', 'woocommerce-payments' ) }
+				</span>
+			) }
+			<PaymentMethodsLogos
+				maxElements={ 4 }
+				paymentMethods={ getCardBrands() }
+				breakpointConfigs={ breakpointConfigs }
+			/>
+		</span>
+	);
+};
+
+// Default export for backward compatibility
+export default CardPaymentMethodLabel;

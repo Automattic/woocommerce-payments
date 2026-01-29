@@ -15,7 +15,10 @@ import { getUPEConfig, getConfig } from 'utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
 import WCPayAPI from '../api';
 import { SavedTokenHandler } from './saved-token-handler';
-import PaymentMethodLabel from './payment-method-label';
+import {
+	CardPaymentMethodLabel,
+	StandardPaymentMethodLabel,
+} from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import {
@@ -46,9 +49,46 @@ const api = new WCPayAPI(
 	request
 );
 
+// Determine the icon based on the current UPE appearance theme (light/dark).
+const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
+const getIconForTheme = ( upeConfig ) =>
+	upeAppearanceTheme === 'night' && upeConfig.darkIcon
+		? upeConfig.darkIcon
+		: upeConfig.icon;
+
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
+		const isCardPayment = upeName === 'card';
+
+		// For card payments, use the custom label with card brand logos.
+		// For other payment methods, use the standard label pattern with icons via the icons property.
+		const Label = isCardPayment
+			? ( props ) => (
+					<CardPaymentMethodLabel
+						{ ...props }
+						title={ upeConfig.title }
+					/>
+			  )
+			: ( props ) => (
+					<StandardPaymentMethodLabel
+						{ ...props }
+						title={ upeConfig.title }
+					/>
+			  );
+
+		// For non-card payment methods, pass the icon via the icons property.
+		// The icon is selected based on the current theme (light/dark).
+		const icons = isCardPayment
+			? null
+			: [
+					{
+						id: upeName,
+						src: getIconForTheme( upeConfig ),
+						alt: upeConfig.title,
+					},
+			  ];
+
 		registerPaymentMethod( {
 			name: upeConfig.gatewayId,
 			content: getDeferredIntentCreationUPEFields(
@@ -75,16 +115,8 @@ Object.entries( enabledPaymentMethodsConfig )
 				return needsPayment && isAvailableInTheCountry;
 			},
 			paymentMethodId: upeConfig.gatewayId,
-			// see .wc-block-checkout__payment-method styles in blocks/style.scss
-			label: (
-				<PaymentMethodLabel
-					api={ api }
-					title={ upeConfig.title }
-					iconLight={ upeConfig.icon }
-					iconDark={ upeConfig.darkIcon }
-					upeName={ upeName }
-				/>
-			),
+			label: <Label />,
+			icons,
 			ariaLabel: 'WooPayments',
 			supports: {
 				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
