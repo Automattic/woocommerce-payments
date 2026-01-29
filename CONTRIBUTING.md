@@ -90,13 +90,17 @@ To shutdown:
 
 * Use `npm run down` to stop this worktree's WordPress container
 * Use `npm run infra:down` to stop shared infrastructure (database, phpMyAdmin)
-* The state of the environment will be persisted in `docker/wordpress` and `docker/data`. To restart the environment simply run `npm run up` again. To start afresh, delete these folders and re-run `npm run up:recreate`.
+* The state of the environment will be persisted in `docker/data` (database) and shared Docker volumes (plugins, themes, uploads, mu-plugins). To restart the environment simply run `npm run up` again. To start completely fresh, delete `docker/data` and remove the shared volumes:
+  ```bash
+  docker volume rm wcpay-plugins wcpay-themes wcpay-uploads wcpay-mu-plugins
+  ```
+  Then re-run `npm run infra:up && npm run up:recreate`.
 
 For more details, including git worktree support, see [docker/README.md](docker/README.md).
 
 IDE setup:
 
-* Adding `docker/wordpress` to your IDE's PHP include path will allow it to provide hinting for WordPress functions etc.
+* Adding `docker/wordpress` to your IDE's PHP include path will allow it to provide hinting for WordPress core functions. Note: plugins are stored in shared Docker volumes, so for plugin hinting you may need to copy files locally (e.g., `docker cp wcpay_wp_default:/var/www/html/wp-content/plugins/woocommerce ./docker/wordpress/wp-content/plugins/`).
 * The WordPress container has xdebug setup. Add the following path mappings to your IDE so it can find the correct code:
 
    * `<project folder>/ -> /var/www/html/wp-content/plugins/woocommerce-payments`

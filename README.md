@@ -64,7 +64,7 @@ If you are using a custom local development setup (as opposed to the Docker-base
 
 We currently support the following variables:
 
--   `LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH`: The path to your local WCPay Dev Tools plugin directory for auto-updates; it defaults to `docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools`.
+-   `LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH`: The path to your local WCPay Dev Tools plugin directory for auto-updates. This is primarily useful for non-Docker setups. With the Docker setup, the dev tools plugin is stored in a shared Docker volume and is installed automatically by the setup script.
 
 ## Test account setup
 

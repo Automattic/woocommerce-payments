@@ -191,7 +191,7 @@ The Docker setup is designed for multiple worktrees to share a single database w
 **Why this design?**
 - Installing a plugin or theme in one worktree makes it available to all (matches the shared DB state)
 - Each worktree tests its own WooPayments code changes in isolation
-- Local debugging helpers (mu-plugins) and logs stay separate per worktree
+- Logs (WooCommerce and Apache) stay separate per worktree for easier debugging
 
 **To browse shared plugin/theme files:**
 ```bash
