@@ -10,6 +10,7 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Utils;
+use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
@@ -133,6 +134,19 @@ class UPE_Payment_Method {
 			$this->is_bnpl                      = PaymentMethodUtils::is_bnpl( $this->definition );
 			$this->countries                    = $this->definition::get_supported_countries();
 		}
+	}
+
+	/**
+	 * Returns payment method ID
+	 *
+	 * @return string
+	 */
+	public function is_express_checkout() {
+		if ( null !== $this->definition ) {
+			return in_array( PaymentMethodCapability::EXPRESS_CHECKOUT, $this->definition::get_capabilities(), true );
+		}
+
+		return false;
 	}
 
 	/**

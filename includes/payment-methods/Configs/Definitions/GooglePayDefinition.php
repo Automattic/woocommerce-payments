@@ -107,6 +107,7 @@ class GooglePayDefinition implements PaymentMethodDefinitionInterface {
 			PaymentMethodCapability::MULTI_CURRENCY,
 			PaymentMethodCapability::TOKENIZATION,
 			PaymentMethodCapability::CAPTURE_LATER,
+			PaymentMethodCapability::EXPRESS_CHECKOUT,
 		];
 	}
 
