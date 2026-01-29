@@ -246,7 +246,7 @@ EOF
 
     # Step 6: Start Docker container
     log_step 6 $total_steps "Starting Docker container... "
-    (cd "$worktree_path" && docker compose up --build -d --quiet-pull 2>/dev/null) || {
+    (cd "$worktree_path" && docker compose up --build -d --quiet-pull) || {
         log_error "Failed to start Docker container"
         exit 1
     }
