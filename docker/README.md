@@ -47,9 +47,10 @@ npm run up:recreate
 ```
 
 This will:
-1. Auto-configure your port and worktree ID (saved to `.env`)
-2. Create/recreate the WordPress container
-3. Run the setup script to install WordPress, WooCommerce, and WooPayments
+1. Create/recreate the WordPress container (uses port 8082 and container ID "default" if `.env` doesn't exist)
+2. Run the setup script to install WordPress, WooCommerce, and WooPayments
+
+**Note:** For custom port/container configuration, copy `.env.example` to `.env` and edit it, or run `npm run worktree:setup` to auto-generate one.
 
 For subsequent startups (container already configured):
 
@@ -86,6 +87,8 @@ cat .env
 ```
 
 Or it's displayed when you run `npm run up`.
+
+**Note:** If `.env` doesn't exist, Docker Compose uses defaults (port 8082, container ID "default"). Copy `.env.example` to `.env` and customize, or run `npm run worktree:setup` to auto-generate one.
 
 ### WordPress Admin
 
