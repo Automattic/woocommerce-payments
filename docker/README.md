@@ -193,6 +193,9 @@ The Docker setup is designed for multiple worktrees to share a single database w
 - Each worktree tests its own WooPayments code changes in isolation
 - Logs (WooCommerce and Apache) stay separate per worktree for easier debugging
 
+> [!WARNING]
+> Shared database means shared state. If you're testing destructive operations (database migrations, data deletions, etc.), changes will affect all your running worktrees. Consider backing up the database first or testing destructive changes in isolation.
+
 **To browse shared plugin/theme files:**
 ```bash
 # List plugins in the shared volume
