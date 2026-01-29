@@ -82,4 +82,11 @@ export interface SpotlightProps {
 	 * @default false
 	 */
 	showImmediately?: boolean;
+
+	/**
+	 * Delay in milliseconds before showing the spotlight when showImmediately is false.
+	 *
+	 * @default 4000
+	 */
+	showDelayMs?: number;
 }
