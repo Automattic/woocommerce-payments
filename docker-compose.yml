@@ -5,6 +5,15 @@ networks:
 volumes:
   ## Kludge for not having the ./docker directory bound recursively
   dockerdirectory:
+  ## Shared volumes for wp-content subdirectories (defined in docker-compose.infra.yml)
+  wcpay-plugins:
+    external: true
+  wcpay-themes:
+    external: true
+  wcpay-uploads:
+    external: true
+  wcpay-mu-plugins:
+    external: true
 
 services:
   wordpress:
@@ -23,11 +32,18 @@ services:
       - default.env
     volumes:
       - ./docker/wordpress:/var/www/html/
-      - ./docker/mu-plugins:/var/www/html/wp-content/mu-plugins
-      - ./docker/logs/apache2/:/var/log/apache2
+      ## Shared volumes overlay wp-content subdirectories
+      - wcpay-plugins:/var/www/html/wp-content/plugins
+      - wcpay-themes:/var/www/html/wp-content/themes
+      - wcpay-uploads:/var/www/html/wp-content/uploads
+      - wcpay-mu-plugins:/var/www/html/wp-content/mu-plugins
+      ## Per-worktree overlays on top of shared volumes
+      - ./docker/logs/wc-logs:/var/www/html/wp-content/uploads/wc-logs
       - .:/var/www/html/wp-content/plugins/woocommerce-payments
-      - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
       - dockerdirectory:/var/www/html/wp-content/plugins/woocommerce-payments/docker
+      ## Other per-worktree mounts
+      - ./docker/logs/apache2/:/var/log/apache2
+      - ./docker/wc-payments-php.ini:/usr/local/etc/php/conf.d/wc-payments-php.ini
       - ./docker/bin:/var/scripts
     extra_hosts:
       - "host.docker.internal:host-gateway"

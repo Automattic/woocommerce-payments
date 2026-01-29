@@ -36,7 +36,9 @@ The database and phpMyAdmin are shared across all worktrees. Start them once fro
 npm run infra:up
 ```
 
-This creates a shared Docker network (`wcpay-network`) that all WordPress containers will join.
+This creates:
+- A shared Docker network (`wcpay-network`) that all WordPress containers join
+- Shared Docker volumes for plugins, themes, and uploads (see [Shared vs Per-Worktree Resources](#shared-vs-per-worktree-resources))
 
 #### Step 3: Start WordPress and set up the site
 
@@ -144,6 +146,11 @@ cd ..
 git worktree remove /path/to/worktree
 ```
 
+This will:
+- Stop the worktree's WordPress container
+- Drop the worktree's test database (`wcpay_tests_<WORKTREE_ID>`) from the shared DB
+- Remove the `.env` file
+
 #### Customizing your worktree config
 
 Edit `.env` to customize:
@@ -163,6 +170,36 @@ npm run down
 
 # Stop all shared infrastructure (DB, phpMyAdmin)
 npm run infra:down
+```
+
+### Shared vs Per-Worktree Resources
+
+The Docker setup is designed for multiple worktrees to share a single database while each testing their own WooPayments code.
+
+| Resource | Shared/Per-Worktree | Location |
+|----------|---------------------|----------|
+| Database (MySQL) | Shared | `wcpay_db` container |
+| Plugins (WooCommerce, etc.) | Shared | `wcpay-plugins` Docker volume |
+| Themes | Shared | `wcpay-themes` Docker volume |
+| Uploads (media) | Shared | `wcpay-uploads` Docker volume |
+| mu-plugins | Shared | `wcpay-mu-plugins` Docker volume |
+| **WooPayments plugin code** | **Per-worktree** | Bind mount from repo root |
+| WordPress container | Per-worktree | `wcpay_wp_<WORKTREE_ID>` |
+| WooCommerce logs | Per-worktree | `./docker/logs/wc-logs` |
+| Apache logs | Per-worktree | `./docker/logs/apache2` |
+
+**Why this design?**
+- Installing a plugin or theme in one worktree makes it available to all (matches the shared DB state)
+- Each worktree tests its own WooPayments code changes in isolation
+- Local debugging helpers (mu-plugins) and logs stay separate per worktree
+
+**To browse shared plugin/theme files:**
+```bash
+# List plugins in the shared volume
+docker exec wcpay_wp_default ls /var/www/html/wp-content/plugins
+
+# Copy a file out for inspection
+docker cp wcpay_wp_default:/var/www/html/wp-content/plugins/woocommerce/woocommerce.php ./
 ```
 
 ### Exposing Your Local Site (for Jetpack Connection)
@@ -246,14 +283,40 @@ To apply the change, restart your containers using `npm run down && npm run up`.
 
 ### Adding local helper scripts/hacks
 
-You can add local PHP scripts in the `docker/mu-plugins` directory since it's mounted as the `wp-content/mu-plugins` WordPress directory in your Docker container. These PHP scripts will be loaded automatically because they are treated as [WordPress must-use plugins](https://developer.wordpress.org/advanced-administration/plugins/mu-plugins/).
+You can add PHP scripts to the `mu-plugins` directory (stored in the shared `wcpay-mu-plugins` Docker volume). These are treated as [WordPress must-use plugins](https://developer.wordpress.org/advanced-administration/plugins/mu-plugins/) and loaded automatically.
 
-**Note:** Please make sure that you try to think of these scripts as _temporary solutions/helpers_ and not as permanent code to be run constantly (unless you are sure that is what you want).
+**Note:** Since mu-plugins are shared across all worktrees, any script you add will affect all environments.
 
-One _recommended way_ of working with your collection of helper scripts is to take advantage of the fact that _WordPress will not automatically load PHP files_ in subdirectories of `wp-content/mu-plugins` (as it does with regular plugins in `wp-content/plugins`).
+**Adding a mu-plugin:**
 
-1. Create a new directory in `docker/mu-plugins` for your scripts, e.g. `docker/mu-plugins/local-helpers`. WordPress will not automatically load PHP files in subdirectories of `mu-plugins`, so you need to include them manually.
-2. Create a new PHP file in `docker/mu-plugins`,e.g. `docker/mu-plugins/0-local-helpers.php`.
-3. Add lines like `require_once __DIR__ . '/local-helpers/your-script.php';` to `docker/mu-plugins/0-local-helpers.php` to load your scripts.
-4. Comment/uncomment the `require_once` lines to load the scripts you need for your particular itch.
-5. Make sure you comment out any lines once you are finished with that itch to avoid unexpected/non-standard behavior on your local environment going forward - leftover helpers are not helpful!
+```bash
+# Create a local file
+echo '<?php // My helper script' > my-helper.php
+
+# Copy it into the shared volume (use any running WordPress container)
+docker cp my-helper.php wcpay_wp_default:/var/www/html/wp-content/mu-plugins/
+
+# Clean up local file
+rm my-helper.php
+```
+
+**Editing an existing mu-plugin:**
+
+```bash
+# Copy out, edit, copy back
+docker cp wcpay_wp_default:/var/www/html/wp-content/mu-plugins/my-helper.php ./
+# ... edit the file ...
+docker cp my-helper.php wcpay_wp_default:/var/www/html/wp-content/mu-plugins/
+```
+
+**Listing mu-plugins:**
+
+```bash
+docker exec wcpay_wp_default ls -la /var/www/html/wp-content/mu-plugins/
+```
+
+**Removing a mu-plugin:**
+
+```bash
+docker exec wcpay_wp_default rm /var/www/html/wp-content/mu-plugins/my-helper.php
+```

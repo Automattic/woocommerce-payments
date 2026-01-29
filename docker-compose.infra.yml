@@ -2,6 +2,16 @@ networks:
   wcpay-network:
     name: wcpay-network
 
+volumes:
+  wcpay-plugins:
+    name: wcpay-plugins
+  wcpay-themes:
+    name: wcpay-themes
+  wcpay-uploads:
+    name: wcpay-uploads
+  wcpay-mu-plugins:
+    name: wcpay-mu-plugins
+
 services:
   db:
     container_name: wcpay_db
