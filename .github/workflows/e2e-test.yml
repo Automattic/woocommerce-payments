@@ -72,7 +72,7 @@ jobs:
           # - WC RC: YES blocks tests (newest version, test upcoming release)
 
           # Define common values to reduce repetition
-          PHP_LEGACY="7.3"
+          PHP_LEGACY="7.4"
           PHP_STABLE="8.3"
           PHP_LATEST="8.4"
           TEST_GROUPS_WCPAY="wcpay"
@@ -84,7 +84,7 @@ jobs:
           # Initialize empty matrix array
           MATRIX_ENTRIES=()
 
-          # Add WC 7.7.0 with PHP 7.3 only (legacy - NO blocks tests)
+          # Add WC 7.7.0 with PHP 7.4 only (legacy - NO blocks tests)
           MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
           # The following tests are temporarily disabled due to a fatal error with WC 7.7.0.

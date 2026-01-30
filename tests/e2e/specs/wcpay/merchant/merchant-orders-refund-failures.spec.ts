@@ -10,6 +10,7 @@ import { emptyCart, placeOrderWithCurrency } from '../../../utils/shopper';
 import { getMerchant, getShopper } from '../../../utils/helpers';
 import { goToOrder } from '../../../utils/merchant-navigation';
 import { ensureOrderIsProcessed } from '../../../utils/merchant';
+import { isWooCommerceVersionAtLeast } from '../../../utils/constants';
 
 const selectorQty = '.refund_order_item_qty';
 const selectorLineAmount = '.refund_line_total';
@@ -42,7 +43,13 @@ test.describe( 'Order > Refund Failure', () => {
 		// Place an order to refund later
 		await emptyCart( shopperPage );
 		orderId = await placeOrderWithCurrency( shopperPage, 'USD' );
-		await ensureOrderIsProcessed( merchantPage, orderId );
+
+		// WooCommerce 10.5+ uses batch analytics imports (every 12 hours) instead of
+		// per-order Action Scheduler actions. For older versions, manually trigger
+		// the wc-admin_import_orders action to ensure the order is synced.
+		if ( ! isWooCommerceVersionAtLeast( '10.5.0' ) ) {
+			await ensureOrderIsProcessed( merchantPage, orderId );
+		}
 	} );
 
 	dataTable.forEach( ( [ fieldName, valueDescription, selector, value ] ) => {

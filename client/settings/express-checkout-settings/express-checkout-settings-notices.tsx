@@ -13,6 +13,7 @@ import {
 	useWooPayEnabledSettings,
 	usePaymentRequestEnabledSettings,
 	useAmazonPayEnabledSettings,
+	useGetAvailablePaymentMethodIds,
 } from 'wcpay/data';
 
 type ExpressCheckoutMethod = 'woopay' | 'google/apple' | 'amazon_pay';
@@ -69,12 +70,15 @@ const ExpressCheckoutSettingsNotices: React.FC< ExpressCheckoutSettingsNoticesPr
 			amazonPay: isAmazonPayFeatureFlagEnabled,
 		},
 	} = useContext( WCPaySettingsContext );
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	// need to ensure that if the feature flag is disabled, we ignore the button's state.
 	const isWooPayEffectivelyEnabled =
 		isWooPayEnabled && isWooPayFeatureFlagEnabled;
 	const isAmazonPayEffectivelyEnabled =
-		isAmazonPayEnabled && isAmazonPayFeatureFlagEnabled;
+		isAmazonPayEnabled &&
+		isAmazonPayFeatureFlagEnabled &&
+		availablePaymentMethodIds.includes( 'amazon_pay' );
 
 	const otherButtons = [
 		currentMethod !== 'woopay' &&
