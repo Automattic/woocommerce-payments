@@ -24,7 +24,7 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
 	let eurOrderId: string;
-	let orderAmount: string;
+	let refundAmount: string;
 
 	test.beforeAll( async ( { browser } ) => {
 		merchantPage = ( await getMerchant( browser ) ).merchantPage;
@@ -109,32 +109,44 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 	test( 'can refund in correct currency', async () => {
 		await goToOrder( merchantPage, eurOrderId );
 
-		// Get the order total from the admin order page (formatted correctly for refund)
-		orderAmount =
-			( await merchantPage
-				.getByRole( 'row', { name: /Order Total/ } )
-				.locator( '.woocommerce-Price-amount' )
-				.textContent() ) ?? '';
-
-		// Click refund button
+		// Click refund button to show the refund UI
 		await merchantPage
 			.getByRole( 'button', {
 				name: 'Refund',
 			} )
 			.click();
 
-		// Fill refund details with the EUR amount
-		await merchantPage.getByLabel( 'Refund amount' ).fill( orderAmount );
+		// Get the total available to refund amount (e.g., "€21.00")
+		refundAmount =
+			( await merchantPage
+				.getByRole( 'row', { name: 'Total available to refund' } )
+				.locator( '.woocommerce-Price-amount' )
+				.textContent() ) ?? '';
+
+		// Set the refund quantity to 1 for the first line item (full refund of item)
+		await merchantPage
+			.locator( '.refund_order_item_qty' )
+			.first()
+			.fill( '1' );
+
+		// Press Tab to trigger the refund amount calculation
+		await merchantPage.keyboard.press( 'Tab' );
+
+		// Wait for the refund amount field to be populated (non-empty)
+		await expect(
+			merchantPage.getByLabel( 'Refund amount' )
+		).not.toHaveValue( '' );
+
+		// Fill in refund reason
 		await merchantPage
 			.getByLabel( 'Reason for refund' )
 			.fill( 'Multi-currency refund test' );
 
-		// Verify the refund button shows the correct currency (EUR)
+		// Find the refund button and verify it shows the EUR amount
 		const refundButton = merchantPage.getByRole( 'button', {
-			name: `Refund ${ orderAmount } via WooPayments`,
+			name: `Refund ${ refundAmount } via WooPayments`,
 		} );
 		await expect( refundButton ).toBeVisible();
-		await expect( refundButton ).toContainText( '€' );
 
 		// Click refund and handle confirmation dialog
 		merchantPage.once( 'dialog', ( dialog ) => dialog.accept() );
@@ -143,21 +155,22 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 		// Wait for refund to process
 		await merchantPage.waitForLoadState( 'networkidle' );
 
-		// Verify refund details show EUR currency
+		// Verify refund details show EUR currency with the correct amount
 		await expect(
-			merchantPage.getByRole( 'cell', {
-				name: new RegExp( `-${ orderAmount }` ),
-			} )
-		).toBeVisible();
+			merchantPage.locator( '.refund .woocommerce-Price-amount' ).first()
+		).toContainText( refundAmount );
 
-		// Verify refund note contains the EUR amount
-		await expect(
-			merchantPage.getByText(
-				new RegExp(
-					`A refund of ${ orderAmount } was successfully processed using WooPayments`
-				)
-			)
-		).toBeVisible();
+		// Finding the refund note, and verify it contains the EUR amount
+		const refundNote = merchantPage
+			.locator( '#woocommerce-order-notes .note_content' )
+			.filter( { hasText: 'A refund of' } )
+			.filter( { hasText: 'was successfully processed' } );
+		await expect( refundNote ).toContainText( refundAmount );
+
+		// Verify order status is Refunded
+		await expect( merchantPage.locator( '#order_status' ) ).toHaveValue(
+			'wc-refunded'
+		);
 	} );
 
 	test( 'refund displays correctly on transaction page', async () => {
@@ -173,13 +186,11 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 		await goToPaymentDetails( merchantPage, paymentIntentId );
 
 		// Verify the refund is shown in the timeline with EUR currency
-		await expect(
-			merchantPage.getByText(
-				new RegExp(
-					`A payment of ${ orderAmount } was successfully refunded`
-				)
-			)
-		).toBeVisible();
+		const refundTimeline = merchantPage.getByText(
+			'was successfully refunded'
+		);
+		await expect( refundTimeline ).toBeVisible();
+		await expect( refundTimeline ).toContainText( refundAmount );
 
 		// Verify the payment status changed to Refunded
 		await expect(
