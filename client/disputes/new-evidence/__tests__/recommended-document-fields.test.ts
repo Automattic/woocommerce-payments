@@ -459,6 +459,59 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
 				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
+
+			it( 'should return matrix fields for product_not_received + booking_reservation when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'product_not_received',
+					undefined,
+					undefined,
+					'booking_reservation'
+				);
+
+				// Matrix entry for product_not_received + booking_reservation
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
+				expect( result[ 0 ].description ).toBe(
+					"A copy of the customer's receipt, which can be found in the receipt history for this transaction."
+				);
+				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
+				expect( result[ 2 ].key ).toBe( 'service_documentation' );
+				expect( result[ 2 ].label ).toBe(
+					'Reservation or booking confirmation'
+				);
+				expect( result[ 2 ].description ).toBe(
+					'Any documents showing the service completion, attendance or reservation confirmation.'
+				);
+				expect( result[ 3 ].key ).toBe( 'cancellation_rebuttal' ); // Cancellation confirmation
+				expect( result[ 3 ].label ).toBe( 'Cancellation confirmation' );
+				expect( result[ 3 ].description ).toBe(
+					'Documents showing the product or service was canceled, such as cancellation logs, confirmation emails, or account records.'
+				);
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
+			} );
+
+			it( 'should fall back to trunk product_not_received fields for physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'product_not_received',
+					undefined,
+					undefined,
+					'physical_product'
+				);
+
+				// Should fall back to trunk product_not_received fields since no matrix entry for physical_product
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+			} );
 		} );
 
 		describe( 'Visa Compliance (noncompliant) reason', () => {

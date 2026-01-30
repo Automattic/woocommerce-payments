@@ -52,4 +52,11 @@ class PaymentMethodCapability {
 	 * @var string
 	 */
 	public const DOMESTIC_TRANSACTIONS_ONLY = 'domestic_transactions_only';
+
+	/**
+	 * Payment method can be displayed in the "Express Checkout" section of the checkout page
+	 *
+	 * @var string
+	 */
+	public const EXPRESS_CHECKOUT = 'express_checkout';
 }

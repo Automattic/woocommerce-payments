@@ -3866,4 +3866,61 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Act: Call store_setup_sync.
 		$this->wcpay_account->store_setup_sync();
 	}
+
+	/**
+	 * Data provider for test_is_review_prompt_eligible.
+	 *
+	 * @return array
+	 */
+	public function provider_is_review_prompt_eligible() {
+		return [
+			'eligible when flag is true'        => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => true,
+				],
+				true,
+			],
+			'not eligible when flag is false'   => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => false,
+				],
+				false,
+			],
+			'not eligible when flag not set'    => [
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+				],
+				false,
+			],
+			'not eligible when no account data' => [
+				[],
+				false,
+			],
+		];
+	}
+
+	/**
+	 * Test is_review_prompt_eligible method with various account data scenarios.
+	 *
+	 * @dataProvider provider_is_review_prompt_eligible
+	 *
+	 * @param array $account_data The account data to cache.
+	 * @param bool  $expected     The expected eligibility result.
+	 */
+	public function test_is_review_prompt_eligible( $account_data, $expected ) {
+		// Arrange: Mock server connection and cache account data.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$this->cache_account_details( $account_data );
+
+		// Act.
+		$result = $this->wcpay_account->is_review_prompt_eligible();
+
+		// Assert.
+		$this->assertSame( $expected, $result );
+	}
 }
