@@ -1,0 +1,92 @@
+name: QIT E2E Tests - Run
+
+on:
+  workflow_call:
+    inputs:
+      woocommerce-version:
+        description: 'WooCommerce version (nightly, or specific version like 9.6.0, 10.5.0-dev)'
+        required: true
+        type: string
+      wordpress-version:
+        description: 'WordPress version (latest, nightly, or specific version)'
+        required: false
+        type: string
+        default: 'latest'
+      php-version:
+        description: 'PHP version'
+        required: true
+        type: string
+      artifact-name:
+        description: 'Name of the artifact containing the built plugin zip'
+        required: true
+        type: string
+      playwright-project:
+        description: 'Playwright project to run (shopper, merchant, subscriptions)'
+        required: true
+        type: string
+    secrets:
+      QIT_CI_USER:
+        required: true
+      QIT_CI_SECRET:
+        required: true
+      E2E_QIT_JP_SITE_ID:
+        required: true
+      E2E_QIT_JP_BLOG_TOKEN:
+        required: true
+      E2E_QIT_JP_USER_TOKEN:
+        required: true
+
+jobs:
+  qit-e2e:
+    name: "Run tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download plugin artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ inputs.php-version }}
+          tools: composer
+          coverage: none
+
+      - name: Install QIT CLI
+        # Use dev-trunk because test packages feature is not yet in stable releases
+        run: composer global require woocommerce/qit-cli:dev-trunk
+
+      - name: Authenticate QIT
+        run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
+
+      - name: Run QIT E2E Tests
+        env:
+          E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
+          E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
+          E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
+        run: |
+          qit run:e2e woocommerce-payments \
+            --config tests/qit/qit.json \
+            --woo=${{ inputs.woocommerce-version }} \
+            --wp=${{ inputs.wordpress-version }} \
+            --php=${{ inputs.php-version }} \
+            --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
+            --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
+            --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
+            --verbose \
+            --wait \
+            -- --project=${{ inputs.playwright-project }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qit-e2e-results-wp${{ inputs.wordpress-version }}-wc${{ inputs.woocommerce-version }}-php${{ inputs.php-version }}-${{ inputs.playwright-project }}
+          path: |
+            tests/qit/test-package/test-results/
+            qit-results/
+          retention-days: 7

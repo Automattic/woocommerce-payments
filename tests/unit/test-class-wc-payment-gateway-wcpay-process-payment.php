@@ -1738,7 +1738,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_process_payment_for_subscription_from_woopay_save_token_if_does_not_exist() {
-
 		// Arrange: Set request value to mimic a payment through WooPay.
 		$_POST['is_woopay'] = true;
 
@@ -1783,6 +1782,113 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Returning correct array.
 		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	/**
+	 * Test that when using a confirmation token (ctoken_*), the payment method ID
+	 * stored is the real pm_* ID from the intent, not the confirmation token.
+	 */
+	public function test_confirmation_token_payment_stores_real_pm_id_from_intent() {
+		$confirmation_token  = 'ctoken_mock123';
+		$real_payment_method = 'pm_real_from_intent';
+		$customer_id         = 'cus_mock';
+		$order_id            = 123;
+		$total               = 12.23;
+
+		// Arrange: Create an order to test with.
+		$mock_order = $this->createMock( 'WC_Order' );
+
+		$mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+		$mock_order
+			->method( 'get_id' )
+			->willReturn( $order_id );
+		$mock_order
+			->method( 'get_total' )
+			->willReturn( $total );
+		$mock_order
+			->method( 'get_user' )
+			->willReturn( wp_get_current_user() );
+
+		// Arrange: Set a good return value for customer ID.
+		$this->mock_customer_service->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( $customer_id );
+
+		// Arrange: Create a mock cart.
+		$mock_cart = $this->createMock( 'WC_Cart' );
+
+		// Arrange: Return a successful response with the real payment method ID.
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'payment_method_id' => $real_payment_method,
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		$mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_wcpay_mode', WC_Payments::mode()->is_test() ? 'test' : 'prod' ],
+				[ '_wcpay_multi_currency_stripe_exchange_rate', 0.86 ]
+			);
+
+		// Assert: Customer ID is always stored.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'set_customer_id_for_order' )
+			->with( $mock_order, $customer_id );
+
+		// Assert: set_payment_method_id_for_order is called exactly once with the
+		// REAL payment method ID from the intent (not the confirmation token).
+		// This verifies both behaviors:
+		// 1. The confirmation token is NOT stored initially.
+		// 2. The real pm_* ID IS stored after intent creation.
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'set_payment_method_id_for_order' )
+			->with( $mock_order, $real_payment_method );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'attach_intent_info_to_order' )
+			->with( $mock_order, $intent );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'update_order_status_from_intent' )
+			->with( $mock_order, $intent );
+
+		$mock_cart
+			->expects( $this->once() )
+			->method( 'empty_cart' );
+
+		$charge_request = $this->mock_wcpay_request( Get_Charge::class, 1, 'ch_mock' );
+
+		$charge_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
+
+		// Act: Use a confirmation token in the POST data.
+		$_POST['wcpay-payment-method'] = $confirmation_token;
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		// Verify that this is indeed using a confirmation token.
+		$this->assertTrue( $payment_information->is_using_confirmation_token() );
+
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+
+		// Assert: Returning the correct array.
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( $this->return_url, $result['redirect'] );
 	}
 
 	private function mock_wcs_order_contains_subscription( $value ) {

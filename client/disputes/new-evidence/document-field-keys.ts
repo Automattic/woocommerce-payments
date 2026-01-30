@@ -9,9 +9,12 @@ export const DOCUMENT_FIELD_KEYS = {
 	CUSTOMER_SIGNATURE: 'customer_signature',
 	UNCATEGORIZED_FILE: 'uncategorized_file',
 	REFUND_POLICY: 'refund_policy',
-	REFUND_RECEIPT_DOCUMENTATION: 'uncategorized_file',
+	// For duplicate disputes where it was a duplicate, we use duplicate_charge_documentation
+	// to store the refund receipt since it's documentation related to the duplicate charge.
+	REFUND_RECEIPT_DOCUMENTATION: 'duplicate_charge_documentation',
 	DUPLICATE_CHARGE_DOCUMENTATION: 'duplicate_charge_documentation',
 	CANCELLATION_POLICY: 'cancellation_policy',
+	CANCELLATION_REBUTTAL: 'cancellation_rebuttal',
 	ACCESS_ACTIVITY_LOG: 'access_activity_log',
 	SERVICE_DOCUMENTATION: 'service_documentation',
 	SHIPPING_DOCUMENTATION: 'shipping_documentation',
