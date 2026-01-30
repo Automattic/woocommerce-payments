@@ -269,13 +269,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		if ( ! $amazon_pay_gateway->is_enabled() ) {
-			return false;
-		}
-
-		// Check if Amazon Pay has fees configured (indicates it's actually available for the account).
-		$methods_with_fees = array_keys( $this->account->get_fees() );
-		if ( ! in_array( AmazonPayDefinition::get_id(), $methods_with_fees, true ) ) {
+		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
 			return false;
 		}
 
@@ -284,10 +278,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		$currency        = get_woocommerce_currency();
-		$account_country = $this->account->get_account_country();
-
-		return AmazonPayDefinition::is_available_for( $currency, $account_country );
+		return true;
 	}
 
 	/**
