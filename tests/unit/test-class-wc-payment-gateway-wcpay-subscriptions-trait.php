@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 
 /**
