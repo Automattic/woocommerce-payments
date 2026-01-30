@@ -51,7 +51,7 @@ Object.entries( enabledPaymentMethodsConfig )
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		// Label component renders the payment method title using the standard
 		// PaymentMethodLabel from WooCommerce Blocks, with icons as a sibling
-		// element for proper CSS grid positioning.
+		// element for proper flexbox layout.
 		const Label = ( props ) => (
 			<PaymentMethodLabel
 				{ ...props }
