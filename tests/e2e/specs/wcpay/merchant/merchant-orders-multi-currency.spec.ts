@@ -132,13 +132,13 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 
 		// Verify the refund button shows the correct currency (EUR)
 		const refundButton = merchantPage.getByRole( 'button', {
-			name: new RegExp( `Refund ${ orderAmount } via WooPayments` ),
+			name: `Refund ${ orderAmount } via WooPayments`,
 		} );
 		await expect( refundButton ).toBeVisible();
 		await expect( refundButton ).toContainText( '€' );
 
 		// Click refund and handle confirmation dialog
-		merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
+		merchantPage.once( 'dialog', ( dialog ) => dialog.accept() );
 		await refundButton.click();
 
 		// Wait for refund to process
