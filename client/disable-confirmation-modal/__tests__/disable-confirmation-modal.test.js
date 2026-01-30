@@ -20,6 +20,7 @@ jest.mock( '../../data', () => ( {
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true ] ),
 	usePaymentRequestEnabledSettings: jest.fn().mockReturnValue( [ true ] ),
 	useAmazonPayEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 } ) );
 
 const renderWithSettingsProvider = ( ui ) =>
