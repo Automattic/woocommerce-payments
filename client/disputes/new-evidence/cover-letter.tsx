@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { external } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -114,12 +113,10 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				className="wcpay-dispute-evidence-cover-letter__print"
 				variant="primary"
 				onClick={ handleViewCoverLetter }
-				iconPosition="right"
-				iconSize={ 24 }
-				icon={ external }
 				__next40pxDefaultSize
 			>
-				{ __( 'Preview cover letter', 'woocommerce-payments' ) }
+				{ __( 'Preview cover letter', 'woocommerce-payments' ) + ' ' }
+				&#8599;
 			</Button>
 		</section>
 	);
