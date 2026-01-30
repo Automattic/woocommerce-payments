@@ -75,7 +75,7 @@ export const generateAttachments = (
 	const standardAttachments: Array< {
 		key: string;
 		label: string;
-		labelForReasons?: { reasons: string[]; label: string };
+		labelForReasons?: Array< { reasons: string[]; label: string } >;
 		labelForStatus?: { status: string; label: string };
 		onlyForReasons?: string[];
 		excludeWhen?: ( reason: string, status?: string ) => boolean;
@@ -125,14 +125,24 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 			label: __( 'Item condition', 'woocommerce-payments' ),
-			// For product_not_received disputes, this field is labeled "Reservation or booking confirmation"
-			labelForReasons: {
-				reasons: [ 'product_not_received' ],
-				label: __(
-					'Reservation or booking confirmation',
-					'woocommerce-payments'
-				),
-			},
+			labelForReasons: [
+				{
+					// For product_not_received disputes, this field is labeled "Reservation or booking confirmation"
+					reasons: [ 'product_not_received' ],
+					label: __(
+						'Reservation or booking confirmation',
+						'woocommerce-payments'
+					),
+				},
+				{
+					// For product_unacceptable disputes, this field is labeled "Event or booking documentation"
+					reasons: [ 'product_unacceptable' ],
+					label: __(
+						'Event or booking documentation',
+						'woocommerce-payments'
+					),
+				},
+			],
 		},
 		{
 			// For non-fraudulent disputes, "Subscription logs" appears in its original position
@@ -145,22 +155,26 @@ export const generateAttachments = (
 			label: __( 'Cancellation logs', 'woocommerce-payments' ),
 			onlyForReasons: [ 'subscription_canceled', 'product_not_received' ],
 			// For product_not_received disputes, this field is labeled "Cancellation confirmation"
-			labelForReasons: {
-				reasons: [ 'product_not_received' ],
-				label: __(
-					'Cancellation confirmation',
-					'woocommerce-payments'
-				),
-			},
+			labelForReasons: [
+				{
+					reasons: [ 'product_not_received' ],
+					label: __(
+						'Cancellation confirmation',
+						'woocommerce-payments'
+					),
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 			label: __( 'Cancellation policy', 'woocommerce-payments' ),
 			// For subscription_canceled disputes, this field is labeled "Terms of service" in the UI
-			labelForReasons: {
-				reasons: [ 'subscription_canceled' ],
-				label: __( 'Terms of service', 'woocommerce-payments' ),
-			},
+			labelForReasons: [
+				{
+					reasons: [ 'subscription_canceled' ],
+					label: __( 'Terms of service', 'woocommerce-payments' ),
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
@@ -202,10 +216,13 @@ export const generateAttachments = (
 					duplicateStatus === labelForStatus.status
 				) {
 					displayLabel = labelForStatus.label;
-				} else if (
-					labelForReasons?.reasons.includes( dispute.reason )
-				) {
-					displayLabel = labelForReasons.label;
+				} else if ( labelForReasons ) {
+					const match = labelForReasons.find( ( entry ) =>
+						entry.reasons.includes( dispute.reason )
+					);
+					if ( match ) {
+						displayLabel = match.label;
+					}
 				}
 				attachments.push(
 					sprintf(
