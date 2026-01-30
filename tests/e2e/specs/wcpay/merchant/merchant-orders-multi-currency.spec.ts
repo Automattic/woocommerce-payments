@@ -35,14 +35,6 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 
 		// Place an order in EUR
 		eurOrderId = await shopper.placeOrderWithCurrency( shopperPage, 'EUR' );
-
-		// Get the order total for refund tests
-		orderAmount =
-			( await shopperPage
-				.locator(
-					'.woocommerce-order-overview__total .woocommerce-Price-amount'
-				)
-				.textContent() ) ?? '';
 	} );
 
 	test.afterAll( async () => {
@@ -116,6 +108,13 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 
 	test( 'can refund in correct currency', async () => {
 		await goToOrder( merchantPage, eurOrderId );
+
+		// Get the order total from the admin order page (formatted correctly for refund)
+		orderAmount =
+			( await merchantPage
+				.getByRole( 'row', { name: /Order Total/ } )
+				.locator( '.woocommerce-Price-amount' )
+				.textContent() ) ?? '';
 
 		// Click refund button
 		await merchantPage
