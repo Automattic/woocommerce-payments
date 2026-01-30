@@ -13,6 +13,7 @@ import './styles.scss';
 import {
 	useAmazonPayEnabledSettings,
 	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from '../data';
@@ -35,6 +36,7 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 	const {
 		featureFlags: { amazonPay: isAmazonPayFeatureFlagEnabled },
 	} = useContext( WCPaySettingsContext );
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	return (
 		<ConfirmationModal
@@ -122,14 +124,16 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 						</li>
 					</>
 				) }
-				{ isAmazonPayEnabled && isAmazonPayFeatureFlagEnabled && (
-					<li>
-						<PaymentMethodIcon
-							Icon={ paymentMethodsMap.amazon_pay.icon }
-							label={ paymentMethodsMap.amazon_pay.label }
-						/>
-					</li>
-				) }
+				{ isAmazonPayEnabled &&
+					isAmazonPayFeatureFlagEnabled &&
+					availablePaymentMethodIds.includes( 'amazon_pay' ) && (
+						<li>
+							<PaymentMethodIcon
+								Icon={ paymentMethodsMap.amazon_pay.icon }
+								label={ paymentMethodsMap.amazon_pay.label }
+							/>
+						</li>
+					) }
 				{ isStripeLinkEnabled && (
 					<li>
 						<PaymentMethodIcon

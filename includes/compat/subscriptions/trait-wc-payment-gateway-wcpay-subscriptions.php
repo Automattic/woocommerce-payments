@@ -9,7 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
@@ -19,8 +18,6 @@ use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
-use WCPay\Constants\Intent_Status;
-use WCPay\Constants\Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 
 /**
@@ -106,14 +103,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @var bool False by default, true once the callbacks have been attached.
 	 */
 	private static $has_attached_integration_hooks = false;
-
-	/**
-	 * Used to temporary keep the state of the order_pay value on the Pay for order page with the SCA authorization flow.
-	 * For more details, see remove_order_pay_var and restore_order_pay_var hooks.
-	 *
-	 * @var string|int
-	 */
-	private $order_pay_var;
 
 	/**
 	 * Get the list of WCPay gateway IDs that support reusable payment methods for subscriptions.
@@ -238,7 +227,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		self::$has_attached_integration_hooks = true;
 
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
-		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
 
 		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
 
@@ -279,15 +267,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'add_payment_method_select_to_subscription_edit' ] );
 
-		/*
-		 * WC subscriptions hooks into the "template_redirect" hook with priority 100.
-		 * If the screen is "Pay for order" and the order is a subscription renewal, it redirects to the plain checkout.
-		 * See: https://github.com/woocommerce/woocommerce-subscriptions/blob/99a75687e109b64cbc07af6e5518458a6305f366/includes/class-wcs-cart-renewal.php#L165
-		 * If we are in the "You just need to authorize SCA" flow, we don't want that redirection to happen.
-		 */
-		add_action( 'template_redirect', [ $this, 'remove_order_pay_var' ], 99 );
-		add_action( 'template_redirect', [ $this, 'restore_order_pay_var' ], 101 );
-
 		// Update subscriptions token when user sets a default payment method.
 		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
 		add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this, 'update_payment_method_for_subscriptions' ], 10, 3 );
@@ -326,69 +305,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Adds the necessary hooks to modify the "Pay for order" page in order to clean
-	 * it up and prepare it for the PaymentIntents modal to confirm a payment.
-	 *
-	 * @param WC_Payment_Gateway[] $gateways A list of all available gateways.
-	 * @return WC_Payment_Gateway[]          Either the same list or an empty one in the right conditions.
-	 */
-	public function prepare_order_pay_page( $gateways ) {
-		if ( ! is_wc_endpoint_url( 'order-pay' ) || ! isset( $_GET['wcpay-confirmation'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return $gateways;
-		}
-
-		try {
-			if ( ! $this->prepare_intent_for_order_pay_page() ) {
-				return $gateways;
-			}
-		} catch ( Exception $e ) {
-			// Just show the full order pay page if there was a problem preparing the Payment Intent.
-			return $gateways;
-		}
-
-		add_filter( 'woocommerce_checkout_show_terms', '__return_false' );
-		add_filter( 'woocommerce_pay_order_button_html', '__return_false' );
-		add_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
-		add_filter( 'woocommerce_no_available_payment_methods_message', [ $this, 'change_no_available_methods_message' ] );
-
-		return [];
-	}
-
-	/**
-	 * Prepares the Payment Intent for it to be completed in the "Pay for Order" page.
-	 *
-	 * @return bool True if the Intent was fetched and prepared successfully, false otherwise.
-	 */
-	public function prepare_intent_for_order_pay_page(): bool {
-		$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
-
-		$request = Get_Intention::create( $order->get_transaction_id() );
-		$request->set_hook_args( $order );
-		$intent = $request->send();
-
-		if ( ! $intent || Intent_Status::REQUIRES_ACTION !== $intent->get_status() ) {
-			return false;
-		}
-
-		$js_config                     = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-		$js_config['intentSecret']     = $intent->get_client_secret();
-		$js_config['updateOrderNonce'] = wp_create_nonce( 'wcpay_update_order_status_nonce' );
-		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', $js_config );
-		wp_enqueue_script( 'WCPAY_CHECKOUT' );
-		return true;
-	}
-
-	/**
-	 * Changes the text of the "No available methods" message to one that indicates
-	 * the need for a PaymentIntent to be confirmed.
-	 *
-	 * @return string the new message.
-	 */
-	public function change_no_available_methods_message() {
-		return wpautop( __( "Almost there!\n\nYour order has already been created, the only thing that still needs to be done is for you to authorize the payment with your bank.", 'woocommerce-payments' ) );
 	}
 
 	/**
@@ -1063,28 +979,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$email_classes['WC_Payments_Email_Failed_Renewal_Authentication'] = new WC_Payments_Email_Failed_Renewal_Authentication( $email_classes );
 		$email_classes['WC_Payments_Email_Failed_Authentication_Retry']   = new WC_Payments_Email_Failed_Authentication_Retry();
 		return $email_classes;
-	}
-
-	/**
-	 * If this is the "Pass the SCA challenge" flow, remove a variable that is checked by WC Subscriptions
-	 * so WC Subscriptions doesn't redirect to the checkout
-	 */
-	public function remove_order_pay_var() {
-		global $wp;
-		if ( isset( $_GET['wcpay-confirmation'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$this->order_pay_var         = $wp->query_vars['order-pay'];
-			$wp->query_vars['order-pay'] = null;
-		}
-	}
-
-	/**
-	 * Restore the variable that was removed in remove_order_pay_var()
-	 */
-	public function restore_order_pay_var() {
-		global $wp;
-		if ( isset( $this->order_pay_var ) ) {
-			$wp->query_vars['order-pay'] = $this->order_pay_var;
-		}
 	}
 
 	/**

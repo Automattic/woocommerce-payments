@@ -21,6 +21,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useIsWCPayEnabled: jest.fn(),
 	useTestMode: jest.fn(),
 	useTestModeOnboarding: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 	useEnabledPaymentMethodIds: jest.fn().mockReturnValue( [ [ 'card' ] ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
 	usePaymentRequestEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
