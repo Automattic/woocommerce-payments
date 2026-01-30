@@ -18,6 +18,7 @@ import {
 	goToOrder,
 	goToPaymentDetails,
 } from '../../../utils/merchant-navigation';
+import { goToShop } from '../../../utils/shopper-navigation';
 
 test.describe( 'Admin Multi-Currency Orders', () => {
 	let wasMulticurrencyEnabled: boolean;
@@ -38,8 +39,12 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 	} );
 
 	test.afterAll( async () => {
-		await restoreCurrencies( merchantPage );
 		await shopper.emptyCart( shopperPage );
+
+		// Reset the shopper's currency preference back to USD to avoid affecting other tests
+		await goToShop( shopperPage, { currency: 'USD' } );
+
+		await restoreCurrencies( merchantPage );
 
 		if ( ! wasMulticurrencyEnabled ) {
 			await deactivateMulticurrency( merchantPage );
