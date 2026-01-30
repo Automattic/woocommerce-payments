@@ -197,7 +197,13 @@ The local environment persists state between runs. CI starts fresh each time. If
 
 ### Need to reset test data
 
-Stop and restart the environment:
+Reset the database to the post-setup state:
+
+```bash
+npm run test:qit-e2e-reset
+```
+
+If that's not enough, do a full restart:
 
 ```bash
 npm run test:qit-e2e-down

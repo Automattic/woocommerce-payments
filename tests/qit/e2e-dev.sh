@@ -11,7 +11,6 @@ QIT_BINARY="${QIT_BINARY:-$WCP_ROOT/vendor/bin/qit}"
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 print_error() {
@@ -22,9 +21,6 @@ print_success() {
     echo -e "${GREEN}$1${NC}"
 }
 
-print_warning() {
-    echo -e "${YELLOW}$1${NC}"
-}
 
 # Check if local.env exists
 check_local_env() {
