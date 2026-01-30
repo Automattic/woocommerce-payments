@@ -17,24 +17,27 @@
 }
 
 .wc-block-checkout__payment-method {
-	// Style the WCPay payment method label wrapper for grid-based alignment.
-	// The label text stays on the left (next to radio button) and icons align to the right.
-	.wcpay-payment-method-label {
-		display: grid;
-		grid-template-columns: 1fr auto;
+	// Style the WooCommerce Blocks payment method label with icon.
+	// The markup has icon first, then text. We use flexbox with order to
+	// keep text on the left and move icon to the right.
+	.wc-block-components-payment-method-label.wc-block-components-payment-method-label--with-icon {
+		display: flex;
 		align-items: center;
-		gap: 8px;
 		width: 100%;
 
-		// Payment method icon styling
+		// Payment method icon - move to the end (right side)
 		.wcpay-payment-method-icon {
 			height: 24px;
 			width: auto;
+			order: 1;
+			margin-left: auto;
 		}
 
-		// Card brand logos
+		// Card brand logos - move to the end (right side)
 		.payment-methods--logos {
 			height: 24px;
+			order: 1;
+			margin-left: auto;
 		}
 	}
 }

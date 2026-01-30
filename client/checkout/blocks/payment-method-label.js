@@ -11,11 +11,44 @@ const cardBrandsBreakpointConfigs = [
 ];
 
 /**
- * Payment method label component that uses the WooCommerce Blocks PaymentMethodLabel
- * for the text, with icons rendered as a sibling element for proper positioning.
+ * Renders the payment method icon.
+ * For card payments, shows card brand logos.
+ * For other payment methods, shows the payment method icon based on theme.
  *
- * This approach allows the CSS grid to position the label text and icons separately,
- * with the label staying next to the radio button and icons aligned to the right.
+ * @param {Object} props Component props.
+ * @param {string} props.paymentMethodId The payment method ID (e.g., 'card', 'giropay').
+ * @param {string} props.icon The light theme icon URL.
+ * @param {string} props.darkIcon The dark theme icon URL.
+ * @param {string} props.title The payment method title for alt text.
+ * @return {JSX.Element} The payment method icon component.
+ */
+const PaymentMethodIcon = ( { paymentMethodId, icon, darkIcon, title } ) => {
+	if ( paymentMethodId === 'card' ) {
+		return (
+			<PaymentMethodsLogos
+				maxElements={ 4 }
+				paymentMethods={ getCardBrands() }
+				breakpointConfigs={ cardBrandsBreakpointConfigs }
+			/>
+		);
+	}
+
+	const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
+	const iconSrc =
+		upeAppearanceTheme === 'night' && darkIcon ? darkIcon : icon;
+
+	return (
+		<img
+			className="wcpay-payment-method-icon"
+			src={ iconSrc }
+			alt={ title }
+		/>
+	);
+};
+
+/**
+ * Payment method label component that uses the WooCommerce Blocks PaymentMethodLabel
+ * with the icon prop for proper icon positioning.
  *
  * @param {Object} props Component props passed by WooCommerce Blocks.
  * @param {Object} props.components Components provided by WooCommerce Blocks, including PaymentMethodLabel.
@@ -23,7 +56,7 @@ const cardBrandsBreakpointConfigs = [
  * @param {string} props.paymentMethodId The payment method ID (e.g., 'card', 'giropay').
  * @param {string} props.icon The light theme icon URL.
  * @param {string} props.darkIcon The dark theme icon URL.
- * @return {JSX.Element} The payment method label component with icons.
+ * @return {JSX.Element} The payment method label component.
  */
 const PaymentMethodLabel = ( {
 	components,
@@ -33,36 +66,19 @@ const PaymentMethodLabel = ( {
 	darkIcon,
 } ) => {
 	const { PaymentMethodLabel: Label } = components;
-	const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
-
-	const renderIcon = () => {
-		if ( paymentMethodId === 'card' ) {
-			return (
-				<PaymentMethodsLogos
-					maxElements={ 4 }
-					paymentMethods={ getCardBrands() }
-					breakpointConfigs={ cardBrandsBreakpointConfigs }
-				/>
-			);
-		}
-
-		const iconSrc =
-			upeAppearanceTheme === 'night' && darkIcon ? darkIcon : icon;
-
-		return (
-			<img
-				className="wcpay-payment-method-icon"
-				src={ iconSrc }
-				alt={ title }
-			/>
-		);
-	};
 
 	return (
-		<span className="wcpay-payment-method-label">
-			<Label text={ title } />
-			{ renderIcon() }
-		</span>
+		<Label
+			text={ title }
+			icon={
+				<PaymentMethodIcon
+					paymentMethodId={ paymentMethodId }
+					icon={ icon }
+					darkIcon={ darkIcon }
+					title={ title }
+				/>
+			}
+		/>
 	);
 };
 
