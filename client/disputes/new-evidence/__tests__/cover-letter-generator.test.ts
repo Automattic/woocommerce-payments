@@ -386,6 +386,30 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).not.toContain( 'Item condition' );
 		} );
 
+		it( 'should order all product_unacceptable attachments correctly with full evidence', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'service_documentation_url',
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments( productUnacceptableDispute );
+			expect( result ).toContain(
+				'Event or booking documentation (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
 		it( 'should use "Terms of service" label for cancellation_policy in subscription_canceled disputes', () => {
 			const subscriptionCanceledDispute: ExtendedDispute = {
 				...mockDispute,
