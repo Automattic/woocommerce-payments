@@ -82,27 +82,6 @@ if [[ $? -eq 0 ]] && [[ "$WOOCOMMERCE_EXISTS" == "yes" ]]; then
 	echo
 	echo "WooPayments is installed and active"
 
-	# Generate .worktree-info.json even for already-configured sites
-	SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-	REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-	WORKTREE_NAME=$(basename "$REPO_ROOT")
-	BASE_BRANCH=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
-	CREATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-	cat > "$REPO_ROOT/.worktree-info.json" << EOF
-{
-  "version": 1,
-  "worktree_id": "${WORKTREE_ID:-default}",
-  "port": ${DEFAULT_PORT},
-  "url": "http://localhost:${DEFAULT_PORT}",
-  "admin_url": "http://localhost:${DEFAULT_PORT}/wp-admin/",
-  "container_name": "${WP_CONTAINER}",
-  "created_at": "${CREATED_AT}",
-  "base_branch": "${BASE_BRANCH}",
-  "path": "${REPO_ROOT}"
-}
-EOF
-
 	echo "SUCCESS! You should now be able to access http://${SITE_URL}/wp-admin/"
 	echo "You can login by using the username and password both as 'admin'"
 	exit 0
@@ -266,33 +245,6 @@ if [[ "$health_passed" != "true" ]]; then
     echo "  3. Try restarting: npm run down && npm run up:recreate"
     exit 1
 fi
-
-# Generate .worktree-info.json
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-WORKTREE_NAME=$(basename "$REPO_ROOT")
-
-# Determine base branch (best effort - may not be accurate for all setups)
-BASE_BRANCH=$(git -C "$REPO_ROOT" log --oneline --decorate -1 2>/dev/null | grep -o 'origin/[^,)]*' | head -1 | sed 's|origin/||' || echo "unknown")
-if [[ -z "$BASE_BRANCH" ]] || [[ "$BASE_BRANCH" == "unknown" ]]; then
-    BASE_BRANCH=$(git -C "$REPO_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
-fi
-
-CREATED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-cat > "$REPO_ROOT/.worktree-info.json" << EOF
-{
-  "version": 1,
-  "worktree_id": "${WORKTREE_ID:-default}",
-  "port": ${DEFAULT_PORT},
-  "url": "http://localhost:${DEFAULT_PORT}",
-  "admin_url": "http://localhost:${DEFAULT_PORT}/wp-admin/",
-  "container_name": "${WP_CONTAINER}",
-  "created_at": "${CREATED_AT}",
-  "base_branch": "${BASE_BRANCH}",
-  "path": "${REPO_ROOT}"
-}
-EOF
 
 echo
 echo "SUCCESS! You should now be able to access http://${SITE_URL}/wp-admin/"

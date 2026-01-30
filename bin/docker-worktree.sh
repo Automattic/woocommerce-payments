@@ -3,6 +3,7 @@
 # Single entry point for worktree lifecycle management
 # Usage:
 #   npm run worktree:create <name> [base-branch] [--json]
+#   npm run worktree:setup [--json]
 #   npm run worktree:status [--json]
 #   npm run worktree:remove <name> [--force]
 
@@ -152,6 +153,93 @@ worktree_exists() {
     git -C "$REPO_ROOT" worktree list --porcelain | grep -q "worktree $path"
 }
 
+# Setup command - configures .env for current directory (standalone, no git worktree creation)
+# This allows users to use their own worktree tools and then run setup separately
+cmd_setup() {
+    local target_path="${1:-$(pwd)}"
+
+    # Resolve to absolute path
+    target_path="$(cd "$target_path" 2>/dev/null && pwd)" || {
+        log_error "Directory does not exist: $1"
+        exit 1
+    }
+
+    local dir_name=$(basename "$target_path")
+    local worktree_id=$(generate_worktree_id "$dir_name")
+
+    # Check if .env already exists
+    if [[ -f "$target_path/.env" ]]; then
+        source "$target_path/.env"
+        if [[ -n "$WORDPRESS_PORT" ]]; then
+            log_warn ".env already exists with port $WORDPRESS_PORT"
+            if [[ "$JSON_OUTPUT" == "true" ]]; then
+                cat << EOF
+{
+  "worktree_id": "${WORKTREE_ID:-$worktree_id}",
+  "port": $WORDPRESS_PORT,
+  "url": "http://localhost:$WORDPRESS_PORT",
+  "admin_url": "http://localhost:$WORDPRESS_PORT/wp-admin/",
+  "container_name": "wcpay_wp_${WORKTREE_ID:-$worktree_id}",
+  "path": "$target_path",
+  "already_configured": true
+}
+EOF
+            else
+                echo ""
+                echo -e "  ${BOLD}URL:${NC}       http://localhost:$WORDPRESS_PORT"
+                echo -e "  ${BOLD}Admin:${NC}     http://localhost:$WORDPRESS_PORT/wp-admin/"
+                echo ""
+                echo "To reconfigure, delete .env and run again."
+            fi
+            exit 0
+        fi
+    fi
+
+    log_info "Setting up Docker environment for '${BOLD}$dir_name${NC}${BLUE}'..."
+
+    # Ensure infrastructure is running
+    log_info "Checking infrastructure..."
+    ensure_infra
+
+    # Find available port
+    local port=$(find_available_port)
+    if [[ -z "$port" ]]; then
+        local occupied=$(get_occupied_ports)
+        log_error "No available ports in range $PORT_RANGE_START-$PORT_RANGE_END"
+        log_error "Occupied ports:$occupied"
+        exit 1
+    fi
+
+    # Create .env file
+    cat > "$target_path/.env" << EOF
+WORKTREE_ID=$worktree_id
+WORDPRESS_PORT=$port
+EOF
+
+    if [[ "$JSON_OUTPUT" == "true" ]]; then
+        cat << EOF
+{
+  "worktree_id": "$worktree_id",
+  "port": $port,
+  "url": "http://localhost:$port",
+  "admin_url": "http://localhost:$port/wp-admin/",
+  "container_name": "wcpay_wp_$worktree_id",
+  "path": "$target_path"
+}
+EOF
+    else
+        log_success "Environment configured!"
+        echo ""
+        echo -e "  ${BOLD}Port:${NC}      $port"
+        echo -e "  ${BOLD}URL:${NC}       http://localhost:$port"
+        echo ""
+        echo "Next steps:"
+        echo "  1. npm run up        # Start Docker container"
+        echo "  2. Open http://localhost:$port/wp-admin/"
+        echo ""
+    fi
+}
+
 # Create worktree
 cmd_create() {
     local name=$1
@@ -264,29 +352,18 @@ EOF
         exit 1
     }
 
-    # Read back the generated .worktree-info.json if it exists
-    local info_file="$worktree_path/.worktree-info.json"
-
     if [[ "$JSON_OUTPUT" == "true" ]]; then
-        if [[ -f "$info_file" ]]; then
-            cat "$info_file"
-        else
-            # Generate minimal JSON if setup script didn't create info file
-            local created_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-            cat << EOF
+        cat << EOF
 {
-  "version": 1,
   "worktree_id": "$worktree_id",
   "port": $port,
   "url": "http://localhost:$port",
   "admin_url": "http://localhost:$port/wp-admin/",
   "container_name": "wcpay_wp_$worktree_id",
-  "created_at": "$created_at",
   "base_branch": "$base_branch",
   "path": "$worktree_path"
 }
 EOF
-        fi
     else
         echo ""
         echo -e "${GREEN}${BOLD}SUCCESS!${NC} Worktree is ready."
@@ -356,13 +433,6 @@ cmd_status() {
 
         if [[ -n "$port" ]]; then
             url="http://localhost:$port"
-        fi
-
-        # Check for .worktree-info.json
-        local info_file="$wt_path/.worktree-info.json"
-        local info_json="{}"
-        if [[ -f "$info_file" ]]; then
-            info_json=$(cat "$info_file")
         fi
 
         if [[ "$JSON_OUTPUT" != "true" ]]; then
@@ -515,9 +585,8 @@ cmd_remove() {
         fi
     fi
 
-    # Step 3: Remove .env and .worktree-info.json
+    # Step 3: Remove .env
     [[ -f "$worktree_path/.env" ]] && rm "$worktree_path/.env"
-    [[ -f "$worktree_path/.worktree-info.json" ]] && rm "$worktree_path/.worktree-info.json"
 
     # Step 4: Remove git worktree
     log_info "Removing git worktree..."
@@ -543,6 +612,9 @@ Commands:
   create <name> [base-branch]  Create a new worktree with Docker environment
                                Default base-branch: develop
 
+  setup [path]                 Configure .env for current directory (or specified path)
+                               Use this after creating a worktree with external tools
+
   status                       Show status of all worktrees and containers
 
   remove <name>                Remove a worktree and its Docker resources
@@ -554,6 +626,8 @@ Options:
 Examples:
   npm run worktree:create feature-abc
   npm run worktree:create feature-abc develop
+  npm run worktree:setup
+  npm run worktree:setup -- /path/to/worktree
   npm run worktree:status
   npm run worktree:status -- --json
   npm run worktree:remove feature-abc
@@ -569,6 +643,9 @@ main() {
     case $command in
         create)
             cmd_create "$@"
+            ;;
+        setup)
+            cmd_setup "$@"
             ;;
         status)
             cmd_status "$@"

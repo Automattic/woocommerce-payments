@@ -63,6 +63,7 @@
 		"infra:up": "bash bin/docker-infra-up.sh",
 		"infra:down": "docker compose -f docker-compose.infra.yml down",
 		"worktree:create": "bash bin/docker-worktree.sh create",
+		"worktree:setup": "bash bin/docker-worktree.sh setup",
 		"worktree:status": "bash bin/docker-worktree.sh status",
 		"worktree:remove": "bash bin/docker-worktree.sh remove",
 		"wp": "docker compose exec -u www-data wordpress wp",
