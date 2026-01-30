@@ -79,6 +79,8 @@ export const generateAttachments = (
 		labelForStatus?: { status: string; label: string };
 		onlyForReasons?: string[];
 		excludeWhen?: ( reason: string, status?: string ) => boolean;
+		order?: number;
+		orderForReasons?: Array< { reasons: string[]; order: number } >;
 	} > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
@@ -143,6 +145,10 @@ export const generateAttachments = (
 					),
 				},
 			],
+			// For product_unacceptable, this should appear first (before Order receipt)
+			orderForReasons: [
+				{ reasons: [ 'product_unacceptable' ], order: -1 },
+			],
 		},
 		{
 			// For non-fraudulent disputes, "Subscription logs" appears in its original position
@@ -182,15 +188,27 @@ export const generateAttachments = (
 		},
 	];
 
+	// Collect matching attachments with resolved labels and order
+	const resolvedAttachments: Array< {
+		displayLabel: string;
+		arrayIndex: number;
+		sortOrder: number;
+	} > = [];
+
 	standardAttachments.forEach(
-		( {
-			key,
-			label,
-			labelForReasons,
-			labelForStatus,
-			onlyForReasons,
-			excludeWhen,
-		} ) => {
+		(
+			{
+				key,
+				label,
+				labelForReasons,
+				labelForStatus,
+				onlyForReasons,
+				excludeWhen,
+				order,
+				orderForReasons,
+			},
+			index
+		) => {
 			const evidence = dispute.evidence?.[ key ];
 
 			// Check if this attachment should be skipped based on rules
@@ -205,7 +223,6 @@ export const generateAttachments = (
 			}
 
 			if ( evidence && isEvidenceString( evidence ) ) {
-				attachmentCount++;
 				// Determine the display label with priority:
 				// 1. Status-specific label (e.g., "Refund receipt" for is_duplicate)
 				// 2. Reason-specific label (e.g., "Terms of service" for subscription_canceled)
@@ -224,20 +241,46 @@ export const generateAttachments = (
 						displayLabel = match.label;
 					}
 				}
-				attachments.push(
-					sprintf(
-						/* translators: %1$s: label, %2$s: attachment letter */
-						__(
-							'• %1$s (Attachment %2$s)',
-							'woocommerce-payments'
-						),
-						displayLabel,
-						String.fromCharCode( 64 + attachmentCount )
-					)
-				);
+
+				// Determine sort order: reason-specific override, explicit order, or array position
+				let sortOrder = order ?? index;
+				if ( orderForReasons ) {
+					const orderMatch = orderForReasons.find( ( entry ) =>
+						entry.reasons.includes( dispute.reason )
+					);
+					if ( orderMatch ) {
+						sortOrder = orderMatch.order;
+					}
+				}
+
+				resolvedAttachments.push( {
+					displayLabel,
+					arrayIndex: index,
+					sortOrder,
+				} );
 			}
 		}
 	);
+
+	// Sort by sortOrder (stable: ties broken by original array position)
+	resolvedAttachments.sort( ( a, b ) => {
+		if ( a.sortOrder !== b.sortOrder ) {
+			return a.sortOrder - b.sortOrder;
+		}
+		return a.arrayIndex - b.arrayIndex;
+	} );
+
+	resolvedAttachments.forEach( ( { displayLabel } ) => {
+		attachmentCount++;
+		attachments.push(
+			sprintf(
+				/* translators: %1$s: label, %2$s: attachment letter */
+				__( '• %1$s (Attachment %2$s)', 'woocommerce-payments' ),
+				displayLabel,
+				String.fromCharCode( 64 + attachmentCount )
+			)
+		);
+	} );
 
 	// If no attachments were provided, use default list
 	if ( attachments.length === 0 ) {

@@ -369,7 +369,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).not.toContain( 'Item condition' );
 		} );
 
-		it( 'should use "Event or booking documentation" label for service_documentation in product_unacceptable disputes', () => {
+		it( 'should use "Event or booking documentation" as first attachment for product_unacceptable disputes', () => {
 			const productUnacceptableDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'product_unacceptable' as DisputeReason,
@@ -379,10 +379,10 @@ describe( 'Cover Letter Generator', () => {
 				},
 			};
 			const result = generateAttachments( productUnacceptableDispute );
-			expect( result ).toContain( 'Order receipt (Attachment A)' );
 			expect( result ).toContain(
-				'Event or booking documentation (Attachment B)'
+				'Event or booking documentation (Attachment A)'
 			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
 			expect( result ).not.toContain( 'Item condition' );
 		} );
 
