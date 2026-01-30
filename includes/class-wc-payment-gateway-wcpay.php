@@ -76,6 +76,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const METHOD_ENABLED_KEY = 'enabled';
 
 	/**
+	 * Express checkout methods that are registered separately in JavaScript
+	 * via registerExpressPaymentMethod() with different naming conventions.
+	 *
+	 * @type string[]
+	 */
+	const EXPRESS_CHECKOUT_METHODS = [ 'apple_pay', 'google_pay' ];
+
+	/**
 	 * Mapping between the client and server accepted params:
 	 * - Keys are WCPay client accepted params (in WC_REST_Payments_Settings_Controller).
 	 * - Values are WCPay Server accepted params.
@@ -2681,14 +2689,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// WooCommerce to incorrectly flag them as "incompatible with block checkout" because it can't
 		// match the PHP gateway ID to a JS registerPaymentMethod() call. We set enabled='no' only in
 		// admin context to exclude them from that compatibility check while preserving normal behavior.
-		$express_checkout_methods = [ 'apple_pay', 'google_pay' ];
-		if ( is_admin() && in_array( $this->stripe_id, $express_checkout_methods, true ) ) {
+		if ( is_admin() && in_array( $this->stripe_id, self::EXPRESS_CHECKOUT_METHODS, true ) ) {
 			$this->enabled = 'no';
 			return;
 		}
 
 		// For the main card gateway and express checkout (non-admin), just use the enabled setting.
-		if ( 'card' === $this->stripe_id || in_array( $this->stripe_id, $express_checkout_methods, true ) ) {
+		if ( 'card' === $this->stripe_id || in_array( $this->stripe_id, self::EXPRESS_CHECKOUT_METHODS, true ) ) {
 			$this->enabled = $is_enabled ? 'yes' : 'no';
 			return;
 		}
@@ -4032,8 +4039,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// For the main card gateway and express checkout methods, just check the enabled option.
 		// Express checkout methods need is_enabled() to return true for domain verification etc.
-		$simple_check_methods = [ 'card', 'apple_pay', 'google_pay' ];
-		if ( in_array( $this->stripe_id, $simple_check_methods, true ) ) {
+		if ( 'card' === $this->stripe_id || in_array( $this->stripe_id, self::EXPRESS_CHECKOUT_METHODS, true ) ) {
 			return $is_enabled;
 		}
 

@@ -1507,19 +1507,14 @@ class WC_Payments {
 		// Register the main card gateway.
 		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 
-		// Express checkout methods (Apple Pay, Google Pay) are registered separately via
-		// registerExpressPaymentMethod() in JavaScript with different naming conventions.
-		// We should NOT register them here as regular payment methods to avoid
-		// incompatibility warnings (the names don't match).
-		$express_checkout_methods = [ 'apple_pay', 'google_pay' ];
-
 		// Register all split gateways (Affirm, Klarna, etc.) to avoid
 		// them being shown as incompatible in the block editor.
 		$payment_methods = array_keys( self::get_payment_method_map() );
 		foreach ( $payment_methods as $payment_method_id ) {
 			// Skip 'card' (already registered above), 'link' (not a separate gateway),
-			// and express checkout methods (registered separately with different names).
-			if ( 'card' === $payment_method_id || 'link' === $payment_method_id || in_array( $payment_method_id, $express_checkout_methods, true ) ) {
+			// and express checkout methods (Apple Pay, Google Pay are registered separately
+			// via registerExpressPaymentMethod() in JavaScript with different naming conventions).
+			if ( 'card' === $payment_method_id || 'link' === $payment_method_id || in_array( $payment_method_id, WC_Payment_Gateway_WCPay::EXPRESS_CHECKOUT_METHODS, true ) ) {
 				continue;
 			}
 
