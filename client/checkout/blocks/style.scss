@@ -20,6 +20,7 @@
 	// Style the WooCommerce Blocks payment method label with icon.
 	// The markup has icon first, then text. We use flexbox with order to
 	// keep text on the left and move icon to the right.
+	// Badge (order 0) stays after text, icon (order 1) goes to the right.
 	.wc-block-components-payment-method-label.wc-block-components-payment-method-label--with-icon {
 		display: flex;
 		align-items: center;
@@ -29,16 +30,40 @@
 		.wcpay-payment-method-icon {
 			height: 24px;
 			width: auto;
-			order: 1;
+			order: 2;
 			margin-left: auto;
 		}
 
 		// Card brand logos - move to the end (right side)
 		.payment-methods--logos {
 			height: 24px;
-			order: 1;
+			order: 2;
 			margin-left: auto;
 		}
+
+		// Test mode badge - hidden by default, shown when payment method is selected
+		// order: 0 (default) keeps it after the text but before the icon (order: 1)
+		.test-mode.badge {
+			background-color: #fff2d7;
+			border-radius: 4px;
+			padding: 4px 6px;
+			font-size: 12px;
+			font-weight: 400;
+			line-height: 16px;
+			color: #4d3716;
+			margin-left: 8px;
+			display: none;
+			order: 1;
+		}
+	}
+
+	// Show test mode badge when payment method is selected
+	input:checked
+		~ div
+		.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] )
+		> .wc-block-components-payment-method-label
+		.test-mode.badge {
+		display: inline-block;
 	}
 }
 

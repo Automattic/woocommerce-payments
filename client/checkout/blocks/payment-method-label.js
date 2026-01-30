@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { PaymentMethodsLogos } from './payment-methods-logos';
@@ -11,7 +16,8 @@ const cardBrandsBreakpointConfigs = [
 ];
 
 /**
- * Renders the payment method icon.
+ * Renders the payment method icon along with the test mode badge.
+ * The badge is included here so it can be positioned via CSS within the same flex container.
  * For card payments, shows card brand logos.
  * For other payment methods, shows the payment method icon based on theme.
  *
@@ -23,13 +29,25 @@ const cardBrandsBreakpointConfigs = [
  * @return {JSX.Element} The payment method icon component.
  */
 const PaymentMethodIcon = ( { paymentMethodId, icon, darkIcon, title } ) => {
+	const isTestMode = getUPEConfig( 'testMode' );
+
+	const renderTestModeBadge = () =>
+		isTestMode && (
+			<span className="test-mode badge">
+				{ __( 'Test Mode', 'woocommerce-payments' ) }
+			</span>
+		);
+
 	if ( paymentMethodId === 'card' ) {
 		return (
-			<PaymentMethodsLogos
-				maxElements={ 4 }
-				paymentMethods={ getCardBrands() }
-				breakpointConfigs={ cardBrandsBreakpointConfigs }
-			/>
+			<>
+				{ renderTestModeBadge() }
+				<PaymentMethodsLogos
+					maxElements={ 4 }
+					paymentMethods={ getCardBrands() }
+					breakpointConfigs={ cardBrandsBreakpointConfigs }
+				/>
+			</>
 		);
 	}
 
@@ -38,11 +56,14 @@ const PaymentMethodIcon = ( { paymentMethodId, icon, darkIcon, title } ) => {
 		upeAppearanceTheme === 'night' && darkIcon ? darkIcon : icon;
 
 	return (
-		<img
-			className="wcpay-payment-method-icon"
-			src={ iconSrc }
-			alt={ title }
-		/>
+		<>
+			{ renderTestModeBadge() }
+			<img
+				className="wcpay-payment-method-icon"
+				src={ iconSrc }
+				alt={ title }
+			/>
+		</>
 	);
 };
 
