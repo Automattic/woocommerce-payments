@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6b58e44f39d45cbcc950226f1149a5ce",
+    "content-hash": "a35beb5bd8a3d71c8eb05e4a5230627c",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -942,20 +942,20 @@
         },
         {
             "name": "woocommerce/subscriptions-core",
-            "version": "6.7.1",
+            "version": "8.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/woocommerce-subscriptions-core.git",
-                "reference": "81d809a476e87c260492d4cc0413818d85e123cc"
+                "reference": "442d585955ab048673c765a8afca680b1ea38e07"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/81d809a476e87c260492d4cc0413818d85e123cc",
-                "reference": "81d809a476e87c260492d4cc0413818d85e123cc",
+                "url": "https://api.github.com/repos/Automattic/woocommerce-subscriptions-core/zipball/442d585955ab048673c765a8afca680b1ea38e07",
+                "reference": "442d585955ab048673c765a8afca680b1ea38e07",
                 "shasum": ""
             },
             "require": {
-                "composer/installers": "~1.2",
+                "composer/installers": "^1.2 || ^2.2",
                 "php": "^7.1"
             },
             "require-dev": {
@@ -992,11 +992,11 @@
             "description": "Sell products and services with recurring payments in your WooCommerce Store.",
             "homepage": "https://github.com/Automattic/woocommerce-subscriptions-core",
             "support": {
-                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/6.7.1",
+                "source": "https://github.com/Automattic/woocommerce-subscriptions-core/tree/8.2.0",
                 "issues": "https://github.com/Automattic/woocommerce-subscriptions-core/issues"
             },
             "abandoned": true,
-            "time": "2024-01-17T01:56:28+00:00"
+            "time": "2025-04-14T13:37:52+00:00"
         }
     ],
     "packages-dev": [
@@ -5970,5 +5970,5 @@
     "platform-overrides": {
         "php": "7.4"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
