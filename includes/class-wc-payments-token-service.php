@@ -514,7 +514,6 @@ class WC_Payments_Token_Service {
 	 */
 	public function get_account_saved_payment_methods_list_item_amazon_pay( $item, $payment_token ) {
 		if ( WC_Payment_Token_WCPay_Amazon_Pay::TYPE === strtolower( $payment_token->get_type() ) ) {
-			// Email is stored in redacted format for privacy.
 			$item['method']['last4'] = $payment_token->get_email();
 			$item['method']['brand'] = esc_html__( 'Amazon Pay', 'woocommerce-payments' );
 		}
