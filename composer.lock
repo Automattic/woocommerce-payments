@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6b58e44f39d45cbcc950226f1149a5ce",
+    "content-hash": "d03caa4970ecf522f8ca934bac95ecd6",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -1940,16 +1940,16 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v6.8.0",
+            "version": "v10.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3"
+                "reference": "b1222d510f791a92bf89905708c2995854de85b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/aa70197bc38607e0f25a4de0b39422ab379defd3",
-                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/b1222d510f791a92bf89905708c2995854de85b6",
+                "reference": "b1222d510f791a92bf89905708c2995854de85b6",
                 "shasum": ""
             },
             "require": {
@@ -1978,9 +1978,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v6.8.0"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.4.2"
             },
-            "time": "2022-08-09T05:06:14+00:00"
+            "time": "2025-12-14T04:41:11+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
@@ -5970,5 +5970,5 @@
     "platform-overrides": {
         "php": "7.4"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
