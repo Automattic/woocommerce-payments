@@ -124,6 +124,12 @@ const PaymentProcessor = ( {
 						},
 					} );
 
+					// Get the platform payment method flag from the config.
+					// This flag is calculated at page load time when context checks work correctly.
+					const isPlatformPaymentMethod =
+						paymentMethodsConfig[ paymentMethodId ]
+							?.forceNetworkSavedCards ?? false;
+
 					if ( result.error ) {
 						return {
 							// We return a `success` type even when there's an error since we want the checkout request to go
@@ -143,6 +149,9 @@ const PaymentProcessor = ( {
 										result.error.type,
 									'wcpay-fraud-prevention-token': getFraudPreventionToken(),
 									'wcpay-fingerprint': fingerprint,
+									'wcpay-is-platform-payment-method': isPlatformPaymentMethod
+										? '1'
+										: '0',
 								},
 							},
 						};
@@ -156,6 +165,9 @@ const PaymentProcessor = ( {
 								'wcpay-payment-method': result.paymentMethod.id,
 								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
+								'wcpay-is-platform-payment-method': isPlatformPaymentMethod
+									? '1'
+									: '0',
 							},
 						},
 					};

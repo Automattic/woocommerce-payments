@@ -36,7 +36,11 @@ describe( 'PaymentProcessor', () => {
 	let mockApi;
 	let mockCreatePaymentMethod;
 	beforeEach( () => {
-		global.wcpay_upe_config = { paymentMethodsConfig: {} };
+		global.wcpay_upe_config = {
+			paymentMethodsConfig: {
+				card: { forceNetworkSavedCards: true },
+			},
+		};
 		PaymentElement.mockImplementation( () => null );
 		mockCreatePaymentMethod = jest
 			.fn()
@@ -203,6 +207,7 @@ describe( 'PaymentProcessor', () => {
 					'wcpay-payment-method-error-type': 'card_error',
 					'wcpay-fraud-prevention-token': '',
 					'wcpay-fingerprint': '',
+					'wcpay-is-platform-payment-method': '1',
 				},
 			},
 		} );
@@ -246,6 +251,7 @@ describe( 'PaymentProcessor', () => {
 					'wcpay-payment-method': 'paymentMethodId',
 					'wcpay-fraud-prevention-token': '',
 					'wcpay-fingerprint': '',
+					'wcpay-is-platform-payment-method': '1',
 				},
 			},
 		} );

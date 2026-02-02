@@ -480,7 +480,13 @@ class WC_Payments_Checkout {
 						$this->gateway->save_payment_method_checkbox( $force_save_payment );
 					}
 				}
+
+				// Pass the platform payment method flag to the backend.
+				// This flag is calculated at page load time when context checks like is_checkout() work correctly.
+				// During AJAX payment processing, these context checks fail, so we need to pass the flag explicitly.
+				$is_platform_payment_method = $this->gateway->should_use_stripe_platform_on_checkout_page() ? '1' : '0';
 				?>
+				<input type="hidden" name="wcpay-is-platform-payment-method" value="<?php echo esc_attr( $is_platform_payment_method ); ?>" />
 
 			</fieldset>
 			</div>

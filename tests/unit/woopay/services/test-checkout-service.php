@@ -62,6 +62,19 @@ class Checkout_Service_Test extends WCPAY_UnitTestCase {
 	public function test_is_platform_payment_method_will_return_if_is_platform_payment_method_parameter_is_not_boolean() {
 		$_POST['wcpay-is-platform-payment-method'] = 'foo';
 		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
+		unset( $_POST['wcpay-is-platform-payment-method'] );
+	}
+
+	public function test_is_platform_payment_method_returns_true_when_post_flag_is_set_to_one() {
+		$_POST['wcpay-is-platform-payment-method'] = '1';
+		$this->assertTrue( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
+		unset( $_POST['wcpay-is-platform-payment-method'] );
+	}
+
+	public function test_is_platform_payment_method_returns_false_when_post_flag_is_set_to_zero() {
+		$_POST['wcpay-is-platform-payment-method'] = '0';
+		$this->assertFalse( $this->checkout_service->is_platform_payment_method( $this->payment_information ) );
+		unset( $_POST['wcpay-is-platform-payment-method'] );
 	}
 
 	public function test_create_intention_request_will_create_request() {

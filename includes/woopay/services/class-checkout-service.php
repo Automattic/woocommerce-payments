@@ -68,18 +68,24 @@ class Checkout_Service {
 			return false;
 		}
 
-		$should_use_stripe_platform = \WC_Payments::get_payment_gateway_by_id( $payment_information->get_payment_method_stripe_id() )->should_use_stripe_platform_on_checkout_page();
-
-		// Make sure the payment method being charged was created in the platform.
-		if (
-			! $payment_information->is_using_saved_payment_method() &&
-			$should_use_stripe_platform
-		) {
-			// This payment method was created under the platform account.
-			return true;
+		// Return false if using a saved payment method.
+		if ( $payment_information->is_using_saved_payment_method() ) {
+			return false;
 		}
 
-		return false;
+		// Check if the frontend explicitly indicated this is a platform payment method.
+		// This flag is set at checkout page load time when should_use_stripe_platform_on_checkout_page() returns true,
+		// and passed to the backend during payment processing. This is necessary because context-dependent checks
+		// like is_checkout() return false during AJAX payment processing.
+		// phpcs:ignore WordPress.Security.NonceVerification
+		if ( isset( $_POST['wcpay-is-platform-payment-method'] ) ) {
+			return filter_var( wp_unslash( $_POST['wcpay-is-platform-payment-method'] ), FILTER_VALIDATE_BOOLEAN ); // phpcs:ignore WordPress.Security.NonceVerification,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		}
+
+		// Fallback to the gateway method for cases where the flag is not set.
+		$should_use_stripe_platform = \WC_Payments::get_payment_gateway_by_id( $payment_information->get_payment_method_stripe_id() )->should_use_stripe_platform_on_checkout_page();
+
+		return $should_use_stripe_platform;
 	}
 
 	/**
