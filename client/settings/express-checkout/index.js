@@ -16,11 +16,13 @@ import AppleGooglePayExpressCheckoutItem from './apple-google-pay-item';
 import LinkExpressCheckoutItem from './link-item';
 import AmazonPayExpressCheckoutItem from './amazon-pay-item';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import { useGetAvailablePaymentMethodIds } from 'wcpay/data';
 
 const ExpressCheckout = () => {
 	const {
 		featureFlags: { amazonPay: isAmazonPayEligible },
 	} = useContext( WCPaySettingsContext );
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	return (
 		<Card className="express-checkouts">
@@ -29,7 +31,10 @@ const ExpressCheckout = () => {
 					<WooPayExpressCheckoutItem />
 					<AppleGooglePayExpressCheckoutItem />
 					<LinkExpressCheckoutItem />
-					{ isAmazonPayEligible && <AmazonPayExpressCheckoutItem /> }
+					{ isAmazonPayEligible &&
+						availablePaymentMethodIds.includes( 'amazon_pay' ) && (
+							<AmazonPayExpressCheckoutItem />
+						) }
 				</ul>
 			</CardBody>
 		</Card>
