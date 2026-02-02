@@ -11,13 +11,13 @@ import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
 import clsx from 'clsx';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies.
  */
 import { useDisputes, useDisputesSummary } from 'data/index';
 import OrderLink from 'components/order-link';
+import Chip from 'components/chip';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
@@ -172,23 +172,20 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 		return '';
 	}
 	if ( diffHours <= 72 ) {
-		return (
-			<span className="due-soon">
-				{ diffHours <= 24
-					? __( 'Last day today', 'woocommerce-payments' )
-					: sprintf(
-							// Translators: %s is the number of days left to respond to the dispute.
-							_n(
-								'%s day left',
-								'%s days left',
-								diffDays,
-								'woocommerce-payments'
-							),
-							diffDays
-					  ) }
-				<NoticeOutlineIcon className="due-soon-icon" />
-			</span>
-		);
+		const message =
+			diffHours <= 24
+				? __( 'Last day today', 'woocommerce-payments' )
+				: sprintf(
+						// Translators: %s is the number of days left to respond to the dispute.
+						_n(
+							'%s day left',
+							'%s days left',
+							diffDays,
+							'woocommerce-payments'
+						),
+						diffDays
+				  );
+		return <Chip message={ message } type="alert" />;
 	}
 	return formatDateTimeFromString( dispute.due_by, {
 		includeTime: true,

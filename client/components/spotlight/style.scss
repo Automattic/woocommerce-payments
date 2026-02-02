@@ -51,7 +51,8 @@
 		box-shadow: $elevation-medium;
 	}
 
-	&.has-image {
+	&.has-image,
+	&.has-icon {
 		.wcpay-spotlight__header {
 			position: absolute;
 			top: 0;
@@ -118,12 +119,32 @@
 	}
 }
 
+.wcpay-spotlight__icon {
+	margin-bottom: 8px; // Gap between icon and heading (from Figma)
+	display: flex;
+	align-items: flex-start;
+
+	// Style the icon SVG (44px container with white background and padding)
+	svg {
+		width: 44px;
+		height: 44px;
+		padding: 6px;
+		background: #fff;
+		flex-shrink: 0;
+	}
+}
+
 .wcpay-spotlight__body {
 	padding: $gap;
 
-	// Remove top padding when there's no image (header is directly above)
-	.wcpay-spotlight__card:not( .has-image ) & {
+	// Remove top padding when there's no image/icon (header is directly above)
+	.wcpay-spotlight__card:not( .has-image ):not( .has-icon ) & {
 		padding-top: 0;
+	}
+
+	// Use 16px padding for icon-based spotlights (from Figma)
+	.wcpay-spotlight__card.has-icon & {
+		padding: 16px;
 	}
 }
 

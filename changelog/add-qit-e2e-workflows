@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add QIT E2E workflows for PR, scheduled, and pre-release testing with L-1 WooCommerce version support.

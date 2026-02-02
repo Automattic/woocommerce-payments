@@ -255,6 +255,10 @@ export function updateIsStripeBillingEnabled( isEnabled ) {
 	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
 }
 
+export function updateAccountCommunicationsEmail( email ) {
+	return updateSettingsValues( { account_communications_email: email } );
+}
+
 export function updateExpressCheckoutProductMethods( methods ) {
 	return updateSettingsValues( {
 		express_checkout_product_methods: [ ...methods ],
@@ -298,7 +302,7 @@ export function* submitStripeBillingSubscriptionMigration() {
 }
 
 export function saveOption( optionName, value ) {
-	directApiFetch( {
+	return directApiFetch( {
 		path: `${ NAMESPACE }/settings/${ optionName }`,
 		method: 'post',
 		data: { value },

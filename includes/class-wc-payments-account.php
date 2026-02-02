@@ -371,6 +371,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'accountLink'         => empty( $account['is_test_drive'] ) ? $this->get_login_url() : false,
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
 			'isDocumentsEnabled'  => $account['is_documents_enabled'] ?? false,
+			'communicationsEmail' => $account['communications_email'] ?? '',
 			'requirements'        => [
 				'errors' => $account['requirements']['errors'] ?? [],
 			],
@@ -381,7 +382,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Campaigns are temporary flags that are used to enable/disable features for a limited time.
 			'campaigns'           => [
 				// The flag for the WordPress.org merchant review campaign in 2025. Eligibility is determined per-account on transact-platform-server.
-				'wporgReview2025' => $account['eligibility_wporg_review_campaign_2025'] ?? false,
+				'wporgReview2025'    => $account['eligibility_wporg_review_campaign_2025'] ?? false,
+				// The flag for the payments settings review prompt (Phase 0). Eligibility is determined per-account on transact-platform-server.
+				'reviewPromptPhase0' => $account['eligibility_review_prompt_phase_0'] ?? false,
 			],
 		];
 	}
@@ -482,6 +485,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_business_support_phone(): string {
 		$account = $this->get_cached_account_data();
 		return isset( $account['business_profile']['support_phone'] ) ? $account['business_profile']['support_phone'] : '';
+	}
+
+	/**
+	 * Gets the communications email.
+	 *
+	 * @return string Communications email.
+	 */
+	public function get_communications_email(): string {
+		$account = $this->get_cached_account_data();
+		return isset( $account['communications_email'] ) ? $account['communications_email'] : '';
 	}
 
 	/**
@@ -2544,6 +2557,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return;
 		}
 
+		// Track that this merchant has been eligible for instant deposits.
+		// Used to show an informative notice if they later become ineligible.
+		update_option( 'wcpay_instant_deposits_previously_eligible', true );
+
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-instant-deposits-eligible.php';
 		WC_Payments_Notes_Instant_Deposits_Eligible::possibly_add_note();
 		$this->maybe_add_instant_deposit_note_reminder();
@@ -2635,6 +2652,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function is_card_testing_protection_eligible(): bool {
 		$account = $this->get_cached_account_data();
 		return $account['card_testing_protection_eligible'] ?? false;
+	}
+
+	/**
+	 * Checks if the account is eligible for the review prompt (Phase 0).
+	 *
+	 * @return bool
+	 */
+	public function is_review_prompt_eligible(): bool {
+		$account = $this->get_cached_account_data();
+		return $account['eligibility_review_prompt_phase_0'] ?? false;
 	}
 
 	/**

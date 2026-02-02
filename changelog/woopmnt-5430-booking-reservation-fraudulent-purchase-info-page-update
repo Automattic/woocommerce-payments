@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add "Other" and "Booking/Reservation" product type support for dispute evidence (feature flag gated)

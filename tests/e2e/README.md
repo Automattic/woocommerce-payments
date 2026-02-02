@@ -26,7 +26,7 @@ Note: The Playwright config sets `video: on-first-retry`, which applies only if 
 CI coverage differences:
 
 - Pull requests: Run against WC latest and WC L-1 on PHP 8.3
-- Scheduled/full runs: Include WC 7.7.0 (PHP 7.3), WC L-1 (PHP 8.3), WC latest (PHP 8.3), optional WC beta (PHP 8.3), and WC RC (PHP 8.4 when applicable)
+- Scheduled/full runs: Include WC 7.7.0 (PHP 7.4), WC L-1 (PHP 8.3), WC latest (PHP 8.3), optional WC beta (PHP 8.3), and WC RC (PHP 8.4 when applicable)
 
 ## Setting up & running E2E tests
 
@@ -328,7 +328,7 @@ The E2E test matrix is dynamically generated using the `.github/scripts/generate
 - L-1 policy: Automatically tests against the latest WooCommerce version and the L-1 (previous major) version
 - Version resolution: Fetches latest WC, RC, and beta versions from WordPress.org API
 - PHP strategy:
-  - WC 7.7.0: PHP 7.3 (legacy support)
+  - WC 7.7.0: PHP 7.4 (legacy support)
   - WC L-1 & latest: PHP 8.3 (stable)
   - WC RC: PHP 8.4 (latest)
 - Business continuity: Maintains WC 7.7.0 support for significant TPV reasons
@@ -339,7 +339,7 @@ This ensures comprehensive test coverage while optimizing CI execution time and 
 
 - GitHub Action test runs
   - View GitHub checks in the "Checks" tab of a PR
-  - The E2E test matrix is generated dynamically. PRs cover WC latest and L-1 on PHP 8.3; scheduled runs also include 7.7.0 (PHP 7.3), RC (PHP 8.4), and beta (when available)
+  - The E2E test matrix is generated dynamically. PRs cover WC latest and L-1 on PHP 8.3; scheduled runs also include 7.7.0 (PHP 7.4), RC (PHP 8.4), and beta (when available)
   - Click on the details link to the right of the failed job to see the summary
   - In the job summary, click on the "Run tests, upload screenshots & logs" section
   - Click on the artifact download link at the end of the section, then extract and copy the `playwright-report` directory to the root of the WooPayments repository

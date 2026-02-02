@@ -75,8 +75,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		// Checks if Google Pay or Apple Pay are enabled.
-		if ( ! $this->gateway->is_payment_request_enabled() ) {
+		// Checks if at least one express checkout method is enabled.
+		if ( ! $this->gateway->is_payment_request_enabled() && ! $this->express_checkout_helper->can_use_amazon_pay() ) {
 			return;
 		}
 
@@ -86,6 +86,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		}
 
 		add_action( 'template_redirect', [ $this, 'set_session' ] );
+		add_action( 'wcpay_payment_fields_js_config', [ $this, 'payment_fields_js_config' ] );
 		add_action( 'template_redirect', [ $this, 'handle_express_checkout_redirect' ] );
 		add_filter( 'woocommerce_login_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
@@ -98,6 +99,20 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
 			$this->register_ece_data_for_block_editor();
 		}
+	}
+
+	/**
+	 * Appends express-checkout-related data to the JS configuration used during checkout.
+	 *
+	 * @param array $config The configuration to be provided to the JS.
+	 *
+	 * @return mixed
+	 */
+	public function payment_fields_js_config( $config ) {
+		$config['isPaymentRequestEnabled'] = $this->gateway->is_payment_request_enabled() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'payment_request' );
+		$config['isAmazonPayEnabled']      = $this->express_checkout_helper->can_use_amazon_pay() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'amazon_pay' );
+
+		return $config;
 	}
 
 	/**
@@ -244,12 +259,14 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
 						'display_prices_with_tax'    => 'incl' === get_option( 'woocommerce_tax_display_cart' ),
 					],
+					'has_subscription'   => $this->has_subscription_product(),
 					'button'             => $this->get_button_settings(),
 					'login_confirmation' => $this->get_login_confirmation_settings(),
 					'button_context'     => $this->express_checkout_helper->get_button_context(),
 					'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
 					'product'            => $this->express_checkout_helper->get_product_data(),
 					'store_name'         => get_bloginfo( 'name' ),
+					'enabled_methods'    => $this->express_checkout_helper->get_enabled_express_checkout_methods_for_context(),
 				]
 			),
 			[
@@ -258,6 +275,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 					'accountId'      => $this->account->get_stripe_account_id(),
 					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+				],
+				'flags'  => [
+					'isEceUsingConfirmationTokens' => WC_Payments_Features::is_ece_confirmation_tokens_enabled(),
 				],
 			]
 		);

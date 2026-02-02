@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -10,6 +11,7 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import DisableConfirmationModal from '..';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 jest.mock( '../../data', () => ( {
 	useEnabledPaymentMethodIds: jest
@@ -17,12 +19,25 @@ jest.mock( '../../data', () => ( {
 		.mockReturnValue( [ [ 'card', 'giropay', 'link' ] ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true ] ),
 	usePaymentRequestEnabledSettings: jest.fn().mockReturnValue( [ true ] ),
+	useAmazonPayEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 } ) );
+
+const renderWithSettingsProvider = ( ui ) =>
+	render(
+		<WCPaySettingsContext.Provider
+			value={ { featureFlags: { amazonPay: false } } }
+		>
+			{ ui }
+		</WCPaySettingsContext.Provider>
+	);
 
 describe( 'DisableConfirmationModal', () => {
 	it( 'calls the onClose handler on cancel', async () => {
 		const handleCloseMock = jest.fn();
-		render( <DisableConfirmationModal onClose={ handleCloseMock } /> );
+		renderWithSettingsProvider(
+			<DisableConfirmationModal onClose={ handleCloseMock } />
+		);
 
 		expect( handleCloseMock ).not.toHaveBeenCalled();
 
@@ -33,7 +48,9 @@ describe( 'DisableConfirmationModal', () => {
 
 	it( 'calls the onConfirm handler on cancel', async () => {
 		const handleConfirmMock = jest.fn();
-		render( <DisableConfirmationModal onConfirm={ handleConfirmMock } /> );
+		renderWithSettingsProvider(
+			<DisableConfirmationModal onConfirm={ handleConfirmMock } />
+		);
 
 		expect( handleConfirmMock ).not.toHaveBeenCalled();
 

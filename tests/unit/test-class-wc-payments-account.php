@@ -3091,6 +3091,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'instant_deposits_eligible' => true,
 		];
 
+		// Ensure option is not set before.
+		delete_option( 'wcpay_instant_deposits_previously_eligible' );
+
 		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
@@ -3098,6 +3101,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Test to see if scheduled action was created.
 		$this->assertTrue( $this->mock_action_scheduler_service->pending_action_exists( $action_hook ) );
+
+		// Test that the previously eligible option is set.
+		$this->assertTrue( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
@@ -3111,10 +3117,16 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'instant_deposits_eligible' => false,
 		];
 
+		// Ensure option is not set before.
+		delete_option( 'wcpay_instant_deposits_previously_eligible' );
+
 		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+
+		// Test that the previously eligible option is NOT set when ineligible.
+		$this->assertFalse( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder_will_not_schedule_job_if_pending_action_exist() {
@@ -3853,5 +3865,62 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Act: Call store_setup_sync.
 		$this->wcpay_account->store_setup_sync();
+	}
+
+	/**
+	 * Data provider for test_is_review_prompt_eligible.
+	 *
+	 * @return array
+	 */
+	public function provider_is_review_prompt_eligible() {
+		return [
+			'eligible when flag is true'        => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => true,
+				],
+				true,
+			],
+			'not eligible when flag is false'   => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => false,
+				],
+				false,
+			],
+			'not eligible when flag not set'    => [
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+				],
+				false,
+			],
+			'not eligible when no account data' => [
+				[],
+				false,
+			],
+		];
+	}
+
+	/**
+	 * Test is_review_prompt_eligible method with various account data scenarios.
+	 *
+	 * @dataProvider provider_is_review_prompt_eligible
+	 *
+	 * @param array $account_data The account data to cache.
+	 * @param bool  $expected     The expected eligibility result.
+	 */
+	public function test_is_review_prompt_eligible( $account_data, $expected ) {
+		// Arrange: Mock server connection and cache account data.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$this->cache_account_details( $account_data );
+
+		// Act.
+		$result = $this->wcpay_account->is_review_prompt_eligible();
+
+		// Assert.
+		$this->assertSame( $expected, $result );
 	}
 }

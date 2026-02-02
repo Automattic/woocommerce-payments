@@ -544,6 +544,126 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Data provider for test_should_show_review_prompt.
+	 *
+	 * @return array
+	 */
+	public function provider_should_show_review_prompt() {
+		return [
+			'should not show on section page'            => [
+				'page_setup'  => [
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when account not eligible'  => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => false,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when permanently dismissed' => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => time(),
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when in cooldown'           => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => time() - ( 5 * DAY_IN_SECONDS ), // 5 days ago.
+				'expected'    => false,
+			],
+			'should show when cooldown expired'          => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => time() - ( 11 * DAY_IN_SECONDS ), // 11 days ago.
+				'expected'    => true,
+			],
+			'should show when all conditions pass'       => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => true,
+			],
+		];
+	}
+
+	/**
+	 * Test should_show_review_prompt method with various scenarios.
+	 *
+	 * @dataProvider provider_should_show_review_prompt
+	 *
+	 * @param array $page_setup   Page setup parameters.
+	 * @param bool  $is_eligible  Whether account is eligible.
+	 * @param int   $dismissed    Timestamp when dismissed (0 if not dismissed).
+	 * @param int   $maybe_later  Timestamp when maybe later clicked (0 if not).
+	 * @param bool  $expected     Expected return value.
+	 */
+	public function test_should_show_review_prompt( $page_setup, $is_eligible, $dismissed, $maybe_later, $expected ) {
+		// Arrange: Set up page.
+		foreach ( $page_setup as $key => $value ) {
+			$_REQUEST[ $key ] = $value;
+		}
+
+		// Mock the current screen.
+		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+
+		// Mock account eligibility.
+		$this->mock_account->method( 'is_review_prompt_eligible' )->willReturn( $is_eligible );
+
+		// Mock current user and set user meta.
+		$user_id = 1;
+		wp_set_current_user( $user_id );
+
+		if ( $dismissed > 0 ) {
+			update_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed', $dismissed );
+		}
+
+		if ( $maybe_later > 0 ) {
+			update_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later', $maybe_later );
+		}
+
+		// Act.
+		$result = $this->payments_admin->should_show_review_prompt();
+
+		// Assert.
+		$this->assertSame( $expected, $result );
+
+		// Clean up.
+		foreach ( array_keys( $page_setup ) as $key ) {
+			unset( $_REQUEST[ $key ] );
+		}
+		delete_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed' );
+		delete_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later' );
+	}
+
+	/**
 	 * Returns an object mocking what we need from \WP_Screen.
 	 *
 	 * @return object
