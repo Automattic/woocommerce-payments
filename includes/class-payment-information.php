@@ -204,7 +204,7 @@ class Payment_Information {
 	 * @return bool True if using a confirmation token, false otherwise.
 	 */
 	public function is_using_confirmation_token(): bool {
-		return ! empty( $this->get_payment_method() ) && 0 === strpos( $this->get_payment_method(), 'ctoken_' );
+		return 0 === strpos( $this->get_payment_method(), 'ctoken_' );
 	}
 
 	/**
