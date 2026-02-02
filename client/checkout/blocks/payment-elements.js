@@ -89,6 +89,7 @@ const PaymentElements = ( { api, ...props } ) => {
 					stripe={ stripeForUPE }
 					options={ {
 						mode: amount < 1 ? 'setup' : 'payment',
+						loader: 'never',
 						amount: amount,
 						currency: currency,
 						paymentMethodCreation: 'manual',
