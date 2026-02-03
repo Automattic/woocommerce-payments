@@ -218,24 +218,22 @@ const isFXEvent = ( event = {} ) => {
  * @return {string} Formatted fee amount in the store currency.
  */
 const convertAndFormatFeeAmount = ( feeAmount, feeCurrency, event ) => {
-	const { rate, fromCurrency } = event.fee_rates.fee_exchange_rate;
-	const storeCurrency = event.transaction_details.store_currency;
-
-	if (
-		! isFXEvent( event ) ||
-		! event.fee_rates?.fee_exchange_rate ||
-		fromCurrency === event.transaction_details.store_currency
-	) {
+	if ( ! event.fee_rates?.fee_exchange_rate ) {
 		return formatCurrency( -Math.abs( feeAmount ), feeCurrency );
 	}
+	const {
+		rate,
+		from_currency: fromCurrency,
+		to_currency: toCurrency,
+	} = event.fee_rates.fee_exchange_rate;
 
 	// Convert based on the direction of the exchange rate
 	const convertedAmount =
 		feeCurrency === fromCurrency
-			? feeAmount * rate // Converting from store currency to customer currency
-			: feeAmount / rate; // Converting from customer currency to store currency
+			? feeAmount / rate // Converting from store currency to customer currency
+			: feeAmount * rate; // Converting from customer currency to store currency
 
-	return formatCurrency( -Math.abs( convertedAmount ), storeCurrency );
+	return formatCurrency( -Math.abs( convertedAmount ), toCurrency );
 };
 
 /**
