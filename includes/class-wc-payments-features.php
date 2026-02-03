@@ -31,6 +31,7 @@ class WC_Payments_Features {
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
+	const ECE_CONFIRMATION_TOKENS_FLAG_NAME                   = '_wcpay_feature_ece_confirmation_tokens';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -370,6 +371,11 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_ece_confirmation_tokens_enabled(): bool {
+		// Feature is disabled by default while being stabilized.
+		if ( '1' !== get_option( self::ECE_CONFIRMATION_TOKENS_FLAG_NAME, '0' ) ) {
+			return false;
+		}
+
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
 
 		return is_array( $account ) && ! ( $account['ece_confirmation_tokens_disabled'] ?? false );
