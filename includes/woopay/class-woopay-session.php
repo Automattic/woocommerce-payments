@@ -722,7 +722,7 @@ class WooPay_Session {
 			'save_user_in_woopay'     => filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ),
 			'woopay_source_url'       =>
 			wc_clean( wp_unslash( $_POST['woopay_source_url'] ) ),
-			'woopay_is_blocks'        => filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ),
+			'woopay_is_blocks'        => filter_var( wp_unslash( $_POST['woopay_is_blocks'] ), FILTER_VALIDATE_BOOLEAN ),
 			'woopay_viewport'         => wc_clean( wp_unslash( $_POST['woopay_viewport'] ) ),
 			'woopay_user_phone_field' => [
 				'full' => wc_clean( wp_unslash( $_POST['woopay_user_phone_field']['full'] ) ),
