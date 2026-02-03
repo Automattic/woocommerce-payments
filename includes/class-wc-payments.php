@@ -1513,12 +1513,11 @@ class WC_Payments {
 
 		// Register all split gateways (Affirm, Klarna, etc.) to avoid
 		// them being shown as incompatible in the block editor.
-		$payment_methods = array_keys( self::get_payment_method_map() );
-		foreach ( $payment_methods as $payment_method_id ) {
+		foreach ( self::get_payment_method_map() as $payment_method_id => $payment_method ) {
 			// Skip 'card' (already registered above), 'link' (not a separate gateway),
-			// and express checkout methods (Apple Pay, Google Pay are registered separately
-			// via registerExpressPaymentMethod() in JavaScript with different naming conventions).
-			if ( 'card' === $payment_method_id || 'link' === $payment_method_id || in_array( $payment_method_id, WC_Payment_Gateway_WCPay::EXPRESS_CHECKOUT_METHODS, true ) ) {
+			// and express checkout methods (registered separately via
+			// registerExpressPaymentMethod() in JavaScript with different naming conventions).
+			if ( 'card' === $payment_method_id || 'link' === $payment_method_id || $payment_method->is_express_checkout() ) {
 				continue;
 			}
 

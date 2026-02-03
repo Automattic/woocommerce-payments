@@ -76,14 +76,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	const METHOD_ENABLED_KEY = 'enabled';
 
 	/**
-	 * Express checkout methods that are registered separately in JavaScript
-	 * via registerExpressPaymentMethod() with different naming conventions.
-	 *
-	 * @type string[]
-	 */
-	const EXPRESS_CHECKOUT_METHODS = [ 'apple_pay', 'google_pay' ];
-
-	/**
 	 * Mapping between the client and server accepted params:
 	 * - Keys are WCPay client accepted params (in WC_REST_Payments_Settings_Controller).
 	 * - Values are WCPay Server accepted params.
@@ -965,6 +957,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_available_for_express_checkout() {
+		if ( is_admin() ) {
+			// In admin context (block editor), skip full availability checks.
+			// check_base_availability() calls parent::is_available() which checks
+			// $this->enabled, but init_settings() intentionally sets that to 'no'
+			// for express checkout methods to prevent block editor compatibility
+			// warnings. Use is_enabled() instead, which reads the actual setting
+			// value and isn't affected by the init_settings() override.
+			return WC_Payments::get_gateway()->is_enabled() && $this->is_enabled();
+		}
+
 		return $this->check_base_availability();
 	}
 
@@ -2716,13 +2718,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// WooCommerce to incorrectly flag them as "incompatible with block checkout" because it can't
 		// match the PHP gateway ID to a JS registerPaymentMethod() call. We set enabled='no' only in
 		// admin context to exclude them from that compatibility check while preserving normal behavior.
-		if ( is_admin() && in_array( $this->stripe_id, self::EXPRESS_CHECKOUT_METHODS, true ) ) {
+		if ( is_admin() && $this->payment_method->is_express_checkout() ) {
 			$this->enabled = 'no';
 			return;
 		}
 
 		// For the main card gateway and express checkout (non-admin), just use the enabled setting.
-		if ( 'card' === $this->stripe_id || in_array( $this->stripe_id, self::EXPRESS_CHECKOUT_METHODS, true ) ) {
+		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
 			$this->enabled = $is_enabled ? 'yes' : 'no';
 			return;
 		}
@@ -4066,7 +4068,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// For the main card gateway and express checkout methods, just check the enabled option.
 		// Express checkout methods need is_enabled() to return true for domain verification etc.
-		if ( 'card' === $this->stripe_id || in_array( $this->stripe_id, self::EXPRESS_CHECKOUT_METHODS, true ) ) {
+		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
 			return $is_enabled;
 		}
 
