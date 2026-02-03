@@ -23,11 +23,13 @@
 
 	&__header {
 		justify-content: space-between;
+		padding: $gap $gap 0 $gap;
 	}
 
 	&__heading {
 		margin: 0;
 		font-size: 16px;
+		font-weight: 600;
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
@@ -112,6 +114,16 @@
 	// To be removed when we upgrade this package.
 	.components-popover {
 		position: fixed;
+	}
+
+	// Manual capture notice styling to match Figma design
+	.manual-capture-notice.wcpay-banner-notice {
+		background-color: #fcf9e8; // Light yellow background
+		border-left: none;
+		margin: $gap $gap 0 $gap;
+		padding: $gap;
+		border-radius: 2px;
+		align-items: center;
 	}
 }
 
