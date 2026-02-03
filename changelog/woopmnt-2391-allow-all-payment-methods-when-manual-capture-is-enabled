@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Allow all payment methods when manual capture is enabled - non-card methods use automatic capture

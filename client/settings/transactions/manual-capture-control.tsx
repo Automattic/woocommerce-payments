@@ -116,24 +116,35 @@ const ManualCaptureControl = (): JSX.Element => {
 					}
 					onRequestClose={ handleModalCancel }
 				>
-					<strong>
-						{ __(
-							'Payments must be captured within 7 days or the authorization will expire and money will be returned to the shopper.',
-							'woocommerce-payments'
-						) }
-					</strong>
 					<p>
 						{ __(
-							'Additionally, only card payments support manual capture. Non-card payments will be hidden from checkout.',
+							'Payments must be captured on the order details screen within 7 days ' +
+								'of authorization, otherwise the authorization and order will be canceled. ',
 							'woocommerce-payments'
 						) }
+						{ interpolateComponents( {
+							mixedString: __(
+								'{{learnMoreLink}}Learn more about manual capture{{/learnMoreLink}}.',
+								'woocommerce-payments'
+							),
+							components: {
+								learnMoreLink: (
+									// eslint-disable-next-line jsx-a11y/anchor-has-content
+									<a
+										href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/"
+										target="_blank"
+										rel="noreferrer"
+									/>
+								),
+							},
+						} ) }
 					</p>
-					<p>
+					<InlineNotice status="info" isDismissible={ false }>
 						{ __(
-							'Do you want to continue?',
+							"Manual capture is available for card payments only. Payment methods that don't support it will be disabled.",
 							'woocommerce-payments'
 						) }
-					</p>
+					</InlineNotice>
 				</ConfirmationModal>
 			) }
 		</>
