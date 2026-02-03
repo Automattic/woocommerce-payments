@@ -112,6 +112,8 @@ describe( 'WooPaySettings', () => {
 			getMockWooPayLocations( [ true, true, true ], jest.fn() )
 		);
 
+		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
+
 		global.wcpaySettings = {
 			restUrl: 'http://example.com/wp-json/',
 		};
@@ -202,25 +204,12 @@ describe( 'WooPaySettings', () => {
 		const enableCheckbox = screen.getByLabelText( /Enable WooPay/ );
 		expect( enableCheckbox ).toBeDisabled();
 
+		// Use getAllByText since a11y regions may duplicate the text
 		expect(
 			screen.getAllByText(
 				'To enable WooPay, you must first disable Link by Stripe.'
-			).length
-		).toBeGreaterThan( 0 );
-	} );
-
-	it( 'does not show Stripe Link warning when Stripe Link is not enabled', () => {
-		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
-
-		const { container } = render( <WooPaySettings section="enable" /> );
-
-		const enableCheckbox = screen.getByLabelText( /Enable WooPay/ );
-		expect( enableCheckbox ).not.toBeDisabled();
-
-		// Check that no InlineNotice with warning content exists in the component
-		expect(
-			container.querySelector( '.wcpay-inline-notice' )
-		).not.toBeInTheDocument();
+			)[ 0 ]
+		).toBeInTheDocument();
 	} );
 
 	it( 'hides incompatibility notice when Stripe Link is enabled', () => {
@@ -235,10 +224,25 @@ describe( 'WooPaySettings', () => {
 			)
 		).not.toBeInTheDocument();
 
+		// Use getAllByText since a11y regions may duplicate the text
 		expect(
 			screen.getAllByText(
 				'To enable WooPay, you must first disable Link by Stripe.'
-			).length
-		).toBeGreaterThan( 0 );
+			)[ 0 ]
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not show notices when Stripe Link is not enabled', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+
+		const { container } = render( <WooPaySettings section="enable" /> );
+
+		const enableCheckbox = screen.getByLabelText( /Enable WooPay/ );
+		expect( enableCheckbox ).not.toBeDisabled();
+
+		// checking that there are no `InlineNotice`s rendered, just in case.
+		expect(
+			container.querySelector( '.wcpay-inline-notice' )
+		).not.toBeInTheDocument();
 	} );
 } );
