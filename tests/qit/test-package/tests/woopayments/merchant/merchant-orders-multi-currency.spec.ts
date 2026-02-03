@@ -1,11 +1,7 @@
 /**
- * External dependencies
- */
-import { test, expect } from '../../../fixtures/auth';
-
-/**
  * Internal dependencies
  */
+import { test, expect } from '../../../fixtures/auth';
 import {
 	activateMulticurrency,
 	addCurrency,
@@ -19,7 +15,7 @@ import { goToShop } from '../../../utils/shopper-navigation';
 
 test.describe(
 	'Admin Multi-Currency Orders',
-	{ tag: [ '@merchant' ] },
+	{ tag: '@merchant' },
 	() => {
 		let wasMulticurrencyEnabled: boolean;
 		let eurOrderId: string;

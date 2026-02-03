@@ -4,9 +4,9 @@ set -e
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-WCP_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-QIT_ROOT="$SCRIPT_DIR"
-QIT_BINARY="${QIT_BINARY:-$WCP_ROOT/vendor/bin/qit}"
+
+# Source common.sh for shared QIT setup logic
+source "$SCRIPT_DIR/common.sh"
 
 # Colors for output
 RED='\033[0;31m'
@@ -36,28 +36,9 @@ check_local_env() {
     fi
 }
 
-# Load and validate environment variables
-load_and_validate_env() {
-    # Load local env variables
-    set -a
-    source "$QIT_ROOT/config/local.env"
-    set +a
-
+# Validate Jetpack tokens for E2E tests
+validate_jetpack_tokens() {
     local has_error=0
-
-    # Check QIT credentials
-    if [[ -z "$QIT_USER" ]] || [[ -z "$QIT_PASSWORD" ]]; then
-        print_error "QIT_USER and QIT_PASSWORD are required"
-        echo ""
-        echo "These credentials are needed to authenticate with the QIT CLI."
-        echo "Add them to tests/qit/config/local.env:"
-        echo "  QIT_USER=your_qit_username"
-        echo "  QIT_PASSWORD=your_qit_application_password"
-        echo ""
-        echo "To obtain credentials, see: https://mc.a8c.com/secret-store/?secret_id=11043"
-        echo ""
-        has_error=1
-    fi
 
     # Check Jetpack tokens
     if [[ -z "$E2E_JP_SITE_ID" ]] || [[ -z "$E2E_JP_BLOG_TOKEN" ]] || [[ -z "$E2E_JP_USER_TOKEN" ]]; then
@@ -78,27 +59,19 @@ load_and_validate_env() {
     fi
 }
 
-# Register QIT partner if needed
-register_qit_partner() {
-    export QIT_DISABLE_ONBOARDING=yes
-
-    if ! "$QIT_BINARY" list 2>/dev/null | grep -q 'partner:remove'; then
-        echo "Registering QIT partner credentials..."
-        if ! "$QIT_BINARY" partner:add --user="$QIT_USER" --application_password="$QIT_PASSWORD"; then
-            print_error "Failed to register QIT partner. Check your credentials."
-            exit 1
-        fi
-    fi
-}
-
 # Start the QIT environment
 cmd_up() {
     echo "Starting QIT E2E development environment..."
     echo ""
 
     check_local_env
-    load_and_validate_env
-    register_qit_partner
+
+    # Load local env variables (common.sh already loaded it, but we need to re-export for subprocesses)
+    set -a
+    source "$QIT_ROOT/config/local.env"
+    set +a
+
+    validate_jetpack_tokens
 
     echo "Launching environment with global setup..."
     echo "(This may take a few minutes on first run)"
