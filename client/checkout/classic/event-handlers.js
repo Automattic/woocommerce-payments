@@ -74,7 +74,7 @@ jQuery( function ( $ ) {
 		injectPaymentMethodLogos();
 	} );
 
-	$( `input[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
+	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
 		'change',
 		function () {
 			this.closest( 'form.checkout' )
