@@ -1436,8 +1436,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
-			// Update the customer with order data async.
-			$this->update_customer_with_order_data( $order, $customer_id, WC_Payments::mode()->is_test(), $options['is_woopay'] ?? false );
+			// Update the customer with order data asynchronously using the shutdown hook.
+			// This avoids blocking the payment response while still updating customer details.
+			// Using shutdown hook instead of ActionScheduler to reduce overhead.
+			add_action(
+				'shutdown',
+				function () use ( $order, $customer_id, $options ) {
+					$this->update_customer_with_order_data(
+						$order,
+						$customer_id,
+						WC_Payments::mode()->is_test(),
+						$options['is_woopay'] ?? false
+					);
+				}
+			);
 		}
 
 		return [ $user, $customer_id ];
@@ -1613,76 +1625,98 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( empty( $intent ) ) {
 				$payment_methods = $this->get_payment_method_types( $payment_information );
 
-				$request = Create_And_Confirm_Intention::create();
-				$request->set_amount( $converted_amount );
-				$request->set_currency_code( $currency );
-				$payment_credential = $payment_information->get_payment_method();
-				if ( $payment_information->is_using_confirmation_token() ) {
-					$request->set_confirmation_token( $payment_credential );
-				} else {
-					$request->set_payment_method( $payment_credential );
-				}
-				$request->set_customer( $customer_id );
-				$request->set_capture_method( $payment_information->is_using_manual_capture() );
-				$request->set_metadata( $metadata );
-				$request->set_level3( $this->get_level3_data_from_order( $order ) );
-				$request->set_off_session( $payment_information->is_merchant_initiated() );
-				$request->set_payment_methods( $payment_methods );
-				$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
-				$request->set_hook_args( $payment_information );
-				if ( $payment_information->is_using_saved_payment_method() ) {
-					$billing_details = $this->order_service->get_billing_data_from_order( $order );
-
-					$is_legacy_card_object = (bool) preg_match( '/^(card_|src_)/', $payment_information->get_payment_method() );
-
-					// Not updating billing details for legacy card objects because they have a different structure and are no longer supported.
-					if ( ! empty( $billing_details ) && ! $is_legacy_card_object ) {
-						$request->set_payment_method_update_data( [ 'billing_details' => $billing_details ] );
+				try {
+					$request = Create_And_Confirm_Intention::create();
+					$request->set_amount( $converted_amount );
+					$request->set_currency_code( $currency );
+					$payment_credential = $payment_information->get_payment_method();
+					if ( $payment_information->is_using_confirmation_token() ) {
+						$request->set_confirmation_token( $payment_credential );
+					} else {
+						$request->set_payment_method( $payment_credential );
 					}
-				}
-				// Add specific payment method parameters to the request.
-				$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
+					$request->set_customer( $customer_id );
+					$request->set_capture_method( $payment_information->is_using_manual_capture() );
+					$request->set_metadata( $metadata );
+					$request->set_level3( $this->get_level3_data_from_order( $order ) );
+					$request->set_off_session( $payment_information->is_merchant_initiated() );
+					$request->set_payment_methods( $payment_methods );
+					$request->set_cvc_confirmation( $payment_information->get_cvc_confirmation() );
+					$request->set_hook_args( $payment_information );
+					if ( $payment_information->is_using_saved_payment_method() ) {
+						$billing_details = $this->order_service->get_billing_data_from_order( $order );
 
-				// The below if-statement ensures the support for UPE payment methods.
-				if ( $this->upe_needs_redirection( $payment_methods ) ) {
-					$request->set_return_url(
-						wp_sanitize_redirect(
-							esc_url_raw(
-								add_query_arg(
-									[
-										'wc_payment_method' => self::GATEWAY_ID,
-										'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
-									],
-									$this->get_return_url( $order )
+						$is_legacy_card_object = (bool) preg_match( '/^(card_|src_)/', $payment_information->get_payment_method() );
+
+						// Not updating billing details for legacy card objects because they have a different structure and are no longer supported.
+						if ( ! empty( $billing_details ) && ! $is_legacy_card_object ) {
+							$request->set_payment_method_update_data( [ 'billing_details' => $billing_details ] );
+						}
+					}
+					// Add specific payment method parameters to the request.
+					$this->modify_create_intent_parameters_when_processing_payment( $request, $payment_information, $order );
+
+					// The below if-statement ensures the support for UPE payment methods.
+					if ( $this->upe_needs_redirection( $payment_methods ) ) {
+						$request->set_return_url(
+							wp_sanitize_redirect(
+								esc_url_raw(
+									add_query_arg(
+										[
+											'wc_payment_method' => self::GATEWAY_ID,
+											'_wpnonce' => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
+										],
+										$this->get_return_url( $order )
+									)
 								)
 							)
-						)
-					);
-				}
+						);
+					}
 
-				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
-				$request->set_fingerprint( $payment_information->get_fingerprint() );
-				if ( $save_payment_method_to_store ) {
-					// Only set setup_future_usage for reusable payment methods.
-					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
-					if ( $this->payment_method->is_reusable() ) {
-						$request->setup_future_usage();
+					// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
+					$request->set_fingerprint( $payment_information->get_fingerprint() );
+					if ( $save_payment_method_to_store ) {
+						// Only set setup_future_usage for reusable payment methods.
+						// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
+						if ( $this->payment_method->is_reusable() ) {
+							$request->setup_future_usage();
+						}
+					}
+					if ( $scheduled_subscription_payment ) {
+						$mandate = $this->get_mandate_param_for_renewal_order( $order );
+						if ( $mandate ) {
+							$request->set_mandate( $mandate );
+						}
+					}
+
+					// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
+					if ( $this->is_mandate_data_required() ) {
+						$request->set_mandate_data( $this->get_mandate_data() );
+					}
+
+					/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+					$intent = $request->send();
+				} catch ( API_Exception $e ) {
+					// Synchronous recovery for missing customer ID.
+					// This handles cases where the customer ID doesn't exist (e.g., after site migration).
+					if ( 'resource_missing' === $e->get_error_code() && false !== strpos( $e->getMessage(), 'customer' ) ) {
+						Logger::info( 'Customer not found during payment intent creation. Recreating customer and retrying payment.' );
+
+						// Recreate the customer synchronously.
+						$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+						$customer_id   = $this->customer_service->recreate_customer_for_user( $user, $customer_data );
+
+						// Update order meta with the new customer ID.
+						$this->order_service->set_customer_id_for_order( $order, $customer_id );
+
+						// Retry the payment intent creation with the new customer ID.
+						$request->set_customer( $customer_id );
+						$intent = $request->send();
+					} else {
+						// Re-throw any other exceptions.
+						throw $e;
 					}
 				}
-				if ( $scheduled_subscription_payment ) {
-					$mandate = $this->get_mandate_param_for_renewal_order( $order );
-					if ( $mandate ) {
-						$request->set_mandate( $mandate );
-					}
-				}
-
-				// For Stripe Link & SEPA, we must create mandate to acknowledge that terms have been shown to customer.
-				if ( $this->is_mandate_data_required() ) {
-					$request->set_mandate_data( $this->get_mandate_data() );
-				}
-
-				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $request->send();
 			}
 
 			$intent_id     = $intent->get_id();
