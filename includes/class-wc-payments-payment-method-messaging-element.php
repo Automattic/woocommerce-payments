@@ -54,8 +54,8 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		global $product;
 		$currency_code      = get_woocommerce_currency();
 		$store_country      = WC()->countries->get_base_country();
-		$billing_country    = WC()->customer->get_billing_country();
-		$cart_total         = WC()->cart->total;
+		$billing_country    = WC()->customer ? WC()->customer->get_billing_country() : '';
+		$cart_total         = WC()->cart ? WC()->cart->total : 0;
 		$product_variations = [];
 
 		if ( $product ) {
@@ -67,7 +67,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 					wc_prices_include_tax() &&
 					(
 						get_option( 'woocommerce_tax_display_shop' ) !== 'incl' ||
-						WC()->customer->get_is_vat_exempt()
+						( WC()->customer && WC()->customer->get_is_vat_exempt() )
 					)
 				) {
 					$get_price_fn = function ( $product ) {
@@ -75,7 +75,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 					};
 				} elseif (
 					get_option( 'woocommerce_tax_display_shop' ) === 'incl'
-					&& ! WC()->customer->get_is_vat_exempt()
+					&& ! ( WC()->customer && WC()->customer->get_is_vat_exempt() )
 				) {
 					$get_price_fn = function ( $product ) {
 						return wc_get_price_including_tax( $product );
@@ -174,8 +174,17 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			$script_data
 		);
 
-		// Ensure wcpayConfig is available in the page.
-		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
+		// Ensure wcpayConfig is available in the page with only the keys the product-details script needs.
+		$wcpay_config = rawurlencode(
+			wp_json_encode(
+				[
+					'ajaxUrl'                      => admin_url( 'admin-ajax.php' ),
+					'saveUPEAppearanceNonce'       => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
+					'upeBnplProductPageAppearance' => get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT ),
+					'upeBnplClassicCartAppearance' => get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT ),
+				]
+			)
+		);
 		wp_add_inline_script(
 			'WCPAY_PRODUCT_DETAILS',
 			"
