@@ -1727,10 +1727,16 @@ class WC_Payments {
 
 	/**
 	 * Enqueues the common config script.
+	 * Only enqueues if the full config hasn't already been loaded via express button scripts.
 	 *
 	 * @return void
 	 */
 	public static function enqueue_woopay_common_config_script() {
+		// Skip if the express button script is already enqueued/registered, as it includes the full config.
+		if ( wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'enqueued' ) || wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'registered' ) ) {
+			return;
+		}
+
 		try {
 			// is_test() throws if the class 'Mode' has not been initialized.
 			$is_test_mode = self::mode()->is_test();
@@ -1739,21 +1745,23 @@ class WC_Payments {
 			$is_test_mode = false;
 		}
 
+		$common_config = [
+			'woopayHost'                    => WooPay_Utilities::get_woopay_url(),
+			'testMode'                      => $is_test_mode,
+			'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
+			'woopayMerchantId'              => Jetpack_Options::get_option( 'id' ),
+			'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
+			'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
+			'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
+			'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
+		];
+
 		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
-		wp_localize_script(
+		wp_add_inline_script(
 			'WCPAY_WOOPAY_COMMON_CONFIG',
-			'wcpayConfig',
-			[
-				'woopayHost'                    => WooPay_Utilities::get_woopay_url(),
-				'testMode'                      => $is_test_mode,
-				'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-				'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
-				'woopayMerchantId'              => Jetpack_Options::get_option( 'id' ),
-				'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
-				'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
-				'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
-				'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
-			]
+			'var wcpayConfig = Object.assign( wcpayConfig || {}, ' . wp_json_encode( $common_config ) . ' );',
+			'before'
 		);
 		wp_enqueue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
 	}
