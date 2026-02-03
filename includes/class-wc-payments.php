@@ -1727,10 +1727,16 @@ class WC_Payments {
 
 	/**
 	 * Enqueues the common config script.
+	 * Only enqueues if the full config hasn't already been loaded via express button scripts.
 	 *
 	 * @return void
 	 */
 	public static function enqueue_woopay_common_config_script() {
+		// Skip if the express button script is already enqueued/registered, as it includes the full config.
+		if ( wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'enqueued' ) || wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'registered' ) ) {
+			return;
+		}
+
 		try {
 			// is_test() throws if the class 'Mode' has not been initialized.
 			$is_test_mode = self::mode()->is_test();
