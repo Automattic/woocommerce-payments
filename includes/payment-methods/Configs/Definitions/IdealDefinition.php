@@ -53,7 +53,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'iDEAL', 'woocommerce-payments' );
+		return __( 'iDEAL | Wero', 'woocommerce-payments' );
 	}
 
 	/**
