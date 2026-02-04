@@ -69,7 +69,7 @@
     }
   },
   "expectation": {
-    "fxString": "1.00 USD → 0.84122 GBP: £16.00 GBP",
+    "fxString": "1.00 USD → 0.84122 GBP: 16.00 GBP",
     "feeString": "Fee (5.5% + $0.30): -£1.12",
     "feeBreakdown": {
       "base": "Base fee: 1.5% + £0.25",
@@ -77,6 +77,6 @@
       "additional-fx": "Currency conversion fee: 2%"
     },
     "taxString": "Tax UK VAT (20%): -£0.22",
-    "netString": "Net payout: £14.64 GBP"
+    "netString": "Net payout: 14.64 GBP"
   }
 }

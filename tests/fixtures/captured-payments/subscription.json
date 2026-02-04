@@ -56,13 +56,13 @@
     }
   },
   "expectation": {
-    "fxString": "1.00 EUR → 1.05491 USD: $55.91 USD",
+    "fxString": "1.00 EUR → 1.05491 USD: 55.91 USD",
     "feeString": "Fee (4.9% + $0.30): -$3.04",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Currency conversion fee: 1%",
       "additional-wcpay-subscription": "Subscription transaction fee: 1%"
     },
-    "netString": "Net payout: $52.87 USD"
+    "netString": "Net payout: 52.87 USD"
   }
 }

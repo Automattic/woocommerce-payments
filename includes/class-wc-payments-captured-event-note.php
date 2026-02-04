@@ -210,7 +210,7 @@ class WC_Payments_Captured_Event_Note {
 		return sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Net payout: %s', 'woocommerce-payments' ),
-			WC_Payments_Utils::format_explicit_currency( $net, $currency )
+			WC_Payments_Utils::format_explicit_currency( $net, $currency, true )
 		);
 	}
 
@@ -439,7 +439,7 @@ class WC_Payments_Captured_Event_Note {
 			'%1$s → %2$s: %3$s',
 			self::format_explicit_currency_with_base( 1, $from_currency, $to_currency, true ),
 			self::format_exchange_rate( $exchange_rate, $to_currency ),
-			WC_Payments_Utils::format_explicit_currency( $to_display_amount, $to_currency, false )
+			WC_Payments_Utils::format_explicit_currency( $to_display_amount, $to_currency, true )
 		);
 	}
 

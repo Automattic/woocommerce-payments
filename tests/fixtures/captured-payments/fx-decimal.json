@@ -48,12 +48,12 @@
       }
     },
   "expectation": {
-    "fxString": "1.00 EUR → 1.0504 USD: $105.04 USD",
+    "fxString": "1.00 EUR → 1.0504 USD: 105.04 USD",
     "feeString": "Fee (3.9% + $0.30): -$4.39",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-fx": "Currency conversion fee: 1%"
     },
-    "netString": "Net payout: $100.65 USD"
+    "netString": "Net payout: 100.65 USD"
   }
 }
