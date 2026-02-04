@@ -119,7 +119,10 @@ class WC_Payments_Captured_Event_Note {
 			$fee_amount   = (int) $data['transaction_details']['customer_fee'];
 		}
 
-		$formatted_fee_amount = $this->convert_and_format_fee_amount( $fee_amount, $fee_currency );
+		$formatted_fee_amount = $this->convert_and_format_fee_amount(
+			WC_Payments_Utils::interpret_stripe_amount( $fee_amount, $fee_currency ),
+			$fee_currency
+		);
 
 		$base_fee_label = $this->is_base_fee_only()
 			? __( 'Base fee', 'woocommerce-payments' )
@@ -583,10 +586,7 @@ class WC_Payments_Captured_Event_Note {
 	private function convert_and_format_fee_amount( float $fee_amount, string $fee_currency ) {
 		$fee_exchange_rate = $this->captured_event['fee_rates']['fee_exchange_rate'] ?? null;
 		if ( ! $fee_exchange_rate ) {
-			return WC_Payments_Utils::format_currency(
-				-abs( WC_Payments_Utils::interpret_stripe_amount( $fee_amount, $fee_currency ) ),
-				$fee_currency
-			);
+			return WC_Payments_Utils::format_currency( -abs( $fee_amount ), $fee_currency );
 		}
 
 		$rate           = $fee_exchange_rate['rate'];
@@ -599,9 +599,6 @@ class WC_Payments_Captured_Event_Note {
 			? $fee_amount / $rate // Converting from store currency to customer currency.
 			: $fee_amount * $rate; // Converting from customer currency to store currency.
 
-		return WC_Payments_Utils::format_currency(
-			-abs( WC_Payments_Utils::interpret_stripe_amount( $converted_amount, $store_currency ) ),
-			$store_currency
-		);
+		return WC_Payments_Utils::format_currency( -abs( $converted_amount ), $store_currency );
 	}
 }
