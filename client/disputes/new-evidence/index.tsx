@@ -254,7 +254,8 @@ export default ( { query }: { query: { id: string } } ) => {
 							settings,
 							bankName,
 							refundStatus,
-							duplicateStatus
+							duplicateStatus,
+							suggestedProductType
 						);
 						setIsCoverLetterManuallyEdited(
 							savedCoverLetter !== generatedContent
@@ -272,7 +273,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						settings,
 						bankName,
 						refundStatus,
-						duplicateStatus
+						duplicateStatus,
+						suggestedProductType
 					);
 					setCoverLetter( generatedCoverLetter );
 					setIsCoverLetterManuallyEdited( false );
@@ -379,7 +381,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			settings,
 			bankName,
 			refundStatus,
-			duplicateStatus
+			duplicateStatus,
+			productType
 		);
 
 		// Only auto-update if not manually edited, or if the current content matches what was previously generated
@@ -404,6 +407,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		refundStatus,
 		duplicateStatus,
 		coverLetter,
+		productType,
 	] );
 
 	// --- Step logic ---
@@ -1210,7 +1214,8 @@ export default ( { query }: { query: { id: string } } ) => {
 									settings,
 									bankName,
 									refundStatus,
-									duplicateStatus
+									duplicateStatus,
+									productType
 								);
 								setCoverLetter( generatedContent );
 								setIsCoverLetterManuallyEdited( false );
@@ -1224,7 +1229,8 @@ export default ( { query }: { query: { id: string } } ) => {
 								settings,
 								bankName,
 								refundStatus,
-								duplicateStatus
+								duplicateStatus,
+								productType
 							);
 							setCoverLetter( newValue );
 							setIsCoverLetterManuallyEdited(

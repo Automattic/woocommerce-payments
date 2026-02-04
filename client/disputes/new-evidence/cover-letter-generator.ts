@@ -61,7 +61,8 @@ const isEvidenceString = (
 
 export const generateAttachments = (
 	dispute: ExtendedDispute,
-	duplicateStatus?: string
+	duplicateStatus?: string,
+	productType?: string
 ): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
@@ -75,12 +76,20 @@ export const generateAttachments = (
 	const standardAttachments: Array< {
 		key: string;
 		label: string;
-		labelForReasons?: Array< { reasons: string[]; label: string } >;
+		labelForReasons?: Array< {
+			reasons: string[];
+			label: string;
+			productTypes?: string[];
+		} >;
 		labelForStatus?: { status: string; label: string };
 		onlyForReasons?: string[];
 		excludeWhen?: ( reason: string, status?: string ) => boolean;
 		order?: number;
-		orderForReasons?: Array< { reasons: string[]; order: number } >;
+		orderForReasons?: Array< {
+			reasons: string[];
+			order: number;
+			productTypes?: string[];
+		} >;
 	} > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
@@ -129,25 +138,31 @@ export const generateAttachments = (
 			label: __( 'Item condition', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
-					// For product_not_received disputes, this field is labeled "Reservation or booking confirmation"
+					// For product_not_received disputes with booking_reservation product type
 					reasons: [ 'product_not_received' ],
 					label: __(
 						'Reservation or booking confirmation',
 						'woocommerce-payments'
 					),
+					productTypes: [ 'booking_reservation' ],
 				},
 				{
-					// For product_unacceptable disputes, this field is labeled "Event or booking documentation"
+					// For product_unacceptable disputes with booking_reservation product type
 					reasons: [ 'product_unacceptable' ],
 					label: __(
 						'Event or booking documentation',
 						'woocommerce-payments'
 					),
+					productTypes: [ 'booking_reservation' ],
 				},
 			],
-			// For product_unacceptable, this should appear first (before Order receipt)
+			// For product_unacceptable with booking_reservation, this should appear first (before Order receipt)
 			orderForReasons: [
-				{ reasons: [ 'product_unacceptable' ], order: -1 },
+				{
+					reasons: [ 'product_unacceptable' ],
+					order: -1,
+					productTypes: [ 'booking_reservation' ],
+				},
 			],
 		},
 		{
@@ -225,8 +240,9 @@ export const generateAttachments = (
 			if ( evidence && isEvidenceString( evidence ) ) {
 				// Determine the display label with priority:
 				// 1. Status-specific label (e.g., "Refund receipt" for is_duplicate)
-				// 2. Reason-specific label (e.g., "Terms of service" for subscription_canceled)
-				// 3. Default label
+				// 2. Reason + product type specific label (e.g., "Event or booking documentation" for product_unacceptable + booking_reservation)
+				// 3. Reason-specific label (e.g., "Terms of service" for subscription_canceled)
+				// 4. Default label
 				let displayLabel = label;
 				if (
 					labelForStatus &&
@@ -234,20 +250,36 @@ export const generateAttachments = (
 				) {
 					displayLabel = labelForStatus.label;
 				} else if ( labelForReasons ) {
-					const match = labelForReasons.find( ( entry ) =>
-						entry.reasons.includes( dispute.reason )
-					);
+					const match = labelForReasons.find( ( entry ) => {
+						const reasonMatches = entry.reasons.includes(
+							dispute.reason
+						);
+						// If productTypes is specified, the product type must also match
+						const productTypeMatches =
+							! entry.productTypes ||
+							( productType &&
+								entry.productTypes.includes( productType ) );
+						return reasonMatches && productTypeMatches;
+					} );
 					if ( match ) {
 						displayLabel = match.label;
 					}
 				}
 
-				// Determine sort order: reason-specific override, explicit order, or array position
+				// Determine sort order: reason + product type specific override, explicit order, or array position
 				let sortOrder = order ?? index;
 				if ( orderForReasons ) {
-					const orderMatch = orderForReasons.find( ( entry ) =>
-						entry.reasons.includes( dispute.reason )
-					);
+					const orderMatch = orderForReasons.find( ( entry ) => {
+						const reasonMatches = entry.reasons.includes(
+							dispute.reason
+						);
+						// If productTypes is specified, the product type must also match
+						const productTypeMatches =
+							! entry.productTypes ||
+							( productType &&
+								entry.productTypes.includes( productType ) );
+						return reasonMatches && productTypeMatches;
+					} );
 					if ( orderMatch ) {
 						sortOrder = orderMatch.order;
 					}
@@ -699,7 +731,8 @@ export const generateCoverLetter = (
 	settings: any,
 	bankName: string | null,
 	refundStatus?: string,
-	duplicateStatus?: string
+	duplicateStatus?: string,
+	productType?: string
 ): string => {
 	const todayUnixTimestamp = Math.floor( Date.now() / 1000 );
 	const todayFormatted = formatDateTimeFromTimestamp( todayUnixTimestamp, {
@@ -756,7 +789,11 @@ export const generateCoverLetter = (
 		duplicateStatus: duplicateStatus,
 	};
 
-	const attachmentsList = generateAttachments( dispute, duplicateStatus );
+	const attachmentsList = generateAttachments(
+		dispute,
+		duplicateStatus,
+		productType
+	);
 	const header = generateHeader( data );
 	const recipient = generateRecipient( data );
 	const greeting = __(
