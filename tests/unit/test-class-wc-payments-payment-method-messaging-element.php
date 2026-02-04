@@ -64,6 +64,21 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 	public function tear_down(): void {
 		parent::tear_down();
 		wp_reset_postdata();
+		wp_scripts()->remove( 'WCPAY_PRODUCT_DETAILS' );
+	}
+
+	private function setup_gateway_mocks() {
+		$this->mock_account->method( 'get_stripe_account_id' )->willReturn( 'acct_test' );
+		$this->mock_account->method( 'get_publishable_key' )->willReturn( 'pk_test_key' );
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
+			[ Payment_Method::AFFIRM ]
+		);
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_statuses' )->willReturn(
+			[ 'affirm_payments' => [ 'status' => 'active' ] ]
+		);
+		$this->mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn(
+			[ Payment_Method::AFFIRM => 'affirm_payments' ]
+		);
 	}
 
 	private function get_script_data() {
@@ -124,8 +139,6 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$this->assertNotContains( Payment_Method::AFTERPAY, $script_data['paymentMethods'], 'Afterpay should not be included' );
 		$this->assertNotContains( Payment_Method::CARD, $script_data['paymentMethods'], 'Card should not be included' );
 		$this->assertNotContains( Payment_Method::IDEAL, $script_data['paymentMethods'], 'iDEAL should not be included' );
-
-		wp_scripts()->remove( 'WCPAY_PRODUCT_DETAILS' );
 	}
 
 	/**
@@ -162,7 +175,72 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 
 		// no payment methods should be included.
 		$this->assertEmpty( $script_data['paymentMethods'], 'No BNPL methods should be included when all are inactive' );
+	}
 
-		wp_scripts()->remove( 'WCPAY_PRODUCT_DETAILS' );
+	/**
+	 * Test that init handles null WC()->customer gracefully.
+	 */
+	public function test_init_handles_null_customer() {
+		$this->setup_gateway_mocks();
+
+		$original_customer = WC()->customer;
+		WC()->customer     = null;
+
+		$result = $this->messaging_element->init();
+
+		WC()->customer = $original_customer;
+
+		// Should complete without fatal error and return the container div.
+		$this->assertSame( '<div id="payment-method-message"></div>', $result );
+	}
+
+	/**
+	 * Test that init handles null WC()->cart gracefully.
+	 */
+	public function test_init_handles_null_cart() {
+		$this->setup_gateway_mocks();
+
+		$original_cart = WC()->cart;
+		WC()->cart     = null;
+
+		$result = $this->messaging_element->init();
+
+		WC()->cart = $original_cart;
+
+		// Should complete without fatal error and return the container div.
+		$this->assertSame( '<div id="payment-method-message"></div>', $result );
+
+		$script_data = $this->get_script_data();
+		$this->assertEquals( 0, $script_data['cartTotal'] );
+	}
+
+	/**
+	 * Test that inline script contains only minimal config keys, not the full checkout config.
+	 */
+	public function test_init_inline_script_contains_only_minimal_config() {
+		$this->setup_gateway_mocks();
+
+		$this->messaging_element->init();
+
+		// Get the inline script added before WCPAY_PRODUCT_DETAILS.
+		$registered = wp_scripts()->registered['WCPAY_PRODUCT_DETAILS'];
+		$before     = $registered->extra['before'] ?? [];
+		$inline_js  = implode( '', $before );
+
+		// Extract the JSON from the inline script.
+		preg_match( "/decodeURIComponent\(\s*'([^']+)'\s*\)/", $inline_js, $matches );
+		$this->assertNotEmpty( $matches[1], 'Inline script should contain encoded config' );
+
+		$config = json_decode( urldecode( $matches[1] ), true );
+		$this->assertIsArray( $config );
+
+		// Should contain only the 4 minimal keys.
+		$expected_keys = [ 'ajaxUrl', 'saveUPEAppearanceNonce', 'upeBnplProductPageAppearance', 'upeBnplClassicCartAppearance' ];
+		$this->assertEqualsCanonicalizing( $expected_keys, array_keys( $config ) );
+
+		// Should NOT contain keys from the full checkout config.
+		$this->assertArrayNotHasKey( 'fraudServices', $config );
+		$this->assertArrayNotHasKey( 'paymentMethodsConfig', $config );
+		$this->assertArrayNotHasKey( 'woopayMinimumSessionData', $config );
 	}
 }
