@@ -52,12 +52,12 @@
       }
     },
   "expectation": {
-    "fxString": "1.00 CAD → 0.696667 USD: 16.72 USD",
+    "fxString": "1.00 CAD → 0.696667 USD: $16.72 USD",
     "feeString": "Fee (3.9% + $0.39 CAD): -$0.92 USD",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30 USD",
       "additional-fx": "Currency conversion fee: 1%"
     },
-    "netString": "Net payout: 15.80 USD"
+    "netString": "Net payout: $15.80 USD"
   }
 }

@@ -285,7 +285,7 @@ const formatNetString = ( event ) => {
 		return formatExplicitCurrency(
 			amountCaptured - fee,
 			currency,
-			true,
+			false,
 			storeCurrency
 		);
 	}
@@ -294,7 +294,7 @@ const formatNetString = ( event ) => {
 	return formatExplicitCurrency(
 		storeAmountCaptured - storeFee,
 		storeCurrency,
-		true,
+		false,
 		storeCurrency
 	);
 };

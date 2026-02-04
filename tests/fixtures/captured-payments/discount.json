@@ -62,7 +62,7 @@
     }
   },
   "expectation": {
-    "fxString": "1.00 EUR → 1.0548 USD: 105.48 USD",
+    "fxString": "1.00 EUR → 1.0548 USD: $105.48 USD",
     "feeString": "Fee (0% + $0.00): $0.00",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
@@ -74,6 +74,6 @@
         "fixed": "Fixed fee: -$0.30"
       }
     },
-    "netString": "Net payout: 105.48 USD"
+    "netString": "Net payout: $105.48 USD"
   }
 }

@@ -271,7 +271,7 @@ export const formatFX = ( from, to, rate, baseCurrencyCode ) => {
 	) } → ${ formatExchangeRate( from, to, rate ) }: ${ formatExplicitCurrency(
 		Math.abs( to.amount ),
 		to.currency,
-		true,
+		false,
 		baseCurrencyCode
 	) }`;
 };
