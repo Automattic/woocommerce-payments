@@ -582,20 +582,20 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	private function convert_and_format_fee_amount( float $fee_amount, string $fee_currency ) {
 		$fee_exchange_rate = $this->captured_event['fee_rates']['fee_exchange_rate'] ?? null;
-		if ( ! $fee_exchange_rate ) {
+		$store_currency    = $this->captured_event['transaction_details']['store_currency'] ?? null;
+		if ( ( strtoupper( $fee_currency ) === strtoupper( $store_currency ) ) || ! $this->is_fx_event() || ! $fee_exchange_rate ) {
 			return WC_Payments_Utils::format_currency(
 				-abs( WC_Payments_Utils::interpret_stripe_amount( $fee_amount, $fee_currency ) ),
 				$fee_currency
 			);
 		}
 
-		$rate           = $fee_exchange_rate['rate'];
-		$from_currency  = $fee_exchange_rate['from_currency'] ?? null;
-		$store_currency = $this->captured_event['transaction_details']['store_currency'] ?? null;
+		$rate          = $fee_exchange_rate['rate'];
+		$from_currency = $fee_exchange_rate['from_currency'] ?? null;
 
 		// Convert based on the direction of the exchange rate.
 		$converted_amount =
-			$fee_currency === $from_currency
+			strtoupper( $fee_currency ) === strtoupper( $from_currency )
 			? $fee_amount / $rate // Converting from store currency to customer currency.
 			: $fee_amount * $rate; // Converting from customer currency to store currency.
 
