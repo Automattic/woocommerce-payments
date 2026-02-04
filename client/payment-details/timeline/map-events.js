@@ -24,7 +24,6 @@ import {
 	formatCurrency,
 	formatFX,
 	formatExplicitCurrency,
-	isZeroDecimalCurrency,
 } from 'multi-currency/interface/functions';
 import { formatFee } from 'utils/fees';
 import { getAdminUrl } from 'wcpay/utils';
@@ -228,22 +227,11 @@ const convertAndFormatFeeAmount = ( feeAmount, feeCurrency, event ) => {
 		to_currency: toCurrency,
 	} = event.fee_rates.fee_exchange_rate;
 
-	/**
-	 * Adjust for zero-decimal currencies.
-	 */
-	if ( isZeroDecimalCurrency( feeCurrency ) ) {
-		feeAmount = feeAmount * 100;
-	}
-
 	// Convert based on the direction of the exchange rate
 	const convertedAmount =
 		feeCurrency === fromCurrency
 			? feeAmount / rate // Converting from store currency to customer currency
 			: feeAmount * rate; // Converting from customer currency to store currency
-
-	if ( isZeroDecimalCurrency( toCurrency ) ) {
-		feeAmount = feeAmount / 100;
-	}
 
 	return formatCurrency( -Math.abs( convertedAmount ), toCurrency );
 };
@@ -391,7 +379,9 @@ export const composeFeeString = ( event ) => {
 		formatCurrency( baseFee, baseFeeCurrency ),
 		hasIdenticalSymbol ? ` ${ baseFeeCurrency }` : '',
 		formattedFeeAmount,
-		hasIdenticalSymbol ? ` ${ feeCurrency }` : ''
+		hasIdenticalSymbol
+			? ` ${ event.transaction_details.store_currency }`
+			: ''
 	);
 };
 
