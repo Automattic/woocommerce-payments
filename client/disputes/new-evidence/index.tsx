@@ -350,24 +350,71 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		if ( ! dispute || ! settings ) return;
 
+		// Get the document fields that are applicable for the current reason + product type
+		// This ensures we only include evidence for fields shown in the current UI
+		const applicableDocumentFields = getRecommendedDocumentFields(
+			dispute.reason,
+			dispute.reason === 'credit_not_processed'
+				? refundStatus
+				: undefined,
+			dispute.reason === 'duplicate' ? duplicateStatus : undefined,
+			productType
+		);
+		const applicableFieldKeys = new Set(
+			applicableDocumentFields.map( ( field ) => field.key )
+		);
+
+		// Helper to get evidence value only if the field is applicable
+		const getApplicableEvidence = (
+			key: string,
+			value: string | undefined
+		) => ( applicableFieldKeys.has( key ) ? value || '' : '' );
+
 		// Create a dispute object with current evidence state for generation
+		// Only include evidence for fields that are applicable to the current product type
 		const disputeWithCurrentEvidence = {
 			...dispute,
 			evidence: {
 				...dispute.evidence,
 				product_description: productDescription,
-				receipt: evidence.receipt,
-				customer_communication: evidence.customer_communication,
-				customer_signature: evidence.customer_signature,
-				refund_policy: evidence.refund_policy,
-				duplicate_charge_documentation:
-					evidence.duplicate_charge_documentation,
+				receipt: getApplicableEvidence( 'receipt', evidence.receipt ),
+				customer_communication: getApplicableEvidence(
+					'customer_communication',
+					evidence.customer_communication
+				),
+				customer_signature: getApplicableEvidence(
+					'customer_signature',
+					evidence.customer_signature
+				),
+				refund_policy: getApplicableEvidence(
+					'refund_policy',
+					evidence.refund_policy
+				),
+				duplicate_charge_documentation: getApplicableEvidence(
+					'duplicate_charge_documentation',
+					evidence.duplicate_charge_documentation
+				),
 				shipping_documentation: evidence.shipping_documentation,
-				service_documentation: evidence.service_documentation,
-				cancellation_policy: evidence.cancellation_policy,
-				cancellation_rebuttal: evidence.cancellation_rebuttal,
-				access_activity_log: evidence.access_activity_log,
-				uncategorized_file: evidence.uncategorized_file,
+				service_documentation: getApplicableEvidence(
+					'service_documentation',
+					evidence.service_documentation
+				),
+				cancellation_policy: getApplicableEvidence(
+					'cancellation_policy',
+					evidence.cancellation_policy
+				),
+				cancellation_rebuttal: getApplicableEvidence(
+					'cancellation_rebuttal',
+					evidence.cancellation_rebuttal
+				),
+				access_activity_log: getApplicableEvidence(
+					'access_activity_log',
+					evidence.access_activity_log
+				),
+				uncategorized_file: getApplicableEvidence(
+					'uncategorized_file',
+					evidence.uncategorized_file
+				),
 				shipping_carrier: shippingCarrier,
 				shipping_date: shippingDate,
 				shipping_tracking_number: shippingTrackingNumber,
