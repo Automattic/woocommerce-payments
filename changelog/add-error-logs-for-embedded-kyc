@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Add error logging for embedded KYC session failures to improve debugging.

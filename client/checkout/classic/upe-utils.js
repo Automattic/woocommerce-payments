@@ -257,11 +257,16 @@ export const hasPaymentMethodCountryRestrictions = ( upeElement ) => {
 };
 
 /**
- * Hides payment method if it has set specific countries in the PHP class.
+ * Hides the payment method if it has set specific countries in the PHP class.
  *
  * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
  **/
 export const togglePaymentMethodForCountry = ( upeElement ) => {
+	const upeContainer = upeElement?.closest( '.wc_payment_method' );
+	if ( ! upeContainer ) {
+		return;
+	}
+
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const paymentMethodType = upeElement.dataset.paymentMethodType;
 	const supportedCountries =
@@ -269,7 +274,7 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const selectedPaymentMethod = getSelectedUPEGatewayPaymentMethod();
 	// Simplified approach - find the form ancestor and then search within it
 	let billingInput = upeElement
-		?.closest( 'form.checkout, form#add_payment_method' )
+		.closest( 'form.checkout, form#add_payment_method' )
 		?.querySelector( '[name="billing_country"]' );
 
 	// If not found, fallback to the search in the whole document
@@ -281,7 +286,6 @@ export const togglePaymentMethodForCountry = ( upeElement ) => {
 	const billingCountry =
 		billingInput?.value || window?.wcpayCustomerData?.billing_country || '';
 
-	const upeContainer = upeElement?.closest( '.wc_payment_method' );
 	if ( supportedCountries.includes( billingCountry ) ) {
 		upeContainer.style.removeProperty( 'display' );
 	} else {
