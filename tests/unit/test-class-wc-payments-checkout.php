@@ -653,4 +653,50 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->assertArrayHasKey( 'card', $config );
 		$this->assertArrayNotHasKey( 'link', $config );
 	}
+
+	public function test_add_payment_methods_config_to_fragments_returns_unchanged_when_payment_fragment_missing() {
+		$fragments = [
+			'.some-other-selector' => '<div>Some content</div>',
+		];
+
+		$result = $this->system_under_test->add_payment_methods_config_to_update_order_review_fragments( $fragments );
+
+		$this->assertSame( $fragments, $result );
+	}
+
+	public function test_add_payment_methods_config_to_fragments_includes_dynamic_config_values() {
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'card' ] );
+
+		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturn( $card_pm );
+
+		$original_payment_html = '<div class="woocommerce-checkout-payment">Stuff</div>';
+
+		$fragments = [
+			'.woocommerce-checkout-payment' => $original_payment_html,
+		];
+
+		$result = $this->system_under_test->add_payment_methods_config_to_update_order_review_fragments( $fragments );
+
+		// The original content should still be there.
+		$this->assertStringContainsString( $original_payment_html, $result['.woocommerce-checkout-payment'] );
+		// A script tag should be appended.
+		$this->assertStringContainsString( '<script>', $result['.woocommerce-checkout-payment'] );
+		$this->assertStringContainsString( 'window.wcpay_upe_config', $result['.woocommerce-checkout-payment'] );
+		$this->assertStringContainsString( 'Object.assign', $result['.woocommerce-checkout-payment'] );
+		// Check that the script contains the expected dynamic config keys.
+		$this->assertStringContainsString( 'paymentMethodsConfig', $result['.woocommerce-checkout-payment'] );
+		$this->assertStringContainsString( 'currency', $result['.woocommerce-checkout-payment'] );
+		$this->assertStringContainsString( 'cartTotal', $result['.woocommerce-checkout-payment'] );
+	}
 }

@@ -74,6 +74,15 @@ jQuery( function ( $ ) {
 		injectPaymentMethodLogos();
 	} );
 
+	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
+		'change',
+		function () {
+			this.closest( 'form.checkout' )
+				?.querySelectorAll( '.wcpay-upe-element' )
+				.forEach( restrictPaymentMethodToLocation );
+		}
+	);
+
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
 		if ( isBillingInformationMissing() ) {
 			return;
@@ -389,18 +398,6 @@ jQuery( function ( $ ) {
 	function restrictPaymentMethodToLocation( upeElement ) {
 		if ( hasPaymentMethodCountryRestrictions( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
-
-			const billingInput = upeElement
-				?.closest( 'form.checkout' )
-				?.querySelector(
-					`[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]`
-				);
-			if ( billingInput ) {
-				// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
-				$( billingInput ).on( 'change', function () {
-					togglePaymentMethodForCountry( upeElement );
-				} );
-			}
 		}
 	}
 } );

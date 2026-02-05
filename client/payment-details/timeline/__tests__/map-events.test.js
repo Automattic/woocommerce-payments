@@ -660,6 +660,13 @@ describe( 'mapTimelineEvents', () => {
 							percentage: 0.029,
 							fixed: 30,
 							fixed_currency: 'USD',
+							fee_exchange_rate: {
+								from_currency: 'EUR',
+								to_currency: 'USD',
+								from_amount: 52,
+								to_amount: 62,
+								rate: 0.8387096774193548,
+							},
 						},
 						type: 'captured',
 						transaction_details: {
@@ -688,6 +695,15 @@ describe( 'mapTimelineEvents', () => {
 						dispute_id: 'some_id',
 						evidence_due_by: 1585879574,
 						fee: 1500,
+						fee_rates: {
+							fee_exchange_rate: {
+								from_currency: 'EUR',
+								to_currency: 'USD',
+								from_amount: null,
+								to_amount: 1500,
+								rate: null,
+							},
+						},
 						reason: 'fraudulent',
 						type: 'dispute_needs_response',
 						transaction_details: {
@@ -716,6 +732,15 @@ describe( 'mapTimelineEvents', () => {
 						type: 'partial_refund',
 						acquirer_reference_number_status: 'available',
 						acquirer_reference_number: '4785767637658864',
+						fee_rates: {
+							fee_exchange_rate: {
+								from_currency: 'EUR',
+								to_currency: 'USD',
+								from_amount: 0,
+								to_amount: 0,
+								rate: 1,
+							},
+						},
 						transaction_details: {
 							customer_amount: 500,
 							customer_amount_captured: 500,
@@ -741,6 +766,15 @@ describe( 'mapTimelineEvents', () => {
 						currency: 'EUR',
 						datetime: 1586008266,
 						deposit: null,
+						fee_rates: {
+							fee_exchange_rate: {
+								from_currency: 'EUR',
+								to_currency: 'USD',
+								from_amount: 0,
+								to_amount: 0,
+								rate: 1,
+							},
+						},
 						type: 'full_refund',
 						transaction_details: {
 							customer_amount: 1800,
@@ -769,6 +803,15 @@ describe( 'mapTimelineEvents', () => {
 							id: 'dummy_po_5eaada696b2d3',
 						},
 						fee: -1500,
+						fee_rates: {
+							fee_exchange_rate: {
+								from_currency: 'EUR',
+								to_currency: 'USD',
+								from_amount: null,
+								to_amount: -1500,
+								rate: null,
+							},
+						},
 						type: 'dispute_won',
 						transaction_details: {
 							customer_amount: 2500,
@@ -839,6 +882,233 @@ describe( 'mapTimelineEvents', () => {
 		expect( events[ 1 ].headline ).toBe(
 			'A payment of €77.00 EUR failed: The card was declined by the bank.'
 		);
+	} );
+
+	describe( '3-currency scenarios', () => {
+		beforeEach( () => {
+			global.wcpaySettings.currencyData.SE = {
+				code: 'SEK',
+				symbol: 'kr',
+				symbolPosition: 'right_space',
+				thousandSeparator: ' ',
+				decimalSeparator: ',',
+				precision: 2,
+			};
+		} );
+
+		test( 'formats captured events with 3 currencies - same order and base fee currencies', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 24000,
+						amount_captured: 24000,
+						currency: 'SEK',
+						datetime: 1770202411,
+						deposit: null,
+						fee: 1028,
+						fee_rates: {
+							percentage: 0.0335,
+							fixed: 2,
+							fixed_currency: 'EUR',
+							history: [
+								{
+									type: 'base',
+									additional_type: '',
+									fee_id: 'base-se-card-fee',
+									percentage_rate: 0.015,
+									fixed_rate: 20,
+									currency: 'sek',
+								},
+								{
+									type: 'discount',
+									additional_type: '',
+									fee_id:
+										'wcpay-promo-2023-incentive-10off3m-se',
+									percentage_rate: -0.0015,
+									fixed_rate: -2,
+									currency: 'sek',
+								},
+								{
+									type: 'additional',
+									additional_type: 'fx',
+									fee_id: 'additional-se-card-fx-fee',
+									percentage_rate: 0.02,
+									fixed_rate: 0,
+									currency: 'sek',
+								},
+							],
+							tax: {
+								percentage_rate: 0.25,
+								amount: 206,
+								currency: 'sek',
+								description: 'SE VAT',
+							},
+							before_tax: {
+								amount: 822,
+								currency: 'sek',
+							},
+							fee_exchange_rate: {
+								from_currency: 'SEK',
+								to_currency: 'EUR',
+								from_amount: 1028,
+								to_amount: 97,
+								rate: 10.577052239003303,
+							},
+						},
+						type: 'captured',
+						transaction_id: 'txn_3Sx3iAFrftSTz62v1ndGkcn0',
+						transaction_details: {
+							customer_currency: 'SEK',
+							customer_amount: 24000,
+							customer_amount_captured: 24000,
+							customer_fee: 1028,
+							store_currency: 'EUR',
+							store_amount: 2269,
+							store_amount_captured: 2269,
+							store_fee: 97,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats captured events with 3 currencies - different order, settlement, and base fee', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 2600,
+						amount_captured: 2600,
+						currency: 'USD',
+						datetime: 1770202475,
+						deposit: null,
+						fee: 111,
+						fee_rates: {
+							percentage: 0.0335,
+							fixed: 2,
+							fixed_currency: 'EUR',
+							history: [
+								{
+									type: 'base',
+									additional_type: '',
+									fee_id: 'base-se-card-fee',
+									percentage_rate: 0.015,
+									fixed_rate: 20,
+									currency: 'sek',
+								},
+								{
+									type: 'discount',
+									additional_type: '',
+									fee_id:
+										'wcpay-promo-2023-incentive-10off3m-se',
+									percentage_rate: -0.0015,
+									fixed_rate: -2,
+									currency: 'sek',
+								},
+								{
+									type: 'additional',
+									additional_type: 'fx',
+									fee_id: 'additional-se-card-fx-fee',
+									percentage_rate: 0.02,
+									fixed_rate: 0,
+									currency: 'sek',
+								},
+							],
+							tax: {
+								percentage_rate: 0.25,
+								amount: 22,
+								currency: 'usd',
+								description: 'SE VAT',
+							},
+							before_tax: {
+								amount: 89,
+								currency: 'usd',
+							},
+							fee_exchange_rate: {
+								from_currency: 'USD',
+								to_currency: 'EUR',
+								from_amount: 111,
+								to_amount: 94,
+								rate: 1.18141725176356,
+							},
+						},
+						type: 'captured',
+						transaction_id: 'txn_3Sx3jDFrftSTz62v178CI0wb',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 2600,
+							customer_amount_captured: 2600,
+							customer_fee: 111,
+							store_currency: 'EUR',
+							store_amount: 2201,
+							store_amount_captured: 2201,
+							store_fee: 94,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats captured events with 3 currencies - same order and settlement currencies', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6200,
+						amount_captured: 6200,
+						currency: 'EUR',
+						datetime: 1770202445,
+						deposit: null,
+						fee: 106,
+						fee_rates: {
+							percentage: 0.0135,
+							fixed: 2,
+							fixed_currency: 'EUR',
+							history: [
+								{
+									type: 'base',
+									additional_type: '',
+									fee_id: 'base-se-card-fee',
+									percentage_rate: 0.015,
+									fixed_rate: 20,
+									currency: 'sek',
+								},
+								{
+									type: 'discount',
+									additional_type: '',
+									fee_id:
+										'wcpay-promo-2023-incentive-10off3m-se',
+									percentage_rate: -0.0015,
+									fixed_rate: -2,
+									currency: 'sek',
+								},
+							],
+							tax: {
+								percentage_rate: 0.25,
+								amount: 21,
+								currency: 'eur',
+								description: 'SE VAT',
+							},
+							before_tax: {
+								amount: 85,
+								currency: 'eur',
+							},
+							fee_exchange_rate: null,
+						},
+						type: 'captured',
+						transaction_id: 'txn_3Sx3iiFrftSTz62v1PCjHEmg',
+						transaction_details: {
+							customer_currency: 'EUR',
+							customer_amount: 6200,
+							customer_amount_captured: 6200,
+							customer_fee: 106,
+							store_currency: 'EUR',
+							store_amount: 6200,
+							store_amount_captured: 6200,
+							store_fee: 106,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
 	} );
 } );
 
