@@ -58,17 +58,6 @@ function _manually_load_plugin() {
 		1
 	);
 
-	// Enable the ECE confirmation tokens feature flag in tests to ensure existing
-	// tests continue to work. The feature is disabled by default in production.
-	add_filter(
-		'default_option__wcpay_feature_ece_confirmation_tokens',
-		function ( $default ) {
-			return '1';
-		},
-		10,
-		1
-	);
-
 	$_plugin_dir = __DIR__ . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
