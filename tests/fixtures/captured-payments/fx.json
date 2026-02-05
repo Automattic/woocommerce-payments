@@ -24,7 +24,14 @@
             "fixed_rate": 0,
             "currency": "usd"
           }
-        ]
+        ],
+        "fee_exchange_rate": {
+          "from_currency": "VND",
+          "to_currency": "USD",
+          "from_amount": 96453,
+          "to_amount": 420,
+          "rate": 229.65
+        }
       },
       "currency": "VND",
       "datetime": 1651215552,
