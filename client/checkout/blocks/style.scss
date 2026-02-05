@@ -17,77 +17,58 @@
 }
 
 .wc-block-checkout__payment-method {
-	input:checked ~ div {
-		/* stylelint-disable-next-line selector-id-pattern */
-		.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] ) {
-			> .payment-method-label {
-				.test-mode.badge {
-					// hiding the badge when the payment method is not selected
-					display: inline-block;
-				}
-			}
+	// Style the WooCommerce Blocks payment method label with icon.
+	// The markup has icon first, then text. We use flexbox with order to
+	// keep text on the left and move icon to the right.
+	// Badge (order 1) stays after text, icon (order 2) goes to the right.
+	.wc-block-components-payment-method-label.wc-block-components-payment-method-label--with-icon {
+		display: flex;
+		align-items: center;
+		width: 100%;
+
+		// Payment method icon - move to the end (right side)
+		.wcpay-payment-method-icon {
+			height: 24px;
+			width: auto;
+			order: 2;
+			margin-left: auto;
+		}
+
+		// Card brand logos - move to the end (right side)
+		.payment-methods--logos {
+			height: 24px;
+			order: 2;
+			margin-left: auto;
+		}
+
+		// Test mode badge - hidden by default, shown when payment method is selected
+		// order: 1 (default) keeps it after the text but before the icon (order: 2)
+		.test-mode.badge {
+			background-color: #fff2d7;
+			border-radius: 4px;
+			padding: 4px 6px;
+			font-size: 12px;
+			font-weight: 400;
+			line-height: 16px;
+			color: #4d3716;
+			margin-left: 8px;
+			display: none;
+			order: 1;
 		}
 	}
 
-	/* stylelint-disable-next-line selector-id-pattern */
-	.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] ) {
-		width: 100%;
-		display: block !important;
-
-		> .payment-method-label {
-			display: grid !important;
-			justify-content: normal !important;
-			grid-template-columns: max-content auto;
-			grid-template-areas: 'label badge logos';
-			align-items: center;
-			gap: 8px;
-			width: 100%;
-
-			> .payment-method-label__label {
-				grid-area: label;
-				width: 100%;
-			}
-
-			> .payment-methods--logos {
-				grid-area: logos;
-				height: 24px;
-				justify-self: end;
-			}
-
-			> .test-mode.badge {
-				grid-area: badge;
-				background-color: #fff2d7;
-				border-radius: 4px;
-				padding: 4px 6px;
-				font-size: 12px;
-				font-weight: 400;
-				line-height: 16px;
-				color: #4d3716;
-				justify-self: start;
-				width: max-content;
-				display: none;
-			}
-		}
+	// Show test mode badge when payment method is selected
+	input:checked
+		~ div
+		.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] )
+		> .wc-block-components-payment-method-label
+		.test-mode.badge {
+		display: inline-block;
 	}
 }
 
 #remember-me:empty {
 	margin-bottom: 0;
-}
-
-#payment-method {
-	/* stylelint-disable-next-line selector-id-pattern */
-	#radio-control-wc-payment-method-options-woocommerce_payments_affirm__label
-		img {
-		min-width: 50px;
-		height: auto;
-	}
-	/* stylelint-disable-next-line selector-id-pattern */
-	#radio-control-wc-payment-method-options-woocommerce_payments_afterpay_clearpay__label
-		img {
-		min-width: auto;
-		height: auto;
-	}
 }
 
 @import '../woopay/style';
