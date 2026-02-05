@@ -540,6 +540,51 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Terms of service (Attachment D)' );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
+
+		it( 'should include "Customer\'s signature" only for physical_product product type', () => {
+			const disputeWithSignature: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					customer_signature: 'customer_signature_url',
+				},
+			};
+
+			// Physical product should include Customer's signature
+			const physicalResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'physical_product'
+			);
+			expect( physicalResult ).toContain( "Customer's signature" );
+
+			// Booking/Reservation should NOT include Customer's signature
+			const bookingResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'booking_reservation'
+			);
+			expect( bookingResult ).not.toContain( "Customer's signature" );
+
+			// Other product types should NOT include Customer's signature
+			const otherResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'other'
+			);
+			expect( otherResult ).not.toContain( "Customer's signature" );
+
+			// No product type specified should NOT include Customer's signature
+			const noProductTypeResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				undefined
+			);
+			expect( noProductTypeResult ).not.toContain(
+				"Customer's signature"
+			);
+		} );
 	} );
 
 	describe( 'generateHeader', () => {

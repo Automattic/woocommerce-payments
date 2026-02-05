@@ -70,6 +70,7 @@ export const generateAttachments = (
 	// Standard attachment definitions with optional restriction rules
 	// Each attachment can specify:
 	// - `onlyForReasons`: only include for these dispute reasons
+	// - `onlyForProductTypes`: only include for these product types
 	// - `excludeWhen`: exclude when this condition is true (for complex conditions)
 	// - `labelForReasons`: use a different label for specific dispute reasons
 	// - `labelForStatus`: use a different label based on duplicateStatus
@@ -83,6 +84,7 @@ export const generateAttachments = (
 		} >;
 		labelForStatus?: { status: string; label: string };
 		onlyForReasons?: string[];
+		onlyForProductTypes?: string[];
 		excludeWhen?: ( reason: string, status?: string ) => boolean;
 		order?: number;
 		orderForReasons?: Array< {
@@ -124,6 +126,8 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
 			label: __( "Customer's signature", 'woocommerce-payments' ),
+			// Customer's signature is only shown in the UI for physical products
+			onlyForProductTypes: [ 'physical_product' ],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
@@ -218,6 +222,7 @@ export const generateAttachments = (
 				labelForReasons,
 				labelForStatus,
 				onlyForReasons,
+				onlyForProductTypes,
 				excludeWhen,
 				order,
 				orderForReasons,
@@ -230,6 +235,13 @@ export const generateAttachments = (
 			if (
 				onlyForReasons &&
 				! onlyForReasons.includes( dispute.reason )
+			) {
+				return;
+			}
+			if (
+				onlyForProductTypes &&
+				( ! productType ||
+					! onlyForProductTypes.includes( productType ) )
 			) {
 				return;
 			}
