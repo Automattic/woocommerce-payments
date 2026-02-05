@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import { memo, useMemo } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -28,20 +29,24 @@ const cardBrandsBreakpointConfigs = [
  * @param {string} props.title The payment method title for alt text.
  * @return {JSX.Element} The payment method icon component.
  */
-const PaymentMethodIcon = ( { paymentMethodId, icon, darkIcon, title } ) => {
+const PaymentMethodIcon = memo( function PaymentMethodIcon( {
+	paymentMethodId,
+	icon,
+	darkIcon,
+	title,
+} ) {
 	const isTestMode = getUPEConfig( 'testMode' );
 
-	const renderTestModeBadge = () =>
-		isTestMode && (
-			<span className="test-mode badge">
-				{ __( 'Test Mode', 'woocommerce-payments' ) }
-			</span>
-		);
+	const testModeBadge = isTestMode && (
+		<span className="test-mode badge">
+			{ __( 'Test Mode', 'woocommerce-payments' ) }
+		</span>
+	);
 
 	if ( paymentMethodId === 'card' ) {
 		return (
 			<>
-				{ renderTestModeBadge() }
+				{ testModeBadge }
 				<PaymentMethodsLogos
 					maxElements={ 4 }
 					paymentMethods={ getCardBrands() }
@@ -57,7 +62,7 @@ const PaymentMethodIcon = ( { paymentMethodId, icon, darkIcon, title } ) => {
 
 	return (
 		<>
-			{ renderTestModeBadge() }
+			{ testModeBadge }
 			<img
 				className="wcpay-payment-method-icon"
 				src={ iconSrc }
@@ -65,7 +70,7 @@ const PaymentMethodIcon = ( { paymentMethodId, icon, darkIcon, title } ) => {
 			/>
 		</>
 	);
-};
+} );
 
 /**
  * Payment method label component that uses the WooCommerce Blocks PaymentMethodLabel
@@ -88,19 +93,22 @@ const PaymentMethodLabel = ( {
 } ) => {
 	const { PaymentMethodLabel: Label } = components;
 
-	return (
-		<Label
-			text={ title }
-			icon={
-				<PaymentMethodIcon
-					paymentMethodId={ paymentMethodId }
-					icon={ icon }
-					darkIcon={ darkIcon }
-					title={ title }
-				/>
-			}
-		/>
+	const iconProp = useMemo(
+		() => (
+			<PaymentMethodIcon
+				paymentMethodId={ paymentMethodId }
+				icon={ icon }
+				darkIcon={ darkIcon }
+				title={ title }
+			/>
+		),
+		[ paymentMethodId, icon, darkIcon, title ]
 	);
+
+	return useMemo( () => <Label text={ title } icon={ iconProp } />, [
+		title,
+		iconProp,
+	] );
 };
 
 export default PaymentMethodLabel;
