@@ -1,6 +1,4 @@
-<svg width="64" height="40" viewBox="0 0 64 40" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-  <rect width="64" height="40" fill="white"/>
-  <svg x="2" y="7" width="60" height="26" viewBox="0 0 480 182">
+<svg width="64" height="24" viewBox="0 0 480 182" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <style>
         .cls-1 {
@@ -61,5 +59,4 @@
       <path class="cls-4" d="M334.75,66c-13.92,0-22.87,8.76-25.26,19.56h15.04c1.8-3.72,5.34-6.42,10.22-6.42,3.89,0,6.91,1.68,8.88,4.22l9.9-10.01c-4.42-4.48-10.78-7.35-18.77-7.35Z"></path>
     </g>
     <path class="cls-5" d="M215.61,145c-1.1,0-2-.9-2-2V39c0-1.1.9-2,2-2s2,.9,2,2v104c0,1.1-.9,2-2,2Z"></path>
-  </svg>
 </svg>
