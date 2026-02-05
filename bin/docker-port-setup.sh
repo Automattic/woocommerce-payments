@@ -5,8 +5,8 @@
 set -e
 
 ENV_FILE=".env"
-PORT_RANGE_START=8084
-PORT_RANGE_END=8099
+PORT_RANGE_START=8180
+PORT_RANGE_END=8199
 
 # Get default worktree ID from directory basename
 DEFAULT_WORKTREE_ID=$(basename "$(pwd)" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/_/g')
