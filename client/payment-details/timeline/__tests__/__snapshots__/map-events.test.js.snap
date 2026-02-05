@@ -1,5 +1,184 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`mapTimelineEvents 3-currency scenarios formats captured events with 3 currencies - different order, settlement, and base fee 1`] = `
+[
+  {
+    "body": [],
+    "date": 2026-02-04T10:54:35.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Paid
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [],
+    "date": 2026-02-04T10:54:35.000Z,
+    "headline": "21,07 € EUR will be added to a future payout.",
+    "icon": <PlusIcon />,
+  },
+  {
+    "body": [
+      "1,00 USD → 0,846538 EUR: 22,01 € EUR",
+      "Fee (3.35% + 0,02 €): -0,75 €",
+      <ul
+        className="fee-breakdown-list"
+      >
+         
+        <li>
+          Base fee: 1.5% + 0,20 kr
+        </li>
+        <li>
+          Discount
+          <ul
+            className="discount-split-list"
+          >
+            <li>
+              Variable fee: -0.15%
+            </li>
+            <li>
+              Fixed fee: -0,02 kr
+            </li>
+          </ul>
+        </li>
+        <li>
+          Currency conversion fee: 2%
+        </li>
+         
+      </ul>,
+      "Tax SE VAT (25.00%): -0,18 €",
+      "Net payout: 21,07 € EUR",
+    ],
+    "date": 2026-02-04T10:54:35.000Z,
+    "headline": "A payment of 26,00 $ USD was successfully charged.",
+    "icon": <CheckmarkIcon
+      className="is-success"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents 3-currency scenarios formats captured events with 3 currencies - same order and base fee currencies 1`] = `
+[
+  {
+    "body": [],
+    "date": 2026-02-04T10:53:31.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Paid
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [],
+    "date": 2026-02-04T10:53:31.000Z,
+    "headline": "21,72 € EUR will be added to a future payout.",
+    "icon": <PlusIcon />,
+  },
+  {
+    "body": [
+      "1,00 SEK → 0,094542 EUR: 22,69 € EUR",
+      "Fee (3.35% + 0,02 €): -0,77 €",
+      <ul
+        className="fee-breakdown-list"
+      >
+         
+        <li>
+          Base fee: 1.5% + 0,20 kr
+        </li>
+        <li>
+          Discount
+          <ul
+            className="discount-split-list"
+          >
+            <li>
+              Variable fee: -0.15%
+            </li>
+            <li>
+              Fixed fee: -0,02 kr
+            </li>
+          </ul>
+        </li>
+        <li>
+          Currency conversion fee: 2%
+        </li>
+         
+      </ul>,
+      "Tax SE VAT (25.00%): -0,19 €",
+      "Net payout: 21,72 € EUR",
+    ],
+    "date": 2026-02-04T10:53:31.000Z,
+    "headline": "A payment of kr240.00 SEK was successfully charged.",
+    "icon": <CheckmarkIcon
+      className="is-success"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents 3-currency scenarios formats captured events with 3 currencies - same order and settlement currencies 1`] = `
+[
+  {
+    "body": [],
+    "date": 2026-02-04T10:54:05.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Paid
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [],
+    "date": 2026-02-04T10:54:05.000Z,
+    "headline": "60,94 € EUR will be added to a future payout.",
+    "icon": <PlusIcon />,
+  },
+  {
+    "body": [
+      "Fee (1.35% + 0,02 €): -0,85 €",
+      <ul
+        className="fee-breakdown-list"
+      >
+         
+        <li>
+          Base fee: 1.5% + 0,20 kr
+        </li>
+        <li>
+          Discount
+          <ul
+            className="discount-split-list"
+          >
+            <li>
+              Variable fee: -0.15%
+            </li>
+            <li>
+              Fixed fee: -0,02 kr
+            </li>
+          </ul>
+        </li>
+         
+      </ul>,
+      "Tax SE VAT (25.00%): -0,21 €",
+      "Net payout: 60,94 € EUR",
+    ],
+    "date": 2026-02-04T10:54:05.000Z,
+    "headline": "A payment of €62.00 EUR was successfully charged.",
+    "icon": <CheckmarkIcon
+      className="is-success"
+    />,
+  },
+]
+`;
+
 exports[`mapTimelineEvents Multi-Currency events formats captured events with fee details 1`] = `
 [
   {

@@ -218,20 +218,41 @@ const isFXEvent = ( event = {} ) => {
  * @return {string} Formatted fee amount in the store currency.
  */
 const convertAndFormatFeeAmount = ( feeAmount, feeCurrency, event ) => {
-	if ( ! isFXEvent( event ) || ! event.fee_rates?.fee_exchange_rate ) {
-		return formatCurrency( -Math.abs( feeAmount ), feeCurrency );
+	const storeCurrency = event.transaction_details?.store_currency?.toUpperCase();
+	if (
+		( storeCurrency && storeCurrency === feeCurrency.toUpperCase() ) ||
+		! isFXEvent( event ) ||
+		! event.fee_rates?.fee_exchange_rate
+	) {
+		return formatCurrency(
+			-Math.abs( feeAmount ),
+			feeCurrency,
+			storeCurrency
+		);
 	}
 
-	const { rate, fromCurrency } = event.fee_rates.fee_exchange_rate;
-	const storeCurrency = event.transaction_details.store_currency;
+	const {
+		from_amount: fromAmount,
+		to_amount: toAmount,
+		from_currency: fromCurrency,
+	} = event.fee_rates.fee_exchange_rate;
 
-	// Convert based on the direction of the exchange rate
+	// Handle zero amounts
+	if ( feeAmount === 0 || fromAmount === 0 || toAmount === 0 ) {
+		return formatCurrency( 0, storeCurrency, storeCurrency );
+	}
+
+	// Use the ratio from the fee_exchange_rate to convert the fee amount
 	const convertedAmount =
-		feeCurrency === fromCurrency
-			? feeAmount * rate // Converting from store currency to customer currency
-			: feeAmount / rate; // Converting from customer currency to store currency
+		feeCurrency.toUpperCase() === fromCurrency.toUpperCase()
+			? Math.floor( ( feeAmount * toAmount ) / fromAmount )
+			: Math.floor( ( feeAmount * fromAmount ) / toAmount );
 
-	return formatCurrency( -Math.abs( convertedAmount ), storeCurrency );
+	return formatCurrency(
+		-Math.abs( convertedAmount ),
+		storeCurrency,
+		storeCurrency
+	);
 };
 
 /**
@@ -261,12 +282,19 @@ const formatNetString = ( event ) => {
 	} = event;
 
 	if ( ! isFXEvent( event ) ) {
-		return formatExplicitCurrency( amountCaptured - fee, currency );
+		return formatExplicitCurrency(
+			amountCaptured - fee,
+			currency,
+			false,
+			storeCurrency
+		);
 	}
 
 	// We need to use the store amount and currency for the net amount calculation in the case of a FX event.
 	return formatExplicitCurrency(
 		storeAmountCaptured - storeFee,
+		storeCurrency,
+		false,
 		storeCurrency
 	);
 };
@@ -333,10 +361,10 @@ export const composeFeeString = ( event ) => {
 	if ( isFXEvent( event ) ) {
 		feeAmount =
 			event.fee_rates?.before_tax?.amount ||
-			event.transaction_details.store_fee;
+			event.transaction_details.customer_fee;
 		feeCurrency =
 			event.fee_rates?.before_tax?.currency ||
-			event.transaction_details.store_currency;
+			event.transaction_details.customer_currency;
 		baseFee = fixed || 0;
 		baseFeeCurrency = fixedCurrency || feeCurrency;
 	} else {
@@ -356,11 +384,13 @@ export const composeFeeString = ( event ) => {
 		event
 	);
 
+	const storeCurrency = event.transaction_details?.store_currency;
+
 	if ( isBaseFeeOnly( event ) && history[ 0 ]?.capped ) {
 		return sprintf(
 			'%1$s (capped at %2$s): %3$s',
 			baseFeeLabel,
-			formatCurrency( baseFee, baseFeeCurrency ),
+			formatCurrency( baseFee, baseFeeCurrency, storeCurrency ),
 			formattedFeeAmount
 		);
 	}
@@ -374,10 +404,14 @@ export const composeFeeString = ( event ) => {
 		'%1$s (%2$f%% + %3$s%4$s): %5$s%6$s',
 		baseFeeLabel,
 		formatFee( percentage ),
-		formatCurrency( baseFee, baseFeeCurrency ),
-		hasIdenticalSymbol ? ` ${ baseFeeCurrency }` : '',
+		formatCurrency( baseFee, baseFeeCurrency, storeCurrency ),
+		hasIdenticalSymbol
+			? ` ${ event.transaction_details.customer_currency }`
+			: '',
 		formattedFeeAmount,
-		hasIdenticalSymbol ? ` ${ feeCurrency }` : ''
+		hasIdenticalSymbol
+			? ` ${ event.transaction_details.store_currency }`
+			: ''
 	);
 };
 
@@ -403,7 +437,9 @@ export const composeFXString = ( event ) => {
 		{
 			currency: storeCurrency,
 			amount: storeAmountCaptured ?? storeAmount,
-		}
+		},
+		undefined,
+		storeCurrency
 	);
 };
 
@@ -531,6 +567,7 @@ export const feeBreakdown = ( event ) => {
 		discount: __( 'Discount', 'woocommerce-payments' ),
 	} );
 
+	const storeCurrency = event.transaction_details?.store_currency;
 	const feeHistoryStrings = {};
 	history.forEach( ( fee ) => {
 		let labelType = fee.type;
@@ -546,7 +583,11 @@ export const feeBreakdown = ( event ) => {
 		} = fee;
 
 		const percentageRateFormatted = formatFee( percentageRate );
-		const fixedRateFormatted = `${ formatCurrency( fixedRate, currency ) }${
+		const fixedRateFormatted = `${ formatCurrency(
+			fixedRate,
+			currency,
+			storeCurrency
+		) }${
 			hasSameSymbol(
 				event.transaction_details.store_currency,
 				event.transaction_details.customer_currency

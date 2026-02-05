@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Stop using dynamic keys for the database cache and move cached payment methods to user meta.
