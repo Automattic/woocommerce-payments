@@ -768,6 +768,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	const updateProductType = ( newType: string ) => {
 		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
 		setProductType( newType );
+		// Reset the manual edit flag so the cover letter regenerates with the new product type
+		// This ensures attachment labels are updated to match the selected product type
+		setIsCoverLetterManuallyEdited( false );
 	};
 
 	const updateProductDescription = ( value: string ) => {
