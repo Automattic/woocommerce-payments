@@ -650,6 +650,59 @@ describe( 'NewEvidence - Regular Dispute Flow', () => {
 			).not.toBeInTheDocument();
 		} );
 	} );
+
+	it( 'should include empty document fields when saving to clear them on the server', async () => {
+		// This test verifies that when a user removes a document,
+		// the empty value is sent to the server so it can be cleared.
+		// Previously, empty fields were filtered out, causing removed
+		// documents to persist on the server.
+		const disputeWithEvidence = {
+			...regularDispute,
+			evidence: {
+				receipt: 'file_abc123', // Existing evidence on server
+			},
+		};
+
+		mockApiFetch
+			.mockResolvedValueOnce( disputeWithEvidence ) // Initial fetch
+			.mockResolvedValue( disputeWithEvidence ); // Save response
+
+		render( <NewEvidence query={ { id: 'dp_test_456' } } /> );
+
+		// Wait for initial load
+		await waitFor( () => {
+			expect(
+				screen.getByText( "Let's gather the basics" )
+			).toBeInTheDocument();
+		} );
+
+		// Click "Save for later" button
+		const saveButton = screen.getByRole( 'button', {
+			name: /Save for later/i,
+		} );
+		fireEvent.click( saveButton );
+
+		// Verify the API was called with document fields included
+		// (even if they might be empty, they should be present in the request)
+		await waitFor( () => {
+			expect( mockApiFetch ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					method: 'post',
+					data: expect.objectContaining( {
+						evidence: expect.objectContaining( {
+							// Document fields should be included in the request
+							// to ensure they can be cleared on the server
+							receipt: expect.anything(),
+							customer_communication: expect.anything(),
+							customer_signature: expect.anything(),
+							refund_policy: expect.anything(),
+							uncategorized_file: expect.anything(),
+						} ),
+					} ),
+				} )
+			);
+		} );
+	} );
 } );
 
 describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {

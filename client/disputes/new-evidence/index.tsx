@@ -550,7 +550,23 @@ export default ( { query }: { query: { id: string } } ) => {
 				'shipping_address',
 			];
 
-			// Filter evidence: include shipping fields even if empty (to clear them),
+			// Define document/file field keys that need special handling
+			// These fields must be sent to Stripe even when empty to clear existing data
+			// when a document is removed by the user
+			const documentFieldKeys = [
+				'receipt',
+				'customer_communication',
+				'customer_signature',
+				'refund_policy',
+				'duplicate_charge_documentation',
+				'service_documentation',
+				'cancellation_policy',
+				'cancellation_rebuttal',
+				'access_activity_log',
+				'uncategorized_file',
+			];
+
+			// Filter evidence: include shipping and document fields even if empty (to clear them),
 			// but filter out other empty fields
 			const evidenceToSend = Object.fromEntries(
 				Object.entries( baseEvidence ).filter( ( [ key, value ] ) => {
@@ -558,7 +574,12 @@ export default ( { query }: { query: { id: string } } ) => {
 					if ( shippingFieldKeys.includes( key ) ) {
 						return true;
 					}
-					// For non-shipping fields, only include if they have a value
+					// Always include document fields (even if empty) to ensure they're cleared on Stripe
+					// when a document is removed by the user
+					if ( documentFieldKeys.includes( key ) ) {
+						return true;
+					}
+					// For other fields, only include if they have a value
 					return value && value !== '';
 				} )
 			);
