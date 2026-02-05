@@ -1829,4 +1829,282 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
+
+	/**
+	 * Tests that store_dispute_fees correctly stores dispute fees and network costs.
+	 */
+	public function test_store_dispute_fees() {
+		// Create a test order.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Test dispute summary data with both fee and network cost.
+		$dispute_summary = [
+			'fee'           => 1500, // $15.00 in cents
+			'network_cost'  => 500,  // $5.00 in cents
+			'currency'      => 'usd',
+			'exchange_rate' => 1,
+		];
+
+		// Act: Store dispute fees.
+		$this->order_service->store_dispute_fees( $order, $dispute_summary );
+
+		// Assert: Check that dispute fee was stored correctly.
+		$this->assertEquals( 15.00, $order->get_meta( '_wcpay_dispute_fee', true ) );
+
+		// Assert: Check that network cost was stored correctly.
+		$this->assertEquals( 5.00, $order->get_meta( '_wcpay_dispute_network_cost', true ) );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that store_dispute_fees handles zero values correctly.
+	 */
+	public function test_store_dispute_fees_with_zero_values() {
+		// Create a test order.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Test dispute summary data with zero values.
+		$dispute_summary = [
+			'fee'           => 0,
+			'network_cost'  => 0,
+			'currency'      => 'usd',
+			'exchange_rate' => 1,
+		];
+
+		// Act: Store dispute fees.
+		$this->order_service->store_dispute_fees( $order, $dispute_summary );
+
+		// Assert: Check that dispute fee was not stored (should be empty or not set).
+		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_fee', true ) );
+
+		// Assert: Check that network cost was not stored (should be empty or not set).
+		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_network_cost', true ) );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that store_dispute_fees handles missing values correctly.
+	 */
+	public function test_store_dispute_fees_with_missing_values() {
+		// Create a test order.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Test dispute summary data with missing fee and network cost.
+		$dispute_summary = [
+			'currency'      => 'usd',
+			'exchange_rate' => 1,
+		];
+
+		// Act: Store dispute fees.
+		$this->order_service->store_dispute_fees( $order, $dispute_summary );
+
+		// Assert: Check that dispute fee was not stored.
+		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_fee', true ) );
+
+		// Assert: Check that network cost was not stored.
+		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_network_cost', true ) );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that store_dispute_fees handles exchange rates correctly.
+	 */
+	public function test_store_dispute_fees_with_exchange_rate() {
+		// Create a test order.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Test dispute summary data with exchange rate.
+		$dispute_summary = [
+			'fee'           => 1000, // 10.00 in original currency
+			'network_cost'  => 200,  // 2.00 in original currency
+			'currency'      => 'eur',
+			'exchange_rate' => 1.2,  // 1 EUR = 1.2 USD
+		];
+
+		// Act: Store dispute fees.
+		$this->order_service->store_dispute_fees( $order, $dispute_summary );
+
+		// Assert: Check that dispute fee was converted correctly (10.00 / 1.2 = 8.33).
+		$this->assertEquals( 10.00 / 1.2, $order->get_meta( '_wcpay_dispute_fee', true ) );
+
+		// Assert: Check that network cost was converted correctly (2.00 / 1.2 = 1.67).
+		$this->assertEquals( 2.00 / 1.2, $order->get_meta( '_wcpay_dispute_network_cost', true ) );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that store_dispute_fees exits gracefully with invalid order.
+	 */
+	public function test_store_dispute_fees_with_invalid_order() {
+		// Test dispute summary data.
+		$dispute_summary = [
+			'fee'           => 1500,
+			'network_cost'  => 500,
+			'currency'      => 'usd',
+			'exchange_rate' => 1,
+		];
+
+		// Act: Store dispute fees with invalid order.
+		$this->order_service->store_dispute_fees( 'invalid_order', $dispute_summary );
+
+		// Assert: Method should exit gracefully without errors.
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed handles dispute summary data correctly.
+	 */
+	public function test_mark_payment_dispute_closed_with_dispute_summary() {
+		// Create a test order and set it to on-hold status (as dispute would).
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Test dispute summary data.
+		$dispute_summary = [
+			'disputed_amount' => 5000, // $50.00 in cents
+			'currency'        => 'usd',
+			'fee'             => 1500, // $15.00 in cents
+			'network_cost'    => 500,  // $5.00 in cents
+			'exchange_rate'   => 1,
+		];
+
+		// Act: Mark payment dispute closed with dispute summary.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Assert: Check that the order status was left in on-hold status.
+		$this->assertTrue( $order->has_status( [ Order_Status::ON_HOLD ] ) );
+
+		// Assert: Check that dispute fee was stored correctly.
+		$this->assertEquals( 15.00, $order->get_meta( '_wcpay_dispute_fee', true ) );
+
+		// Assert: Check that network cost was stored correctly.
+		$this->assertEquals( 5.00, $order->get_meta( '_wcpay_dispute_network_cost', true ) );
+
+		// Assert: Check that a refund was created with the correct amount.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -50.00, $refunds[0]->get_total() );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertStringContainsString( 'Dispute has been closed with status lost', $notes[0]->content );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed handles partial refunds correctly.
+	 */
+	public function test_mark_payment_dispute_closed_with_partial_refund() {
+		// Create a test order with a total of $100.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Test dispute summary data with disputed amount less than order total.
+		$dispute_summary = [
+			'disputed_amount' => 3000, // $30.00 in cents (partial amount)
+			'currency'        => 'usd',
+			'fee'             => 1500, // $15.00 in cents
+			'network_cost'    => 500,  // $5.00 in cents
+			'exchange_rate'   => 1,
+		];
+
+		// Act: Mark payment dispute closed with dispute summary.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Assert: Check that a refund was created with the partial amount.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -30.00, $refunds[0]->get_total() );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed handles disputed amount exceeding order total.
+	 */
+	public function test_mark_payment_dispute_closed_with_excessive_disputed_amount() {
+		// Create a test order with a total of $50.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 50.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Test dispute summary data with disputed amount greater than order total.
+		$dispute_summary = [
+			'disputed_amount' => 6000, // $60.00 in cents (more than order total)
+			'currency'        => 'usd',
+			'fee'             => 1500, // $15.00 in cents
+			'network_cost'    => 500,  // $5.00 in cents
+			'exchange_rate'   => 1,
+		];
+
+		// Act: Mark payment dispute closed with dispute summary.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Assert: Check that a refund was created with the order total amount (not exceeding).
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -50.00, $refunds[0]->get_total() );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed works without dispute summary (backward compatibility).
+	 */
+	public function test_mark_payment_dispute_closed_without_dispute_summary() {
+		// Create a test order and set it to on-hold status.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Act: Mark payment dispute closed without dispute summary (old behavior).
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order status was left in on-hold status.
+		$this->assertTrue( $order->has_status( [ Order_Status::ON_HOLD ] ) );
+
+		// Assert: Check that no dispute fees were stored.
+		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_fee', true ) );
+		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_network_cost', true ) );
+
+		// Assert: Check that a refund was created with the full order amount.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -$order->get_total(), $refunds[0]->get_total() );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
 }

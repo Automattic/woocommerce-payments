@@ -1618,4 +1618,261 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			wp_delete_post( (int) $post_id, true );
 		}
 	}
+
+	/**
+	 * Tests that get_dispute_summary returns correct data for a valid dispute ID.
+	 */
+	public function test_get_dispute_summary_success() {
+		$dispute_id = 'dp_123456789';
+
+		// Mock the expected response from the API.
+		$expected_response = [
+			'id'              => $dispute_id,
+			'fee'             => 1500,
+			'network_cost'    => 500,
+			'currency'        => 'usd',
+			'disputed_amount' => 5000,
+			'exchange_rate'   => 1,
+		];
+
+		$this->set_http_mock_response( 200, $expected_response );
+
+		// Act: Call the method.
+		$result = $this->payments_api_client->get_dispute_summary( $dispute_id );
+
+		// Assert: Check that the response matches the expected data.
+		$this->assertEquals( $expected_response, $result );
+	}
+
+	/**
+	 * Tests that get_dispute_summary throws exception for invalid dispute ID.
+	 */
+	public function test_get_dispute_summary_invalid_id() {
+		$dispute_id = 'invalid_id_with_special_chars!';
+
+		// Expect an API exception to be thrown.
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Route param validation failed.' );
+
+		// Act: Call the method with invalid ID.
+		$this->payments_api_client->get_dispute_summary( $dispute_id );
+	}
+
+	/**
+	 * Tests that get_dispute_summary handles API errors correctly.
+	 */
+	public function test_get_dispute_summary_api_error() {
+		$dispute_id = 'dp_123456789';
+
+		// Mock an API error response.
+		$error_response = [
+			'error' => [
+				'code'    => 'resource_missing',
+				'message' => 'No such dispute',
+			],
+		];
+
+		$this->set_http_mock_response( 404, $error_response );
+
+		// Expect an API exception to be thrown.
+		$this->expectException( API_Exception::class );
+
+		// Act: Call the method.
+		$this->payments_api_client->get_dispute_summary( $dispute_id );
+	}
+
+	/**
+	 * Tests that order metadata is saved correctly for dispute fees.
+	 */
+	public function test_order_metadata_saved_correctly() {
+		// Create a test order with dispute fees.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_dispute_fee', 15.00 );
+		$order->update_meta_data( '_wcpay_dispute_network_cost', 5.00 );
+		$order->save_meta_data();
+		$order->save();
+
+		// Reload the order to check if metadata was saved.
+		$reloaded_order = wc_get_order( $order->get_id() );
+
+		// Assert: Check that dispute fee was saved.
+		$this->assertEquals( 15.00, $reloaded_order->get_meta( '_wcpay_dispute_fee', true ) );
+
+		// Assert: Check that network cost was saved.
+		$this->assertEquals( 5.00, $reloaded_order->get_meta( '_wcpay_dispute_network_cost', true ) );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that add_additional_info_to_charge adds dispute fees correctly.
+	 */
+	public function test_add_additional_info_to_charge_with_dispute_fees() {
+		// Create a test order with dispute fees.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_dispute_fee', 15.00 );
+		$order->update_meta_data( '_wcpay_dispute_network_cost', 5.00 );
+		$order->save_meta_data(); // Make sure metadata is saved.
+		$order->save(); // Save the order.
+
+		// Mock the database to return our test order when looking up by charge ID.
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'ch_123' )
+			->willReturn( $order );
+
+		// Create a charge object with proper structure.
+		$charge = [
+			'id'       => 'ch_123',
+			'order'    => [
+				'id' => $order->get_id(),
+			],
+			'amount'   => 10000,
+			'currency' => $order->get_currency(),
+		];
+
+		// Act: Add additional info to charge object.
+		$result = $this->payments_api_client->add_additional_info_to_charge( $charge );
+
+		// Assert: Check that dispute fee was added.
+		$this->assertArrayHasKey( 'dispute_fee', $result );
+		$this->assertEquals( 15.00, $result['dispute_fee']['amount'] );
+		$this->assertEquals( $order->get_currency(), $result['dispute_fee']['currency'] );
+
+		// Assert: Check that network cost was added.
+		$this->assertArrayHasKey( 'network_cost', $result );
+		$this->assertEquals( 5.00, $result['network_cost']['amount'] );
+		$this->assertEquals( $order->get_currency(), $result['network_cost']['currency'] );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that add_additional_info_to_charge handles missing order correctly.
+	 */
+	public function test_add_additional_info_to_charge_missing_order() {
+		// Create a charge object without order.
+		$charge = [
+			'id'     => 'ch_123',
+			'amount' => 10000,
+		];
+
+		// Act: Add additional info to charge object.
+		$result = $this->payments_api_client->add_additional_info_to_charge( $charge );
+
+		// Assert: Check that no dispute fees were added.
+		$this->assertArrayNotHasKey( 'dispute_fee', $result );
+		$this->assertArrayNotHasKey( 'network_cost', $result );
+	}
+
+	/**
+	 * Tests that add_additional_info_to_charge handles order without dispute fees correctly.
+	 */
+	public function test_add_additional_info_to_charge_no_fees() {
+		// Create a test order without dispute fees.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Create a charge object with proper structure.
+		$charge = [
+			'id'       => 'ch_123',
+			'order'    => [
+				'id' => $order->get_id(),
+			],
+			'amount'   => 10000,
+			'currency' => $order->get_currency(),
+		];
+
+		// Act: Add additional info to charge object.
+		$result = $this->payments_api_client->add_additional_info_to_charge( $charge );
+
+		// Assert: Check that no dispute fees were added.
+		$this->assertArrayNotHasKey( 'dispute_fee', $result );
+		$this->assertArrayNotHasKey( 'network_cost', $result );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that add_additional_info_to_charge handles only dispute fee (no network cost).
+	 */
+	public function test_add_additional_info_to_charge_only_dispute_fee() {
+		// Create a test order with only dispute fee.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_dispute_fee', 15.00 );
+		$order->save_meta_data(); // Make sure metadata is saved.
+		$order->save(); // Save the order.
+
+		// Mock the database to return our test order when looking up by charge ID.
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'ch_123' )
+			->willReturn( $order );
+
+		// Create a charge object with proper structure.
+		$charge = [
+			'id'       => 'ch_123',
+			'order'    => [
+				'id' => $order->get_id(),
+			],
+			'amount'   => 10000,
+			'currency' => $order->get_currency(),
+		];
+
+		// Act: Add additional info to charge object.
+		$result = $this->payments_api_client->add_additional_info_to_charge( $charge );
+
+		// Assert: Check that dispute fee was added.
+		$this->assertArrayHasKey( 'dispute_fee', $result );
+		$this->assertEquals( 15.00, $result['dispute_fee']['amount'] );
+
+		// Assert: Check that network cost was not added.
+		$this->assertArrayNotHasKey( 'network_cost', $result );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that add_additional_info_to_charge handles only network cost (no dispute fee).
+	 */
+	public function test_add_additional_info_to_charge_only_network_cost() {
+		// Create a test order with only network cost.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_dispute_network_cost', 5.00 );
+		$order->save_meta_data(); // Make sure metadata is saved.
+		$order->save(); // Save the order.
+
+		// Mock the database to return our test order when looking up by charge ID.
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'ch_123' )
+			->willReturn( $order );
+
+		// Create a charge object with proper structure.
+		$charge = [
+			'id'       => 'ch_123',
+			'order'    => [
+				'id' => $order->get_id(),
+			],
+			'amount'   => 10000,
+			'currency' => $order->get_currency(),
+		];
+
+		// Act: Add additional info to charge object.
+		$result = $this->payments_api_client->add_additional_info_to_charge( $charge );
+
+		// Assert: Check that dispute fee was not added.
+		$this->assertArrayNotHasKey( 'dispute_fee', $result );
+
+		// Assert: Check that network cost was added.
+		$this->assertArrayHasKey( 'network_cost', $result );
+		$this->assertEquals( 5.00, $result['network_cost']['amount'] );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
 }
