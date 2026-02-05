@@ -118,6 +118,20 @@ class WC_Payments_Order_Service {
 	const WCPAY_TRANSACTION_FEE_META_KEY = '_wcpay_transaction_fee';
 
 	/**
+	 * Meta key used to store the dispute fee of order.
+	 *
+	 * @const string
+	 */
+	const WCPAY_DISPUTE_FEE_META_KEY = '_wcpay_dispute_fee';
+
+	/**
+	 * Meta key used to store the dispute network cost of order.
+	 *
+	 * @const string
+	 */
+	const WCPAY_DISPUTE_NETWORK_COST_META_KEY = '_wcpay_dispute_network_cost';
+
+	/**
 	 * Meta key used to store the mode, either 'test', or 'prod' of order.
 	 *
 	 * @see Order_Mode
@@ -397,13 +411,14 @@ class WC_Payments_Order_Service {
 	/**
 	 * Updates the order status based on dispute status and adds a note about the dispute.
 	 *
-	 * @param WC_Order $order      Order object.
-	 * @param string   $charge_id  The ID of the disputed charge associated with this order.
-	 * @param string   $status     The status of the dispute.
+	 * @param WC_Order $order           Order object.
+	 * @param string   $charge_id       The ID of the disputed charge associated with this order.
+	 * @param string   $status          The status of the dispute.
+	 * @param array    $dispute_summary Dispute summary information.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_closed( $order, $charge_id, $status ) {
+	public function mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary = [] ) {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
@@ -421,9 +436,26 @@ class WC_Payments_Order_Service {
 		add_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
 
 		if ( 'lost' === $status ) {
+			// Use dispute summary data if available to determine refund amount.
+			$refund_amount = $order->get_total();
+			if ( ! empty( $dispute_summary ) ) {
+				// Use disputed amount or balance amount depending on currency.
+				$disputed_amount = isset( $dispute_summary['disputed_amount'] ) ? $dispute_summary['disputed_amount'] : 0;
+				$currency        = isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency();
+
+				// Convert amounts to the correct format based on currency (e.g. cents to dollars).
+				$disputed_amount = WC_Payments_Utils::interpret_stripe_amount( $disputed_amount, $currency );
+
+				// Use the appropriate amount, but don't exceed order total.
+				$refund_amount = min( $order->get_total(), $disputed_amount );
+
+				// Store dispute fees and network costs if available.
+				$this->store_dispute_fees( $order, $dispute_summary );
+			}
+
 			wc_create_refund(
 				[
-					'amount'     => $order->get_total(),
+					'amount'     => $refund_amount,
 					'reason'     => __( 'Dispute lost.', 'woocommerce-payments' ),
 					'order_id'   => $order->get_id(),
 					'line_items' => $order->get_items(),
@@ -441,6 +473,37 @@ class WC_Payments_Order_Service {
 		remove_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
 
 		$order->add_order_note( $note );
+	}
+
+	/**
+	 * Store dispute fees and network costs in order metadata.
+	 *
+	 * @param WC_Order $order           Order object.
+	 * @param array    $dispute_summary Dispute summary data.
+	 *
+	 * @return void
+	 */
+	public function store_dispute_fees( $order, $dispute_summary ) {
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return;
+		}
+
+		$currency      = isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency();
+		$exchange_rate = $dispute_summary['exchange_rate'] ?? 1;
+
+		// Store dispute fee if available.
+		if ( isset( $dispute_summary['fee'] ) && $dispute_summary['fee'] > 0 ) {
+			$fee_amount = WC_Payments_Utils::interpret_stripe_amount( $dispute_summary['fee'], $currency ) / $exchange_rate;
+			$order->update_meta_data( self::WCPAY_DISPUTE_FEE_META_KEY, $fee_amount );
+		}
+
+		// Store network cost if available.
+		if ( isset( $dispute_summary['network_cost'] ) && $dispute_summary['network_cost'] > 0 ) {
+			$network_cost = WC_Payments_Utils::interpret_stripe_amount( $dispute_summary['network_cost'], $currency ) / $exchange_rate;
+			$order->update_meta_data( self::WCPAY_DISPUTE_NETWORK_COST_META_KEY, $network_cost );
+		}
+
+		$order->save();
 	}
 
 	/**

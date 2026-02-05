@@ -1055,6 +1055,21 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 			];
 		case 'dispute_lost':
 			return [
+				event.network_cost &&
+					getDepositTimelineItem(
+						event,
+						formatExplicitCurrency(
+							event.network_cost,
+							event.balance_currency
+						),
+						false,
+						[
+							__(
+								'Network cost for the dispute.',
+								'woocommerce-payments'
+							),
+						]
+					),
 				getStatusChangeTimelineItem(
 					event,
 					__( 'Disputed: Lost', 'woocommerce-payments' )

@@ -18,7 +18,6 @@ use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Constants\Currency_Code;
-use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
@@ -763,6 +762,26 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
+	 * Get summary of a specific dispute.
+	 *
+	 * @param string $dispute_id The ID of the dispute.
+	 *
+	 * @return array Dispute summary data.
+	 * @throws API_Exception - Exception thrown in case route validation fails.
+	 */
+	public function get_dispute_summary( $dispute_id ) {
+		if ( ! preg_match( '/^\w+$/', $dispute_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
+		return $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/summary', self::GET );
 	}
 
 	/**
@@ -2228,6 +2247,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	public function add_additional_info_to_charge( array $charge ): array {
 		$charge = $this->add_order_info_to_charge_object( $charge['id'], $charge );
 		$charge = $this->add_formatted_address_to_charge_object( $charge );
+		$charge = $this->add_dispute_fees_to_charge_object( $charge );
 
 		return $charge;
 	}
@@ -2254,6 +2274,46 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$billing_details['state']     = ( ! empty( $raw_details['state'] ) ) ? $raw_details['state'] : '';
 
 			$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details );
+		}
+
+		return $charge;
+	}
+
+	/**
+	 * Adds dispute fees and network costs to the Charge object
+	 *
+	 * @param array $charge - Charge object.
+	 *
+	 * @return array
+	 */
+	private function add_dispute_fees_to_charge_object( array $charge ): array {
+		if ( ! isset( $charge['order']['id'] ) ) {
+			return $charge;
+		}
+
+		$order_id = $charge['order']['id'];
+		$order    = wc_get_order( $order_id );
+
+		if ( ! $order ) {
+			return $charge;
+		}
+
+		// Add dispute fee if it exists.
+		$dispute_fee = $order->get_meta( '_wcpay_dispute_fee', true );
+		if ( $dispute_fee ) {
+			$charge['dispute_fee'] = [
+				'amount'   => $dispute_fee,
+				'currency' => $order->get_currency(),
+			];
+		}
+
+		// Add network cost if it exists.
+		$network_cost = $order->get_meta( '_wcpay_dispute_network_cost', true );
+		if ( $network_cost ) {
+			$charge['network_cost'] = [
+				'amount'   => $network_cost,
+				'currency' => $order->get_currency(),
+			];
 		}
 
 		return $charge;
