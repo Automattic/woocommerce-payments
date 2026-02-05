@@ -38,6 +38,9 @@ services:
       - wcpay-uploads:/var/www/html/wp-content/uploads
       - wcpay-mu-plugins:/var/www/html/wp-content/mu-plugins
       ## Per-worktree overlays on top of shared volumes
+      ## Note: wc-logs is a nested mount inside wcpay-uploads. Docker processes mounts
+      ## in order, so later mounts overlay earlier ones. This keeps wc-logs per-worktree
+      ## while sharing the rest of uploads across worktrees.
       - ./docker/logs/wc-logs:/var/www/html/wp-content/uploads/wc-logs
       - .:/var/www/html/wp-content/plugins/woocommerce-payments
       - dockerdirectory:/var/www/html/wp-content/plugins/woocommerce-payments/docker
