@@ -126,7 +126,7 @@ describe( 'ReviewPrompt', () => {
 				'Your feedback shapes our roadmap and supports the WooCommerce community. We are all ears!'
 			)
 		).toBeInTheDocument();
-		expect( screen.getByText( 'Write a review' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Leave review' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'Maybe later' ) ).toBeInTheDocument();
 	} );
 
@@ -146,12 +146,12 @@ describe( 'ReviewPrompt', () => {
 		);
 	} );
 
-	it( 'opens WordPress.org review URL when "Write a review" is clicked in live mode', async () => {
+	it( 'opens WordPress.org review URL when "Leave review" is clicked in live mode', async () => {
 		global.wcpayReviewPromptSettings.isLive = true;
 
 		render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Write a review' );
+		const writeReviewButton = screen.getByText( 'Leave review' );
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
@@ -163,12 +163,12 @@ describe( 'ReviewPrompt', () => {
 		} );
 	} );
 
-	it( 'opens marketplace review URL when "Write a review" is clicked in test mode', async () => {
+	it( 'opens marketplace review URL when "Leave review" is clicked in test mode', async () => {
 		global.wcpayReviewPromptSettings.isLive = false;
 
 		render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Write a review' );
+		const writeReviewButton = screen.getByText( 'Leave review' );
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
@@ -180,10 +180,10 @@ describe( 'ReviewPrompt', () => {
 		} );
 	} );
 
-	it( 'records correct telemetry events when "Write a review" is clicked', async () => {
+	it( 'records correct telemetry events when "Leave review" is clicked', async () => {
 		render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Write a review' );
+		const writeReviewButton = screen.getByText( 'Leave review' );
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
@@ -208,10 +208,10 @@ describe( 'ReviewPrompt', () => {
 		} );
 	} );
 
-	it( 'hides prompt after "Write a review" is clicked', async () => {
+	it( 'hides prompt after "Leave review" is clicked', async () => {
 		const { container } = render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Write a review' );
+		const writeReviewButton = screen.getByText( 'Leave review' );
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
@@ -281,7 +281,7 @@ describe( 'ReviewPrompt', () => {
 		// Advance time by 5 seconds
 		jest.advanceTimersByTime( 5000 );
 
-		const writeReviewButton = screen.getByText( 'Write a review' );
+		const writeReviewButton = screen.getByText( 'Leave review' );
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
@@ -301,7 +301,7 @@ describe( 'ReviewPrompt', () => {
 		global.wcpayReviewPromptSettings.isLive = true;
 		const { unmount } = render( <ReviewPrompt /> );
 
-		let writeReviewButton = screen.getByText( 'Write a review' );
+		let writeReviewButton = screen.getByText( 'Leave review' );
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
@@ -319,7 +319,7 @@ describe( 'ReviewPrompt', () => {
 		global.wcpayReviewPromptSettings.isLive = false;
 		render( <ReviewPrompt /> );
 
-		writeReviewButton = screen.getByText( 'Write a review' );
+		writeReviewButton = screen.getByText( 'Leave review' );
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {
@@ -340,7 +340,7 @@ describe( 'ReviewPrompt', () => {
 
 		render( <ReviewPrompt /> );
 
-		const writeReviewButton = screen.getByText( 'Write a review' );
+		const writeReviewButton = screen.getByText( 'Leave review' );
 		fireEvent.click( writeReviewButton );
 
 		await waitFor( () => {

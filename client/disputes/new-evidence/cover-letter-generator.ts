@@ -125,6 +125,14 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 			label: __( 'Item condition', 'woocommerce-payments' ),
+			// For product_not_received disputes, this field is labeled "Reservation or booking confirmation"
+			labelForReasons: {
+				reasons: [ 'product_not_received' ],
+				label: __(
+					'Reservation or booking confirmation',
+					'woocommerce-payments'
+				),
+			},
 		},
 		{
 			// For non-fraudulent disputes, "Subscription logs" appears in its original position
@@ -135,7 +143,15 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
 			label: __( 'Cancellation logs', 'woocommerce-payments' ),
-			onlyForReasons: [ 'subscription_canceled' ],
+			onlyForReasons: [ 'subscription_canceled', 'product_not_received' ],
+			// For product_not_received disputes, this field is labeled "Cancellation confirmation"
+			labelForReasons: {
+				reasons: [ 'product_not_received' ],
+				label: __(
+					'Cancellation confirmation',
+					'woocommerce-payments'
+				),
+			},
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,

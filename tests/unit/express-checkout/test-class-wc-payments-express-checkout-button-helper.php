@@ -536,42 +536,26 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		return [
 			'feature flag disabled' => [
 				'feature_flag_enabled' => false,
-				'gateway_enabled'      => true,
-				'has_fees'             => true,
+				'gateway_available'    => true,
 				'tax_on_billing'       => false,
-				'currency'             => 'USD',
 				'expected'             => false,
 			],
-			'gateway not enabled'   => [
+			'gateway not available' => [
 				'feature_flag_enabled' => true,
-				'gateway_enabled'      => false,
-				'has_fees'             => true,
+				'gateway_available'    => false,
 				'tax_on_billing'       => false,
-				'currency'             => 'USD',
-				'expected'             => false,
-			],
-			'no fees configured'    => [
-				'feature_flag_enabled' => true,
-				'gateway_enabled'      => true,
-				'has_fees'             => false,
-				'tax_on_billing'       => false,
-				'currency'             => 'USD',
 				'expected'             => false,
 			],
 			'tax based on billing'  => [
 				'feature_flag_enabled' => true,
-				'gateway_enabled'      => true,
-				'has_fees'             => true,
+				'gateway_available'    => true,
 				'tax_on_billing'       => true,
-				'currency'             => 'USD',
 				'expected'             => false,
 			],
 			'all conditions met'    => [
 				'feature_flag_enabled' => true,
-				'gateway_enabled'      => true,
-				'has_fees'             => true,
+				'gateway_available'    => true,
 				'tax_on_billing'       => false,
-				'currency'             => 'USD',
 				'expected'             => true,
 			],
 		];
@@ -580,7 +564,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	/**
 	 * @dataProvider can_use_amazon_pay_provider
 	 */
-	public function test_can_use_amazon_pay( $feature_flag_enabled, $gateway_enabled, $has_fees, $tax_on_billing, $currency, $expected ) {
+	public function test_can_use_amazon_pay( $feature_flag_enabled, $gateway_available, $tax_on_billing, $expected ) {
 		$original_gateway_map     = WC_Payments::get_payment_gateway_map();
 		$original_account_service = WC_Payments::get_account_service();
 		$original_cache           = WC_Payments::get_database_cache();
@@ -598,30 +582,14 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		);
 
 		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$mock_amazon_pay_gateway->method( 'is_enabled' )->willReturn( $gateway_enabled );
+		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( $gateway_available );
 		$this->set_payment_gateway_map( [ 'amazon_pay' => $mock_amazon_pay_gateway ] );
 
-		$fees = $has_fees
-			? [
-				'card'       => [ 'base' => [] ],
-				'amazon_pay' => [ 'base' => [] ],
-			]
-			: [ 'card' => [ 'base' => [] ] ];
-
 		$mock_account = $this->createMock( WC_Payments_Account::class );
-		$mock_account->method( 'get_fees' )->willReturn( $fees );
 		$mock_account->method( 'get_account_country' )->willReturn( 'US' );
 		$mock_account->method( 'get_cached_account_data' )->willReturn( [ 'country' => 'US' ] );
 
-		// AmazonPayDefinition::get_supported_currencies() uses the global account service.
 		WC_Payments::set_account_service( $mock_account );
-
-		add_filter(
-			'woocommerce_currency',
-			function () use ( $currency ) {
-				return $currency;
-			}
-		);
 
 		if ( $tax_on_billing ) {
 			add_filter( 'wc_tax_enabled', '__return_true' );
@@ -641,7 +609,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$this->assertSame( $expected, $result );
 
 		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
-		remove_all_filters( 'woocommerce_currency' );
 		$this->set_payment_gateway_map( $original_gateway_map );
 		if ( $original_account_service ) {
 			WC_Payments::set_account_service( $original_account_service );

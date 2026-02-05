@@ -882,6 +882,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
+		// some payment methods should not be available in the payment methods list if they're "express checkout".
+		if ( $this->payment_method->is_express_checkout() && ! is_admin() ) {
+			return false;
+		}
+
+		return $this->check_base_availability();
+	}
+
+	/**
+	 * Checks base availability without checkout-page-specific restrictions.
+	 * Used by is_available_for_express_checkout() for payment methods that are
+	 * only available via express checkout (e.g., Amazon Pay).
+	 *
+	 * @return bool
+	 */
+	protected function check_base_availability() {
 		if ( ! WC_Payments::get_gateway()->is_enabled() ) {
 			return false;
 		}
@@ -925,12 +941,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Disable the gateway if it should not be displayed on the checkout page.
-		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
+		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true );
 		if ( ! $is_gateway_enabled ) {
 			return false;
 		}
 
 		return parent::is_available() && ! $this->needs_setup();
+	}
+
+	/**
+	 * Checks if the gateway is available for express checkout.
+	 * This bypasses checkout-page-specific restrictions for payment methods
+	 * that are only available via express checkout buttons.
+	 *
+	 * @return bool
+	 */
+	public function is_available_for_express_checkout() {
+		return $this->check_base_availability();
 	}
 
 	/**

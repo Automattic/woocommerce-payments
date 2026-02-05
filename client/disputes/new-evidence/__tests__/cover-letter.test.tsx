@@ -125,7 +125,9 @@ describe( 'CoverLetter', () => {
 		render( <CoverLetter { ...baseProps } /> );
 		expect( screen.getByLabelText( /COVER LETTER/i ) ).toBeInTheDocument();
 		expect(
-			screen.getByRole( 'button', { name: /View cover letter/i } )
+			screen.getByRole( 'button', {
+				name: /Preview cover letter ↗/i,
+			} )
 		).toBeInTheDocument();
 	} );
 
