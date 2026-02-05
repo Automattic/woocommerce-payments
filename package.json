@@ -61,7 +61,7 @@
 		"start": "npm run watch",
 		"dev": "npm run up && npm run watch",
 		"up:recreate": "bash bin/docker-preflight.sh && docker compose up --build --force-recreate -d && ./bin/docker-setup.sh && bash -c 'source .env 2>/dev/null; echo \"Site available at http://localhost:${WORDPRESS_PORT:-8082}\"'",
-		"up": "bash bin/docker-preflight.sh && docker compose up --build -d && bash bin/docker-seed-volumes.sh && bash -c 'source .env 2>/dev/null; echo \"Site available at http://localhost:${WORDPRESS_PORT:-8082}\"'",
+		"up": "bash bin/docker-preflight.sh && docker compose up --build -d && bash -c 'source .env 2>/dev/null; echo \"Site available at http://localhost:${WORDPRESS_PORT:-8082}\"'",
 		"down": "docker compose down",
 		"infra:up": "bash bin/docker-infra-up.sh",
 		"infra:down": "docker compose -f docker-compose.infra.yml down",

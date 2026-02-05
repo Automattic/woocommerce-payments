@@ -5,12 +5,32 @@ networks:
 volumes:
   wcpay-plugins:
     name: wcpay-plugins
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WCPAY_SHARED_WP_PATH}/wp-content/plugins
   wcpay-themes:
     name: wcpay-themes
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WCPAY_SHARED_WP_PATH}/wp-content/themes
   wcpay-uploads:
     name: wcpay-uploads
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WCPAY_SHARED_WP_PATH}/wp-content/uploads
   wcpay-mu-plugins:
     name: wcpay-mu-plugins
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WCPAY_SHARED_WP_PATH}/wp-content/mu-plugins
 
 services:
   db:

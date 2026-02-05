@@ -38,7 +38,7 @@ npm run infra:up
 
 This creates:
 - A shared Docker network (`wcpay-network`) that all WordPress containers join
-- Shared Docker volumes for plugins, themes, and uploads (see [Shared vs Per-Worktree Resources](#shared-vs-per-worktree-resources))
+- Docker volumes bound to `./docker/wordpress/wp-content/` for plugins, themes, uploads, and mu-plugins (see [Shared vs Per-Worktree Resources](#shared-vs-per-worktree-resources))
 
 #### Step 3: Start WordPress and set up the site
 
@@ -179,10 +179,10 @@ The Docker setup is designed for multiple worktrees to share a single database w
 | Resource | Shared/Per-Worktree | Location |
 |----------|---------------------|----------|
 | Database (MySQL) | Shared | `wcpay_db` container |
-| Plugins (WooCommerce, etc.) | Shared | `wcpay-plugins` Docker volume |
-| Themes | Shared | `wcpay-themes` Docker volume |
-| Uploads (media) | Shared | `wcpay-uploads` Docker volume |
-| mu-plugins | Shared | `wcpay-mu-plugins` Docker volume |
+| Plugins (WooCommerce, etc.) | Shared | `./docker/wordpress/wp-content/plugins` |
+| Themes | Shared | `./docker/wordpress/wp-content/themes` |
+| Uploads (media) | Shared | `./docker/wordpress/wp-content/uploads` |
+| mu-plugins | Shared | `./docker/wordpress/wp-content/mu-plugins` |
 | **WooPayments plugin code** | **Per-worktree** | Bind mount from repo root |
 | WordPress container | Per-worktree | `wcpay_wp_<WORKTREE_ID>` |
 | WooCommerce logs | Per-worktree | `./docker/logs/wc-logs` |
@@ -197,12 +197,14 @@ The Docker setup is designed for multiple worktrees to share a single database w
 > Shared database means shared state. If you're testing destructive operations (database migrations, data deletions, etc.), changes will affect all your running worktrees. Consider backing up the database first or testing destructive changes in isolation.
 
 **To browse shared plugin/theme files:**
-```bash
-# List plugins in the shared volume
-docker exec wcpay_wp_default ls /var/www/html/wp-content/plugins
 
-# Copy a file out for inspection
-docker cp wcpay_wp_default:/var/www/html/wp-content/plugins/woocommerce/woocommerce.php ./
+Files are stored directly on your host filesystem:
+```bash
+# List plugins
+ls docker/wordpress/wp-content/plugins
+
+# List themes
+ls docker/wordpress/wp-content/themes
 ```
 
 ### Exposing Your Local Site (for Jetpack Connection)
@@ -286,40 +288,32 @@ To apply the change, restart your containers using `npm run down && npm run up`.
 
 ### Adding local helper scripts/hacks
 
-You can add PHP scripts to the `mu-plugins` directory (stored in the shared `wcpay-mu-plugins` Docker volume). These are treated as [WordPress must-use plugins](https://developer.wordpress.org/advanced-administration/plugins/mu-plugins/) and loaded automatically.
+You can add PHP scripts to the `mu-plugins` directory (`docker/wordpress/wp-content/mu-plugins`). These are treated as [WordPress must-use plugins](https://developer.wordpress.org/advanced-administration/plugins/mu-plugins/) and loaded automatically.
 
 **Note:** Since mu-plugins are shared across all worktrees, any script you add will affect all environments.
 
 **Adding a mu-plugin:**
 
 ```bash
-# Create a local file
-echo '<?php // My helper script' > my-helper.php
-
-# Copy it into the shared volume (use any running WordPress container)
-docker cp my-helper.php wcpay_wp_default:/var/www/html/wp-content/mu-plugins/
-
-# Clean up local file
-rm my-helper.php
+# Create the file directly in the mu-plugins directory
+echo '<?php // My helper script' > docker/wordpress/wp-content/mu-plugins/my-helper.php
 ```
 
 **Editing an existing mu-plugin:**
 
 ```bash
-# Copy out, edit, copy back
-docker cp wcpay_wp_default:/var/www/html/wp-content/mu-plugins/my-helper.php ./
-# ... edit the file ...
-docker cp my-helper.php wcpay_wp_default:/var/www/html/wp-content/mu-plugins/
+# Edit the file directly
+vim docker/wordpress/wp-content/mu-plugins/my-helper.php
 ```
 
 **Listing mu-plugins:**
 
 ```bash
-docker exec wcpay_wp_default ls -la /var/www/html/wp-content/mu-plugins/
+ls -la docker/wordpress/wp-content/mu-plugins/
 ```
 
 **Removing a mu-plugin:**
 
 ```bash
-docker exec wcpay_wp_default rm /var/www/html/wp-content/mu-plugins/my-helper.php
+rm docker/wordpress/wp-content/mu-plugins/my-helper.php
 ```
