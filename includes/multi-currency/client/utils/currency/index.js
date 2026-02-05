@@ -253,10 +253,11 @@ export const formatExplicitCurrency = (
  * @param {string} to.currency   Target currency code.
  * @param {number} to.amount     Target amount.
  * @param {number|undefined} rate         Exchange rate.
+ * @param {string|undefined} baseCurrencyCode Base currency code for formatting consistency.
  *
  * @return {string?} formatted string like `€1,00 → $1,19: $29.99`.
  */
-export const formatFX = ( from, to, rate ) => {
+export const formatFX = ( from, to, rate, baseCurrencyCode ) => {
 	if ( ! from.currency || ! to.currency ) {
 		return;
 	}
@@ -265,10 +266,13 @@ export const formatFX = ( from, to, rate ) => {
 	return `${ formatExplicitCurrency(
 		fromAmount,
 		from.currency,
-		true
+		true,
+		baseCurrencyCode
 	) } → ${ formatExchangeRate( from, to, rate ) }: ${ formatExplicitCurrency(
 		Math.abs( to.amount ),
-		to.currency
+		to.currency,
+		false,
+		baseCurrencyCode
 	) }`;
 };
 

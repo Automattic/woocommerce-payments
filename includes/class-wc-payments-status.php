@@ -572,6 +572,20 @@ class WC_Payments_Status {
 						</td>
 					</tr>
 					<tr>
+						<td data-export-label="Support Phone"><?php esc_html_e( 'Support Phone', 'woocommerce-payments' ); ?>:</td>
+						<td class="help"><?php echo wc_help_tip( esc_html__( 'The support phone number set in WooPayments settings. If not set, the settings Save button will be disabled.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
+						<td>
+						<?php
+						$support_phone = $this->gateway->get_option( 'account_business_support_phone' );
+						if ( ! empty( $support_phone ) ) {
+							echo esc_html( $support_phone );
+						} else {
+							echo '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . esc_html__( 'Not set', 'woocommerce-payments' ) . '</mark>';
+						}
+						?>
+						</td>
+					</tr>
+					<tr>
 						<td data-export-label="Documents"><?php esc_html_e( 'Documents', 'woocommerce-payments' ); ?>:</td>
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the tax documents section is enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td><?php WC_Payments_Features::is_documents_section_enabled() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
