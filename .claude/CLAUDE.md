@@ -162,7 +162,7 @@ npm run i18n:pot                    # Generate translations
   - Link to release testing docs post-merge
 
 ### Docker Environment
-- WordPress: http://localhost:<PORT> (check `.env` for your port; default 8082 for main checkout, 8084-8099 for worktrees)
+- WordPress: http://localhost:<PORT> (check `.env` for your port; default 8082 for main checkout, 8180-8199 for worktrees)
 - phpMyAdmin: http://localhost:8083
 - MySQL: localhost:5678
 - Xdebug ready (requires IDE path mapping)
