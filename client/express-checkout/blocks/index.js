@@ -9,6 +9,9 @@ import { __ } from '@wordpress/i18n';
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
+import ApplePayPreview from './components/apple-pay-preview';
+import GooglePayPreview from './components/google-pay-preview';
+import AmazonPayPreview from './components/amazon-pay-preview';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
 import '../compatibility/wc-order-attribution';
 
@@ -24,13 +27,7 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 	content: (
 		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
 	),
-	edit: (
-		<ExpressCheckoutContainer
-			api={ api }
-			expressPaymentMethod="applePay"
-			isPreview
-		/>
-	),
+	edit: <ApplePayPreview />,
 	supports: {
 		features: getConfig( 'features' ),
 		style: [ 'height', 'borderRadius' ],
@@ -59,13 +56,7 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			expressPaymentMethod="googlePay"
 		/>
 	),
-	edit: (
-		<ExpressCheckoutContainer
-			api={ api }
-			expressPaymentMethod="googlePay"
-			isPreview
-		/>
-	),
+	edit: <GooglePayPreview />,
 	supports: {
 		features: getConfig( 'features' ),
 		style: [ 'height', 'borderRadius' ],
@@ -91,13 +82,7 @@ export const expressCheckoutElementAmazonPay = ( api ) => ( {
 			expressPaymentMethod="amazonPay"
 		/>
 	),
-	edit: (
-		<ExpressCheckoutContainer
-			api={ api }
-			expressPaymentMethod="amazonPay"
-			isPreview
-		/>
-	),
+	edit: <AmazonPayPreview />,
 	supports: {
 		features: getConfig( 'features' ),
 		style: [ 'height', 'borderRadius' ],
