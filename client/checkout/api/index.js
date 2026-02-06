@@ -181,16 +181,17 @@ export default class WCPayAPI {
 				'accountIdForIntentConfirmation'
 			);
 
-			// If this is a setup intent we're not processing a woopay payment so we can
-			// use the regular getStripe function.
-			const stripe = await this.getStripe();
 			if ( isSetupIntent ) {
+				// Setup intents are created on the connected account, so we need to use
+				// the connected account Stripe instance to handle the next action.
+				const stripeForSetupIntent = await this.getStripe( true );
+
 				// For `SetupIntent`s with a confirmation token, use confirmSetup()
 				// to confirm the intent with the token. This is required because
 				// `SetupIntent`s created without a payment method need the confirmation
 				// token passed during the `confirm` step.
 				if ( confirmationToken ) {
-					return stripe.confirmSetup( {
+					return stripeForSetupIntent.confirmSetup( {
 						clientSecret: clientSecret,
 						confirmParams: {
 							confirmation_token: confirmationToken,
@@ -200,7 +201,7 @@ export default class WCPayAPI {
 				}
 
 				// For regular `SetupIntent`s (already confirmed), just handle any next action.
-				return stripe.handleNextAction( {
+				return stripeForSetupIntent.handleNextAction( {
 					clientSecret: clientSecret,
 				} );
 			}
