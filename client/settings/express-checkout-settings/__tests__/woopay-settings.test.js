@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event';
  */
 import WooPaySettings from '../woopay-settings';
 import {
+	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
@@ -22,6 +23,7 @@ import {
 } from '../../../data';
 
 jest.mock( '../../../data', () => ( {
+	useEnabledPaymentMethodIds: jest.fn(),
 	useWooPayEnabledSettings: jest.fn(),
 	useWooPayCustomMessage: jest.fn(),
 	useWooPayStoreLogo: jest.fn(),
@@ -80,6 +82,8 @@ const getMockWooPayLocations = ( message, updateWooPayLocationsHandler ) => [
 
 describe( 'WooPaySettings', () => {
 	beforeEach( () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( true, jest.fn() )
 		);
@@ -107,6 +111,8 @@ describe( 'WooPaySettings', () => {
 		useWooPayLocations.mockReturnValue(
 			getMockWooPayLocations( [ true, true, true ], jest.fn() )
 		);
+
+		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
 
 		global.wcpaySettings = {
 			restUrl: 'http://example.com/wp-json/',
@@ -187,6 +193,56 @@ describe( 'WooPaySettings', () => {
 			screen.queryByText(
 				'One or more of your extensions are incompatible with WooPay.'
 			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'disables the enable checkbox and shows warning when Stripe Link is enabled', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ], jest.fn() ] );
+
+		render( <WooPaySettings section="enable" /> );
+
+		const enableCheckbox = screen.getByLabelText( /Enable WooPay/ );
+		expect( enableCheckbox ).toBeDisabled();
+
+		// Use getAllByText since a11y regions may duplicate the text
+		expect(
+			screen.getAllByText(
+				'To enable WooPay, you must first disable Link by Stripe.'
+			)[ 0 ]
+		).toBeInTheDocument();
+	} );
+
+	it( 'hides incompatibility notice when Stripe Link is enabled', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'link' ], jest.fn() ] );
+		useWooPayShowIncompatibilityNotice.mockReturnValue( true );
+
+		render( <WooPaySettings section="enable" /> );
+
+		expect(
+			screen.queryByText(
+				'One or more of your extensions are incompatible with WooPay.'
+			)
+		).not.toBeInTheDocument();
+
+		// Use getAllByText since a11y regions may duplicate the text
+		expect(
+			screen.getAllByText(
+				'To enable WooPay, you must first disable Link by Stripe.'
+			)[ 0 ]
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not show notices when Stripe Link is not enabled', () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
+
+		const { container } = render( <WooPaySettings section="enable" /> );
+
+		const enableCheckbox = screen.getByLabelText( /Enable WooPay/ );
+		expect( enableCheckbox ).not.toBeDisabled();
+
+		// checking that there are no `InlineNotice`s rendered, just in case.
+		expect(
+			container.querySelector( '.wcpay-inline-notice' )
 		).not.toBeInTheDocument();
 	} );
 } );
