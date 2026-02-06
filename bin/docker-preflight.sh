@@ -1,31 +1,53 @@
 #!/bin/bash
 # bin/docker-preflight.sh
 # Checks prerequisites before starting WordPress containers
+# Auto-starts shared infrastructure from the main checkout if needed
 
 set -e
 
-# Check if the shared Docker network exists
+# Check if infrastructure is needed
+infra_needed=false
+
 if ! docker network inspect wcpay-network > /dev/null 2>&1; then
-    echo "Error: The 'wcpay-network' Docker network does not exist."
-    echo ""
-    echo "Please start the shared infrastructure first by running:"
-    echo "  npm run infra:up"
-    echo ""
-    echo "This only needs to be done once. It starts the shared database"
-    echo "and phpMyAdmin containers that all worktrees connect to."
-    exit 1
+    infra_needed=true
 fi
 
-# Check if the shared Docker volumes exist
-for volume in wcpay-plugins wcpay-themes wcpay-uploads wcpay-mu-plugins; do
-    if ! docker volume inspect "$volume" > /dev/null 2>&1; then
-        echo "Error: The '$volume' Docker volume does not exist."
+if [[ "$infra_needed" == "false" ]]; then
+    for volume in wcpay-plugins wcpay-themes wcpay-uploads wcpay-mu-plugins; do
+        if ! docker volume inspect "$volume" > /dev/null 2>&1; then
+            infra_needed=true
+            break
+        fi
+    done
+fi
+
+# Auto-start infrastructure if needed
+if [[ "$infra_needed" == "true" ]]; then
+    echo "Shared infrastructure not running. Starting it now..."
+    echo ""
+
+    # Determine the main checkout directory (not a worktree)
+    # git-common-dir points to the main .git directory
+    GIT_DIR=$(git rev-parse --git-dir 2>/dev/null)
+    GIT_COMMON_DIR=$(git rev-parse --git-common-dir 2>/dev/null)
+
+    if [[ "$GIT_DIR" != "$GIT_COMMON_DIR" ]]; then
+        # We're in a worktree - find the main checkout
+        # GIT_COMMON_DIR is like /path/to/main-checkout/.git
+        MAIN_CHECKOUT=$(dirname "$GIT_COMMON_DIR")
+        echo "Running from worktree. Starting infrastructure from main checkout:"
+        echo "  $MAIN_CHECKOUT"
         echo ""
-        echo "Please start the shared infrastructure first by running:"
-        echo "  npm run infra:up"
-        exit 1
+        (cd "$MAIN_CHECKOUT" && npm run infra:up --silent)
+    else
+        # We're in the main checkout
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+        (cd "$REPO_ROOT" && npm run infra:up --silent)
     fi
-done
+
+    echo ""
+fi
 
 # Ensure per-worktree log directories exist
 mkdir -p docker/logs/wc-logs
