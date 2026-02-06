@@ -54,6 +54,35 @@ mkdir -p "$WCPAY_SHARED_WP_PATH/wp-content/mu-plugins"
 # Ensure database data directory exists
 mkdir -p "$WCPAY_DB_DATA_PATH"
 
+# Copy mu-plugins from repo to shared volume
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+if [[ -d "$REPO_ROOT/docker/mu-plugins" ]]; then
+    echo "Copying mu-plugins to shared volume..."
+    cp -r "$REPO_ROOT/docker/mu-plugins/"* "$WCPAY_SHARED_WP_PATH/wp-content/mu-plugins/" 2>/dev/null || true
+fi
+
+# Create shared volumes as bind mounts to the wp-content directories
+# These must be created explicitly since no service in infra.yml uses them directly
+echo "Creating shared volumes..."
+for volume_name in wcpay-plugins wcpay-themes wcpay-uploads wcpay-mu-plugins; do
+    subdir="${volume_name#wcpay-}"  # Remove wcpay- prefix to get subdirectory name
+
+    # Skip if volume already exists
+    if docker volume inspect "$volume_name" > /dev/null 2>&1; then
+        echo "  - $volume_name (exists)"
+        continue
+    fi
+
+    docker volume create \
+        --driver local \
+        --opt type=none \
+        --opt o=bind \
+        --opt device="$WCPAY_SHARED_WP_PATH/wp-content/$subdir" \
+        "$volume_name" > /dev/null
+    echo "  - $volume_name (created)"
+done
+
 echo "Starting shared infrastructure..."
 docker compose -f docker-compose.infra.yml up -d
 
