@@ -50,7 +50,7 @@ const GooglePayPreview = ( { buttonAttributes } ) => {
 
 		const container = googlePayContainerRef.current;
 
-		( async () => {
+		const loadGooglePayButton = async () => {
 			// The container may be inside an iframe, so we need to retrieve a reference to the document and window objects.
 			const targetDocument = container.ownerDocument;
 			const targetWindow = targetDocument.defaultView;
@@ -86,12 +86,15 @@ const GooglePayPreview = ( { buttonAttributes } ) => {
 			const button = googlePayClient.createButton( {
 				buttonType,
 				buttonColor,
-				buttonRadius: parseFloat( borderRadius ),
+				buttonRadius: parseFloat( borderRadius ) || 0,
 				buttonSizeMode: 'fill',
 				onClick: () => {},
 			} );
 			container.appendChild( button );
-		} )();
+		};
+
+		// Fail gracefully if script fails to load - just don't render the button.
+		loadGooglePayButton().catch( () => {} );
 	}, [ theme, borderRadius, buttonType ] );
 
 	return (
