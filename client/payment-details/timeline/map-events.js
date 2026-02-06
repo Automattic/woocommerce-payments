@@ -1054,9 +1054,8 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'dispute_lost':
-			return [
-				event.network_cost &&
-					getDepositTimelineItem(
+			const networkCostItem = event.network_cost
+				? getDepositTimelineItem(
 						event,
 						formatExplicitCurrency(
 							event.network_cost,
@@ -1069,7 +1068,11 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 								'woocommerce-payments'
 							),
 						]
-					),
+				  )
+				: null;
+
+			return [
+				networkCostItem,
 				getStatusChangeTimelineItem(
 					event,
 					__( 'Disputed: Lost', 'woocommerce-payments' )
@@ -1179,5 +1182,5 @@ export default ( timelineEvents, bankName = null ) => {
 
 	return flatMap( timelineEvents, ( event ) =>
 		mapEventToTimelineItems( event, bankName )
-	);
+	).filter( Boolean );
 };
