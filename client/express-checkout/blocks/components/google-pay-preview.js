@@ -13,7 +13,7 @@ import {
 
 const GooglePayPreview = ( { buttonAttributes } ) => {
 	const googlePayContainerRef = useRef( null );
-	const hasStartedLoadingGooglePayButton = useRef( null );
+	const isScriptLoaded = useRef( false );
 
 	const styleSettings = useMemo(
 		() => getExpressCheckoutButtonStyleSettings(),
@@ -41,53 +41,55 @@ const GooglePayPreview = ( { buttonAttributes } ) => {
 	);
 
 	useEffect( () => {
-		if (
-			googlePayContainerRef.current &&
-			! hasStartedLoadingGooglePayButton.current
-		) {
-			hasStartedLoadingGooglePayButton.current = true;
-			( async () => {
-				// The container may be inside an iframe, so we need to retrieve a reference to the document and window objects.
-				const targetDocument =
-					googlePayContainerRef.current.ownerDocument;
-				const targetWindow = targetDocument.defaultView;
-				if ( ! targetWindow.google?.payments?.api?.PaymentsClient ) {
-					await new Promise( ( resolve ) => {
-						const script = document.createElement( 'script' );
-						script.src = 'https://pay.google.com/gp/p/js/pay.js';
-						script.onload = resolve;
-						targetDocument.head.appendChild( script );
-					} );
-				}
+		if ( ! googlePayContainerRef.current ) {
+			return;
+		}
 
-				const googlePayClient = new targetWindow.google.payments.api.PaymentsClient(
-					{
-						environment: 'TEST',
-					}
-				);
+		const container = googlePayContainerRef.current;
 
-				const buttonColor = theme === 'black' ? 'black' : 'white'; // There is no 'outline' theme in Google Pay.
+		( async () => {
+			// The container may be inside an iframe, so we need to retrieve a reference to the document and window objects.
+			const targetDocument = container.ownerDocument;
+			const targetWindow = targetDocument.defaultView;
 
-				const button = googlePayClient.createButton( {
-					buttonType,
-					buttonColor,
-					buttonRadius: parseFloat( borderRadius ),
-					buttonSizeMode: 'fill',
-					onClick: () => {},
+			if (
+				! isScriptLoaded.current &&
+				! targetWindow.google?.payments?.api?.PaymentsClient
+			) {
+				await new Promise( ( resolve, reject ) => {
+					const script = targetDocument.createElement( 'script' );
+					script.src = 'https://pay.google.com/gp/p/js/pay.js';
+					script.onload = resolve;
+					script.onerror = () =>
+						reject(
+							new Error( 'Failed to load Google Pay script.' )
+						);
+					targetDocument.head.appendChild( script );
 				} );
-				googlePayContainerRef.current.appendChild( button );
-			} )();
-		}
-	}, [ theme, borderRadius, buttonType ] );
+				isScriptLoaded.current = true;
+			}
 
-	useEffect( () => {
-		const button = googlePayContainerRef.current?.querySelector( 'button' );
-		if ( button ) {
-			button.style.setProperty( 'border-radius', borderRadius );
-			button.style.setProperty( 'width', '100%' );
-			button.style.setProperty( 'height', '100%' );
-		}
-	}, [ borderRadius ] );
+			const googlePayClient = new targetWindow.google.payments.api.PaymentsClient(
+				{
+					environment: 'TEST',
+				}
+			);
+
+			const buttonColor = theme === 'black' ? 'black' : 'white'; // There is no 'outline' theme in Google Pay.
+
+			// Clear existing button before creating a new one.
+			container.innerHTML = '';
+
+			const button = googlePayClient.createButton( {
+				buttonType,
+				buttonColor,
+				buttonRadius: parseFloat( borderRadius ),
+				buttonSizeMode: 'fill',
+				onClick: () => {},
+			} );
+			container.appendChild( button );
+		} )();
+	}, [ theme, borderRadius, buttonType ] );
 
 	return (
 		<div
