@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useMemo } from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -56,7 +57,7 @@ const ApplePayPreview = ( { buttonAttributes } ) => {
 				id="express-checkout-button-preview-applePay"
 				className="express-checkout-button-preview"
 				style={ buttonStyle }
-				aria-label="Apple Pay"
+				aria-label={ __( 'Apple Pay', 'woocommerce-payments' ) }
 			/>
 		</div>
 	);

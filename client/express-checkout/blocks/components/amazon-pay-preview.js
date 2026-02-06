@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { useMemo } from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -19,7 +20,7 @@ const AmazonPayLogo = () => (
 		viewBox="4 8 56 24"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
-		aria-label="Amazon Pay"
+		aria-label={ __( 'Amazon Pay logo', 'woocommerce-payments' ) }
 	>
 		<path
 			fillRule="evenodd"
@@ -155,7 +156,7 @@ const AmazonPayPreview = ( { buttonAttributes } ) => {
 				id="express-checkout-button-preview-amazonPay"
 				className="express-checkout-button-preview"
 				style={ buttonStyle }
-				aria-label="Amazon Pay"
+				aria-label={ __( 'Amazon Pay', 'woocommerce-payments' ) }
 			>
 				<AmazonPayLogo />
 			</button>

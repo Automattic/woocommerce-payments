@@ -80,7 +80,7 @@ const GooglePayPreview = ( { buttonAttributes } ) => {
 
 			const buttonColor = theme === 'black' ? 'black' : 'white'; // There is no 'outline' theme in Google Pay.
 
-			// Clear existing button before creating a new one.
+			// Clear the existing button before creating a new one.
 			container.innerHTML = '';
 
 			const button = googlePayClient.createButton( {
