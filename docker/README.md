@@ -121,7 +121,7 @@ npm run worktree:setup
 npm run up:recreate
 ```
 
-The `worktree:setup` command scans for an available port (8084-8099), derives a `WORKTREE_ID` from the directory name, and creates a `.env` file with both values.
+The `worktree:setup` command scans for an available port (8180-8199), derives a `WORKTREE_ID` from the directory name, and creates a `.env` file with both values.
 
 #### Removing a worktree
 
