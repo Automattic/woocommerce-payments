@@ -4,13 +4,10 @@
 # 1. Install dependencies
 npm install
 
-# 2. Start shared infrastructure (database & phpMyAdmin) - first time only
-npm run infra:up
-
-# 3. Start WordPress container and set up the site
+# 2. Start WordPress container and set up the site (auto-starts infrastructure if needed)
 npm run up:recreate
 
-# 4. Build JS assets (or use `npm start` to watch for changes)
+# 3. Build JS assets (or use `npm start` to watch for changes)
 npm run build:client
 ```
 
@@ -28,19 +25,7 @@ Login credentials: `admin` / `admin`
 npm install
 ```
 
-#### Step 2: Start shared infrastructure (first time only)
-
-The database and phpMyAdmin are shared across all worktrees. Start them once from your main checkout:
-
-```bash
-npm run infra:up
-```
-
-This creates:
-- A shared Docker network (`wcpay-network`) that all WordPress containers join
-- Docker volumes bound to `./docker/wordpress/wp-content/` for plugins, themes, uploads, and mu-plugins (see [Shared vs Per-Worktree Resources](#shared-vs-per-worktree-resources))
-
-#### Step 3: Start WordPress and set up the site
+#### Step 2: Start WordPress and set up the site
 
 For first-time setup (creates container AND configures WordPress/WooPayments):
 
@@ -49,8 +34,11 @@ npm run up:recreate
 ```
 
 This will:
-1. Create/recreate the WordPress container (uses port 8082 and container ID "default" if `.env` doesn't exist)
-2. Run the setup script to install WordPress, WooCommerce, and WooPayments
+1. Auto-start shared infrastructure (database, phpMyAdmin) if not already running
+2. Create/recreate the WordPress container (uses port 8082 and container ID "default" if `.env` doesn't exist)
+3. Run the setup script to install WordPress, WooCommerce, and WooPayments
+
+**Note:** The shared infrastructure (database and phpMyAdmin) is started automatically from your main checkout when needed. If you're in a worktree, the infrastructure will be started from the main checkout directory. You can also start it manually with `npm run infra:up` if you prefer explicit control.
 
 **Note:** For custom port/container configuration, copy `.env.example` to `.env` and edit it, or run `npm run worktree:setup` to auto-generate one.
 
@@ -60,7 +48,7 @@ For subsequent startups (container already configured):
 npm run up
 ```
 
-#### Step 4: Build JS assets
+#### Step 3: Build JS assets
 
 Build once for production:
 
@@ -94,7 +82,7 @@ Or it's displayed when you run `npm run up`.
 
 ### WordPress Admin
 
-Open http://localhost:<YOUR_PORT>/wp-admin/ (check `.env` for your port; default is 8082 for main checkout, worktrees get auto-assigned ports from 8084-8099)
+Open http://localhost:<YOUR_PORT>/wp-admin/ (check `.env` for your port; default is 8082 for main checkout, worktrees get auto-assigned ports from 8180-8199)
 ```
 Username: admin
 Password: admin

@@ -44,8 +44,7 @@ For detailed Docker setup instructions, see [docker/README.md](docker/README.md)
 Quick start:
 ```bash
 npm install                  # Install dependencies
-npm run infra:up             # Start shared infrastructure (first time only)
-npm run up:recreate          # Start WordPress and run setup
+npm run up:recreate          # Start WordPress and run setup (auto-starts infrastructure if needed)
 ```
 
 Your site will be available at `http://localhost:<PORT>/wp-admin/` (check `.env` for your port; default is 8082).

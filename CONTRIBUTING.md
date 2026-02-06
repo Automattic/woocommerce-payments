@@ -81,8 +81,7 @@ Docker can be used to setup a local development environment:
 
 * Ensure Docker is installed ([Docker Desktop](https://www.docker.com/products/docker-desktop) is a good option for developers)
 * Follow the steps above in the Development section to build the project's JavaScript
-* Start the shared infrastructure (database & phpMyAdmin): `npm run infra:up`
-* Start WordPress and run setup: `npm run up:recreate`
+* Start WordPress and run setup: `npm run up:recreate` (auto-starts infrastructure if needed)
 * The fully configured site can now be accessed at `http://localhost:<PORT>/wp-admin/` (check `.env` for your port, default is 8082)
 * The prompt to run the setup wizard can be dismissed unless there is something specific you would like to configure
 
@@ -94,7 +93,7 @@ To shutdown:
   ```bash
   docker volume rm wcpay-plugins wcpay-themes wcpay-uploads wcpay-mu-plugins
   ```
-  Then re-run `npm run infra:up && npm run up:recreate`.
+  Then re-run `npm run up:recreate`.
 
 For more details, including git worktree support, see [docker/README.md](docker/README.md).
 
