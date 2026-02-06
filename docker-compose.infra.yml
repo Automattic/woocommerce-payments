@@ -42,7 +42,7 @@ services:
     env_file:
       - default.env
     volumes:
-      - ./docker/data:/var/lib/mysql
+      - ${WCPAY_DB_DATA_PATH}:/var/lib/mysql
     networks:
       - wcpay-network
 
