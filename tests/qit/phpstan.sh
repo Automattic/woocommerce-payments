@@ -6,6 +6,16 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Source common.sh using the relative path
 source "$DIR/common.sh"
 
+# Add the PHPStan baseline file to the release zip so QIT can use it.
+# This keeps the baseline out of normal releases while making it available for QIT tests.
+BASELINE_FILE="$WCP_ROOT/phpstan.neon"
+ZIP_FILE="$WCP_ROOT/woocommerce-payments.zip"
+if [[ -f "$BASELINE_FILE" && -f "$ZIP_FILE" ]]; then
+  echo "Adding phpstan.neon baseline to the release zip..."
+  cp "$BASELINE_FILE" "$WCP_ROOT/release/$EXTENSION_NAME/"
+  ( cd "$WCP_ROOT/release" && zip "$ZIP_FILE" "$EXTENSION_NAME/phpstan.neon" )
+fi
+
 # Check if the --local flag is provided which means the tests should run against the development build
 ZIP_FILE=""
 if echo "$@" | grep -q -- "--local"; then
