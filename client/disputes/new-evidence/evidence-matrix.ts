@@ -335,6 +335,38 @@ const getProductUnacceptableMatrix = (): {
 } );
 
 /**
+ * Get evidence matrix entries for credit_not_processed disputes.
+ *
+ * Credit not processed disputes depend on both product type AND refund status.
+ * Keys are formatted as: `${productType}__${refundStatus}`
+ */
+const getCreditNotProcessedMatrix = (): {
+	[ key: string ]: Array< RecommendedDocument >;
+} => ( {
+	// Booking/Reservation - Refund was not owed (Scenario B)
+	booking_reservation__refund_was_not_owed: [
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Proof of acceptance', 'woocommerce-payments' ),
+			description: __(
+				'Screenshot or document showing where the customer agreed to or acknowledged the refund policy during checkout or on the receipt.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+	],
+} );
+
+/**
  * Get evidence matrix entries for fraudulent disputes.
  */
 const getFraudulentMatrix = (): {
@@ -380,6 +412,7 @@ export const evidenceMatrix: EvidenceMatrix = {
 	subscription_canceled: getSubscriptionCanceledMatrix(),
 	product_unacceptable: getProductUnacceptableMatrix(),
 	duplicate: getDuplicateMatrix(),
+	credit_not_processed: getCreditNotProcessedMatrix(),
 };
 
 /**
@@ -398,8 +431,11 @@ export const getMatrixFields = (
 	productType: string,
 	status?: string
 ): Array< RecommendedDocument > | undefined => {
-	// For duplicate disputes, use composite key with status
-	if ( reason === 'duplicate' && status ) {
+	// For duplicate and credit_not_processed disputes, use composite key with status
+	if (
+		( reason === 'duplicate' || reason === 'credit_not_processed' ) &&
+		status
+	) {
 		const compositeKey = `${ productType }__${ status }`;
 		return evidenceMatrix[ reason ]?.[ compositeKey ];
 	}

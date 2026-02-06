@@ -59,7 +59,13 @@ const getRecommendedDocumentFields = (
 		}
 		// Use 'default' as placeholder to attempt matrix lookup (will fall back if no entry exists).
 		// For duplicate disputes, use duplicateStatus for composite key lookup.
-		const status = reason === 'duplicate' ? duplicateStatus : undefined;
+		// For credit_not_processed disputes, use refundStatus for composite key lookup.
+		let status: string | undefined;
+		if ( reason === 'duplicate' ) {
+			status = duplicateStatus;
+		} else if ( reason === 'credit_not_processed' ) {
+			status = refundStatus;
+		}
 		const effectiveProductType =
 			productType || ( reason === 'duplicate' ? 'default' : undefined );
 
