@@ -27,7 +27,11 @@ const GooglePayPreview = ( { buttonAttributes } ) => {
 		return appearance.variables.borderRadius;
 	}, [ buttonAttributes ] );
 
-	const buttonHeight = buttonAttributes?.height ?? styleSettings.buttonHeight;
+	// Clamp height to supported range (40-55px).
+	const buttonHeight = Math.min(
+		Math.max( buttonAttributes?.height ?? styleSettings.buttonHeight, 40 ),
+		55
+	);
 	const theme = styleSettings.buttonTheme?.googlePay ?? 'black';
 	const buttonType = styleSettings.buttonType?.googlePay ?? 'plain';
 
