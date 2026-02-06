@@ -102,6 +102,20 @@ Password: wordpress
 
 The Docker setup is designed to work seamlessly with git worktrees. Each worktree gets its own WordPress container with a unique port.
 
+#### Listing all worktrees
+
+To see all worktrees and their Docker status:
+
+```bash
+npm run worktree:status
+```
+
+This shows:
+- Port and URL for each worktree
+- Docker container status (running/stopped/no container)
+- Current worktree marked with `*`
+- Warnings for orphan containers
+
 #### Creating a new worktree
 
 ```bash

@@ -169,6 +169,7 @@ npm run i18n:pot                    # Generate translations
 - First-time setup: `npm run up:recreate` (auto-starts infrastructure if needed)
 - Subsequent runs: `npm run up`
 - For git worktrees: `npm run worktree:setup` to configure `.env` with unique port
+- To list all worktrees and their ports: `npm run worktree:status`
 
 ### Dependency Management
 - WordPress dependencies extracted automatically via webpack plugin
