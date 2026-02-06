@@ -66,6 +66,7 @@
 		"infra:up": "bash bin/docker-infra-up.sh",
 		"infra:down": "docker compose --env-file default.env -f docker-compose.infra.yml down",
 		"worktree:setup": "bash bin/docker-port-setup.sh",
+		"worktree:status": "bash bin/docker-worktree-status.sh",
 		"worktree:cleanup": "bash bin/docker-worktree-cleanup.sh",
 		"wp": "docker compose exec -u www-data wordpress wp",
 		"install-if-deps-outdated": "node bin/install-if-deps-outdated.js",
