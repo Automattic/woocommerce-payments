@@ -152,6 +152,7 @@ const AmazonPayPreview = ( { buttonAttributes } ) => {
 				id="express-checkout-button-preview-amazonPay"
 				className="express-checkout-button-preview"
 				style={ buttonStyle }
+				aria-label="Amazon Pay"
 			>
 				<AmazonPayLogo />
 			</button>
