@@ -95,7 +95,6 @@ const ExpressCheckoutComponent = ( {
 		setExpressPaymentError,
 		paymentMethodTypes,
 	} );
-	const onClickHandler = onButtonClick;
 	const onShippingAddressChange = ( event ) =>
 		shippingAddressChangeHandler( event, elements );
 
@@ -142,7 +141,7 @@ const ExpressCheckoutComponent = ( {
 	return (
 		<ExpressCheckoutElement
 			options={ checkoutElementOptions }
-			onClick={ onClickHandler }
+			onClick={ onButtonClick }
 			onConfirm={ onConfirm }
 			onReady={ onElementsReady }
 			onCancel={ onCancel }

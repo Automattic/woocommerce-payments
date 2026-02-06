@@ -24,7 +24,6 @@ const ApplePayPreview = ( { buttonAttributes } ) => {
 		return appearance.variables.borderRadius;
 	}, [ buttonAttributes ] );
 
-	// Clamp height to supported range (40-55px).
 	const buttonHeight = Math.min(
 		Math.max( buttonAttributes?.height ?? styleSettings.buttonHeight, 40 ),
 		55
