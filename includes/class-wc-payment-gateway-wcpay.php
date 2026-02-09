@@ -964,10 +964,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// for express checkout methods to prevent block editor compatibility
 			// warnings. Use is_enabled() instead, which reads the actual setting
 			// value and isn't affected by the init_settings() override.
-			// We exclude AJAX requests because is_admin() returns true for them
-			// (they go through admin-ajax.php), but they need normal availability
-			// checks — e.g. WooCommerce Subscriptions uses AJAX to fetch available
-			// payment methods when editing a subscription.
 			return WC_Payments::get_gateway()->is_enabled() && $this->is_enabled();
 		}
 
