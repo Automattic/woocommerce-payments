@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+import { lazy, Suspense } from 'react';
 
 /**
  * Internal dependencies
@@ -11,6 +12,42 @@ import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
 import '../compatibility/wc-order-attribution';
+
+const LazyApplePayPreview = lazy( () =>
+	import(
+		/* webpackChunkName: "express-checkout-previews" */ './components/apple-pay-preview'
+	)
+);
+const LazyGooglePayPreview = lazy( () =>
+	import(
+		/* webpackChunkName: "express-checkout-previews" */ './components/google-pay-preview'
+	)
+);
+const LazyAmazonPayPreview = lazy( () =>
+	import(
+		/* webpackChunkName: "express-checkout-previews" */ './components/amazon-pay-preview'
+	)
+);
+
+const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
+
+const ApplePayPreview = ( props ) => (
+	<Suspense fallback={ <PreviewFallback /> }>
+		<LazyApplePayPreview { ...props } />
+	</Suspense>
+);
+
+const GooglePayPreview = ( props ) => (
+	<Suspense fallback={ <PreviewFallback /> }>
+		<LazyGooglePayPreview { ...props } />
+	</Suspense>
+);
+
+const AmazonPayPreview = ( props ) => (
+	<Suspense fallback={ <PreviewFallback /> }>
+		<LazyAmazonPayPreview { ...props } />
+	</Suspense>
+);
 
 export const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
@@ -24,13 +61,7 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 	content: (
 		<ExpressCheckoutContainer api={ api } expressPaymentMethod="applePay" />
 	),
-	edit: (
-		<ExpressCheckoutContainer
-			api={ api }
-			expressPaymentMethod="applePay"
-			isPreview
-		/>
-	),
+	edit: <ApplePayPreview />,
 	supports: {
 		features: getConfig( 'features' ),
 		style: [ 'height', 'borderRadius' ],
@@ -59,13 +90,7 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			expressPaymentMethod="googlePay"
 		/>
 	),
-	edit: (
-		<ExpressCheckoutContainer
-			api={ api }
-			expressPaymentMethod="googlePay"
-			isPreview
-		/>
-	),
+	edit: <GooglePayPreview />,
 	supports: {
 		features: getConfig( 'features' ),
 		style: [ 'height', 'borderRadius' ],
@@ -91,13 +116,7 @@ export const expressCheckoutElementAmazonPay = ( api ) => ( {
 			expressPaymentMethod="amazonPay"
 		/>
 	),
-	edit: (
-		<ExpressCheckoutContainer
-			api={ api }
-			expressPaymentMethod="amazonPay"
-			isPreview
-		/>
-	),
+	edit: <AmazonPayPreview />,
 	supports: {
 		features: getConfig( 'features' ),
 		style: [ 'height', 'borderRadius' ],
