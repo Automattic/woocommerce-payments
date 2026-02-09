@@ -286,6 +286,55 @@ const getProductNotReceivedMatrix = (): {
 } );
 
 /**
+ * Get evidence matrix entries for product_unacceptable disputes.
+ */
+const getProductUnacceptableMatrix = (): {
+	[ productType: string ]: Array< RecommendedDocument >;
+} => ( {
+	booking_reservation: [
+		{
+			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			label: __(
+				'Event or booking documentation',
+				'woocommerce-payments'
+			),
+			description: __(
+				'Screenshots or documents showing the event or reservation details (date, location, description, and terms) and confirmation it occurred or remained valid as described.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+} );
+
+/**
  * Get evidence matrix entries for fraudulent disputes.
  */
 const getFraudulentMatrix = (): {
@@ -329,6 +378,7 @@ export const evidenceMatrix: EvidenceMatrix = {
 	fraudulent: getFraudulentMatrix(),
 	product_not_received: getProductNotReceivedMatrix(),
 	subscription_canceled: getSubscriptionCanceledMatrix(),
+	product_unacceptable: getProductUnacceptableMatrix(),
 	duplicate: getDuplicateMatrix(),
 };
 
