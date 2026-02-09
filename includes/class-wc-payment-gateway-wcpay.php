@@ -2717,20 +2717,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Get the basic enabled value from settings.
 		$is_enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ];
 
-		// Express checkout methods (Apple Pay, Google Pay) are registered via registerExpressPaymentMethod()
-		// in JS with different names than their PHP gateway IDs. In the admin block editor, this causes
-		// WooCommerce to incorrectly flag them as "incompatible with block checkout" because it can't
-		// match the PHP gateway ID to a JS registerPaymentMethod() call. We set enabled='no' only in
-		// admin context to exclude them from that compatibility check while preserving normal behavior.
-		// We exclude AJAX requests because is_admin() returns true for them (they go through
-		// admin-ajax.php), but express checkout methods must remain enabled during AJAX — e.g.
-		// WooCommerce Subscriptions uses AJAX to fetch available payment methods when editing
-		// a subscription in wp-admin.
-		if ( is_admin() && $this->payment_method->is_express_checkout() ) {
-			$this->enabled = 'no';
-			return;
-		}
-
 		// For the main card gateway and express checkout (non-admin), just use the enabled setting.
 		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
 			$this->enabled = $is_enabled ? 'yes' : 'no';
