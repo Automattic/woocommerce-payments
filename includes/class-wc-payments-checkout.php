@@ -104,6 +104,7 @@ class WC_Payments_Checkout {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
 		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
+		add_filter( 'woocommerce_update_order_review_fragments', [ $this, 'add_payment_methods_config_to_update_order_review_fragments' ] );
 	}
 
 	/**
@@ -198,7 +199,6 @@ class WC_Payments_Checkout {
 			'locale'                            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                         => is_preview(),
 			'isSavedCardsEnabled'               => $this->gateway->is_saved_cards_enabled(),
-			'isPaymentRequestEnabled'           => $this->gateway->is_payment_request_enabled(),
 			'isWooPayEnabled'                   => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_guest_checkout(),
 			'isWoopayExpressCheckoutEnabled'    => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'     => $this->woopay_util->is_woopay_first_party_auth_enabled(),
@@ -216,15 +216,8 @@ class WC_Payments_Checkout {
 			'woopayMinimumSessionData'          => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
-		/**
-		 * Allows filtering of the JS config for the payment fields.
-		 *
-		 * @param array $js_config The JS config for the payment fields.
-		 */
-		$payment_fields = apply_filters( 'wcpay_payment_fields_js_config', $js_config );
+		$payment_fields = $js_config;
 
-		$payment_fields['accountDescriptor']             = $this->gateway->get_account_statement_descriptor();
-		$payment_fields['addPaymentReturnURL']           = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']                     = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$payment_fields['isCheckout']                    = is_checkout();
 		$payment_fields['paymentMethodsConfig']          = $this->get_enabled_payment_method_config();
@@ -253,16 +246,7 @@ class WC_Payments_Checkout {
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {
-				$payment_fields['isChangingPayment']   = true;
-				$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
-
-				if ( $this->gateway->is_setup_intent_success_creation_redirection() && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ) ) ) {
-					$setup_intent_id = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
-					$token           = $this->gateway->create_token_from_setup_intent( $setup_intent_id, wp_get_current_user() );
-					if ( null !== $token ) {
-						$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
-					}
-				}
+				$payment_fields['isChangingPayment'] = true;
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
@@ -281,13 +265,10 @@ class WC_Payments_Checkout {
 		// Get the store base country.
 		$payment_fields['storeCountry'] = WC()->countries->get_base_country();
 
-		// Get the WooCommerce Store API endpoint.
-		$payment_fields['storeApiURL'] = get_rest_url( null, 'wc/store' );
-
 		/**
-		 * Allows filtering for the payment fields.
+		 * Allows filtering of the JS config for the payment fields.
 		 *
-		 * @param array $payment_fields The payment fields.
+		 * @param array $js_config The JS config for the payment fields.
 		 */
 		return apply_filters( 'wcpay_payment_fields_js_config', $payment_fields ); // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 	}
@@ -313,6 +294,40 @@ class WC_Payments_Checkout {
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Adds dynamic payment fields config to the update_order_review AJAX response fragments.
+	 *
+	 * This allows the frontend to refresh the available payment methods and currency
+	 * when the billing country changes during checkout. This is particularly important
+	 * for stores using plugins that change currency based on customer location, ensuring
+	 * that payment methods restricted by country/currency are properly updated.
+	 *
+	 * @param array $fragments The fragments to be updated.
+	 * @return array The updated fragments.
+	 */
+	public function add_payment_methods_config_to_update_order_review_fragments( $fragments ) {
+		if ( ! isset( $fragments['.woocommerce-checkout-payment'] ) ) {
+			return $fragments;
+		}
+
+		// I'm calling the base method (rather than reconstructing the pieces individually), so that we can also take advantage of the hooks/filters.
+		// It's a little heavier in computation, but it gives a more accurate result.
+		$js_config = $this->get_payment_fields_js_config();
+
+		$fragments['.woocommerce-checkout-payment'] .= sprintf(
+			'<script>window.wcpay_upe_config && Object.assign( window.wcpay_upe_config, %s );</script>',
+			wp_json_encode(
+				[
+					'paymentMethodsConfig' => $js_config['paymentMethodsConfig'],
+					'currency'             => $js_config['currency'],
+					'cartTotal'            => $js_config['cartTotal'],
+				]
+			)
+		);
+
+		return $fragments;
 	}
 
 	/**

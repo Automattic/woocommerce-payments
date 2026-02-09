@@ -41,6 +41,8 @@ export interface WCPayExpressCheckoutParams {
 		currency_decimals: number;
 	};
 
+	has_subscription?: boolean;
+
 	/**
 	 * Indicaters whether the page has a Cart or Checkout Block on it.
 	 */
@@ -88,6 +90,14 @@ export interface WCPayExpressCheckoutParams {
 	};
 	total_label: string;
 	wc_ajax_url: string;
+
+	/**
+	 * The available express checkout methods for the current page context.
+	 */
+	enabled_methods: Array< 'payment_request' | 'amazon_pay' >;
+	flags: {
+		isEceUsingConfirmationTokens: boolean;
+	};
 }
 
 declare global {
@@ -202,10 +212,33 @@ export const getExpressCheckoutButtonAppearance = (
 };
 
 /**
+ * Returns Stripe Elements options for saving payment methods for subscriptions.
+ * If the current context involves a subscription product, returns
+ * `{ setupFutureUsage: 'off_session' }` to save the payment method for future renewals.
+ * Otherwise, returns an empty object.
+ */
+export const getSetupFutureUsage = ():
+	| { setupFutureUsage: 'off_session' }
+	| Record< string, never > => {
+	const productType = getExpressCheckoutData( 'product' )?.product_type ?? '';
+	const isSubscriptionProduct = [
+		'subscription',
+		'variable-subscription',
+		'subscription_variation',
+	].includes( productType );
+
+	const hasSubscription =
+		getExpressCheckoutData( 'has_subscription' ) || isSubscriptionProduct;
+
+	return hasSubscription ? { setupFutureUsage: 'off_session' } : {};
+};
+
+/**
  * Returns the style settings for the Express Checkout buttons.
  */
 export const getExpressCheckoutButtonStyleSettings = () => {
 	const buttonSettings = getExpressCheckoutData( 'button' );
+	const enabledMethods = getExpressCheckoutData( 'enabled_methods' ) ?? [];
 
 	const mapWooPaymentsThemeToButtonTheme = (
 		buttonType: string,
@@ -237,11 +270,17 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 			? 'plain'
 			: buttonSettings?.type ?? 'plain';
 
+	const isGoogleApplePayEnabled = enabledMethods.includes(
+		'payment_request'
+	);
+
 	return {
 		paymentMethods: {
-			applePay: 'always',
-			googlePay: 'always',
-			amazonPay: 'never',
+			applePay: isGoogleApplePayEnabled ? 'always' : 'never',
+			googlePay: isGoogleApplePayEnabled ? 'always' : 'never',
+			amazonPay: enabledMethods.includes( 'amazon_pay' )
+				? 'auto'
+				: 'never',
 			link: 'never',
 			paypal: 'never',
 			klarna: 'never',

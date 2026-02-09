@@ -12,6 +12,7 @@ import {
 	useWooPayEnabledSettings,
 	usePaymentRequestEnabledSettings,
 	useAmazonPayEnabledSettings,
+	useGetAvailablePaymentMethodIds,
 } from 'wcpay/data';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
@@ -19,6 +20,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useWooPayEnabledSettings: jest.fn(),
 	usePaymentRequestEnabledSettings: jest.fn(),
 	useAmazonPayEnabledSettings: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 } ) );
 
 const renderWithSettingsProvider = (
@@ -84,6 +86,11 @@ describe( 'ExpressCheckoutSettingsNotices', () => {
 		useWooPayEnabledSettings.mockReturnValue( [ true ] );
 		usePaymentRequestEnabledSettings.mockReturnValue( [ true ] );
 		useAmazonPayEnabledSettings.mockReturnValue( [ true ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'link',
+			'card',
+			'amazon_pay',
+		] );
 
 		renderWithSettingsProvider(
 			<ExpressCheckoutSettingsNotices currentMethod="woopay" />
@@ -115,6 +122,11 @@ describe( 'ExpressCheckoutSettingsNotices', () => {
 	it( 'respects Amazon Pay feature flag when disabled', () => {
 		useAmazonPayEnabledSettings.mockReturnValue( [ true ] );
 		usePaymentRequestEnabledSettings.mockReturnValue( [ true ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'link',
+			'card',
+			'amazon_pay',
+		] );
 
 		renderWithSettingsProvider(
 			<ExpressCheckoutSettingsNotices currentMethod="woopay" />,

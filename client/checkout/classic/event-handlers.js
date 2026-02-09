@@ -5,15 +5,15 @@
  */
 import './style.scss';
 import { getUPEConfig } from 'wcpay/utils/checkout';
+import { isLinkEnabled } from '../utils/upe';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
-	isLinkEnabled,
 	hasPaymentMethodCountryRestrictions,
 	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
 	isBillingInformationMissing,
-} from '../utils/upe';
+} from './upe-utils';
 import {
 	processPayment,
 	mountStripePaymentElement,
@@ -30,7 +30,7 @@ import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
-import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
 import { getCardBrands } from 'wcpay/utils/card-brands';
 
 jQuery( function ( $ ) {
@@ -73,6 +73,15 @@ jQuery( function ( $ ) {
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
 		injectPaymentMethodLogos();
 	} );
+
+	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
+		'change',
+		function () {
+			this.closest( 'form.checkout' )
+				?.querySelectorAll( '.wcpay-upe-element' )
+				.forEach( restrictPaymentMethodToLocation );
+		}
+	);
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
 		if ( isBillingInformationMissing() ) {
@@ -389,18 +398,6 @@ jQuery( function ( $ ) {
 	function restrictPaymentMethodToLocation( upeElement ) {
 		if ( hasPaymentMethodCountryRestrictions( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
-
-			const billingInput = upeElement
-				?.closest( 'form.checkout' )
-				?.querySelector(
-					`[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]`
-				);
-			if ( billingInput ) {
-				// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
-				$( billingInput ).on( 'change', function () {
-					togglePaymentMethodForCountry( upeElement );
-				} );
-			}
 		}
 	}
 } );

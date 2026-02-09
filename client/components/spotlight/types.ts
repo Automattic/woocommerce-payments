@@ -41,14 +41,20 @@ export interface SpotlightProps {
 	footnote?: ReactNode;
 
 	/**
-	 * Image element or URL to display in the spotlight.
+	 * Image element or URL to display in the spotlight (full-width banner).
 	 */
 	image?: ReactNode | string;
 
 	/**
-	 * Primary button label.
+	 * Small icon element to display in the top-left corner (e.g., megaphone, bell).
+	 * Use this instead of `image` for compact icons.
 	 */
-	primaryButtonLabel: string;
+	icon?: ReactNode;
+
+	/**
+	 * Primary button label (can include icons or other React elements).
+	 */
+	primaryButtonLabel: ReactNode;
 
 	/**
 	 * Callback when the primary button is clicked.
@@ -56,9 +62,9 @@ export interface SpotlightProps {
 	onPrimaryClick: () => void;
 
 	/**
-	 * Secondary button/link label (e.g., "Learn more").
+	 * Secondary button/link label (can include icons or other React elements).
 	 */
-	secondaryButtonLabel?: string;
+	secondaryButtonLabel?: ReactNode;
 
 	/**
 	 * Callback when the secondary button is clicked.
@@ -82,4 +88,19 @@ export interface SpotlightProps {
 	 * @default false
 	 */
 	showImmediately?: boolean;
+
+	/**
+	 * Delay in milliseconds before showing the spotlight when showImmediately is false.
+	 *
+	 * @default 4000
+	 */
+	showDelayMs?: number;
+
+	/**
+	 * Whether to reverse the button order (primary first, secondary second).
+	 * By default, secondary button appears first (left), primary button second (right).
+	 *
+	 * @default false
+	 */
+	reverseButtons?: boolean;
 }

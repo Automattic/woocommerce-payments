@@ -503,6 +503,9 @@ export const usePaymentRequestButtonBorderRadius = () => {
 	];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').SavingError | null}
+ */
 export const useGetSavingError = () => {
 	return useSelect( ( select ) => select( STORE_NAME ).getSavingError(), [] );
 };
@@ -573,11 +576,28 @@ export const useWooPayLocations = makeExpressCheckoutLocationHook( 'woopay' );
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useAmazonPayEnabledSettings = () => {
-	const { updateIsAmazonPayEnabled } = useDispatch( STORE_NAME );
+	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-	const isAmazonPayEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsAmazonPayEnabled()
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
+
+	const isAmazonPayEnabled = enabledPaymentMethodIds.includes( 'amazon_pay' );
+
+	const updateIsAmazonPayEnabled = ( isEnabled ) => {
+		if ( isEnabled ) {
+			updateEnabledPaymentMethodIds( [
+				...enabledPaymentMethodIds,
+				'amazon_pay',
+			] );
+		} else {
+			updateEnabledPaymentMethodIds(
+				enabledPaymentMethodIds.filter(
+					( method ) => method !== 'amazon_pay'
+				)
+			);
+		}
+	};
 
 	return [ isAmazonPayEnabled, updateIsAmazonPayEnabled ];
 };
@@ -665,4 +685,17 @@ export const useStripeBillingMigration = () => {
 			hasResolved,
 		];
 	}, [] );
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
+export const useAccountCommunicationsEmail = () => {
+	const { updateAccountCommunicationsEmail } = useDispatch( STORE_NAME );
+
+	const accountCommunicationsEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountCommunicationsEmail()
+	);
+
+	return [ accountCommunicationsEmail, updateAccountCommunicationsEmail ];
 };

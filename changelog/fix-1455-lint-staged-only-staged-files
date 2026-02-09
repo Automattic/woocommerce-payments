@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix lint-staged to only lint staged CSS/SCSS files instead of all files.

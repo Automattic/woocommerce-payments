@@ -1,5 +1,11 @@
 ## WooPayments QIT Tests
 
+## Local Development
+
+For a faster workflow when writing or debugging E2E tests locally, see [LOCAL_DEVELOPMENT.md](./LOCAL_DEVELOPMENT.md).
+
+This allows you to start the test environment once and run Playwright directly, avoiding the overhead of full orchestration on each run.
+
 We use the [QIT toolkit](https://qit.woo.com/docs/) for automated testing including security, PHPStan, and E2E tests.
 
 ### Setup
@@ -59,11 +65,32 @@ Before running E2E tests, build the plugin package:
 npm run build:release
 ```
 
-This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests with the required environment variables:
+This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests with the required environment variables.
+
+##### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run test:qit-e2e` | Run all E2E tests |
+| `npm run test:qit-e2e:shopper` | Run shopper tests only |
+| `npm run test:qit-e2e:merchant` | Run merchant tests only |
+| `npm run test:qit-e2e:subscriptions` | Run subscription tests (installs WC Subscriptions automatically) |
+| `npm run test:qit-e2e:ci` | Run tests locally the same way CI does (sets `CI=true`) |
+
+##### Usage Examples
 
 ```bash
 # Run all E2E tests (prepend with env vars from local.env)
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e
+
+# Run only shopper tests
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:shopper
+
+# Run only merchant tests
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:merchant
+
+# Run subscription tests (automatically installs WooCommerce Subscriptions)
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:subscriptions
 
 # Run specific test file (passthrough to Playwright)
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- shopper-checkout-purchase.spec.ts
@@ -71,10 +98,6 @@ E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>'
 
 # Run tests filtered by tag (e.g., @blocks, @shopper)
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- --grep "@blocks"
-
-# Run a specific test project (e.g., merchant, shopper)
-E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- --project=merchant
-# Available projects are defined in playwright.config.js
 ```
 
 > [!TIP]

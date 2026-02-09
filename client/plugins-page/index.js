@@ -39,7 +39,7 @@ const PluginsPage = () => {
 		const currentDate = new Date();
 
 		// Update modal dismissed option.
-		saveOption( 'wcpay_exit_survey_last_shown', currentDate );
+		await saveOption( 'wcpay_exit_survey_last_shown', currentDate );
 
 		window.wcpayPluginsSettings.exitSurveyLastShown = currentDate;
 

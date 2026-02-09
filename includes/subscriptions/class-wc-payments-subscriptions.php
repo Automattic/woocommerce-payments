@@ -98,7 +98,7 @@ class WC_Payments_Subscriptions {
 			( new WC_Payments_Subscriptions_Disabler() )->init_hooks();
 		}
 
-		if ( class_exists( 'WCS_Background_Repairer' ) ) {
+		if ( class_exists( 'WCS_Background_Repairer' ) && function_exists( 'wcs_get_orders_with_meta_query' ) ) {
 			include_once __DIR__ . '/class-wc-payments-subscriptions-migrator.php';
 			self::$stripe_billing_migrator = new WC_Payments_Subscriptions_Migrator( $api_client, $token_service );
 		}

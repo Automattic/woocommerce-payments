@@ -251,4 +251,15 @@ class Update_Account extends Request {
 	public function set_locale( string $locale ) {
 		$this->set_param( 'locale', $locale );
 	}
+
+	/**
+	 * Sets the communications email.
+	 *
+	 * @param  string $communications_email Communications email.
+	 *
+	 * @return void
+	 */
+	public function set_communications_email( string $communications_email ) {
+		$this->set_param( 'communications_email', $communications_email );
+	}
 }

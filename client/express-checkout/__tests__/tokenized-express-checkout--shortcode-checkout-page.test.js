@@ -57,6 +57,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		};
 		global.wcpayExpressCheckoutParams.store_name = 'My fancy store';
 		global.wcpayExpressCheckoutParams.button_context = 'checkout';
+		global.wcpayExpressCheckoutParams.enabled_methods = [
+			'payment_request',
+		];
 
 		// just mocking some server-side-provided DOM elements.
 		render(
@@ -135,9 +138,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 			mode: 'payment',
 			amount: 3697,
 			currency: 'usd',
-			paymentMethodCreation: 'manual',
 			appearance: expect.anything(),
 			locale: 'it',
+			paymentMethodTypes: [ 'card' ],
 		} );
 
 		// triggering the `ready` event on the ECE button, to test its callback.

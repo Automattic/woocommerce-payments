@@ -203,7 +203,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 
 		// Check for the checkbox with the $500 fee acknowledgment
 		const checkbox = screen.getByRole( 'checkbox', {
-			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD fee/i,
+			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD network fee, which will be refunded if you win the dispute./i,
 		} );
 
 		expect( checkbox ).toBeInTheDocument();
@@ -235,7 +235,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 
 		// Check for the checkbox with the $500 fee acknowledgment
 		const checkbox = screen.getByRole( 'checkbox', {
-			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD fee/i,
+			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD network fee, which will be refunded if you win the dispute./i,
 		} );
 
 		expect( checkbox ).toBeChecked();
@@ -279,7 +279,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		);
 
 		const checkbox = screen.getByRole( 'checkbox', {
-			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD fee/i,
+			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD network fee, which will be refunded if you win the dispute./i,
 		} );
 
 		// Check the checkbox
@@ -326,7 +326,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 
 		// Verify the checkbox is indeed checked
 		const checkbox = screen.getByRole( 'checkbox', {
-			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD fee/i,
+			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD network fee, which will be refunded if you win the dispute./i,
 		} );
 		expect( checkbox ).toBeChecked();
 	} );

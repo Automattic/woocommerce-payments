@@ -331,6 +331,59 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		}
 	}
 
+	public function test_zero_dollar_subscription_with_confirmation_token() {
+		$confirmation_token = 'ctoken_mock';
+		$order              = WC_Helper_Order::create_order( self::USER_ID, 0 );
+		$subscriptions      = [ new WC_Subscription() ];
+		$subscriptions[0]->set_parent( $order );
+
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
+		$_POST = [
+			'wcpay-confirmation-token' => $confirmation_token,
+			'payment_method'           => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		];
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( self::CUSTOMER_ID );
+
+		// set_confirmation_token should be used, instead of set_payment_method.
+		$request->expects( $this->never() )
+			->method( 'set_payment_method' );
+
+		$request->expects( $this->once() )
+			->method( 'set_confirmation_token' )
+			->with( $confirmation_token );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $this->setup_intent );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( self::PAYMENT_METHOD_ID, $order->get_user() )
+			->willReturn( $this->token );
+
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result_order = wc_get_order( $order->get_id() );
+
+		$this->assertEquals( Order_Status::PROCESSING, $result_order->get_status() );
+		$this->assertEquals( 'success', $result['result'] );
+
+		$orders = array_merge( [ $order ], $subscriptions );
+		foreach ( $orders as $order ) {
+			$payment_tokens = $order->get_payment_tokens();
+			if ( [] !== $payment_tokens ) {
+				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			}
+		}
+	}
+
 	public function test_new_card_is_added_before_status_update() {
 		$order         = WC_Helper_Order::create_order( self::USER_ID, 0 );
 		$subscriptions = [ new WC_Subscription() ];

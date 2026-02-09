@@ -11,6 +11,7 @@ import { memoize } from 'lodash';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
+import { getExpressCheckoutData, getSetupFutureUsage } from '.';
 
 // types from https://github.com/woocommerce/woocommerce/blob/360d9bc0f5709e6cf13c646860360fca9968ebb0/plugins/woocommerce/client/blocks/assets/js/types/type-defs/cart.ts
 interface CartTotals {
@@ -49,13 +50,26 @@ const checkPaymentMethodIsAvailableInternal = (
 
 		bodyElement.appendChild( containerEl );
 
+		const useConfirmationToken =
+			getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
+			true;
+		const paymentMethodTypes = [
+			[ 'applePay', 'googlePay' ].includes( paymentMethod ) && 'card',
+			paymentMethod === 'amazonPay' && 'amazon_pay',
+		].filter( Boolean ) as string[];
+
 		const root = createRoot( containerEl );
 		root.render(
 			<Elements
 				stripe={ api.loadStripeForExpressCheckout() }
 				options={ {
 					mode: 'payment',
-					paymentMethodCreation: 'manual',
+					...( useConfirmationToken
+						? {
+								paymentMethodTypes,
+								...getSetupFutureUsage(),
+						  }
+						: { paymentMethodCreation: 'manual' } ),
 					amount: Number( totalPrice ),
 					currency: currencyCode.toLowerCase(),
 				} }
@@ -77,7 +91,11 @@ const checkPaymentMethodIsAvailableInternal = (
 								paymentMethod === 'googlePay'
 									? 'always'
 									: 'never',
-							amazonPay: 'never',
+							amazonPay:
+								// amazon pay can be "auto" or "never", but not "always"
+								paymentMethod === 'amazonPay'
+									? 'auto'
+									: 'never',
 							link: 'never',
 							paypal: 'never',
 							klarna: 'never',

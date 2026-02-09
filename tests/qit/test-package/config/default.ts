@@ -63,14 +63,17 @@ export const config = {
 		},
 		subscription_signup_fee: {
 			name: 'Subscription signup fee product',
+			slug: 'subscription-signup-fee-product',
 			pageNumber: 2,
 		},
 		subscription_no_signup_fee: {
 			name: 'Subscription no signup fee product',
+			slug: 'subscription-no-signup-fee-product',
 			pageNumber: 2,
 		},
 		subscription_free_trial: {
 			name: 'Subscription free trial product',
+			slug: 'subscription-free-trial-product',
 			pageNumber: 2,
 		},
 	} as Record< string, Product >,
@@ -359,4 +362,4 @@ export type CustomerAddress = Omit<
 	state?: string;
 };
 
-export type Product = { name: string; pageNumber: number };
+export type Product = { name: string; pageNumber: number; slug?: string };

@@ -55,11 +55,15 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 						value: 'other',
 					},
 			  ]
-			: [] ),
-		{
-			label: __( 'Multiple product types', 'woocommerce-payments' ),
-			value: 'multiple',
-		},
+			: [
+					{
+						label: __(
+							'Multiple product types',
+							'woocommerce-payments'
+						),
+						value: 'multiple',
+					},
+			  ] ),
 	];
 
 	return (

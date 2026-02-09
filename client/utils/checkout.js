@@ -8,7 +8,10 @@
  */
 export const getConfig = ( name ) => {
 	// Classic checkout or blocks-based one.
-	if ( typeof wcpayConfig !== 'undefined' ) {
+	if (
+		typeof wcpayConfig !== 'undefined' &&
+		typeof wcpayConfig[ name ] !== 'undefined'
+	) {
 		return wcpayConfig[ name ];
 	}
 
