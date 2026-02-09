@@ -227,11 +227,6 @@ class WC_Payments_Order_Service {
 					$this->mark_payment_started( $order, $intent_data );
 				}
 				break;
-			case Intent_Status::REQUIRES_CONFIRMATION:
-				// For SetupIntents created with confirmation tokens (e.g.: via the ECE), the intent needs
-				// frontend confirmation. Mark the payment as started until confirmed.
-				$this->mark_payment_started( $order, $intent_data );
-				break;
 			default:
 				Logger::error( 'Uncaught payment intent status of ' . $intent_data['intent_status'] . ' passed for order id: ' . $order->get_id() );
 				break;
