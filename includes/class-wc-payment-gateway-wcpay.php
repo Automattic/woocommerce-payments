@@ -957,7 +957,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_available_for_express_checkout() {
-		if ( is_admin() && ! wp_doing_ajax() ) {
+		if ( is_admin() ) {
 			// In admin context (block editor), skip full availability checks.
 			// check_base_availability() calls parent::is_available() which checks
 			// $this->enabled, but init_settings() intentionally sets that to 'no'
@@ -2726,7 +2726,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// admin-ajax.php), but express checkout methods must remain enabled during AJAX — e.g.
 		// WooCommerce Subscriptions uses AJAX to fetch available payment methods when editing
 		// a subscription in wp-admin.
-		if ( is_admin() && ! wp_doing_ajax() && $this->payment_method->is_express_checkout() ) {
+		if ( is_admin() && $this->payment_method->is_express_checkout() ) {
 			$this->enabled = 'no';
 			return;
 		}
@@ -4234,7 +4234,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// block-based checkout" warnings. On the frontend, full validation applies.
 				// We exclude AJAX requests because is_admin() returns true for them but
 				// they need full validation (e.g. subscription payment method switching).
-				$is_admin_context          = ! $force_currency_check && is_admin() && ! wp_doing_ajax();
+				$is_admin_context          = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
 				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $is_admin_context ) && ( $is_admin_context || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
