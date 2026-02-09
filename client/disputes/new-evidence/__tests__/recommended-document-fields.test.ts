@@ -460,6 +460,54 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 
+			it( 'should return matrix fields for product_unacceptable + booking_reservation when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'product_unacceptable',
+					undefined,
+					undefined,
+					'booking_reservation'
+				);
+
+				// Matrix entry for product_unacceptable + booking_reservation
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'service_documentation' );
+				expect( result[ 0 ].label ).toBe(
+					'Event or booking documentation'
+				);
+				expect( result[ 0 ].description ).toBe(
+					'Screenshots or documents showing the event or reservation details (date, location, description, and terms) and confirmation it occurred or remained valid as described.'
+				);
+				expect( result[ 1 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].label ).toBe( 'Order receipt' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' ); // Base field
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].label ).toBe( 'Refund policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
+			} );
+
+			it( 'should fall back to trunk product_unacceptable fields for physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'product_unacceptable',
+					undefined,
+					undefined,
+					'physical_product'
+				);
+
+				// Should fall back to trunk product_unacceptable fields since no matrix entry for physical_product
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 3 ].key ).toBe( 'service_documentation' );
+				expect( result[ 4 ].key ).toBe( 'refund_policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+			} );
+
 			it( 'should return matrix fields for product_not_received + booking_reservation when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
