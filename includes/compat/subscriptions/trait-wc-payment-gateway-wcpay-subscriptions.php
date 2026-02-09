@@ -128,6 +128,43 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Get a descriptive payment method title from a token.
+	 *
+	 * For credit cards, returns "{title} ending in {last4}".
+	 * For Amazon Pay, returns "{title} ({redacted_email})".
+	 * For other tokens, returns the default title.
+	 *
+	 * @param WC_Payment_Token|null $token   The payment token.
+	 * @param string                $default The default title to return if token cannot be processed.
+	 * @return string The payment method title with identifying details.
+	 */
+	private function get_payment_method_title_from_token( $token, $default ) {
+		if ( ! $token ) {
+			return $default;
+		}
+
+		if ( $token instanceof WC_Payment_Token_CC ) {
+			$last4 = $token->get_last4();
+			// Avoid duplication if the title already contains the last4.
+			if ( ! empty( $last4 ) && false === strpos( $default, $last4 ) ) {
+				// translators: 1: payment method likely credit card, 2: last 4 digit.
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $default, $last4 );
+			}
+		}
+
+		if ( $token instanceof WC_Payment_Token_WCPay_Amazon_Pay ) {
+			$email = $token->get_email();
+			// Avoid duplication if the title already contains the email.
+			if ( ! empty( $email ) && false === strpos( $default, $email ) ) {
+				// translators: 1: payment method (Amazon Pay), 2: redacted customer email.
+				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $default, $email );
+			}
+		}
+
+		return $default;
+	}
+
+	/**
 	 * Check if a subscription or order belongs to this specific gateway or a related WCPay gateway
 	 * that this gateway should handle (e.g., card gateway handling Amazon Pay display).
 	 *
@@ -794,10 +831,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
 			$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
-			if ( $token && $token instanceof WC_Payment_Token_CC ) {
-				// translators: 1: payment method likely credit card, 2: last 4 digit.
-				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
-			}
+
+			return $this->get_payment_method_title_from_token( $token, $old_payment_method_title );
 		} else {
 			$last_order_id = $subscription->get_last_order();
 			if ( ! $last_order_id ) {
@@ -813,13 +848,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			$second_to_last_token_id = $token_ids[ count( $token_ids ) - 2 ];
 			$token                   = WC_Payment_Tokens::get( $second_to_last_token_id );
-			if ( $token && $token instanceof WC_Payment_Token_CC ) {
-				// translators: 1: payment method likely credit card, 2: last 4 digit.
-				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $old_payment_method_title, $token->get_last4() );
-			}
-		}
 
-		return $old_payment_method_title;
+			return $this->get_payment_method_title_from_token( $token, $old_payment_method_title );
+		}
 	}
 
 	/**
@@ -854,10 +885,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		if ( $payment_information->is_using_saved_payment_method() ) {
 			$token = $payment_information->get_payment_token();
-			if ( $token && $token instanceof WC_Payment_Token_CC ) {
-				// translators: 1: payment method likely credit card, 2: last 4 digit.
-				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $token->get_last4() );
-			}
+
+			return $this->get_payment_method_title_from_token( $token, $new_payment_method_title );
 		} else {
 			try {
 				$payment_method_id = $payment_information->get_payment_method();
@@ -865,6 +894,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				if ( ! empty( $payment_method['card']['last4'] ) ) {
 					// translators: 1: payment method likely credit card, 2: last 4 digit.
 					return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['card']['last4'] );
+				}
+				if ( ! empty( $payment_method['amazon_pay']['email'] ) ) {
+					// translators: 1: payment method (Amazon Pay), 2: redacted customer email.
+					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['amazon_pay']['email'] );
 				}
 			} catch ( Exception $e ) {
 				Logger::error( $e );

@@ -32,4 +32,22 @@ class WC_Helper_Token {
 
 		return WC_Payment_Tokens::get( $token->get_id() );
 	}
+
+	/**
+	 * Create an Amazon Pay token.
+	 *
+	 * @param string $payment_method Token payment method.
+	 * @param int    $user_id        ID of the token's user, defaults to get_current_user_id().
+	 * @param string $email          Amazon Pay account email (will be stored redacted).
+	 */
+	public static function create_amazon_pay_token( $payment_method, $user_id = null, $email = 'test@amazon.com' ) {
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_token( $payment_method );
+		$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_amazon_pay' );
+		$token->set_user_id( $user_id ?? get_current_user_id() );
+		$token->set_email( $email );
+		$token->save();
+
+		return WC_Payment_Tokens::get( $token->get_id() );
+	}
 }
