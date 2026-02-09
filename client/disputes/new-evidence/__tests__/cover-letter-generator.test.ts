@@ -606,6 +606,16 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Proof of acceptance' );
 			expect( result ).toContain( 'Other documents' );
 			expect( result ).not.toContain( 'Customer communication' );
+
+			// Verify exact ordering: Proof of acceptance (A), Store refund policy (B), Other documents (C)
+			const proofIndex = result.indexOf( 'Proof of acceptance' );
+			const refundPolicyIndex = result.indexOf( 'Store refund policy' );
+			const otherDocsIndex = result.indexOf( 'Other documents' );
+			expect( proofIndex ).toBeLessThan( refundPolicyIndex );
+			expect( refundPolicyIndex ).toBeLessThan( otherDocsIndex );
+			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
+			expect( result ).toContain( 'Store refund policy (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
 		} );
 
 		it( 'should label uncategorized_file as "Other documents" for credit_not_processed + booking_reservation + refund_has_been_issued', () => {
