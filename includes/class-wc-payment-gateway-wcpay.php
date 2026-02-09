@@ -1845,11 +1845,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			// For SetupIntents with confirmation tokens, the status will be 'requires_payment_method'
-			// since no payment method is attached yet (the confirmation token will be used on frontend).
-			$needs_frontend_confirmation = Intent_Status::REQUIRES_ACTION === $status
-											|| Intent_Status::REQUIRES_CONFIRMATION === $status
-											|| ( Intent_Status::REQUIRES_PAYMENT_METHOD === $status && $payment_information->is_using_confirmation_token() && ! $payment_needed );
+			$needs_frontend_confirmation = (
+				Intent_Status::REQUIRES_ACTION === $status
+				|| Intent_Status::REQUIRES_CONFIRMATION === $status
+				|| (
+					// For SetupIntents with confirmation tokens, the status will be 'requires_payment_method'
+					// since no payment method is attached yet (the confirmation token will be used on frontend).
+					Intent_Status::REQUIRES_PAYMENT_METHOD === $status
+					&& $payment_information->is_using_confirmation_token()
+					&& ! $payment_needed
+				)
+			);
 
 			if ( $needs_frontend_confirmation ) {
 				$next_action_type = $next_action['type'] ?? null;
