@@ -46,7 +46,7 @@ const api = new WCPayAPI(
 	request
 );
 
-Object.entries( enabledPaymentMethodsConfig || {} )
+Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		registerPaymentMethod( {
