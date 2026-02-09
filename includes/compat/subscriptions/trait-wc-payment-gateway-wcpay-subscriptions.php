@@ -262,7 +262,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
 
-		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
+		// Switch Amazon Pay ECE subscriptions to the correct gateway (priority 10, before manual renewal check).
+		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_switch_subscription_to_amazon_pay_gateway' ], 10, 1 );
+		// Force non-reusable payment methods to manual renewal (priority 11, after gateway switch).
+		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 11, 1 );
 
 		// Register gateway-specific hooks for all reusable gateways.
 		foreach ( $this->get_reusable_wcpay_gateway_ids() as $gateway_id ) {
@@ -1188,8 +1191,45 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Switch subscription to Amazon Pay gateway when created via Express Checkout.
+	 *
+	 * ECE payments are initially processed by the base gateway, but Amazon Pay subscriptions
+	 * need to use the split Amazon Pay gateway for proper renewal handling.
+	 *
+	 * This runs at priority 9, before maybe_force_subscription_to_manual (priority 10).
+	 *
+	 * @param WC_Subscription $subscription The subscription being created.
+	 */
+	public function maybe_switch_subscription_to_amazon_pay_gateway( $subscription ) {
+		// Only process subscriptions using the base WCPay gateway.
+		$payment_method_id = $subscription->get_payment_method();
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $payment_method_id ) {
+			return;
+		}
+
+		// Check if this is an Amazon Pay Express Checkout payment.
+		$parent_order = $subscription->get_parent();
+		if ( ! $parent_order ) {
+			return;
+		}
+
+		// technically, `$express_checkout_type` could also be `google_pay` or `apple_pay`.
+		// But those are card methods, processed through `woocommerce_payments`, not through `woocommerce_payments_google_pay`.
+		$express_checkout_type = $parent_order->get_meta( '_wcpay_express_checkout_payment_method' );
+		if ( AmazonPayDefinition::get_id() !== $express_checkout_type ) {
+			return;
+		}
+
+		// Switch to the Amazon Pay split gateway.
+		$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id();
+		$subscription->set_payment_method( $amazon_pay_gateway_id );
+		$subscription->save();
+	}
+
+	/**
 	 * Force subscription to manual renewal if non-reusable payment method was used.
-	 * This should be hooked into 'woocommerce_checkout_subscription_created' action.
+	 *
+	 * This runs at priority 10, after maybe_switch_subscription_to_amazon_pay_gateway (priority 9).
 	 *
 	 * @param WC_Subscription $subscription The subscription being created.
 	 */
@@ -1198,19 +1238,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$payment_method_id = $subscription->get_payment_method();
 		if ( 0 !== strpos( $payment_method_id, WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
 			return;
-		}
-
-		// Check if this is an Express Checkout payment that needs the gateway updated.
-		// ECE payments are initially processed by the base gateway, but Amazon Pay needs its own split gateway.
-		$parent_order = $subscription->get_parent();
-		if ( $parent_order ) {
-			$express_checkout_type = $parent_order->get_meta( '_wcpay_express_checkout_payment_method' );
-			if ( AmazonPayDefinition::get_id() === $express_checkout_type ) {
-				$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id();
-				$subscription->set_payment_method( $amazon_pay_gateway_id );
-				$subscription->save();
-				return;
-			}
 		}
 
 		// Check if this is a reusable payment method (card, Amazon Pay).
