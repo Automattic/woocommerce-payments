@@ -29,3 +29,11 @@
 		display: none;
 	}
 }
+
+// Google Pay preview button - fix internal sizing
+/* stylelint-disable-next-line selector-id-pattern */
+#express-checkout-button-preview-googlePay {
+	.gpay-card-info-container {
+		min-width: auto;
+	}
+}
