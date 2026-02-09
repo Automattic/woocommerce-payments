@@ -334,7 +334,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).not.toContain( 'Cancellation logs' );
 		} );
 
-		it( 'should use "Item condition" label for service_documentation in non-product_not_received disputes', () => {
+		it( 'should use "Item condition" label for service_documentation in general disputes', () => {
 			const generalDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'general' as DisputeReason,
@@ -349,9 +349,10 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).not.toContain(
 				'Reservation or booking confirmation'
 			);
+			expect( result ).not.toContain( 'Event or booking documentation' );
 		} );
 
-		it( 'should use "Reservation or booking confirmation" label for service_documentation in product_not_received disputes', () => {
+		it( 'should use "Reservation or booking confirmation" label for service_documentation in product_not_received disputes with booking_reservation product type', () => {
 			const productNotReceivedDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'product_not_received' as DisputeReason,
@@ -360,12 +361,132 @@ describe( 'Cover Letter Generator', () => {
 					service_documentation: 'service_documentation_url',
 				},
 			};
-			const result = generateAttachments( productNotReceivedDispute );
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'booking_reservation'
+			);
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
 			expect( result ).toContain(
 				'Reservation or booking confirmation (Attachment B)'
 			);
 			expect( result ).not.toContain( 'Item condition' );
+		} );
+
+		it( 'should use "Item condition" label for service_documentation in product_not_received disputes without booking_reservation product type', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Item condition (Attachment B)' );
+			expect( result ).not.toContain(
+				'Reservation or booking confirmation'
+			);
+		} );
+
+		it( 'should use "Event or booking documentation" as first attachment for product_unacceptable disputes with booking_reservation product type', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'booking_reservation'
+			);
+			expect( result ).toContain(
+				'Event or booking documentation (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).not.toContain( 'Item condition' );
+		} );
+
+		it( 'should use "Item condition" label for service_documentation in product_unacceptable disputes without booking_reservation product type', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Item condition (Attachment B)' );
+			expect( result ).not.toContain( 'Event or booking documentation' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly with full evidence and booking_reservation product type', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'service_documentation_url',
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'booking_reservation'
+			);
+			expect( result ).toContain(
+				'Event or booking documentation (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all product_unacceptable attachments with standard order when not booking_reservation product type', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'service_documentation_url',
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			// Without booking_reservation, order should be standard (receipt first, not service_documentation)
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Store refund policy (Attachment C)' );
+			expect( result ).toContain( 'Item condition (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 
 		it( 'should use "Terms of service" label for cancellation_policy in subscription_canceled disputes', () => {
@@ -418,6 +539,51 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Cancellation logs (Attachment C)' );
 			expect( result ).toContain( 'Terms of service (Attachment D)' );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should include "Customer\'s signature" only for physical_product product type', () => {
+			const disputeWithSignature: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					customer_signature: 'customer_signature_url',
+				},
+			};
+
+			// Physical product should include Customer's signature
+			const physicalResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'physical_product'
+			);
+			expect( physicalResult ).toContain( "Customer's signature" );
+
+			// Booking/Reservation should NOT include Customer's signature
+			const bookingResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'booking_reservation'
+			);
+			expect( bookingResult ).not.toContain( "Customer's signature" );
+
+			// Other product types should NOT include Customer's signature
+			const otherResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'other'
+			);
+			expect( otherResult ).not.toContain( "Customer's signature" );
+
+			// No product type specified should NOT include Customer's signature
+			const noProductTypeResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				undefined
+			);
+			expect( noProductTypeResult ).not.toContain(
+				"Customer's signature"
+			);
 		} );
 	} );
 
