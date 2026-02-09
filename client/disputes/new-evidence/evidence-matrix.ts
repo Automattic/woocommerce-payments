@@ -344,6 +344,10 @@ const getCreditNotProcessedMatrix = (): {
 	[ key: string ]: Array< RecommendedDocument >;
 } => ( {
 	// Booking/Reservation - Refund was not owed (Scenario B)
+	// Note: CUSTOMER_COMMUNICATION is used here as "Other documents" because
+	// UNCATEGORIZED_FILE is already used for "Proof of acceptance".
+	// Including CUSTOMER_COMMUNICATION in the matrix also prevents the base
+	// "Customer communication" field from being auto-merged.
 	booking_reservation__refund_was_not_owed: [
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
@@ -362,6 +366,15 @@ const getCreditNotProcessedMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
 		},
 	],
 } );

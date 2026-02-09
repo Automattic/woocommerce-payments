@@ -580,9 +580,10 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 0 ].description ).toBe(
 					'Screenshot or document showing where the customer agreed to or acknowledged the refund policy during checkout or on the receipt.'
 				);
-				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
-				expect( result[ 2 ].key ).toBe( 'refund_policy' );
-				expect( result[ 2 ].label ).toBe( 'Refund policy' );
+				expect( result[ 1 ].key ).toBe( 'refund_policy' );
+				expect( result[ 1 ].label ).toBe( 'Refund policy' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].label ).toBe( 'Other documents' );
 			} );
 
 			it( 'should fall back to legacy fields for credit_not_processed + booking_reservation + refund_has_been_issued when feature flag is enabled', () => {

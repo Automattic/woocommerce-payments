@@ -407,12 +407,16 @@ const implementedCombinations: CombinationSpec[] = [
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]:
 					'Proof of acceptance',
 				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
-					'Customer communication',
+					'Other documents',
 				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 			},
 		},
 		coverLetterAttachments: {
-			shouldInclude: [ 'Proof of acceptance', 'Store refund policy' ],
+			shouldInclude: [
+				'Proof of acceptance',
+				'Store refund policy',
+				'Other documents',
+			],
 			shouldExclude: [ "Customer's signature" ],
 		},
 	},

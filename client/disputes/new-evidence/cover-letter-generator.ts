@@ -124,6 +124,14 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 			label: __( 'Customer communication', 'woocommerce-payments' ),
+			labelForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					label: __( 'Other documents', 'woocommerce-payments' ),
+					productTypes: [ 'booking_reservation' ],
+					refundStatuses: [ 'refund_was_not_owed' ],
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,

@@ -586,13 +586,14 @@ describe( 'Cover Letter Generator', () => {
 			);
 		} );
 
-		it( 'should label uncategorized_file as "Proof of acceptance" for credit_not_processed + booking_reservation + refund_was_not_owed', () => {
+		it( 'should label uncategorized_file as "Proof of acceptance" and customer_communication as "Other documents" for credit_not_processed + booking_reservation + refund_was_not_owed', () => {
 			const creditNotProcessedDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'credit_not_processed' as DisputeReason,
 				evidence: {
 					uncategorized_file: 'proof_of_acceptance_url',
 					refund_policy: 'refund_policy_url',
+					customer_communication: 'other_docs_url',
 				},
 			};
 
@@ -603,7 +604,8 @@ describe( 'Cover Letter Generator', () => {
 				'refund_was_not_owed'
 			);
 			expect( result ).toContain( 'Proof of acceptance' );
-			expect( result ).not.toContain( 'Other documents' );
+			expect( result ).toContain( 'Other documents' );
+			expect( result ).not.toContain( 'Customer communication' );
 		} );
 
 		it( 'should label uncategorized_file as "Other documents" for credit_not_processed + booking_reservation + refund_has_been_issued', () => {
