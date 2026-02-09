@@ -344,7 +344,7 @@ class WC_Payments_Token_Service {
 			$types[] = Payment_Method::LINK;
 		}
 
-		$amazon_pay = WC_Payments::get_payment_gateway_by_id( 'amazon_pay' );
+		$amazon_pay = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
 		if ( $amazon_pay && $amazon_pay->is_enabled() ) {
 			$types[] = Payment_Method::AMAZON_PAY;
 		}
