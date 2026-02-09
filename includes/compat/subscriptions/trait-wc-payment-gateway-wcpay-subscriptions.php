@@ -142,13 +142,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return true;
 		}
 
-		// For the base card gateway, also handle Amazon Pay subscriptions for display purposes.
-		// This is needed because some hooks are only registered once for the base gateway.
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $this->id ) {
-			$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . AmazonPayDefinition::get_id();
-			if ( $payment_method === $amazon_pay_gateway_id ) {
-				return true;
-			}
+		// Subscriptions' hooks are only registered to the base card gateway.
+		// The main gateway should be used for all reusable payment methods.
+		if ( in_array( $payment_method, $this->get_reusable_wcpay_gateway_ids(), true ) ) {
+			return true;
 		}
 
 		return false;
