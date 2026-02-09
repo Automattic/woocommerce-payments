@@ -1054,7 +1054,17 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'dispute_lost':
-			const networkCostItem = event.network_cost
+			const networkCostText =
+				event?.reason === 'noncompliant'
+					? __(
+							'Network costs associated with resolving Visa compliance disputes.',
+							'woocommerce-payments'
+					  )
+					: __(
+							'Network cost for the dispute.',
+							'woocommerce-payments'
+					  );
+			const networkCostItem = event?.network_cost
 				? getDepositTimelineItem(
 						event,
 						formatExplicitCurrency(
@@ -1062,12 +1072,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 							event.balance_currency
 						),
 						false,
-						[
-							__(
-								'Network cost for the dispute.',
-								'woocommerce-payments'
-							),
-						]
+						[ networkCostText ]
 				  )
 				: null;
 
