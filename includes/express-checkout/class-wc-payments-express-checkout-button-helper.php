@@ -239,7 +239,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
 		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
-		if ( $location === 'pay_for_order' ) {
+		if ( 'pay_for_order' === $location ) {
 			$location = 'checkout';
 		}
 
