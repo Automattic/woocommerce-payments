@@ -3,8 +3,22 @@
 # Exit if any command fails.
 set -e
 
-WP_CONTAINER=${1-woocommerce_payments_wordpress}
-SITE_URL=${WP_URL-"localhost:8082"}
+# Load worktree-specific config if available
+if [ -f ".env" ]; then
+    source .env
+fi
+
+# Determine container name (from .env or parameter or default)
+if [ -n "$WORKTREE_ID" ]; then
+    DEFAULT_CONTAINER="wcpay_wp_${WORKTREE_ID}"
+else
+    DEFAULT_CONTAINER="wcpay_wp_default"
+fi
+WP_CONTAINER=${1:-$DEFAULT_CONTAINER}
+
+# Determine site URL (from .env or environment or default)
+DEFAULT_PORT=${WORDPRESS_PORT:-8082}
+SITE_URL=${WP_URL:-"localhost:${DEFAULT_PORT}"}
 
 redirect_output() {
 	if [[ -z "$DEBUG" ]]; then
@@ -34,6 +48,27 @@ while [[ $? -ne 0 ]]; do
 	cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 done
 
+# wp-config.php settings are per-worktree (file-based), so always set them
+# This must run BEFORE the early exit check since each container has its own wp-config.php
+echo "Configuring wp-config.php for this worktree..."
+cli wp config set DOCKER_HOST "\$_SERVER['HTTP_X_FORWARDED_HOST'] ?? \$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? \$_SERVER['HTTP_HOST'] ?? 'localhost'" --raw
+# Ensure $_SERVER['HTTP_HOST'] is overwritten with DOCKER_HOST (only adding this line if not already present)
+docker exec $WP_CONTAINER bash -c "grep -q '\\\$_SERVER\[.HTTP_HOST.\] = DOCKER_HOST' /var/www/html/wp-config.php || sed -i \"/define.*'DOCKER_HOST'/a \\\\\\\$_SERVER['HTTP_HOST'] = DOCKER_HOST;\" /var/www/html/wp-config.php"
+cli wp config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST" --raw
+cli wp config set WP_SITEURL DOCKER_REQUEST_URL --raw
+cli wp config set WP_HOME DOCKER_REQUEST_URL --raw
+
+echo "Enabling WordPress debug flags"
+cli wp config set WP_DEBUG true --raw
+# WP_DEBUG_DISPLAY=false to avoid issues with plugins that output content before headers
+# Errors are still logged to wp-content/debug.log when WP_DEBUG_LOG is true
+cli wp config set WP_DEBUG_DISPLAY false --raw
+cli wp config set WP_DEBUG_LOG true --raw
+cli wp config set SCRIPT_DEBUG true --raw
+
+echo "Enabling WordPress development environment (enforces Stripe testing mode)"
+cli wp config set WP_ENVIRONMENT_TYPE development
+
 # If the plugin is already active then return early
 cli wp plugin is-active woocommerce-payments > /dev/null
 if [[ $? -eq 0 ]]; then
@@ -51,36 +86,30 @@ echo
 echo "Setting up environment..."
 echo
 
-echo "Setting up WordPress..."
-cli wp core install \
-	--path=/var/www/html \
-	--url=$SITE_URL \
-	--title=${SITE_TITLE-"WooCommerce Payments Dev"} \
-	--admin_name=${WP_ADMIN-admin} \
-	--admin_password=${WP_ADMIN_PASSWORD-admin} \
-	--admin_email=${WP_ADMIN_EMAIL-admin@example.com} \
-	--skip-email
+# Check if WordPress is already installed in the database
+cli wp core is-installed --path=/var/www/html 2>/dev/null
+WP_INSTALLED=$?
 
-echo "Updating WordPress to the latest version..."
-cli wp core update --quiet
+# Only run WordPress core install if not already installed
+if [[ $WP_INSTALLED -ne 0 ]]; then
+	echo "Setting up WordPress..."
+	cli wp core install \
+		--path=/var/www/html \
+		--url=$SITE_URL \
+		--title=${SITE_TITLE-"WooCommerce Payments Dev"} \
+		--admin_name=${WP_ADMIN-admin} \
+		--admin_password=${WP_ADMIN_PASSWORD-admin} \
+		--admin_email=${WP_ADMIN_EMAIL-admin@example.com} \
+		--skip-email
 
-echo "Updating the WordPress database..."
-cli wp core update-db --quiet
+	echo "Updating WordPress to the latest version..."
+	cli wp core update --quiet
 
-echo "Configuring WordPress to work with ngrok (in order to allow creating a Jetpack-WPCOM connection)";
-cli wp config set DOCKER_HOST "\$_SERVER['HTTP_X_ORIGINAL_HOST'] ?? \$_SERVER['HTTP_HOST'] ?? 'localhost'" --raw
-cli wp config set DOCKER_REQUEST_URL "( ! empty( \$_SERVER['HTTPS'] ) ? 'https://' : 'http://' ) . DOCKER_HOST" --raw
-cli wp config set WP_SITEURL DOCKER_REQUEST_URL --raw
-cli wp config set WP_HOME DOCKER_REQUEST_URL --raw
-
-echo "Enabling WordPress debug flags"
-cli wp config set WP_DEBUG true --raw
-cli wp config set WP_DEBUG_DISPLAY true --raw
-cli wp config set WP_DEBUG_LOG true --raw
-cli wp config set SCRIPT_DEBUG true --raw
-
-echo "Enabling WordPress development environment (enforces Stripe testing mode)";
-cli wp config set WP_ENVIRONMENT_TYPE development
+	echo "Updating the WordPress database..."
+	cli wp core update-db --quiet
+else
+	echo "WordPress already installed, skipping core setup..."
+fi
 
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
@@ -133,13 +162,18 @@ cli wp plugin install disable-wordpress-updates --activate
 
 echo "Installing dev tools plugin..."
 set +e
-git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools
-if [[ $? -eq 0 ]]; then
-	cli wp plugin activate woocommerce-payments-dev-tools
-else
-	echo
-	echo "WARN: Could not clone the dev tools repository. Skipping the install."
-fi;
+# Check if dev tools already exists in the shared plugins volume (e.g., from main checkout setup)
+cli wp plugin path woocommerce-payments-dev-tools > /dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+	# Not present - clone to the local path (which is the shared volume when running from main checkout)
+	git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools
+	if [[ $? -ne 0 ]]; then
+		echo
+		echo "WARN: Could not clone the dev tools repository. Skipping the install."
+	fi
+fi
+# Try to activate (may already be active, that's fine)
+cli wp plugin activate woocommerce-payments-dev-tools 2>/dev/null || true
 set -e
 
 echo
