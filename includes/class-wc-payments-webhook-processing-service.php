@@ -619,7 +619,14 @@ class WC_Payments_Webhook_Processing_Service {
 		try {
 			$dispute_summary = $this->api_client->get_dispute_summary( $dispute_id );
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to fetch dispute summary: ' . $e->getMessage() );
+			Logger::error(
+				sprintf(
+					'Failed to fetch dispute summary for dispute %1$s (charge %2$s): %3$s',
+					$dispute_id,
+					$charge_id,
+					$e->getMessage()
+				)
+			);
 		}
 
 		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
