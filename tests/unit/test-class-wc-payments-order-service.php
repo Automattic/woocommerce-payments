@@ -1935,10 +1935,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->store_dispute_fees( $order, $dispute_summary );
 
 		// Assert: Check that dispute fee was converted correctly (10.00 / 1.2 = 8.33).
-		$this->assertEquals( 10.00 / 1.2, $order->get_meta( '_wcpay_dispute_fee', true ) );
+		$this->assertEquals( 8.33, $order->get_meta( '_wcpay_dispute_fee', true ) );
 
 		// Assert: Check that network cost was converted correctly (2.00 / 1.2 = 1.67).
-		$this->assertEquals( 2.00 / 1.2, $order->get_meta( '_wcpay_dispute_network_cost', true ) );
+		$this->assertEquals( 1.67, $order->get_meta( '_wcpay_dispute_network_cost', true ) );
 
 		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );
@@ -2037,11 +2037,45 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that a refund was created with the partial amount.
 		$refunds = $order->get_refunds();
 		$this->assertCount( 1, $refunds );
-		$this->assertEquals( -30.00, $refunds[0]->get_total() );
+		$this->assertEquals( -30.00, $refunds[0]->get_total(), 'Refund is created for the partial amount from the dispute summary.' );
 
 		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed handles missing amount in refund.
+	 */
+	public function test_mark_payment_dispute_closed_with_missing_amount_in_summary() {
+		// Create a test order with a total of $100.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Test dispute summary data with disputed amount less than order total.
+		$dispute_summary = [
+			'currency'      => 'usd',
+			'fee'           => 1500, // $15.00 in cents
+			'network_cost'  => 500,  // $5.00 in cents
+			'exchange_rate' => 1,
+		];
+
+		// Act: Mark payment dispute closed with dispute summary.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Assert: Check that a refund was created with the total order amount.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -100.00, $refunds[0]->get_total(), 'Refund is created with order total if dispute summary amount is missing.' );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
 
 	/**
 	 * Tests that mark_payment_dispute_closed handles disputed amount exceeding order total.

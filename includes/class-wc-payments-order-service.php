@@ -439,15 +439,17 @@ class WC_Payments_Order_Service {
 			// Use dispute summary data if available to determine refund amount.
 			$refund_amount = $order->get_total();
 			if ( ! empty( $dispute_summary ) ) {
-				// Use disputed amount or balance amount depending on currency.
 				$disputed_amount = isset( $dispute_summary['disputed_amount'] ) ? $dispute_summary['disputed_amount'] : 0;
-				$currency        = isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency();
+				if ( $disputed_amount > 0 ) {
+					// Use disputed amount for refund if avaialable.
+					$currency = isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency();
 
-				// Convert amounts to the correct format based on currency (e.g. cents to dollars).
-				$disputed_amount = WC_Payments_Utils::interpret_stripe_amount( $disputed_amount, $currency );
+					// Convert amounts to the correct format based on currency (e.g. cents to dollars).
+					$disputed_amount = WC_Payments_Utils::interpret_stripe_amount( $disputed_amount, $currency );
 
-				// Use the appropriate amount, but don't exceed order total.
-				$refund_amount = min( $order->get_total(), $disputed_amount );
+					// Use the appropriate amount, but don't exceed order total.
+					$refund_amount = min( $order->get_total(), $disputed_amount );
+				}
 
 				// Store dispute fees and network costs if available.
 				$this->store_dispute_fees( $order, $dispute_summary );
@@ -490,16 +492,28 @@ class WC_Payments_Order_Service {
 
 		$currency      = isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency();
 		$exchange_rate = $dispute_summary['exchange_rate'] ?? 1;
+		if ( $exchange_rate <= 0 ) {
+			$exchange_rate = 1;
+		}
+
+		$currency_data = WC_Payments::get_localization_service()->get_currency_format( $currency );
+		$num_decimals  = $currency_data['num_decimals'] ?? 2;
 
 		// Store dispute fee if available.
 		if ( isset( $dispute_summary['fee'] ) && $dispute_summary['fee'] > 0 ) {
-			$fee_amount = WC_Payments_Utils::interpret_stripe_amount( $dispute_summary['fee'], $currency ) / $exchange_rate;
+			$fee_amount = round(
+				WC_Payments_Utils::interpret_stripe_amount( $dispute_summary['fee'], $currency ) / $exchange_rate,
+				$num_decimals
+			);
 			$order->update_meta_data( self::WCPAY_DISPUTE_FEE_META_KEY, $fee_amount );
 		}
 
 		// Store network cost if available.
 		if ( isset( $dispute_summary['network_cost'] ) && $dispute_summary['network_cost'] > 0 ) {
-			$network_cost = WC_Payments_Utils::interpret_stripe_amount( $dispute_summary['network_cost'], $currency ) / $exchange_rate;
+			$network_cost = round(
+				WC_Payments_Utils::interpret_stripe_amount( $dispute_summary['network_cost'], $currency ) / $exchange_rate,
+				$num_decimals
+			);
 			$order->update_meta_data( self::WCPAY_DISPUTE_NETWORK_COST_META_KEY, $network_cost );
 		}
 
