@@ -160,7 +160,7 @@ class ExpressCheckoutTotalMismatchService {
 		// restored from session but not yet recalculated with billing address.
 		$totals = $cart->get_totals();
 
-		if ( empty( $totals['total'] ) ) {
+		if ( ! isset( $totals['total'] ) ) {
 			return;
 		}
 
