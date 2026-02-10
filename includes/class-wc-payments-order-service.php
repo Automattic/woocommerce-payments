@@ -499,22 +499,26 @@ class WC_Payments_Order_Service {
 		$currency_data = WC_Payments::get_localization_service()->get_currency_format( $currency );
 		$num_decimals  = $currency_data['num_decimals'] ?? 2;
 
-		// Store dispute fee if available.
+		// Store dispute fee if available, otherwise clear any existing value to keep metadata idempotent.
 		if ( isset( $dispute_summary['fee'] ) && $dispute_summary['fee'] > 0 ) {
 			$fee_amount = round(
 				WC_Payments_Utils::interpret_stripe_amount( $dispute_summary['fee'], $currency ) / $exchange_rate,
 				$num_decimals
 			);
 			$order->update_meta_data( self::WCPAY_DISPUTE_FEE_META_KEY, $fee_amount );
+		} else {
+			$order->delete_meta_data( self::WCPAY_DISPUTE_FEE_META_KEY );
 		}
 
-		// Store network cost if available.
+		// Store network cost if available, otherwise clear any existing value to keep metadata idempotent.
 		if ( isset( $dispute_summary['network_cost'] ) && $dispute_summary['network_cost'] > 0 ) {
 			$network_cost = round(
 				WC_Payments_Utils::interpret_stripe_amount( $dispute_summary['network_cost'], $currency ) / $exchange_rate,
 				$num_decimals
 			);
 			$order->update_meta_data( self::WCPAY_DISPUTE_NETWORK_COST_META_KEY, $network_cost );
+		} else {
+			$order->delete_meta_data( self::WCPAY_DISPUTE_NETWORK_COST_META_KEY );
 		}
 
 		$order->save();
