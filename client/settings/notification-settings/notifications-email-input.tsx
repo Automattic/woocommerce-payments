@@ -107,7 +107,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 			>
 				<span>
 					{ __(
-						'Any communication sent to this email will be treated as coming from the account owner. Please verify the address carefully.',
+						'Anyone with access to this email address will be treated as the account owner. Please verify the address carefully.',
 						'woocommerce-payments'
 					) }
 				</span>

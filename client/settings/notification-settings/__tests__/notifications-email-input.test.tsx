@@ -285,7 +285,7 @@ describe( 'NotificationsEmailInput', () => {
 		);
 		expect( warningNotice ).not.toBeNull();
 		expect( warningNotice?.textContent ).toContain(
-			'Any communication sent to this email will be treated as coming from the account owner.'
+			'Anyone with access to this email address will be treated as the account owner.'
 		);
 	} );
 
