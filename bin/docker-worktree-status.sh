@@ -55,7 +55,16 @@ for wt_path in "${worktrees[@]}"; do
         port=$(grep '^WORDPRESS_PORT=' "$wt_path/.env" 2>/dev/null | cut -d= -f2)
         worktree_id=$(grep '^WORKTREE_ID=' "$wt_path/.env" 2>/dev/null | cut -d= -f2)
     fi
-    [[ -z "$worktree_id" ]] && worktree_id=$(generate_worktree_id "$wt_name")
+
+    # Use defaults for main checkout if no .env
+    if [[ -z "$worktree_id" ]]; then
+        if [[ "$wt_path" == "$REPO_ROOT" ]]; then
+            worktree_id="default"
+            [[ -z "$port" ]] && port="8082"
+        else
+            worktree_id=$(generate_worktree_id "$wt_name")
+        fi
+    fi
 
     container_name="wcpay_wp_$worktree_id"
 
@@ -87,6 +96,8 @@ for container_name in $containers; do
         if [[ -f "$wt_path/.env" ]]; then
             wt_id=$(grep '^WORKTREE_ID=' "$wt_path/.env" 2>/dev/null | cut -d= -f2)
             [[ -z "$wt_id" ]] && wt_id=$(generate_worktree_id "$wt_name")
+        elif [[ "$wt_path" == "$REPO_ROOT" ]]; then
+            wt_id="default"
         else
             wt_id=$(generate_worktree_id "$wt_name")
         fi
