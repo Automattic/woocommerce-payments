@@ -273,6 +273,21 @@ services:
 I used port `9003` as an example.
 To apply the change, restart your containers using `npm run down && npm run up`
 
+### IDE setup for xDebug
+
+Add the following path mappings to your IDE so it can find the correct code when debugging:
+
+* `<project folder>/` → `/var/www/html/wp-content/plugins/woocommerce-payments`
+* `<project folder>/docker/wordpress` → `/var/www/html`
+
+For WordPress core function hinting, add `docker/wordpress` to your IDE's PHP include path.
+
+**Note:** Plugins (like WooCommerce) are stored in shared Docker volumes, not locally. For plugin hinting, you can copy files locally:
+```bash
+# Get your container name from .env (WORKTREE_ID) or use 'default' for main checkout
+docker cp wcpay_wp_<worktree_id>:/var/www/html/wp-content/plugins/woocommerce ./docker/wordpress/wp-content/plugins/
+```
+
 ### Mapping WooCommerce development repo plugin folder
 
 If you also work on [WooCommerce core](https://github.com/woocommerce/woocommerce) that you want to use in your Docker environment, you can map it by adding a volume mapping to `docker-compose.override.yml`.

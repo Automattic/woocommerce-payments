@@ -99,8 +99,4 @@ For more details, including git worktree support, see [docker/README.md](docker/
 
 IDE setup:
 
-* Adding `docker/wordpress` to your IDE's PHP include path will allow it to provide hinting for WordPress core functions. Note: plugins are stored in shared Docker volumes, so for plugin hinting you may need to copy files locally (e.g., `docker cp wcpay_wp_default:/var/www/html/wp-content/plugins/woocommerce ./docker/wordpress/wp-content/plugins/`).
-* The WordPress container has xdebug setup. Add the following path mappings to your IDE so it can find the correct code:
-
-   * `<project folder>/ -> /var/www/html/wp-content/plugins/woocommerce-payments`
-   * `<project folder>/docker/wordpress -> /var/www/html`
+* The WordPress container has xdebug configured. For path mappings, PHP include paths, and other IDE configuration, see [docker/README.md](docker/README.md#ide-setup-for-xdebug).
