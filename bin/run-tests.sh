@@ -2,6 +2,15 @@
 
 set -e
 
+# Source .env if available for worktree-specific config (needed for WORKTREE_ID)
+WORKTREE_ID="default"
+if [ -f ".env" ]; then
+    source .env
+fi
+
+# Generate unique test database name per worktree
+TEST_DB_NAME="wcpay_tests_${WORKTREE_ID}"
+
 WATCH_FLAG=false
 
 while getopts ':w' OPTION; do
@@ -14,9 +23,10 @@ while getopts ':w' OPTION; do
 done
 
 echo "Installing the test environment..."
+echo "Using test database: ${TEST_DB_NAME}"
 
 docker compose exec -u www-data wordpress \
-	/var/www/html/wp-content/plugins/woocommerce-payments/bin/install-wp-tests.sh
+	/var/www/html/wp-content/plugins/woocommerce-payments/bin/install-wp-tests.sh "${TEST_DB_NAME}"
 
 if $WATCH_FLAG; then
 	echo "Running the tests on watch mode..."
