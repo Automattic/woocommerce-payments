@@ -16,7 +16,7 @@ else
 fi
 
 echo "Checking if the installer is present and downloading it if not..."
-echo 
+echo
 
 # Download the installer (if it's not already present):
 if [ ! -f "${JT_DIR}/installer.sh" ]; then
@@ -25,23 +25,23 @@ if [ ! -f "${JT_DIR}/installer.sh" ]; then
 fi
 
 echo "Running the installation script..."
-echo 
+echo
 
 # Run the installer script
 "${JT_DIR}/installer.sh"
 
 echo
 read -p "Go to https://jurassic.tube/ in a browser, paste your public key which was printed above into the box, and click 'Add Public Key'. Press enter to continue"
-echo 
+echo
 
 read -p "Go to https://jurassic.tube/ in a browser, add a subdomain using the desired name for your subdomain, and click 'Add Subdomain'. The subdomain name is what you will use to access WC Payments in a browser. When this is done, type the subdomain name here and press enter. Please just type in the subdomain, not the full URL: " subdomain
-echo 
+echo
 
 # npm run wp option update home https://${subdomain}.jurassic.tube/
 # npm run wp option update siteurl https://${subdomain}.jurassic.tube/
 
 read -p "Please enter your Automattic/WordPress.com username: " username
-echo 
+echo
 
 if [ ! -f "${JT_DIR}/config.env" ]; then
     touch "${JT_DIR}/config.env"
@@ -49,13 +49,23 @@ else
     > "${JT_DIR}/config.env"
 fi
 
-# Find the WordPress container section and get its port
-PORT=$(docker ps | grep woocommerce_payments_wordpress | sed -En "s/.*0:([0-9]+).*/\1/p")
+# Load port from .env if available
+if [ -f ".env" ]; then
+    source .env
+fi
 
-# Use default if extraction failed
-if [ -z "$PORT" ]; then
-    PORT=8082  # Default fallback
-    echo "Could not extract WordPress container port, using default: ${PORT}"
+# Use WORDPRESS_PORT from .env, or try to detect from running container, or use default
+if [ -n "$WORDPRESS_PORT" ]; then
+    PORT=$WORDPRESS_PORT
+else
+    # Try to find running wcpay WordPress container
+    PORT=$(docker ps | grep "wcpay_wp_" | sed -En "s/.*0:([0-9]+).*/\1/p" | head -1)
+
+    # Use default if extraction failed
+    if [ -z "$PORT" ]; then
+        PORT=8082  # Default fallback
+        echo "Could not extract WordPress container port, using default: ${PORT}"
+    fi
 fi
 
 echo "username=${username}" >> "${JT_DIR}/config.env"
@@ -64,4 +74,4 @@ echo "localhost=localhost:${PORT}" >> "${JT_DIR}/config.env"
 
 echo "Setup complete!"
 echo "Use the command: npm run tube:start from the root directory of your WC Payments project to start running Jurassic Tube."
-echo 
+echo
