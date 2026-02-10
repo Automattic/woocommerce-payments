@@ -91,9 +91,20 @@ class WC_Payments_Notes_Canceled_Auth_Remediation {
 	 * @return bool
 	 */
 	private static function has_affected_orders() {
+		// The underlying bug was fixed in Nov 2025, so no new affected orders can be created.
+		// Cache the result permanently to avoid the expensive query on every admin_init.
+		$cached = get_option( 'wcpay_has_affected_auth_fee_orders' );
+		if ( false !== $cached ) {
+			return (bool) $cached;
+		}
+
 		include_once WCPAY_ABSPATH . 'includes/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
 		$remediation = new WC_Payments_Remediate_Canceled_Auth_Fees();
-		return $remediation->has_affected_orders();
+		$result      = $remediation->has_affected_orders();
+
+		update_option( 'wcpay_has_affected_auth_fee_orders', $result ? 1 : 0, true );
+
+		return $result;
 	}
 
 	/**
