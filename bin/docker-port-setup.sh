@@ -10,7 +10,7 @@ PORT_RANGE_END=8199
 CURRENT_DIR="$(pwd)"
 
 get_reserved_ports() {
-    git worktree list --porcelain 2>/dev/null | grep '^worktree ' | cut -d' ' -f2- | while read -r dir; do
+    git worktree list 2>/dev/null | cut -d' ' -f1 | while read -r dir; do
         # Skip current directory
         [[ "$dir" == "$CURRENT_DIR" ]] && continue
         if [[ -f "$dir/.env" ]]; then
