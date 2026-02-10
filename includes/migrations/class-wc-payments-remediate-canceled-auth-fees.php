@@ -446,6 +446,9 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			return;
 		}
 
+		// This can affect the order transitions by unnecessarily reaching out to Stripe.
+		remove_action( 'woocommerce_order_status_cancelled', [ WC_Payments::get_order_service(), 'cancel_authorizations_on_order_status_change' ] );
+
 		$start_time = microtime( true );
 		$batch_size = $this->get_batch_size();
 		$orders     = $this->get_affected_orders( $batch_size );
