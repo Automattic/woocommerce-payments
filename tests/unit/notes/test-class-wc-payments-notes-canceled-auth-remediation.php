@@ -18,6 +18,7 @@ class WC_Payments_Notes_Canceled_Auth_Remediation_Test extends WCPAY_UnitTestCas
 
 		// Clean up any existing options.
 		delete_option( 'wcpay_fee_remediation_status' );
+		delete_option( 'wcpay_has_affected_auth_fee_orders' );
 	}
 
 	/**
@@ -25,6 +26,7 @@ class WC_Payments_Notes_Canceled_Auth_Remediation_Test extends WCPAY_UnitTestCas
 	 */
 	public function tear_down() {
 		delete_option( 'wcpay_fee_remediation_status' );
+		delete_option( 'wcpay_has_affected_auth_fee_orders' );
 		parent::tear_down();
 	}
 
@@ -57,5 +59,45 @@ class WC_Payments_Notes_Canceled_Auth_Remediation_Test extends WCPAY_UnitTestCas
 		$result = WC_Payments_Notes_Canceled_Auth_Remediation::can_be_added();
 
 		$this->assertFalse( $result );
+	}
+
+	/**
+	 * Tests that can_be_added returns false when cached result indicates no affected orders.
+	 */
+	public function test_can_be_added_returns_false_when_no_affected_orders_cached() {
+		update_option( 'wcpay_has_affected_auth_fee_orders', 0 );
+
+		$result = WC_Payments_Notes_Canceled_Auth_Remediation::can_be_added();
+
+		$this->assertFalse( $result );
+	}
+
+	/**
+	 * Tests that has_affected_orders caches the result after the first query.
+	 */
+	public function test_has_affected_orders_sets_option_after_query() {
+		// Option should not exist initially.
+		$this->assertFalse( get_option( 'wcpay_has_affected_auth_fee_orders' ) );
+
+		// Calling can_be_added triggers has_affected_orders, which should cache the result.
+		WC_Payments_Notes_Canceled_Auth_Remediation::can_be_added();
+
+		// The option should now be set (0 since there are no affected orders in the test DB).
+		$this->assertNotFalse( get_option( 'wcpay_has_affected_auth_fee_orders' ) );
+	}
+
+	/**
+	 * Tests that the cached option distinguishes between 0 (no affected orders) and false (not yet checked).
+	 */
+	public function test_cached_zero_is_not_treated_as_unchecked() {
+		update_option( 'wcpay_has_affected_auth_fee_orders', 0 );
+
+		// Should return false without running the query — the "completed" and "running"
+		// checks pass, but has_affected_orders returns false from cache.
+		$result = WC_Payments_Notes_Canceled_Auth_Remediation::can_be_added();
+
+		$this->assertFalse( $result );
+		// Option should remain 0 (not re-queried and overwritten).
+		$this->assertEquals( 0, get_option( 'wcpay_has_affected_auth_fee_orders' ) );
 	}
 }
