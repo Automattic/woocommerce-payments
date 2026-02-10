@@ -61,7 +61,8 @@ const isEvidenceString = (
 
 export const generateAttachments = (
 	dispute: ExtendedDispute,
-	duplicateStatus?: string
+	duplicateStatus?: string,
+	productType?: string
 ): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
@@ -69,16 +70,28 @@ export const generateAttachments = (
 	// Standard attachment definitions with optional restriction rules
 	// Each attachment can specify:
 	// - `onlyForReasons`: only include for these dispute reasons
+	// - `onlyForProductTypes`: only include for these product types
 	// - `excludeWhen`: exclude when this condition is true (for complex conditions)
 	// - `labelForReasons`: use a different label for specific dispute reasons
 	// - `labelForStatus`: use a different label based on duplicateStatus
 	const standardAttachments: Array< {
 		key: string;
 		label: string;
-		labelForReasons?: { reasons: string[]; label: string };
+		labelForReasons?: Array< {
+			reasons: string[];
+			label: string;
+			productTypes?: string[];
+		} >;
 		labelForStatus?: { status: string; label: string };
 		onlyForReasons?: string[];
+		onlyForProductTypes?: string[];
 		excludeWhen?: ( reason: string, status?: string ) => boolean;
+		order?: number;
+		orderForReasons?: Array< {
+			reasons: string[];
+			order: number;
+			productTypes?: string[];
+		} >;
 	} > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
@@ -113,6 +126,8 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
 			label: __( "Customer's signature", 'woocommerce-payments' ),
+			// Customer's signature is only shown in the UI for physical products
+			onlyForProductTypes: [ 'physical_product' ],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
@@ -125,14 +140,34 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 			label: __( 'Item condition', 'woocommerce-payments' ),
-			// For product_not_received disputes, this field is labeled "Reservation or booking confirmation"
-			labelForReasons: {
-				reasons: [ 'product_not_received' ],
-				label: __(
-					'Reservation or booking confirmation',
-					'woocommerce-payments'
-				),
-			},
+			labelForReasons: [
+				{
+					// For product_not_received disputes with booking_reservation product type
+					reasons: [ 'product_not_received' ],
+					label: __(
+						'Reservation or booking confirmation',
+						'woocommerce-payments'
+					),
+					productTypes: [ 'booking_reservation' ],
+				},
+				{
+					// For product_unacceptable disputes with booking_reservation product type
+					reasons: [ 'product_unacceptable' ],
+					label: __(
+						'Event or booking documentation',
+						'woocommerce-payments'
+					),
+					productTypes: [ 'booking_reservation' ],
+				},
+			],
+			// For product_unacceptable with booking_reservation, this should appear first (before Order receipt)
+			orderForReasons: [
+				{
+					reasons: [ 'product_unacceptable' ],
+					order: -1,
+					productTypes: [ 'booking_reservation' ],
+				},
+			],
 		},
 		{
 			// For non-fraudulent disputes, "Subscription logs" appears in its original position
@@ -145,22 +180,26 @@ export const generateAttachments = (
 			label: __( 'Cancellation logs', 'woocommerce-payments' ),
 			onlyForReasons: [ 'subscription_canceled', 'product_not_received' ],
 			// For product_not_received disputes, this field is labeled "Cancellation confirmation"
-			labelForReasons: {
-				reasons: [ 'product_not_received' ],
-				label: __(
-					'Cancellation confirmation',
-					'woocommerce-payments'
-				),
-			},
+			labelForReasons: [
+				{
+					reasons: [ 'product_not_received' ],
+					label: __(
+						'Cancellation confirmation',
+						'woocommerce-payments'
+					),
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 			label: __( 'Cancellation policy', 'woocommerce-payments' ),
 			// For subscription_canceled disputes, this field is labeled "Terms of service" in the UI
-			labelForReasons: {
-				reasons: [ 'subscription_canceled' ],
-				label: __( 'Terms of service', 'woocommerce-payments' ),
-			},
+			labelForReasons: [
+				{
+					reasons: [ 'subscription_canceled' ],
+					label: __( 'Terms of service', 'woocommerce-payments' ),
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
@@ -168,15 +207,28 @@ export const generateAttachments = (
 		},
 	];
 
+	// Collect matching attachments with resolved labels and order
+	const resolvedAttachments: Array< {
+		displayLabel: string;
+		arrayIndex: number;
+		sortOrder: number;
+	} > = [];
+
 	standardAttachments.forEach(
-		( {
-			key,
-			label,
-			labelForReasons,
-			labelForStatus,
-			onlyForReasons,
-			excludeWhen,
-		} ) => {
+		(
+			{
+				key,
+				label,
+				labelForReasons,
+				labelForStatus,
+				onlyForReasons,
+				onlyForProductTypes,
+				excludeWhen,
+				order,
+				orderForReasons,
+			},
+			index
+		) => {
 			const evidence = dispute.evidence?.[ key ];
 
 			// Check if this attachment should be skipped based on rules
@@ -186,41 +238,93 @@ export const generateAttachments = (
 			) {
 				return;
 			}
+			if (
+				onlyForProductTypes &&
+				( ! productType ||
+					! onlyForProductTypes.includes( productType ) )
+			) {
+				return;
+			}
 			if ( excludeWhen?.( dispute.reason, duplicateStatus ) ) {
 				return;
 			}
 
 			if ( evidence && isEvidenceString( evidence ) ) {
-				attachmentCount++;
 				// Determine the display label with priority:
 				// 1. Status-specific label (e.g., "Refund receipt" for is_duplicate)
-				// 2. Reason-specific label (e.g., "Terms of service" for subscription_canceled)
-				// 3. Default label
+				// 2. Reason + product type specific label (e.g., "Event or booking documentation" for product_unacceptable + booking_reservation)
+				// 3. Reason-specific label (e.g., "Terms of service" for subscription_canceled)
+				// 4. Default label
 				let displayLabel = label;
 				if (
 					labelForStatus &&
 					duplicateStatus === labelForStatus.status
 				) {
 					displayLabel = labelForStatus.label;
-				} else if (
-					labelForReasons?.reasons.includes( dispute.reason )
-				) {
-					displayLabel = labelForReasons.label;
+				} else if ( labelForReasons ) {
+					const match = labelForReasons.find( ( entry ) => {
+						const reasonMatches = entry.reasons.includes(
+							dispute.reason
+						);
+						// If productTypes is specified, the product type must also match
+						const productTypeMatches =
+							! entry.productTypes ||
+							( productType &&
+								entry.productTypes.includes( productType ) );
+						return reasonMatches && productTypeMatches;
+					} );
+					if ( match ) {
+						displayLabel = match.label;
+					}
 				}
-				attachments.push(
-					sprintf(
-						/* translators: %1$s: label, %2$s: attachment letter */
-						__(
-							'• %1$s (Attachment %2$s)',
-							'woocommerce-payments'
-						),
-						displayLabel,
-						String.fromCharCode( 64 + attachmentCount )
-					)
-				);
+
+				// Determine sort order: reason + product type specific override, explicit order, or array position
+				let sortOrder = order ?? index;
+				if ( orderForReasons ) {
+					const orderMatch = orderForReasons.find( ( entry ) => {
+						const reasonMatches = entry.reasons.includes(
+							dispute.reason
+						);
+						// If productTypes is specified, the product type must also match
+						const productTypeMatches =
+							! entry.productTypes ||
+							( productType &&
+								entry.productTypes.includes( productType ) );
+						return reasonMatches && productTypeMatches;
+					} );
+					if ( orderMatch ) {
+						sortOrder = orderMatch.order;
+					}
+				}
+
+				resolvedAttachments.push( {
+					displayLabel,
+					arrayIndex: index,
+					sortOrder,
+				} );
 			}
 		}
 	);
+
+	// Sort by sortOrder (stable: ties broken by original array position)
+	resolvedAttachments.sort( ( a, b ) => {
+		if ( a.sortOrder !== b.sortOrder ) {
+			return a.sortOrder - b.sortOrder;
+		}
+		return a.arrayIndex - b.arrayIndex;
+	} );
+
+	resolvedAttachments.forEach( ( { displayLabel } ) => {
+		attachmentCount++;
+		attachments.push(
+			sprintf(
+				/* translators: %1$s: label, %2$s: attachment letter */
+				__( '• %1$s (Attachment %2$s)', 'woocommerce-payments' ),
+				displayLabel,
+				String.fromCharCode( 64 + attachmentCount )
+			)
+		);
+	} );
 
 	// If no attachments were provided, use default list
 	if ( attachments.length === 0 ) {
@@ -639,7 +743,8 @@ export const generateCoverLetter = (
 	settings: any,
 	bankName: string | null,
 	refundStatus?: string,
-	duplicateStatus?: string
+	duplicateStatus?: string,
+	productType?: string
 ): string => {
 	const todayUnixTimestamp = Math.floor( Date.now() / 1000 );
 	const todayFormatted = formatDateTimeFromTimestamp( todayUnixTimestamp, {
@@ -696,7 +801,11 @@ export const generateCoverLetter = (
 		duplicateStatus: duplicateStatus,
 	};
 
-	const attachmentsList = generateAttachments( dispute, duplicateStatus );
+	const attachmentsList = generateAttachments(
+		dispute,
+		duplicateStatus,
+		productType
+	);
 	const header = generateHeader( data );
 	const recipient = generateRecipient( data );
 	const greeting = __(

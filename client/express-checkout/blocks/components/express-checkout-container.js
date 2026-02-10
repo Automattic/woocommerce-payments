@@ -17,7 +17,7 @@ import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {
-	const { api, billing, buttonAttributes, isPreview } = props;
+	const { api, billing, buttonAttributes } = props;
 
 	const stripePromise = useMemo( () => {
 		return api.loadStripeForExpressCheckout();
@@ -47,12 +47,10 @@ const ExpressCheckoutContainer = ( props ) => {
 			  }
 			: { paymentMethodCreation: 'manual' } ),
 		// ensuring that the total amount is transformed to the correct format.
-		amount: ! isPreview
-			? transformPrice( billing.cartTotal.value, {
-					currency_minor_unit: billing.currency.minorUnit ?? 0,
-			  } )
-			: 10,
-		currency: ! isPreview ? billing.currency.code.toLowerCase() : 'usd',
+		amount: transformPrice( billing.cartTotal.value, {
+			currency_minor_unit: billing.currency.minorUnit ?? 0,
+		} ),
+		currency: billing.currency.code.toLowerCase(),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};
