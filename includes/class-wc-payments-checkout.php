@@ -265,6 +265,21 @@ class WC_Payments_Checkout {
 		// Get the store base country.
 		$payment_fields['storeCountry'] = WC()->countries->get_base_country();
 
+		// Add Amazon Pay saved tokens configuration for logged-in users.
+		if ( is_user_logged_in() ) {
+			$amazon_pay_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+			$amazon_pay_tokens     = \WC_Payment_Tokens::get_customer_tokens( get_current_user_id(), $amazon_pay_gateway_id );
+
+			if ( ! empty( $amazon_pay_tokens ) ) {
+				$payment_fields['amazonPayConfig'] = [
+					'hasSavedTokens' => true,
+					'gatewayId'      => $amazon_pay_gateway_id,
+					'title'          => __( 'Amazon Pay', 'woocommerce-payments' ),
+					'icon'           => plugins_url( 'assets/images/payment-methods/amazon-pay.svg', WCPAY_PLUGIN_FILE ),
+				];
+			}
+		}
+
 		/**
 		 * Allows filtering of the JS config for the payment fields.
 		 *

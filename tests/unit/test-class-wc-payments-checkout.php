@@ -699,4 +699,76 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'currency', $result['.woocommerce-checkout-payment'] );
 		$this->assertStringContainsString( 'cartTotal', $result['.woocommerce-checkout-payment'] );
 	}
+
+	public function test_amazon_pay_config_not_included_when_user_not_logged_in() {
+		wp_set_current_user( 0 );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayNotHasKey( 'amazonPayConfig', $config );
+	}
+
+	public function test_amazon_pay_config_not_included_when_no_saved_tokens() {
+		$user_id = wp_insert_user(
+			[
+				'user_login' => 'test_amazon_pay_user',
+				'user_pass'  => 'test_password',
+				'user_email' => 'test_amazon_pay@example.com',
+			]
+		);
+		wp_set_current_user( $user_id );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayNotHasKey( 'amazonPayConfig', $config );
+
+		// Cleanup.
+		wp_delete_user( $user_id );
+	}
+
+	public function test_amazon_pay_config_included_when_user_has_saved_tokens() {
+		$user_id = wp_insert_user(
+			[
+				'user_login' => 'test_amazon_pay_user_with_token',
+				'user_pass'  => 'test_password',
+				'user_email' => 'test_amazon_pay_token@example.com',
+			]
+		);
+		wp_set_current_user( $user_id );
+
+		// Create a saved Amazon Pay token for the user.
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_gateway_id( 'woocommerce_payments_amazon_pay' );
+		$token->set_token( 'amazon_pay_test_token_123' );
+		$token->set_user_id( $user_id );
+		$token->set_email( 'amazon@example.com' );
+		$token->save();
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayHasKey( 'amazonPayConfig', $config );
+		$this->assertTrue( $config['amazonPayConfig']['hasSavedTokens'] );
+		$this->assertEquals( 'woocommerce_payments_amazon_pay', $config['amazonPayConfig']['gatewayId'] );
+		$this->assertEquals( 'Amazon Pay', $config['amazonPayConfig']['title'] );
+		$this->assertStringContainsString( 'amazon-pay.svg', $config['amazonPayConfig']['icon'] );
+
+		// Cleanup.
+		$token->delete();
+		wp_delete_user( $user_id );
+	}
 }

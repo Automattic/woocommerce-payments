@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+feat: add amazon pay saved tokens to block-based checkout

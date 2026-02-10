@@ -139,6 +139,37 @@ if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
 if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
 	registerExpressPaymentMethod( expressCheckoutElementAmazonPay( api ) );
 }
+
+// Register Amazon Pay for saved tokens (separate from express checkout).
+const amazonPayConfig = getUPEConfig( 'amazonPayConfig' );
+if ( amazonPayConfig?.hasSavedTokens ) {
+	const AmazonPayLabel = ( props ) => (
+		<PaymentMethodLabel
+			{ ...props }
+			title={ amazonPayConfig.title }
+			paymentMethodId="amazon_pay"
+			icon={ amazonPayConfig.icon }
+		/>
+	);
+
+	registerPaymentMethod( {
+		name: amazonPayConfig.gatewayId,
+		content: <></>,
+		edit: <></>,
+		savedTokenComponent: <SavedTokenHandler api={ api } />,
+		canMakePayment: ( { cart } ) => {
+			return cart.cartNeedsPayment;
+		},
+		paymentMethodId: amazonPayConfig.gatewayId,
+		label: <AmazonPayLabel />,
+		ariaLabel: 'Amazon Pay',
+		supports: {
+			showSavedCards: true,
+			showSaveOption: false,
+			features: getUPEConfig( 'features' ),
+		},
+	} );
+}
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();
