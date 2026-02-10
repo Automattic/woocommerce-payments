@@ -1833,7 +1833,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that store_dispute_fees correctly stores dispute fees and network costs.
 	 */
-	public function test_store_dispute_fees() {
+	public function test_store_dispute_fees(): void {
 		// Create a test order.
 		$order = WC_Helper_Order::create_order();
 		$order->save();
@@ -1862,7 +1862,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that store_dispute_fees handles zero values correctly.
 	 */
-	public function test_store_dispute_fees_with_zero_values() {
+	public function test_store_dispute_fees_with_zero_values(): void {
 		// Create a test order.
 		$order = WC_Helper_Order::create_order();
 		$order->save();
@@ -1891,7 +1891,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that store_dispute_fees handles missing values correctly.
 	 */
-	public function test_store_dispute_fees_with_missing_values() {
+	public function test_store_dispute_fees_with_missing_values(): void {
 		// Create a test order.
 		$order = WC_Helper_Order::create_order();
 		$order->save();
@@ -1918,7 +1918,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that store_dispute_fees handles exchange rates correctly.
 	 */
-	public function test_store_dispute_fees_with_exchange_rate() {
+	public function test_store_dispute_fees_with_exchange_rate(): void {
 		// Create a test order.
 		$order = WC_Helper_Order::create_order();
 		$order->save();
@@ -1947,7 +1947,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that store_dispute_fees exits gracefully with invalid order.
 	 */
-	public function test_store_dispute_fees_with_invalid_order() {
+	public function test_store_dispute_fees_with_invalid_order(): void {
+		// Assert: Method should exit gracefully without errors.
+		$this->expectNotToPerformAssertions();
+
 		// Test dispute summary data.
 		$dispute_summary = [
 			'fee'           => 1500,
@@ -1958,15 +1961,12 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Act: Store dispute fees with invalid order.
 		$this->order_service->store_dispute_fees( 'invalid_order', $dispute_summary );
-
-		// Assert: Method should exit gracefully without errors.
-		$this->assertTrue( true );
 	}
 
 	/**
 	 * Tests that mark_payment_dispute_closed handles dispute summary data correctly.
 	 */
-	public function test_mark_payment_dispute_closed_with_dispute_summary() {
+	public function test_mark_payment_dispute_closed_with_dispute_summary(): void {
 		// Create a test order and set it to on-hold status (as dispute would).
 		$order = WC_Helper_Order::create_order();
 		$order->set_status( Order_Status::ON_HOLD );
@@ -2012,7 +2012,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that mark_payment_dispute_closed handles partial refunds correctly.
 	 */
-	public function test_mark_payment_dispute_closed_with_partial_refund() {
+	public function test_mark_payment_dispute_closed_with_partial_refund(): void {
 		// Create a test order with a total of $100.
 		$order = WC_Helper_Order::create_order();
 		$order->set_total( 100.00 );
@@ -2046,7 +2046,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that mark_payment_dispute_closed handles missing amount in refund.
 	 */
-	public function test_mark_payment_dispute_closed_with_missing_amount_in_summary() {
+	public function test_mark_payment_dispute_closed_with_missing_amount_in_summary(): void {
 		// Create a test order with a total of $100.
 		$order = WC_Helper_Order::create_order();
 		$order->set_total( 100.00 );
@@ -2080,7 +2080,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that mark_payment_dispute_closed handles disputed amount exceeding order total.
 	 */
-	public function test_mark_payment_dispute_closed_with_excessive_disputed_amount() {
+	public function test_mark_payment_dispute_closed_with_excessive_disputed_amount(): void {
 		// Create a test order with a total of $50.
 		$order = WC_Helper_Order::create_order();
 		$order->set_total( 50.00 );
@@ -2114,7 +2114,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that mark_payment_dispute_closed works without dispute summary (backward compatibility).
 	 */
-	public function test_mark_payment_dispute_closed_without_dispute_summary() {
+	public function test_mark_payment_dispute_closed_without_dispute_summary(): void {
 		// Create a test order and set it to on-hold status.
 		$order = WC_Helper_Order::create_order();
 		$order->set_status( Order_Status::ON_HOLD );

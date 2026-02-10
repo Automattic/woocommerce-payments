@@ -772,7 +772,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @return array Dispute summary data.
 	 * @throws API_Exception - Exception thrown in case route validation fails.
 	 */
-	public function get_dispute_summary( $dispute_id ) {
+	public function get_dispute_summary( $dispute_id ): array {
 		if ( ! preg_match( '/^\w+$/', $dispute_id ) ) {
 			throw new API_Exception(
 				__( 'Route param validation failed.', 'woocommerce-payments' ),

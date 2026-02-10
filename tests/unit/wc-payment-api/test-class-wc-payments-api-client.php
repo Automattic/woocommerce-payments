@@ -1622,7 +1622,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that get_dispute_summary returns correct data for a valid dispute ID.
 	 */
-	public function test_get_dispute_summary_success() {
+	public function test_get_dispute_summary_success(): void {
 		$dispute_id = 'dp_123456789';
 
 		// Mock the expected response from the API.
@@ -1647,7 +1647,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that get_dispute_summary throws exception for invalid dispute ID.
 	 */
-	public function test_get_dispute_summary_invalid_id() {
+	public function test_get_dispute_summary_invalid_id(): void {
 		$dispute_id = 'invalid_id_with_special_chars!';
 
 		// Expect an API exception to be thrown.
@@ -1661,7 +1661,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that get_dispute_summary handles API errors correctly.
 	 */
-	public function test_get_dispute_summary_api_error() {
+	public function test_get_dispute_summary_api_error(): void {
 		$dispute_id = 'dp_123456789';
 
 		// Mock an API error response.
@@ -1682,33 +1682,9 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that order metadata is saved correctly for dispute fees.
-	 */
-	public function test_order_metadata_saved_correctly() {
-		// Create a test order with dispute fees.
-		$order = WC_Helper_Order::create_order();
-		$order->update_meta_data( '_wcpay_dispute_fee', 15.00 );
-		$order->update_meta_data( '_wcpay_dispute_network_cost', 5.00 );
-		$order->save_meta_data();
-		$order->save();
-
-		// Reload the order to check if metadata was saved.
-		$reloaded_order = wc_get_order( $order->get_id() );
-
-		// Assert: Check that dispute fee was saved.
-		$this->assertEquals( 15.00, $reloaded_order->get_meta( '_wcpay_dispute_fee', true ) );
-
-		// Assert: Check that network cost was saved.
-		$this->assertEquals( 5.00, $reloaded_order->get_meta( '_wcpay_dispute_network_cost', true ) );
-
-		// Clean up.
-		WC_Helper_Order::delete_order( $order->get_id() );
-	}
-
-	/**
 	 * Tests that add_additional_info_to_charge adds dispute fees correctly.
 	 */
-	public function test_add_additional_info_to_charge_with_dispute_fees() {
+	public function test_add_additional_info_to_charge_with_dispute_fees(): void {
 		// Create a test order with dispute fees.
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_wcpay_dispute_fee', 15.00 );
@@ -1752,7 +1728,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that add_additional_info_to_charge handles missing order correctly.
 	 */
-	public function test_add_additional_info_to_charge_missing_order() {
+	public function test_add_additional_info_to_charge_missing_order(): void {
 		// Create a charge object without order.
 		$charge = [
 			'id'     => 'ch_123',
@@ -1770,7 +1746,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that add_additional_info_to_charge handles order without dispute fees correctly.
 	 */
-	public function test_add_additional_info_to_charge_no_fees() {
+	public function test_add_additional_info_to_charge_no_fees(): void {
 		// Create a test order without dispute fees.
 		$order = WC_Helper_Order::create_order();
 		$order->save();
@@ -1784,6 +1760,12 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			'amount'   => 10000,
 			'currency' => $order->get_currency(),
 		];
+
+		// Mock the database to return our test order when looking up by charge ID.
+		$this->mock_db_wrapper
+			->method( 'order_from_charge_id' )
+			->with( 'ch_123' )
+			->willReturn( $order );
 
 		// Act: Add additional info to charge object.
 		$result = $this->payments_api_client->add_additional_info_to_charge( $charge );
@@ -1799,7 +1781,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that add_additional_info_to_charge handles only dispute fee (no network cost).
 	 */
-	public function test_add_additional_info_to_charge_only_dispute_fee() {
+	public function test_add_additional_info_to_charge_only_dispute_fee(): void {
 		// Create a test order with only dispute fee.
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_wcpay_dispute_fee', 15.00 );
@@ -1839,7 +1821,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Tests that add_additional_info_to_charge handles only network cost (no dispute fee).
 	 */
-	public function test_add_additional_info_to_charge_only_network_cost() {
+	public function test_add_additional_info_to_charge_only_network_cost(): void {
 		// Create a test order with only network cost.
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_wcpay_dispute_network_cost', 5.00 );

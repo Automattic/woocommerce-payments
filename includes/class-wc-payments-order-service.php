@@ -418,7 +418,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary = [] ) {
+	public function mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary = [] ): void {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
@@ -485,7 +485,7 @@ class WC_Payments_Order_Service {
 	 *
 	 * @return void
 	 */
-	public function store_dispute_fees( $order, $dispute_summary ) {
+	public function store_dispute_fees( $order, array $dispute_summary ): void {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
