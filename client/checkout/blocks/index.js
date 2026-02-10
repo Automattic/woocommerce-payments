@@ -143,15 +143,6 @@ if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
 // Register Amazon Pay for saved tokens (separate from express checkout).
 const amazonPayConfig = getUPEConfig( 'amazonPayConfig' );
 if ( amazonPayConfig?.hasSavedTokens ) {
-	const AmazonPayLabel = ( props ) => (
-		<PaymentMethodLabel
-			{ ...props }
-			title={ amazonPayConfig.title }
-			paymentMethodId="amazon_pay"
-			icon={ amazonPayConfig.icon }
-		/>
-	);
-
 	registerPaymentMethod( {
 		name: amazonPayConfig.gatewayId,
 		content: <></>,
@@ -161,7 +152,13 @@ if ( amazonPayConfig?.hasSavedTokens ) {
 			return cart.cartNeedsPayment;
 		},
 		paymentMethodId: amazonPayConfig.gatewayId,
-		label: <AmazonPayLabel />,
+		label: (
+			<PaymentMethodLabel
+				title={ amazonPayConfig.title }
+				paymentMethodId="amazon_pay"
+				icon={ amazonPayConfig.icon }
+			/>
+		),
 		ariaLabel: 'Amazon Pay',
 		supports: {
 			showSavedCards: true,
