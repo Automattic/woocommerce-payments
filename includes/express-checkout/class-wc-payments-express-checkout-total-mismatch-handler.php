@@ -1,6 +1,6 @@
 <?php
 /**
- * Class ExpressCheckoutTotalMismatchService
+ * Class WC_Payments_Express_Checkout_Total_Mismatch_Handler
  *
  * Handles detection and handling of total mismatches during Express Checkout payments.
  * This can occur when tax is calculated based on billing address, which is only
@@ -9,17 +9,17 @@
  * @package WooCommerce\Payments
  */
 
-namespace WCPay\Internal\Service;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 use Automattic\WooCommerce\StoreApi\Payments\PaymentContext;
 use Automattic\WooCommerce\StoreApi\Payments\PaymentResult;
-use WCPay\Internal\Proxy\HooksProxy;
-use WCPay\Internal\Proxy\LegacyProxy;
 
 /**
- * Service to detect and handle Express Checkout total mismatches.
+ * WC_Payments_Express_Checkout_Total_Mismatch_Handler class.
  */
-class ExpressCheckoutTotalMismatchService {
+class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 
 	/**
 	 * Threshold in cents for acceptable total difference (to account for rounding).
@@ -37,20 +37,6 @@ class ExpressCheckoutTotalMismatchService {
 	const ORDER_META_KEY = '_wcpay_ece_total_mismatch';
 
 	/**
-	 * HooksProxy instance.
-	 *
-	 * @var HooksProxy
-	 */
-	private $hooks_proxy;
-
-	/**
-	 * LegacyProxy instance.
-	 *
-	 * @var LegacyProxy
-	 */
-	private $legacy_proxy;
-
-	/**
 	 * Session cart total captured at cart load time (in minor units).
 	 *
 	 * This represents the cart total from the session before billing address is applied.
@@ -61,25 +47,14 @@ class ExpressCheckoutTotalMismatchService {
 	private $session_cart_total = null;
 
 	/**
-	 * Constructor.
-	 *
-	 * @param HooksProxy  $hooks_proxy  Hooks proxy instance.
-	 * @param LegacyProxy $legacy_proxy Legacy proxy instance.
-	 */
-	public function __construct( HooksProxy $hooks_proxy, LegacyProxy $legacy_proxy ) {
-		$this->hooks_proxy  = $hooks_proxy;
-		$this->legacy_proxy = $legacy_proxy;
-	}
-
-	/**
-	 * Initialize hooks for this service.
+	 * Initialize hooks for this handler.
 	 *
 	 * @return void
 	 */
-	public function init_hooks(): void {
+	public function init() {
 		// Capture cart total from session before billing address is applied.
 		// This fires early in the checkout process, before customer data is updated.
-		$this->hooks_proxy->add_action(
+		add_action(
 			'woocommerce_cart_loaded_from_session',
 			[ $this, 'capture_session_cart_total' ],
 			10,
@@ -88,7 +63,7 @@ class ExpressCheckoutTotalMismatchService {
 
 		// Run before WC's Legacy::process_legacy_payment (priority 999).
 		// Setting the result status will prevent payment processing.
-		$this->hooks_proxy->add_action(
+		add_action(
 			'woocommerce_rest_checkout_process_payment_with_context',
 			[ $this, 'check_ece_total_mismatch' ],
 			5,
@@ -98,7 +73,7 @@ class ExpressCheckoutTotalMismatchService {
 		// Display mismatch notice on the pay-for-order page.
 		// Use woocommerce_pay_order_before_payment hook which fires during template output,
 		// allowing us to print the notice directly without relying on session storage.
-		$this->hooks_proxy->add_action(
+		add_action(
 			'woocommerce_pay_order_before_payment',
 			[ $this, 'maybe_display_mismatch_notice' ]
 		);
@@ -109,7 +84,7 @@ class ExpressCheckoutTotalMismatchService {
 	 *
 	 * @return void
 	 */
-	public function maybe_display_mismatch_notice(): void {
+	public function maybe_display_mismatch_notice() {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( empty( $_GET['wcpay_ece_mismatch'] ) ) {
 			return;
@@ -123,7 +98,7 @@ class ExpressCheckoutTotalMismatchService {
 			return;
 		}
 
-		$order = $this->legacy_proxy->call_function( 'wc_get_order', $order_id );
+		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
 			return;
 		}
@@ -141,7 +116,7 @@ class ExpressCheckoutTotalMismatchService {
 			$mismatch_data['actual']
 		);
 
-		$this->legacy_proxy->call_function( 'wc_print_notice', $message, 'notice' );
+		wc_print_notice( $message, 'notice' );
 	}
 
 	/**
@@ -151,11 +126,16 @@ class ExpressCheckoutTotalMismatchService {
 	 * from the checkout request is applied. The session total represents what the user
 	 * saw in the Express Checkout dialog (calculated with shipping address only).
 	 *
-	 * @param \WC_Cart $cart Cart instance.
+	 * @param WC_Cart $cart Cart instance.
 	 *
 	 * @return void
 	 */
-	public function capture_session_cart_total( $cart ): void {
+	public function capture_session_cart_total( $cart ) {
+		// Skip if cart is empty (e.g., pay-for-order page where cart isn't used).
+		if ( $cart->is_empty() ) {
+			return;
+		}
+
 		// Get the cart total from session. At this point, totals have been
 		// restored from session but not yet recalculated with billing address.
 		$totals = $cart->get_totals();
@@ -166,8 +146,8 @@ class ExpressCheckoutTotalMismatchService {
 
 		// Convert to minor units (cents) for comparison.
 		// Use the store currency since cart currency matches store currency.
-		$currency                 = $this->legacy_proxy->call_function( 'get_woocommerce_currency' );
-		$this->session_cart_total = $this->prepare_amount( (float) $totals['total'], $currency );
+		$currency                 = get_woocommerce_currency();
+		$this->session_cart_total = WC_Payments_Utils::prepare_amount( (float) $totals['total'], $currency );
 	}
 
 	/**
@@ -178,7 +158,7 @@ class ExpressCheckoutTotalMismatchService {
 	 *
 	 * @return void
 	 */
-	public function check_ece_total_mismatch( PaymentContext $context, PaymentResult &$result ): void {
+	public function check_ece_total_mismatch( PaymentContext $context, PaymentResult &$result ) {
 		// Only handle WooPayments ECE requests.
 		if ( ! $this->is_ece_payment( $context ) ) {
 			return;
@@ -192,7 +172,7 @@ class ExpressCheckoutTotalMismatchService {
 		}
 
 		$order        = $context->order;
-		$actual_total = $this->prepare_amount( (float) $order->get_total(), $order->get_currency() );
+		$actual_total = WC_Payments_Utils::prepare_amount( (float) $order->get_total(), $order->get_currency() );
 		$difference   = abs( $actual_total - $expected_total );
 
 		if ( $difference <= self::MISMATCH_THRESHOLD_CENTS ) {
@@ -206,8 +186,7 @@ class ExpressCheckoutTotalMismatchService {
 		$customer_message = $this->get_customer_message( $order, $expected_total, $actual_total );
 
 		// Build redirect URL with mismatch indicator for displaying notice on pay-for-order page.
-		$redirect_url = $this->legacy_proxy->call_function(
-			'add_query_arg',
+		$redirect_url = add_query_arg(
 			'wcpay_ece_mismatch',
 			'1',
 			$order->get_checkout_payment_url()
@@ -230,7 +209,7 @@ class ExpressCheckoutTotalMismatchService {
 	 *
 	 * @return bool
 	 */
-	private function is_ece_payment( PaymentContext $context ): bool {
+	private function is_ece_payment( PaymentContext $context ) {
 		// Must be WooPayments gateway.
 		if ( self::GATEWAY_ID !== $context->payment_method ) {
 			return false;
@@ -251,25 +230,8 @@ class ExpressCheckoutTotalMismatchService {
 	 *
 	 * @return int|null Expected total in minor units (cents), or null if not available.
 	 */
-	private function get_expected_total(): ?int {
+	private function get_expected_total() {
 		return $this->session_cart_total;
-	}
-
-	/**
-	 * Convert an amount to cents/minor units.
-	 *
-	 * @param float  $amount   Amount in major units.
-	 * @param string $currency Currency code.
-	 *
-	 * @return int Amount in minor units.
-	 */
-	private function prepare_amount( float $amount, string $currency ): int {
-		return $this->legacy_proxy->call_static(
-			\WC_Payments_Utils::class,
-			'prepare_amount',
-			$amount,
-			$currency
-		);
 	}
 
 	/**
@@ -282,36 +244,27 @@ class ExpressCheckoutTotalMismatchService {
 	 *
 	 * @return string Formatted price as plain text.
 	 */
-	private function format_price( int $amount_minor_units, string $currency ): string {
+	private function format_price( $amount_minor_units, $currency ) {
 		// Use interpret_stripe_amount to correctly handle zero-decimal currencies.
-		$decimal_amount = $this->legacy_proxy->call_static(
-			\WC_Payments_Utils::class,
-			'interpret_stripe_amount',
-			$amount_minor_units,
-			strtolower( $currency )
-		);
+		$decimal_amount = WC_Payments_Utils::interpret_stripe_amount( $amount_minor_units, strtolower( $currency ) );
 
-		$html_price = $this->legacy_proxy->call_function(
-			'wc_price',
-			$decimal_amount,
-			[ 'currency' => $currency ]
-		);
+		$html_price = wc_price( $decimal_amount, [ 'currency' => $currency ] );
 
 		// Strip HTML tags and decode entities for plain text display.
-		$plain_price = $this->legacy_proxy->call_function( 'wp_strip_all_tags', $html_price );
+		$plain_price = wp_strip_all_tags( $html_price );
 		return html_entity_decode( $plain_price, ENT_QUOTES, 'UTF-8' );
 	}
 
 	/**
 	 * Record the mismatch in order meta and add an internal order note.
 	 *
-	 * @param \WC_Order $order          Order object.
-	 * @param int       $expected_total Expected total in cents.
-	 * @param int       $actual_total   Actual total in cents.
+	 * @param WC_Order $order          Order object.
+	 * @param int      $expected_total Expected total in cents.
+	 * @param int      $actual_total   Actual total in cents.
 	 *
 	 * @return void
 	 */
-	private function record_mismatch( \WC_Order $order, int $expected_total, int $actual_total ): void {
+	private function record_mismatch( $order, $expected_total, $actual_total ) {
 		$currency = $order->get_currency();
 
 		// Store mismatch data in order meta.
@@ -342,13 +295,13 @@ class ExpressCheckoutTotalMismatchService {
 	/**
 	 * Get the customer-facing error message.
 	 *
-	 * @param \WC_Order $order          Order object.
-	 * @param int       $expected_total Expected total in cents.
-	 * @param int       $actual_total   Actual total in cents.
+	 * @param WC_Order $order          Order object.
+	 * @param int      $expected_total Expected total in cents.
+	 * @param int      $actual_total   Actual total in cents.
 	 *
 	 * @return string Customer-facing message.
 	 */
-	private function get_customer_message( \WC_Order $order, int $expected_total, int $actual_total ): string {
+	private function get_customer_message( $order, $expected_total, $actual_total ) {
 		$currency = $order->get_currency();
 
 		return sprintf(
