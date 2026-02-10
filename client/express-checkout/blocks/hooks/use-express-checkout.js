@@ -3,6 +3,8 @@
  */
 import { useCallback } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
+import { select } from '@wordpress/data';
+import { applyFilters } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -24,6 +26,7 @@ import {
 } from '../../event-handlers';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
+import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
 export const useExpressCheckout = ( {
 	api,
@@ -64,14 +67,27 @@ export const useExpressCheckout = ( {
 
 			const shippingAddressRequired = shippingData?.needsShipping;
 
+			// Get cart data with extensions for subscription handling
+			const cartData = select( WC_STORE_CART )?.getCartData();
+
 			let shippingRates;
 			if ( shippingAddressRequired ) {
-				const hasValidRates =
-					shippingData?.shippingRates[ 0 ]?.shipping_rates?.length >
-					0;
+				// Get base shipping rates from WC Blocks
+				const baseShippingRates =
+					shippingData?.shippingRates[ 0 ]?.shipping_rates || [];
+
+				// Apply filter to allow modifications (e.g., for trial subscriptions
+				// where shipping rates are in subscription extensions)
+				const effectiveShippingRates = applyFilters(
+					'wcpay.express-checkout.shipping-rates',
+					baseShippingRates,
+					cartData
+				);
+
+				const hasValidRates = effectiveShippingRates?.length > 0;
 
 				if ( hasValidRates ) {
-					shippingRates = shippingData.shippingRates[ 0 ].shipping_rates
+					shippingRates = effectiveShippingRates
 						.map( ( rate ) => {
 							return {
 								id: rate.rate_id,
@@ -114,9 +130,17 @@ export const useExpressCheckout = ( {
 				0
 			);
 
-			const cartTotals = transformPrice( billing.cartTotal.value, {
+			// Calculate base cart totals
+			const baseCartTotals = transformPrice( billing.cartTotal.value, {
 				currency_minor_unit: billing.currency.minorUnit ?? 0,
 			} );
+
+			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+			const cartTotals = applyFilters(
+				'wcpay.express-checkout.total-amount',
+				baseCartTotals,
+				cartData
+			);
 
 			const options = {
 				business: {

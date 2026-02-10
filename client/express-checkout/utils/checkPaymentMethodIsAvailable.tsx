@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { ExpressCheckoutElement, Elements } from '@stripe/react-stripe-js';
 import type { AvailablePaymentMethods } from '@stripe/stripe-js';
 import { memoize } from 'lodash';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -17,11 +18,34 @@ import { getExpressCheckoutData, getStripeElementsMode } from '.';
 interface CartTotals {
 	total_price: string;
 	currency_code: string;
+	currency_minor_unit?: number;
 }
 
 interface Cart {
 	cartTotals: CartTotals;
 }
+
+/**
+ * Gets the effective total price for Stripe initialization.
+ * Uses the wcpay.express-checkout.total-amount filter to allow modifications
+ * (e.g., for trial subscriptions with $0 initial payment).
+ *
+ * @param cart The cart object from WC Blocks.
+ * @return The total price to use for Stripe.
+ */
+const getEffectiveTotalPrice = ( cart: Cart ): string => {
+	const totalPrice = parseInt( cart.cartTotals.total_price, 10 );
+
+	// Apply filter to allow modifications (e.g., for trial subscriptions)
+	// The filter expects numeric amounts, so we pass the parsed total
+	const filteredTotal = applyFilters(
+		'wcpay.express-checkout.total-amount',
+		totalPrice,
+		cart
+	) as number;
+
+	return String( filteredTotal );
+};
 
 type PaymentMethod = keyof AvailablePaymentMethods;
 
@@ -143,8 +167,8 @@ export const checkPaymentMethodIsAvailable = (
 		paymentMethodAvailabilityFunctions[ paymentMethod ] = memoizedFn;
 	}
 
-	return memoizedFn(
-		cart.cartTotals.total_price,
-		cart.cartTotals.currency_code
-	);
+	// Use effective total price to handle trial subscriptions with $0 initial payment
+	const effectiveTotalPrice = getEffectiveTotalPrice( cart );
+
+	return memoizedFn( effectiveTotalPrice, cart.cartTotals.currency_code );
 };

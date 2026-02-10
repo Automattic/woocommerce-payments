@@ -56,13 +56,21 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		elements.update( {
-			amount: transformPrice(
-				parseInt( cartData.totals.total_price, 10 ) -
-					parseInt( cartData.totals.total_refund || 0, 10 ),
-				cartData.totals
-			),
-		} );
+		// Calculate base amount from cart totals
+		const baseAmount = transformPrice(
+			parseInt( cartData.totals.total_price, 10 ) -
+				parseInt( cartData.totals.total_refund || 0, 10 ),
+			cartData.totals
+		);
+
+		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+		const amount = applyFilters(
+			'wcpay.express-checkout.total-amount',
+			baseAmount,
+			cartData
+		);
+
+		elements.update( { amount } );
 
 		event.resolve( {
 			shippingRates,
@@ -75,18 +83,38 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 
 export const shippingRateChangeHandler = async ( event, elements ) => {
 	try {
+		// Get current cart to determine correct package ID
+		const currentCart = await cartApi.getCart();
+
+		// Apply filter to get the correct package ID (e.g., for trial subscriptions
+		// where shipping is in subscription extensions, not main cart)
+		const packageId = applyFilters(
+			'wcpay.express-checkout.shipping-package-id',
+			0,
+			currentCart,
+			event.shippingRate.id
+		);
+
 		const cartData = await cartApi.selectShippingRate( {
-			package_id: 0,
+			package_id: packageId,
 			rate_id: event.shippingRate.id,
 		} );
 
-		elements.update( {
-			amount: transformPrice(
-				parseInt( cartData.totals.total_price, 10 ) -
-					parseInt( cartData.totals.total_refund || 0, 10 ),
-				cartData.totals
-			),
-		} );
+		// Calculate base amount from cart totals
+		const baseAmount = transformPrice(
+			parseInt( cartData.totals.total_price, 10 ) -
+				parseInt( cartData.totals.total_refund || 0, 10 ),
+			cartData.totals
+		);
+
+		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+		const amount = applyFilters(
+			'wcpay.express-checkout.total-amount',
+			baseAmount,
+			cartData
+		);
+
+		elements.update( { amount } );
 		event.resolve( {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );

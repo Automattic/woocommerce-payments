@@ -190,7 +190,23 @@ export const transformCartDataForShippingRates = ( cartData ) => {
 	const displayPriceIncludingTax = getExpressCheckoutData( 'checkout' )
 		.display_prices_with_tax;
 
-	return cartData.shipping_rates?.[ 0 ]?.shipping_rates
+	// Get base shipping rates from cart
+	const baseShippingRates =
+		cartData.shipping_rates?.[ 0 ]?.shipping_rates || [];
+
+	// Apply filter to allow modifications (e.g., for trial subscriptions
+	// where shipping rates are in subscription extensions)
+	const effectiveShippingRates = applyFilters(
+		'wcpay.express-checkout.shipping-rates',
+		baseShippingRates,
+		cartData
+	);
+
+	if ( ! effectiveShippingRates || effectiveShippingRates.length === 0 ) {
+		return [];
+	}
+
+	return effectiveShippingRates
 		.sort( ( rateA, rateB ) => {
 			if ( rateA.selected === rateB.selected ) {
 				return 0; // Keep relative order if both have the same value for 'selected'
