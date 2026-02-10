@@ -441,7 +441,7 @@ class WC_Payments_Order_Service {
 			if ( ! empty( $dispute_summary ) ) {
 				$disputed_amount = isset( $dispute_summary['disputed_amount'] ) ? $dispute_summary['disputed_amount'] : 0;
 				if ( $disputed_amount > 0 ) {
-					// Use disputed amount for refund if avaialable.
+					// Use disputed amount for refund if available.
 					$currency = isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency();
 
 					// Convert amounts to the correct format based on currency (e.g. cents to dollars).
