@@ -27,11 +27,6 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	const MISMATCH_THRESHOLD_CENTS = 1;
 
 	/**
-	 * WooPayments gateway ID.
-	 */
-	const GATEWAY_ID = 'woocommerce_payments';
-
-	/**
 	 * Order meta key for storing mismatch data.
 	 */
 	const ORDER_META_KEY = '_wcpay_ece_total_mismatch';
@@ -211,7 +206,7 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 */
 	private function is_ece_payment( PaymentContext $context ) {
 		// Must be WooPayments gateway.
-		if ( self::GATEWAY_ID !== $context->payment_method ) {
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $context->payment_method ) {
 			return false;
 		}
 
