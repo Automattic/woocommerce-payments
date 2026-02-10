@@ -238,6 +238,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
+		// the "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
+		if ( $location === 'pay_for_order' ) {
+			$location = 'checkout';
+		}
+
 		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
 
 		if ( $enabled_methods && is_array( $enabled_methods ) ) {

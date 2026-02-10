@@ -672,4 +672,31 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_filter( 'wc_tax_enabled', '__return_false' );
 		delete_option( 'woocommerce_tax_based_on' );
 	}
+
+	public function test_is_express_checkout_method_enabled_at_maps_pay_for_order_to_checkout() {
+		// Set up checkout methods only - pay_for_order should use these
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request', 'amazon_pay' ] );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_cart_methods', [] );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_product_methods', [] );
+
+		// Test that pay_for_order location uses checkout settings
+		$this->assertTrue(
+			$this->system_under_test->is_express_checkout_method_enabled_at( 'pay_for_order', 'payment_request' ),
+			'pay_for_order location should use checkout settings for payment_request'
+		);
+		$this->assertTrue(
+			$this->system_under_test->is_express_checkout_method_enabled_at( 'pay_for_order', 'amazon_pay' ),
+			'pay_for_order location should use checkout settings for amazon_pay'
+		);
+
+		// Test that other locations still work correctly
+		$this->assertTrue(
+			$this->system_under_test->is_express_checkout_method_enabled_at( 'checkout', 'payment_request' ),
+			'checkout location should still work'
+		);
+		$this->assertFalse(
+			$this->system_under_test->is_express_checkout_method_enabled_at( 'cart', 'payment_request' ),
+			'cart location should return false when not configured'
+		);
+	}
 }
