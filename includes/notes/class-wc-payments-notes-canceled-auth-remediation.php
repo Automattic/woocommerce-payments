@@ -88,23 +88,47 @@ class WC_Payments_Notes_Canceled_Auth_Remediation {
 	/**
 	 * Check if there are orders that need remediation.
 	 *
+	 * Uses a state machine backed by an option to avoid running the expensive
+	 * query inline. On the first call, schedules an async Action Scheduler job
+	 * and returns false. The note will be added on a subsequent admin_init
+	 * once the async check completes.
+	 *
 	 * @return bool
 	 */
 	private static function has_affected_orders() {
-		// The underlying bug was fixed in Nov 2025, so no new affected orders can be created.
-		// Cache the result permanently to avoid the expensive query on every admin_init.
-		$cached = get_option( 'wcpay_has_affected_auth_fee_orders' );
-		if ( false !== $cached ) {
-			return (bool) $cached;
+		$state = get_option( WC_Payments_Remediate_Canceled_Auth_Fees::CHECK_STATE_OPTION_KEY );
+
+		if ( false === $state ) {
+			self::schedule_check();
+			return false;
 		}
 
-		include_once WCPAY_ABSPATH . 'includes/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
-		$remediation = new WC_Payments_Remediate_Canceled_Auth_Fees();
-		$result      = $remediation->has_affected_orders();
+		if ( 'has_affected_orders' === $state ) {
+			return true;
+		}
 
-		update_option( 'wcpay_has_affected_auth_fee_orders', $result ? 1 : 0, true );
+		// 'scheduled', 'no_affected_orders', or any unexpected value.
+		return false;
+	}
 
-		return $result;
+	/**
+	 * Schedule the async affected orders check via Action Scheduler.
+	 *
+	 * @return void
+	 */
+	private static function schedule_check() {
+		if ( ! function_exists( 'as_schedule_single_action' ) ) {
+			return;
+		}
+
+		update_option( WC_Payments_Remediate_Canceled_Auth_Fees::CHECK_STATE_OPTION_KEY, 'scheduled', true );
+
+		as_schedule_single_action(
+			time() + 10,
+			WC_Payments_Remediate_Canceled_Auth_Fees::CHECK_AFFECTED_ORDERS_HOOK,
+			[],
+			'woocommerce-payments'
+		);
 	}
 
 	/**
@@ -117,7 +141,6 @@ class WC_Payments_Notes_Canceled_Auth_Remediation {
 			return false;
 		}
 
-		include_once WCPAY_ABSPATH . 'includes/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
 		return as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK );
 	}
 }

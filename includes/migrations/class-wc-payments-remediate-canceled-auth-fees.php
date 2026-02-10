@@ -49,6 +49,22 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	const DRY_RUN_ACTION_HOOK = 'wcpay_remediate_canceled_authorization_fees_dry_run';
 
 	/**
+	 * Action Scheduler hook for the async affected orders check.
+	 */
+	const CHECK_AFFECTED_ORDERS_HOOK = 'wcpay_check_affected_auth_fee_orders';
+
+	/**
+	 * Option key for tracking the affected orders check state.
+	 *
+	 * Possible values:
+	 * - false (option doesn't exist): not yet checked.
+	 * - 'scheduled': async check is scheduled or running.
+	 * - 'has_affected_orders': affected orders were found.
+	 * - 'no_affected_orders': no affected orders found.
+	 */
+	const CHECK_STATE_OPTION_KEY = 'wcpay_has_affected_auth_fee_orders';
+
+	/**
 	 * Option key for tracking dry run mode.
 	 */
 	const DRY_RUN_OPTION_KEY = 'wcpay_fee_remediation_dry_run';
@@ -98,6 +114,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	public function init(): void {
 		add_action( self::ACTION_HOOK, [ $this, 'process_batch' ] );
 		add_action( self::DRY_RUN_ACTION_HOOK, [ $this, 'process_batch_dry_run' ] );
+		add_action( self::CHECK_AFFECTED_ORDERS_HOOK, [ $this, 'check_and_cache_affected_orders' ] );
 	}
 
 	/**
@@ -884,5 +901,22 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	public function has_affected_orders(): bool {
 		$orders = $this->get_affected_orders( 1 );
 		return ! empty( $orders );
+	}
+
+	/**
+	 * Run the affected orders query and cache the result.
+	 *
+	 * Called by Action Scheduler in a separate request.
+	 *
+	 * @return void
+	 */
+	public function check_and_cache_affected_orders(): void {
+		$result = $this->has_affected_orders();
+
+		update_option(
+			self::CHECK_STATE_OPTION_KEY,
+			$result ? 'has_affected_orders' : 'no_affected_orders',
+			true
+		);
 	}
 }
