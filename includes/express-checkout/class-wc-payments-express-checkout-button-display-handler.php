@@ -210,9 +210,17 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
 					$js_config['pay_for_order'] = sanitize_text_field( wp_unslash( $_GET['pay_for_order'] ) );
 					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
-					$js_config['key']           = sanitize_text_field( wp_unslash( $_GET['key'] ) );
-					$js_config['billing_email'] = current_user_can( 'read_private_shop_orders' ) ||
-						( get_current_user_id() !== 0 && $order->get_customer_id() === get_current_user_id() )
+					$js_config['key'] = sanitize_text_field( wp_unslash( $_GET['key'] ) );
+					// Show order's billing email if:
+					// - User can read private shop orders (admin), OR
+					// - Logged-in user is the order owner, OR
+					// - This is a guest order (no customer ID) and visitor has valid order key
+					// (already verified by current_user_can('pay_for_order') check above).
+					$can_view_billing_email = current_user_can( 'read_private_shop_orders' ) ||
+						( get_current_user_id() !== 0 && $order->get_customer_id() === get_current_user_id() ) ||
+						( ! $order->get_customer_id() );
+
+					$js_config['billing_email'] = $can_view_billing_email
 						? $order->get_billing_email()
 						: $user_email;
 

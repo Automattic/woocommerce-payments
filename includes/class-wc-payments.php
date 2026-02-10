@@ -631,6 +631,10 @@ class WC_Payments {
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
 
+		// Register hooks for Express Checkout total mismatch detection.
+		// This handles cases where tax recalculation based on billing address causes total changes.
+		wcpay_get_container()->get( \WCPay\Internal\Service\ExpressCheckoutTotalMismatchService::class )->init_hooks();
+
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 		self::$apple_pay_registration->init_hooks();
 

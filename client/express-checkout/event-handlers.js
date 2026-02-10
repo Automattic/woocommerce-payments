@@ -156,6 +156,14 @@ export const onConfirmHandler = async (
 		} );
 
 		if ( orderResponse.payment_result.payment_status !== 'success' ) {
+			// If there's a redirect URL (e.g., for total mismatch), redirect directly
+			// without showing error - customer will see the message on the redirected page.
+			const redirectUrl = orderResponse.payment_result?.redirect_url;
+			if ( redirectUrl ) {
+				window.location.href = redirectUrl;
+				return;
+			}
+
 			return abortPayment(
 				getErrorMessageFromNotice(
 					orderResponse.message ??
@@ -192,10 +200,18 @@ export const onConfirmHandler = async (
 			e = await Promise.resolve( e.json() );
 		}
 
+		// Check for redirect URL in error response (e.g., total mismatch redirect to pay-for-order).
+		// Redirect directly without showing error - customer will see the message on the redirected page.
+		const redirectUrl = e.payment_result?.redirect_url;
+		if ( redirectUrl ) {
+			window.location.href = redirectUrl;
+			return;
+		}
+
 		return abortPayment(
 			getErrorMessageFromNotice(
 				e.message ||
-					e.payment_result?.payment_details.find(
+					e.payment_result?.payment_details?.find(
 						( detail ) => detail.key === 'errorMessage'
 					)?.value ||
 					__(
