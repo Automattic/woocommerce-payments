@@ -311,35 +311,33 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		$orders_table  = $wpdb->prefix . 'wc_orders';
 		$meta_table    = $wpdb->prefix . 'wc_orders_meta';
 
-		// Build the SQL query to find orders with canceled intent status that have either:
-		// 1. Incorrect fee metadata (_wcpay_transaction_fee or _wcpay_net), OR
-		// 2. Refund objects (which shouldn't exist for never-captured authorizations), OR
-		// 3. Incorrect order status of 'wc-refunded' (should be 'wc-cancelled').
-		$sql = "
-			SELECT DISTINCT o.id
-			FROM {$orders_table} o
-			INNER JOIN {$meta_table} pm_status ON o.id = pm_status.order_id
-			LEFT JOIN {$meta_table} pm_fee ON o.id = pm_fee.order_id
-				AND pm_fee.meta_key IN ('_wcpay_transaction_fee', '_wcpay_net')
-			LEFT JOIN {$orders_table} refunds ON o.id = refunds.parent_order_id
-				AND refunds.type = 'shop_order_refund'
-			WHERE o.type = 'shop_order'
-			AND o.date_created_gmt >= %s
-			AND pm_status.meta_key = '_intention_status'
-			AND pm_status.meta_value = %s
-			AND (pm_fee.order_id IS NOT NULL OR refunds.id IS NOT NULL OR o.status = 'wc-refunded')
-		";
+		$sql = "SELECT orders.id
+			FROM {$orders_table} orders
+			INNER JOIN {$meta_table} status_meta ON orders.id = status_meta.order_id AND status_meta.meta_key = '_intention_status' AND status_meta.meta_value = %s
+			LEFT JOIN {$meta_table} fees_meta ON orders.id = fees_meta.order_id AND fees_meta.meta_key = '_wcpay_transaction_fee'
+			WHERE orders.type = 'shop_order'
+				AND orders.date_created_gmt >= %s
+				AND (
+					-- Refunded with or without a refund.
+					orders.status = 'wc-refunded'
 
-		$params = [ self::BUG_START_DATE, Intent_Status::CANCELED ];
+					-- Cancelled with fees.
+					OR (
+						orders.status = 'wc-cancelled'
+						AND fees_meta.order_id IS NOT NULL
+					)
+				)";
+
+		$params = [ Intent_Status::CANCELED, self::BUG_START_DATE ];
 
 		// Add offset based on last order ID.
 		if ( $last_order_id > 0 ) {
-			$sql     .= ' AND o.id > %d';
+			$sql     .= ' AND orders.id > %d';
 			$params[] = $last_order_id;
 		}
 
 		// Add ordering and limit.
-		$sql     .= ' ORDER BY o.id ASC LIMIT %d';
+		$sql     .= ' ORDER BY orders.id ASC LIMIT %d';
 		$params[] = $limit;
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
