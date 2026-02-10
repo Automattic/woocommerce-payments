@@ -37,6 +37,8 @@ class WC_Payments_Notes_Canceled_Auth_Remediation {
 	 * @return bool
 	 */
 	public static function can_be_added() {
+		include_once WCPAY_ABSPATH . 'includes/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
+
 		// Don't show if remediation is already complete.
 		if ( 'completed' === get_option( 'wcpay_fee_remediation_status', '' ) ) {
 			return false;
