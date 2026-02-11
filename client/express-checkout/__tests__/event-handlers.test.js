@@ -724,16 +724,26 @@ describe( 'Express checkout event handlers', () => {
 		} );
 
 		describe( 'redirect on failure with redirect_url', () => {
-			let originalLocation;
+			let originalLocationDescriptor;
 
 			beforeEach( () => {
-				originalLocation = window.location;
-				delete window.location;
-				window.location = { href: '' };
+				originalLocationDescriptor = Object.getOwnPropertyDescriptor(
+					window,
+					'location'
+				);
+				Object.defineProperty( window, 'location', {
+					configurable: true,
+					writable: true,
+					value: { href: '' },
+				} );
 			} );
 
 			afterEach( () => {
-				window.location = originalLocation;
+				Object.defineProperty(
+					window,
+					'location',
+					originalLocationDescriptor
+				);
 			} );
 
 			it( 'should redirect without calling abortPayment when payment_status is failure but redirect_url is set', async () => {
