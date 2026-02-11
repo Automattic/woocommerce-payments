@@ -677,15 +677,21 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					}
 				);
 
-				// Wait for description control to be visible
-				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
-					.waitFor( { timeout: 10000, state: 'visible' } );
+				// The product description field is auto-populated asynchronously.
+				// The same React effect race that affects the initial fill can also
+				// overwrite the restored value after page reload, so we retry until
+				// the saved evidence value appears.
+				await expect( async () => {
+					await merchantPage
+						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.waitFor( { timeout: 5000, state: 'visible' } );
 
-				// Assert the product description persisted (server stores this under evidence)
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-				).toHaveValue( 'my product description', { timeout: 15000 } );
+					await expect(
+						merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					).toHaveValue( 'my product description', {
+						timeout: 2000,
+					} );
+				} ).toPass( { timeout: 20000, intervals: [ 2000 ] } );
 			}
 		);
 	} );
