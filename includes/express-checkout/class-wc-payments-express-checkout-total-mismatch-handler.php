@@ -93,6 +93,12 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 			return;
 		}
 
+		// Verify the user is authorized to pay for this order before accessing order data.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['pay_for_order'] ) || ! isset( $_GET['key'] ) || ! current_user_can( 'pay_for_order', $order_id ) ) {
+			return;
+		}
+
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
 			return;
