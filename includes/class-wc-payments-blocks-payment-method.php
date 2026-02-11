@@ -31,13 +31,13 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payment_Gateway_WCPay|null $gateway Optional. The gateway to use. Defaults to main card gateway.
+	 * @param WC_Payment_Gateway_WCPay $gateway The gateway instance.
 	 */
-	public function __construct( $gateway = null ) {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
 		// Set the gateway and name immediately in constructor because get_name()
 		// is called during register() before initialize() runs.
-		$this->gateway = $gateway ?? WC_Payments::get_gateway();
-		$this->name    = $this->gateway ? $this->gateway->id : WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$this->gateway = $gateway;
+		$this->name    = $gateway->id;
 	}
 
 	/**
@@ -60,7 +60,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return boolean True when active.
 	 */
 	public function is_active() {
-		return $this->gateway && $this->gateway->is_enabled();
+		return $this->gateway->is_enabled();
 	}
 
 	/**
@@ -102,15 +102,6 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return array An associative array, containing all necessary values.
 	 */
 	public function get_payment_method_data() {
-		// Return minimal data if gateway is not available.
-		if ( ! $this->gateway ) {
-			return [
-				'title'       => '',
-				'description' => '',
-				'is_admin'    => is_admin(),
-			];
-		}
-
 		$is_woopay_eligible = WC_Payments_Features::is_woopay_eligible(); // Feature flag.
 		$is_woopay_enabled  = 'yes' === $this->gateway->get_option( 'platform_checkout', 'no' );
 		$woopay_config      = [];

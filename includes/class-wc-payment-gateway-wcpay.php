@@ -2713,7 +2713,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Get the basic enabled value from settings.
 		$is_enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ];
 
-		// For the main card gateway and express checkout (non-admin), just use the enabled setting.
+		// Card and express checkout methods are not in the UPE enabled list,
+		// so they only need the basic enabled setting check. Without this
+		// early return, they would fall through to the UPE list verification
+		// below and always end up disabled.
 		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
 			$this->enabled = $is_enabled ? 'yes' : 'no';
 			return;

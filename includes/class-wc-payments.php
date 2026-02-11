@@ -361,6 +361,7 @@ class WC_Payments {
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
+		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'disable_express_checkout_in_block_editor' ], 1 );
 
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
@@ -1508,22 +1509,43 @@ class WC_Payments {
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
 
-		// Register the main card gateway.
-		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
-
-		// Register all split gateways (Affirm, Klarna, etc.) to avoid
-		// them being shown as incompatible in the block editor.
 		foreach ( self::get_payment_method_map() as $payment_method_id => $payment_method ) {
-			// Skip 'card' (already registered above), 'link' (not a separate gateway),
-			// and express checkout methods (registered separately via
-			// registerExpressPaymentMethod() in JavaScript with different naming conventions).
-			if ( 'card' === $payment_method_id || 'link' === $payment_method_id || $payment_method->is_express_checkout() ) {
+			// Skip 'link' (not a separate gateway) and express checkout methods
+			// (registered via registerExpressPaymentMethod() in JS with different naming).
+			if ( 'link' === $payment_method_id || $payment_method->is_express_checkout() ) {
 				continue;
 			}
 
 			$gateway = self::get_payment_gateway_by_id( $payment_method_id );
 			if ( $gateway ) {
 				$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method( $gateway ) );
+			}
+		}
+	}
+
+	/**
+	 * Disables express checkout gateways in the block editor to prevent
+	 * WooCommerce from flagging them as "incompatible with block-based checkout".
+	 *
+	 * Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are registered
+	 * via registerExpressPaymentMethod() in JS with different names than their
+	 * PHP gateway IDs, so WooCommerce can't match them and shows a false warning.
+	 *
+	 * This hook runs at priority 1 on enqueue_block_editor_assets, which fires
+	 * only in the block editor — before WC's Checkout block reads $gateway->enabled
+	 * at priority 10. It does not affect subscription admin pages, AJAX, or frontend.
+	 */
+	public static function disable_express_checkout_in_block_editor() {
+		$express_gateway_ids = [];
+		foreach ( self::get_payment_method_map() as $method_id => $payment_method ) {
+			if ( $payment_method->is_express_checkout() ) {
+				$express_gateway_ids[] = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . $method_id;
+			}
+		}
+
+		foreach ( WC()->payment_gateways()->payment_gateways() as $gateway ) {
+			if ( in_array( $gateway->id, $express_gateway_ids, true ) ) {
+				$gateway->enabled = 'no';
 			}
 		}
 	}

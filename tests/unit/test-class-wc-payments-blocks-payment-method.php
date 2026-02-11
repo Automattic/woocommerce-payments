@@ -27,13 +27,6 @@ class WC_Payments_Blocks_Payment_Method_Test extends WCPAY_UnitTestCase {
 	private $mock_gateway;
 
 	/**
-	 * Backup of the original gateway.
-	 *
-	 * @var WC_Payment_Gateway_WCPay
-	 */
-	private $original_gateway;
-
-	/**
 	 * Pre-test setup.
 	 */
 	public function set_up() {
@@ -47,13 +40,11 @@ class WC_Payments_Blocks_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_gateway->id = 'woocommerce_payments';
 
-		// Backup original gateway and set our mock.
+		// Backup original gateway so it can be restored in tear_down().
 		$this->original_gateway = WC_Payments::get_gateway();
-		WC_Payments::set_gateway( $this->mock_gateway );
 
 		// Create the blocks payment method instance.
-		// Note: gateway and name are set in constructor, initialize() only sets wc_payments_checkout.
-		$this->blocks_payment_method = new WC_Payments_Blocks_Payment_Method();
+		$this->blocks_payment_method = new WC_Payments_Blocks_Payment_Method( $this->mock_gateway );
 		$this->blocks_payment_method->initialize();
 	}
 
