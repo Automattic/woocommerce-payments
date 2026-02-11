@@ -116,6 +116,22 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'apple_pay_google_pay', array_keys( $result )[0] );
 	}
 
+	public function test_prb_detection_excludes_disabled_stripe_gateway() {
+		// WCPay gateway enabled with PRB.
+		$this->woopayments_gateway->id                               = 'woocommerce_payments';
+		$this->woopayments_gateway->enabled                          = 'yes';
+		$this->woopayments_gateway->is_payment_request_enabled_value = true;
+
+		// Stripe gateway disabled but with payment_request still enabled in settings.
+		$this->gateway_from_another_plugin->id       = 'stripe';
+		$this->gateway_from_another_plugin->enabled  = 'no';
+		$this->gateway_from_another_plugin->settings = [ 'payment_request' => 'yes' ];
+
+		$result = $this->service->find_duplicates();
+
+		$this->assertEmpty( $result );
+	}
+
 	public function test_duplicate_not_enabled_in_woopayments() {
 		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
 		$this->woopayments_gateway->id = 'not_woopayments_card';
