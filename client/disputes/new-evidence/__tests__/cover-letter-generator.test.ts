@@ -585,6 +585,57 @@ describe( 'Cover Letter Generator', () => {
 				"Customer's signature"
 			);
 		} );
+
+		it( 'should label uncategorized_file as "Proof of acceptance" and customer_communication as "Other documents" for credit_not_processed + booking_reservation + refund_was_not_owed', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'proof_of_acceptance_url',
+					refund_policy: 'refund_policy_url',
+					customer_communication: 'other_docs_url',
+				},
+			};
+
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'booking_reservation',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Proof of acceptance' );
+			expect( result ).toContain( 'Other documents' );
+			expect( result ).not.toContain( 'Customer communication' );
+
+			// Verify exact ordering: Proof of acceptance (A), Store refund policy (B), Other documents (C)
+			const proofIndex = result.indexOf( 'Proof of acceptance' );
+			const refundPolicyIndex = result.indexOf( 'Store refund policy' );
+			const otherDocsIndex = result.indexOf( 'Other documents' );
+			expect( proofIndex ).toBeLessThan( refundPolicyIndex );
+			expect( refundPolicyIndex ).toBeLessThan( otherDocsIndex );
+			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
+			expect( result ).toContain( 'Store refund policy (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+		} );
+
+		it( 'should label uncategorized_file as "Other documents" for credit_not_processed + booking_reservation + refund_has_been_issued', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'some_file_url',
+				},
+			};
+
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'booking_reservation',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Other documents' );
+			expect( result ).not.toContain( 'Proof of acceptance' );
+		} );
 	} );
 
 	describe( 'generateHeader', () => {
