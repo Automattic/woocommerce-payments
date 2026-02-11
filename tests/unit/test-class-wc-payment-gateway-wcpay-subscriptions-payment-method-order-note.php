@@ -364,8 +364,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 	 * modified.
 	 */
 	public function test_new_payment_method_non_wc_pay() {
-		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$new_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$old_payment_method_title = 'cc';
 		$new_payment_method_title = 'cc';
 
@@ -379,19 +377,78 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->assertEquals( $new_payment_method_title, $new_payment_method_title_modified );
 	}
 
-	private function mock_wcs_get_subscriptions_for_order( $subscriptions ) {
-		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order ) use ( $subscriptions ) {
-				return $subscriptions;
-			}
+	public function test_amazon_pay_old_payment_method_displays_email() {
+		$old_token = WC_Helper_Token::create_amazon_pay_token( 'pm_amazon_1', self::USER_ID, 'customer@example.com' );
+
+		$newer_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$newer_token->set_last4( '9999' );
+		$newer_token->save();
+
+		$this->renewal_order->add_payment_token( $old_token );
+		$this->renewal_order->add_payment_token( $newer_token );
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			'Amazon Pay',
+			'woocommerce_payments_amazon_pay',
+			$this->subscription
 		);
+
+		$this->assertStringContainsString( '***omer@example.com', $old_payment_method_title_modified );
+		$this->assertStringContainsString( 'Amazon Pay', $old_payment_method_title_modified );
 	}
 
-	private function mock_wcs_is_subscription( $return_value ) {
-		WC_Subscriptions::set_wcs_is_subscription(
-			function ( $order ) use ( $return_value ) {
-				return $return_value;
-			}
+	public function test_amazon_pay_new_saved_payment_method_displays_email() {
+		$amazon_pay_gateway_id = 'woocommerce_payments_amazon_pay';
+
+		$new_token = WC_Helper_Token::create_amazon_pay_token( 'pm_amazon_1', self::USER_ID, 'buyer@amazon.com' );
+
+		$this->renewal_order->set_payment_method( $amazon_pay_gateway_id );
+		$this->renewal_order->set_payment_method_title( 'Amazon Pay' );
+
+		$_POST['payment_method']                                    = $amazon_pay_gateway_id;
+		$_POST[ 'wc-' . $amazon_pay_gateway_id . '-payment-token' ] = $new_token->get_id();
+
+		$new_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_new_payment_method_title',
+			'Amazon Pay',
+			$amazon_pay_gateway_id,
+			$this->subscription
 		);
+
+		$this->assertStringContainsString( '***uyer@amazon.com', $new_payment_method_title_modified );
+		$this->assertStringContainsString( 'Amazon Pay', $new_payment_method_title_modified );
+	}
+
+	public function test_switching_from_card_to_amazon_pay() {
+		$amazon_pay_gateway_id    = 'woocommerce_payments_amazon_pay';
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Credit card';
+		$new_payment_method_title = 'Amazon Pay';
+
+		// Old payment is a card (already set up in setUp with token1 and token2).
+		$new_token = WC_Helper_Token::create_amazon_pay_token( 'pm_amazon_1', self::USER_ID, 'switcher@test.com' );
+		$this->renewal_order->add_payment_token( $new_token );
+
+		$_POST['payment_method']                                    = $amazon_pay_gateway_id;
+		$_POST[ 'wc-' . $amazon_pay_gateway_id . '-payment-token' ] = $new_token->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+		$new_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_new_payment_method_title',
+			$new_payment_method_title,
+			$amazon_pay_gateway_id,
+			$this->subscription
+		);
+
+		// Old should show card last4.
+		$this->assertStringContainsString( $this->last4digits[2], $old_payment_method_title_modified );
+		// New should show Amazon Pay email.
+		$this->assertStringContainsString( '***cher@test.com', $new_payment_method_title_modified );
 	}
 }

@@ -162,10 +162,14 @@ npm run i18n:pot                    # Generate translations
   - Link to release testing docs post-merge
 
 ### Docker Environment
-- WordPress: http://localhost:8082
+- WordPress: http://localhost:<PORT> (check `.env` for your port; default 8082 for main checkout, 8180-8199 for worktrees)
 - phpMyAdmin: http://localhost:8083
 - MySQL: localhost:5678
 - Xdebug ready (requires IDE path mapping)
+- First-time setup: `npm run up:recreate` (auto-starts infrastructure if needed)
+- Subsequent runs: `npm run up`
+- For git worktrees: `npm run worktree:setup` to configure `.env` with unique port
+- To list all worktrees and their ports: `npm run worktree:status`
 
 ### Dependency Management
 - WordPress dependencies extracted automatically via webpack plugin

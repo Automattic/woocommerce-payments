@@ -579,7 +579,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		);
 	} );
 
-	it( 'should set setupFutureUsage to off_session for subscription products', async () => {
+	it( 'should use subscription mode for subscription products', async () => {
 		global.wcpayExpressCheckoutParams.product.product_type = 'subscription';
 
 		await jest.isolateModulesAsync( async () => {
@@ -589,16 +589,15 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		expect( global.Stripe ).toHaveBeenCalled();
 		expect( stripeInstance.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				mode: 'payment',
+				mode: 'subscription',
 				amount: 1100,
 				currency: 'usd',
 				paymentMethodTypes: [ 'card' ],
-				setupFutureUsage: 'off_session',
 			} )
 		);
 	} );
 
-	it( 'should set setupFutureUsage to off_session for variable-subscription products', async () => {
+	it( 'should use subscription mode for variable-subscription products', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
 		global.wcpayExpressCheckoutParams.product.product_type =
 			'variable-subscription';
@@ -610,13 +609,12 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		expect( global.Stripe ).toHaveBeenCalled();
 		expect( stripeInstance.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				mode: 'payment',
-				setupFutureUsage: 'off_session',
+				mode: 'subscription',
 			} )
 		);
 	} );
 
-	it( 'should set setupFutureUsage to off_session when has_subscription is true', async () => {
+	it( 'should use subscription mode when has_subscription is true', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
 		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
 		global.wcpayExpressCheckoutParams.has_subscription = true;
@@ -628,8 +626,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		expect( global.Stripe ).toHaveBeenCalled();
 		expect( stripeInstance.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				mode: 'payment',
-				setupFutureUsage: 'off_session',
+				mode: 'subscription',
 			} )
 		);
 	} );
