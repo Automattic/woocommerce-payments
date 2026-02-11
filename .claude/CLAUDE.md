@@ -92,10 +92,19 @@ npm run dev             # Start Docker + watch mode
 
 **PHP Tests:**
 ```bash
-# Standard approach
+# First run sets up the environment (installs WP, activates plugins).
+# Requires composer install --dev and Docker running (npm run up).
 npm run test:php                    # Run all PHP tests in Docker
 npm run test:php-watch              # Watch mode
 npm run test:php-coverage           # With coverage
+
+# To run a specific test class or method directly:
+docker compose exec -u www-data wordpress bash -c \
+  "cd /var/www/html/wp-content/plugins/woocommerce-payments && \
+  vendor/bin/phpunit --configuration phpunit.xml.dist --filter 'TestClassName::test_method_name'"
+
+# Run npm run test:php once first to set up the test environment,
+# then use the docker compose exec command for faster subsequent runs.
 ```
 
 **JavaScript Tests:**
