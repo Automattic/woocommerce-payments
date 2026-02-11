@@ -636,6 +636,30 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Other documents' );
 			expect( result ).not.toContain( 'Proof of acceptance' );
 		} );
+
+		it( 'should order all credit_not_processed Scenario A attachments correctly with booking_reservation product type', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					receipt: 'refund_receipt_url',
+					cancellation_rebuttal: 'cancellation_logs_url',
+					customer_communication: 'other_docs_url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'booking_reservation',
+				'refund_has_been_issued'
+			);
+			// Verify exact ordering: Refund receipt (A), Cancellation logs (B), Other documents (C)
+			expect( result ).toContain( 'Refund receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Order receipt' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
 	} );
 
 	describe( 'generateHeader', () => {
