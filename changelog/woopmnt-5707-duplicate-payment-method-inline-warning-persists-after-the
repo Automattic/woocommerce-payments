@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed duplicate payment method dismissed notices option type from bool to array, allowing notice dismissals to persist across page refreshes.

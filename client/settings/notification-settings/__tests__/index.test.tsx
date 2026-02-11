@@ -50,7 +50,9 @@ describe( 'NotificationSettings', () => {
 
 		render( <NotificationSettings /> );
 
-		expect( screen.getByDisplayValue( testEmail ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Email address' ) ).toHaveValue(
+			testEmail
+		);
 	} );
 } );
 

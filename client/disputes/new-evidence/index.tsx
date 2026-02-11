@@ -286,11 +286,11 @@ export default ( { query }: { query: { id: string } } ) => {
 			}
 		};
 		fetchDispute();
-		// We intentionally exclude duplicateStatus from dependencies to prevent re-fetching dispute data
-		// when duplicate status changes (which would reset the product type selection).
+		// We intentionally exclude duplicateStatus and refundStatus from dependencies to prevent
+		// re-fetching dispute data when status changes (which would reset the product type selection).
 		// Cover letter regeneration on status changes is handled by the evidence update effect.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ path, createErrorNotice, settings, bankName, refundStatus ] );
+	}, [ path, createErrorNotice, settings, bankName ] );
 
 	// --- File name display logic ---
 	useEffect( () => {

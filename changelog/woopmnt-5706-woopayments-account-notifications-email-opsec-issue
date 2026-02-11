@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add email confirmation field and warning notice to account notification email settings to prevent typos and improve security awareness
