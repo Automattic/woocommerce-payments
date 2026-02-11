@@ -4211,19 +4211,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// force_currency_check = 0 is_admin = 1 -> skip_currency_check = 1.
 				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
 				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
-
-				// In admin context (e.g., block editor), we skip runtime checks to allow
-				// payment methods to be displayed. This prevents false "incompatible with
-				// block-based checkout" warnings. On the frontend, full validation applies.
-				// We exclude AJAX requests because is_admin() returns true for them but
-				// they need full validation (e.g. subscription payment method switching).
-				$is_admin_context          = ! $force_currency_check && is_admin();
+				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $is_admin_context ) && ( $is_admin_context || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
-					// In admin context, skip capability status check to allow all enabled
-					// methods to appear in the block editor's payment method list.
-					if ( $is_admin_context || 'active' === $status ) {
+					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
 					}
 				}
