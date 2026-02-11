@@ -310,7 +310,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
 	}
 
-	public function test_should_not_show_express_checkout_button_for_non_shipping_but_price_does_not_include_tax() {
+	public function test_should_show_express_checkout_button_for_non_shipping_even_when_tax_based_on_billing() {
 		$this->mock_wcpay_account
 			->method( 'is_stripe_connected' )
 			->willReturn( true );
@@ -324,7 +324,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		update_option( 'woocommerce_tax_based_on', 'billing' );
 		update_option( 'woocommerce_prices_include_tax', 'no' );
 
-		$this->assertFalse( $this->system_under_test->should_show_express_checkout_button() );
+		// Buttons should show even when tax is based on billing - any mismatch is handled
+		// by redirecting to pay-for-order page with updated totals.
+		$this->assertTrue( $this->system_under_test->should_show_express_checkout_button() );
 
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 		remove_filter( 'wc_tax_enabled', '__return_true' );
@@ -604,7 +606,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 				'feature_flag_enabled' => true,
 				'gateway_available'    => true,
 				'tax_on_billing'       => true,
-				'expected'             => false,
+				// Amazon Pay is allowed even with tax on billing - mismatches are handled
+				// by redirecting to pay-for-order page.
+				'expected'             => true,
 			],
 			'all conditions met'    => [
 				'feature_flag_enabled' => true,
