@@ -183,7 +183,7 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler_Test extends WCPAY_Uni
 		$this->assertArrayHasKey( 'difference', $mismatch_data );
 		$this->assertArrayHasKey( 'currency', $mismatch_data );
 		$this->assertArrayHasKey( 'timestamp', $mismatch_data );
-		$this->assertEquals( 1000, $mismatch_data['difference'] );
+		$this->assertEquals( 10.0, $mismatch_data['difference'] );
 	}
 
 	public function test_small_difference_within_threshold_tolerated() {

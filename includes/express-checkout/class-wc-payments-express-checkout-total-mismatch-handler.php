@@ -22,9 +22,10 @@ use Automattic\WooCommerce\StoreApi\Payments\PaymentResult;
 class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 
 	/**
-	 * Threshold in cents for acceptable total difference (to account for rounding).
+	 * Threshold for acceptable total difference (to account for rounding).
+	 * Value is in decimal currency units (e.g., 0.01 = one cent).
 	 */
-	const MISMATCH_THRESHOLD_CENTS = 1;
+	const MISMATCH_THRESHOLD = 0.01;
 
 	/**
 	 * Order meta key for storing mismatch data.
@@ -32,12 +33,12 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	const ORDER_META_KEY = '_wcpay_ece_total_mismatch';
 
 	/**
-	 * Session cart total captured at cart load time (in minor units).
+	 * Session cart total captured at cart load time (decimal amount).
 	 *
 	 * This represents the cart total from the session before billing address is applied.
 	 * It's the total that was shown to the user in the Express Checkout dialog.
 	 *
-	 * @var int|null
+	 * @var float|null
 	 */
 	private $session_cart_total = null;
 
@@ -145,10 +146,8 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 			return;
 		}
 
-		// Convert to minor units (cents) for comparison.
-		// Use the store currency since cart currency matches store currency.
-		$currency                 = get_woocommerce_currency();
-		$this->session_cart_total = WC_Payments_Utils::prepare_amount( (float) $totals['total'], $currency );
+		// Store as decimal amount for comparison.
+		$this->session_cart_total = (float) $totals['total'];
 	}
 
 	/**
@@ -173,10 +172,10 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 		}
 
 		$order        = $context->order;
-		$actual_total = WC_Payments_Utils::prepare_amount( (float) $order->get_total(), $order->get_currency() );
+		$actual_total = (float) $order->get_total();
 		$difference   = abs( $actual_total - $expected_total );
 
-		if ( $difference <= self::MISMATCH_THRESHOLD_CENTS ) {
+		if ( $difference <= self::MISMATCH_THRESHOLD ) {
 			// Within tolerance - proceed with payment.
 			return;
 		}
@@ -229,27 +228,24 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * before billing address was applied. This is what the user saw in the
 	 * Express Checkout dialog.
 	 *
-	 * @return int|null Expected total in minor units (cents), or null if not available.
+	 * @return float|null Expected total as decimal amount, or null if not available.
 	 */
 	private function get_expected_total() {
 		return $this->session_cart_total;
 	}
 
 	/**
-	 * Format a price in minor units (cents) for display.
+	 * Format a price for display.
 	 *
 	 * Returns plain text (no HTML) for compatibility with frontend error display.
 	 *
-	 * @param int    $amount_minor_units Amount in minor units (e.g., cents).
-	 * @param string $currency           Currency code.
+	 * @param float  $amount   Amount as decimal (e.g., 12.99).
+	 * @param string $currency Currency code.
 	 *
 	 * @return string Formatted price as plain text.
 	 */
-	private function format_price( $amount_minor_units, $currency ) {
-		// Use interpret_stripe_amount to correctly handle zero-decimal currencies.
-		$decimal_amount = WC_Payments_Utils::interpret_stripe_amount( $amount_minor_units, strtolower( $currency ) );
-
-		$html_price = wc_price( $decimal_amount, [ 'currency' => $currency ] );
+	private function format_price( $amount, $currency ) {
+		$html_price = wc_price( $amount, [ 'currency' => $currency ] );
 
 		// Strip HTML tags and decode entities for plain text display.
 		$plain_price = wp_strip_all_tags( $html_price );
@@ -260,8 +256,8 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * Record the mismatch in order meta and add an internal order note.
 	 *
 	 * @param WC_Order $order          Order object.
-	 * @param int      $expected_total Expected total in cents.
-	 * @param int      $actual_total   Actual total in cents.
+	 * @param float    $expected_total Expected total as decimal.
+	 * @param float    $actual_total   Actual total as decimal.
 	 *
 	 * @return void
 	 */
@@ -297,8 +293,8 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * Get the customer-facing error message.
 	 *
 	 * @param WC_Order $order          Order object.
-	 * @param int      $expected_total Expected total in cents.
-	 * @param int      $actual_total   Actual total in cents.
+	 * @param float    $expected_total Expected total as decimal.
+	 * @param float    $actual_total   Actual total as decimal.
 	 *
 	 * @return string Customer-facing message.
 	 */
