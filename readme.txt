@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.3
-Stable tag: 10.5.0
+Stable tag: 10.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,10 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 10.5.1 - 2026-02-11 =
+* Fix - Cache the affected orders check for the canceled auth fee remediation note to avoid an expensive query on every admin page load
+
 
 = 10.5.0 - 2026-02-05 =
 * Add - Add "Other" and "Booking/Reservation" product type support for dispute evidence (feature flag gated)
