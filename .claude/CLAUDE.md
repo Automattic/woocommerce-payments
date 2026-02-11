@@ -54,7 +54,7 @@ Checkout Form (JS) → WC_Payment_Gateway_WCPay::process_payment()
 
 5. **Frontend** (`client/`)
    - React 18.3 + TypeScript. State via `@wordpress/data` stores (one store per domain in `client/data/`).
-   - Checkout JS creates a Stripe PaymentMethod on the client, passes `pm_xxx` ID to PHP.
+   - Checkout JS creates a Stripe PaymentMethod or confirmation token on the client, passes the ID to PHP.
    - Uses WordPress and WooCommerce component libraries — check Storybooks before building custom components.
 
 ### Key Architectural Docs (read when working in these areas)

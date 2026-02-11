@@ -6,7 +6,7 @@ This documents the exact call chain for payment operations in WooPayments. Read 
 
 ### 1. Gateway Entry
 
-**`WC_Payment_Gateway_WCPay::process_payment($order_id)`**
+**`WC_Payment_Gateway_WCPay::process_payment($order_id)`** _(called by WC Core)_
 - Validates fraud prevention token via `Fraud_Prevention_Service`
 - Checks rate limiter via `$this->failed_transaction_rate_limiter->is_limited()`
 - Delegates to `process_payment_for_order($cart, $payment_information)`
@@ -16,15 +16,17 @@ This documents the exact call chain for payment operations in WooPayments. Read 
 **`WC_Payment_Gateway_WCPay::process_payment_for_order()`**
 - Manages customer details via `manage_customer_details_for_order()`
 - Handles zero-amount orders (skips intent creation)
-- For WooPay pre-created intents: calls `Get_Intention::create($intent_id)->send()`
-- For new payments: creates `Create_And_Confirm_Intention` request
+- Multiple paths depending on context:
+  - **WooPay pre-created intents**: calls `Get_Intention::create($intent_id)->send()`
+  - **Deferred intent creation** (e.g. confirmation tokens): creates `Create_Intention` first, then confirms separately
+  - **Standard flow**: creates and confirms in one step via `Create_And_Confirm_Intention`
 
 ```php
-// The standard payment flow
+// Example: the standard create-and-confirm flow (not the only path)
 $request = Create_And_Confirm_Intention::create();
 $request->set_amount( WC_Payments_Utils::prepare_amount( $amount, $currency ) );
 $request->set_currency_code( strtolower( $currency ) );
-$request->set_payment_method( $payment_method_id );  // pm_xxx from Stripe
+$request->set_payment_method( $payment_method_id );  // pm_xxx or confirmation token
 $request->set_customer( $customer_id );               // cus_xxx
 $request->set_capture_method( $manual ? 'manual' : 'automatic' );
 $request->set_metadata( $metadata );
