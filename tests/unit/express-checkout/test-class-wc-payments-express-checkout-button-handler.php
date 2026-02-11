@@ -119,8 +119,8 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 
 
 	public function test_filter_cart_needs_shipping_address_subscription_products() {
-		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 		$this->mock_ece_button_helper->method( 'is_checkout' )->willReturn( true );
+		$this->mock_ece_button_helper->method( 'has_subscription_product' )->willReturn( true );
 
 		$this->zone->delete_shipping_method( $this->flat_rate_id );
 		$this->zone->delete_shipping_method( $this->local_pickup_id );
@@ -131,7 +131,6 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 		);
 
 		remove_filter( 'woocommerce_shipping_method_count', '__return_zero' );
-		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 	}
 
 	public function test_get_express_checkout_params() {

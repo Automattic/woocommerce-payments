@@ -18,7 +18,7 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
-	getSetupFutureUsage,
+	getStripeElementsMode,
 	displayLoginConfirmation,
 } from './utils';
 import {
@@ -224,14 +224,11 @@ jQuery( ( $ ) => {
 
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
-				mode: 'payment',
+				mode: getStripeElementsMode(),
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
 				...( useConfirmationToken
-					? {
-							paymentMethodTypes,
-							...getSetupFutureUsage(),
-					  }
+					? { paymentMethodTypes }
 					: { paymentMethodCreation: 'manual' } ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',

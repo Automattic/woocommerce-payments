@@ -83,12 +83,16 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 	 */
 	public function provider_valid_values(): array {
 		return [
-			'bool option with true'          => [ 'wcpay_multi_currency_setup_completed', true ],
-			'bool option with false'         => [ 'wcpay_multi_currency_setup_completed', false ],
-			'array option with empty array'  => [ 'woocommerce_dismissed_todo_tasks', [] ],
-			'array option with array'        => [ 'woocommerce_dismissed_todo_tasks', [ 'key' => 'value' ] ],
-			'array option with nested array' => [ 'woocommerce_dismissed_todo_tasks', [ 'key' => [ 'nested' => 'value' ] ] ],
-			'string option with string'      => [ 'wcpay_exit_survey_last_shown', '2026-01-09T09:23:30.444Z' ],
+			'bool option with true'                        => [ 'wcpay_multi_currency_setup_completed', true ],
+			'bool option with false'                       => [ 'wcpay_multi_currency_setup_completed', false ],
+			'array option with empty array'                => [ 'woocommerce_dismissed_todo_tasks', [] ],
+			'array option with array'                      => [ 'woocommerce_dismissed_todo_tasks', [ 'key' => 'value' ] ],
+			'array option with nested array'               => [ 'woocommerce_dismissed_todo_tasks', [ 'key' => [ 'nested' => 'value' ] ] ],
+			'string option with string'                    => [ 'wcpay_exit_survey_last_shown', '2026-01-09T09:23:30.444Z' ],
+			'array option for dismissed duplicate notices' => [
+				'wcpay_duplicate_payment_method_notices_dismissed',
+				[ 'card' => [ 'woocommerce_payments', 'stripe' ] ],
+			],
 		];
 	}
 
@@ -110,14 +114,15 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 	 */
 	public function provider_invalid_values(): array {
 		return [
-			'bool option with string'  => [ 'wcpay_multi_currency_setup_completed', 'string' ],
-			'bool option with array'   => [ 'wcpay_multi_currency_setup_completed', [] ],
-			'bool option with int'     => [ 'wcpay_multi_currency_setup_completed', 123 ],
-			'array option with bool'   => [ 'woocommerce_dismissed_todo_tasks', true ],
-			'array option with string' => [ 'woocommerce_dismissed_todo_tasks', 'string' ],
-			'string option with bool'  => [ 'wcpay_exit_survey_last_shown', true ],
-			'string option with array' => [ 'wcpay_exit_survey_last_shown', [] ],
-			'string option with int'   => [ 'wcpay_exit_survey_last_shown', 123 ],
+			'bool option with string'                    => [ 'wcpay_multi_currency_setup_completed', 'string' ],
+			'bool option with array'                     => [ 'wcpay_multi_currency_setup_completed', [] ],
+			'bool option with int'                       => [ 'wcpay_multi_currency_setup_completed', 123 ],
+			'array option with bool'                     => [ 'woocommerce_dismissed_todo_tasks', true ],
+			'array option with string'                   => [ 'woocommerce_dismissed_todo_tasks', 'string' ],
+			'string option with bool'                    => [ 'wcpay_exit_survey_last_shown', true ],
+			'string option with array'                   => [ 'wcpay_exit_survey_last_shown', [] ],
+			'string option with int'                     => [ 'wcpay_exit_survey_last_shown', 123 ],
+			'array option (dismissed notices) with bool' => [ 'wcpay_duplicate_payment_method_notices_dismissed', true ],
 		];
 	}
 
