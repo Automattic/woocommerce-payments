@@ -958,12 +958,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function is_available_for_express_checkout() {
 		if ( is_admin() ) {
-			// In admin context (block editor), skip full availability checks.
-			// check_base_availability() calls parent::is_available() which checks
-			// $this->enabled, but init_settings() intentionally sets that to 'no'
-			// for express checkout methods to prevent block editor compatibility
-			// warnings. Use is_enabled() instead, which reads the actual setting
-			// value and isn't affected by the init_settings() override.
+			// In admin context (e.g. block editor preview), skip full availability
+			// checks. check_base_availability() includes runtime checks (HTTPS,
+			// currency, capability status) that can fail without an active cart
+			// or customer session. A simple enabled check is sufficient here.
 			return WC_Payments::get_gateway()->is_enabled() && $this->is_enabled();
 		}
 
