@@ -1,0 +1,84 @@
+name: "Agent Pipeline"
+
+on:
+  workflow_dispatch:
+    inputs:
+      linear_issue_id:
+        description: "Linear issue ID (e.g. GAMMA-123) or issue description"
+        required: true
+        type: string
+      target_branch:
+        description: "Base branch to work from"
+        required: false
+        default: "develop"
+        type: string
+      stages:
+        description: "Pipeline stages to run (comma-separated: plan,dev,review,compound)"
+        required: false
+        default: "plan"
+        type: string
+      model:
+        description: "Claude model to use"
+        required: false
+        default: "claude-sonnet-4-5-20250929"
+        type: choice
+        options:
+          - claude-sonnet-4-5-20250929
+          - claude-opus-4-6
+
+concurrency:
+  group: agent-pipeline-${{ inputs.linear_issue_id }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Stage 1: Plan ───────────────────────────────
+  plan:
+    if: contains(inputs.stages, 'plan')
+    uses: ./.github/workflows/agent-plan.yml
+    with:
+      linear_issue_id: ${{ inputs.linear_issue_id }}
+      target_branch: ${{ inputs.target_branch }}
+      model: ${{ inputs.model }}
+    secrets: inherit
+
+  # ─── Stage 2: Dev (Phase 2) ──────────────────────
+  # dev:
+  #   needs: plan
+  #   if: contains(inputs.stages, 'dev')
+  #   uses: ./.github/workflows/agent-dev.yml
+  #   with:
+  #     linear_issue_id: ${{ inputs.linear_issue_id }}
+  #     target_branch: ${{ inputs.target_branch }}
+  #     model: ${{ inputs.model }}
+  #   secrets: inherit
+
+  # ─── Stage 3: Review (Phase 2) ───────────────────
+  # review:
+  #   needs: dev
+  #   if: contains(inputs.stages, 'review')
+  #   uses: ./.github/workflows/agent-review.yml
+  #   with:
+  #     linear_issue_id: ${{ inputs.linear_issue_id }}
+  #     target_branch: ${{ inputs.target_branch }}
+  #     model: ${{ inputs.model }}
+  #   secrets: inherit
+
+  # ─── Human Gate (Phase 2) ────────────────────────
+  # Requires GitHub Environment "agent-pipeline-approval" with required reviewers.
+  # human-approval:
+  #   needs: review
+  #   runs-on: ubuntu-latest
+  #   environment: agent-pipeline-approval
+  #   steps:
+  #     - run: echo "Approved by human reviewer"
+
+  # ─── Stage 4: Compound (Phase 2) ─────────────────
+  # compound:
+  #   needs: human-approval
+  #   if: contains(inputs.stages, 'compound')
+  #   uses: ./.github/workflows/agent-compound.yml
+  #   with:
+  #     linear_issue_id: ${{ inputs.linear_issue_id }}
+  #     target_branch: ${{ inputs.target_branch }}
+  #     model: ${{ inputs.model }}
+  #   secrets: inherit
