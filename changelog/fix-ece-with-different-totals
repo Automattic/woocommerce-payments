@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-feat: add tax based on billing address support to google pay/apple pay payment methods
+feat: enable ECE buttons (Apple Pay, Google Pay, Amazon Pay) for stores with tax calculated based on billing address.

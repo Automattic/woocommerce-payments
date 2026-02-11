@@ -48,7 +48,7 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * @return void
 	 */
 	public function init() {
-		// Capture cart total from session before billing address is applied.
+		// Capture cart total from the session before the billing address is applied.
 		// This fires early in the checkout process, before customer data is updated.
 		add_action(
 			'woocommerce_cart_loaded_from_session',
@@ -57,7 +57,7 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 			1
 		);
 
-		// Run before WC's Legacy::process_legacy_payment (priority 999).
+		// Run before WC's Legacy::process_legacy_payment (which is set with priority 999).
 		// Setting the result status will prevent payment processing.
 		add_action(
 			'woocommerce_rest_checkout_process_payment_with_context',
@@ -66,9 +66,9 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 			2
 		);
 
-		// Display mismatch notice on the pay-for-order page.
+		// Display a mismatch notice on the pay-for-order page.
 		// Use woocommerce_pay_order_before_payment hook which fires during template output,
-		// allowing us to print the notice directly without relying on session storage.
+		// allowing us to print the notice directly.
 		add_action(
 			'woocommerce_pay_order_before_payment',
 			[ $this, 'maybe_display_mismatch_notice' ]
@@ -87,7 +87,6 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 		}
 
 		global $wp;
-		// Get the order ID from the query vars (set by WC's endpoint).
 		$order_id = absint( $wp->query_vars['order-pay'] ?? 0 );
 
 		if ( ! $order_id ) {
@@ -105,13 +104,13 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 			return;
 		}
 
-		// Get the mismatch data from order meta.
 		$mismatch_data = $order->get_meta( self::ORDER_META_KEY );
-		if ( empty( $mismatch_data ) ) {
+		// checking validity of data as well, in case it got manipulated.
+		if ( empty( $mismatch_data ) || ! isset( $mismatch_data['expected'], $mismatch_data['actual'] ) ) {
 			return;
 		}
 
-		// Display the notice directly (not via session) since we're in template output phase.
+		// display the notice directly (not via session) since we're in the template output phase.
 		$message = $this->get_customer_message(
 			$order,
 			$mismatch_data['expected'],
@@ -133,12 +132,12 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * @return void
 	 */
 	public function capture_session_cart_total( $cart ) {
-		// Skip if cart is empty (e.g., pay-for-order page where cart isn't used).
+		// Skip if the cart is empty (e.g., pay-for-order page where cart isn't used).
 		if ( $cart->is_empty() ) {
 			return;
 		}
 
-		// Get the cart total from session. At this point, totals have been
+		// Get the cart total from the session. At this point, totals have been
 		// restored from session but not yet recalculated with billing address.
 		$totals = $cart->get_totals();
 
@@ -146,7 +145,6 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 			return;
 		}
 
-		// Store as decimal amount for comparison.
 		$this->session_cart_total = (float) $totals['total'];
 	}
 
@@ -159,15 +157,12 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * @return void
 	 */
 	public function check_ece_total_mismatch( PaymentContext $context, PaymentResult &$result ) {
-		// Only handle WooPayments ECE requests.
 		if ( ! $this->is_ece_payment( $context ) ) {
 			return;
 		}
 
-		// Get expected total from captured session cart total.
 		$expected_total = $this->get_expected_total();
 		if ( null === $expected_total ) {
-			// No expected total available - skip validation.
 			return;
 		}
 
@@ -176,23 +171,20 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 		$difference   = abs( $actual_total - $expected_total );
 
 		if ( $difference <= self::MISMATCH_THRESHOLD ) {
-			// Within tolerance - proceed with payment.
 			return;
 		}
 
-		// Mismatch detected - record it and set failure result.
 		$this->record_mismatch( $order, $expected_total, $actual_total );
 
 		$customer_message = $this->get_customer_message( $order, $expected_total, $actual_total );
 
-		// Build redirect URL with mismatch indicator for displaying notice on pay-for-order page.
 		$redirect_url = add_query_arg(
 			'wcpay_ece_mismatch',
 			'1',
 			$order->get_checkout_payment_url()
 		);
 
-		// Set failure result - this prevents Legacy::process_legacy_payment from processing.
+		// Set a "failure" result - this prevents Legacy::process_legacy_payment (in WC Core( from processing.
 		$result->set_status( 'failure' );
 		$result->set_redirect_url( $redirect_url );
 		$result->set_payment_details(
@@ -210,12 +202,10 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * @return bool
 	 */
 	private function is_ece_payment( PaymentContext $context ) {
-		// Must be WooPayments gateway.
 		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $context->payment_method ) {
 			return false;
 		}
 
-		// Must have express_payment_type set.
 		$express_payment_type = $context->payment_data['express_payment_type'] ?? '';
 
 		return ! empty( $express_payment_type );
@@ -225,10 +215,10 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * Get the expected total for comparison.
 	 *
 	 * Returns the captured session cart total, which represents the cart total
-	 * before billing address was applied. This is what the user saw in the
+	 * before the billing address was applied. This is what the user saw in the
 	 * Express Checkout dialog.
 	 *
-	 * @return float|null Expected total as decimal amount, or null if not available.
+	 * @return float|null Expected total as a decimal amount, or null if not available.
 	 */
 	private function get_expected_total() {
 		return $this->session_cart_total;
@@ -245,10 +235,9 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	 * @return string Formatted price as plain text.
 	 */
 	private function format_price( $amount, $currency ) {
-		$html_price = wc_price( $amount, [ 'currency' => $currency ] );
-
-		// Strip HTML tags and decode entities for plain text display.
+		$html_price  = wc_price( $amount, [ 'currency' => $currency ] );
 		$plain_price = wp_strip_all_tags( $html_price );
+
 		return html_entity_decode( $plain_price, ENT_QUOTES, 'UTF-8' );
 	}
 
@@ -264,7 +253,6 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 	private function record_mismatch( $order, $expected_total, $actual_total ) {
 		$currency = $order->get_currency();
 
-		// Store mismatch data in order meta.
 		$order->update_meta_data(
 			self::ORDER_META_KEY,
 			[
@@ -276,7 +264,6 @@ class WC_Payments_Express_Checkout_Total_Mismatch_Handler {
 			]
 		);
 
-		// Add internal order note for the merchant.
 		$order->add_order_note(
 			sprintf(
 				/* translators: 1: expected total, 2: actual total */
