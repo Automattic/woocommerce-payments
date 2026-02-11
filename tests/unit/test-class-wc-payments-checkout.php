@@ -377,12 +377,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
-			->willReturnMap(
-				[
-					[ 'card', $card_pm ],
-					[ 'link', $link_pm ],
-				]
-			);
+			->withConsecutive( [ 'card' ], [ 'link' ] )
+			->willReturnOnConsecutiveCalls( $card_pm, $link_pm );
 
 		$this->mock_wcpay_account
 			->expects( $this->any() )
