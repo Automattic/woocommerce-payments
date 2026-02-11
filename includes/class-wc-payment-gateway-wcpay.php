@@ -4211,6 +4211,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// force_currency_check = 0 is_admin = 1 -> skip_currency_check = 1.
 				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
 				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
+
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
 				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
