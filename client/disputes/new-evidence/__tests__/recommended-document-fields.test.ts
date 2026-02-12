@@ -562,6 +562,69 @@ describe( 'Recommended Documents', () => {
 			} );
 		} );
 
+		describe( 'credit_not_processed matrix with feature flag', () => {
+			it( 'should return matrix fields for credit_not_processed + booking_reservation + refund_was_not_owed when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'credit_not_processed',
+					'refund_was_not_owed',
+					undefined,
+					'booking_reservation'
+				);
+
+				// Matrix entry for credit_not_processed + booking_reservation + refund_was_not_owed
+				expect( result ).toHaveLength( 3 );
+				expect( result[ 0 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 0 ].label ).toBe( 'Proof of acceptance' );
+				expect( result[ 0 ].description ).toBe(
+					'Screenshot or document showing where the customer agreed to or acknowledged the refund policy during checkout or on the receipt.'
+				);
+				expect( result[ 1 ].key ).toBe( 'refund_policy' );
+				expect( result[ 1 ].label ).toBe( 'Refund policy' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].label ).toBe( 'Other documents' );
+			} );
+
+			it( 'should fall back to legacy fields for credit_not_processed + booking_reservation + refund_has_been_issued when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'credit_not_processed',
+					'refund_has_been_issued',
+					undefined,
+					'booking_reservation'
+				);
+
+				// No matrix entry for refund_has_been_issued yet, falls back to legacy
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'service_documentation' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+			} );
+
+			it( 'should fall back to legacy fields for credit_not_processed + physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'credit_not_processed',
+					'refund_was_not_owed',
+					undefined,
+					'physical_product'
+				);
+
+				// No matrix entry for physical_product, falls back to legacy
+				expect( result ).toHaveLength( 4 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].key ).toBe( 'uncategorized_file' );
+			} );
+		} );
+
 		describe( 'Visa Compliance (noncompliant) reason', () => {
 			it( 'should return only customer communication and uncategorized file for noncompliant reason', () => {
 				// Enable the feature flag for Visa Compliance documents

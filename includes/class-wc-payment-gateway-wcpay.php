@@ -37,6 +37,7 @@ use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
+use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
@@ -1743,26 +1744,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				// For $0 orders, we need to save the payment method using a setup intent.
-				$request = Create_And_Confirm_Setup_Intention::create();
-				$request->set_customer( $customer_id );
-
-				// Setting the credential based on what was provided.
 				$payment_credential = $payment_information->get_payment_method();
-				if ( $payment_information->is_using_confirmation_token() ) {
-					$request->set_confirmation_token( $payment_credential );
-				} else {
-					$request->set_payment_method( $payment_credential );
-				}
-				$request->set_metadata( $metadata );
-				$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
-				$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
 
-				if (
-					Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
-					in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
-					) {
+				// For confirmation tokens (e.g.: through the ECE), we must create an unconfirmed `SetupIntent`
+				// and let the frontend confirm it with the confirmation token.
+				// Stripe's SetupIntent API doesn't support confirmation_token with confirm=true in the same way `PaymentIntent`s do.
+				if ( $payment_information->is_using_confirmation_token() ) {
+					$request = Create_Setup_Intention::create();
+					$request->set_customer( $customer_id );
 					$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
-					$request->set_mandate_data( $this->get_mandate_data() );
+					$request->set_metadata( $metadata );
+					$request->assign_hook( 'wcpay_create_setup_intention_request' );
+				} else {
+					$request = Create_And_Confirm_Setup_Intention::create();
+					$request->set_customer( $customer_id );
+					$request->set_payment_method( $payment_credential );
+					$request->set_metadata( $metadata );
+					$request->assign_hook( 'wcpay_create_and_confirm_setup_intention_request' );
+					$request->set_hook_args( $payment_information, false, $save_user_in_woopay );
+
+					if (
+						Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() &&
+						in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true )
+					) {
+						$request->set_payment_method_types( $this->get_payment_method_types( $payment_information ) );
+						$request->set_mandate_data( $this->get_mandate_data() );
+					}
 				}
 
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
@@ -1838,7 +1845,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 
-			if ( Intent_Status::REQUIRES_ACTION === $status ) {
+			$needs_frontend_confirmation = (
+				Intent_Status::REQUIRES_ACTION === $status
+				|| Intent_Status::REQUIRES_CONFIRMATION === $status
+				|| (
+					// For SetupIntents with confirmation tokens, the status will be 'requires_payment_method'
+					// since no payment method is attached yet (the confirmation token will be used on frontend).
+					Intent_Status::REQUIRES_PAYMENT_METHOD === $status
+					&& $payment_information->is_using_confirmation_token()
+					&& ! $payment_needed
+				)
+			);
+
+			if ( $needs_frontend_confirmation ) {
 				$next_action_type = $next_action['type'] ?? null;
 				if ( 'redirect_to_url' === $next_action_type && ! empty( $next_action[ $next_action_type ]['url'] ) ) {
 					$response = [
@@ -1854,17 +1873,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						$next_action[ $next_action_type ]['expires_at']
 					);
 				} else {
+					// Build the redirect URL with the confirmation token for `SetupIntent`s requested through the ECE.
+					// Format: #wcpay-confirm-{si|pi}:{orderId}:{clientSecret}:{nonce}[:{confirmationToken}].
+					$redirect_hash_parts = [
+						$payment_needed ? 'pi' : 'si',
+						$order_id,
+						$client_secret,
+						wp_create_nonce( 'wcpay_update_order_status_nonce' ),
+					];
+
+					// For ECE SetupIntents, include the confirmation token so the frontend can
+					// use it with confirmSetup() to complete the confirmation.
+					if ( ! $payment_needed && $payment_information->is_using_confirmation_token() ) {
+						$redirect_hash_parts[] = $payment_information->get_payment_method();
+					}
+
 					$response = [
 						'result'         => 'success',
 						// Include a new nonce for update_order_status to ensure the update order
 						// status call works when a guest user creates an account during checkout.
-						'redirect'       => sprintf(
-							'#wcpay-confirm-%s:%s:%s:%s',
-							$payment_needed ? 'pi' : 'si',
-							$order_id,
-							$client_secret,
-							wp_create_nonce( 'wcpay_update_order_status_nonce' ),
-						),
+						'redirect'       => '#wcpay-confirm-' . implode( ':', $redirect_hash_parts ),
 						// Include the payment method ID so the Blocks integration can save cards.
 						'payment_method' => $payment_information->get_payment_method(),
 					];
@@ -1919,7 +1947,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
 		$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 
-		if ( isset( $status ) && Intent_Status::REQUIRES_ACTION === $status && $this->is_changing_payment_method_for_subscription() ) {
+		if ( isset( $status ) && ( Intent_Status::REQUIRES_ACTION === $status || Intent_Status::REQUIRES_CONFIRMATION === $status ) && $this->is_changing_payment_method_for_subscription() ) {
 			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
 			if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 				$order->update_meta_data( '_delayed_update_payment_method_all', wc_clean( wp_unslash( $_POST['payment_method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -3709,12 +3737,38 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// For $0 orders, fetch the Setup Intent instead.
 				$setup_intent_request = Get_Setup_Intention::create( $intent_id );
 				/** @var WC_Payments_API_Setup_Intention $setup_intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent    = $setup_intent_request->send();
-				$status    = $intent->get_status();
-				$charge_id = '';
+				$intent = $setup_intent_request->send();
+				$status = $intent->get_status();
+
+				// For $0 orders (free trials), directly complete the order when SetupIntent succeeds.
+				// This is similar to how WC Stripe Gateway handles it - calling payment_complete()
+				// directly ensures the order transitions to the correct status and activates subscriptions.
+				// Otherwise, the order would be in a "Pending payment" state and the subscription would be "Pending".
+				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() ) {
+					$order->payment_complete( $intent_id );
+
+					// Add a success note similar to mark_payment_completed().
+					$note = sprintf(
+					/* translators: %1: the successfully charged amount, %2: WooPayments, %3: transaction ID of the payment */
+						__( 'A payment of %1$s was successfully charged using %2$s (%3$s).', 'woocommerce-payments' ),
+						wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ),
+						'WooPayments',
+						$intent_id
+					);
+					$order->add_order_note( $note );
+					$this->order_service->set_intention_status_for_order( $order, $status );
+					$order->save();
+				}
 			}
 
 			$payment_method_id = $intent->get_payment_method_id();
+
+			// For SetupIntents confirmed via frontend (e.g., ECE with confirmation tokens),
+			// store the payment method ID in order meta. This ensures subscription renewals
+			// can find the payment method even if token creation fails later.
+			if ( ! empty( $payment_method_id ) ) {
+				$this->order_service->set_payment_method_id_for_order( $order, $payment_method_id );
+			}
 
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
@@ -3737,8 +3791,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 						}
 					} catch ( Exception $e ) {
-						// If saving the token fails, log the error message but catch the error to avoid crashing the checkout flow.
 						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+
+						// For subscription orders, token creation failure is critical - renewals will fail.
+						// Re-throw the exception so the customer sees an error instead of a successful
+						// checkout that will fail on the first renewal.
+						if ( $is_subscription ) {
+							throw new Exception(
+								__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
+							);
+						}
 					}
 				}
 
@@ -3992,24 +4054,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Returns a formatted token list for a user.
 	 *
-	 * @param int $user_id The user ID.
+	 * @param int         $user_id The user ID.
+	 * @param string|null $gateway_id Optional gateway ID to filter tokens. Defaults to card gateway.
 	 */
-	protected function get_user_formatted_tokens_array( $user_id ) {
+	protected function get_user_formatted_tokens_array( $user_id, $gateway_id = null ) {
 		$tokens = WC_Payment_Tokens::get_tokens(
 			[
 				'user_id'    => $user_id,
-				'gateway_id' => self::GATEWAY_ID,
+				'gateway_id' => $gateway_id ?? self::GATEWAY_ID,
 				'limit'      => self::USER_FORMATTED_TOKENS_LIMIT,
 			]
 		);
 
 		return array_map(
 			static function ( WC_Payment_Token $token ): array {
+				// ensures that Google Pay/Apple Pay methods display "Google Pay Visa ending in 1234",
+				// instead of just "Visa ending in 1234".
+				$wallet_type    = $token->get_meta( '_wcpay_wallet_type', true );
+				$name           = $token->get_display_name();
+				$payment_method = WC_Payments::get_payment_method_by_id( $wallet_type );
+				if ( $payment_method && method_exists( $payment_method, 'get_title' ) ) {
+					$name = join( ' ', [ $payment_method->get_title(), $name ] );
+				}
+
 				return [
 					'tokenId'         => $token->get_id(),
 					'paymentMethodId' => $token->get_token(),
 					'isDefault'       => $token->get_is_default(),
-					'displayName'     => $token->get_display_name(),
+					'displayName'     => $name,
 				];
 			},
 			array_values( $tokens )

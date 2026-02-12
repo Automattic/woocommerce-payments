@@ -1,0 +1,60 @@
+networks:
+  wcpay-network:
+    name: wcpay-network
+
+volumes:
+  wcpay-plugins:
+    name: wcpay-plugins
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WCPAY_SHARED_WP_PATH}/wp-content/plugins
+  wcpay-themes:
+    name: wcpay-themes
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WCPAY_SHARED_WP_PATH}/wp-content/themes
+  wcpay-uploads:
+    name: wcpay-uploads
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WCPAY_SHARED_WP_PATH}/wp-content/uploads
+  wcpay-mu-plugins:
+    name: wcpay-mu-plugins
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${WCPAY_SHARED_WP_PATH}/wp-content/mu-plugins
+
+services:
+  db:
+    container_name: wcpay_db
+    image: mariadb:10.5.8
+    restart: unless-stopped
+    ports:
+      - "5678:3306"
+    env_file:
+      - default.env
+    volumes:
+      - ${WCPAY_DB_DATA_PATH}:/var/lib/mysql
+    networks:
+      - wcpay-network
+
+  phpmyadmin:
+    container_name: wcpay_phpmyadmin
+    image: phpmyadmin:latest
+    restart: unless-stopped
+    ports:
+      - "8083:80"
+    env_file:
+      - default.env
+    depends_on:
+      - db
+    networks:
+      - wcpay-network
