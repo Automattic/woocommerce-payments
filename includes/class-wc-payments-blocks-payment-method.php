@@ -40,13 +40,6 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	/**
 	 * Checks whether the gateway is active.
 	 *
-	 * This uses is_enabled() instead of is_available() because is_available()
-	 * includes runtime checks (HTTPS, currency, account status) that can fail
-	 * in the block editor context, causing WooPayments to incorrectly appear
-	 * as "incompatible with block-based checkout". The is_enabled() method
-	 * simply checks if the gateway is enabled in settings, which aligns with
-	 * how WooCommerce core payment methods implement this check.
-	 *
 	 * @return boolean True when active.
 	 */
 	public function is_active() {
