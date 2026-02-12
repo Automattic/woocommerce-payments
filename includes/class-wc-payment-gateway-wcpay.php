@@ -2744,7 +2744,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// early return, they would fall through to the UPE list verification
 		// below and always end up disabled.
 		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
-			$this->enabled = $is_enabled ? 'yes' : 'no';
 			return;
 		}
 
