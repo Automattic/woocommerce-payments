@@ -231,6 +231,9 @@ npm run i18n:pot                    # Generate translations
   - Include testing instructions
   - Check mobile testing requirement
   - Link to release testing docs post-merge
+- **After creating a PR:**
+  - Assign `Automattic/gamma` as reviewer: `gh pr edit <number> --add-reviewer Automattic/gamma`
+  - Add the `pr: needs review` label: `gh pr edit <number> --add-label "pr: needs review"`
 
 ### Docker Environment
 - WordPress: http://localhost:<PORT> (check `.env` for your port; default 8082 for main checkout, 8180-8199 for worktrees)
