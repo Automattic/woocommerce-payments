@@ -2735,28 +2735,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_settings() {
 		parent::init_settings();
-
-		// Get the basic enabled value from settings.
-		$is_enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ];
-
-		// Card and express checkout methods are not in the UPE enabled list,
-		// so they only need the basic enabled setting check. Without this
-		// early return, they would fall through to the UPE list verification
-		// below and always end up disabled.
-		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
-			$this->enabled = $is_enabled ? 'yes' : 'no';
-			return;
-		}
-
-		// For split gateways, also verify the method is in the UPE enabled list.
-		// This prevents sync issues where a gateway has enabled=yes but isn't
-		// actually configured for checkout in the UPE settings.
-		if ( $is_enabled ) {
-			$upe_enabled_methods = $this->get_upe_enabled_payment_method_ids();
-			$this->enabled       = in_array( $this->stripe_id, $upe_enabled_methods, true ) ? 'yes' : 'no';
-		} else {
-			$this->enabled = 'no';
-		}
+		$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
 	}
 
 	/**
@@ -4120,30 +4099,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	/**
 	 * Checks whether the gateway is enabled.
 	 *
-	 * For split gateways (non-card, non-express payment methods), this also verifies
-	 * that the payment method is in the UPE enabled payment methods list. This ensures
-	 * that gateway `enabled` status stays in sync with the UPE config.
-	 *
 	 * @return bool The result.
 	 */
 	public function is_enabled() {
-		$is_enabled = 'yes' === $this->get_option( 'enabled' );
-
-		// For the main card gateway and express checkout methods, just check the enabled option.
-		// Express checkout methods need is_enabled() to return true for domain verification etc.
-		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
-			return $is_enabled;
-		}
-
-		// For split gateways, also verify the method is in the UPE enabled list.
-		// This prevents sync issues where a gateway has enabled=yes but isn't
-		// actually configured for checkout in the UPE settings.
-		if ( $is_enabled ) {
-			$upe_enabled_methods = $this->get_upe_enabled_payment_method_ids();
-			return in_array( $this->stripe_id, $upe_enabled_methods, true );
-		}
-
-		return false;
+		return 'yes' === $this->get_option( 'enabled' );
 	}
 
 	/**
