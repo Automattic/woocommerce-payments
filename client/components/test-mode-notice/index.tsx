@@ -153,6 +153,35 @@ const getNoticeContent = (
 		case 'payments':
 		case 'loans':
 		case 'transactions':
+			if ( isDevMode ) {
+				return (
+					<>
+						{ interpolateComponents( {
+							mixedString: sprintf(
+								/* translators: %1$s: resource name (e.g. "transactions") */
+								__(
+									'Viewing test %1$s. Test mode is active because your store is in a development or staging environment. ' +
+										'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
+									'woocommerce-payments'
+								),
+								'deposits' === currentPage
+									? 'payouts'
+									: currentPage
+							),
+							components: {
+								learnMoreLink: (
+									// @ts-expect-error: children is provided when interpolating the component
+									<ExternalLink
+										href={
+											'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
+										}
+									/>
+								),
+							},
+						} ) }
+					</>
+				);
+			}
 			if ( isDetailsView ) {
 				return (
 					<>
@@ -174,35 +203,6 @@ const getNoticeContent = (
 									// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 									// eslint-disable-next-line jsx-a11y/anchor-has-content
 									<a href={ getPaymentSettingsUrl() } />
-								),
-							},
-						} ) }
-					</>
-				);
-			}
-			if ( isDevMode ) {
-				return (
-					<>
-						{ interpolateComponents( {
-							mixedString: sprintf(
-								/* translators: %1$s: resource name (e.g. "transactions") */
-								__(
-									'Viewing test %1$s. Test mode is active because your store is in a development or staging environment. ' +
-										'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
-									'woocommerce-payments'
-								),
-								'deposits' === currentPage
-									? 'payouts'
-									: currentPage
-							),
-							components: {
-								learnMoreLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<a
-										target="_blank"
-										rel="noreferrer"
-										href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
-									/>
 								),
 							},
 						} ) }

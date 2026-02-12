@@ -3,6 +3,7 @@
  */
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+import { ExternalLink } from '@wordpress/components';
 import { LoadError } from '@stripe/connect-js';
 
 /**
@@ -96,19 +97,19 @@ const EmbeddedKyc: React.FC< Props > = ( {
 						components: {
 							strong: <strong />,
 							wpEnvLink: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									target="_blank"
-									rel="noreferrer"
-									href="https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/"
+								// @ts-expect-error: children is provided when interpolating the component
+								<ExternalLink
+									href={
+										'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/'
+									}
 								/>
 							),
 							learnMoreLink: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									target="_blank"
-									rel="noreferrer"
-									href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
+								// @ts-expect-error: children is provided when interpolating the component
+								<ExternalLink
+									href={
+										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
+									}
 								/>
 							),
 						},
