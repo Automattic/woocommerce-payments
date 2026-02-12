@@ -1499,29 +1499,13 @@ class WC_Payments {
 	}
 
 	/**
-	 * Registers WooPayments payment methods with the blocks registry.
-	 *
-	 * This registers the main card gateway and all split gateways (Affirm, Apple Pay, etc.)
-	 * with the blocks system. Each gateway needs to be registered separately to avoid
-	 * being flagged as "incompatible with block-based checkout" in the editor.
+	 * Registers the payment method with the blocks registry.
 	 *
 	 * @param Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry The registry.
 	 */
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
-
-		foreach ( self::get_payment_method_map() as $payment_method_id => $payment_method ) {
-			// Skip 'link' (not a separate gateway) and express checkout methods
-			// (registered via registerExpressPaymentMethod() in JS with different naming).
-			if ( 'link' === $payment_method_id || $payment_method->is_express_checkout() ) {
-				continue;
-			}
-
-			$gateway = self::get_payment_gateway_by_id( $payment_method_id );
-			if ( $gateway ) {
-				$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method( $gateway ) );
-			}
-		}
+		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
 	}
 
 	/**

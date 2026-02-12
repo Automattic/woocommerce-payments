@@ -29,21 +29,11 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	private $wc_payments_checkout;
 
 	/**
-	 * Constructor.
-	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway The gateway instance.
-	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway ) {
-		// Set the gateway and name immediately in constructor because get_name()
-		// is called during register() before initialize() runs.
-		$this->gateway = $gateway;
-		$this->name    = $gateway->id;
-	}
-
-	/**
 	 * Initializes the class.
 	 */
 	public function initialize() {
+		$this->name                 = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$this->gateway              = WC_Payments::get_gateway();
 		$this->wc_payments_checkout = WC_Payments::get_wc_payments_checkout();
 	}
 
@@ -60,7 +50,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return boolean True when active.
 	 */
 	public function is_active() {
-		return $this->gateway->is_enabled();
+		return $this->gateway->is_available();
 	}
 
 	/**
