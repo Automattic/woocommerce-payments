@@ -214,11 +214,21 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 					// Show order's billing email if:
 					// - User can read private shop orders (admin), OR
 					// - Logged-in user is the order owner, OR
-					// - This is a guest order (no customer ID) and visitor has valid order key
-					// (already verified by current_user_can('pay_for_order') check above).
+					// - This is a guest order (no customer ID) and visitor has valid order key.
+					//
+					// The order key check is only required for guest orders because admins have
+					// role-based access and logged-in users are verified via user ID matching.
+					// For guests, the order key is the only proof of authorization.
+					//
+					// Note: WooCommerce validates the order key during page load, but we
+					// explicitly verify it here as defense in depth.
+					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- Already checked with isset() on line 195.
+					$order_key    = wc_clean( wp_unslash( $_GET['key'] ) );
+					$is_valid_key = hash_equals( $order->get_order_key(), $order_key );
+
 					$can_view_billing_email = current_user_can( 'read_private_shop_orders' ) ||
 						( get_current_user_id() !== 0 && $order->get_customer_id() === get_current_user_id() ) ||
-						( ! $order->get_customer_id() );
+						( ! $order->get_customer_id() && $is_valid_key );
 
 					$js_config['billing_email'] = $can_view_billing_email
 						? $order->get_billing_email()
