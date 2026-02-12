@@ -211,6 +211,11 @@ npm run i18n:pot                    # Generate translations
 - Main branch for PRs: `develop`
 - Release branch: `trunk`
 - Husky manages git hooks
+- **Before pushing to a branch**, verify it doesn't belong to a merged PR:
+  ```bash
+  gh pr list --head "$(git branch --show-current)" --state merged --json number --jq length
+  ```
+  If the result is non-zero, the branch's PR was already merged. Do NOT push — create a new branch off `develop` instead.
 - **Before creating a PR:**
   - Must add and commit a changelog entry (use 'patch' significance if change is not significant)
   - For Claude/automation: `npm run changelog:add -- --type=<type> --entry="<description>"`
