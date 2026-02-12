@@ -4,6 +4,8 @@ Review expectations specific to the WooPayments codebase. Loaded by the review a
 
 These rules supplement generic review practices with WCPay conventions, known pitfalls, and lessons from past incidents.
 
+**WooCommerce core context:** Many WCPay issues only surface when you understand what WooCommerce does with our hooks. Always check WC core when reviewing code that changes order statuses, hooks into `admin_init`/`init`, or triggers emails. WC code is available at `docker/wordpress/wp-content/plugins/woocommerce/` (always present) or `../woocommerce/plugins/woocommerce/` (if the full repo is checked out).
+
 ---
 
 ## Architecture Compliance
