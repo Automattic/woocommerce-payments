@@ -32,7 +32,7 @@ const cards: Array<
 	[
 		'declined-expired',
 		config.cards[ 'declined-expired' ],
-		/card has expired/i,
+		/card (?:has|is) expired/i,
 	],
 	[
 		'declined-cvc',

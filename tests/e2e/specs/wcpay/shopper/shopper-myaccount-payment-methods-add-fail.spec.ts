@@ -35,7 +35,7 @@ const cards: Array< CardType > = [
 	[
 		'declined-expired',
 		config.cards[ 'declined-expired' ],
-		/card has expired/i,
+		/card (?:has|is) expired/i,
 	],
 	[
 		'declined-cvc',
