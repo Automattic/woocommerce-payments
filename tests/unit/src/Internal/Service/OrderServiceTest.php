@@ -309,6 +309,34 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $result );
 	}
 
+	public function test_is_valid_phone_number_with_filter() {
+		$phone_number = '123456789012345678901'; // 21 characters - invalid at default
+
+		// First test: should be invalid with default 20-char limit
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_billing_phone' )
+			->willReturn( $phone_number );
+
+		$result = $this->sut->is_valid_phone_number( $this->order_id );
+		$this->assertFalse( $result, 'Phone number should be invalid with default 20-char limit' );
+
+		// Second test: should be valid when filter increases limit to 25
+		add_filter( 'woocommerce_payments_phone_number_max_length', function() {
+			return 25;
+		} );
+
+		$this->mock_get_order()
+			->expects( $this->once() )
+			->method( 'get_billing_phone' )
+			->willReturn( $phone_number );
+
+		$result = $this->sut->is_valid_phone_number( $this->order_id );
+		$this->assertTrue( $result, 'Phone number should be valid with filtered 25-char limit' );
+
+		remove_all_filters( 'woocommerce_payments_phone_number_max_length' );
+	}
+
 	public function test_add_note() {
 		$note_id      = 321;
 		$note_content = 'Note content';
