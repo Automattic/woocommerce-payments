@@ -101,7 +101,6 @@
 
 .payment-method__brand--ideal {
 	background-image: url( '../images/payment-methods/ideal.svg' );
-	background-size: contain;
 }
 
 .payment-method__brand--google-pay {
