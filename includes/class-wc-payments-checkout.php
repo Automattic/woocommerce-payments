@@ -290,6 +290,14 @@ class WC_Payments_Checkout {
 				}
 			}
 
+			// Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are registered
+			// separately via registerExpressPaymentMethod() in JS. Skip them here to avoid
+			// them also being registered as regular payment methods via registerPaymentMethod().
+			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+			if ( $payment_method && $payment_method->is_express_checkout() ) {
+				continue;
+			}
+
 			$settings[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
 		}
 
