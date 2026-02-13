@@ -1521,17 +1521,14 @@ class WC_Payments {
 	 * at priority 10. It does not affect subscription admin pages, AJAX, or frontend.
 	 */
 	public static function disable_express_checkout_in_block_editor() {
-		$express_gateway_ids = [];
-		foreach ( self::get_payment_method_map() as $method_id => $payment_method ) {
-			if ( $payment_method->is_express_checkout() ) {
-				$express_gateway_ids[] = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . $method_id;
-			}
-		}
-
 		foreach ( WC()->payment_gateways()->payment_gateways() as $gateway ) {
-			if ( in_array( $gateway->id, $express_gateway_ids, true ) ) {
-				$gateway->enabled = 'no';
+			if ( ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
+				continue;
 			}
+			if ( ! $gateway->get_payment_method()->is_express_checkout() ) {
+				continue;
+			}
+			$gateway->enabled = 'no';
 		}
 	}
 
