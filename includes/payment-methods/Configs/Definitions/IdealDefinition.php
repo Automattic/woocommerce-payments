@@ -137,7 +137,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/ideal-settings.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/ideal.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
