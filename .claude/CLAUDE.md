@@ -67,6 +67,7 @@ Checkout Form (JS) → WC_Payment_Gateway_WCPay::process_payment()
 
 - `.claude/docs/payment-flow.md` — Complete call chain with method signatures, data transformations, and hooks
 - `.claude/docs/test-patterns.md` — Testing conventions, base classes, mocking patterns, example tests
+- `.claude/docs/mode-system.md` — Mode hierarchy (dev/test/live), frontend data flow, debugging test vs dev mode UI
 
 ### External Documentation
 
