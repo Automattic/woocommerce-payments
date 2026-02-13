@@ -61,7 +61,7 @@ Read by utility functions:
 
 ### 2. `@wordpress/data` Store (REST API)
 
-The settings store fetches from `GET /wc/v3/payments/settings`. The REST response includes `is_dev_mode`, `is_test_mode_onboarding`, `is_test_mode`.
+The settings store fetches from `GET /wc/v3/payments/settings`. The REST response includes `is_dev_mode_enabled`, `is_test_mode_onboarding`, `is_test_mode_enabled`.
 
 Read by hooks:
 - `useDevMode()` — from settings store
@@ -109,7 +109,7 @@ Check the REST API directly:
 GET /wp-json/wc/v3/payments/settings
 ```
 
-Look for `is_dev_mode`, `is_test_mode_onboarding`, `is_test_mode` in the response.
+Look for `is_dev_mode_enabled`, `is_test_mode_onboarding`, `is_test_mode_enabled` in the response.
 
 Or in PHP:
 
