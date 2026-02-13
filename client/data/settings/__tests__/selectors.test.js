@@ -9,7 +9,7 @@ import {
 	getAccountStatementDescriptor,
 	isSavingSettings,
 	getIsPaymentRequestEnabled,
-	getIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+	getIsExpressCheckoutInPaymentMethodsEnabled,
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
 	getIsWooPayEnabled,
@@ -179,18 +179,18 @@ describe( 'Settings selectors tests', () => {
 		} );
 	} );
 
-	describe( 'getIsAppleGooglePayInPaymentMethodsOptionsEnabled()', () => {
-		test( 'returns the value of state.settings.data.is_apple_google_pay_in_payment_methods_options_enabled', () => {
+	describe( 'getIsExpressCheckoutInPaymentMethodsEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_express_checkout_in_payment_methods_enabled', () => {
 			const state = {
 				settings: {
 					data: {
-						is_apple_google_pay_in_payment_methods_options_enabled: true,
+						is_express_checkout_in_payment_methods_enabled: true,
 					},
 				},
 			};
 
 			expect(
-				getIsAppleGooglePayInPaymentMethodsOptionsEnabled( state )
+				getIsExpressCheckoutInPaymentMethodsEnabled( state )
 			).toBeTruthy();
 		} );
 
@@ -201,7 +201,7 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect(
-				getIsAppleGooglePayInPaymentMethodsOptionsEnabled( state )
+				getIsExpressCheckoutInPaymentMethodsEnabled( state )
 			).toBeFalsy();
 		} );
 	} );

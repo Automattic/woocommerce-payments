@@ -21,7 +21,17 @@ jest.mock( 'wcpay/data', () => ( {
 		.fn()
 		.mockReturnValue( [ 'amazon_pay' ] ),
 	usePaymentRequestEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
+	useExpressCheckoutInPaymentMethodsEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
 } ) );
+
+// Set up global wcpaySettings for feature flag check.
+global.wcpaySettings = {
+	featureFlags: {
+		isDynamicCheckoutPlaceOrderButtonEnabled: true,
+	},
+};
 
 const renderWithSettingsProvider = ( ui ) =>
 	render(
