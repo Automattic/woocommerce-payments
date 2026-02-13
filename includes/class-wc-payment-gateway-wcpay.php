@@ -1179,7 +1179,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order = wc_get_order( $order_id );
 
 		try {
-			if ( 20 < strlen( $order->get_billing_phone() ) ) {
+			/**
+			 * Filter the maximum length of a phone number accepted by Stripe.
+			 *
+			 * Stripe's API enforces a 20-character maximum on the billing_details.phone field
+			 * (designed for E.164 international format). Increase at your own risk, as values
+			 * exceeding 20 characters may still be rejected by Stripe's API.
+			 *
+			 * @param int $max_length The maximum phone number length. Default: 20.
+			 *
+			 * @return int The filtered maximum phone number length.
+			 *
+			 * @since 7.8.0
+			 */
+			$phone_max_length = apply_filters( 'woocommerce_payments_phone_number_max_length', 20 );
+			if ( $phone_max_length < strlen( $order->get_billing_phone() ) ) {
 				throw new Invalid_Phone_Number_Exception(
 					__( 'Invalid phone number.', 'woocommerce-payments' ),
 					'invalid_phone_number'

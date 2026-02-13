@@ -217,7 +217,21 @@ class OrderService {
 	 */
 	public function is_valid_phone_number( int $order_id ): bool {
 		$order = $this->get_order( $order_id );
-		return strlen( $order->get_billing_phone() ) < 20;
+		/**
+		 * Filter the maximum length of a phone number accepted by Stripe.
+		 *
+		 * Stripe's API enforces a 20-character maximum on the billing_details.phone field
+		 * (designed for E.164 international format). Increase at your own risk, as values
+		 * exceeding 20 characters may still be rejected by Stripe's API.
+		 *
+		 * @param int $max_length The maximum phone number length. Default: 20.
+		 *
+		 * @return int The filtered maximum phone number length.
+		 *
+		 * @since 7.8.0
+		 */
+		$phone_max_length = apply_filters( 'woocommerce_payments_phone_number_max_length', 20 );
+		return strlen( $order->get_billing_phone() ) < $phone_max_length;
 	}
 
 	/**
