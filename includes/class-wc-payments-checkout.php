@@ -287,6 +287,25 @@ class WC_Payments_Checkout {
 		$settings                = [];
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
+		// When "express checkout in payment methods" setting is enabled, add express checkout
+		// methods to the list. They're not in upe_enabled_payment_method_ids by default since
+		// they're normally registered separately via registerExpressPaymentMethod() in JS.
+		if ( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' ) ) {
+			// Add Apple Pay and Google Pay if payment request is enabled.
+			if ( $this->gateway->is_payment_request_enabled() ) {
+				$enabled_payment_methods[] = 'apple_pay';
+				$enabled_payment_methods[] = 'google_pay';
+			}
+
+			// Add Amazon Pay if the feature flag is enabled and the gateway is enabled.
+			if ( WC_Payments_Features::is_amazon_pay_enabled() ) {
+				$amazon_pay_gateway = \WC_Payments::get_payment_gateway_by_id( 'amazon_pay' );
+				if ( $amazon_pay_gateway && $amazon_pay_gateway->is_enabled() ) {
+					$enabled_payment_methods[] = 'amazon_pay';
+				}
+			}
+		}
+
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			// Link by Stripe should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {
@@ -295,10 +314,8 @@ class WC_Payments_Checkout {
 				}
 			}
 
-			// Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are normally registered
-			// separately via registerExpressPaymentMethod() in JS. Skip them here unless the
-			// "express checkout in payment methods" setting is enabled, in which case they
-			// should appear in the regular payment methods list.
+			// Skip express checkout methods if they somehow got into the list but the setting
+			// is not enabled (defensive check - shouldn't happen with normal code flow).
 			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
 			if ( $payment_method && $payment_method->is_express_checkout() ) {
 				if ( ! ( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' ) ) ) {
