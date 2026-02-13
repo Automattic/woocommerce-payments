@@ -265,6 +265,11 @@ class WC_Payments_Checkout {
 		// Get the store base country.
 		$payment_fields['storeCountry'] = WC()->countries->get_base_country();
 
+		// Whether express checkout methods (Apple Pay, Google Pay, Amazon Pay) should be displayed
+		// in the payment methods list instead of as separate express buttons.
+		// Both the feature flag (which checks WC 10.6.0+) and the setting must be enabled.
+		$payment_fields['isExpressCheckoutInPaymentMethodsEnabled'] = WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' );
+
 		/**
 		 * Allows filtering of the JS config for the payment fields.
 		 *
@@ -371,13 +376,14 @@ class WC_Payments_Checkout {
 		}
 
 		$config = [
-			'isReusable'     => $payment_method->is_reusable(),
-			'isBnpl'         => $payment_method->is_bnpl(),
-			'title'          => $payment_method->get_title( $account_country ),
-			'icon'           => $payment_method->get_icon( $account_country ),
-			'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
-			'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
-			'countries'      => $payment_method->get_countries(),
+			'isReusable'        => $payment_method->is_reusable(),
+			'isBnpl'            => $payment_method->is_bnpl(),
+			'isExpressCheckout' => $payment_method->is_express_checkout(),
+			'title'             => $payment_method->get_title( $account_country ),
+			'icon'              => $payment_method->get_icon( $account_country ),
+			'darkIcon'          => $payment_method->get_dark_icon( $account_country ),
+			'showSaveOption'    => $this->should_upe_payment_method_show_save_option( $payment_method ),
+			'countries'         => $payment_method->get_countries(),
 		];
 
 		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );

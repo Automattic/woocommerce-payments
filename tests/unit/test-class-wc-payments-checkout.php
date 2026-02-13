@@ -100,6 +100,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'is_subscription_item_in_cart',
 					'wc_payments_get_payment_method_by_id',
 					'display_gateway_html',
+					'init_settings',
 				]
 			)
 			->disableOriginalConstructor()
@@ -394,6 +395,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 				'card' => [
 					'isReusable'             => true,
 					'isBnpl'                 => false,
+					'isExpressCheckout'      => false,
 					'title'                  => 'Card',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
@@ -406,6 +408,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 				'link' => [
 					'isReusable'             => true,
 					'isBnpl'                 => false,
+					'isExpressCheckout'      => false,
 					'title'                  => 'Link',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
@@ -702,5 +705,78 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'paymentMethodsConfig', $result['.woocommerce-checkout-payment'] );
 		$this->assertStringContainsString( 'currency', $result['.woocommerce-checkout-payment'] );
 		$this->assertStringContainsString( 'cartTotal', $result['.woocommerce-checkout-payment'] );
+	}
+
+	public function test_payment_fields_js_config_includes_is_express_checkout_in_payment_methods_enabled_when_feature_and_option_enabled() {
+		// Requires WooCommerce 10.6.0+ for the feature flag (or dev mode).
+		WC_Payments::mode()->dev();
+
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertTrue( $js_config['isExpressCheckoutInPaymentMethodsEnabled'] );
+
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+	}
+
+	public function test_payment_fields_js_config_includes_is_express_checkout_in_payment_methods_enabled_false_when_option_is_no() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'no' );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertFalse( $js_config['isExpressCheckoutInPaymentMethodsEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_includes_is_express_checkout_in_payment_methods_enabled_false_when_feature_disabled() {
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		// Even with option 'yes', result should be false when feature flag is disabled.
+		$this->assertFalse( $js_config['isExpressCheckoutInPaymentMethodsEnabled'] );
+	}
+
+	public function test_payment_method_config_includes_is_express_checkout() {
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'card' ] );
+
+		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturn( $card_pm );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayHasKey( 'isExpressCheckout', $js_config['paymentMethodsConfig']['card'] );
+		$this->assertFalse( $js_config['paymentMethodsConfig']['card']['isExpressCheckout'] );
 	}
 }
