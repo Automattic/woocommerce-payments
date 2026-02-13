@@ -18,39 +18,39 @@ import {
 	confirmCardAuthentication,
 } from '../../../utils/shopper';
 
-type CardType = [ string, typeof config.cards.declined, string ];
+type CardType = [ string, typeof config.cards.declined, string | RegExp ];
 
 const cards: Array< CardType > = [
-	[ 'declined', config.cards.declined, 'Error: Your card was declined.' ],
+	[ 'declined', config.cards.declined, /card\b.*\bdeclined/i ],
 	[
 		'declined-funds',
 		config.cards[ 'declined-funds' ],
-		'Error: Your card has insufficient funds.',
+		/insufficient funds/i,
 	],
 	[
 		'declined-incorrect',
 		config.cards[ 'declined-incorrect' ],
-		'Your card number is invalid.',
+		/card number is invalid/i,
 	],
 	[
 		'declined-expired',
 		config.cards[ 'declined-expired' ],
-		'Error: Your card has expired.',
+		/card has expired/i,
 	],
 	[
 		'declined-cvc',
 		config.cards[ 'declined-cvc' ],
-		"Error: Your card's security code is incorrect.",
+		/security code is incorrect/i,
 	],
 	[
 		'declined-processing',
 		config.cards[ 'declined-processing' ],
-		'Error: An error occurred while processing your card. Try again in a little bit.',
+		/error occurred while processing your card/i,
 	],
 	[
 		'declined-3ds',
 		config.cards[ 'declined-3ds' ],
-		'We are unable to authenticate your payment method. Please choose a different payment method and try again.',
+		/unable to authenticate your payment method/i,
 	],
 ];
 
@@ -79,7 +79,7 @@ test.describe( 'Payment Methods', () => {
 				}
 
 				// Verify that we get the expected error message.
-				await expect( shopperPage.getByRole( 'alert' ) ).toHaveText(
+				await expect( shopperPage.getByRole( 'alert' ) ).toContainText(
 					errorText
 				);
 

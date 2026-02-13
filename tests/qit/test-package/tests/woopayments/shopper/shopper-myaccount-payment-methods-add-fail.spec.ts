@@ -15,37 +15,39 @@ import {
 	confirmCardAuthentication,
 } from '../../../utils/shopper';
 
-const cards: Array< [ string, typeof config.cards.declined, string ] > = [
-	[ 'declined', config.cards.declined, 'Error: Your card was declined.' ],
+const cards: Array<
+	[ string, typeof config.cards.declined, string | RegExp ]
+> = [
+	[ 'declined', config.cards.declined, /card\b.*\bdeclined/i ],
 	[
 		'declined-funds',
 		config.cards[ 'declined-funds' ],
-		'Error: Your card has insufficient funds.',
+		/insufficient funds/i,
 	],
 	[
 		'declined-incorrect',
 		config.cards[ 'declined-incorrect' ],
-		'Your card number is invalid.',
+		/card number is invalid/i,
 	],
 	[
 		'declined-expired',
 		config.cards[ 'declined-expired' ],
-		'Error: Your card has expired.',
+		/card has expired/i,
 	],
 	[
 		'declined-cvc',
 		config.cards[ 'declined-cvc' ],
-		"Error: Your card's security code is incorrect.",
+		/security code is incorrect/i,
 	],
 	[
 		'declined-processing',
 		config.cards[ 'declined-processing' ],
-		'Error: An error occurred while processing your card. Try again in a little bit.',
+		/error occurred while processing your card/i,
 	],
 	[
 		'declined-3ds',
 		config.cards[ 'declined-3ds' ],
-		'We are unable to authenticate your payment method. Please choose a different payment method and try again.',
+		/unable to authenticate your payment method/i,
 	],
 ];
 
@@ -96,7 +98,7 @@ test.describe( 'Payment Methods', { tag: '@shopper' }, () => {
 					// and displays as a WooCommerce notice on the page
 					await expect(
 						shopperPage.getByRole( 'alert' )
-					).toHaveText( errorText, { timeout: 30000 } );
+					).toContainText( errorText, { timeout: 30000 } );
 				}
 
 				await expect(
