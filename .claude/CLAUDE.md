@@ -79,24 +79,30 @@ When building features, consult these references:
 
 WooPayments is a separate plugin that integrates with WooCommerce core, leveraging its hooks, filters, and APIs. Having the WooCommerce codebase available locally provides useful context when working on WooPayments.
 
-**Location:** `../woocommerce` (or set `WOOCOMMERCE_DIR` env var to override)
+**Locations (in priority order):**
+1. `../woocommerce/plugins/woocommerce/` — Full monorepo checkout (if available). Has git history.
+2. `docker/wordpress/wp-content/plugins/woocommerce/` — Always available. Built plugin with `includes/` and `src/`. No git history but has all PHP code needed for hook tracing.
+3. In the CI pipeline: checked out via `actions/checkout` to `./woocommerce/plugins/woocommerce/`.
 
 **Key paths within WooCommerce:**
-- `plugins/woocommerce/includes/` - Core WooCommerce PHP classes
-- `plugins/woocommerce/src/` - Modern PSR-4 WooCommerce code
-- `plugins/woocommerce-blocks/` - Checkout and cart blocks
+- `includes/` — Core PHP classes (`WC_Emails`, `WC_Order`, hooks, gateways)
+- `src/` — Modern PSR-4 code (newer features, DI container)
+- `includes/emails/` — Email hook handlers (important for understanding side effects of status changes)
 
 **When to reference WooCommerce core:**
-- When working with WC hooks/filters - check the core implementation to understand parameters, timing, and context
-- When using WC base classes (e.g., `WC_Payment_Gateway`) - understand the parent class behavior
+- When working with WC hooks/filters — check the core implementation to understand parameters, timing, and context
+- When using WC base classes (e.g., `WC_Payment_Gateway`) — understand the parent class behavior
 - When debugging issues that may involve core behavior
 - When implementing features that interact with WC APIs (orders, products, customers, etc.)
+- **When changing order statuses** — trace what hooks fire and what side effects occur (emails, API calls). Check `includes/class-wc-emails.php` and `includes/abstracts/abstract-wc-order.php`
+- **When reviewing code that hooks into `admin_init` or `init`** — trace the full call chain to understand performance implications
 
 **Auto-reference triggers:** Proactively check WooCommerce core when you encounter:
 - Classes using `WC_*` base classes
 - Hooks starting with `woocommerce_` or `wc_`
 - Usage of `WC()` singleton or WC helper functions
 - Order, product, or customer manipulation code
+- `$order->set_status()` or `$order->update_status()` calls — always check what hooks and emails fire
 
 ## Directory Structure
 
@@ -211,6 +217,11 @@ npm run i18n:pot                    # Generate translations
 - Main branch for PRs: `develop`
 - Release branch: `trunk`
 - Husky manages git hooks
+- **Before pushing to a branch**, verify it doesn't belong to a merged PR:
+  ```bash
+  gh pr list --head "$(git branch --show-current)" --state merged --json number --jq length
+  ```
+  If the result is non-zero, the branch's PR was already merged. Do NOT push — create a new branch off `develop` instead.
 - **Before creating a PR:**
   - Must add and commit a changelog entry (use 'patch' significance if change is not significant)
   - For Claude/automation: `npm run changelog:add -- --type=<type> --entry="<description>"`
@@ -220,6 +231,9 @@ npm run i18n:pot                    # Generate translations
   - Include testing instructions
   - Check mobile testing requirement
   - Link to release testing docs post-merge
+- **After creating a PR:**
+  - Assign `Automattic/gamma` as reviewer: `gh pr edit <number> --add-reviewer Automattic/gamma`
+  - Add the `pr: needs review` label: `gh pr edit <number> --add-label "pr: needs review"`
 
 ### Docker Environment
 - WordPress: http://localhost:<PORT> (check `.env` for your port; default 8082 for main checkout, 8180-8199 for worktrees)

@@ -52,7 +52,9 @@ jobs:
   #     model: ${{ inputs.model }}
   #   secrets: inherit
 
-  # ─── Stage 3: Review (Phase 2) ───────────────────
+  # ─── Stage 3: Review ─────────────────────────────
+  # Requires dev stage to produce a branch name.
+  # Can also be run standalone with stages=review and a branch_name input.
   # review:
   #   needs: dev
   #   if: contains(inputs.stages, 'review')
@@ -60,6 +62,7 @@ jobs:
   #   with:
   #     linear_issue_id: ${{ inputs.linear_issue_id }}
   #     target_branch: ${{ inputs.target_branch }}
+  #     branch_name: ${{ needs.dev.outputs.branch_name }}
   #     model: ${{ inputs.model }}
   #   secrets: inherit
 
