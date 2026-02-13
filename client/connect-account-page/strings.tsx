@@ -50,7 +50,7 @@ export default {
 		},
 	},
 	usp1: __(
-		'Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
+		'Offer card payments, Apple Pay, iDEAL | Wero, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
 		'woocommerce-payments'
 	),
 	usp2: __(

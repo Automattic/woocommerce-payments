@@ -53,7 +53,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'iDEAL', 'woocommerce-payments' );
+		return __( 'iDEAL | Wero', 'woocommerce-payments' );
 	}
 
 	/**
@@ -74,7 +74,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Expand your business with iDEAL — Netherlands\'s most popular payment method.', 'woocommerce-payments' );
+		return __( 'Expand your business with iDEAL | Wero — Netherlands\'s most popular payment method.', 'woocommerce-payments' );
 	}
 
 	/**
@@ -115,7 +115,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/ideal.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/ideal-horizontal.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -137,7 +137,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/ideal.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
