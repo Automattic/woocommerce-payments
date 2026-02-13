@@ -295,12 +295,15 @@ class WC_Payments_Checkout {
 				}
 			}
 
-			// Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are registered
-			// separately via registerExpressPaymentMethod() in JS. Skip them here to avoid
-			// them also being registered as regular payment methods via registerPaymentMethod().
+			// Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are normally registered
+			// separately via registerExpressPaymentMethod() in JS. Skip them here unless the
+			// "express checkout in payment methods" setting is enabled, in which case they
+			// should appear in the regular payment methods list.
 			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
 			if ( $payment_method && $payment_method->is_express_checkout() ) {
-				continue;
+				if ( ! ( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' ) ) ) {
+					continue;
+				}
 			}
 
 			$settings[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
