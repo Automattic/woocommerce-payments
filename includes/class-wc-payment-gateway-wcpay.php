@@ -365,12 +365,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->is_saved_cards_enabled() ) {
 			array_push( $this->supports, 'tokenization', 'add_payment_method' );
 		}
-
-		// Enable custom place order button for express checkout methods (Apple Pay, Google Pay, Amazon Pay only)
-		// when the feature is available. Other payment methods like card return false for is_express_checkout().
-		if ( property_exists( $this, 'has_custom_place_order_button' ) && $this->payment_method->is_express_checkout() && WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() ) {
-			$this->has_custom_place_order_button = true;
-		}
 	}
 
 	/**
@@ -2283,14 +2277,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// If $gateway_id begins with `woocommerce_payments_` payment method is a split UPE LPM.
 		// Otherwise, $gateway_id must be `woocommerce_payments`.
 		if ( substr( $gateway_id, 0, strlen( $split_upe_gateway_prefix ) ) === $split_upe_gateway_prefix ) {
-			$payment_method_id = str_replace( $split_upe_gateway_prefix, '', $gateway_id );
-
-			// Apple Pay and Google Pay are wrappers around card payments for Stripe.
-			if ( in_array( $payment_method_id, [ 'apple_pay', 'google_pay' ], true ) ) {
-				return [ Payment_Method::CARD ];
-			}
-
-			return [ $payment_method_id ];
+			return [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
 		}
 
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
