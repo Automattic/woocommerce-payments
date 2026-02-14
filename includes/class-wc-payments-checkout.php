@@ -268,7 +268,7 @@ class WC_Payments_Checkout {
 		// Whether express checkout methods (Apple Pay, Google Pay, Amazon Pay) should be displayed
 		// in the payment methods list instead of as separate express buttons.
 		// Both the feature flag (which checks WC 10.6.0+) and the setting must be enabled.
-		$payment_fields['isExpressCheckoutInPaymentMethodsEnabled'] = WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' );
+		$payment_fields['isExpressCheckoutInPaymentMethodsEnabled'] = WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === \WC_Payments::get_gateway()->get_option( 'express_checkout_in_payment_methods' );
 
 		/**
 		 * Allows filtering of the JS config for the payment fields.
@@ -290,7 +290,14 @@ class WC_Payments_Checkout {
 		// When "express checkout in payment methods" setting is enabled, add express checkout
 		// methods to the list. They're not in upe_enabled_payment_method_ids by default since
 		// they're normally registered separately via registerExpressPaymentMethod() in JS.
-		if ( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' ) ) {
+		// Use the card gateway (main gateway) for this setting check, because $this->gateway
+		// can be mutated by set_gateway() during shortcode checkout rendering. The
+		// express_checkout_in_payment_methods setting is stored on the card gateway.
+		$card_gateway                           = \WC_Payments::get_gateway();
+		$is_express_checkout_in_payment_methods = WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled()
+			&& 'yes' === $card_gateway->get_option( 'express_checkout_in_payment_methods' );
+
+		if ( $is_express_checkout_in_payment_methods ) {
 			// Add Apple Pay and Google Pay if payment request is enabled.
 			if ( $this->gateway->is_payment_request_enabled() ) {
 				$enabled_payment_methods[] = 'apple_pay';
@@ -318,7 +325,7 @@ class WC_Payments_Checkout {
 			// is not enabled (defensive check - shouldn't happen with normal code flow).
 			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
 			if ( $payment_method && $payment_method->is_express_checkout() ) {
-				if ( ! ( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' ) ) ) {
+				if ( ! $is_express_checkout_in_payment_methods ) {
 					continue;
 				}
 			}
@@ -406,7 +413,10 @@ class WC_Payments_Checkout {
 			'countries'         => $payment_method->get_countries(),
 		];
 
-		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		$gateway_for_payment_method = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		if ( ! $gateway_for_payment_method ) {
+			return [];
+		}
 		$config['gatewayId']           = $gateway_for_payment_method->id;
 		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
 			/* translators: link to Stripe testing page */
