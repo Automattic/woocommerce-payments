@@ -368,7 +368,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Enable custom place order button for express checkout methods (Apple Pay, Google Pay, Amazon Pay only)
 		// when the feature is available. Other payment methods like card return false for is_express_checkout().
-		if ( $this->payment_method->is_express_checkout() && WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() ) {
+		if ( property_exists( $this, 'has_custom_place_order_button' ) && $this->payment_method->is_express_checkout() && WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() ) {
 			$this->has_custom_place_order_button = true;
 		}
 	}
