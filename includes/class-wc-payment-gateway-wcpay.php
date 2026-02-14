@@ -887,10 +887,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// in the payment methods list when the feature is enabled. Otherwise, they appear
 		// as separate express checkout buttons.
 		if ( $this->payment_method->is_express_checkout() && ! is_admin() ) {
-			$is_express_in_payment_methods = WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled()
-				&& 'yes' === WC_Payments::get_gateway()->get_option( 'express_checkout_in_payment_methods' );
-
-			if ( ! $is_express_in_payment_methods ) {
+			if ( ! WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
 				return false;
 			}
 		}
@@ -1017,6 +1014,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether express checkout methods should appear in the payment methods list
+	 * instead of as separate express buttons.
+	 *
+	 * Requires both the dynamic checkout place order button feature flag
+	 * and the express_checkout_in_payment_methods gateway setting.
+	 *
+	 * @return bool
+	 */
+	public function is_express_checkout_in_payment_methods_enabled(): bool {
+		return WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled()
+			&& 'yes' === $this->get_option( 'express_checkout_in_payment_methods' );
 	}
 
 	/**

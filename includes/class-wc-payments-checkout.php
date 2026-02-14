@@ -267,8 +267,7 @@ class WC_Payments_Checkout {
 
 		// Whether express checkout methods (Apple Pay, Google Pay, Amazon Pay) should be displayed
 		// in the payment methods list instead of as separate express buttons.
-		// Both the feature flag (which checks WC 10.6.0+) and the setting must be enabled.
-		$payment_fields['isExpressCheckoutInPaymentMethodsEnabled'] = WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() && 'yes' === \WC_Payments::get_gateway()->get_option( 'express_checkout_in_payment_methods' );
+		$payment_fields['isExpressCheckoutInPaymentMethodsEnabled'] = \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled();
 
 		/**
 		 * Allows filtering of the JS config for the payment fields.
@@ -290,12 +289,10 @@ class WC_Payments_Checkout {
 		// When "express checkout in payment methods" setting is enabled, add express checkout
 		// methods to the list. They're not in upe_enabled_payment_method_ids by default since
 		// they're normally registered separately via registerExpressPaymentMethod() in JS.
-		// Use the card gateway (main gateway) for this setting check, because $this->gateway
-		// can be mutated by set_gateway() during shortcode checkout rendering. The
-		// express_checkout_in_payment_methods setting is stored on the card gateway.
+		// Use the card gateway (main gateway) for this check, because $this->gateway
+		// can be mutated by set_gateway() during shortcode checkout rendering.
 		$card_gateway                           = \WC_Payments::get_gateway();
-		$is_express_checkout_in_payment_methods = WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled()
-			&& 'yes' === $card_gateway->get_option( 'express_checkout_in_payment_methods' );
+		$is_express_checkout_in_payment_methods = $card_gateway->is_express_checkout_in_payment_methods_enabled();
 
 		if ( $is_express_checkout_in_payment_methods ) {
 			// Add Apple Pay and Google Pay if payment request is enabled.
@@ -321,8 +318,8 @@ class WC_Payments_Checkout {
 				}
 			}
 
-			// Skip express checkout methods if they somehow got into the list but the setting
-			// is not enabled (defensive check - shouldn't happen with normal code flow).
+			// Skip express checkout methods if they somehow got into the list, but the setting
+			// is not enabled (it shouldn't happen with normal code flow - adding just in case).
 			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
 			if ( $payment_method && $payment_method->is_express_checkout() ) {
 				if ( ! $is_express_checkout_in_payment_methods ) {

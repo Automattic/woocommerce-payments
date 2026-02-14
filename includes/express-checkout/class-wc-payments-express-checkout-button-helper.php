@@ -293,10 +293,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	public function can_use_amazon_pay() {
 		// When express checkout methods are displayed in the payment methods list,
 		// Amazon Pay should not appear as a separate express button.
-		if (
-			WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() &&
-			'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' )
-		) {
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
 			return false;
 		}
 
@@ -507,10 +504,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	public function should_show_express_checkout_button() {
 		// When express checkout methods are displayed in the payment methods list,
 		// don't show them as separate express buttons.
-		if (
-			WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() &&
-			'yes' === $this->gateway->get_option( 'express_checkout_in_payment_methods' )
-		) {
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
 			return false;
 		}
 
