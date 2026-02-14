@@ -299,7 +299,7 @@ class WC_Payments_Checkout {
 
 		if ( $is_express_checkout_in_payment_methods ) {
 			// Add Apple Pay and Google Pay if payment request is enabled.
-			if ( $this->gateway->is_payment_request_enabled() ) {
+			if ( $card_gateway->is_payment_request_enabled() ) {
 				$enabled_payment_methods[] = 'apple_pay';
 				$enabled_payment_methods[] = 'google_pay';
 			}
