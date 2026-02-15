@@ -11,6 +11,7 @@ project.properties
 *.sublime-workspace
 .sublimelinterrc
 .cursor/
+CLAUDE.local.md
 **/.claude/**/*.local.*
 .claude/local/
 .serena/
