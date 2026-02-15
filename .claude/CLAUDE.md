@@ -68,6 +68,7 @@ Checkout Form (JS) → WC_Payment_Gateway_WCPay::process_payment()
 - `.claude/docs/payment-flow.md` — Complete call chain with method signatures, data transformations, and hooks
 - `.claude/docs/test-patterns.md` — Testing conventions, base classes, mocking patterns, example tests
 - `.claude/docs/mode-system.md` — Mode hierarchy (dev/test/live), frontend data flow, debugging test vs dev mode UI
+- `.claude/docs/pm-promotions.md` — PM Promotions data flow, components, REST API, analytics events
 
 ### External Documentation
 
@@ -299,6 +300,46 @@ npm run i18n:pot                    # Generate translations
 - `docker/README.md` - Docker setup
 - `includes/core/README.md` - Extensibility docs
 - `docs/` - Additional documentation
+
+## `.claude/` Documentation Structure
+
+AI-generated documentation lives in `.claude/`. Permanent developer docs live in `docs/`.
+
+### Directories
+
+| Directory | Purpose | Naming | Git |
+|-----------|---------|--------|-----|
+| `.claude/docs/` | Living reference guides | No date prefix; include `**Last updated:** YYYY-MM-DD` after title | Checked in |
+| `.claude/docs/analysis/` | Research, investigations, deep-dives | `YYYY-MM-DD-description.md` | Checked in |
+| `.claude/docs/plans/` | Implementation plans, design docs | `YYYY-MM-DD-description.md` | Checked in |
+| `.claude/tmp/` | Transitory files (reviews, screenshots) | Any | Gitignored |
+| `.claude/tmp/reviews/` | Code review outputs | `YYYY-MM-DD-description.md` | Gitignored |
+| `.claude/tmp/screenshots/` | UI screenshots from browser verification | `YYYY-MM-DD-description.png` | Gitignored |
+| `.claude/local/` | Developer-local drafts, archived docs | Any; use `-outdated` suffix for archives | Gitignored |
+
+### Living docs convention
+
+Living reference docs (guides, patterns, API references) must include immediately after the title:
+
+```markdown
+# Document Title
+
+**Last updated:** YYYY-MM-DD
+```
+
+Update the date on every modification. This makes staleness visible.
+
+### When to persist
+
+| Content | Where | Example |
+|---------|-------|---------|
+| Reference guides, patterns | `.claude/docs/` | `pm-promotions.md` |
+| Research, analysis | `.claude/docs/analysis/` | `2026-02-09-stripe-test-mode-analysis.md` |
+| Implementation plans | `.claude/docs/plans/` | `2026-02-10-wcpay-test-lab-design.md` |
+| Code reviews | `.claude/tmp/reviews/` | `2026-02-15-pr-review-feature-x.md` |
+| Screenshots | `.claude/tmp/screenshots/` | `2026-02-15-test-lab-status.png` |
+
+Skip persisting: trivial lookups, single-file reads, simple Q&A.
 
 ## Tips for Claude
 - Prefer editing existing files over creating new ones

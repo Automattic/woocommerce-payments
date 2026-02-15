@@ -1,5 +1,7 @@
 # Payment Flow — Detailed Reference
 
+**Last updated:** 2026-02-11
+
 This documents the exact call chain for payment operations in WooPayments. Read this when working on payment processing, refunds, or API communication.
 
 ## Payment Intent Creation (Checkout)
