@@ -4288,6 +4288,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class,
 		];
 
 		$registry = PaymentMethodDefinitionRegistry::instance();
