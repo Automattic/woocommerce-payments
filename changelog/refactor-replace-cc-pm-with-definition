@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+refactor: remove `CC_Payment_Method` in favor of `CardDefinition`

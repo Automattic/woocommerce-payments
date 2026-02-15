@@ -28,7 +28,6 @@ use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -264,8 +263,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
 		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
-		$this->mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
+		$this->mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class ] )
 			->setMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 
@@ -1126,7 +1125,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return [
 			'card only'                  => [
 				[ 'card' => [ 'base' => 0.1 ] ],
-				[ 'card' ],
+				[ 'card', 'apple_pay', 'google_pay' ],
 			],
 			'no match with fees'         => [
 				[ 'some_other_payment_method' => [ 'base' => 0.1 ] ],
@@ -1137,7 +1136,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'card'       => [ 'base' => 0.1 ],
 					'bancontact' => [ 'base' => 0.2 ],
 				],
-				[ 'card', 'bancontact' ],
+				[ 'card', 'bancontact', 'apple_pay', 'google_pay' ],
 			],
 			'no fees no methods'         => [
 				[],
@@ -4273,6 +4272,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_methods = [];
 
 		$payment_method_definitions = [
+			\WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::class,
@@ -4289,15 +4289,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 		];
-
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			$payment_method                               = new $payment_method_class( $this->mock_token_service );
-			$payment_methods[ $payment_method->get_id() ] = $payment_method;
-		}
 
 		$registry = PaymentMethodDefinitionRegistry::instance();
 		foreach ( $payment_method_definitions as $definition_class ) {

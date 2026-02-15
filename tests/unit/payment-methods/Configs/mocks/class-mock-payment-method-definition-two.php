@@ -34,6 +34,10 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 		return 'Second Mock Method';
 	}
 
+	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+		return null;
+	}
+
 	public static function get_settings_label( ?string $account_country = null ): string {
 		return 'Second Mock Method';
 	}

@@ -6,7 +6,7 @@
  */
 
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -80,7 +80,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_two_cc_one_enabled() {
-		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'no' );
+		$this->set_duplicates( CardDefinition::get_id(), 'yes', 'no' );
 
 		$result = $this->service->find_duplicates();
 
@@ -106,7 +106,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_two_prbs_enabled() {
-		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( CardDefinition::get_id(), 'yes', 'yes' );
 		$this->woopayments_gateway->is_payment_request_enabled_value = true;
 		$this->woopayments_gateway->enabled                          = 'yes';
 		$this->gateway_from_another_plugin->id                       = 'apple_pay';
@@ -133,7 +133,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_duplicate_not_enabled_in_woopayments() {
-		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( CardDefinition::get_id(), 'yes', 'yes' );
 		$this->woopayments_gateway->id = 'not_woopayments_card';
 
 		$result = $this->service->find_duplicates();

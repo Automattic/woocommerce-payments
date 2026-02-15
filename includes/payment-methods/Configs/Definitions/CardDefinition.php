@@ -1,22 +1,21 @@
 <?php
 /**
- * Amazon Pay Payment Method Definition
+ * Card Payment Method Definition
  *
  * @package WCPay\PaymentMethods\Configs\Definitions
  */
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
-use WCPay\Constants\Country_Code;
-use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
+use WCPay\Constants\Country_Test_Cards;
 
 /**
- * Class implementing the Amazon Pay payment method definition.
+ * Class implementing the Card payment method definition.
  */
-class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
+class CardDefinition implements PaymentMethodDefinitionInterface {
 
 	/**
 	 * Get the internal ID for the payment method
@@ -24,16 +23,16 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_id(): string {
-		return 'amazon_pay';
+		return 'card';
 	}
 
 	/**
-	 * Get the keywords for the payment method. These are used by the duplicates detection service.
+	 * Get the keywords for the payment method. These are used by the duplicate detection service.
 	 *
 	 * @return string[]
 	 */
 	public static function get_keywords(): array {
-		return [ 'amazon_pay', 'amazonpay', 'amazon' ];
+		return [ 'card', 'credit card', 'debit card', 'cc' ];
 	}
 
 	/**
@@ -53,11 +52,14 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'Amazon Pay', 'woocommerce-payments' );
+		return __( 'Card', 'woocommerce-payments' );
 	}
 
 	/**
 	 * Get a dynamic title based on charge details from Stripe.
+	 *
+	 * For cards, this returns a title like "Visa credit card" based on the
+	 * card network and funding type from the Stripe charge details.
 	 *
 	 * @param string $account_country The merchant's account country.
 	 * @param array  $payment_details The payment method details from the Stripe charge.
@@ -65,7 +67,30 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string|null The dynamic title, or null to use the default get_title().
 	 */
 	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
-		return null;
+		if ( ! isset( $payment_details[ self::get_id() ] ) ) {
+			return null;
+		}
+
+		$details       = $payment_details[ self::get_id() ];
+		$funding_types = [
+			'credit'  => __( 'credit', 'woocommerce-payments' ),
+			'debit'   => __( 'debit', 'woocommerce-payments' ),
+			'prepaid' => __( 'prepaid', 'woocommerce-payments' ),
+			'unknown' => __( 'unknown', 'woocommerce-payments' ),
+		];
+
+		$card_network = $details['display_brand'] ?? $details['network'] ?? $details['networks']['preferred'] ?? $details['networks']['available'][0];
+		// Networks like `cartes_bancaires` may use underscores, so we replace them with spaces.
+		$card_network = str_replace( '_', ' ', $card_network );
+
+		$payment_method_title = sprintf(
+			// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
+			__( '%1$s %2$s card', 'woocommerce-payments' ),
+			ucwords( $card_network ),
+			$funding_types[ $details['funding'] ]
+		);
+
+		return $payment_method_title;
 	}
 
 	/**
@@ -76,7 +101,7 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_label( ?string $account_country = null ): string {
-		return self::get_title( $account_country );
+		return __( 'Credit / Debit Cards', 'woocommerce-payments' );
 	}
 
 	/**
@@ -86,40 +111,25 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Offer customers a fast, secure checkout experience with Amazon Pay.', 'woocommerce-payments' );
+		return __(
+			'Let your customers pay with major credit and debit cards without leaving your store.',
+			'woocommerce-payments'
+		);
 	}
 
 	/**
 	 * Get the list of supported currencies
+	 * Empty array means all currencies are supported
 	 *
 	 * @return string[] Array of currency codes
 	 */
 	public static function get_supported_currencies(): array {
-		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
-		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
-
-		if ( Country_Code::UNITED_STATES === $account_country ) {
-			return [ Currency_Code::UNITED_STATES_DOLLAR ];
-		}
-
-		return [
-			Currency_Code::UNITED_STATES_DOLLAR,
-			Currency_Code::AUSTRALIAN_DOLLAR,
-			Currency_Code::POUND_STERLING,
-			Currency_Code::DANISH_KRONE,
-			Currency_Code::EURO,
-			Currency_Code::HONG_KONG_DOLLAR,
-			Currency_Code::JAPANESE_YEN,
-			Currency_Code::NEW_ZEALAND_DOLLAR,
-			Currency_Code::NORWEGIAN_KRONE,
-			Currency_Code::SWEDISH_KRONA,
-			Currency_Code::SWISS_FRANC,
-			Currency_Code::SOUTH_AFRICAN_RAND,
-		];
+		return [];
 	}
 
 	/**
 	 * Get the list of supported countries
+	 * Empty array means all countries are supported
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string[] Array of country codes
@@ -139,7 +149,6 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 			PaymentMethodCapability::MULTI_CURRENCY,
 			PaymentMethodCapability::TOKENIZATION,
 			PaymentMethodCapability::CAPTURE_LATER,
-			PaymentMethodCapability::EXPRESS_CHECKOUT,
 		];
 	}
 
@@ -151,7 +160,7 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/amazon-pay.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/generic-card.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -173,7 +182,7 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/generic-card-black.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -183,7 +192,13 @@ class AmazonPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string HTML string containing testing instructions
 	 */
 	public static function get_testing_instructions( string $account_country ): string {
-		return '';
+		$test_card_number = Country_Test_Cards::get_test_card_for_country( $account_country );
+
+		return sprintf(
+			// Translators: %s is a test card number.
+			__( 'Use test card <number>%s</number> or refer to our <a>testing guide</a>.', 'woocommerce-payments' ),
+			$test_card_number
+		);
 	}
 
 	/**
