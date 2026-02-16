@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fixed double border on iDEAL | Wero logo in admin pages
+Fixed iDEAL | Wero logo: removed baked-in stroke causing double border in admin, fixed missing rounded corners on checkout, and consolidated into a single SVG file
