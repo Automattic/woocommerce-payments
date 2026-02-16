@@ -161,19 +161,25 @@ echo "Installing and activating Disable WordPress Updates..."
 cli wp plugin install disable-wordpress-updates --activate
 
 echo "Installing dev tools plugin..."
+# Load local.env for custom dev-tools path (same file the post-merge hook uses).
+if [[ -f "$(pwd)/local.env" ]]; then
+	source "$(pwd)/local.env"
+fi
+DEV_TOOLS_CLONE_PATH=${LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH:-"docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools"}
+
 set +e
-# Check if dev tools already exists in the shared plugins volume (e.g., from main checkout setup)
-cli wp plugin path woocommerce-payments-dev-tools > /dev/null 2>&1
-if [[ $? -ne 0 ]]; then
-	# Not present - clone to the local path (which is the shared volume when running from main checkout)
-	git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools
-	if [[ $? -ne 0 ]]; then
+if [[ -d "$DEV_TOOLS_CLONE_PATH/.git" ]]; then
+	echo "Dev tools already cloned at $DEV_TOOLS_CLONE_PATH — skipping clone."
+	cli wp plugin activate woocommerce-payments-dev-tools
+else
+	git clone git@github.com:Automattic/woocommerce-payments-dev-tools.git "$DEV_TOOLS_CLONE_PATH"
+	if [[ $? -eq 0 ]]; then
+		cli wp plugin activate woocommerce-payments-dev-tools
+	else
 		echo
 		echo "WARN: Could not clone the dev tools repository. Skipping the install."
 	fi
-fi
-# Try to activate (may already be active, that's fine)
-cli wp plugin activate woocommerce-payments-dev-tools 2>/dev/null || true
+fi;
 set -e
 
 echo
