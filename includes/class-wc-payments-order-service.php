@@ -434,7 +434,7 @@ class WC_Payments_Order_Service {
 					$disputed_amount = WC_Payments_Utils::interpret_stripe_amount( $disputed_amount, $currency );
 
 					// Use the appropriate amount, but don't exceed order total.
-					$refund_amount = min( $order->get_total(), $disputed_amount );
+					$refund_amount = min( $order->get_remaining_refund_amount(), $disputed_amount );
 				}
 			}
 
