@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Improve messaging when WooPayments is forced into test-only mode by environment configuration

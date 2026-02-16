@@ -1,0 +1,122 @@
+name: "Agent Pipeline — Review Stage"
+
+on:
+  workflow_call:
+    inputs:
+      linear_issue_id:
+        type: string
+        required: true
+        description: "Linear issue ID (e.g. GAMMA-123) or issue description"
+      target_branch:
+        type: string
+        required: false
+        default: "develop"
+        description: "Base branch to work from"
+      branch_name:
+        type: string
+        required: true
+        description: "Feature branch to review (created by dev stage)"
+      model:
+        type: string
+        required: false
+        default: "claude-sonnet-4-5-20250929"
+        description: "Claude model to use"
+
+jobs:
+  review:
+    name: "Review: ${{ inputs.linear_issue_id }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout WooPayments
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Checkout WooCommerce (context)
+        uses: actions/checkout@v4
+        with:
+          repository: woocommerce/woocommerce
+          path: woocommerce
+          sparse-checkout: |
+            plugins/woocommerce/includes
+            plugins/woocommerce/src
+            plugins/woocommerce-blocks
+
+      - name: Checkout gamma-ai-tools (prompt templates)
+        uses: actions/checkout@v4
+        with:
+          repository: Automattic/gamma-ai-tools
+          github-server-url: https://github.a8c.com
+          token: ${{ secrets.GHE_TOKEN }}
+          path: .gamma-ai-tools
+          sparse-checkout: prompts/pipeline
+
+      - name: Prepare prompt from template
+        id: prompt
+        run: |
+          TEMPLATE=".gamma-ai-tools/prompts/pipeline/review.md"
+          if [ ! -f "$TEMPLATE" ]; then
+            echo "::error::Prompt template not found: $TEMPLATE"
+            exit 1
+          fi
+
+          # Substitute variables
+          sed \
+            -e 's|{{LINEAR_ISSUE_ID}}|${{ inputs.linear_issue_id }}|g' \
+            -e 's|{{TARGET_BRANCH}}|${{ inputs.target_branch }}|g' \
+            -e 's|{{BRANCH_NAME}}|${{ inputs.branch_name }}|g' \
+            "$TEMPLATE" > /tmp/review-prompt.md
+
+          # Write multiline output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "content<<$EOF" >> "$GITHUB_OUTPUT"
+          cat /tmp/review-prompt.md >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Clean up gamma-ai-tools checkout
+        run: rm -rf .gamma-ai-tools
+
+      - name: Run Review Agent
+        id: review
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: ${{ inputs.model }}
+          prompt: ${{ steps.prompt.outputs.content }}
+          max_turns: "50"
+          allowed_tools: "Read,Glob,Grep,Bash(git log*),Bash(git blame*),Bash(git show*),Bash(git diff*),Bash(wc *),Bash(find *),Write(review-report.md),Write(/tmp/pr-review/*)"
+
+      - name: Upload review-report.md as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: review-${{ inputs.linear_issue_id }}
+          path: review-report.md
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## Review Agent Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Issue:** ${{ inputs.linear_issue_id }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch:** ${{ inputs.branch_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Base:** ${{ inputs.target_branch }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Model:** ${{ inputs.model }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -f review-report.md ]; then
+            echo "**Status:** review-report.md generated" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "<details><summary>Full review-report.md</summary>" >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            cat review-report.md >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "</details>" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "**Status:** review-report.md was NOT generated" >> "$GITHUB_STEP_SUMMARY"
+          fi

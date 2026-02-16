@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed WooPayments incorrectly shown as incompatible with block-based checkout in the editor

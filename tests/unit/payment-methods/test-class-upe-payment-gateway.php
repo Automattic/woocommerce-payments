@@ -643,7 +643,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			'Bancontact',
 			'EPS',
 			'Przelewy24 (P24)',
-			'iDEAL',
+			'iDEAL | Wero',
 			'SEPA Direct Debit',
 			'BECS Direct Debit',
 		];
@@ -768,8 +768,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $sepa_method->is_reusable() );
 
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
-		$this->assertEquals( 'iDEAL', $ideal_method->get_title( 'US' ) );
-		$this->assertEquals( 'iDEAL', $ideal_method->get_title( 'US', $mock_ideal_details ) );
+		$this->assertEquals( 'iDEAL | Wero', $ideal_method->get_title( 'US' ) );
+		$this->assertEquals( 'iDEAL | Wero', $ideal_method->get_title( 'US', $mock_ideal_details ) );
 		$this->assertTrue( $ideal_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $ideal_method->is_reusable() );
 
