@@ -953,12 +953,15 @@ class WC_Payments_Order_Service {
 	/**
 	 * Set the IPP channel for an order.
 	 *
-	 * @param WC_Order $order   The order object.
-	 * @param string   $channel The IPP channel value (e.g. 'mobile_pos', 'mobile_store_management').
+	 * @param mixed  $order   The order ID or order object.
+	 * @param string $channel The IPP channel value (e.g. 'mobile_pos', 'mobile_store_management').
 	 *
 	 * @return void
+	 *
+	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_ipp_channel_for_order( $order, string $channel ): void {
+		$order = $this->get_order( $order );
 		$order->update_meta_data( self::IPP_CHANNEL_META_KEY, $channel );
 		$order->save_meta_data();
 	}

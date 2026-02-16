@@ -191,11 +191,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
 			$this->order_service->attach_intent_info_to_order( $order, $intent );
 
-			// Store the IPP channel from intent metadata on the order.
-			// This must happen before update_order_status_from_intent() so the POS flag
-			// is available when transactional emails fire during status transitions.
-			$ipp_channel = $intent_metadata['ipp_channel'] ?? '';
-			if ( '' !== $ipp_channel ) {
+			$ipp_channel      = $intent_metadata['ipp_channel'] ?? '';
+			$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
+			if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
 				$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
 			}
 
