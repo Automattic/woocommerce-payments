@@ -1278,117 +1278,33 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		// Check if we have any fees to display.
 		$transaction_fee = $order->get_meta( '_wcpay_transaction_fee' );
-		$dispute_fee     = $order->get_meta( '_wcpay_dispute_fee' );
-		$network_cost    = $order->get_meta( '_wcpay_dispute_network_cost' );
 
-		if ( ! $transaction_fee && ! $dispute_fee && ! $network_cost ) {
+		if ( ! $transaction_fee ) {
 			return;
 		}
 
-		// Display transaction fee if it exists.
-		if ( $transaction_fee ) {
-			?>
-			<tr>
-				<td class="label wcpay-transaction-fee">
-					<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput
-						echo wc_help_tip(
-							sprintf(
-								/* translators: %s: WooPayments */
-								__( 'This represents the fee %s collects for the transaction.', 'woocommerce-payments' ),
-								'WooPayments'
-							)
-						);
-					?>
-					<?php esc_html_e( 'Transaction Fee:', 'woocommerce-payments' ); ?>
-				</td>
-				<td width="1%"></td>
-				<td class="total">
-					-<?php echo wp_kses( wc_price( $transaction_fee, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
-				</td>
-			</tr>
-			<?php
-		}
-
-		// Display dispute fee if it exists.
-		if ( $dispute_fee ) {
-			?>
-			<tr>
-				<td class="label wcpay-dispute-fee">
-					<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput
-						echo wc_help_tip(
-							__( 'This represents the fee charged for the dispute.', 'woocommerce-payments' )
-						);
-					?>
-					<?php esc_html_e( 'Dispute Fee:', 'woocommerce-payments' ); ?>
-				</td>
-				<td width="1%"></td>
-				<td class="total">
-					-<?php echo wp_kses( wc_price( $dispute_fee, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
-				</td>
-			</tr>
-			<?php
-		}
-
-		// Display network cost if it exists.
-		if ( $network_cost ) {
-			?>
-			<tr>
-				<td class="label wcpay-network-cost">
-					<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput
-						echo wc_help_tip(
-							__( 'This represents the network cost associated with the dispute.', 'woocommerce-payments' )
-						);
-					?>
-					<?php esc_html_e( 'Network Cost:', 'woocommerce-payments' ); ?>
-				</td>
-				<td width="1%"></td>
-				<td class="total">
-					-<?php echo wp_kses( wc_price( $network_cost, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
-				</td>
-			</tr>
-			<?php
-		}
-
-		// Display total fees if we have multiple fees.
-		$total_fees = 0;
-		$fee_count  = 0;
-		if ( $transaction_fee ) {
-			$total_fees += $transaction_fee;
-			++$fee_count;
-		}
-		if ( $dispute_fee ) {
-			$total_fees += $dispute_fee;
-			++$fee_count;
-		}
-		if ( $network_cost ) {
-			$total_fees += $network_cost;
-			++$fee_count;
-		}
-
-		if ( $fee_count > 1 ) {
-			?>
-			<tr>
-				<td class="label wcpay-total-fees">
-					<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput
-						echo wc_help_tip(
-							__( 'Total of all fees associated with this transaction.', 'woocommerce-payments' )
-						);
-					?>
-					<?php esc_html_e( 'Total Fees:', 'woocommerce-payments' ); ?>
-				</td>
-				<td width="1%"></td>
-				<td class="total">
-					-<?php echo wp_kses( wc_price( $total_fees, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
-				</td>
-			</tr>
-			<?php
-		}
+		?>
+		<tr>
+			<td class="label wcpay-transaction-fee">
+				<?php
+					// phpcs:ignore WordPress.Security.EscapeOutput
+					echo wc_help_tip(
+						sprintf(
+							/* translators: %s: WooPayments */
+							__( 'This represents the fee %s collects for the transaction.', 'woocommerce-payments' ),
+							'WooPayments'
+						)
+					);
+				?>
+				<?php esc_html_e( 'Transaction Fee:', 'woocommerce-payments' ); ?>
+			</td>
+			<td width="1%"></td>
+			<td class="total">
+				-<?php echo wp_kses( wc_price( $transaction_fee, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+			</td>
+		</tr>
+		<?php
 	}
 
 	/**

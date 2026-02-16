@@ -1831,139 +1831,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Tests that store_dispute_fees correctly stores dispute fees and network costs.
-	 */
-	public function test_store_dispute_fees(): void {
-		// Create a test order.
-		$order = WC_Helper_Order::create_order();
-		$order->save();
-
-		// Test dispute summary data with both fee and network cost.
-		$dispute_summary = [
-			'fee'           => 1500, // $15.00 in cents
-			'network_cost'  => 500,  // $5.00 in cents
-			'currency'      => 'usd',
-			'exchange_rate' => 1,
-		];
-
-		// Act: Store dispute fees.
-		$this->order_service->store_dispute_fees( $order, $dispute_summary );
-
-		// Assert: Check that dispute fee was stored correctly.
-		$this->assertEquals( 15.00, $order->get_meta( '_wcpay_dispute_fee', true ) );
-
-		// Assert: Check that network cost was stored correctly.
-		$this->assertEquals( 5.00, $order->get_meta( '_wcpay_dispute_network_cost', true ) );
-
-		// Clean up.
-		WC_Helper_Order::delete_order( $order->get_id() );
-	}
-
-	/**
-	 * Tests that store_dispute_fees handles zero values correctly.
-	 */
-	public function test_store_dispute_fees_with_zero_values(): void {
-		// Create a test order.
-		$order = WC_Helper_Order::create_order();
-		$order->save();
-
-		// Test dispute summary data with zero values.
-		$dispute_summary = [
-			'fee'           => 0,
-			'network_cost'  => 0,
-			'currency'      => 'usd',
-			'exchange_rate' => 1,
-		];
-
-		// Act: Store dispute fees.
-		$this->order_service->store_dispute_fees( $order, $dispute_summary );
-
-		// Assert: Check that dispute fee was not stored (should be empty or not set).
-		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_fee', true ) );
-
-		// Assert: Check that network cost was not stored (should be empty or not set).
-		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_network_cost', true ) );
-
-		// Clean up.
-		WC_Helper_Order::delete_order( $order->get_id() );
-	}
-
-	/**
-	 * Tests that store_dispute_fees handles missing values correctly.
-	 */
-	public function test_store_dispute_fees_with_missing_values(): void {
-		// Create a test order.
-		$order = WC_Helper_Order::create_order();
-		$order->save();
-
-		// Test dispute summary data with missing fee and network cost.
-		$dispute_summary = [
-			'currency'      => 'usd',
-			'exchange_rate' => 1,
-		];
-
-		// Act: Store dispute fees.
-		$this->order_service->store_dispute_fees( $order, $dispute_summary );
-
-		// Assert: Check that dispute fee was not stored.
-		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_fee', true ) );
-
-		// Assert: Check that network cost was not stored.
-		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_network_cost', true ) );
-
-		// Clean up.
-		WC_Helper_Order::delete_order( $order->get_id() );
-	}
-
-	/**
-	 * Tests that store_dispute_fees handles exchange rates correctly.
-	 */
-	public function test_store_dispute_fees_with_exchange_rate(): void {
-		// Create a test order.
-		$order = WC_Helper_Order::create_order();
-		$order->save();
-
-		// Test dispute summary data with exchange rate.
-		$dispute_summary = [
-			'fee'           => 1000, // 10.00 in original currency
-			'network_cost'  => 200,  // 2.00 in original currency
-			'currency'      => 'eur',
-			'exchange_rate' => 1.2,  // 1 EUR = 1.2 USD
-		];
-
-		// Act: Store dispute fees.
-		$this->order_service->store_dispute_fees( $order, $dispute_summary );
-
-		// Assert: Check that dispute fee was converted correctly (10.00 / 1.2 = 8.33).
-		$this->assertEquals( 8.33, $order->get_meta( '_wcpay_dispute_fee', true ) );
-
-		// Assert: Check that network cost was converted correctly (2.00 / 1.2 = 1.67).
-		$this->assertEquals( 1.67, $order->get_meta( '_wcpay_dispute_network_cost', true ) );
-
-		// Clean up.
-		WC_Helper_Order::delete_order( $order->get_id() );
-	}
-
-	/**
-	 * Tests that store_dispute_fees exits gracefully with invalid order.
-	 */
-	public function test_store_dispute_fees_with_invalid_order(): void {
-		// Assert: Method should exit gracefully without errors.
-		$this->expectNotToPerformAssertions();
-
-		// Test dispute summary data.
-		$dispute_summary = [
-			'fee'           => 1500,
-			'network_cost'  => 500,
-			'currency'      => 'usd',
-			'exchange_rate' => 1,
-		];
-
-		// Act: Store dispute fees with invalid order.
-		$this->order_service->store_dispute_fees( 'invalid_order', $dispute_summary );
-	}
-
-	/**
 	 * Tests that mark_payment_dispute_closed handles dispute summary data correctly.
 	 */
 	public function test_mark_payment_dispute_closed_with_dispute_summary(): void {
@@ -1989,12 +1856,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the order status was left in on-hold status.
 		$this->assertTrue( $order->has_status( [ Order_Status::ON_HOLD ] ) );
-
-		// Assert: Check that dispute fee was stored correctly.
-		$this->assertEquals( 15.00, $order->get_meta( '_wcpay_dispute_fee', true ) );
-
-		// Assert: Check that network cost was stored correctly.
-		$this->assertEquals( 5.00, $order->get_meta( '_wcpay_dispute_network_cost', true ) );
 
 		// Assert: Check that a refund was created with the correct amount.
 		$refunds = $order->get_refunds();
@@ -2128,10 +1989,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check that the order status was left in on-hold status.
 		$this->assertTrue( $order->has_status( [ Order_Status::ON_HOLD ] ) );
-
-		// Assert: Check that no dispute fees were stored.
-		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_fee', true ) );
-		$this->assertEmpty( $order->get_meta( '_wcpay_dispute_network_cost', true ) );
 
 		// Assert: Check that a refund was created with the full order amount.
 		$refunds = $order->get_refunds();
