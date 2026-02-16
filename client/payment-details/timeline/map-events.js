@@ -1053,14 +1053,15 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					<NoticeOutlineIcon className="is-success" />
 				),
 			];
-		case 'dispute_lost':
+		case 'dispute_lost': {
 			const networkCost = event?.network_cost;
-			const formattedNetworkCost = networkCost
-				? formatExplicitCurrency(
-						networkCost.amount,
-						networkCost.currency
-				  )
-				: '';
+			const formattedNetworkCost =
+				networkCost?.amount != null && networkCost?.currency
+					? formatExplicitCurrency(
+							networkCost.amount,
+							networkCost.currency
+					  )
+					: '';
 			const isCrossCurrencyNetworkCost =
 				networkCost &&
 				event.currency?.toLowerCase() !==
@@ -1075,19 +1076,20 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 						formattedNetworkCost
 				  )
 				: formattedNetworkCost;
-			const networkCostItem = networkCost
-				? getDepositTimelineItem( event, networkCostAmount, false, [
-						event?.reason === 'noncompliant'
-							? __(
-									'Network costs associated with resolving Visa compliance disputes.',
-									'woocommerce-payments'
-							  )
-							: __(
-									'Network cost for the dispute.',
-									'woocommerce-payments'
-							  ),
-				  ] )
-				: null;
+			const networkCostItem =
+				networkCost?.amount != null && networkCost?.currency
+					? getDepositTimelineItem( event, networkCostAmount, false, [
+							event?.reason === 'noncompliant'
+								? __(
+										'Network costs associated with resolving Visa compliance disputes.',
+										'woocommerce-payments'
+								  )
+								: __(
+										'Network cost for the dispute.',
+										'woocommerce-payments'
+								  ),
+					  ] )
+					: null;
 
 			return [
 				networkCostItem,
@@ -1119,6 +1121,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					<CrossIcon className="is-error" />
 				),
 			];
+		}
 		case 'dispute_warning_closed':
 			return [
 				getMainTimelineItem(

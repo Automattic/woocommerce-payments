@@ -424,17 +424,22 @@ class WC_Payments_Order_Service {
 		if ( 'lost' === $status ) {
 			// Use dispute summary data if available to determine refund amount.
 			$refund_amount = $order->get_remaining_refund_amount();
+			$line_items    = $order->get_items();
 			if ( ! empty( $dispute_summary ) ) {
 				$disputed_amount = isset( $dispute_summary['disputed_amount'] ) ? $dispute_summary['disputed_amount'] : 0;
 				if ( $disputed_amount > 0 ) {
 					// Use disputed amount for refund if available.
-					$currency = isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency();
+					$currency = strtolower( isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency() );
 
 					// Convert amounts to the correct format based on currency (e.g. cents to dollars).
-					$disputed_amount = WC_Payments_Utils::interpret_stripe_amount( $disputed_amount, $currency );
+					$disputed_amount = WC_Payments_Utils::interpret_stripe_amount( (int) $disputed_amount, $currency );
 
 					// Use the appropriate amount, but don't exceed order total.
-					$refund_amount = min( $order->get_remaining_refund_amount(), $disputed_amount );
+					$refund_amount = min( $refund_amount, $disputed_amount );
+					if ( $refund_amount !== $disputed_amount ) {
+						// For partial refunds pass empty line_items to avoid inconsistency in the order view.
+						$line_items = [];
+					}
 				}
 			}
 
@@ -443,7 +448,7 @@ class WC_Payments_Order_Service {
 					'amount'     => $refund_amount,
 					'reason'     => __( 'Dispute lost.', 'woocommerce-payments' ),
 					'order_id'   => $order->get_id(),
-					'line_items' => $order->get_items(),
+					'line_items' => $line_items,
 				]
 			);
 		} else {
