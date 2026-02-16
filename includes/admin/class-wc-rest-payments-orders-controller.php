@@ -253,6 +253,12 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				}
 			}
 
+			// Store the IPP channel from intent metadata on the order.
+			$ipp_channel = $intent_metadata['ipp_channel'] ?? '';
+			if ( '' !== $ipp_channel ) {
+				$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
+			}
+
 			// Actualize order status.
 			$this->order_service->mark_terminal_payment_completed( $order, $intent_id, $result['status'] );
 
