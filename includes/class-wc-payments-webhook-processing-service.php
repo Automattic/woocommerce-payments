@@ -523,6 +523,12 @@ class WC_Payments_Webhook_Processing_Service {
 		// This is an incoming request from WCPay server rather than an outgoing request to WCPay server.
 		// However, the shape of the payment intent object are the same.
 		// Using this extraction method will reduce the code duplication.
+		$ipp_channel      = $event_object['metadata']['ipp_channel'] ?? '';
+		$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
+		if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
+			$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
+		}
+
 		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
 		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 
