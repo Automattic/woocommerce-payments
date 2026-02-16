@@ -1054,26 +1054,39 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'dispute_lost':
-			const networkCostText =
-				event?.reason === 'noncompliant'
-					? __(
-							'Network costs associated with resolving Visa compliance disputes.',
-							'woocommerce-payments'
-					  )
-					: __(
-							'Network cost for the dispute.',
-							'woocommerce-payments'
-					  );
-			const networkCostItem = event?.network_cost
-				? getDepositTimelineItem(
-						event,
-						formatExplicitCurrency(
-							event.network_cost,
-							event.balance_currency
-						),
-						false,
-						[ networkCostText ]
+			const networkCost = event?.network_cost;
+			const formattedNetworkCost = networkCost
+				? formatExplicitCurrency(
+						networkCost.amount,
+						networkCost.currency
 				  )
+				: '';
+			const isCrossCurrencyNetworkCost =
+				networkCost &&
+				event.currency?.toLowerCase() !==
+					networkCost.currency?.toLowerCase();
+			const networkCostAmount = isCrossCurrencyNetworkCost
+				? sprintf(
+						// translators: %s - formatted network cost amount with currency code
+						__(
+							'%s in your account currency',
+							'woocommerce-payments'
+						),
+						formattedNetworkCost
+				  )
+				: formattedNetworkCost;
+			const networkCostItem = networkCost
+				? getDepositTimelineItem( event, networkCostAmount, false, [
+						event?.reason === 'noncompliant'
+							? __(
+									'Network costs associated with resolving Visa compliance disputes.',
+									'woocommerce-payments'
+							  )
+							: __(
+									'Network cost for the dispute.',
+									'woocommerce-payments'
+							  ),
+				  ] )
 				: null;
 
 			return [

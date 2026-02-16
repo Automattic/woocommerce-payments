@@ -442,7 +442,33 @@ describe( 'mapTimelineEvents', () => {
 							id: 'dummy_po_5eaada696b2ef',
 						},
 						fee: 1500,
-						network_cost: 500,
+						network_cost: {
+							amount: 500,
+							currency: 'USD',
+						},
+						type: 'dispute_lost',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats dispute_lost events with cross-currency network cost', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 10000,
+						currency: 'EUR',
+						balance_currency: 'EUR',
+						datetime: 1586055370,
+						deposit: {
+							arrival_date: 1586141770,
+							id: 'dummy_po_5eaada696b2ef',
+						},
+						fee: 1500,
+						network_cost: {
+							amount: 500,
+							currency: 'USD',
+						},
 						type: 'dispute_lost',
 					},
 				] )
