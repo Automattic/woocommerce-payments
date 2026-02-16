@@ -423,7 +423,7 @@ class WC_Payments_Order_Service {
 
 		if ( 'lost' === $status ) {
 			// Use dispute summary data if available to determine refund amount.
-			$refund_amount = $order->get_total();
+			$refund_amount = $order->get_remaining_refund_amount();
 			if ( ! empty( $dispute_summary ) ) {
 				$disputed_amount = isset( $dispute_summary['disputed_amount'] ) ? $dispute_summary['disputed_amount'] : 0;
 				if ( $disputed_amount > 0 ) {
