@@ -169,6 +169,13 @@ class WC_Payments_Order_Service {
 	const PAYMENT_METHOD_DETAILS_META_KEY = '_wcpay_payment_method_details';
 
 	/**
+	 * Meta key used to store the IPP channel from Stripe intent metadata.
+	 *
+	 * @const string
+	 */
+	const IPP_CHANNEL_META_KEY = '_wcpay_ipp_channel';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -941,6 +948,33 @@ class WC_Payments_Order_Service {
 	public function get_fraud_meta_box_type_for_order( $order ): string {
 		$order = $this->get_order( $order );
 		return $order->get_meta( self::WCPAY_FRAUD_META_BOX_TYPE_META_KEY, true );
+	}
+
+	/**
+	 * Set the IPP channel for an order.
+	 *
+	 * @param WC_Order $order   The order object.
+	 * @param string   $channel The IPP channel value (e.g. 'mobile_pos', 'mobile_store_management').
+	 *
+	 * @return void
+	 */
+	public function set_ipp_channel_for_order( $order, string $channel ): void {
+		$order->update_meta_data( self::IPP_CHANNEL_META_KEY, $channel );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the IPP channel for an order.
+	 *
+	 * @param mixed $order The order Id or order object.
+	 *
+	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_ipp_channel_for_order( $order ): string {
+		$order = $this->get_order( $order );
+		return $order->get_meta( self::IPP_CHANNEL_META_KEY, true );
 	}
 
 	/**
