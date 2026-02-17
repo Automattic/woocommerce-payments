@@ -11,7 +11,8 @@
 	},
 	"sideEffects": [
 		"*.scss",
-		"*.css"
+		"*.css",
+		"./client/data/index.ts"
 	],
 	"config": {
 		"wp_org_slug": "woocommerce-payments",
