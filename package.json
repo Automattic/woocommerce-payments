@@ -100,6 +100,7 @@
 		"@woocommerce/number": "2.4.0",
 		"@woocommerce/onboarding": "3.5.0",
 		"canvas-confetti": "1.9.2",
+		"decimal.js-light": "2.5.1",
 		"intl-tel-input": "17.0.15",
 		"lodash": "4.17.21",
 		"validator": "13.12.0"
