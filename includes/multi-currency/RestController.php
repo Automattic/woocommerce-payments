@@ -159,6 +159,7 @@ class RestController extends \WP_REST_Controller {
 					'wcpay_multi_currency_rendering_mode' => [
 						'type'     => 'string',
 						'required' => false,
+						'enum'     => [ 'speed', 'cache' ],
 					],
 				],
 				'callback'            => [ $this, 'update_settings' ],
