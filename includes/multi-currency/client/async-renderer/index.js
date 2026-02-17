@@ -1,0 +1,354 @@
+/* global wcpayAsyncPriceConfig, jQuery */
+
+/**
+ * External dependencies
+ */
+import Decimal from 'decimal.js-light';
+
+/**
+ * Internal dependencies
+ */
+import './style.scss';
+
+const TIMEOUT_MS = 10000;
+const MAX_CACHE_SIZE = 500;
+
+/**
+ * Async price renderer for cache-optimized multi-currency mode.
+ *
+ * Fetches currency config from the public REST endpoint and converts
+ * all skeleton-wrapped prices on the client side.
+ */
+class WCPayAsyncPriceRenderer {
+	constructor() {
+		this.config = null;
+		this.cache = new Map();
+		this.initialized = false;
+		this.observer = null;
+	}
+
+	/**
+	 * Initialize the renderer: fetch config, convert prices, observe DOM.
+	 */
+	async init() {
+		if ( this.initialized ) {
+			return;
+		}
+		this.initialized = true;
+
+		try {
+			const timeoutPromise = new Promise( ( _, reject ) =>
+				setTimeout(
+					() => reject( new Error( 'Config fetch timeout' ) ),
+					TIMEOUT_MS
+				)
+			);
+
+			this.config = await Promise.race( [
+				this.fetchConfig(),
+				timeoutPromise,
+			] );
+
+			this.convertAllPrices();
+			this.observeDynamicContent();
+			this.listenToWooCommerceEvents();
+		} catch ( error ) {
+			this.showErrorState();
+		}
+	}
+
+	/**
+	 * Fetch the public multi-currency config from the REST API.
+	 *
+	 * @return {Promise<Object>} The config object.
+	 */
+	async fetchConfig() {
+		const response = await fetch( wcpayAsyncPriceConfig.apiUrl );
+		if ( ! response.ok ) {
+			throw new Error( `Config fetch failed: ${ response.status }` );
+		}
+		const config = await response.json();
+		this.decodeCurrencySymbols( config );
+		return config;
+	}
+
+	/**
+	 * Decode HTML entities in currency symbols (e.g. &euro; → €).
+	 *
+	 * Uses a detached textarea element to safely convert HTML entities to
+	 * their character equivalents. The textarea is never added to the DOM
+	 * and .value always returns plain text, so this is XSS-safe.
+	 *
+	 * @param {Object} config The config object to mutate.
+	 */
+	decodeCurrencySymbols( config ) {
+		if ( ! config.currencies ) {
+			return;
+		}
+		const textarea = document.createElement( 'textarea' );
+		for ( const code of Object.keys( config.currencies ) ) {
+			const currency = config.currencies[ code ];
+			if ( currency.symbol ) {
+				textarea.innerHTML = currency.symbol;
+				currency.symbol = textarea.value;
+			}
+		}
+	}
+
+	/**
+	 * Convert a price value based on currency settings.
+	 *
+	 * @param {number|string} price The raw price in default currency.
+	 * @param {string}        type  One of 'product', 'shipping', 'coupon', 'tax', 'exchange_rate'.
+	 * @return {string} The converted price as a formatted string.
+	 */
+	convertPrice( price, type ) {
+		const cacheKey = `${ price }_${ type }`;
+		if ( this.cache.has( cacheKey ) ) {
+			return this.cache.get( cacheKey );
+		}
+
+		const selectedCode = this.config.selected_currency;
+		const currency = this.config.currencies[ selectedCode ];
+
+		if ( ! currency || selectedCode === this.config.default_currency ) {
+			const formatted = this.formatPrice(
+				new Decimal( price ),
+				currency ||
+					this.config.currencies[ this.config.default_currency ]
+			);
+			this.setCacheEntry( cacheKey, formatted );
+			return formatted;
+		}
+
+		let converted = new Decimal( price ).times(
+			new Decimal( currency.rate )
+		);
+
+		if ( type === 'tax' || type === 'coupon' || type === 'exchange_rate' ) {
+			// Tax, coupon, and exchange_rate: simple rounding to decimals.
+			converted = converted.toDecimalPlaces(
+				currency.decimals,
+				Decimal.ROUND_HALF_UP
+			);
+		} else {
+			// Product and shipping: apply rounding and charm pricing.
+			const rounding = new Decimal( currency.rounding );
+
+			if ( rounding.gt( 0 ) ) {
+				converted = converted
+					.div( rounding )
+					.toDecimalPlaces( 0, Decimal.ROUND_CEIL )
+					.times( rounding );
+			} else {
+				converted = converted.toDecimalPlaces(
+					currency.decimals,
+					Decimal.ROUND_HALF_UP
+				);
+			}
+
+			// Apply charm pricing based on the PHP filter setting.
+			const charmOnlyProducts = this.config.charm_only_products !== false;
+			const charmTypes = charmOnlyProducts
+				? [ 'product' ]
+				: [ 'product', 'shipping' ];
+
+			if ( charmTypes.includes( type ) ) {
+				const charm = new Decimal( currency.charm );
+				converted = converted.plus( charm );
+			}
+		}
+
+		// Never return negative prices.
+		if ( converted.lt( 0 ) ) {
+			converted = new Decimal( 0 );
+		}
+
+		const formatted = this.formatPrice( converted, currency );
+		this.setCacheEntry( cacheKey, formatted );
+		return formatted;
+	}
+
+	/**
+	 * Add an entry to the price cache with size limit.
+	 *
+	 * @param {string} key       The cache key.
+	 * @param {string} value     The cached value.
+	 */
+	setCacheEntry( key, value ) {
+		if ( this.cache.size >= MAX_CACHE_SIZE ) {
+			// Remove oldest entry.
+			const firstKey = this.cache.keys().next().value;
+			this.cache.delete( firstKey );
+		}
+		this.cache.set( key, value );
+	}
+
+	/**
+	 * Format a price with the currency's formatting settings.
+	 *
+	 * @param {Decimal} price    The price as a Decimal.
+	 * @param {Object}  currency The currency config object.
+	 * @return {string} The formatted price string.
+	 */
+	formatPrice( price, currency ) {
+		const fixed = price.toFixed( currency.decimals );
+		const parts = fixed.split( '.' );
+		const integerPart = parts[ 0 ];
+		const decimalPart = parts[ 1 ] || '';
+
+		// Add thousand separators.
+		const formattedInteger = integerPart.replace(
+			/\B(?=(\d{3})+(?!\d))/g,
+			currency.thousand_sep
+		);
+
+		let formattedNumber = formattedInteger;
+		if ( currency.decimals > 0 ) {
+			formattedNumber += currency.decimal_sep + decimalPart;
+		}
+
+		const symbol = currency.symbol;
+
+		switch ( currency.symbol_pos ) {
+			case 'left':
+				return symbol + formattedNumber;
+			case 'left_space':
+				return symbol + '\u00a0' + formattedNumber;
+			case 'right':
+				return formattedNumber + symbol;
+			case 'right_space':
+				return formattedNumber + '\u00a0' + symbol;
+			default:
+				return symbol + formattedNumber;
+		}
+	}
+
+	/**
+	 * Find all skeleton price elements and convert them.
+	 */
+	convertAllPrices() {
+		const elements = document.querySelectorAll(
+			'[data-wcpay-price]:not(.wcpay-price-converted)'
+		);
+
+		elements.forEach( ( el ) => {
+			const price = el.getAttribute( 'data-wcpay-price' );
+			const type =
+				el.getAttribute( 'data-wcpay-price-type' ) || 'product';
+
+			const converted = this.convertPrice( price, type );
+
+			// Replace skeleton with converted price.
+			const skeleton = el.querySelector( '.wcpay-price-skeleton' );
+			if ( skeleton ) {
+				skeleton.remove();
+			}
+
+			const priceSpan = document.createElement( 'span' );
+			priceSpan.className = 'woocommerce-Price-amount amount';
+			priceSpan.textContent = converted;
+			el.appendChild( priceSpan );
+
+			el.classList.add( 'wcpay-price-converted' );
+		} );
+	}
+
+	/**
+	 * Set up a MutationObserver to convert prices in dynamically added content.
+	 */
+	observeDynamicContent() {
+		this.observer = new MutationObserver( ( mutations ) => {
+			let hasNewPrices = false;
+
+			for ( const mutation of mutations ) {
+				for ( const node of mutation.addedNodes ) {
+					if ( node.nodeType !== Node.ELEMENT_NODE ) {
+						continue;
+					}
+
+					if (
+						node.matches?.(
+							'[data-wcpay-price]:not(.wcpay-price-converted)'
+						) ||
+						node.querySelector?.(
+							'[data-wcpay-price]:not(.wcpay-price-converted)'
+						)
+					) {
+						hasNewPrices = true;
+						break;
+					}
+				}
+
+				if ( hasNewPrices ) {
+					break;
+				}
+			}
+
+			if ( hasNewPrices ) {
+				this.convertAllPrices();
+			}
+		} );
+
+		this.observer.observe( document.body, {
+			childList: true,
+			subtree: true,
+		} );
+	}
+
+	/**
+	 * Listen to WooCommerce AJAX events that may update price markup.
+	 */
+	listenToWooCommerceEvents() {
+		const events = [
+			'updated_cart_totals',
+			'updated_checkout',
+			'updated_wc_div',
+		];
+
+		if ( typeof jQuery !== 'undefined' ) {
+			events.forEach( ( event ) => {
+				jQuery( document.body ).on( event, () => {
+					this.convertAllPrices();
+				} );
+			} );
+		}
+	}
+
+	/**
+	 * Show error state on all skeleton elements when config fetch fails.
+	 */
+	showErrorState() {
+		const elements = document.querySelectorAll( '.wcpay-price-skeleton' );
+		elements.forEach( ( el ) => {
+			el.classList.remove( 'wcpay-price-skeleton' );
+			el.classList.add( 'wcpay-price-error' );
+			el.textContent = '\u2014';
+		} );
+	}
+
+	/**
+	 * Clean up the observer and event listeners.
+	 */
+	destroy() {
+		if ( this.observer ) {
+			this.observer.disconnect();
+			this.observer = null;
+		}
+		this.cache.clear();
+	}
+}
+
+// Export for testing.
+export { WCPayAsyncPriceRenderer };
+
+// Initialize when DOM is ready.
+if ( typeof wcpayAsyncPriceConfig !== 'undefined' ) {
+	const renderer = new WCPayAsyncPriceRenderer();
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', () => renderer.init() );
+	} else {
+		renderer.init();
+	}
+}
