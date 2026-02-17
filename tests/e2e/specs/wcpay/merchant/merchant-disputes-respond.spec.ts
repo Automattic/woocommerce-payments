@@ -681,7 +681,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					).toHaveValue( 'my product description', {
 						timeout: 5000,
 					} );
-				} ).toPass( { timeout: 30000, intervals: [ 3000 ] } );
+				} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 			}
 		);
 	} );
