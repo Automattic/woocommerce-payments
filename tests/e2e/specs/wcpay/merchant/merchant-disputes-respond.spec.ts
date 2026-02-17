@@ -77,7 +77,9 @@ async function createDisputedOrder( browser: Browser ) {
 	return orderId;
 }
 
-test.describe( 'Disputes > Respond to a dispute', () => {
+// TODO: Quarantined - disputes test is flaky in CI, causing ~50% of qit-e2e failures.
+// Investigate and fix in WOOPMNT-5743.
+test.describe.skip( 'Disputes > Respond to a dispute', () => {
 	// Allow all tests within this describe block to run in parallel.
 	test.describe.configure( { mode: 'parallel' } );
 

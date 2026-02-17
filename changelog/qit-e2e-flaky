@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fix flaky E2E tests for declined card error messages by using regex patterns instead of exact string matching
+Fix flaky E2E tests: use regex patterns for declined card error assertions, quarantine flaky disputes test
