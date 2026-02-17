@@ -132,6 +132,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 *
 	 * For credit cards, returns "{title} ending in {last4}".
 	 * For Amazon Pay, returns "{title} ({redacted_email})".
+	 * For Stripe Link, returns "{title} ({redacted_email})".
 	 * For other tokens, returns the default title.
 	 *
 	 * @param WC_Payment_Token|null $token   The payment token.
@@ -157,6 +158,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			// Avoid duplication if the title already contains the email.
 			if ( ! empty( $email ) && false === strpos( $default, $email ) ) {
 				// translators: 1: payment method (Amazon Pay), 2: redacted customer email.
+				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $default, $email );
+			}
+		}
+
+		if ( $token instanceof WC_Payment_Token_WCPay_Link ) {
+			$email = $token->get_redacted_email();
+			// Avoid duplication if the title already contains the email.
+			if ( ! empty( $email ) && false === strpos( $default, $email ) ) {
+				// translators: 1: payment method (Stripe Link), 2: redacted customer email.
 				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $default, $email );
 			}
 		}
@@ -901,6 +911,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				if ( ! empty( $payment_method['amazon_pay']['email'] ) ) {
 					// translators: 1: payment method (Amazon Pay), 2: redacted customer email.
 					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['amazon_pay']['email'] );
+				}
+				if ( ! empty( $payment_method['link']['email'] ) ) {
+					// translators: 1: payment method (Stripe Link), 2: customer email.
+					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['link']['email'] );
 				}
 			} catch ( Exception $e ) {
 				Logger::error( $e );

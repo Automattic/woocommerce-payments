@@ -451,4 +451,112 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// New should show Amazon Pay email.
 		$this->assertStringContainsString( '***cher@test.com', $new_payment_method_title_modified );
 	}
+
+	public function test_link_old_payment_method_displays_email() {
+		$old_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'customer@example.com' );
+
+		$newer_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$newer_token->set_last4( '9999' );
+		$newer_token->save();
+
+		$this->renewal_order->add_payment_token( $old_token );
+		$this->renewal_order->add_payment_token( $newer_token );
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			'Stripe Link',
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		$this->assertStringContainsString( '***omer@example.com', $old_payment_method_title_modified );
+		$this->assertStringContainsString( 'Stripe Link', $old_payment_method_title_modified );
+	}
+
+	public function test_link_new_saved_payment_method_displays_email() {
+		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'buyer@link.com' );
+
+		$this->renewal_order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->renewal_order->set_payment_method_title( 'Stripe Link' );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
+
+		$new_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_new_payment_method_title',
+			'Stripe Link',
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		$this->assertStringContainsString( '***uyer@link.com', $new_payment_method_title_modified );
+		$this->assertStringContainsString( 'Stripe Link', $new_payment_method_title_modified );
+	}
+
+	public function test_switching_from_card_to_link() {
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Credit card';
+		$new_payment_method_title = 'Stripe Link';
+
+		// Old payment is a card (already set up in setUp with token1 and token2).
+		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'switcher@test.com' );
+		$this->renewal_order->add_payment_token( $new_token );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+		$new_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_new_payment_method_title',
+			$new_payment_method_title,
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		// Old should show card last4.
+		$this->assertStringContainsString( $this->last4digits[2], $old_payment_method_title_modified );
+		// New should show Link email.
+		$this->assertStringContainsString( '***cher@test.com', $new_payment_method_title_modified );
+	}
+
+	public function test_switching_from_link_to_card() {
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Stripe Link';
+		$new_payment_method_title = 'Credit card';
+
+		// Replace setup's CC tokens with Link + CC tokens on the renewal order.
+		$link_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'linker@test.com' );
+		$card_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$card_token->set_last4( '7777' );
+		$card_token->save();
+
+		$this->renewal_order->add_payment_token( $link_token );
+		$this->renewal_order->add_payment_token( $card_token );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $card_token->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+		$new_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_new_payment_method_title',
+			$new_payment_method_title,
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		// Old should show Link email.
+		$this->assertStringContainsString( '***nker@test.com', $old_payment_method_title_modified );
+		// New should show card last4.
+		$this->assertStringContainsString( '7777', $new_payment_method_title_modified );
+	}
 }
