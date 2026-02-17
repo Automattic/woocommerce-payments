@@ -5,7 +5,6 @@
 import { fireEvent, render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -308,7 +307,7 @@ describe( 'PaymentDetailsSummary', () => {
 					charge_id: 'ch_mock',
 					amount: 1000,
 					currency: 'usd',
-					created: moment.utc().format(),
+					created: new Date( Date.now() ).toISOString(),
 					order_id: 123,
 					risk_level: 1,
 					customer_country: 'US',

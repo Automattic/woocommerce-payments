@@ -3,13 +3,13 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
-import moment from 'moment';
 import type { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import { sortDatesAsc } from 'utils/date-time';
 
 export interface Document {
 	document_id: string;
@@ -61,11 +61,7 @@ export const useDocuments = ( {
 				match,
 				dateBefore,
 				dateAfter,
-				dateBetween:
-					dateBetween &&
-					dateBetween.sort( ( a, b ) =>
-						moment( a ).diff( moment( b ) )
-					),
+				dateBetween: dateBetween && sortDatesAsc( dateBetween ),
 				typeIs,
 				typeIsNot,
 			};

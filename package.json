@@ -9,6 +9,10 @@
 		"npm": ">=8.15.0",
 		"node": ">=20.11.1"
 	},
+	"sideEffects": [
+		"*.scss",
+		"*.css"
+	],
 	"config": {
 		"wp_org_slug": "woocommerce-payments",
 		"translate": true,

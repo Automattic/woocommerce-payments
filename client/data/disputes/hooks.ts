@@ -5,7 +5,6 @@
  */
 import { useSelect, useDispatch } from '@wordpress/data';
 import type { Query } from '@woocommerce/navigation';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -16,6 +15,7 @@ import type {
 	DisputesSummary,
 } from 'wcpay/types/disputes';
 import type { ApiError } from 'wcpay/types/errors';
+import { sortDatesAsc } from 'utils/date-time';
 import { STORE_NAME } from '../constants';
 
 /**
@@ -108,11 +108,7 @@ export const useDisputes = ( {
 				match,
 				dateBefore,
 				dateAfter,
-				dateBetween:
-					dateBetween &&
-					dateBetween.sort( ( a, b ) =>
-						moment( a ).diff( moment( b ) )
-					),
+				dateBetween: dateBetween && sortDatesAsc( dateBetween ),
 				filter,
 				statusIs,
 				statusIsNot,

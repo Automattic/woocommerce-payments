@@ -4,12 +4,12 @@
  * External dependencies
  */
 import { useSelect, useDispatch } from '@wordpress/data';
-import moment from 'moment';
 
 /**
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import { sortDatesAsc } from 'utils/date-time';
 import type { Query } from '@woocommerce/navigation';
 import type {
 	CachedDeposits,
@@ -132,11 +132,7 @@ export const useDeposits = ( {
 				match,
 				dateBefore,
 				dateAfter,
-				dateBetween:
-					dateBetween &&
-					dateBetween.sort( ( a, b ) =>
-						moment( a ).diff( moment( b ) )
-					),
+				dateBetween: dateBetween && sortDatesAsc( dateBetween ),
 				statusIs,
 				statusIsNot,
 			};

@@ -2,8 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import moment from 'moment';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { formatOrdinalDay } from 'utils/date-time';
 
 interface DepositObject {
 	date: number | string;
@@ -24,14 +24,10 @@ export const getDepositMonthlyAnchorLabel = ( {
 	// More details can be found in https://github.com/WordPress/gutenberg/issues/15221/
 	// Using 'en' as the locale should be enough to workaround it
 	// TODO: This was resolved in WP 6.1. When the required version is 6.1 or higher, we can remove this workaround.
-	const fixedLocale = moment.locale().startsWith( 'en' )
-		? 'en'
-		: moment.locale();
+	const locale = document.documentElement.lang || navigator.language || 'en';
+	const fixedLocale = locale.startsWith( 'en' ) ? 'en' : locale;
 
-	let label = moment()
-		.locale( fixedLocale )
-		.date( monthlyAnchor )
-		.format( 'Do' );
+	let label = formatOrdinalDay( monthlyAnchor, fixedLocale );
 
 	if ( 31 === monthlyAnchor ) {
 		label = __( 'Last day of the month', 'woocommerce-payments' );

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Replace moment.js with native Date + @wordpress/date utilities for ~67KB bundle reduction

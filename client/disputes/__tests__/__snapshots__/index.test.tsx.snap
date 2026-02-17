@@ -597,13 +597,7 @@ exports[`Disputes list renders correctly 1`] = `
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
-                    >
-                      <span
-                        class="chip chip-alert"
-                      >
-                        2 days left
-                      </span>
-                    </a>
+                    />
                   </td>
                   <td
                     class="woocommerce-table__item is-numeric"
@@ -840,13 +834,7 @@ exports[`Disputes list renders correctly 1`] = `
                       data-link-type="wc-admin"
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_mock"
                       tabindex="-1"
-                    >
-                      <span
-                        class="chip chip-alert"
-                      >
-                        Last day today
-                      </span>
-                    </a>
+                    />
                   </td>
                   <td
                     class="woocommerce-table__item is-numeric"

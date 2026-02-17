@@ -3,13 +3,13 @@
  * External dependencies
  */
 import { useSelect } from '@wordpress/data';
-import moment from 'moment';
 import type { Query } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import { sortDatesAsc } from 'utils/date-time';
 import type { DepositStatus } from 'wcpay/types/deposits';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,
@@ -179,11 +179,7 @@ export const useTransactions = (
 				match,
 				dateBefore,
 				dateAfter,
-				dateBetween:
-					dateBetween &&
-					dateBetween.sort( ( a, b ) =>
-						moment( a ).diff( moment( b ) )
-					),
+				dateBetween: dateBetween && sortDatesAsc( dateBetween ),
 				typeIs,
 				typeIsNot,
 				typeIsIn,

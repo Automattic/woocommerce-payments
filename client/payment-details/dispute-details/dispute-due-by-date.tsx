@@ -4,7 +4,6 @@
 import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import clsx from 'clsx';
-import moment from 'moment';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 const DisputeDueByDate: React.FC< {
@@ -12,7 +11,7 @@ const DisputeDueByDate: React.FC< {
 	showRemainingDays?: boolean;
 } > = ( { dueBy, showRemainingDays = true } ) => {
 	const daysRemaining = Math.floor(
-		moment.unix( dueBy ).utc().diff( moment().utc(), 'days', true )
+		( new Date( dueBy * 1000 ).getTime() - Date.now() ) / 86_400_000
 	);
 	const respondByDate = formatDateTimeFromTimestamp( dueBy, {
 		customFormat: 'F j, Y g:i A',

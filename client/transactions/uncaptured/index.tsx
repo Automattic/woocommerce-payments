@@ -7,7 +7,6 @@ import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -20,7 +19,7 @@ import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
 import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
-import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { formatDateTimeFromString, addDaysToDate } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 interface Column extends TableCardColumn {
@@ -147,12 +146,12 @@ export const AuthorizationsList = (): JSX.Element => {
 			// Payments are authorized for a maximum of 7 days
 			capture_by: {
 				value: formatDateTimeFromString(
-					moment.utc( auth.created ).add( 7, 'd' ).toISOString(),
+					addDaysToDate( auth.created, 7 ),
 					{ includeTime: true }
 				),
 				display: clickable(
 					formatDateTimeFromString(
-						moment.utc( auth.created ).add( 7, 'd' ).toISOString(),
+						addDaysToDate( auth.created, 7 ),
 						{ includeTime: true }
 					)
 				),
