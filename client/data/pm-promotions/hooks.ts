@@ -27,7 +27,7 @@ export const usePmPromotions = (): PmPromotionsResponse =>
 			pmPromotionsError: getPmPromotionsError(),
 			isLoading: isResolving( 'getPmPromotions' ),
 		};
-	} );
+	}, [] );
 
 /**
  * Hook to get PM promotion actions (activate and dismiss).

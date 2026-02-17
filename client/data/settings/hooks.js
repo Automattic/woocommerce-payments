@@ -17,8 +17,9 @@ import { STORE_NAME } from '../constants';
 export const useSavedCards = () => {
 	const { updateIsSavedCardsEnabled } = useDispatch( STORE_NAME );
 
-	const isSavedCardsEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsSavedCardsEnabled()
+	const isSavedCardsEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsSavedCardsEnabled(),
+		[]
 	);
 
 	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
@@ -30,8 +31,9 @@ export const useSavedCards = () => {
 export const useCardPresentEligible = () => {
 	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
 
-	const isCardPresentEligible = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsCardPresentEligible()
+	const isCardPresentEligible = useSelect(
+		( select ) => select( STORE_NAME ).getIsCardPresentEligible(),
+		[]
 	);
 
 	return [ isCardPresentEligible, updateIsCardPresentEligible ];
@@ -43,8 +45,9 @@ export const useCardPresentEligible = () => {
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-	const enabledPaymentMethodIds = useSelect( ( select ) =>
-		select( STORE_NAME ).getEnabledPaymentMethodIds()
+	const enabledPaymentMethodIds = useSelect(
+		( select ) => select( STORE_NAME ).getEnabledPaymentMethodIds(),
+		[]
 	);
 
 	return [ enabledPaymentMethodIds, updateEnabledPaymentMethodIds ];
@@ -54,8 +57,9 @@ export const useEnabledPaymentMethodIds = () => {
  * @return {string}
  */
 export const useAccountDomesticCurrency = () =>
-	useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountDomesticCurrency()
+	useSelect(
+		( select ) => select( STORE_NAME ).getAccountDomesticCurrency(),
+		[]
 	);
 
 /**
@@ -64,8 +68,9 @@ export const useAccountDomesticCurrency = () =>
 export const useSelectedPaymentMethod = () => {
 	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
 
-	const enabledPaymentMethodIds = useSelect( ( select ) =>
-		select( STORE_NAME ).getEnabledPaymentMethodIds()
+	const enabledPaymentMethodIds = useSelect(
+		( select ) => select( STORE_NAME ).getEnabledPaymentMethodIds(),
+		[]
 	);
 
 	return [ enabledPaymentMethodIds, updateSelectedPaymentMethod ];
@@ -77,8 +82,9 @@ export const useSelectedPaymentMethod = () => {
 export const useUnselectedPaymentMethod = () => {
 	const { updateUnselectedPaymentMethod } = useDispatch( STORE_NAME );
 
-	const enabledPaymentMethodIds = useSelect( ( select ) =>
-		select( STORE_NAME ).getEnabledPaymentMethodIds()
+	const enabledPaymentMethodIds = useSelect(
+		( select ) => select( STORE_NAME ).getEnabledPaymentMethodIds(),
+		[]
 	);
 
 	return [ enabledPaymentMethodIds, updateUnselectedPaymentMethod ];
@@ -90,8 +96,9 @@ export const useUnselectedPaymentMethod = () => {
 export const useDebugLog = () => {
 	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
 
-	const isDebugLogEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsDebugLogEnabled()
+	const isDebugLogEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsDebugLogEnabled(),
+		[]
 	);
 
 	return [ isDebugLogEnabled, updateIsDebugLogEnabled ];
@@ -103,8 +110,9 @@ export const useDebugLog = () => {
 export const useTestMode = () => {
 	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
 
-	const isTestModeEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsTestModeEnabled()
+	const isTestModeEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsTestModeEnabled(),
+		[]
 	);
 
 	return [ isTestModeEnabled, updateIsTestModeEnabled ];
@@ -131,8 +139,9 @@ export const useDevMode = () =>
 export const useMultiCurrency = () => {
 	const { updateIsMultiCurrencyEnabled } = useDispatch( STORE_NAME );
 
-	const isMultiCurrencyEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsMultiCurrencyEnabled()
+	const isMultiCurrencyEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsMultiCurrencyEnabled(),
+		[]
 	);
 
 	return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
@@ -141,11 +150,13 @@ export const useMultiCurrency = () => {
 export const useWCPaySubscriptions = () => {
 	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
 
-	const isWCPaySubscriptionsEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsWCPaySubscriptionsEnabled()
+	const isWCPaySubscriptionsEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsWCPaySubscriptionsEnabled(),
+		[]
 	);
-	const isWCPaySubscriptionsEligible = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsWCPaySubscriptionsEligible()
+	const isWCPaySubscriptionsEligible = useSelect(
+		( select ) => select( STORE_NAME ).getIsWCPaySubscriptionsEligible(),
+		[]
 	);
 
 	return [
@@ -161,8 +172,9 @@ export const useWCPaySubscriptions = () => {
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
 
-	const accountStatementDescriptor = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountStatementDescriptor()
+	const accountStatementDescriptor = useSelect(
+		( select ) => select( STORE_NAME ).getAccountStatementDescriptor(),
+		[]
 	);
 
 	return [ accountStatementDescriptor, updateAccountStatementDescriptor ];
@@ -174,8 +186,9 @@ export const useAccountStatementDescriptor = () => {
 export const useAccountStatementDescriptorKanji = () => {
 	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
 
-	const accountStatementDescriptorKanji = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountStatementDescriptorKanji()
+	const accountStatementDescriptorKanji = useSelect(
+		( select ) => select( STORE_NAME ).getAccountStatementDescriptorKanji(),
+		[]
 	);
 
 	return [
@@ -190,8 +203,9 @@ export const useAccountStatementDescriptorKanji = () => {
 export const useAccountStatementDescriptorKana = () => {
 	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
 
-	const accountStatementDescriptorKana = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountStatementDescriptorKana()
+	const accountStatementDescriptorKana = useSelect(
+		( select ) => select( STORE_NAME ).getAccountStatementDescriptorKana(),
+		[]
 	);
 
 	return [
@@ -206,8 +220,9 @@ export const useAccountStatementDescriptorKana = () => {
 export const useAccountBusinessSupportEmail = () => {
 	const { updateAccountBusinessSupportEmail } = useDispatch( STORE_NAME );
 
-	const accountBusinessSupportEmail = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountBusinessSupportEmail()
+	const accountBusinessSupportEmail = useSelect(
+		( select ) => select( STORE_NAME ).getAccountBusinessSupportEmail(),
+		[]
 	);
 
 	return [ accountBusinessSupportEmail, updateAccountBusinessSupportEmail ];
@@ -219,8 +234,9 @@ export const useAccountBusinessSupportEmail = () => {
 export const useAccountBusinessSupportPhone = () => {
 	const { updateAccountBusinessSupportPhone } = useDispatch( STORE_NAME );
 
-	const accountBusinessSupportPhone = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountBusinessSupportPhone()
+	const accountBusinessSupportPhone = useSelect(
+		( select ) => select( STORE_NAME ).getAccountBusinessSupportPhone(),
+		[]
 	);
 
 	return [ accountBusinessSupportPhone, updateAccountBusinessSupportPhone ];
@@ -229,8 +245,9 @@ export const useAccountBusinessSupportPhone = () => {
 export const useDepositScheduleInterval = () => {
 	const { updateDepositScheduleInterval } = useDispatch( STORE_NAME );
 
-	const depositScheduleInterval = useSelect( ( select ) =>
-		select( STORE_NAME ).getDepositScheduleInterval()
+	const depositScheduleInterval = useSelect(
+		( select ) => select( STORE_NAME ).getDepositScheduleInterval(),
+		[]
 	);
 
 	return [ depositScheduleInterval, updateDepositScheduleInterval ];
@@ -239,8 +256,9 @@ export const useDepositScheduleInterval = () => {
 export const useDepositScheduleWeeklyAnchor = () => {
 	const { updateDepositScheduleWeeklyAnchor } = useDispatch( STORE_NAME );
 
-	const depositScheduleWeeklyAnchor = useSelect( ( select ) =>
-		select( STORE_NAME ).getDepositScheduleWeeklyAnchor()
+	const depositScheduleWeeklyAnchor = useSelect(
+		( select ) => select( STORE_NAME ).getDepositScheduleWeeklyAnchor(),
+		[]
 	);
 
 	return [ depositScheduleWeeklyAnchor, updateDepositScheduleWeeklyAnchor ];
@@ -249,8 +267,9 @@ export const useDepositScheduleWeeklyAnchor = () => {
 export const useDepositScheduleMonthlyAnchor = () => {
 	const { updateDepositScheduleMonthlyAnchor } = useDispatch( STORE_NAME );
 
-	const depositScheduleMonthlyAnchor = useSelect( ( select ) =>
-		select( STORE_NAME ).getDepositScheduleMonthlyAnchor()
+	const depositScheduleMonthlyAnchor = useSelect(
+		( select ) => select( STORE_NAME ).getDepositScheduleMonthlyAnchor(),
+		[]
 	);
 
 	return [ depositScheduleMonthlyAnchor, updateDepositScheduleMonthlyAnchor ];
@@ -260,7 +279,10 @@ export const useDepositDelayDays = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getDepositDelayDays(), [] );
 
 export const useCompletedWaitingPeriod = () =>
-	useSelect( ( select ) => select( STORE_NAME ).getCompletedWaitingPeriod() );
+	useSelect(
+		( select ) => select( STORE_NAME ).getCompletedWaitingPeriod(),
+		[]
+	);
 
 /**
  * @return {string}
@@ -272,7 +294,10 @@ export const useDepositStatus = () =>
  * @return {string}
  */
 export const useDepositRestrictions = () =>
-	useSelect( ( select ) => select( STORE_NAME ).getDepositRestrictions() );
+	useSelect(
+		( select ) => select( STORE_NAME ).getDepositRestrictions(),
+		[]
+	);
 
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
@@ -280,8 +305,9 @@ export const useDepositRestrictions = () =>
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
-	const isManualCaptureEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsManualCaptureEnabled()
+	const isManualCaptureEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsManualCaptureEnabled(),
+		[]
 	);
 
 	return [ isManualCaptureEnabled, updateIsManualCaptureEnabled ];
@@ -293,8 +319,9 @@ export const useManualCapture = () => {
 export const useIsWCPayEnabled = () => {
 	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
 
-	const IsWCPayEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsWCPayEnabled()
+	const IsWCPayEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsWCPayEnabled(),
+		[]
 	);
 
 	return [ IsWCPayEnabled, updateIsWCPayEnabled ];
@@ -304,39 +331,48 @@ export const useIsWCPayEnabled = () => {
  * @return {string[]} Array of available payment method IDs.
  */
 export const useGetAvailablePaymentMethodIds = () =>
-	useSelect( ( select ) =>
-		select( STORE_NAME ).getAvailablePaymentMethodIds()
+	useSelect(
+		( select ) => select( STORE_NAME ).getAvailablePaymentMethodIds(),
+		[]
 	);
 
 /**
  * @return {Record<string, {status: string, requirements: string[]}>}
  */
 export const useGetPaymentMethodStatuses = () =>
-	useSelect( ( select ) => select( STORE_NAME ).getPaymentMethodStatuses() );
+	useSelect(
+		( select ) => select( STORE_NAME ).getPaymentMethodStatuses(),
+		[]
+	);
 
 /**
  * @return {string[]}
  */
 export const useGetDuplicatedPaymentMethodIds = () =>
-	useSelect( ( select ) =>
-		select( STORE_NAME ).getDuplicatedPaymentMethodIds()
+	useSelect(
+		( select ) => select( STORE_NAME ).getDuplicatedPaymentMethodIds(),
+		[]
 	);
 
 /**
  * @return {Record<string, any>}
  */
 export const useGetSettings = () =>
-	useSelect( ( select ) => select( STORE_NAME ).getSettings() );
+	useSelect( ( select ) => select( STORE_NAME ).getSettings(), [] );
 
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').SettingsState}
  */
 export const useSettings = () => {
 	const { saveSettings } = useDispatch( STORE_NAME );
-	const isSaving = useSelect( ( select ) =>
-		select( STORE_NAME ).isSavingSettings()
+	const isSaving = useSelect(
+		( select ) => select( STORE_NAME ).isSavingSettings(),
+		[]
 	);
-	const isDirty = useSelect( ( select ) => select( STORE_NAME ).isDirty() );
+	const isDirty = useSelect(
+		( select ) => select( STORE_NAME ).isDirty(),
+		[]
+	);
 
 	const isLoading = useSelect( ( select ) => {
 		select( STORE_NAME ).getSettings();
@@ -345,7 +381,7 @@ export const useSettings = () => {
 			'getSettings'
 		);
 		return isResolving || ! hasFinishedResolving;
-	} );
+	}, [] );
 
 	return {
 		isLoading,
@@ -361,8 +397,9 @@ export const useSettings = () => {
 export const usePaymentRequestEnabledSettings = () => {
 	const { updateIsPaymentRequestEnabled } = useDispatch( STORE_NAME );
 
-	const isPaymentRequestEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsPaymentRequestEnabled()
+	const isPaymentRequestEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsPaymentRequestEnabled(),
+		[]
 	);
 
 	return [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ];
@@ -376,8 +413,10 @@ export const useExpressCheckoutInPaymentMethodsEnabledSettings = () => {
 		STORE_NAME
 	);
 
-	const isExpressCheckoutInPaymentMethodsEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsExpressCheckoutInPaymentMethodsEnabled()
+	const isExpressCheckoutInPaymentMethodsEnabled = useSelect(
+		( select ) =>
+			select( STORE_NAME ).getIsExpressCheckoutInPaymentMethodsEnabled(),
+		[]
 	);
 
 	return [
@@ -399,14 +438,17 @@ const makeExpressCheckoutLocationHook = ( methodId ) => () => {
 		updateExpressCheckoutCheckoutMethods,
 	} = useDispatch( STORE_NAME );
 
-	const productMethods = useSelect( ( select ) =>
-		select( STORE_NAME ).getExpressCheckoutProductMethods()
+	const productMethods = useSelect(
+		( select ) => select( STORE_NAME ).getExpressCheckoutProductMethods(),
+		[]
 	);
-	const cartMethods = useSelect( ( select ) =>
-		select( STORE_NAME ).getExpressCheckoutCartMethods()
+	const cartMethods = useSelect(
+		( select ) => select( STORE_NAME ).getExpressCheckoutCartMethods(),
+		[]
 	);
-	const checkoutMethods = useSelect( ( select ) =>
-		select( STORE_NAME ).getExpressCheckoutCheckoutMethods()
+	const checkoutMethods = useSelect(
+		( select ) => select( STORE_NAME ).getExpressCheckoutCheckoutMethods(),
+		[]
 	);
 
 	const methodsListMap = {
@@ -452,8 +494,9 @@ export const usePaymentRequestLocations = makeExpressCheckoutLocationHook(
 export const usePaymentRequestButtonType = () => {
 	const { updatePaymentRequestButtonType } = useDispatch( STORE_NAME );
 
-	const paymentRequestButtonType = useSelect( ( select ) =>
-		select( STORE_NAME ).getPaymentRequestButtonType()
+	const paymentRequestButtonType = useSelect(
+		( select ) => select( STORE_NAME ).getPaymentRequestButtonType(),
+		[]
 	);
 
 	return [ paymentRequestButtonType, updatePaymentRequestButtonType ];
@@ -465,8 +508,9 @@ export const usePaymentRequestButtonType = () => {
 export const usePaymentRequestButtonSize = () => {
 	const { updatePaymentRequestButtonSize } = useDispatch( STORE_NAME );
 
-	const paymentRequestButtonSize = useSelect( ( select ) =>
-		select( STORE_NAME ).getPaymentRequestButtonSize()
+	const paymentRequestButtonSize = useSelect(
+		( select ) => select( STORE_NAME ).getPaymentRequestButtonSize(),
+		[]
 	);
 
 	return [ paymentRequestButtonSize, updatePaymentRequestButtonSize ];
@@ -478,8 +522,9 @@ export const usePaymentRequestButtonSize = () => {
 export const usePaymentRequestButtonTheme = () => {
 	const { updatePaymentRequestButtonTheme } = useDispatch( STORE_NAME );
 
-	const paymentRequestButtonTheme = useSelect( ( select ) =>
-		select( STORE_NAME ).getPaymentRequestButtonTheme()
+	const paymentRequestButtonTheme = useSelect(
+		( select ) => select( STORE_NAME ).getPaymentRequestButtonTheme(),
+		[]
 	);
 
 	return [ paymentRequestButtonTheme, updatePaymentRequestButtonTheme ];
@@ -490,8 +535,10 @@ export const usePaymentRequestButtonBorderRadius = () => {
 		STORE_NAME
 	);
 
-	const paymentRequestButtonBorderRadius = useSelect( ( select ) =>
-		select( STORE_NAME ).getPaymentRequestButtonBorderRadius()
+	const paymentRequestButtonBorderRadius = useSelect(
+		( select ) =>
+			select( STORE_NAME ).getPaymentRequestButtonBorderRadius(),
+		[]
 	);
 
 	return [
@@ -513,8 +560,9 @@ export const useGetSavingError = () => {
 export const useWooPayEnabledSettings = () => {
 	const { updateIsWooPayEnabled } = useDispatch( STORE_NAME );
 
-	const isWooPayEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsWooPayEnabled()
+	const isWooPayEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsWooPayEnabled(),
+		[]
 	);
 
 	return [ isWooPayEnabled, updateIsWooPayEnabled ];
@@ -528,8 +576,10 @@ export const useWooPayGlobalThemeSupportEnabledSettings = () => {
 		STORE_NAME
 	);
 
-	const isWooPayGlobalThemeSupportEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsWooPayGlobalThemeSupportEnabled()
+	const isWooPayGlobalThemeSupportEnabled = useSelect(
+		( select ) =>
+			select( STORE_NAME ).getIsWooPayGlobalThemeSupportEnabled(),
+		[]
 	);
 
 	return [
@@ -544,8 +594,9 @@ export const useWooPayGlobalThemeSupportEnabledSettings = () => {
 export const useWooPayCustomMessage = () => {
 	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
 
-	const wooPayCustomMessage = useSelect( ( select ) =>
-		select( STORE_NAME ).getWooPayCustomMessage()
+	const wooPayCustomMessage = useSelect(
+		( select ) => select( STORE_NAME ).getWooPayCustomMessage(),
+		[]
 	);
 
 	return [ wooPayCustomMessage, updateWooPayCustomMessage ];
@@ -557,8 +608,9 @@ export const useWooPayCustomMessage = () => {
 export const useWooPayStoreLogo = () => {
 	const { updateWooPayStoreLogo } = useDispatch( STORE_NAME );
 
-	const wooPayStoreLogo = useSelect( ( select ) =>
-		select( STORE_NAME ).getWooPayStoreLogo()
+	const wooPayStoreLogo = useSelect(
+		( select ) => select( STORE_NAME ).getWooPayStoreLogo(),
+		[]
 	);
 
 	return [ wooPayStoreLogo, updateWooPayStoreLogo ];
@@ -575,8 +627,9 @@ export const useWooPayLocations = makeExpressCheckoutLocationHook( 'woopay' );
 export const useAmazonPayEnabledSettings = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-	const enabledPaymentMethodIds = useSelect( ( select ) =>
-		select( STORE_NAME ).getEnabledPaymentMethodIds()
+	const enabledPaymentMethodIds = useSelect(
+		( select ) => select( STORE_NAME ).getEnabledPaymentMethodIds(),
+		[]
 	);
 
 	const isAmazonPayEnabled = enabledPaymentMethodIds.includes( 'amazon_pay' );
@@ -612,8 +665,9 @@ export const useAmazonPayLocations = makeExpressCheckoutLocationHook(
 export const useCurrentProtectionLevel = () => {
 	const { updateProtectionLevel } = useDispatch( STORE_NAME );
 
-	const currentProtectionLevel = useSelect( ( select ) =>
-		select( STORE_NAME ).getCurrentProtectionLevel()
+	const currentProtectionLevel = useSelect(
+		( select ) => select( STORE_NAME ).getCurrentProtectionLevel(),
+		[]
 	);
 
 	return [ currentProtectionLevel, updateProtectionLevel ];
@@ -625,8 +679,9 @@ export const useCurrentProtectionLevel = () => {
 export const useAdvancedFraudProtectionSettings = () => {
 	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
 
-	const advancedFraudProtectionSettings = useSelect( ( select ) =>
-		select( STORE_NAME ).getAdvancedFraudProtectionSettings()
+	const advancedFraudProtectionSettings = useSelect(
+		( select ) => select( STORE_NAME ).getAdvancedFraudProtectionSettings(),
+		[]
 	);
 
 	return [
@@ -639,8 +694,9 @@ export const useAdvancedFraudProtectionSettings = () => {
  * @return {boolean}
  */
 export const useWooPayShowIncompatibilityNotice = () =>
-	useSelect( ( select ) =>
-		select( STORE_NAME ).getShowWooPayIncompatibilityNotice()
+	useSelect(
+		( select ) => select( STORE_NAME ).getShowWooPayIncompatibilityNotice(),
+		[]
 	);
 
 /**
@@ -649,8 +705,9 @@ export const useWooPayShowIncompatibilityNotice = () =>
 export const useStripeBilling = () => {
 	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
 
-	const isStripeBillingEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsStripeBillingEnabled()
+	const isStripeBillingEnabled = useSelect(
+		( select ) => select( STORE_NAME ).getIsStripeBillingEnabled(),
+		[]
 	);
 
 	return [ isStripeBillingEnabled, updateIsStripeBillingEnabled ];
@@ -690,8 +747,9 @@ export const useStripeBillingMigration = () => {
 export const useAccountCommunicationsEmail = () => {
 	const { updateAccountCommunicationsEmail } = useDispatch( STORE_NAME );
 
-	const accountCommunicationsEmail = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountCommunicationsEmail()
+	const accountCommunicationsEmail = useSelect(
+		( select ) => select( STORE_NAME ).getAccountCommunicationsEmail(),
+		[]
 	);
 
 	return [ accountCommunicationsEmail, updateAccountCommunicationsEmail ];

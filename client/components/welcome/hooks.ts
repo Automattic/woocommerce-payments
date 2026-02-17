@@ -24,7 +24,7 @@ export const useCurrentWpUser = (): {
 			user: getCurrentUser() as WPUser | undefined,
 			isLoading: !! isResolving( 'getCurrentUser' ),
 		};
-	} );
+	}, [] );
 
 	return { user, isLoading };
 };

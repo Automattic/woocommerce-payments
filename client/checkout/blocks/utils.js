@@ -18,8 +18,9 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
  * @return {Object} An object containing customer data and functions for managing customer information.
  */
 export const useCustomerData = () => {
-	const customerData = useSelect( ( select ) =>
-		select( WC_STORE_CART ).getCustomerData()
+	const customerData = useSelect(
+		( select ) => select( WC_STORE_CART ).getCustomerData(),
+		[]
 	);
 
 	// Backward compatibility billingData/billingAddress

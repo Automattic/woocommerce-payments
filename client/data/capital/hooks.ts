@@ -24,7 +24,7 @@ export const useActiveLoanSummary = (): SummaryResponse =>
 			summaryError: getActiveLoanSummaryError(),
 			isLoading: isResolving( 'getActiveLoanSummary' ),
 		};
-	} );
+	}, [] );
 
 export const useLoans = (): LoansResponse =>
 	useSelect( ( select ) => {
@@ -35,4 +35,4 @@ export const useLoans = (): LoansResponse =>
 			loansError: getLoansError(),
 			isLoading: isResolving( 'getLoans' ),
 		};
-	} );
+	}, [] );

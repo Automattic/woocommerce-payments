@@ -162,7 +162,7 @@ const InboxPanel = () => {
 				  )
 				: undefined,
 		};
-	} );
+	}, [] );
 	const [ dismiss, setDismiss ] = useState();
 	// Make sure we only set lastRead at component mount.
 	const lastRead = useRef( overviewInboxLastRead );

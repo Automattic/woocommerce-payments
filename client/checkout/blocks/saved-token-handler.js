@@ -13,7 +13,7 @@ export const SavedTokenHandler = ( {
 	const paymentMethodData = useSelect( ( select ) => {
 		const store = select( 'wc/store/payment' );
 		return store.getPaymentMethodData();
-	} );
+	}, [] );
 
 	useEffect( () => {
 		return onPaymentSetup( () => {

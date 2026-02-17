@@ -55,19 +55,24 @@ export const useAuthorizationsSummary = (
 	authorizationsSummary: AuthorizationsSummary;
 	isLoading: boolean;
 } =>
-	useSelect( ( select ) => {
-		const {
-			getAuthorizationsSummary,
-			getAuthorizationsSummaryError,
-			isResolving,
-		} = select( STORE_NAME );
+	useSelect(
+		( select ) => {
+			const {
+				getAuthorizationsSummary,
+				getAuthorizationsSummaryError,
+				isResolving,
+			} = select( STORE_NAME );
 
-		return {
-			authorizationsSummary: getAuthorizationsSummary( query ),
-			authorizationsSummaryError: getAuthorizationsSummaryError( query ),
-			isLoading: isResolving( 'getAuthorizationsSummary', [ query ] ),
-		};
-	} );
+			return {
+				authorizationsSummary: getAuthorizationsSummary( query ),
+				authorizationsSummaryError: getAuthorizationsSummaryError(
+					query
+				),
+				isLoading: isResolving( 'getAuthorizationsSummary', [ query ] ),
+			};
+		},
+		[ query ]
+	);
 
 export const useAuthorization = (
 	paymentIntentId: string,
@@ -94,7 +99,8 @@ export const useAuthorization = (
 				] ),
 				isRequesting: getIsRequesting(),
 			};
-		}
+		},
+		[ paymentIntentId, requiresCapture ]
 	);
 
 	const {

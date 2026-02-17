@@ -95,7 +95,7 @@ export const useAllDepositsOverviews = (): AccountOverview.OverviewsResponse =>
 				! hasFinishedResolution( 'getAllDepositsOverviews' ) ||
 				isResolving( 'getAllDepositsOverviews' ),
 		};
-	} );
+	}, [] );
 
 export const useDeposits = ( {
 	paged,
@@ -206,14 +206,17 @@ export const useDepositsSummary = ( {
 export const useInstantDeposit = (
 	currency: string
 ): { inProgress: boolean; submit: () => void; deposit: unknown } => {
-	const { deposit, inProgress } = useSelect( ( select ) => {
-		const { getInstantDeposit, isResolving } = select( STORE_NAME );
+	const { deposit, inProgress } = useSelect(
+		( select ) => {
+			const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
-		return {
-			deposit: getInstantDeposit( [ currency ] ),
-			inProgress: isResolving( 'getInstantDeposit', [ currency ] ),
-		};
-	} );
+			return {
+				deposit: getInstantDeposit( [ currency ] ),
+				inProgress: isResolving( 'getInstantDeposit', [ currency ] ),
+			};
+		},
+		[ currency ]
+	);
 	const { submitInstantDeposit } = useDispatch( STORE_NAME );
 	const submit = () => submitInstantDeposit( currency );
 

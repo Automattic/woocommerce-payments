@@ -42,12 +42,14 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const [ userDataSent, setUserDataSent ] = useState( false );
 	const isPhoneNumberTouched = useRef( false );
 
-	const checkoutIsProcessing = useSelect( ( select ) =>
-		select( CHECKOUT_STORE_KEY ).isProcessing()
+	const checkoutIsProcessing = useSelect(
+		( select ) => select( CHECKOUT_STORE_KEY ).isProcessing(),
+		[]
 	);
 
-	const isBillingSameAsShipping = useSelect( ( select ) =>
-		select( CHECKOUT_STORE_KEY ).getUseShippingAsBilling()
+	const isBillingSameAsShipping = useSelect(
+		( select ) => select( CHECKOUT_STORE_KEY ).getUseShippingAsBilling(),
+		[]
 	);
 
 	const isRegisteredUser = useWooPayUser();
