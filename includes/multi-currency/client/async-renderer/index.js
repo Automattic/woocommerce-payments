@@ -36,23 +36,26 @@ class WCPayAsyncPriceRenderer {
 		}
 		this.initialized = true;
 
+		let timeoutId;
 		try {
-			const timeoutPromise = new Promise( ( _, reject ) =>
-				setTimeout(
+			const timeoutPromise = new Promise( ( _, reject ) => {
+				timeoutId = setTimeout(
 					() => reject( new Error( 'Config fetch timeout' ) ),
 					TIMEOUT_MS
-				)
-			);
+				);
+			} );
 
 			this.config = await Promise.race( [
 				this.fetchConfig(),
 				timeoutPromise,
 			] );
+			clearTimeout( timeoutId );
 
 			this.convertAllPrices();
 			this.observeDynamicContent();
 			this.listenToWooCommerceEvents();
 		} catch ( error ) {
+			clearTimeout( timeoutId );
 			this.showErrorState();
 		}
 	}
@@ -298,6 +301,12 @@ class WCPayAsyncPriceRenderer {
 
 	/**
 	 * Listen to WooCommerce AJAX events that may update price markup.
+	 *
+	 * These jQuery-triggered events fire when WooCommerce replaces HTML
+	 * fragments after AJAX operations (e.g., updating cart, refreshing
+	 * checkout). The MutationObserver handles generic DOM changes, but
+	 * these events provide a reliable trigger for WC-specific updates
+	 * where replaced HTML may contain new skeleton price elements.
 	 */
 	listenToWooCommerceEvents() {
 		const events = [
