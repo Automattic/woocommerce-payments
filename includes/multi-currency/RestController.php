@@ -282,7 +282,7 @@ class RestController extends \WP_REST_Controller {
 		// Cache for 5 minutes in the browser. The response varies per visitor IP
 		// (geolocation-based currency), so CDN caching is not possible, but
 		// browser caching avoids repeated requests during a single browsing session.
-		$response->header( 'Cache-Control', 'public, max-age=300' );
+		$response->header( 'Cache-Control', 'private, max-age=300' );
 		return $response;
 	}
 
