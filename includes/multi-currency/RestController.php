@@ -278,7 +278,12 @@ class RestController extends \WP_REST_Controller {
 	 * @return \WP_REST_Response The public config data.
 	 */
 	public function get_public_config() {
-		return rest_ensure_response( $this->multi_currency->get_public_config() );
+		$response = rest_ensure_response( $this->multi_currency->get_public_config() );
+		// Cache for 5 minutes in the browser. The response varies per visitor IP
+		// (geolocation-based currency), so CDN caching is not possible, but
+		// browser caching avoids repeated requests during a single browsing session.
+		$response->header( 'Cache-Control', 'public, max-age=300' );
+		return $response;
 	}
 
 	/**

@@ -28,21 +28,12 @@ class AsyncPriceRenderer {
 	private $multi_currency;
 
 	/**
-	 * Compatibility instance.
-	 *
-	 * @var Compatibility
-	 */
-	private $compatibility;
-
-	/**
 	 * Constructor.
 	 *
 	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
-	 * @param Compatibility $compatibility  The Compatibility instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
+	public function __construct( MultiCurrency $multi_currency ) {
 		$this->multi_currency = $multi_currency;
-		$this->compatibility  = $compatibility;
 	}
 
 	/**
@@ -84,15 +75,14 @@ class AsyncPriceRenderer {
 	 * @return string The wrapped price markup.
 	 */
 	public function wrap_price_with_skeleton( $return, $price, $args, $unformatted_price, $original_price ) {
-		if ( is_admin() ) {
-			return $return;
-		}
-
 		// The async renderer only runs on non-session pages (catalog/product).
 		// Cart/checkout have active sessions and use server-side FrontendPrices.
-		// On catalog pages, all wc_price calls are for product prices.
-		$price_type = 'product';
+		// Default to 'product' since catalog pages only call wc_price for products.
+		$price_type = apply_filters( 'wcpay_multi_currency_async_price_type', 'product', $price, $args );
 
+		// We use $price (the raw numeric value passed to wc_price) rather than
+		// $original_price because in cache-optimized mode FrontendPrices hooks
+		// are not active, so $price is the unconverted default-currency price.
 		return sprintf(
 			'<span class="wcpay-async-price" data-wcpay-price="%s" data-wcpay-price-type="%s"><span class="wcpay-price-skeleton"></span></span>',
 			esc_attr( $price ),

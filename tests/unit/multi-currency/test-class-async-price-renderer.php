@@ -6,7 +6,6 @@
  */
 
 use WCPay\MultiCurrency\AsyncPriceRenderer;
-use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\MultiCurrency;
 
 /**
@@ -22,13 +21,6 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	private $mock_multi_currency;
 
 	/**
-	 * Mock Compatibility.
-	 *
-	 * @var Compatibility|PHPUnit\Framework\MockObject\MockObject
-	 */
-	private $mock_compatibility;
-
-	/**
 	 * The system under test.
 	 *
 	 * @var AsyncPriceRenderer
@@ -42,11 +34,9 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 		parent::set_up();
 
 		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->mock_compatibility  = $this->createMock( Compatibility::class );
 
 		$this->renderer = new AsyncPriceRenderer(
-			$this->mock_multi_currency,
-			$this->mock_compatibility
+			$this->mock_multi_currency
 		);
 	}
 
@@ -66,26 +56,6 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 		$this->assertStringContainsString( 'data-wcpay-price="10"', $result );
 		$this->assertStringContainsString( 'data-wcpay-price-type="product"', $result );
 		$this->assertStringContainsString( 'wcpay-price-skeleton', $result );
-	}
-
-	/**
-	 * Test that wrap_price_with_skeleton returns original value in admin.
-	 */
-	public function test_wrap_price_with_skeleton_returns_original_in_admin() {
-		set_current_screen( 'edit-post' );
-
-		$original = '<span class="woocommerce-Price-amount amount">$10.00</span>';
-		$result   = $this->renderer->wrap_price_with_skeleton(
-			$original,
-			10.00,
-			[],
-			10.00,
-			10.00
-		);
-
-		$this->assertEquals( $original, $result );
-
-		set_current_screen( 'front' );
 	}
 
 	/**

@@ -291,7 +291,7 @@ class MultiCurrency {
 
 		// In cache-optimized mode without an active session, use async rendering.
 		// Otherwise, use standard server-side price conversion.
-		$async_renderer = new AsyncPriceRenderer( $this, $this->compatibility );
+		$async_renderer = new AsyncPriceRenderer( $this );
 		$async_renderer->init_hooks();
 
 		if ( ! $this->is_cache_optimized_mode() || $this->has_active_session() ) {
