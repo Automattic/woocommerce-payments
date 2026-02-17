@@ -53,6 +53,18 @@ class RestController extends \WP_REST_Controller {
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
+		if ( \WC_Payments_Features::is_mc_cache_optimized_enabled() ) {
+			register_rest_route(
+				$this->namespace,
+				'/' . $this->rest_base . '/public/config',
+				[
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => [ $this, 'get_public_config' ],
+					'permission_callback' => '__return_true',
+				]
+			);
+		}
+
 		register_rest_route(
 			$this->namespace,
 			'/' . $this->rest_base . '/currencies',
@@ -258,6 +270,15 @@ class RestController extends \WP_REST_Controller {
 		$params = $request->get_params();
 		$this->multi_currency->update_settings( $params );
 		return rest_ensure_response( $this->multi_currency->get_settings() );
+	}
+
+	/**
+	 * Gets the public configuration for the async price renderer.
+	 *
+	 * @return \WP_REST_Response The public config data.
+	 */
+	public function get_public_config() {
+		return rest_ensure_response( $this->multi_currency->get_public_config() );
 	}
 
 	/**

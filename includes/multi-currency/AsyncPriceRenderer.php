@@ -1,0 +1,144 @@
+<?php
+/**
+ * Class AsyncPriceRenderer
+ *
+ * @package WooCommerce\Payments\MultiCurrency
+ */
+
+namespace WCPay\MultiCurrency;
+
+use WC_Payments_Features;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Renders skeleton price markup for cache-optimized mode.
+ *
+ * When cache mode is active and no WC session exists, this class replaces
+ * server-side price conversion with skeleton placeholders that are converted
+ * by JavaScript on the client side.
+ */
+class AsyncPriceRenderer {
+
+	/**
+	 * MultiCurrency instance.
+	 *
+	 * @var MultiCurrency
+	 */
+	private $multi_currency;
+
+	/**
+	 * Compatibility instance.
+	 *
+	 * @var Compatibility
+	 */
+	private $compatibility;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
+	 * @param Compatibility $compatibility  The Compatibility instance.
+	 */
+	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
+		$this->multi_currency = $multi_currency;
+		$this->compatibility  = $compatibility;
+	}
+
+	/**
+	 * Initializes hooks for async price rendering.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		if ( ! WC_Payments_Features::is_mc_cache_optimized_enabled() ) {
+			return;
+		}
+
+		if ( ! $this->multi_currency->is_cache_optimized_mode() ) {
+			return;
+		}
+
+		if ( is_admin() || defined( 'DOING_CRON' ) ) {
+			return;
+		}
+
+		// If there's an active session, let FrontendPrices handle it.
+		if ( $this->multi_currency->has_active_session() ) {
+			return;
+		}
+
+		add_filter( 'wc_price', [ $this, 'wrap_price_with_skeleton' ], 999, 5 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_async_renderer' ] );
+	}
+
+	/**
+	 * Wraps a price with skeleton markup for client-side conversion.
+	 *
+	 * @param string $return           The formatted price string.
+	 * @param float  $price            The raw price.
+	 * @param array  $args             Arguments passed to wc_price.
+	 * @param float  $unformatted_price The unformatted price.
+	 * @param float  $original_price    The original price before any conversion.
+	 *
+	 * @return string The wrapped price markup.
+	 */
+	public function wrap_price_with_skeleton( $return, $price, $args, $unformatted_price, $original_price ) {
+		if ( is_admin() ) {
+			return $return;
+		}
+
+		// The async renderer only runs on non-session pages (catalog/product).
+		// Cart/checkout have active sessions and use server-side FrontendPrices.
+		// On catalog pages, all wc_price calls are for product prices.
+		$price_type = 'product';
+
+		return sprintf(
+			'<span class="wcpay-async-price" data-wcpay-price="%s" data-wcpay-price-type="%s"><span class="wcpay-price-skeleton"></span></span>',
+			esc_attr( $price ),
+			esc_attr( $price_type )
+		);
+	}
+
+	/**
+	 * Enqueues the async price renderer script and styles.
+	 *
+	 * @return void
+	 */
+	public function enqueue_async_renderer() {
+		$this->multi_currency->register_script_with_dependencies(
+			'wcpay-multi-currency-async-renderer',
+			'dist/multi-currency-async-renderer'
+		);
+
+		wp_localize_script(
+			'wcpay-multi-currency-async-renderer',
+			'wcpayAsyncPriceConfig',
+			[
+				'apiUrl' => rest_url( 'wc/v3/payments/multi-currency/public/config' ),
+			]
+		);
+
+		wp_enqueue_script( 'wcpay-multi-currency-async-renderer' );
+
+		wp_enqueue_style(
+			'wcpay-multi-currency-async-renderer',
+			plugins_url(
+				'dist/multi-currency-async-renderer.css',
+				$this->get_plugin_file_path()
+			),
+			[],
+			$this->multi_currency->get_file_version( 'dist/multi-currency-async-renderer.css' )
+		);
+	}
+
+	/**
+	 * Gets the plugin file path from the MultiCurrency settings service.
+	 *
+	 * @return string The plugin file path.
+	 */
+	private function get_plugin_file_path(): string {
+		// Access through the main plugin file constant.
+		return WCPAY_PLUGIN_FILE;
+	}
+}
