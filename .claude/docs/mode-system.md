@@ -1,5 +1,7 @@
 # WooPayments Mode System
 
+**Last updated:** 2026-02-13
+
 Reference for how WooPayments determines its operating mode (live, test, dev). Source: `includes/core/class-mode.php`.
 
 ## Mode Hierarchy
