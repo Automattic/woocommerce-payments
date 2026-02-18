@@ -436,8 +436,8 @@ class WC_Payments_Order_Service {
 
 					// Use the appropriate amount, but don't exceed order total.
 					$refund_amount = min( $refund_amount, $disputed_amount );
-					if ( $refund_amount !== $disputed_amount ) {
-						// For partial refunds pass empty line_items to avoid inconsistency in the order view.
+					if ( $disputed_amount < (float) $order->get_total() ) {
+						// For partial disputes pass empty line_items to avoid inconsistency in the order view.
 						$line_items = [];
 					}
 				}

@@ -1862,6 +1862,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 1, $refunds );
 		$this->assertEquals( -50.00, $refunds[0]->get_total() );
 
+		// Assert: Full dispute (disputed amount == order total) should include line items.
+		$this->assertNotEmpty( $refunds[0]->get_items(), 'Full dispute refund should include line items.' );
+
 		// Assert: Check that the notes were updated.
 		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
 		$this->assertStringContainsString( 'Dispute has been closed with status lost', $notes[0]->content );
@@ -1899,6 +1902,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$refunds = $order->get_refunds();
 		$this->assertCount( 1, $refunds );
 		$this->assertEquals( -30.00, $refunds[0]->get_total(), 'Refund is created for the partial amount from the dispute summary.' );
+
+		// Assert: Partial dispute should have empty line items to avoid inconsistency.
+		$this->assertEmpty( $refunds[0]->get_items(), 'Partial dispute refund should have empty line items.' );
 
 		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );
@@ -1967,6 +1973,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$refunds = $order->get_refunds();
 		$this->assertCount( 1, $refunds );
 		$this->assertEquals( -50.00, $refunds[0]->get_total() );
+
+		// Assert: Disputed amount >= order total means full dispute, so line items should be present.
+		$this->assertNotEmpty( $refunds[0]->get_items(), 'Full dispute refund should include line items.' );
 
 		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );
