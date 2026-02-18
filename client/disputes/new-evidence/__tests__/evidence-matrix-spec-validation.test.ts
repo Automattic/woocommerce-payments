@@ -188,8 +188,10 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
+			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Order receipt',
+				'Customer communication',
 				"Customer's signature",
 				'Store refund policy',
 				'Other documents',
@@ -816,7 +818,7 @@ describe( 'Evidence Matrix Specification Validation', () => {
  * - other (needs: Prior history, Other)
  *
  * Product Not Received:
- * - physical_product (needs: Order receipt, Customer communication, Customer's signature, Refund policy, Other)
+ * - physical_product ✅ Implemented
  * - digital_product_or_service (needs: Order receipt, Login/usage records, Other)
  * - offline_service (needs: Order receipt, Proof of service completion, Other)
  * - event (needs: Order receipt, Attendance confirmation, Other)
