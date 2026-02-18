@@ -156,11 +156,10 @@ const ReviewPrompt: React.FC = () => {
 			primaryButtonLabel={
 				<>
 					{ __( 'Leave review', 'woocommerce-payments' ) }
-					<Icon
-						icon={ external }
-						size={ 20 }
-						style={ { marginLeft: '6px' } }
-					/>
+					<span
+						className="components-external-link__icon"
+						children={ '\u2197' }
+					></span>
 				</>
 			}
 			onPrimaryClick={ handlePrimaryClick }
