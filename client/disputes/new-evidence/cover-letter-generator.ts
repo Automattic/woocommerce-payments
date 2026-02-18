@@ -99,6 +99,14 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
+			labelForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					label: __( 'Refund receipt', 'woocommerce-payments' ),
+					productTypes: [ 'booking_reservation' ],
+					refundStatuses: [ 'refund_has_been_issued' ],
+				},
+			],
 		},
 		{
 			// For duplicate disputes:
@@ -130,7 +138,10 @@ export const generateAttachments = (
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Other documents', 'woocommerce-payments' ),
 					productTypes: [ 'booking_reservation' ],
-					refundStatuses: [ 'refund_was_not_owed' ],
+					refundStatuses: [
+						'refund_was_not_owed',
+						'refund_has_been_issued',
+					],
 				},
 			],
 			// When repurposed as "Other documents", it should appear last
@@ -139,7 +150,10 @@ export const generateAttachments = (
 					reasons: [ 'credit_not_processed' ],
 					order: 100,
 					productTypes: [ 'booking_reservation' ],
-					refundStatuses: [ 'refund_was_not_owed' ],
+					refundStatuses: [
+						'refund_was_not_owed',
+						'refund_has_been_issued',
+					],
 				},
 			],
 		},
@@ -198,7 +212,11 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
 			label: __( 'Cancellation logs', 'woocommerce-payments' ),
-			onlyForReasons: [ 'subscription_canceled', 'product_not_received' ],
+			onlyForReasons: [
+				'subscription_canceled',
+				'product_not_received',
+				'credit_not_processed',
+			],
 			// For product_not_received disputes, this field is labeled "Cancellation confirmation"
 			labelForReasons: [
 				{

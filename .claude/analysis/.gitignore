@@ -1,4 +1,0 @@
-# Ignore all analysis files (throwaway session artifacts)
-*
-# But keep this directory
-!.gitignore

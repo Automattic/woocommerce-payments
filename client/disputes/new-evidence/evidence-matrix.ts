@@ -343,6 +343,38 @@ const getProductUnacceptableMatrix = (): {
 const getCreditNotProcessedMatrix = (): {
 	[ key: string ]: Array< RecommendedDocument >;
 } => ( {
+	// Booking/Reservation - Refund has been issued (Scenario A)
+	// Note: CUSTOMER_COMMUNICATION is repurposed as "Other documents" to prevent
+	// the base "Customer communication" field from being auto-merged.
+	booking_reservation__refund_has_been_issued: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Refund receipt', 'woocommerce-payments' ),
+			description: __(
+				'A copy of the refund receipt, which can be found in the receipt history for this transaction.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
+			label: __( 'Cancellation logs', 'woocommerce-payments' ),
+			description: __(
+				'Records showing no cancellation attempt or request was made before the charge, such as account activity, subscription status, or communication history.',
+				'woocommerce-payments'
+			),
+			order: 20,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
 	// Booking/Reservation - Refund was not owed (Scenario B)
 	// Note: CUSTOMER_COMMUNICATION is used here as "Other documents" because
 	// UNCATEGORIZED_FILE is already used for "Proof of acceptance".
