@@ -291,10 +291,16 @@ class MultiCurrency {
 
 		// In cache-optimized mode without an active session, use async rendering.
 		// Otherwise, use standard server-side price conversion.
-		$async_renderer = new AsyncPriceRenderer( $this );
-		$async_renderer->init_hooks();
+		// A ?currency= URL param means a session will be created (at init priority 11),
+		// so we use server-side conversion to show the correct currency immediately.
+		$async_renderer              = new AsyncPriceRenderer( $this );
+		$has_pending_currency_switch = isset( $_GET['currency'] ); // phpcs:ignore WordPress.Security.NonceVerification
 
-		if ( ! $this->is_cache_optimized_mode() || $this->has_active_session() ) {
+		if ( ! $has_pending_currency_switch ) {
+			$async_renderer->init_hooks();
+		}
+
+		if ( ! $this->is_cache_optimized_mode() || $this->has_active_session() || $has_pending_currency_switch ) {
 			$this->frontend_prices->init_hooks();
 			$this->frontend_currencies->init_hooks();
 		}
