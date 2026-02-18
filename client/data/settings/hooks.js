@@ -371,21 +371,18 @@ export const usePaymentRequestEnabledSettings = () => {
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
-export const useAppleGooglePayInPaymentMethodsOptionsEnabledSettings = () => {
-	const {
-		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
-	} = useDispatch( STORE_NAME );
+export const useExpressCheckoutInPaymentMethodsEnabledSettings = () => {
+	const { updateIsExpressCheckoutInPaymentMethodsEnabled } = useDispatch(
+		STORE_NAME
+	);
 
-	const isAppleGooglePayInPaymentMethodsOptionsEnabled = useSelect(
-		( select ) =>
-			select(
-				STORE_NAME
-			).getIsAppleGooglePayInPaymentMethodsOptionsEnabled()
+	const isExpressCheckoutInPaymentMethodsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsExpressCheckoutInPaymentMethodsEnabled()
 	);
 
 	return [
-		isAppleGooglePayInPaymentMethodsOptionsEnabled,
-		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+		isExpressCheckoutInPaymentMethodsEnabled,
+		updateIsExpressCheckoutInPaymentMethodsEnabled,
 	];
 };
 
@@ -576,11 +573,28 @@ export const useWooPayLocations = makeExpressCheckoutLocationHook( 'woopay' );
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useAmazonPayEnabledSettings = () => {
-	const { updateIsAmazonPayEnabled } = useDispatch( STORE_NAME );
+	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-	const isAmazonPayEnabled = useSelect( ( select ) =>
-		select( STORE_NAME ).getIsAmazonPayEnabled()
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
+
+	const isAmazonPayEnabled = enabledPaymentMethodIds.includes( 'amazon_pay' );
+
+	const updateIsAmazonPayEnabled = ( isEnabled ) => {
+		if ( isEnabled ) {
+			updateEnabledPaymentMethodIds( [
+				...enabledPaymentMethodIds,
+				'amazon_pay',
+			] );
+		} else {
+			updateEnabledPaymentMethodIds(
+				enabledPaymentMethodIds.filter(
+					( method ) => method !== 'amazon_pay'
+				)
+			);
+		}
+	};
 
 	return [ isAmazonPayEnabled, updateIsAmazonPayEnabled ];
 };

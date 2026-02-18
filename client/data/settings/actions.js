@@ -62,11 +62,9 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 	return updateSettingsValues( { is_payment_request_enabled: isEnabled } );
 }
 
-export function updateIsAppleGooglePayInPaymentMethodsOptionsEnabled(
-	isEnabled
-) {
+export function updateIsExpressCheckoutInPaymentMethodsEnabled( isEnabled ) {
 	return updateSettingsValues( {
-		is_apple_google_pay_in_payment_methods_options_enabled: isEnabled,
+		is_express_checkout_in_payment_methods_enabled: isEnabled,
 	} );
 }
 
@@ -221,10 +219,6 @@ export function* saveSettings() {
 
 export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
-}
-
-export function updateIsAmazonPayEnabled( isEnabled ) {
-	return updateSettingsValues( { is_amazon_pay_enabled: isEnabled } );
 }
 
 export function updateIsWooPayGlobalThemeSupportEnabled( isEnabled ) {

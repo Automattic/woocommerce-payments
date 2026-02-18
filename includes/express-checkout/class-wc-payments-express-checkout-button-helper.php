@@ -238,10 +238,41 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
+		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
+		if ( 'pay_for_order' === $location ) {
+			$location = 'checkout';
+		}
+
 		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
 
 		if ( $enabled_methods && is_array( $enabled_methods ) ) {
 			return in_array( $method_id, $enabled_methods, true );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( $this->is_product() ) {
+			$product = $this->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		}
+
+		if ( $this->is_checkout() || $this->is_cart() ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
+			}
 		}
 
 		return false;
@@ -269,13 +300,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		if ( ! $amazon_pay_gateway->is_enabled() ) {
-			return false;
-		}
-
-		// Check if Amazon Pay has fees configured (indicates it's actually available for the account).
-		$methods_with_fees = array_keys( $this->account->get_fees() );
-		if ( ! in_array( AmazonPayDefinition::get_id(), $methods_with_fees, true ) ) {
+		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
 			return false;
 		}
 
@@ -284,10 +309,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		$currency        = get_woocommerce_currency();
-		$account_country = $this->account->get_account_country();
-
-		return AmazonPayDefinition::is_available_for( $currency, $account_country );
+		return true;
 	}
 
 	/**

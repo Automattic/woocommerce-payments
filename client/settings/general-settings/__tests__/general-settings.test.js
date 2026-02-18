@@ -21,6 +21,7 @@ jest.mock( 'wcpay/data', () => ( {
 	useIsWCPayEnabled: jest.fn(),
 	useTestMode: jest.fn(),
 	useTestModeOnboarding: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 	useEnabledPaymentMethodIds: jest.fn().mockReturnValue( [ [ 'card' ] ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
 	usePaymentRequestEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
@@ -169,5 +170,41 @@ describe( 'GeneralSettings', () => {
 				"Before continuing, please make sure that you're aware of the following:"
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'disables test mode checkbox when dev mode is enabled', () => {
+		useDevMode.mockReturnValue( true );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		const enableTestModeCheckbox = screen.getByLabelText(
+			'Enable test mode (enabled by development mode)'
+		);
+
+		expect( enableTestModeCheckbox ).toBeDisabled();
+		expect( enableTestModeCheckbox ).toBeChecked();
+	} );
+
+	it( 'shows dev mode help text when dev mode is enabled', () => {
+		useDevMode.mockReturnValue( true );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		expect(
+			screen.queryByText( /development or staging environment/i )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not disable test mode checkbox when dev mode is not enabled', () => {
+		useDevMode.mockReturnValue( false );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		const enableTestModeCheckbox = screen.getByLabelText(
+			'Enable test mode'
+		);
+
+		expect( enableTestModeCheckbox ).not.toBeDisabled();
+		expect( enableTestModeCheckbox ).not.toBeChecked();
 	} );
 } );

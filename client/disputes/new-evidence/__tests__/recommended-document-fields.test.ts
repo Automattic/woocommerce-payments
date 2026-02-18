@@ -459,6 +459,176 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
 				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
+
+			it( 'should return matrix fields for product_unacceptable + booking_reservation when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'product_unacceptable',
+					undefined,
+					undefined,
+					'booking_reservation'
+				);
+
+				// Matrix entry for product_unacceptable + booking_reservation
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'service_documentation' );
+				expect( result[ 0 ].label ).toBe(
+					'Event or booking documentation'
+				);
+				expect( result[ 0 ].description ).toBe(
+					'Screenshots or documents showing the event or reservation details (date, location, description, and terms) and confirmation it occurred or remained valid as described.'
+				);
+				expect( result[ 1 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].label ).toBe( 'Order receipt' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' ); // Base field
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].label ).toBe( 'Refund policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
+			} );
+
+			it( 'should fall back to trunk product_unacceptable fields for physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'product_unacceptable',
+					undefined,
+					undefined,
+					'physical_product'
+				);
+
+				// Should fall back to trunk product_unacceptable fields since no matrix entry for physical_product
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 3 ].key ).toBe( 'service_documentation' );
+				expect( result[ 4 ].key ).toBe( 'refund_policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+			} );
+
+			it( 'should return matrix fields for product_not_received + booking_reservation when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'product_not_received',
+					undefined,
+					undefined,
+					'booking_reservation'
+				);
+
+				// Matrix entry for product_not_received + booking_reservation
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
+				expect( result[ 0 ].description ).toBe(
+					"A copy of the customer's receipt, which can be found in the receipt history for this transaction."
+				);
+				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
+				expect( result[ 2 ].key ).toBe( 'service_documentation' );
+				expect( result[ 2 ].label ).toBe(
+					'Reservation or booking confirmation'
+				);
+				expect( result[ 2 ].description ).toBe(
+					'Any documents showing the service completion, attendance or reservation confirmation.'
+				);
+				expect( result[ 3 ].key ).toBe( 'cancellation_rebuttal' ); // Cancellation confirmation
+				expect( result[ 3 ].label ).toBe( 'Cancellation confirmation' );
+				expect( result[ 3 ].description ).toBe(
+					'Documents showing the product or service was canceled, such as cancellation logs, confirmation emails, or account records.'
+				);
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
+			} );
+
+			it( 'should fall back to trunk product_not_received fields for physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'product_not_received',
+					undefined,
+					undefined,
+					'physical_product'
+				);
+
+				// Should fall back to trunk product_not_received fields since no matrix entry for physical_product
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+			} );
+		} );
+
+		describe( 'credit_not_processed matrix with feature flag', () => {
+			it( 'should return matrix fields for credit_not_processed + booking_reservation + refund_was_not_owed when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'credit_not_processed',
+					'refund_was_not_owed',
+					undefined,
+					'booking_reservation'
+				);
+
+				// Matrix entry for credit_not_processed + booking_reservation + refund_was_not_owed
+				expect( result ).toHaveLength( 3 );
+				expect( result[ 0 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 0 ].label ).toBe( 'Proof of acceptance' );
+				expect( result[ 0 ].description ).toBe(
+					'Screenshot or document showing where the customer agreed to or acknowledged the refund policy during checkout or on the receipt.'
+				);
+				expect( result[ 1 ].key ).toBe( 'refund_policy' );
+				expect( result[ 1 ].label ).toBe( 'Refund policy' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].label ).toBe( 'Other documents' );
+			} );
+
+			it( 'should return matrix fields for credit_not_processed + booking_reservation + refund_has_been_issued when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'credit_not_processed',
+					'refund_has_been_issued',
+					undefined,
+					'booking_reservation'
+				);
+
+				// Matrix entry for credit_not_processed + booking_reservation + refund_has_been_issued
+				expect( result ).toHaveLength( 3 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Refund receipt' );
+				expect( result[ 0 ].description ).toBe(
+					'A copy of the refund receipt, which can be found in the receipt history for this transaction.'
+				);
+				expect( result[ 1 ].key ).toBe( 'cancellation_rebuttal' );
+				expect( result[ 1 ].label ).toBe( 'Cancellation logs' );
+				expect( result[ 1 ].description ).toBe(
+					'Records showing no cancellation attempt or request was made before the charge, such as account activity, subscription status, or communication history.'
+				);
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].label ).toBe( 'Other documents' );
+			} );
+
+			it( 'should fall back to legacy fields for credit_not_processed + physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'credit_not_processed',
+					'refund_was_not_owed',
+					undefined,
+					'physical_product'
+				);
+
+				// No matrix entry for physical_product, falls back to legacy
+				expect( result ).toHaveLength( 4 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].key ).toBe( 'uncategorized_file' );
+			} );
 		} );
 
 		describe( 'Visa Compliance (noncompliant) reason', () => {

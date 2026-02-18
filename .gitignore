@@ -11,8 +11,10 @@ project.properties
 *.sublime-workspace
 .sublimelinterrc
 .cursor/
+CLAUDE.local.md
 **/.claude/**/*.local.*
 .claude/local/
+.serena/
 .zed/
 .phpactor.json
 
@@ -78,6 +80,7 @@ docker/logs
 
 # Local machine docker override
 docker-compose.override.yml
+.env
 
 # Tunneling scripts
 /docker/bin/jt

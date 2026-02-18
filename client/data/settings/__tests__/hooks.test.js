@@ -15,7 +15,7 @@ import {
 	useTestMode,
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
-	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
+	useExpressCheckoutInPaymentMethodsEnabledSettings,
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
@@ -234,30 +234,28 @@ describe( 'Settings hooks tests', () => {
 		} );
 	} );
 
-	describe( 'useAppleGooglePayInPaymentMethodsOptionsEnabledSettings()', () => {
-		test( 'returns Apple Google Pay in payment methods options settings from selector', () => {
+	describe( 'useExpressCheckoutInPaymentMethodsEnabledSettings()', () => {
+		test( 'returns express checkout in payment methods settings from selector', () => {
 			actions = {
-				updateIsAppleGooglePayInPaymentMethodsOptionsEnabled: jest.fn(),
+				updateIsExpressCheckoutInPaymentMethodsEnabled: jest.fn(),
 			};
 
 			selectors = {
-				getIsAppleGooglePayInPaymentMethodsOptionsEnabled: jest.fn(
+				getIsExpressCheckoutInPaymentMethodsEnabled: jest.fn(
 					() => true
 				),
 			};
 
 			const [
-				isAppleGooglePayInPaymentMethodsOptionsEnabled,
-				updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
-			] = useAppleGooglePayInPaymentMethodsOptionsEnabledSettings();
+				isExpressCheckoutInPaymentMethodsEnabled,
+				updateIsExpressCheckoutInPaymentMethodsEnabled,
+			] = useExpressCheckoutInPaymentMethodsEnabledSettings();
 
-			updateIsAppleGooglePayInPaymentMethodsOptionsEnabled( false );
+			updateIsExpressCheckoutInPaymentMethodsEnabled( false );
 
-			expect( isAppleGooglePayInPaymentMethodsOptionsEnabled ).toEqual(
-				true
-			);
+			expect( isExpressCheckoutInPaymentMethodsEnabled ).toEqual( true );
 			expect(
-				actions.updateIsAppleGooglePayInPaymentMethodsOptionsEnabled
+				actions.updateIsExpressCheckoutInPaymentMethodsEnabled
 			).toHaveBeenCalledWith( false );
 		} );
 	} );

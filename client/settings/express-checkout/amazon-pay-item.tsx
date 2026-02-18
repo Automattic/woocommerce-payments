@@ -12,6 +12,8 @@ import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import methodsConfiguration from '../../payment-methods-map';
 import { useAmazonPayEnabledSettings } from 'wcpay/data';
+import usePaymentMethodAvailability from 'wcpay/settings/payment-methods-list/use-payment-method-availability';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 	const [
@@ -25,6 +27,12 @@ const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 		description,
 	} = methodsConfiguration.amazon_pay;
 
+	const {
+		isActionable,
+		notice,
+		noticeType = 'warning' as const,
+	} = usePaymentMethodAvailability( 'amazon_pay' );
+
 	return (
 		<li className="express-checkout" id="express-checkouts-amazon-pay">
 			<div className="express-checkout__row">
@@ -32,6 +40,7 @@ const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 					<CheckboxControl
 						label={ label }
 						checked={ isAmazonPayEnabled }
+						disabled={ ! isActionable }
 						onChange={ updateIsAmazonPayEnabled }
 						data-testid="amazon-pay-toggle"
 						__nextHasNoMarginBottom
@@ -93,6 +102,11 @@ const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
+			{ notice && (
+				<InlineNotice status={ noticeType } isDismissible={ false }>
+					{ notice }
+				</InlineNotice>
+			) }
 		</li>
 	);
 };

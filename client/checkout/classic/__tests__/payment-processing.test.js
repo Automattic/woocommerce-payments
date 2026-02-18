@@ -51,7 +51,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 					forceNetworkSavedCards: false,
 				},
 				ideal: {
-					label: 'iDEAL',
+					label: 'iDEAL | Wero',
 					forceNetworkSavedCards: false,
 				},
 				sepa: {
@@ -142,7 +142,7 @@ describe( 'Stripe Payment Element mounting', () => {
 						forceNetworkSavedCards: false,
 					},
 					ideal: {
-						label: 'iDEAL',
+						label: 'iDEAL | Wero',
 						forceNetworkSavedCards: false,
 					},
 					sepa: {

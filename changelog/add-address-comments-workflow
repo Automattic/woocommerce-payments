@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add agent-address-comments workflow for automated PR comment resolution

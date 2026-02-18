@@ -170,34 +170,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return true;
 		}
 		// If cart contains subscription and account creation is not posible, authentication is required.
-		if ( $this->has_subscription_product() && ! $this->is_account_creation_possible() ) {
+		if ( $this->express_checkout_helper->has_subscription_product() && ! $this->is_account_creation_possible() ) {
 			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Checks whether cart contains a subscription product or this is a subscription product page.
-	 *
-	 * @return boolean
-	 */
-	public function has_subscription_product() {
-		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
-			return false;
-		}
-
-		if ( $this->express_checkout_helper->is_product() ) {
-			$product = $this->express_checkout_helper->get_product();
-			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
-				return true;
-			}
-		}
-
-		if ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() ) {
-			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
-				return true;
-			}
 		}
 
 		return false;
@@ -212,7 +186,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' );
 
 		// If a subscription is being purchased, check if account creation is allowed for subscriptions.
-		if ( ! $is_signup_from_checkout_allowed && $this->has_subscription_product() ) {
+		if ( ! $is_signup_from_checkout_allowed && $this->express_checkout_helper->has_subscription_product() ) {
 			$is_signup_from_checkout_allowed = 'yes' === get_option( 'woocommerce_enable_signup_from_checkout_for_subscriptions', 'no' );
 		}
 
@@ -259,7 +233,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
 						'display_prices_with_tax'    => 'incl' === get_option( 'woocommerce_tax_display_cart' ),
 					],
-					'has_subscription'   => $this->has_subscription_product(),
+					'has_subscription'   => $this->express_checkout_helper->has_subscription_product(),
 					'button'             => $this->get_button_settings(),
 					'login_confirmation' => $this->get_login_confirmation_settings(),
 					'button_context'     => $this->express_checkout_helper->get_button_context(),
@@ -402,7 +376,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @param boolean $needs_shipping_address Whether the cart needs a shipping address.
 	 */
 	public function filter_cart_needs_shipping_address( $needs_shipping_address ) {
-		if ( $this->has_subscription_product() && wc_get_shipping_method_count( true, true ) === 0 ) {
+		if ( $this->express_checkout_helper->has_subscription_product() && wc_get_shipping_method_count( true, true ) === 0 ) {
 			return false;
 		}
 

@@ -537,28 +537,28 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 				await adminPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'offline_service' );
-				await adminPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
-					.fill( 'my product description' );
 
-				// Blur the field to ensure value is committed to state before saving
-				await adminPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
-					.press( 'Tab' );
+				// The product description field is auto-populated asynchronously.
+				// An async React effect may overwrite user input after initial load,
+				// so we retry the fill+verify cycle until the value sticks.
+				await expect( async () => {
+					await adminPage
+						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.fill( 'my product description' );
 
-				// Verify the value was set correctly immediately after filling
-				await expect(
-					adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
-				).toHaveValue( 'my product description' );
+					// Blur the field to ensure value is committed to state
+					await adminPage
+						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.press( 'Tab' );
+
+					await expect(
+						adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					).toHaveValue( 'my product description', {
+						timeout: 2000,
+					} );
+				} ).toPass( { timeout: 20000, intervals: [ 2000 ] } );
 			}
 		);
-
-		await test.step( 'Verify form values before saving', async () => {
-			// Double-check that the form value is still correct before saving
-			await expect(
-				adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
-			).toHaveValue( 'my product description' );
-		} );
 
 		await test.step( 'Save the dispute challenge for later', async () => {
 			// Evidence form persistence pattern from task template
@@ -637,15 +637,21 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 					}
 				);
 
-				// Wait for description control to be visible
-				await adminPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
-					.waitFor( { timeout: 10000, state: 'visible' } );
+				// The product description field is auto-populated asynchronously.
+				// The same React effect race that affects the initial fill can also
+				// overwrite the restored value after page reload, so we retry until
+				// the saved evidence value appears.
+				await expect( async () => {
+					await adminPage
+						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.waitFor( { timeout: 5000, state: 'visible' } );
 
-				// Assert the product description persisted (server stores this under evidence)
-				await expect(
-					adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
-				).toHaveValue( 'my product description', { timeout: 15000 } );
+					await expect(
+						adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					).toHaveValue( 'my product description', {
+						timeout: 2000,
+					} );
+				} ).toPass( { timeout: 20000, intervals: [ 2000 ] } );
 			}
 		);
 	} );

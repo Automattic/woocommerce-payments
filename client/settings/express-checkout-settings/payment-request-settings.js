@@ -14,7 +14,7 @@ import GeneralPaymentRequestButtonSettings from './general-payment-request-butto
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
-	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
+	useExpressCheckoutInPaymentMethodsEnabledSettings,
 } from 'wcpay/data';
 
 const PaymentRequestSettings = ( { section } ) => {
@@ -24,9 +24,9 @@ const PaymentRequestSettings = ( { section } ) => {
 	] = usePaymentRequestEnabledSettings();
 
 	const [
-		isAppleGooglePayInPaymentMethodsOptionsEnabled,
-		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
-	] = useAppleGooglePayInPaymentMethodsOptionsEnabledSettings();
+		isExpressCheckoutInPaymentMethodsEnabled,
+		updateIsExpressCheckoutInPaymentMethodsEnabled,
+	] = useExpressCheckoutInPaymentMethodsEnabledSettings();
 
 	const [
 		paymentRequestLocations,
@@ -47,20 +47,28 @@ const PaymentRequestSettings = ( { section } ) => {
 							<CheckboxControl
 								className="wcpay-payment-request-settings__enable__checkbox"
 								checked={
-									isAppleGooglePayInPaymentMethodsOptionsEnabled
+									isExpressCheckoutInPaymentMethodsEnabled
 								}
 								onChange={
-									updateIsAppleGooglePayInPaymentMethodsOptionsEnabled
+									updateIsExpressCheckoutInPaymentMethodsEnabled
 								}
 								label={ __(
-									'Enable Apple Pay / Google Pay as options in the payment methods list',
+									'Enable express checkout methods as options in the payment methods list',
 									'woocommerce-payments'
 								) }
-								help={ __(
-									'Customers with Apple Pay or Google Pay enabled will be able to pay with ' +
-										'their preferred wallet as options in the payment methods list.',
-									'woocommerce-payments'
-								) }
+								help={
+									wcpaySettings.featureFlags.amazonPay
+										? __(
+												'Apple Pay, Google Pay, and Amazon Pay will appear as options ' +
+													'in the payment methods list instead of as separate express checkout buttons.',
+												'woocommerce-payments'
+										  )
+										: __(
+												'Apple Pay and Google Pay will appear as options in the payment methods list ' +
+													'instead of as separate express checkout buttons.',
+												'woocommerce-payments'
+										  )
+								}
 								__nextHasNoMarginBottom
 							/>
 						) }

@@ -104,6 +104,7 @@ class WC_Payments_Checkout {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
 		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
+		add_filter( 'woocommerce_update_order_review_fragments', [ $this, 'add_payment_methods_config_to_update_order_review_fragments' ] );
 	}
 
 	/**
@@ -289,10 +290,52 @@ class WC_Payments_Checkout {
 				}
 			}
 
+			// Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are registered
+			// separately via registerExpressPaymentMethod() in JS. Skip them here to avoid
+			// them also being registered as regular payment methods via registerPaymentMethod().
+			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+			if ( $payment_method && $payment_method->is_express_checkout() ) {
+				continue;
+			}
+
 			$settings[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Adds dynamic payment fields config to the update_order_review AJAX response fragments.
+	 *
+	 * This allows the frontend to refresh the available payment methods and currency
+	 * when the billing country changes during checkout. This is particularly important
+	 * for stores using plugins that change currency based on customer location, ensuring
+	 * that payment methods restricted by country/currency are properly updated.
+	 *
+	 * @param array $fragments The fragments to be updated.
+	 * @return array The updated fragments.
+	 */
+	public function add_payment_methods_config_to_update_order_review_fragments( $fragments ) {
+		if ( ! isset( $fragments['.woocommerce-checkout-payment'] ) ) {
+			return $fragments;
+		}
+
+		// I'm calling the base method (rather than reconstructing the pieces individually), so that we can also take advantage of the hooks/filters.
+		// It's a little heavier in computation, but it gives a more accurate result.
+		$js_config = $this->get_payment_fields_js_config();
+
+		$fragments['.woocommerce-checkout-payment'] .= sprintf(
+			'<script>window.wcpay_upe_config && Object.assign( window.wcpay_upe_config, %s );</script>',
+			wp_json_encode(
+				[
+					'paymentMethodsConfig' => $js_config['paymentMethodsConfig'],
+					'currency'             => $js_config['currency'],
+					'cartTotal'            => $js_config['cartTotal'],
+				]
+			)
+		);
+
+		return $fragments;
 	}
 
 	/**

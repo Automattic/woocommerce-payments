@@ -361,6 +361,7 @@ class WC_Payments {
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
+		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'disable_express_checkout_in_block_editor' ], 1 );
 
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
@@ -507,6 +508,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/woopay/class-woopay-adapted-extensions.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-link.php';
+		include_once __DIR__ . '/class-wc-payment-token-wcpay-amazon-pay.php';
 		include_once __DIR__ . '/core/service/class-wc-payments-customer-service-api.php';
 		include_once __DIR__ . '/class-duplicate-payment-prevention-service.php';
 		include_once __DIR__ . '/class-wc-payments-incentives-service.php';
@@ -986,6 +988,10 @@ class WC_Payments {
 
 				// WPORG 2025 merchant feedback prompt user dismissed state.
 				'wc_payments_wporg_review_2025_prompt_dismissed',
+
+				// WooPayments review prompt user preferences.
+				'wc_payments_review_prompt_dismissed',
+				'wc_payments_review_prompt_maybe_later',
 			]
 		);
 	}
@@ -1503,6 +1509,30 @@ class WC_Payments {
 	}
 
 	/**
+	 * Disables express checkout gateways in the block editor to prevent
+	 * WooCommerce from flagging them as "incompatible with block-based checkout".
+	 *
+	 * Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are registered
+	 * via registerExpressPaymentMethod() in JS with different names than their
+	 * PHP gateway IDs, so WooCommerce can't match them and shows a false warning.
+	 *
+	 * This hook runs at priority 1 on enqueue_block_editor_assets, which fires
+	 * only in the block editor — before WC's Checkout block reads $gateway->enabled
+	 * at priority 10. It does not affect subscription admin pages, AJAX, or frontend.
+	 */
+	public static function disable_express_checkout_in_block_editor() {
+		foreach ( WC()->payment_gateways()->payment_gateways() as $gateway ) {
+			if ( ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
+				continue;
+			}
+			if ( ! $gateway->get_payment_method()->is_express_checkout() ) {
+				continue;
+			}
+			$gateway->enabled = 'no';
+		}
+	}
+
+	/**
 	 * Handles upgrade routines.
 	 */
 	public static function install_actions() {
@@ -1723,10 +1753,16 @@ class WC_Payments {
 
 	/**
 	 * Enqueues the common config script.
+	 * Only enqueues if the full config hasn't already been loaded via express button scripts.
 	 *
 	 * @return void
 	 */
 	public static function enqueue_woopay_common_config_script() {
+		// Skip if the express button script is already enqueued/registered, as it includes the full config.
+		if ( wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'enqueued' ) || wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'registered' ) ) {
+			return;
+		}
+
 		try {
 			// is_test() throws if the class 'Mode' has not been initialized.
 			$is_test_mode = self::mode()->is_test();
@@ -1735,21 +1771,23 @@ class WC_Payments {
 			$is_test_mode = false;
 		}
 
+		$common_config = [
+			'woopayHost'                    => WooPay_Utilities::get_woopay_url(),
+			'testMode'                      => $is_test_mode,
+			'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
+			'woopayMerchantId'              => Jetpack_Options::get_option( 'id' ),
+			'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
+			'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
+			'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
+			'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
+		];
+
 		wp_register_script( 'WCPAY_WOOPAY_COMMON_CONFIG', '', [], WCPAY_VERSION_NUMBER, false );
-		wp_localize_script(
+		wp_add_inline_script(
 			'WCPAY_WOOPAY_COMMON_CONFIG',
-			'wcpayConfig',
-			[
-				'woopayHost'                    => WooPay_Utilities::get_woopay_url(),
-				'testMode'                      => $is_test_mode,
-				'wcAjaxUrl'                     => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-				'woopaySessionNonce'            => wp_create_nonce( 'woopay_session_nonce' ),
-				'woopayMerchantId'              => Jetpack_Options::get_option( 'id' ),
-				'isWooPayDirectCheckoutEnabled' => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
-				'platformTrackerNonce'          => wp_create_nonce( 'platform_tracks_nonce' ),
-				'ajaxUrl'                       => admin_url( 'admin-ajax.php' ),
-				'woopayMinimumSessionData'      => WooPay_Session::get_woopay_minimum_session_data(),
-			]
+			'var wcpayConfig = Object.assign( wcpayConfig || {}, ' . wp_json_encode( $common_config ) . ' );',
+			'before'
 		);
 		wp_enqueue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
 	}
