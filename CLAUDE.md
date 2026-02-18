@@ -150,12 +150,25 @@ npm run test:update-snapshots       # Update snapshots
 ```
 
 ### E2E Tests
+
+E2E tests use Playwright in Docker containers against a local WordPress site with real Stripe test transactions.
+
+**First-time setup:** Run `bin/setup-e2e-local.sh` to auto-generate `tests/e2e/config/local.env` from your local infrastructure, then `npm run build:client && npm run test:e2e-setup`. See the E2E skill (`/e2e-testing`) or `tests/e2e/README.md` for full details.
+
 ```bash
-npm run test:e2e                    # Run E2E tests
-npm run test:e2e-ui                 # UI mode
-npm run test:e2e-up                 # Setup test environment
-npm run test:e2e-down               # Teardown
+npm run test:e2e                    # Run all E2E tests (headless)
+npm run test:e2e-ui                 # Interactive UI mode (localhost:8077)
+npm run test:e2e-setup              # First-time E2E environment setup
+npm run test:e2e-up                 # Start existing E2E containers
+npm run test:e2e-down               # Stop E2E containers
+
+# Run specific tests
+npm run test:e2e tests/e2e/specs/wcpay/merchant/  # All merchant tests
+npm run test:e2e tests/e2e/specs/wcpay/shopper/   # All shopper tests
+npm run test:e2e -- -g "dispute"                   # By test name
 ```
+
+**E2E environment ports:** WordPress `:8084` | phpMyAdmin `:8085` | Transact Server `:8088` | Playwright UI `:8077`
 
 ### Build & Quality
 ```bash
