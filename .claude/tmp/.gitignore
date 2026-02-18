@@ -1,0 +1,10 @@
+# Transitory files — code reviews, screenshots, scratch work.
+# Keep directory structure but ignore contents.
+*
+!.gitignore
+!reviews/
+!screenshots/
+reviews/*
+!reviews/.gitkeep
+screenshots/*
+!screenshots/.gitkeep
