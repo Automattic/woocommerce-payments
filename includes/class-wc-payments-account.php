@@ -2726,14 +2726,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		return [
 			// The WooPayments setup details.
-			'gateway'                => [
+			'gateway'                                     => [
 				'enabled'              => $gateway->is_enabled(),
 				'test_mode'            => WC_Payments::mode()->is_test(),
 				'test_mode_onboarding' => WC_Payments::mode()->is_test_mode_onboarding(),
 			],
 
 			// Payment methods setup.
-			'payment_methods'        => [
+			'payment_methods'                             => [
 				'available'  => $payment_methods_available,
 				'enabled'    => $payment_methods_enabled,
 				'disabled'   => $payment_methods_disabled,
@@ -2741,18 +2741,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 			// Payment methods mapped to capabilities, for flexibility with the Transact Platform.
 			// E.g. 'card_payments' capability corresponds to 'card' payment method.
-			'provider_capabilities'  => [
+			'provider_capabilities'                       => [
 				'available' => $provider_capabilities_available,
 				'enabled'   => $provider_capabilities_enabled,
 				'disabled'  => $provider_capabilities_disabled,
 			],
-			'apple_google_pay_in_payment_methods_options_enabled' => $gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
+			'express_checkout_in_payment_methods_enabled' => $gateway->get_option( 'express_checkout_in_payment_methods' ),
 
-			'saved_cards_enabled'    => $gateway->is_saved_cards_enabled(),
-			'manual_capture_enabled' => 'yes' === $gateway->get_option( 'manual_capture' ),
-			'debug_log_enabled'      => 'yes' === $gateway->get_option( 'enable_logging' ),
+			'saved_cards_enabled'                         => $gateway->is_saved_cards_enabled(),
+			'manual_capture_enabled'                      => 'yes' === $gateway->get_option( 'manual_capture' ),
+			'debug_log_enabled'                           => 'yes' === $gateway->get_option( 'enable_logging' ),
 
-			'payment_request'        => [
+			'payment_request'                             => [
 				'enabled'              => $gateway->is_payment_request_enabled(),
 				'enabled_locations'    => $this->get_express_checkout_method_locations( $gateway, 'payment_request' ),
 				'button_type'          => $gateway->get_option( 'payment_request_button_type' ),
@@ -2761,7 +2761,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'button_border_radius' => $gateway->get_option( 'payment_request_button_border_radius' ),
 			],
 
-			'woopay'                 => [
+			'woopay'                                      => [
 				'enabled'                 => WC_Payments_Features::is_woopay_enabled(),
 				'enabled_locations'       => $this->get_express_checkout_method_locations( $gateway, 'woopay' ),
 				'store_logo'              => $gateway->get_option( 'platform_checkout_store_logo' ),
@@ -2770,17 +2770,17 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 
 			// WooPayments features.
-			'multi_currency_enabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'stripe_billing_enabled' => WC_Payments_Features::is_stripe_billing_enabled(),
+			'multi_currency_enabled'                      => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'stripe_billing_enabled'                      => WC_Payments_Features::is_stripe_billing_enabled(),
 
 			// Other WooPayments details.
-			'plugin'                 => [
+			'plugin'                                      => [
 				'version'              => defined( 'WCPAY_VERSION_NUMBER' ) ? explode( '-', WCPAY_VERSION_NUMBER, 2 )[0] : '',
 				'activation_timestamp' => get_option( 'wcpay_activation_timestamp', null ),
 			],
 
 			// Other store setup details.
-			'wp_setup'               => [
+			'wp_setup'                                    => [
 				'name'           => get_bloginfo( 'name' ),
 				'url'            => home_url(),
 				'active_theme'   => $this->get_store_theme_details(),
@@ -2788,7 +2788,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'version'        => get_bloginfo( 'version' ),
 				'locale'         => get_locale(),
 			],
-			'wc_setup'               => [
+			'wc_setup'                                    => [
 				'version'                     => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
 				'store_id'                    => ( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) ) ? get_option( \WC_Install::STORE_ID_OPTION, null ) : null,
 				'currency'                    => get_woocommerce_currency(),

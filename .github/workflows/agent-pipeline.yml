@@ -13,7 +13,7 @@ on:
         default: "develop"
         type: string
       stages:
-        description: "Pipeline stages to run (comma-separated: plan,dev,review,compound)"
+        description: "Pipeline stages to run (comma-separated: plan,dev,review,address-comments,compound)"
         required: false
         default: "plan"
         type: string
@@ -63,6 +63,20 @@ jobs:
   #     linear_issue_id: ${{ inputs.linear_issue_id }}
   #     target_branch: ${{ inputs.target_branch }}
   #     branch_name: ${{ needs.dev.outputs.branch_name }}
+  #     model: ${{ inputs.model }}
+  #   secrets: inherit
+
+  # ─── Stage 3.5: Address Comments ─────────────────
+  # Reads PR review comments and automated findings, implements fixes, replies.
+  # address-comments:
+  #   needs: review
+  #   if: contains(inputs.stages, 'address-comments')
+  #   uses: ./.github/workflows/agent-address-comments.yml
+  #   with:
+  #     linear_issue_id: ${{ inputs.linear_issue_id }}
+  #     target_branch: ${{ inputs.target_branch }}
+  #     branch_name: ${{ needs.dev.outputs.branch_name }}
+  #     pr_number: ${{ needs.dev.outputs.pr_number }}
   #     model: ${{ inputs.model }}
   #   secrets: inherit
 
