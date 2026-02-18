@@ -11,6 +11,7 @@
  * IMPLEMENTATION STATUS (from evidence-matrix.ts):
  * ✅ Implemented combinations:
  *   - fraudulent × booking_reservation
+ *   - fraudulent × physical_product
  *   - product_not_received × booking_reservation
  *   - product_unacceptable × booking_reservation
  *   - subscription_canceled × booking_reservation
@@ -22,7 +23,7 @@
  *   - credit_not_processed × booking_reservation (refund_has_been_issued scenario)
  *
  * ⏳ Not yet implemented (in backlog):
- *   - All combinations with physical_product
+ *   - Remaining combinations with physical_product
  *   - All combinations with digital_product_or_service
  *   - All combinations with offline_service
  *   - All combinations with event
