@@ -542,7 +542,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 
-			it( 'should fall back to trunk product_not_received fields for physical_product when feature flag is enabled', () => {
+			it( 'should return matrix fields for product_not_received + physical_product when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -552,13 +552,18 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// Should fall back to trunk product_not_received fields since no matrix entry for physical_product
+				// Matrix entry for product_not_received + physical_product
 				expect( result ).toHaveLength( 5 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
 				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 1 ].label ).toBe( 'Customer communication' );
 				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 2 ].label ).toBe( "Customer's signature" );
 				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].label ).toBe( 'Refund policy' );
 				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 		} );
 
