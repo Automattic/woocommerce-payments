@@ -605,53 +605,38 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 			await adminPage.waitForTimeout( 3000 );
 		} );
 
-		await test.step( 'Go back to the payment details page', async () => {
-			await adminPage.goto( paymentDetailsLink );
-		} );
-
 		await test.step(
-			'Navigate to the payment details screen and click the challenge dispute button',
+			'Navigate back and verify previously saved values are restored',
 			async () => {
-				await adminPage
-					.getByTestId( 'challenge-dispute-button' )
-					.click();
-
-				// Wait for the challenge screen initial loading spinner to disappear
-				await expect(
-					adminPage.getByTestId( 'new-evidence-loading' )
-				).toBeHidden( { timeout: 20000 } );
-			}
-		);
-
-		await test.step(
-			'Verify previously saved values are restored',
-			async () => {
-				await test.step(
-					'Confirm we are on the challenge dispute page',
-					async () => {
-						await expect(
-							adminPage.getByText( "Let's gather the basics", {
-								exact: true,
-							} )
-						).toBeVisible();
-					}
-				);
-
-				// The product description field is auto-populated asynchronously.
-				// The same React effect race that affects the initial fill can also
-				// overwrite the restored value after page reload, so we retry until
-				// the saved evidence value appears.
+				// Poll by reloading the challenge page on each retry.
+				// The Stripe API may not return the saved evidence immediately,
+				// so we retry the full navigation cycle until the saved value
+				// appears. This follows the same polling pattern used by the
+				// dispute status checks in the winning/losing evidence tests.
 				await expect( async () => {
+					await adminPage.goto( paymentDetailsLink );
+					await adminPage.waitForLoadState( 'networkidle' );
+
 					await adminPage
-						.getByLabel( 'PRODUCT DESCRIPTION' )
-						.waitFor( { timeout: 5000, state: 'visible' } );
+						.getByTestId( 'challenge-dispute-button' )
+						.click();
+
+					await expect(
+						adminPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
+
+					await expect(
+						adminPage.getByText( "Let's gather the basics", {
+							exact: true,
+						} )
+					).toBeVisible();
 
 					await expect(
 						adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
 					).toHaveValue( 'my product description', {
-						timeout: 2000,
+						timeout: 5000,
 					} );
-				} ).toPass( { timeout: 20000, intervals: [ 2000 ] } );
+				} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 			}
 		);
 	} );
