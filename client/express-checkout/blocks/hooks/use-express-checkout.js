@@ -118,16 +118,11 @@ export const useExpressCheckout = ( {
 				}
 			}
 
-			// Use the same transformer as the shortcode flow to get product-level
-			// line items (name, quantity, variations) instead of summary aggregates.
-			// transformCartDataForDisplayItems also handles the rounding safety check internally.
-			const lineItems = transformCartDataForDisplayItems( cartData );
-
 			const options = {
 				business: {
 					name: getExpressCheckoutData( 'store_name' ),
 				},
-				lineItems,
+				lineItems: transformCartDataForDisplayItems( cartData ),
 				emailRequired: true,
 				shippingAddressRequired,
 				phoneNumberRequired:
