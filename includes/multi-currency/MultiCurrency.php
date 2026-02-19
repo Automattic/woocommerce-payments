@@ -808,6 +808,12 @@ class MultiCurrency {
 			return;
 		}
 
+		// In cache-optimized mode, currency switching is handled client-side
+		// via the REST API. Skip server-side geolocation and notice.
+		if ( $this->is_cache_optimized_mode() && ! $this->has_active_session() ) {
+			return;
+		}
+
 		// Display notice, prevent duplicates in simulation.
 		if ( ! has_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] ) ) {
 			add_action( 'wp_footer', [ $this, 'display_geolocation_currency_update_notice' ] );
