@@ -34,13 +34,11 @@ interface Cart {
  * @return The total price to use for Stripe.
  */
 const getEffectiveTotalPrice = ( cart: Cart ): string => {
-	const totalPrice = parseInt( cart.cartTotals.total_price, 10 );
-
 	// Apply filter to allow modifications (e.g., for trial subscriptions)
-	// The filter expects numeric amounts, so we pass the parsed total
 	const filteredTotal = applyFilters(
 		'wcpay.express-checkout.total-amount',
-		totalPrice,
+		// The filter expects numeric amounts, so we pass the parsed total
+		parseInt( cart.cartTotals.total_price, 10 ),
 		cart
 	) as number;
 
@@ -167,8 +165,9 @@ export const checkPaymentMethodIsAvailable = (
 		paymentMethodAvailabilityFunctions[ paymentMethod ] = memoizedFn;
 	}
 
-	// Use effective total price to handle trial subscriptions with $0 initial payment
-	const effectiveTotalPrice = getEffectiveTotalPrice( cart );
-
-	return memoizedFn( effectiveTotalPrice, cart.cartTotals.currency_code );
+	return memoizedFn(
+		// Use effective total price to handle trial subscriptions with $0 initial payment
+		getEffectiveTotalPrice( cart ),
+		cart.cartTotals.currency_code
+	);
 };

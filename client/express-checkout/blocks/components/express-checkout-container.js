@@ -46,7 +46,6 @@ const ExpressCheckoutContainer = ( props ) => {
 		...( useConfirmationToken
 			? { paymentMethodTypes }
 			: { paymentMethodCreation: 'manual' } ),
-		currency: billing.currency.code.toLowerCase(),
 		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 		amount: applyFilters(
 			'wcpay.express-checkout.total-amount',
@@ -55,6 +54,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			} ),
 			select( WC_STORE_CART )?.getCartData()
 		),
+		currency: billing.currency.code.toLowerCase(),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};

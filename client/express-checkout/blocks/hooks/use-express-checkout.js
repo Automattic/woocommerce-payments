@@ -130,15 +130,12 @@ export const useExpressCheckout = ( {
 				0
 			);
 
-			// Calculate base cart totals
-			const baseCartTotals = transformPrice( billing.cartTotal.value, {
-				currency_minor_unit: billing.currency.minorUnit ?? 0,
-			} );
-
 			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 			const cartTotals = applyFilters(
 				'wcpay.express-checkout.total-amount',
-				baseCartTotals,
+				transformPrice( billing.cartTotal.value, {
+					currency_minor_unit: billing.currency.minorUnit ?? 0,
+				} ),
 				cartData
 			);
 

@@ -56,21 +56,18 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		// Calculate base amount from cart totals
-		const baseAmount = transformPrice(
-			parseInt( cartData.totals.total_price, 10 ) -
-				parseInt( cartData.totals.total_refund || 0, 10 ),
-			cartData.totals
-		);
-
-		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-		const amount = applyFilters(
-			'wcpay.express-checkout.total-amount',
-			baseAmount,
-			cartData
-		);
-
-		elements.update( { amount } );
+		elements.update( {
+			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+			amount: applyFilters(
+				'wcpay.express-checkout.total-amount',
+				transformPrice(
+					parseInt( cartData.totals.total_price, 10 ) -
+						parseInt( cartData.totals.total_refund || 0, 10 ),
+					cartData.totals
+				),
+				cartData
+			),
+		} );
 
 		event.resolve( {
 			shippingRates,
@@ -86,35 +83,30 @@ export const shippingRateChangeHandler = async ( event, elements ) => {
 		// Get current cart to determine correct package ID
 		const currentCart = await cartApi.getCart();
 
-		// Apply filter to get the correct package ID (e.g., for trial subscriptions
-		// where shipping is in subscription extensions, not main cart)
-		const packageId = applyFilters(
-			'wcpay.express-checkout.shipping-package-id',
-			0,
-			currentCart,
-			event.shippingRate.id
-		);
-
 		const cartData = await cartApi.selectShippingRate( {
-			package_id: packageId,
+			// Apply filter to get the correct package ID (e.g., for trial subscriptions
+			// where shipping is in subscription extensions, not main cart)
+			package_id: applyFilters(
+				'wcpay.express-checkout.shipping-package-id',
+				0,
+				currentCart,
+				event.shippingRate.id
+			),
 			rate_id: event.shippingRate.id,
 		} );
 
-		// Calculate base amount from cart totals
-		const baseAmount = transformPrice(
-			parseInt( cartData.totals.total_price, 10 ) -
-				parseInt( cartData.totals.total_refund || 0, 10 ),
-			cartData.totals
-		);
-
-		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-		const amount = applyFilters(
-			'wcpay.express-checkout.total-amount',
-			baseAmount,
-			cartData
-		);
-
-		elements.update( { amount } );
+		elements.update( {
+			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+			amount: applyFilters(
+				'wcpay.express-checkout.total-amount',
+				transformPrice(
+					parseInt( cartData.totals.total_price, 10 ) -
+						parseInt( cartData.totals.total_refund || 0, 10 ),
+					cartData.totals
+				),
+				cartData
+			),
+		} );
 		event.resolve( {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );

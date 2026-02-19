@@ -190,7 +190,6 @@ export const transformCartDataForShippingRates = ( cartData ) => {
 	const displayPriceIncludingTax = getExpressCheckoutData( 'checkout' )
 		.display_prices_with_tax;
 
-	// Get base shipping rates from cart
 	const baseShippingRates =
 		cartData.shipping_rates?.[ 0 ]?.shipping_rates || [];
 

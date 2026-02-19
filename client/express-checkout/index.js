@@ -62,16 +62,14 @@ const fetchNewCartData = async () => {
 
 const getTotalAmount = () => {
 	if ( cachedCartData ) {
-		const baseTotal = transformPrice(
-			parseInt( cachedCartData.totals.total_price, 10 ) -
-				parseInt( cachedCartData.totals.total_refund || 0, 10 ),
-			cachedCartData.totals
-		);
-
 		// Apply filter to allow modifications (e.g., for trial subscriptions)
 		return applyFilters(
 			'wcpay.express-checkout.total-amount',
-			baseTotal,
+			transformPrice(
+				parseInt( cachedCartData.totals.total_price, 10 ) -
+					parseInt( cachedCartData.totals.total_refund || 0, 10 ),
+				cachedCartData.totals
+			),
 			cachedCartData
 		);
 	}
