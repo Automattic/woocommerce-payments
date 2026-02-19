@@ -883,8 +883,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		// some payment methods should not be available in the payment methods list if they're "express checkout".
+		// Some payment methods should not be available in the payment methods list if they're "express checkout".
+		// However, if the user has saved tokens for this express checkout method, we should allow it.
 		if ( $this->payment_method->is_express_checkout() && ! is_admin() ) {
+			if ( is_user_logged_in() && ! empty( \WC_Payment_Tokens::get_customer_tokens( get_current_user_id(), $this->id ) ) ) {
+				return $this->check_base_availability_for_saved_tokens();
+			}
 			return false;
 		}
 
@@ -946,6 +950,44 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! $is_gateway_enabled ) {
 			return false;
 		}
+
+		return parent::is_available() && ! $this->needs_setup();
+	}
+
+	/**
+	 * Checks availability for express checkout payment methods when used with saved tokens.
+	 * Similar to check_base_availability() but skips the check for payment methods
+	 * enabled at checkout, since express checkout methods like Amazon Pay are not
+	 * in that list but should still be available when the user has saved tokens.
+	 *
+	 * @return bool
+	 */
+	protected function check_base_availability_for_saved_tokens() {
+		if ( ! WC_Payments::get_gateway()->is_enabled() ) {
+			return false;
+		}
+
+		$payment_method_id         = $this->payment_method->get_id();
+		$processing_payment_method = $this->payment_methods[ $payment_method_id ];
+		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
+			return false;
+		}
+
+		$payment_method_statuses  = $this->get_upe_enabled_payment_method_statuses();
+		$stripe_key               = $this->get_payment_method_capability_key_map()[ $payment_method_id ] ?? null;
+		$is_payment_method_active = array_key_exists( $stripe_key, $payment_method_statuses ) && 'active' === $payment_method_statuses[ $stripe_key ]['status'];
+		if ( false === $is_payment_method_active ) {
+			return false;
+		}
+
+		// Disable the gateway if using live mode without HTTPS set up or the currency is not
+		// available in the country of the account.
+		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() ) {
+			return false;
+		}
+
+		// Skip the check for get_payment_method_ids_enabled_at_checkout() since express checkout
+		// methods like Amazon Pay are not in that list but should be available for saved tokens.
 
 		return parent::is_available() && ! $this->needs_setup();
 	}
