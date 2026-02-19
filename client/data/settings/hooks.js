@@ -371,21 +371,18 @@ export const usePaymentRequestEnabledSettings = () => {
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
-export const useAppleGooglePayInPaymentMethodsOptionsEnabledSettings = () => {
-	const {
-		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
-	} = useDispatch( STORE_NAME );
+export const useExpressCheckoutInPaymentMethodsEnabledSettings = () => {
+	const { updateIsExpressCheckoutInPaymentMethodsEnabled } = useDispatch(
+		STORE_NAME
+	);
 
-	const isAppleGooglePayInPaymentMethodsOptionsEnabled = useSelect(
-		( select ) =>
-			select(
-				STORE_NAME
-			).getIsAppleGooglePayInPaymentMethodsOptionsEnabled()
+	const isExpressCheckoutInPaymentMethodsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsExpressCheckoutInPaymentMethodsEnabled()
 	);
 
 	return [
-		isAppleGooglePayInPaymentMethodsOptionsEnabled,
-		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+		isExpressCheckoutInPaymentMethodsEnabled,
+		updateIsExpressCheckoutInPaymentMethodsEnabled,
 	];
 };
 

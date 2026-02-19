@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add E2E testing skill and automated local setup script for running Playwright E2E tests against a local Transact Platform Server

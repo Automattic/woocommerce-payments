@@ -23,7 +23,7 @@ import Cartebancaire from 'assets/images/cards/cartes_bancaires.svg?asset';
 import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import Diners from 'assets/images/cards/diners.svg?asset';
 import Eftpos from 'assets/images/cards/eftpos.svg?asset';
-import Ideal from 'assets/images/payment-methods/ideal.svg?asset';
+import Ideal from 'assets/images/payment-methods/ideal-horizontal.svg?asset';
 import Bancontact from 'assets/images/payment-methods/bancontact.svg?asset';
 import Eps from 'assets/images/payment-methods/eps.svg?asset';
 import Becs from 'assets/images/payment-methods/becs.svg?asset';

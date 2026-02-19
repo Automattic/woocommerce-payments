@@ -545,9 +545,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'expected_title'   => 'Przelewy24 (P24)',
 				'expected_gateway' => 'woocommerce_payments_p24',
 			],
-			'iDEAL'             => [
+			'iDEAL | Wero'      => [
 				'payment_details'  => [ 'type' => 'ideal' ],
-				'expected_title'   => 'iDEAL',
+				'expected_title'   => 'iDEAL | Wero',
 				'expected_gateway' => 'woocommerce_payments_ideal',
 			],
 			'SEPA Direct Debit' => [
@@ -779,8 +779,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $sepa_method->is_reusable() );
 
 		$this->assertEquals( 'ideal', $ideal_method->get_id() );
-		$this->assertEquals( 'iDEAL', $ideal_method->get_title() );
-		$this->assertEquals( 'iDEAL', $ideal_method->get_title( 'US', $mock_ideal_details ) );
+		$this->assertEquals( 'iDEAL | Wero', $ideal_method->get_title() );
+		$this->assertEquals( 'iDEAL | Wero', $ideal_method->get_title( 'US', $mock_ideal_details ) );
 		$this->assertTrue( $ideal_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $ideal_method->is_reusable() );
 

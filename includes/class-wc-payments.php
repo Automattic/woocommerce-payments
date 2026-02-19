@@ -361,6 +361,7 @@ class WC_Payments {
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
+		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'disable_express_checkout_in_block_editor' ], 1 );
 
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
@@ -1505,6 +1506,30 @@ class WC_Payments {
 	public static function register_checkout_gateway( $payment_method_registry ) {
 		require_once __DIR__ . '/class-wc-payments-blocks-payment-method.php';
 		$payment_method_registry->register( new WC_Payments_Blocks_Payment_Method() );
+	}
+
+	/**
+	 * Disables express checkout gateways in the block editor to prevent
+	 * WooCommerce from flagging them as "incompatible with block-based checkout".
+	 *
+	 * Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are registered
+	 * via registerExpressPaymentMethod() in JS with different names than their
+	 * PHP gateway IDs, so WooCommerce can't match them and shows a false warning.
+	 *
+	 * This hook runs at priority 1 on enqueue_block_editor_assets, which fires
+	 * only in the block editor — before WC's Checkout block reads $gateway->enabled
+	 * at priority 10. It does not affect subscription admin pages, AJAX, or frontend.
+	 */
+	public static function disable_express_checkout_in_block_editor() {
+		foreach ( WC()->payment_gateways()->payment_gateways() as $gateway ) {
+			if ( ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
+				continue;
+			}
+			if ( ! $gateway->get_payment_method()->is_express_checkout() ) {
+				continue;
+			}
+			$gateway->enabled = 'no';
+		}
 	}
 
 	/**

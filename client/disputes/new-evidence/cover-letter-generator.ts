@@ -62,7 +62,8 @@ const isEvidenceString = (
 export const generateAttachments = (
 	dispute: ExtendedDispute,
 	duplicateStatus?: string,
-	productType?: string
+	productType?: string,
+	refundStatus?: string
 ): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
@@ -81,6 +82,7 @@ export const generateAttachments = (
 			reasons: string[];
 			label: string;
 			productTypes?: string[];
+			refundStatuses?: string[];
 		} >;
 		labelForStatus?: { status: string; label: string };
 		onlyForReasons?: string[];
@@ -91,11 +93,20 @@ export const generateAttachments = (
 			reasons: string[];
 			order: number;
 			productTypes?: string[];
+			refundStatuses?: string[];
 		} >;
 	} > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
+			labelForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					label: __( 'Refund receipt', 'woocommerce-payments' ),
+					productTypes: [ 'booking_reservation' ],
+					refundStatuses: [ 'refund_has_been_issued' ],
+				},
+			],
 		},
 		{
 			// For duplicate disputes:
@@ -122,6 +133,29 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 			label: __( 'Customer communication', 'woocommerce-payments' ),
+			labelForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					label: __( 'Other documents', 'woocommerce-payments' ),
+					productTypes: [ 'booking_reservation' ],
+					refundStatuses: [
+						'refund_was_not_owed',
+						'refund_has_been_issued',
+					],
+				},
+			],
+			// When repurposed as "Other documents", it should appear last
+			orderForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					order: 100,
+					productTypes: [ 'booking_reservation' ],
+					refundStatuses: [
+						'refund_was_not_owed',
+						'refund_has_been_issued',
+					],
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
@@ -178,7 +212,11 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
 			label: __( 'Cancellation logs', 'woocommerce-payments' ),
-			onlyForReasons: [ 'subscription_canceled', 'product_not_received' ],
+			onlyForReasons: [
+				'subscription_canceled',
+				'product_not_received',
+				'credit_not_processed',
+			],
 			// For product_not_received disputes, this field is labeled "Cancellation confirmation"
 			labelForReasons: [
 				{
@@ -204,6 +242,23 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			label: __( 'Other documents', 'woocommerce-payments' ),
+			labelForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					label: __( 'Proof of acceptance', 'woocommerce-payments' ),
+					productTypes: [ 'booking_reservation' ],
+					refundStatuses: [ 'refund_was_not_owed' ],
+				},
+			],
+			// When used as "Proof of acceptance", it should appear first
+			orderForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					order: -1,
+					productTypes: [ 'booking_reservation' ],
+					refundStatuses: [ 'refund_was_not_owed' ],
+				},
+			],
 		},
 	];
 
@@ -271,7 +326,16 @@ export const generateAttachments = (
 							! entry.productTypes ||
 							( productType &&
 								entry.productTypes.includes( productType ) );
-						return reasonMatches && productTypeMatches;
+						// If refundStatuses is specified, the refund status must also match
+						const refundStatusMatches =
+							! entry.refundStatuses ||
+							( refundStatus &&
+								entry.refundStatuses.includes( refundStatus ) );
+						return (
+							reasonMatches &&
+							productTypeMatches &&
+							refundStatusMatches
+						);
 					} );
 					if ( match ) {
 						displayLabel = match.label;
@@ -290,7 +354,16 @@ export const generateAttachments = (
 							! entry.productTypes ||
 							( productType &&
 								entry.productTypes.includes( productType ) );
-						return reasonMatches && productTypeMatches;
+						// If refundStatuses is specified, the refund status must also match
+						const refundStatusMatches =
+							! entry.refundStatuses ||
+							( refundStatus &&
+								entry.refundStatuses.includes( refundStatus ) );
+						return (
+							reasonMatches &&
+							productTypeMatches &&
+							refundStatusMatches
+						);
 					} );
 					if ( orderMatch ) {
 						sortOrder = orderMatch.order;
@@ -804,7 +877,8 @@ export const generateCoverLetter = (
 	const attachmentsList = generateAttachments(
 		dispute,
 		duplicateStatus,
-		productType
+		productType,
+		refundStatus
 	);
 	const header = generateHeader( data );
 	const recipient = generateRecipient( data );

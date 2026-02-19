@@ -958,6 +958,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool
 	 */
 	public function is_available_for_express_checkout() {
+		if ( is_admin() ) {
+			// In admin context (e.g. block editor preview), skip full availability
+			// checks. check_base_availability() includes runtime checks (HTTPS,
+			// currency, capability status) that can fail without an active cart
+			// or customer session. A simple enabled check is sufficient here.
+			return WC_Payments::get_gateway()->is_enabled() && $this->is_enabled();
+		}
+
 		return $this->check_base_availability();
 	}
 
@@ -2727,7 +2735,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_settings() {
 		parent::init_settings();
-		$this->enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ] ? 'yes' : 'no';
+
+		// Get the basic enabled value from settings.
+		$is_enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ];
+
+		// Card and express checkout methods are not in the UPE enabled list,
+		// so they only need the basic enabled setting check. Without this
+		// early return, they would fall through to the UPE list verification
+		// below and always end up disabled.
+		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
+			return;
+		}
+
+		// For split gateways, also verify the method is in the UPE enabled list.
+		// This prevents sync issues where a gateway has enabled=yes but isn't
+		// actually configured for checkout in the UPE settings.
+		if ( $is_enabled ) {
+			$upe_enabled_methods = $this->get_upe_enabled_payment_method_ids();
+			$this->enabled       = in_array( $this->stripe_id, $upe_enabled_methods, true ) ? 'yes' : 'no';
+		} else {
+			$this->enabled = 'no';
+		}
 	}
 
 	/**
