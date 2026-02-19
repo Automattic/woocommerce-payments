@@ -81,14 +81,27 @@ const getRecurringCartTotal = ( cartData ) => {
 		totalRecurring += parseInt( subscription.totals.total_price, 10 );
 		totalItems += parseInt( subscription.totals.total_items || '0', 10 );
 		totalTax += parseInt( subscription.totals.total_tax || '0', 10 );
-		totalShipping += parseInt(
-			subscription.totals.total_shipping || '0',
-			10
+
+		// During free trials, subscription.totals.total_shipping may be 0
+		// even after a shipping rate is selected, because shipping is deferred.
+		// Read the selected rate's price from the extension's shipping_rates instead.
+		const selectedRate = subscription.shipping_rates?.[ 0 ]?.shipping_rates?.find(
+			( r ) => r.selected
 		);
-		totalShippingTax += parseInt(
-			subscription.totals.total_shipping_tax || '0',
-			10
-		);
+		if ( selectedRate ) {
+			totalShipping += parseInt( selectedRate.price || '0', 10 );
+			totalShippingTax += parseInt( selectedRate.taxes || '0', 10 );
+		} else {
+			totalShipping += parseInt(
+				subscription.totals.total_shipping || '0',
+				10
+			);
+			totalShippingTax += parseInt(
+				subscription.totals.total_shipping_tax || '0',
+				10
+			);
+		}
+
 		currencyMinorUnit =
 			subscription.totals.currency_minor_unit ?? currencyMinorUnit;
 

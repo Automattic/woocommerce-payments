@@ -284,6 +284,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * This is used to determine if ECE buttons should be shown even when the cart
 	 * total is $0, as the customer will still need to authorize the recurring payment.
 	 *
+	 * Only returns true when the cart needs shipping, because Express Checkout
+	 * collects a shipping address for physical products — which also provides the
+	 * billing information needed to calculate taxes correctly. Virtual-only carts
+	 * don't trigger address collection, so the displayed price could be wrong.
+	 *
 	 * @return boolean True if cart is zero total with a trial subscription that has a recurring amount.
 	 */
 	public function is_cart_zero_total_with_trial_subscription() {
@@ -297,6 +302,14 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Check if cart total is zero.
 		if ( 0.0 !== (float) WC()->cart->get_total( 'edit' ) ) {
+			return false;
+		}
+
+		// Only allow when the cart needs shipping — Express Checkout collects
+		// a shipping address for physical products, giving us the billing info
+		// required for correct tax calculation. Virtual-only carts skip address
+		// collection so the price shown could be inaccurate.
+		if ( ! WC()->cart->needs_shipping() ) {
 			return false;
 		}
 
@@ -841,6 +854,14 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
+			// Virtual subscriptions with a free trial are not supported because Express
+			// Checkout won't collect a shipping address, so we can't calculate taxes.
+			|| (
+				class_exists( 'WC_Subscriptions_Product' )
+				&& WC_Subscriptions_Product::is_subscription( $product )
+				&& ! $product->needs_shipping()
+				&& WC_Subscriptions_Product::get_trial_length( $product ) > 0
+			)
 		) {
 			$is_supported = false;
 		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {

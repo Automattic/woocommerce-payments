@@ -29,6 +29,7 @@ import {
 } from './transformers/wc-to-stripe';
 
 let lastSelectedAddress = null;
+let lastCartData = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
@@ -69,6 +70,8 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			),
 		} );
 
+		lastCartData = cartData;
+
 		event.resolve( {
 			shippingRates,
 			lineItems: transformCartDataForDisplayItems( cartData ),
@@ -83,6 +86,12 @@ export const shippingRateChangeHandler = async (
 	elements,
 	currentCartData = null
 ) => {
+	// Use the most recent cart data from a previous address/rate change,
+	// falling back to the caller-provided data. This ensures we have
+	// up-to-date subscription extension data (e.g., shipping rates for
+	// the current address) when resolving the shipping package ID.
+	const effectiveCartData = lastCartData || currentCartData;
+
 	try {
 		const cartData = await cartApi.selectShippingRate( {
 			// Apply filter to get the correct package ID (e.g., for trial subscriptions
@@ -90,11 +99,13 @@ export const shippingRateChangeHandler = async (
 			package_id: applyFilters(
 				'wcpay.express-checkout.shipping-package-id',
 				0,
-				currentCartData,
+				effectiveCartData,
 				event.shippingRate.id
 			),
 			rate_id: event.shippingRate.id,
 		} );
+
+		lastCartData = cartData;
 
 		elements.update( {
 			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)

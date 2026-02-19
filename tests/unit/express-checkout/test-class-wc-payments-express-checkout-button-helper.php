@@ -762,7 +762,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 				'name'          => 'Regular Subscription',
 				'regular_price' => 0,
 				'price'         => 0,
-				'virtual'       => true,
 			]
 		);
 		$product->save();
@@ -771,6 +770,38 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
+			->getMock();
+
+		$helper->method( 'is_cart' )->willReturn( true );
+		$helper->method( 'is_checkout' )->willReturn( false );
+
+		$this->assertFalse( $helper->is_cart_zero_total_with_trial_subscription() );
+	}
+
+	public function test_is_cart_zero_total_with_trial_subscription_returns_false_when_cart_is_virtual_only() {
+		// Virtual-only carts should not qualify because Express Checkout
+		// won't collect a shipping address, so we can't calculate taxes.
+		WC()->cart->empty_cart();
+		$product = new WC_Product_Simple();
+		$product->set_props(
+			[
+				'name'          => 'Virtual Trial Subscription',
+				'regular_price' => 0,
+				'price'         => 0,
+				'virtual'       => true,
+			]
+		);
+		$product->save();
+		WC()->cart->add_to_cart( $product->get_id(), 1 );
+		WC()->cart->calculate_totals();
+
+		WC_Subscriptions_Product::$is_subscription = true;
+		WC_Subscriptions_Product::$trial_length    = 1;
 		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )

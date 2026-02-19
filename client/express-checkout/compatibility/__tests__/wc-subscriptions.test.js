@@ -190,6 +190,34 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 			).toBe( 1999 );
 		} );
 
+		it( 'includes shipping from selected rate in recurring total', () => {
+			const cart = buildTrialCart( {
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						totalPrice: '2499',
+						totalItems: '1999',
+						shippingRates: [
+							{
+								package_id: 'sub_month_0',
+								shipping_rates: [
+									{
+										rate_id: 'flat_rate:1',
+										price: '500',
+										taxes: '0',
+										selected: true,
+									},
+								],
+							},
+						],
+					} ),
+				],
+			} );
+
+			expect(
+				applyFilters( 'wcpay.express-checkout.total-amount', 0, cart )
+			).toBe( 2499 );
+		} );
+
 		it( 'sums recurring totals across multiple subscription schedules', () => {
 			const cart = buildTrialCart( {
 				items: [
@@ -389,6 +417,40 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 
 			expect( result.items[ 0 ].totals.line_subtotal ).toBe( '1500' );
 			expect( result.items[ 1 ].totals.line_subtotal ).toBe( '1500' );
+		} );
+
+		it( 'includes shipping from selected rate in totals', () => {
+			const cart = buildTrialCart( {
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						totalPrice: '2499',
+						totalItems: '1999',
+						shippingRates: [
+							{
+								package_id: 'sub_month_0',
+								shipping_rates: [
+									{
+										rate_id: 'flat_rate:1',
+										name: 'Standard',
+										price: '500',
+										taxes: '0',
+										selected: true,
+									},
+								],
+							},
+						],
+					} ),
+				],
+			} );
+
+			const result = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				cart
+			);
+
+			expect( result.totals.total_price ).toBe( '2499' );
+			expect( result.totals.total_shipping ).toBe( '500' );
+			expect( result.totals.total_items ).toBe( '1999' );
 		} );
 
 		it( 'handles multiple billing periods and aggregates totals', () => {
