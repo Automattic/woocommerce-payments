@@ -82,7 +82,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency = $this->getMockBuilder( MultiCurrency::class )
 			->setConstructorArgs( [ $mock_settings, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
 			->enableOriginalConstructor()
-			->onlyMethods( [ 'get_available_currencies' ] )
+			->onlyMethods( [ 'get_available_currencies', 'get_public_config' ] )
 			->getMock();
 
 		$this->mock_multi_currency->expects( $this->any() )
