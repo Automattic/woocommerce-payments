@@ -59,28 +59,9 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * Test that init_hooks does not hook when feature flag is disabled.
+	 * Test that init_hooks does not hook when cache-optimized mode is not active.
 	 */
-	public function test_init_hooks_returns_early_when_feature_flag_disabled() {
-		update_option( '_wcpay_feature_mc_cache_optimized', '0' );
-
-		$this->mock_multi_currency
-			->method( 'is_cache_optimized_mode' )
-			->willReturn( true );
-
-		$this->renderer->init_hooks();
-
-		$this->assertFalse(
-			has_filter( 'wc_price', [ $this->renderer, 'wrap_price_with_skeleton' ] )
-		);
-	}
-
-	/**
-	 * Test that init_hooks does not hook in speed mode.
-	 */
-	public function test_init_hooks_returns_early_in_speed_mode() {
-		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
-
+	public function test_init_hooks_returns_early_when_not_cache_optimized() {
 		$this->mock_multi_currency
 			->method( 'is_cache_optimized_mode' )
 			->willReturn( false );
@@ -96,8 +77,6 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	 * Test that init_hooks does not hook when there is an active session.
 	 */
 	public function test_init_hooks_returns_early_with_active_session() {
-		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
-
 		$this->mock_multi_currency
 			->method( 'is_cache_optimized_mode' )
 			->willReturn( true );

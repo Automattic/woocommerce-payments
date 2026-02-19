@@ -7,8 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Payments_Features;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -42,10 +40,7 @@ class AsyncPriceRenderer {
 	 * @return void
 	 */
 	public function init_hooks() {
-		if ( ! WC_Payments_Features::is_mc_cache_optimized_enabled() ) {
-			return;
-		}
-
+		// is_cache_optimized_mode() checks both the feature flag and the rendering mode option.
 		if ( ! $this->multi_currency->is_cache_optimized_mode() ) {
 			return;
 		}
