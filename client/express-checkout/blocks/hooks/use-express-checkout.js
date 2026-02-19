@@ -14,7 +14,6 @@ import {
 	displayLoginConfirmation,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
-	normalizeLineItems,
 } from '../../utils';
 import {
 	onAbortPaymentHandler,
@@ -24,7 +23,10 @@ import {
 	onConfirmHandler,
 	onReadyHandler,
 } from '../../event-handlers';
-import { transformPrice } from '../../transformers/wc-to-stripe';
+import {
+	transformCartDataForDisplayItems,
+	transformPrice,
+} from '../../transformers/wc-to-stripe';
 import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
@@ -116,39 +118,16 @@ export const useExpressCheckout = ( {
 				}
 			}
 
-			const lineItems = normalizeLineItems( billing.cartTotalItems ).map(
-				( item ) => ( {
-					...item,
-					// ensuring that the amount is transformed to the correct format expected by Stripe.
-					amount: transformPrice( item.amount, {
-						currency_minor_unit: billing.currency.minorUnit ?? 0,
-					} ),
-				} )
-			);
-			const lineItemsTotals = lineItems.reduce(
-				( acc, lineItem ) => acc + lineItem.amount,
-				0
-			);
-
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			const cartTotals = applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice( billing.cartTotal.value, {
-					currency_minor_unit: billing.currency.minorUnit ?? 0,
-				} ),
-				cartData
-			);
+			// Use the same transformer as the shortcode flow to get product-level
+			// line items (name, quantity, variations) instead of summary aggregates.
+			// transformCartDataForDisplayItems also handles the rounding safety check internally.
+			const lineItems = transformCartDataForDisplayItems( cartData );
 
 			const options = {
 				business: {
 					name: getExpressCheckoutData( 'store_name' ),
 				},
-				// if the transformed cart total is less than the total of `lineItems`, Stripe throws an error
-				// it can sometimes happen that the total is _slightly_ less, due to rounding errors on individual items/taxes/shipping
-				// (or with the `woocommerce_tax_round_at_subtotal` setting).
-				// if that happens, let's just not return any of the line items.
-				// This way, just the total amount will be displayed to the customer.
-				lineItems: cartTotals < lineItemsTotals ? [] : lineItems,
+				lineItems,
 				emailRequired: true,
 				shippingAddressRequired,
 				phoneNumberRequired:
@@ -169,8 +148,6 @@ export const useExpressCheckout = ( {
 		},
 		[
 			onClick,
-			billing.cartTotalItems,
-			billing.cartTotal.value,
 			shippingData.needsShipping,
 			shippingData.shippingRates,
 			billing.currency.minorUnit,
