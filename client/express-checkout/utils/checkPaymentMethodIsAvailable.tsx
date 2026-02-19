@@ -22,6 +22,8 @@ interface CartTotals {
 }
 
 interface Cart {
+	extensions: any;
+	cartItems: any;
 	cartTotals: CartTotals;
 }
 
@@ -39,7 +41,11 @@ const getEffectiveTotalPrice = ( cart: Cart ): string => {
 		'wcpay.express-checkout.total-amount',
 		// The filter expects numeric amounts, so we pass the parsed total
 		parseInt( cart.cartTotals.total_price, 10 ),
-		cart
+		{
+			totals: cart.cartTotals,
+			items: cart.cartItems,
+			extensions: cart.extensions,
+		}
 	) as number;
 
 	return String( filteredTotal );
