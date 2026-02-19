@@ -2575,6 +2575,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	public function handle_loan_approved_inbox_note( $account ) {
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-loan-approved.php';
+		require_once WCPAY_ABSPATH . 'includes/class-wc-payments-explicit-price-formatter.php';
 
 		// If the account cache is empty, don't try to create an inbox note.
 		if ( empty( $account ) ) {
