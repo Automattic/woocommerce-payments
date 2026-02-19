@@ -133,8 +133,6 @@ export const useExpressCheckout = ( {
 					.allowed_shipping_countries,
 			};
 
-			// console.log( '### options', options );
-
 			// Click event from WC Blocks.
 			onClick();
 			// Global click event handler from WooPayments to ECE.
