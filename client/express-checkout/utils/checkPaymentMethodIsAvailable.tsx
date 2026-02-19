@@ -13,12 +13,13 @@ import { applyFilters } from '@wordpress/hooks';
  */
 import type WCPayAPI from 'wcpay/checkout/api';
 import { getExpressCheckoutData, getStripeElementsMode } from '.';
+import { transformPrice } from '../transformers/wc-to-stripe';
 
 // types from https://github.com/woocommerce/woocommerce/blob/360d9bc0f5709e6cf13c646860360fca9968ebb0/plugins/woocommerce/client/blocks/assets/js/types/type-defs/cart.ts
 interface CartTotals {
 	total_price: string;
 	currency_code: string;
-	currency_minor_unit?: number;
+	currency_minor_unit: number;
 }
 
 interface Cart {
@@ -39,8 +40,11 @@ const getEffectiveTotalPrice = ( cart: Cart ): string => {
 	// Apply filter to allow modifications (e.g., for trial subscriptions)
 	const filteredTotal = applyFilters(
 		'wcpay.express-checkout.total-amount',
-		// The filter expects numeric amounts, so we pass the parsed total
-		parseInt( cart.cartTotals.total_price, 10 ),
+		// The filter expects numeric amounts, so we pass the transformed total
+		transformPrice(
+			parseInt( cart.cartTotals.total_price, 10 ),
+			cart.cartTotals
+		),
 		{
 			totals: cart.cartTotals,
 			items: cart.cartItems,
