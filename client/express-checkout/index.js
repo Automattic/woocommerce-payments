@@ -381,7 +381,7 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'shippingratechange', async ( event ) =>
-				shippingRateChangeHandler( event, elements )
+				shippingRateChangeHandler( event, elements, cachedCartData )
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {

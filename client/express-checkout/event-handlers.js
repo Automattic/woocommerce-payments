@@ -78,18 +78,19 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 	}
 };
 
-export const shippingRateChangeHandler = async ( event, elements ) => {
+export const shippingRateChangeHandler = async (
+	event,
+	elements,
+	currentCartData = null
+) => {
 	try {
-		// Get current cart to determine correct package ID
-		const currentCart = await cartApi.getCart();
-
 		const cartData = await cartApi.selectShippingRate( {
 			// Apply filter to get the correct package ID (e.g., for trial subscriptions
 			// where shipping is in subscription extensions, not main cart)
 			package_id: applyFilters(
 				'wcpay.express-checkout.shipping-package-id',
 				0,
-				currentCart,
+				currentCartData,
 				event.shippingRate.id
 			),
 			rate_id: event.shippingRate.id,
