@@ -13,6 +13,7 @@ import {
 	getFingerprint,
 } from 'wcpay/checkout/utils/fingerprint';
 import { getPaymentMethodsOverride } from 'wcpay/express-checkout/utils/payment-method-overrides';
+import { checkAllExpressMethodsAvailability } from 'wcpay/express-checkout/utils/checkPaymentMethodIsAvailable';
 
 // Track which gateways have been registered to avoid duplicate registration.
 const registeredGateways = {};
@@ -90,56 +91,6 @@ function showPaymentMethod( gatewayId ) {
 	);
 	if ( el ) {
 		el.style.display = '';
-	}
-}
-
-/**
- * Checks which express payment methods (Apple Pay, Google Pay) are available
- * on the current device/browser by creating a hidden Stripe ECE element.
- *
- * @param {Object} api      The WCPay API instance.
- * @param {number} amount   The payment amount in smallest currency unit.
- * @param {string} currency The currency code (lowercase).
- * @return {Promise<Object>} Object with availability, e.g. { applePay: true, googlePay: false }.
- */
-async function checkExpressPaymentMethodsAvailability( api, amount, currency ) {
-	try {
-		const stripe = await api.getStripe();
-		const container = document.createElement( 'div' );
-		container.style.position = 'absolute';
-		container.style.left = '-9999px';
-		container.style.top = '-9999px';
-		document.body.appendChild( container );
-
-		const elements = stripe.elements( {
-			mode: 'payment',
-			amount: Math.max( amount, 1 ), // Stripe requires amount >= 1.
-			currency: currency,
-			paymentMethodCreation: 'manual',
-		} );
-
-		const eceButton = elements.create( 'expressCheckout', {
-			buttonType: { applePay: 'plain', googlePay: 'plain' },
-			paymentMethods: { applePay: 'always', googlePay: 'always' },
-		} );
-
-		return new Promise( ( resolve ) => {
-			eceButton.on( 'ready', ( { availablePaymentMethods } ) => {
-				eceButton.unmount();
-				container.remove();
-				resolve( availablePaymentMethods || {} );
-			} );
-
-			eceButton.on( 'loaderror', () => {
-				eceButton.unmount();
-				container.remove();
-				resolve( {} );
-			} );
-
-			eceButton.mount( container );
-		} );
-	} catch {
-		return {};
 	}
 }
 
@@ -322,7 +273,7 @@ async function registerExpressPaymentMethods( api ) {
 	}
 
 	// Check device/browser availability via hidden ECE element.
-	const availablePaymentMethods = await checkExpressPaymentMethodsAvailability(
+	const availablePaymentMethods = await checkAllExpressMethodsAvailability(
 		api,
 		cartTotal,
 		currency

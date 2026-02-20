@@ -19,6 +19,13 @@ jest.mock( 'wcpay/express-checkout/utils/payment-method-overrides', () => ( {
 	} ) ),
 } ) );
 
+jest.mock(
+	'wcpay/express-checkout/utils/checkPaymentMethodIsAvailable',
+	() => ( {
+		checkAllExpressMethodsAvailability: jest.fn().mockResolvedValue( {} ),
+	} )
+);
+
 describe( 'initExpressPaymentMethods', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
