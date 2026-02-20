@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix flaky disputes E2E test by polling for saved evidence instead of asserting stale state

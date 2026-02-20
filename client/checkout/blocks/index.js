@@ -131,12 +131,20 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+// When express checkout methods are displayed in the payment methods list,
+// don't register them as separate express payment buttons.
+if (
+	getUPEConfig( 'isPaymentRequestEnabled' ) &&
+	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
+) {
 	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
 }
 
-if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
+if (
+	getUPEConfig( 'isAmazonPayEnabled' ) &&
+	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
+) {
 	registerExpressPaymentMethod( expressCheckoutElementAmazonPay( api ) );
 }
 window.addEventListener( 'load', () => {

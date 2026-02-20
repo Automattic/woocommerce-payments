@@ -297,16 +297,18 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
-	 * @param array $self_assessment_data Self assessment data.
-	 * @param array $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
-	 *                           indicating whether the capability should be requested when the account is created
-	 *                           and enabled in the settings.
+	 * @param array       $self_assessment_data Self assessment data.
+	 * @param array       $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                                  indicating whether the capability should be requested when the account is created
+	 *                                  and enabled in the settings.
+	 * @param string|null $explicit_mode Optional. The user's explicit mode selection ('live' or 'test').
+	 *                                   When provided, overrides the auto-detected mode (unless dev mode is active).
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [] ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [], ?string $explicit_mode = null ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: Jetpack connection not available.' );
 			return [];
@@ -320,7 +322,14 @@ class WC_Payments_Onboarding_Service {
 
 		$this->set_onboarding_init_in_progress();
 
-		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
+		// Determine setup mode: dev mode always forces test; explicit user selection overrides auto-detection.
+		if ( WC_Payments::mode()->is_dev() ) {
+			$setup_mode = 'test';
+		} elseif ( null !== $explicit_mode && in_array( strtolower( $explicit_mode ), [ 'live', 'test' ], true ) ) {
+			$setup_mode = $explicit_mode;
+		} else {
+			$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
+		}
 
 		// Make sure the onboarding test mode DB flag is set.
 		self::set_test_mode( 'live' !== $setup_mode );
