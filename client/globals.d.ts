@@ -171,6 +171,7 @@ declare global {
 			title: string;
 			icon: string;
 			darkIcon: string;
+			isExpressCheckout: boolean;
 			showSaveOption: boolean;
 			countries: string[];
 			testingInstructions: string;
@@ -271,6 +272,64 @@ declare global {
 		) => WcSettings[ K ] | T;
 	};
 
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	const wcpay_upe_config: {
+		publishableKey: string;
+		testMode: boolean;
+		accountId: string;
+		ajaxUrl: string;
+		wcAjaxUrl: string;
+		createSetupIntentNonce: string;
+		initWooPayNonce: string;
+		saveUPEAppearanceNonce: string;
+		genericErrorMessage: string;
+		fraudServices: unknown[];
+		features: string[];
+		forceNetworkSavedCards: boolean;
+		locale: string;
+		isPreview: boolean;
+		isSavedCardsEnabled: boolean;
+		isWooPayEnabled: boolean;
+		isWoopayExpressCheckoutEnabled: boolean;
+		isWoopayFirstPartyAuthEnabled: boolean;
+		isWooPayEmailInputEnabled: boolean;
+		isWooPayDirectCheckoutEnabled: boolean;
+		isWooPayGlobalThemeSupportEnabled: boolean;
+		woopayHost: string;
+		platformTrackerNonce: string;
+		accountIdForIntentConfirmation: string;
+		wcpayVersionNumber: string;
+		woopaySignatureNonce: string;
+		woopaySessionNonce: string;
+		woopayMerchantId: string;
+		icon: string;
+		woopayMinimumSessionData: Record< string, unknown >;
+		gatewayId: string;
+		isCheckout: boolean;
+		paymentMethodsConfig: typeof wooPaymentsPaymentMethodsConfig;
+		upeAppearance: string | false;
+		upeAddPaymentMethodAppearance: string | false;
+		upeBnplProductPageAppearance: string | false;
+		upeBnplClassicCartAppearance: string | false;
+		upeBnplCartBlockAppearance: string | false;
+		wcBlocksUPEAppearance: string | false;
+		wcBlocksUPEAppearanceTheme: string | false;
+		cartContainsSubscription: boolean;
+		currency: string;
+		cartTotal: number;
+		enabledBillingFields: Record<
+			string,
+			{
+				required: boolean;
+			}
+		>;
+		storeCountry: string;
+		isExpressCheckoutInPaymentMethodsEnabled: boolean;
+		isOrderPay?: boolean;
+		orderId?: number;
+		isChangingPayment?: boolean;
+	};
+
 	interface Window {
 		wcpaySettings: typeof wcpaySettings;
 		wc: typeof wc;
@@ -279,5 +338,7 @@ declare global {
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		wcpay_upe_config?: typeof wcpay_upe_config;
 	}
 }

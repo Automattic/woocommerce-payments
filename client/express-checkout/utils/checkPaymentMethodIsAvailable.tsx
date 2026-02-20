@@ -14,6 +14,7 @@ import { applyFilters } from '@wordpress/hooks';
 import type WCPayAPI from 'wcpay/checkout/api';
 import { getExpressCheckoutData, getStripeElementsMode } from '.';
 import { transformPrice } from '../transformers/wc-to-stripe';
+import { getPaymentMethodsOverride } from './payment-method-overrides';
 
 // types from https://github.com/woocommerce/woocommerce/blob/360d9bc0f5709e6cf13c646860360fca9968ebb0/plugins/woocommerce/client/blocks/assets/js/types/type-defs/cart.ts
 interface CartTotals {
@@ -110,26 +111,7 @@ const checkPaymentMethodIsAvailableInternal = (
 						root.unmount();
 						containerEl.remove();
 					} }
-					options={ {
-						paymentMethods: {
-							applePay:
-								paymentMethod === 'applePay'
-									? 'always'
-									: 'never',
-							googlePay:
-								paymentMethod === 'googlePay'
-									? 'always'
-									: 'never',
-							amazonPay:
-								// amazon pay can be "auto" or "never", but not "always"
-								paymentMethod === 'amazonPay'
-									? 'auto'
-									: 'never',
-							link: 'never',
-							paypal: 'never',
-							klarna: 'never',
-						},
-					} }
+					options={ getPaymentMethodsOverride( paymentMethod ) }
 					onReady={ ( { availablePaymentMethods } ) => {
 						resolve(
 							Boolean(
