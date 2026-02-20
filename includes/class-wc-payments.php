@@ -603,6 +603,9 @@ class WC_Payments {
 
 		// Build the card gateway first so that WC_Payments::get_gateway() is available
 		// during construction of the other gateways (e.g. for settings checks).
+		if ( ! isset( $payment_methods['card'] ) ) {
+			throw new \Exception( 'WC_Payments::init() requires a card payment method, but none was found in the payment method registry.' );
+		}
 		$card_payment_method                                        = $payment_methods['card'];
 		self::$payment_method_map[ $card_payment_method->get_id() ] = $card_payment_method;
 		self::$card_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $card_payment_method, $payment_methods, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service, self::$failed_transaction_rate_limiter );
