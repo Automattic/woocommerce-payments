@@ -1059,7 +1059,9 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				networkCost?.amount != null && networkCost?.currency
 					? formatExplicitCurrency(
 							networkCost.amount,
-							networkCost.currency
+							networkCost.currency.toUpperCase(),
+							false,
+							event?.fee?.currency.toUpperCase()
 					  )
 					: '';
 			const isCrossCurrencyNetworkCost =
@@ -1091,6 +1093,30 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					  ] )
 					: null;
 
+			let headlineText;
+			if ( event.reason === 'noncompliant' ) {
+				headlineText = __(
+					// eslint-disable-next-line max-len
+					"<strong>Dispute lost.</strong> Visa reviewed the evidence and decided in the customer's favor.",
+					'woocommerce-payments'
+				);
+			} else {
+				headlineText = bankName
+					? sprintf(
+							__(
+								// eslint-disable-next-line max-len
+								"<strong>Dispute lost.</strong> Your customer's bank, <strong>%s</strong>, reviewed the evidence and decided in the customer's favor.",
+								'woocommerce-payments'
+							),
+							bankName
+					  )
+					: __(
+							// eslint-disable-next-line max-len
+							"<strong>Dispute lost.</strong> Your customer's bank reviewed the evidence and decided in the customer's favor.",
+							'woocommerce-payments'
+					  );
+			}
+
 			return [
 				networkCostItem,
 				getStatusChangeTimelineItem(
@@ -1099,25 +1125,9 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 				getMainTimelineItem(
 					event,
-					createInterpolateElement(
-						bankName
-							? sprintf(
-									__(
-										// eslint-disable-next-line max-len
-										"<strong>Dispute lost.</strong> Your customer's bank, <strong>%s</strong>, reviewed the evidence and decided in the customer's favor.",
-										'woocommerce-payments'
-									),
-									bankName
-							  )
-							: __(
-									// eslint-disable-next-line max-len
-									"<strong>Dispute lost.</strong> Your customer's bank reviewed the evidence and decided in the customer's favor.",
-									'woocommerce-payments'
-							  ),
-						{
-							strong: <strong />,
-						}
-					),
+					createInterpolateElement( headlineText, {
+						strong: <strong />,
+					} ),
 					<CrossIcon className="is-error" />
 				),
 			];

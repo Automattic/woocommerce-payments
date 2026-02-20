@@ -435,16 +435,18 @@ describe( 'mapTimelineEvents', () => {
 					{
 						amount: 10000,
 						currency: 'USD',
-						balance_currency: 'USD',
 						datetime: 1586055370,
 						deposit: {
 							arrival_date: 1586141770,
 							id: 'dummy_po_5eaada696b2ef',
 						},
-						fee: 1500,
+						fee: {
+							amount: 1500,
+							currency: 'usd',
+						},
 						network_cost: {
 							amount: 500,
-							currency: 'USD',
+							currency: 'usd',
 						},
 						type: 'dispute_lost',
 					},
@@ -458,13 +460,15 @@ describe( 'mapTimelineEvents', () => {
 					{
 						amount: 10000,
 						currency: 'EUR',
-						balance_currency: 'EUR',
 						datetime: 1586055370,
 						deposit: {
 							arrival_date: 1586141770,
 							id: 'dummy_po_5eaada696b2ef',
 						},
-						fee: 1500,
+						fee: {
+							amount: 1500,
+							currency: 'usd',
+						},
 						network_cost: {
 							amount: 500,
 							currency: 'USD',
