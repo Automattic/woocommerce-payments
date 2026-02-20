@@ -22,9 +22,6 @@ import {
 import { transformCartDataForDisplayItems } from '../../transformers/wc-to-stripe';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
-import ApplePayPreview from './apple-pay-preview';
-import GooglePayPreview from './google-pay-preview';
-import AmazonPayPreview from './amazon-pay-preview';
 
 declare global {
 	interface Window {
@@ -70,12 +67,6 @@ interface DynamicButtonContainerProps {
 	};
 	isEditor?: boolean;
 }
-
-const previewComponents: Record< string, React.ComponentType< any > > = {
-	applePay: ApplePayPreview,
-	googlePay: GooglePayPreview,
-	amazonPay: AmazonPayPreview,
-};
 
 /**
  * Inner component that has access to Stripe and Elements via hooks.
@@ -253,8 +244,7 @@ const DynamicButtonContainer = ( props: DynamicButtonContainerProps ) => {
 	}, [ api ] );
 
 	if ( isEditor ) {
-		const PreviewComponent = previewComponents[ expressPaymentMethod ];
-		return PreviewComponent ? <PreviewComponent /> : null;
+		return null;
 	}
 
 	const elementsOptions = {
