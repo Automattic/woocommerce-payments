@@ -601,20 +601,27 @@ class WC_Payments {
 			$payment_methods[ $payment_method->get_id() ] = $payment_method;
 		}
 
+		// Build the card gateway first so that WC_Payments::get_gateway() is available
+		// during construction of the other gateways (e.g. for settings checks).
+		$card_payment_method                                        = $payment_methods[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ];
+		self::$payment_method_map[ $card_payment_method->get_id() ] = $card_payment_method;
+		self::$card_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $card_payment_method, $payment_methods, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service, self::$failed_transaction_rate_limiter );
+		self::$payment_gateway_map[ $card_payment_method->get_id() ] = self::$card_gateway;
+
 		foreach ( $payment_methods as $payment_method ) {
+			if ( 'card' === $payment_method->get_id() ) {
+				continue;
+			}
+
 			self::$payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
 			$split_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $payment_method, $payment_methods, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service, self::$failed_transaction_rate_limiter );
 
-			// Card gateway hooks are registered once below.
-			if ( 'card' !== $payment_method->get_id() ) {
-				$split_gateway->init_hooks();
-			}
+			$split_gateway->init_hooks();
 
 			self::$payment_gateway_map[ $payment_method->get_id() ] = $split_gateway;
 		}
 
-		self::$card_gateway         = self::get_payment_gateway_by_id( 'card' );
 		self::$wc_payments_checkout = new WC_Payments_Checkout( self::get_gateway(), self::$woopay_util, self::$account, self::$customer_service, self::$fraud_service );
 
 		self::$card_gateway->init_hooks();
