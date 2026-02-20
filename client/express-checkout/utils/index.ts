@@ -3,6 +3,10 @@
  */
 export * from './normalize';
 export * from './shipping-fields';
+export {
+	getPaymentMethodsOverride,
+	adjustButtonHeights,
+} from './payment-method-overrides';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 interface MyWindow extends Window {

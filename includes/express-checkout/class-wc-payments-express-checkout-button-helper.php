@@ -291,6 +291,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function can_use_amazon_pay() {
+		// When express checkout methods are displayed in the payment methods list,
+		// Amazon Pay should not appear as a separate express button.
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return false;
+		}
+
 		if ( ! WC_Payments_Features::is_amazon_pay_enabled() ) {
 			return false;
 		}
@@ -496,6 +502,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return bool
 	 */
 	public function should_show_express_checkout_button() {
+		// When express checkout methods are displayed in the payment methods list,
+		// don't show them as separate express buttons.
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return false;
+		}
+
 		// If account is not connected, then bail.
 		if ( ! $this->account->is_stripe_connected( false ) ) {
 			return false;
