@@ -325,7 +325,7 @@ class WC_Payments_Onboarding_Service {
 		// Determine setup mode: dev mode always forces test; explicit user selection overrides auto-detection.
 		if ( WC_Payments::mode()->is_dev() ) {
 			$setup_mode = 'test';
-		} elseif ( null !== $explicit_mode && in_array( $explicit_mode, [ 'live', 'test' ], true ) ) {
+		} elseif ( null !== $explicit_mode && in_array( strtolower( $explicit_mode ), [ 'live', 'test' ], true ) ) {
 			$setup_mode = $explicit_mode;
 		} else {
 			$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
