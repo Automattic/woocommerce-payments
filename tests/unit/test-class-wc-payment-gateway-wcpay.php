@@ -565,6 +565,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'expected_title'   => 'GrabPay',
 				'expected_gateway' => 'woocommerce_payments_grabpay',
 			],
+			'Link'              => [
+				'payment_details'  => [ 'type' => 'link' ],
+				'expected_title'   => 'Link',
+				'expected_gateway' => 'woocommerce_payments',
+			],
 		];
 	}
 
