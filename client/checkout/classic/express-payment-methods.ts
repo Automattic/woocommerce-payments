@@ -12,7 +12,10 @@ import type {
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getExpressCheckoutData } from 'wcpay/express-checkout/utils';
+import {
+	shouldUseConfirmationTokens,
+	createPaymentCredential,
+} from 'wcpay/express-checkout/utils';
 import {
 	appendPaymentMethodIdToForm,
 	appendConfirmationTokenToForm,
@@ -25,6 +28,7 @@ import {
 } from 'wcpay/checkout/utils/fingerprint';
 import { getPaymentMethodsOverride } from 'wcpay/express-checkout/utils/payment-method-overrides';
 import { checkAllExpressMethodsAvailability } from 'wcpay/express-checkout/utils/checkPaymentMethodIsAvailable';
+import { getExpressMethodByConfigKey } from 'wcpay/express-checkout/constants';
 import type WCPayAPI from 'wcpay/checkout/api';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,46 +61,8 @@ interface PaymentMethodConfig {
 	gatewayId: string;
 }
 
-/**
- * Maps express payment method IDs to their Stripe configuration.
- * Matches the blocks pattern from dynamic-button-container.tsx.
- */
-const expressMethodConfig: Record<
-	string,
-	{
-		expressPaymentType: string;
-		paymentMethodTypes: string[];
-	}
-> = {
-	apple_pay: {
-		expressPaymentType: 'apple_pay',
-		paymentMethodTypes: [ 'card' ],
-	},
-	google_pay: {
-		expressPaymentType: 'google_pay',
-		paymentMethodTypes: [ 'card' ],
-	},
-	amazon_pay: {
-		expressPaymentType: 'amazon_pay',
-		paymentMethodTypes: [ 'amazon_pay' ],
-	},
-};
-
 // Track which gateways have been registered to avoid duplicate registration.
 const registeredGateways: Record< string, boolean > = {};
-
-/**
- * Converts a snake_case string to camelCase.
- * Needed because Stripe's ECE ready event reports availability in camelCase
- * (e.g., applePay, googlePay) but our config uses snake_case (apple_pay, google_pay).
- */
-function snakeToCamel( str: string ): string {
-	return str.replace(
-		/_([a-z])/g,
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		( _match, letter: string ) => letter.toUpperCase()
-	);
-}
 
 /**
  * Gets the cart total in smallest currency unit (e.g., cents).
@@ -176,19 +142,17 @@ function registerCustomPlaceOrderButton(
 	const currency = ( getUPEConfig( 'currency' ) as
 		| string
 		| undefined )?.toLowerCase();
-	const paymentMethodType = snakeToCamel( paymentMethodId );
 
-	// Amazon Pay always uses confirmation tokens (same as dynamic-button-container.tsx).
-	// For Apple/Google Pay, check the feature flag.
-	const useConfirmationTokens =
-		paymentMethodType === 'amazonPay' ||
-		( getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
-			true );
+	const useConfirmationTokens = shouldUseConfirmationTokens();
 
-	const methodConfig = expressMethodConfig[ paymentMethodId ];
+	const expressMethod = getExpressMethodByConfigKey( paymentMethodId );
+	if ( ! expressMethod ) {
+		return;
+	}
+	const { camelKey, config: methodConfig } = expressMethod;
 
 	// Use the shared utility for payment method overrides.
-	const paymentMethodOptions = getPaymentMethodsOverride( paymentMethodType )
+	const paymentMethodOptions = getPaymentMethodsOverride( camelKey )
 		.paymentMethods;
 
 	const state: {
@@ -216,7 +180,7 @@ function registerCustomPlaceOrderButton(
 				state.elements = stripe.elements( {
 					mode: 'payment',
 					amount: cartTotal,
-					currency: currency,
+					currency: currency!,
 					...( useConfirmationTokens
 						? {
 								paymentMethodTypes:
@@ -241,7 +205,7 @@ function registerCustomPlaceOrderButton(
 					} ) => {
 						if (
 							! availablePaymentMethods?.[
-								paymentMethodType as keyof AvailablePaymentMethods
+								camelKey as keyof AvailablePaymentMethods
 							]
 						) {
 							hidePaymentMethod( gatewayId );
@@ -277,34 +241,19 @@ function registerCustomPlaceOrderButton(
 
 						const $form = jQuery( 'form.checkout' );
 
-						if ( useConfirmationTokens ) {
-							const {
-								confirmationToken,
-								error,
-							} = await stripe.createConfirmationToken( {
-								elements: state.elements!,
-							} );
-							if ( error ) {
-								throw new Error( error.message );
-							}
+						const credential = await createPaymentCredential(
+							stripe,
+							state.elements!,
+							useConfirmationTokens
+						);
+
+						if ( credential.type === 'confirmation_token' ) {
 							appendConfirmationTokenToForm(
 								$form,
-								confirmationToken!.id
+								credential.id
 							);
 						} else {
-							const {
-								paymentMethod,
-								error,
-							} = await stripe.createPaymentMethod( {
-								elements: state.elements!,
-							} );
-							if ( error ) {
-								throw new Error( error.message );
-							}
-							appendPaymentMethodIdToForm(
-								$form,
-								paymentMethod!.id
-							);
+							appendPaymentMethodIdToForm( $form, credential.id );
 						}
 
 						appendExpressPaymentTypeToForm(
@@ -402,11 +351,14 @@ async function registerExpressPaymentMethods( api: WCPayAPI ): Promise< void > {
 	}
 
 	for ( const [ paymentMethodId, config ] of eceExpressMethods ) {
-		const paymentMethodType = snakeToCamel( paymentMethodId );
+		const expressMethod = getExpressMethodByConfigKey( paymentMethodId );
+		if ( ! expressMethod ) {
+			continue;
+		}
 
 		if (
 			! availablePaymentMethods[
-				paymentMethodType as keyof AvailablePaymentMethods
+				expressMethod.camelKey as keyof AvailablePaymentMethods
 			]
 		) {
 			continue;

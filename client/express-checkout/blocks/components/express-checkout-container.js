@@ -12,8 +12,10 @@ import { applyFilters } from '@wordpress/hooks';
 import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
-	getExpressCheckoutData,
 	getStripeElementsMode,
+	shouldUseConfirmationTokens,
+	buildPaymentMethodTypes,
+	buildStripeElementsOptions,
 } from '../../utils';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
@@ -26,26 +28,10 @@ const ExpressCheckoutContainer = ( props ) => {
 		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
 
-	const useConfirmationToken =
-		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+	const useConfirmationTokens = shouldUseConfirmationTokens();
+	const paymentMethodTypes = useMemo( () => buildPaymentMethodTypes(), [] );
 
-	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
-	// Building the payment method types array to send to the server,
-	// to ensure PaymentIntent uses matching types.
-	const paymentMethodTypes = useMemo( () => {
-		const methods = enabledMethods || [];
-
-		return [
-			methods.includes( 'payment_request' ) && 'card',
-			methods.includes( 'amazon_pay' ) && 'amazon_pay',
-		].filter( Boolean );
-	}, [ enabledMethods ] );
-
-	const options = {
-		mode: getStripeElementsMode(),
-		...( useConfirmationToken
-			? { paymentMethodTypes }
-			: { paymentMethodCreation: 'manual' } ),
+	const options = buildStripeElementsOptions( {
 		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 		amount: applyFilters(
 			'wcpay.express-checkout.total-amount',
@@ -54,10 +40,12 @@ const ExpressCheckoutContainer = ( props ) => {
 			} ),
 			select( WC_STORE_CART )?.getCartData()
 		),
-		currency: billing.currency.code.toLowerCase(),
+		currency: billing.currency.code,
+		useConfirmationTokens,
+		paymentMethodTypes,
+		mode: getStripeElementsMode(),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
-		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
-	};
+	} );
 
 	return (
 		<div style={ { minHeight: '40px' } }>

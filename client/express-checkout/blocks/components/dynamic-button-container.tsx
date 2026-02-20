@@ -8,7 +8,6 @@ import {
 	useStripe,
 	useElements,
 } from '@stripe/react-stripe-js';
-import type { StripeElementLocale } from '@stripe/stripe-js';
 import { select } from '@wordpress/data';
 
 /**
@@ -16,9 +15,15 @@ import { select } from '@wordpress/data';
  */
 import {
 	getExpressCheckoutData,
-	getExpressCheckoutButtonAppearance,
 	getPaymentMethodsOverride,
+	shouldUseConfirmationTokens,
+	createPaymentCredential,
+	buildStripeElementsOptions,
 } from '../../utils';
+import {
+	EXPRESS_PAYMENT_METHODS,
+	ExpressPaymentMethodKey,
+} from '../../constants';
 import { transformCartDataForDisplayItems } from '../../transformers/wc-to-stripe';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
@@ -29,26 +34,8 @@ declare global {
 	}
 }
 
-const paymentMethodConfig = {
-	applePay: {
-		expressPaymentType: 'apple_pay',
-		paymentMethodTypes: [ 'card' ] as string[],
-		gatewayId: 'woocommerce_payments_apple_pay',
-	},
-	googlePay: {
-		expressPaymentType: 'google_pay',
-		paymentMethodTypes: [ 'card' ] as string[],
-		gatewayId: 'woocommerce_payments_google_pay',
-	},
-	amazonPay: {
-		expressPaymentType: 'amazon_pay',
-		paymentMethodTypes: [ 'amazon_pay' ] as string[],
-		gatewayId: 'woocommerce_payments_amazon_pay',
-	},
-};
-
 interface DynamicButtonContainerProps {
-	expressPaymentMethod: 'applePay' | 'googlePay' | 'amazonPay';
+	expressPaymentMethod: ExpressPaymentMethodKey;
 	api: any;
 	validate: () => Promise< { hasError: boolean } >;
 	onSubmit: () => void;
@@ -82,13 +69,10 @@ const DynamicButton = ( {
 	const stripe = useStripe();
 	const elements = useElements();
 
-	const config = paymentMethodConfig[ expressPaymentMethod ];
+	const config = EXPRESS_PAYMENT_METHODS[ expressPaymentMethod ];
 	const { expressPaymentType, paymentMethodTypes, gatewayId } = config;
 
-	const useConfirmationTokens =
-		expressPaymentMethod === 'amazonPay' ||
-		( getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
-			true );
+	const useConfirmationTokens = shouldUseConfirmationTokens();
 
 	const handleClick = useCallback(
 		async ( event: any ) => {
@@ -129,49 +113,14 @@ const DynamicButton = ( {
 				};
 			}
 
-			if ( useConfirmationTokens ) {
-				const {
-					confirmationToken,
-					error,
-				} = await stripe!.createConfirmationToken( {
-					elements: elements!,
-				} );
-
-				if ( error ) {
-					return {
-						type: responseTypes.SUCCESS,
-						meta: {
-							paymentMethodData: {
-								payment_method: gatewayId,
-								'wcpay-payment-method': 'error',
-							},
-						},
-					};
-				}
-
-				return {
-					type: responseTypes.SUCCESS,
-					meta: {
-						paymentMethodData: {
-							payment_method: gatewayId,
-							'wcpay-confirmation-token': confirmationToken!.id,
-							express_payment_type: expressPaymentType,
-							'wcpay-express-payment-method-types': JSON.stringify(
-								paymentMethodTypes
-							),
-							'wcpay-fraud-prevention-token':
-								window.wcpayFraudPreventionToken ?? '',
-						},
-					},
-				};
-			}
-
-			const {
-				paymentMethod,
-				error,
-			} = await stripe!.createPaymentMethod( { elements: elements! } );
-
-			if ( error ) {
+			let credential;
+			try {
+				credential = await createPaymentCredential(
+					stripe!,
+					elements!,
+					useConfirmationTokens
+				);
+			} catch {
 				return {
 					type: responseTypes.SUCCESS,
 					meta: {
@@ -183,12 +132,17 @@ const DynamicButton = ( {
 				};
 			}
 
+			const credentialKey =
+				credential.type === 'confirmation_token'
+					? 'wcpay-confirmation-token'
+					: 'wcpay-payment-method';
+
 			return {
 				type: responseTypes.SUCCESS,
 				meta: {
 					paymentMethodData: {
 						payment_method: gatewayId,
-						'wcpay-payment-method': paymentMethod!.id,
+						[ credentialKey ]: credential.id,
 						express_payment_type: expressPaymentType,
 						'wcpay-express-payment-method-types': JSON.stringify(
 							paymentMethodTypes
@@ -232,12 +186,8 @@ const DynamicButton = ( {
 const DynamicButtonContainer = ( props: DynamicButtonContainerProps ) => {
 	const { api, billing, expressPaymentMethod, isEditor } = props;
 
-	const config = paymentMethodConfig[ expressPaymentMethod ];
-
-	const useConfirmationTokens =
-		expressPaymentMethod === 'amazonPay' ||
-		( getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
-			true );
+	const config = EXPRESS_PAYMENT_METHODS[ expressPaymentMethod ];
+	const useConfirmationTokens = shouldUseConfirmationTokens();
 
 	const stripePromise = useMemo( () => {
 		return api.loadStripeForExpressCheckout();
@@ -247,17 +197,12 @@ const DynamicButtonContainer = ( props: DynamicButtonContainerProps ) => {
 		return null;
 	}
 
-	const elementsOptions = {
-		mode: 'payment' as const,
-		amount: billing.cartTotal.value || 1,
-		currency: billing.currency.code.toLowerCase(),
-		...( useConfirmationTokens
-			? { paymentMethodTypes: config.paymentMethodTypes }
-			: { paymentMethodCreation: 'manual' as const } ),
-		appearance: getExpressCheckoutButtonAppearance( undefined ),
-		locale: ( getExpressCheckoutData( 'stripe' )?.locale ??
-			'en' ) as StripeElementLocale,
-	};
+	const elementsOptions = buildStripeElementsOptions( {
+		amount: billing.cartTotal.value,
+		currency: billing.currency.code,
+		useConfirmationTokens,
+		paymentMethodTypes: config.paymentMethodTypes,
+	} );
 
 	return (
 		<Elements stripe={ stripePromise } options={ elementsOptions }>

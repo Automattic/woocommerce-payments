@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { lazy, Suspense } from 'react';
 
 /**
@@ -13,6 +12,7 @@ import ExpressCheckoutContainer from './components/express-checkout-container';
 import DynamicButtonContainer from './components/dynamic-button-container';
 import PaymentMethodLabel from 'wcpay/checkout/blocks/payment-method-label';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
+import { EXPRESS_PAYMENT_METHODS } from '../constants';
 import '../compatibility/wc-order-attribution';
 import '../compatibility/wc-subscriptions';
 
@@ -45,44 +45,8 @@ const previewComponents = {
 	),
 };
 
-const expressMethodConfig = {
-	applePay: {
-		configKey: 'apple_pay',
-		gatewayId: 'woocommerce_payments_apple_pay',
-		title: 'WooPayments - Apple Pay',
-		description: __(
-			"An easy, secure way to pay that's accepted on millions of stores.",
-			'woocommerce-payments'
-		),
-		ariaLabel: 'Apple Pay',
-		fallbackTitle: 'Apple Pay',
-	},
-	googlePay: {
-		configKey: 'google_pay',
-		gatewayId: 'woocommerce_payments_google_pay',
-		title: 'WooPayments - Google Pay',
-		description: __(
-			'Simplify checkout with fewer steps to pay.',
-			'woocommerce-payments'
-		),
-		ariaLabel: 'Google Pay',
-		fallbackTitle: 'Google Pay',
-	},
-	amazonPay: {
-		configKey: 'amazon_pay',
-		gatewayId: 'woocommerce_payments_amazon_pay',
-		title: 'WooPayments - Amazon Pay',
-		description: __(
-			'Pay with your Amazon account.',
-			'woocommerce-payments'
-		),
-		ariaLabel: 'Amazon Pay',
-		fallbackTitle: 'Amazon Pay',
-	},
-};
-
 export const makeExpressCheckoutElement = ( api, methodKey ) => {
-	const method = expressMethodConfig[ methodKey ];
+	const method = EXPRESS_PAYMENT_METHODS[ methodKey ];
 	const Preview = previewComponents[ methodKey ];
 	return {
 		paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
@@ -114,9 +78,9 @@ export const makeExpressCheckoutElement = ( api, methodKey ) => {
 const EmptyContent = () => null;
 
 export const makeDynamicPlaceOrderButton = ( api, methodKey ) => {
-	const method = expressMethodConfig[ methodKey ];
+	const method = EXPRESS_PAYMENT_METHODS[ methodKey ];
 	const Preview = previewComponents[ methodKey ];
-	const config = getUPEConfig( 'paymentMethodsConfig' )?.[ method.configKey ];
+	const config = getUPEConfig( 'paymentMethodsConfig' )?.[ method.key ];
 
 	return {
 		paymentMethodId: method.gatewayId,
@@ -127,7 +91,7 @@ export const makeDynamicPlaceOrderButton = ( api, methodKey ) => {
 		label: (
 			<PaymentMethodLabel
 				title={ config?.title ?? method.fallbackTitle }
-				paymentMethodId={ method.configKey }
+				paymentMethodId={ method.key }
 				icon={ config?.icon }
 				darkIcon={ config?.darkIcon }
 			/>

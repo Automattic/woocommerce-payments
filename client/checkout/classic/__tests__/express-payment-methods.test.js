@@ -37,6 +37,46 @@ jest.mock( 'wcpay/express-checkout/utils', () => ( {
 		}
 		return null;
 	} ),
+	shouldUseConfirmationTokens: jest.fn( () => true ),
+	createPaymentCredential: jest.fn().mockResolvedValue( {
+		id: 'ct_123',
+		type: 'confirmation_token',
+	} ),
+} ) );
+
+jest.mock( 'wcpay/express-checkout/constants', () => ( {
+	getExpressMethodByConfigKey: jest.fn( ( configKey ) => {
+		const methods = {
+			apple_pay: {
+				camelKey: 'applePay',
+				config: {
+					key: 'apple_pay',
+					expressPaymentType: 'apple_pay',
+					paymentMethodTypes: [ 'card' ],
+					gatewayId: 'woocommerce_payments_apple_pay',
+				},
+			},
+			google_pay: {
+				camelKey: 'googlePay',
+				config: {
+					key: 'google_pay',
+					expressPaymentType: 'google_pay',
+					paymentMethodTypes: [ 'card' ],
+					gatewayId: 'woocommerce_payments_google_pay',
+				},
+			},
+			amazon_pay: {
+				camelKey: 'amazonPay',
+				config: {
+					key: 'amazon_pay',
+					expressPaymentType: 'amazon_pay',
+					paymentMethodTypes: [ 'amazon_pay' ],
+					gatewayId: 'woocommerce_payments_amazon_pay',
+				},
+			},
+		};
+		return methods[ configKey ];
+	} ),
 } ) );
 
 jest.mock( '../upe-utils', () => ( {

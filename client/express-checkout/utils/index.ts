@@ -7,6 +7,10 @@ export {
 	getPaymentMethodsOverride,
 	adjustButtonHeights,
 } from './payment-method-overrides';
+export { shouldUseConfirmationTokens } from './confirmation-tokens';
+export { createPaymentCredential } from './payment-credentials';
+export { buildStripeElementsOptions } from './stripe-elements-options';
+export { buildPaymentMethodTypes } from './payment-method-types';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 interface MyWindow extends Window {
