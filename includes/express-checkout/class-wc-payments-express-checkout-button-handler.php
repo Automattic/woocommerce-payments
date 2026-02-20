@@ -263,6 +263,18 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	public function scripts() {
 		// Don't load scripts if page is not supported.
 		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {
+			// Dynamic place order buttons are registered as regular payment methods
+			// on the blocks checkout, so they still need the express checkout params
+			// even when the express checkout buttons are not displayed.
+			// wp_localize_script won't work here because WCPAY_BLOCKS_CHECKOUT may not
+			// be registered yet. Instead, use the AssetDataRegistry so the data is
+			// available via wc.wcSettings.getSetting('ece_data').
+			if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+				$data_registry = Package::container()->get( AssetDataRegistry::class );
+				if ( ! $data_registry->exists( 'ece_data' ) ) {
+					$data_registry->add( 'ece_data', $this->get_express_checkout_params() );
+				}
+			}
 			return;
 		}
 

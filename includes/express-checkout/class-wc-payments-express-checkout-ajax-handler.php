@@ -162,7 +162,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * @param \WP_REST_Request $request Store API request to update the order.
 	 */
 	public function tokenized_cart_set_payment_method_type( \WC_Order $order, \WP_REST_Request $request ) {
-		if ( ! isset( $request['payment_method'] ) || 'woocommerce_payments' !== $request['payment_method'] ) {
+		if ( ! isset( $request['payment_method'] ) || strpos( $request['payment_method'], 'woocommerce_payments' ) !== 0 ) {
 			return;
 		}
 

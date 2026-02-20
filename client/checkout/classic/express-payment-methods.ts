@@ -1,4 +1,12 @@
-/* global jQuery, wc */
+/**
+ * External dependencies
+ */
+import type {
+	Stripe,
+	StripeElements,
+	StripeExpressCheckoutElement,
+	AvailablePaymentMethods,
+} from '@stripe/stripe-js';
 
 /**
  * Internal dependencies
@@ -14,29 +22,59 @@ import {
 } from 'wcpay/checkout/utils/fingerprint';
 import { getPaymentMethodsOverride } from 'wcpay/express-checkout/utils/payment-method-overrides';
 import { checkAllExpressMethodsAvailability } from 'wcpay/express-checkout/utils/checkPaymentMethodIsAvailable';
+import type WCPayAPI from 'wcpay/checkout/api';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const jQuery: any;
+
+interface CustomPlaceOrderButtonApi {
+	validate: () => Promise< { hasError: boolean } >;
+	submit: () => void;
+}
+
+interface CustomPlaceOrderButtonHandler {
+	render: (
+		container: HTMLElement,
+		wcApi: CustomPlaceOrderButtonApi
+	) => Promise< void >;
+	cleanup: () => void;
+}
+
+declare const wc: {
+	customPlaceOrderButton?: {
+		register?: (
+			gatewayId: string,
+			handler: CustomPlaceOrderButtonHandler
+		) => void;
+	};
+} & Record< string, unknown >;
+
+interface PaymentMethodConfig {
+	isExpressCheckout?: boolean;
+	gatewayId: string;
+}
 
 // Track which gateways have been registered to avoid duplicate registration.
-const registeredGateways = {};
+const registeredGateways: Record< string, boolean > = {};
 
 /**
  * Converts a snake_case string to camelCase.
  * Needed because Stripe's ECE ready event reports availability in camelCase
  * (e.g., applePay, googlePay) but our config uses snake_case (apple_pay, google_pay).
- *
- * @param {string} str The snake_case string.
- * @return {string} The camelCase string.
  */
-function snakeToCamel( str ) {
-	return str.replace( /_([a-z])/g, ( _, letter ) => letter.toUpperCase() );
+function snakeToCamel( str: string ): string {
+	return str.replace(
+		/_([a-z])/g,
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		( _match, letter: string ) => letter.toUpperCase()
+	);
 }
 
 /**
  * Gets the cart total in smallest currency unit (e.g., cents).
  * Uses the config value as the primary source, with DOM parsing as a fallback.
- *
- * @return {number} The cart total in smallest currency unit.
  */
-function getCartTotal() {
+function getCartTotal(): number {
 	// Primary: use the config value (set server-side and updated via AJAX fragments).
 	const configTotal = Number( getUPEConfig( 'cartTotal' ) );
 	if ( configTotal > 0 ) {
@@ -68,11 +106,9 @@ function getCartTotal() {
 
 /**
  * Hides a payment method from the payment methods list.
- *
- * @param {string} gatewayId The gateway ID (e.g., 'woocommerce_payments_apple_pay').
  */
-function hidePaymentMethod( gatewayId ) {
-	const el = document.querySelector(
+function hidePaymentMethod( gatewayId: string ): void {
+	const el = document.querySelector< HTMLElement >(
 		`.wc_payment_method.payment_method_${ gatewayId }`
 	);
 	if ( el ) {
@@ -82,11 +118,9 @@ function hidePaymentMethod( gatewayId ) {
 
 /**
  * Shows a payment method in the payment methods list.
- *
- * @param {string} gatewayId The gateway ID (e.g., 'woocommerce_payments_apple_pay').
  */
-function showPaymentMethod( gatewayId ) {
-	const el = document.querySelector(
+function showPaymentMethod( gatewayId: string ): void {
+	const el = document.querySelector< HTMLElement >(
 		`.wc_payment_method.payment_method_${ gatewayId }`
 	);
 	if ( el ) {
@@ -96,32 +130,43 @@ function showPaymentMethod( gatewayId ) {
 
 /**
  * Registers a single express payment method with the WC Custom Place Order Button API.
- *
- * @param {Object} api             The WCPay API instance.
- * @param {string} paymentMethodId The payment method ID (e.g., 'apple_pay').
- * @param {string} fingerprint     The fingerprint for fraud prevention.
  */
-function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
-	const config = getUPEConfig( 'paymentMethodsConfig' )[ paymentMethodId ];
+function registerCustomPlaceOrderButton(
+	api: WCPayAPI,
+	paymentMethodId: string,
+	fingerprint: string
+): void {
+	const config = ( getUPEConfig( 'paymentMethodsConfig' ) as Record<
+		string,
+		PaymentMethodConfig
+	> )?.[ paymentMethodId ];
 	if ( ! config ) {
 		return;
 	}
 
 	const { gatewayId } = config;
-	const currency = getUPEConfig( 'currency' )?.toLowerCase();
+	const currency = ( getUPEConfig( 'currency' ) as
+		| string
+		| undefined )?.toLowerCase();
 	const paymentMethodType = snakeToCamel( paymentMethodId );
 
 	// Use the shared utility for payment method overrides.
 	const paymentMethodOptions = getPaymentMethodsOverride( paymentMethodType )
 		.paymentMethods;
 
-	const state = {
+	const state: {
+		elements: StripeElements | null;
+		eceButton: StripeExpressCheckoutElement | null;
+	} = {
 		elements: null,
 		eceButton: null,
 	};
 
-	wc.customPlaceOrderButton.register( gatewayId, {
-		render: async function ( container, wcApi ) {
+	wc.customPlaceOrderButton!.register!( gatewayId, {
+		render: async function (
+			container: HTMLElement,
+			wcApi: CustomPlaceOrderButtonApi
+		) {
 			const cartTotal = getCartTotal();
 
 			if ( cartTotal <= 0 ) {
@@ -130,7 +175,7 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 			}
 
 			try {
-				const stripe = await api.getStripe();
+				const stripe = ( await api.getStripe() ) as Stripe;
 				state.elements = stripe.elements( {
 					mode: 'payment',
 					amount: cartTotal,
@@ -145,9 +190,17 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 
 				state.eceButton.on(
 					'ready',
-					( { availablePaymentMethods } ) => {
+					( {
+						availablePaymentMethods,
+					}: {
+						availablePaymentMethods:
+							| AvailablePaymentMethods
+							| undefined;
+					} ) => {
 						if (
-							! availablePaymentMethods?.[ paymentMethodType ]
+							! availablePaymentMethods?.[
+								paymentMethodType as keyof AvailablePaymentMethods
+							]
 						) {
 							hidePaymentMethod( gatewayId );
 							container.style.display = 'none';
@@ -175,7 +228,7 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 					try {
 						const {
 							error: submitError,
-						} = await state.elements.submit();
+						} = await state.elements!.submit();
 						if ( submitError ) {
 							throw new Error( submitError.message );
 						}
@@ -184,7 +237,7 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 							paymentMethod,
 							error,
 						} = await stripe.createPaymentMethod( {
-							elements: state.elements,
+							elements: state.elements!,
 						} );
 
 						if ( error ) {
@@ -192,7 +245,7 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 						}
 
 						const $form = jQuery( 'form.checkout' );
-						appendPaymentMethodIdToForm( $form, paymentMethod.id );
+						appendPaymentMethodIdToForm( $form, paymentMethod!.id );
 						appendFingerprintInputToForm( $form, fingerprint );
 						appendFraudPreventionTokenInputToForm( $form );
 						wcApi.submit();
@@ -205,11 +258,11 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 							$notices.append(
 								jQuery(
 									'<div class="woocommerce-error" />'
-								).text( error.message )
+								).text( ( error as Error ).message )
 							);
 							jQuery( 'html, body' ).animate(
 								{
-									scrollTop: $notices.offset().top - 100,
+									scrollTop: $notices.offset()!.top - 100,
 								},
 								1000
 							);
@@ -240,19 +293,17 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 
 /**
  * Main orchestrator: detects availability and registers express payment methods.
- *
- * @param {Object} api The WCPay API instance.
  */
-async function registerExpressPaymentMethods( api ) {
-	const currency = getUPEConfig( 'currency' )?.toLowerCase();
+async function registerExpressPaymentMethods( api: WCPayAPI ): Promise< void > {
+	const currency = ( getUPEConfig( 'currency' ) as string ).toLowerCase();
 	const cartTotal = getCartTotal();
-	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+	const paymentMethodsConfig = getUPEConfig(
+		'paymentMethodsConfig'
+	) as Record< string, PaymentMethodConfig >;
 
 	// Get express checkout methods from config (only Stripe ECE-based: apple_pay, google_pay).
 	// Amazon Pay uses a different SDK and is handled separately.
-	const eceExpressMethods = Object.entries(
-		paymentMethodsConfig || {}
-	).filter(
+	const eceExpressMethods = Object.entries( paymentMethodsConfig ).filter(
 		( [ id, config ] ) =>
 			config.isExpressCheckout &&
 			[ 'apple_pay', 'google_pay' ].includes( id )
@@ -291,7 +342,11 @@ async function registerExpressPaymentMethods( api ) {
 	for ( const [ paymentMethodId, config ] of eceExpressMethods ) {
 		const paymentMethodType = snakeToCamel( paymentMethodId );
 
-		if ( ! availablePaymentMethods[ paymentMethodType ] ) {
+		if (
+			! availablePaymentMethods[
+				paymentMethodType as keyof AvailablePaymentMethods
+			]
+		) {
 			continue;
 		}
 
@@ -308,10 +363,8 @@ async function registerExpressPaymentMethods( api ) {
 /**
  * Entry point: initialize express payment methods for classic checkout.
  * Called on page load and on updated_checkout.
- *
- * @param {Object} api The WCPay API instance.
  */
-export function initExpressPaymentMethods( api ) {
+export function initExpressPaymentMethods( api: WCPayAPI ): void {
 	// Guard: WC Custom Place Order Button API must be available (WC 10.6.0+).
 	if (
 		typeof wc === 'undefined' ||

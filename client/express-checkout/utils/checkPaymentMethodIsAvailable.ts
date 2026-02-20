@@ -3,26 +3,37 @@
  */
 import { memoize } from 'lodash';
 import { applyFilters } from '@wordpress/hooks';
+import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
 
 /**
  * Internal dependencies
  */
+import type WCPayAPI from 'wcpay/checkout/api';
 import { getStripeElementsMode } from '.';
 import { transformPrice } from '../transformers/wc-to-stripe';
+
+interface CartTotals {
+	total_price: string;
+	currency_code: string;
+	currency_minor_unit: number;
+}
+
+interface Cart {
+	extensions: unknown;
+	cartItems: unknown;
+	cartTotals: CartTotals;
+}
+
+type PaymentMethod = keyof AvailablePaymentMethods;
 
 /**
  * Gets the effective total price for Stripe initialization.
  * Uses the wcpay.express-checkout.total-amount filter to allow modifications
  * (e.g., for trial subscriptions with $0 initial payment).
- *
- * @param {Object} cart The cart object from WC Blocks.
- * @return {string} The total price to use for Stripe.
  */
-const getEffectiveTotalPrice = ( cart ) => {
-	// Apply filter to allow modifications (e.g., for trial subscriptions)
+const getEffectiveTotalPrice = ( cart: Cart ): string => {
 	const filteredTotal = applyFilters(
 		'wcpay.express-checkout.total-amount',
-		// The filter expects numeric amounts, so we pass the transformed total
 		transformPrice(
 			parseInt( cart.cartTotals.total_price, 10 ),
 			cart.cartTotals
@@ -32,7 +43,7 @@ const getEffectiveTotalPrice = ( cart ) => {
 			items: cart.cartItems,
 			extensions: cart.extensions,
 		}
-	);
+	) as number;
 
 	return String( filteredTotal );
 };
@@ -40,14 +51,13 @@ const getEffectiveTotalPrice = ( cart ) => {
 /**
  * Core function: creates a hidden Stripe Express Checkout Element to detect
  * which express payment methods are available on the current device/browser.
- *
- * @param {Object} stripe   The Stripe instance.
- * @param {number} amount   The payment amount in smallest currency unit.
- * @param {string} currency The currency code (lowercase).
- * @param {string} mode     The Stripe Elements mode ('payment' or 'subscription').
- * @return {Promise<Object>} Object with availability, e.g. { applePay: true, googlePay: false }.
  */
-function checkAllMethodsInternal( stripe, amount, currency, mode ) {
+function checkAllMethodsInternal(
+	stripe: Stripe,
+	amount: number,
+	currency: string,
+	mode: string
+): Promise< Partial< AvailablePaymentMethods > > {
 	return new Promise( ( resolve ) => {
 		try {
 			const container = document.createElement( 'div' );
@@ -57,8 +67,8 @@ function checkAllMethodsInternal( stripe, amount, currency, mode ) {
 			document.body.appendChild( container );
 
 			const elements = stripe.elements( {
-				mode,
-				amount: Math.max( amount, 1 ), // Stripe requires amount >= 1.
+				mode: mode as 'payment' | 'subscription',
+				amount: Math.max( amount, 1 ),
 				currency,
 				paymentMethodCreation: 'manual',
 			} );
@@ -92,44 +102,48 @@ function checkAllMethodsInternal( stripe, amount, currency, mode ) {
 }
 
 // Module-level cache for the Stripe promise and memoized check function.
-let cachedStripePromise = null;
-let memoizedCheck = null;
+let cachedStripePromise: Promise< Stripe > | null = null;
+let memoizedCheck:
+	| ( (
+			_amount: number,
+			_currency: string,
+			_mode: string
+	  ) => Promise< Partial< AvailablePaymentMethods > > )
+	| null = null;
 
 /**
  * Checks which express payment methods are available on the current device/browser.
  * Results are memoized by amount+currency+mode combination.
- *
- * @param {Object} api      The WCPay API instance.
- * @param {number} amount   The payment amount in smallest currency unit.
- * @param {string} currency The currency code (lowercase).
- * @param {string} mode     The Stripe Elements mode ('payment' or 'subscription'). Defaults to 'payment'.
- * @return {Promise<Object>} Object with availability, e.g. { applePay: true, googlePay: false, amazonPay: true }.
  */
 export async function checkAllExpressMethodsAvailability(
-	api,
-	amount,
-	currency,
+	api: WCPayAPI,
+	amount: number,
+	currency: string,
 	mode = 'payment'
-) {
+): Promise< Partial< AvailablePaymentMethods > > {
 	if ( ! cachedStripePromise ) {
 		cachedStripePromise = api.loadStripeForExpressCheckout();
 	}
 
-	let stripe;
+	let stripe: Stripe;
 	try {
 		stripe = await cachedStripePromise;
 	} catch {
 		return {};
 	}
 
-	if ( stripe?.error ) {
+	if ( ( ( stripe as unknown ) as { error: unknown } )?.error ) {
 		return {};
 	}
 
 	if ( ! memoizedCheck ) {
 		memoizedCheck = memoize(
-			( a, c, m ) => checkAllMethodsInternal( stripe, a, c, m ),
-			( a, c, m ) => `${ a }-${ c }-${ m }`
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			( _amount: number, _currency: string, _mode: string ) =>
+				checkAllMethodsInternal( stripe, _amount, _currency, _mode ),
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			( _amount: number, _currency: string, _mode: string ) =>
+				`${ _amount }-${ _currency }-${ _mode }`
 		);
 	}
 
@@ -139,17 +153,12 @@ export async function checkAllExpressMethodsAvailability(
 /**
  * Checks if a specific express payment method is available.
  * Thin wrapper for blocks consumers — delegates to checkAllExpressMethodsAvailability.
- *
- * @param {string} paymentMethod The payment method key (e.g., 'applePay', 'googlePay').
- * @param {Object} cart          The cart object from WC Blocks.
- * @param {Object} api           The WCPay API instance.
- * @return {Promise<boolean>} Whether the specific payment method is available.
  */
 export async function checkPaymentMethodIsAvailable(
-	paymentMethod,
-	cart,
-	api
-) {
+	paymentMethod: PaymentMethod,
+	cart: Cart,
+	api: WCPayAPI
+): Promise< boolean > {
 	const totalPrice = getEffectiveTotalPrice( cart );
 	const mode = getStripeElementsMode();
 
@@ -166,7 +175,8 @@ export async function checkPaymentMethodIsAvailable(
 /**
  * Resets module-level caches. Only for testing.
  */
-export function _resetForTesting() {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function _resetForTesting(): void {
 	cachedStripePromise = null;
 	memoizedCheck = null;
 }

@@ -65,7 +65,8 @@ interface DynamicButtonContainerProps {
 		onPaymentSetup: ( callback: () => Promise< any > ) => () => void;
 	};
 	emitResponse: {
-		responseTypes: { success: string; error: string; fail: string };
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		responseTypes: { SUCCESS: string; ERROR: string; FAIL: string };
 	};
 	isEditor?: boolean;
 }
@@ -132,7 +133,7 @@ const DynamicButton = ( {
 				await validateElements( elements! );
 			} catch ( e ) {
 				return {
-					type: responseTypes.error,
+					type: responseTypes.ERROR,
 					message: ( e as Error ).message,
 				};
 			}
@@ -147,7 +148,7 @@ const DynamicButton = ( {
 
 				if ( error ) {
 					return {
-						type: responseTypes.success,
+						type: responseTypes.SUCCESS,
 						meta: {
 							paymentMethodData: {
 								payment_method: gatewayId,
@@ -158,7 +159,7 @@ const DynamicButton = ( {
 				}
 
 				return {
-					type: responseTypes.success,
+					type: responseTypes.SUCCESS,
 					meta: {
 						paymentMethodData: {
 							payment_method: gatewayId,
@@ -181,7 +182,7 @@ const DynamicButton = ( {
 
 			if ( error ) {
 				return {
-					type: responseTypes.success,
+					type: responseTypes.SUCCESS,
 					meta: {
 						paymentMethodData: {
 							payment_method: gatewayId,
@@ -192,7 +193,7 @@ const DynamicButton = ( {
 			}
 
 			return {
-				type: responseTypes.success,
+				type: responseTypes.SUCCESS,
 				meta: {
 					paymentMethodData: {
 						payment_method: gatewayId,
