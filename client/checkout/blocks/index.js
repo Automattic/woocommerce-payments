@@ -55,6 +55,19 @@ Object.entries( enabledPaymentMethodsConfig )
 			)
 	)
 	.forEach( ( [ upeName, upeConfig ] ) => {
+		// Label component renders the payment method title using the standard
+		// PaymentMethodLabel from WooCommerce Blocks, with icons as a sibling
+		// element for proper flexbox layout.
+		const Label = ( props ) => (
+			<PaymentMethodLabel
+				{ ...props }
+				title={ upeConfig.title }
+				paymentMethodId={ upeName }
+				icon={ upeConfig.icon }
+				darkIcon={ upeConfig.darkIcon }
+			/>
+		);
+
 		registerPaymentMethod( {
 			name: upeConfig.gatewayId,
 			content: getDeferredIntentCreationUPEFields(
@@ -81,18 +94,7 @@ Object.entries( enabledPaymentMethodsConfig )
 				return needsPayment && isAvailableInTheCountry;
 			},
 			paymentMethodId: upeConfig.gatewayId,
-			// Label component renders the payment method title using the standard
-			// PaymentMethodLabel from WooCommerce Blocks, with icons as a sibling
-			// element for proper flexbox layout.
-			label: ( props ) => (
-				<PaymentMethodLabel
-					{ ...props }
-					title={ upeConfig.title }
-					paymentMethodId={ upeName }
-					icon={ upeConfig.icon }
-					darkIcon={ upeConfig.darkIcon }
-				/>
-			),
+			label: <Label />,
 			ariaLabel: 'WooPayments',
 			supports: {
 				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,

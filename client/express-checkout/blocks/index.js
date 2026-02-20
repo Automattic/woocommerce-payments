@@ -86,7 +86,7 @@ export const makeExpressCheckoutElement = ( api, methodKey ) => {
 	const Preview = previewComponents[ methodKey ];
 	return {
 		paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-		name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_' + methodKey,
+		name: method.gatewayId,
 		title: method.title,
 		description: method.description,
 		gatewayId: 'woocommerce_payments',
@@ -119,6 +119,7 @@ export const makeDynamicPlaceOrderButton = ( api, methodKey ) => {
 	const config = getUPEConfig( 'paymentMethodsConfig' )?.[ method.configKey ];
 
 	return {
+		paymentMethodId: method.gatewayId,
 		name: method.gatewayId,
 		content: <EmptyContent />,
 		edit: <Preview />,
@@ -142,7 +143,6 @@ export const makeDynamicPlaceOrderButton = ( api, methodKey ) => {
 		canMakePayment: ( { cart } ) => {
 			return checkPaymentMethodIsAvailable( methodKey, cart, api );
 		},
-		paymentMethodId: method.gatewayId,
 		supports: {
 			features: getConfig( 'features' ),
 		},
