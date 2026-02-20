@@ -12,8 +12,11 @@ import type {
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
+import { getExpressCheckoutData } from 'wcpay/express-checkout/utils';
 import {
 	appendPaymentMethodIdToForm,
+	appendConfirmationTokenToForm,
+	appendExpressPaymentTypeToForm,
 	appendFraudPreventionTokenInputToForm,
 } from './upe-utils';
 import {
@@ -53,6 +56,31 @@ interface PaymentMethodConfig {
 	isExpressCheckout?: boolean;
 	gatewayId: string;
 }
+
+/**
+ * Maps express payment method IDs to their Stripe configuration.
+ * Matches the blocks pattern from dynamic-button-container.tsx.
+ */
+const expressMethodConfig: Record<
+	string,
+	{
+		expressPaymentType: string;
+		paymentMethodTypes: string[];
+	}
+> = {
+	apple_pay: {
+		expressPaymentType: 'apple_pay',
+		paymentMethodTypes: [ 'card' ],
+	},
+	google_pay: {
+		expressPaymentType: 'google_pay',
+		paymentMethodTypes: [ 'card' ],
+	},
+	amazon_pay: {
+		expressPaymentType: 'amazon_pay',
+		paymentMethodTypes: [ 'amazon_pay' ],
+	},
+};
 
 // Track which gateways have been registered to avoid duplicate registration.
 const registeredGateways: Record< string, boolean > = {};
@@ -150,6 +178,15 @@ function registerCustomPlaceOrderButton(
 		| undefined )?.toLowerCase();
 	const paymentMethodType = snakeToCamel( paymentMethodId );
 
+	// Amazon Pay always uses confirmation tokens (same as dynamic-button-container.tsx).
+	// For Apple/Google Pay, check the feature flag.
+	const useConfirmationTokens =
+		paymentMethodType === 'amazonPay' ||
+		( getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
+			true );
+
+	const methodConfig = expressMethodConfig[ paymentMethodId ];
+
 	// Use the shared utility for payment method overrides.
 	const paymentMethodOptions = getPaymentMethodsOverride( paymentMethodType )
 		.paymentMethods;
@@ -180,7 +217,12 @@ function registerCustomPlaceOrderButton(
 					mode: 'payment',
 					amount: cartTotal,
 					currency: currency,
-					paymentMethodCreation: 'manual',
+					...( useConfirmationTokens
+						? {
+								paymentMethodTypes:
+									methodConfig.paymentMethodTypes,
+						  }
+						: { paymentMethodCreation: 'manual' as const } ),
 				} );
 
 				state.eceButton = state.elements.create( 'expressCheckout', {
@@ -233,19 +275,42 @@ function registerCustomPlaceOrderButton(
 							throw new Error( submitError.message );
 						}
 
-						const {
-							paymentMethod,
-							error,
-						} = await stripe.createPaymentMethod( {
-							elements: state.elements!,
-						} );
+						const $form = jQuery( 'form.checkout' );
 
-						if ( error ) {
-							throw new Error( error.message );
+						if ( useConfirmationTokens ) {
+							const {
+								confirmationToken,
+								error,
+							} = await stripe.createConfirmationToken( {
+								elements: state.elements!,
+							} );
+							if ( error ) {
+								throw new Error( error.message );
+							}
+							appendConfirmationTokenToForm(
+								$form,
+								confirmationToken!.id
+							);
+						} else {
+							const {
+								paymentMethod,
+								error,
+							} = await stripe.createPaymentMethod( {
+								elements: state.elements!,
+							} );
+							if ( error ) {
+								throw new Error( error.message );
+							}
+							appendPaymentMethodIdToForm(
+								$form,
+								paymentMethod!.id
+							);
 						}
 
-						const $form = jQuery( 'form.checkout' );
-						appendPaymentMethodIdToForm( $form, paymentMethod!.id );
+						appendExpressPaymentTypeToForm(
+							$form,
+							methodConfig.expressPaymentType
+						);
 						appendFingerprintInputToForm( $form, fingerprint );
 						appendFraudPreventionTokenInputToForm( $form );
 						wcApi.submit();
@@ -301,12 +366,9 @@ async function registerExpressPaymentMethods( api: WCPayAPI ): Promise< void > {
 		'paymentMethodsConfig'
 	) as Record< string, PaymentMethodConfig >;
 
-	// Get express checkout methods from config (only Stripe ECE-based: apple_pay, google_pay).
-	// Amazon Pay uses a different SDK and is handled separately.
+	// Get all express checkout methods from config (apple_pay, google_pay, amazon_pay).
 	const eceExpressMethods = Object.entries( paymentMethodsConfig ).filter(
-		( [ id, config ] ) =>
-			config.isExpressCheckout &&
-			[ 'apple_pay', 'google_pay' ].includes( id )
+		( [ , config ] ) => config.isExpressCheckout
 	);
 
 	if ( eceExpressMethods.length === 0 ) {

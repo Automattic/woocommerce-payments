@@ -196,6 +196,30 @@ export const appendPaymentMethodErrorDataToForm = (
 };
 
 /**
+ * Appends the confirmation token ID to the form.
+ *
+ * @param {Object} $form jQuery form object
+ * @param {string} confirmationTokenId Confirmation token ID to append
+ */
+export const appendConfirmationTokenToForm = ( $form, confirmationTokenId ) => {
+	$form.append(
+		`<input type="hidden" id="wcpay-confirmation-token" name="wcpay-confirmation-token" value="${ confirmationTokenId }" />`
+	);
+};
+
+/**
+ * Appends the express payment type to the form.
+ *
+ * @param {Object} $form jQuery form object
+ * @param {string} expressPaymentType Express payment type to append (e.g. 'apple_pay', 'google_pay', 'amazon_pay')
+ */
+export const appendExpressPaymentTypeToForm = ( $form, expressPaymentType ) => {
+	$form.append(
+		`<input type="hidden" id="express_payment_type" name="express_payment_type" value="${ expressPaymentType }" />`
+	);
+};
+
+/**
  * Appends fraud prevention token to the form.
  *
  * @param {Object} $form jQuery form object

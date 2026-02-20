@@ -22,9 +22,28 @@ jest.mock( 'wcpay/express-checkout/utils/payment-method-overrides', () => ( {
 jest.mock(
 	'wcpay/express-checkout/utils/checkPaymentMethodIsAvailable',
 	() => ( {
-		checkAllExpressMethodsAvailability: jest.fn().mockResolvedValue( {} ),
+		checkAllExpressMethodsAvailability: jest.fn().mockResolvedValue( {
+			applePay: true,
+			googlePay: false,
+			amazonPay: true,
+		} ),
 	} )
 );
+
+jest.mock( 'wcpay/express-checkout/utils', () => ( {
+	getExpressCheckoutData: jest.fn( ( key ) => {
+		if ( key === 'flags' ) {
+			return { isEceUsingConfirmationTokens: true };
+		}
+		return null;
+	} ),
+} ) );
+
+jest.mock( '../upe-utils', () => ( {
+	...jest.requireActual( '../upe-utils' ),
+	appendConfirmationTokenToForm: jest.fn(),
+	appendExpressPaymentTypeToForm: jest.fn(),
+} ) );
 
 describe( 'initExpressPaymentMethods', () => {
 	beforeEach( () => {

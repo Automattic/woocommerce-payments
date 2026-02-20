@@ -1206,6 +1206,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
+		// For classic checkout with express payment methods (Google Pay, Apple Pay, Amazon Pay),
+		// set the express checkout metadata and title on the order. The block checkout equivalent
+		// is handled by tokenized_cart_set_payment_method_type via the Store API hook.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! empty( $_POST['express_payment_type'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$express_payment_type = wc_clean( wp_unslash( $_POST['express_payment_type'] ) );
+			$payment_method       = WC_Payments::get_payment_method_by_id( $express_payment_type );
+			$title                = $payment_method ? $payment_method->get_title() : 'Payment Request';
+			$suffix               = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+			if ( ! empty( $suffix ) ) {
+				$suffix = " ($suffix)";
+			}
+			$order->set_payment_method_title( $title . $suffix );
+			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_payment_type );
+			$order->save();
+		}
+
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
 				throw new Invalid_Phone_Number_Exception(
