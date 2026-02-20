@@ -45,25 +45,16 @@ const api = new WCPayAPI(
 	request
 );
 
-const EXPRESS_CHECKOUT_METHODS = [ 'apple_pay', 'google_pay', 'amazon_pay' ];
-
 Object.entries( enabledPaymentMethodsConfig )
-	.filter( ( [ upeName ] ) => upeName !== 'link' )
-	.filter( ( [ upeName ] ) => ! EXPRESS_CHECKOUT_METHODS.includes( upeName ) )
+	.filter(
+		( [ upeName ] ) =>
+			// `link` is not rendered via `registerPaymentMethod`, but via the `card` method.
+			// Google Pay/Apple Pay/Amazon Pay are rendered via the Dynamic Place Order button flag, and have some special logic.
+			! [ 'apple_pay', 'google_pay', 'amazon_pay', 'link' ].includes(
+				upeName
+			)
+	)
 	.forEach( ( [ upeName, upeConfig ] ) => {
-		// Label component renders the payment method title using the standard
-		// PaymentMethodLabel from WooCommerce Blocks, with icons as a sibling
-		// element for proper flexbox layout.
-		const Label = ( props ) => (
-			<PaymentMethodLabel
-				{ ...props }
-				title={ upeConfig.title }
-				paymentMethodId={ upeName }
-				icon={ upeConfig.icon }
-				darkIcon={ upeConfig.darkIcon }
-			/>
-		);
-
 		registerPaymentMethod( {
 			name: upeConfig.gatewayId,
 			content: getDeferredIntentCreationUPEFields(
@@ -90,7 +81,18 @@ Object.entries( enabledPaymentMethodsConfig )
 				return needsPayment && isAvailableInTheCountry;
 			},
 			paymentMethodId: upeConfig.gatewayId,
-			label: <Label />,
+			// Label component renders the payment method title using the standard
+			// PaymentMethodLabel from WooCommerce Blocks, with icons as a sibling
+			// element for proper flexbox layout.
+			label: ( props ) => (
+				<PaymentMethodLabel
+					{ ...props }
+					title={ upeConfig.title }
+					paymentMethodId={ upeName }
+					icon={ upeConfig.icon }
+					darkIcon={ upeConfig.darkIcon }
+				/>
+			),
 			ariaLabel: 'WooPayments',
 			supports: {
 				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
@@ -133,41 +135,30 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-// When express checkout methods are displayed in the payment methods list,
-// don't register them as separate express payment buttons.
-if (
-	getUPEConfig( 'isPaymentRequestEnabled' ) &&
-	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
-) {
-	registerExpressPaymentMethod(
-		makeExpressCheckoutElement( api, 'applePay' )
-	);
-	registerExpressPaymentMethod(
-		makeExpressCheckoutElement( api, 'googlePay' )
-	);
-}
-
-if (
-	getUPEConfig( 'isAmazonPayEnabled' ) &&
-	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
-) {
-	registerExpressPaymentMethod(
-		makeExpressCheckoutElement( api, 'amazonPay' )
-	);
-}
-
-// Register dynamic place order buttons when express checkout methods
-// should appear in the payment methods list instead of as separate buttons.
-if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
-	if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+	if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
 		registerPaymentMethod( makeDynamicPlaceOrderButton( api, 'applePay' ) );
 		registerPaymentMethod(
 			makeDynamicPlaceOrderButton( api, 'googlePay' )
 		);
+	} else {
+		registerExpressPaymentMethod(
+			makeExpressCheckoutElement( api, 'applePay' )
+		);
+		registerExpressPaymentMethod(
+			makeExpressCheckoutElement( api, 'googlePay' )
+		);
 	}
-	if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
+}
+
+if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
+	if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
 		registerPaymentMethod(
 			makeDynamicPlaceOrderButton( api, 'amazonPay' )
+		);
+	} else {
+		registerExpressPaymentMethod(
+			makeExpressCheckoutElement( api, 'amazonPay' )
 		);
 	}
 }
