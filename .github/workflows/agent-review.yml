@@ -79,10 +79,17 @@ jobs:
       - name: Clean up gamma-ai-tools checkout
         run: rm -rf .gamma-ai-tools
 
+      - name: Install Bun
+        id: bun
+        run: |
+          npm install -g bun@1.3.6
+          echo "path=$(which bun)" >> "$GITHUB_OUTPUT"
+
       - name: Run Review Agent
         id: review
         uses: anthropics/claude-code-action@v1
         with:
+          path_to_bun_executable: ${{ steps.bun.outputs.path }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: ${{ inputs.model }}
           prompt: ${{ steps.prompt.outputs.content }}
