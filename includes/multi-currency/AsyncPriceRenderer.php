@@ -45,7 +45,7 @@ class AsyncPriceRenderer {
 			return;
 		}
 
-		if ( is_admin() || defined( 'DOING_CRON' ) ) {
+		if ( is_admin() || defined( 'DOING_CRON' ) || Utils::is_admin_api_request() ) {
 			return;
 		}
 
