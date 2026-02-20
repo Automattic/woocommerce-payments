@@ -55,7 +55,7 @@ jobs:
         with:
           repository: Automattic/gamma-ai-tools
           github-server-url: https://github.a8c.com
-          token: ${{ secrets.GHE_TOKEN }}
+          token: ${{ secrets.GHE_A8C_GAMMA_AI_TOOLS_TOKEN }}
           path: .gamma-ai-tools
           sparse-checkout: prompts/pipeline
 
