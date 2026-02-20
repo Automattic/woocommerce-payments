@@ -168,6 +168,22 @@ describe( 'Express checkout blocks registration', () => {
 				expect( result ).toBe( false );
 				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
 			} );
+
+			it( 'should return false for Google Pay (defaults to empty array)', () => {
+				const result = expressCheckoutElementGooglePay(
+					mockApi
+				).canMakePayment( { cart: mockCart } );
+				expect( result ).toBe( false );
+				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
+			} );
+
+			it( 'should return false for Amazon Pay (defaults to empty array)', () => {
+				const result = expressCheckoutElementAmazonPay(
+					mockApi
+				).canMakePayment( { cart: mockCart } );
+				expect( result ).toBe( false );
+				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
+			} );
 		} );
 	} );
 } );
