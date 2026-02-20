@@ -350,7 +350,17 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_dynamic_checkout_place_order_button_enabled(): bool {
-		return '1' === get_option( self::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '0' );
+		if ( '1' !== get_option( self::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '0' ) ) {
+			return false;
+		}
+
+		// Dev mode bypasses WC version requirements for local testing.
+		if ( WC_Payments::mode()->is_dev() ) {
+			return true;
+		}
+
+		// Requires WooCommerce 10.6.0+ for the Custom Place Order Button API.
+		return defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '10.6.0', '>=' );
 	}
 
 	/**
