@@ -1,0 +1,2 @@
+export const PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT =
+	'woocommerce_payments_express_checkout';

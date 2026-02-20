@@ -261,47 +261,63 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * Load public scripts and styles.
 	 */
 	public function scripts() {
-		// Don't load scripts if page is not supported.
-		if ( ! $this->express_checkout_helper->should_show_express_checkout_button() ) {
-			// Dynamic place order buttons are registered as regular payment methods
-			// on the blocks checkout, so they still need the express checkout params
-			// even when the express checkout buttons are not displayed.
-			// wp_localize_script won't work here because WCPAY_BLOCKS_CHECKOUT may not
-			// be registered yet. Instead, use the AssetDataRegistry so the data is
-			// available via wc.wcSettings.getSetting('ece_data').
-			if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
-				$data_registry = Package::container()->get( AssetDataRegistry::class );
-				if ( ! $data_registry->exists( 'ece_data' ) ) {
-					$data_registry->add( 'ece_data', $this->get_express_checkout_params() );
-				}
-			}
+		$should_show_standalone = $this->express_checkout_helper->should_show_express_checkout_button();
+		$is_dynamic_place_order = \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled();
+
+		if ( ! $should_show_standalone && ! $is_dynamic_place_order ) {
 			return;
 		}
 
 		$express_checkout_params = $this->get_express_checkout_params();
 
-		WC_Payments::register_script_with_dependencies(
-			'WCPAY_EXPRESS_CHECKOUT_ECE',
-			'dist/express-checkout',
-			[
-				'jquery',
-				'stripe',
-			]
-		);
+		// Blocks express checkout: registers express payment methods with the
+		// WC Blocks registry. Only enqueue on pages with blocks checkout/cart
+		// where the registry is available.
+		if ( has_block( 'woocommerce/checkout' ) || has_block( 'woocommerce/cart' ) ) {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_BLOCKS_EXPRESS_CHECKOUT',
+				'dist/blocks-express-checkout',
+				[
+					'WCPAY_BLOCKS_CHECKOUT',
+				]
+			);
 
-		WC_Payments_Utils::enqueue_style(
-			'WCPAY_EXPRESS_CHECKOUT_ECE',
-			plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/express-checkout.css' )
-		);
+			wp_localize_script( 'WCPAY_BLOCKS_EXPRESS_CHECKOUT', 'wcpayExpressCheckoutParams', $express_checkout_params );
+			wp_set_script_translations( 'WCPAY_BLOCKS_EXPRESS_CHECKOUT', 'woocommerce-payments' );
+			wp_enqueue_script( 'WCPAY_BLOCKS_EXPRESS_CHECKOUT' );
+		}
 
-		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $express_checkout_params );
-		wp_localize_script( 'WCPAY_BLOCKS_CHECKOUT', 'wcpayExpressCheckoutParams', $express_checkout_params );
+		// Dynamic place order buttons need express checkout params via
+		// AssetDataRegistry as a fallback for wc.wcSettings.getSetting('ece_data').
+		if ( $is_dynamic_place_order ) {
+			$data_registry = Package::container()->get( AssetDataRegistry::class );
+			if ( ! $data_registry->exists( 'ece_data' ) ) {
+				$data_registry->add( 'ece_data', $express_checkout_params );
+			}
+		}
 
-		wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
+		// Standalone mode: classic express checkout buttons (product/cart/checkout pages).
+		if ( $should_show_standalone ) {
+			WC_Payments::register_script_with_dependencies(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				'dist/express-checkout',
+				[
+					'jquery',
+					'stripe',
+				]
+			);
 
-		wp_enqueue_script( 'WCPAY_EXPRESS_CHECKOUT_ECE' );
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_EXPRESS_CHECKOUT_ECE',
+				plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/express-checkout.css' )
+			);
+
+			wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $express_checkout_params );
+			wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
+			wp_enqueue_script( 'WCPAY_EXPRESS_CHECKOUT_ECE' );
+		}
 
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 

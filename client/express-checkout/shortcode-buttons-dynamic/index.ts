@@ -21,7 +21,7 @@ import {
 	appendConfirmationTokenToForm,
 	appendExpressPaymentTypeToForm,
 	appendFraudPreventionTokenInputToForm,
-} from './upe-utils';
+} from 'wcpay/checkout/classic/upe-utils';
 import {
 	appendFingerprintInputToForm,
 	getFingerprint,

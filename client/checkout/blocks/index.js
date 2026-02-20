@@ -18,11 +18,6 @@ import { SavedTokenHandler } from './saved-token-handler';
 import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
-import {
-	makeExpressCheckoutElement,
-	makeDynamicPlaceOrderButton,
-} from 'wcpay/express-checkout/blocks';
-
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
@@ -134,34 +129,6 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 
 	if ( getUPEConfig( 'shouldShowWooPayButton' ) ) {
 		registerExpressPaymentMethod( wooPayExpressCheckoutPaymentMethod() );
-	}
-}
-
-if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
-		registerPaymentMethod( makeDynamicPlaceOrderButton( api, 'applePay' ) );
-		registerPaymentMethod(
-			makeDynamicPlaceOrderButton( api, 'googlePay' )
-		);
-	} else {
-		registerExpressPaymentMethod(
-			makeExpressCheckoutElement( api, 'applePay' )
-		);
-		registerExpressPaymentMethod(
-			makeExpressCheckoutElement( api, 'googlePay' )
-		);
-	}
-}
-
-if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
-	if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
-		registerPaymentMethod(
-			makeDynamicPlaceOrderButton( api, 'amazonPay' )
-		);
-	} else {
-		registerExpressPaymentMethod(
-			makeExpressCheckoutElement( api, 'amazonPay' )
-		);
 	}
 }
 

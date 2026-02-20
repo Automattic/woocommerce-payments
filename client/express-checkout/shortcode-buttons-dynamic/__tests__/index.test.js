@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { initExpressPaymentMethods } from '../express-payment-methods';
+import { initExpressPaymentMethods } from '..';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 
 jest.mock( 'wcpay/utils/checkout', () => ( {
@@ -79,8 +79,8 @@ jest.mock( 'wcpay/express-checkout/constants', () => ( {
 	} ),
 } ) );
 
-jest.mock( '../upe-utils', () => ( {
-	...jest.requireActual( '../upe-utils' ),
+jest.mock( 'wcpay/checkout/classic/upe-utils', () => ( {
+	...jest.requireActual( 'wcpay/checkout/classic/upe-utils' ),
 	appendConfirmationTokenToForm: jest.fn(),
 	appendExpressPaymentTypeToForm: jest.fn(),
 } ) );

@@ -8,13 +8,13 @@ import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import WCPayAPI from '../checkout/api';
-import '../checkout/express-checkout-buttons.scss';
+import WCPayAPI from '../../checkout/api';
+import './express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
-import './compatibility/wc-order-attribution';
+import '../compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
 import './compatibility/wc-product-bundles';
-import './compatibility/wc-subscriptions';
+import '../compatibility/wc-subscriptions';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
@@ -24,7 +24,7 @@ import {
 	shouldUseConfirmationTokens,
 	buildPaymentMethodTypes,
 	buildStripeElementsOptions,
-} from './utils';
+} from '../utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -36,16 +36,16 @@ import {
 	shippingRateChangeHandler,
 	setCartApiHandler,
 	getCartApiHandler,
-} from './event-handlers';
-import ExpressCheckoutOrderApi from './order-api';
-import ExpressCheckoutCartApi from './cart-api';
+} from '../event-handlers';
+import ExpressCheckoutOrderApi from '../order-api';
+import ExpressCheckoutCartApi from '../cart-api';
 import { getConfig } from 'wcpay/utils/checkout';
 import expressCheckoutButtonUi from './button-ui';
 import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingRates,
 	transformPrice,
-} from './transformers/wc-to-stripe';
+} from '../transformers/wc-to-stripe';
 
 let cachedCartData = null;
 const fetchNewCartData = async () => {

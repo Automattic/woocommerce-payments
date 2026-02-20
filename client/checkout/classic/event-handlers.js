@@ -4,7 +4,6 @@
  * Internal dependencies
  */
 import './style.scss';
-import { initExpressPaymentMethods } from './express-payment-methods';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
 import {
@@ -65,19 +64,35 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
-	// Initialize express payment methods (Apple Pay, Google Pay) in the payment methods list.
-	initExpressPaymentMethods( api );
+	// Dynamically load and initialize express payment methods (Apple Pay, Google Pay)
+	// in the payment methods list, only when the feature is enabled.
+	if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
+		const expressModule = import(
+			/* webpackChunkName: "shortcode-buttons-dynamic" */
+			'wcpay/express-checkout/shortcode-buttons-dynamic'
+		);
+
+		expressModule.then( ( { initExpressPaymentMethods } ) => {
+			initExpressPaymentMethods( api );
+		} );
+
+		$( document.body ).on( 'updated_checkout', () => {
+			maybeMountStripePaymentElement( 'shortcode_checkout' );
+			injectPaymentMethodLogos();
+			expressModule.then( ( { initExpressPaymentMethods } ) => {
+				initExpressPaymentMethods( api );
+			} );
+		} );
+	} else {
+		$( document.body ).on( 'updated_checkout', () => {
+			maybeMountStripePaymentElement( 'shortcode_checkout' );
+			injectPaymentMethodLogos();
+		} );
+	}
 
 	blockUI( $forms );
 	showAuthenticationModalIfRequired( api ).finally( () => {
 		unblockUI( $forms );
-	} );
-
-	$( document.body ).on( 'updated_checkout', () => {
-		maybeMountStripePaymentElement( 'shortcode_checkout' );
-		injectPaymentMethodLogos();
-		// Re-check express payment method availability after checkout updates.
-		initExpressPaymentMethods( api );
 	} );
 
 	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(

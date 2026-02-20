@@ -6,7 +6,7 @@ import { lazy, Suspense } from 'react';
 /**
  * Internal dependencies
  */
-import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
+import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from './constants';
 import { getConfig, getUPEConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import DynamicButtonContainer from './components/dynamic-button-container';
@@ -30,17 +30,17 @@ const lazyPreview = ( importFn ) => {
 const previewComponents = {
 	applePay: lazyPreview( () =>
 		import(
-			/* webpackChunkName: "express-checkout-previews" */ './components/apple-pay-preview'
+			/* webpackChunkName: "block-buttons-preview" */ './components/apple-pay-preview'
 		)
 	),
 	googlePay: lazyPreview( () =>
 		import(
-			/* webpackChunkName: "express-checkout-previews" */ './components/google-pay-preview'
+			/* webpackChunkName: "block-buttons-preview" */ './components/google-pay-preview'
 		)
 	),
 	amazonPay: lazyPreview( () =>
 		import(
-			/* webpackChunkName: "express-checkout-previews" */ './components/amazon-pay-preview'
+			/* webpackChunkName: "block-buttons-preview" */ './components/amazon-pay-preview'
 		)
 	),
 };
