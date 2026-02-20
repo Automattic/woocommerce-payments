@@ -4,6 +4,7 @@
  * Internal dependencies
  */
 import './style.scss';
+import { initExpressPaymentMethods } from './express-payment-methods';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
 import {
@@ -64,6 +65,9 @@ jQuery( function ( $ ) {
 		apiRequest
 	);
 
+	// Initialize express payment methods (Apple Pay, Google Pay) in the payment methods list.
+	initExpressPaymentMethods( api );
+
 	blockUI( $forms );
 	showAuthenticationModalIfRequired( api ).finally( () => {
 		unblockUI( $forms );
@@ -72,6 +76,8 @@ jQuery( function ( $ ) {
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
 		injectPaymentMethodLogos();
+		// Re-check express payment method availability after checkout updates.
+		initExpressPaymentMethods( api );
 	} );
 
 	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
@@ -374,6 +380,14 @@ jQuery( function ( $ ) {
 
 	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
+		// Skip express checkout methods — they handle their own payment flow
+		// via the Custom Place Order Button API.
+		const paymentMethodConfig = getUPEConfig( 'paymentMethodsConfig' )?.[
+			paymentMethodType
+		];
+		if ( paymentMethodConfig?.isExpressCheckout ) {
+			return;
+		}
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
 			return processPayment( api, $form, paymentMethodType );
 		}

@@ -1,0 +1,379 @@
+/* global jQuery, wc */
+
+/**
+ * Internal dependencies
+ */
+import { getUPEConfig } from 'wcpay/utils/checkout';
+import {
+	appendPaymentMethodIdToForm,
+	appendFraudPreventionTokenInputToForm,
+} from './upe-utils';
+import {
+	appendFingerprintInputToForm,
+	getFingerprint,
+} from 'wcpay/checkout/utils/fingerprint';
+import { getPaymentMethodsOverride } from 'wcpay/express-checkout/utils/payment-method-overrides';
+
+// Track which gateways have been registered to avoid duplicate registration.
+const registeredGateways = {};
+
+/**
+ * Converts a snake_case string to camelCase.
+ * Needed because Stripe's ECE ready event reports availability in camelCase
+ * (e.g., applePay, googlePay) but our config uses snake_case (apple_pay, google_pay).
+ *
+ * @param {string} str The snake_case string.
+ * @return {string} The camelCase string.
+ */
+function snakeToCamel( str ) {
+	return str.replace( /_([a-z])/g, ( _, letter ) => letter.toUpperCase() );
+}
+
+/**
+ * Gets the cart total in smallest currency unit (e.g., cents).
+ * Uses the config value as the primary source, with DOM parsing as a fallback.
+ *
+ * @return {number} The cart total in smallest currency unit.
+ */
+function getCartTotal() {
+	// Primary: use the config value (set server-side and updated via AJAX fragments).
+	const configTotal = Number( getUPEConfig( 'cartTotal' ) );
+	if ( configTotal > 0 ) {
+		return configTotal;
+	}
+
+	// Fallback: parse from DOM (for edge cases where config isn't updated yet).
+	const orderTotalElement = document.querySelector(
+		'.woocommerce-checkout-review-order-table .order-total .woocommerce-Price-amount'
+	);
+
+	if ( orderTotalElement ) {
+		const totalText = orderTotalElement.textContent || '';
+		// Remove all non-numeric characters except decimal points and commas.
+		// Then normalize: replace comma decimal separators with dots.
+		const normalized = totalText
+			.replace( /[^\d.,]/g, '' )
+			.replace( /,(\d{2})$/, '.$1' ) // Handle "1.234,56" → "1.234.56"
+			.replace( /,/g, '' ); // Remove remaining thousand separators
+		const total = parseFloat( normalized );
+
+		if ( ! isNaN( total ) && total > 0 ) {
+			return Math.round( total * 100 );
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * Hides a payment method from the payment methods list.
+ *
+ * @param {string} gatewayId The gateway ID (e.g., 'woocommerce_payments_apple_pay').
+ */
+function hidePaymentMethod( gatewayId ) {
+	const el = document.querySelector(
+		`.wc_payment_method.payment_method_${ gatewayId }`
+	);
+	if ( el ) {
+		el.style.display = 'none';
+	}
+}
+
+/**
+ * Shows a payment method in the payment methods list.
+ *
+ * @param {string} gatewayId The gateway ID (e.g., 'woocommerce_payments_apple_pay').
+ */
+function showPaymentMethod( gatewayId ) {
+	const el = document.querySelector(
+		`.wc_payment_method.payment_method_${ gatewayId }`
+	);
+	if ( el ) {
+		el.style.display = '';
+	}
+}
+
+/**
+ * Checks which express payment methods (Apple Pay, Google Pay) are available
+ * on the current device/browser by creating a hidden Stripe ECE element.
+ *
+ * @param {Object} api      The WCPay API instance.
+ * @param {number} amount   The payment amount in smallest currency unit.
+ * @param {string} currency The currency code (lowercase).
+ * @return {Promise<Object>} Object with availability, e.g. { applePay: true, googlePay: false }.
+ */
+async function checkExpressPaymentMethodsAvailability( api, amount, currency ) {
+	try {
+		const stripe = await api.getStripe();
+		const container = document.createElement( 'div' );
+		container.style.position = 'absolute';
+		container.style.left = '-9999px';
+		container.style.top = '-9999px';
+		document.body.appendChild( container );
+
+		const elements = stripe.elements( {
+			mode: 'payment',
+			amount: Math.max( amount, 1 ), // Stripe requires amount >= 1.
+			currency: currency,
+			paymentMethodCreation: 'manual',
+		} );
+
+		const eceButton = elements.create( 'expressCheckout', {
+			buttonType: { applePay: 'plain', googlePay: 'plain' },
+			paymentMethods: { applePay: 'always', googlePay: 'always' },
+		} );
+
+		return new Promise( ( resolve ) => {
+			eceButton.on( 'ready', ( { availablePaymentMethods } ) => {
+				eceButton.unmount();
+				container.remove();
+				resolve( availablePaymentMethods || {} );
+			} );
+
+			eceButton.on( 'loaderror', () => {
+				eceButton.unmount();
+				container.remove();
+				resolve( {} );
+			} );
+
+			eceButton.mount( container );
+		} );
+	} catch {
+		return {};
+	}
+}
+
+/**
+ * Registers a single express payment method with the WC Custom Place Order Button API.
+ *
+ * @param {Object} api             The WCPay API instance.
+ * @param {string} paymentMethodId The payment method ID (e.g., 'apple_pay').
+ * @param {string} fingerprint     The fingerprint for fraud prevention.
+ */
+function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
+	const config = getUPEConfig( 'paymentMethodsConfig' )[ paymentMethodId ];
+	if ( ! config ) {
+		return;
+	}
+
+	const { gatewayId } = config;
+	const currency = getUPEConfig( 'currency' )?.toLowerCase();
+	const paymentMethodType = snakeToCamel( paymentMethodId );
+
+	// Use the shared utility for payment method overrides.
+	const paymentMethodOptions = getPaymentMethodsOverride( paymentMethodType )
+		.paymentMethods;
+
+	const state = {
+		elements: null,
+		eceButton: null,
+	};
+
+	wc.customPlaceOrderButton.register( gatewayId, {
+		render: async function ( container, wcApi ) {
+			const cartTotal = getCartTotal();
+
+			if ( cartTotal <= 0 ) {
+				hidePaymentMethod( gatewayId );
+				return;
+			}
+
+			try {
+				const stripe = await api.getStripe();
+				state.elements = stripe.elements( {
+					mode: 'payment',
+					amount: cartTotal,
+					currency: currency,
+					paymentMethodCreation: 'manual',
+				} );
+
+				state.eceButton = state.elements.create( 'expressCheckout', {
+					buttonType: { applePay: 'plain', googlePay: 'plain' },
+					paymentMethods: paymentMethodOptions,
+				} );
+
+				state.eceButton.on(
+					'ready',
+					( { availablePaymentMethods } ) => {
+						if (
+							! availablePaymentMethods?.[ paymentMethodType ]
+						) {
+							hidePaymentMethod( gatewayId );
+							container.style.display = 'none';
+						} else {
+							showPaymentMethod( gatewayId );
+							container.style.display = '';
+						}
+					}
+				);
+
+				state.eceButton.on( 'click', async ( event ) => {
+					const validationResult = await wcApi.validate();
+					if ( validationResult.hasError ) {
+						return;
+					}
+
+					event.resolve( {
+						emailRequired: true,
+						phoneNumberRequired: false,
+						shippingAddressRequired: false,
+					} );
+				} );
+
+				state.eceButton.on( 'confirm', async () => {
+					try {
+						const {
+							error: submitError,
+						} = await state.elements.submit();
+						if ( submitError ) {
+							throw new Error( submitError.message );
+						}
+
+						const {
+							paymentMethod,
+							error,
+						} = await stripe.createPaymentMethod( {
+							elements: state.elements,
+						} );
+
+						if ( error ) {
+							throw new Error( error.message );
+						}
+
+						const $form = jQuery( 'form.checkout' );
+						appendPaymentMethodIdToForm( $form, paymentMethod.id );
+						appendFingerprintInputToForm( $form, fingerprint );
+						appendFraudPreventionTokenInputToForm( $form );
+						wcApi.submit();
+					} catch ( error ) {
+						const $notices = jQuery(
+							'.woocommerce-notices-wrapper'
+						).first();
+						if ( $notices.length ) {
+							$notices.find( '.woocommerce-error' ).remove();
+							$notices.append(
+								jQuery(
+									'<div class="woocommerce-error" />'
+								).text( error.message )
+							);
+							jQuery( 'html, body' ).animate(
+								{
+									scrollTop: $notices.offset().top - 100,
+								},
+								1000
+							);
+						}
+					}
+				} );
+
+				state.eceButton.on( 'loaderror', () => {
+					hidePaymentMethod( gatewayId );
+					container.style.display = 'none';
+				} );
+
+				state.eceButton.mount( container );
+			} catch {
+				hidePaymentMethod( gatewayId );
+			}
+		},
+
+		cleanup: function () {
+			if ( state.eceButton ) {
+				state.eceButton.unmount();
+				state.eceButton = null;
+			}
+			state.elements = null;
+		},
+	} );
+}
+
+/**
+ * Main orchestrator: detects availability and registers express payment methods.
+ *
+ * @param {Object} api The WCPay API instance.
+ */
+async function registerExpressPaymentMethods( api ) {
+	const currency = getUPEConfig( 'currency' )?.toLowerCase();
+	const cartTotal = getCartTotal();
+	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
+
+	// Get express checkout methods from config (only Stripe ECE-based: apple_pay, google_pay).
+	// Amazon Pay uses a different SDK and is handled separately.
+	const eceExpressMethods = Object.entries(
+		paymentMethodsConfig || {}
+	).filter(
+		( [ id, config ] ) =>
+			config.isExpressCheckout &&
+			[ 'apple_pay', 'google_pay' ].includes( id )
+	);
+
+	if ( eceExpressMethods.length === 0 ) {
+		return;
+	}
+
+	// Hide all express methods while checking availability (CSS already hides them,
+	// but this handles the case where updated_checkout re-shows them).
+	for ( const [ , config ] of eceExpressMethods ) {
+		hidePaymentMethod( config.gatewayId );
+	}
+
+	if ( cartTotal <= 0 ) {
+		return;
+	}
+
+	// Check device/browser availability via hidden ECE element.
+	const availablePaymentMethods = await checkExpressPaymentMethodsAvailability(
+		api,
+		cartTotal,
+		currency
+	);
+
+	// Get fingerprint for fraud prevention.
+	let fingerprint = '';
+	try {
+		const { visitorId } = await getFingerprint();
+		fingerprint = visitorId;
+	} catch {
+		// Continue without fingerprint.
+	}
+
+	for ( const [ paymentMethodId, config ] of eceExpressMethods ) {
+		const paymentMethodType = snakeToCamel( paymentMethodId );
+
+		if ( ! availablePaymentMethods[ paymentMethodType ] ) {
+			continue;
+		}
+
+		// Register with Custom Place Order Button API (once per gateway).
+		if ( ! registeredGateways[ config.gatewayId ] ) {
+			registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint );
+			registeredGateways[ config.gatewayId ] = true;
+		}
+
+		showPaymentMethod( config.gatewayId );
+	}
+}
+
+/**
+ * Entry point: initialize express payment methods for classic checkout.
+ * Called on page load and on updated_checkout.
+ *
+ * @param {Object} api The WCPay API instance.
+ */
+export function initExpressPaymentMethods( api ) {
+	// Guard: WC Custom Place Order Button API must be available (WC 10.6.0+).
+	if (
+		typeof wc === 'undefined' ||
+		! wc.customPlaceOrderButton ||
+		! wc.customPlaceOrderButton.register
+	) {
+		return;
+	}
+
+	// Guard: feature must be enabled.
+	if ( ! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
+		return;
+	}
+
+	registerExpressPaymentMethods( api );
+}

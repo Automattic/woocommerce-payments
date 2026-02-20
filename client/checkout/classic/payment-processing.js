@@ -35,6 +35,13 @@ const gatewayUPEComponents = {};
 let fingerprint = null;
 
 for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
+	const methodConfig = getUPEConfig( 'paymentMethodsConfig' )[
+		paymentMethodType
+	];
+	// Skip express checkout methods — they use the Custom Place Order Button API.
+	if ( methodConfig.isExpressCheckout ) {
+		continue;
+	}
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
 		upeElement: null,

@@ -952,10 +952,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 		}
 
-		// Disable the gateway if it should not be displayed on the checkout page.
-		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true );
-		if ( ! $is_gateway_enabled ) {
-			return false;
+		// Express checkout methods (Apple Pay, Google Pay, Amazon Pay) have their own
+		// enabled settings and are not in upe_enabled_payment_method_ids, so skip this check.
+		if ( ! $this->payment_method->is_express_checkout() ) {
+			$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true );
+			if ( ! $is_gateway_enabled ) {
+				return false;
+			}
 		}
 
 		return parent::is_available() && ! $this->needs_setup();

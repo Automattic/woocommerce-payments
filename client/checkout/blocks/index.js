@@ -19,9 +19,8 @@ import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import {
-	expressCheckoutElementApplePay,
-	expressCheckoutElementGooglePay,
-	expressCheckoutElementAmazonPay,
+	makeExpressCheckoutElement,
+	makeDynamicPlaceOrderButton,
 } from 'wcpay/express-checkout/blocks';
 
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
@@ -46,8 +45,11 @@ const api = new WCPayAPI(
 	request
 );
 
+const EXPRESS_CHECKOUT_METHODS = [ 'apple_pay', 'google_pay', 'amazon_pay' ];
+
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
+	.filter( ( [ upeName ] ) => ! EXPRESS_CHECKOUT_METHODS.includes( upeName ) )
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		// Label component renders the payment method title using the standard
 		// PaymentMethodLabel from WooCommerce Blocks, with icons as a sibling
@@ -137,16 +139,39 @@ if (
 	getUPEConfig( 'isPaymentRequestEnabled' ) &&
 	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
 ) {
-	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
-	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+	registerExpressPaymentMethod(
+		makeExpressCheckoutElement( api, 'applePay' )
+	);
+	registerExpressPaymentMethod(
+		makeExpressCheckoutElement( api, 'googlePay' )
+	);
 }
 
 if (
 	getUPEConfig( 'isAmazonPayEnabled' ) &&
 	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
 ) {
-	registerExpressPaymentMethod( expressCheckoutElementAmazonPay( api ) );
+	registerExpressPaymentMethod(
+		makeExpressCheckoutElement( api, 'amazonPay' )
+	);
 }
+
+// Register dynamic place order buttons when express checkout methods
+// should appear in the payment methods list instead of as separate buttons.
+if ( getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' ) ) {
+	if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+		registerPaymentMethod( makeDynamicPlaceOrderButton( api, 'applePay' ) );
+		registerPaymentMethod(
+			makeDynamicPlaceOrderButton( api, 'googlePay' )
+		);
+	}
+	if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
+		registerPaymentMethod(
+			makeDynamicPlaceOrderButton( api, 'amazonPay' )
+		);
+	}
+}
+
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();
