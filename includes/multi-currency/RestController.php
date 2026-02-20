@@ -146,7 +146,7 @@ class RestController extends \WP_REST_Controller {
 			[
 				'methods'             => \WP_REST_Server::CREATABLE,
 				'args'                => [
-					'wcpay_multi_currency_enable_auto_currency'       => [
+					'wcpay_multi_currency_enable_auto_currency' => [
 						'type'     => 'string',
 						'format'   => 'text-field',
 						'required' => true,
@@ -155,6 +155,11 @@ class RestController extends \WP_REST_Controller {
 						'type'     => 'string',
 						'format'   => 'text-field',
 						'required' => true,
+					],
+					'wcpay_multi_currency_rendering_mode' => [
+						'type'     => 'string',
+						'required' => false,
+						'enum'     => [ 'speed', 'cache' ],
 					],
 				],
 				'callback'            => [ $this, 'update_settings' ],

@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add feature flag and admin UI setting for cache-optimized multi-currency rendering mode
