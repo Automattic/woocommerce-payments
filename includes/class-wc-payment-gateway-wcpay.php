@@ -1206,24 +1206,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment( $order_id ) {
 		$order = wc_get_order( $order_id );
 
-		// For classic checkout with express payment methods (Google Pay, Apple Pay, Amazon Pay),
-		// set the express checkout metadata and title on the order. The block checkout equivalent
-		// is handled by tokenized_cart_set_payment_method_type via the Store API hook.
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( ! empty( $_POST['express_payment_type'] ) ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$express_payment_type = wc_clean( wp_unslash( $_POST['express_payment_type'] ) );
-			$payment_method       = WC_Payments::get_payment_method_by_id( $express_payment_type );
-			$title                = $payment_method ? $payment_method->get_title() : 'Payment Request';
-			$suffix               = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-			if ( ! empty( $suffix ) ) {
-				$suffix = " ($suffix)";
-			}
-			$order->set_payment_method_title( $title . $suffix );
-			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_payment_type );
-			$order->save();
-		}
-
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
 				throw new Invalid_Phone_Number_Exception(
@@ -2370,10 +2352,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
+		// Detect express checkout type: first from Stripe's wallet info (authoritative),
+		// then fall back to metadata that may have been set earlier in the flow.
+		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
+		if ( ! $express_checkout_type && ! empty( $payment_method_details['card']['wallet']['type'] ) ) {
+			$express_checkout_type = $payment_method_details['card']['wallet']['type'];
+			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_checkout_type );
+		}
+
 		// express checkout can be Amazon Pay/Google Pay/Apple Pay/Link,
 		// but Google Pay/Apple Pay/Link use the `card` gateway; Amazon Pay has its own gateway.
-		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
-		$effective_type        = $express_checkout_type ? $express_checkout_type : $payment_method_type;
+		$effective_type = $express_checkout_type ? $express_checkout_type : $payment_method_type;
 
 		$payment_methods_using_card = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::GOOGLE_PAY, Payment_Method::APPLE_PAY ];
 		$payment_gateway            = in_array( $effective_type, $payment_methods_using_card, true )
@@ -2383,8 +2372,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// this will ensure that the refunds are handled by the correct split gateway class.
 		$order->set_payment_method( $payment_gateway );
 
-		// the Express Checkout handler already set the method's title in `tokenized_cart_set_payment_method_type`, earlier in the flow.
-		if ( ! $express_checkout_type ) {
+		if ( $express_checkout_type ) {
+			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
+			$title          = $express_method ? $express_method->get_title() : null;
+			if ( $title ) {
+				$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+				if ( ! empty( $suffix ) ) {
+					$suffix = " ($suffix)";
+				}
+				$order->set_payment_method_title( $title . $suffix );
+			}
+		} else {
 			$order->set_payment_method_title( $payment_method->get_title( $this->get_account_country(), $payment_method_details ) );
 		}
 
