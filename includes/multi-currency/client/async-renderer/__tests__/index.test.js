@@ -254,13 +254,15 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 	describe( 'destroy', () => {
 		it( 'disconnects observer and clears cache', () => {
+			const disconnectFn = jest.fn();
 			renderer.observer = {
-				disconnect: jest.fn(),
+				disconnect: disconnectFn,
 			};
 			renderer.cache.set( 'test', 'value' );
 
 			renderer.destroy();
 
+			expect( disconnectFn ).toHaveBeenCalledTimes( 1 );
 			expect( renderer.observer ).toBeNull();
 			expect( renderer.cache.size ).toBe( 0 );
 		} );
@@ -304,12 +306,19 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	} );
 
 	describe( 'fetchConfig', () => {
-		it( 'fetches config from the API URL', async () => {
-			global.wcpayAsyncPriceConfig = {
-				apiUrl:
-					'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config',
-			};
+		const apiUrl =
+			'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config';
 
+		beforeEach( () => {
+			global.wcpayAsyncPriceConfig = { apiUrl };
+		} );
+
+		afterEach( () => {
+			delete global.wcpayAsyncPriceConfig;
+			delete global.fetch;
+		} );
+
+		it( 'fetches config from the API URL', async () => {
 			global.fetch = jest.fn().mockResolvedValue( {
 				ok: true,
 				json: () => Promise.resolve( mockConfig ),
@@ -317,20 +326,10 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			const config = await renderer.fetchConfig();
 			expect( config ).toEqual( mockConfig );
-			expect( global.fetch ).toHaveBeenCalledWith(
-				'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config'
-			);
-
-			delete global.wcpayAsyncPriceConfig;
-			delete global.fetch;
+			expect( global.fetch ).toHaveBeenCalledWith( apiUrl );
 		} );
 
 		it( 'decodes HTML entity symbols from API response', async () => {
-			global.wcpayAsyncPriceConfig = {
-				apiUrl:
-					'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config',
-			};
-
 			const apiResponse = {
 				...mockConfig,
 				currencies: {
@@ -349,17 +348,9 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			const config = await renderer.fetchConfig();
 			expect( config.currencies.EUR.symbol ).toBe( '\u20ac' );
-
-			delete global.wcpayAsyncPriceConfig;
-			delete global.fetch;
 		} );
 
 		it( 'throws on non-ok response', async () => {
-			global.wcpayAsyncPriceConfig = {
-				apiUrl:
-					'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config',
-			};
-
 			global.fetch = jest.fn().mockResolvedValue( {
 				ok: false,
 				status: 500,
@@ -368,9 +359,6 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			await expect( renderer.fetchConfig() ).rejects.toThrow(
 				'Config fetch failed: 500'
 			);
-
-			delete global.wcpayAsyncPriceConfig;
-			delete global.fetch;
 		} );
 	} );
 } );
