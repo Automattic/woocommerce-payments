@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix fatal error when WC_Payments_Explicit_Price_Formatter class is loaded before loan approved note

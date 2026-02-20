@@ -673,6 +673,40 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		delete_option( 'woocommerce_tax_based_on' );
 	}
 
+	public function test_can_use_amazon_pay_returns_false_when_express_checkout_in_payment_methods_enabled() {
+		$original_gateway = WC_Payments::get_gateway();
+
+		WC_Payments::mode()->dev();
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+		WC_Payments::set_gateway( $this->mock_wcpay_gateway );
+
+		$result = $this->system_under_test->can_use_amazon_pay();
+
+		$this->assertFalse( $result );
+
+		WC_Payments::set_gateway( $original_gateway );
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+	}
+
+	public function test_should_show_express_checkout_button_returns_false_when_express_checkout_in_payment_methods_enabled() {
+		$original_gateway = WC_Payments::get_gateway();
+
+		WC_Payments::mode()->dev();
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+		WC_Payments::set_gateway( $this->mock_wcpay_gateway );
+
+		$result = $this->system_under_test->should_show_express_checkout_button();
+
+		$this->assertFalse( $result );
+
+		WC_Payments::set_gateway( $original_gateway );
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+	}
+
 	public function test_is_express_checkout_method_enabled_at_maps_pay_for_order_to_checkout() {
 		// Set up checkout methods only - pay_for_order should use these.
 		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request', 'amazon_pay' ] );

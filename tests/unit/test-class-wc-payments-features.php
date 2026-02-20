@@ -324,6 +324,39 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_is_dynamic_checkout_place_order_button_enabled_returns_true_when_enabled_in_dev_mode() {
+		$this->set_feature_flag_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		// Dev mode bypasses WC version requirements.
+		WC_Payments::mode()->dev();
+
+		$this->assertTrue( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() );
+
+		WC_Payments::mode()->live();
+		$this->clear_feature_flag_options( [ WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME ] );
+	}
+
+	public function test_is_dynamic_checkout_place_order_button_enabled_returns_false_when_option_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '0' );
+
+		$this->assertFalse( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() );
+
+		$this->clear_feature_flag_options( [ WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME ] );
+	}
+
+	public function test_is_dynamic_checkout_place_order_button_enabled_returns_false_by_default() {
+		// Don't set any option, should default to false.
+		$this->assertFalse( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() );
+	}
+
+	public function test_is_dynamic_checkout_place_order_button_enabled_returns_false_in_dev_mode_without_flag() {
+		// Dev mode without the flag enabled should still return false.
+		WC_Payments::mode()->dev();
+
+		$this->assertFalse( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() );
+
+		WC_Payments::mode()->live();
+	}
+
 	public function test_is_ece_confirmation_tokens_enabled_returns_true_when_enabled() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$this->assertTrue( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );

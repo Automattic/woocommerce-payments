@@ -365,6 +365,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( $this->is_saved_cards_enabled() ) {
 			array_push( $this->supports, 'tokenization', 'add_payment_method' );
 		}
+
+		// enabling the custom place order button for express checkout methods (Apple Pay, Google Pay, Amazon Pay)
+		// only when the feature is available. Other payment methods like WooPay or card will return `false` for `is_express_checkout()`.
+		if ( property_exists( $this, 'has_custom_place_order_button' ) && $this->payment_method->is_express_checkout() && \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			$this->has_custom_place_order_button = true;
+		}
 	}
 
 	/**
@@ -883,9 +889,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the gateway is enabled and ready to accept payments.
 	 */
 	public function is_available() {
-		// some payment methods should not be available in the payment methods list if they're "express checkout".
+		// Express checkout methods (Apple Pay, Google Pay, Amazon Pay) are only available
+		// in the payment methods list when the feature is enabled. Otherwise, they appear
+		// as separate express checkout buttons.
 		if ( $this->payment_method->is_express_checkout() && ! is_admin() ) {
-			return false;
+			if ( ! WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+				return false;
+			}
 		}
 
 		return $this->check_base_availability();
@@ -1010,6 +1020,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether express checkout methods should appear in the payment methods list
+	 * instead of as separate express buttons.
+	 *
+	 * Requires both the dynamic checkout place order button feature flag
+	 * and the express_checkout_in_payment_methods gateway setting.
+	 *
+	 * @return bool
+	 */
+	public function is_express_checkout_in_payment_methods_enabled(): bool {
+		return WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled()
+			&& 'yes' === $this->get_option( 'express_checkout_in_payment_methods' );
 	}
 
 	/**
@@ -2270,7 +2294,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// If $gateway_id begins with `woocommerce_payments_` payment method is a split UPE LPM.
 		// Otherwise, $gateway_id must be `woocommerce_payments`.
 		if ( substr( $gateway_id, 0, strlen( $split_upe_gateway_prefix ) ) === $split_upe_gateway_prefix ) {
-			return [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
+			$payment_method = str_replace( $split_upe_gateway_prefix, '', $gateway_id );
+
+			// Apple Pay and Google Pay are wrappers around card payments for Stripe.
+			$card_wrappers = [ Payment_Method::APPLE_PAY, Payment_Method::GOOGLE_PAY ];
+			if ( in_array( $payment_method, $card_wrappers, true ) ) {
+				return [ Payment_Method::CARD ];
+			}
+
+			return [ $payment_method ];
 		}
 
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );
