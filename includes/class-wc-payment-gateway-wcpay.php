@@ -2356,7 +2356,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// then fall back to metadata that may have been set earlier in the flow.
 		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
 		if ( ! $express_checkout_type && ! empty( $payment_method_details['card']['wallet']['type'] ) ) {
-			$express_checkout_type = $payment_method_details['card']['wallet']['type'];
+			$express_checkout_type = sanitize_text_field( $payment_method_details['card']['wallet']['type'] );
 			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_checkout_type );
 		}
 

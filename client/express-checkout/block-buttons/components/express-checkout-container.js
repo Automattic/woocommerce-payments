@@ -31,21 +31,34 @@ const ExpressCheckoutContainer = ( props ) => {
 	const useConfirmationTokens = shouldUseConfirmationTokens();
 	const paymentMethodTypes = useMemo( () => buildPaymentMethodTypes(), [] );
 
-	const options = buildStripeElementsOptions( {
-		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-		amount: applyFilters(
-			'wcpay.express-checkout.total-amount',
-			transformPrice( billing.cartTotal.value, {
-				currency_minor_unit: billing.currency.minorUnit ?? 0,
+	const amount = applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice( billing.cartTotal.value, {
+			currency_minor_unit: billing.currency.minorUnit ?? 0,
+		} ),
+		select( WC_STORE_CART )?.getCartData()
+	);
+
+	const options = useMemo(
+		() =>
+			buildStripeElementsOptions( {
+				amount,
+				currency: billing.currency.code,
+				useConfirmationTokens,
+				paymentMethodTypes,
+				mode: getStripeElementsMode(),
+				appearance: getExpressCheckoutButtonAppearance(
+					buttonAttributes
+				),
 			} ),
-			select( WC_STORE_CART )?.getCartData()
-		),
-		currency: billing.currency.code,
-		useConfirmationTokens,
-		paymentMethodTypes,
-		mode: getStripeElementsMode(),
-		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
-	} );
+		[
+			amount,
+			billing.currency.code,
+			useConfirmationTokens,
+			paymentMethodTypes,
+			buttonAttributes,
+		]
+	);
 
 	return (
 		<div style={ { minHeight: '40px' } }>

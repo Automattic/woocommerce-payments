@@ -16,6 +16,7 @@ import { select } from '@wordpress/data';
 import {
 	getExpressCheckoutData,
 	getPaymentMethodsOverride,
+	getStripeElementsMode,
 	shouldUseConfirmationTokens,
 	createPaymentCredential,
 	buildStripeElementsOptions,
@@ -27,6 +28,7 @@ import {
 import { transformCartDataForDisplayItems } from '../../transformers/wc-to-stripe';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
+import type WCPayAPI from 'wcpay/checkout/api';
 
 declare global {
 	interface Window {
@@ -34,19 +36,26 @@ declare global {
 	}
 }
 
+interface CartTotalItem {
+	key: string;
+	label: string;
+	value: number;
+	valueWithTax: number;
+}
+
 interface DynamicButtonContainerProps {
 	expressPaymentMethod: ExpressPaymentMethodKey;
-	api: any;
+	api: WCPayAPI;
 	validate: () => Promise< { hasError: boolean } >;
 	onSubmit: () => void;
 	billing: {
 		cartTotal: { value: number };
-		cartTotalItems: any[];
+		cartTotalItems: CartTotalItem[];
 		currency: { code: string; minorUnit: number };
 	};
 	shippingData: { needsShipping: boolean };
 	eventRegistration: {
-		onPaymentSetup: ( callback: () => Promise< any > ) => () => void;
+		onPaymentSetup: ( callback: () => Promise< unknown > ) => () => void;
 	};
 	emitResponse: {
 		// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -166,9 +175,12 @@ const DynamicButton = ( {
 		paymentMethodTypes,
 	] );
 
-	const expressCheckoutOptions = {
-		...getPaymentMethodsOverride( expressPaymentMethod ),
-	};
+	const expressCheckoutOptions = useMemo(
+		() => ( {
+			...getPaymentMethodsOverride( expressPaymentMethod ),
+		} ),
+		[ expressPaymentMethod ]
+	);
 
 	return (
 		<ExpressCheckoutElement
@@ -193,16 +205,26 @@ const DynamicButtonContainer = ( props: DynamicButtonContainerProps ) => {
 		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
 
+	const elementsOptions = useMemo(
+		() =>
+			buildStripeElementsOptions( {
+				amount: billing.cartTotal.value,
+				currency: billing.currency.code,
+				useConfirmationTokens,
+				paymentMethodTypes: config.paymentMethodTypes,
+				mode: getStripeElementsMode(),
+			} ),
+		[
+			billing.cartTotal.value,
+			billing.currency.code,
+			useConfirmationTokens,
+			config.paymentMethodTypes,
+		]
+	);
+
 	if ( isEditor ) {
 		return null;
 	}
-
-	const elementsOptions = buildStripeElementsOptions( {
-		amount: billing.cartTotal.value,
-		currency: billing.currency.code,
-		useConfirmationTokens,
-		paymentMethodTypes: config.paymentMethodTypes,
-	} );
 
 	return (
 		<Elements stripe={ stripePromise } options={ elementsOptions }>
