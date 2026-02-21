@@ -31,6 +31,7 @@ class WC_Payments_Features {
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
+	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -361,6 +362,15 @@ class WC_Payments_Features {
 
 		// Requires WooCommerce 10.6.0+ for the Custom Place Order Button API.
 		return defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '10.6.0', '>=' );
+	}
+
+	/**
+	 * Checks whether the multi-currency cache-optimized rendering mode is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_mc_cache_optimized_enabled(): bool {
+		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
 	}
 
 	/**
