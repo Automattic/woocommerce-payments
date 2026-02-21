@@ -163,6 +163,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 				>
 					<div className="add-enabled-currencies-modal__search">
 						<SearchControl
+							autoFocus
 							__nextHasNoMarginBottom
 							value={ searchText }
 							onChange={ setSearchText }

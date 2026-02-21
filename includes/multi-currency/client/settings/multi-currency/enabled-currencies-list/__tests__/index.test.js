@@ -262,6 +262,16 @@ describe( 'Multi-Currency enabled currencies list', () => {
 		window.multiCurrencyPaymentMethodsMap = undefined;
 	} );
 
+	test( 'Search input should be focused when modal opens', async () => {
+		getContainer();
+		await userEvent.click(
+			screen.getByRole( 'button', {
+				name: /add\/remove currencies/i,
+			} )
+		);
+		expect( screen.getByRole( 'searchbox' ) ).toHaveFocus();
+	} );
+
 	test( 'Modal should clear search term on cancel and update selected', async () => {
 		for ( const name of [ /cancel/i, /update selected/i ] ) {
 			getContainer();
