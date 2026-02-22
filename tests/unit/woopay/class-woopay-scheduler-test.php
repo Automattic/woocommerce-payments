@@ -231,6 +231,42 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Checks that adapted extensions no longer disable first-party auth.
+	 */
+	public function test_adapted_extensions_do_not_disable_first_party_auth() {
+		$adapted_extensions = [ 'test-extension' ];
+
+		$active_plugins_mock = function () {
+			return [ 'test-extension/test-extension.php' ];
+		};
+
+		add_filter( 'pre_option_active_plugins', $active_plugins_mock, 10, 3 );
+
+		// Set first-party auth to enabled.
+		update_option( '_wcpay_feature_woopay_first_party_auth', 1 );
+
+		$this->scheduler->update_enabled_adapted_extensions( [ 'test-extension/test-extension.php' ], $adapted_extensions );
+
+		// First-party auth should remain unchanged.
+		$this->assertEquals( 1, get_option( '_wcpay_feature_woopay_first_party_auth' ) );
+
+		remove_filter( 'pre_option_active_plugins', $active_plugins_mock );
+	}
+
+	/**
+	 * Checks that the plugin update migration removes the first-party auth flag.
+	 */
+	public function test_remove_first_party_auth_flag_on_update() {
+		// Simulate a store where the old scheduler disabled first-party auth.
+		update_option( '_wcpay_feature_woopay_first_party_auth', 0 );
+
+		$this->scheduler->remove_first_party_auth_flag_on_update();
+
+		// Option should be deleted, falling back to default '1' (enabled).
+		$this->assertFalse( get_option( '_wcpay_feature_woopay_first_party_auth' ) );
+	}
+
+	/**
 	 * Mocks the return of WC_Payments_API_Client::get_woopay_compatibility.
 	 *
 	 * @param array $incompatible_extensions
