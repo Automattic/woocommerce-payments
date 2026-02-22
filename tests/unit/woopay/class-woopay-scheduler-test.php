@@ -236,12 +236,6 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 	public function test_adapted_extensions_do_not_disable_first_party_auth() {
 		$adapted_extensions = [ 'test-extension' ];
 
-		$active_plugins_mock = function () {
-			return [ 'test-extension/test-extension.php' ];
-		};
-
-		add_filter( 'pre_option_active_plugins', $active_plugins_mock, 10, 3 );
-
 		// Set first-party auth to enabled.
 		update_option( '_wcpay_feature_woopay_first_party_auth', 1 );
 
@@ -249,8 +243,6 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 		// First-party auth should remain unchanged.
 		$this->assertEquals( 1, get_option( '_wcpay_feature_woopay_first_party_auth' ) );
-
-		remove_filter( 'pre_option_active_plugins', $active_plugins_mock );
 	}
 
 	/**
@@ -264,6 +256,7 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 
 		// Option should be deleted, falling back to default '1' (enabled).
 		$this->assertFalse( get_option( '_wcpay_feature_woopay_first_party_auth' ) );
+		$this->assertEquals( '1', get_option( '_wcpay_feature_woopay_first_party_auth', '1' ) );
 	}
 
 	/**

@@ -86,7 +86,7 @@ class WooPay_Scheduler {
 	 * default value of '1' (enabled).
 	 */
 	public function remove_first_party_auth_flag_on_update() {
-		delete_option( '_wcpay_feature_woopay_first_party_auth' );
+		delete_option( \WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME );
 	}
 
 	/**
