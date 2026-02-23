@@ -1274,9 +1274,16 @@ class WC_Payments_Admin {
 	 */
 	public function display_wcpay_transaction_fee( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) || Intent_Status::REQUIRES_CAPTURE === $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ) ) {
+		if ( ! $order || Intent_Status::REQUIRES_CAPTURE === $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ) ) {
 			return;
 		}
+
+		$transaction_fee = $order->get_meta( '_wcpay_transaction_fee' );
+
+		if ( ! $transaction_fee ) {
+			return;
+		}
+
 		?>
 		<tr>
 			<td class="label wcpay-transaction-fee">
@@ -1294,7 +1301,7 @@ class WC_Payments_Admin {
 			</td>
 			<td width="1%"></td>
 			<td class="total">
-				-<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+				-<?php echo wp_kses( wc_price( $transaction_fee, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
 			</td>
 		</tr>
 		<?php

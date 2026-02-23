@@ -12,6 +12,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
 import '../compatibility/wc-order-attribution';
+import '../compatibility/wc-subscriptions';
 
 const LazyApplePayPreview = lazy( () =>
 	import(
