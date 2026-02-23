@@ -16,5 +16,4 @@ export { getExpressCheckoutButtonAppearance } from './button-appearance';
 export type { ButtonAttributesType } from './button-appearance';
 export { getExpressCheckoutButtonStyleSettings } from './button-style-settings';
 export { getStripeElementsMode } from './stripe-mode';
-export { shouldUseConfirmationTokens } from './confirmation-tokens';
 export { createPaymentCredential } from './payment-credentials';

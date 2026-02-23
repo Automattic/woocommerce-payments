@@ -12,7 +12,6 @@ import {
 	getErrorMessageFromNotice,
 	getExpressCheckoutData,
 	updateShippingAddressUI,
-	shouldUseConfirmationTokens,
 	createPaymentCredential,
 } from './utils';
 import {
@@ -143,15 +142,9 @@ export const onConfirmHandler = async (
 		return abortPayment( submitError.message );
 	}
 
-	const useConfirmationTokens = shouldUseConfirmationTokens();
-
 	let credential;
 	try {
-		credential = await createPaymentCredential(
-			stripe,
-			elements,
-			useConfirmationTokens
-		);
+		credential = await createPaymentCredential( stripe, elements );
 	} catch ( credentialError ) {
 		return abortPayment( credentialError.message );
 	}
@@ -164,7 +157,7 @@ export const onConfirmHandler = async (
 			...transformStripePaymentMethodForStoreApi(
 				event,
 				credential.id,
-				useConfirmationTokens,
+				credential.type === 'confirmation_token',
 				paymentMethodTypes
 			),
 			extensions: applyFilters(
