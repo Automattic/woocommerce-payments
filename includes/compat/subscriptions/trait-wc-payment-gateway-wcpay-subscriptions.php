@@ -148,8 +148,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$last4 = $token->get_last4();
 			// Avoid duplication if the title already contains the last4.
 			if ( ! empty( $last4 ) && false === strpos( $default, $last4 ) ) {
+				// Use the specific card brand (e.g. "Visa") when available instead of $default,
+				// which may refer to a different payment method type (e.g. "Link" from a previous subscription payment).
+				$card_type = $token->get_card_type();
+				$title     = ! empty( $card_type ) ? wc_get_credit_card_type_label( $card_type ) : $default;
 				// translators: 1: payment method likely credit card, 2: last 4 digit.
-				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $default, $last4 );
+				return sprintf( __( '%1$s ending in %2$s', 'woocommerce-payments' ), $title, $last4 );
 			}
 		}
 

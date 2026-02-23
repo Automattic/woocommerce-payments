@@ -587,7 +587,47 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 
 		// Old should show Link email.
 		$this->assertStringContainsString( '***nker@test.com', $old_payment_method_title_modified );
-		// New should show card last4.
+		// New should show card brand and last4, not "Credit card ending in".
+		$this->assertStringContainsString( 'Visa', $new_payment_method_title_modified );
 		$this->assertStringContainsString( '7777', $new_payment_method_title_modified );
+	}
+
+	/**
+	 * Regression test: when $default is "Link" (subscription's stored title) but the
+	 * actual token is a CC, the note should show "Visa ending in XXXX" not "Link ending in XXXX".
+	 */
+	public function test_cc_token_with_link_default_uses_card_brand_not_link() {
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Link';
+
+		// Simulate: subscription had Link, but the second-to-last token is a CC
+		// (e.g., from a prior card payment before the Link payment was set up).
+		$card_token_old = WC_Helper_Token::create_token( 'pm_card_old', self::USER_ID );
+		$card_token_old->set_last4( '4242' );
+		$card_token_old->set_card_type( 'visa' );
+		$card_token_old->save();
+
+		$card_token_new = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$card_token_new->set_last4( '8888' );
+		$card_token_new->set_card_type( 'mastercard' );
+		$card_token_new->save();
+
+		$this->renewal_order->add_payment_token( $card_token_old );
+		$this->renewal_order->add_payment_token( $card_token_new );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $card_token_new->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+
+		// Should say "Visa ending in 4242", NOT "Link ending in 4242".
+		$this->assertStringContainsString( 'Visa', $old_payment_method_title_modified );
+		$this->assertStringContainsString( '4242', $old_payment_method_title_modified );
+		$this->assertStringNotContainsString( 'Link', $old_payment_method_title_modified );
 	}
 }
