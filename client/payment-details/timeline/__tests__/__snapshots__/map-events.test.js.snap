@@ -928,6 +928,98 @@ exports[`mapTimelineEvents single currency events formats dispute_lost events 1`
 ]
 `;
 
+exports[`mapTimelineEvents single currency events formats dispute_lost events with cross-currency network cost 1`] = `
+[
+  {
+    "body": [
+      "Network cost for the dispute.",
+    ],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      $5.00 USD in your account currency was deducted from your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2ef"
+      >
+        Apr 5, 2020 payout
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <MinusIcon />,
+  },
+  {
+    "body": [],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Disputed: Lost
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      <strong>
+        Dispute lost.
+      </strong>
+       Your customer's bank reviewed the evidence and decided in the customer's favor.
+    </React.Fragment>,
+    "icon": <CrossIcon
+      className="is-error"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents single currency events formats dispute_lost events with network cost 1`] = `
+[
+  {
+    "body": [
+      "Network cost for the dispute.",
+    ],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      $5.00 USD was deducted from your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2ef"
+      >
+        Apr 5, 2020 payout
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <MinusIcon />,
+  },
+  {
+    "body": [],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Disputed: Lost
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [],
+    "date": 2020-04-05T02:56:10.000Z,
+    "headline": <React.Fragment>
+      <strong>
+        Dispute lost.
+      </strong>
+       Your customer's bank reviewed the evidence and decided in the customer's favor.
+    </React.Fragment>,
+    "icon": <CrossIcon
+      className="is-error"
+    />,
+  },
+]
+`;
+
 exports[`mapTimelineEvents single currency events formats dispute_needs_response events 1`] = `
 [
   {
