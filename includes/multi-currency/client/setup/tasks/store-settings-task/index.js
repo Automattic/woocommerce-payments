@@ -88,6 +88,7 @@ const StoreSettingsTask = () => {
 		submitStoreSettingsUpdate(
 			isAutomaticSwitchEnabledValue,
 			isStorefrontSwitcherEnabledValue,
+			'speed',
 			! isMultiCurrencyEnabled
 		);
 

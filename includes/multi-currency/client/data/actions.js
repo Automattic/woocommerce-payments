@@ -117,6 +117,7 @@ export function* submitCurrencySettings( currencyCode, settings ) {
 export function* submitStoreSettingsUpdate(
 	isAutoSwitchEnabled,
 	isStorefrontSwitcherEnabled,
+	renderingMode = 'speed',
 	suppressNotices = false
 ) {
 	try {
@@ -130,6 +131,7 @@ export function* submitStoreSettingsUpdate(
 				wcpay_multi_currency_enable_storefront_switcher: isStorefrontSwitcherEnabled
 					? 'yes'
 					: 'no',
+				wcpay_multi_currency_rendering_mode: renderingMode,
 			},
 		} );
 

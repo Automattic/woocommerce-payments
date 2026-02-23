@@ -100,6 +100,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'is_subscription_item_in_cart',
 					'wc_payments_get_payment_method_by_id',
 					'display_gateway_html',
+					'init_settings',
 				]
 			)
 			->disableOriginalConstructor()
@@ -394,6 +395,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 				'card' => [
 					'isReusable'             => true,
 					'isBnpl'                 => false,
+					'isExpressCheckout'      => false,
 					'title'                  => 'Card',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
@@ -406,6 +408,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 				'link' => [
 					'isReusable'             => true,
 					'isBnpl'                 => false,
+					'isExpressCheckout'      => false,
 					'title'                  => 'Link',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
@@ -702,5 +705,312 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->assertStringContainsString( 'paymentMethodsConfig', $result['.woocommerce-checkout-payment'] );
 		$this->assertStringContainsString( 'currency', $result['.woocommerce-checkout-payment'] );
 		$this->assertStringContainsString( 'cartTotal', $result['.woocommerce-checkout-payment'] );
+	}
+
+	public function test_payment_fields_js_config_includes_is_express_checkout_in_payment_methods_enabled_when_feature_and_option_enabled() {
+		// Requires WooCommerce 10.6.0+ for the feature flag (or dev mode).
+		WC_Payments::mode()->dev();
+
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertTrue( $js_config['isExpressCheckoutInPaymentMethodsEnabled'] );
+
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+	}
+
+	public function test_payment_fields_js_config_includes_is_express_checkout_in_payment_methods_enabled_false_when_option_is_no() {
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'no' );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertFalse( $js_config['isExpressCheckoutInPaymentMethodsEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_includes_is_express_checkout_in_payment_methods_enabled_false_when_feature_disabled() {
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [] );
+
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		// Even with option 'yes', result should be false when feature flag is disabled.
+		$this->assertFalse( $js_config['isExpressCheckoutInPaymentMethodsEnabled'] );
+	}
+
+	public function test_get_enabled_payment_method_config_includes_express_methods_when_feature_enabled() {
+		WC_Payments::mode()->dev();
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'card' ] );
+
+		// Set up payment gateway map so is_payment_request_enabled() returns true.
+		$mock_google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
+
+		$reflection = new \ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$original_map = $property->getValue( null );
+
+		// Add gateways for card, google_pay, and apple_pay.
+		$mock_card_gateway     = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_card_gateway->id = 'woocommerce_payments';
+		$mock_card_gateway->method( 'should_use_stripe_platform_on_checkout_page' )->willReturn( false );
+		$mock_apple_pay_gateway     = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_apple_pay_gateway->id = 'woocommerce_payments_apple_pay';
+		$mock_apple_pay_gateway->method( 'should_use_stripe_platform_on_checkout_page' )->willReturn( false );
+		$mock_google_pay_gateway->id = 'woocommerce_payments_google_pay';
+		$mock_google_pay_gateway->method( 'should_use_stripe_platform_on_checkout_page' )->willReturn( false );
+
+		$property->setValue(
+			null,
+			[
+				'card'       => $mock_card_gateway,
+				'google_pay' => $mock_google_pay_gateway,
+				'apple_pay'  => $mock_apple_pay_gateway,
+			]
+		);
+
+		// Mock payment method lookups.
+		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+
+		$mock_apple_pay_pm = $this->createMock( UPE_Payment_Method::class );
+		$mock_apple_pay_pm->method( 'is_reusable' )->willReturn( false );
+		$mock_apple_pay_pm->method( 'is_bnpl' )->willReturn( false );
+		$mock_apple_pay_pm->method( 'is_express_checkout' )->willReturn( true );
+		$mock_apple_pay_pm->method( 'get_title' )->willReturn( 'Apple Pay' );
+		$mock_apple_pay_pm->method( 'get_icon' )->willReturn( '' );
+		$mock_apple_pay_pm->method( 'get_dark_icon' )->willReturn( '' );
+		$mock_apple_pay_pm->method( 'get_countries' )->willReturn( [] );
+		$mock_apple_pay_pm->method( 'get_testing_instructions' )->willReturn( '' );
+
+		$mock_google_pay_pm = $this->createMock( UPE_Payment_Method::class );
+		$mock_google_pay_pm->method( 'is_reusable' )->willReturn( false );
+		$mock_google_pay_pm->method( 'is_bnpl' )->willReturn( false );
+		$mock_google_pay_pm->method( 'is_express_checkout' )->willReturn( true );
+		$mock_google_pay_pm->method( 'get_title' )->willReturn( 'Google Pay' );
+		$mock_google_pay_pm->method( 'get_icon' )->willReturn( '' );
+		$mock_google_pay_pm->method( 'get_dark_icon' )->willReturn( '' );
+		$mock_google_pay_pm->method( 'get_countries' )->willReturn( [] );
+		$mock_google_pay_pm->method( 'get_testing_instructions' )->willReturn( '' );
+
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturnCallback(
+				function ( $id ) use ( $card_pm, $mock_apple_pay_pm, $mock_google_pay_pm ) {
+					$map = [
+						'card'       => $card_pm,
+						'apple_pay'  => $mock_apple_pay_pm,
+						'google_pay' => $mock_google_pay_pm,
+					];
+					return $map[ $id ] ?? null;
+				}
+			);
+
+		$config = $this->system_under_test->get_enabled_payment_method_config();
+
+		$this->assertArrayHasKey( 'card', $config );
+		$this->assertArrayHasKey( 'apple_pay', $config );
+		$this->assertArrayHasKey( 'google_pay', $config );
+		$this->assertTrue( $config['apple_pay']['isExpressCheckout'] );
+		$this->assertTrue( $config['google_pay']['isExpressCheckout'] );
+
+		$property->setValue( null, $original_map );
+		$property->setAccessible( false );
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+	}
+
+	public function test_get_enabled_payment_method_config_excludes_express_methods_when_feature_disabled() {
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'card' ] );
+
+		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturn( $card_pm );
+
+		$config = $this->system_under_test->get_enabled_payment_method_config();
+
+		$this->assertArrayHasKey( 'card', $config );
+		$this->assertArrayNotHasKey( 'apple_pay', $config );
+		$this->assertArrayNotHasKey( 'google_pay', $config );
+	}
+
+	public function test_get_config_for_payment_method_returns_empty_when_gateway_not_found() {
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'nonexistent_method' ] );
+
+		// Return a valid payment method object so we pass the first null guard.
+		$mock_pm = $this->createMock( UPE_Payment_Method::class );
+		$mock_pm->method( 'is_reusable' )->willReturn( false );
+		$mock_pm->method( 'is_bnpl' )->willReturn( false );
+		$mock_pm->method( 'is_express_checkout' )->willReturn( false );
+		$mock_pm->method( 'get_title' )->willReturn( 'Test' );
+		$mock_pm->method( 'get_icon' )->willReturn( '' );
+		$mock_pm->method( 'get_dark_icon' )->willReturn( '' );
+		$mock_pm->method( 'get_countries' )->willReturn( [] );
+
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->with( 'nonexistent_method' )
+			->willReturn( $mock_pm );
+
+		// 'nonexistent_method' is not in the gateway map, so
+		// wc_payments_get_payment_gateway_by_id returns false → empty config.
+		$config = $this->system_under_test->get_enabled_payment_method_config();
+
+		$this->assertArrayHasKey( 'nonexistent_method', $config );
+		$this->assertSame( [], $config['nonexistent_method'] );
+	}
+
+	public function test_update_order_review_fragments_include_express_methods_when_feature_enabled() {
+		WC_Payments::mode()->dev();
+		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'card' ] );
+
+		// Set up payment gateway map so is_payment_request_enabled() returns true.
+		$reflection = new \ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$original_map = $property->getValue( null );
+
+		$mock_google_pay_gateway     = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->id = 'woocommerce_payments_google_pay';
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_google_pay_gateway->method( 'should_use_stripe_platform_on_checkout_page' )->willReturn( false );
+
+		$mock_apple_pay_gateway     = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_apple_pay_gateway->id = 'woocommerce_payments_apple_pay';
+		$mock_apple_pay_gateway->method( 'should_use_stripe_platform_on_checkout_page' )->willReturn( false );
+
+		$mock_card_gateway     = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_card_gateway->id = 'woocommerce_payments';
+		$mock_card_gateway->method( 'should_use_stripe_platform_on_checkout_page' )->willReturn( false );
+
+		$property->setValue(
+			null,
+			[
+				'card'       => $mock_card_gateway,
+				'google_pay' => $mock_google_pay_gateway,
+				'apple_pay'  => $mock_apple_pay_gateway,
+			]
+		);
+
+		// Mock payment method lookups.
+		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+
+		$mock_express_pm = $this->createMock( UPE_Payment_Method::class );
+		$mock_express_pm->method( 'is_reusable' )->willReturn( false );
+		$mock_express_pm->method( 'is_bnpl' )->willReturn( false );
+		$mock_express_pm->method( 'is_express_checkout' )->willReturn( true );
+		$mock_express_pm->method( 'get_title' )->willReturn( 'Express' );
+		$mock_express_pm->method( 'get_icon' )->willReturn( '' );
+		$mock_express_pm->method( 'get_dark_icon' )->willReturn( '' );
+		$mock_express_pm->method( 'get_countries' )->willReturn( [] );
+		$mock_express_pm->method( 'get_testing_instructions' )->willReturn( '' );
+
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturnCallback(
+				function ( $id ) use ( $card_pm, $mock_express_pm ) {
+					if ( 'card' === $id ) {
+						return $card_pm;
+					}
+					if ( in_array( $id, [ 'apple_pay', 'google_pay' ], true ) ) {
+						return $mock_express_pm;
+					}
+					return null;
+				}
+			);
+
+		$fragments = [
+			'.woocommerce-checkout-payment' => '<div class="woocommerce-checkout-payment">Payment</div>',
+		];
+
+		$result = $this->system_under_test->add_payment_methods_config_to_update_order_review_fragments( $fragments );
+
+		$this->assertStringContainsString( 'apple_pay', $result['.woocommerce-checkout-payment'] );
+		$this->assertStringContainsString( 'google_pay', $result['.woocommerce-checkout-payment'] );
+
+		$property->setValue( null, $original_map );
+		$property->setAccessible( false );
+		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+		WC_Payments::mode()->live();
+	}
+
+	public function test_payment_method_config_includes_is_express_checkout() {
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'card' ] );
+
+		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->willReturn( $card_pm );
+
+		$js_config = $this->system_under_test->get_payment_fields_js_config();
+
+		$this->assertArrayHasKey( 'isExpressCheckout', $js_config['paymentMethodsConfig']['card'] );
+		$this->assertFalse( $js_config['paymentMethodsConfig']['card']['isExpressCheckout'] );
 	}
 }
