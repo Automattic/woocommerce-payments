@@ -1017,6 +1017,14 @@ class WC_Payments_Order_Service {
 				$this->store_payment_method_details( $order, $payment_method_details );
 			}
 		}
+
+		// Store IPP channel from intent metadata if present.
+		$metadata         = $intent->get_metadata();
+		$ipp_channel      = $metadata['ipp_channel'] ?? '';
+		$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
+		if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
+			$this->set_ipp_channel_for_order( $order, $ipp_channel );
+		}
 	}
 
 	/**
