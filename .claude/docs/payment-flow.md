@@ -41,8 +41,7 @@ $response = $request->send();
 
 Stripe returns `payment_method_details.type = 'card'` (not `'link'`) in charge objects for Link payments, because Link wraps a stored card. To correctly identify Link:
 - **Don't** rely on `charge.payment_method_details.type` — it's `'card'` for Link
-- **Do** check the saved token type (`WC_Payment_Token_WCPay_Link`) or the PaymentMethod object (`pm.type = 'link'`)
-- See `get_payment_method_type_for_setup_intent()` in the gateway for the canonical pattern
+- **Do** check `card.wallet.type === 'link'` via `WC_Payment_Gateway_WCPay::is_link_card_wallet()`, or the saved token type (`WC_Payment_Token_WCPay_Link`)
 
 ### 3. Request Execution
 
