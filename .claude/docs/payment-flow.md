@@ -84,6 +84,19 @@ $refund = $request->send();
 
 Same layers: Request → API Client → HTTP → Jetpack → wpcom → Stripe.
 
+## Dispute Webhook Flow
+
+**`WC_Payments_Webhook_Processing_Service::process_webhook_dispute_closed()`**
+- Reads `charge`, `status`, and `id` from the webhook event object
+- Fetches dispute summary via `$this->api_client->get_dispute_summary($dispute_id)` (wrapped in try/catch — non-fatal)
+- Calls `$this->order_service->mark_payment_dispute_closed($order, $charge_id, $status, $dispute_summary)`
+
+**`WC_Payments_Order_Service::mark_payment_dispute_closed()`**
+- Lost disputes: creates a refund via `wc_create_refund()` using disputed amount (capped at `$order->get_remaining_refund_amount()`)
+- Won disputes: restores order to previous status
+
+**Important:** The API client's `get_dispute_summary()` is called directly (not via a Request class) because it's a simple GET used only in webhook processing. This is an accepted exception to the "always use Request classes" rule for internal/webhook-only endpoints.
+
 ## Frontend Checkout (JS)
 
 ### Blocks Checkout (`client/checkout/blocks/payment-processor.js`)
@@ -142,6 +155,7 @@ Same layers: Request → API Client → HTTP → Jetpack → wpcom → Stripe.
 | `Refund_Charge` | `refunds` | POST | Process refund |
 | `List_Transactions` | `transactions` | GET | Admin transaction list |
 | `List_Disputes` | `disputes` | GET | Admin dispute list |
+| (direct) | `disputes/{id}/summary` | GET | Fetch dispute summary (webhook-only, no Request class) |
 
 ## Plugin Initialization Chain
 

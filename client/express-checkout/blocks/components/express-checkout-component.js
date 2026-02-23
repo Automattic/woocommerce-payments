@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
+import { select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
@@ -10,7 +11,10 @@ import {
 	shippingRateChangeHandler,
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
-import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
+import {
+	PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
+	WC_STORE_CART,
+} from 'wcpay/checkout/constants';
 import {
 	getPaymentMethodsOverride,
 	adjustButtonHeights,
@@ -54,7 +58,11 @@ const ExpressCheckoutComponent = ( {
 		shippingAddressChangeHandler( event, elements );
 
 	const onShippingRateChange = ( event ) =>
-		shippingRateChangeHandler( event, elements );
+		shippingRateChangeHandler(
+			event,
+			elements,
+			select( WC_STORE_CART )?.getCartData()
+		);
 
 	const onElementsReady = ( event ) => {
 		const paymentMethodContainer = document.getElementById(
