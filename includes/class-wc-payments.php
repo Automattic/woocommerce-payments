@@ -1963,7 +1963,11 @@ class WC_Payments {
 		wp_enqueue_script( 'WCPAY_CART' );
 
 		if ( WC_Payments_Utils::is_cart_block() ) {
-			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
+			// WC Core introduced a change ( https://github.com/woocommerce/woocommerce/pull/48010 ) that delays the registration of `wc-cart-block-frontend`.
+			// we need to conditionally add it to avoid polluting the logs with notices.
+			// by the time WordPress outputs scripts in the footer, WC Core's lazy registration has already run (the cart block renders before `wp_footer`).
+			$cart_block_deps = wp_script_is( 'wc-cart-block-frontend', 'registered' ) ? [ 'wc-cart-block-frontend' ] : [];
+			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', $cart_block_deps );
 			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
 
 			// Enqueue cart block styles.
