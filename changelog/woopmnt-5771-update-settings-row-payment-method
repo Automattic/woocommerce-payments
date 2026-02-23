@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Updated settings row payment method icons to use Figma-exported SVGs with baked-in strokes, removing CSS border dependency.
