@@ -37,7 +37,7 @@ export interface WCPayExpressCheckoutParams {
 	has_subscription?: boolean;
 
 	/**
-	 * Indicaters whether the page has a Cart or Checkout Block on it.
+	 * Indicates whether the page has a Cart or Checkout Block on it.
 	 */
 	has_block: boolean;
 
