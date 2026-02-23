@@ -2,7 +2,13 @@
  * External dependencies
  */
 import React from 'react';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+	cleanup,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -199,9 +205,21 @@ const getContainer = () => {
 };
 
 describe( 'Multi-Currency enabled currencies list', () => {
+	const originalGetClientRects = window.HTMLElement.prototype.getClientRects;
+
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = { zeroDecimalCurrencies: [] };
+		// jsdom has no layout engine, so getClientRects returns empty by default.
+		// The Modal's focusOnMount logic relies on it to determine element visibility.
+		// See https://github.com/WordPress/gutenberg/blob/trunk/packages/dom/src/focusable.js#L55-L61
+		window.HTMLElement.prototype.getClientRects = function () {
+			return [ 'mock-client-rect' ];
+		};
+	} );
+
+	afterEach( () => {
+		window.HTMLElement.prototype.getClientRects = originalGetClientRects;
 	} );
 
 	test( 'Enabled currencies list renders correctly', () => {
@@ -269,7 +287,9 @@ describe( 'Multi-Currency enabled currencies list', () => {
 				name: /add\/remove currencies/i,
 			} )
 		);
-		expect( screen.getByRole( 'searchbox' ) ).toHaveFocus();
+		await waitFor( () => {
+			expect( screen.getByRole( 'searchbox' ) ).toHaveFocus();
+		} );
 	} );
 
 	test( 'Modal should clear search term on cancel and update selected', async () => {

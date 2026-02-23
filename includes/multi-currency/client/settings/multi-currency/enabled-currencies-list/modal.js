@@ -133,6 +133,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 		<>
 			{ isEnabledCurrenciesModalOpen && (
 				<ConfirmationModal
+					focusOnMount="firstContentElement"
 					title={ __(
 						'Add enabled currencies',
 						'woocommerce-payments'
@@ -163,7 +164,6 @@ const EnabledCurrenciesModal = ( { className } ) => {
 				>
 					<div className="add-enabled-currencies-modal__search">
 						<SearchControl
-							autoFocus
 							__nextHasNoMarginBottom
 							value={ searchText }
 							onChange={ setSearchText }
