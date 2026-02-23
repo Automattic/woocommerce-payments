@@ -397,13 +397,14 @@ class WC_Payments_Order_Service {
 	/**
 	 * Updates the order status based on dispute status and adds a note about the dispute.
 	 *
-	 * @param WC_Order $order      Order object.
-	 * @param string   $charge_id  The ID of the disputed charge associated with this order.
-	 * @param string   $status     The status of the dispute.
+	 * @param WC_Order $order           Order object.
+	 * @param string   $charge_id       The ID of the disputed charge associated with this order.
+	 * @param string   $status          The status of the dispute.
+	 * @param array    $dispute_summary Dispute summary information.
 	 *
 	 * @return void
 	 */
-	public function mark_payment_dispute_closed( $order, $charge_id, $status ) {
+	public function mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary = [] ): void {
 		if ( ! is_a( $order, 'WC_Order' ) ) {
 			return;
 		}
@@ -421,12 +422,33 @@ class WC_Payments_Order_Service {
 		add_filter( 'woocommerce_email_enabled_customer_completed_renewal_order', '__return_false' );
 
 		if ( 'lost' === $status ) {
+			// Use dispute summary data if available to determine refund amount.
+			$refund_amount = $order->get_remaining_refund_amount();
+			$line_items    = $order->get_items();
+			if ( ! empty( $dispute_summary ) ) {
+				$disputed_amount = isset( $dispute_summary['disputed_amount'] ) ? $dispute_summary['disputed_amount'] : 0;
+				if ( $disputed_amount > 0 ) {
+					// Use disputed amount for refund if available.
+					$currency = strtolower( isset( $dispute_summary['currency'] ) ? $dispute_summary['currency'] : $order->get_currency() );
+
+					// Convert amounts to the correct format based on currency (e.g. cents to dollars).
+					$disputed_amount = WC_Payments_Utils::interpret_stripe_amount( (int) $disputed_amount, $currency );
+
+					// Use the appropriate amount, but don't exceed order total.
+					$refund_amount = min( $refund_amount, $disputed_amount );
+					if ( $disputed_amount < (float) $order->get_total() ) {
+						// For partial disputes pass empty line_items to avoid inconsistency in the order view.
+						$line_items = [];
+					}
+				}
+			}
+
 			wc_create_refund(
 				[
-					'amount'     => $order->get_total(),
+					'amount'     => $refund_amount,
 					'reason'     => __( 'Dispute lost.', 'woocommerce-payments' ),
 					'order_id'   => $order->get_id(),
-					'line_items' => $order->get_items(),
+					'line_items' => $line_items,
 				]
 			);
 		} else {

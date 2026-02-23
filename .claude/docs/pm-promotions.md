@@ -1,5 +1,7 @@
 # Payment Method (PM) Promotions
 
+**Last updated:** 2025-12-05
+
 ## Overview
 
 PM Promotions display promotional offers for payment methods that merchants haven't yet enabled. The system uses a **flat data structure** where each promotion is a standalone object with a `type` field indicating its display context (spotlight, badge).
