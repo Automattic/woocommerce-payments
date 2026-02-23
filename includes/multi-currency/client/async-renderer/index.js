@@ -25,6 +25,7 @@ class WCPayAsyncPriceRenderer {
 		this.cache = new Map();
 		this.initialized = false;
 		this.observer = null;
+		this.wcEventHandler = null;
 	}
 
 	/**
@@ -100,6 +101,9 @@ class WCPayAsyncPriceRenderer {
 
 	/**
 	 * Convert a price value based on currency settings.
+	 *
+	 * This mirrors the PHP conversion in MultiCurrency::get_price() and
+	 * MultiCurrency::get_adjusted_price(). Changes here must be kept in sync.
 	 *
 	 * @param {number|string} price The raw price in default currency.
 	 * @param {string}        type  One of 'product', 'shipping', 'coupon', 'tax', 'exchange_rate'.
@@ -309,19 +313,21 @@ class WCPayAsyncPriceRenderer {
 	 * where replaced HTML may contain new skeleton price elements.
 	 */
 	listenToWooCommerceEvents() {
+		if ( typeof jQuery === 'undefined' ) {
+			return;
+		}
+
+		this.wcEventHandler = () => this.convertAllPrices();
+
 		const events = [
 			'updated_cart_totals',
 			'updated_checkout',
 			'updated_wc_div',
 		];
 
-		if ( typeof jQuery !== 'undefined' ) {
-			events.forEach( ( event ) => {
-				jQuery( document.body ).on( event, () => {
-					this.convertAllPrices();
-				} );
-			} );
-		}
+		events.forEach( ( event ) => {
+			jQuery( document.body ).on( event, this.wcEventHandler );
+		} );
 	}
 
 	/**
@@ -344,6 +350,15 @@ class WCPayAsyncPriceRenderer {
 			this.observer.disconnect();
 			this.observer = null;
 		}
+
+		if ( this.wcEventHandler && typeof jQuery !== 'undefined' ) {
+			jQuery( document.body ).off(
+				'updated_cart_totals updated_checkout updated_wc_div',
+				this.wcEventHandler
+			);
+			this.wcEventHandler = null;
+		}
+
 		this.cache.clear();
 	}
 }

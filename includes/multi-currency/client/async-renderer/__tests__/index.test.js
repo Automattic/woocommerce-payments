@@ -52,6 +52,70 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		renderer.config = mockConfig;
 	} );
 
+	describe( 'init', () => {
+		const apiUrl =
+			'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config';
+
+		beforeEach( () => {
+			document.body.textContent = '';
+			global.wcpayAsyncPriceConfig = { apiUrl };
+		} );
+
+		afterEach( () => {
+			delete global.wcpayAsyncPriceConfig;
+			delete global.fetch;
+		} );
+
+		it( 'fetches config and converts prices on success', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			const span = document.createElement( 'span' );
+			span.setAttribute( 'data-wcpay-price', '10' );
+			const skeleton = document.createElement( 'span' );
+			skeleton.className = 'wcpay-price-skeleton';
+			span.appendChild( skeleton );
+			document.body.appendChild( span );
+
+			await renderer.init();
+
+			expect( renderer.config ).toEqual( mockConfig );
+			expect( span.classList.contains( 'wcpay-price-converted' ) ).toBe(
+				true
+			);
+		} );
+
+		it( 'shows error state on fetch failure', async () => {
+			global.fetch = jest
+				.fn()
+				.mockRejectedValue( new Error( 'Network error' ) );
+
+			const skeleton = document.createElement( 'span' );
+			skeleton.className = 'wcpay-price-skeleton';
+			document.body.appendChild( skeleton );
+
+			await renderer.init();
+
+			expect(
+				document.querySelector( '.wcpay-price-error' )
+			).not.toBeNull();
+		} );
+
+		it( 'only initializes once', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			await renderer.init();
+			await renderer.init();
+
+			expect( global.fetch ).toHaveBeenCalledTimes( 1 );
+		} );
+	} );
+
 	describe( 'convertPrice', () => {
 		it( 'converts a product price with rate, rounding, and charm', () => {
 			// 10.00 USD * 0.85 = 8.50 EUR
@@ -265,6 +329,25 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			expect( disconnectFn ).toHaveBeenCalledTimes( 1 );
 			expect( renderer.observer ).toBeNull();
 			expect( renderer.cache.size ).toBe( 0 );
+		} );
+
+		it( 'removes jQuery event listeners', () => {
+			const offFn = jest.fn().mockReturnThis();
+			const onFn = jest.fn().mockReturnThis();
+			global.jQuery = jest.fn( () => ( { on: onFn, off: offFn } ) );
+
+			renderer.listenToWooCommerceEvents();
+			const handler = renderer.wcEventHandler;
+
+			renderer.destroy();
+
+			expect( offFn ).toHaveBeenCalledWith(
+				'updated_cart_totals updated_checkout updated_wc_div',
+				handler
+			);
+			expect( renderer.wcEventHandler ).toBeNull();
+
+			delete global.jQuery;
 		} );
 	} );
 
