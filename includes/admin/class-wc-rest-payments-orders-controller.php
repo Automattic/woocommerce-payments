@@ -191,12 +191,6 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
 			$this->order_service->attach_intent_info_to_order( $order, $intent );
 
-			$ipp_channel      = $intent_metadata['ipp_channel'] ?? '';
-			$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
-			if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
-				$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
-			}
-
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).
