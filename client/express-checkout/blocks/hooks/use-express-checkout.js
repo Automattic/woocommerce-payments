@@ -27,7 +27,7 @@ import {
 	transformCartDataForDisplayItems,
 	transformPrice,
 } from '../../transformers/wc-to-stripe';
-import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/shipping-limits';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
 export const useExpressCheckout = ( {
