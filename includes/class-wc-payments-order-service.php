@@ -977,7 +977,7 @@ class WC_Payments_Order_Service {
 	 */
 	public function get_ipp_channel_for_order( $order ): string {
 		$order = $this->get_order( $order );
-		return $order->get_meta( self::IPP_CHANNEL_META_KEY, true );
+		return $order->get_meta( self::IPP_CHANNEL_META_KEY );
 	}
 
 	/**
