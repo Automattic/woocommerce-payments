@@ -154,7 +154,7 @@ global.wooPaymentsPaymentMethodDefinitions = {
 		allows_manual_capture: true,
 	} ),
 	bancontact: buildMockDefinition( 'bancontact', 'Bancontact', [ 'EUR' ] ),
-	ideal: buildMockDefinition( 'ideal', 'iDEAL', [ 'EUR' ] ),
+	ideal: buildMockDefinition( 'ideal', 'iDEAL | Wero', [ 'EUR' ] ),
 	eps: buildMockDefinition( 'eps', 'EPS', [ 'EUR' ] ),
 	giropay: buildMockDefinition( 'giropay', 'Giropay', [ 'EUR' ] ),
 	sofort: buildMockDefinition( 'sofort', 'Sofort', [ 'EUR' ] ),
@@ -188,4 +188,5 @@ global.wooPaymentsPaymentMethodDefinitions = {
 	alipay: buildMockDefinition( 'alipay', 'Alipay', [ 'USD' ] ),
 	google_pay: buildMockDefinition( 'google_pay', 'Google Pay' ),
 	apple_pay: buildMockDefinition( 'apple_pay', 'Apple Pay' ),
+	amazon_pay: buildMockDefinition( 'amazon_pay', 'Amazon Pay' ),
 };

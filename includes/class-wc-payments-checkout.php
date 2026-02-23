@@ -104,6 +104,7 @@ class WC_Payments_Checkout {
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
 		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
+		add_filter( 'woocommerce_update_order_review_fragments', [ $this, 'add_payment_methods_config_to_update_order_review_fragments' ] );
 	}
 
 	/**
@@ -198,7 +199,6 @@ class WC_Payments_Checkout {
 			'locale'                            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                         => is_preview(),
 			'isSavedCardsEnabled'               => $this->gateway->is_saved_cards_enabled(),
-			'isPaymentRequestEnabled'           => $this->gateway->is_payment_request_enabled(),
 			'isWooPayEnabled'                   => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_guest_checkout(),
 			'isWoopayExpressCheckoutEnabled'    => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'     => $this->woopay_util->is_woopay_first_party_auth_enabled(),
@@ -216,15 +216,8 @@ class WC_Payments_Checkout {
 			'woopayMinimumSessionData'          => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
-		/**
-		 * Allows filtering of the JS config for the payment fields.
-		 *
-		 * @param array $js_config The JS config for the payment fields.
-		 */
-		$payment_fields = apply_filters( 'wcpay_payment_fields_js_config', $js_config );
+		$payment_fields = $js_config;
 
-		$payment_fields['accountDescriptor']             = $this->gateway->get_account_statement_descriptor();
-		$payment_fields['addPaymentReturnURL']           = wc_get_account_endpoint_url( 'payment-methods' );
 		$payment_fields['gatewayId']                     = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$payment_fields['isCheckout']                    = is_checkout();
 		$payment_fields['paymentMethodsConfig']          = $this->get_enabled_payment_method_config();
@@ -253,16 +246,7 @@ class WC_Payments_Checkout {
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {
-				$payment_fields['isChangingPayment']   = true;
-				$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
-
-				if ( $this->gateway->is_setup_intent_success_creation_redirection() && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ) ) ) {
-					$setup_intent_id = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
-					$token           = $this->gateway->create_token_from_setup_intent( $setup_intent_id, wp_get_current_user() );
-					if ( null !== $token ) {
-						$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
-					}
-				}
+				$payment_fields['isChangingPayment'] = true;
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
@@ -281,13 +265,14 @@ class WC_Payments_Checkout {
 		// Get the store base country.
 		$payment_fields['storeCountry'] = WC()->countries->get_base_country();
 
-		// Get the WooCommerce Store API endpoint.
-		$payment_fields['storeApiURL'] = get_rest_url( null, 'wc/store' );
+		// Whether express checkout methods (Apple Pay, Google Pay, Amazon Pay) should be displayed
+		// in the payment methods list instead of as separate express buttons.
+		$payment_fields['isExpressCheckoutInPaymentMethodsEnabled'] = \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled();
 
 		/**
-		 * Allows filtering for the payment fields.
+		 * Allows filtering of the JS config for the payment fields.
 		 *
-		 * @param array $payment_fields The payment fields.
+		 * @param array $js_config The JS config for the payment fields.
 		 */
 		return apply_filters( 'wcpay_payment_fields_js_config', $payment_fields ); // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 	}
@@ -301,6 +286,30 @@ class WC_Payments_Checkout {
 		$settings                = [];
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
+		// When "express checkout in payment methods" setting is enabled, add express checkout
+		// methods to the list. They're not in upe_enabled_payment_method_ids by default since
+		// they're normally registered separately via registerExpressPaymentMethod() in JS.
+		// Use the card gateway (main gateway) for this check, because $this->gateway
+		// can be mutated by set_gateway() during shortcode checkout rendering.
+		$card_gateway                           = \WC_Payments::get_gateway();
+		$is_express_checkout_in_payment_methods = $card_gateway->is_express_checkout_in_payment_methods_enabled();
+
+		if ( $is_express_checkout_in_payment_methods ) {
+			// Add Apple Pay and Google Pay if payment request is enabled.
+			if ( $card_gateway->is_payment_request_enabled() ) {
+				$enabled_payment_methods[] = 'apple_pay';
+				$enabled_payment_methods[] = 'google_pay';
+			}
+
+			// Add Amazon Pay if the feature flag is enabled and the gateway is enabled.
+			if ( WC_Payments_Features::is_amazon_pay_enabled() ) {
+				$amazon_pay_gateway = \WC_Payments::get_payment_gateway_by_id( 'amazon_pay' );
+				if ( $amazon_pay_gateway && $amazon_pay_gateway->is_enabled() ) {
+					$enabled_payment_methods[] = 'amazon_pay';
+				}
+			}
+		}
+
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			// Link by Stripe should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {
@@ -309,10 +318,53 @@ class WC_Payments_Checkout {
 				}
 			}
 
+			// Skip express checkout methods if they somehow got into the list, but the setting
+			// is not enabled (it shouldn't happen with normal code flow - adding just in case).
+			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+			if ( $payment_method && $payment_method->is_express_checkout() ) {
+				if ( ! $is_express_checkout_in_payment_methods ) {
+					continue;
+				}
+			}
+
 			$settings[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Adds dynamic payment fields config to the update_order_review AJAX response fragments.
+	 *
+	 * This allows the frontend to refresh the available payment methods and currency
+	 * when the billing country changes during checkout. This is particularly important
+	 * for stores using plugins that change currency based on customer location, ensuring
+	 * that payment methods restricted by country/currency are properly updated.
+	 *
+	 * @param array $fragments The fragments to be updated.
+	 * @return array The updated fragments.
+	 */
+	public function add_payment_methods_config_to_update_order_review_fragments( $fragments ) {
+		if ( ! isset( $fragments['.woocommerce-checkout-payment'] ) ) {
+			return $fragments;
+		}
+
+		// I'm calling the base method (rather than reconstructing the pieces individually), so that we can also take advantage of the hooks/filters.
+		// It's a little heavier in computation, but it gives a more accurate result.
+		$js_config = $this->get_payment_fields_js_config();
+
+		$fragments['.woocommerce-checkout-payment'] .= sprintf(
+			'<script>window.wcpay_upe_config && Object.assign( window.wcpay_upe_config, %s );</script>',
+			wp_json_encode(
+				[
+					'paymentMethodsConfig' => $js_config['paymentMethodsConfig'],
+					'currency'             => $js_config['currency'],
+					'cartTotal'            => $js_config['cartTotal'],
+				]
+			)
+		);
+
+		return $fragments;
 	}
 
 	/**
@@ -348,16 +400,20 @@ class WC_Payments_Checkout {
 		}
 
 		$config = [
-			'isReusable'     => $payment_method->is_reusable(),
-			'isBnpl'         => $payment_method->is_bnpl(),
-			'title'          => $payment_method->get_title( $account_country ),
-			'icon'           => $payment_method->get_icon( $account_country ),
-			'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
-			'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
-			'countries'      => $payment_method->get_countries(),
+			'isReusable'        => $payment_method->is_reusable(),
+			'isBnpl'            => $payment_method->is_bnpl(),
+			'isExpressCheckout' => $payment_method->is_express_checkout(),
+			'title'             => $payment_method->get_title( $account_country ),
+			'icon'              => $payment_method->get_icon( $account_country ),
+			'darkIcon'          => $payment_method->get_dark_icon( $account_country ),
+			'showSaveOption'    => $this->should_upe_payment_method_show_save_option( $payment_method ),
+			'countries'         => $payment_method->get_countries(),
 		];
 
-		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		$gateway_for_payment_method = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		if ( ! $gateway_for_payment_method ) {
+			return [];
+		}
 		$config['gatewayId']           = $gateway_for_payment_method->id;
 		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
 			/* translators: link to Stripe testing page */

@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
@@ -58,13 +57,6 @@ class WC_Payments_Customer_Service {
 	private $account;
 
 	/**
-	 * Database_Cache instance to get information about the account
-	 *
-	 * @var Database_Cache
-	 */
-	private $database_cache;
-
-	/**
 	 * WC_Payments_Session_Service instance for working with session information
 	 *
 	 * @var WC_Payments_Session_Service
@@ -83,20 +75,17 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
 	 * @param WC_Payments_Account         $account WC_Payments_Account instance.
-	 * @param Database_Cache              $database_cache Database_Cache instance.
 	 * @param WC_Payments_Session_Service $session_service Session Service class instance.
 	 * @param WC_Payments_Order_Service   $order_service Order Service class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
-		Database_Cache $database_cache,
 		WC_Payments_Session_Service $session_service,
 		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
-		$this->database_cache      = $database_cache;
 		$this->session_service     = $session_service;
 		$this->order_service       = $order_service;
 	}
@@ -254,6 +243,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @param string $customer_id The customer ID.
 	 * @param string $type        Type of payment methods to fetch.
+	 * @return array
 	 *
 	 * @throws API_Exception We only handle 'resource_missing' code types and rethrow anything else.
 	 */
@@ -262,23 +252,8 @@ class WC_Payments_Customer_Service {
 			return [];
 		}
 
-		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
-		$cache_key             = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type;
-
-		if ( $cache_payment_methods ) {
-			$payment_methods = $this->database_cache->get( $cache_key );
-			if ( is_array( $payment_methods ) ) {
-				return $payment_methods;
-			}
-		}
-
 		try {
-			$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
-			if ( $cache_payment_methods ) {
-				$this->database_cache->add( $cache_key, $payment_methods );
-			}
-			return $payment_methods;
-
+			return $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
 		} catch ( API_Exception $e ) {
 			// If we failed to find the payment methods, we can simply return empty payment methods as this customer
 			// will be recreated when the user successfully adds a payment method.
@@ -307,23 +282,6 @@ class WC_Payments_Customer_Service {
 					'billing_details' => $billing_details,
 				]
 			);
-		}
-	}
-
-	/**
-	 * Clear payment methods cache for a user.
-	 *
-	 * @param int $user_id WC user ID.
-	 */
-	public function clear_cached_payment_methods_for_user( $user_id ) {
-		if ( WC_Payments::is_network_saved_cards_enabled() ) {
-			return; // No need to do anything, payment methods will never be cached in this case.
-		}
-
-		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::SEPA ];
-		$customer_id                      = $this->get_customer_id_by_user_id( $user_id );
-		foreach ( $retrievable_payment_method_types as $type ) {
-			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
 		}
 	}
 
@@ -385,15 +343,6 @@ class WC_Payments_Customer_Service {
 		}
 
 		return $data;
-	}
-
-	/**
-	 * Delete all saved payment methods that are stored inside the database cache driver.
-	 *
-	 * @return void
-	 */
-	public function delete_cached_payment_methods() {
-		$this->database_cache->delete_by_prefix( Database_Cache::PAYMENT_METHODS_KEY_PREFIX );
 	}
 
 	/**

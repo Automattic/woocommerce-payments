@@ -18,7 +18,7 @@ export default defineConfig( {
 	forbidOnly: !! process.env.CI,
 
 	/* Retry on CI only */
-	retries: process.env.CI ? 2 : 0,
+	retries: process.env.CI ? 1 : 0,
 
 	/* Opt out of parallel tests - run one at a time */
 	workers: 1,
@@ -26,28 +26,38 @@ export default defineConfig( {
 	/* Reporter configuration for QIT */
 	reporter: [
 		[ 'list' ],
-		[ 'html', { open: 'never', outputFolder: './results/html' } ],
 		[
 			'playwright-ctrf-json-reporter',
 			{
-				outputDir: './results',
+				outputDir: './test-results',
 				outputFile: 'ctrf.json',
 			},
 		],
 		[
-			'allure-playwright',
+			'json',
 			{
-				resultsDir: './results/allure',
+				outputFile: './test-results/playwright-results.json',
 			},
 		],
 		[
 			'blob',
 			{
-				outputDir: './results/blob',
+				outputDir: './test-results/blob-report',
+			},
+		],
+		[
+			'html',
+			{
+				outputFolder: './playwright-report',
+			},
+		],
+		[
+			'allure-playwright',
+			{
+				resultsDir: './test-results/allure',
 			},
 		],
 	],
-
 	/* Shared settings for all projects */
 	use: {
 		/* Base URL from QIT environment */
@@ -82,7 +92,15 @@ export default defineConfig( {
 			testDir: './tests/woopayments/shopper',
 			use: { ...devices[ 'Desktop Chrome' ] },
 		},
-		// Additional projects for merchant and subscriptions subpackages
-		// will be added when those tests are migrated.
+		{
+			name: 'merchant',
+			testDir: './tests/woopayments/merchant',
+			use: { ...devices[ 'Desktop Chrome' ] },
+		},
+		{
+			name: 'subscriptions',
+			testDir: './tests/woopayments/subscriptions',
+			use: { ...devices[ 'Desktop Chrome' ] },
+		},
 	],
 } );

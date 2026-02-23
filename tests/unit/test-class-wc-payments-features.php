@@ -26,8 +26,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_customer_multi_currency'        => 'multiCurrency',
-		WC_Payments_Features::ACCOUNT_DETAILS_FLAG_NAME => 'isAccountDetailsEnabled',
+		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
 	];
 
 	public function set_up() {
@@ -325,48 +324,91 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_is_account_details_enabled_returns_false_when_disabled() {
-		$this->set_feature_flag_option( WC_Payments_Features::ACCOUNT_DETAILS_FLAG_NAME, '0' );
+	public function test_is_dynamic_checkout_place_order_button_enabled_returns_true_when_enabled_in_dev_mode() {
+		$this->set_feature_flag_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		// Dev mode bypasses WC version requirements.
+		WC_Payments::mode()->dev();
 
-		$result = WC_Payments_Features::is_account_details_enabled();
+		$this->assertTrue( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() );
 
-		$this->assertFalse( $result );
+		WC_Payments::mode()->live();
+		$this->clear_feature_flag_options( [ WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME ] );
 	}
 
-	public function test_is_account_details_enabled_returns_true_when_enabled() {
-		$this->set_feature_flag_option( WC_Payments_Features::ACCOUNT_DETAILS_FLAG_NAME, '1' );
+	public function test_is_dynamic_checkout_place_order_button_enabled_returns_false_when_option_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '0' );
 
-		$result = WC_Payments_Features::is_account_details_enabled();
+		$this->assertFalse( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() );
 
-		$this->assertTrue( $result );
+		$this->clear_feature_flag_options( [ WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME ] );
 	}
 
-	public function test_to_array_includes_account_details_flag() {
-		$this->set_feature_flag_option( WC_Payments_Features::ACCOUNT_DETAILS_FLAG_NAME, '1' );
+	public function test_is_dynamic_checkout_place_order_button_enabled_returns_false_by_default() {
+		// Don't set any option, should default to false.
+		$this->assertFalse( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() );
+	}
 
-		$result = WC_Payments_Features::to_array();
+	public function test_is_dynamic_checkout_place_order_button_enabled_returns_false_in_dev_mode_without_flag() {
+		// Dev mode without the flag enabled should still return false.
+		WC_Payments::mode()->dev();
 
-		$this->assertArrayHasKey( 'isAccountDetailsEnabled', $result );
-		$this->assertTrue( $result['isAccountDetailsEnabled'] );
+		$this->assertFalse( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() );
+
+		WC_Payments::mode()->live();
+	}
+
+	public function test_is_ece_confirmation_tokens_enabled_returns_true_when_enabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
+		$this->assertTrue( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+	}
+
+	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_disabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => true ] );
+		$this->assertFalse( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+	}
+
+	public function test_is_ece_confirmation_tokens_enabled_returns_true_when_field_missing() {
+		$this->mock_cache->method( 'get' )->willReturn( [] );
+		$this->assertTrue( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
+	}
+
+	public function test_is_ece_confirmation_tokens_enabled_returns_false_when_cache_not_set() {
+		$this->mock_cache->method( 'get' )->willReturn( null );
+		$this->assertFalse( WC_Payments_Features::is_ece_confirmation_tokens_enabled() );
 	}
 
 	public function test_is_amazon_pay_enabled_returns_false_when_disabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '0' );
 
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
 
 		$this->assertFalse( $result );
+		$this->clear_feature_flag_options( [ WC_Payments_Features::AMAZON_PAY_FLAG_NAME ] );
 	}
 
 	public function test_is_amazon_pay_enabled_returns_true_when_enabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '1' );
 
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
 
 		$this->assertTrue( $result );
+		$this->clear_feature_flag_options( [ WC_Payments_Features::AMAZON_PAY_FLAG_NAME ] );
+	}
+
+	public function test_is_amazon_pay_enabled_returns_false_when_server_side_disabled() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => true ] );
+		$this->set_feature_flag_option( WC_Payments_Features::AMAZON_PAY_FLAG_NAME, '1' );
+
+		$result = WC_Payments_Features::is_amazon_pay_enabled();
+
+		$this->assertFalse( $result );
+		$this->clear_feature_flag_options( [ WC_Payments_Features::AMAZON_PAY_FLAG_NAME ] );
 	}
 
 	public function test_is_amazon_pay_enabled_returns_false_by_default() {
+		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
 
 		$this->assertFalse( $result );

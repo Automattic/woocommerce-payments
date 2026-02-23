@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Implemented amount mismatch detection for an already paid order.

@@ -18,7 +18,6 @@ use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Constants\Currency_Code;
-use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
@@ -766,6 +765,26 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
+	 * Get summary of a specific dispute.
+	 *
+	 * @param string $dispute_id The ID of the dispute.
+	 *
+	 * @return array Dispute summary data.
+	 * @throws API_Exception - Exception thrown in case route validation fails.
+	 */
+	public function get_dispute_summary( $dispute_id ): array {
+		if ( ! preg_match( '/^\w+$/', $dispute_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
+		return $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/summary', self::GET );
+	}
+
+	/**
 	 * Initiates deposits export via API.
 	 *
 	 * @param array  $filters    The filters to be used in the query.
@@ -1139,7 +1158,20 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
 
 		if ( ! is_array( $session ) ) {
+			WC_Payments_Utils::log_to_wc( sprintf( 'Failed to initialize embedded KYC: Invalid API response type %s.', gettype( $session ) ) );
 			return [];
+		}
+
+		// Log a warning if the session is missing critical fields that indicate a server-side issue.
+		if ( empty( $session['publishable_key'] ) || empty( $session['client_secret'] ) ) {
+			WC_Payments_Utils::log_to_wc(
+				sprintf(
+					'Embedded KYC session missing required fields: publishable_key=%s, client_secret=%s.',
+					empty( $session['publishable_key'] ) ? 'missing' : 'set',
+					empty( $session['client_secret'] ) ? 'missing' : 'set'
+				),
+				'warning'
+			);
 		}
 
 		return $session;

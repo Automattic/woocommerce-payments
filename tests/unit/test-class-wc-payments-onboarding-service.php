@@ -642,4 +642,118 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 			],
 		];
 	}
+
+	/**
+	 * Test that explicit 'live' mode overrides environment-based auto-detection.
+	 */
+	public function test_create_embedded_kyc_session_explicit_live_mode_overrides_auto_detection() {
+		// Arrange: Force test mode via the onboarding test mode option (simulates leftover from test drive).
+		WC_Payments_Onboarding_Service::set_test_mode( true );
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( true ) // First arg is $live_account = true.
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => true,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_live_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: Pass explicit 'live' mode.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], [], 'live' );
+
+		// Assert: The session was created and the test mode flag was cleared.
+		$this->assertNotEmpty( $result );
+		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+	}
+
+	/**
+	 * Test that dev mode forces test even when explicit 'live' is passed.
+	 */
+	public function test_create_embedded_kyc_session_dev_mode_forces_test_despite_explicit_live() {
+		// Arrange: Force dev mode.
+		WC_Payments::mode()->dev();
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( false ) // First arg is $live_account = false (forced by dev mode).
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => false,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_test_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: Pass explicit 'live' mode, but dev mode should override.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], [], 'live' );
+
+		// Assert.
+		$this->assertNotEmpty( $result );
+		$this->assertTrue( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+
+		// Clean up: Reset mode to avoid affecting other tests.
+		WC_Payments::mode()->live();
+	}
+
+	/**
+	 * Test backwards compatibility: no explicit mode falls back to auto-detection.
+	 */
+	public function test_create_embedded_kyc_session_no_explicit_mode_uses_auto_detection() {
+		// Arrange: Ensure live mode (no test mode flag, no dev mode).
+		WC_Payments_Onboarding_Service::set_test_mode( false );
+		WC_Payments::mode()->live();
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( true ) // First arg is $live_account = true (auto-detected as live).
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => true,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_live_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: No explicit mode (backwards compat).
+		$result = $this->onboarding_service->create_embedded_kyc_session( [] );
+
+		// Assert.
+		$this->assertNotEmpty( $result );
+	}
 }

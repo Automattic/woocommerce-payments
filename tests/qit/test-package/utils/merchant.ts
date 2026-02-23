@@ -12,6 +12,11 @@ type WidgetEntry = {
 	instance?: unknown;
 };
 
+/**
+ * Default theme used as fallback when active theme detection fails.
+ */
+const DEFAULT_THEME = 'twentytwentyfour';
+
 const parseJson = < T >( value: string, fallback: T ): T => {
 	try {
 		return JSON.parse( value ) as T;
@@ -48,7 +53,53 @@ export async function dataHasLoaded( page: Page ) {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 }
 
-const goToWooPaymentsSettings = async ( page: Page ) => {
+export const tableDataHasLoaded = async ( page: Page ) => {
+	await page
+		.locator( '.woocommerce-table__table.is-loading' )
+		.waitFor( { state: 'hidden' } );
+};
+
+export const waitAndSkipTourComponent = async (
+	page: Page,
+	containerClass: string
+) => {
+	try {
+		await page.waitForSelector( `${ containerClass }`, { timeout: 3000 } );
+		if ( await page.isVisible( `${ containerClass }` ) ) {
+			await page.click(
+				`${ containerClass } button.woocommerce-tour-kit-step-controls__close-btn`
+			);
+		}
+	} catch ( error ) {
+		// Do nothing. The tour component being not present shouldn't cause the test to fail.
+	}
+};
+
+export const ensureOrderIsProcessed = async ( page: Page ) => {
+	// Sync the most recent order to WooCommerce Analytics tables.
+	// We call the sync functions directly via PHP eval since the 'wc admin' CLI
+	// command no longer exists in current WooCommerce versions.
+	const syncCommand = `
+		$order = wc_get_orders( array( 'limit' => 1, 'orderby' => 'date', 'order' => 'DESC' ) )[0];
+		if ( $order ) {
+			$id = $order->get_id();
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Orders\\Stats\\DataStore::sync_order( $id );
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Products\\DataStore::sync_order_products( $id );
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Customers\\DataStore::sync_order_customer( $id );
+		}
+	`;
+
+	try {
+		await qit.wp( `eval '${ syncCommand.replace( /'/g, `'"'"'` ) }'`, true );
+	} catch ( error ) {
+		// Sync may fail in some environments, continue anyway
+	}
+
+	// Brief wait for analytics to update
+	await page.waitForTimeout( 2000 );
+};
+
+export const goToWooPaymentsSettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments',
 		{ waitUntil: 'load' }
@@ -56,12 +107,149 @@ const goToWooPaymentsSettings = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
-const goToMultiCurrencySettings = async ( page: Page ) => {
+export const goToTransactions = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
+export const goToDisputes = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
+export const goToOrderAnalytics = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fanalytics%2Forders',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
+export const goToPaymentsOverview = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=/payments/overview',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
+export const goToWooCommerceSettings = async ( page: Page, tab?: string ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-settings' + ( tab ? '&tab=' + tab : '' ),
+		{ waitUntil: 'load' }
+	);
+};
+
+export const goToSubscriptions = async ( page: Page ) => {
+	await page.goto( '/wp-admin/admin.php?page=wc-orders--shop_subscription', {
+		waitUntil: 'load',
+	} );
+};
+
+export const goToSubscriptionPage = async (
+	page: Page,
+	subscriptionId: string
+) => {
+	await goToSubscriptions( page );
+	await page.getByRole( 'link', { name: `#${ subscriptionId }` } ).click();
+	await dataHasLoaded( page );
+};
+
+export const goToActionScheduler = async (
+	page: Page,
+	status?: string,
+	search?: string
+) => {
+	let pageUrl = '/wp-admin/tools.php?page=action-scheduler';
+	if ( status ) {
+		pageUrl += `&status=${ status }`;
+	}
+	if ( search ) {
+		pageUrl += `&s=${ search }`;
+	}
+	await page.goto( pageUrl, {
+		waitUntil: 'load',
+	} );
+};
+
+export const goToMultiCurrencyOnboarding = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fmulti-currency-setup',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
+export const goToMultiCurrencySettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency',
 		{ waitUntil: 'load' }
 	);
 	await dataHasLoaded( page );
+};
+
+export const goToNewPost = async ( page: Page ) => {
+	await page.goto( '/wp-admin/post-new.php', {
+		waitUntil: 'load',
+	} );
+	await dataHasLoaded( page );
+};
+
+export const goToOrder = async ( page: Page, orderId: string ) => {
+	await page.goto(
+		`/wp-admin/admin.php?page=wc-orders&action=edit&id=${ orderId }`,
+		{
+			waitUntil: 'load',
+		}
+	);
+	await dataHasLoaded( page );
+};
+
+export const goToPaymentDetails = async (
+	page: Page,
+	paymentIntentId: string
+) => {
+	await page.goto(
+		`/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=${ paymentIntentId }`
+	);
+	await dataHasLoaded( page );
+};
+
+/**
+ * Navigate to payment details for a specific order.
+ * Extracts the payment intent ID from the order page and navigates to the payment details.
+ *
+ * @param page - The page object to use for navigation
+ * @param orderId - The WooCommerce order ID
+ * @return The URL of the payment details page
+ */
+export const goToPaymentDetailsForOrder = async (
+	page: Page,
+	orderId: string
+): Promise< string > => {
+	// Navigate to the order page
+	await goToOrder( page, orderId );
+
+	// Extract payment intent ID from order page
+	const paymentIntentId = await page
+		.locator( '#order_data' )
+		.getByRole( 'link', {
+			name: /pi_/,
+		} )
+		.innerText();
+
+	// Navigate to payment details
+	await goToPaymentDetails( page, paymentIntentId );
+	await dataHasLoaded( page );
+
+	// Return current URL for later use
+	return page.url();
 };
 
 const goToWooCommerceGeneralSettings = async ( page: Page ) => {
@@ -76,9 +264,11 @@ const expectSnackbarWithText = async (
 	text: string,
 	timeout = 10_000
 ) => {
-	const snackbar = page.locator( '.components-snackbar__content', {
-		hasText: text,
-	} );
+	const snackbar = page
+		.locator( '.components-snackbar__content', {
+			hasText: text,
+		} )
+		.first();
 	await expect( snackbar ).toBeVisible( { timeout } );
 	await page.waitForTimeout( 2_000 );
 };
@@ -100,6 +290,69 @@ export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await ensureSupportPhoneIsFilled( page );
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expectSnackbarWithText( page, 'Settings saved.' );
+};
+
+export const isCaptureLaterEnabled = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateCaptureLater = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const wasInitiallyEnabled = await page
+		.getByTestId( checkboxTestId )
+		.isChecked();
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).click();
+		await page
+			.getByRole( 'button', { name: 'Enable manual capture' } )
+			.click();
+		await page.getByRole( 'button', { name: 'Save changes' } ).click();
+		await page.waitForTimeout( 1000 );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateCaptureLater = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+	await page.getByTestId( 'capture-later-checkbox' ).uncheck();
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await page.waitForTimeout( 1000 );
+};
+
+export const isWooPayEnabled = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'woopay-toggle';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateWooPay = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'woopay-toggle';
+	const wasInitiallyEnabled = await isWooPayEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).check();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateWooPay = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+	await page.getByTestId( 'woopay-toggle' ).uncheck();
+	await saveWooPaymentsSettings( page );
 };
 
 export const saveMultiCurrencySettings = async ( page: Page ) => {
@@ -313,7 +566,7 @@ echo $order->get_id();
 	return orderId;
 };
 
-const disableAllEnabledCurrencies = async ( page: Page ) => {
+export const disableAllEnabledCurrencies = async ( page: Page ) => {
 	await goToMultiCurrencySettings( page );
 
 	const deleteButtons = () =>
@@ -408,6 +661,58 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	).toBeVisible();
 };
 
+export const removeCurrency = async ( page: Page, currencyCode: string ) => {
+	await goToMultiCurrencySettings( page );
+	const removeButton = page.locator(
+		`li.enabled-currency.${ currencyCode.toLowerCase() } .enabled-currency__action.delete`
+	);
+	await removeButton.click();
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
+	await expect(
+		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
+	).toBeHidden();
+};
+
+export const editCurrency = async ( page: Page, currencyCode: string ) => {
+	await goToMultiCurrencySettings( page );
+	const editButton = page.locator(
+		`.enabled-currency.${ currencyCode.toLowerCase() } .enabled-currency__action.edit`
+	);
+	await editButton.click();
+	await dataHasLoaded( page );
+};
+
+export const setCurrencyRate = async (
+	page: Page,
+	currencyCode: string,
+	rate: string
+) => {
+	await editCurrency( page, currencyCode );
+	await page.getByLabel( 'Manual' ).check();
+	await page.getByTestId( 'manual_rate_input' ).fill( rate );
+	await saveMultiCurrencySettings( page );
+};
+
+export const setCurrencyCharmPricing = async (
+	page: Page,
+	currencyCode: string,
+	charm: string
+) => {
+	await editCurrency( page, currencyCode );
+	await page.getByTestId( 'price_charm' ).selectOption( charm );
+	await saveMultiCurrencySettings( page );
+};
+
+export const setCurrencyPriceRounding = async (
+	page: Page,
+	currencyCode: string,
+	rounding: string
+) => {
+	await editCurrency( page, currencyCode );
+	await page.getByTestId( 'price_rounding' ).selectOption( rounding );
+	await saveMultiCurrencySettings( page );
+};
+
 export const enablePaymentMethods = async (
 	page: Page,
 	paymentMethods: string[]
@@ -453,12 +758,49 @@ export const disablePaymentMethods = async (
 	}
 };
 
-export const activateTheme = async ( slug: string ) => {
+export const getActiveThemeSlug = async (): Promise< string > => {
 	try {
-		await qit.wp( `theme is-installed ${ slug }`, true );
+		const result = await qit.wp(
+			'theme list --status=active --field=name',
+			true
+		);
+		// Handle case where result might be undefined or not a string
+		if ( typeof result === 'string' && result.trim() ) {
+			return result.trim();
+		}
+		// Fallback to getting active theme via option
+		const activeTheme = await qit.wp( 'option get stylesheet', true );
+		return typeof activeTheme === 'string'
+			? activeTheme.trim()
+			: DEFAULT_THEME;
 	} catch ( error ) {
-		await qit.wp( `theme install ${ slug } --force`, true );
+		// Default fallback theme
+		return DEFAULT_THEME;
+	}
+};
+
+export const activateTheme = async ( slug: string ) => {
+	// Skip if no slug provided or if it's already the fallback
+	if ( ! slug || slug === 'undefined' ) {
+		return;
 	}
 
-	await qit.wp( `theme activate ${ slug }`, true );
+	try {
+		// Check if theme is already installed
+		await qit.wp( `theme is-installed ${ slug }`, true );
+	} catch ( error ) {
+		// Try to install the theme if not found
+		try {
+			await qit.wp( `theme install ${ slug } --force`, true );
+		} catch ( installError ) {
+			// If installation fails, just return - we can't activate what we can't install
+			return;
+		}
+	}
+
+	try {
+		await qit.wp( `theme activate ${ slug }`, true );
+	} catch ( activationError ) {
+		// Theme activation failed, but we don't want to crash the test
+	}
 };

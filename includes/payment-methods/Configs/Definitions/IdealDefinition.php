@@ -53,7 +53,19 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'iDEAL', 'woocommerce-payments' );
+		return __( 'iDEAL | Wero', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Get a dynamic title based on charge details from Stripe.
+	 *
+	 * @param string $account_country The merchant's account country.
+	 * @param array  $payment_details The payment method details from the Stripe charge.
+	 *
+	 * @return string|null The dynamic title, or null to use the default get_title().
+	 */
+	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+		return null;
 	}
 
 	/**
@@ -74,7 +86,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Expand your business with iDEAL — Netherlands\'s most popular payment method.', 'woocommerce-payments' );
+		return __( 'Expand your business with iDEAL | Wero — Netherlands\'s most popular payment method.', 'woocommerce-payments' );
 	}
 
 	/**
@@ -126,7 +138,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string Returns regular icon URL if no dark mode icon exists
 	 */
 	public static function get_dark_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/ideal-dark.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -137,7 +149,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/ideal.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

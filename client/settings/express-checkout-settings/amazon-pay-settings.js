@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -14,8 +14,14 @@ import {
 	BaseControl,
 	RadioControl,
 } from '@wordpress/components';
-import { usePaymentRequestButtonSize } from 'wcpay/data';
+import {
+	usePaymentRequestButtonSize,
+	useAmazonPayEnabledSettings,
+	useAmazonPayLocations,
+	useExpressCheckoutInPaymentMethodsEnabledSettings,
+} from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
+import ExpressCheckoutSettingsNotices from './express-checkout-settings-notices';
 
 const makeButtonSizeText = ( string ) =>
 	interpolateComponents( {
@@ -62,6 +68,7 @@ const GeneralSettings = () => {
 
 	return (
 		<CardBody className="wcpay-card-body">
+			<ExpressCheckoutSettingsNotices currentMethod="amazon_pay" />
 			<RadioControl
 				label={ __( 'Button size', 'woocommerce-payments' ) }
 				selected={ size }
@@ -73,21 +80,21 @@ const GeneralSettings = () => {
 };
 
 const AmazonPaySettings = ( { section } ) => {
-	const [ isAmazonPayEnabled, setIsAmazonPayEnabled ] = useState( false );
-	const [ amazonPayLocations, setAmazonPayLocations ] = useState( [
-		'product',
-		'cart',
-		'checkout',
-	] );
+	const [
+		isAmazonPayEnabled,
+		updateIsAmazonPayEnabled,
+	] = useAmazonPayEnabledSettings();
+	const [
+		amazonPayLocations,
+		updateAmazonPayLocations,
+	] = useAmazonPayLocations();
+	const [
+		isExpressCheckoutInPaymentMethodsEnabled,
+		updateIsExpressCheckoutInPaymentMethodsEnabled,
+	] = useExpressCheckoutInPaymentMethodsEnabledSettings();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
-		if ( isChecked ) {
-			setAmazonPayLocations( [ ...amazonPayLocations, location ] );
-		} else {
-			setAmazonPayLocations(
-				amazonPayLocations.filter( ( name ) => name !== location )
-			);
-		}
+		updateAmazonPayLocations( location, isChecked );
 	};
 
 	return (
@@ -95,16 +102,39 @@ const AmazonPaySettings = ( { section } ) => {
 			{ section === 'enable' && (
 				<CardBody className="wcpay-card-body">
 					<div className="wcpay-payment-request-settings__enable">
+						{ wcpaySettings.featureFlags
+							.isDynamicCheckoutPlaceOrderButtonEnabled && (
+							<CheckboxControl
+								className="wcpay-payment-request-settings__enable__checkbox"
+								checked={
+									isExpressCheckoutInPaymentMethodsEnabled
+								}
+								onChange={
+									updateIsExpressCheckoutInPaymentMethodsEnabled
+								}
+								label={ __(
+									'Enable express checkout methods as options in the payment methods list',
+									'woocommerce-payments'
+								) }
+								help={ __(
+									// Amazon Pay settings page always has Amazon Pay available.
+									'Apple Pay, Google Pay, and Amazon Pay will appear as options in the payment methods list ' +
+										'instead of as separate express checkout buttons.',
+									'woocommerce-payments'
+								) }
+								__nextHasNoMarginBottom
+							/>
+						) }
 						<CheckboxControl
 							className="wcpay-payment-request-settings__enable__checkbox"
 							checked={ isAmazonPayEnabled }
-							onChange={ setIsAmazonPayEnabled }
+							onChange={ updateIsAmazonPayEnabled }
 							label={ __(
 								'Enable Amazon Pay as an express payment button',
 								'woocommerce-payments'
 							) }
 							help={ __(
-								'Show Amazon Pay button on store pages for faster purchases. ' +
+								'Show Amazon Pay buttons on store pages for faster purchases. ' +
 									'Customers with Amazon accounts can use their stored payment information.',
 								'woocommerce-payments'
 							) }

@@ -1,83 +1,114 @@
 /**
+ * External dependencies
+ */
+import { memo, useMemo } from 'react';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import { PaymentMethodsLogos } from './payment-methods-logos';
 import { getCardBrands } from 'wcpay/utils/card-brands';
-import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { __ } from '@wordpress/i18n';
-import './style.scss';
-import { useEffect, useState, useRef } from '@wordpress/element';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
-const breakpointConfigs = [
+
+const cardBrandsBreakpointConfigs = [
 	{ breakpoint: 550, maxElements: 2 },
 	{ breakpoint: 330, maxElements: 1 },
 ];
 
-export default ( { api, title, iconLight, iconDark, upeName } ) => {
-	const containerRef = useRef( null );
+/**
+ * Renders the payment method icon along with the test mode badge.
+ * The badge is included here so it can be positioned via CSS within the same flex container.
+ * For card payments, shows card brand logos.
+ * For other payment methods, shows the payment method icon based on theme.
+ *
+ * @param {Object} props Component props.
+ * @param {string} props.paymentMethodId The payment method ID (e.g., 'card', 'giropay').
+ * @param {string} props.icon The light theme icon URL.
+ * @param {string} props.darkIcon The dark theme icon URL.
+ * @param {string} props.title The payment method title for alt text.
+ * @return {JSX.Element} The payment method icon component.
+ */
+const PaymentMethodIcon = memo( function PaymentMethodIcon( {
+	paymentMethodId,
+	icon,
+	darkIcon,
+	title,
+} ) {
 	const isTestMode = getUPEConfig( 'testMode' );
-	const [ appearance, setAppearance ] = useState(
-		getUPEConfig( 'wcBlocksUPEAppearance' )
+
+	const testModeBadge = isTestMode && (
+		<span className="test-mode badge">
+			{ __( 'Test Mode', 'woocommerce-payments' ) }
+		</span>
 	);
 
-	const [ upeAppearanceTheme, setUpeAppearanceTheme ] = useState(
-		getUPEConfig( 'wcBlocksUPEAppearanceTheme' )
-	);
-
-	useEffect( () => {
-		async function generateUPEAppearance() {
-			if ( ! containerRef.current ) {
-				return;
-			}
-			// Generate UPE input styles.
-			let upeAppearance = getAppearance(
-				'blocks_checkout',
-				false,
-				containerRef.current.ownerDocument
-			);
-			upeAppearance = await api.saveUPEAppearance(
-				upeAppearance,
-				'blocks_checkout'
-			);
-			setAppearance( upeAppearance );
-			setUpeAppearanceTheme( upeAppearance.theme );
-		}
-
-		if ( ! appearance ) {
-			generateUPEAppearance();
-		}
-	}, [ api, appearance ] );
-
-	const stripe = useStripeForUPE( api, upeName );
-
-	if ( ! stripe ) {
-		return null;
-	}
-
-	return (
-		<div ref={ containerRef } className="payment-method-label">
-			<span className="payment-method-label__label">{ title }</span>
-			{ isTestMode && (
-				<span className="test-mode badge">
-					{ __( 'Test Mode', 'woocommerce-payments' ) }
-				</span>
-			) }
-			{ upeName === 'card' ? (
+	if ( paymentMethodId === 'card' ) {
+		return (
+			<>
+				{ testModeBadge }
 				<PaymentMethodsLogos
 					maxElements={ 4 }
 					paymentMethods={ getCardBrands() }
-					breakpointConfigs={ breakpointConfigs }
+					breakpointConfigs={ cardBrandsBreakpointConfigs }
 				/>
-			) : (
-				<img
-					className="payment-methods--logos"
-					src={
-						upeAppearanceTheme === 'night' ? iconDark : iconLight
-					}
-					alt={ title }
-				/>
-			) }
-		</div>
+			</>
+		);
+	}
+
+	const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
+	const iconSrc =
+		upeAppearanceTheme === 'night' && darkIcon ? darkIcon : icon;
+
+	return (
+		<>
+			{ testModeBadge }
+			<img
+				className="wcpay-payment-method-icon"
+				src={ iconSrc }
+				alt={ title }
+			/>
+		</>
 	);
+} );
+
+/**
+ * Payment method label component that uses the WooCommerce Blocks PaymentMethodLabel
+ * with the icon prop for proper icon positioning.
+ *
+ * @param {Object} props Component props passed by WooCommerce Blocks.
+ * @param {Object} props.components Components provided by WooCommerce Blocks, including PaymentMethodLabel.
+ * @param {string} props.title The payment method title to display.
+ * @param {string} props.paymentMethodId The payment method ID (e.g., 'card', 'giropay').
+ * @param {string} props.icon The light theme icon URL.
+ * @param {string} props.darkIcon The dark theme icon URL.
+ * @return {JSX.Element} The payment method label component.
+ */
+const PaymentMethodLabel = ( {
+	components,
+	title,
+	paymentMethodId,
+	icon,
+	darkIcon,
+} ) => {
+	const { PaymentMethodLabel: Label } = components;
+
+	const iconProp = useMemo(
+		() => (
+			<PaymentMethodIcon
+				paymentMethodId={ paymentMethodId }
+				icon={ icon }
+				darkIcon={ darkIcon }
+				title={ title }
+			/>
+		),
+		[ paymentMethodId, icon, darkIcon, title ]
+	);
+
+	return useMemo( () => <Label text={ title } icon={ iconProp } />, [
+		title,
+		iconProp,
+	] );
 };
+
+export default PaymentMethodLabel;

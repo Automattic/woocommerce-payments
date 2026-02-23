@@ -62,11 +62,9 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 	return updateSettingsValues( { is_payment_request_enabled: isEnabled } );
 }
 
-export function updateIsAppleGooglePayInPaymentMethodsOptionsEnabled(
-	isEnabled
-) {
+export function updateIsExpressCheckoutInPaymentMethodsEnabled( isEnabled ) {
 	return updateSettingsValues( {
-		is_apple_google_pay_in_payment_methods_options_enabled: isEnabled,
+		is_express_checkout_in_payment_methods_enabled: isEnabled,
 	} );
 }
 
@@ -219,12 +217,6 @@ export function* saveSettings() {
 	return error === null;
 }
 
-export function updatePaymentRequestLocations( locations ) {
-	return updateSettingsValues( {
-		payment_request_enabled_locations: [ ...locations ],
-	} );
-}
-
 export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
 }
@@ -247,12 +239,6 @@ export function updateWooPayStoreLogo( storeLogo ) {
 	} );
 }
 
-export function updateWooPayLocations( locations ) {
-	return updateSettingsValues( {
-		woopay_enabled_locations: [ ...locations ],
-	} );
-}
-
 export function updateProtectionLevel( level ) {
 	return updateSettingsValues( { current_protection_level: level } );
 }
@@ -265,6 +251,28 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 
 export function updateIsStripeBillingEnabled( isEnabled ) {
 	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}
+
+export function updateAccountCommunicationsEmail( email ) {
+	return updateSettingsValues( { account_communications_email: email } );
+}
+
+export function updateExpressCheckoutProductMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_product_methods: [ ...methods ],
+	} );
+}
+
+export function updateExpressCheckoutCartMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_cart_methods: [ ...methods ],
+	} );
+}
+
+export function updateExpressCheckoutCheckoutMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_checkout_methods: [ ...methods ],
+	} );
 }
 
 export function* submitStripeBillingSubscriptionMigration() {
@@ -292,7 +300,7 @@ export function* submitStripeBillingSubscriptionMigration() {
 }
 
 export function saveOption( optionName, value ) {
-	directApiFetch( {
+	return directApiFetch( {
 		path: `${ NAMESPACE }/settings/${ optionName }`,
 		method: 'post',
 		data: { value },

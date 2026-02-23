@@ -3,6 +3,10 @@
  */
 export * from './normalize';
 export * from './shipping-fields';
+export {
+	getPaymentMethodsOverride,
+	adjustButtonHeights,
+} from './payment-method-overrides';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 interface MyWindow extends Window {
@@ -40,6 +44,8 @@ export interface WCPayExpressCheckoutParams {
 		needs_shipping: boolean;
 		currency_decimals: number;
 	};
+
+	has_subscription?: boolean;
 
 	/**
 	 * Indicaters whether the page has a Cart or Checkout Block on it.
@@ -88,6 +94,14 @@ export interface WCPayExpressCheckoutParams {
 	};
 	total_label: string;
 	wc_ajax_url: string;
+
+	/**
+	 * The available express checkout methods for the current page context.
+	 */
+	enabled_methods: Array< 'payment_request' | 'amazon_pay' >;
+	flags: {
+		isEceUsingConfirmationTokens: boolean;
+	};
 }
 
 declare global {
@@ -202,10 +216,37 @@ export const getExpressCheckoutButtonAppearance = (
 };
 
 /**
+ * Checks if the current cart or product context contains a subscription.
+ */
+const hasSubscriptionInContext = (): boolean => {
+	const productType = getExpressCheckoutData( 'product' )?.product_type ?? '';
+	const isSubscriptionProduct = [
+		'subscription',
+		'variable-subscription',
+		'subscription_variation',
+	].includes( productType );
+
+	return (
+		Boolean( getExpressCheckoutData( 'has_subscription' ) ) ||
+		isSubscriptionProduct
+	);
+};
+
+/**
+ * Returns the Stripe Elements mode based on the current context.
+ * Returns 'subscription' for subscription products (to handle payment method saving internally),
+ * or 'payment' for regular products.
+ */
+export const getStripeElementsMode = (): 'subscription' | 'payment' => {
+	return hasSubscriptionInContext() ? 'subscription' : 'payment';
+};
+
+/**
  * Returns the style settings for the Express Checkout buttons.
  */
 export const getExpressCheckoutButtonStyleSettings = () => {
 	const buttonSettings = getExpressCheckoutData( 'button' );
+	const enabledMethods = getExpressCheckoutData( 'enabled_methods' ) ?? [];
 
 	const mapWooPaymentsThemeToButtonTheme = (
 		buttonType: string,
@@ -237,11 +278,17 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 			? 'plain'
 			: buttonSettings?.type ?? 'plain';
 
+	const isGoogleApplePayEnabled = enabledMethods.includes(
+		'payment_request'
+	);
+
 	return {
 		paymentMethods: {
-			applePay: 'always',
-			googlePay: 'always',
-			amazonPay: 'never',
+			applePay: isGoogleApplePayEnabled ? 'always' : 'never',
+			googlePay: isGoogleApplePayEnabled ? 'always' : 'never',
+			amazonPay: enabledMethods.includes( 'amazon_pay' )
+				? 'auto'
+				: 'never',
 			link: 'never',
 			paypal: 'never',
 			klarna: 'never',

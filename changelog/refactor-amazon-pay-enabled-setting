@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: deprecate is_amazon_pay_enabled setting in favor of enabled_payment_method_ids

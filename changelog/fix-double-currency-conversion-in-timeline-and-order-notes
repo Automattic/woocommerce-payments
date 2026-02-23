@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix the case of double exchange rate applied to the displayed fee amount in some scenarios.

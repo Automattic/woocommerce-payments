@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix memory exhaustion and null customer fatal errors in BNPL site messaging on product and cart pages

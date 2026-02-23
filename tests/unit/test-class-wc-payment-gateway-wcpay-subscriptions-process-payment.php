@@ -7,6 +7,7 @@
 
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
+use WCPay\Core\Server\Request\Create_Setup_Intention;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -329,6 +330,67 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
 			}
 		}
+	}
+
+	public function test_zero_dollar_subscription_with_confirmation_token() {
+		$confirmation_token = 'ctoken_mock';
+		$order              = WC_Helper_Order::create_order( self::USER_ID, 0 );
+		$subscriptions      = [ new WC_Subscription() ];
+		$subscriptions[0]->set_parent( $order );
+
+		$this->mock_wcs_order_contains_subscription( true );
+		$this->mock_wcs_get_subscriptions_for_order( $subscriptions );
+
+		$_POST = [
+			'wcpay-confirmation-token' => $confirmation_token,
+			'payment_method'           => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		];
+
+		// For ECE confirmation tokens, Create_Setup_Intention is used (unconfirmed).
+		// The frontend will confirm the intent with the confirmation token.
+		$unconfirmed_setup_intent = WC_Helper_Intention::create_setup_intention(
+			[
+				'id'             => self::SETUP_INTENT_ID,
+				'status'         => Intent_Status::REQUIRES_PAYMENT_METHOD,
+				'client_secret'  => 'test_client_secret',
+				'next_action'    => [],
+				'payment_method' => null, // No payment method yet - will be attached during frontend confirmation.
+			]
+		);
+
+		$request = $this->mock_wcpay_request( Create_Setup_Intention::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_customer' )
+			->with( self::CUSTOMER_ID );
+
+		// For ECE, set_payment_method_types is called instead of set_payment_method.
+		$request->expects( $this->once() )
+			->method( 'set_payment_method_types' );
+
+		$request->expects( $this->once() )
+			->method( 'set_metadata' );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $unconfirmed_setup_intent );
+
+		// No token is added at this point - the payment method is unknown until frontend confirmation.
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$result       = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		$result_order = wc_get_order( $order->get_id() );
+
+		// The result should be success with a redirect containing the confirmation token.
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertStringContainsString( '#wcpay-confirm-si:', $result['redirect'] );
+		$this->assertStringContainsString( $confirmation_token, $result['redirect'] );
+
+		// The order status is NOT 'processing' yet - it will be set after frontend confirmation
+		// via the update_order_status AJAX handler. At this point it should not be 'failed'.
+		$this->assertNotEquals( Order_Status::FAILED, $result_order->get_status() );
 	}
 
 	public function test_new_card_is_added_before_status_update() {

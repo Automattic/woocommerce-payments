@@ -356,7 +356,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							onChange={ setVisaComplianceConditionAccepted }
 							checked={ isVisaComplianceConditionAccepted }
 							label={ __(
-								'By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a $500 USD fee, which will be refunded only if you win the case.',
+								'By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a $500 USD network fee, which will be refunded if you win the dispute.',
 								'woocommerce-payments'
 							) }
 							__nextHasNoMarginBottom

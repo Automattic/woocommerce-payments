@@ -10,7 +10,7 @@ import { apiFetch } from '@wordpress/data-controls';
 import {
 	saveSettings,
 	updateIsSavingSettings,
-	updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+	updateIsExpressCheckoutInPaymentMethodsEnabled,
 } from '../actions';
 
 jest.mock( '@wordpress/data' );
@@ -165,29 +165,29 @@ describe( 'Settings actions tests', () => {
 		} );
 	} );
 
-	describe( 'updateIsAppleGooglePayInPaymentMethodsOptionsEnabled()', () => {
+	describe( 'updateIsExpressCheckoutInPaymentMethodsEnabled()', () => {
 		test( 'returns action with correct payload for enabled state', () => {
-			const action = updateIsAppleGooglePayInPaymentMethodsOptionsEnabled(
+			const action = updateIsExpressCheckoutInPaymentMethodsEnabled(
 				true
 			);
 
 			expect( action ).toEqual( {
 				type: 'SET_SETTINGS_VALUES',
 				payload: {
-					is_apple_google_pay_in_payment_methods_options_enabled: true,
+					is_express_checkout_in_payment_methods_enabled: true,
 				},
 			} );
 		} );
 
 		test( 'returns action with correct payload for disabled state', () => {
-			const action = updateIsAppleGooglePayInPaymentMethodsOptionsEnabled(
+			const action = updateIsExpressCheckoutInPaymentMethodsEnabled(
 				false
 			);
 
 			expect( action ).toEqual( {
 				type: 'SET_SETTINGS_VALUES',
 				payload: {
-					is_apple_google_pay_in_payment_methods_options_enabled: false,
+					is_express_checkout_in_payment_methods_enabled: false,
 				},
 			} );
 		} );

@@ -118,6 +118,7 @@ describe( 'Multi-Currency store settings', () => {
 		expect( submitStoreSettingsUpdate ).toBeCalledWith(
 			false,
 			false,
+			'speed',
 			true
 		);
 
@@ -130,7 +131,12 @@ describe( 'Multi-Currency store settings', () => {
 				name: /Continue/,
 			} )
 		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith( true, true, true );
+		expect( submitStoreSettingsUpdate ).toBeCalledWith(
+			true,
+			true,
+			'speed',
+			true
+		);
 	} );
 
 	test( 'store settings are saved with continue button click', () => {
@@ -144,6 +150,7 @@ describe( 'Multi-Currency store settings', () => {
 		expect( submitStoreSettingsUpdate ).toBeCalledWith(
 			false,
 			false,
+			'speed',
 			false
 		);
 
@@ -156,7 +163,12 @@ describe( 'Multi-Currency store settings', () => {
 				name: /Continue/,
 			} )
 		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith( true, true, false );
+		expect( submitStoreSettingsUpdate ).toBeCalledWith(
+			true,
+			true,
+			'speed',
+			false
+		);
 	} );
 
 	test( 'store settings preview should open a modal with an iframe', () => {

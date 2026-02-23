@@ -1,5 +1,11 @@
 ## WooPayments QIT Tests
 
+## Local Development
+
+For a faster workflow when writing or debugging E2E tests locally, see [LOCAL_DEVELOPMENT.md](./LOCAL_DEVELOPMENT.md).
+
+This allows you to start the test environment once and run Playwright directly, avoiding the overhead of full orchestration on each run.
+
 We use the [QIT toolkit](https://qit.woo.com/docs/) for automated testing including security, PHPStan, and E2E tests.
 
 ### Setup
@@ -59,11 +65,32 @@ Before running E2E tests, build the plugin package:
 npm run build:release
 ```
 
-This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests with the required environment variables:
+This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests with the required environment variables.
+
+##### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run test:qit-e2e` | Run all E2E tests |
+| `npm run test:qit-e2e:shopper` | Run shopper tests only |
+| `npm run test:qit-e2e:merchant` | Run merchant tests only |
+| `npm run test:qit-e2e:subscriptions` | Run subscription tests (installs WC Subscriptions automatically) |
+| `npm run test:qit-e2e:ci` | Run tests locally the same way CI does (sets `CI=true`) |
+
+##### Usage Examples
 
 ```bash
 # Run all E2E tests (prepend with env vars from local.env)
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e
+
+# Run only shopper tests
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:shopper
+
+# Run only merchant tests
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:merchant
+
+# Run subscription tests (automatically installs WooCommerce Subscriptions)
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e:subscriptions
 
 # Run specific test file (passthrough to Playwright)
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- shopper-checkout-purchase.spec.ts
@@ -93,3 +120,27 @@ npm run test:qit-e2e
 #### "Card testing attempt detected" errors
 
 If checkout tests fail with "Card testing attempt detected" errors, the test account may need server-side configuration to disable fraud protection for E2E testing. Contact the payments team for assistance.
+
+#### GitHub token errors during `composer install`
+
+When running `composer install`, you may encounter:
+
+```text
+Could not fetch https://api.github.com/repos/woocommerce/qit-cli/zipball/...
+please review your configured GitHub OAuth token
+```
+
+**Solution:** Use a fine-grained GitHub token with read-only access to public repositories.
+
+1. Go to GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
+2. Create a new token with:
+   - **Repository access:** Public repositories (read-only)
+   - No additional permissions required
+3. Configure Composer to use the token:
+
+   ```bash
+   composer config --global github-oauth.github.com YOUR_TOKEN
+   ```
+
+> [!NOTE]
+> Classic PAT tokens may not work for accessing woocommerce repos. Fine-grained tokens with public repo read access are sufficient.

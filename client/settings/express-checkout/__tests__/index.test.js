@@ -17,8 +17,12 @@ import {
 	useWooPayEnabledSettings,
 	useWooPayShowIncompatibilityNotice,
 	useGetDuplicatedPaymentMethodIds,
+	useAmazonPayEnabledSettings,
+	useGetPaymentMethodStatuses,
+	useManualCapture,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../../wcpay-settings-context';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 
 jest.mock( 'wcpay/data', () => ( {
 	useTestMode: jest.fn().mockReturnValue( [] ),
@@ -28,6 +32,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
+	useAmazonPayEnabledSettings: jest.fn(),
+	useGetPaymentMethodStatuses: jest.fn(),
+	useManualCapture: jest.fn(),
 } ) );
 
 const getMockPaymentRequestEnabledSettings = (
@@ -48,10 +55,16 @@ describe( 'ExpressCheckout', () => {
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( false, jest.fn() )
 		);
+		useAmazonPayEnabledSettings.mockReturnValue( [ false, jest.fn() ] );
 
 		useWooPayShowIncompatibilityNotice.mockReturnValue( false );
 
 		useGetDuplicatedPaymentMethodIds.mockReturnValue( [] );
+
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			amazon_pay_payments: upeCapabilityStatuses.ACTIVE,
+		} );
+		useManualCapture.mockReturnValue( [ false ] );
 	} );
 
 	it( 'should dispatch enabled status update if express checkout is being toggled', async () => {
@@ -231,7 +244,11 @@ describe( 'ExpressCheckout', () => {
 			accountStatus: {},
 			featureFlags: { woopay: true, amazonPay: true },
 		};
-		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'link',
+			'card',
+			'amazon_pay',
+		] );
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
 		render(

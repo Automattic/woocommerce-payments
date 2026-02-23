@@ -15,7 +15,7 @@ import {
 	useTestMode,
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
-	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
+	useExpressCheckoutInPaymentMethodsEnabledSettings,
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
@@ -234,60 +234,103 @@ describe( 'Settings hooks tests', () => {
 		} );
 	} );
 
-	describe( 'useAppleGooglePayInPaymentMethodsOptionsEnabledSettings()', () => {
-		test( 'returns Apple Google Pay in payment methods options settings from selector', () => {
+	describe( 'useExpressCheckoutInPaymentMethodsEnabledSettings()', () => {
+		test( 'returns express checkout in payment methods settings from selector', () => {
 			actions = {
-				updateIsAppleGooglePayInPaymentMethodsOptionsEnabled: jest.fn(),
+				updateIsExpressCheckoutInPaymentMethodsEnabled: jest.fn(),
 			};
 
 			selectors = {
-				getIsAppleGooglePayInPaymentMethodsOptionsEnabled: jest.fn(
+				getIsExpressCheckoutInPaymentMethodsEnabled: jest.fn(
 					() => true
 				),
 			};
 
 			const [
-				isAppleGooglePayInPaymentMethodsOptionsEnabled,
-				updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
-			] = useAppleGooglePayInPaymentMethodsOptionsEnabledSettings();
+				isExpressCheckoutInPaymentMethodsEnabled,
+				updateIsExpressCheckoutInPaymentMethodsEnabled,
+			] = useExpressCheckoutInPaymentMethodsEnabledSettings();
 
-			updateIsAppleGooglePayInPaymentMethodsOptionsEnabled( false );
+			updateIsExpressCheckoutInPaymentMethodsEnabled( false );
 
-			expect( isAppleGooglePayInPaymentMethodsOptionsEnabled ).toEqual(
-				true
-			);
+			expect( isExpressCheckoutInPaymentMethodsEnabled ).toEqual( true );
 			expect(
-				actions.updateIsAppleGooglePayInPaymentMethodsOptionsEnabled
+				actions.updateIsExpressCheckoutInPaymentMethodsEnabled
 			).toHaveBeenCalledWith( false );
 		} );
 	} );
 
 	describe( 'usePaymentRequestLocations()', () => {
-		test( 'returns and updates payment request locations', () => {
-			const locationsBeforeUpdate = [];
-			const locationsAfterUpdate = [ 'cart' ];
-
+		test( 'returns locations where payment_request is enabled', () => {
 			actions = {
-				updatePaymentRequestLocations: jest.fn(),
+				updateExpressCheckoutProductMethods: jest.fn(),
+				updateExpressCheckoutCartMethods: jest.fn(),
+				updateExpressCheckoutCheckoutMethods: jest.fn(),
 			};
 
 			selectors = {
-				getPaymentRequestLocations: jest.fn(
-					() => locationsBeforeUpdate
-				),
+				getExpressCheckoutProductMethods: jest.fn( () => [
+					'payment_request',
+					'woopay',
+				] ),
+				getExpressCheckoutCartMethods: jest.fn( () => [ 'woopay' ] ),
+				getExpressCheckoutCheckoutMethods: jest.fn( () => [
+					'payment_request',
+				] ),
 			};
 
-			const [
-				paymentRequestLocations,
-				updatePaymentRequestLocations,
-			] = usePaymentRequestLocations();
+			const [ enabledLocations ] = usePaymentRequestLocations();
 
-			updatePaymentRequestLocations( locationsAfterUpdate );
+			expect( enabledLocations ).toEqual( [ 'product', 'checkout' ] );
+		} );
 
-			expect( paymentRequestLocations ).toEqual( locationsBeforeUpdate );
+		test( 'updater adds payment_request to a location when checked', () => {
+			actions = {
+				updateExpressCheckoutProductMethods: jest.fn(),
+				updateExpressCheckoutCartMethods: jest.fn(),
+				updateExpressCheckoutCheckoutMethods: jest.fn(),
+			};
+
+			selectors = {
+				getExpressCheckoutProductMethods: jest.fn( () => [ 'woopay' ] ),
+				getExpressCheckoutCartMethods: jest.fn( () => [ 'woopay' ] ),
+				getExpressCheckoutCheckoutMethods: jest.fn( () => [] ),
+			};
+
+			const [ , locationUpdater ] = usePaymentRequestLocations();
+
+			locationUpdater( 'cart', true );
+
 			expect(
-				actions.updatePaymentRequestLocations
-			).toHaveBeenCalledWith( locationsAfterUpdate );
+				actions.updateExpressCheckoutCartMethods
+			).toHaveBeenCalledWith( [ 'woopay', 'payment_request' ] );
+		} );
+
+		test( 'updater removes payment_request from a location when unchecked', () => {
+			actions = {
+				updateExpressCheckoutProductMethods: jest.fn(),
+				updateExpressCheckoutCartMethods: jest.fn(),
+				updateExpressCheckoutCheckoutMethods: jest.fn(),
+			};
+
+			selectors = {
+				getExpressCheckoutProductMethods: jest.fn( () => [
+					'payment_request',
+					'woopay',
+				] ),
+				getExpressCheckoutCartMethods: jest.fn( () => [
+					'payment_request',
+				] ),
+				getExpressCheckoutCheckoutMethods: jest.fn( () => [] ),
+			};
+
+			const [ , locationUpdater ] = usePaymentRequestLocations();
+
+			locationUpdater( 'product', false );
+
+			expect(
+				actions.updateExpressCheckoutProductMethods
+			).toHaveBeenCalledWith( [ 'woopay' ] );
 		} );
 	} );
 

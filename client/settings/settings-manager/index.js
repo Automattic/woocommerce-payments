@@ -23,6 +23,9 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
+import NotificationSettings, {
+	NotificationSettingsDescription,
+} from '../notification-settings';
 import {
 	useDepositDelayDays,
 	useGetDuplicatedPaymentMethodIds,
@@ -145,6 +148,9 @@ const AdvancedDescription = () => {
 
 const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
+		true
+	);
+	const [ isNotificationEmailValid, setNotificationEmailValid ] = useState(
 		true
 	);
 
@@ -282,6 +288,20 @@ const SettingsManager = () => {
 				</div>
 			</SettingsSection>
 			<SettingsSection
+				description={ NotificationSettingsDescription }
+				id="notification-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<NotificationSettings
+							setNotificationEmailValid={
+								setNotificationEmailValid
+							}
+						/>
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
 				description={ FraudProtectionDescription }
 				id="fp-settings"
 			>
@@ -301,7 +321,11 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
+			<SaveSettingsSection
+				disabled={
+					! isTransactionInputsValid || ! isNotificationEmailValid
+				}
+			/>
 			<VatFormModal
 				isModalOpen={ isVatFormModalOpen }
 				setModalOpen={ handleVatFormModalClose }

@@ -397,7 +397,7 @@ export const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
 		return sprintf(
 			/* translators: %1$s: discount percentage, %2$s: total payment volume until this promotion expires, %3$s: End date of the promotion */
 			__(
-				'You are getting %1$s%% off on processing fees for the first %2$s of total payment volume or through %3$s.',
+				'You are saving %1$s%% on processing fees for the first %2$s of total payment volume or through %3$s.',
 				'woocommerce-payments'
 			),
 			discountPercentage,
@@ -408,7 +408,7 @@ export const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
 		return sprintf(
 			/* translators: %1$s: discount percentage, %2$s: total payment volume until this promotion expires */
 			__(
-				'You are getting %1$s%% off on processing fees for the first %2$s of total payment volume.',
+				'You are saving %1$s%% on processing fees for the first %2$s of total payment volume.',
 				'woocommerce-payments'
 			),
 			discountPercentage,
@@ -418,7 +418,7 @@ export const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
 		return sprintf(
 			/* translators: %1$s: discount percentage, %2$s: End date of the promotion */
 			__(
-				'You are getting %1$s%% off on processing fees through %2$s.',
+				'You are saving %1$s%% on processing fees through %2$s.',
 				'woocommerce-payments'
 			),
 			discountPercentage,
@@ -428,10 +428,7 @@ export const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
 
 	return sprintf(
 		/* translators: %s: discount percentage */
-		__(
-			'You are getting %s%% off on processing fees.',
-			'woocommerce-payments'
-		),
+		__( 'You are saving %s%% on processing fees.', 'woocommerce-payments' ),
 		discountPercentage
 	);
 };

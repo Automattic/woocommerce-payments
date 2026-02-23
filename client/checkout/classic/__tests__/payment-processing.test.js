@@ -22,10 +22,12 @@ import {
 	appendPaymentMethodErrorDataToForm,
 	appendPaymentMethodIdToForm,
 	getSelectedUPEGatewayPaymentMethod,
-} from 'wcpay/checkout/utils/upe';
+} from '../upe-utils';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( '../../upe-styles' );
+
+jest.mock( '../upe-utils' );
 
 jest.mock( 'wcpay/checkout/utils/upe' );
 
@@ -49,7 +51,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 					forceNetworkSavedCards: false,
 				},
 				ideal: {
-					label: 'iDEAL',
+					label: 'iDEAL | Wero',
 					forceNetworkSavedCards: false,
 				},
 				sepa: {
@@ -140,7 +142,7 @@ describe( 'Stripe Payment Element mounting', () => {
 						forceNetworkSavedCards: false,
 					},
 					ideal: {
-						label: 'iDEAL',
+						label: 'iDEAL | Wero',
 						forceNetworkSavedCards: false,
 					},
 					sepa: {

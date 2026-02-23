@@ -425,18 +425,11 @@ class WC_Payments_PM_Promotions_Service {
 	 * @param string $error_message     The error message.
 	 */
 	private function log_gateway_error( string $payment_method_id, string $error_message ): void {
-		if ( function_exists( 'wc_get_logger' ) ) {
-			$logger = wc_get_logger();
-			$logger->warning(
-				sprintf(
-					/* translators: 1: Payment method ID, 2: Error message */
-					'Failed to enable payment method %1$s: %2$s',
-					$payment_method_id,
-					$error_message
-				),
-				[ 'source' => 'woopayments' ]
-			);
-		}
+		/* translators: 1: Payment method ID, 2: Error message */
+		WC_Payments_Utils::log_to_wc(
+			sprintf( 'Failed to enable payment method %1$s: %2$s', $payment_method_id, $error_message ),
+			'warning'
+		);
 	}
 
 	/**
@@ -461,15 +454,10 @@ class WC_Payments_PM_Promotions_Service {
 			$enabled_pm_ids[] = $payment_method_id;
 			$result           = $payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_pm_ids );
 
-			if ( false === $result && function_exists( 'wc_get_logger' ) ) {
-				$logger = wc_get_logger();
-				$logger->warning(
-					sprintf(
-						'Failed to sync payment method %s to gateway %s',
-						$payment_method_id,
-						get_class( $payment_gateway )
-					),
-					[ 'source' => 'woopayments' ]
+			if ( false === $result ) {
+				WC_Payments_Utils::log_to_wc(
+					sprintf( 'Failed to sync payment method %s to gateway %s', $payment_method_id, get_class( $payment_gateway ) ),
+					'warning'
 				);
 			}
 		}
@@ -543,12 +531,10 @@ class WC_Payments_PM_Promotions_Service {
 	 * @return bool Always returns false.
 	 */
 	private function handle_promotion_activation_failure( string $payment_method_id, array $promotion, string $error_message ): bool {
-		// Log the error.
-		if ( function_exists( 'wc_get_logger' ) ) {
-			$logger = wc_get_logger();
-			/* translators: 1: Payment method ID, 2: Error message */
-			$logger->error( sprintf( 'Failed to activate promotion for payment method %1$s: %2$s', $payment_method_id, $error_message ), [ 'source' => 'woopayments' ] );
-		}
+		/* translators: 1: Payment method ID, 2: Error message */
+		WC_Payments_Utils::log_to_wc(
+			sprintf( 'Failed to activate promotion for payment method %1$s: %2$s', $payment_method_id, $error_message )
+		);
 
 		// Track the failure.
 		$this->tracks_event(

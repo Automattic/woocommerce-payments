@@ -3091,6 +3091,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'instant_deposits_eligible' => true,
 		];
 
+		// Ensure option is not set before.
+		delete_option( 'wcpay_instant_deposits_previously_eligible' );
+
 		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
@@ -3098,6 +3101,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Test to see if scheduled action was created.
 		$this->assertTrue( $this->mock_action_scheduler_service->pending_action_exists( $action_hook ) );
+
+		// Test that the previously eligible option is set.
+		$this->assertTrue( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
@@ -3111,10 +3117,16 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'instant_deposits_eligible' => false,
 		];
 
+		// Ensure option is not set before.
+		delete_option( 'wcpay_instant_deposits_previously_eligible' );
+
 		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+
+		// Test that the previously eligible option is NOT set when ineligible.
+		$this->assertFalse( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder_will_not_schedule_job_if_pending_action_exist() {
@@ -3646,17 +3658,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$mock_gateway->method( 'get_option' )->willReturnCallback(
 			function ( $key, $default = null ) {
 				$options = [
-					'apple_google_pay_in_payment_methods_options' => 'yes',
+					'express_checkout_in_payment_methods'  => 'yes',
 					'manual_capture'                       => 'no',
 					'enable_logging'                       => 'no',
-					'payment_request_button_locations'     => [ 'product', 'cart' ],
 					'payment_request_button_type'          => 'default',
 					'payment_request_button_size'          => 'default',
 					'payment_request_button_theme'         => 'dark',
 					'payment_request_button_border_radius' => '4',
-					'platform_checkout_button_locations'   => [ 'product', 'cart' ],
 					'platform_checkout_store_logo'         => '',
 					'platform_checkout_custom_message'     => '',
+					'express_checkout_product_methods'     => [ 'payment_request', 'woopay' ],
+					'express_checkout_cart_methods'        => [ 'payment_request', 'woopay' ],
+					'express_checkout_checkout_methods'    => [],
 				];
 				return $options[ $key ] ?? $default;
 			}
@@ -3695,7 +3708,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'gateway', $captured_data );
 		$this->assertArrayHasKey( 'payment_methods', $captured_data );
 		$this->assertArrayHasKey( 'provider_capabilities', $captured_data );
-		$this->assertArrayHasKey( 'apple_google_pay_in_payment_methods_options_enabled', $captured_data );
+		$this->assertArrayHasKey( 'express_checkout_in_payment_methods_enabled', $captured_data );
 		$this->assertArrayHasKey( 'saved_cards_enabled', $captured_data );
 		$this->assertArrayHasKey( 'manual_capture_enabled', $captured_data );
 		$this->assertArrayHasKey( 'debug_log_enabled', $captured_data );
@@ -3742,7 +3755,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Assert: Verify simple boolean/string values match mocked data.
-		$this->assertEquals( 'yes', $captured_data['apple_google_pay_in_payment_methods_options_enabled'] );
+		$this->assertEquals( 'yes', $captured_data['express_checkout_in_payment_methods_enabled'] );
 		$this->assertTrue( $captured_data['saved_cards_enabled'] );
 		$this->assertFalse( $captured_data['manual_capture_enabled'] );
 		$this->assertFalse( $captured_data['debug_log_enabled'] );
@@ -3755,7 +3768,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'button_theme', $captured_data['payment_request'] );
 		$this->assertArrayHasKey( 'button_border_radius', $captured_data['payment_request'] );
 		$this->assertTrue( $captured_data['payment_request']['enabled'] );
-		$this->assertEquals( [ 'product', 'cart' ], $captured_data['payment_request']['enabled_locations'] );
+		$this->assertEquals( [ 'product', 'cart' ], $captured_data['payment_request']['enabled_locations'] ); // payment_request is in product and cart, not checkout.
 		$this->assertEquals( 'default', $captured_data['payment_request']['button_type'] );
 		$this->assertEquals( 'default', $captured_data['payment_request']['button_size'] );
 		$this->assertEquals( 'dark', $captured_data['payment_request']['button_theme'] );
@@ -3852,5 +3865,62 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Act: Call store_setup_sync.
 		$this->wcpay_account->store_setup_sync();
+	}
+
+	/**
+	 * Data provider for test_is_review_prompt_eligible.
+	 *
+	 * @return array
+	 */
+	public function provider_is_review_prompt_eligible() {
+		return [
+			'eligible when flag is true'        => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => true,
+				],
+				true,
+			],
+			'not eligible when flag is false'   => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => false,
+				],
+				false,
+			],
+			'not eligible when flag not set'    => [
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+				],
+				false,
+			],
+			'not eligible when no account data' => [
+				[],
+				false,
+			],
+		];
+	}
+
+	/**
+	 * Test is_review_prompt_eligible method with various account data scenarios.
+	 *
+	 * @dataProvider provider_is_review_prompt_eligible
+	 *
+	 * @param array $account_data The account data to cache.
+	 * @param bool  $expected     The expected eligibility result.
+	 */
+	public function test_is_review_prompt_eligible( $account_data, $expected ) {
+		// Arrange: Mock server connection and cache account data.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$this->cache_account_details( $account_data );
+
+		// Act.
+		$result = $this->wcpay_account->is_review_prompt_eligible();
+
+		// Assert.
+		$this->assertSame( $expected, $result );
 	}
 }

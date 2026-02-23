@@ -63,6 +63,9 @@ const receiveMultiCurrencies = (
 						data.wcpay_multi_currency_enable_auto_currency,
 					enable_storefront_switcher:
 						data.wcpay_multi_currency_enable_storefront_switcher,
+					rendering_mode: data.wcpay_multi_currency_rendering_mode,
+					is_cache_optimized_feature_enabled:
+						data.is_cache_optimized_feature_enabled,
 					site_theme: data.site_theme,
 					date_format: data.date_format,
 					time_format: data.time_format,

@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.3
-Stable tag: 10.3.0
+Stable tag: 10.5.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,113 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 10.5.1 - 2026-02-11 =
+* Fix - Cache the affected orders check for the canceled auth fee remediation note to avoid an expensive query on every admin page load
+
+
+= 10.5.0 - 2026-02-05 =
+* Add - Add "Other" and "Booking/Reservation" product type support for dispute evidence (feature flag gated)
+* Add - Add ability to specify preferred communications email.
+* Add - Add evidence matrix entry for subscription_canceled + booking_reservation dispute combination
+* Add - Add remediation tool to fix incorrect analytics data from canceled authorizations
+* Add - feat: add Amazon Pay settings storage
+* Add - feat: add confirmation tokens feature flag
+* Add - feat: Amazon Pay ECE button front-end implementation
+* Add - Show an informative notice when a previously eligible merchant loses instant payout eligibility, instead of silently hiding the button.
+* Fix - Allow subscription renewals with saved Link payment tokens even when Link is disabled at checkout
+* Fix - fix: payment method title displayed on page editor for block-based checkout page
+* Fix - fix: subscription behavior with confirmation tokens
+* Fix - fix: text wrap of google pay/apple pay descriptions
+* Fix - Fix E2E test for non-admin WP-Admin access to expect 'Connected' instead of 'Complete' account status.
+* Fix - Fixed fatal error in email preview when viewing third-party plugin emails
+* Fix - Fixed iDEAL logo sizing in checkout to match other payment method logos.
+* Fix - Fix exit survey option not being preserved due to string type validation failure.
+* Fix - Fix migration log file cleanup compatibility with WooCommerce 8.6+.
+* Fix - Fix REST schema type for stripe_billing_subscription_count and stripe_billing_migrated_count from 'int' to 'integer'
+* Fix - Fix the case of double exchange rate applied to the displayed fee amount in some scenarios.
+* Fix - Fix the logic of the WooPay button on single product pages.
+* Fix - Improved subscription migration log file merging to use stream-based operations for memory efficiency and preserve chronological order.
+* Fix - Make sure that nonces are loaded correctly for the Add Payment Method page.
+* Fix - Prevent fatal error on sites running WooCommerce Subscriptions < 5.0.0 by not instantiating the Stripe Billing migrator when required functions are unavailable.
+* Fix - Update AVS Mismatch fraud filter copy to remove street check
+* Fix - Update dispute evidence fields to match specification document
+* Update - Bump the minimum required PHP version to 7.4
+* Update - chore: update Alipay/WeChat Pay settings descriptions to state restrictions with regional versions
+* Update - Improved and simplified Visa Compliance dispute screen.
+* Update - refactor: ECE to use confirmation tokens instead of payment methods
+* Update - Tested up to WooCommerce 10.5.0
+* Update - update: allow server-side control of confirmation token logic
+* Update - Use badge component in 'Respond by' column of the Disputes table for consistency with the 'Response needed' status badge
+* Dev - Add error logging for embedded KYC session failures to improve debugging.
+* Dev - Add non-interactive changelog command for automation
+* Dev - Add QIT E2E workflows for PR, scheduled, and pre-release testing with L-1 WooCommerce version support.
+* Dev - Add WooCommerce core reference instructions to Claude Code configuration
+* Dev - Bump the version of WP in tested up to readme
+* Dev - chore: removed unused entries from the `wcpay_payment_fields_js_config` filter; ensured single call of the `wcpay_payment_fields_js_config` filter;
+* Dev - chore: remove unused ECE utilities
+* Dev - Clean up after rolling out the new Account Details in the Overview page.
+* Dev - Migrate subscription E2E tests to QIT test-package infrastructure.
+* Dev - refactor: scoping of UPE utilities at checkout
+* Dev - Remove flaky E2E admin analytics test in favor of QIT coverage
+* Dev - Stop using dynamic keys for the database cache and move cached payment methods to user meta.
+* Dev - [E2E][QIT] Migrate shopper subscription E2E test specs to QIT test-package
+
+= 10.4.0 - 2026-01-07 =
+* Add - Add duplicate charge documentation field for "Not Duplicate" dispute scenario.
+* Add - Adding ability to support payment method promotional campaigns (spotlight and badge treatments).
+* Add - feat: add Amazon Pay payment gateway class
+* Add - Open up new Account Details in the Overview page by enabling the feature flag by default
+* Add - When editing subscriptions, load payment methods whenever the customer is changed.
+* Fix - Add order note when WooPay checkout fails.
+* Fix - Attempt to fix when items remain in the cart after successful checkout (Affirm).
+* Fix - Avoid race conditions while capturing payments.
+* Fix - Comment: Update links to the WooPayments fees documentation.
+* Fix - fix: ensuring that the Express Checkout Buttons show the correct amounts for currencies formatted in unusual ways (e.g.: USD with zero decimals)
+* Fix - fix: order attribution data on block-based checkout
+* Fix - fix: payment method definitions merge conflicts
+* Fix - fix: payment method logos compatibility with WooCommerce Blocks in WC>=10.4
+* Fix - fix: redirect message styles on block-based checkout page
+* Fix - Fix: Stripe Link availability on checkout outside of USD
+* Fix - fix: VAT error messages localization
+* Fix - fix: when WooCommerce Core sends the email about the activated payment method, redirect the merchant to the main settings page instead of a non-existent page.
+* Fix - Fix number format when converting order prices.
+* Fix - Implemented amount mismatch detection for an already paid order.
+* Fix - refactor: remove Stripe Link autofill modal button from checkout
+* Fix - Resolve JavaScript errors in WooPay Direct Checkout on sites with WooCommerce 10.4+
+* Fix - Respect merchant tracking preferences for shopper events
+* Fix - Update wording related to the Visa Compliance disputes.
+* Update - chore: remove unused `wcBlocksCheckoutData` constant
+* Update - chore: update account fees docs URL
+* Update - Improve how server-side and client-side check tracking usage eligibility.
+* Update - refactor: convert Klarna payment method into a payment method definition
+* Update - refactor: Google Pay/Apple Pay settings storage consistency
+* Update - refactor: remove Afterpay_Payment_Method in favor of AfterpayDefinition
+* Update - refactor: remove payment_request_enabled_locations and woopay_enabled_locations in favor of a more future-proof express_checkout_product_methods express_checkout_cart_methods express_checkout_checkout_methods
+* Update - refactor: update payment method definition classes to delegate capabilities to PaymentMethodUtils
+* Update - update: bring back card borders on settings screens.
+* Update - update: payment method definition to determine eligible countries
+* Update - update: remove Google Pay test mode notice with live account, it's no longer necessary
+* Update - update: usage of WP best practices
+* Update - Update dispute evidence fields and cover letter for Booking/Reservation duplicate disputes
+* Update - Update suggested evidence for the Subscription Cancelled dispute reason.
+* Update - Update wording on promo rate information tooltip
+* Update - Update “WooPayments” to “WooCommerce” mobile application in the Card Readers page.
+* Dev - Add validation to prevent Request classes from using empty hook names, which could cause fatal errors on PHP 8.0+
+* Dev - Bump WC tested up to version to 10.4.0
+* Dev - chore: remove CC_Payment_Gateway class in favor of WC_Payment_Gateway_WCPay
+* Dev - Cleanup unneeded asset.
+* Dev - Fix failing E2E tests
+* Dev - Log exceptions during the payment process.
+* Dev - Migrate remaining shopper E2E specs to QIT (my account, multicurrency, alternative payment methods)
+* Dev - refactor: add Apple Pay and Google Pay payment definitions
+* Dev - refactor: migrate remaining non-card payment methods into payment method definitions
+* Dev - refactor: updating some payment methods to use payment definitions instead
+* Dev - Update Jetpack packages.
+
+= 10.3.1 - 2025-12-22 =
+* Fix - Fix fatal error on WooCommerce Settings Payments tab caused by missing hook in Get_PM_Promotions request class
+
 
 = 10.3.0 - 2025-12-10 =
 * Add - Add backend support for additional dispute evidence types (event, booking, other) behind feature flag.

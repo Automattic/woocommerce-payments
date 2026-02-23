@@ -11,8 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 
 /**
  * Handles and process WC payment tokens API.
@@ -20,10 +18,13 @@ use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
  */
 class WC_Payments_Token_Service {
 	const REUSABLE_GATEWAYS_BY_PAYMENT_METHOD = [
-		Payment_Method::CARD => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-		Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
-		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::CARD       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::SEPA       => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
+		Payment_Method::LINK       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::AMAZON_PAY => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY,
 	];
+
+	const CACHED_PAYMENT_METHODS_META_KEY = '_wcpay_payment_methods';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -60,6 +61,7 @@ class WC_Payments_Token_Service {
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_link' ], 10, 2 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_wallet' ], 10, 2 );
+		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_amazon_pay' ], 10, 2 );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_stripe_link_label' ] );
 	}
@@ -73,7 +75,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function add_token_to_user( $payment_method, $user ) {
 		// Clear cached payment methods.
-		$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
+		$this->clear_cached_payment_methods_for_user( $user->ID );
 
 		switch ( $payment_method['type'] ) {
 			case Payment_Method::SEPA:
@@ -87,6 +89,15 @@ class WC_Payments_Token_Service {
 				$gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
+				break;
+			case Payment_Method::AMAZON_PAY:
+				$token      = new WC_Payment_Token_WCPay_Amazon_Pay();
+				$gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+				$token->set_gateway_id( $gateway_id );
+				// Amazon Pay stores email in billing_details. The token class handles redaction.
+				if ( ! empty( $payment_method['billing_details']['email'] ) ) {
+					$token->set_email( $payment_method['billing_details']['email'] );
+				}
 				break;
 			case Payment_Method::CARD_PRESENT:
 				$token = new WC_Payment_Token_CC();
@@ -138,6 +149,46 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Clear payment methods cache for a user.
+	 *
+	 * @param int $user_id WC user ID.
+	 */
+	public function clear_cached_payment_methods_for_user( $user_id ) {
+		if ( WC_Payments::is_network_saved_cards_enabled() ) {
+			return; // No need to do anything, payment methods will never be cached in this case.
+		}
+
+		delete_user_meta( $user_id, self::CACHED_PAYMENT_METHODS_META_KEY );
+	}
+
+	/**
+	 * Clear all cached payment methods.
+	 * Used when account data is updated and all payment method caches need to be cleared.
+	 */
+	public function clear_all_cached_payment_methods() {
+		global $wpdb;
+
+		if ( WC_Payments::is_network_saved_cards_enabled() ) {
+			return; // No need to do anything, payment methods will never be cached in this case.
+		}
+
+		// Tap straight into the database and delete the meta key for all users.
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE meta_key = %s", self::CACHED_PAYMENT_METHODS_META_KEY ) );
+
+		/**
+		 * Legacy: Payment methods were stored in the database cache with the `wcpay_pm_` prefix.
+		 * When cleaning up cached payment methods, we need to flush the database from old cached data as well.
+		 *
+		 * This method gets called for account updates. Even though those are rare, they should be a
+		 * good opportunity to clean up old cached data.
+		 */
+		$options = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE 'wcpay_pm_%'" );
+		foreach ( $options as $option ) {
+			delete_option( $option->option_name );
+		}
+	}
+
+	/**
 	 * Gets saved tokens from API if they don't already exist in WooCommerce.
 	 *
 	 * @param array  $tokens     Array of tokens.
@@ -172,16 +223,7 @@ class WC_Payments_Token_Service {
 				}
 			}
 
-			$retrievable_payment_method_types = $this->get_retrievable_payment_method_types( $gateway_id );
-
-			$payment_methods = [];
-
-			foreach ( $retrievable_payment_method_types as $type ) {
-				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
-			}
-
-			$payment_methods = array_merge( ...$payment_methods );
-
+			$payment_methods = $this->get_payment_methods_from_stripe( $user_id, $customer_id, $gateway_id );
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch payment methods for customer.' . $e );
 			return $tokens;
@@ -212,6 +254,60 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 
 		return $tokens;
+	}
+
+	/**
+	 * Gets payment methods from Stripe.
+	 *
+	 * @param string $user_id     WP user ID.
+	 * @param string $customer_id WC customer ID.
+	 * @param string $gateway_id  WC gateway ID.
+	 * @return array Payment methods.
+	 */
+	private function get_payment_methods_from_stripe( $user_id, $customer_id, $gateway_id ) {
+		// Prepare all payment method types that are to be retrieved, based on the gateway.
+		$types_to_retrieve = $this->get_retrievable_payment_method_types( $gateway_id );
+
+		// Load cached data, verify it is for the same customer ID. Bust if they do not match.
+		$cache = get_user_meta( $user_id, self::CACHED_PAYMENT_METHODS_META_KEY, true );
+		if ( ! is_array( $cache ) || ! isset( $cache['customer_id'] ) || $cache['customer_id'] !== $customer_id ) {
+			$cache = [
+				'customer_id' => $customer_id,
+			];
+		}
+
+		$payment_methods = [];
+
+		// Check whether all retrievable payment method types are cached.
+		// Combine with existing data in case there are cached PMs for other gateway IDs.
+		foreach ( $types_to_retrieve as $type ) {
+			if ( isset( $cache[ 'payment_method_' . $type ] ) ) {
+				$payment_methods = array_merge( $payment_methods, $cache[ 'payment_method_' . $type ] );
+				unset( $types_to_retrieve[ array_search( $type, $types_to_retrieve, true ) ] );
+			}
+		}
+
+		if ( empty( $types_to_retrieve ) ) {
+			return $payment_methods;
+		}
+
+		foreach ( $types_to_retrieve as $type ) {
+			$type_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
+
+			// Add to cache.
+			$cache[ 'payment_method_' . $type ] = $type_methods;
+
+			// Add to the list that will be returned.
+			$payment_methods = array_merge( $payment_methods, $type_methods );
+		}
+
+		update_user_meta(
+			$user_id,
+			self::CACHED_PAYMENT_METHODS_META_KEY,
+			$cache
+		);
+
+		return $payment_methods;
 	}
 
 	/**
@@ -246,6 +342,11 @@ class WC_Payments_Token_Service {
 
 		if ( $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
 			$types[] = Payment_Method::LINK;
+		}
+
+		$amazon_pay = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
+		if ( $amazon_pay && $amazon_pay->is_enabled() ) {
+			$types[] = Payment_Method::AMAZON_PAY;
 		}
 
 		return $types;
@@ -314,7 +415,7 @@ class WC_Payments_Token_Service {
 		try {
 			$this->payments_api_client->detach_payment_method( $token->get_token() );
 			// Clear cached payment methods.
-			$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
+			$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
 		} catch ( Exception $e ) {
 			Logger::log( 'Error detaching payment method:' . $e->getMessage() );
 		}
@@ -333,7 +434,7 @@ class WC_Payments_Token_Service {
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
 				// Clear cached payment methods.
-				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
+				$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
 			}
 		}
 	}
@@ -401,6 +502,21 @@ class WC_Payments_Token_Service {
 			$original_brand
 		);
 
+		return $item;
+	}
+
+	/**
+	 * Controls the output for Amazon Pay tokens on the My Account page.
+	 *
+	 * @param  array                                              $item          Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Amazon_Pay $payment_token The payment token associated with this method entry.
+	 * @return array                                            Filtered item.
+	 */
+	public function get_account_saved_payment_methods_list_item_amazon_pay( $item, $payment_token ) {
+		if ( WC_Payment_Token_WCPay_Amazon_Pay::TYPE === strtolower( $payment_token->get_type() ) ) {
+			$item['method']['last4'] = $payment_token->get_email();
+			$item['method']['brand'] = esc_html__( 'Amazon Pay', 'woocommerce-payments' );
+		}
 		return $item;
 	}
 

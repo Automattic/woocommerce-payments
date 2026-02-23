@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 
@@ -9,20 +9,39 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
  * Internal dependencies
  */
 import { Button, CheckboxControl } from '@wordpress/components';
-import { AmazonPayIcon } from 'wcpay/payment-methods-icons';
 import interpolateComponents from '@automattic/interpolate-components';
+import methodsConfiguration from '../../payment-methods-map';
+import { useAmazonPayEnabledSettings } from 'wcpay/data';
+import usePaymentMethodAvailability from 'wcpay/settings/payment-methods-list/use-payment-method-availability';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
-	const [ isAmazonPayEnabled, setIsAmazonPayEnabled ] = useState( false );
+	const [
+		isAmazonPayEnabled,
+		updateIsAmazonPayEnabled,
+	] = useAmazonPayEnabledSettings();
+
+	const {
+		icon: AmazonPayIcon,
+		label,
+		description,
+	} = methodsConfiguration.amazon_pay;
+
+	const {
+		isActionable,
+		notice,
+		noticeType = 'warning' as const,
+	} = usePaymentMethodAvailability( 'amazon_pay' );
 
 	return (
 		<li className="express-checkout" id="express-checkouts-amazon-pay">
 			<div className="express-checkout__row">
 				<div className="express-checkout__checkbox">
 					<CheckboxControl
-						label={ __( 'Amazon Pay', 'woocommerce-payments' ) }
+						label={ label }
 						checked={ isAmazonPayEnabled }
-						onChange={ setIsAmazonPayEnabled }
+						disabled={ ! isActionable }
+						onChange={ updateIsAmazonPayEnabled }
 						data-testid="amazon-pay-toggle"
 						__nextHasNoMarginBottom
 					/>
@@ -34,23 +53,20 @@ const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 								<AmazonPayIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
-								{ __( 'Amazon Pay', 'woocommerce-payments' ) }
+								{ label }
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label express-checkout__label-desktop">
-									{ __(
-										'Amazon Pay',
-										'woocommerce-payments'
-									) }
+									{ label }
 								</div>
 								<div className="express-checkout__description">
+									{ description + ' ' }
 									{ interpolateComponents( {
 										mixedString: __(
 											/* eslint-disable-next-line max-len */
-											'Enhance sales by providing a quick, straightforward, and secure checkout experience. ' +
-												'By activating this feature, you accept ' +
+											'By activating this feature, you accept ' +
 												'{{stripeLink}}Stripe{{/stripeLink}} and ' +
-												"{{amazonLink}}Amazon{{/amazonLink}}'s terms of use. ",
+												"{{amazonLink}}Amazon{{/amazonLink}}'s terms of use.",
 											'woocommerce-payments'
 										),
 										/* eslint-disable jsx-a11y/anchor-has-content */
@@ -86,6 +102,11 @@ const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
+			{ notice && (
+				<InlineNotice status={ noticeType } isDismissible={ false }>
+					{ notice }
+				</InlineNotice>
+			) }
 		</li>
 	);
 };

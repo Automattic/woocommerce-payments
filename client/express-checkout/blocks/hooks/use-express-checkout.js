@@ -3,6 +3,8 @@
  */
 import { useCallback } from '@wordpress/element';
 import { useStripe, useElements } from '@stripe/react-stripe-js';
+import { select } from '@wordpress/data';
+import { applyFilters } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -12,7 +14,6 @@ import {
 	displayLoginConfirmation,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
-	normalizeLineItems,
 } from '../../utils';
 import {
 	onAbortPaymentHandler,
@@ -22,8 +23,12 @@ import {
 	onConfirmHandler,
 	onReadyHandler,
 } from '../../event-handlers';
-import { transformPrice } from '../../transformers/wc-to-stripe';
+import {
+	transformCartDataForDisplayItems,
+	transformPrice,
+} from '../../transformers/wc-to-stripe';
 import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
+import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
 export const useExpressCheckout = ( {
 	api,
@@ -32,6 +37,7 @@ export const useExpressCheckout = ( {
 	onClick,
 	onClose,
 	setExpressPaymentError,
+	paymentMethodTypes = [],
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
@@ -63,14 +69,27 @@ export const useExpressCheckout = ( {
 
 			const shippingAddressRequired = shippingData?.needsShipping;
 
+			// Get cart data with extensions for subscription handling
+			const cartData = select( WC_STORE_CART )?.getCartData();
+
 			let shippingRates;
 			if ( shippingAddressRequired ) {
-				const hasValidRates =
-					shippingData?.shippingRates[ 0 ]?.shipping_rates?.length >
-					0;
+				// Get base shipping rates from WC Blocks
+				const baseShippingRates =
+					shippingData?.shippingRates[ 0 ]?.shipping_rates || [];
+
+				// Apply filter to allow modifications (e.g., for trial subscriptions
+				// where shipping rates are in subscription extensions)
+				const effectiveShippingRates = applyFilters(
+					'wcpay.express-checkout.shipping-rates',
+					baseShippingRates,
+					cartData
+				);
+
+				const hasValidRates = effectiveShippingRates?.length > 0;
 
 				if ( hasValidRates ) {
-					shippingRates = shippingData.shippingRates[ 0 ].shipping_rates
+					shippingRates = effectiveShippingRates
 						.map( ( rate ) => {
 							return {
 								id: rate.rate_id,
@@ -99,34 +118,11 @@ export const useExpressCheckout = ( {
 				}
 			}
 
-			const lineItems = normalizeLineItems( billing.cartTotalItems ).map(
-				( item ) => ( {
-					...item,
-					// ensuring that the amount is transformed to the correct format expected by Stripe.
-					amount: transformPrice( item.amount, {
-						currency_minor_unit: billing.currency.minorUnit ?? 0,
-					} ),
-				} )
-			);
-			const lineItemsTotals = lineItems.reduce(
-				( acc, lineItem ) => acc + lineItem.amount,
-				0
-			);
-
-			const cartTotals = transformPrice( billing.cartTotal.value, {
-				currency_minor_unit: billing.currency.minorUnit ?? 0,
-			} );
-
 			const options = {
 				business: {
 					name: getExpressCheckoutData( 'store_name' ),
 				},
-				// if the transformed cart total is less than the total of `lineItems`, Stripe throws an error
-				// it can sometimes happen that the total is _slightly_ less, due to rounding errors on individual items/taxes/shipping
-				// (or with the `woocommerce_tax_round_at_subtotal` setting).
-				// if that happens, let's just not return any of the line items.
-				// This way, just the total amount will be displayed to the customer.
-				lineItems: cartTotals < lineItemsTotals ? [] : lineItems,
+				lineItems: transformCartDataForDisplayItems( cartData ),
 				emailRequired: true,
 				shippingAddressRequired,
 				phoneNumberRequired:
@@ -137,8 +133,6 @@ export const useExpressCheckout = ( {
 					.allowed_shipping_countries,
 			};
 
-			// console.log( '### options', options );
-
 			// Click event from WC Blocks.
 			onClick();
 			// Global click event handler from WooPayments to ECE.
@@ -147,8 +141,6 @@ export const useExpressCheckout = ( {
 		},
 		[
 			onClick,
-			billing.cartTotalItems,
-			billing.cartTotal.value,
 			shippingData.needsShipping,
 			shippingData.shippingRates,
 			billing.currency.minorUnit,
@@ -167,7 +159,8 @@ export const useExpressCheckout = ( {
 				order_comments: wp?.data
 					?.select( 'wc/store/checkout' )
 					?.getOrderNotes(),
-			}
+			},
+			paymentMethodTypes
 		);
 	};
 

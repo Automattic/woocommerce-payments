@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Logger;
-
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -89,6 +87,12 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 								'type' => 'boolean',
 							],
 						],
+					],
+					'mode'            => [
+						'description' => 'The account mode the user selected: live or test. Overrides environment-based auto-detection (except dev mode).',
+						'type'        => 'string',
+						'required'    => false,
+						'enum'        => [ 'live', 'test' ],
 					],
 				],
 			]
@@ -219,11 +223,22 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	public function create_embedded_kyc_session( WP_REST_Request $request ) {
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
 		$capabilities         = ! empty( $request->get_param( 'capabilities' ) ) ? wc_clean( wp_unslash( $request->get_param( 'capabilities' ) ) ) : [];
+		$mode                 = ! empty( $request->get_param( 'mode' ) ) ? sanitize_text_field( $request->get_param( 'mode' ) ) : null;
 
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			$self_assessment_data,
-			$capabilities
+			$capabilities,
+			$mode
 		);
+
+		if ( empty( $account_session ) ) {
+			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: Empty response from onboarding service.' );
+		} elseif ( empty( $account_session['publishableKey'] ) ) {
+			WC_Payments_Utils::log_to_wc(
+				sprintf( 'Embedded KYC session missing publishableKey. Session keys: %s.', implode( ', ', array_keys( $account_session ) ) ),
+				'warning'
+			);
+		}
 
 		if ( $account_session ) {
 			$account_session['locale'] = get_user_locale();
