@@ -30,6 +30,8 @@ class MultiCurrency {
 	const CURRENCY_META_KEY       = 'wcpay_currency';
 	const FILTER_PREFIX           = 'wcpay_multi_currency_';
 	const CUSTOMER_CURRENCIES_KEY = 'wcpay_multi_currency_stored_customer_currencies';
+	const RENDERING_MODE_SPEED    = 'speed';
+	const RENDERING_MODE_CACHE    = 'cache';
 
 	/**
 	 * The plugin's ID.
@@ -1042,6 +1044,25 @@ class MultiCurrency {
 	}
 
 	/**
+	 * Gets the rendering mode for multi-currency prices.
+	 *
+	 * @return string One of 'speed' or 'cache'.
+	 */
+	public function get_rendering_mode(): string {
+		return get_option( 'wcpay_multi_currency_rendering_mode', self::RENDERING_MODE_SPEED );
+	}
+
+	/**
+	 * Checks if the cache-optimized rendering mode is active.
+	 *
+	 * @return bool
+	 */
+	public function is_cache_optimized_mode(): bool {
+		return \WC_Payments_Features::is_mc_cache_optimized_enabled()
+			&& self::RENDERING_MODE_CACHE === $this->get_rendering_mode();
+	}
+
+	/**
 	 * Gets the store settings.
 	 *
 	 * @return  array  The store settings.
@@ -1050,6 +1071,8 @@ class MultiCurrency {
 		return [
 			$this->id . '_enable_auto_currency'       => $this->is_using_auto_currency_switching(),
 			$this->id . '_enable_storefront_switcher' => $this->is_using_storefront_switcher(),
+			'wcpay_multi_currency_rendering_mode'     => $this->get_rendering_mode(),
+			'is_cache_optimized_feature_enabled'      => \WC_Payments_Features::is_mc_cache_optimized_enabled(),
 			'site_theme'                              => wp_get_theme()->get( 'Name' ),
 			'date_format'                             => esc_attr( get_option( 'date_format', 'F j, Y' ) ),
 			'time_format'                             => esc_attr( get_option( 'time_format', 'g:i a' ) ),
@@ -1068,12 +1091,23 @@ class MultiCurrency {
 		$updateable_options = [
 			'wcpay_multi_currency_enable_auto_currency',
 			'wcpay_multi_currency_enable_storefront_switcher',
+			'wcpay_multi_currency_rendering_mode',
 		];
 
 		foreach ( $updateable_options as $key ) {
-			if ( isset( $params[ $key ] ) ) {
-				update_option( $key, sanitize_text_field( $params[ $key ] ) );
+			if ( ! isset( $params[ $key ] ) ) {
+				continue;
 			}
+
+			$value = sanitize_text_field( $params[ $key ] );
+
+			// Validate rendering mode to only accept known values.
+			if ( 'wcpay_multi_currency_rendering_mode' === $key
+				&& ! in_array( $value, [ self::RENDERING_MODE_SPEED, self::RENDERING_MODE_CACHE ], true ) ) {
+				continue;
+			}
+
+			update_option( $key, $value );
 		}
 	}
 

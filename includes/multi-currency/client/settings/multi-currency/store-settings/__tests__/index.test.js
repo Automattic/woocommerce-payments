@@ -80,6 +80,10 @@ describe( 'Multi-Currency store settings', () => {
 				name: /Save changes/,
 			} )
 		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith( true, true );
+		expect( submitStoreSettingsUpdate ).toBeCalledWith(
+			true,
+			true,
+			'speed'
+		);
 	} );
 } );

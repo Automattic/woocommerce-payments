@@ -1053,36 +1053,85 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					<NoticeOutlineIcon className="is-success" />
 				),
 			];
-		case 'dispute_lost':
+		case 'dispute_lost': {
+			const networkCost = event?.network_cost;
+			const formattedNetworkCost =
+				networkCost?.amount != null && networkCost?.currency
+					? formatExplicitCurrency(
+							networkCost.amount,
+							networkCost.currency.toUpperCase(),
+							false,
+							event?.fee?.currency.toUpperCase()
+					  )
+					: '';
+			const isCrossCurrencyNetworkCost =
+				networkCost &&
+				event.currency?.toLowerCase() !==
+					networkCost.currency?.toLowerCase();
+			const networkCostAmount = isCrossCurrencyNetworkCost
+				? sprintf(
+						// translators: %s - formatted network cost amount with currency code
+						__(
+							'%s in your account currency',
+							'woocommerce-payments'
+						),
+						formattedNetworkCost
+				  )
+				: formattedNetworkCost;
+			const networkCostItem =
+				networkCost?.amount != null && networkCost?.currency
+					? getDepositTimelineItem( event, networkCostAmount, false, [
+							event?.reason === 'noncompliant'
+								? __(
+										'Network costs associated with resolving Visa compliance disputes.',
+										'woocommerce-payments'
+								  )
+								: __(
+										'Network cost for the dispute.',
+										'woocommerce-payments'
+								  ),
+					  ] )
+					: null;
+
+			let headlineText;
+			if ( event.reason === 'noncompliant' ) {
+				headlineText = __(
+					// eslint-disable-next-line max-len
+					"<strong>Dispute lost.</strong> Visa reviewed the evidence and decided in the customer's favor.",
+					'woocommerce-payments'
+				);
+			} else {
+				headlineText = bankName
+					? sprintf(
+							__(
+								// eslint-disable-next-line max-len
+								"<strong>Dispute lost.</strong> Your customer's bank, <strong>%s</strong>, reviewed the evidence and decided in the customer's favor.",
+								'woocommerce-payments'
+							),
+							bankName
+					  )
+					: __(
+							// eslint-disable-next-line max-len
+							"<strong>Dispute lost.</strong> Your customer's bank reviewed the evidence and decided in the customer's favor.",
+							'woocommerce-payments'
+					  );
+			}
+
 			return [
+				networkCostItem,
 				getStatusChangeTimelineItem(
 					event,
 					__( 'Disputed: Lost', 'woocommerce-payments' )
 				),
 				getMainTimelineItem(
 					event,
-					createInterpolateElement(
-						bankName
-							? sprintf(
-									__(
-										// eslint-disable-next-line max-len
-										"<strong>Dispute lost.</strong> Your customer's bank, <strong>%s</strong>, reviewed the evidence and decided in the customer's favor.",
-										'woocommerce-payments'
-									),
-									bankName
-							  )
-							: __(
-									// eslint-disable-next-line max-len
-									"<strong>Dispute lost.</strong> Your customer's bank reviewed the evidence and decided in the customer's favor.",
-									'woocommerce-payments'
-							  ),
-						{
-							strong: <strong />,
-						}
-					),
+					createInterpolateElement( headlineText, {
+						strong: <strong />,
+					} ),
 					<CrossIcon className="is-error" />
 				),
 			];
+		}
 		case 'dispute_warning_closed':
 			return [
 				getMainTimelineItem(
@@ -1164,5 +1213,5 @@ export default ( timelineEvents, bankName = null ) => {
 
 	return flatMap( timelineEvents, ( event ) =>
 		mapEventToTimelineItems( event, bankName )
-	);
+	).filter( Boolean );
 };
