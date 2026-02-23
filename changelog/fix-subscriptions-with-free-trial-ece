@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensure that subscriptions with free trials are consistently handled by the ECE

@@ -541,6 +541,34 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 
+		it( 'should order all product_not_received attachments correctly with full evidence and physical_product product type', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					customer_signature: 'customer_signature_url',
+					refund_policy: 'refund_policy_url',
+					shipping_documentation: 'shipping_documentation_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( "Customer's signature (Attachment C)" );
+			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Proof of shipping (Attachment E)' );
+			expect( result ).toContain( 'Other documents (Attachment F)' );
+		} );
+
 		it( 'should include "Customer\'s signature" only for physical_product product type', () => {
 			const disputeWithSignature: ExtendedDispute = {
 				...mockDispute,

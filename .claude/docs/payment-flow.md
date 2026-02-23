@@ -1,6 +1,6 @@
 # Payment Flow — Detailed Reference
 
-**Last updated:** 2026-02-11
+**Last updated:** 2026-02-20
 
 This documents the exact call chain for payment operations in WooPayments. Read this when working on payment processing, refunds, or API communication.
 
@@ -84,6 +84,19 @@ $refund = $request->send();
 
 Same layers: Request → API Client → HTTP → Jetpack → wpcom → Stripe.
 
+## Dispute Webhook Flow
+
+**`WC_Payments_Webhook_Processing_Service::process_webhook_dispute_closed()`**
+- Reads `charge`, `status`, and `id` from the webhook event object
+- Fetches dispute summary via `$this->api_client->get_dispute_summary($dispute_id)` (wrapped in try/catch — non-fatal)
+- Calls `$this->order_service->mark_payment_dispute_closed($order, $charge_id, $status, $dispute_summary)`
+
+**`WC_Payments_Order_Service::mark_payment_dispute_closed()`**
+- Lost disputes: creates a refund via `wc_create_refund()` using disputed amount (capped at `$order->get_remaining_refund_amount()`)
+- Won disputes: restores order to previous status
+
+**Important:** The API client's `get_dispute_summary()` is called directly (not via a Request class) because it's a simple GET used only in webhook processing. This is an accepted exception to the "always use Request classes" rule for internal/webhook-only endpoints.
+
 ## Frontend Checkout (JS)
 
 ### Blocks Checkout (`client/checkout/blocks/payment-processor.js`)
@@ -92,6 +105,17 @@ Same layers: Request → API Client → HTTP → Jetpack → wpcom → Stripe.
 2. Returns `pm_xxx` ID in `meta.paymentMethodData['wcpay-payment-method']`
 3. WooCommerce Blocks sends this to PHP via the Store API
 4. `onCheckoutSuccess` hook: handles 3DS confirmation via `stripe.handleNextAction()` or `stripe.confirmCardPayment()`
+
+### Express Checkout in Blocks (ECE)
+
+Express checkout buttons (Apple Pay, Google Pay, Amazon Pay) in WooCommerce block-based Cart/Checkout use a **dual data path** — bugs often arise from these paths being out of sync:
+
+1. **Registration data** — `isPaymentRequestEnabled` from `get_payment_method_data()` → WC Blocks registry → `getUPEConfig()`. Controls whether `registerExpressPaymentMethod()` is called.
+2. **Runtime data** — `wcpayExpressCheckoutParams` from `wp_localize_script()` in the Express Checkout Button Handler's `scripts()` method. Provides `enabled_methods` for the current page context.
+
+Key difference from shortcode path: The shortcode path uses `should_show_express_checkout_button()` to prevent script loading entirely. The blocks path loads `WCPAY_BLOCKS_CHECKOUT` via `WC_Payments_Blocks_Payment_Method::get_payment_method_script_handles()` unconditionally — visibility must be controlled via `canMakePayment` callbacks and `enabled_methods`.
+
+**Location settings model (since 10.4.0):** `express_checkout_{location}_methods` options (e.g., `express_checkout_cart_methods`). Values: `'payment_request'` = Apple Pay/Google Pay, `'amazon_pay'` = Amazon Pay.
 
 ### JS API Client (`client/checkout/api/index.js`)
 
@@ -142,6 +166,7 @@ Same layers: Request → API Client → HTTP → Jetpack → wpcom → Stripe.
 | `Refund_Charge` | `refunds` | POST | Process refund |
 | `List_Transactions` | `transactions` | GET | Admin transaction list |
 | `List_Disputes` | `disputes` | GET | Admin dispute list |
+| (direct) | `disputes/{id}/summary` | GET | Fetch dispute summary (webhook-only, no Request class) |
 
 ## Plugin Initialization Chain
 
