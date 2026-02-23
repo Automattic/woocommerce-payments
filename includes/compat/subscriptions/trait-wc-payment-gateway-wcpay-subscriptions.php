@@ -166,8 +166,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$email = $token->get_redacted_email();
 			// Avoid duplication if the title already contains the email.
 			if ( ! empty( $email ) && false === strpos( $default, $email ) ) {
+				// Link uses the card gateway, so $default is "Card". Use "Stripe Link" instead.
 				// translators: 1: payment method (Stripe Link), 2: redacted customer email.
-				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $default, $email );
+				return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), __( 'Stripe Link', 'woocommerce-payments' ), $email );
 			}
 		}
 
@@ -287,6 +288,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// Display the payment method used for a subscription in the "My Subscriptions" table.
 		add_filter( 'woocommerce_my_subscriptions_payment_method', [ $this, 'maybe_render_subscription_payment_method' ], 10, 2 );
+
+		// Override the payment method display for Link subscriptions in all contexts (admin + customer).
+		// The gateway title is "Card" for Link subscriptions because Link uses the card gateway.
+		add_filter( 'woocommerce_subscription_payment_method_to_display', [ $this, 'maybe_override_link_subscription_payment_method_display' ], 10, 2 );
 
 		// Hide "Change payment" button for manual subscriptions with non-reusable payment methods.
 		add_filter( 'wcs_view_subscription_actions', [ $this, 'maybe_hide_change_payment_for_manual_subscriptions' ], 10, 2 );
@@ -624,6 +629,34 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Override the payment method display for Link subscriptions in all contexts.
+	 *
+	 * Stripe Link uses the card gateway (woocommerce_payments), so the gateway title is "Card".
+	 * This replaces it with the Link token's display name (e.g. "Stripe Link (r***@r***.com)").
+	 *
+	 * @param string          $payment_method_to_display Default payment method to display.
+	 * @param WC_Subscription $subscription              Subscription object.
+	 *
+	 * @return string Payment method string to display.
+	 */
+	public function maybe_override_link_subscription_payment_method_display( $payment_method_to_display, $subscription ) {
+		try {
+			if ( ! $this->should_handle_order( $subscription ) ) {
+				return $payment_method_to_display;
+			}
+
+			$token = $this->get_payment_token( $subscription );
+			if ( $token instanceof \WC_Payment_Token_WCPay_Link ) {
+				return $token->get_display_name();
+			}
+
+			return $payment_method_to_display;
+		} catch ( \Exception $e ) {
+			return $payment_method_to_display;
+		}
+	}
+
+	/**
 	 * Render the payment method used for a subscription in My Account pages
 	 *
 	 * @param string          $payment_method_to_display Default payment method to display.
@@ -913,8 +946,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['amazon_pay']['email'] );
 				}
 				if ( ! empty( $payment_method['link']['email'] ) ) {
+					// Link uses the card gateway, so $new_payment_method_title is "Card". Use "Stripe Link" instead.
 					// translators: 1: payment method (Stripe Link), 2: customer email.
-					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), $new_payment_method_title, $payment_method['link']['email'] );
+					return sprintf( __( '%1$s (%2$s)', 'woocommerce-payments' ), __( 'Stripe Link', 'woocommerce-payments' ), $payment_method['link']['email'] );
 				}
 			} catch ( Exception $e ) {
 				Logger::error( $e );

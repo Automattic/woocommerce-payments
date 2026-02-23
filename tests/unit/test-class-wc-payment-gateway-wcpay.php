@@ -570,6 +570,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'expected_title'   => 'Link',
 				'expected_gateway' => 'woocommerce_payments',
 			],
+			'Link (via card wallet)' => [
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'wallet' => [
+							'type' => 'link',
+						],
+					],
+				],
+				'expected_title'   => 'Link',
+				'expected_gateway' => 'woocommerce_payments',
+			],
 		];
 	}
 

@@ -524,6 +524,37 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		$this->assertStringContainsString( '***cher@test.com', $new_payment_method_title_modified );
 	}
 
+	public function test_switching_from_link_to_card_uses_stripe_link_title_even_when_gateway_says_card() {
+		// WC Subscriptions passes the gateway title ("Card") as the default, not "Stripe Link".
+		// Our filter should produce "Stripe Link (email)" regardless.
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Card';
+		$new_payment_method_title = 'Credit card';
+
+		$link_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'linker@test.com' );
+		$card_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$card_token->set_last4( '7777' );
+		$card_token->save();
+
+		$this->renewal_order->add_payment_token( $link_token );
+		$this->renewal_order->add_payment_token( $card_token );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $card_token->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+
+		// Should say "Stripe Link (email)" not "Card (email)".
+		$this->assertStringContainsString( 'Stripe Link', $old_payment_method_title_modified );
+		$this->assertStringContainsString( '***nker@test.com', $old_payment_method_title_modified );
+		$this->assertStringNotContainsString( 'Card (', $old_payment_method_title_modified );
+	}
+
 	public function test_switching_from_link_to_card() {
 		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$old_payment_method_title = 'Stripe Link';

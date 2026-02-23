@@ -1988,10 +1988,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$payment_method_type = $intent->get_payment_method_type();
 			}
 
-			// Stripe returns type='card' in charge.payment_method_details for Link payments
-			// because Link wraps a stored card. Use the saved token type to detect Link correctly.
-			$token = $payment_information->get_payment_token();
-			if ( $token instanceof \WC_Payment_Token_WCPay_Link ) {
+			// Detect Link via the card wallet type (new payments) or saved token type (saved PM payments).
+			if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details )
+				|| $payment_information->get_payment_token() instanceof \WC_Payment_Token_WCPay_Link ) {
 				$payment_method_type = Payment_Method::LINK;
 			}
 
@@ -2375,6 +2374,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
 	 */
 	public function set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details ) {
+		// Stripe returns type='card' for Link payments because Link wraps a stored card.
+		if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details ) ) {
+			$payment_method_type = Payment_Method::LINK;
+		}
+
 		$payment_method = $this->get_selected_payment_method( $payment_method_type );
 		if ( ! $payment_method ) {
 			return;
@@ -4606,7 +4610,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|null Payment method type or nothing.
 	 */
 	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
-		return $payment_method_details['type'] ?? null;
+		$type = $payment_method_details['type'] ?? null;
+
+		if ( self::is_link_card_wallet( $type, $payment_method_details ) ) {
+			return Payment_Method::LINK;
+		}
+
+		return $type;
+	}
+
+	/**
+	 * Check if charge payment_method_details represent a Link payment.
+	 *
+	 * Stripe returns type='card' for Link payments because Link wraps a stored card,
+	 * but includes card.wallet.type='link' to identify it.
+	 *
+	 * @param string|null $payment_method_type The payment method type from Stripe.
+	 * @param array|bool  $payment_method_details The payment method details from the charge.
+	 * @return bool True if this is a Link payment disguised as a card.
+	 */
+	public static function is_link_card_wallet( $payment_method_type, $payment_method_details ) {
+		return 'card' === $payment_method_type
+			&& is_array( $payment_method_details )
+			&& 'link' === ( $payment_method_details['card']['wallet']['type'] ?? null );
 	}
 
 	/**
