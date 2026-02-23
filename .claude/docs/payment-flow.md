@@ -1,6 +1,6 @@
 # Payment Flow — Detailed Reference
 
-**Last updated:** 2026-02-11
+**Last updated:** 2026-02-20
 
 This documents the exact call chain for payment operations in WooPayments. Read this when working on payment processing, refunds, or API communication.
 
@@ -105,6 +105,17 @@ Same layers: Request → API Client → HTTP → Jetpack → wpcom → Stripe.
 2. Returns `pm_xxx` ID in `meta.paymentMethodData['wcpay-payment-method']`
 3. WooCommerce Blocks sends this to PHP via the Store API
 4. `onCheckoutSuccess` hook: handles 3DS confirmation via `stripe.handleNextAction()` or `stripe.confirmCardPayment()`
+
+### Express Checkout in Blocks (ECE)
+
+Express checkout buttons (Apple Pay, Google Pay, Amazon Pay) in WooCommerce block-based Cart/Checkout use a **dual data path** — bugs often arise from these paths being out of sync:
+
+1. **Registration data** — `isPaymentRequestEnabled` from `get_payment_method_data()` → WC Blocks registry → `getUPEConfig()`. Controls whether `registerExpressPaymentMethod()` is called.
+2. **Runtime data** — `wcpayExpressCheckoutParams` from `wp_localize_script()` in the Express Checkout Button Handler's `scripts()` method. Provides `enabled_methods` for the current page context.
+
+Key difference from shortcode path: The shortcode path uses `should_show_express_checkout_button()` to prevent script loading entirely. The blocks path loads `WCPAY_BLOCKS_CHECKOUT` via `WC_Payments_Blocks_Payment_Method::get_payment_method_script_handles()` unconditionally — visibility must be controlled via `canMakePayment` callbacks and `enabled_methods`.
+
+**Location settings model (since 10.4.0):** `express_checkout_{location}_methods` options (e.g., `express_checkout_cart_methods`). Values: `'payment_request'` = Apple Pay/Google Pay, `'amazon_pay'` = Amazon Pay.
 
 ### JS API Client (`client/checkout/api/index.js`)
 
