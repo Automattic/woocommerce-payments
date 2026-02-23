@@ -167,7 +167,7 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 * @param array    $charge The charge data.
 		 */
 		public function trigger( WC_Order $order, array $merchant_settings, array $charge ) {
-			if ( 'mobile_pos' === $order->get_meta( WC_Payments_Order_Service::IPP_CHANNEL_META_KEY, true ) ) {
+			if ( 'mobile_pos' === WC_Payments::get_order_service()->get_ipp_channel_for_order( $order ) ) {
 				return;
 			}
 
