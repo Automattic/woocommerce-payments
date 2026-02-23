@@ -11,6 +11,7 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/con
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
+import { getExpressCheckoutData } from '../utils';
 import '../compatibility/wc-order-attribution';
 import '../compatibility/wc-subscriptions';
 
@@ -72,6 +73,12 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 			return false;
 		}
 
+		const enabledMethods =
+			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		if ( ! enabledMethods.includes( 'payment_request' ) ) {
+			return false;
+		}
+
 		return checkPaymentMethodIsAvailable( 'applePay', cart, api );
 	},
 } );
@@ -101,6 +108,12 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			return false;
 		}
 
+		const enabledMethods =
+			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		if ( ! enabledMethods.includes( 'payment_request' ) ) {
+			return false;
+		}
+
 		return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
 	},
 } );
@@ -124,6 +137,12 @@ export const expressCheckoutElementAmazonPay = ( api ) => ( {
 	},
 	canMakePayment: ( { cart } ) => {
 		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
+
+		const enabledMethods =
+			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		if ( ! enabledMethods.includes( 'amazon_pay' ) ) {
 			return false;
 		}
 
