@@ -18,7 +18,6 @@ use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Constants\Currency_Code;
-use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
@@ -763,6 +762,26 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
+	 * Get summary of a specific dispute.
+	 *
+	 * @param string $dispute_id The ID of the dispute.
+	 *
+	 * @return array Dispute summary data.
+	 * @throws API_Exception - Exception thrown in case route validation fails.
+	 */
+	public function get_dispute_summary( $dispute_id ): array {
+		if ( ! preg_match( '/^\w+$/', $dispute_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
+		return $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/summary', self::GET );
 	}
 
 	/**
