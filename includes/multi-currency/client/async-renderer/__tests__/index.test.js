@@ -117,6 +117,30 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			expect( global.fetch ).toHaveBeenCalledTimes( 1 );
 		} );
+
+		it( 'shows error state when config fetch times out', async () => {
+			jest.useFakeTimers();
+			global.fetch = jest
+				.fn()
+				.mockImplementation( () => new Promise( () => {} ) ); // never resolves
+
+			const wrapper = document.createElement( 'span' );
+			wrapper.setAttribute( 'data-wcpay-price', '10.00' );
+			const skeleton = document.createElement( 'span' );
+			skeleton.className = 'wcpay-price-skeleton';
+			wrapper.appendChild( skeleton );
+			document.body.appendChild( wrapper );
+
+			const initPromise = renderer.init();
+			jest.advanceTimersByTime( 10000 );
+			await initPromise;
+
+			expect(
+				document.querySelector( '.wcpay-price-error' )
+			).not.toBeNull();
+
+			jest.useRealTimers();
+		} );
 	} );
 
 	describe( 'convertPrice', () => {
@@ -253,6 +277,24 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				mockConfig.currencies.USD
 			);
 			expect( result ).toBe( '$1,234,567.89' );
+		} );
+
+		it( 'formats with left_space symbol position', () => {
+			const Decimal = require( 'decimal.js-light' );
+			const result = renderer.formatPrice( new Decimal( '10.50' ), {
+				...mockConfig.currencies.USD,
+				symbol_pos: 'left_space',
+			} );
+			expect( result ).toBe( '$\u00a010.50' );
+		} );
+
+		it( 'formats with right symbol position', () => {
+			const Decimal = require( 'decimal.js-light' );
+			const result = renderer.formatPrice( new Decimal( '10.50' ), {
+				...mockConfig.currencies.USD,
+				symbol_pos: 'right',
+			} );
+			expect( result ).toBe( '10.50$' );
 		} );
 	} );
 
@@ -494,6 +536,41 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			await expect( renderer.fetchConfig() ).rejects.toThrow(
 				'Config fetch failed: 500'
 			);
+		} );
+	} );
+
+	describe( 'observeDynamicContent', () => {
+		beforeEach( () => {
+			document.body.textContent = '';
+		} );
+
+		it( 'debounces rapid DOM mutations into a single convertAllPrices call', async () => {
+			jest.useFakeTimers();
+			const convertSpy = jest
+				.spyOn( renderer, 'convertAllPrices' )
+				.mockImplementation( () => {} );
+
+			renderer.observeDynamicContent();
+
+			// Add three price elements in rapid succession.
+			for ( let i = 0; i < 3; i++ ) {
+				const el = document.createElement( 'span' );
+				el.setAttribute( 'data-wcpay-price', String( i ) );
+				document.body.appendChild( el );
+			}
+
+			// Debounce timer not yet elapsed — no conversion yet.
+			expect( convertSpy ).not.toHaveBeenCalled();
+
+			// advanceTimersByTimeAsync flushes microtasks (MutationObserver
+			// callbacks) as well as the 50ms debounce timer.
+			await jest.advanceTimersByTimeAsync( 50 );
+
+			expect( convertSpy ).toHaveBeenCalledTimes( 1 );
+
+			renderer.destroy();
+			convertSpy.mockRestore();
+			jest.useRealTimers();
 		} );
 	} );
 } );
