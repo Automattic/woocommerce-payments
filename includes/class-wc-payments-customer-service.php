@@ -491,7 +491,7 @@ class WC_Payments_Customer_Service {
 			$order_id = absint( $wp->query_vars['order-pay'] );
 			$order    = wc_get_order( $order_id );
 
-			if ( is_a( $order, 'WC_Order' ) ) {
+			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
 				$firstname       = $order->get_billing_first_name();
 				$lastname        = $order->get_billing_last_name();
 				$user_email      = $order->get_billing_email();
