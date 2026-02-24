@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Express Checkout incompatibility with Add to Cart + Options block: prevent double margin and restore mini-cart drawer functionality.
