@@ -279,6 +279,39 @@ describe( 'Getting styles for automated theming', () => {
 		} );
 	} );
 
+	test( 'getFieldStyles prioritizes content-area selectors over bare fallback', () => {
+		const contentElement = document.createElement( 'a' );
+		const accentColor = 'rgb(0, 102, 204)';
+		const accentStyleDeclaration = {
+			...cssPropertiesCamel,
+			color: accentColor,
+			getPropertyValue: ( prop ) => {
+				if ( prop === 'color' ) return accentColor;
+				return cssPropertiesDashed[ prop ];
+			},
+		};
+
+		// querySelector returns null for bare 'a' but finds 'form.checkout a'.
+		const scope = {
+			querySelector: jest.fn( ( selector ) =>
+				selector === 'form.checkout a' ? contentElement : null
+			),
+			defaultView: {
+				getComputedStyle: jest.fn( () => accentStyleDeclaration ),
+			},
+		};
+
+		const fieldStyles = upeStyles.getFieldStyles(
+			[ 'form.checkout a', '.woocommerce a', 'a' ],
+			'.Label',
+			null,
+			scope
+		);
+
+		expect( fieldStyles.color ).toBe( accentColor );
+		expect( scope.querySelector ).toHaveBeenCalledWith( 'form.checkout a' );
+	} );
+
 	[
 		{
 			elementsLocation: 'shortcode_checkout',

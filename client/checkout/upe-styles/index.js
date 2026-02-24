@@ -45,7 +45,6 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '#place_order' ],
-		linkSelectors: [ 'a' ],
 		pmmeRelativeTextSizeSelector: '.wc_payment_method > label',
 	},
 	blocksCheckout: {
@@ -76,7 +75,6 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
-		linkSelectors: [ 'a' ],
 		containerSelectors: [
 			'.wp-block-woocommerce-checkout-order-summary-block',
 		],
@@ -100,7 +98,6 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.single_add_to_cart_button' ],
-		linkSelectors: [ 'a' ],
 	},
 	bnplClassicCart: {
 		appendTarget: '.cart .quantity',
@@ -119,7 +116,6 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.checkout-button' ],
-		linkSelectors: [ 'a' ],
 		containerSelectors: [ '.shop_table' ],
 	},
 	bnplCartBlock: {
@@ -143,7 +139,6 @@ export const appearanceSelectors = {
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
 		buttonSelectors: [ '.wc-block-cart__submit-button' ],
-		linkSelectors: [ 'a' ],
 		containerSelectors: [ '.wp-block-woocommerce-cart-line-items-block' ],
 	},
 	wooPayClassicCheckout: {
@@ -664,52 +659,10 @@ export const getAppearance = (
 		selectors.backgroundSelectors,
 		scope
 	);
-	const headingRules = getFieldStyles(
-		selectors.headingSelectors,
-		'.Label',
-		null,
-		scope
-	);
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
 		backgroundColor,
-		scope
-	);
-	const buttonRules = getFieldStyles(
-		selectors.buttonSelectors,
-		'.Input',
-		null,
-		scope
-	);
-	const linkRules = getFieldStyles(
-		selectors.linkSelectors,
-		'.Label',
-		null,
-		scope
-	);
-	const containerRules = getFieldStyles(
-		selectors.containerSelectors,
-		'.Container',
-		null,
-		scope
-	);
-	const headerRules = getFieldStyles(
-		selectors.headerSelectors,
-		'.Header',
-		null,
-		scope
-	);
-	const footerRules = getFieldStyles(
-		selectors.footerSelectors,
-		'.Footer',
-		null,
-		scope
-	);
-	const footerLinkRules = getFieldStyles(
-		selectors.footerLink,
-		'.Footer--link',
-		null,
 		scope
 	);
 	const globalRules = {
@@ -768,13 +721,48 @@ export const getAppearance = (
 	if ( forWooPay ) {
 		appearance.rules = {
 			...appearance.rules,
-			'.Heading': headingRules,
-			'.Header': headerRules,
-			'.Footer': footerRules,
-			'.Footer-link': footerLinkRules,
-			'.Button': buttonRules,
-			'.Link': linkRules,
-			'.Container': containerRules,
+			'.Heading': getFieldStyles(
+				selectors.headingSelectors,
+				'.Label',
+				null,
+				scope
+			),
+			'.Header': getFieldStyles(
+				selectors.headerSelectors,
+				'.Header',
+				null,
+				scope
+			),
+			'.Footer': getFieldStyles(
+				selectors.footerSelectors,
+				'.Footer',
+				null,
+				scope
+			),
+			'.Footer-link': getFieldStyles(
+				selectors.footerLink,
+				'.Footer--link',
+				null,
+				scope
+			),
+			'.Button': getFieldStyles(
+				selectors.buttonSelectors,
+				'.Input',
+				null,
+				scope
+			),
+			'.Link': getFieldStyles(
+				selectors.linkSelectors,
+				'.Label',
+				null,
+				scope
+			),
+			'.Container': getFieldStyles(
+				selectors.containerSelectors,
+				'.Container',
+				null,
+				scope
+			),
 		};
 	}
 
