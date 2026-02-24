@@ -59,9 +59,15 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		beforeEach( () => {
 			document.body.textContent = '';
 			global.wcpayAsyncPriceConfig = { apiUrl };
+			global.jQuery = jest.fn( () => ( {
+				on: jest.fn().mockReturnThis(),
+				off: jest.fn(),
+			} ) );
 		} );
 
 		afterEach( () => {
+			renderer.destroy();
+			delete global.jQuery;
 			delete global.wcpayAsyncPriceConfig;
 			delete global.fetch;
 		} );
@@ -407,6 +413,35 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			const el = document.querySelector( '.wcpay-price-error' );
 			expect( el ).not.toBeNull();
 			expect( el.textContent ).toBe( '\u2014' );
+		} );
+	} );
+
+	describe( 'listenToWooCommerceEvents', () => {
+		afterEach( () => {
+			delete global.jQuery;
+		} );
+
+		it( 'calls convertAllPrices when a bound WooCommerce event fires', () => {
+			let boundHandler;
+			global.jQuery = jest.fn( () => ( {
+				on: jest.fn().mockImplementation( ( _events, handler ) => {
+					boundHandler = handler;
+					return { on: jest.fn() };
+				} ),
+				off: jest.fn(),
+			} ) );
+
+			renderer.listenToWooCommerceEvents();
+
+			const convertSpy = jest
+				.spyOn( renderer, 'convertAllPrices' )
+				.mockImplementation( () => {} );
+
+			// Simulate WooCommerce firing one of the bound events.
+			boundHandler();
+
+			expect( convertSpy ).toHaveBeenCalledTimes( 1 );
+			convertSpy.mockRestore();
 		} );
 	} );
 
