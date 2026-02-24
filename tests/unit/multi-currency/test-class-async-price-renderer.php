@@ -138,7 +138,12 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	 * The localized data must contain the decoded character, not the raw entity.
 	 */
 	public function test_enqueue_async_renderer_decodes_currency_symbol_entities() {
-		update_option( 'woocommerce_currency', 'EUR' ); // symbol: "&euro;".
+		// Use a filter to override the currency reliably in the test environment.
+		// Priority 901 is needed to override FrontendCurrencies which hooks at 900.
+		$force_eur = function () {
+			return 'EUR';
+		};
+		add_filter( 'woocommerce_currency', $force_eur, 901 );
 
 		wp_register_script( 'wcpay-multi-currency-async-renderer', false, [], '1.0', true );
 
@@ -157,6 +162,8 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 		$this->assertStringContainsString( json_encode( '€' ), $data );
 		$this->assertStringNotContainsString( '&euro;', $data );
 		$this->assertStringNotContainsString( '&#', $data );
+
+		remove_filter( 'woocommerce_currency', $force_eur, 901 );
 	}
 
 	/**
@@ -164,7 +171,6 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	 */
 	public function tear_down() {
 		delete_option( '_wcpay_feature_mc_cache_optimized' );
-		delete_option( 'woocommerce_currency' );
 		wp_deregister_script( 'wcpay-multi-currency-async-renderer' );
 		wp_deregister_style( 'wcpay-multi-currency-async-renderer' );
 		parent::tear_down();
