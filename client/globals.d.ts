@@ -156,6 +156,7 @@ declare global {
 		defaultExpressCheckoutBorderRadius: string;
 		dateFormat: string;
 		timeFormat: string;
+		formattedStoreAddress: string;
 	};
 
 	const wooPaymentsPaymentMethodDefinitions: Record<

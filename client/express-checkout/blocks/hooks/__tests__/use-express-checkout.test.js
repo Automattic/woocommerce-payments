@@ -16,6 +16,13 @@ jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
 } ) );
 
+let mockCartData = {};
+jest.mock( '@wordpress/data', () => ( {
+	select: () => ( {
+		getCartData: () => mockCartData,
+	} ),
+} ) );
+
 const jQueryMock = ( selector ) => {
 	if ( typeof selector === 'function' ) {
 		return selector( jQueryMock );
@@ -33,6 +40,51 @@ jQueryMock.blockUI = () => null;
 window.wcpayExpressCheckoutParams = {};
 window.wcpayExpressCheckoutParams.checkout = {};
 
+const buildCartData = ( {
+	items = [],
+	totals = {},
+	extensions = {},
+} = {} ) => ( {
+	items,
+	totals: {
+		total_items: '0',
+		total_items_tax: '0',
+		total_fees: '0',
+		total_fees_tax: '0',
+		total_discount: '0',
+		total_discount_tax: '0',
+		total_shipping: '0',
+		total_shipping_tax: '0',
+		total_price: '0',
+		total_tax: '0',
+		currency_minor_unit: 2,
+		...totals,
+	},
+	extensions,
+} );
+
+const buildCartItem = ( {
+	name = 'Test Product',
+	quantity = 1,
+	lineSubtotal = '0',
+	lineSubtotalTax = '0',
+	currencyMinorUnit = 2,
+} = {} ) => ( {
+	name,
+	quantity,
+	variation: [],
+	item_data: [],
+	totals: {
+		line_subtotal: lineSubtotal,
+		line_subtotal_tax: lineSubtotalTax,
+		currency_minor_unit: currencyMinorUnit,
+	},
+	prices: {
+		price: lineSubtotal,
+		currency_minor_unit: currencyMinorUnit,
+	},
+} );
+
 describe( 'useExpressCheckout', () => {
 	beforeEach( () => {
 		global.$ = jQueryMock;
@@ -40,53 +92,35 @@ describe( 'useExpressCheckout', () => {
 		window.wcpayExpressCheckoutParams.checkout = {
 			currency_decimals: 2,
 		};
+		mockCartData = buildCartData();
 	} );
 
-	it( 'should provide the line items', () => {
+	it( 'should provide product-level line items from cart data', () => {
 		const onClickMock = jest.fn();
 		const event = { resolve: jest.fn() };
+
+		mockCartData = buildCartData( {
+			items: [
+				buildCartItem( {
+					name: 'Beanie with Logo',
+					lineSubtotal: '4000',
+					lineSubtotalTax: '330',
+				} ),
+			],
+			totals: {
+				total_items: '4000',
+				total_items_tax: '330',
+				total_price: '4330',
+				total_tax: '330',
+			},
+		} );
+
 		const { result } = renderHook( () =>
 			useExpressCheckout( {
 				billing: {
-					cartTotalItems: [
-						{
-							key: 'total_items',
-							label: 'Subtotal:',
-							value: 4000,
-							valueWithTax: 4330,
-						},
-						{
-							key: 'total_fees',
-							label: 'Fees:',
-							value: 0,
-							valueWithTax: 0,
-						},
-						{
-							key: 'total_discount',
-							label: 'Discount:',
-							value: 0,
-							valueWithTax: 0,
-						},
-						{
-							key: 'total_tax',
-							label: 'Taxes:',
-							value: 330,
-							valueWithTax: 330,
-						},
-						{
-							key: 'total_shipping',
-							label: 'Shipping:',
-							value: 0,
-							valueWithTax: 0,
-						},
-					],
-					cartTotal: {
-						label: 'Total',
-						value: 4330,
-					},
-					currency: {
-						minorUnit: 2,
-					},
+					cartTotalItems: [],
+					cartTotal: { label: 'Total', value: 4330 },
+					currency: { minorUnit: 2 },
 				},
 				shippingData: {
 					needsShipping: false,
@@ -105,64 +139,41 @@ describe( 'useExpressCheckout', () => {
 		expect( event.resolve ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				lineItems: [
-					{ amount: 4000, name: 'Subtotal:' },
-					{ amount: 0, name: 'Fees:' },
-					{ amount: -0, name: 'Discount:' },
-					{ amount: 330, name: 'Taxes:' },
-					{ amount: 0, name: 'Shipping:' },
+					{ amount: 4000, name: 'Beanie with Logo' },
+					{ amount: 330, name: 'Tax' },
 				],
 			} )
 		);
 		expect( onClickMock ).toHaveBeenCalled();
 	} );
 
-	it( "should not provide the line items if the totals don't match", () => {
+	it( 'should not provide line items if the totals have rounding errors', () => {
 		const onClickMock = jest.fn();
 		const event = { resolve: jest.fn() };
+
+		mockCartData = buildCartData( {
+			items: [
+				buildCartItem( {
+					name: 'Product A',
+					lineSubtotal: '1000',
+					lineSubtotalTax: '100',
+				} ),
+			],
+			totals: {
+				total_items: '1000',
+				total_items_tax: '100',
+				total_tax: '100',
+				// Cart total is less than sum of line items (rounding error scenario).
+				total_price: '1050',
+			},
+		} );
+
 		const { result } = renderHook( () =>
 			useExpressCheckout( {
 				billing: {
-					cartTotalItems: [
-						{
-							key: 'total_items',
-							label: 'Subtotal:',
-							value: 4000,
-							valueWithTax: 4330,
-						},
-						{
-							key: 'total_fees',
-							label: 'Fees:',
-							value: 0,
-							valueWithTax: 0,
-						},
-						{
-							key: 'total_discount',
-							label: 'Discount:',
-							value: 0,
-							valueWithTax: 0,
-						},
-						{
-							key: 'total_tax',
-							label: 'Taxes:',
-							value: 330,
-							valueWithTax: 330,
-						},
-						{
-							key: 'total_shipping',
-							label: 'Shipping:',
-							value: 0,
-							valueWithTax: 0,
-						},
-					],
-					cartTotal: {
-						label: 'Total',
-						// simulating a total amount that is lower than the sum of the values of `cartTotalItems`
-						// this scenario happens with the Gift Cards plugin.
-						value: 400,
-					},
-					currency: {
-						minorUnit: 2,
-					},
+					cartTotalItems: [],
+					cartTotal: { label: 'Total', value: 1050 },
+					currency: { minorUnit: 2 },
 				},
 				shippingData: {
 					needsShipping: false,
@@ -314,27 +325,29 @@ describe( 'useExpressCheckout', () => {
 		);
 	} );
 
-	it( 'should transform amounts correctly with standard 2-decimal currency (USD, EUR)', () => {
+	it( 'should transform shipping rate amounts correctly with standard 2-decimal currency', () => {
 		const event = { resolve: jest.fn() };
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
+
+		mockCartData = buildCartData( {
+			items: [
+				buildCartItem( {
+					name: 'Test Product',
+					lineSubtotal: '1000',
+					lineSubtotalTax: '0',
+				} ),
+			],
+			totals: {
+				total_items: '1000',
+				total_price: '1500',
+				total_shipping: '500',
+			},
+		} );
 
 		const { result } = renderHook( () =>
 			useExpressCheckout( {
 				billing: {
-					cartTotalItems: [
-						{
-							key: 'total_items',
-							label: 'Subtotal:',
-							value: 1000,
-							valueWithTax: 1000,
-						},
-						{
-							key: 'total_tax',
-							label: 'Tax:',
-							value: 100,
-							valueWithTax: 100,
-						},
-					],
+					cartTotalItems: [],
 					cartTotal: {
 						label: 'Total',
 						value: 1600,
@@ -367,10 +380,6 @@ describe( 'useExpressCheckout', () => {
 
 		expect( event.resolve ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				lineItems: [
-					{ amount: 1000, name: 'Subtotal:' },
-					{ amount: 100, name: 'Tax:' },
-				],
 				shippingRates: [
 					{
 						id: 'flat_rate',
@@ -382,21 +391,30 @@ describe( 'useExpressCheckout', () => {
 		);
 	} );
 
-	it( 'should transform amounts correctly with zero-decimal currency (JPY, KRW)', () => {
+	it( 'should transform shipping rate amounts correctly with zero-decimal currency (JPY, KRW)', () => {
 		const event = { resolve: jest.fn() };
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 0;
+
+		mockCartData = buildCartData( {
+			items: [
+				buildCartItem( {
+					name: 'Test Product',
+					lineSubtotal: '10',
+					currencyMinorUnit: 0,
+				} ),
+			],
+			totals: {
+				total_items: '10',
+				total_price: '15',
+				total_shipping: '5',
+				currency_minor_unit: 0,
+			},
+		} );
 
 		const { result } = renderHook( () =>
 			useExpressCheckout( {
 				billing: {
-					cartTotalItems: [
-						{
-							key: 'total_items',
-							label: 'Subtotal:',
-							value: 10,
-							valueWithTax: 10,
-						},
-					],
+					cartTotalItems: [],
 					cartTotal: {
 						label: 'Total',
 						value: 15,
@@ -430,7 +448,6 @@ describe( 'useExpressCheckout', () => {
 
 		expect( event.resolve ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				lineItems: [ { amount: 10, name: 'Subtotal:' } ],
 				shippingRates: [
 					{
 						id: 'flat_rate',
@@ -442,22 +459,31 @@ describe( 'useExpressCheckout', () => {
 		);
 	} );
 
-	it( 'should transform amounts correctly with USD configured to display zero decimals', () => {
+	it( 'should transform shipping rate amounts correctly with USD configured to display zero decimals', () => {
 		const event = { resolve: jest.fn() };
-		// mocking a configured to display USD with 0 decimals - ensuring that Stripe still receives decimals
+		// Mocking USD configured to display with 0 decimals - Stripe still needs cents.
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
+
+		mockCartData = buildCartData( {
+			items: [
+				buildCartItem( {
+					name: 'Test Product',
+					lineSubtotal: '10',
+					currencyMinorUnit: 0,
+				} ),
+			],
+			totals: {
+				total_items: '10',
+				total_price: '15',
+				total_shipping: '5',
+				currency_minor_unit: 0,
+			},
+		} );
 
 		const { result } = renderHook( () =>
 			useExpressCheckout( {
 				billing: {
-					cartTotalItems: [
-						{
-							key: 'total_items',
-							label: 'Subtotal:',
-							value: 10,
-							valueWithTax: 10,
-						},
-					],
+					cartTotalItems: [],
 					cartTotal: {
 						label: 'Total',
 						value: 15,
@@ -490,7 +516,6 @@ describe( 'useExpressCheckout', () => {
 
 		expect( event.resolve ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				lineItems: [ { amount: 1000, name: 'Subtotal:' } ],
 				shippingRates: [
 					{
 						id: 'flat_rate',
@@ -502,30 +527,32 @@ describe( 'useExpressCheckout', () => {
 		);
 	} );
 
-	it( 'should exclude line items when transformed cart total is less than transformed line items total', () => {
+	it( 'should exclude line items when total is less than sum of display items', () => {
 		const event = { resolve: jest.fn() };
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
+
+		mockCartData = buildCartData( {
+			items: [
+				buildCartItem( {
+					name: 'Product A',
+					lineSubtotal: '1000',
+					lineSubtotalTax: '100',
+				} ),
+			],
+			totals: {
+				total_items: '1000',
+				total_tax: '100',
+				// Cart total is less than sum of display items (rounding error).
+				total_price: '1050',
+			},
+		} );
 
 		const { result } = renderHook( () =>
 			useExpressCheckout( {
 				billing: {
-					cartTotalItems: [
-						{
-							key: 'total_items',
-							label: 'Subtotal:',
-							value: 1000,
-							valueWithTax: 1000,
-						},
-						{
-							key: 'total_tax',
-							label: 'Tax:',
-							value: 100,
-							valueWithTax: 100,
-						},
-					],
+					cartTotalItems: [],
 					cartTotal: {
 						label: 'Total',
-						// Cart total is less than sum of line items (rounding error scenario)
 						value: 1050,
 					},
 					currency: {
