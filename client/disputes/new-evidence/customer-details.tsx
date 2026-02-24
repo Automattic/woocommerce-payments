@@ -24,17 +24,7 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 	const phone = charge?.billing_details?.phone || '-';
 	const email = charge?.billing_details?.email || '-';
 	const ip = dispute.order?.ip_address || '-';
-	const address = charge?.billing_details?.address;
-	const billingAddress = [
-		address?.line1 || '',
-		address?.line2 || '',
-		address?.city || '',
-		address?.state || '',
-		address?.postal_code || '',
-		address?.country || '',
-	]
-		.filter( Boolean )
-		.join( ', ' );
+	const formattedAddress = charge?.billing_details?.formatted_address || '-';
 	return (
 		<section className="wcpay-dispute-evidence-customer-details">
 			<h3 className="wcpay-dispute-evidence-customer-details__heading">
@@ -92,7 +82,7 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 					{ __( 'BILLING ADDRESS', 'woocommerce-payments' ) }
 				</div>
 				<div className="wcpay-dispute-evidence-customer-details__billing-value">
-					{ billingAddress }
+					{ formattedAddress }
 				</div>
 			</div>
 		</section>
