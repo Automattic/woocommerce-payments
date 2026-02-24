@@ -5,6 +5,10 @@ import { WCPayAsyncPriceRenderer } from '../index';
 
 describe( 'WCPayAsyncPriceRenderer', () => {
 	let renderer;
+	// Save the global fetch reference (MSW-intercepted) so we can restore it
+	// after tests that override global.fetch with jest.fn(). Deleting
+	// global.fetch breaks MSW's server.close() cleanup.
+	let savedFetch;
 
 	const mockConfig = {
 		default_currency: 'USD',
@@ -48,6 +52,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	};
 
 	beforeEach( () => {
+		savedFetch = global.fetch;
 		renderer = new WCPayAsyncPriceRenderer();
 		renderer.config = mockConfig;
 	} );
@@ -69,7 +74,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			renderer.destroy();
 			delete global.jQuery;
 			delete global.wcpayAsyncPriceConfig;
-			delete global.fetch;
+			global.fetch = savedFetch;
 		} );
 
 		it( 'fetches config and converts prices on success', async () => {
@@ -527,7 +532,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 		afterEach( () => {
 			delete global.wcpayAsyncPriceConfig;
-			delete global.fetch;
+			global.fetch = savedFetch;
 		} );
 
 		it( 'fetches config from the API URL', async () => {
