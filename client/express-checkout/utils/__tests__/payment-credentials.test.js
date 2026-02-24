@@ -3,41 +3,41 @@
  */
 import { createPaymentCredential } from '../payment-credentials';
 
-jest.mock( '../confirmation-tokens', () => ( {
-	shouldUseConfirmationTokens: jest.fn(),
-} ) );
-
-import { shouldUseConfirmationTokens } from '../confirmation-tokens';
-
 describe( 'createPaymentCredential', () => {
-	let mockStripe;
-	let mockElements;
+	let stripeMock;
+	let elementsMock;
 
 	beforeEach( () => {
-		mockStripe = {
+		stripeMock = {
 			createConfirmationToken: jest.fn(),
 			createPaymentMethod: jest.fn(),
 		};
-		mockElements = {};
+		elementsMock = {};
+	} );
+
+	afterEach( () => {
+		delete window.wcpayExpressCheckoutParams;
 	} );
 
 	describe( 'when confirmation tokens are enabled', () => {
 		beforeEach( () => {
-			shouldUseConfirmationTokens.mockReturnValue( true );
+			window.wcpayExpressCheckoutParams = {
+				flags: { isEceUsingConfirmationTokens: true },
+			};
 		} );
 
 		test( 'creates a confirmation token', async () => {
-			mockStripe.createConfirmationToken.mockResolvedValue( {
+			stripeMock.createConfirmationToken.mockResolvedValue( {
 				confirmationToken: { id: 'ctoken_123' },
 			} );
 
 			const result = await createPaymentCredential(
-				mockStripe,
-				mockElements
+				stripeMock,
+				elementsMock
 			);
 
-			expect( mockStripe.createConfirmationToken ).toHaveBeenCalledWith( {
-				elements: mockElements,
+			expect( stripeMock.createConfirmationToken ).toHaveBeenCalledWith( {
+				elements: elementsMock,
 			} );
 			expect( result ).toEqual( {
 				id: 'ctoken_123',
@@ -47,33 +47,35 @@ describe( 'createPaymentCredential', () => {
 
 		test( 'throws on Stripe error', async () => {
 			const stripeError = { message: 'Token creation failed' };
-			mockStripe.createConfirmationToken.mockResolvedValue( {
+			stripeMock.createConfirmationToken.mockResolvedValue( {
 				error: stripeError,
 			} );
 
 			await expect(
-				createPaymentCredential( mockStripe, mockElements )
+				createPaymentCredential( stripeMock, elementsMock )
 			).rejects.toEqual( stripeError );
 		} );
 	} );
 
 	describe( 'when confirmation tokens are disabled', () => {
 		beforeEach( () => {
-			shouldUseConfirmationTokens.mockReturnValue( false );
+			window.wcpayExpressCheckoutParams = {
+				flags: { isEceUsingConfirmationTokens: false },
+			};
 		} );
 
 		test( 'creates a payment method', async () => {
-			mockStripe.createPaymentMethod.mockResolvedValue( {
+			stripeMock.createPaymentMethod.mockResolvedValue( {
 				paymentMethod: { id: 'pm_456' },
 			} );
 
 			const result = await createPaymentCredential(
-				mockStripe,
-				mockElements
+				stripeMock,
+				elementsMock
 			);
 
-			expect( mockStripe.createPaymentMethod ).toHaveBeenCalledWith( {
-				elements: mockElements,
+			expect( stripeMock.createPaymentMethod ).toHaveBeenCalledWith( {
+				elements: elementsMock,
 			} );
 			expect( result ).toEqual( {
 				id: 'pm_456',
@@ -83,12 +85,12 @@ describe( 'createPaymentCredential', () => {
 
 		test( 'throws on Stripe error', async () => {
 			const stripeError = { message: 'Payment method failed' };
-			mockStripe.createPaymentMethod.mockResolvedValue( {
+			stripeMock.createPaymentMethod.mockResolvedValue( {
 				error: stripeError,
 			} );
 
 			await expect(
-				createPaymentCredential( mockStripe, mockElements )
+				createPaymentCredential( stripeMock, elementsMock )
 			).rejects.toEqual( stripeError );
 		} );
 	} );
