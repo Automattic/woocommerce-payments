@@ -169,6 +169,13 @@ class WC_Payments_Order_Service {
 	const PAYMENT_METHOD_DETAILS_META_KEY = '_wcpay_payment_method_details';
 
 	/**
+	 * Meta key used to store the IPP channel from Stripe intent metadata.
+	 *
+	 * @const string
+	 */
+	const IPP_CHANNEL_META_KEY = '_wcpay_ipp_channel';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -966,6 +973,36 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Set the IPP channel for an order.
+	 *
+	 * @param mixed  $order   The order ID or order object.
+	 * @param string $channel The IPP channel value (e.g. 'mobile_pos', 'mobile_store_management').
+	 *
+	 * @return void
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function set_ipp_channel_for_order( $order, string $channel ): void {
+		$order = $this->get_order( $order );
+		$order->update_meta_data( self::IPP_CHANNEL_META_KEY, $channel );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get the IPP channel for an order.
+	 *
+	 * @param mixed $order The order Id or order object.
+	 *
+	 * @return string
+	 *
+	 * @throws Order_Not_Found_Exception
+	 */
+	public function get_ipp_channel_for_order( $order ): string {
+		$order = $this->get_order( $order );
+		return $order->get_meta( self::IPP_CHANNEL_META_KEY );
+	}
+
+	/**
 	 * Given the payment intent data, adds it to the given order as metadata and parses any notes that need to be added
 	 *
 	 * @param WC_Order                                                          $order The order.
@@ -1001,6 +1038,14 @@ class WC_Payments_Order_Service {
 			if ( $payment_method_details ) {
 				$this->store_payment_method_details( $order, $payment_method_details );
 			}
+		}
+
+		// Store IPP channel from intent metadata if present.
+		$metadata         = $intent->get_metadata();
+		$ipp_channel      = $metadata['ipp_channel'] ?? '';
+		$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
+		if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
+			$this->set_ipp_channel_for_order( $order, $ipp_channel );
 		}
 	}
 

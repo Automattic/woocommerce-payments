@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Store ipp_channel from Stripe intent metadata on WooCommerce orders and suppress IPP receipt email for POS orders
