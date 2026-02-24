@@ -1028,6 +1028,17 @@ class WC_Payments_Admin {
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
+			'formattedStoreAddress'              => WC()->countries->get_formatted_address(
+				[
+					'address_1' => get_option( 'woocommerce_store_address', '' ),
+					'address_2' => get_option( 'woocommerce_store_address_2', '' ),
+					'city'      => get_option( 'woocommerce_store_city', '' ),
+					'state'     => WC()->countries->get_base_state(),
+					'postcode'  => get_option( 'woocommerce_store_postcode', '' ),
+					'country'   => WC()->countries->get_base_country(),
+				],
+				', '
+			),
 		];
 
 		/**

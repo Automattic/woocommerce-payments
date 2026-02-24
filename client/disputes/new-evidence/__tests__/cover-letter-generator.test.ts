@@ -154,14 +154,32 @@ describe( 'Cover Letter Generator', () => {
 	};
 
 	describe( 'formatMerchantAddress', () => {
-		it( 'should format merchant address correctly', () => {
+		const originalWcpaySettings = ( window as any ).wcpaySettings;
+
+		afterEach( () => {
+			( window as any ).wcpaySettings = originalWcpaySettings;
+		} );
+
+		it( 'should use server-formatted address when available', () => {
+			( window as any ).wcpaySettings = {
+				...originalWcpaySettings,
+				formattedStoreAddress:
+					'123 Main St, Suite 100, Test City, TS 12345, United States (US)',
+			};
 			const result = formatMerchantAddress( mockAccountDetails );
 			expect( result ).toBe(
-				'123 Main St, Suite 100, Test City, TS 12345 US'
+				'123 Main St, Suite 100, Test City, TS 12345, United States (US)'
 			);
 		} );
 
-		it( 'should handle empty address fields', () => {
+		it( 'should fall back to client-side formatting', () => {
+			const result = formatMerchantAddress( mockAccountDetails );
+			expect( result ).toBe(
+				'123 Main St, Suite 100, Test City, TS, 12345, US'
+			);
+		} );
+
+		it( 'should handle empty address fields in fallback', () => {
 			const emptyAddressDetails = {
 				...mockAccountDetails,
 				support_address_line2: '',
@@ -170,7 +188,7 @@ describe( 'Cover Letter Generator', () => {
 				support_address_postal_code: '',
 			};
 			const result = formatMerchantAddress( emptyAddressDetails );
-			expect( result ).toBe( '123 Main St, , ,   US' );
+			expect( result ).toBe( '123 Main St, US' );
 		} );
 	} );
 
@@ -846,7 +864,7 @@ describe( 'Cover Letter Generator', () => {
 			);
 			expect( result ).toContain( 'Test Store' );
 			expect( result ).toContain(
-				'123 Main St, Suite 100, Test City, TS 12345 US'
+				'123 Main St, Suite 100, Test City, TS, 12345, US'
 			);
 			expect( result ).toContain( 'test@example.com' );
 			expect( result ).toContain( 'Test Bank' );
