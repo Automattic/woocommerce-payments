@@ -3,7 +3,6 @@
  */
 import React, { useCallback, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Icon, external } from '@wordpress/icons';
 
 /**
  * Internal dependencies

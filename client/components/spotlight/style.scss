@@ -144,8 +144,8 @@
 
 	// Use 16px padding for icon-based spotlights (from Figma)
 	.wcpay-spotlight__card.has-icon & {
-		padding: 0 16px;
-		margin: 16px 0;
+		padding: 0 $gap;
+		margin: $gap 0;
 	}
 }
 
@@ -189,7 +189,7 @@
 	&.components-card__footer {
 		border-radius: 0 0 $radius-medium $radius-medium;
 		padding-top: 0;
-		margin-top: 16px;
+		margin-top: $gap;
 	}
 }
 
