@@ -538,4 +538,107 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			$this->mock_pr->get_button_settings()
 		);
 	}
+
+	public function test_display_woopay_button_html_includes_button_placeholder_without_add_to_cart_with_options_block() {
+		// Without the add-to-cart-with-options block in post content,
+		// the disabled <button> placeholder should be rendered so the page
+		// has a visible loading state before React hydrates.
+		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+					$this->mock_woopay_utilities,
+					$this->mock_express_checkout_helper,
+				]
+			)
+			->setMethods( [ 'should_show_woopay_button', 'get_button_settings' ] )
+			->getMock();
+
+		$mock_handler->method( 'should_show_woopay_button' )->willReturn( true );
+		$mock_handler->method( 'get_button_settings' )->willReturn(
+			[
+				'type'   => 'default',
+				'theme'  => 'dark',
+				'height' => '48',
+				'size'   => 'medium',
+				'radius' => '',
+			]
+		);
+
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		// Ensure global $post has no block content so has_block() returns false.
+		global $post;
+		$previous_post = $post;
+		$post          = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		ob_start();
+		$mock_handler->display_woopay_button_html();
+		$output = ob_get_clean();
+
+		$post = $previous_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$this->assertStringContainsString( 'id="wcpay-woopay-button"', $output );
+		$this->assertStringContainsString( '<button', $output );
+		$this->assertStringContainsString( 'woopay-express-button', $output );
+		$this->assertStringContainsString( 'disabled', $output );
+	}
+
+	public function test_display_woopay_button_html_omits_button_placeholder_with_add_to_cart_with_options_block() {
+		// With the add-to-cart-with-options block active, the <button> placeholder
+		// must be omitted to prevent the block's legacy-mode detection from kicking in
+		// (which would break the mini-cart drawer). React still hydrates the container.
+		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+					$this->mock_woopay_utilities,
+					$this->mock_express_checkout_helper,
+				]
+			)
+			->setMethods( [ 'should_show_woopay_button', 'get_button_settings' ] )
+			->getMock();
+
+		$mock_handler->method( 'should_show_woopay_button' )->willReturn( true );
+		$mock_handler->method( 'get_button_settings' )->willReturn(
+			[
+				'type'   => 'default',
+				'theme'  => 'dark',
+				'height' => '48',
+				'size'   => 'medium',
+				'radius' => '',
+			]
+		);
+
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		// Create a post containing the add-to-cart-with-options block.
+		$post_id = self::factory()->post->create(
+			[
+				'post_content' => '<!-- wp:woocommerce/add-to-cart-with-options /-->',
+				'post_status'  => 'publish',
+			]
+		);
+
+		global $post;
+		$previous_post = $post;
+		$post          = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		ob_start();
+		$mock_handler->display_woopay_button_html();
+		$output = ob_get_clean();
+
+		$post = $previous_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		wp_delete_post( $post_id, true );
+
+		$this->assertStringContainsString( 'id="wcpay-woopay-button"', $output );
+		$this->assertStringNotContainsString( '<button', $output );
+		$this->assertStringNotContainsString( 'woopay-express-button', $output );
+	}
 }
