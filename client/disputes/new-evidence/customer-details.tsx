@@ -31,7 +31,16 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 	const billingState = address?.state || '';
 	const billingPostcode = address?.postal_code || '';
 	const billingCountry = address?.country || '';
-	const billingAddress = `${ billingLine1 }, ${ billingLine2 }, ${ billingCity }, ${ billingState }, ${ billingPostcode }, ${ billingCountry }`;
+	const billingAddress = [
+		billingLine1,
+		billingLine2,
+		billingCity,
+		billingState,
+		billingPostcode,
+		billingCountry,
+	]
+		.filter( Boolean )
+		.join( ', ' );
 	return (
 		<section className="wcpay-dispute-evidence-customer-details">
 			<h3 className="wcpay-dispute-evidence-customer-details__heading">

@@ -36,7 +36,33 @@ describe( 'CustomerDetails', () => {
 		expect( screen.getByText( '123-456-7890' ) ).toBeInTheDocument();
 		expect( screen.getByText( 'john@example.com' ) ).toBeInTheDocument();
 		expect( screen.getByText( '1.2.3.4' ) ).toBeInTheDocument();
-		expect( screen.getByText( /123 Main St/ ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( '123 Main St, City, ST, 12345, US' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'renders address without empty parts', () => {
+		const dispute = {
+			...baseDispute,
+			charge: {
+				...baseDispute.charge,
+				billing_details: {
+					...baseDispute.charge.billing_details,
+					address: {
+						line1: '456 Oak Ave',
+						line2: 'Apt 2B',
+						city: 'Town',
+						state: '',
+						postal_code: '99999',
+						country: 'US',
+					},
+				},
+			},
+		};
+		render( <CustomerDetails dispute={ dispute as any } /> );
+		expect(
+			screen.getByText( '456 Oak Ave, Apt 2B, Town, 99999, US' )
+		).toBeInTheDocument();
 	} );
 
 	it( 'renders dashes for missing data', () => {
