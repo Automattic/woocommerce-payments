@@ -26,6 +26,7 @@ class WCPayAsyncPriceRenderer {
 		this.initialized = false;
 		this.observer = null;
 		this.wcEventHandler = null;
+		this.debounceTimer = null;
 	}
 
 	/**
@@ -194,6 +195,12 @@ class WCPayAsyncPriceRenderer {
 	/**
 	 * Format a price with the currency's formatting settings.
 	 *
+	 * This intentionally does not use the admin-side `formatCurrency` utility
+	 * from `includes/multi-currency/client/utils/currency/`, which depends on
+	 * `wcpaySettings` (admin-only global) and heavy packages (@woocommerce/currency,
+	 * lodash). Both are unavailable on the storefront. The formatting logic here
+	 * should produce equivalent output to `@woocommerce/currency`'s Currency class.
+	 *
 	 * @param {Decimal} price    The price as a Decimal.
 	 * @param {Object}  currency The currency config object.
 	 * @return {string} The formatted price string.
@@ -293,7 +300,11 @@ class WCPayAsyncPriceRenderer {
 			}
 
 			if ( hasNewPrices ) {
-				this.convertAllPrices();
+				clearTimeout( this.debounceTimer );
+				this.debounceTimer = setTimeout(
+					() => this.convertAllPrices(),
+					50
+				);
 			}
 		} );
 
@@ -359,6 +370,7 @@ class WCPayAsyncPriceRenderer {
 			this.wcEventHandler = null;
 		}
 
+		clearTimeout( this.debounceTimer );
 		this.cache.clear();
 	}
 }
