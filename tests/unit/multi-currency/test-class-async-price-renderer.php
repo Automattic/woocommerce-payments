@@ -107,10 +107,66 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Test that enqueue_async_renderer registers the script and localizes the config.
+	 */
+	public function test_enqueue_async_renderer_localizes_config_data() {
+		// Register the script manually since register_script_with_dependencies is mocked.
+		wp_register_script( 'wcpay-multi-currency-async-renderer', false, [], '1.0', true );
+
+		$this->mock_multi_currency
+			->method( 'register_script_with_dependencies' )
+			->willReturn( null );
+		$this->mock_multi_currency
+			->method( 'get_file_version' )
+			->willReturn( '1.0' );
+
+		$this->renderer->enqueue_async_renderer();
+
+		$data = wp_scripts()->get_data( 'wcpay-multi-currency-async-renderer', 'data' );
+		$this->assertNotEmpty( $data, 'wp_localize_script should have set data on the script handle.' );
+		$this->assertStringContainsString( 'wcpayAsyncPriceConfig', $data );
+		$this->assertStringContainsString( 'apiUrl', $data );
+		$this->assertStringContainsString( 'defaultCurrency', $data );
+		$this->assertTrue( wp_script_is( 'wcpay-multi-currency-async-renderer', 'enqueued' ) );
+		$this->assertTrue( wp_style_is( 'wcpay-multi-currency-async-renderer', 'enqueued' ) );
+	}
+
+	/**
+	 * Test that enqueue_async_renderer decodes HTML entities in the currency symbol.
+	 *
+	 * get_woocommerce_currency_symbol() returns HTML entities (e.g. &euro; for EUR).
+	 * The localized data must contain the decoded character, not the raw entity.
+	 */
+	public function test_enqueue_async_renderer_decodes_currency_symbol_entities() {
+		update_option( 'woocommerce_currency', 'EUR' ); // symbol: "&euro;".
+
+		wp_register_script( 'wcpay-multi-currency-async-renderer', false, [], '1.0', true );
+
+		$this->mock_multi_currency
+			->method( 'register_script_with_dependencies' )
+			->willReturn( null );
+		$this->mock_multi_currency
+			->method( 'get_file_version' )
+			->willReturn( '1.0' );
+
+		$this->renderer->enqueue_async_renderer();
+
+		$data = wp_scripts()->get_data( 'wcpay-multi-currency-async-renderer', 'data' );
+
+		// Decoded euro sign must be present; raw entity must not.
+		$this->assertStringContainsString( json_encode( '€' ), $data );
+		$this->assertStringNotContainsString( '&euro;', $data );
+		$this->assertStringNotContainsString( '&#', $data );
+	}
+
+	/**
 	 * Clean up after tests.
 	 */
 	public function tear_down() {
 		delete_option( '_wcpay_feature_mc_cache_optimized' );
+		delete_option( 'woocommerce_currency' );
+		wp_deregister_script( 'wcpay-multi-currency-async-renderer' );
+		wp_deregister_style( 'wcpay-multi-currency-async-renderer' );
 		parent::tear_down();
 	}
 }
