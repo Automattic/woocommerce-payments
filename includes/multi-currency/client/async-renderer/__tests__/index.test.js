@@ -92,9 +92,12 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				.fn()
 				.mockRejectedValue( new Error( 'Network error' ) );
 
+			const wrapper = document.createElement( 'span' );
+			wrapper.setAttribute( 'data-wcpay-price', '10.00' );
 			const skeleton = document.createElement( 'span' );
 			skeleton.className = 'wcpay-price-skeleton';
-			document.body.appendChild( skeleton );
+			wrapper.appendChild( skeleton );
+			document.body.appendChild( wrapper );
 
 			await renderer.init();
 
@@ -302,11 +305,60 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	} );
 
 	describe( 'showErrorState', () => {
-		it( 'replaces skeleton elements with error state', () => {
-			document.body.textContent = '';
+		const apiUrl =
+			'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config';
+
+		const mockDefaultCurrency = {
+			symbol: '$',
+			decimals: 2,
+			decimal_sep: '.',
+			thousand_sep: ',',
+			symbol_pos: 'left',
+		};
+
+		const createPriceWrapper = ( price = '10.00' ) => {
+			const wrapper = document.createElement( 'span' );
+			wrapper.setAttribute( 'data-wcpay-price', price );
 			const skeleton = document.createElement( 'span' );
 			skeleton.className = 'wcpay-price-skeleton';
-			document.body.appendChild( skeleton );
+			wrapper.appendChild( skeleton );
+			document.body.appendChild( wrapper );
+			return wrapper;
+		};
+
+		beforeEach( () => {
+			document.body.textContent = '';
+		} );
+
+		afterEach( () => {
+			delete global.wcpayAsyncPriceConfig;
+		} );
+
+		it( 'formats price with default currency when available', () => {
+			global.wcpayAsyncPriceConfig = {
+				apiUrl,
+				defaultCurrency: mockDefaultCurrency,
+			};
+			const wrapper = createPriceWrapper( '10.00' );
+
+			renderer.showErrorState();
+
+			expect(
+				wrapper.classList.contains( 'wcpay-price-converted' )
+			).toBe( true );
+			expect(
+				wrapper.querySelector( '.wcpay-price-skeleton' )
+			).toBeNull();
+			const priceEl = wrapper.querySelector(
+				'.woocommerce-Price-amount'
+			);
+			expect( priceEl ).not.toBeNull();
+			expect( priceEl.textContent ).toBe( '$10.00' );
+		} );
+
+		it( 'shows em dash when no default currency is available', () => {
+			global.wcpayAsyncPriceConfig = { apiUrl };
+			createPriceWrapper( '10.00' );
 
 			renderer.showErrorState();
 

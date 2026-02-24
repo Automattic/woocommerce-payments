@@ -343,13 +343,47 @@ class WCPayAsyncPriceRenderer {
 
 	/**
 	 * Show error state on all skeleton elements when config fetch fails.
+	 *
+	 * If the default currency is available in wcpayAsyncPriceConfig, formats
+	 * the raw default-currency price as a fallback instead of showing an em dash.
+	 * The default currency data is store-wide (not per-user) so it is safe to
+	 * include in the cached page via wp_localize_script.
 	 */
 	showErrorState() {
-		const elements = document.querySelectorAll( '.wcpay-price-skeleton' );
+		const defaultCurrency = wcpayAsyncPriceConfig.defaultCurrency;
+		const elements = document.querySelectorAll(
+			'[data-wcpay-price]:not(.wcpay-price-converted)'
+		);
+
 		elements.forEach( ( el ) => {
-			el.classList.remove( 'wcpay-price-skeleton' );
-			el.classList.add( 'wcpay-price-error' );
-			el.textContent = '\u2014';
+			const skeleton = el.querySelector( '.wcpay-price-skeleton' );
+			const rawPrice = el.getAttribute( 'data-wcpay-price' );
+
+			if ( defaultCurrency && rawPrice !== null ) {
+				try {
+					const formatted = this.formatPrice(
+						new Decimal( rawPrice ),
+						defaultCurrency
+					);
+					if ( skeleton ) {
+						skeleton.remove();
+					}
+					const priceSpan = document.createElement( 'span' );
+					priceSpan.className = 'woocommerce-Price-amount amount';
+					priceSpan.textContent = formatted;
+					el.appendChild( priceSpan );
+					el.classList.add( 'wcpay-price-converted' );
+					return;
+				} catch ( e ) {
+					// Fall through to em dash error state.
+				}
+			}
+
+			if ( skeleton ) {
+				skeleton.classList.remove( 'wcpay-price-skeleton' );
+				skeleton.classList.add( 'wcpay-price-error' );
+				skeleton.textContent = '\u2014';
+			}
 		} );
 	}
 

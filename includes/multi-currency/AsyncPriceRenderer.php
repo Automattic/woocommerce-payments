@@ -100,7 +100,14 @@ class AsyncPriceRenderer {
 			'wcpay-multi-currency-async-renderer',
 			'wcpayAsyncPriceConfig',
 			[
-				'apiUrl' => rest_url( 'wc/v3/payments/multi-currency/public/config' ),
+				'apiUrl'          => rest_url( 'wc/v3/payments/multi-currency/public/config' ),
+				'defaultCurrency' => [
+					'symbol'       => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
+					'decimals'     => wc_get_price_decimals(),
+					'decimal_sep'  => wc_get_price_decimal_separator(),
+					'thousand_sep' => wc_get_price_thousand_separator(),
+					'symbol_pos'   => get_option( 'woocommerce_currency_pos' ),
+				],
 			]
 		);
 
