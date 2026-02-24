@@ -263,7 +263,10 @@ class WCPayAsyncPriceRenderer {
 
 			const priceSpan = document.createElement( 'span' );
 			priceSpan.className = 'woocommerce-Price-amount amount';
-			priceSpan.textContent = converted;
+			// Wrap in <bdi> to match wc_price() markup and preserve RTL rendering.
+			const bdi = document.createElement( 'bdi' );
+			bdi.textContent = converted;
+			priceSpan.appendChild( bdi );
 			el.appendChild( priceSpan );
 
 			el.classList.add( 'wcpay-price-converted' );
@@ -372,7 +375,9 @@ class WCPayAsyncPriceRenderer {
 					}
 					const priceSpan = document.createElement( 'span' );
 					priceSpan.className = 'woocommerce-Price-amount amount';
-					priceSpan.textContent = formatted;
+					const bdi = document.createElement( 'bdi' );
+					bdi.textContent = formatted;
+					priceSpan.appendChild( bdi );
 					el.appendChild( priceSpan );
 					el.classList.add( 'wcpay-price-converted' );
 					return;
@@ -407,7 +412,10 @@ class WCPayAsyncPriceRenderer {
 		}
 
 		clearTimeout( this.debounceTimer );
+		this.debounceTimer = null;
 		this.cache.clear();
+		this.initialized = false;
+		this.config = null;
 	}
 }
 
