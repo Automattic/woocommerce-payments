@@ -25,19 +25,13 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 	const email = charge?.billing_details?.email || '-';
 	const ip = dispute.order?.ip_address || '-';
 	const address = charge?.billing_details?.address;
-	const billingLine1 = address?.line1 || '';
-	const billingLine2 = address?.line2 || '';
-	const billingCity = address?.city || '';
-	const billingState = address?.state || '';
-	const billingPostcode = address?.postal_code || '';
-	const billingCountry = address?.country || '';
 	const billingAddress = [
-		billingLine1,
-		billingLine2,
-		billingCity,
-		billingState,
-		billingPostcode,
-		billingCountry,
+		address?.line1 || '',
+		address?.line2 || '',
+		address?.city || '',
+		address?.state || '',
+		address?.postal_code || '',
+		address?.country || '',
 	]
 		.filter( Boolean )
 		.join( ', ' );
