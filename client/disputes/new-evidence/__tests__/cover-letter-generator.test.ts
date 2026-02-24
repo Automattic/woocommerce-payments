@@ -175,7 +175,7 @@ describe( 'Cover Letter Generator', () => {
 		it( 'should fall back to client-side formatting', () => {
 			const result = formatMerchantAddress( mockAccountDetails );
 			expect( result ).toBe(
-				'123 Main St, Suite 100, Test City, TS 12345, US'
+				'123 Main St, Suite 100, Test City, TS, 12345, US'
 			);
 		} );
 
@@ -864,7 +864,7 @@ describe( 'Cover Letter Generator', () => {
 			);
 			expect( result ).toContain( 'Test Store' );
 			expect( result ).toContain(
-				'123 Main St, Suite 100, Test City, TS 12345, US'
+				'123 Main St, Suite 100, Test City, TS, 12345, US'
 			);
 			expect( result ).toContain( 'test@example.com' );
 			expect( result ).toContain( 'Test Bank' );

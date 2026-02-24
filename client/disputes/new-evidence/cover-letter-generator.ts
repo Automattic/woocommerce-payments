@@ -40,16 +40,12 @@ export const formatMerchantAddress = (
 	}
 
 	return [
-		accountDetails.support_address_line1,
-		accountDetails.support_address_line2,
-		accountDetails.support_address_city,
-		[
-			accountDetails.support_address_state,
-			accountDetails.support_address_postal_code,
-		]
-			.filter( Boolean )
-			.join( ' ' ),
-		accountDetails.support_address_country,
+		accountDetails.support_address_line1 || '',
+		accountDetails.support_address_line2 || '',
+		accountDetails.support_address_city || '',
+		accountDetails.support_address_state || '',
+		accountDetails.support_address_postal_code || '',
+		accountDetails.support_address_country || '',
 	]
 		.filter( Boolean )
 		.join( ', ' );
