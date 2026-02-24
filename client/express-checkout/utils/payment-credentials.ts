@@ -4,26 +4,17 @@
 import type { Stripe, StripeElements } from '@stripe/stripe-js';
 
 /**
- * Internal dependencies
- */
-import { shouldUseConfirmationTokens } from './confirmation-tokens';
-
-export interface PaymentCredentialResult {
-	id: string;
-	type: 'confirmation_token' | 'payment_method';
-}
-
-/**
  * Creates a payment credential (either confirmation token or payment method)
- * based on the confirmation tokens feature flag.
+ * based on the `useConfirmationTokens` argument.
  *
  * @throws The Stripe error if credential creation fails.
  */
 export async function createPaymentCredential(
 	stripe: Stripe,
-	elements: StripeElements
-): Promise< PaymentCredentialResult > {
-	if ( shouldUseConfirmationTokens() ) {
+	elements: StripeElements,
+	useConfirmationTokens: boolean
+): Promise< string > {
+	if ( useConfirmationTokens ) {
 		const {
 			confirmationToken,
 			error,
@@ -31,7 +22,7 @@ export async function createPaymentCredential(
 		if ( error ) {
 			throw error;
 		}
-		return { id: confirmationToken!.id, type: 'confirmation_token' };
+		return confirmationToken!.id;
 	}
 
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
@@ -40,5 +31,5 @@ export async function createPaymentCredential(
 	if ( error ) {
 		throw error;
 	}
-	return { id: paymentMethod!.id, type: 'payment_method' };
+	return paymentMethod!.id;
 }
