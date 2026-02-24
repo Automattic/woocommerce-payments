@@ -224,37 +224,19 @@ describe( 'PaymentRequestSettings', () => {
 			<PaymentRequestSettings section="enable" />
 		);
 
+		const checkbox = screen.getByLabelText(
+			'Enable express checkout methods as options in the payment methods list'
+		);
+
+		expect( checkbox ).toBeChecked();
 		expect(
 			updateIsExpressCheckoutInPaymentMethodsEnabledHandler
 		).not.toHaveBeenCalled();
 
-		await userEvent.click(
-			screen.getByLabelText(
-				'Enable express checkout methods as options in the payment methods list'
-			)
-		);
+		await userEvent.click( checkbox );
 		expect(
 			updateIsExpressCheckoutInPaymentMethodsEnabledHandler
 		).toHaveBeenCalledWith( false );
-	} );
-
-	it( 'displays the correct checked state for express checkout in payment methods checkbox', () => {
-		useExpressCheckoutInPaymentMethodsEnabledSettings.mockReturnValue(
-			getMockExpressCheckoutInPaymentMethodsEnabledSettings(
-				true,
-				jest.fn()
-			)
-		);
-
-		renderWithSettingsProvider(
-			<PaymentRequestSettings section="enable" />
-		);
-
-		expect(
-			screen.getByLabelText(
-				'Enable express checkout methods as options in the payment methods list'
-			)
-		).toBeChecked();
 	} );
 
 	it( 'renders general settings with defaults', () => {
@@ -286,7 +268,7 @@ describe( 'PaymentRequestSettings', () => {
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
 
-	it( 'triggers the hooks when the enabled settings are being interacted with', async () => {
+	it( 'triggers the location update handler when checking location checkboxes', async () => {
 		const updatePaymentRequestLocationsHandler = jest.fn();
 		usePaymentRequestLocations.mockReturnValue(
 			getMockPaymentRequestLocations(
@@ -367,6 +349,74 @@ describe( 'PaymentRequestSettings', () => {
 
 		await userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
+	} );
+
+	it( 'disables and overrides location checkboxes when express checkout in payment methods is enabled', () => {
+		useExpressCheckoutInPaymentMethodsEnabledSettings.mockReturnValue(
+			getMockExpressCheckoutInPaymentMethodsEnabledSettings(
+				true,
+				jest.fn()
+			)
+		);
+
+		usePaymentRequestLocations.mockReturnValue(
+			getMockPaymentRequestLocations( true, true, true, jest.fn() )
+		);
+
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
+
+		expect(
+			screen.getByLabelText( 'Show on product page' )
+		).toBeDisabled();
+		expect( screen.getByLabelText( 'Show on cart page' ) ).toBeDisabled();
+		expect(
+			screen.getByLabelText( 'Show on checkout page' )
+		).toBeDisabled();
+
+		expect(
+			screen.getByLabelText( 'Show on product page' )
+		).not.toBeChecked();
+		expect(
+			screen.getByLabelText( 'Show on cart page' )
+		).not.toBeChecked();
+		expect(
+			screen.getByLabelText( 'Show on checkout page' )
+		).toBeChecked();
+	} );
+
+	it( 'keeps location checkboxes interactive when express checkout in payment methods is disabled', async () => {
+		const updatePaymentRequestLocationsHandler = jest.fn();
+
+		useExpressCheckoutInPaymentMethodsEnabledSettings.mockReturnValue(
+			getMockExpressCheckoutInPaymentMethodsEnabledSettings(
+				false,
+				jest.fn()
+			)
+		);
+
+		usePaymentRequestLocations.mockReturnValue(
+			getMockPaymentRequestLocations(
+				true,
+				true,
+				true,
+				updatePaymentRequestLocationsHandler
+			)
+		);
+
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
+
+		// Location checkboxes should still be interactive when express checkout in payment methods is disabled
+		await userEvent.click(
+			screen.getByLabelText( 'Show on product page' )
+		);
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'product',
+			false
+		);
 	} );
 
 	it( 'should trigger an action to save the checked locations when un-checking the location checkboxes', async () => {
