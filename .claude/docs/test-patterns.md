@@ -1,6 +1,6 @@
 # Testing Patterns — Reference Guide
 
-**Last updated:** 2026-02-11
+**Last updated:** 2026-02-24
 
 Conventions and patterns for writing tests in WooPayments. Read this before writing or modifying tests.
 
@@ -107,6 +107,45 @@ Located in `tests/unit/helpers/`:
 | `WC_Helper_Product` | `create_simple_product()` — creates WC_Product |
 | `WC_Helper_Subscription` | Creates subscription products and customer subscriptions |
 | `WC_Helper_Token` | Creates payment method tokens |
+
+### Testing PHP HTML Output
+
+For methods that `echo` or use inline PHP templates, capture output with `ob_start()` / `ob_get_clean()` and assert against the string:
+
+```php
+ob_start();
+$handler->display_woopay_button_html();
+$output = ob_get_clean();
+
+$this->assertStringContainsString( 'id="wcpay-woopay-button"', $output );
+$this->assertStringNotContainsString( '<button', $output );
+```
+
+**When the method checks `global $post`** (e.g., via `has_block()`), save and restore it:
+
+```php
+global $post;
+$previous_post = $post;
+$post          = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+// ... call the method and capture output ...
+
+$post = $previous_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+```
+
+To simulate a page with a specific block, create a real post via the factory:
+
+```php
+$post_id = self::factory()->post->create( [
+    'post_content' => '<!-- wp:woocommerce/add-to-cart-with-options /-->',
+] );
+$post = get_post( $post_id ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+// ... test ...
+
+wp_delete_post( $post_id, true );
+$post = $previous_post; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+```
 
 ### Running PHP Tests
 

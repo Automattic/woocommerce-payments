@@ -1,6 +1,6 @@
 # Payment Flow — Detailed Reference
 
-**Last updated:** 2026-02-20
+**Last updated:** 2026-02-24
 
 This documents the exact call chain for payment operations in WooPayments. Read this when working on payment processing, refunds, or API communication.
 
@@ -116,6 +116,20 @@ Express checkout buttons (Apple Pay, Google Pay, Amazon Pay) in WooCommerce bloc
 Key difference from shortcode path: The shortcode path uses `should_show_express_checkout_button()` to prevent script loading entirely. The blocks path loads `WCPAY_BLOCKS_CHECKOUT` via `WC_Payments_Blocks_Payment_Method::get_payment_method_script_handles()` unconditionally — visibility must be controlled via `canMakePayment` callbacks and `enabled_methods`.
 
 **Location settings model (since 10.4.0):** `express_checkout_{location}_methods` options (e.g., `express_checkout_cart_methods`). Values: `'payment_request'` = Apple Pay/Google Pay, `'amazon_pay'` = Amazon Pay.
+
+### WooPay Button and the Add to Cart + Options Block
+
+The `woocommerce/add-to-cart-with-options` block buffers all output hooked to `woocommerce_after_add_to_cart_form` via `ob_start()` / `ob_get_clean()`, then scans it with `has_form_elements()` for any `BUTTON|INPUT|SELECT|TEXTAREA|FORM` tag. If found, it forces **legacy mode** (standard form POST) instead of **Interactivity API mode** (AJAX, fires `wc-blocks_added_to_cart` for mini-cart drawer).
+
+**Implication:** Any WooPayments feature that renders a `<button>` placeholder via `woocommerce_after_add_to_cart_form` will break the Add to Cart + Options block's mini-cart integration. Fix pattern:
+
+```php
+if ( ! has_block( 'woocommerce/add-to-cart-with-options' ) ) {
+    // render the <button> placeholder
+}
+```
+
+`has_block()` reads `$post->post_content` (no DB query). Safe to call at `woocommerce_after_add_to_cart_form` hook time — `global $post` is set during template rendering.
 
 ### JS API Client (`client/checkout/api/index.js`)
 
