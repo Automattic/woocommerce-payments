@@ -133,13 +133,7 @@ class WCPayAsyncPriceRenderer {
 			new Decimal( currency.rate )
 		);
 
-		if ( type === 'tax' || type === 'coupon' || type === 'exchange_rate' ) {
-			// Tax, coupon, and exchange_rate: simple rounding to decimals.
-			converted = converted.toDecimalPlaces(
-				currency.decimals,
-				Decimal.ROUND_HALF_UP
-			);
-		} else {
+		if ( type === 'product' || type === 'shipping' ) {
 			// Product and shipping: apply rounding and charm pricing.
 			const rounding = new Decimal( currency.rounding );
 
@@ -165,6 +159,14 @@ class WCPayAsyncPriceRenderer {
 				const charm = new Decimal( currency.charm );
 				converted = converted.plus( charm );
 			}
+		} else {
+			// Tax, coupon, exchange_rate, and any unknown types: simple rounding.
+			// Using simple rounding as the safe default prevents unintended
+			// rounding rules or charm pricing from applying to unknown price types.
+			converted = converted.toDecimalPlaces(
+				currency.decimals,
+				Decimal.ROUND_HALF_UP
+			);
 		}
 
 		// Never return negative prices.
