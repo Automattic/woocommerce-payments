@@ -154,14 +154,32 @@ describe( 'Cover Letter Generator', () => {
 	};
 
 	describe( 'formatMerchantAddress', () => {
-		it( 'should format merchant address correctly', () => {
+		const originalWcpaySettings = ( window as any ).wcpaySettings;
+
+		afterEach( () => {
+			( window as any ).wcpaySettings = originalWcpaySettings;
+		} );
+
+		it( 'should use server-formatted address when available', () => {
+			( window as any ).wcpaySettings = {
+				...originalWcpaySettings,
+				formattedStoreAddress:
+					'123 Main St, Suite 100, Test City, TS 12345, United States (US)',
+			};
 			const result = formatMerchantAddress( mockAccountDetails );
 			expect( result ).toBe(
-				'123 Main St, Suite 100, Test City, TS 12345 US'
+				'123 Main St, Suite 100, Test City, TS 12345, United States (US)'
 			);
 		} );
 
-		it( 'should handle empty address fields', () => {
+		it( 'should fall back to client-side formatting', () => {
+			const result = formatMerchantAddress( mockAccountDetails );
+			expect( result ).toBe(
+				'123 Main St, Suite 100, Test City, TS, 12345, US'
+			);
+		} );
+
+		it( 'should handle empty address fields in fallback', () => {
 			const emptyAddressDetails = {
 				...mockAccountDetails,
 				support_address_line2: '',
@@ -170,7 +188,7 @@ describe( 'Cover Letter Generator', () => {
 				support_address_postal_code: '',
 			};
 			const result = formatMerchantAddress( emptyAddressDetails );
-			expect( result ).toBe( '123 Main St, , ,   US' );
+			expect( result ).toBe( '123 Main St, US' );
 		} );
 	} );
 
@@ -541,6 +559,34 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 
+		it( 'should order all product_not_received attachments correctly with full evidence and physical_product product type', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					customer_signature: 'customer_signature_url',
+					refund_policy: 'refund_policy_url',
+					shipping_documentation: 'shipping_documentation_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( "Customer's signature (Attachment C)" );
+			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Proof of shipping (Attachment E)' );
+			expect( result ).toContain( 'Other documents (Attachment F)' );
+		} );
+
 		it( 'should include "Customer\'s signature" only for physical_product product type', () => {
 			const disputeWithSignature: ExtendedDispute = {
 				...mockDispute,
@@ -635,6 +681,30 @@ describe( 'Cover Letter Generator', () => {
 			);
 			expect( result ).toContain( 'Other documents' );
 			expect( result ).not.toContain( 'Proof of acceptance' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario A attachments correctly with booking_reservation product type', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					receipt: 'refund_receipt_url',
+					cancellation_rebuttal: 'cancellation_logs_url',
+					customer_communication: 'other_docs_url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'booking_reservation',
+				'refund_has_been_issued'
+			);
+			// Verify exact ordering: Refund receipt (A), Cancellation logs (B), Other documents (C)
+			expect( result ).toContain( 'Refund receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Order receipt' );
+			expect( result ).not.toContain( 'Customer communication' );
 		} );
 	} );
 
@@ -794,7 +864,7 @@ describe( 'Cover Letter Generator', () => {
 			);
 			expect( result ).toContain( 'Test Store' );
 			expect( result ).toContain(
-				'123 Main St, Suite 100, Test City, TS 12345 US'
+				'123 Main St, Suite 100, Test City, TS, 12345, US'
 			);
 			expect( result ).toContain( 'test@example.com' );
 			expect( result ).toContain( 'Test Bank' );

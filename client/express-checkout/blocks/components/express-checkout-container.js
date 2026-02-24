@@ -3,6 +3,8 @@
  */
 import { useMemo } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
+import { select } from '@wordpress/data';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -15,6 +17,7 @@ import {
 } from '../../utils';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
+import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
 const ExpressCheckoutContainer = ( props ) => {
 	const { api, billing, buttonAttributes } = props;
@@ -43,10 +46,14 @@ const ExpressCheckoutContainer = ( props ) => {
 		...( useConfirmationToken
 			? { paymentMethodTypes }
 			: { paymentMethodCreation: 'manual' } ),
-		// ensuring that the total amount is transformed to the correct format.
-		amount: transformPrice( billing.cartTotal.value, {
-			currency_minor_unit: billing.currency.minorUnit ?? 0,
-		} ),
+		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+		amount: applyFilters(
+			'wcpay.express-checkout.total-amount',
+			transformPrice( billing.cartTotal.value, {
+				currency_minor_unit: billing.currency.minorUnit ?? 0,
+			} ),
+			select( WC_STORE_CART )?.getCartData()
+		),
 		currency: billing.currency.code.toLowerCase(),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',

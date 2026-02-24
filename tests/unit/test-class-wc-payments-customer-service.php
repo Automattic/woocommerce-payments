@@ -645,6 +645,98 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test get_prepared_customer_data returns null when not on a relevant page.
+	 */
+	public function test_get_prepared_customer_data_returns_null_when_not_on_relevant_page() {
+		unset( $_GET['pay_for_order'] );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertNull( $result );
+	}
+
+	/**
+	 * Test get_prepared_customer_data returns order data when the user can pay for the order.
+	 */
+	public function test_get_prepared_customer_data_returns_order_data_when_user_can_pay() {
+		global $wp;
+
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Set the current user to the order owner so current_user_can( 'pay_for_order' ) passes.
+		wp_set_current_user( $order->get_customer_id() );
+
+		$_GET['pay_for_order']       = 'true';
+		$wp->query_vars['order-pay'] = $order->get_id();
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertIsArray( $result );
+		$this->assertNotEmpty( $result['name'] );
+		$this->assertNotEmpty( $result['email'] );
+		$this->assertIsArray( $result['address'] );
+		$this->assertNotEmpty( $result['address']['country'] );
+
+		// Clean up.
+		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
+	}
+
+	/**
+	 * Test get_prepared_customer_data does not return order data when the user cannot pay for the order.
+	 */
+	public function test_get_prepared_customer_data_omits_order_data_when_user_cannot_pay() {
+		global $wp;
+
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Set a different user who is not the order owner.
+		$other_user_id = $this->factory->user->create( [ 'role' => 'customer' ] );
+		wp_set_current_user( $other_user_id );
+
+		$_GET['pay_for_order']       = 'true';
+		$wp->query_vars['order-pay'] = $order->get_id();
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertIsArray( $result );
+		$this->assertSame( ' ', $result['name'] );
+		$this->assertEmpty( $result['email'] );
+		$this->assertNull( $result['address'] );
+
+		// Clean up.
+		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
+	}
+
+	/**
+	 * Test get_prepared_customer_data returns order data for a guest order (no user assigned).
+	 */
+	public function test_get_prepared_customer_data_returns_order_data_for_guest_order() {
+		global $wp;
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( 0 );
+		$order->save();
+
+		// Any logged-in user can pay for a guest order per WooCommerce's pay_for_order capability.
+		$user_id = $this->factory->user->create( [ 'role' => 'customer' ] );
+		wp_set_current_user( $user_id );
+
+		$_GET['pay_for_order']       = 'true';
+		$wp->query_vars['order-pay'] = $order->get_id();
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertIsArray( $result );
+		$this->assertNotEmpty( $result['email'] );
+		$this->assertIsArray( $result['address'] );
+
+		// Clean up.
+		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
+	}
+
+	/**
 	 * Test $customer_service->get_customer_id_for_order( $order ).
 	 */
 	public function test_get_customer_id_for_order() {

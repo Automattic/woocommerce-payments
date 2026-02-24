@@ -14,6 +14,7 @@ import {
 	CardBody,
 	CheckboxControl,
 	ExternalLink,
+	RadioControl,
 } from '@wordpress/components';
 import { useStoreSettings } from 'multi-currency/data';
 import {
@@ -61,6 +62,8 @@ const StoreSettings = () => {
 		setIsStorefrontSwitcherEnabledValue,
 	] = useState( false );
 
+	const [ renderingModeValue, setRenderingModeValue ] = useState( 'speed' );
+
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
 	const [ isDirty, setIsDirty ] = useState( false );
@@ -73,6 +76,9 @@ const StoreSettings = () => {
 			setIsAutomaticSwitchEnabledValue(
 				storeSettings.enable_auto_currency
 			);
+			if ( storeSettings.rendering_mode ) {
+				setRenderingModeValue( storeSettings.rendering_mode );
+			}
 		}
 	}, [
 		setIsAutomaticSwitchEnabledValue,
@@ -90,11 +96,17 @@ const StoreSettings = () => {
 		setIsDirty( true );
 	};
 
+	const handleRenderingModeChange = ( value ) => {
+		setRenderingModeValue( value );
+		setIsDirty( true );
+	};
+
 	const saveSettings = () => {
 		setIsSavingSettings( true );
 		submitStoreSettingsUpdate(
 			isAutomaticSwitchEnabledValue,
-			isStorefrontSwitcherEnabledValue
+			isStorefrontSwitcherEnabledValue,
+			renderingModeValue
 		);
 		setIsSavingSettings( false );
 		setIsDirty( false );
@@ -137,6 +149,36 @@ const StoreSettings = () => {
 								) }
 								__nextHasNoMarginBottom
 							/>
+							{ storeSettings.is_cache_optimized_feature_enabled ? (
+								<RadioControl
+									label={ __(
+										'Price rendering mode',
+										'woocommerce-payments'
+									) }
+									help={ __(
+										'Choose how multi-currency prices are rendered. "Optimized for caching" outputs identical HTML for all visitors and converts prices client-side, allowing hosting providers to cache pages effectively.',
+										'woocommerce-payments'
+									) }
+									selected={ renderingModeValue }
+									options={ [
+										{
+											label: __(
+												'Optimized for speed (default)',
+												'woocommerce-payments'
+											),
+											value: 'speed',
+										},
+										{
+											label: __(
+												'Optimized for caching',
+												'woocommerce-payments'
+											),
+											value: 'cache',
+										},
+									] }
+									onChange={ handleRenderingModeChange }
+								/>
+							) : null }
 							{ storeSettings.site_theme === 'Storefront' ? (
 								<CheckboxControl
 									checked={ isStorefrontSwitcherEnabledValue }

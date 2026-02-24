@@ -542,7 +542,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 
-			it( 'should fall back to trunk product_not_received fields for physical_product when feature flag is enabled', () => {
+			it( 'should return matrix fields for product_not_received + physical_product when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -552,13 +552,18 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// Should fall back to trunk product_not_received fields since no matrix entry for physical_product
+				// Matrix entry for product_not_received + physical_product
 				expect( result ).toHaveLength( 5 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
 				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 1 ].label ).toBe( 'Customer communication' );
 				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 2 ].label ).toBe( "Customer's signature" );
 				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].label ).toBe( 'Refund policy' );
 				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 		} );
 
@@ -586,7 +591,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 2 ].label ).toBe( 'Other documents' );
 			} );
 
-			it( 'should fall back to legacy fields for credit_not_processed + booking_reservation + refund_has_been_issued when feature flag is enabled', () => {
+			it( 'should return matrix fields for credit_not_processed + booking_reservation + refund_has_been_issued when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -596,14 +601,20 @@ describe( 'Recommended Documents', () => {
 					'booking_reservation'
 				);
 
-				// No matrix entry for refund_has_been_issued yet, falls back to legacy
-				expect( result ).toHaveLength( 6 );
+				// Matrix entry for credit_not_processed + booking_reservation + refund_has_been_issued
+				expect( result ).toHaveLength( 3 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 1 ].key ).toBe( 'customer_communication' );
-				expect( result[ 2 ].key ).toBe( 'customer_signature' );
-				expect( result[ 3 ].key ).toBe( 'refund_policy' );
-				expect( result[ 4 ].key ).toBe( 'service_documentation' );
-				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 0 ].label ).toBe( 'Refund receipt' );
+				expect( result[ 0 ].description ).toBe(
+					'A copy of the refund receipt, which can be found in the receipt history for this transaction.'
+				);
+				expect( result[ 1 ].key ).toBe( 'cancellation_rebuttal' );
+				expect( result[ 1 ].label ).toBe( 'Cancellation logs' );
+				expect( result[ 1 ].description ).toBe(
+					'Records showing no cancellation attempt or request was made before the charge, such as account activity, subscription status, or communication history.'
+				);
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].label ).toBe( 'Other documents' );
 			} );
 
 			it( 'should fall back to legacy fields for credit_not_processed + physical_product when feature flag is enabled', () => {

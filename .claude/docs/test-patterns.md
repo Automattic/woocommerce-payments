@@ -1,5 +1,7 @@
 # Testing Patterns — Reference Guide
 
+**Last updated:** 2026-02-11
+
 Conventions and patterns for writing tests in WooPayments. Read this before writing or modifying tests.
 
 ## PHP Unit Tests

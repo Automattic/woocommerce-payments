@@ -19,13 +19,15 @@
  *   - duplicate × booking_reservation (is_duplicate scenario)
  *   - duplicate × booking_reservation (is_not_duplicate scenario)
  *   - credit_not_processed × booking_reservation (refund_was_not_owed scenario)
+ *   - credit_not_processed × booking_reservation (refund_has_been_issued scenario)
+ *   - product_not_received × physical_product
  *
  * ⏳ Not yet implemented (in backlog):
- *   - All combinations with physical_product
+ *   - All combinations with physical_product (except product_not_received)
  *   - All combinations with digital_product_or_service
  *   - All combinations with offline_service
  *   - All combinations with event
- *   - credit_not_processed (remaining product types and refund_has_been_issued scenario)
+ *   - credit_not_processed (remaining product types)
  *   - general (all product types)
  */
 
@@ -151,6 +153,50 @@ const implementedCombinations: CombinationSpec[] = [
 				'Other documents',
 			],
 			shouldExclude: [ "Customer's signature" ],
+		},
+	},
+
+	// ============================================
+	// PRODUCT NOT RECEIVED × PHYSICAL PRODUCT
+	// ============================================
+	{
+		reason: 'product_not_received',
+		productType: 'physical_product',
+		description:
+			'Product not received for physical product - needs receipt, signature, refund policy',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION, // Shown separately in shipping step
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION, // Not for physical products
+				DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL, // Not in spec for physical product
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ]:
+					"Customer's signature",
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			// Note: Cover letter uses "Store refund policy" label
+			shouldInclude: [
+				'Order receipt',
+				'Customer communication',
+				"Customer's signature",
+				'Store refund policy',
+				'Other documents',
+			],
+			shouldExclude: [],
 		},
 	},
 
@@ -380,6 +426,45 @@ const implementedCombinations: CombinationSpec[] = [
 				'Other documents',
 			],
 			shouldExclude: [],
+		},
+	},
+
+	// ============================================
+	// CREDIT NOT PROCESSED × BOOKING/RESERVATION (REFUND HAS BEEN ISSUED - Scenario A)
+	// ============================================
+	{
+		reason: 'credit_not_processed',
+		productType: 'booking_reservation',
+		refundStatus: 'refund_has_been_issued',
+		description:
+			'Credit not processed for booking/reservation - refund has been issued (Scenario A)',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Refund receipt',
+				[ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ]:
+					'Cancellation logs',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Refund receipt',
+				'Cancellation logs',
+				'Other documents',
+			],
+			shouldExclude: [ "Customer's signature" ],
 		},
 	},
 
@@ -733,7 +818,7 @@ describe( 'Evidence Matrix Specification Validation', () => {
  * - other (needs: Prior history, Other)
  *
  * Product Not Received:
- * - physical_product (needs: Order receipt, Customer communication, Customer's signature, Refund policy, Other)
+ * - physical_product ✅ Implemented
  * - digital_product_or_service (needs: Order receipt, Login/usage records, Other)
  * - offline_service (needs: Order receipt, Proof of service completion, Other)
  * - event (needs: Order receipt, Attendance confirmation, Other)
@@ -746,9 +831,8 @@ describe( 'Evidence Matrix Specification Validation', () => {
  * - event (needs: Event/booking documentation, Order receipt, Refund policy, Other)
  * - other (needs: Order receipt, Terms of service, Other)
  *
- * Credit Not Processed (remaining product types and scenarios):
+ * Credit Not Processed (remaining product types):
  * - physical_product, digital_product_or_service, offline_service, event, other (all scenarios)
- * - booking_reservation (refund_has_been_issued scenario only - Scenario A)
  *
  * Subscription Canceled:
  * - physical_product (needs: Order receipt, Customer communication, Cancellation logs, Refund policy, Terms of service, Other)
