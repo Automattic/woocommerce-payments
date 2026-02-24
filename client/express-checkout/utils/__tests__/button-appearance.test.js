@@ -3,10 +3,6 @@
  */
 import { getExpressCheckoutButtonAppearance } from '..';
 
-jest.mock( 'wcpay/utils/express-checkout', () => ( {
-	getDefaultBorderRadius: jest.fn( () => 4 ),
-} ) );
-
 describe( 'getExpressCheckoutButtonAppearance', () => {
 	afterEach( () => {
 		delete window.wcpayExpressCheckoutParams;
