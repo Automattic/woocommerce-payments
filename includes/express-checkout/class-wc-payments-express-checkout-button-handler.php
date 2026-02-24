@@ -109,8 +109,18 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return mixed
 	 */
 	public function payment_fields_js_config( $config ) {
-		$config['isPaymentRequestEnabled'] = $this->gateway->is_payment_request_enabled() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'payment_request' );
-		$config['isAmazonPayEnabled']      = $this->express_checkout_helper->can_use_amazon_pay() && $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'amazon_pay' );
+		$context = $this->express_checkout_helper->get_button_context();
+
+		$config['isPaymentRequestEnabled'] = $this->gateway->is_payment_request_enabled()
+			&& (
+				empty( $context )
+				|| $this->express_checkout_helper->is_express_checkout_method_enabled_at( $context, 'payment_request' )
+			);
+		$config['isAmazonPayEnabled']      = $this->express_checkout_helper->can_use_amazon_pay()
+			&& (
+				empty( $context )
+				|| $this->express_checkout_helper->is_express_checkout_method_enabled_at( $context, 'amazon_pay' )
+			);
 
 		return $config;
 	}
