@@ -281,7 +281,9 @@ describe( 'Getting styles for automated theming', () => {
 
 	test( 'getFieldStyles prioritizes content-area selectors over bare fallback', () => {
 		const contentElement = document.createElement( 'a' );
+		const bareElement = document.createElement( 'a' );
 		const accentColor = 'rgb(0, 102, 204)';
+		const navColor = 'rgb(255, 0, 0)';
 		const accentStyleDeclaration = {
 			...cssPropertiesCamel,
 			color: accentColor,
@@ -290,14 +292,28 @@ describe( 'Getting styles for automated theming', () => {
 				return cssPropertiesDashed[ prop ];
 			},
 		};
+		const navStyleDeclaration = {
+			...cssPropertiesCamel,
+			color: navColor,
+			getPropertyValue: ( prop ) => {
+				if ( prop === 'color' ) return navColor;
+				return cssPropertiesDashed[ prop ];
+			},
+		};
 
-		// querySelector returns null for bare 'a' but finds 'form.checkout a'.
+		// Both 'form.checkout a' and bare 'a' match, but the first should win.
 		const scope = {
-			querySelector: jest.fn( ( selector ) =>
-				selector === 'form.checkout a' ? contentElement : null
-			),
+			querySelector: jest.fn( ( selector ) => {
+				if ( selector === 'form.checkout a' ) return contentElement;
+				if ( selector === 'a' ) return bareElement;
+				return null;
+			} ),
 			defaultView: {
-				getComputedStyle: jest.fn( () => accentStyleDeclaration ),
+				getComputedStyle: jest.fn( ( el ) =>
+					el === contentElement
+						? accentStyleDeclaration
+						: navStyleDeclaration
+				),
 			},
 		};
 
