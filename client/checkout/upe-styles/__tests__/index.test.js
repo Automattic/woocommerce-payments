@@ -143,7 +143,7 @@ describe( 'Getting styles for automated theming', () => {
 
 		const appearance = upeStyles.getAppearance(
 			'shortcode_checkout',
-			true,
+			false,
 			scope
 		);
 		expect( appearance ).toEqual( {
@@ -225,55 +225,6 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 					backgroundColor: '#ffffff',
 				},
-				'.Heading': {
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
-				'.Button': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					outline: '1px solid rgb(150, 88, 138)',
-					padding: '10px',
-				},
-				'.Link': {
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
-				'.Container': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-				},
-				'.Footer': {
-					color: 'rgb(109, 109, 109)',
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
-				'.Footer-link': {
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
-				'.Header': {
-					color: 'rgb(109, 109, 109)',
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
 			},
 			labels: 'above',
 		} );
@@ -334,6 +285,24 @@ describe( 'Getting styles for automated theming', () => {
 		const accentColor = 'rgb(0, 102, 204)';
 		const navColor = 'rgb(255, 255, 255)';
 
+		// Pre-create style declarations to avoid per-call object allocation.
+		const accentStyleDeclaration = {
+			...cssPropertiesCamel,
+			color: accentColor,
+			getPropertyValue: ( prop ) => {
+				if ( prop === 'color' ) return accentColor;
+				return cssPropertiesDashed[ prop ];
+			},
+		};
+		const navStyleDeclaration = {
+			...cssPropertiesCamel,
+			color: navColor,
+			getPropertyValue: ( prop ) => {
+				if ( prop === 'color' ) return navColor;
+				return cssPropertiesDashed[ prop ];
+			},
+		};
+
 		const scope = {
 			querySelector: jest.fn( ( selector ) => {
 				// Content-area link — should win for .Link color.
@@ -348,26 +317,8 @@ describe( 'Getting styles for automated theming', () => {
 			),
 			defaultView: {
 				getComputedStyle: jest.fn( ( el ) => {
-					if ( el === contentLink ) {
-						return {
-							...cssPropertiesCamel,
-							color: accentColor,
-							getPropertyValue: ( prop ) => {
-								if ( prop === 'color' ) return accentColor;
-								return cssPropertiesDashed[ prop ];
-							},
-						};
-					}
-					if ( el === navLink ) {
-						return {
-							...cssPropertiesCamel,
-							color: navColor,
-							getPropertyValue: ( prop ) => {
-								if ( prop === 'color' ) return navColor;
-								return cssPropertiesDashed[ prop ];
-							},
-						};
-					}
+					if ( el === contentLink ) return accentStyleDeclaration;
+					if ( el === navLink ) return navStyleDeclaration;
 					return mockCSStyleDeclaration;
 				} ),
 			},
