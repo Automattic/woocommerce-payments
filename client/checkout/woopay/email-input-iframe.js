@@ -183,14 +183,14 @@ export const handleWooPayEmailInput = async (
 		}
 	};
 
-	iframe.addEventListener( 'load', () => {
+	iframe.addEventListener( 'load', async () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 		const appearanceType = getAppearanceType();
 		const appearance =
 			isSupportedThemeEntrypoint( appearanceType ) &&
 			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? getAppearance( appearanceType, true )
+				? await getAppearance( appearanceType, true )
 				: null;
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {

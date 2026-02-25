@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Retrieve UPE styling after fonts have been loaded to improve display consistency.

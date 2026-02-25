@@ -46,7 +46,7 @@ const PaymentElements = ( { api, ...props } ) => {
 				getFontRulesFromPage( containerRef.current.ownerDocument )
 			);
 			// Generate UPE input styles.
-			let upeAppearance = getAppearance(
+			let upeAppearance = await getAppearance(
 				'blocks_checkout',
 				false,
 				containerRef.current.ownerDocument

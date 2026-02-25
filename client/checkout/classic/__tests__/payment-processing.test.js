@@ -209,7 +209,7 @@ describe( 'Stripe Payment Element mounting', () => {
 				document.body.dispatchEvent = dispatchMock;
 
 				const appearanceMock = { backgroundColor: '#fff' };
-				getAppearance.mockReturnValue( appearanceMock );
+				getAppearance.mockResolvedValue( appearanceMock );
 				getFingerprint.mockImplementation( () => {
 					return 'fingerprint';
 				} );
@@ -233,7 +233,7 @@ describe( 'Stripe Payment Element mounting', () => {
 
 			test( 'does not call getAppearance or saveUPEAppearance if appearance is already set', async () => {
 				const appearanceMock = { backgroundColor: '#fff' };
-				getAppearance.mockReturnValue( appearanceMock );
+				getAppearance.mockResolvedValue( appearanceMock );
 				getFingerprint.mockImplementation( () => {
 					return 'fingerprint';
 				} );

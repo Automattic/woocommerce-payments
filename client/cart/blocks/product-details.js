@@ -53,7 +53,7 @@ const ProductDetail = ( { cart, context } ) => {
 	useEffect( () => {
 		async function generateUPEAppearance() {
 			// Generate UPE input styles.
-			let upeAppearance = getAppearance( 'bnpl_cart_block' );
+			let upeAppearance = await getAppearance( 'bnpl_cart_block' );
 			upeAppearance = await api.saveUPEAppearance(
 				upeAppearance,
 				'bnpl_cart_block'

@@ -200,7 +200,7 @@ export const WoopayExpressCheckoutButton = ( {
 	);
 
 	const onClickFirstPartyAuthFlow = useCallback(
-		( e ) => {
+		async ( e ) => {
 			e.preventDefault();
 
 			if ( isPreview || isLoadingRef.current ) {
@@ -225,7 +225,7 @@ export const WoopayExpressCheckoutButton = ( {
 			const appearance =
 				isSupportedThemeEntrypoint( appearanceType ) &&
 				getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-					? getAppearance( appearanceType, true )
+					? await getAppearance( appearanceType, true )
 					: null;
 
 			if ( isProductPage ) {

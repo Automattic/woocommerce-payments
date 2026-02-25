@@ -5,6 +5,7 @@ import WCPayAPI from '..';
 import request from 'wcpay/checkout/utils/request';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import { getConfig } from 'wcpay/utils/checkout';
+import { getAppearance } from 'checkout/upe-styles';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
 	jest.fn( () => Promise.resolve( {} ).finally( () => {} ) )
@@ -15,6 +16,9 @@ jest.mock( 'wcpay/utils/express-checkout', () => ( {
 } ) );
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
+} ) );
+jest.mock( 'checkout/upe-styles', () => ( {
+	getAppearance: jest.fn(),
 } ) );
 
 const mockAppearance = {
@@ -115,6 +119,7 @@ describe( 'WCPayAPI', () => {
 
 	test( 'initializes woopay using config params', async () => {
 		buildAjaxURL.mockReturnValue( 'https://example.org/' );
+		getAppearance.mockResolvedValue( mockAppearance );
 		getConfig.mockImplementation( ( key ) => {
 			const mockProperties = {
 				initWooPayNonce: 'foo',

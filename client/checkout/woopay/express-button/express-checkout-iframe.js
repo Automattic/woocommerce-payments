@@ -108,14 +108,14 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			Math.floor( window.innerWidth / 2 - iframeRect.width / 2 ) + 'px';
 	};
 
-	iframe.addEventListener( 'load', () => {
+	iframe.addEventListener( 'load', async () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 		const appearanceType = getAppearanceType();
 		const appearance =
 			isSupportedThemeEntrypoint( appearanceType ) &&
 			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? getAppearance( appearanceType, true )
+				? await getAppearance( appearanceType, true )
 				: null;
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {

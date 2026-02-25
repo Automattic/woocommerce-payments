@@ -38,7 +38,7 @@ async function initializeAppearance( api, location ) {
 	}
 
 	return await api.saveUPEAppearance(
-		getAppearance( appearanceKey ),
+		await getAppearance( appearanceKey ),
 		appearanceKey
 	);
 }

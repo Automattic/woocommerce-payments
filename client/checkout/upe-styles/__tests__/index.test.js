@@ -130,7 +130,7 @@ describe( 'Getting styles for automated theming', () => {
 		expect( fontRules ).toEqual( [] );
 	} );
 
-	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', () => {
+	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', async () => {
 		const scope = {
 			querySelector: jest.fn( () => mockElement ),
 			createElement: jest.fn( ( htmlTag ) =>
@@ -139,9 +139,12 @@ describe( 'Getting styles for automated theming', () => {
 			defaultView: {
 				getComputedStyle: jest.fn( () => mockCSStyleDeclaration ),
 			},
+			fonts: {
+				ready: Promise.resolve(),
+			},
 		};
 
-		const appearance = upeStyles.getAppearance(
+		const appearance = await upeStyles.getAppearance(
 			'shortcode_checkout',
 			true,
 			scope
@@ -279,6 +282,47 @@ describe( 'Getting styles for automated theming', () => {
 		} );
 	} );
 
+	test( 'getAppearance re-fetches paragraph rules when initial font family is a generic CSS font', async () => {
+		const genericFontStyleDeclaration = {
+			...mockCSStyleDeclaration,
+			getPropertyValue: ( propertyName ) => {
+				if ( propertyName === 'font-family' ) return 'serif';
+				return cssPropertiesDashed[ propertyName ] ?? '';
+			},
+		};
+		const getComputedStyleMock = jest
+			.fn()
+			.mockImplementationOnce( () => genericFontStyleDeclaration )
+			.mockImplementation( () => mockCSStyleDeclaration );
+
+		const scope = {
+			querySelector: jest.fn( () => mockElement ),
+			createElement: jest.fn( ( htmlTag ) =>
+				document.createElement( htmlTag )
+			),
+			defaultView: {
+				getComputedStyle: getComputedStyleMock,
+			},
+			fonts: {
+				ready: Promise.resolve(),
+			},
+		};
+
+		const appearance = await upeStyles.getAppearance(
+			'shortcode_checkout',
+			false,
+			scope
+		);
+
+		// getComputedStyle is called a second time for the text selector after
+		// the 100ms delay, so the total call count must be greater than one.
+		expect( getComputedStyleMock.mock.calls.length ).toBeGreaterThan( 1 );
+		// The re-fetched (non-generic) font family is reflected in the appearance.
+		expect( appearance.variables.fontFamily ).toBe(
+			'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"'
+		);
+	} );
+
 	[
 		{
 			elementsLocation: 'shortcode_checkout',
@@ -309,7 +353,7 @@ describe( 'Getting styles for automated theming', () => {
 		},
 	].forEach( ( { elementsLocation, expectedSelectors } ) => {
 		describe( `when elementsLocation is ${ elementsLocation }`, () => {
-			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
+			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', async () => {
 				const scope = {
 					querySelector: jest.fn( () => mockElement ),
 					createElement: jest.fn( ( htmlTag ) =>
@@ -320,9 +364,12 @@ describe( 'Getting styles for automated theming', () => {
 							() => mockCSStyleDeclaration
 						),
 					},
+					fonts: {
+						ready: Promise.resolve(),
+					},
 				};
 
-				upeStyles.getAppearance( elementsLocation, false, scope );
+				await upeStyles.getAppearance( elementsLocation, false, scope );
 
 				expectedSelectors.forEach( ( selector ) => {
 					expect( scope.querySelector ).toHaveBeenCalledWith(

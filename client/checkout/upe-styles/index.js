@@ -576,7 +576,7 @@ function ensureFontSizeSmallerThan(
 	return `${ fontSizeNumber }px`;
 }
 
-export const getAppearance = (
+export const getAppearance = async (
 	elementsLocation,
 	forWooPay = false,
 	scope = document
@@ -586,8 +586,39 @@ export const getAppearance = (
 		scope
 	);
 
+	// Wait for fonts to be loaded.
+	await scope.fonts.ready;
+
 	// Add hidden fields to DOM for generating styles.
 	hiddenElementsForUPE.init( elementsLocation, scope );
+
+	// Helper to validate font family
+	const isGenericFont = ( fontFamily ) => {
+		return /^(serif|sans-serif|cursive|monospace|fantasy|system-ui)$/i.test(
+			fontFamily
+		);
+	};
+
+	// Get paragraph rules first to check font family
+	const paragraphRules = getFieldStyles(
+		selectors.upeThemeTextSelectors,
+		'.Text',
+		null,
+		scope
+	);
+	if ( isGenericFont( paragraphRules.fontFamily ) ) {
+		await new Promise( ( resolve ) => setTimeout( resolve, 100 ) );
+		// Re-fetch paragraph rules after delay
+		Object.assign(
+			paragraphRules,
+			getFieldStyles(
+				selectors.upeThemeTextSelectors,
+				'.Text',
+				null,
+				scope
+			)
+		);
+	}
 
 	const inputRules = getFieldStyles(
 		selectors.hiddenInput,
@@ -612,13 +643,6 @@ export const getAppearance = (
 	const labelRestingRules = {
 		fontSize: labelRules.fontSize,
 	};
-
-	const paragraphRules = getFieldStyles(
-		selectors.upeThemeTextSelectors,
-		'.Text',
-		null,
-		scope
-	);
 
 	const tabRules = getFieldStyles(
 		selectors.upeThemeInputSelector,

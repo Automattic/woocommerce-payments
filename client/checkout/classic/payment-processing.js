@@ -64,7 +64,7 @@ async function initializeAppearance( api, elementsLocation ) {
 	}
 
 	return await api.saveUPEAppearance(
-		getAppearance( elementsLocation ),
+		await getAppearance( elementsLocation ),
 		elementsLocation
 	);
 }
