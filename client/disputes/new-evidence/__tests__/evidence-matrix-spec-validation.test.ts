@@ -24,7 +24,7 @@
  *   - product_not_received × physical_product
  *
  * ⏳ Not yet implemented (in backlog):
- *   - Remaining combinations with physical_product
+ *   - Remaining combinations with physical_product (excluding fraudulent, product_not_received)
  *   - All combinations with digital_product_or_service
  *   - All combinations with offline_service
  *   - All combinations with event
