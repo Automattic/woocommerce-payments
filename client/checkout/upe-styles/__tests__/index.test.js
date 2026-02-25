@@ -328,6 +328,73 @@ describe( 'Getting styles for automated theming', () => {
 		expect( scope.querySelector ).toHaveBeenCalledWith( 'form.checkout a' );
 	} );
 
+	test( 'getAppearance for woopay_shortcode_checkout includes WooPay rules with correct link priority', () => {
+		const contentLink = document.createElement( 'a' );
+		const navLink = document.createElement( 'a' );
+		const accentColor = 'rgb(0, 102, 204)';
+		const navColor = 'rgb(255, 255, 255)';
+
+		const scope = {
+			querySelector: jest.fn( ( selector ) => {
+				// Content-area link — should win for .Link color.
+				if ( selector === 'form.checkout a' ) return contentLink;
+				// Bare fallback — should NOT win.
+				if ( selector === 'a' ) return navLink;
+				// Everything else uses default mock element.
+				return mockElement;
+			} ),
+			createElement: jest.fn( ( htmlTag ) =>
+				document.createElement( htmlTag )
+			),
+			defaultView: {
+				getComputedStyle: jest.fn( ( el ) => {
+					if ( el === contentLink ) {
+						return {
+							...cssPropertiesCamel,
+							color: accentColor,
+							getPropertyValue: ( prop ) => {
+								if ( prop === 'color' ) return accentColor;
+								return cssPropertiesDashed[ prop ];
+							},
+						};
+					}
+					if ( el === navLink ) {
+						return {
+							...cssPropertiesCamel,
+							color: navColor,
+							getPropertyValue: ( prop ) => {
+								if ( prop === 'color' ) return navColor;
+								return cssPropertiesDashed[ prop ];
+							},
+						};
+					}
+					return mockCSStyleDeclaration;
+				} ),
+			},
+		};
+
+		const appearance = upeStyles.getAppearance(
+			'woopay_shortcode_checkout',
+			true,
+			scope
+		);
+
+		// WooPay-specific rules should all be present.
+		expect( appearance.rules ).toHaveProperty( '.Link' );
+		expect( appearance.rules ).toHaveProperty( '.Header' );
+		expect( appearance.rules ).toHaveProperty( '.Footer' );
+		expect( appearance.rules ).toHaveProperty( '.Footer-link' );
+		expect( appearance.rules ).toHaveProperty( '.Button' );
+		expect( appearance.rules ).toHaveProperty( '.Heading' );
+		expect( appearance.rules ).toHaveProperty( '.Container' );
+
+		// Link color should come from content-area selector, not bare 'a'.
+		expect( appearance.rules[ '.Link' ].color ).toBe( accentColor );
+
+		// Verify the content-area link selector was actually queried.
+		expect( scope.querySelector ).toHaveBeenCalledWith( 'form.checkout a' );
+	} );
+
 	[
 		{
 			elementsLocation: 'shortcode_checkout',
@@ -353,6 +420,15 @@ describe( 'Getting styles for automated theming', () => {
 				upeStyles.appearanceSelectors.blocksCheckout
 					.upeThemeInputSelector,
 				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'woopay_shortcode_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.wooPayClassicCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.wooPayClassicCheckout
 					.upeThemeLabelSelector,
 			],
 		},
