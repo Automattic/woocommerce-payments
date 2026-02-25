@@ -42,6 +42,21 @@ const PaymentRequestSettings = ( { section } ) => {
 			{ section === 'enable' && (
 				<CardBody className="wcpay-card-body">
 					<div className="wcpay-payment-request-settings__enable">
+						<CheckboxControl
+							className="wcpay-payment-request-settings__enable__checkbox"
+							checked={ isPaymentRequestEnabled }
+							onChange={ updateIsPaymentRequestEnabled }
+							label={ __(
+								'Enable Apple Pay / Google Pay as express payment buttons',
+								'woocommerce-payments'
+							) }
+							help={ __(
+								'Show express payment buttons on store pages for faster purchases. ' +
+									'Customers with Apple Pay or Google Pay enabled will be able to pay with their preferred wallet.',
+								'woocommerce-payments'
+							) }
+							__nextHasNoMarginBottom
+						/>
 						{ wcpaySettings.featureFlags
 							.isDynamicCheckoutPlaceOrderButtonEnabled && (
 							<CheckboxControl
@@ -72,21 +87,6 @@ const PaymentRequestSettings = ( { section } ) => {
 								__nextHasNoMarginBottom
 							/>
 						) }
-						<CheckboxControl
-							className="wcpay-payment-request-settings__enable__checkbox"
-							checked={ isPaymentRequestEnabled }
-							onChange={ updateIsPaymentRequestEnabled }
-							label={ __(
-								'Enable Apple Pay / Google Pay as express payment buttons',
-								'woocommerce-payments'
-							) }
-							help={ __(
-								'Show express payment buttons on store pages for faster purchases. ' +
-									'Customers with Apple Pay or Google Pay enabled will be able to pay with their preferred wallet.',
-								'woocommerce-payments'
-							) }
-							__nextHasNoMarginBottom
-						/>
 						{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
 						<BaseControl
 							__next40pxDefaultSize
@@ -95,12 +95,17 @@ const PaymentRequestSettings = ( { section } ) => {
 							<ul className="payment-request-settings__location">
 								<li>
 									<CheckboxControl
-										disabled={ ! isPaymentRequestEnabled }
+										disabled={
+											! isPaymentRequestEnabled ||
+											isExpressCheckoutInPaymentMethodsEnabled
+										}
 										checked={
-											isPaymentRequestEnabled &&
-											paymentRequestLocations.includes(
-												'product'
-											)
+											isExpressCheckoutInPaymentMethodsEnabled
+												? false
+												: isPaymentRequestEnabled &&
+												  paymentRequestLocations.includes(
+														'product'
+												  )
 										}
 										onChange={ makeLocationChangeHandler(
 											'product'
@@ -114,12 +119,17 @@ const PaymentRequestSettings = ( { section } ) => {
 								</li>
 								<li>
 									<CheckboxControl
-										disabled={ ! isPaymentRequestEnabled }
+										disabled={
+											! isPaymentRequestEnabled ||
+											isExpressCheckoutInPaymentMethodsEnabled
+										}
 										checked={
-											isPaymentRequestEnabled &&
-											paymentRequestLocations.includes(
-												'cart'
-											)
+											isExpressCheckoutInPaymentMethodsEnabled
+												? false
+												: isPaymentRequestEnabled &&
+												  paymentRequestLocations.includes(
+														'cart'
+												  )
 										}
 										onChange={ makeLocationChangeHandler(
 											'cart'
@@ -133,12 +143,17 @@ const PaymentRequestSettings = ( { section } ) => {
 								</li>
 								<li>
 									<CheckboxControl
-										disabled={ ! isPaymentRequestEnabled }
+										disabled={
+											! isPaymentRequestEnabled ||
+											isExpressCheckoutInPaymentMethodsEnabled
+										}
 										checked={
-											isPaymentRequestEnabled &&
-											paymentRequestLocations.includes(
-												'checkout'
-											)
+											isExpressCheckoutInPaymentMethodsEnabled
+												? true
+												: isPaymentRequestEnabled &&
+												  paymentRequestLocations.includes(
+														'checkout'
+												  )
 										}
 										onChange={ makeLocationChangeHandler(
 											'checkout'
