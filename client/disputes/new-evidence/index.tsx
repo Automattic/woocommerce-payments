@@ -963,7 +963,10 @@ export default ( { query }: { query: { id: string } } ) => {
 		productType
 	);
 
-	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields();
+	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields(
+		disputeReason,
+		productType
+	);
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
 		( field: RecommendedDocument ) => ( {
 			key: field.key,
