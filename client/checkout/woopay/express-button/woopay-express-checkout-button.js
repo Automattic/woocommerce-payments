@@ -21,6 +21,10 @@ import {
 	deleteSkipWooPayCookie,
 	isSupportedThemeEntrypoint,
 } from 'wcpay/checkout/woopay/utils';
+import {
+	getAddToCartButton,
+	getProductForm,
+} from 'wcpay/express-checkout/compatibility/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
@@ -112,9 +116,7 @@ export const WoopayExpressCheckoutButton = ( {
 			return true;
 		}
 
-		const addToCartButton = document.querySelector(
-			'.single_add_to_cart_button'
-		);
+		const addToCartButton = getAddToCartButton();
 
 		if (
 			addToCartButton &&
@@ -178,7 +180,7 @@ export const WoopayExpressCheckoutButton = ( {
 						if ( res.submit ) {
 							// Some extensions needs to submit the form
 							// to show error messages.
-							document.querySelector( 'form.cart' ).submit();
+							getProductForm()?.submit();
 						}
 						return;
 					}

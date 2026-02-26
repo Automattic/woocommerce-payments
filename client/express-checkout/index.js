@@ -43,6 +43,7 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
+import { $getAddToCartButton } from './compatibility/wc-product-page-selectors';
 
 let cachedCartData = null;
 const fetchNewCartData = async () => {
@@ -264,7 +265,7 @@ jQuery( ( $ ) => {
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
-					const addToCartButton = $( '.single_add_to_cart_button' );
+					const addToCartButton = $getAddToCartButton();
 
 					// First check if product can be added to cart.
 					if ( addToCartButton.is( '.disabled' ) ) {
@@ -503,9 +504,7 @@ jQuery( ( $ ) => {
 					if (
 						getExpressCheckoutData( 'button_context' ) === 'product'
 					) {
-						const addToCartButton = $(
-							'.single_add_to_cart_button'
-						);
+						const addToCartButton = $getAddToCartButton();
 
 						// First check if product can be added to cart.
 						if ( addToCartButton.is( '.disabled' ) ) {
