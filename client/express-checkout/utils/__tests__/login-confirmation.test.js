@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { displayLoginConfirmation } from '..';
+import { displayLoginConfirmation } from '../login-confirmation';
 
 describe( 'displayLoginConfirmation', () => {
 	let confirmSpy;

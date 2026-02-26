@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getExpressCheckoutData } from '..';
+import { getExpressCheckoutData } from '../express-checkout-data';
 
 describe( 'getExpressCheckoutData', () => {
 	afterEach( () => {
