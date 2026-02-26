@@ -93,13 +93,14 @@ describe( 'WooPay appearance theming', () => {
 		);
 
 		// WooPay-specific rules should all be present.
-		expect( appearance.rules ).toHaveProperty( '.Link' );
-		expect( appearance.rules ).toHaveProperty( '.Header' );
-		expect( appearance.rules ).toHaveProperty( '.Footer' );
-		expect( appearance.rules ).toHaveProperty( '.Footer-link' );
-		expect( appearance.rules ).toHaveProperty( '.Button' );
-		expect( appearance.rules ).toHaveProperty( '.Heading' );
-		expect( appearance.rules ).toHaveProperty( '.Container' );
+		// Use array syntax to prevent Jest interpreting dots as nested paths.
+		expect( appearance.rules ).toHaveProperty( [ '.Link' ] );
+		expect( appearance.rules ).toHaveProperty( [ '.Header' ] );
+		expect( appearance.rules ).toHaveProperty( [ '.Footer' ] );
+		expect( appearance.rules ).toHaveProperty( [ '.Footer-link' ] );
+		expect( appearance.rules ).toHaveProperty( [ '.Button' ] );
+		expect( appearance.rules ).toHaveProperty( [ '.Heading' ] );
+		expect( appearance.rules ).toHaveProperty( [ '.Container' ] );
 
 		// Link color should come from content-area selector, not bare 'a'.
 		expect( appearance.rules[ '.Link' ].color ).toBe( accentColor );
