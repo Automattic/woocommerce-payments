@@ -192,6 +192,7 @@ describe( 'PaymentDetailsTimeline', () => {
 				{
 					amount: 10000,
 					currency: 'USD',
+					balance_currency: 'USD',
 					datetime: 1586055370,
 					deposit: {
 						arrival_date: 1586141770,

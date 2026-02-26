@@ -31,6 +31,7 @@ export const createKycAccountSession = async (
 	data: OnboardingFields
 ): Promise< AccountSession > => {
 	const urlParams = new URLSearchParams( window.location.search );
+	const isTestDrive = urlParams.get( 'test_drive' ) === 'true';
 
 	return await apiFetch< AccountSession >( {
 		path: `${ NAMESPACE }/onboarding/kyc/session`,
@@ -38,6 +39,7 @@ export const createKycAccountSession = async (
 		data: {
 			self_assessment: fromDotNotation( data ),
 			capabilities: urlParams.get( 'capabilities' ) || '',
+			mode: isTestDrive ? 'test' : 'live',
 		},
 	} );
 };

@@ -55,6 +55,8 @@ const StoreSettings = () => {
 		saveStoreSettings,
 	} = useStoreSettings();
 
+	const [ renderingModeValue, setRenderingModeValue ] = useState( 'speed' );
+
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
 	return (
@@ -111,8 +113,7 @@ const StoreSettings = () => {
 										'woocommerce-payments'
 									) }
 									selected={
-										storeSettings.rendering_mode ||
-										'speed'
+										storeSettings.rendering_mode || 'speed'
 									}
 									options={ [
 										{

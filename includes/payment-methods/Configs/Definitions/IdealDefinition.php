@@ -127,7 +127,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/ideal-horizontal.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/ideal.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -138,7 +138,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string Returns regular icon URL if no dark mode icon exists
 	 */
 	public static function get_dark_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/ideal-dark.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
