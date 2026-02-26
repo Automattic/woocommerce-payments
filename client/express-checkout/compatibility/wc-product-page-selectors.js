@@ -56,7 +56,9 @@ export const getProductId = () => {
 		return classicButton.value;
 	}
 
-	const hiddenInput = document.querySelector( 'input[name="add-to-cart"]' );
+	const hiddenInput = document.querySelector(
+		'.wp-block-add-to-cart-with-options input[name="add-to-cart"]'
+	);
 	return hiddenInput?.value;
 };
 
