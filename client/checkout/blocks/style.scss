@@ -1,7 +1,67 @@
 @import '../style';
 
+// Skeleton overlay for Stripe PaymentElement loading state.
+// Positioned absolutely over the iframe mount point and fades out
+// when Stripe fires the `ready` event.
+.wcpay-payment-element-wrapper {
+	position: relative;
+	min-height: 120px;
+}
+
+.wcpay-payment-element-skeleton {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 1;
+	opacity: 1;
+	transition: opacity 300ms ease-out;
+
+	&.is-hidden {
+		opacity: 0;
+		pointer-events: none;
+	}
+}
+
+.wcpay-skeleton-line {
+	height: 40px;
+	border-radius: 4px;
+	background: linear-gradient(
+		90deg,
+		#f0f0f0 25%,
+		#e8e8e8 50%,
+		#f0f0f0 75%
+	);
+	background-size: 200% 100%;
+	animation: wcpay-skeleton-shimmer 1.6s ease-in-out infinite;
+
+	@media screen and ( prefers-reduced-motion: reduce ) {
+		animation: none;
+	}
+}
+
+.wcpay-skeleton-row {
+	display: flex;
+	gap: 12px;
+	margin-top: 12px;
+
+	.wcpay-skeleton-line {
+		flex: 1;
+	}
+}
+
+@keyframes wcpay-skeleton-shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+
+	100% {
+		background-position: -200% 0;
+	}
+}
+
 .wcpay-payment-element {
-	margin-bottom: 2rem;
+	margin-bottom: 0;
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
@@ -65,4 +125,3 @@
 }
 
 @import '../woopay/style';
-@import '../../components/loadable/style';
