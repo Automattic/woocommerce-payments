@@ -11,6 +11,7 @@
  * IMPLEMENTATION STATUS (from evidence-matrix.ts):
  * ✅ Implemented combinations:
  *   - fraudulent × booking_reservation
+ *   - fraudulent × physical_product
  *   - product_not_received × booking_reservation
  *   - product_unacceptable × booking_reservation
  *   - subscription_canceled × booking_reservation
@@ -23,7 +24,7 @@
  *   - product_not_received × physical_product
  *
  * ⏳ Not yet implemented (in backlog):
- *   - All combinations with physical_product (except product_not_received)
+ *   - Remaining combinations with physical_product (excluding fraudulent, product_not_received)
  *   - All combinations with digital_product_or_service
  *   - All combinations with offline_service
  *   - All combinations with event
@@ -80,6 +81,50 @@ interface CombinationSpec {
  * Based on evidence-matrix.ts and the specification document.
  */
 const implementedCombinations: CombinationSpec[] = [
+	// ============================================
+	// FRAUDULENT × PHYSICAL_PRODUCT
+	// ============================================
+	{
+		reason: 'fraudulent',
+		productType: 'physical_product',
+		description:
+			'Fraudulent dispute for physical product - needs receipt, prior history, signature, refund policy',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION, // Shown separately in shipping step
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG ]:
+					'Prior undisputed transaction history',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ]:
+					"Customer's signature",
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Prior undisputed transaction history',
+				"Customer's signature",
+				'Store refund policy',
+				'Other documents',
+			],
+			shouldExclude: [],
+		},
+	},
+
 	// ============================================
 	// FRAUDULENT × BOOKING/RESERVATION
 	// ============================================
@@ -600,7 +645,6 @@ describe( 'Evidence Matrix Specification Validation', () => {
 
 		describe( 'Non-implemented combinations should return undefined', () => {
 			const notImplemented = [
-				{ reason: 'fraudulent', productType: 'physical_product' },
 				{
 					reason: 'fraudulent',
 					productType: 'digital_product_or_service',
