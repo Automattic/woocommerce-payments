@@ -110,20 +110,10 @@ class AsyncPriceRenderer {
 			'wcpay-multi-currency-async-renderer',
 			plugins_url(
 				'dist/multi-currency-async-renderer.css',
-				$this->get_plugin_file_path()
+				WCPAY_PLUGIN_FILE
 			),
 			[],
 			$this->multi_currency->get_file_version( 'dist/multi-currency-async-renderer.css' )
 		);
-	}
-
-	/**
-	 * Gets the plugin file path from the MultiCurrency settings service.
-	 *
-	 * @return string The plugin file path.
-	 */
-	private function get_plugin_file_path(): string {
-		// Access through the main plugin file constant.
-		return WCPAY_PLUGIN_FILE;
 	}
 }

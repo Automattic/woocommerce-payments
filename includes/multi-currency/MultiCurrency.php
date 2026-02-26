@@ -167,6 +167,13 @@ class MultiCurrency {
 	protected $tracking;
 
 	/**
+	 * AsyncPriceRenderer instance.
+	 *
+	 * @var AsyncPriceRenderer
+	 */
+	protected $async_renderer;
+
+	/**
 	 * Simulation variables array.
 	 *
 	 * @var array
@@ -195,6 +202,7 @@ class MultiCurrency {
 		$this->geolocation             = new Geolocation( $this->localization_service );
 		$this->compatibility           = new Compatibility( $this, $this->utils );
 		$this->currency_switcher_block = new CurrencySwitcherBlock( $this, $this->compatibility );
+		$this->async_renderer          = new AsyncPriceRenderer( $this );
 	}
 
 	/**
@@ -293,11 +301,10 @@ class MultiCurrency {
 		// Otherwise, use standard server-side price conversion.
 		// A ?currency= URL param means a session will be created (at init priority 11),
 		// so we use server-side conversion to show the correct currency immediately.
-		$async_renderer              = new AsyncPriceRenderer( $this );
 		$has_pending_currency_switch = isset( $_GET['currency'] ); // phpcs:ignore WordPress.Security.NonceVerification
 
 		if ( ! $has_pending_currency_switch ) {
-			$async_renderer->init_hooks();
+			$this->async_renderer->init_hooks();
 		}
 
 		if ( ! $this->is_cache_optimized_mode() || $this->has_active_session() || $has_pending_currency_switch ) {
