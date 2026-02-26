@@ -9,7 +9,11 @@ import userEvent from '@testing-library/user-event';
  * Internal dependencies
  */
 import AmazonPaySettings from '../amazon-pay-settings';
-import { useAmazonPayEnabledSettings, useAmazonPayLocations } from 'wcpay/data';
+import {
+	useAmazonPayEnabledSettings,
+	useAmazonPayLocations,
+	useExpressCheckoutInPaymentMethodsEnabledSettings,
+} from 'wcpay/data';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
@@ -155,6 +159,38 @@ describe( 'AmazonPaySettings', () => {
 			'cart',
 			true
 		);
+	} );
+
+	it( 'disables and overrides location checkboxes when express checkout in payment methods is enabled', () => {
+		useExpressCheckoutInPaymentMethodsEnabledSettings.mockReturnValue( [
+			true,
+			jest.fn(),
+		] );
+
+		useAmazonPayLocations.mockReturnValue( [
+			[ 'product', 'cart', 'checkout' ],
+			jest.fn(),
+		] );
+
+		renderWithSettingsProvider( <AmazonPaySettings section="enable" /> );
+
+		expect(
+			screen.getByLabelText( 'Show on product page' )
+		).toBeDisabled();
+		expect( screen.getByLabelText( 'Show on cart page' ) ).toBeDisabled();
+		expect(
+			screen.getByLabelText( 'Show on checkout page' )
+		).toBeDisabled();
+
+		expect(
+			screen.getByLabelText( 'Show on product page' )
+		).not.toBeChecked();
+		expect(
+			screen.getByLabelText( 'Show on cart page' )
+		).not.toBeChecked();
+		expect(
+			screen.getByLabelText( 'Show on checkout page' )
+		).toBeChecked();
 	} );
 
 	it( 'renders general settings section with button size options', () => {

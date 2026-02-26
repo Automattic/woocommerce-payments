@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getErrorMessageFromNotice } from '..';
+import { getErrorMessageFromNotice } from '../error-messages';
 
 describe( 'getErrorMessageFromNotice', () => {
 	test( 'strips formatting', () => {
