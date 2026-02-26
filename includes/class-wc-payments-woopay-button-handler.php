@@ -326,25 +326,23 @@ class WC_Payments_WooPay_Button_Handler {
 
 		$settings = $this->get_button_settings();
 
-		// When the Add to Cart + Options block is used, render a <div> placeholder instead of
-		// a <button>. That block scans hooked content for form elements (BUTTON, INPUT, etc.)
-		// to decide between Interactivity API mode and legacy form-submit mode. A <button> here
-		// forces legacy mode, which breaks the mini-cart drawer. The React component hydrates
-		// the #wcpay-woopay-button container regardless of the placeholder element type.
-		$using_add_to_cart_with_options = has_block( 'woocommerce/add-to-cart-with-options' );
-		$placeholder_tag                = $using_add_to_cart_with_options ? 'div' : 'button';
-
+		// Use a <div> placeholder instead of <button>. The Add to Cart + Options block
+		// scans hooked content for form elements (BUTTON, INPUT, etc.) to decide between
+		// Interactivity API mode and legacy form-submit mode. A <button> here forces
+		// legacy mode, which breaks the mini-cart drawer. The React component hydrates
+		// the #wcpay-woopay-button container regardless of the placeholder element type,
+		// and .woopay-express-button CSS fully styles the element, so <div> is visually
+		// identical.
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>
-			<<?php echo $placeholder_tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+			<div
 				class="woopay-express-button"
 				aria-label="<?php esc_attr_e( 'WooPay', 'woocommerce-payments' ); ?>"
 				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
 				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
 				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
 				style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $settings['radius'] ); ?>px"
-				<?php echo $using_add_to_cart_with_options ? '' : 'disabled'; ?>
-			></<?php echo $placeholder_tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			></div>
 		</div>
 		<?php
 	}

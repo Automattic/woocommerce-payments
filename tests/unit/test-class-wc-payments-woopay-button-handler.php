@@ -539,7 +539,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_display_woopay_button_html_renders_div_when_add_to_cart_with_options_block_present() {
+	public function test_display_woopay_button_html_renders_div_placeholder() {
 		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
 			->setConstructorArgs(
 				[
@@ -558,70 +558,16 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_product' )
 			->willReturn( true );
 
-		// Simulate a page using the Add to Cart + Options block.
-		global $post;
-		$original_post = $post;
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$post = $this->factory()->post->create_and_get(
-			[
-				'post_content' => '<!-- wp:woocommerce/add-to-cart-with-options --><!-- /wp:woocommerce/add-to-cart-with-options -->',
-			]
-		);
-
 		ob_start();
 		$mock_handler->display_woopay_button_html();
 		$output = ob_get_clean();
 
-		// The placeholder should be a <div>, not a <button>.
+		// The placeholder must be a <div> — never a <button> — to avoid triggering
+		// has_form_elements() in the Add to Cart + Options block, which would force
+		// legacy form mode and break the mini-cart drawer.
 		$this->assertStringNotContainsString( '<button', $output );
 		$this->assertStringNotContainsString( 'disabled', $output );
 		$this->assertStringContainsString( 'woopay-express-button', $output );
 		$this->assertStringContainsString( '<div id="wcpay-woopay-button"', $output );
-
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$post = $original_post;
-	}
-
-	public function test_display_woopay_button_html_renders_button_when_classic_add_to_cart_used() {
-		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
-			->setConstructorArgs(
-				[
-					$this->mock_wcpay_account,
-					$this->mock_wcpay_gateway,
-					$this->mock_woopay_utilities,
-					$this->mock_express_checkout_helper,
-				]
-			)
-			->setMethods( [ 'should_show_woopay_button' ] )
-			->getMock();
-
-		$mock_handler->method( 'should_show_woopay_button' )->willReturn( true );
-
-		$this->mock_express_checkout_helper
-			->method( 'is_product' )
-			->willReturn( true );
-
-		// Simulate a page WITHOUT the Add to Cart + Options block.
-		global $post;
-		$original_post = $post;
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$post = $this->factory()->post->create_and_get(
-			[
-				'post_content' => '<!-- wp:woocommerce/product-meta --><!-- /wp:woocommerce/product-meta -->',
-			]
-		);
-
-		ob_start();
-		$mock_handler->display_woopay_button_html();
-		$output = ob_get_clean();
-
-		// The placeholder should be a <button> with disabled attribute.
-		$this->assertStringContainsString( '<button', $output );
-		$this->assertStringContainsString( '</button>', $output );
-		$this->assertStringContainsString( 'disabled', $output );
-		$this->assertStringContainsString( 'woopay-express-button', $output );
-
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$post = $original_post;
 	}
 }
