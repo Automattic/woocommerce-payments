@@ -78,7 +78,7 @@ class WCPayAsyncPriceRenderer {
 	}
 
 	/**
-	 * Decode HTML entities in currency symbols (e.g. &euro; → €).
+	 * Decode HTML entities in currency symbols (e.g. &euro; -> EUR symbol).
 	 *
 	 * Uses a detached textarea element to safely convert HTML entities to
 	 * their character equivalents. The textarea is never added to the DOM
@@ -94,7 +94,10 @@ class WCPayAsyncPriceRenderer {
 		for ( const code of Object.keys( config.currencies ) ) {
 			const currency = config.currencies[ code ];
 			if ( currency.symbol ) {
-				textarea.innerHTML = currency.symbol;
+				// Safe: textarea.value always returns plain text, never HTML.
+				// The textarea is detached (never in DOM) and used solely to
+				// leverage the browser's built-in HTML entity decoder.
+				textarea.innerHTML = currency.symbol; // eslint-disable-line no-unsanitized/property
 				currency.symbol = textarea.value;
 			}
 		}

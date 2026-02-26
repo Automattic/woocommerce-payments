@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getExpressCheckoutButtonStyleSettings } from '..';
+import { getExpressCheckoutButtonStyleSettings } from '../button-style-settings';
 
 describe( 'getExpressCheckoutButtonStyleSettings', () => {
 	afterEach( () => {

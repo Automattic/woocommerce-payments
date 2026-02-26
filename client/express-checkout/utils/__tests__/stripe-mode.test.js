@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getStripeElementsMode } from '..';
+import { getStripeElementsMode } from '../stripe-mode';
 
 describe( 'getStripeElementsMode', () => {
 	beforeEach( () => {
