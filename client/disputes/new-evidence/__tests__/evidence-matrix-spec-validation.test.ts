@@ -13,6 +13,7 @@
  *   - fraudulent × booking_reservation
  *   - fraudulent × physical_product
  *   - product_not_received × booking_reservation
+ *   - product_unacceptable × physical_product
  *   - product_unacceptable × booking_reservation
  *   - subscription_canceled × booking_reservation
  *   - subscription_canceled × other
@@ -24,7 +25,7 @@
  *   - product_not_received × physical_product
  *
  * ⏳ Not yet implemented (in backlog):
- *   - Remaining combinations with physical_product (excluding fraudulent, product_not_received)
+ *   - Remaining combinations with physical_product (excluding fraudulent, product_not_received, product_unacceptable)
  *   - All combinations with digital_product_or_service
  *   - All combinations with offline_service
  *   - All combinations with event
@@ -236,6 +237,52 @@ const implementedCombinations: CombinationSpec[] = [
 			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Order receipt',
+				'Customer communication',
+				"Customer's signature",
+				'Store refund policy',
+				'Other documents',
+			],
+			shouldExclude: [],
+		},
+	},
+
+	// ============================================
+	// PRODUCT UNACCEPTABLE × PHYSICAL PRODUCT
+	// ============================================
+	{
+		reason: 'product_unacceptable',
+		productType: 'physical_product',
+		description:
+			'Product unacceptable for physical product - needs receipt, prior history, signature, refund policy',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION, // Shown separately in shipping step
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION, // Not for physical product
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG ]:
+					'Prior undisputed transaction history',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ]:
+					"Customer's signature",
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Prior undisputed transaction history',
 				'Customer communication',
 				"Customer's signature",
 				'Store refund policy',
@@ -869,7 +916,7 @@ describe( 'Evidence Matrix Specification Validation', () => {
  * - other (needs: Order receipt, Service completion records, Other)
  *
  * Product Unacceptable:
- * - physical_product (needs: Order receipt, Customer communication, Customer's signature, Refund policy, Item's condition, Other)
+ * - physical_product ✅ Implemented
  * - digital_product_or_service (needs: Proof of delivered service, Order receipt, Login/usage records, Refund policy, Other)
  * - offline_service (needs: Proof of delivered service, Order receipt, Refund policy, Other)
  * - event (needs: Event/booking documentation, Order receipt, Refund policy, Other)

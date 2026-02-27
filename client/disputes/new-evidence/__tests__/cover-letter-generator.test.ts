@@ -507,6 +507,57 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 
+		it( 'should use "Prior undisputed transaction history" label for access_activity_log in product_unacceptable disputes with physical_product', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					access_activity_log: 'access_activity_log_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment B)'
+			);
+			expect( result ).not.toContain( 'Subscription logs' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly with full evidence and physical_product', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					access_activity_log: 'access_activity_log_url',
+					customer_communication: 'customer_communication_url',
+					customer_signature: 'customer_signature_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( "Customer's signature (Attachment D)" );
+			expect( result ).toContain( 'Store refund policy (Attachment E)' );
+			expect( result ).toContain( 'Other documents (Attachment F)' );
+		} );
+
 		it( 'should use "Terms of service" label for cancellation_policy in subscription_canceled disputes', () => {
 			const subscriptionCanceledDispute: ExtendedDispute = {
 				...mockDispute,
