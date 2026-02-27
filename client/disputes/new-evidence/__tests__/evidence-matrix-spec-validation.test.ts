@@ -624,6 +624,8 @@ const implementedCombinations: CombinationSpec[] = [
 			],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ]:
 					'Cancellation logs',
 				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
@@ -655,14 +657,14 @@ const implementedCombinations: CombinationSpec[] = [
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
-				DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
 				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 			],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
-				[ DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION ]:
+				[ DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION ]:
 					'Refund receipt',
 				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',

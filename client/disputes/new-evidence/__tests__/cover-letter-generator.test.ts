@@ -528,6 +528,26 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).not.toContain( 'Subscription logs' );
 		} );
 
+		it( 'should still use "Subscription logs" label for access_activity_log in product_unacceptable disputes with booking_reservation', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					access_activity_log: 'access_activity_log_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'booking_reservation'
+			);
+			expect( result ).toContain( 'Subscription logs (Attachment B)' );
+			expect( result ).not.toContain(
+				'Prior undisputed transaction history'
+			);
+		} );
+
 		it( 'should order all product_unacceptable attachments correctly with full evidence and physical_product', () => {
 			const productUnacceptableDispute: ExtendedDispute = {
 				...mockDispute,
