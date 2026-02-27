@@ -385,7 +385,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 3 ].label ).toBe( 'Other documents' );
 			} );
 
-			it( 'should fall back to trunk duplicate fields for physical_product when feature flag is enabled', () => {
+			it( 'should return matrix fields for duplicate + physical_product + is_duplicate when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -395,17 +395,22 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// Should fall back to trunk duplicate fields since no matrix entry for physical_product
-				expect( result ).toHaveLength( 6 );
+				// Matrix entry for duplicate + physical_product + is_duplicate
+				expect( result ).toHaveLength( 5 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 1 ].key ).toBe( 'customer_communication' );
-				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
+				expect( result[ 1 ].key ).toBe(
+					'duplicate_charge_documentation'
+				);
+				expect( result[ 1 ].label ).toBe( 'Refund receipt' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
 				expect( result[ 3 ].key ).toBe( 'refund_policy' );
-				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
-				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 3 ].label ).toBe( 'Refund policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 
-			it( 'should fall back to trunk subscription_canceled fields for physical_product when feature flag is enabled', () => {
+			it( 'should return matrix fields for subscription_canceled + physical_product when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -415,17 +420,19 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// Should fall back to trunk subscription_canceled fields since no matrix entry for physical_product
+				// Matrix entry for subscription_canceled + physical_product
 				expect( result ).toHaveLength( 6 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
 				expect( result[ 1 ].key ).toBe( 'customer_communication' );
-				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
-				expect( result[ 2 ].label ).toBe(
-					'Proof of active subscription'
-				);
+				expect( result[ 2 ].key ).toBe( 'cancellation_rebuttal' );
+				expect( result[ 2 ].label ).toBe( 'Cancellation logs' );
 				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].label ).toBe( 'Refund policy' );
 				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 4 ].label ).toBe( 'Terms of service' );
 				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 5 ].label ).toBe( 'Other documents' );
 			} );
 
 			it( 'should fall back to trunk subscription_canceled fields for digital_product_or_service when feature flag is enabled', () => {
@@ -628,7 +635,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 2 ].label ).toBe( 'Other documents' );
 			} );
 
-			it( 'should fall back to legacy fields for credit_not_processed + physical_product when feature flag is enabled', () => {
+			it( 'should return matrix fields for credit_not_processed + physical_product + refund_was_not_owed when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -638,12 +645,14 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// No matrix entry for physical_product, falls back to legacy
-				expect( result ).toHaveLength( 4 );
-				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 1 ].key ).toBe( 'customer_communication' );
-				expect( result[ 2 ].key ).toBe( 'refund_policy' );
-				expect( result[ 3 ].key ).toBe( 'uncategorized_file' );
+				// Matrix entry for credit_not_processed + physical_product + refund_was_not_owed
+				expect( result ).toHaveLength( 3 );
+				expect( result[ 0 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 0 ].label ).toBe( 'Proof of acceptance' );
+				expect( result[ 1 ].key ).toBe( 'refund_policy' );
+				expect( result[ 1 ].label ).toBe( 'Refund policy' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].label ).toBe( 'Other documents' );
 			} );
 		} );
 
