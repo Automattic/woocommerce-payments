@@ -217,10 +217,29 @@ export const generateAttachments = (
 			],
 		},
 		{
-			// For non-fraudulent disputes, "Subscription logs" appears in its original position
+			// For non-fraudulent disputes, "Subscription logs" appears in its original position.
+			// For product_unacceptable with physical_product, relabeled as "Prior undisputed transaction history"
+			// and reordered to appear before Customer communication.
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 			label: __( 'Subscription logs', 'woocommerce-payments' ),
 			excludeWhen: ( reason: string ) => reason === 'fraudulent',
+			labelForReasons: [
+				{
+					reasons: [ 'product_unacceptable' ],
+					label: __(
+						'Prior undisputed transaction history',
+						'woocommerce-payments'
+					),
+					productTypes: [ 'physical_product' ],
+				},
+			],
+			orderForReasons: [
+				{
+					reasons: [ 'product_unacceptable' ],
+					order: 1,
+					productTypes: [ 'physical_product' ],
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
