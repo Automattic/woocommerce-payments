@@ -116,7 +116,6 @@ export const generateAttachments = (
 				{
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Refund receipt', 'woocommerce-payments' ),
-					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [ 'refund_has_been_issued' ],
 				},
 			],
@@ -150,7 +149,6 @@ export const generateAttachments = (
 				{
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Other documents', 'woocommerce-payments' ),
-					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [
 						'refund_was_not_owed',
 						'refund_has_been_issued',
@@ -162,7 +160,6 @@ export const generateAttachments = (
 				{
 					reasons: [ 'credit_not_processed' ],
 					order: 100,
-					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [
 						'refund_was_not_owed',
 						'refund_has_been_issued',
@@ -278,7 +275,6 @@ export const generateAttachments = (
 				{
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Proof of acceptance', 'woocommerce-payments' ),
-					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [ 'refund_was_not_owed' ],
 				},
 			],
@@ -287,7 +283,6 @@ export const generateAttachments = (
 				{
 					reasons: [ 'credit_not_processed' ],
 					order: -1,
-					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [ 'refund_was_not_owed' ],
 				},
 			],
