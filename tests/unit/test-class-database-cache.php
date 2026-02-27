@@ -544,18 +544,19 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	public function test_delete_clears_wp_object_cache_when_db_option_exists() {
 		$value = [ 'mock' => true ];
 
-		// Write a valid cache entry to DB (via update_option, which also populates the alloptions object cache).
+		// Write a valid cache entry to DB (non-autoloaded, matching production behavior).
 		$this->write_mock_cache( $value );
 
-		// Sanity check: get_option returns the data (from DB/alloptions cache).
-		$this->assertNotFalse( get_option( self::MOCK_KEY ), 'Precondition: option should be retrievable.' );
+		// Sanity check: both DB and WP object cache have the entry.
+		$this->assertNotFalse( get_option( self::MOCK_KEY ), 'Precondition: DB option should exist.' );
+		$this->assertNotFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'Precondition: WP object cache should have the entry.' );
 
 		// Act: delete via Database_Cache.
 		$this->database_cache->delete( self::MOCK_KEY );
 
-		// Assert: option is no longer retrievable from either DB or WP object cache.
-		$this->assertFalse( get_option( self::MOCK_KEY ), 'Option should not be retrievable after delete.' );
-		$this->assertFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'Individual WP object cache entry should not exist after delete.' );
+		// Assert: both DB and WP object cache entries must be gone.
+		$this->assertFalse( get_option( self::MOCK_KEY ), 'DB option should be deleted.' );
+		$this->assertFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'WP object cache entry should be deleted.' );
 	}
 
 	public function test_get_or_add_does_not_refresh_if_disabled() {
@@ -589,7 +590,8 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 				'data'    => $data,
 				'fetched' => $fetch_time ?? time(),
 				'errored' => $errored,
-			]
+			],
+			'no' // Match production: Database_Cache stores options as non-autoloaded.
 		);
 	}
 
