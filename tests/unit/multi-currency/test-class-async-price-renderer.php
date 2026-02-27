@@ -59,6 +59,28 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Test that init_hooks registers hooks when cache-optimized mode is active and no session exists.
+	 */
+	public function test_init_hooks_registers_hooks_when_conditions_met() {
+		$this->mock_multi_currency
+			->method( 'is_cache_optimized_mode' )
+			->willReturn( true );
+		$this->mock_multi_currency
+			->method( 'has_active_session' )
+			->willReturn( false );
+
+		$this->renderer->init_hooks();
+
+		$this->assertSame(
+			999,
+			has_filter( 'wc_price', [ $this->renderer, 'wrap_price_with_skeleton' ] )
+		);
+		$this->assertNotFalse(
+			has_action( 'wp_enqueue_scripts', [ $this->renderer, 'enqueue_async_renderer' ] )
+		);
+	}
+
+	/**
 	 * Test that init_hooks does not hook when cache-optimized mode is not active.
 	 */
 	public function test_init_hooks_returns_early_when_not_cache_optimized() {
