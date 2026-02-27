@@ -55,6 +55,15 @@ const getDuplicateMatrix = (): {
 			order: 15,
 		},
 		{
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __( 'Proof of active subscription', 'woocommerce-payments' ),
+			description: __(
+				'Any documents showing the billing history, subscription status, or cancellation logs, for example.',
+				'woocommerce-payments'
+			),
+			order: 22,
+		},
+		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 			label: __( 'Refund policy', 'woocommerce-payments' ),
 			description: __(
@@ -62,6 +71,15 @@ const getDuplicateMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Terms of service', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's terms of service.",
+				'woocommerce-payments'
+			),
+			order: 30,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
@@ -468,31 +486,28 @@ const getProductUnacceptableMatrix = (): {
 			order: 10,
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-			label: __(
-				'Prior undisputed transaction history',
-				'woocommerce-payments'
-			),
-			description: __(
-				'Proof of past undisputed transactions from the same customer, with matching billing and device details.',
-				'woocommerce-payments'
-			),
-			order: 15,
-		},
-		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
 			label: __( "Customer's signature", 'woocommerce-payments' ),
 			description: __(
 				"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
 				'woocommerce-payments'
 			),
-			order: 25,
+			order: 15,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 			label: __( 'Refund policy', 'woocommerce-payments' ),
 			description: __(
 				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			label: __( "Item's condition", 'woocommerce-payments' ),
+			description: __(
+				"Photos showing the item's condition prior to shipping.",
 				'woocommerce-payments'
 			),
 			order: 30,
@@ -561,29 +576,65 @@ const getCreditNotProcessedMatrix = (): {
 	[ key: string ]: Array< RecommendedDocument >;
 } => ( {
 	// Physical Product - Refund has been issued (Scenario A)
-	// Note: CUSTOMER_COMMUNICATION is repurposed as "Other documents" to prevent
-	// the base "Customer communication" field from being auto-merged.
+	// Note: CUSTOMER_COMMUNICATION is included explicitly with its proper label.
+	// This prevents the auto-merge from adding a duplicate "Customer communication" field.
 	physical_product__refund_has_been_issued: [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
-			label: __( 'Refund receipt', 'woocommerce-payments' ),
+			label: __( 'Order receipt', 'woocommerce-payments' ),
 			description: __(
-				'A copy of the refund receipt, which can be found in the receipt history for this transaction.',
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
 				'woocommerce-payments'
 			),
 			order: 10,
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
-			label: __( 'Cancellation logs', 'woocommerce-payments' ),
+			key: DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+			label: __( 'Refund receipt', 'woocommerce-payments' ),
 			description: __(
-				'Records showing no cancellation attempt or request was made before the charge, such as account activity, subscription status, or communication history.',
+				'A confirmation that a merchant is waiting for a return prior to refund.',
+				'woocommerce-payments'
+			),
+			order: 12,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
+			label: __( 'Return tracking', 'woocommerce-payments' ),
+			description: __(
+				'A confirmation that a merchant is waiting for a return prior to refund (if applicable).',
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			label: __( 'Customer communication', 'woocommerce-payments' ),
+			description: __(
+				'Any correspondence with the customer regarding this purchase.',
 				'woocommerce-payments'
 			),
 			order: 20,
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+			label: __( "Customer's signature", 'woocommerce-payments' ),
+			description: __(
+				"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 30,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			label: __( 'Other documents', 'woocommerce-payments' ),
 			description: __(
 				'Any other relevant documents that will support your case.',
@@ -593,10 +644,9 @@ const getCreditNotProcessedMatrix = (): {
 		},
 	],
 	// Physical Product - Refund was not owed (Scenario B)
-	// Note: CUSTOMER_COMMUNICATION is used here as "Other documents" because
-	// UNCATEGORIZED_FILE is already used for "Proof of acceptance".
-	// Including CUSTOMER_COMMUNICATION in the matrix also prevents the base
-	// "Customer communication" field from being auto-merged.
+	// Note: CUSTOMER_COMMUNICATION is included with its proper label.
+	// SERVICE_DOCUMENTATION is used for "Other documents" since UNCATEGORIZED_FILE
+	// is already used for "Proof of acceptance".
 	physical_product__refund_was_not_owed: [
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
@@ -608,6 +658,15 @@ const getCreditNotProcessedMatrix = (): {
 			order: 10,
 		},
 		{
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			label: __( 'Customer communication', 'woocommerce-payments' ),
+			description: __(
+				'Any correspondence with the customer regarding this purchase.',
+				'woocommerce-payments'
+			),
+			order: 20,
+		},
+		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 			label: __( 'Refund policy', 'woocommerce-payments' ),
 			description: __(
@@ -617,7 +676,7 @@ const getCreditNotProcessedMatrix = (): {
 			order: 25,
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 			label: __( 'Other documents', 'woocommerce-payments' ),
 			description: __(
 				'Any other relevant documents that will support your case.',

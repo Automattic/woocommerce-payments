@@ -257,36 +257,36 @@ const implementedCombinations: CombinationSpec[] = [
 		reason: 'product_unacceptable',
 		productType: 'physical_product',
 		description:
-			'Product unacceptable for physical product - needs receipt, prior history, signature, refund policy',
+			"Product unacceptable for physical product - needs receipt, signature, refund policy, item's condition",
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
-				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
 				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			],
 			shouldExclude: [
 				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION, // Shown separately in shipping step
-				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION, // Not for physical product
+				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG, // Not for physical product product_unacceptable
 			],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
-				[ DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG ]:
-					'Prior undisputed transaction history',
 				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
 					'Customer communication',
 				[ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ]:
 					"Customer's signature",
 				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION ]:
+					"Item's condition",
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
 		},
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Order receipt',
-				'Prior undisputed transaction history',
+				"Item's condition",
 				'Customer communication',
 				"Customer's signature",
 				'Store refund policy',
@@ -658,7 +658,9 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
 				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 			],
@@ -666,7 +668,12 @@ const implementedCombinations: CombinationSpec[] = [
 				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
 				[ DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION ]:
 					'Refund receipt',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG ]:
+					'Proof of active subscription',
 				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
 		},
@@ -674,7 +681,9 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Refund receipt',
+				'Proof of active subscription',
 				'Store refund policy',
+				'Terms of service',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -725,31 +734,40 @@ const implementedCombinations: CombinationSpec[] = [
 		productType: 'physical_product',
 		refundStatus: 'refund_has_been_issued',
 		description:
-			'Credit not processed for physical product - refund has been issued (Scenario A)',
+			'Credit not processed for physical product - refund has been issued (Scenario A) - 7 fields',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
-				DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
+				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
-			],
-			shouldExclude: [
 				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
-				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			],
+			shouldExclude: [ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ],
 			expectedLabels: {
-				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Refund receipt',
-				[ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ]:
-					'Cancellation logs',
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION ]:
+					'Refund receipt',
+				[ DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION ]:
+					'Return tracking',
 				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
-					'Other documents',
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ]:
+					"Customer's signature",
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
 		},
 		coverLetterAttachments: {
 			shouldInclude: [
+				'Order receipt',
 				'Refund receipt',
-				'Cancellation logs',
+				'Return tracking',
+				'Customer communication',
+				"Customer's signature",
+				'Store refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -764,29 +782,32 @@ const implementedCombinations: CombinationSpec[] = [
 		productType: 'physical_product',
 		refundStatus: 'refund_was_not_owed',
 		description:
-			'Credit not processed for physical product - refund was not owed (Scenario B)',
+			'Credit not processed for physical product - refund was not owed (Scenario B) - 4 fields',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 			],
 			shouldExclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
-				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 			],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]:
 					'Proof of acceptance',
 				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
-					'Other documents',
+					'Customer communication',
 				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION ]:
+					'Other documents',
 			},
 		},
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Proof of acceptance',
+				'Customer communication',
 				'Store refund policy',
 				'Other documents',
 			],

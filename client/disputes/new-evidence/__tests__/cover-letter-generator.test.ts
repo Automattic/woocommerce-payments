@@ -433,7 +433,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).not.toContain( 'Item condition' );
 		} );
 
-		it( 'should use "Item condition" label for service_documentation in product_unacceptable disputes without booking_reservation product type', () => {
+		it( 'should use "Item\'s condition" label for service_documentation in product_unacceptable disputes with physical_product', () => {
 			const productUnacceptableDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'product_unacceptable' as DisputeReason,
@@ -448,7 +448,7 @@ describe( 'Cover Letter Generator', () => {
 				'physical_product'
 			);
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
-			expect( result ).toContain( 'Item condition (Attachment B)' );
+			expect( result ).toContain( "Item's condition (Attachment B)" );
 			expect( result ).not.toContain( 'Event or booking documentation' );
 		} );
 
@@ -480,7 +480,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 
-		it( 'should order all product_unacceptable attachments with standard order when not booking_reservation product type', () => {
+		it( 'should order all product_unacceptable attachments with standard order when physical_product', () => {
 			const productUnacceptableDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'product_unacceptable' as DisputeReason,
@@ -497,17 +497,17 @@ describe( 'Cover Letter Generator', () => {
 				undefined,
 				'physical_product'
 			);
-			// Without booking_reservation, order should be standard (receipt first, not service_documentation)
+			// With physical_product, order should be standard (receipt first)
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
 			expect( result ).toContain(
 				'Customer communication (Attachment B)'
 			);
 			expect( result ).toContain( 'Store refund policy (Attachment C)' );
-			expect( result ).toContain( 'Item condition (Attachment D)' );
+			expect( result ).toContain( "Item's condition (Attachment D)" );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 
-		it( 'should use "Prior undisputed transaction history" label for access_activity_log in product_unacceptable disputes with physical_product', () => {
+		it( 'should use "Subscription logs" label for access_activity_log in product_unacceptable disputes (no product-specific override)', () => {
 			const productUnacceptableDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'product_unacceptable' as DisputeReason,
@@ -522,30 +522,7 @@ describe( 'Cover Letter Generator', () => {
 				'physical_product'
 			);
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
-			expect( result ).toContain(
-				'Prior undisputed transaction history (Attachment B)'
-			);
-			expect( result ).not.toContain( 'Subscription logs' );
-		} );
-
-		it( 'should still use "Subscription logs" label for access_activity_log in product_unacceptable disputes with booking_reservation', () => {
-			const productUnacceptableDispute: ExtendedDispute = {
-				...mockDispute,
-				reason: 'product_unacceptable' as DisputeReason,
-				evidence: {
-					receipt: 'receipt_url',
-					access_activity_log: 'access_activity_log_url',
-				},
-			};
-			const result = generateAttachments(
-				productUnacceptableDispute,
-				undefined,
-				'booking_reservation'
-			);
 			expect( result ).toContain( 'Subscription logs (Attachment B)' );
-			expect( result ).not.toContain(
-				'Prior undisputed transaction history'
-			);
 		} );
 
 		it( 'should order all product_unacceptable attachments correctly with full evidence and physical_product', () => {
@@ -554,7 +531,7 @@ describe( 'Cover Letter Generator', () => {
 				reason: 'product_unacceptable' as DisputeReason,
 				evidence: {
 					receipt: 'receipt_url',
-					access_activity_log: 'access_activity_log_url',
+					service_documentation: 'service_documentation_url',
 					customer_communication: 'customer_communication_url',
 					customer_signature: 'customer_signature_url',
 					refund_policy: 'refund_policy_url',
@@ -568,13 +545,11 @@ describe( 'Cover Letter Generator', () => {
 			);
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
 			expect( result ).toContain(
-				'Prior undisputed transaction history (Attachment B)'
+				'Customer communication (Attachment B)'
 			);
-			expect( result ).toContain(
-				'Customer communication (Attachment C)'
-			);
-			expect( result ).toContain( "Customer's signature (Attachment D)" );
-			expect( result ).toContain( 'Store refund policy (Attachment E)' );
+			expect( result ).toContain( "Customer's signature (Attachment C)" );
+			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( "Item's condition (Attachment E)" );
 			expect( result ).toContain( 'Other documents (Attachment F)' );
 		} );
 
