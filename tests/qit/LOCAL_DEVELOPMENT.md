@@ -268,6 +268,17 @@ After running tests, view the HTML report:
 npx playwright show-report
 ```
 
+### Finding Test Artifacts
+
+When running Playwright directly (not through `npm run test:qit-e2e`), results are saved relative to the test-package directory:
+
+- `tests/qit/test-package/test-results/` — Screenshots, traces, videos (on failure)
+- `tests/qit/test-package/playwright-report/` — HTML report (view with `npx playwright show-report`)
+
+Both directories are gitignored.
+
+When running through `npm run test:qit-e2e` (full orchestration), QIT collects and merges results into `qit-results/` at the repo root. See `tests/qit/README.md` for details.
+
 ## Comparison: Local Dev vs Full Orchestration
 
 | Aspect | `npm run test:qit-e2e-up` | `npm run test:qit-e2e` |

@@ -115,6 +115,15 @@ npm run test:qit-e2e
 - Ping the author for fixing the error, or fix it yourself if it is straightforward enough.
 - For failed tests, check the artifacts directory for screenshots and error context.
 
+#### Finding Test Artifacts
+
+Test results are saved to `qit-results/` at the repo root (gitignored by default). This directory contains:
+- `final/ctrf/ctrf-report.json` — Merged CTRF report
+- `final/html-report/` — Merged HTML report
+- `final/allure/` — Allure report data
+
+To override the location, set `QIT_RESULTS_DIR` in `tests/qit/config/local.env` or as an environment variable before running tests.
+
 ### Troubleshooting
 
 #### "Card testing attempt detected" errors

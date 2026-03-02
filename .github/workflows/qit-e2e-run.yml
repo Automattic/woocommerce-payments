@@ -65,10 +65,12 @@ jobs:
 
       - name: Run QIT E2E Tests
         env:
+          QIT_RESULTS_DIR: ./qit-results
           E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
           E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
         run: |
+          rm -rf "$QIT_RESULTS_DIR"
           qit run:e2e woocommerce-payments \
             --config tests/qit/qit.json \
             --woo=${{ inputs.woocommerce-version }} \

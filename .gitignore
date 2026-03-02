@@ -102,6 +102,11 @@ tests/e2e/test-results/
 tests/e2e/playwright/.cache/
 tests/e2e/tests/e2e/.auth/*
 
+# QIT test results
+qit-results/
+tests/qit/test-package/test-results/
+tests/qit/test-package/playwright-report/
+
 # Slate docs
 docs/rest-api/build/*
 
