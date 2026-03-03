@@ -116,4 +116,21 @@ describe( 'Multi-Currency store settings', () => {
 		);
 		expect( mockSaveStoreSettings ).toHaveBeenCalled();
 	} );
+
+	test( 'clears window.onbeforeunload when not dirty', () => {
+		window.onbeforeunload = jest.fn();
+		useStoreSettings.mockReturnValue( {
+			storeSettings: {
+				enable_storefront_switcher: false,
+				enable_auto_currency: false,
+				site_theme: 'Storefront',
+			},
+			isDirty: false,
+			isSaving: false,
+			updateStoreSettingValues: mockUpdateStoreSettingValues,
+			saveStoreSettings: mockSaveStoreSettings,
+		} );
+		createContainer();
+		expect( window.onbeforeunload ).toBeNull();
+	} );
 } );

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -54,6 +54,12 @@ const StoreSettings = () => {
 		updateStoreSettingValues,
 		saveStoreSettings,
 	} = useStoreSettings();
+
+	useEffect( () => {
+		if ( ! isDirty ) {
+			window.onbeforeunload = null;
+		}
+	}, [ isDirty ] );
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
