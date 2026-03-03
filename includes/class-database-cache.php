@@ -213,10 +213,14 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		unset( $this->in_memory_cache[ $key ] );
 
 		// Remove from the DB cache.
-		if ( delete_option( $key ) ) {
-			// Clear the WP object cache to ensure the new data is fetched by other processes.
-			wp_cache_delete( $key, 'options' );
-		}
+		delete_option( $key );
+
+		// Always clear the WP object cache, even if the DB row didn't exist.
+		// wp_cache_delete on a missing key is a no-op, but skipping it when the
+		// DB row is gone while Memcached still has a stale entry causes persistent
+		// stale data across requests (see #8601 for the original fix, #9639 for
+		// the regression).
+		wp_cache_delete( $key, 'options' );
 	}
 
 	/**
