@@ -279,6 +279,62 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Checks if the cart has a $0 total due to a subscription with a free trial.
+	 *
+	 * This is used to determine if ECE buttons should be shown even when the cart
+	 * total is $0, as the customer will still need to authorize the recurring payment.
+	 *
+	 * Only returns true when the cart needs shipping, because Express Checkout
+	 * collects a shipping address for physical products — which also provides the
+	 * billing information needed to calculate taxes correctly. Virtual-only carts
+	 * don't trigger address collection, so the displayed price could be wrong.
+	 *
+	 * @return boolean True if cart is zero total with a trial subscription that has a recurring amount.
+	 */
+	public function is_cart_zero_total_with_trial_subscription() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( ! $this->is_checkout() && ! $this->is_cart() ) {
+			return false;
+		}
+
+		// Check if cart total is zero.
+		if ( 0.0 !== (float) WC()->cart->get_total( 'edit' ) ) {
+			return false;
+		}
+
+		// Only allow when the cart needs shipping — Express Checkout collects
+		// a shipping address for physical products, giving us the billing info
+		// required for correct tax calculation. Virtual-only carts skip address
+		// collection so the price shown could be inaccurate.
+		if ( ! WC()->cart->needs_shipping() ) {
+			return false;
+		}
+
+		// Check if cart contains subscriptions.
+		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return false;
+		}
+
+		// Check if any subscription in cart has a free trial with a recurring price.
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			$product = $cart_item['data'];
+			if ( WC_Subscriptions_Product::is_subscription( $product )
+				&& WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+				// Check if the subscription has a recurring price (not a free subscription).
+				$price = (float) WC_Subscriptions_Product::get_price( $product );
+				if ( $price > 0 ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Checks if Amazon Pay can be used in Express Checkout.
 	 *
 	 * This validates:
@@ -577,11 +633,16 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		// Cart total is 0 or is on product page and product price is 0.
-		// Exclude pay-for-order pages from this check.
+		// Exclude pay-for-order pages and trial subscriptions with recurring totals from this check.
+		// Trial subscriptions may have $0 initial payment but will charge recurring amounts.
 		if (
-			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
-			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
-
+			(
+				! $this->is_product()
+				&& ! $this->is_pay_for_order_page()
+				&& ! $this->is_cart_zero_total_with_trial_subscription()
+				&& 0.0 === (float) WC()->cart->get_total( 'edit' )
+			)
+			|| ( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 		) {
 			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
 			return false;
@@ -657,13 +718,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			 * @param object  $_product     Product object.
 			 */
 			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
-				return false;
-			}
-
-			/**
-			 * Trial subscriptions with shipping are not supported.
-			 */
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
 		}
@@ -807,26 +861,28 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		if ( is_null( $product ) || ! is_object( $product ) ) {
 			$is_supported = false;
-		} else {
-			// Simple subscription that needs shipping with free trials is not supported.
-			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
-
-			if (
+		} elseif (
 			! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| $is_free_trial_simple_subs
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
-			) {
-				$is_supported = false;
-			} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
-				// File upload addon not supported.
-				$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
-				foreach ( $product_addons as $addon ) {
-					if ( 'file_upload' === $addon['type'] ) {
-						$is_supported = false;
-						break;
-					}
+			// Virtual subscriptions with a free trial are not supported because Express
+			// Checkout won't collect a shipping address, so we can't calculate taxes.
+			|| (
+				class_exists( 'WC_Subscriptions_Product' )
+				&& WC_Subscriptions_Product::is_subscription( $product )
+				&& ! $product->needs_shipping()
+				&& WC_Subscriptions_Product::get_trial_length( $product ) > 0
+			)
+		) {
+			$is_supported = false;
+		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+			// File upload addon not supported.
+			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
+			foreach ( $product_addons as $addon ) {
+				if ( 'file_upload' === $addon['type'] ) {
+					$is_supported = false;
+					break;
 				}
 			}
 		}

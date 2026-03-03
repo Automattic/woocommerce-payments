@@ -63,4 +63,113 @@ class WC_Payments_Email_IPP_Receipt_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $order, $result );
 		$this->assertSame( 'WooCommerce In-Person Payments', $result->get_payment_method_title() );
 	}
+
+	/**
+	 * Test that trigger skips sending when the order has mobile_pos ipp_channel.
+	 */
+	public function test_trigger_skips_sending_for_pos_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( WC_Payments_Order_Service::IPP_CHANNEL_META_KEY, 'mobile_pos' );
+		$order->save();
+
+		$merchant_settings = [
+			'business_name' => 'Test Store',
+			'support_info'  => [
+				'address' => [],
+				'phone'   => '',
+				'email'   => '',
+			],
+		];
+		$charge            = [
+			'amount_captured'        => 1000,
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'visa',
+					'last4'   => '4242',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test',
+						'account_type'               => 'credit',
+					],
+				],
+			],
+		];
+
+		$this->email->trigger( $order, $merchant_settings, $charge );
+
+		$this->assertEmpty( $order->get_meta( '_new_receipt_email_sent' ) );
+	}
+
+	/**
+	 * Test that trigger does not skip for mobile_store_management ipp_channel.
+	 */
+	public function test_trigger_sends_for_store_management_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( WC_Payments_Order_Service::IPP_CHANNEL_META_KEY, 'mobile_store_management' );
+		$order->set_billing_email( 'test@example.com' );
+		$order->save();
+
+		$merchant_settings = [
+			'business_name' => 'Test Store',
+			'support_info'  => [
+				'address' => [],
+				'phone'   => '',
+				'email'   => '',
+			],
+		];
+		$charge            = [
+			'amount_captured'        => 1000,
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'visa',
+					'last4'   => '4242',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test',
+						'account_type'               => 'credit',
+					],
+				],
+			],
+		];
+
+		$this->email->trigger( $order, $merchant_settings, $charge );
+
+		$this->assertEquals( 'true', $order->get_meta( '_new_receipt_email_sent' ) );
+	}
+
+	/**
+	 * Test that trigger sends the email for non-POS card-present orders.
+	 */
+	public function test_trigger_sends_for_non_pos_card_present_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_email( 'test@example.com' );
+		$order->save();
+
+		$merchant_settings = [
+			'business_name' => 'Test Store',
+			'support_info'  => [
+				'address' => [],
+				'phone'   => '',
+				'email'   => '',
+			],
+		];
+		$charge            = [
+			'amount_captured'        => 1000,
+			'payment_method_details' => [
+				'card_present' => [
+					'brand'   => 'visa',
+					'last4'   => '4242',
+					'receipt' => [
+						'application_preferred_name' => 'Test',
+						'dedicated_file_name'        => 'Test',
+						'account_type'               => 'credit',
+					],
+				],
+			],
+		];
+
+		$this->email->trigger( $order, $merchant_settings, $charge );
+
+		$this->assertEquals( 'true', $order->get_meta( '_new_receipt_email_sent' ) );
+	}
 }

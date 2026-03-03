@@ -63,6 +63,7 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		cartTotals: {
 			total_price: totalPrice,
 			currency_code: currencyCode,
+			currency_minor_unit: 2,
 		},
 	} );
 

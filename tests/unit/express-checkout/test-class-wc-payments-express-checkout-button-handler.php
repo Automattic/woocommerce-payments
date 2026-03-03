@@ -148,4 +148,92 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertArrayHasKey( 'store_name', $params );
 		$this->assertEquals( get_bloginfo( 'name' ), $params['store_name'] );
 	}
+
+	public function test_payment_fields_js_config_on_cart_page_with_cart_disabled() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'cart' );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_request_enabled' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'payment_request' )
+			->willReturn( false );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( false );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertFalse( $config['isPaymentRequestEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_on_checkout_page_with_checkout_enabled() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'checkout' );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_request_enabled' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'checkout', 'payment_request' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( false );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertTrue( $config['isPaymentRequestEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_with_empty_context_defaults_to_enabled() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( '' );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_request_enabled' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( true );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertTrue( $config['isPaymentRequestEnabled'] );
+		$this->assertTrue( $config['isAmazonPayEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_amazon_pay_on_cart_with_cart_disabled() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'cart' );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_request_enabled' )
+			->willReturn( false );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'amazon_pay' )
+			->willReturn( false );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertFalse( $config['isAmazonPayEnabled'] );
+	}
 }
