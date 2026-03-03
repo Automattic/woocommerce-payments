@@ -55,8 +55,6 @@ const StoreSettings = () => {
 		saveStoreSettings,
 	} = useStoreSettings();
 
-	const [ renderingModeValue, setRenderingModeValue ] = useState( 'speed' );
-
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
 	return (
