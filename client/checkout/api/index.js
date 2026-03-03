@@ -342,16 +342,22 @@ export default class WCPayAPI {
 	 *
 	 * @param {Object} appearance The UPE appearance object with style values
 	 * @param {string} elementsLocation The location of the elements.
+	 * @param {Object} [options] Optional overrides for contexts where wcpayConfig is unavailable.
+	 * @param {string} [options.ajaxUrl] The admin-ajax.php URL.
+	 * @param {string} [options.nonce] The save UPE appearance nonce.
 	 *
 	 * @return {Promise} The final promise for the request to the server.
 	 */
-	saveUPEAppearance( appearance, elementsLocation ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
+	saveUPEAppearance( appearance, elementsLocation, options = {} ) {
+		const ajaxUrl = options.ajaxUrl || getConfig( 'ajaxUrl' );
+		const nonce = options.nonce || getConfig( 'saveUPEAppearanceNonce' );
+
+		return this.request( ajaxUrl, {
 			elements_location: elementsLocation,
 			appearance: JSON.stringify( appearance ),
 			action: 'save_upe_appearance',
 			// eslint-disable-next-line camelcase
-			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
+			_ajax_nonce: nonce,
 		} )
 			.then( ( response ) => {
 				return response.data;

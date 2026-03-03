@@ -31,14 +31,19 @@ const elementsLocations = {
 async function initializeAppearance( api, location ) {
 	const { configKey, appearanceKey } = elementsLocations[ location ];
 
-	const appearance = window.wcpayStripeSiteMessaging?.[ configKey ];
+	const messaging = window.wcpayStripeSiteMessaging;
+	const appearance = messaging?.[ configKey ];
 	if ( appearance ) {
 		return Promise.resolve( appearance );
 	}
 
 	return await api.saveUPEAppearance(
 		getAppearance( appearanceKey ),
-		appearanceKey
+		appearanceKey,
+		{
+			ajaxUrl: messaging?.ajaxUrl,
+			nonce: messaging?.saveUPEAppearanceNonce,
+		}
 	);
 }
 
