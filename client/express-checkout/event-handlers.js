@@ -12,6 +12,8 @@ import {
 	getErrorMessageFromNotice,
 	getExpressCheckoutData,
 	updateShippingAddressUI,
+	createPaymentCredential,
+	shouldUseConfirmationTokens,
 } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
@@ -141,33 +143,17 @@ export const onConfirmHandler = async (
 		return abortPayment( submitError.message );
 	}
 
-	const useConfirmationToken =
-		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+	const useConfirmationTokens = shouldUseConfirmationTokens();
 
-	let paymentCredential;
-	if ( useConfirmationToken ) {
-		const {
-			confirmationToken,
-			error,
-		} = await stripe.createConfirmationToken( {
+	let credentialId;
+	try {
+		credentialId = await createPaymentCredential(
+			stripe,
 			elements,
-		} );
-
-		if ( error ) {
-			return abortPayment( error.message );
-		}
-
-		paymentCredential = confirmationToken;
-	} else {
-		const { paymentMethod, error } = await stripe.createPaymentMethod( {
-			elements,
-		} );
-
-		if ( error ) {
-			return abortPayment( error.message );
-		}
-
-		paymentCredential = paymentMethod;
+			useConfirmationTokens
+		);
+	} catch ( credentialError ) {
+		return abortPayment( credentialError.message );
 	}
 
 	try {
@@ -177,8 +163,8 @@ export const onConfirmHandler = async (
 			// so that we make it harder for external plugins to modify or intercept checkout data.
 			...transformStripePaymentMethodForStoreApi(
 				event,
-				paymentCredential.id,
-				useConfirmationToken,
+				credentialId,
+				useConfirmationTokens,
 				paymentMethodTypes
 			),
 			extensions: applyFilters(

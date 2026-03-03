@@ -302,7 +302,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
 			} );
 
-			it( 'should return default fields for fraudulent + physical_product even when feature flag is enabled', () => {
+			it( 'should return matrix fields for fraudulent + physical_product when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -312,10 +312,21 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// Should fall back to default fraudulent fields since no matrix entry exists
-				expect( result ).toHaveLength( 5 );
+				// Matrix entry for fraudulent + physical_product
+				expect( result ).toHaveLength( 6 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
+				expect( result[ 1 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 1 ].label ).toBe(
+					'Prior undisputed transaction history'
+				);
+				expect( result[ 2 ].key ).toBe( 'customer_communication' ); // Base field auto-merged
+				expect( result[ 3 ].key ).toBe( 'customer_signature' );
+				expect( result[ 3 ].label ).toBe( "Customer's signature" );
+				expect( result[ 4 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].label ).toBe( 'Refund policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 5 ].label ).toBe( 'Other documents' );
 			} );
 
 			it( 'should return default fields for fraudulent when no product type is provided', () => {
