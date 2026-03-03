@@ -228,10 +228,7 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$this->messaging_element->init();
 
 		$script_data = $this->get_script_data();
-		$this->assertEquals( $product_page_appearance, $script_data['upeBnplProductPageAppearance'] );
-		$this->assertEquals( $classic_cart_appearance, $script_data['upeBnplClassicCartAppearance'] );
-
-		delete_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
-		delete_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
+		$this->assertSame( $product_page_appearance, $script_data['upeBnplProductPageAppearance'] );
+		$this->assertSame( $classic_cart_appearance, $script_data['upeBnplClassicCartAppearance'] );
 	}
 }
