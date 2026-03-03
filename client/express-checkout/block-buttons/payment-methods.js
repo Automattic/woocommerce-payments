@@ -12,9 +12,20 @@ import ExpressCheckoutContainer from './components/express-checkout-container';
 import DynamicButtonContainer from './components/dynamic-button-container';
 import PaymentMethodLabel from 'wcpay/checkout/blocks/payment-method-label';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
+import { getExpressCheckoutData } from '../utils';
 import { EXPRESS_PAYMENT_METHODS } from '../constants';
 import '../compatibility/wc-order-attribution';
 import '../compatibility/wc-subscriptions';
+
+/**
+ * Maps each express payment method key to its corresponding value
+ * in the `enabled_methods` backend setting.
+ */
+const enabledMethodMap = {
+	applePay: 'payment_request',
+	googlePay: 'payment_request',
+	amazonPay: 'amazon_pay',
+};
 
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
 
@@ -67,6 +78,12 @@ export const makeExpressCheckoutElement = ( api, methodKey ) => {
 		},
 		canMakePayment: ( { cart } ) => {
 			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+				return false;
+			}
+
+			const enabledMethods =
+				getExpressCheckoutData( 'enabled_methods' ) ?? [];
+			if ( ! enabledMethods.includes( enabledMethodMap[ methodKey ] ) ) {
 				return false;
 			}
 

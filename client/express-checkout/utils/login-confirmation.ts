@@ -3,7 +3,7 @@
  */
 import { getExpressCheckoutData } from './express-checkout-data';
 
-type ExpressPaymentType =
+export type ExpressPaymentType =
 	| 'apple_pay'
 	| 'google_pay'
 	| 'amazon_pay'

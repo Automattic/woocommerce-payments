@@ -288,6 +288,8 @@
 			--Scales-Theme-theme-alpha-04,
 			rgba( 56, 88, 233, 0.04 )
 		);
+		flex-shrink: 1;
+		min-width: 0;
 	}
 
 	&__chip-filename {
@@ -297,7 +299,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0;
-		max-width: 200px; // Default max width for medium screens
+		min-width: 0;
 	}
 
 	&__chip-filename-name {
@@ -319,13 +321,16 @@
 		align-items: flex-start;
 	}
 	&__info-header {
-		height: 32px;
-		max-height: 32px;
+		min-height: 32px;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
 		justify-content: flex-start;
 		gap: 8px;
+
+		.wcpay-dispute-evidence-file-upload-control__label {
+			flex-shrink: 0;
+		}
 	}
 	&__info-description {
 		color: var( --Scales-Grays-gray-700, $gray-700 );

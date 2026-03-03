@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getExpressCheckoutData } from './index';
+import { getExpressCheckoutData } from './express-checkout-data';
 
 /**
  * Determines whether to use Stripe confirmation tokens or legacy payment methods.

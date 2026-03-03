@@ -1,0 +1,20 @@
+.wcpay-price-skeleton {
+	display: inline-block;
+	width: 4em;
+	height: 1em;
+	background: linear-gradient( 90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75% );
+	background-size: 200% 100%;
+	animation: wcpay-skeleton-pulse 1.5s ease-in-out infinite;
+	border-radius: 3px;
+	vertical-align: middle;
+}
+
+@keyframes wcpay-skeleton-pulse {
+	0% {
+		background-position: 200% 0;
+	}
+
+	100% {
+		background-position: -200% 0;
+	}
+}

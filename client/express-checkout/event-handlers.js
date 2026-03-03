@@ -12,8 +12,8 @@ import {
 	getErrorMessageFromNotice,
 	getExpressCheckoutData,
 	updateShippingAddressUI,
-	shouldUseConfirmationTokens,
 	createPaymentCredential,
+	shouldUseConfirmationTokens,
 } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
