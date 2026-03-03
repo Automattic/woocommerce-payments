@@ -213,4 +213,25 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$script_data = $this->get_script_data();
 		$this->assertEquals( 0, $script_data['cartTotal'] );
 	}
+
+	/**
+	 * Test that BNPL appearance transients are included in the script data.
+	 */
+	public function test_init_includes_bnpl_appearance_transients() {
+		$this->setup_gateway_mocks();
+
+		$product_page_appearance = [ 'theme' => 'stripe' ];
+		$classic_cart_appearance = [ 'theme' => 'flat' ];
+		set_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT, $product_page_appearance );
+		set_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT, $classic_cart_appearance );
+
+		$this->messaging_element->init();
+
+		$script_data = $this->get_script_data();
+		$this->assertEquals( $product_page_appearance, $script_data['upeBnplProductPageAppearance'] );
+		$this->assertEquals( $classic_cart_appearance, $script_data['upeBnplClassicCartAppearance'] );
+
+		delete_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
+		delete_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
+	}
 }

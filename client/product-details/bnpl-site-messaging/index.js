@@ -5,7 +5,6 @@
 import './style.scss';
 import WCPayAPI from 'wcpay/checkout/api';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
-import { getUPEConfig } from 'wcpay/utils/checkout';
 import apiRequest from 'wcpay/checkout/utils/request';
 
 const elementsLocations = {
@@ -32,7 +31,7 @@ const elementsLocations = {
 async function initializeAppearance( api, location ) {
 	const { configKey, appearanceKey } = elementsLocations[ location ];
 
-	const appearance = getUPEConfig( configKey );
+	const appearance = window.wcpayStripeSiteMessaging?.[ configKey ];
 	if ( appearance ) {
 		return Promise.resolve( appearance );
 	}
