@@ -174,25 +174,6 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			$script_data
 		);
 
-		// Ensure wcpayConfig is available in the page with only the keys the product-details script needs.
-		$wcpay_config = rawurlencode(
-			wp_json_encode(
-				[
-					'ajaxUrl'                      => admin_url( 'admin-ajax.php' ),
-					'saveUPEAppearanceNonce'       => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
-					'upeBnplProductPageAppearance' => get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT ),
-					'upeBnplClassicCartAppearance' => get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT ),
-				]
-			)
-		);
-		wp_add_inline_script(
-			'WCPAY_PRODUCT_DETAILS',
-			"
-			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
-			",
-			'before'
-		);
-
 		if ( ! $is_cart_block ) {
 			return '<div id="payment-method-message"></div>';
 		}

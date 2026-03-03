@@ -213,34 +213,4 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$script_data = $this->get_script_data();
 		$this->assertEquals( 0, $script_data['cartTotal'] );
 	}
-
-	/**
-	 * Test that inline script contains only minimal config keys, not the full checkout config.
-	 */
-	public function test_init_inline_script_contains_only_minimal_config() {
-		$this->setup_gateway_mocks();
-
-		$this->messaging_element->init();
-
-		// Get the inline script added before WCPAY_PRODUCT_DETAILS.
-		$registered = wp_scripts()->registered['WCPAY_PRODUCT_DETAILS'];
-		$before     = $registered->extra['before'] ?? [];
-		$inline_js  = implode( '', $before );
-
-		// Extract the JSON from the inline script.
-		preg_match( "/decodeURIComponent\(\s*'([^']+)'\s*\)/", $inline_js, $matches );
-		$this->assertNotEmpty( $matches[1], 'Inline script should contain encoded config' );
-
-		$config = json_decode( urldecode( $matches[1] ), true );
-		$this->assertIsArray( $config );
-
-		// Should contain only the 4 minimal keys.
-		$expected_keys = [ 'ajaxUrl', 'saveUPEAppearanceNonce', 'upeBnplProductPageAppearance', 'upeBnplClassicCartAppearance' ];
-		$this->assertEqualsCanonicalizing( $expected_keys, array_keys( $config ) );
-
-		// Should NOT contain keys from the full checkout config.
-		$this->assertArrayNotHasKey( 'fraudServices', $config );
-		$this->assertArrayNotHasKey( 'paymentMethodsConfig', $config );
-		$this->assertArrayNotHasKey( 'woopayMinimumSessionData', $config );
-	}
 }
