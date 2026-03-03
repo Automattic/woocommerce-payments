@@ -2,9 +2,9 @@
  * Internal dependencies
  */
 import {
-	getAddToCartButton,
+	getAddToCartButtonElement,
 	getProductId,
-	getProductForm,
+	getProductFormElement,
 	getQuantity,
 } from '../wc-product-page-selectors';
 
@@ -13,11 +13,11 @@ describe( 'wc-product-page-selectors', () => {
 		document.body.innerHTML = '';
 	} );
 
-	describe( 'getAddToCartButton', () => {
+	describe( 'getAddToCartButtonElement', () => {
 		it( 'returns the classic add-to-cart button', () => {
 			document.body.innerHTML =
 				'<button class="single_add_to_cart_button">Add to cart</button>';
-			expect( getAddToCartButton() ).toBe(
+			expect( getAddToCartButtonElement() ).toBe(
 				document.querySelector( '.single_add_to_cart_button' )
 			);
 		} );
@@ -25,7 +25,7 @@ describe( 'wc-product-page-selectors', () => {
 		it( 'returns the new block submit button', () => {
 			document.body.innerHTML =
 				'<div class="wp-block-add-to-cart-with-options"><button type="submit">Add to cart</button></div>';
-			expect( getAddToCartButton() ).toBe(
+			expect( getAddToCartButtonElement() ).toBe(
 				document.querySelector( 'button[type="submit"]' )
 			);
 		} );
@@ -35,13 +35,13 @@ describe( 'wc-product-page-selectors', () => {
 				'<button class="single_add_to_cart_button" value="10">Add to cart</button>',
 				'<div class="wp-block-add-to-cart-with-options"><button type="submit">Add to cart</button></div>',
 			].join( '' );
-			expect( getAddToCartButton().classList ).toContain(
+			expect( getAddToCartButtonElement().classList ).toContain(
 				'single_add_to_cart_button'
 			);
 		} );
 
 		it( 'returns null when neither exists', () => {
-			expect( getAddToCartButton() ).toBeNull();
+			expect( getAddToCartButtonElement() ).toBeNull();
 		} );
 	} );
 
@@ -69,11 +69,11 @@ describe( 'wc-product-page-selectors', () => {
 		} );
 	} );
 
-	describe( 'getProductForm', () => {
+	describe( 'getProductFormElement', () => {
 		it( 'returns the classic form.cart', () => {
 			document.body.innerHTML =
 				'<form class="cart"><input type="hidden" /></form>';
-			expect( getProductForm() ).toBe(
+			expect( getProductFormElement() ).toBe(
 				document.querySelector( 'form.cart' )
 			);
 		} );
@@ -81,7 +81,7 @@ describe( 'wc-product-page-selectors', () => {
 		it( 'returns the new block form', () => {
 			document.body.innerHTML =
 				'<form class="wp-block-add-to-cart-with-options"><input type="hidden" /></form>';
-			expect( getProductForm() ).toBe(
+			expect( getProductFormElement() ).toBe(
 				document.querySelector(
 					'form.wp-block-add-to-cart-with-options'
 				)
@@ -89,7 +89,7 @@ describe( 'wc-product-page-selectors', () => {
 		} );
 
 		it( 'returns null when neither form exists', () => {
-			expect( getProductForm() ).toBeNull();
+			expect( getProductFormElement() ).toBeNull();
 		} );
 	} );
 

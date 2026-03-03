@@ -18,7 +18,7 @@
  *
  * @return {HTMLElement|null} The add-to-cart button, or null.
  */
-export const getAddToCartButton = () => {
+export const getAddToCartButtonElement = () => {
 	return (
 		document.querySelector( '.single_add_to_cart_button' ) ||
 		document.querySelector(
@@ -28,7 +28,7 @@ export const getAddToCartButton = () => {
 };
 
 /**
- * jQuery version of getAddToCartButton for code that still uses jQuery.
+ * jQuery version of getAddToCartButtonElement for code that still uses jQuery.
  *
  * @return {jQuery} jQuery object wrapping the button (may be empty).
  */
@@ -70,7 +70,7 @@ export const getProductId = () => {
  *
  * @return {HTMLFormElement|null} The form element, or null.
  */
-export const getProductForm = () => {
+export const getProductFormElement = () => {
 	return (
 		document.querySelector( 'form.cart' ) ||
 		document.querySelector( 'form.wp-block-add-to-cart-with-options' )

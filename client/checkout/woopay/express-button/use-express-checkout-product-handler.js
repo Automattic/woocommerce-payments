@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 import {
 	getProductId,
 	getQuantity,
-	getProductForm,
+	getProductFormElement,
 } from 'wcpay/express-checkout/compatibility/wc-product-page-selectors';
 
 const useExpressCheckoutProductHandler = ( api ) => {
@@ -110,7 +110,7 @@ const useExpressCheckoutProductHandler = ( api ) => {
 				? getAttributes()
 				: [];
 		} else {
-			const form = getProductForm();
+			const form = getProductFormElement();
 
 			if ( form ) {
 				const formData = new FormData( form );
@@ -133,7 +133,7 @@ const useExpressCheckoutProductHandler = ( api ) => {
 			}
 		}
 
-		const addOnForm = getProductForm();
+		const addOnForm = getProductFormElement();
 
 		if ( addOnForm ) {
 			const formData = new FormData( addOnForm );
