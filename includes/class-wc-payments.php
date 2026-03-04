@@ -608,7 +608,7 @@ class WC_Payments {
 
 		// Build the card gateway first so that WC_Payments::get_gateway() is available
 		// during construction of the other gateways (e.g. for settings checks).
-		$card_payment_method                                        = $payment_methods[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ];
+		$card_payment_method                                        = $payment_methods[ \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::get_id() ];
 		self::$payment_method_map[ $card_payment_method->get_id() ] = $card_payment_method;
 		self::$card_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $card_payment_method, $payment_methods, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service, self::$failed_transaction_rate_limiter );
 		self::$payment_gateway_map[ $card_payment_method->get_id() ] = self::$card_gateway;
