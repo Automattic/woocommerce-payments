@@ -108,6 +108,10 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 | `bin/` | Helper scripts | |
 | `tasks/` | Build and release automation | |
 
+**Namespace caveat for `includes/`:** ~12 files in `includes/` use the `WCPay` namespace (e.g., `class-wc-payments-checkout.php`, `class-database-cache.php`). When referencing a global-namespace class from these files, you must add a `use` import or prefix with `\`. PHPStan catches this but local PHPCS won't — run `composer run phpstan` before pushing changes that introduce new cross-namespace references.
+
+**No `declare(strict_types=1)` in `includes/`:** The project's PHPCS rules require the file docblock immediately after `<?php`. Adding `declare(strict_types=1)` between them causes lint failures. Files in `src/` (PSR-4) may use it, but `includes/` files must not.
+
 ## Technology Stack
 
 | Layer | Technologies |
