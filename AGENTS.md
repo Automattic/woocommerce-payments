@@ -216,6 +216,33 @@ gh pr edit <number> --add-reviewer Automattic/gamma
 gh pr edit <number> --add-label "pr: needs review"
 ```
 
+## Git Worktrees
+
+Worktrees provide isolated working directories for parallel feature work. Each worktree gets its own Docker port range (8180-8199).
+
+**Setup:** `npm run worktree:setup` (configures `.env`), `npm run worktree:status` (list all)
+
+**CRITICAL: Never remove a worktree that is your current working directory.** Removing the CWD makes ALL subsequent commands fail irrecoverably — no `cd`, no subshell can fix it.
+
+**Safe cleanup sequence (always from the main repo):**
+```bash
+# 1. Switch to main repo FIRST
+cd /path/to/main/repo
+
+# 2. Now safe to remove
+git worktree remove /path/to/worktree
+
+# 3. Clean up
+git worktree prune
+git branch -d worktree-feat/branch-name
+```
+
+**Merging worktree work:** `git checkout main` fails inside a worktree when main is checked out elsewhere. Use `git -C` from the main repo:
+```bash
+cd /path/to/main/repo
+git -C /path/to/main/repo merge worktree-feat/branch-name
+```
+
 ## Docker Environment
 
 | Service | URL/Port |
@@ -226,7 +253,6 @@ gh pr edit <number> --add-label "pr: needs review"
 
 - First-time: `npm run up:recreate`
 - Subsequent: `npm run up`
-- Worktrees: `npm run worktree:setup` (configure `.env`), `npm run worktree:status` (list all)
 - Xdebug ready (requires IDE path mapping)
 
 ## Configuration Files
