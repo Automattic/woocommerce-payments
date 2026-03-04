@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-chore: rename ECE constants to `shipping-limits.js` and add express payment method JS registry/config
+chore: rename ECE constants to `shipping-limits.js`
