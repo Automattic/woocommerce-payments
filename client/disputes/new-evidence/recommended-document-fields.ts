@@ -437,10 +437,11 @@ const getRecommendedDocumentFields = (
 		} ) );
 };
 
-const getRecommendedShippingDocumentFields = (): Array<
-	RecommendedDocument
-> => {
-	return [
+const getRecommendedShippingDocumentFields = (
+	reason?: string,
+	productType?: string
+): Array< RecommendedDocument > => {
+	const fields: Array< RecommendedDocument > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
 			label: __( 'Proof of shipping', 'woocommerce-payments' ),
@@ -451,6 +452,23 @@ const getRecommendedShippingDocumentFields = (): Array<
 			order: 0,
 		},
 	];
+
+	if (
+		reason === 'product_not_received' &&
+		productType === 'physical_product'
+	) {
+		fields.push( {
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+			label: __( 'Proof of delivery', 'woocommerce-payments' ),
+			description: __(
+				'A confirmation that the product was delivered.',
+				'woocommerce-payments'
+			),
+			order: 1,
+		} );
+	}
+
+	return fields;
 };
 
 export { getRecommendedDocumentFields, getRecommendedShippingDocumentFields };

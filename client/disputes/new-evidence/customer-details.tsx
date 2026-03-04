@@ -21,17 +21,8 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 			? dispute.charge
 			: null;
 	const name = charge?.billing_details?.name || '-';
-	const phone = charge?.billing_details?.phone || '-';
 	const email = charge?.billing_details?.email || '-';
-	const ip = dispute.order?.ip_address || '-';
-	const address = charge?.billing_details?.address;
-	const billingLine1 = address?.line1 || '';
-	const billingLine2 = address?.line2 || '';
-	const billingCity = address?.city || '';
-	const billingState = address?.state || '';
-	const billingPostcode = address?.postal_code || '';
-	const billingCountry = address?.country || '';
-	const billingAddress = `${ billingLine1 }, ${ billingLine2 }, ${ billingCity }, ${ billingState }, ${ billingPostcode }, ${ billingCountry }`;
+
 	return (
 		<section className="wcpay-dispute-evidence-customer-details">
 			<h3 className="wcpay-dispute-evidence-customer-details__heading">
@@ -57,7 +48,7 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 						{ __( 'PHONE', 'woocommerce-payments' ) }
 					</div>
 					<span className="wcpay-dispute-evidence-customer-details__phone-number">
-						{ phone }
+						{ charge?.billing_details?.phone || '-' }
 					</span>
 				</div>
 				<div>
@@ -80,7 +71,7 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 						{ __( 'IP ADDRESS', 'woocommerce-payments' ) }
 					</div>
 					<span className="wcpay-dispute-evidence-customer-details__ip-address">
-						{ ip }
+						{ dispute.order?.ip_address || '-' }
 					</span>
 				</div>
 			</div>
@@ -89,7 +80,7 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 					{ __( 'BILLING ADDRESS', 'woocommerce-payments' ) }
 				</div>
 				<div className="wcpay-dispute-evidence-customer-details__billing-value">
-					{ billingAddress }
+					{ charge?.billing_details?.formatted_address || '-' }
 				</div>
 			</div>
 		</section>

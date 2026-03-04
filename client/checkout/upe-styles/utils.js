@@ -112,8 +112,11 @@ export const getBackgroundColor = ( selectors, scope = document ) => {
 
 		const bgColor = windowObject.getComputedStyle( element )
 			.backgroundColor;
-		// If backgroundColor property present and alpha > 0.
-		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
+		// Accept colors that are mostly opaque (alpha >= 0.5).  Low-alpha
+		// values like rgba(129,110,153,0.14) are decorative overlays, not
+		// real backgrounds — skip them so we fall through to the actual
+		// page background beneath.
+		if ( bgColor && tinycolor( bgColor ).getAlpha() >= 0.5 ) {
 			color = bgColor;
 		}
 		i++;
@@ -124,11 +127,28 @@ export const getBackgroundColor = ( selectors, scope = document ) => {
 /**
  * Determines whether background color is light or dark.
  *
+ * When the color has an alpha channel (e.g. rgba), it is composited against
+ * white first, since that is the default page background.  Without this,
+ * a low-opacity dark color like rgba(129,110,153,0.14) would be reported as
+ * "dark" even though it appears nearly white to the user.
+ *
  * @param {string} color CSS color value.
  * @return {boolean} True, if background is light; false, if background is dark.
  */
 export const isColorLight = ( color ) => {
-	return tinycolor( color ).getBrightness() > 125;
+	const tc = tinycolor( color );
+	const alpha = tc.getAlpha();
+	if ( alpha < 1 ) {
+		// Composite against white (#fff) using "source over" blending.
+		const rgb = tc.toRgb();
+		const blended = tinycolor( {
+			r: Math.round( rgb.r * alpha + 255 * ( 1 - alpha ) ),
+			g: Math.round( rgb.g * alpha + 255 * ( 1 - alpha ) ),
+			b: Math.round( rgb.b * alpha + 255 * ( 1 - alpha ) ),
+		} );
+		return blended.getBrightness() > 125;
+	}
+	return tc.getBrightness() > 125;
 };
 
 /**

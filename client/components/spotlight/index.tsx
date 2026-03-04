@@ -211,7 +211,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	const primaryButton = (
 		<Button
 			className="wcpay-spotlight__primary-btn"
-			variant="primary"
+			variant="secondary"
 			onClick={ handlePrimaryClick }
 		>
 			{ primaryButtonLabel }
@@ -301,7 +301,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 										viewBox="6 4 12 14"
 									/>
 								}
-								iconSize={ 24 }
+								iconSize={ 16 }
 								onClick={ () => handleClose() }
 							/>
 						</Flex>
@@ -368,7 +368,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 						size="small"
 						className="wcpay-spotlight__footer"
 					>
-						<Flex justify="flex-end" gap={ 3 }>
+						<Flex justify="flex-start" gap={ 3 }>
 							{ reverseButtons ? (
 								<>
 									{ primaryButton }

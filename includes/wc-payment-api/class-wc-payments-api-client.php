@@ -654,7 +654,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
+		$dispute   = $this->add_order_info_to_charge_object( $charge_id, $dispute );
+
+		if ( is_array( $dispute['charge'] ) ) {
+			$dispute['charge'] = $this->add_formatted_address_to_charge_object( $dispute['charge'], ', ' );
+		}
+
+		return $dispute;
 	}
 
 	/**
@@ -710,7 +716,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
+		$dispute   = $this->add_order_info_to_charge_object( $charge_id, $dispute );
+
+		if ( is_array( $dispute['charge'] ) ) {
+			$dispute['charge'] = $this->add_formatted_address_to_charge_object( $dispute['charge'], ', ' );
+		}
+
+		return $dispute;
 	}
 
 	/**
@@ -739,7 +751,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
+		$dispute   = $this->add_order_info_to_charge_object( $charge_id, $dispute );
+
+		if ( is_array( $dispute['charge'] ) ) {
+			$dispute['charge'] = $this->add_formatted_address_to_charge_object( $dispute['charge'], ', ' );
+		}
+
+		return $dispute;
 	}
 
 	/**
@@ -2254,11 +2272,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Adds the formatted address to the Charge object
 	 *
-	 * @param array $charge - Charge object.
+	 * @param array  $charge    - Charge object.
+	 * @param string $separator - Separator for the formatted address. Defaults to '<br/>'.
 	 *
 	 * @return array
 	 */
-	public function add_formatted_address_to_charge_object( array $charge ): array {
+	public function add_formatted_address_to_charge_object( array $charge, string $separator = '<br/>' ): array {
 		$has_billing_details = isset( $charge['billing_details'] );
 
 		if ( $has_billing_details ) {
@@ -2272,7 +2291,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$billing_details['postcode']  = ( ! empty( $raw_details['postal_code'] ) ) ? $raw_details['postal_code'] : '';
 			$billing_details['state']     = ( ! empty( $raw_details['state'] ) ) ? $raw_details['state'] : '';
 
-			$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details );
+			$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details, $separator );
 		}
 
 		return $charge;

@@ -1042,55 +1042,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card was declined.', 'card_declined', 402 ) ) );
 	}
 
-	private function delete_appearance_theme_transients( $transients ) {
-		foreach ( $transients as $location => $contexts ) {
-			foreach ( $contexts as $context => $transient ) {
-				delete_transient( $transient );
-			}
-		}
-	}
-
-	private function set_appearance_theme_transients( $transients ) {
-		foreach ( $transients as $location => $contexts ) {
-			foreach ( $contexts as $context => $transient ) {
-				set_transient( $transient, $location . '_' . $context . '_value', DAY_IN_SECONDS );
-			}
-		}
-	}
-
-	public function test_get_active_upe_theme_transient_for_location() {
-		$theme_transients = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
-
-		// Test with no transients set.
-		$this->assertSame( 'stripe', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'checkout', 'blocks' ) );
-
-		// Set the transients.
-		$this->set_appearance_theme_transients( $theme_transients );
-
-		// Test with transients set.
-		// Test with invalid location.
-		$this->assertSame( 'checkout_blocks_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'invalid_location', 'blocks' ) );
-
-		// Test with valid location and invalid context.
-		$this->assertSame( 'checkout_blocks_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'checkout', 'invalid_context' ) );
-
-		// Test with valid location and context.
-		foreach ( $theme_transients as $location => $contexts ) {
-			foreach ( $contexts as $context => $transient ) {
-				// Our transient for the product page is the same transient for both block and classic.
-				if ( 'product_page' === $location ) {
-					$this->assertSame( 'product_page_classic_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, 'blocks' ) );
-					$this->assertSame( 'product_page_classic_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, 'classic' ) );
-				} else {
-					$this->assertSame( $location . '_' . $context . '_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $context ) );
-				}
-			}
-		}
-
-		// Remove the transients.
-		$this->delete_appearance_theme_transients( $theme_transients );
-	}
-
 	public function test_is_store_api_request_with_store_api_request() {
 		$_SERVER['REQUEST_URI'] = '/index.php';
 		$_REQUEST['rest_route'] = '/wc/store/v1/checkout';
@@ -1274,5 +1225,64 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			'general'                   => [ 'general', 'General' ],
 			'default case'              => [ 'unknown_reason', 'General' ],
 		];
+	}
+
+	public function test_get_styles_cache_version_returns_md5_string() {
+		delete_option( 'wcpay_styles_cache_version' );
+		$version = WC_Payments_Utils::get_styles_cache_version();
+		$this->assertMatchesRegularExpression( '/^[a-f0-9]{32}$/', $version );
+	}
+
+	public function test_get_styles_cache_version_stores_in_option() {
+		delete_option( 'wcpay_styles_cache_version' );
+		$version = WC_Payments_Utils::get_styles_cache_version();
+		$this->assertEquals( $version, get_option( 'wcpay_styles_cache_version' ) );
+	}
+
+	public function test_get_styles_cache_version_reads_from_option() {
+		update_option( 'wcpay_styles_cache_version', 'cached_hash_value' );
+		$version = WC_Payments_Utils::get_styles_cache_version();
+		$this->assertEquals( 'cached_hash_value', $version );
+		delete_option( 'wcpay_styles_cache_version' );
+	}
+
+	public function test_invalidate_styles_cache_version_deletes_option() {
+		update_option( 'wcpay_styles_cache_version', 'some_hash' );
+		WC_Payments_Utils::invalidate_styles_cache_version();
+		$this->assertFalse( get_option( 'wcpay_styles_cache_version' ) );
+	}
+
+	public function test_styles_cache_invalidation_hooks_registered() {
+		$this->assertNotFalse(
+			has_action( 'after_switch_theme', [ 'WC_Payments_Utils', 'invalidate_styles_cache_version' ] ),
+			'after_switch_theme hook not registered.'
+		);
+		$this->assertNotFalse(
+			has_action( 'save_post_wp_global_styles', [ 'WC_Payments_Utils', 'invalidate_styles_cache_version' ] ),
+			'save_post_wp_global_styles hook not registered.'
+		);
+		$this->assertNotFalse(
+			has_action( 'customize_save_after', [ 'WC_Payments_Utils', 'invalidate_styles_cache_version' ] ),
+			'customize_save_after hook not registered.'
+		);
+		$this->assertNotFalse(
+			has_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Utils', 'invalidate_styles_cache_version' ] ),
+			'woocommerce_woocommerce_payments_updated hook not registered.'
+		);
+	}
+
+	public function test_get_styles_cache_version_recomputes_after_invalidation() {
+		// Populate the cache.
+		delete_option( 'wcpay_styles_cache_version' );
+		$first_version = WC_Payments_Utils::get_styles_cache_version();
+
+		// Invalidate.
+		WC_Payments_Utils::invalidate_styles_cache_version();
+		$this->assertFalse( get_option( 'wcpay_styles_cache_version' ) );
+
+		// Recompute — should get a new stored value.
+		$second_version = WC_Payments_Utils::get_styles_cache_version();
+		$this->assertNotEmpty( get_option( 'wcpay_styles_cache_version' ) );
+		$this->assertMatchesRegularExpression( '/^[a-f0-9]{32}$/', $second_version );
 	}
 }
