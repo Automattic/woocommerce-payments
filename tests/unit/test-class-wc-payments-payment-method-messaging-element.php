@@ -221,11 +221,6 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 	public function test_init_does_not_inject_wcpay_config_inline_script() {
 		$this->setup_gateway_mocks();
 
-		$product_page_appearance = [ 'theme' => 'stripe' ];
-		$classic_cart_appearance = [ 'theme' => 'flat' ];
-		set_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT, $product_page_appearance );
-		set_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT, $classic_cart_appearance );
-
 		$this->messaging_element->init();
 
 		// No inline script should be added before WCPAY_PRODUCT_DETAILS.
