@@ -15,7 +15,7 @@ import MegaphoneIcon from './megaphone-icon';
 const wordpressOrgReviewUrl =
 	'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post';
 const marketplaceReviewUrl =
-	'https://woocommerce.com/products/woocommerce-payments/#reviews';
+	'https://woocommerce.com/products/woocommerce-payments/?review';
 
 /**
  * Helper to record an event with base properties and optional additional properties.
