@@ -172,7 +172,7 @@ describe( 'ReviewPrompt', () => {
 
 		await waitFor( () => {
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				'https://woocommerce.com/products/woocommerce-payments/#reviews',
+				'https://woocommerce.com/products/woocommerce-payments/?review',
 				'_blank'
 			);
 		} );
