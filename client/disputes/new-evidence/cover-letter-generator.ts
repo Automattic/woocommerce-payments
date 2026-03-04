@@ -35,7 +35,20 @@ export const getBusinessDetails = (): AccountDetails => {
 export const formatMerchantAddress = (
 	accountDetails: AccountDetails
 ): string => {
-	return `${ accountDetails.support_address_line1 }, ${ accountDetails.support_address_line2 }, ${ accountDetails.support_address_city }, ${ accountDetails.support_address_state } ${ accountDetails.support_address_postal_code } ${ accountDetails.support_address_country }`;
+	if ( wcpaySettings?.formattedStoreAddress ) {
+		return wcpaySettings.formattedStoreAddress;
+	}
+
+	return [
+		accountDetails.support_address_line1 || '',
+		accountDetails.support_address_line2 || '',
+		accountDetails.support_address_city || '',
+		accountDetails.support_address_state || '',
+		accountDetails.support_address_postal_code || '',
+		accountDetails.support_address_country || '',
+	]
+		.filter( Boolean )
+		.join( ', ' );
 };
 
 export const formatDeliveryDate = (

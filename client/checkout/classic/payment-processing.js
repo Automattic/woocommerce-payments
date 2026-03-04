@@ -8,6 +8,11 @@ import { __ } from '@wordpress/i18n';
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
+import {
+	getCachedAppearance,
+	setCachedAppearance,
+	dispatchAppearanceEvent,
+} from 'wcpay/utils/appearance-cache';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -43,30 +48,22 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 }
 
 /**
- * Initializes the appearance of the payment element by retrieving the UPE configuration
- * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
- * it is simply returned.
+ * Initializes the appearance of the payment element by computing it from the DOM.
  *
- * @param {Object} api The API object used to save the UPE configuration.
  * @param {string} elementsLocation The location of the UPE elements.
- * @return {Promise<Object>} The appearance object for the UPE.
+ * @return {Object} The appearance object for the UPE.
  */
-async function initializeAppearance( api, elementsLocation ) {
-	const upeConfigMap = {
-		shortcode_checkout: 'upeAppearance',
-		add_payment_method: 'upeAddPaymentMethodAppearance',
-	};
-	const upeConfigProperty =
-		upeConfigMap[ elementsLocation ] ?? 'upeAppearance';
-	const appearance = getUPEConfig( upeConfigProperty );
-	if ( appearance ) {
-		return Promise.resolve( appearance );
+function initializeAppearance( elementsLocation ) {
+	const version = getUPEConfig( 'stylesCacheVersion' );
+	const cached = getCachedAppearance( elementsLocation, version );
+	if ( cached ) {
+		return cached;
 	}
 
-	return await api.saveUPEAppearance(
-		getAppearance( elementsLocation ),
-		elementsLocation
-	);
+	const appearance = getAppearance( elementsLocation );
+	dispatchAppearanceEvent( appearance, elementsLocation );
+	setCachedAppearance( elementsLocation, version, appearance );
+	return appearance;
 }
 
 /**
@@ -251,7 +248,7 @@ async function createStripePaymentElement(
 ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
-	const appearance = await initializeAppearance( api, elementsLocation );
+	const appearance = initializeAppearance( elementsLocation );
 	document
 		.querySelector(
 			`.wcpay-upe-element[data-payment-method-type="${ paymentMethodType }"]`
