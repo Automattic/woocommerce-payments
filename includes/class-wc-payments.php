@@ -339,6 +339,7 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
+		include_once __DIR__ . '/class-wc-payments-styles-cache.php';
 		include_once __DIR__ . '/core/class-mode.php';
 
 		self::$mode = new Mode();
@@ -361,9 +362,9 @@ class WC_Payments {
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		// Invalidate the styles cache version when theme or styles change.
-		add_action( 'after_switch_theme', [ 'WC_Payments_Utils', 'invalidate_styles_cache_version' ] );
-		add_action( 'save_post_wp_global_styles', [ 'WC_Payments_Utils', 'invalidate_styles_cache_version' ] );
-		add_action( 'customize_save_after', [ 'WC_Payments_Utils', 'invalidate_styles_cache_version' ] );
+		add_action( 'after_switch_theme', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
+		add_action( 'save_post_wp_global_styles', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
+		add_action( 'customize_save_after', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'disable_express_checkout_in_block_editor' ], 1 );
@@ -731,7 +732,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Utils', 'invalidate_styles_cache_version' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();

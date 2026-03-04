@@ -161,7 +161,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			],
 			'wcAjaxUrl'            => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'shouldInitializePMME' => WC_Payments_Utils::is_any_bnpl_supporting_country( array_values( $bnpl_payment_methods ), $country, $currency_code ),
-			'stylesCacheVersion'   => WC_Payments_Utils::get_styles_cache_version(),
+			'stylesCacheVersion'   => WC_Payments_Styles_Cache::get_styles_cache_version(),
 		];
 
 		if ( $product ) {
