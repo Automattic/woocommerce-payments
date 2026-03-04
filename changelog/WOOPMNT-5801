@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix WooPay button and BNPL site messaging not rendering on product pages when a BNPL payment method is active.
