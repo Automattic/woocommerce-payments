@@ -173,6 +173,12 @@ class UPE_Payment_Method {
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
 		if ( null !== $this->definition ) {
+			if ( is_array( $payment_details ) && ! empty( $payment_details ) ) {
+				$dynamic_title = $this->definition::get_title_from_charge_details( $account_country ?? '', $payment_details );
+				if ( null !== $dynamic_title ) {
+					return $dynamic_title;
+				}
+			}
 			return $this->definition::get_title( $account_country );
 		}
 		return $this->title;
@@ -370,6 +376,24 @@ class UPE_Payment_Method {
 			return $this->definition::get_dark_icon_url( $account_country );
 		}
 		return isset( $this->dark_icon_url ) ? $this->dark_icon_url : $this->get_icon( $account_country );
+	}
+
+	/**
+	 * Gets the theme appropriate icon for the payment method for a given location and context.
+	 *
+	 * @param string  $location The location to get the icon for.
+	 * @param boolean $is_blocks Whether the icon is for blocks.
+	 * @param string  $account_country Optional account country.
+	 * @return string
+	 */
+	public function get_payment_method_icon_for_location( string $location = 'checkout', bool $is_blocks = true, ?string $account_country = null ) {
+		$appearance_theme = WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $is_blocks ? 'blocks' : 'classic' );
+
+		if ( 'night' === $appearance_theme ) {
+			return $this->get_dark_icon( $account_country );
+		}
+
+		return $this->get_icon( $account_country );
 	}
 
 	/**
