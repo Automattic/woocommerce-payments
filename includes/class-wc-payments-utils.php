@@ -1328,90 +1328,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Extract the REST route from the current request URL.
-	 *
-	 * @return string The REST route, or empty string if not found.
-	 */
-	private static function extract_rest_route_from_url(): string {
-		// Extract the request path from the request URL.
-		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		if ( empty( $url_parts['path'] ) ) {
-			return '';
-		}
-
-		$request_path = rtrim( $url_parts['path'], '/' );
-		if ( empty( $request_path ) ) {
-			return '';
-		}
-
-		// Remove the REST API prefix from the request path to end up with the route.
-		$rest_prefix = trailingslashit( rest_get_url_prefix() );
-
-		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
-		// Look for the wp-json prefix in the path and extract everything after it.
-		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
-		if ( false !== $wp_json_pos ) {
-			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
-		}
-
-		// Fallback: simple prefix replacement for non-multisite cases.
-		return str_replace( $rest_prefix, '', $request_path );
-	}
-
-	/**
-	 * Gets the current active theme transient for a given location
-	 * Falls back to 'stripe' if no transients are set.
-	 *
-	 * @param string $location The theme location.
-	 * @param string $context The theme location to fall back to if both transients are set.
-	 * @return string
-	 */
-	public static function get_active_upe_theme_transient_for_location( string $location = 'checkout', string $context = 'blocks' ) {
-		$themes       = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
-		$active_theme = false;
-
-		// If an invalid location is sent, we fallback to trying $themes[ 'checkout' ][ 'block' ].
-		if ( ! isset( $themes[ $location ] ) ) {
-			$active_theme = get_transient( $themes['checkout']['blocks'] );
-		} elseif ( ! isset( $themes[ $location ][ $context ] ) ) {
-			// If the location is valid but the context is invalid, we fallback to trying $themes[ $location ][ 'block' ].
-			$active_theme = get_transient( $themes[ $location ]['blocks'] );
-		} else {
-			$active_theme = get_transient( $themes[ $location ][ $context ] );
-		}
-
-		// If $active_theme is still false here, that means that $themes[ $location ][ $context ] is not set, so we try $themes[ $location ][ 'classic' ].
-		if ( ! $active_theme ) {
-			$active_theme = get_transient( $themes[ $location ][ 'blocks' === $context ? 'classic' : 'blocks' ] );
-		}
-
-		// If $active_theme is still false here, nothing at the location is set so we'll try all locations.
-		if ( ! $active_theme ) {
-			foreach ( $themes as $location_const => $contexts ) {
-				// We don't need to check the same location again.
-				if ( $location_const === $location ) {
-					continue;
-				}
-
-				foreach ( $contexts as $context => $transient ) {
-					$active_theme = get_transient( $transient );
-					if ( $active_theme ) {
-						break 2; // This will break both loops.
-					}
-				}
-			}
-		}
-
-		// If $active_theme is still false, we don't have any theme set in the transients, so we fallback to 'stripe'.
-		if ( $active_theme ) {
-			return $active_theme;
-		}
-
-		// Fallback to 'stripe' if no transients are set.
-		return 'stripe';
-	}
-
-	/**
 	 * Returns the list of countries in the European Economic Area (EEA).
 	 *
 	 * Based on the list documented at https://www.gov.uk/eu-eea.
@@ -1470,5 +1386,81 @@ class WC_Payments_Utils {
 			$logger = wc_get_logger();
 			$logger->$level( $message, [ 'source' => 'woopayments' ] );
 		}
+	}
+
+	/**
+	 * Returns the styles cache version string used to invalidate localStorage
+	 * appearance caches. Reads from a stored WP option; if missing, computes
+	 * and stores it.
+	 *
+	 * @return string MD5 hash representing the current styles version.
+	 */
+	public static function get_styles_cache_version(): string {
+		$version = get_option( 'wcpay_styles_cache_version' );
+		if ( ! empty( $version ) ) {
+			return $version;
+		}
+
+		$version = self::compute_styles_cache_version();
+		update_option( 'wcpay_styles_cache_version', $version, true );
+		return $version;
+	}
+
+	/**
+	 * Deletes the stored cache version so it recomputes on the next page load.
+	 * Hooked to after_switch_theme, save_post_wp_global_styles, and customize_save_after.
+	 */
+	public static function invalidate_styles_cache_version(): void {
+		delete_option( 'wcpay_styles_cache_version' );
+	}
+
+	/**
+	 * Extract the REST route from the current request URL.
+	 *
+	 * @return string The REST route, or empty string if not found.
+	 */
+	private static function extract_rest_route_from_url(): string {
+		// Extract the request path from the request URL.
+		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		if ( empty( $url_parts['path'] ) ) {
+			return '';
+		}
+
+		$request_path = rtrim( $url_parts['path'], '/' );
+		if ( empty( $request_path ) ) {
+			return '';
+		}
+
+		// Remove the REST API prefix from the request path to end up with the route.
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+
+		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
+		// Look for the wp-json prefix in the path and extract everything after it.
+		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
+		if ( false !== $wp_json_pos ) {
+			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
+		}
+
+		// Fallback: simple prefix replacement for non-multisite cases.
+		return str_replace( $rest_prefix, '', $request_path );
+	}
+
+	/**
+	 * Computes a fresh styles cache version hash from plugin version,
+	 * theme stylesheet, and global styles (color palettes, style variations).
+	 *
+	 * @return string MD5 hash.
+	 */
+	private static function compute_styles_cache_version(): string {
+		$parts = WCPAY_VERSION_NUMBER . wp_get_theme()->get_stylesheet();
+
+		if ( function_exists( 'wp_get_global_styles' ) ) {
+			$parts .= wp_json_encode( wp_get_global_styles() );
+		}
+
+		// Theme mods capture Customizer changes (classic themes).
+		$parts .= wp_json_encode( get_theme_mods() );
+
+		return md5( $parts );
 	}
 }

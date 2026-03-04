@@ -157,8 +157,7 @@ describe( 'ReviewPrompt', () => {
 		await waitFor( () => {
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
 				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
-				'_blank',
-				'noopener,noreferrer'
+				'_blank'
 			);
 		} );
 	} );
@@ -173,9 +172,8 @@ describe( 'ReviewPrompt', () => {
 
 		await waitFor( () => {
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
-				'https://woocommerce.com/products/woocommerce-payments/#reviews',
-				'_blank',
-				'noopener,noreferrer'
+				'https://woocommerce.com/products/woocommerce-payments/?review',
+				'_blank'
 			);
 		} );
 	} );
@@ -347,8 +345,7 @@ describe( 'ReviewPrompt', () => {
 			// Should have tried to open in new window
 			expect( mockWindowOpen ).toHaveBeenCalledWith(
 				'https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post',
-				'_blank',
-				'noopener,noreferrer'
+				'_blank'
 			);
 
 			// Should fall back to navigating current window
