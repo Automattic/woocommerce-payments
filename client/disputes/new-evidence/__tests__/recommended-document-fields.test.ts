@@ -5,7 +5,10 @@
 /**
  * Internal dependencies
  */
-import { getRecommendedDocumentFields } from '../recommended-document-fields';
+import {
+	getRecommendedDocumentFields,
+	getRecommendedShippingDocumentFields,
+} from '../recommended-document-fields';
 import { RecommendedDocument } from '../types';
 
 declare const global: {
@@ -664,6 +667,48 @@ describe( 'Recommended Documents', () => {
 					'Any other relevant documents that will support your case.'
 				);
 			} );
+		} );
+	} );
+
+	describe( 'getRecommendedShippingDocumentFields', () => {
+		it( 'should return only proof of shipping by default', () => {
+			const result = getRecommendedShippingDocumentFields();
+			expect( result ).toHaveLength( 1 );
+			expect( result[ 0 ].key ).toBe( 'shipping_documentation' );
+			expect( result[ 0 ].label ).toBe( 'Proof of shipping' );
+		} );
+
+		it( 'should return only proof of shipping for non-matching reason', () => {
+			const result = getRecommendedShippingDocumentFields(
+				'fraudulent',
+				'physical_product'
+			);
+			expect( result ).toHaveLength( 1 );
+			expect( result[ 0 ].key ).toBe( 'shipping_documentation' );
+		} );
+
+		it( 'should return only proof of shipping for non-matching product type', () => {
+			const result = getRecommendedShippingDocumentFields(
+				'product_not_received',
+				'booking_reservation'
+			);
+			expect( result ).toHaveLength( 1 );
+			expect( result[ 0 ].key ).toBe( 'shipping_documentation' );
+		} );
+
+		it( 'should return proof of shipping and proof of delivery for product_not_received + physical_product', () => {
+			const result = getRecommendedShippingDocumentFields(
+				'product_not_received',
+				'physical_product'
+			);
+			expect( result ).toHaveLength( 2 );
+			expect( result[ 0 ].key ).toBe( 'shipping_documentation' );
+			expect( result[ 0 ].label ).toBe( 'Proof of shipping' );
+			expect( result[ 1 ].key ).toBe( 'customer_signature' );
+			expect( result[ 1 ].label ).toBe( 'Proof of delivery' );
+			expect( result[ 1 ].description ).toBe(
+				'A confirmation that the product was delivered.'
+			);
 		} );
 	} );
 } );
