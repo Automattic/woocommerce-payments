@@ -15,6 +15,7 @@ use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
 use WC_Payments_Fraud_Service;
+use WC_Payments_Styles_Cache;
 use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
