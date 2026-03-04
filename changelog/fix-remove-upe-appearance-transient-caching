@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Remove server-side appearance caching in favor of client-side caching
