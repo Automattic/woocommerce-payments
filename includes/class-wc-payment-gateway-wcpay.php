@@ -112,37 +112,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	const USER_FORMATTED_TOKENS_LIMIT = 100;
 
-	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE        = 'upe_process_redirect_order_id_mismatched';
-	const UPE_APPEARANCE_TRANSIENT                          = 'wcpay_upe_appearance';
-	const UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT       = 'wcpay_upe_add_payment_method_appearance';
-	const WC_BLOCKS_UPE_APPEARANCE_TRANSIENT                = 'wcpay_wc_blocks_upe_appearance';
-	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT        = 'wcpay_upe_bnpl_product_page_appearance';
-	const UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT        = 'wcpay_upe_bnpl_classic_cart_appearance';
-	const UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT          = 'wcpay_upe_bnpl_cart_block_appearance';
-	const UPE_APPEARANCE_THEME_TRANSIENT                    = 'wcpay_upe_appearance_theme';
-	const UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT = 'wcpay_upe_add_payment_method_appearance_theme';
-	const WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT          = 'wcpay_wc_blocks_upe_appearance_theme';
-	const UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT  = 'wcpay_upe_bnpl_product_page_appearance_theme';
-	const UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT  = 'wcpay_upe_bnpl_classic_cart_appearance_theme';
-	const UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT    = 'wcpay_upe_bnpl_cart_block_appearance_theme';
-
-	/**
-	 * The locations of appearance transients.
-	 */
-	const APPEARANCE_THEME_TRANSIENTS = [
-		'checkout'     => [
-			'blocks'  => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
-			'classic' => self::UPE_APPEARANCE_THEME_TRANSIENT,
-		],
-		'product_page' => [
-			'blocks'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
-			'classic' => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
-		],
-		'cart'         => [
-			'blocks'  => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
-			'classic' => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
-		],
-	];
+	const PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE = 'upe_process_redirect_order_id_mismatched';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -4375,102 +4345,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
 	}
 
-	/**
-	 * Handle AJAX request for saving UPE appearance value to transient.
-	 *
-	 * @throws Exception - If nonce or setup intent is invalid.
-	 */
-	public function save_upe_appearance_ajax() {
-		try {
-			$is_nonce_valid = check_ajax_referer( 'wcpay_save_upe_appearance_nonce', false, false );
-			if ( ! $is_nonce_valid ) {
-				throw new Exception(
-					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
-				);
-			}
 
-			$elements_location = isset( $_POST['elements_location'] ) ? wc_clean( wp_unslash( $_POST['elements_location'] ) ) : null;
-			$appearance        = isset( $_POST['appearance'] ) ? json_decode( wc_clean( wp_unslash( $_POST['appearance'] ) ) ) : null;
-
-			$valid_locations = [ 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method' ];
-			if ( ! $elements_location || ! in_array( $elements_location, $valid_locations, true ) ) {
-				throw new Exception(
-					__( 'Unable to update UPE appearance values at this time.', 'woocommerce-payments' )
-				);
-			}
-
-			if ( in_array( $elements_location, [ 'blocks_checkout', 'shortcode_checkout' ], true ) ) {
-				$is_blocks_checkout = 'blocks_checkout' === $elements_location;
-				/**
-				 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
-				 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-				 *
-				 * @deprecated 7.4.0 Use {@see 'wcpay_elements_appearance'} instead.
-				 * @since 7.3.0
-				 */
-				$appearance = apply_filters_deprecated( 'wcpay_upe_appearance', [ $appearance, $is_blocks_checkout ], '7.4.0', 'wcpay_elements_appearance' );
-			}
-
-			/**
-			 * This filter is only called on "save" of the appearance, to avoid calling it on every page load.
-			 * If you apply changes through this filter, you'll need to clear the transient data to see them at checkout.
-			 * $elements_location can be 'blocks_checkout', 'shortcode_checkout', 'bnpl_product_page', 'bnpl_classic_cart', 'bnpl_cart_block', 'add_payment_method'.
-			 *
-			 * @since 7.4.0
-			 */
-			$appearance = apply_filters( 'wcpay_elements_appearance', $appearance, $elements_location );
-
-			$appearance_transient       = [
-				'shortcode_checkout' => self::UPE_APPEARANCE_TRANSIENT,
-				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT,
-				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT,
-				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT,
-				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT,
-				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT,
-			][ $elements_location ];
-			$appearance_theme_transient = [
-				'shortcode_checkout' => self::UPE_APPEARANCE_THEME_TRANSIENT,
-				'add_payment_method' => self::UPE_ADD_PAYMENT_METHOD_APPEARANCE_THEME_TRANSIENT,
-				'blocks_checkout'    => self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_product_page'  => self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_classic_cart'  => self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT,
-				'bnpl_cart_block'    => self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT,
-			][ $elements_location ];
-
-			if ( null !== $appearance ) {
-				set_transient( $appearance_transient, $appearance, DAY_IN_SECONDS );
-				set_transient( $appearance_theme_transient, $appearance->theme, DAY_IN_SECONDS );
-			}
-
-			wp_send_json_success( $appearance, 200 );
-		} catch ( Exception $e ) {
-			// Send back error so it can be displayed to the customer.
-			wp_send_json_error(
-				[
-					'error' => [
-						'message' => WC_Payments_Utils::get_filtered_error_message( $e ),
-					],
-				],
-				WC_Payments_Utils::get_filtered_error_status_code( $e )
-			);
-		}
-	}
-
-	/**
-	 * Clear the saved UPE appearance transient value.
-	 */
-	public function clear_upe_appearance_transient() {
-		delete_transient( self::UPE_APPEARANCE_TRANSIENT );
-		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
-		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
-		delete_transient( self::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
-		delete_transient( self::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
-		delete_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
-		delete_transient( self::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
-		delete_transient( self::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_THEME_TRANSIENT );
-		delete_transient( self::UPE_BNPL_CLASSIC_CART_APPEARANCE_THEME_TRANSIENT );
-		delete_transient( self::UPE_BNPL_CART_BLOCK_APPEARANCE_THEME_TRANSIENT );
-	}
 
 	/**
 	 * Returns true if the code returned from the API represents an error that should be rate-limited.
@@ -4646,15 +4521,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Checks if UPE appearance theme is set and returns appropriate icon URL.
+	 * Returns the appropriate icon URL for the payment method.
 	 *
 	 * @return string
 	 */
 	public function get_theme_icon() {
-		$upe_appearance_theme = get_transient( self::UPE_APPEARANCE_THEME_TRANSIENT );
-		if ( $upe_appearance_theme ) {
-			return 'night' === $upe_appearance_theme ? $this->payment_method->get_dark_icon() : $this->payment_method->get_icon();
-		}
 		return $this->payment_method->get_icon();
 	}
 
