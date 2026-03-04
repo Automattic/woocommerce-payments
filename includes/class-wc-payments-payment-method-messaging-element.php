@@ -144,18 +144,18 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		$country = empty( $billing_country ) ? $store_country : $billing_country;
 
 		$script_data = [
-			'productId'                    => 'base_product',
-			'productVariations'            => $product_variations,
-			'country'                      => $country,
-			'locale'                       => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'accountId'                    => $this->account->get_stripe_account_id(),
-			'publishableKey'               => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-			'paymentMethods'               => array_values( $bnpl_payment_methods ),
-			'currencyCode'                 => $currency_code,
-			'isCart'                       => is_cart(),
-			'isCartBlock'                  => $is_cart_block,
-			'cartTotal'                    => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
-			'nonce'                        => [
+			'productId'            => 'base_product',
+			'productVariations'    => $product_variations,
+			'country'              => $country,
+			'locale'               => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'accountId'            => $this->account->get_stripe_account_id(),
+			'publishableKey'       => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+			'paymentMethods'       => array_values( $bnpl_payment_methods ),
+			'currencyCode'         => $currency_code,
+			'isCart'               => is_cart(),
+			'isCartBlock'          => $is_cart_block,
+			'cartTotal'            => WC_Payments_Utils::prepare_amount( $cart_total, $currency_code ),
+			'nonce'                => [
 				'get_cart_total'    => wp_create_nonce( 'wcpay-get-cart-total' ),
 				'is_bnpl_available' => wp_create_nonce( 'wcpay-is-bnpl-available' ),
 			],
