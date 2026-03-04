@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { getExpressCheckoutButtonAppearance } from '..';
+import { getExpressCheckoutButtonAppearance } from '../button-appearance';
 
 describe( 'getExpressCheckoutButtonAppearance', () => {
 	afterEach( () => {

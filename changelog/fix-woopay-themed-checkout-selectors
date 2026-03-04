@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix themed checkout extracting incorrect accent/link colors by using more specific CSS selectors for links, headers, and footers
