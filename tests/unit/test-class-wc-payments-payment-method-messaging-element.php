@@ -215,9 +215,10 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 	}
 
 	/**
-	 * Test that BNPL appearance transients are included in the script data.
+	 * Test that no wcpayConfig inline script is injected, to avoid claiming the global
+	 * before WooPay's full config can load on product pages.
 	 */
-	public function test_init_includes_bnpl_appearance_transients() {
+	public function test_init_does_not_inject_wcpay_config_inline_script() {
 		$this->setup_gateway_mocks();
 
 		$product_page_appearance = [ 'theme' => 'stripe' ];
@@ -227,8 +228,11 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 
 		$this->messaging_element->init();
 
-		$script_data = $this->get_script_data();
-		$this->assertSame( $product_page_appearance, $script_data['upeBnplProductPageAppearance'] );
-		$this->assertSame( $classic_cart_appearance, $script_data['upeBnplClassicCartAppearance'] );
+		// No inline script should be added before WCPAY_PRODUCT_DETAILS.
+		$registered = wp_scripts()->registered['WCPAY_PRODUCT_DETAILS'];
+		$before     = $registered->extra['before'] ?? [];
+		$inline_js  = implode( '', $before );
+
+		$this->assertStringNotContainsString( 'wcpayConfig', $inline_js, 'No wcpayConfig inline script should be injected — it would break the WooPay button on product pages.' );
 	}
 }

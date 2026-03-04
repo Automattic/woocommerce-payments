@@ -159,12 +159,9 @@ class WC_Payments_Payment_Method_Messaging_Element {
 				'get_cart_total'    => wp_create_nonce( 'wcpay-get-cart-total' ),
 				'is_bnpl_available' => wp_create_nonce( 'wcpay-is-bnpl-available' ),
 			],
-			'wcAjaxUrl'                    => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'ajaxUrl'                      => admin_url( 'admin-ajax.php' ),
-			'saveUPEAppearanceNonce'       => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
-			'shouldInitializePMME'         => WC_Payments_Utils::is_any_bnpl_supporting_country( array_values( $bnpl_payment_methods ), $country, $currency_code ),
-			'upeBnplProductPageAppearance' => get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT ),
-			'upeBnplClassicCartAppearance' => get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT ),
+			'wcAjaxUrl'            => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'shouldInitializePMME' => WC_Payments_Utils::is_any_bnpl_supporting_country( array_values( $bnpl_payment_methods ), $country, $currency_code ),
+			'stylesCacheVersion'   => WC_Payments_Utils::get_styles_cache_version(),
 		];
 
 		if ( $product ) {

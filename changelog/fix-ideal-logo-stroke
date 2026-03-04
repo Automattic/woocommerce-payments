@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Fixed iDEAL | Wero logo: removed baked-in stroke causing double border in admin, fixed missing rounded corners on checkout, consolidated into a single SVG file, and added dark mode icon for night theme checkout
+Fixed iDEAL / Wero logo: removed baked-in stroke causing double border in admin, fixed missing rounded corners on checkout, consolidated into a single SVG file, and added dark mode icon for night theme checkout

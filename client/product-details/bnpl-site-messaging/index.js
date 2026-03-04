@@ -5,47 +5,17 @@
 import './style.scss';
 import WCPayAPI from 'wcpay/checkout/api';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import {
+	getCachedAppearance,
+	setCachedAppearance,
+	dispatchAppearanceEvent,
+} from 'wcpay/utils/appearance-cache';
 import apiRequest from 'wcpay/checkout/utils/request';
 
 const elementsLocations = {
-	bnplProductPage: {
-		configKey: 'upeBnplProductPageAppearance',
-		appearanceKey: 'bnpl_product_page',
-	},
-	bnplClassicCart: {
-		configKey: 'upeBnplClassicCartAppearance',
-		appearanceKey: 'bnpl_classic_cart',
-	},
+	bnplProductPage: 'bnpl_product_page',
+	bnplClassicCart: 'bnpl_classic_cart',
 };
-
-/**
- * Initializes the appearance of the payment element by retrieving the UPE configuration
- * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
- * it is simply returned.
- *
- * @param {Object} api The API object used to save the UPE configuration.
- * @param {string} location The location of the UPE.
- *
- * @return {Promise<Object>} The appearance object for the UPE.
- */
-async function initializeAppearance( api, location ) {
-	const { configKey, appearanceKey } = elementsLocations[ location ];
-
-	const messaging = window.wcpayStripeSiteMessaging;
-	const appearance = messaging?.[ configKey ];
-	if ( appearance ) {
-		return Promise.resolve( appearance );
-	}
-
-	return await api.saveUPEAppearance(
-		await getAppearance( appearanceKey ),
-		appearanceKey,
-		{
-			ajaxUrl: messaging?.ajaxUrl,
-			nonce: messaging?.saveUPEAppearanceNonce,
-		}
-	);
-}
 
 export const initializeBnplSiteMessaging = async () => {
 	const {
@@ -94,8 +64,17 @@ export const initializeBnplSiteMessaging = async () => {
 		countryCode: country, // Customer's country or base country of the store.
 	};
 
+	const location = elementsLocations[ elementLocation ];
+	const cacheVersion = window.wcpayStripeSiteMessaging.stylesCacheVersion;
+	let appearance = getCachedAppearance( location, cacheVersion );
+	if ( ! appearance ) {
+		appearance = getAppearance( location );
+		dispatchAppearanceEvent( appearance, location );
+		setCachedAppearance( location, cacheVersion, appearance );
+	}
+
 	const elementsOptions = {
-		appearance: await initializeAppearance( api, elementLocation ),
+		appearance,
 		fonts: getFontRulesFromPage(),
 	};
 
