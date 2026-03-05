@@ -9,13 +9,6 @@
 	width: 100%;
 }
 
-.wc-block-components-main
-	.wc-block-components-checkout-step--with-step-number
-	.wc-block-components-checkout-step__content
-	> :last-child {
-	padding: 0;
-}
-
 .wc-block-checkout__payment-method {
 	// Style the WooCommerce Blocks payment method label with icon.
 	// The markup has icon first, then text. We use flexbox with order to
