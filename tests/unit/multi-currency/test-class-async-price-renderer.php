@@ -196,6 +196,62 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Test that tag_sale_price_sr_text adds data attributes to screen reader spans.
+	 */
+	public function test_tag_sale_price_sr_text_adds_data_attributes() {
+		// Simulate wc_format_sale_price() output structure.
+		$html = '<del aria-hidden="true"><span class="woocommerce-Price-amount amount">$20.00</span></del> '
+			. '<span class="screen-reader-text">Original price was: $20.00.</span>'
+			. '<ins aria-hidden="true"><span class="woocommerce-Price-amount amount">$18.00</span></ins>'
+			. '<span class="screen-reader-text">Current price is: $18.00.</span>';
+
+		$result = $this->renderer->tag_sale_price_sr_text( $html, '20.00', '18.00' );
+
+		$this->assertStringContainsString( 'data-wcpay-sr-price="20.00"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-template="original_price"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-price="18.00"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-template="current_price"', $result );
+	}
+
+	/**
+	 * Test that tag_price_range_sr_text adds data attributes to screen reader span.
+	 */
+	public function test_tag_price_range_sr_text_adds_data_attributes() {
+		// Simulate wc_format_price_range() output structure.
+		$html = '<span class="woocommerce-Price-amount amount">$10.00</span>'
+			. ' <span aria-hidden="true">&ndash;</span> '
+			. '<span class="woocommerce-Price-amount amount">$20.00</span>'
+			. '<span class="screen-reader-text">Price range: $10.00 through $20.00</span>';
+
+		$result = $this->renderer->tag_price_range_sr_text( $html, '10.00', '20.00' );
+
+		$this->assertStringContainsString( 'data-wcpay-sr-price-from="10.00"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-price-to="20.00"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-template="price_range"', $result );
+	}
+
+	/**
+	 * Test that init_hooks registers sale price and price range filters.
+	 */
+	public function test_init_hooks_registers_sr_text_filters() {
+		$this->mock_multi_currency
+			->method( 'is_cache_optimized_mode' )
+			->willReturn( true );
+		$this->mock_multi_currency
+			->method( 'has_active_session' )
+			->willReturn( false );
+
+		$this->renderer->init_hooks();
+
+		$this->assertNotFalse(
+			has_filter( 'woocommerce_format_sale_price', [ $this->renderer, 'tag_sale_price_sr_text' ] )
+		);
+		$this->assertNotFalse(
+			has_filter( 'woocommerce_format_price_range', [ $this->renderer, 'tag_price_range_sr_text' ] )
+		);
+	}
+
+	/**
 	 * Clean up after tests.
 	 */
 	public function tear_down() {

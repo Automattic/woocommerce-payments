@@ -279,6 +279,94 @@ class WCPayAsyncPriceRenderer {
 	}
 
 	/**
+	 * Format a full price string with symbol for use in screen reader text.
+	 *
+	 * Unlike buildPriceBdi() which creates DOM elements, this returns a plain
+	 * string suitable for text content in screen reader spans.
+	 *
+	 * @param {string} formattedNumber The formatted number string (no symbol).
+	 * @param {Object} currency        The currency config object.
+	 * @return {string} The price string with symbol (e.g. "$10.00" or "10,00 €").
+	 */
+	formatPriceWithSymbol( formattedNumber, currency ) {
+		switch ( currency.symbol_pos ) {
+			case 'right':
+				return formattedNumber + currency.symbol;
+			case 'right_space':
+				return formattedNumber + '\u00a0' + currency.symbol;
+			case 'left_space':
+				return currency.symbol + '\u00a0' + formattedNumber;
+			default:
+				return currency.symbol + formattedNumber;
+		}
+	}
+
+	/**
+	 * Update screen reader text spans that accompany converted prices.
+	 *
+	 * WC core's wc_format_sale_price() and wc_format_price_range() generate
+	 * screen reader text with the default-currency price. After JS conversion
+	 * we update these spans with the converted price using the same i18n
+	 * templates WC core uses.
+	 *
+	 * @param {Object} currency The effective display currency.
+	 */
+	updateScreenReaderText( currency ) {
+		const i18n =
+			typeof wcpayAsyncPriceConfig !== 'undefined' &&
+			wcpayAsyncPriceConfig.i18n;
+		if ( ! i18n ) {
+			return;
+		}
+
+		// Sale price: "Original price was: %s." and "Current price is: %s."
+		document
+			.querySelectorAll( '[data-wcpay-sr-template]' )
+			.forEach( ( span ) => {
+				const template = span.getAttribute( 'data-wcpay-sr-template' );
+
+				if (
+					template === 'original_price' ||
+					template === 'current_price'
+				) {
+					const rawPrice = span.getAttribute( 'data-wcpay-sr-price' );
+					if ( ! rawPrice ) {
+						return;
+					}
+					const converted = this.convertPrice( rawPrice, 'product' );
+					const priceStr = this.formatPriceWithSymbol(
+						converted,
+						currency
+					);
+					const tpl =
+						template === 'original_price'
+							? i18n.original_price
+							: i18n.current_price;
+					span.textContent = tpl.replace( '%s', priceStr );
+				} else if ( template === 'price_range' ) {
+					const from = span.getAttribute(
+						'data-wcpay-sr-price-from'
+					);
+					const to = span.getAttribute( 'data-wcpay-sr-price-to' );
+					if ( ! from || ! to ) {
+						return;
+					}
+					const fromStr = this.formatPriceWithSymbol(
+						this.convertPrice( from, 'product' ),
+						currency
+					);
+					const toStr = this.formatPriceWithSymbol(
+						this.convertPrice( to, 'product' ),
+						currency
+					);
+					span.textContent = i18n.price_range
+						.replace( '%1$s', fromStr )
+						.replace( '%2$s', toStr );
+				}
+			} );
+	}
+
+	/**
 	 * Find all skeleton price elements and convert them.
 	 */
 	convertAllPrices() {
@@ -310,6 +398,8 @@ class WCPayAsyncPriceRenderer {
 			);
 			el.classList.add( 'wcpay-price-converted' );
 		} );
+
+		this.updateScreenReaderText( effectiveCurrency );
 	}
 
 	/**

@@ -55,6 +55,8 @@ class AsyncPriceRenderer {
 		}
 
 		add_filter( 'wc_price', [ $this, 'wrap_price_with_skeleton' ], 999, 5 );
+		add_filter( 'woocommerce_format_sale_price', [ $this, 'tag_sale_price_sr_text' ], 10, 3 );
+		add_filter( 'woocommerce_format_price_range', [ $this, 'tag_price_range_sr_text' ], 10, 3 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_async_renderer' ] );
 	}
 
@@ -97,6 +99,62 @@ class AsyncPriceRenderer {
 	}
 
 	/**
+	 * Add data attributes to screen-reader-text spans in sale price markup.
+	 *
+	 * WC core's wc_format_sale_price() generates screen-reader text like
+	 * "Original price was: $20.00." using wp_strip_all_tags() on the wc_price()
+	 * output. In async mode that text contains the default-currency price.
+	 * This filter marks those spans so JS can update them after conversion.
+	 *
+	 * @param string $price         The formatted sale price HTML.
+	 * @param string $regular_price The regular price.
+	 * @param string $sale_price    The sale price.
+	 *
+	 * @return string The modified HTML with data attributes on SR spans.
+	 */
+	public function tag_sale_price_sr_text( $price, $regular_price, $sale_price ) {
+		// Mark the "Original price was:" span with the regular price.
+		$price = preg_replace(
+			'/(<del[^>]*>.*?<\/del>\s*)<span class="screen-reader-text">/s',
+			'$1<span class="screen-reader-text" data-wcpay-sr-price="' . esc_attr( $regular_price ) . '" data-wcpay-sr-template="original_price">',
+			$price,
+			1
+		);
+
+		// Mark the "Current price is:" span with the sale price.
+		$price = preg_replace(
+			'/(<ins[^>]*>.*?<\/ins>)\s*<span class="screen-reader-text">/s',
+			'$1<span class="screen-reader-text" data-wcpay-sr-price="' . esc_attr( $sale_price ) . '" data-wcpay-sr-template="current_price">',
+			$price,
+			1
+		);
+
+		return $price;
+	}
+
+	/**
+	 * Add data attributes to screen-reader-text spans in price range markup.
+	 *
+	 * Similar to tag_sale_price_sr_text but for wc_format_price_range().
+	 *
+	 * @param string $price The formatted price range HTML.
+	 * @param string $from  The "from" price.
+	 * @param string $to    The "to" price.
+	 *
+	 * @return string The modified HTML with data attributes on SR spans.
+	 */
+	public function tag_price_range_sr_text( $price, $from, $to ) {
+		$price = preg_replace(
+			'/<span class="screen-reader-text">/',
+			'<span class="screen-reader-text" data-wcpay-sr-price-from="' . esc_attr( $from ) . '" data-wcpay-sr-price-to="' . esc_attr( $to ) . '" data-wcpay-sr-template="price_range">',
+			$price,
+			1
+		);
+
+		return $price;
+	}
+
+	/**
 	 * Enqueues the async price renderer script and styles.
 	 *
 	 * @return void
@@ -119,6 +177,16 @@ class AsyncPriceRenderer {
 					'thousand_sep' => wc_get_price_thousand_separator(),
 					'symbol_pos'   => get_option( 'woocommerce_currency_pos' ),
 				],
+				// phpcs:disable WordPress.WP.I18n.TextDomainMismatch -- Must use WC core domain to reuse its translations.
+				'i18n'            => [
+					/* translators: %s is a product's regular price. */
+					'original_price' => __( 'Original price was: %s.', 'woocommerce' ),
+					/* translators: %s is a product's current (sale) price. */
+					'current_price'  => __( 'Current price is: %s.', 'woocommerce' ),
+					/* translators: 1: price from 2: price to */
+					'price_range'    => __( 'Price range: %1$s through %2$s', 'woocommerce' ),
+				],
+				// phpcs:enable WordPress.WP.I18n.TextDomainMismatch
 			]
 		);
 

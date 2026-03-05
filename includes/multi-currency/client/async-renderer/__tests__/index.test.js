@@ -369,6 +369,83 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 	} );
 
+	describe( 'updateScreenReaderText', () => {
+		beforeEach( () => {
+			document.body.textContent = '';
+			global.wcpayAsyncPriceConfig = {
+				i18n: {
+					original_price: 'Original price was: %s.',
+					current_price: 'Current price is: %s.',
+					price_range: 'Price range: %1$s through %2$s',
+				},
+			};
+		} );
+
+		afterEach( () => {
+			delete global.wcpayAsyncPriceConfig;
+		} );
+
+		it( 'updates sale price screen reader spans with converted prices', () => {
+			const original = document.createElement( 'span' );
+			original.className = 'screen-reader-text';
+			original.setAttribute( 'data-wcpay-sr-price', '20.00' );
+			original.setAttribute( 'data-wcpay-sr-template', 'original_price' );
+			original.textContent = 'Original price was: $20.00.';
+			document.body.appendChild( original );
+
+			const current = document.createElement( 'span' );
+			current.className = 'screen-reader-text';
+			current.setAttribute( 'data-wcpay-sr-price', '18.00' );
+			current.setAttribute( 'data-wcpay-sr-template', 'current_price' );
+			current.textContent = 'Current price is: $18.00.';
+			document.body.appendChild( current );
+
+			renderer.updateScreenReaderText( mockConfig.currencies.EUR );
+
+			// 20 * 0.85 = 17, rounding ceil = 17, charm -0.01 = 16.99
+			expect( original.textContent ).toBe(
+				'Original price was: 16,99\u00a0\u20ac.'
+			);
+			// 18 * 0.85 = 15.30, rounding ceil = 16, charm -0.01 = 15.99
+			expect( current.textContent ).toBe(
+				'Current price is: 15,99\u00a0\u20ac.'
+			);
+		} );
+
+		it( 'updates price range screen reader spans', () => {
+			const range = document.createElement( 'span' );
+			range.className = 'screen-reader-text';
+			range.setAttribute( 'data-wcpay-sr-price-from', '10.00' );
+			range.setAttribute( 'data-wcpay-sr-price-to', '20.00' );
+			range.setAttribute( 'data-wcpay-sr-template', 'price_range' );
+			range.textContent = 'Price range: $10.00 through $20.00';
+			document.body.appendChild( range );
+
+			renderer.updateScreenReaderText( mockConfig.currencies.EUR );
+
+			// 10 * 0.85 = 8.50, ceil = 9, charm = 8.99
+			// 20 * 0.85 = 17, ceil = 17, charm = 16.99
+			expect( range.textContent ).toBe(
+				'Price range: 8,99\u00a0\u20ac through 16,99\u00a0\u20ac'
+			);
+		} );
+
+		it( 'does nothing when i18n config is missing', () => {
+			delete global.wcpayAsyncPriceConfig;
+
+			const span = document.createElement( 'span' );
+			span.setAttribute( 'data-wcpay-sr-template', 'original_price' );
+			span.setAttribute( 'data-wcpay-sr-price', '20.00' );
+			span.textContent = 'Original price was: $20.00.';
+			document.body.appendChild( span );
+
+			// Should not throw.
+			renderer.updateScreenReaderText( mockConfig.currencies.EUR );
+
+			expect( span.textContent ).toBe( 'Original price was: $20.00.' );
+		} );
+	} );
+
 	describe( 'showErrorState', () => {
 		const apiUrl =
 			'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config';
