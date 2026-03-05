@@ -337,35 +337,6 @@ export default class WCPayAPI {
 		return setupIntent;
 	}
 
-	/**
-	 * Saves the calculated UPE appearance values in a transient.
-	 *
-	 * @param {Object} appearance The UPE appearance object with style values
-	 * @param {string} elementsLocation The location of the elements.
-	 *
-	 * @return {Promise} The final promise for the request to the server.
-	 */
-	saveUPEAppearance( appearance, elementsLocation ) {
-		return this.request( getConfig( 'ajaxUrl' ), {
-			elements_location: elementsLocation,
-			appearance: JSON.stringify( appearance ),
-			action: 'save_upe_appearance',
-			// eslint-disable-next-line camelcase
-			_ajax_nonce: getConfig( 'saveUPEAppearanceNonce' ),
-		} )
-			.then( ( response ) => {
-				return response.data;
-			} )
-			.catch( ( error ) => {
-				if ( error.message ) {
-					throw error;
-				} else {
-					// Covers the case of error on the Ajaxrequest.
-					throw new Error( error.statusText );
-				}
-			} );
-	}
-
 	initWooPay( userEmail, woopayUserSession ) {
 		if ( ! this.isWooPayRequesting ) {
 			this.isWooPayRequesting = true;

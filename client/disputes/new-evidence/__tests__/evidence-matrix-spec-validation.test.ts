@@ -208,7 +208,7 @@ const implementedCombinations: CombinationSpec[] = [
 		reason: 'product_not_received',
 		productType: 'physical_product',
 		description:
-			'Product not received for physical product - needs receipt, signature, refund policy',
+			'Product not received for physical product - needs receipt, signature, refund policy. Shipping page also shows proof of delivery (customer_signature).',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,

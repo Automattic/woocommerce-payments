@@ -35,6 +35,9 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+		if ( ! empty( $payment_details['dynamic_title'] ) ) {
+			return $payment_details['dynamic_title'];
+		}
 		return null;
 	}
 
