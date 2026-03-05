@@ -82,6 +82,13 @@ export const generateAttachments = (
 	let attachmentCount = 0;
 
 	// Standard attachment definitions with optional restriction rules
+	// Array index determines default sort order in the cover letter.
+	// `orderForReasons` overrides use these indices — update if the array changes:
+	//   0: RECEIPT, 1: DUPLICATE_CHARGE_DOCUMENTATION, 2: ACCESS_ACTIVITY_LOG (fraudulent),
+	//   3: CUSTOMER_COMMUNICATION, 4: CUSTOMER_SIGNATURE, 5: REFUND_POLICY,
+	//   6: SHIPPING_DOCUMENTATION, 7: SERVICE_DOCUMENTATION, 8: ACCESS_ACTIVITY_LOG (non-fraudulent),
+	//   9: CANCELLATION_REBUTTAL, 10: CANCELLATION_POLICY, 11: UNCATEGORIZED_FILE
+	//
 	// Each attachment can specify:
 	// - `onlyForReasons`: only include for these dispute reasons
 	// - `onlyForProductTypes`: only include for these product types
