@@ -222,6 +222,16 @@ export const generateAttachments = (
 					productTypes: [ 'physical_product' ],
 				},
 			],
+			// For credit_not_processed with refund_has_been_issued, return tracking should
+			// appear after refund receipt (index 1) but before customer communication (index 3)
+			orderForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					order: 2,
+					refundStatuses: [ 'refund_has_been_issued' ],
+					productTypes: [ 'physical_product' ],
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
