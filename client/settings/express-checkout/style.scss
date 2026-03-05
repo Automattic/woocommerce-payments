@@ -12,7 +12,9 @@
 			}
 
 			.payment-method-item__action {
-				margin-top: 1.4em;
+				@include breakpoint( '<660px' ) {
+					margin-top: 1.4em;
+				}
 			}
 		}
 	}

@@ -14,6 +14,7 @@ const PaymentMethodItemCheckbox: React.FC< PaymentMethodItemCheckboxProps > = ( 
 	checked,
 	disabled,
 	onChange,
+	'data-testid': dataTestId,
 } ) => (
 	<div className="payment-method-item__checkbox">
 		<CheckboxControl
@@ -21,6 +22,7 @@ const PaymentMethodItemCheckbox: React.FC< PaymentMethodItemCheckboxProps > = ( 
 			checked={ checked }
 			disabled={ disabled }
 			onChange={ onChange }
+			data-testid={ dataTestId }
 			__nextHasNoMarginBottom
 		/>
 	</div>

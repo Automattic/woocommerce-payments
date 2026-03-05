@@ -53,6 +53,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 				checked={ isWooPayEnabled }
 				disabled={ isStripeLinkEnabled }
 				onChange={ updateIsWooPayEnabled }
+				data-testid="woopay-toggle"
 			/>
 			<PaymentMethodItem.Body>
 				<div>

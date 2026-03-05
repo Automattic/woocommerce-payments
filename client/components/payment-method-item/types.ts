@@ -14,6 +14,8 @@ export interface PaymentMethodItemCheckboxProps {
 	checked: boolean;
 	disabled?: boolean;
 	onChange: ( checked: boolean ) => void;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	'data-testid'?: string;
 }
 
 export interface PaymentMethodItemBodyProps {
