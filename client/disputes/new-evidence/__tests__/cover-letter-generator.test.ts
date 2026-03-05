@@ -295,7 +295,7 @@ describe( 'Cover Letter Generator', () => {
 				},
 			};
 			const result = generateAttachments( duplicateDispute );
-			// Verify the order: Order receipt, Any additional receipts, Customer communication, Store refund policy
+			// Verify the order: Order receipt, Any additional receipts, Customer communication, Refund policy
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
 			expect( result ).toContain(
 				'Any additional receipts (Attachment B)'
@@ -303,7 +303,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'Customer communication (Attachment C)'
 			);
-			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
 		} );
 
 		it( 'should include "Cancellation logs" for subscription_canceled disputes when cancellation_rebuttal is provided', () => {
@@ -476,7 +476,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'Customer communication (Attachment C)'
 			);
-			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 
@@ -502,7 +502,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'Customer communication (Attachment B)'
 			);
-			expect( result ).toContain( 'Store refund policy (Attachment C)' );
+			expect( result ).toContain( 'Refund policy (Attachment C)' );
 			expect( result ).toContain( "Item's condition (Attachment D)" );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
@@ -544,11 +544,11 @@ describe( 'Cover Letter Generator', () => {
 				'physical_product'
 			);
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( "Customer's signature (Attachment B)" );
 			expect( result ).toContain(
-				'Customer communication (Attachment B)'
+				'Customer communication (Attachment C)'
 			);
-			expect( result ).toContain( "Customer's signature (Attachment C)" );
-			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
 			expect( result ).toContain( "Item's condition (Attachment E)" );
 			expect( result ).toContain( 'Other documents (Attachment F)' );
 		} );
@@ -628,7 +628,7 @@ describe( 'Cover Letter Generator', () => {
 				'Customer communication (Attachment B)'
 			);
 			expect( result ).toContain( "Customer's signature (Attachment C)" );
-			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
 			expect( result ).toContain( 'Proof of shipping (Attachment E)' );
 			expect( result ).toContain( 'Other documents (Attachment F)' );
 		} );
@@ -660,7 +660,7 @@ describe( 'Cover Letter Generator', () => {
 				'Customer communication (Attachment C)'
 			);
 			expect( result ).toContain( "Customer's signature (Attachment D)" );
-			expect( result ).toContain( 'Store refund policy (Attachment E)' );
+			expect( result ).toContain( 'Refund policy (Attachment E)' );
 			expect( result ).toContain( 'Proof of shipping (Attachment F)' );
 			expect( result ).toContain( 'Other documents (Attachment G)' );
 		} );
@@ -731,14 +731,14 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Other documents' );
 			expect( result ).not.toContain( 'Customer communication' );
 
-			// Verify exact ordering: Proof of acceptance (A), Store refund policy (B), Other documents (C)
+			// Verify exact ordering: Proof of acceptance (A), Refund policy (B), Other documents (C)
 			const proofIndex = result.indexOf( 'Proof of acceptance' );
-			const refundPolicyIndex = result.indexOf( 'Store refund policy' );
+			const refundPolicyIndex = result.indexOf( 'Refund policy' );
 			const otherDocsIndex = result.indexOf( 'Other documents' );
 			expect( proofIndex ).toBeLessThan( refundPolicyIndex );
 			expect( refundPolicyIndex ).toBeLessThan( otherDocsIndex );
 			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
-			expect( result ).toContain( 'Store refund policy (Attachment B)' );
+			expect( result ).toContain( 'Refund policy (Attachment B)' );
 			expect( result ).toContain( 'Other documents (Attachment C)' );
 		} );
 

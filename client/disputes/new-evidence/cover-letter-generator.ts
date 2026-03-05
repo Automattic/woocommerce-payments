@@ -184,6 +184,13 @@ export const generateAttachments = (
 					],
 					productTypes: [ 'booking_reservation' ],
 				},
+				{
+					// For product_unacceptable with physical_product, customer communication
+					// should appear after customer's signature (index 4) to match the UI order
+					reasons: [ 'product_unacceptable' ],
+					order: 5,
+					productTypes: [ 'physical_product' ],
+				},
 			],
 		},
 		{
@@ -194,7 +201,15 @@ export const generateAttachments = (
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
-			label: __( 'Store refund policy', 'woocommerce-payments' ),
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			// For subscription_canceled, refund policy should appear after cancellation logs (index 9).
+			// For duplicate, refund policy should appear after proof of active subscription (index 8).
+			orderForReasons: [
+				{
+					reasons: [ 'subscription_canceled', 'duplicate' ],
+					order: 10,
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,

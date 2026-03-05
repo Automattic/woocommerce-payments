@@ -123,7 +123,7 @@ const implementedCombinations: CombinationSpec[] = [
 				'Order receipt',
 				'Prior undisputed transaction history',
 				"Customer's signature",
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -238,12 +238,11 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
-			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Order receipt',
 				'Customer communication',
 				"Customer's signature",
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -289,7 +288,7 @@ const implementedCombinations: CombinationSpec[] = [
 				"Item's condition",
 				'Customer communication',
 				"Customer's signature",
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -324,11 +323,10 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
-			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Event or booking documentation',
 				'Order receipt',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [ "Customer's signature" ],
@@ -431,7 +429,7 @@ const implementedCombinations: CombinationSpec[] = [
 			],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
-				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Store refund policy',
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
@@ -439,7 +437,7 @@ const implementedCombinations: CombinationSpec[] = [
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Order receipt',
-				'Store refund policy',
+				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -477,11 +475,10 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
-			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Order receipt',
 				'Refund receipt',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -514,11 +511,10 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
-			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Order receipt',
 				'Any additional receipts',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -595,7 +591,7 @@ const implementedCombinations: CombinationSpec[] = [
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Proof of acceptance',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [ "Customer's signature" ],
@@ -637,7 +633,7 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Cancellation logs',
-				'Store refund policy',
+				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -682,7 +678,7 @@ const implementedCombinations: CombinationSpec[] = [
 				'Order receipt',
 				'Refund receipt',
 				'Proof of active subscription',
-				'Store refund policy',
+				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -719,7 +715,7 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Any additional receipts',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -767,7 +763,7 @@ const implementedCombinations: CombinationSpec[] = [
 				'Return tracking',
 				'Customer communication',
 				"Customer's signature",
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -808,7 +804,7 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Proof of acceptance',
 				'Customer communication',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],

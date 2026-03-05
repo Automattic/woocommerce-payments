@@ -351,7 +351,7 @@ const getSubscriptionCanceledMatrix = (): {
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
-			label: __( 'Store refund policy', 'woocommerce-payments' ),
+			label: __( 'Refund policy', 'woocommerce-payments' ),
 			description: __(
 				"A screenshot of your store's refund policy.",
 				'woocommerce-payments'
