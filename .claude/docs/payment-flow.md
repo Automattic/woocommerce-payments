@@ -1,6 +1,6 @@
 # Payment Flow — Detailed Reference
 
-**Last updated:** 2026-02-20
+**Last updated:** 2026-03-04
 
 This documents the exact call chain for payment operations in WooPayments. Read this when working on payment processing, refunds, or API communication.
 
@@ -167,6 +167,20 @@ Key difference from shortcode path: The shortcode path uses `should_show_express
 | `List_Transactions` | `transactions` | GET | Admin transaction list |
 | `List_Disputes` | `disputes` | GET | Admin dispute list |
 | (direct) | `disputes/{id}/summary` | GET | Fetch dispute summary (webhook-only, no Request class) |
+
+## Stripe Elements Appearance Caching
+
+Appearance objects for Stripe Elements are cached **client-side in localStorage** (`wcpay_appearance_<location>`). The cache is versioned via `stylesCacheVersion` (MD5 hash of theme styles + plugin version), passed from PHP through `wcpayConfig`.
+
+**Locations:** `checkout`, `blocks_checkout`, `bnpl_product_page`, `bnpl_cart_block`, `add_payment_method`
+
+**Cache flow:** `getCachedAppearance()` → cache hit? return it : `getAppearance(location)` → `dispatchAppearanceEvent(appearance, location)` → `setCachedAppearance(location, version, appearance)`
+
+**CustomEvent hook:** `wcpay_elements_appearance` — synchronous CustomEvent dispatched before caching. Merchants modify `event.detail.appearance` in place. Replaces the removed PHP `apply_filters('wcpay_elements_appearance')`.
+
+**Dark icon detection (server-rendered pages):** The order success page uses `data-dark-src` on `<img>` tags + inline JS in `wp_footer` that computes background luminance via `getComputedStyle()` to swap icons for dark themes.
+
+**Key files:** `client/utils/appearance-cache.js`, `client/checkout/classic/payment-processing.js`, `client/checkout/blocks/payment-elements.js`, `includes/class-wc-payments-order-success-page.php`
 
 ## Plugin Initialization Chain
 
