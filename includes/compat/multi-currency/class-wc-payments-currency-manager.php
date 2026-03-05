@@ -12,7 +12,7 @@ use WC_Payment_Gateway_WCPay;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * It ensures that when a payment method is added and multi-currency is enabled, the needed currency is also added.
+ * Ensures that when a payment method is enabled and multi-currency is active, at least one of its supported currencies is also enabled.
  */
 class WC_Payments_Currency_Manager {
 	/**
