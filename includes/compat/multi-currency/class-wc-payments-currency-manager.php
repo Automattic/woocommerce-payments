@@ -94,7 +94,7 @@ class WC_Payments_Currency_Manager {
 	 * Ensures that when a payment method is enabled, at least one of its supported currencies is also enabled.
 	 *
 	 * Payment methods that support multiple currencies (e.g. P24 supports EUR and PLN) only need one of them
-	 * to be enabled. If none are enabled, all supported currencies are added. If at least one is already
+	 * to be enabled. If none are enabled, all available supported currencies are added. If at least one is already
 	 * enabled, no changes are made.
 	 */
 	public function maybe_add_currencies_for_enabled_payment_methods() {

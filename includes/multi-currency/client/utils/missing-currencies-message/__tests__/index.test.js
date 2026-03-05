@@ -22,7 +22,7 @@ describe( 'getMissingCurrenciesTooltipMessage', () => {
 		expect(
 			getMissingCurrenciesTooltipMessage( 'x', [ 'EUR', 'PLN', 'TRY' ] )
 		).toBe(
-			'x requires at least one of the following currencies: EUR or PLN or TRY. You must add at least one of these currencies to your store.'
+			'x requires at least one of the following currencies: EUR, PLN, or TRY. You must add at least one of these currencies to your store.'
 		);
 	} );
 } );
