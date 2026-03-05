@@ -87,6 +87,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 10.6.0-test-1 - unreleased =
+
+
 = 10.6.0 - 2026-03-11 =
 * Add - Add credit_not_processed evidence for booking/reservation (refund has been issued)
 * Add - Add E2E testing skill and automated local setup script for running Playwright E2E tests against a local Transact Platform Server
