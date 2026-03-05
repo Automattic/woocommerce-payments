@@ -15,6 +15,7 @@ use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
 use WC_Payments_Fraud_Service;
+use WC_Payments_Styles_Cache;
 use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
@@ -219,7 +220,7 @@ class WC_Payments_Checkout {
 		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
 		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
 		$payment_fields['currency']                 = get_woocommerce_currency();
-		$payment_fields['stylesCacheVersion']       = WC_Payments_Utils::get_styles_cache_version();
+		$payment_fields['stylesCacheVersion']       = WC_Payments_Styles_Cache::get_styles_cache_version();
 		$cart_total                                 = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
 		$payment_fields['cartTotal']                = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 
