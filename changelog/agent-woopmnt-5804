@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Extract styles cache methods from WC_Payments_Utils into dedicated WC_Payments_Styles_Cache class
