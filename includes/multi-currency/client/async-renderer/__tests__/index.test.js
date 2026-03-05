@@ -85,7 +85,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			const span = document.createElement( 'span' );
 			span.setAttribute( 'data-wcpay-price', '10' );
-			const skeleton = document.createElement( 'span' );
+			const skeleton = document.createElement( 'bdi' );
 			skeleton.className = 'wcpay-price-skeleton';
 			span.appendChild( skeleton );
 			document.body.appendChild( span );
@@ -105,7 +105,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			const wrapper = document.createElement( 'span' );
 			wrapper.setAttribute( 'data-wcpay-price', '10.00' );
-			const skeleton = document.createElement( 'span' );
+			const skeleton = document.createElement( 'bdi' );
 			skeleton.className = 'wcpay-price-skeleton';
 			wrapper.appendChild( skeleton );
 			document.body.appendChild( wrapper );
@@ -137,7 +137,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			const wrapper = document.createElement( 'span' );
 			wrapper.setAttribute( 'data-wcpay-price', '10.00' );
-			const skeleton = document.createElement( 'span' );
+			const skeleton = document.createElement( 'bdi' );
 			skeleton.className = 'wcpay-price-skeleton';
 			wrapper.appendChild( skeleton );
 			document.body.appendChild( wrapper );
@@ -297,12 +297,13 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 
 		it( 'converts skeleton elements to formatted prices', () => {
-			// Build test DOM using safe DOM methods.
+			// Build test DOM matching SSR markup: wrapper IS woocommerce-Price-amount.
 			const span = document.createElement( 'span' );
-			span.className = 'wcpay-async-price';
+			span.className =
+				'woocommerce-Price-amount amount wcpay-async-price';
 			span.setAttribute( 'data-wcpay-price', '10' );
 			span.setAttribute( 'data-wcpay-price-type', 'product' );
-			const skeleton = document.createElement( 'span' );
+			const skeleton = document.createElement( 'bdi' );
 			skeleton.className = 'wcpay-price-skeleton';
 			span.appendChild( skeleton );
 			document.body.appendChild( span );
@@ -314,24 +315,25 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				true
 			);
 			expect( el.querySelector( '.wcpay-price-skeleton' ) ).toBeNull();
+			// The <bdi> is appended directly — no extra wrapper.
+			const bdi = el.querySelector( 'bdi' );
+			expect( bdi ).not.toBeNull();
 			expect(
-				el.querySelector( '.woocommerce-Price-amount' )
+				bdi.querySelector( '.woocommerce-Price-currencySymbol' )
 			).not.toBeNull();
 			expect(
-				el.querySelector( '.woocommerce-Price-currencySymbol' )
-			).not.toBeNull();
-			expect(
-				el.querySelector( '.woocommerce-Price-currencySymbol' )
+				bdi.querySelector( '.woocommerce-Price-currencySymbol' )
 					.textContent
 			).toBe( '\u20ac' ); // EUR is selected_currency in mockConfig
 		} );
 
 		it( 'removes SSR placeholder when converting', () => {
 			const span = document.createElement( 'span' );
-			span.className = 'wcpay-async-price';
+			span.className =
+				'woocommerce-Price-amount amount wcpay-async-price';
 			span.setAttribute( 'data-wcpay-price', '10' );
 			span.setAttribute( 'data-wcpay-price-type', 'product' );
-			const skeleton = document.createElement( 'span' );
+			const skeleton = document.createElement( 'bdi' );
 			skeleton.className = 'wcpay-price-skeleton';
 			span.appendChild( skeleton );
 			const placeholder = document.createElement( 'span' );
@@ -350,21 +352,20 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 		it( 'skips already converted elements', () => {
 			const span = document.createElement( 'span' );
-			span.className = 'wcpay-async-price wcpay-price-converted';
+			span.className =
+				'woocommerce-Price-amount amount wcpay-async-price wcpay-price-converted';
 			span.setAttribute( 'data-wcpay-price', '10' );
 			span.setAttribute( 'data-wcpay-price-type', 'product' );
-			const amount = document.createElement( 'span' );
-			amount.className = 'woocommerce-Price-amount amount';
-			amount.textContent = '8,99\u00a0\u20ac';
-			span.appendChild( amount );
+			const bdi = document.createElement( 'bdi' );
+			bdi.textContent = '8,99\u00a0\u20ac';
+			span.appendChild( bdi );
 			document.body.appendChild( span );
 
 			renderer.convertAllPrices();
 
-			const amounts = document.querySelectorAll(
-				'.woocommerce-Price-amount'
-			);
-			expect( amounts.length ).toBe( 1 );
+			// Should still have only one <bdi> (not append another).
+			const bdis = span.querySelectorAll( 'bdi' );
+			expect( bdis.length ).toBe( 1 );
 		} );
 	} );
 
@@ -383,7 +384,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		const createPriceWrapper = ( price = '10.00' ) => {
 			const wrapper = document.createElement( 'span' );
 			wrapper.setAttribute( 'data-wcpay-price', price );
-			const skeleton = document.createElement( 'span' );
+			const skeleton = document.createElement( 'bdi' );
 			skeleton.className = 'wcpay-price-skeleton';
 			wrapper.appendChild( skeleton );
 			document.body.appendChild( wrapper );
@@ -413,16 +414,15 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			expect(
 				wrapper.querySelector( '.wcpay-price-skeleton' )
 			).toBeNull();
-			const priceEl = wrapper.querySelector(
-				'.woocommerce-Price-amount'
-			);
-			expect( priceEl ).not.toBeNull();
-			expect( priceEl.textContent ).toBe( '$10.00' );
+			// <bdi> is appended directly into wrapper.
+			const bdi = wrapper.querySelector( 'bdi' );
+			expect( bdi ).not.toBeNull();
+			expect( bdi.textContent ).toBe( '$10.00' );
 			expect(
-				priceEl.querySelector( '.woocommerce-Price-currencySymbol' )
+				bdi.querySelector( '.woocommerce-Price-currencySymbol' )
 			).not.toBeNull();
 			expect(
-				priceEl.querySelector( '.woocommerce-Price-currencySymbol' )
+				bdi.querySelector( '.woocommerce-Price-currencySymbol' )
 					.textContent
 			).toBe( '$' );
 		} );
@@ -474,33 +474,31 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 	} );
 
-	describe( 'buildPriceElement', () => {
-		it( 'creates woocommerce-Price-amount with symbol class for left position', () => {
-			const el = renderer.buildPriceElement(
+	describe( 'buildPriceBdi', () => {
+		it( 'creates bdi with symbol class for left position', () => {
+			const bdi = renderer.buildPriceBdi(
 				'10.50',
 				mockConfig.currencies.USD
 			);
-			expect( el.className ).toBe( 'woocommerce-Price-amount amount' );
-			const bdi = el.querySelector( 'bdi' );
-			expect( bdi ).not.toBeNull();
+			expect( bdi.tagName ).toBe( 'BDI' );
 			const symbol = bdi.querySelector(
 				'.woocommerce-Price-currencySymbol'
 			);
 			expect( symbol ).not.toBeNull();
 			expect( symbol.textContent ).toBe( '$' );
-			expect( el.textContent ).toBe( '$10.50' );
+			expect( bdi.textContent ).toBe( '$10.50' );
 		} );
 
 		it( 'creates correct markup for right_space position', () => {
-			const el = renderer.buildPriceElement(
+			const bdi = renderer.buildPriceBdi(
 				'8,99',
 				mockConfig.currencies.EUR
 			);
-			const symbol = el.querySelector(
+			const symbol = bdi.querySelector(
 				'.woocommerce-Price-currencySymbol'
 			);
 			expect( symbol.textContent ).toBe( '\u20ac' );
-			expect( el.textContent ).toBe( '8,99\u00a0\u20ac' );
+			expect( bdi.textContent ).toBe( '8,99\u00a0\u20ac' );
 		} );
 
 		it( 'creates correct markup for left_space position', () => {
@@ -508,12 +506,12 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				...mockConfig.currencies.USD,
 				symbol_pos: 'left_space',
 			};
-			const el = renderer.buildPriceElement( '10.50', currency );
-			const symbol = el.querySelector(
+			const bdi = renderer.buildPriceBdi( '10.50', currency );
+			const symbol = bdi.querySelector(
 				'.woocommerce-Price-currencySymbol'
 			);
 			expect( symbol.textContent ).toBe( '$' );
-			expect( el.textContent ).toBe( '$\u00a010.50' );
+			expect( bdi.textContent ).toBe( '$\u00a010.50' );
 		} );
 
 		it( 'creates correct markup for right position', () => {
@@ -521,12 +519,12 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				...mockConfig.currencies.USD,
 				symbol_pos: 'right',
 			};
-			const el = renderer.buildPriceElement( '10.50', currency );
-			const symbol = el.querySelector(
+			const bdi = renderer.buildPriceBdi( '10.50', currency );
+			const symbol = bdi.querySelector(
 				'.woocommerce-Price-currencySymbol'
 			);
 			expect( symbol.textContent ).toBe( '$' );
-			expect( el.textContent ).toBe( '10.50$' );
+			expect( bdi.textContent ).toBe( '10.50$' );
 		} );
 	} );
 

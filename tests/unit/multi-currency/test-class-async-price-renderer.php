@@ -53,10 +53,12 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 			10.00
 		);
 
+		$this->assertStringContainsString( 'woocommerce-Price-amount', $result );
 		$this->assertStringContainsString( 'wcpay-async-price', $result );
 		$this->assertStringContainsString( 'data-wcpay-price="10"', $result );
 		$this->assertStringContainsString( 'data-wcpay-price-type="product"', $result );
-		$this->assertStringContainsString( 'wcpay-price-skeleton', $result );
+		// Skeleton is a <bdi> to match wc_price() structure.
+		$this->assertStringContainsString( '<bdi class="wcpay-price-skeleton"></bdi>', $result );
 		// Screen-reader placeholder for crawlers and a11y before JS loads.
 		$this->assertStringContainsString( 'wcpay-price-placeholder', $result );
 		$this->assertStringContainsString( 'screen-reader-text', $result );

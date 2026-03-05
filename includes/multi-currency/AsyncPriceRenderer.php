@@ -82,8 +82,14 @@ class AsyncPriceRenderer {
 		// The screen-reader-text placeholder contains the original WC-formatted
 		// price so crawlers and screen readers on slow connections see a real
 		// price before JS loads. JS removes it after successful conversion.
+		//
+		// The wrapper reuses the woocommerce-Price-amount/amount classes so the
+		// DOM hierarchy matches what wc_price() normally produces. This avoids
+		// an extra nesting level that could break theme CSS selectors like
+		// `.price > .woocommerce-Price-amount`. JS replaces the <bdi> contents
+		// in-place rather than appending a new child element.
 		return sprintf(
-			'<span class="wcpay-async-price" data-wcpay-price="%s" data-wcpay-price-type="%s"><span class="wcpay-price-skeleton"></span><span class="screen-reader-text wcpay-price-placeholder">%s</span></span>',
+			'<span class="woocommerce-Price-amount amount wcpay-async-price" data-wcpay-price="%s" data-wcpay-price-type="%s"><bdi class="wcpay-price-skeleton"></bdi><span class="screen-reader-text wcpay-price-placeholder">%s</span></span>',
 			esc_attr( $price ),
 			esc_attr( $price_type ),
 			wp_kses_post( $return )

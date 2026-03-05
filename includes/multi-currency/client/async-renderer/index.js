@@ -231,12 +231,14 @@ class WCPayAsyncPriceRenderer {
 	}
 
 	/**
-	 * Build a WooCommerce-compatible price DOM element.
+	 * Build a <bdi> element with the formatted price content.
 	 *
-	 * Produces markup matching wc_price() output:
-	 * <span class="woocommerce-Price-amount amount">
+	 * The caller is responsible for the outer
+	 * <span class="woocommerce-Price-amount amount"> wrapper — the SSR markup
+	 * already provides it, so JS only needs to replace the <bdi> contents.
+	 *
+	 * Produces:
 	 *   <bdi><span class="woocommerce-Price-currencySymbol">€</span>22,00</bdi>
-	 * </span>
 	 *
 	 * The symbol and number are assembled from separate pieces (mirroring how
 	 * PHP's wc_price() uses sprintf with the price_format pattern), so no
@@ -244,11 +246,9 @@ class WCPayAsyncPriceRenderer {
 	 *
 	 * @param {string} formattedNumber The formatted number string (no symbol).
 	 * @param {Object} currency        The currency config object.
-	 * @return {Element} The assembled price element.
+	 * @return {Element} The <bdi> element.
 	 */
-	buildPriceElement( formattedNumber, currency ) {
-		const span = document.createElement( 'span' );
-		span.className = 'woocommerce-Price-amount amount';
+	buildPriceBdi( formattedNumber, currency ) {
 		const bdi = document.createElement( 'bdi' );
 		const symbolSpan = document.createElement( 'span' );
 		symbolSpan.className = 'woocommerce-Price-currencySymbol';
@@ -275,8 +275,7 @@ class WCPayAsyncPriceRenderer {
 				bdi.appendChild( document.createTextNode( formattedNumber ) );
 		}
 
-		span.appendChild( bdi );
-		return span;
+		return bdi;
 	}
 
 	/**
@@ -302,12 +301,12 @@ class WCPayAsyncPriceRenderer {
 
 			const converted = this.convertPrice( price, type );
 
-			// Remove skeleton and SSR placeholder.
+			// Replace skeleton <bdi> and remove SSR placeholder.
 			el.querySelector( '.wcpay-price-skeleton' )?.remove();
 			el.querySelector( '.wcpay-price-placeholder' )?.remove();
 
 			el.appendChild(
-				this.buildPriceElement( converted, effectiveCurrency )
+				this.buildPriceBdi( converted, effectiveCurrency )
 			);
 			el.classList.add( 'wcpay-price-converted' );
 		} );
@@ -414,7 +413,7 @@ class WCPayAsyncPriceRenderer {
 					// Remove placeholder; the converted element replaces it.
 					el.querySelector( '.wcpay-price-placeholder' )?.remove();
 					el.appendChild(
-						this.buildPriceElement( formatted, defaultCurrency )
+						this.buildPriceBdi( formatted, defaultCurrency )
 					);
 					el.classList.add( 'wcpay-price-converted' );
 					return;
