@@ -208,7 +208,7 @@ class WCPayAsyncPriceRenderer {
 	 *
 	 * @param {Decimal} price    The price as a Decimal.
 	 * @param {Object}  currency The currency config object.
-	 * @return {string} The formatted price string.
+	 * @return {string} The formatted number string (no symbol).
 	 */
 	formatPrice( price, currency ) {
 		const fixed = price.toFixed( currency.decimals );
@@ -227,20 +227,56 @@ class WCPayAsyncPriceRenderer {
 			formattedNumber += currency.decimal_sep + decimalPart;
 		}
 
-		const symbol = currency.symbol;
+		return formattedNumber;
+	}
+
+	/**
+	 * Build a WooCommerce-compatible price DOM element.
+	 *
+	 * Produces markup matching wc_price() output:
+	 * <span class="woocommerce-Price-amount amount">
+	 *   <bdi><span class="woocommerce-Price-currencySymbol">€</span>22,00</bdi>
+	 * </span>
+	 *
+	 * The symbol and number are assembled from separate pieces (mirroring how
+	 * PHP's wc_price() uses sprintf with the price_format pattern), so no
+	 * string-slicing heuristics are needed.
+	 *
+	 * @param {string} formattedNumber The formatted number string (no symbol).
+	 * @param {Object} currency        The currency config object.
+	 * @return {Element} The assembled price element.
+	 */
+	buildPriceElement( formattedNumber, currency ) {
+		const span = document.createElement( 'span' );
+		span.className = 'woocommerce-Price-amount amount';
+		const bdi = document.createElement( 'bdi' );
+		const symbolSpan = document.createElement( 'span' );
+		symbolSpan.className = 'woocommerce-Price-currencySymbol';
+		symbolSpan.textContent = currency.symbol;
 
 		switch ( currency.symbol_pos ) {
-			case 'left':
-				return symbol + formattedNumber;
-			case 'left_space':
-				return symbol + '\u00a0' + formattedNumber;
 			case 'right':
-				return formattedNumber + symbol;
+				bdi.appendChild( document.createTextNode( formattedNumber ) );
+				bdi.appendChild( symbolSpan );
+				break;
 			case 'right_space':
-				return formattedNumber + '\u00a0' + symbol;
+				bdi.appendChild( document.createTextNode( formattedNumber ) );
+				bdi.appendChild( document.createTextNode( '\u00a0' ) );
+				bdi.appendChild( symbolSpan );
+				break;
+			case 'left_space':
+				bdi.appendChild( symbolSpan );
+				bdi.appendChild( document.createTextNode( '\u00a0' ) );
+				bdi.appendChild( document.createTextNode( formattedNumber ) );
+				break;
 			default:
-				return symbol + formattedNumber;
+				// 'left' or unknown: symbol precedes number with no space.
+				bdi.appendChild( symbolSpan );
+				bdi.appendChild( document.createTextNode( formattedNumber ) );
 		}
+
+		span.appendChild( bdi );
+		return span;
 	}
 
 	/**
@@ -251,6 +287,14 @@ class WCPayAsyncPriceRenderer {
 			'[data-wcpay-price]:not(.wcpay-price-converted)'
 		);
 
+		// Determine the effective display currency (mirrors convertPrice() logic).
+		const selectedCode = this.config.selected_currency;
+		const selectedCurrency = this.config.currencies[ selectedCode ];
+		const effectiveCurrency =
+			! selectedCurrency || selectedCode === this.config.default_currency
+				? this.config.currencies[ this.config.default_currency ]
+				: selectedCurrency;
+
 		elements.forEach( ( el ) => {
 			const price = el.getAttribute( 'data-wcpay-price' );
 			const type =
@@ -258,20 +302,13 @@ class WCPayAsyncPriceRenderer {
 
 			const converted = this.convertPrice( price, type );
 
-			// Replace skeleton with converted price.
-			const skeleton = el.querySelector( '.wcpay-price-skeleton' );
-			if ( skeleton ) {
-				skeleton.remove();
-			}
+			// Remove skeleton and SSR placeholder.
+			el.querySelector( '.wcpay-price-skeleton' )?.remove();
+			el.querySelector( '.wcpay-price-placeholder' )?.remove();
 
-			const priceSpan = document.createElement( 'span' );
-			priceSpan.className = 'woocommerce-Price-amount amount';
-			// Wrap in <bdi> to match wc_price() markup and preserve RTL rendering.
-			const bdi = document.createElement( 'bdi' );
-			bdi.textContent = converted;
-			priceSpan.appendChild( bdi );
-			el.appendChild( priceSpan );
-
+			el.appendChild(
+				this.buildPriceElement( converted, effectiveCurrency )
+			);
 			el.classList.add( 'wcpay-price-converted' );
 		} );
 	}
@@ -373,15 +410,12 @@ class WCPayAsyncPriceRenderer {
 						new Decimal( rawPrice ),
 						defaultCurrency
 					);
-					if ( skeleton ) {
-						skeleton.remove();
-					}
-					const priceSpan = document.createElement( 'span' );
-					priceSpan.className = 'woocommerce-Price-amount amount';
-					const bdi = document.createElement( 'bdi' );
-					bdi.textContent = formatted;
-					priceSpan.appendChild( bdi );
-					el.appendChild( priceSpan );
+					skeleton?.remove();
+					// Remove placeholder; the converted element replaces it.
+					el.querySelector( '.wcpay-price-placeholder' )?.remove();
+					el.appendChild(
+						this.buildPriceElement( formatted, defaultCurrency )
+					);
 					el.classList.add( 'wcpay-price-converted' );
 					return;
 				} catch ( e ) {
@@ -389,6 +423,7 @@ class WCPayAsyncPriceRenderer {
 				}
 			}
 
+			// Em dash fallback: placeholder stays for screen readers.
 			if ( skeleton ) {
 				skeleton.classList.remove( 'wcpay-price-skeleton' );
 				skeleton.classList.add( 'wcpay-price-error' );

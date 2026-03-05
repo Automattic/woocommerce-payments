@@ -160,7 +160,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			// Rounding 1.00: ceil(8.50 / 1) * 1 = 9
 			// Charm: 9 + (-0.01) = 8.99
 			const result = renderer.convertPrice( '10.00', 'product' );
-			expect( result ).toBe( '8,99\u00a0\u20ac' );
+			expect( result ).toBe( '8,99' );
 		} );
 
 		it( 'converts a shipping price with rounding but no charm (charm_only_products=true)', () => {
@@ -168,7 +168,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			// Rounding 1.00: ceil(8.50 / 1) * 1 = 9
 			// No charm for shipping when charm_only_products is true
 			const result = renderer.convertPrice( '10.00', 'shipping' );
-			expect( result ).toBe( '9,00\u00a0\u20ac' );
+			expect( result ).toBe( '9,00' );
 		} );
 
 		it( 'applies charm to shipping when charm_only_products is false', () => {
@@ -181,28 +181,28 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			// Rounding 1.00: ceil(8.50 / 1) * 1 = 9
 			// Charm: 9 + (-0.01) = 8.99
 			const result = renderer.convertPrice( '10.00', 'shipping' );
-			expect( result ).toBe( '8,99\u00a0\u20ac' );
+			expect( result ).toBe( '8,99' );
 		} );
 
 		it( 'converts a tax amount without rounding', () => {
 			// 1.50 USD * 0.85 = 1.275 EUR
 			// Tax: round to 2 decimals = 1.28
 			const result = renderer.convertPrice( '1.50', 'tax' );
-			expect( result ).toBe( '1,28\u00a0\u20ac' );
+			expect( result ).toBe( '1,28' );
 		} );
 
 		it( 'converts a coupon amount without rounding', () => {
 			// 5.00 USD * 0.85 = 4.25 EUR
 			// Coupon: round to 2 decimals = 4.25
 			const result = renderer.convertPrice( '5.00', 'coupon' );
-			expect( result ).toBe( '4,25\u00a0\u20ac' );
+			expect( result ).toBe( '4,25' );
 		} );
 
 		it( 'converts an exchange_rate amount without rounding', () => {
 			// 5.00 USD * 0.85 = 4.25 EUR
 			// exchange_rate: round to 2 decimals = 4.25
 			const result = renderer.convertPrice( '5.00', 'exchange_rate' );
-			expect( result ).toBe( '4,25\u00a0\u20ac' );
+			expect( result ).toBe( '4,25' );
 		} );
 
 		it( 'returns same currency price when selected equals default', () => {
@@ -212,7 +212,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			};
 
 			const result = renderer.convertPrice( '10.00', 'product' );
-			expect( result ).toBe( '$10.00' );
+			expect( result ).toBe( '10.00' );
 		} );
 
 		it( 'never returns negative prices', () => {
@@ -229,7 +229,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			};
 
 			const result = renderer.convertPrice( '0.50', 'product' );
-			expect( result ).toBe( '0,00\u00a0\u20ac' );
+			expect( result ).toBe( '0,00' );
 		} );
 
 		it( 'caches converted prices', () => {
@@ -254,22 +254,22 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	} );
 
 	describe( 'formatPrice', () => {
-		it( 'formats with left symbol position', () => {
+		it( 'formats number with correct decimals and separators', () => {
 			const Decimal = require( 'decimal.js-light' );
 			const result = renderer.formatPrice(
 				new Decimal( '10.50' ),
 				mockConfig.currencies.USD
 			);
-			expect( result ).toBe( '$10.50' );
+			expect( result ).toBe( '10.50' );
 		} );
 
-		it( 'formats with right_space symbol position', () => {
+		it( 'uses currency decimal separator', () => {
 			const Decimal = require( 'decimal.js-light' );
 			const result = renderer.formatPrice(
 				new Decimal( '8.99' ),
 				mockConfig.currencies.EUR
 			);
-			expect( result ).toBe( '8,99\u00a0\u20ac' );
+			expect( result ).toBe( '8,99' );
 		} );
 
 		it( 'formats zero-decimal currencies correctly', () => {
@@ -278,7 +278,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				new Decimal( '1100' ),
 				mockConfig.currencies.JPY
 			);
-			expect( result ).toBe( '\u00a51,100' );
+			expect( result ).toBe( '1,100' );
 		} );
 
 		it( 'adds thousand separators correctly', () => {
@@ -287,25 +287,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				new Decimal( '1234567.89' ),
 				mockConfig.currencies.USD
 			);
-			expect( result ).toBe( '$1,234,567.89' );
-		} );
-
-		it( 'formats with left_space symbol position', () => {
-			const Decimal = require( 'decimal.js-light' );
-			const result = renderer.formatPrice( new Decimal( '10.50' ), {
-				...mockConfig.currencies.USD,
-				symbol_pos: 'left_space',
-			} );
-			expect( result ).toBe( '$\u00a010.50' );
-		} );
-
-		it( 'formats with right symbol position', () => {
-			const Decimal = require( 'decimal.js-light' );
-			const result = renderer.formatPrice( new Decimal( '10.50' ), {
-				...mockConfig.currencies.USD,
-				symbol_pos: 'right',
-			} );
-			expect( result ).toBe( '10.50$' );
+			expect( result ).toBe( '1,234,567.89' );
 		} );
 	} );
 
@@ -335,6 +317,35 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			expect(
 				el.querySelector( '.woocommerce-Price-amount' )
 			).not.toBeNull();
+			expect(
+				el.querySelector( '.woocommerce-Price-currencySymbol' )
+			).not.toBeNull();
+			expect(
+				el.querySelector( '.woocommerce-Price-currencySymbol' )
+					.textContent
+			).toBe( '\u20ac' ); // EUR is selected_currency in mockConfig
+		} );
+
+		it( 'removes SSR placeholder when converting', () => {
+			const span = document.createElement( 'span' );
+			span.className = 'wcpay-async-price';
+			span.setAttribute( 'data-wcpay-price', '10' );
+			span.setAttribute( 'data-wcpay-price-type', 'product' );
+			const skeleton = document.createElement( 'span' );
+			skeleton.className = 'wcpay-price-skeleton';
+			span.appendChild( skeleton );
+			const placeholder = document.createElement( 'span' );
+			placeholder.className =
+				'screen-reader-text wcpay-price-placeholder';
+			placeholder.textContent = '$10.00';
+			span.appendChild( placeholder );
+			document.body.appendChild( span );
+
+			renderer.convertAllPrices();
+
+			expect(
+				span.querySelector( '.wcpay-price-placeholder' )
+			).toBeNull();
 		} );
 
 		it( 'skips already converted elements', () => {
@@ -407,6 +418,48 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			);
 			expect( priceEl ).not.toBeNull();
 			expect( priceEl.textContent ).toBe( '$10.00' );
+			expect(
+				priceEl.querySelector( '.woocommerce-Price-currencySymbol' )
+			).not.toBeNull();
+			expect(
+				priceEl.querySelector( '.woocommerce-Price-currencySymbol' )
+					.textContent
+			).toBe( '$' );
+		} );
+
+		it( 'removes SSR placeholder when formatting with default currency', () => {
+			global.wcpayAsyncPriceConfig = {
+				apiUrl,
+				defaultCurrency: mockDefaultCurrency,
+			};
+			const wrapper = createPriceWrapper( '10.00' );
+			const placeholder = document.createElement( 'span' );
+			placeholder.className =
+				'screen-reader-text wcpay-price-placeholder';
+			placeholder.textContent = '$10.00';
+			wrapper.appendChild( placeholder );
+
+			renderer.showErrorState();
+
+			expect(
+				wrapper.querySelector( '.wcpay-price-placeholder' )
+			).toBeNull();
+		} );
+
+		it( 'keeps SSR placeholder on em-dash fallback so screen readers get the price', () => {
+			global.wcpayAsyncPriceConfig = { apiUrl };
+			const wrapper = createPriceWrapper( '10.00' );
+			const placeholder = document.createElement( 'span' );
+			placeholder.className =
+				'screen-reader-text wcpay-price-placeholder';
+			placeholder.textContent = '$10.00';
+			wrapper.appendChild( placeholder );
+
+			renderer.showErrorState();
+
+			expect(
+				wrapper.querySelector( '.wcpay-price-placeholder' )
+			).not.toBeNull();
 		} );
 
 		it( 'shows em dash when no default currency is available', () => {
@@ -418,6 +471,62 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			const el = document.querySelector( '.wcpay-price-error' );
 			expect( el ).not.toBeNull();
 			expect( el.textContent ).toBe( '\u2014' );
+		} );
+	} );
+
+	describe( 'buildPriceElement', () => {
+		it( 'creates woocommerce-Price-amount with symbol class for left position', () => {
+			const el = renderer.buildPriceElement(
+				'10.50',
+				mockConfig.currencies.USD
+			);
+			expect( el.className ).toBe( 'woocommerce-Price-amount amount' );
+			const bdi = el.querySelector( 'bdi' );
+			expect( bdi ).not.toBeNull();
+			const symbol = bdi.querySelector(
+				'.woocommerce-Price-currencySymbol'
+			);
+			expect( symbol ).not.toBeNull();
+			expect( symbol.textContent ).toBe( '$' );
+			expect( el.textContent ).toBe( '$10.50' );
+		} );
+
+		it( 'creates correct markup for right_space position', () => {
+			const el = renderer.buildPriceElement(
+				'8,99',
+				mockConfig.currencies.EUR
+			);
+			const symbol = el.querySelector(
+				'.woocommerce-Price-currencySymbol'
+			);
+			expect( symbol.textContent ).toBe( '\u20ac' );
+			expect( el.textContent ).toBe( '8,99\u00a0\u20ac' );
+		} );
+
+		it( 'creates correct markup for left_space position', () => {
+			const currency = {
+				...mockConfig.currencies.USD,
+				symbol_pos: 'left_space',
+			};
+			const el = renderer.buildPriceElement( '10.50', currency );
+			const symbol = el.querySelector(
+				'.woocommerce-Price-currencySymbol'
+			);
+			expect( symbol.textContent ).toBe( '$' );
+			expect( el.textContent ).toBe( '$\u00a010.50' );
+		} );
+
+		it( 'creates correct markup for right position', () => {
+			const currency = {
+				...mockConfig.currencies.USD,
+				symbol_pos: 'right',
+			};
+			const el = renderer.buildPriceElement( '10.50', currency );
+			const symbol = el.querySelector(
+				'.woocommerce-Price-currencySymbol'
+			);
+			expect( symbol.textContent ).toBe( '$' );
+			expect( el.textContent ).toBe( '10.50$' );
 		} );
 	} );
 

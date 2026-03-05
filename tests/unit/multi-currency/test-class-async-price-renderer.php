@@ -44,8 +44,9 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	 * Test that wrap_price_with_skeleton produces correct HTML.
 	 */
 	public function test_wrap_price_with_skeleton_produces_correct_html() {
-		$result = $this->renderer->wrap_price_with_skeleton(
-			'<span class="woocommerce-Price-amount amount">$10.00</span>',
+		$original_price_html = '<span class="woocommerce-Price-amount amount">$10.00</span>';
+		$result              = $this->renderer->wrap_price_with_skeleton(
+			$original_price_html,
 			10.00,
 			[],
 			10.00,
@@ -56,6 +57,10 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 		$this->assertStringContainsString( 'data-wcpay-price="10"', $result );
 		$this->assertStringContainsString( 'data-wcpay-price-type="product"', $result );
 		$this->assertStringContainsString( 'wcpay-price-skeleton', $result );
+		// Screen-reader placeholder for crawlers and a11y before JS loads.
+		$this->assertStringContainsString( 'wcpay-price-placeholder', $result );
+		$this->assertStringContainsString( 'screen-reader-text', $result );
+		$this->assertStringContainsString( '$10.00', $result );
 	}
 
 	/**
