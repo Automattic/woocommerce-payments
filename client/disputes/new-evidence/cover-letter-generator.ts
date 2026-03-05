@@ -125,8 +125,8 @@ export const generateAttachments = (
 					// For physical_product, RECEIPT stays "Order receipt" (REFUND_RECEIPT_DOCUMENTATION is "Refund receipt").
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Refund receipt', 'woocommerce-payments' ),
-					refundStatuses: [ 'refund_has_been_issued' ],
 					productTypes: [ 'booking_reservation' ],
+					refundStatuses: [ 'refund_has_been_issued' ],
 				},
 			],
 		},
@@ -173,11 +173,11 @@ export const generateAttachments = (
 					// it explicitly with its proper label.
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Other documents', 'woocommerce-payments' ),
+					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [
 						'refund_was_not_owed',
 						'refund_has_been_issued',
 					],
-					productTypes: [ 'booking_reservation' ],
 				},
 			],
 			// When repurposed as "Other documents", it should appear last
@@ -185,11 +185,11 @@ export const generateAttachments = (
 				{
 					reasons: [ 'credit_not_processed' ],
 					order: 100,
+					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [
 						'refund_was_not_owed',
 						'refund_has_been_issued',
 					],
-					productTypes: [ 'booking_reservation' ],
 				},
 				{
 					// For product_unacceptable with physical_product, customer communication
