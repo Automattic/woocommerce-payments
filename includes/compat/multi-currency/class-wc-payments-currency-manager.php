@@ -37,7 +37,7 @@ class WC_Payments_Currency_Manager {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'maybe_add_missing_currencies' ] );
+		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'maybe_add_currencies_for_enabled_payment_methods' ] );
 		add_action( 'admin_head', [ $this, 'add_payment_method_currency_dependencies_script' ] );
 	}
 
@@ -91,9 +91,13 @@ class WC_Payments_Currency_Manager {
 	}
 
 	/**
-	 * Ensures that when a payment method is added from the settings, the needed currency is also added.
+	 * Ensures that when a payment method is enabled, at least one of its supported currencies is also enabled.
+	 *
+	 * Payment methods that support multiple currencies (e.g. P24 supports EUR and PLN) only need one of them
+	 * to be enabled. If none are enabled, all supported currencies are added. If at least one is already
+	 * enabled, no changes are made.
 	 */
-	public function maybe_add_missing_currencies() {
+	public function maybe_add_currencies_for_enabled_payment_methods() {
 		$multi_currency = $this->get_multi_currency_instance();
 		if ( is_null( $multi_currency ) ) {
 			return;
@@ -109,22 +113,27 @@ class WC_Payments_Currency_Manager {
 
 		$missing_currency_codes = [];
 
-		// TODO: we need to find something about having a currency not available for the method in case of having disabled currencies in the future.
-		// First option, not do display it if the available currency is blocked by something else (Stripe, merchant, WCPay etc.)
-		// Second option, showing a notice that it can't be selected because the currency is not available to use.
-
-		// we have payments needing some currency being enabled, let's ensure the currency is present.
 		foreach ( $payment_methods_needing_currency as $payment_method_data ) {
 			$needed_currency_codes = $payment_method_data['currencies'];
-			foreach ( $needed_currency_codes as $needed_currency_code ) {
-				if ( ! isset( $available_currencies[ $needed_currency_code ] ) ) {
-					continue;
-				}
-				if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
-					continue;
-				}
 
-				$missing_currency_codes[] = $needed_currency_code;
+			// If at least one of the payment method's supported currencies is already enabled, skip it.
+			$has_enabled_currency = false;
+			foreach ( $needed_currency_codes as $needed_currency_code ) {
+				if ( isset( $enabled_currencies[ $needed_currency_code ] ) ) {
+					$has_enabled_currency = true;
+					break;
+				}
+			}
+
+			if ( $has_enabled_currency ) {
+				continue;
+			}
+
+			// None of the supported currencies are enabled — add all available ones.
+			foreach ( $needed_currency_codes as $needed_currency_code ) {
+				if ( isset( $available_currencies[ $needed_currency_code ] ) ) {
+					$missing_currency_codes[] = $needed_currency_code;
+				}
 			}
 		}
 
@@ -134,17 +143,18 @@ class WC_Payments_Currency_Manager {
 			return;
 		}
 
-		/**
-		 * The set_enabled_currencies method throws an exception if any currencies passed are not found in the current available currencies.
-		 * Any currencies not found are filtered out above, so we shouldn't need a try/catch here.
-		 */
 		$multi_currency->set_enabled_currencies( array_merge( array_keys( $enabled_currencies ), $missing_currency_codes ) );
 	}
 
 	/**
 	 * Adds the `multiCurrencyPaymentMethodsMap` JS object to the multi-currency settings page.
 	 *
-	 * This object maps currencies to payment methods that require them, so the multi-currency settings page displays a notice in case of dependencies.
+	 * This object maps currencies to payment methods that depend on them, so the multi-currency
+	 * settings page displays a warning when removing a currency that a payment method needs.
+	 *
+	 * A currency is only mapped to a payment method if it is the ONLY enabled currency for that
+	 * payment method. If the payment method has other enabled currencies, removing this one won't
+	 * break the payment method, so no warning is needed.
 	 */
 	public function add_payment_method_currency_dependencies_script() {
 		$multi_currency = $this->get_multi_currency_instance();
@@ -158,13 +168,24 @@ class WC_Payments_Currency_Manager {
 			return;
 		}
 
+		$enabled_currencies   = $multi_currency->get_enabled_currencies();
 		$currency_methods_map = [];
+
 		foreach ( $payment_methods_needing_currency as $method => $data ) {
-			foreach ( $data['currencies'] as $currency ) {
-				if ( ! isset( $currency_methods_map[ $currency ] ) ) {
-					$currency_methods_map[ $currency ] = [];
+			$enabled_for_method = array_filter(
+				$data['currencies'],
+				function ( $currency ) use ( $enabled_currencies ) {
+					return isset( $enabled_currencies[ $currency ] );
 				}
-				$currency_methods_map[ $currency ][ $method ] = $data['title'];
+			);
+
+			// Only warn about removing a currency if it's the sole enabled currency for this payment method.
+			if ( 1 === count( $enabled_for_method ) ) {
+				$sole_currency = reset( $enabled_for_method );
+				if ( ! isset( $currency_methods_map[ $sole_currency ] ) ) {
+					$currency_methods_map[ $sole_currency ] = [];
+				}
+				$currency_methods_map[ $sole_currency ][ $method ] = $data['title'];
 			}
 		}
 

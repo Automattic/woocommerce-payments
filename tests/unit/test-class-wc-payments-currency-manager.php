@@ -89,7 +89,7 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
 		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
 
-		$this->currency_manager->maybe_add_missing_currencies();
+		$this->currency_manager->maybe_add_currencies_for_enabled_payment_methods();
 	}
 
 	public function test_it_should_not_update_available_currencies_when_not_needed() {
@@ -118,7 +118,7 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 		);
 		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
 
-		$this->currency_manager->maybe_add_missing_currencies();
+		$this->currency_manager->maybe_add_currencies_for_enabled_payment_methods();
 	}
 
 	public function test_it_should_update_available_currencies_when_needed() {
@@ -159,7 +159,7 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 				)
 			);
 
-		$this->currency_manager->maybe_add_missing_currencies();
+		$this->currency_manager->maybe_add_currencies_for_enabled_payment_methods();
 	}
 
 	public function test_it_should_not_update_available_currencies_with_bnpl_methods() {
@@ -186,7 +186,7 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 		);
 		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
 
-		$this->currency_manager->maybe_add_missing_currencies();
+		$this->currency_manager->maybe_add_currencies_for_enabled_payment_methods();
 	}
 
 	public function test_it_should_update_available_currencies_with_bnpl_methods() {
@@ -221,7 +221,73 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 				)
 			);
 
-		$this->currency_manager->maybe_add_missing_currencies();
+		$this->currency_manager->maybe_add_currencies_for_enabled_payment_methods();
+	}
+
+	public function test_it_should_not_add_currencies_when_one_of_multiple_supported_currencies_is_already_enabled() {
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'wc_payments_get_payment_method_map' )->willReturn( $this->get_mocked_payment_methods_map() );
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
+			[
+				'card',
+				'p24',
+			]
+		);
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
+		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
+			[
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
+			]
+		);
+		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
+			[
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
+				'PLN' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'PLN' ),
+			]
+		);
+		// EUR is already enabled and P24 supports EUR, so PLN should NOT be added.
+		$this->multi_currency_mock->expects( $this->never() )->method( 'set_enabled_currencies' );
+
+		$this->currency_manager->maybe_add_currencies_for_enabled_payment_methods();
+	}
+
+	public function test_it_should_add_all_supported_currencies_when_none_are_enabled() {
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'wc_payments_get_payment_method_map' )->willReturn( $this->get_mocked_payment_methods_map() );
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
+			[
+				'card',
+				'p24',
+			]
+		);
+		$this->gateway_mock->expects( $this->atLeastOnce() )->method( 'get_account_domestic_currency' )->willReturn( 'USD' );
+		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_enabled_currencies' )->willReturn(
+			[
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+			]
+		);
+		$this->multi_currency_mock->expects( $this->atLeastOnce() )->method( 'get_available_currencies' )->willReturn(
+			[
+				'USD' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ),
+				'EUR' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ),
+				'PLN' => new \WCPay\MultiCurrency\Currency( $this->localization_service, 'PLN' ),
+			]
+		);
+		// Neither EUR nor PLN is enabled, so both should be added.
+		$this->multi_currency_mock
+			->expects( $this->once() )
+			->method( 'set_enabled_currencies' )
+			->with(
+				$this->equalTo(
+					[
+						'USD',
+						'EUR',
+						'PLN',
+					]
+				)
+			);
+
+		$this->currency_manager->maybe_add_currencies_for_enabled_payment_methods();
 	}
 
 	private function get_mocked_payment_methods_map() {
@@ -273,6 +339,12 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 		$link_payment_method->method( 'get_id' )->willReturn( 'link' );
 		$link_payment_method->method( 'has_domestic_transactions_restrictions' )->willReturn( false );
 
+		$p24_payment_method = $this->createMock( \WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$p24_payment_method->method( 'get_currencies' )->willReturn( [ 'EUR', 'PLN' ] );
+		$p24_payment_method->method( 'get_title' )->willReturn( 'p24 Payment Method' );
+		$p24_payment_method->method( 'get_id' )->willReturn( 'p24' );
+		$p24_payment_method->method( 'has_domestic_transactions_restrictions' )->willReturn( false );
+
 		return [
 			'card'          => $card_payment_method,
 			'au_becs_debit' => $becs_payment_method,
@@ -282,6 +354,7 @@ class WC_Payments_Currency_Manager_Tests extends WCPAY_UnitTestCase {
 			'sepa_debit'    => $sepa_payment_method,
 			'klarna'        => $klarna_payment_method,
 			'link'          => $link_payment_method,
+			'p24'           => $p24_payment_method,
 		];
 	}
 }

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: MCCY messaging for payment methods supporting multiple currencies; only auto-enable currencies when none are already enabled;
