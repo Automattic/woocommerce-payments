@@ -807,10 +807,10 @@ describe( 'Cover Letter Generator', () => {
 				'Login or usage records (Attachment A)'
 			);
 			expect( result ).toContain(
-				'Customer communication (Attachment B)'
+				'Prior undisputed transaction history (Attachment B)'
 			);
 			expect( result ).toContain(
-				'Prior undisputed transaction history (Attachment C)'
+				'Customer communication (Attachment C)'
 			);
 			expect( result ).toContain( 'Other documents (Attachment D)' );
 			expect( result ).not.toContain( "Customer's signature" );

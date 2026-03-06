@@ -328,6 +328,13 @@ export const generateAttachments = (
 					],
 				},
 				{
+					// For fraudulent digital, "Prior undisputed transaction history" should appear
+					// before Customer communication (index 3), so use order 2 (ties broken by arrayIndex 7 > 2).
+					reasons: [ 'fraudulent' ],
+					order: 2,
+					productTypes: [ 'digital_product_or_service' ],
+				},
+				{
 					// For credit_not_processed refund_was_not_owed, Other documents should appear last
 					reasons: [ 'credit_not_processed' ],
 					order: 100,
