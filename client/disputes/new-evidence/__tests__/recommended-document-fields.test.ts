@@ -445,7 +445,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 5 ].label ).toBe( 'Other documents' );
 			} );
 
-			it( 'should fall back to trunk subscription_canceled fields for digital_product_or_service when feature flag is enabled', () => {
+			it( 'should return matrix fields for subscription_canceled + digital_product_or_service when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -455,14 +455,19 @@ describe( 'Recommended Documents', () => {
 					'digital_product_or_service'
 				);
 
-				// Should fall back to trunk subscription_canceled fields since no matrix entry for digital_product_or_service
+				// Matrix entry for subscription_canceled + digital_product_or_service
 				expect( result ).toHaveLength( 6 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 1 ].key ).toBe( 'customer_communication' );
-				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
-				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
+				expect( result[ 1 ].key ).toBe( 'cancellation_rebuttal' );
+				expect( result[ 1 ].label ).toBe( 'Cancellation logs' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' ); // Base field
+				expect( result[ 3 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 3 ].label ).toBe( 'Login or usage records' );
 				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 4 ].label ).toBe( 'Terms of service' );
 				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 5 ].label ).toBe( 'Other documents' );
 			} );
 
 			it( 'should return matrix fields for subscription_canceled + booking_reservation when feature flag is enabled', () => {
