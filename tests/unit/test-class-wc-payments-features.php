@@ -407,10 +407,10 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->clear_feature_flag_options( [ WC_Payments_Features::AMAZON_PAY_FLAG_NAME ] );
 	}
 
-	public function test_is_amazon_pay_enabled_returns_false_by_default() {
+	public function test_is_amazon_pay_enabled_returns_true_by_default_when_confirmation_tokens_enabled() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
 		$result = WC_Payments_Features::is_amazon_pay_enabled();
 
-		$this->assertFalse( $result );
+		$this->assertTrue( $result );
 	}
 }

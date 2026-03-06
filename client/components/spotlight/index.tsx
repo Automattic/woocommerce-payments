@@ -213,6 +213,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 			className="wcpay-spotlight__primary-btn"
 			variant="secondary"
 			onClick={ handlePrimaryClick }
+			size="compact"
 		>
 			{ primaryButtonLabel }
 		</Button>
@@ -223,6 +224,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 			className="wcpay-spotlight__secondary-btn"
 			variant="tertiary"
 			onClick={ onSecondaryClick }
+			size="compact"
 		>
 			{ secondaryButtonLabel }
 		</Button>
