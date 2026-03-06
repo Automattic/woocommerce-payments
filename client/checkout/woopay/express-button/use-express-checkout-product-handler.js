@@ -10,8 +10,22 @@ import { __ } from '@wordpress/i18n';
 import {
 	getProductId,
 	getQuantity,
-	getProductFormElement,
 } from 'wcpay/utils/wc-product-page-selectors';
+
+/**
+ * Get the product form element.
+ *
+ * Classic block / shortcode: form.cart
+ * Add to Cart + Options block: form.wp-block-add-to-cart-with-options
+ *
+ * @return {HTMLFormElement|null} The form element, or null.
+ */
+export const getProductFormElement = () => {
+	return (
+		document.querySelector( 'form.cart' ) ||
+		document.querySelector( 'form.wp-block-add-to-cart-with-options' )
+	);
+};
 
 const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {

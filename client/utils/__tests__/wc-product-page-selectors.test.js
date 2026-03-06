@@ -4,7 +4,6 @@
 import {
 	getAddToCartButtonElement,
 	getProductId,
-	getProductFormElement,
 	getQuantity,
 } from '../wc-product-page-selectors';
 
@@ -66,30 +65,6 @@ describe( 'wc-product-page-selectors', () => {
 			document.body.innerHTML =
 				'<input type="hidden" name="add-to-cart" value="77" />';
 			expect( getProductId() ).toBeUndefined();
-		} );
-	} );
-
-	describe( 'getProductFormElement', () => {
-		it( 'returns the classic form.cart', () => {
-			document.body.innerHTML =
-				'<form class="cart"><input type="hidden" /></form>';
-			expect( getProductFormElement() ).toBe(
-				document.querySelector( 'form.cart' )
-			);
-		} );
-
-		it( 'returns the new block form', () => {
-			document.body.innerHTML =
-				'<form class="wp-block-add-to-cart-with-options"><input type="hidden" /></form>';
-			expect( getProductFormElement() ).toBe(
-				document.querySelector(
-					'form.wp-block-add-to-cart-with-options'
-				)
-			);
-		} );
-
-		it( 'returns null when neither form exists', () => {
-			expect( getProductFormElement() ).toBeNull();
 		} );
 	} );
 

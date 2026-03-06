@@ -11,7 +11,9 @@ import clsx from 'clsx';
 import WoopayIcon from './woopay-icon';
 import WoopayIconLight from './woopay-icon-light';
 import { expressCheckoutIframe } from './express-checkout-iframe';
-import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
+import useExpressCheckoutProductHandler, {
+	getProductFormElement,
+} from './use-express-checkout-product-handler';
 import { recordUserEvent } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
@@ -21,10 +23,7 @@ import {
 	deleteSkipWooPayCookie,
 	isSupportedThemeEntrypoint,
 } from 'wcpay/checkout/woopay/utils';
-import {
-	getAddToCartButtonElement,
-	getProductFormElement,
-} from 'wcpay/utils/wc-product-page-selectors';
+import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
