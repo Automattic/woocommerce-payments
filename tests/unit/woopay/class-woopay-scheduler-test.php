@@ -231,18 +231,31 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 	}
 
 	/**
-	 * Checks that adapted extensions no longer disable first-party auth.
+	 * Checks that adapted extensions no longer disable first-party auth when flag is enabled.
 	 */
 	public function test_adapted_extensions_do_not_disable_first_party_auth() {
 		$adapted_extensions = [ 'test-extension' ];
 
 		// Set first-party auth to enabled.
-		update_option( '_wcpay_feature_woopay_first_party_auth', 1 );
+		update_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, 1 );
 
 		$this->scheduler->update_enabled_adapted_extensions( [ 'test-extension/test-extension.php' ], $adapted_extensions );
 
 		// First-party auth should remain unchanged.
-		$this->assertEquals( 1, get_option( '_wcpay_feature_woopay_first_party_auth' ) );
+		$this->assertEquals( 1, get_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME ) );
+	}
+
+	/**
+	 * Checks that adapted extensions no longer re-enable first-party auth when flag is disabled.
+	 */
+	public function test_adapted_extensions_do_not_reenable_first_party_auth() {
+		// Simulate a store where the old scheduler disabled first-party auth.
+		update_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, 0 );
+
+		$this->scheduler->update_enabled_adapted_extensions( [], [] );
+
+		// First-party auth should remain unchanged — the method no longer writes to this flag.
+		$this->assertEquals( 0, get_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME ) );
 	}
 
 	/**
@@ -250,13 +263,23 @@ class WooPay_Scheduler_Test extends WP_UnitTestCase {
 	 */
 	public function test_remove_first_party_auth_flag_on_update() {
 		// Simulate a store where the old scheduler disabled first-party auth.
-		update_option( '_wcpay_feature_woopay_first_party_auth', 0 );
+		update_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, 0 );
 
 		$this->scheduler->remove_first_party_auth_flag_on_update();
 
 		// Option should be deleted, falling back to default '1' (enabled).
-		$this->assertFalse( get_option( '_wcpay_feature_woopay_first_party_auth' ) );
-		$this->assertEquals( '1', get_option( '_wcpay_feature_woopay_first_party_auth', '1' ) );
+		$this->assertSame( false, get_option( WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME ) );
+	}
+
+	/**
+	 * Checks that the migration hook is registered in init().
+	 */
+	public function test_init_registers_remove_first_party_auth_flag_hook() {
+		$this->scheduler->init();
+
+		$this->assertNotFalse(
+			has_action( 'woocommerce_woocommerce_payments_updated', [ $this->scheduler, 'remove_first_party_auth_flag_on_update' ] )
+		);
 	}
 
 	/**
