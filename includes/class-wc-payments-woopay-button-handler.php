@@ -336,7 +336,7 @@ class WC_Payments_WooPay_Button_Handler {
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>
 			<div
-				class="woopay-express-button"
+				class="woopay-express-button is-placeholder"
 				aria-label="<?php esc_attr_e( 'WooPay', 'woocommerce-payments' ); ?>"
 				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
 				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"

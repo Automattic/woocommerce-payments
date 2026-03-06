@@ -12,7 +12,7 @@ import { getExpressCheckoutData } from './utils';
 import {
 	getProductId,
 	getQuantity,
-} from './compatibility/wc-product-page-selectors';
+} from 'wcpay/utils/wc-product-page-selectors';
 
 export default class ExpressCheckoutCartApi {
 	// Used on product pages to interact with an anonymous cart.

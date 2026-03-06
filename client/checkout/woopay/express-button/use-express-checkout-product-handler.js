@@ -11,7 +11,7 @@ import {
 	getProductId,
 	getQuantity,
 	getProductFormElement,
-} from 'wcpay/express-checkout/compatibility/wc-product-page-selectors';
+} from 'wcpay/utils/wc-product-page-selectors';
 
 const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {

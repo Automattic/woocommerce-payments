@@ -44,7 +44,8 @@
 			}
 		}
 
-		&:disabled {
+		&:disabled,
+		&.is-placeholder {
 			opacity: 0.5;
 			cursor: not-allowed;
 		}

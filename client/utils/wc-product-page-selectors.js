@@ -1,5 +1,3 @@
-/* global jQuery */
-
 /**
  * Product page DOM selectors with fallbacks for both the classic Add to Cart
  * block (.wp-block-add-to-cart-form / form.cart) and the new Add to Cart +
@@ -25,19 +23,6 @@ export const getAddToCartButtonElement = () => {
 			'.wp-block-add-to-cart-with-options button[type="submit"]'
 		)
 	);
-};
-
-/**
- * jQuery version of getAddToCartButtonElement for code that still uses jQuery.
- *
- * @return {jQuery} jQuery object wrapping the button (may be empty).
- */
-export const $getAddToCartButton = () => {
-	const $classic = jQuery( '.single_add_to_cart_button' );
-	if ( $classic.length ) {
-		return $classic;
-	}
-	return jQuery( '.wp-block-add-to-cart-with-options button[type="submit"]' );
 };
 
 /**

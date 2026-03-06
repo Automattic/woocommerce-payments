@@ -24,7 +24,7 @@ import {
 import {
 	getAddToCartButtonElement,
 	getProductFormElement,
-} from 'wcpay/express-checkout/compatibility/wc-product-page-selectors';
+} from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
