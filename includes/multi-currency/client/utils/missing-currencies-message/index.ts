@@ -34,9 +34,9 @@ const joinWithOr = ( items: string[] ): string => {
 
 export const getMissingCurrenciesTooltipMessage = (
 	paymentMethodLabel: string,
-	missingCurrencies: string[]
+	requiredCurrencies: string[]
 ) => {
-	if ( missingCurrencies.length === 1 ) {
+	if ( requiredCurrencies.length === 1 ) {
 		return sprintf(
 			/* translators: %1$s: name of payment method, %2$s: name of the required currency */
 			__(
@@ -44,7 +44,7 @@ export const getMissingCurrenciesTooltipMessage = (
 				'woocommerce-payments'
 			),
 			paymentMethodLabel,
-			missingCurrencies[ 0 ]
+			requiredCurrencies[ 0 ]
 		);
 	}
 
@@ -55,6 +55,6 @@ export const getMissingCurrenciesTooltipMessage = (
 			'woocommerce-payments'
 		),
 		paymentMethodLabel,
-		joinWithOr( missingCurrencies )
+		joinWithOr( requiredCurrencies )
 	);
 };
