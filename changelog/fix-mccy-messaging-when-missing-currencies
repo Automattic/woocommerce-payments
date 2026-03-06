@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-fix: MCCY messaging for payment methods supporting multiple currencies; only auto-enable currencies when none are already enabled;
+fix: MCCY tooltip messaging for payment methods supporting multiple currencies now uses "or" instead of "and"
