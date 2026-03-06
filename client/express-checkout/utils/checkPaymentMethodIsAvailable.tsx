@@ -69,6 +69,16 @@ const checkPaymentMethodIsAvailableInternal = (
 	currencyCode: string,
 	api: WCPayAPI
 ): Promise< boolean > => {
+	// Guard against empty currency code during WooCommerce Blocks store
+	// hydration. The cart store initialises with currency_code: '' before
+	// server-side preloaded data is applied. Passing an empty string to
+	// Stripe Elements throws: "Invalid value for elements(): currency should
+	// be one of ...". Returning false here lets WC Blocks re-evaluate once
+	// the cart data (and currency) is properly loaded.
+	if ( ! currencyCode ) {
+		return Promise.resolve( false );
+	}
+
 	return new Promise( ( resolve ) => {
 		const bodyElement = document.querySelector( 'body' );
 		if ( ! bodyElement ) {

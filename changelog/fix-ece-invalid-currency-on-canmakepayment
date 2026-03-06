@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Stripe IntegrationError for invalid currency when canMakePayment is called during WC Blocks store hydration
