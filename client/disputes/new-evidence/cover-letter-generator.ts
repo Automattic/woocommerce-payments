@@ -297,6 +297,17 @@ export const generateAttachments = (
 					productTypes: [ 'digital_product_or_service' ],
 				},
 				{
+					// For fraudulent disputes with digital_product_or_service type,
+					// SERVICE_DOCUMENTATION is repurposed as "Prior undisputed transaction history"
+					// because ACCESS_ACTIVITY_LOG is used for "Login or usage records".
+					reasons: [ 'fraudulent' ],
+					label: __(
+						'Prior undisputed transaction history',
+						'woocommerce-payments'
+					),
+					productTypes: [ 'digital_product_or_service' ],
+				},
+				{
 					// For credit_not_processed × physical_product × refund_was_not_owed,
 					// SERVICE_DOCUMENTATION is used as "Other documents" since
 					// UNCATEGORIZED_FILE is used for "Proof of acceptance".

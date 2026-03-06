@@ -793,6 +793,7 @@ describe( 'Cover Letter Generator', () => {
 				reason: 'fraudulent' as DisputeReason,
 				evidence: {
 					access_activity_log: 'access_activity_log_url',
+					service_documentation: 'service_documentation_url',
 					customer_communication: 'customer_communication_url',
 					uncategorized_file: 'uncategorized_file_url',
 				},
@@ -808,7 +809,10 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'Customer communication (Attachment B)'
 			);
-			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment C)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment D)' );
 			expect( result ).not.toContain( "Customer's signature" );
 			expect( result ).not.toContain( 'Order receipt' );
 			expect( result ).not.toContain( 'Refund policy' );

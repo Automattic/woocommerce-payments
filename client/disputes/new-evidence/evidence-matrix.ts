@@ -1081,6 +1081,8 @@ const getFraudulentMatrix = (): {
 		},
 	],
 	// Digital Product/Service product type
+	// Note: SERVICE_DOCUMENTATION is repurposed as "Prior undisputed transaction history"
+	// because ACCESS_ACTIVITY_LOG is already used for "Login or usage records".
 	digital_product_or_service: [
 		{
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
@@ -1090,6 +1092,18 @@ const getFraudulentMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			label: __(
+				'Prior undisputed transaction history',
+				'woocommerce-payments'
+			),
+			description: __(
+				'Proof of past undisputed transactions from the same customer, with matching billing and device details.',
+				'woocommerce-payments'
+			),
+			order: 15,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,

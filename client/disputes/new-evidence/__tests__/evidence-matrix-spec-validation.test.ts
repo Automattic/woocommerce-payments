@@ -736,10 +736,11 @@ const implementedCombinations: CombinationSpec[] = [
 		reason: 'fraudulent',
 		productType: 'digital_product_or_service',
 		description:
-			'Fraudulent dispute for digital product/service - needs login/usage records, other documents',
+			'Fraudulent dispute for digital product/service - needs login/usage records, prior history, other documents',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			],
@@ -752,13 +753,19 @@ const implementedCombinations: CombinationSpec[] = [
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG ]:
 					'Login or usage records',
+				[ DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION ]:
+					'Prior undisputed transaction history',
 				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
 					'Customer communication',
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
 		},
 		coverLetterAttachments: {
-			shouldInclude: [ 'Login or usage records', 'Other documents' ],
+			shouldInclude: [
+				'Login or usage records',
+				'Prior undisputed transaction history',
+				'Other documents',
+			],
 			shouldExclude: [ "Customer's signature" ],
 		},
 	},
