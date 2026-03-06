@@ -15,7 +15,7 @@ import { __ } from '@wordpress/i18n';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 /**
- * Checks if a cart item is a subscription with a free trial (no sign-up fee).
+ * Checks if a cart item is a subscription with a free trial.
  *
  * @param {Object} item Cart item from Store API.
  * @return {boolean} True if the item is a trial subscription.
@@ -26,10 +26,59 @@ const isTrialSubscriptionItem = ( item ) => {
 		return false;
 	}
 
-	return (
-		subscriptionData.trial_length > 0 &&
-		parseInt( subscriptionData.sign_up_fees || '0', 10 ) === 0
-	);
+	return subscriptionData.trial_length > 0;
+};
+
+/**
+ * Gets shipping rates from subscription extensions for trial subscriptions.
+ * During free trials, shipping is deferred so rates only exist in the
+ * subscription extensions, not in the main cart shipping packages.
+ *
+ * @param {Object} cartData Cart data from Store API.
+ * @return {Array|null} Array of shipping rates or null if none available.
+ */
+const getSubscriptionShippingRates = ( cartData ) => {
+	const subscriptions = cartData?.extensions?.subscriptions;
+	if ( ! subscriptions || ! Array.isArray( subscriptions ) ) {
+		return null;
+	}
+
+	for ( const subscription of subscriptions ) {
+		const rates = subscription.shipping_rates?.[ 0 ]?.shipping_rates;
+		if ( rates?.length > 0 ) {
+			return rates;
+		}
+	}
+
+	return null;
+};
+
+/**
+ * Checks if the cart contains any trial subscriptions (with or without sign-up fee)
+ * that have deferred shipping. During free trials, WooCommerce Subscriptions moves
+ * shipping rates from the main cart to the subscription extensions.
+ *
+ * @param {Object} cartData Cart data from Store API.
+ * @return {boolean} True if cart has trial subscriptions with deferred shipping.
+ */
+const hasTrialSubscriptionWithDeferredShipping = ( cartData ) => {
+	if ( ! cartData?.items || ! cartData?.extensions?.subscriptions ) {
+		return false;
+	}
+
+	const hasTrialItems = cartData.items.some( isTrialSubscriptionItem );
+	if ( ! hasTrialItems ) {
+		return false;
+	}
+
+	// Check that top-level shipping_rates is empty but subscription extensions have rates.
+	const hasMainShippingRates =
+		cartData.shipping_rates?.[ 0 ]?.shipping_rates?.length > 0;
+	if ( hasMainShippingRates ) {
+		return false;
+	}
+
+	return getSubscriptionShippingRates( cartData ) !== null;
 };
 
 /**
@@ -187,30 +236,6 @@ addFilter(
 );
 
 /**
- * Gets shipping rates from subscription extensions for trial subscriptions.
- * During free trials, shipping is deferred so rates only exist in the
- * subscription extensions, not in the main cart shipping packages.
- *
- * @param {Object} cartData Cart data from Store API.
- * @return {Array|null} Array of shipping rates or null if none available.
- */
-const getSubscriptionShippingRates = ( cartData ) => {
-	const subscriptions = cartData?.extensions?.subscriptions;
-	if ( ! subscriptions || ! Array.isArray( subscriptions ) ) {
-		return null;
-	}
-
-	for ( const subscription of subscriptions ) {
-		const rates = subscription.shipping_rates?.[ 0 ]?.shipping_rates;
-		if ( rates?.length > 0 ) {
-			return rates;
-		}
-	}
-
-	return null;
-};
-
-/**
  * Filter: wcpay.express-checkout.shipping-rates
  *
  * For trial subscriptions, falls back to shipping rates from subscription
@@ -228,7 +253,7 @@ addFilter(
 			return shippingRates;
 		}
 
-		if ( ! hasTrialSubscriptionInCart( cartData ) ) {
+		if ( ! hasTrialSubscriptionWithDeferredShipping( cartData ) ) {
 			return shippingRates;
 		}
 
@@ -251,7 +276,7 @@ addFilter(
 	'wcpay.express-checkout.shipping-package-id',
 	'automattic/wcpay/express-checkout/wc-subscriptions',
 	( packageId, cartData, rateId ) => {
-		if ( ! hasTrialSubscriptionInCart( cartData ) ) {
+		if ( ! hasTrialSubscriptionWithDeferredShipping( cartData ) ) {
 			return packageId;
 		}
 
