@@ -94,20 +94,13 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
-	 * Called on theme/style change hooks. For block themes, recomputes the
-	 * appearance from theme.json and stores it. For classic themes, clears
-	 * the stored appearance so it can be repopulated by admin or shopper.
+	 * Called on theme/style change hooks. Invalidates the styles cache version
+	 * and any stored WooPay appearance so it can be recomputed lazily when
+	 * needed (e.g. via get_woopay_appearance()).
 	 */
 	public static function handle_theme_change(): void {
 		self::invalidate_styles_cache_version();
 		self::invalidate_woopay_appearance();
-
-		if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
-			$appearance = self::compute_woopay_appearance_from_theme();
-			if ( null !== $appearance ) {
-				self::set_woopay_appearance( $appearance );
-			}
-		}
 	}
 
 	/**

@@ -71,26 +71,28 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_woopay_appearance_returns_null_on_version_mismatch() {
 		// Force classic theme so get_woopay_appearance() does not auto-compute.
-		add_filter(
-			'stylesheet',
-			function () {
-				return 'default';
-			}
-		);
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
 
-		delete_option( 'wcpay_styles_cache_version' );
+		try {
+			delete_option( 'wcpay_styles_cache_version' );
 
-		$appearance = [ 'theme' => 'stripe' ];
-		WC_Payments_Styles_Cache::set_woopay_appearance( $appearance );
+			$appearance = [ 'theme' => 'stripe' ];
+			WC_Payments_Styles_Cache::set_woopay_appearance( $appearance );
 
-		// Invalidate the styles cache version so a new one is computed.
-		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
+			// Invalidate the styles cache version so a new one is computed.
+			WC_Payments_Styles_Cache::invalidate_styles_cache_version();
 
-		// Manually set a different version to simulate a theme change.
-		update_option( 'wcpay_styles_cache_version', 'different_version' );
+			// Manually set a different version to simulate a theme change.
+			update_option( 'wcpay_styles_cache_version', 'different_version' );
 
-		$result = WC_Payments_Styles_Cache::get_woopay_appearance();
-		$this->assertNull( $result );
+			$result = WC_Payments_Styles_Cache::get_woopay_appearance();
+			$this->assertNull( $result );
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
 	}
 
 	public function test_get_woopay_appearance_returns_null_when_empty() {
