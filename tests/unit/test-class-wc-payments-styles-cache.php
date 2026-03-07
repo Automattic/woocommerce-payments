@@ -70,6 +70,14 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_woopay_appearance_returns_null_on_version_mismatch() {
+		// Force classic theme so get_woopay_appearance() does not auto-compute.
+		add_filter(
+			'stylesheet',
+			function () {
+				return 'default';
+			}
+		);
+
 		delete_option( 'wcpay_styles_cache_version' );
 
 		$appearance = [ 'theme' => 'stripe' ];

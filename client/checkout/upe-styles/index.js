@@ -507,8 +507,15 @@ export const getFieldStyles = (
 	scope
 ) => {
 	// getting one element per selector to avoid performance issues with selectors matching too many elements.
+	// try/catch guards against selectors using :has() in browsers that don't support it.
 	const elements = ( Array.isArray( selector ) ? selector : [ selector ] )
-		.map( ( s ) => scope.querySelector( s ) )
+		.map( ( s ) => {
+			try {
+				return scope.querySelector( s );
+			} catch ( e ) {
+				return null;
+			}
+		} )
 		.filter( Boolean );
 
 	if ( ! elements.length ) {
