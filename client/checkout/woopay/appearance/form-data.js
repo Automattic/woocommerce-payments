@@ -13,6 +13,12 @@ export const appendObjectToFormData = (
 ) => {
 	Object.entries( obj ).forEach( ( [ key, value ] ) => {
 		const fieldKey = `${ prefix }[${ key }]`;
+
+		// Skip null/undefined to avoid FormData coercing them to strings.
+		if ( value === null || typeof value === 'undefined' ) {
+			return;
+		}
+
 		if ( value && typeof value === 'object' && ! Array.isArray( value ) ) {
 			appendObjectToFormData( formData, value, fieldKey );
 		} else {

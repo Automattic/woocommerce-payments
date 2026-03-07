@@ -96,10 +96,20 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_woopay_appearance_returns_null_when_empty() {
-		delete_option( 'wcpay_woopay_checkout_appearance' );
+		// Force a non-block theme so get_woopay_appearance() does not auto-compute.
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
 
-		$result = WC_Payments_Styles_Cache::get_woopay_appearance();
-		$this->assertNull( $result );
+		try {
+			delete_option( 'wcpay_woopay_checkout_appearance' );
+
+			$result = WC_Payments_Styles_Cache::get_woopay_appearance();
+			$this->assertNull( $result );
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
 	}
 
 	public function test_invalidate_woopay_appearance_deletes_option() {
@@ -110,17 +120,27 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_maybe_set_woopay_appearance_stores_when_empty() {
-		delete_option( 'wcpay_woopay_checkout_appearance' );
-		delete_option( 'wcpay_styles_cache_version' );
+		// Force a non-block theme so get_woopay_appearance() does not auto-compute.
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
 
-		$appearance = [
-			'theme' => 'stripe',
-			'rules' => [ '.Input' => [ 'color' => '#333' ] ],
-		];
+		try {
+			delete_option( 'wcpay_woopay_checkout_appearance' );
+			delete_option( 'wcpay_styles_cache_version' );
 
-		$result = WC_Payments_Styles_Cache::maybe_set_woopay_appearance( $appearance );
-		$this->assertTrue( $result );
-		$this->assertEquals( $appearance, WC_Payments_Styles_Cache::get_woopay_appearance() );
+			$appearance = [
+				'theme' => 'stripe',
+				'rules' => [ '.Input' => [ 'color' => '#333' ] ],
+			];
+
+			$result = WC_Payments_Styles_Cache::maybe_set_woopay_appearance( $appearance );
+			$this->assertTrue( $result );
+			$this->assertEquals( $appearance, WC_Payments_Styles_Cache::get_woopay_appearance() );
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
 	}
 
 	public function test_maybe_set_woopay_appearance_rejects_when_slot_filled() {
