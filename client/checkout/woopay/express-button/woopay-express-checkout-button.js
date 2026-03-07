@@ -20,10 +20,12 @@ import {
 	appendRedirectionParams,
 	deleteSkipWooPayCookie,
 	isSupportedThemeEntrypoint,
+	isShortcodeCheckout,
 } from 'wcpay/checkout/woopay/utils';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
+import { maybePersistAppearance } from 'wcpay/checkout/woopay/appearance/persist';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -222,11 +224,18 @@ export const WoopayExpressCheckoutButton = ( {
 			setIsLoading( true );
 
 			const appearanceType = getAppearanceType();
-			const appearance =
+			let appearance = null;
+			if (
 				isSupportedThemeEntrypoint( appearanceType ) &&
 				getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-					? getAppearance( appearanceType, true )
-					: null;
+			) {
+				if ( isShortcodeCheckout() ) {
+					appearance = getAppearance( appearanceType, true );
+					maybePersistAppearance( appearance );
+				} else {
+					appearance = getConfig( 'woopayAppearance' );
+				}
+			}
 
 			if ( isProductPage ) {
 				const productData = getProductDataRef.current();

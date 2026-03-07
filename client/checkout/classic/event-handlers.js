@@ -29,6 +29,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
+import { maybePersistAdminAppearance } from 'wcpay/checkout/woopay/appearance/persist-admin';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
@@ -168,6 +169,9 @@ jQuery( function ( $ ) {
 	) {
 		handleWooPayEmailInput( '#billing_email', api );
 	}
+
+	// In the Customizer preview, capture the live appearance and persist it.
+	maybePersistAdminAppearance();
 
 	async function injectPaymentMethodLogos() {
 		const cardLabel = document.querySelector(

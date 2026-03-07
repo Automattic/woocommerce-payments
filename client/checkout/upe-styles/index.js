@@ -173,9 +173,70 @@ export const appearanceSelectors = {
 		],
 		containerSelectors: [ '.woocommerce-checkout-review-order-table' ],
 		headerSelectors: [
+			'header > div:has(nav)',
+			'header > div:has(.site-logo)',
+			'header > div:has(.custom-logo)',
 			'.site-header',
 			'#masthead',
-			'header > div',
+			'header > div:last-of-type',
+			'header',
+		],
+		footerSelectors: [
+			'.site-footer',
+			'#colophon',
+			'footer > div',
+			'footer',
+		],
+		footerLink: [ '.site-footer a', 'footer a' ],
+	},
+	wooPayBlocksCheckout: {
+		appendTarget: '.wc-block-checkout__contact-fields',
+		upeThemeInputSelector: '.wc-block-components-text-input #email',
+		upeThemeLabelSelector: '.wc-block-components-text-input label',
+		upeThemeTextSelectors: [
+			'.wc-block-components-checkout-step__description',
+			'.wc-block-components-text-input',
+			'.wc-block-components-radio-control__label',
+			'.wc-block-checkout__terms',
+		],
+		rowElement: 'div',
+		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
+		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		alternateSelectors: {
+			appendTarget: '#billing.wc-block-components-address-form',
+			upeThemeInputSelector: '#billing-first_name',
+			upeThemeLabelSelector:
+				'.wc-block-components-checkout-step__description',
+		},
+		backgroundSelectors: [
+			'#payment-method .wc-block-components-radio-control-accordion-option',
+			'#payment-method',
+			'form.wc-block-checkout__form',
+			'.wc-block-checkout',
+			'body',
+		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
+		linkSelectors: [
+			'.wc-block-checkout a',
+			'.wc-block-components-main a',
+			'main a',
+			'.entry-content a',
+			'.site-content a',
+			'#content a',
+			'#primary a',
+			'a',
+		],
+		containerSelectors: [
+			'.wp-block-woocommerce-checkout-order-summary-block',
+		],
+		headerSelectors: [
+			'header > div:has(nav)',
+			'header > div:has(.site-logo)',
+			'header > div:has(.custom-logo)',
+			'.site-header',
+			'#masthead',
+			'header > div:last-of-type',
 			'header',
 		],
 		footerSelectors: [
@@ -242,6 +303,9 @@ export const appearanceSelectors = {
 				break;
 			case 'woopay_shortcode_checkout':
 				appearanceSelector = this.wooPayClassicCheckout;
+				break;
+			case 'woopay_blocks_checkout':
+				appearanceSelector = this.wooPayBlocksCheckout;
 				break;
 		}
 
@@ -590,18 +654,28 @@ function ensureFontSizeSmallerThan(
 	return `${ fontSizeNumber }px`;
 }
 
+// Maps standard element locations to WooPay-specific selector sets that
+// include header, footer, link, and button selectors needed by WooPay.
+const woopayLocationMap = {
+	blocks_checkout: 'woopay_blocks_checkout',
+	shortcode_checkout: 'woopay_shortcode_checkout',
+};
+
 export const getAppearance = (
 	elementsLocation,
 	forWooPay = false,
 	scope = document
 ) => {
+	const selectorLocation = forWooPay
+		? woopayLocationMap[ elementsLocation ] ?? elementsLocation
+		: elementsLocation;
 	const selectors = appearanceSelectors.getSelectors(
-		elementsLocation,
+		selectorLocation,
 		scope
 	);
 
 	// Add hidden fields to DOM for generating styles.
-	hiddenElementsForUPE.init( elementsLocation, scope );
+	hiddenElementsForUPE.init( selectorLocation, scope );
 
 	const inputRules = getFieldStyles(
 		selectors.hiddenInput,
@@ -681,7 +755,9 @@ export const getAppearance = (
 		);
 	}
 
-	const isFloatingLabel = elementsLocation === 'blocks_checkout';
+	const isFloatingLabel =
+		elementsLocation === 'blocks_checkout' ||
+		selectorLocation === 'woopay_blocks_checkout';
 
 	let appearance = {
 		variables: globalRules,

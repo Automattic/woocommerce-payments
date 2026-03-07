@@ -96,11 +96,26 @@ export const deleteSkipWooPayCookie = () => {
 };
 
 /**
+ * Returns true when the current page is a WooCommerce shortcode checkout.
+ *
+ * @return {boolean} True on shortcode checkout pages.
+ */
+export const isShortcodeCheckout = () =>
+	!! document.querySelector( '.woocommerce-billing-fields' );
+
+/**
  * Determine Global theming availability for the entrypoint based on the appearanceType.
  *
  * @param {string} appearanceType entrypoint identifier.
  * @return {boolean} True if Global theming should be enabled for the entrypoint.
  */
 export const isSupportedThemeEntrypoint = ( appearanceType ) => {
-	return appearanceType === 'woopay_shortcode_checkout';
+	return [
+		'woopay_shortcode_checkout',
+		'woopay_blocks_checkout',
+		'blocks_checkout',
+		'bnpl_product_page',
+		'bnpl_classic_cart',
+		'bnpl_cart_block',
+	].includes( appearanceType );
 };

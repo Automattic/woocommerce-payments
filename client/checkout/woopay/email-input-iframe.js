@@ -14,8 +14,10 @@ import {
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
 	isSupportedThemeEntrypoint,
+	isShortcodeCheckout,
 } from './utils';
 import { getAppearanceType } from '../utils';
+import { maybePersistAppearance } from 'wcpay/checkout/woopay/appearance/persist';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -187,11 +189,18 @@ export const handleWooPayEmailInput = async (
 		// Set the initial value.
 		iframeHeaderValue = true;
 		const appearanceType = getAppearanceType();
-		const appearance =
+		let appearance = null;
+		if (
 			isSupportedThemeEntrypoint( appearanceType ) &&
 			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? getAppearance( appearanceType, true )
-				: null;
+		) {
+			if ( isShortcodeCheckout() ) {
+				appearance = getAppearance( appearanceType, true );
+				maybePersistAppearance( appearance );
+			} else {
+				appearance = getConfig( 'woopayAppearance' );
+			}
+		}
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(
