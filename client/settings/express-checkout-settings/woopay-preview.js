@@ -64,6 +64,13 @@ const getThemedStyles = ( appearance ) => {
 		link: {
 			color: rules[ '.Link' ]?.color || undefined,
 		},
+		footer: {
+			backgroundColor: rules[ '.Footer' ]?.backgroundColor || undefined,
+			color: rules[ '.Footer' ]?.color || undefined,
+		},
+		footerLink: {
+			color: rules[ '.Footer-link' ]?.color || undefined,
+		},
 	};
 };
 
@@ -161,12 +168,48 @@ const SectionHeader = ( { children, height, themedStyle } ) => {
 	);
 };
 
-const LoadingBox = ( { height, themedStyle } ) => {
+const FieldValue = ( { children, themedStyle } ) => {
 	return (
-		<div
-			className="preview-layout__loading-box"
-			style={ { height, ...themedStyle } }
-		/>
+		<div className="preview-layout__field-value" style={ themedStyle }>
+			{ children }
+		</div>
+	);
+};
+
+const ChevronDown = () => {
+	return <span className="preview-layout__chevron-down">›</span>;
+};
+
+const OrderItem = ( { name, price, themedStyle } ) => {
+	return (
+		<div className="preview-layout__order-item" style={ themedStyle }>
+			<div className="preview-layout__order-item-box" />
+			<span className="preview-layout__order-item-name">{ name }</span>
+			<span className="preview-layout__order-item-price">{ price }</span>
+		</div>
+	);
+};
+
+const OrderRow = ( { label, value, themedStyle } ) => {
+	return (
+		<div className="preview-layout__order-row" style={ themedStyle }>
+			<span>{ label }</span>
+			<span>{ value }</span>
+		</div>
+	);
+};
+
+const PreviewFooter = ( { themedStyle, linkStyle } ) => {
+	return (
+		<div className="preview-layout__footer" style={ themedStyle }>
+			<div className="preview-layout__footer-links">
+				<span style={ linkStyle }>Terms of use</span>
+				<span className="preview-layout__footer-dot">·</span>
+				<span style={ linkStyle }>Privacy policy</span>
+				<span className="preview-layout__footer-dot">·</span>
+				<span style={ linkStyle }>Help</span>
+			</div>
+		</div>
 	);
 };
 
@@ -313,11 +356,9 @@ export default ( {
 									>
 										CONTACT
 									</SectionHeader>
-									<VerticalSpacer height="0.5rem" />
-									<LoadingBox
-										height="1.875rem"
-										themedStyle={ themed.loadingBox }
-									/>
+									<FieldValue themedStyle={ themed.textBox }>
+										jane@example.com
+									</FieldValue>
 								</ContactField>
 								<ContactField>
 									<SectionHeader
@@ -326,12 +367,13 @@ export default ( {
 										themedStyle={ themed.sectionHeader }
 									>
 										SHIP TO
+										<ChevronDown />
 									</SectionHeader>
-									<VerticalSpacer height="0.5rem" />
-									<LoadingBox
-										height="3.813rem"
-										themedStyle={ themed.loadingBox }
-									/>
+									<FieldValue themedStyle={ themed.textBox }>
+										Jane Smith, 123 Main St,
+										<br />
+										San Francisco, CA 94105
+									</FieldValue>
 								</ContactField>
 								<ContactField>
 									<SectionHeader
@@ -340,12 +382,11 @@ export default ( {
 										themedStyle={ themed.sectionHeader }
 									>
 										SHIPPING METHOD
+										<ChevronDown />
 									</SectionHeader>
-									<VerticalSpacer height="0.5rem" />
-									<LoadingBox
-										height="2.313rem"
-										themedStyle={ themed.loadingBox }
-									/>
+									<FieldValue themedStyle={ themed.textBox }>
+										Free shipping — Free
+									</FieldValue>
 								</ContactField>
 								<ContactField>
 									<SectionHeader
@@ -354,12 +395,11 @@ export default ( {
 										themedStyle={ themed.sectionHeader }
 									>
 										PAY WITH
+										<ChevronDown />
 									</SectionHeader>
-									<VerticalSpacer height="0.5rem" />
-									<LoadingBox
-										height="1.5rem"
-										themedStyle={ themed.loadingBox }
-									/>
+									<FieldValue themedStyle={ themed.textBox }>
+										Visa ···· 4242 Exp. 12/29
+									</FieldValue>
 								</ContactField>
 							</ContactSection>
 
@@ -387,21 +427,42 @@ export default ( {
 								ORDER SUMMARY
 							</SectionHeader>
 							<VerticalSpacer height="0.498rem" />
-							<LoadingBox
-								height="1.563rem"
-								themedStyle={ themed.loadingBox }
+							<OrderItem
+								name="Beanie"
+								price="$ 18.00"
+								themedStyle={ themed.textBox }
 							/>
-							<VerticalSpacer height="0.5rem" />
-							<LoadingBox
-								height="9.438rem"
-								themedStyle={ themed.loadingBox }
+							<VerticalSpacer height="0.25rem" />
+							<hr className="preview-layout__hr preview-layout__hr--dotted" />
+							<VerticalSpacer height="0.25rem" />
+							<OrderRow
+								label="Subtotal"
+								value="$ 18.00"
+								themedStyle={ themed.textBox }
+							/>
+							<OrderRow
+								label="Shipping"
+								value="Free"
+								themedStyle={ themed.textBox }
+							/>
+							<hr className="preview-layout__hr" />
+							<OrderRow
+								label="Total"
+								value="$ 18.00"
+								themedStyle={ {
+									...themed.textBox,
+									fontWeight: 600,
+								} }
 							/>
 							<VerticalSpacer height="0.498rem" />
 						</RightColumn>
 					</ColumnsContainer>
 				</PreviewBody>
 			</PreviewContainer>
-			<VerticalSpacer height="1.5rem" />
+			<PreviewFooter
+				themedStyle={ themed.footer }
+				linkStyle={ themed.footerLink }
+			/>
 		</div>
 	);
 };
