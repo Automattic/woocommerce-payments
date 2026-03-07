@@ -11,6 +11,62 @@ import { chevronLeft, Icon } from '@wordpress/icons';
  */
 import { NAMESPACE } from 'wcpay/data/constants';
 
+/**
+ * Derives inline style objects from a WooPay appearance object.
+ * Returns an empty map when appearance is null (unthemed).
+ *
+ * @param {Object|null} appearance The WooPay appearance object.
+ * @return {Object} A map of element keys to inline style objects.
+ */
+const getThemedStyles = ( appearance ) => {
+	if ( ! appearance ) {
+		return {};
+	}
+
+	const vars = appearance.variables || {};
+	const rules = appearance.rules || {};
+
+	return {
+		root: {
+			fontFamily: vars.fontFamily || undefined,
+		},
+		container: {
+			backgroundColor: vars.colorBackground || undefined,
+		},
+		body: {
+			backgroundColor: vars.colorBackground || undefined,
+		},
+		storeHeader: {
+			backgroundColor: rules[ '.Header' ]?.backgroundColor || undefined,
+		},
+		headerText: {
+			color: rules[ '.Header' ]?.color || undefined,
+		},
+		chevron: {
+			color: rules[ '.Header' ]?.color || undefined,
+		},
+		hr: {
+			color: vars.colorText ? `${ vars.colorText }33` : undefined,
+		},
+		sectionHeader: {
+			color: rules[ '.Label' ]?.color || undefined,
+		},
+		loadingBox: {
+			backgroundColor: rules[ '.Input' ]?.backgroundColor || undefined,
+		},
+		textBox: {
+			color: vars.colorText || undefined,
+		},
+		link: {
+			color: rules[ '.Link' ]?.color || undefined,
+		},
+		button: {
+			backgroundColor: rules[ '.Button' ]?.backgroundColor || undefined,
+			color: rules[ '.Button' ]?.color || undefined,
+		},
+	};
+};
+
 const VerticalSpacer = ( { height } ) => {
 	return <div className="preview-layout__v-spacer" style={ { height } } />;
 };
@@ -21,9 +77,12 @@ const VerticalSpacer = ( { height } ) => {
 // 	return <div className="preview-layout__preview-button">Preview</div>;
 // };
 
-const PreviewContainer = ( { height, children } ) => {
+const PreviewContainer = ( { height, themedStyle, children } ) => {
 	return (
-		<div className="preview-layout__container" style={ { height } }>
+		<div
+			className="preview-layout__container"
+			style={ { height, ...themedStyle } }
+		>
 			{ children }
 		</div>
 	);
@@ -39,20 +98,24 @@ const ChevronLeft = () => {
 	);
 };
 
-const StoreHeader = ( { height, variant = 'test', children } ) => {
+const StoreHeader = ( { height, variant = 'test', themedStyle, children } ) => {
 	return (
 		<div
 			className="preview-layout__store-header"
 			variant={ variant }
-			style={ { height } }
+			style={ { height, ...themedStyle } }
 		>
 			{ children }
 		</div>
 	);
 };
 
-const PreviewBody = ( { children } ) => {
-	return <div className="preview-layout__body">{ children }</div>;
+const PreviewBody = ( { themedStyle, children } ) => {
+	return (
+		<div className="preview-layout__body" style={ themedStyle }>
+			{ children }
+		</div>
+	);
 };
 
 const ColumnsContainer = ( { height, children } ) => {
@@ -87,23 +150,31 @@ const RightColumn = ( { height, children } ) => {
 	);
 };
 
-const SectionHeader = ( { children, height } ) => {
+const SectionHeader = ( { children, height, themedStyle } ) => {
 	return (
-		<div className="preview-layout__section-header" style={ { height } }>
+		<div
+			className="preview-layout__section-header"
+			style={ { height, ...themedStyle } }
+		>
 			{ children }
 		</div>
 	);
 };
 
-const LoadingBox = ( { height } ) => {
-	return <div className="preview-layout__loading-box" style={ { height } } />;
+const LoadingBox = ( { height, themedStyle } ) => {
+	return (
+		<div
+			className="preview-layout__loading-box"
+			style={ { height, ...themedStyle } }
+		/>
+	);
 };
 
-const TextBox = ( { children, maxHeight } ) => {
+const TextBox = ( { children, maxHeight, themedStyle } ) => {
 	return (
 		<div
 			className="preview-layout__text-box"
-			style={ { maxHeight } }
+			style={ { maxHeight, ...themedStyle } }
 			dangerouslySetInnerHTML={ {
 				__html: children,
 			} }
@@ -111,9 +182,12 @@ const TextBox = ( { children, maxHeight } ) => {
 	);
 };
 
-const CheckoutButton = ( { height } ) => {
+const CheckoutButton = ( { height, themedStyle } ) => {
 	return (
-		<div className="preview-layout__checkout-button" style={ { height } }>
+		<div
+			className="preview-layout__checkout-button"
+			style={ { height, ...themedStyle } }
+		>
 			Place order
 		</div>
 	);
@@ -155,8 +229,18 @@ function sanitizeHtmlForPreview( input ) {
 	} );
 }
 
-export default ( { storeName, storeLogo, customMessage, ...props } ) => {
+export default ( {
+	storeName,
+	storeLogo,
+	customMessage,
+	appearance,
+	...props
+} ) => {
 	const { style, ...restProps } = props;
+
+	const themed = useMemo( () => getThemedStyles( appearance ), [
+		appearance,
+	] );
 
 	const preparedCustomMessage = useMemo( () => {
 		let rawCustomMessage = ( customMessage || '' ).trim();
@@ -190,94 +274,134 @@ export default ( { storeName, storeLogo, customMessage, ...props } ) => {
 		);
 	} else {
 		storeHeader = (
-			<span className="header-text">{ decodeEntities( storeName ) }</span>
+			<span className="header-text" style={ themed.headerText }>
+				{ decodeEntities( storeName ) }
+			</span>
 		);
 	}
 
 	return (
-		<div className="preview-layout" style={ style } { ...restProps }>
+		<div
+			className="preview-layout"
+			style={ { ...style, ...themed.root } }
+			{ ...restProps }
+		>
 			{
 				// TODO: Commented out for now. Will be used in a future iteration.
 				// See https://github.com/Automattic/woopay/issues/2559#issuecomment-2064013672
 				// <PreviewButton />
 			 }
-			<PreviewContainer>
+			<PreviewContainer themedStyle={ themed.container }>
 				<VerticalSpacer height="0.75rem" />
 				<StoreHeader
 					className="preview-layout__store-header"
 					variant={ storeLogo ? 'logo' : 'text' }
 					height={ storeLogo ? '2rem' : '1.5rem' }
+					themedStyle={ themed.storeHeader }
 				>
 					<ChevronLeft />
 					{ storeHeader }
 				</StoreHeader>
 				<VerticalSpacer height={ storeLogo ? '0.4rem' : '0.75rem' } />
-				<hr className="preview-layout__hr" />
-				<PreviewBody>
+				<hr className="preview-layout__hr" style={ themed.hr } />
+				<PreviewBody themedStyle={ themed.body }>
 					<VerticalSpacer height="1.5rem" />
 					<ColumnsContainer>
 						<LeftColumn>
 							<ContactSection>
 								<ContactField>
-									<SectionHeader height="0.75rem">
+									<SectionHeader
+										height="0.75rem"
+										themedStyle={ themed.sectionHeader }
+									>
 										CONTACT
 									</SectionHeader>
 									<VerticalSpacer height="0.5rem" />
-									<LoadingBox height="1.875rem" />
+									<LoadingBox
+										height="1.875rem"
+										themedStyle={ themed.loadingBox }
+									/>
 								</ContactField>
 								<ContactField>
 									<SectionHeader
 										isDropdownIncluded
 										height="0.75rem"
+										themedStyle={ themed.sectionHeader }
 									>
 										SHIP TO
 									</SectionHeader>
 									<VerticalSpacer height="0.5rem" />
-									<LoadingBox height="3.813rem" />
+									<LoadingBox
+										height="3.813rem"
+										themedStyle={ themed.loadingBox }
+									/>
 								</ContactField>
 								<ContactField>
 									<SectionHeader
 										isDropdownIncluded
 										height="0.75rem"
+										themedStyle={ themed.sectionHeader }
 									>
 										SHIPPING METHOD
 									</SectionHeader>
 									<VerticalSpacer height="0.5rem" />
-									<LoadingBox height="2.313rem" />
+									<LoadingBox
+										height="2.313rem"
+										themedStyle={ themed.loadingBox }
+									/>
 								</ContactField>
 								<ContactField>
 									<SectionHeader
 										isDropdownIncluded
 										height="0.75rem"
+										themedStyle={ themed.sectionHeader }
 									>
 										PAY WITH
 									</SectionHeader>
 									<VerticalSpacer height="0.5rem" />
-									<LoadingBox height="1.5rem" />
+									<LoadingBox
+										height="1.5rem"
+										themedStyle={ themed.loadingBox }
+									/>
 								</ContactField>
 							</ContactSection>
 
 							<VerticalSpacer height="1.244rem" />
 							{ preparedCustomMessage && (
 								<>
-									<TextBox maxHeight="2.5rem">
+									<TextBox
+										maxHeight="2.5rem"
+										themedStyle={ themed.textBox }
+									>
 										{ preparedCustomMessage }
 									</TextBox>
 									<VerticalSpacer height="0.75rem" />
 								</>
 							) }
-							<CheckoutButton height="1.875rem" />
+							<CheckoutButton
+								height="1.875rem"
+								themedStyle={ themed.button }
+							/>
 
 							<VerticalSpacer height="0.498rem" />
 						</LeftColumn>
 						<RightColumn>
-							<SectionHeader height="0.75rem">
+							<SectionHeader
+								height="0.75rem"
+								themedStyle={ themed.sectionHeader }
+							>
 								ORDER SUMMARY
 							</SectionHeader>
 							<VerticalSpacer height="0.498rem" />
-							<LoadingBox height="1.563rem" />
+							<LoadingBox
+								height="1.563rem"
+								themedStyle={ themed.loadingBox }
+							/>
 							<VerticalSpacer height="0.5rem" />
-							<LoadingBox height="9.438rem" />
+							<LoadingBox
+								height="9.438rem"
+								themedStyle={ themed.loadingBox }
+							/>
 							<VerticalSpacer height="0.498rem" />
 						</RightColumn>
 					</ColumnsContainer>

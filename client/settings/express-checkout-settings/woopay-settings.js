@@ -328,6 +328,11 @@ const WooPaySettings = ( { section } ) => {
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ woopayStoreLogo }
 							customMessage={ woopayCustomMessage }
+							appearance={
+								isWooPayGlobalThemeSupportEnabled
+									? wcpaySettings.woopayAppearance
+									: null
+							}
 						/>
 					</BaseControl>
 				</CardBody>
