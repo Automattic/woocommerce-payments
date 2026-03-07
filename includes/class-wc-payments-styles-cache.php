@@ -59,7 +59,7 @@ class WC_Payments_Styles_Cache {
 		}
 
 		// Auto-compute for block themes when no valid stored appearance exists.
-		if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
+		if ( wp_is_block_theme() ) {
 			$appearance = self::compute_woopay_appearance_from_theme();
 			if ( null !== $appearance ) {
 				self::set_woopay_appearance( $appearance );
@@ -104,15 +104,11 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
-	 * Computes WooPay appearance from theme.json global styles (block themes only).
+	 * Computes WooPay appearance from theme.json global styles (block themes).
 	 *
 	 * @return array|null The appearance object, or null if data is insufficient.
 	 */
 	public static function compute_woopay_appearance_from_theme(): ?array {
-		if ( ! function_exists( 'wp_get_global_styles' ) ) {
-			return null;
-		}
-
 		$styles = wp_get_global_styles();
 
 		// Template part styles (used by header/footer in block themes).
@@ -391,10 +387,6 @@ class WC_Payments_Styles_Cache {
 
 		$property = $matches[1];
 
-		if ( ! function_exists( 'wp_get_global_settings' ) ) {
-			return $value;
-		}
-
 		// Map known preset patterns to their settings paths.
 		$preset_map = [
 			'--wp--preset--font-family--' => 'typography.fontFamilies',
@@ -460,10 +452,6 @@ class WC_Payments_Styles_Cache {
 	 * @return array Associative array with 'background' and/or 'text' keys, or empty.
 	 */
 	private static function get_template_part_colors( string $slug ): array {
-		if ( ! function_exists( 'get_block_template' ) ) {
-			return [];
-		}
-
 		$template = get_block_template( get_stylesheet() . '//' . $slug, 'wp_template_part' );
 		if ( ! $template || empty( $template->content ) ) {
 			return [];
@@ -585,9 +573,7 @@ class WC_Payments_Styles_Cache {
 	private static function compute_styles_cache_version(): string {
 		$parts = WCPAY_VERSION_NUMBER . wp_get_theme()->get_stylesheet();
 
-		if ( function_exists( 'wp_get_global_styles' ) ) {
-			$parts .= wp_json_encode( wp_get_global_styles() );
-		}
+		$parts .= wp_json_encode( wp_get_global_styles() );
 
 		// Theme mods capture Customizer changes (classic themes).
 		$parts .= wp_json_encode( get_theme_mods() );
