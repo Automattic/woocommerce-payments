@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import tinycolor from 'tinycolor2';
+
+/**
  * Internal dependencies
  */
 import { upeRestrictedProperties } from './upe-styles';
@@ -795,6 +800,44 @@ export const getAppearance = (
 	}
 
 	if ( forWooPay ) {
+		const headerRules = getFieldStyles(
+			selectors.headerSelectors,
+			'.Header',
+			null,
+			scope
+		);
+		const footerRules = getFieldStyles(
+			selectors.footerSelectors,
+			'.Footer',
+			null,
+			scope
+		);
+
+		// When the header/footer has a transparent background (e.g.
+		// Storefront), walk the selectors with getBackgroundColor to
+		// find the first ancestor with a solid background.  We can't
+		// reuse `backgroundColor` here because that comes from the
+		// checkout content-area selectors, which may differ from what
+		// sits behind the header/footer.
+		if (
+			! headerRules.backgroundColor ||
+			tinycolor( headerRules.backgroundColor ).getAlpha() < 0.5
+		) {
+			headerRules.backgroundColor = getBackgroundColor(
+				[ ...( selectors.headerSelectors ?? [] ), 'body' ],
+				scope
+			);
+		}
+		if (
+			! footerRules.backgroundColor ||
+			tinycolor( footerRules.backgroundColor ).getAlpha() < 0.5
+		) {
+			footerRules.backgroundColor = getBackgroundColor(
+				[ ...( selectors.footerSelectors ?? [] ), 'body' ],
+				scope
+			);
+		}
+
 		appearance.rules = {
 			...appearance.rules,
 			'.Heading': getFieldStyles(
@@ -803,18 +846,8 @@ export const getAppearance = (
 				null,
 				scope
 			),
-			'.Header': getFieldStyles(
-				selectors.headerSelectors,
-				'.Header',
-				null,
-				scope
-			),
-			'.Footer': getFieldStyles(
-				selectors.footerSelectors,
-				'.Footer',
-				null,
-				scope
-			),
+			'.Header': headerRules,
+			'.Footer': footerRules,
 			'.Footer-link': getFieldStyles(
 				selectors.footerLink,
 				'.Footer--link',
