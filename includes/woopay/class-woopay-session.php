@@ -482,8 +482,9 @@ class WooPay_Session {
 	 * @return array The initial session request data without email and user_session.
 	 */
 	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null ) {
-		// Fall back to server-stored appearance when no appearance was provided.
-		if ( null === $appearance ) {
+		// Fall back to server-stored appearance when no appearance was provided,
+		// but only if global theme support is enabled.
+		if ( null === $appearance && WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
 			$appearance = \WC_Payments_Styles_Cache::get_woopay_appearance();
 		}
 
