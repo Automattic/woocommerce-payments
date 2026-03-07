@@ -68,8 +68,11 @@ const getThemedStyles = ( appearance ) => {
 			backgroundColor: rules[ '.Footer' ]?.backgroundColor || undefined,
 			color: rules[ '.Footer' ]?.color || undefined,
 		},
-		footerLink: {
+		footerGuestLink: {
 			color: rules[ '.Footer-link' ]?.color || undefined,
+		},
+		footerLink: {
+			color: rules[ '.Footer' ]?.color || undefined,
 		},
 	};
 };
@@ -199,16 +202,146 @@ const OrderRow = ( { label, value, themedStyle } ) => {
 	);
 };
 
-const PreviewFooter = ( { themedStyle, linkStyle } ) => {
+const PaymentCardIcons = () => {
+	return (
+		<div className="preview-layout__footer-cards">
+			{ /* Visa, Mastercard, Discover, Diners, Amex, JCB, UnionPay */ }
+			<svg
+				width="200"
+				height="14"
+				viewBox="0 0 284 19"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				{ /* Visa */ }
+				<rect
+					x="0.03"
+					y="0.5"
+					width="28.5"
+					height="18"
+					rx="1.5"
+					fill="white"
+				/>
+				<rect
+					x="0.4"
+					y="0.88"
+					width="27.75"
+					height="17.25"
+					rx="1.12"
+					stroke="black"
+					strokeOpacity="0.25"
+					strokeWidth="0.75"
+				/>
+				<path
+					d="M12.79 12.76H11.07L12.15 6.46H13.87L12.79 12.76Z"
+					fill="#1C34C3"
+				/>
+				<path
+					d="M19.02 6.62C18.68 6.49 18.15 6.35 17.48 6.35C15.78 6.35 14.59 7.21 14.58 8.43C14.57 9.34 15.44 9.84 16.09 10.14C16.75 10.45 16.98 10.65 16.98 10.93C16.97 11.35 16.44 11.54 15.95 11.54C15.26 11.54 14.89 11.44 14.33 11.21L14.11 11.11L13.87 12.52C14.27 12.7 15.01 12.85 15.78 12.86C17.59 12.86 18.76 12.01 18.78 10.71C18.78 9.99 18.32 9.44 17.33 8.99C16.73 8.7 16.36 8.51 16.36 8.21C16.37 7.95 16.67 7.67 17.35 7.67C17.91 7.66 18.32 7.78 18.63 7.91L18.79 7.98L19.02 6.62Z"
+					fill="#1C34C3"
+				/>
+				<path
+					d="M22.1 6.47H23.43L24.82 12.76H23.23C23.23 12.76 23.07 12.04 23.02 11.82H20.81L20.45 12.76H18.65L21.2 6.99C21.38 6.58 21.69 6.47 22.1 6.47ZM22 8.77L21.31 10.53H22.74L22.34 8.71L22.22 8.17L22 8.77Z"
+					fill="#1C34C3"
+				/>
+				<path
+					d="M3.62 6.47H6.39C6.76 6.48 7.07 6.59 7.17 6.99L7.77 9.89L7.95 10.76L9.64 6.47H11.45L8.75 12.76H6.93L5.4 7.28C4.87 6.99 4.27 6.76 3.59 6.59L3.62 6.47Z"
+					fill="#1C34C3"
+				/>
+				{ /* Mastercard */ }
+				<rect
+					x="36.53"
+					y="0.5"
+					width="28.5"
+					height="18"
+					rx="1.5"
+					fill="white"
+				/>
+				<rect
+					x="36.9"
+					y="0.88"
+					width="27.75"
+					height="17.25"
+					rx="1.12"
+					stroke="black"
+					strokeOpacity="0.25"
+					strokeWidth="0.75"
+				/>
+				<circle cx="47.26" cy="9.56" r="5.91" fill="#EA001B" />
+				<circle cx="54.46" cy="9.56" r="5.91" fill="#F79F1A" />
+				<path
+					d="M50.86 4.91C49.5 5.99 48.62 7.68 48.62 9.56C48.62 11.45 49.5 13.13 50.86 14.22C52.22 13.13 53.09 11.45 53.09 9.56C53.09 7.68 52.22 5.99 50.86 4.91Z"
+					fill="#FF5F01"
+				/>
+				{ /* Amex */ }
+				<rect
+					x="146.02"
+					y="0.5"
+					width="28.5"
+					height="18"
+					rx="1.5"
+					fill="white"
+				/>
+				<rect
+					x="146.39"
+					y="0.88"
+					width="27.75"
+					height="17.25"
+					rx="1.12"
+					stroke="black"
+					strokeOpacity="0.25"
+					strokeWidth="0.75"
+				/>
+				<path
+					d="M170.94 4.93L171.52 3.36L174.02 3.35V0.5L145.52 0.51V18.5L174.02 18.49V15.65L171.67 15.66L170.75 14.58L169.79 15.66H162.74V9.94H160.42L163.33 3.36H166.16L166.84 4.85V3.36H170.35L170.94 4.93Z"
+					fill="#006FCF"
+				/>
+				{ /* Diners Club */ }
+				<rect
+					x="109.52"
+					y="0.5"
+					width="28.5"
+					height="18"
+					rx="1.5"
+					fill="white"
+				/>
+				<rect
+					x="109.89"
+					y="0.88"
+					width="27.75"
+					height="17.25"
+					rx="1.12"
+					stroke="black"
+					strokeOpacity="0.25"
+					strokeWidth="0.75"
+				/>
+				<path
+					d="M122.67 3.5C119.43 3.52 116.77 6.46 116.77 9.55C116.77 12.83 119.43 15.5 122.66 15.5H124.17C127.36 15.5 130.27 12.83 130.27 9.55C130.27 6.46 127.36 3.5 124.17 3.5H122.67Z"
+					fill="#254D98"
+				/>
+			</svg>
+		</div>
+	);
+};
+
+const PreviewFooter = ( { themedStyle, guestLinkStyle, linkStyle } ) => {
 	return (
 		<div className="preview-layout__footer" style={ themedStyle }>
 			<div className="preview-layout__footer-links">
+				<span
+					className="preview-layout__footer-guest-link"
+					style={ guestLinkStyle }
+				>
+					Checkout as guest
+				</span>
+				<span className="preview-layout__footer-dot">•</span>
 				<span style={ linkStyle }>Terms of use</span>
-				<span className="preview-layout__footer-dot">·</span>
+				<span className="preview-layout__footer-dot">•</span>
 				<span style={ linkStyle }>Privacy policy</span>
-				<span className="preview-layout__footer-dot">·</span>
+				<span className="preview-layout__footer-dot">•</span>
 				<span style={ linkStyle }>Help</span>
 			</div>
+			<PaymentCardIcons />
 		</div>
 	);
 };
@@ -461,6 +594,7 @@ export default ( {
 			</PreviewContainer>
 			<PreviewFooter
 				themedStyle={ themed.footer }
+				guestLinkStyle={ themed.footerGuestLink }
 				linkStyle={ themed.footerLink }
 			/>
 		</div>
