@@ -194,11 +194,12 @@ export const handleWooPayEmailInput = async (
 			isSupportedThemeEntrypoint( appearanceType ) &&
 			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
 		) {
-			if ( isShortcodeCheckout() ) {
+			// Prefer server-computed appearance (available for themes with theme.json).
+			// Fall back to DOM extraction on checkout for classic themes.
+			appearance = getConfig( 'woopayAppearance' );
+			if ( ! appearance && isShortcodeCheckout() ) {
 				appearance = getAppearance( appearanceType, true );
 				maybePersistAppearance( appearance );
-			} else {
-				appearance = getConfig( 'woopayAppearance' );
 			}
 		}
 
