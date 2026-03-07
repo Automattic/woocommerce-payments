@@ -314,12 +314,71 @@ class WC_Payments_Styles_Cache {
 				'.Link',
 				'.Container',
 			];
+			// Stripe Appearance API CSS properties used by DOM extraction and server-side compute.
+			$allowed_properties = [
+				'color',
+				'backgroundColor',
+				'fontFamily',
+				'fontSize',
+				'fontWeight',
+				'fontVariation',
+				'lineHeight',
+				'letterSpacing',
+				'padding',
+				'paddingTop',
+				'paddingRight',
+				'paddingBottom',
+				'paddingLeft',
+				'border',
+				'borderTop',
+				'borderRight',
+				'borderBottom',
+				'borderLeft',
+				'borderColor',
+				'borderStyle',
+				'borderWidth',
+				'borderTopColor',
+				'borderTopStyle',
+				'borderTopWidth',
+				'borderRightColor',
+				'borderRightStyle',
+				'borderRightWidth',
+				'borderBottomColor',
+				'borderBottomStyle',
+				'borderBottomWidth',
+				'borderLeftColor',
+				'borderLeftStyle',
+				'borderLeftWidth',
+				'borderRadius',
+				'borderTopLeftRadius',
+				'borderTopRightRadius',
+				'borderBottomRightRadius',
+				'borderBottomLeftRadius',
+				'outline',
+				'outlineColor',
+				'outlineWidth',
+				'outlineStyle',
+				'outlineOffset',
+				'boxShadow',
+				'textDecoration',
+				'textShadow',
+				'textTransform',
+				'transition',
+				'transform',
+				'-webkit-font-smoothing',
+				'-moz-osx-font-smoothing',
+			];
 			foreach ( $appearance['rules'] as $rule_key => $rule_value ) {
 				if ( ! in_array( $rule_key, $allowed_rules, true ) ) {
 					return false;
 				}
 				if ( ! is_array( $rule_value ) ) {
 					return false;
+				}
+				foreach ( array_keys( $rule_value ) as $prop ) {
+					if ( ! in_array( $prop, $allowed_properties, true ) ) {
+						return false;
+					}
 				}
 				if ( ! self::validate_string_values( $rule_value ) ) {
 					return false;

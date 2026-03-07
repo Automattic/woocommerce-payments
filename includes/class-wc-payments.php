@@ -365,6 +365,8 @@ class WC_Payments {
 		add_action( 'after_switch_theme', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 		add_action( 'save_post_wp_global_styles', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 		add_action( 'customize_save_after', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
+		add_action( 'save_post_wp_template_part', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
+		add_action( 'save_post_wp_template', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'disable_express_checkout_in_block_editor' ], 1 );
