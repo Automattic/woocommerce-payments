@@ -36,10 +36,12 @@ describe( 'WooPayPreview', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'applies themed background color to container', () => {
+	it( 'applies header background to container for seamless header strip', () => {
 		const appearance = {
 			variables: { colorBackground: '#f0f0f0' },
-			rules: {},
+			rules: {
+				'.Header': { backgroundColor: '#333333' },
+			},
 		};
 
 		const { container } = render(
@@ -51,15 +53,21 @@ describe( 'WooPayPreview', () => {
 			/>
 		);
 
+		// Container uses header background (not body background) so the
+		// strip above the header blends seamlessly.
 		const previewContainer = container.querySelector(
 			'.preview-layout__container'
 		);
 		expect( previewContainer.style.backgroundColor ).toBe(
-			'rgb(240, 240, 240)'
+			'rgb(51, 51, 51)'
 		);
+
+		// Body uses the page background color.
+		const body = container.querySelector( '.preview-layout__body' );
+		expect( body.style.backgroundColor ).toBe( 'rgb(240, 240, 240)' );
 	} );
 
-	it( 'applies themed button colors', () => {
+	it( 'keeps default WooPay purple on Place Order button', () => {
 		const appearance = {
 			variables: {},
 			rules: {
@@ -79,11 +87,12 @@ describe( 'WooPayPreview', () => {
 			/>
 		);
 
+		// Button should NOT inherit theme colors — WooPay branding.
 		const button = container.querySelector(
 			'.preview-layout__checkout-button'
 		);
-		expect( button.style.backgroundColor ).toBe( 'rgb(255, 0, 0)' );
-		expect( button.style.color ).toBe( 'rgb(255, 255, 255)' );
+		expect( button.style.backgroundColor ).toBe( '' );
+		expect( button.style.color ).toBe( '' );
 	} );
 
 	it( 'applies themed header colors', () => {

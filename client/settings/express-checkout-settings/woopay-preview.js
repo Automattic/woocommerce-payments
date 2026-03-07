@@ -26,18 +26,22 @@ const getThemedStyles = ( appearance ) => {
 	const vars = appearance.variables || {};
 	const rules = appearance.rules || {};
 
+	const headerBg = rules[ '.Header' ]?.backgroundColor || undefined;
+
 	return {
 		root: {
 			fontFamily: vars.fontFamily || undefined,
 		},
+		// The area above the store header is visible as a strip — use header
+		// background so it blends seamlessly with the header.
 		container: {
-			backgroundColor: vars.colorBackground || undefined,
+			backgroundColor: headerBg,
 		},
 		body: {
 			backgroundColor: vars.colorBackground || undefined,
 		},
 		storeHeader: {
-			backgroundColor: rules[ '.Header' ]?.backgroundColor || undefined,
+			backgroundColor: headerBg,
 		},
 		headerText: {
 			color: rules[ '.Header' ]?.color || undefined,
@@ -59,10 +63,6 @@ const getThemedStyles = ( appearance ) => {
 		},
 		link: {
 			color: rules[ '.Link' ]?.color || undefined,
-		},
-		button: {
-			backgroundColor: rules[ '.Button' ]?.backgroundColor || undefined,
-			color: rules[ '.Button' ]?.color || undefined,
 		},
 	};
 };
@@ -182,12 +182,9 @@ const TextBox = ( { children, maxHeight, themedStyle } ) => {
 	);
 };
 
-const CheckoutButton = ( { height, themedStyle } ) => {
+const CheckoutButton = ( { height } ) => {
 	return (
-		<div
-			className="preview-layout__checkout-button"
-			style={ { height, ...themedStyle } }
-		>
+		<div className="preview-layout__checkout-button" style={ { height } }>
 			Place order
 		</div>
 	);
@@ -378,10 +375,7 @@ export default ( {
 									<VerticalSpacer height="0.75rem" />
 								</>
 							) }
-							<CheckoutButton
-								height="1.875rem"
-								themedStyle={ themed.button }
-							/>
+							<CheckoutButton height="1.875rem" />
 
 							<VerticalSpacer height="0.498rem" />
 						</LeftColumn>
