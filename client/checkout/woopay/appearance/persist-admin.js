@@ -42,5 +42,9 @@ export const maybePersistAdminAppearance = () => {
 	appendObjectToFormData( body, appearance );
 
 	// Fire-and-forget — admin write always overwrites.
-	fetch( ajaxUrl, { method: 'POST', body, credentials: 'same-origin' } );
+	fetch( ajaxUrl, {
+		method: 'POST',
+		body,
+		credentials: 'same-origin',
+	} ).catch( () => {} );
 };

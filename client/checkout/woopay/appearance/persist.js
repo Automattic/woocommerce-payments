@@ -33,5 +33,9 @@ export const maybePersistAppearance = ( appearance ) => {
 	appendObjectToFormData( body, appearance );
 
 	// Fire-and-forget — we don't need the response.
-	fetch( url, { method: 'POST', body, credentials: 'same-origin' } );
+	fetch( url, {
+		method: 'POST',
+		body,
+		credentials: 'same-origin',
+	} ).catch( () => {} );
 };
