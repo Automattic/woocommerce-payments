@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import { shouldSkipWooPay } from 'wcpay/checkout/woopay/utils';
+import {
+	shouldSkipWooPay,
+	isShortcodeCheckout,
+	isSupportedThemeEntrypoint,
+} from 'wcpay/checkout/woopay/utils';
 
 describe( 'WooPay Utils', () => {
 	const originalDocumentCookie = window.document.cookie;
@@ -55,5 +59,45 @@ describe( 'WooPay Utils', () => {
 		const shouldSkip = shouldSkipWooPay();
 
 		expect( shouldSkip ).toBe( false );
+	} );
+
+	describe( 'isShortcodeCheckout', () => {
+		test( 'returns true when billing fields are present', () => {
+			document.body.innerHTML =
+				'<div class="woocommerce-billing-fields"></div>';
+			expect( isShortcodeCheckout() ).toBe( true );
+		} );
+
+		test( 'returns false when billing fields are absent', () => {
+			document.body.innerHTML = '<div></div>';
+			expect( isShortcodeCheckout() ).toBe( false );
+		} );
+
+		afterEach( () => {
+			document.body.innerHTML = '';
+		} );
+	} );
+
+	describe( 'isSupportedThemeEntrypoint', () => {
+		test.each( [
+			'woopay_shortcode_checkout',
+			'woopay_blocks_checkout',
+			'blocks_checkout',
+			'bnpl_product_page',
+			'bnpl_classic_cart',
+			'bnpl_cart_block',
+		] )( 'returns true for %s', ( type ) => {
+			expect( isSupportedThemeEntrypoint( type ) ).toBe( true );
+		} );
+
+		test( 'returns false for unknown type', () => {
+			expect( isSupportedThemeEntrypoint( 'unknown_type' ) ).toBe(
+				false
+			);
+		} );
+
+		test( 'returns false for undefined', () => {
+			expect( isSupportedThemeEntrypoint( undefined ) ).toBe( false );
+		} );
 	} );
 } );

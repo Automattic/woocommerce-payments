@@ -122,6 +122,7 @@ describe( 'WCPayAPI', () => {
 				key: 'testkey',
 				billing_email: 'test@example.com',
 				isWooPayGlobalThemeSupportEnabled: true,
+				woopayAppearance: mockAppearance,
 			};
 			return mockProperties[ key ];
 		} );
