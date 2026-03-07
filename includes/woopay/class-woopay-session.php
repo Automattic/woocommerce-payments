@@ -482,6 +482,11 @@ class WooPay_Session {
 	 * @return array The initial session request data without email and user_session.
 	 */
 	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null ) {
+		// Fall back to server-stored appearance when no appearance was provided.
+		if ( null === $appearance ) {
+			$appearance = \WC_Payments_Styles_Cache::get_woopay_appearance();
+		}
+
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
 		$order            = wc_get_order( $order_id );
@@ -1138,5 +1143,89 @@ class WooPay_Session {
 		);
 
 		self::$is_error_handler_registered = true;
+	}
+
+	/**
+	 * AJAX handler: admin stores the WooPay checkout appearance.
+	 *
+	 * Requires manage_woocommerce capability. Always accepts the write,
+	 * overwriting any existing value. Used from the checkout customizer.
+	 *
+	 * @return void
+	 */
+	public static function ajax_admin_set_woopay_appearance() {
+		check_ajax_referer( 'wcpay_admin_woopay_appearance_nonce' );
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error(
+				__( 'You aren\'t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( empty( $_POST['appearance'] ) || ! is_array( $_POST['appearance'] ) ) {
+			wp_send_json_error(
+				__( 'Missing or invalid appearance data.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		$appearance = self::array_map_recursive( [ __CLASS__, 'sanitize_string' ], $_POST['appearance'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( ! \WC_Payments_Styles_Cache::validate_appearance_schema( $appearance ) ) {
+			wp_send_json_error(
+				__( 'Invalid appearance schema.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		\WC_Payments_Styles_Cache::set_woopay_appearance( $appearance );
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX handler: shopper conditionally stores the WooPay checkout appearance.
+	 *
+	 * Only accepts the write if no valid appearance exists for the current
+	 * styles cache version. Once the slot is filled (by admin or first shopper),
+	 * subsequent writes are rejected until the next theme change.
+	 *
+	 * @return void
+	 */
+	public static function ajax_shopper_set_woopay_appearance() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren\'t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( empty( $_POST['appearance'] ) || ! is_array( $_POST['appearance'] ) ) {
+			wp_send_json_error(
+				__( 'Missing or invalid appearance data.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		$appearance = self::array_map_recursive( [ __CLASS__, 'sanitize_string' ], $_POST['appearance'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( ! \WC_Payments_Styles_Cache::validate_appearance_schema( $appearance ) ) {
+			wp_send_json_error(
+				__( 'Invalid appearance schema.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		$stored = \WC_Payments_Styles_Cache::maybe_set_woopay_appearance( $appearance );
+
+		if ( ! $stored ) {
+			wp_send_json_success( [ 'stored' => false ] );
+			return;
+		}
+
+		wp_send_json_success( [ 'stored' => true ] );
 	}
 }

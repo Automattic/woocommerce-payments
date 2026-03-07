@@ -150,6 +150,7 @@ class WC_Payments_WooPay_Button_Handler {
 		$config['shouldShowWooPayButton']   = $this->should_show_woopay_button();
 		$config['woopaySessionEmail']       = WooPay_Session::get_user_email( $user );
 		$config['woopayIsCountryAvailable'] = $this->woopay_utilities->is_country_available( $this->gateway );
+		$config['woopayAppearance']         = WC_Payments_Styles_Cache::get_woopay_appearance();
 
 		return $config;
 	}

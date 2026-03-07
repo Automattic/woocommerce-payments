@@ -212,6 +212,12 @@ class WC_Payments_Checkout {
 			'woopayMinimumSessionData'          => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
+		// Provide the admin nonce when previewing in the Customizer so the
+		// frontend can POST the live appearance to the admin endpoint.
+		if ( is_customize_preview() && current_user_can( 'manage_woocommerce' ) ) {
+			$js_config['adminAppearanceNonce'] = wp_create_nonce( 'wcpay_admin_woopay_appearance_nonce' );
+		}
+
 		$payment_fields = $js_config;
 
 		$payment_fields['gatewayId']                = WC_Payment_Gateway_WCPay::GATEWAY_ID;
