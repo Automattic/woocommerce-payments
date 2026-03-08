@@ -479,13 +479,20 @@ class WooPay_Session {
 	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
 	 * @param array                $appearance Merchant appearance.
+	 * @param array                $font_rules Font CDN stylesheet URLs.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null ) {
+	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null, $font_rules = [] ) {
 		// Fall back to server-stored appearance when no appearance was provided,
 		// but only if global theme support is enabled.
 		if ( null === $appearance && WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
 			$appearance = \WC_Payments_Styles_Cache::get_woopay_appearance();
+			$font_rules = \WC_Payments_Styles_Cache::get_woopay_font_rules();
+		}
+
+		// Fall back to server-extracted font rules when none were provided by the client.
+		if ( empty( $font_rules ) && WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
+			$font_rules = \WC_Payments_Styles_Cache::get_woopay_font_rules();
 		}
 
 		$user             = wp_get_current_user();
@@ -571,6 +578,7 @@ class WooPay_Session {
 			],
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity(),
 			'appearance'           => $appearance,
+			'font_rules'           => $font_rules,
 		];
 
 		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
@@ -625,6 +633,41 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Sanitize font rules from the client.
+	 *
+	 * Validates each rule contains a cssSrc URL from an allowed font CDN domain.
+	 * Caps at 10 entries to prevent abuse.
+	 *
+	 * @param array $raw_rules Raw font rules array from the client.
+	 * @return array Sanitized font rules.
+	 */
+	private static function sanitize_font_rules( $raw_rules ): array {
+		if ( ! is_array( $raw_rules ) ) {
+			return [];
+		}
+
+		$allowed_domains = [
+			'fonts.googleapis.com',
+			'fonts.gstatic.com',
+			'use.typekit.net',
+			'fonts.bunny.net',
+		];
+
+		$sanitized = [];
+		foreach ( array_slice( $raw_rules, 0, 10 ) as $rule ) {
+			if ( ! isset( $rule['cssSrc'] ) || ! is_string( $rule['cssSrc'] ) ) {
+				continue;
+			}
+			$url  = esc_url_raw( $rule['cssSrc'] );
+			$host = wp_parse_url( $url, PHP_URL_HOST );
+			if ( $host && in_array( $host, $allowed_domains, true ) ) {
+				$sanitized[] = [ 'cssSrc' => $url ];
+			}
+		}
+		return $sanitized;
+	}
+
+	/**
 	 * Used to initialize woopay session.
 	 *
 	 * @return void
@@ -643,8 +686,9 @@ class WooPay_Session {
 		$key           = ! empty( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : null;
 		$billing_email = ! empty( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : null;
 		$appearance    = ! empty( $_POST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_POST['appearance'] ) : null; // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, Generic.Arrays.DisallowLongArraySyntax.Found
+		$font_rules    = ! empty( $_POST['font_rules'] ) ? self::sanitize_font_rules( wp_unslash( $_POST['font_rules'] ) ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by sanitize_font_rules.
 
-		$body                 = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance );
+		$body                 = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance, $font_rules );
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
 
 		$args = [
@@ -1187,7 +1231,13 @@ class WooPay_Session {
 			);
 		}
 
-		\WC_Payments_Styles_Cache::set_woopay_appearance( $appearance );
+		$font_rules = [];
+		if ( ! empty( $_POST['font_rules'] ) ) {
+			$raw_font_rules = json_decode( sanitize_text_field( wp_unslash( $_POST['font_rules'] ) ), true );
+			$font_rules     = is_array( $raw_font_rules ) ? self::sanitize_font_rules( $raw_font_rules ) : [];
+		}
+
+		\WC_Payments_Styles_Cache::set_woopay_appearance( $appearance, $font_rules );
 
 		wp_send_json_success();
 	}
@@ -1234,7 +1284,13 @@ class WooPay_Session {
 			);
 		}
 
-		$stored = \WC_Payments_Styles_Cache::maybe_set_woopay_appearance( $appearance );
+		$font_rules = [];
+		if ( ! empty( $_POST['font_rules'] ) ) {
+			$raw_font_rules = json_decode( sanitize_text_field( wp_unslash( $_POST['font_rules'] ) ), true );
+			$font_rules     = is_array( $raw_font_rules ) ? self::sanitize_font_rules( $raw_font_rules ) : [];
+		}
+
+		$stored = \WC_Payments_Styles_Cache::maybe_set_woopay_appearance( $appearance, $font_rules );
 
 		if ( ! $stored ) {
 			wp_send_json_success( [ 'stored' => false ] );
