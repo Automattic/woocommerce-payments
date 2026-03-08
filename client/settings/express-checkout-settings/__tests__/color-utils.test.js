@@ -87,8 +87,14 @@ describe( 'getCardBorderColor', () => {
 		expect( getCardBorderColor( '' ) ).toBeUndefined();
 	} );
 
-	it( 'returns undefined for 3-digit hex shorthand', () => {
-		expect( getCardBorderColor( '#fff' ) ).toBeUndefined();
+	it( 'normalizes 3-digit hex shorthand and applies border', () => {
+		// #fff → #ffffff → darkenColor('#ffffff', 6) = #f0f0f0
+		expect( getCardBorderColor( '#fff' ) ).toBe( '#f0f0f0' );
+	} );
+
+	it( 'normalizes 3-digit dark hex shorthand', () => {
+		// #000 → #000000 → lightenColor('#000000', 6) = #0f0f0f
+		expect( getCardBorderColor( '#000' ) ).toBe( '#0f0f0f' );
 	} );
 
 	it( 'returns undefined for invalid hex', () => {

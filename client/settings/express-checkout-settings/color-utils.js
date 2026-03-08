@@ -66,8 +66,19 @@ export const isDarkColor = ( hex ) => {
  * @return {string|undefined} The derived border colour, or undefined.
  */
 export const getCardBorderColor = ( bg ) => {
-	if ( ! bg || ! /^#[0-9a-f]{6}$/i.test( bg ) ) {
+	if ( ! bg ) {
 		return undefined;
 	}
-	return isDarkColor( bg ) ? lightenColor( bg, 6 ) : darkenColor( bg, 6 );
+
+	// Normalize 3-digit hex (#RGB) to 6-digit (#RRGGBB).
+	let hex = bg;
+	const shortMatch = /^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec( hex );
+	if ( shortMatch ) {
+		hex = `#${ shortMatch[ 1 ] }${ shortMatch[ 1 ] }${ shortMatch[ 2 ] }${ shortMatch[ 2 ] }${ shortMatch[ 3 ] }${ shortMatch[ 3 ] }`;
+	}
+
+	if ( ! /^#[0-9a-f]{6}$/i.test( hex ) ) {
+		return undefined;
+	}
+	return isDarkColor( hex ) ? lightenColor( hex, 6 ) : darkenColor( hex, 6 );
 };

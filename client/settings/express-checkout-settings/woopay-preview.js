@@ -4,6 +4,7 @@
  */
 import React, { useMemo } from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -116,7 +117,7 @@ const BackButton = ( { themedStyle } ) => {
 				className="preview-layout__back-button-label"
 				style={ themedStyle }
 			>
-				Return to cart
+				{ __( 'Return to cart', 'woocommerce-payments' ) }
 			</span>
 		</div>
 	);
@@ -314,7 +315,7 @@ const WooPayLogo = () => {
 const CheckoutButton = ( { height } ) => {
 	return (
 		<div className="preview-layout__checkout-button" style={ { height } }>
-			Place order
+			{ __( 'Place order', 'woocommerce-payments' ) }
 		</div>
 	);
 };
@@ -440,7 +441,10 @@ export default ( {
 										height="0.625rem"
 										themedStyle={ themed.sectionHeader }
 									>
-										Ship to
+										{ __(
+											'Ship to',
+											'woocommerce-payments'
+										) }
 										<ChevronDown />
 									</SectionHeader>
 									<FieldValue themedStyle={ themed.textBox }>
@@ -453,11 +457,24 @@ export default ( {
 										height="0.625rem"
 										themedStyle={ themed.sectionHeader }
 									>
-										Shipping method
+										{ __(
+											'Shipping method',
+											'woocommerce-payments'
+										) }
 										<ChevronDown />
 									</SectionHeader>
 									<FieldValue themedStyle={ themed.textBox }>
-										Free shipping — Free
+										{ sprintf(
+											/* translators: %s: shipping method name */
+											__(
+												'%s — Free',
+												'woocommerce-payments'
+											),
+											__(
+												'Free shipping',
+												'woocommerce-payments'
+											)
+										) }
 									</FieldValue>
 								</ContactField>
 								<ContactField>
@@ -465,7 +482,10 @@ export default ( {
 										height="0.625rem"
 										themedStyle={ themed.sectionHeader }
 									>
-										Pay with
+										{ __(
+											'Pay with',
+											'woocommerce-payments'
+										) }
 										<ChevronDown />
 									</SectionHeader>
 									<FieldValue themedStyle={ themed.textBox }>
@@ -507,7 +527,10 @@ export default ( {
 								height="0.625rem"
 								themedStyle={ themed.sectionHeader }
 							>
-								Order summary
+								{ __(
+									'Order summary',
+									'woocommerce-payments'
+								) }
 							</SectionHeader>
 							<VerticalSpacer height="0.6rem" />
 							<div
@@ -515,13 +538,17 @@ export default ( {
 								style={ themed.textBox }
 							>
 								<span className="preview-layout__cart-header-text">
-									1 item
+									{ sprintf(
+										/* translators: %d: number of items in cart */
+										__( '%d item', 'woocommerce-payments' ),
+										1
+									) }
 								</span>
 								<span
 									className="preview-layout__cart-header-toggle"
 									style={ themed.link }
 								>
-									Hide
+									{ __( 'Hide', 'woocommerce-payments' ) }
 									<span className="preview-layout__chevron-up">
 										›
 									</span>
@@ -562,7 +589,7 @@ export default ( {
 										fill="currentColor"
 									/>
 								</svg>
-								Add a coupon
+								{ __( 'Add a coupon', 'woocommerce-payments' ) }
 							</div>
 							<VerticalSpacer height="0.108rem" />
 							<div
@@ -601,22 +628,31 @@ export default ( {
 										strokeWidth="1.5"
 									/>
 								</svg>
-								Add a gift card
+								{ __(
+									'Add a gift card',
+									'woocommerce-payments'
+								) }
 							</div>
 							<VerticalSpacer height="0.24rem" />
 							<OrderRow
-								label="Subtotal"
+								label={ __(
+									'Subtotal',
+									'woocommerce-payments'
+								) }
 								value="$ 18.00"
 								themedStyle={ themed.textBox }
 							/>
 							<OrderRow
-								label="Shipping"
-								value="Free"
+								label={ __(
+									'Shipping',
+									'woocommerce-payments'
+								) }
+								value={ __( 'Free', 'woocommerce-payments' ) }
 								themedStyle={ themed.textBox }
 							/>
 							<VerticalSpacer height="0.5rem" />
 							<OrderRow
-								label="Total"
+								label={ __( 'Total', 'woocommerce-payments' ) }
 								value="$ 18.00"
 								themedStyle={ {
 									...themed.textBox,
