@@ -8,18 +8,13 @@ import { isPreviewing } from 'wcpay/checkout/preview';
 import { appendObjectToFormData } from './form-data';
 
 let attempted = false;
+let listeningForSaved = false;
 
 /**
- * When running inside the Customizer preview, computes the live appearance
- * from the DOM and POSTs it to the admin endpoint. Runs once per page load.
+ * Extracts the current appearance from the DOM and POSTs it to the admin
+ * endpoint. Returns early if preconditions aren't met.
  */
-export const maybePersistAdminAppearance = () => {
-	if ( attempted ) {
-		return;
-	}
-
-	attempted = true;
-
+const persistAppearanceFromDOM = () => {
 	const nonce = getConfig( 'adminAppearanceNonce' );
 	if ( ! nonce || ! isPreviewing() ) {
 		return;
@@ -47,4 +42,30 @@ export const maybePersistAdminAppearance = () => {
 		body,
 		credentials: 'same-origin',
 	} ).catch( () => {} );
+};
+
+/**
+ * When running inside the Customizer preview, computes the live appearance
+ * from the DOM and POSTs it to the admin endpoint. Runs once per page load,
+ * then re-runs after each Customizer "Publish" so the cache is repopulated
+ * with the updated styles.
+ */
+export const maybePersistAdminAppearance = () => {
+	if ( attempted ) {
+		return;
+	}
+
+	attempted = true;
+
+	persistAppearanceFromDOM();
+
+	// After a Customizer publish, the server-side customize_save_after hook
+	// invalidates the cached appearance. Listen for the "saved" event so we
+	// can re-extract and re-persist with the now-current styles.
+	if ( ! listeningForSaved && window.wp?.customize ) {
+		listeningForSaved = true;
+		window.wp.customize.bind( 'saved', () => {
+			persistAppearanceFromDOM();
+		} );
+	}
 };
