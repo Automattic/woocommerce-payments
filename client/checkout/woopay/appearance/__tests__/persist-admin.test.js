@@ -1,5 +1,6 @@
 let mockGetConfig;
 let mockGetAppearance;
+let mockGetFontRulesFromPage;
 let mockGetAppearanceType;
 let mockIsPreviewing;
 
@@ -8,6 +9,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 } ) );
 jest.mock( 'wcpay/checkout/upe-styles', () => ( {
 	getAppearance: ( ...args ) => mockGetAppearance( ...args ),
+	getFontRulesFromPage: ( ...args ) => mockGetFontRulesFromPage( ...args ),
 } ) );
 jest.mock( 'wcpay/checkout/utils', () => ( {
 	getAppearanceType: ( ...args ) => mockGetAppearanceType( ...args ),
@@ -32,6 +34,9 @@ const setupDefaults = () => {
 	mockIsPreviewing = jest.fn( () => true );
 	mockGetAppearanceType = jest.fn( () => 'stripe' );
 	mockGetAppearance = jest.fn( () => MOCK_APPEARANCE );
+	mockGetFontRulesFromPage = jest.fn( () => [
+		{ cssSrc: 'https://fonts.googleapis.com/css?family=Roboto' },
+	] );
 	global.fetch = jest.fn( () => Promise.resolve() );
 };
 
@@ -110,7 +115,7 @@ describe( 'maybePersistAdminAppearance', () => {
 			expect( options.credentials ).toBe( 'same-origin' );
 		} );
 
-		it( 'includes action, nonce, and appearance in FormData', () => {
+		it( 'includes action, nonce, appearance, and font_rules in FormData', () => {
 			const persist = loadModule();
 
 			persist();
@@ -124,6 +129,11 @@ describe( 'maybePersistAdminAppearance', () => {
 			expect( body.get( 'appearance[variables][colorBackground]' ) ).toBe(
 				'#ffffff'
 			);
+			expect( JSON.parse( body.get( 'font_rules' ) ) ).toEqual( [
+				{
+					cssSrc: 'https://fonts.googleapis.com/css?family=Roboto',
+				},
+			] );
 		} );
 	} );
 

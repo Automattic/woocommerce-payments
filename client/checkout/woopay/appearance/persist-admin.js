@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { getConfig } from 'wcpay/utils/checkout';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
 import { isPreviewing } from 'wcpay/checkout/preview';
 import { appendObjectToFormData } from './form-data';
@@ -31,10 +31,13 @@ const persistAppearanceFromDOM = () => {
 		return;
 	}
 
+	const fontRules = getFontRulesFromPage();
+
 	const body = new FormData();
 	body.append( 'action', 'wcpay_admin_set_woopay_appearance' );
 	body.append( '_ajax_nonce', nonce );
 	appendObjectToFormData( body, appearance );
+	body.append( 'font_rules', JSON.stringify( fontRules ) );
 
 	// Fire-and-forget — admin write always overwrites.
 	fetch( ajaxUrl, {

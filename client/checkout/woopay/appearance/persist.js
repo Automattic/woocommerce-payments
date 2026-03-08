@@ -3,6 +3,7 @@
  */
 import { getConfig } from 'wcpay/utils/checkout';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';
+import { getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { appendObjectToFormData } from './form-data';
 
 let persistAttempted = false;
@@ -28,9 +29,12 @@ export const maybePersistAppearance = ( appearance ) => {
 
 	const url = buildAjaxURL( wcAjaxUrl, 'shopper_set_woopay_appearance' );
 
+	const fontRules = getFontRulesFromPage();
+
 	const body = new FormData();
 	body.append( '_ajax_nonce', getConfig( 'woopaySessionNonce' ) );
 	appendObjectToFormData( body, appearance );
+	body.append( 'font_rules', JSON.stringify( fontRules ) );
 
 	// Fire-and-forget — we don't need the response.
 	fetch( url, {
