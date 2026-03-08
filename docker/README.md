@@ -48,31 +48,56 @@ Visit the `<url>` , login and setup WCPay.
 
 ### Setting up an additional Docker environment
 
-If you need to set up a different local environment alongside the default one, here are the steps to follow:
-1. Clone the repository to a new directory and navigate to it.
-2. Run `npm install && composer install` to install the dependencies.
-3. Create a `docker-compose.override.yml` file in the new directory with the following contents:
-    ```
-    services:
-      wordpress:
-        container_name: woopayments_2nd_wordpress # Change the container name.
-        build:
-          args:
-            - XDEBUG_REMOTE_PORT=9004 # Change the xDebug port.
-        ports: !override # This will override the default ports rather than appending to them.
-          - "8092:80" # Change the HTTP port.
-      db:
-        container_name: woopayments_2nd_mysql # Change the container name.
-        ports: !override # This will override the default ports rather than appending to them.
-          - "5690:3306" # Change the MySQL port.
-      phpMyAdmin:
-        container_name: woopayments_2nd_phpmyadmin # Change the container name.
-        ports: !override # This will override the default ports rather than appending to them.
-          - "8093:80" # Change the PHPMyAdmin HTTP port.
-    ```
-4. Run `npm run up` in the new directory to start the new environment.
-5. Run `WP_URL=localhost:8084 ./bin/docker-setup.sh woopayments_2nd_wordpress` to set up the new environment. Notice the use of the new container name and the new port for the WordPress container.
-6. You are all set! You can now access the new environment at `http://localhost:8092/wp-admin/` and PHPMyAdmin at `http://localhost:8093/`.
+The repository supports multiple simultaneous checkouts (via `git worktree` or independent clones) without any manual port configuration.
+
+#### Automated setup (recommended)
+
+Each checkout stores its own Docker settings — container names, ports, project namespace — in a local `.env` file. The setup script generates this file automatically:
+
+1. Clone (or add a worktree) and install dependencies:
+   ```bash
+   git worktree add ../.worktrees/feat-my-feature feat/my-feature
+   cd ../.worktrees/feat-my-feature
+   npm install
+   ```
+2. Run the port-setup script to create a unique `.env` for this checkout:
+   ```bash
+   npm run worktree:setup
+   ```
+   The script auto-detects ports already used by sibling worktrees and running Docker containers, and picks a conflict-free set of ports.
+3. Start Docker normally:
+   ```bash
+   npm run up:recreate
+   ```
+   (`npm run up` also calls `worktree:setup` automatically, so step 2 can be skipped if you prefer.)
+
+To see the status of all your checkouts at a glance:
+```bash
+npm run worktree:status
+```
+
+#### What `npm run worktree:setup` does
+
+It writes (or refreshes) a `.env` file in the current directory with:
+
+| Variable | Example value | Purpose |
+|---|---|---|
+| `WORKTREE_ID` | `feat_my_feature` | Human-readable ID derived from the directory name |
+| `COMPOSE_PROJECT_NAME` | `wcpay_feat_my_feature` | Namespaces Docker containers/volumes so they don't clash |
+| `WORDPRESS_PORT` | `8180` | Host port → WordPress (default **8082** for first checkout) |
+| `MYSQL_PORT` | `5679` | Host port → MySQL |
+| `PHPMYADMIN_PORT` | `8200` | Host port → phpMyAdmin |
+
+The WordPress admin is then available at `http://localhost:<WORDPRESS_PORT>/wp-admin/`.
+
+#### Admin bar indicator
+
+When the Docker environment is running, a 🌿 indicator appears in the WordPress admin bar showing the `WORKTREE_ID` and port of the current checkout, making it easy to tell multiple browser tabs apart.
+
+#### Manual override (advanced)
+
+If you need more control, you can still create a `docker-compose.override.yml` or edit `.env` directly. The `.env` file is gitignored.
+
 
 ### Changing default port for xDebug
 To change the default port for xDebug you should create `docker-compose.override.yml` with the following contents:

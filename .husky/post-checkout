@@ -1,9 +1,24 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+NULL_SHA="0000000000000000000000000000000000000000"
+
+# Skip for fresh worktrees (dependencies won't be installed yet)
+if [ "$1" = "$NULL_SHA" ]; then
+    echo "Fresh worktree detected, skipping post-checkout hooks (run npm install)"
+    exit 0
+fi
+
 # using `--no-install` just in case it's the first time a person is checking out the repo and doesn't have yarnhook installed
 npx --no-install yarnhook
 
 # make sure composer packages are installed and the autoload files are regenerated
 # --ignore-platform-req=php allows dev-only packages (like qit-cli) that need PHP 7.4+
 composer install --ignore-platform-req=php
+
+# Ensure this checkout has a unique Docker environment configuration (.env).
+# Running this after every checkout keeps the .env in sync with the worktree
+# layout and is safe to re-run (it preserves values already set in .env).
+if [ -f "./bin/docker-port-setup.sh" ]; then
+    ./bin/docker-port-setup.sh
+fi
