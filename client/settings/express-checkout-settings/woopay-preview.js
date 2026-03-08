@@ -49,12 +49,14 @@ const getThemedStyles = ( appearance ) => {
 		},
 		headerText: {
 			color: rules[ '.Header' ]?.color || undefined,
+			fontFamily: rules[ '.Heading' ]?.fontFamily || undefined,
 		},
 		chevron: {
 			color: rules[ '.Header' ]?.color || undefined,
 		},
 		sectionHeader: {
 			color: rules[ '.Label' ]?.color || undefined,
+			fontFamily: rules[ '.Heading' ]?.fontFamily || undefined,
 		},
 		textBox: {
 			color: vars.colorText || undefined,
