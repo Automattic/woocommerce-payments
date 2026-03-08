@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
 import { __, sprintf } from '@wordpress/i18n';
 
@@ -358,11 +358,19 @@ function sanitizeHtmlForPreview( input ) {
 	} );
 }
 
+const ALLOWED_FONT_DOMAINS = [
+	'fonts.googleapis.com',
+	'fonts.gstatic.com',
+	'use.typekit.net',
+	'fonts.bunny.net',
+];
+
 export default ( {
 	storeName,
 	storeLogo,
 	customMessage,
 	appearance,
+	fontRules,
 	...props
 } ) => {
 	const { style, ...restProps } = props;
@@ -370,6 +378,34 @@ export default ( {
 	const themed = useMemo( () => getThemedStyles( appearance ), [
 		appearance,
 	] );
+
+	// Load merchant font stylesheets from stored font rules.
+	useEffect( () => {
+		const rules = fontRules || [];
+		const links = [];
+
+		rules.forEach( ( rule, index ) => {
+			if ( ! rule.cssSrc ) {
+				return;
+			}
+			try {
+				const url = new URL( rule.cssSrc );
+				if ( ! ALLOWED_FONT_DOMAINS.includes( url.hostname ) ) {
+					return;
+				}
+			} catch {
+				return;
+			}
+			const link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.href = rule.cssSrc;
+			link.id = `woopay-preview-font-${ index }`;
+			document.head.appendChild( link );
+			links.push( link );
+		} );
+
+		return () => links.forEach( ( link ) => link.remove() );
+	}, [ fontRules ] );
 
 	const preparedCustomMessage = useMemo( () => {
 		let rawCustomMessage = ( customMessage || '' ).trim();
