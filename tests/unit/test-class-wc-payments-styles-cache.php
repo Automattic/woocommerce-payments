@@ -253,4 +253,147 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( get_option( 'wcpay_styles_cache_version' ) );
 		$this->assertMatchesRegularExpression( '/^[a-f0-9]{32}$/', $second_version );
 	}
+
+	public function test_set_woopay_appearance_stores_font_rules() {
+		delete_option( 'wcpay_woopay_checkout_appearance' );
+		delete_option( 'wcpay_styles_cache_version' );
+
+		$appearance = [
+			'theme' => 'stripe',
+			'rules' => [ '.Input' => [ 'color' => '#333' ] ],
+		];
+		$font_rules = [
+			[ 'cssSrc' => 'https://fonts.googleapis.com/css?family=Roboto' ],
+			[ 'cssSrc' => 'https://fonts.bunny.net/css?family=Inter' ],
+		];
+
+		WC_Payments_Styles_Cache::set_woopay_appearance( $appearance, $font_rules );
+
+		$this->assertEquals( $appearance, WC_Payments_Styles_Cache::get_woopay_appearance() );
+		$this->assertEquals( $font_rules, WC_Payments_Styles_Cache::get_woopay_font_rules() );
+	}
+
+	public function test_get_woopay_font_rules_returns_empty_when_not_set() {
+		// Force a non-block theme so get_woopay_appearance() does not auto-compute.
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
+
+		try {
+			delete_option( 'wcpay_woopay_checkout_appearance' );
+
+			$result = WC_Payments_Styles_Cache::get_woopay_font_rules();
+			$this->assertEmpty( $result );
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
+	}
+
+	public function test_get_woopay_font_rules_returns_empty_on_version_mismatch() {
+		// Force a non-block theme so get_woopay_appearance() does not auto-compute.
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
+
+		try {
+			delete_option( 'wcpay_styles_cache_version' );
+
+			$appearance = [ 'theme' => 'stripe' ];
+			$font_rules = [
+				[ 'cssSrc' => 'https://fonts.googleapis.com/css?family=Roboto' ],
+			];
+			WC_Payments_Styles_Cache::set_woopay_appearance( $appearance, $font_rules );
+
+			// Invalidate the styles cache version so a new one is computed.
+			WC_Payments_Styles_Cache::invalidate_styles_cache_version();
+
+			// Manually set a different version to simulate a theme change.
+			update_option( 'wcpay_styles_cache_version', 'different_version' );
+
+			$result = WC_Payments_Styles_Cache::get_woopay_font_rules();
+			$this->assertEmpty( $result );
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
+	}
+
+	public function test_get_font_rules_from_registered_styles_extracts_cdn_urls() {
+		// phpcs:disable WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Test fixtures for CDN font stylesheets.
+		wp_register_style( 'test-google-font', 'https://fonts.googleapis.com/css?family=Roboto', [], null );
+		wp_register_style( 'test-bunny-font', 'https://fonts.bunny.net/css?family=Inter', [], null );
+		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.MissingVersion
+
+		try {
+			$result = WC_Payments_Styles_Cache::get_font_rules_from_registered_styles();
+
+			$sources = array_column( $result, 'cssSrc' );
+			$this->assertContains( 'https://fonts.googleapis.com/css?family=Roboto', $sources );
+			$this->assertContains( 'https://fonts.bunny.net/css?family=Inter', $sources );
+		} finally {
+			wp_deregister_style( 'test-google-font' );
+			wp_deregister_style( 'test-bunny-font' );
+		}
+	}
+
+	public function test_get_font_rules_from_registered_styles_ignores_non_cdn_urls() {
+		// phpcs:ignore WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Test fixture.
+		wp_register_style( 'test-non-cdn', 'https://example.com/styles.css', [], null );
+
+		try {
+			$result  = WC_Payments_Styles_Cache::get_font_rules_from_registered_styles();
+			$sources = array_column( $result, 'cssSrc' );
+			$this->assertNotContains( 'https://example.com/styles.css', $sources );
+		} finally {
+			wp_deregister_style( 'test-non-cdn' );
+		}
+	}
+
+	public function test_get_font_rules_from_registered_styles_caps_at_10() {
+		$handles = [];
+		// phpcs:disable WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Test fixtures.
+		for ( $i = 0; $i < 12; $i++ ) {
+			$handle    = 'test-font-cap-' . $i;
+			$handles[] = $handle;
+			wp_register_style( $handle, 'https://fonts.googleapis.com/css?family=Font' . $i, [], null );
+		}
+		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.MissingVersion
+
+		try {
+			$result = WC_Payments_Styles_Cache::get_font_rules_from_registered_styles();
+			$this->assertCount( 10, $result );
+		} finally {
+			foreach ( $handles as $handle ) {
+				wp_deregister_style( $handle );
+			}
+		}
+	}
+
+	public function test_maybe_set_woopay_appearance_stores_font_rules() {
+		// Force a non-block theme so get_woopay_appearance() does not auto-compute.
+		$stylesheet_filter = function () {
+			return 'default';
+		};
+		add_filter( 'stylesheet', $stylesheet_filter );
+
+		try {
+			delete_option( 'wcpay_woopay_checkout_appearance' );
+			delete_option( 'wcpay_styles_cache_version' );
+
+			$appearance = [
+				'theme' => 'stripe',
+				'rules' => [ '.Input' => [ 'color' => '#333' ] ],
+			];
+			$font_rules = [
+				[ 'cssSrc' => 'https://fonts.googleapis.com/css?family=Roboto' ],
+			];
+
+			$result = WC_Payments_Styles_Cache::maybe_set_woopay_appearance( $appearance, $font_rules );
+			$this->assertTrue( $result );
+			$this->assertEquals( $font_rules, WC_Payments_Styles_Cache::get_woopay_font_rules() );
+		} finally {
+			remove_filter( 'stylesheet', $stylesheet_filter );
+		}
+	}
 }
