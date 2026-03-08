@@ -27,8 +27,16 @@ jest.mock(
 		isUserLoggedIn: jest.fn(),
 		maybePrefetchEncryptedSessionData: jest.fn(),
 		getClassicProceedToCheckoutButton: jest.fn(),
+		getMiniCartProceedToCheckoutButton: jest.fn(),
+		getFooterMiniCartProceedToCheckoutButton: jest.fn(),
 		addRedirectToWooPayEventListener: jest.fn(),
 		setEncryptedSessionDataAsNotPrefetched: jest.fn(),
+		redirectElements: {
+			BLOCKS_MINI_CART_PROCEED_BUTTON:
+				'a.wp-block-woocommerce-mini-cart-checkout-button-block',
+			BLOCKS_FOOTER_MINI_CART_PROCEED_BUTTON:
+				'a.wc-block-mini-cart__footer-checkout',
+		},
 	} )
 );
 
@@ -206,5 +214,73 @@ describe( 'WooPay direct checkout cart item listeners', () => {
 		expect(
 			WooPayDirectCheckout.setEncryptedSessionDataAsNotPrefetched
 		).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'WooPay direct checkout iAPI mini-cart', () => {
+	let miniCartWidget;
+	let miniCartButton;
+	let footerButton;
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+
+		// Set up iAPI mini-cart widget element.
+		miniCartWidget = document.createElement( 'div' );
+		miniCartWidget.setAttribute(
+			'data-wp-interactive',
+			'woocommerce/mini-cart'
+		);
+		document.body.appendChild( miniCartWidget );
+
+		// Set up SSR'd checkout button inside the overlay.
+		miniCartButton = document.createElement( 'a' );
+		miniCartButton.classList.add(
+			'wp-block-woocommerce-mini-cart-checkout-button-block'
+		);
+		document.body.appendChild( miniCartButton );
+
+		// Set up SSR'd footer checkout button.
+		footerButton = document.createElement( 'a' );
+		footerButton.classList.add( 'wc-block-mini-cart__footer-checkout' );
+		document.body.appendChild( footerButton );
+	} );
+
+	afterEach( () => {
+		miniCartWidget.remove();
+		miniCartButton.remove();
+		footerButton.remove();
+	} );
+
+	it( "attaches event listeners directly to SSR'd mini-cart buttons on window load", async () => {
+		WooPayDirectCheckout.isWooPayThirdPartyCookiesEnabled.mockResolvedValue(
+			false
+		);
+		WooPayDirectCheckout.getCheckoutButtonElements.mockReturnValue( [] );
+		WooPayDirectCheckout.getMiniCartProceedToCheckoutButton.mockReturnValue(
+			miniCartButton
+		);
+		WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton.mockReturnValue(
+			footerButton
+		);
+
+		fireEvent.load( window );
+
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		// Should be called 3 times: mini-cart button, footer button, and main checkout buttons.
+		expect(
+			WooPayDirectCheckout.addRedirectToWooPayEventListener
+		).toHaveBeenCalledTimes( 3 );
+
+		// Verify mini-cart button got a listener.
+		expect(
+			WooPayDirectCheckout.addRedirectToWooPayEventListener
+		).toHaveBeenCalledWith( [ miniCartButton ], false );
+
+		// Verify footer button got a listener.
+		expect(
+			WooPayDirectCheckout.addRedirectToWooPayEventListener
+		).toHaveBeenCalledWith( [ footerButton ], false );
 	} );
 } );

@@ -64,14 +64,27 @@ const addFooterCartEventListener = () => {
 };
 
 /**
- * If the mini cart widget is available on the page, observe when the drawer element gets added to the DOM.
+ * If the mini cart widget is available on the page, attach event listeners to the checkout buttons.
  *
- * As of today, no window events are triggered when the mini cart is opened or closed,
- * nor there are attribute changes to the "open" button, so we have to rely on a MutationObserver
- * attached to the `document.body`, which is where the mini cart drawer element is added.
+ * Supports two rendering modes:
+ * - iAPI (WooCommerce 10.4+): The overlay and buttons are server-side rendered and already in the
+ *   DOM at page load. We attach listeners directly — no MutationObserver needed.
+ * - Legacy React: The drawer is dynamically injected into the DOM when opened, so we use a
+ *   MutationObserver to detect insertion and then wait for the buttons to render.
  */
 const maybeObserveMiniCart = () => {
-	// Check if the widget is available on the page.
+	// iAPI mini-cart (WC 10.4+): overlay & buttons are SSR'd, already in the DOM.
+	if (
+		document.querySelector(
+			'[data-wp-interactive="woocommerce/mini-cart"]'
+		)
+	) {
+		addMiniCartEventListener();
+		addFooterCartEventListener();
+		return;
+	}
+
+	// Legacy React mini-cart: check if the widget is available on the page.
 	if (
 		! document.querySelector( '[data-block-name="woocommerce/mini-cart"]' )
 	) {
