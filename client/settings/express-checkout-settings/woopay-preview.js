@@ -388,17 +388,22 @@ export default ( {
 			if ( ! rule.cssSrc ) {
 				return;
 			}
+			let validUrl;
 			try {
 				const url = new URL( rule.cssSrc );
-				if ( ! ALLOWED_FONT_DOMAINS.includes( url.hostname ) ) {
+				if (
+					url.protocol !== 'https:' ||
+					! ALLOWED_FONT_DOMAINS.includes( url.hostname )
+				) {
 					return;
 				}
+				validUrl = url.href;
 			} catch {
 				return;
 			}
 			const link = document.createElement( 'link' );
 			link.rel = 'stylesheet';
-			link.href = rule.cssSrc;
+			link.href = validUrl;
 			link.id = `woopay-preview-font-${ index }`;
 			document.head.appendChild( link );
 			links.push( link );
