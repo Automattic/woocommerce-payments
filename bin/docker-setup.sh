@@ -3,8 +3,19 @@
 # Exit if any command fails.
 set -e
 
-WP_CONTAINER=${1-woocommerce_payments_wordpress}
-SITE_URL=${WP_URL-"localhost:8082"}
+# Load per-checkout environment (.env) to pick up COMPOSE_PROJECT_NAME,
+# WORDPRESS_PORT, etc.  These are set by `npm run worktree:setup` and allow
+# multiple checkouts to coexist on the same machine without port/name clashes.
+if [[ -f ".env" ]]; then
+    # shellcheck source=/dev/null
+    source ".env"
+fi
+
+_PROJECT=${COMPOSE_PROJECT_NAME:-woocommerce_payments}
+_PORT=${WORDPRESS_PORT:-8082}
+
+WP_CONTAINER=${1:-${_PROJECT}_wordpress}
+SITE_URL=${WP_URL:-"localhost:${_PORT}"}
 
 redirect_output() {
 	if [[ -z "$DEBUG" ]]; then

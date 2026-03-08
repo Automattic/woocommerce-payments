@@ -10,15 +10,15 @@ services:
       args:
         - XDEBUG_REMOTE_PORT=9000 # IDE/Editor's listener port
         - XDEBUG_START_WITH_REQUEST=trigger
-    container_name: woocommerce_payments_wordpress
-    image: woocommerce_payments_wordpress
+    container_name: ${COMPOSE_PROJECT_NAME:-woocommerce_payments}_wordpress
+    image: ${COMPOSE_PROJECT_NAME:-woocommerce_payments}_wordpress
     restart: always
     depends_on:
       - db
     links:
       - db:mysql
     ports:
-      - "8082:80"
+      - "${WORDPRESS_PORT:-8082}:80"
     env_file:
       - default.env
     volumes:
@@ -32,18 +32,18 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
   db:
-    container_name: woocommerce_payments_mysql
+    container_name: ${COMPOSE_PROJECT_NAME:-woocommerce_payments}_mysql
     image: mariadb:10.5.8
     ports:
-      - "5678:3306"
+      - "${MYSQL_PORT:-5678}:3306"
     env_file:
       - default.env
     volumes:
       - ./docker/data:/var/lib/mysql
   phpMyAdmin:
-    container_name: woocommerce_payments_phpmyadmin
+    container_name: ${COMPOSE_PROJECT_NAME:-woocommerce_payments}_phpmyadmin
     image: phpmyadmin:latest
     ports:
-      - "8083:80"
+      - "${PHPMYADMIN_PORT:-8083}:80"
     env_file:
       - default.env

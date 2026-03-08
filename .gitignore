@@ -73,11 +73,17 @@ contributors.md
 # Volumes mounted by Docker containers
 docker/data
 docker/wordpress
-docker/mu-plugins
+# Ignore local mu-plugin files (they are developer-only scripts), but track shipped ones
+docker/mu-plugins/*
+!docker/mu-plugins/.gitkeep
+!docker/mu-plugins/wcpay-worktree-indicator.php
 docker/logs
 
 # Local machine docker override
 docker-compose.override.yml
+
+# Per-checkout Docker environment settings (ports, project name)
+.env
 
 # Tunneling scripts
 /docker/bin/jt
