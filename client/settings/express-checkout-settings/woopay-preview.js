@@ -11,79 +11,7 @@ import { decodeEntities } from '@wordpress/html-entities';
 import { NAMESPACE } from 'wcpay/data/constants';
 import PreviewProductImage from 'assets/images/woopay-preview-product.svg?asset';
 
-/**
- * Darkens a hex colour by a percentage (matching WooPay's PHP darken_color).
- *
- * @param {string} hex   A hex colour string (e.g. "#ffffff").
- * @param {number} pct   Percentage to darken (0–100).
- * @return {string} The darkened hex colour.
- */
-const darkenColor = ( hex, pct ) => {
-	const h = hex.replace( '#', '' );
-	const factor = 1 - Math.max( 0, Math.min( 100, pct ) ) / 100;
-	const r = Math.round( parseInt( h.substring( 0, 2 ), 16 ) * factor );
-	const g = Math.round( parseInt( h.substring( 2, 4 ), 16 ) * factor );
-	const b = Math.round( parseInt( h.substring( 4, 6 ), 16 ) * factor );
-	return `#${ r.toString( 16 ).padStart( 2, '0' ) }${ g
-		.toString( 16 )
-		.padStart( 2, '0' ) }${ b.toString( 16 ).padStart( 2, '0' ) }`;
-};
-
-/**
- * Lightens a hex colour by a percentage (matching WooPay's PHP lighten_color).
- *
- * @param {string} hex   A hex colour string (e.g. "#000000").
- * @param {number} pct   Percentage to lighten (0–100).
- * @return {string} The lightened hex colour.
- */
-const lightenColor = ( hex, pct ) => {
-	const h = hex.replace( '#', '' );
-	const factor = Math.max( 0, Math.min( 100, pct ) ) / 100;
-	const r = Math.round(
-		parseInt( h.substring( 0, 2 ), 16 ) +
-			( 255 - parseInt( h.substring( 0, 2 ), 16 ) ) * factor
-	);
-	const g = Math.round(
-		parseInt( h.substring( 2, 4 ), 16 ) +
-			( 255 - parseInt( h.substring( 2, 4 ), 16 ) ) * factor
-	);
-	const b = Math.round(
-		parseInt( h.substring( 4, 6 ), 16 ) +
-			( 255 - parseInt( h.substring( 4, 6 ), 16 ) ) * factor
-	);
-	return `#${ r.toString( 16 ).padStart( 2, '0' ) }${ g
-		.toString( 16 )
-		.padStart( 2, '0' ) }${ b.toString( 16 ).padStart( 2, '0' ) }`;
-};
-
-/**
- * Returns true if the hex colour is considered "dark" (luminance < 128).
- *
- * @param {string} hex A hex colour string.
- * @return {boolean} Whether the colour is dark.
- */
-const isDarkColor = ( hex ) => {
-	const h = hex.replace( '#', '' );
-	const r = parseInt( h.substring( 0, 2 ), 16 );
-	const g = parseInt( h.substring( 2, 4 ), 16 );
-	const b = parseInt( h.substring( 4, 6 ), 16 );
-	return ( r * 299 + g * 587 + b * 114 ) / 1000 < 128;
-};
-
-/**
- * Derives the card border colour from a background hex value.
- * Matches WooPay's PHP logic: lighten 6 % for dark (night) backgrounds,
- * darken 6 % for light (day) backgrounds.
- *
- * @param {string|undefined} bg  A hex colour string, or undefined.
- * @return {string|undefined} The derived border colour, or undefined.
- */
-const getCardBorderColor = ( bg ) => {
-	if ( ! bg || ! /^#[0-9a-f]{6}$/i.test( bg ) ) {
-		return undefined;
-	}
-	return isDarkColor( bg ) ? lightenColor( bg, 6 ) : darkenColor( bg, 6 );
-};
+import { getCardBorderColor } from './color-utils';
 
 /**
  * Derives inline style objects from a WooPay appearance object.
@@ -126,9 +54,6 @@ const getThemedStyles = ( appearance ) => {
 		},
 		sectionHeader: {
 			color: rules[ '.Label' ]?.color || undefined,
-		},
-		loadingBox: {
-			backgroundColor: rules[ '.Input' ]?.backgroundColor || undefined,
 		},
 		textBox: {
 			color: vars.colorText || undefined,
@@ -197,18 +122,9 @@ const BackButton = ( { themedStyle } ) => {
 	);
 };
 
-const StoreHeader = ( {
-	variant = 'test',
-	themedStyle,
-	chevronStyle,
-	children,
-} ) => {
+const StoreHeader = ( { themedStyle, chevronStyle, children } ) => {
 	return (
-		<div
-			className="preview-layout__store-header"
-			variant={ variant }
-			style={ themedStyle }
-		>
+		<div className="preview-layout__store-header" style={ themedStyle }>
 			<BackButton themedStyle={ chevronStyle } />
 			<div className="preview-layout__store-branding">{ children }</div>
 			<div className="preview-layout__store-header-spacer" />
@@ -503,7 +419,6 @@ export default ( {
 			 }
 			<PreviewContainer themedStyle={ themed.container }>
 				<StoreHeader
-					variant={ storeLogo ? 'logo' : 'text' }
 					themedStyle={ themed.storeHeader }
 					chevronStyle={ themed.chevron }
 				>
@@ -522,7 +437,6 @@ export default ( {
 								</ContactField>
 								<ContactField>
 									<SectionHeader
-										isDropdownIncluded
 										height="0.625rem"
 										themedStyle={ themed.sectionHeader }
 									>
@@ -536,7 +450,6 @@ export default ( {
 								</ContactField>
 								<ContactField>
 									<SectionHeader
-										isDropdownIncluded
 										height="0.625rem"
 										themedStyle={ themed.sectionHeader }
 									>
@@ -549,7 +462,6 @@ export default ( {
 								</ContactField>
 								<ContactField>
 									<SectionHeader
-										isDropdownIncluded
 										height="0.625rem"
 										themedStyle={ themed.sectionHeader }
 									>
