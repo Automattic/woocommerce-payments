@@ -2584,6 +2584,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Simulate being inside the wcpay_track_new_order action callback.
 		global $wp_current_filter;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
 		$wp_current_filter[] = 'wcpay_track_new_order';
 
 		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
@@ -2607,6 +2608,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Simulate being inside the wcpay_track_update_order action callback.
 		global $wp_current_filter;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
 		$wp_current_filter[] = 'wcpay_track_update_order';
 
 		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
