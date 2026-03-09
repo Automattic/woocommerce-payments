@@ -276,9 +276,10 @@ class WC_Payments_Styles_Cache {
 			if ( empty( $style->src ) || ! is_string( $style->src ) ) {
 				continue;
 			}
-			$host = wp_parse_url( $style->src, PHP_URL_HOST );
+			$url  = esc_url_raw( $style->src, [ 'https' ] );
+			$host = wp_parse_url( $url, PHP_URL_HOST );
 			if ( $host && in_array( $host, self::ALLOWED_FONT_DOMAINS, true ) ) {
-				$font_rules[] = [ 'cssSrc' => $style->src ];
+				$font_rules[] = [ 'cssSrc' => $url ];
 			}
 		}
 		return array_slice( $font_rules, 0, 10 );

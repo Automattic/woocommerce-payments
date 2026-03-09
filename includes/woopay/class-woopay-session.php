@@ -478,7 +478,7 @@ class WooPay_Session {
 	 * @param string|null          $key Pay-for-order key.
 	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
-	 * @param array                $appearance Merchant appearance.
+	 * @param array|null           $appearance Merchant appearance, or null to use server-stored fallback.
 	 * @param array                $font_rules Font CDN stylesheet URLs.
 	 * @return array The initial session request data without email and user_session.
 	 */
@@ -651,7 +651,7 @@ class WooPay_Session {
 			if ( ! isset( $rule['cssSrc'] ) || ! is_string( $rule['cssSrc'] ) ) {
 				continue;
 			}
-			$url  = esc_url_raw( $rule['cssSrc'] );
+			$url  = esc_url_raw( $rule['cssSrc'], [ 'https' ] );
 			$host = wp_parse_url( $url, PHP_URL_HOST );
 			if ( $host && in_array( $host, \WC_Payments_Styles_Cache::ALLOWED_FONT_DOMAINS, true ) ) {
 				$sanitized[] = [ 'cssSrc' => $url ];
