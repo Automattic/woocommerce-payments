@@ -82,7 +82,7 @@ class WC_Payments_Styles_Cache {
 				'appearance' => $appearance,
 				'version'    => self::get_styles_cache_version(),
 			],
-			true
+			false
 		);
 	}
 
