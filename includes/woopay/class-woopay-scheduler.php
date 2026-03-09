@@ -48,8 +48,6 @@ class WooPay_Scheduler {
 		add_action( 'activated_plugin', [ $this, 'show_warning_when_incompatible_extension_is_enabled' ] );
 		add_action( 'deactivated_plugin', [ $this, 'hide_warning_when_incompatible_extension_is_disabled' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'remove_legacy_schedule_action_name_on_update' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'remove_first_party_auth_flag_on_update' ] );
-
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ $this, 'remove_scheduler' ] );
 	}
 
@@ -76,17 +74,6 @@ class WooPay_Scheduler {
 		if ( wp_next_scheduled( 'validate_incompatible_extensions' ) ) {
 			wp_clear_scheduled_hook( 'validate_incompatible_extensions' );
 		}
-	}
-
-	/**
-	 * Remove the first-party auth flag that was previously set by the scheduler.
-	 *
-	 * Adapted extensions are now compatible with first-party auth, so the flag
-	 * is no longer managed here. Deleting it lets the option fall back to its
-	 * default value of '1' (enabled).
-	 */
-	public function remove_first_party_auth_flag_on_update() {
-		delete_option( \WC_Payments_Features::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME );
 	}
 
 	/**
