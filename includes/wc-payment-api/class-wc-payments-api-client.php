@@ -18,7 +18,6 @@ use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Logger;
 use Automattic\WooCommerce\Admin\API\Reports\Customers\DataStore;
 use WCPay\Constants\Currency_Code;
-use WCPay\Database_Cache;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Fraud_Outcome_Transactions;
 use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
@@ -655,7 +654,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
+		$dispute   = $this->add_order_info_to_charge_object( $charge_id, $dispute );
+
+		if ( is_array( $dispute['charge'] ) ) {
+			$dispute['charge'] = $this->add_formatted_address_to_charge_object( $dispute['charge'], ', ' );
+		}
+
+		return $dispute;
 	}
 
 	/**
@@ -711,7 +716,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
+		$dispute   = $this->add_order_info_to_charge_object( $charge_id, $dispute );
+
+		if ( is_array( $dispute['charge'] ) ) {
+			$dispute['charge'] = $this->add_formatted_address_to_charge_object( $dispute['charge'], ', ' );
+		}
+
+		return $dispute;
 	}
 
 	/**
@@ -740,7 +751,13 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		$charge_id = is_array( $dispute['charge'] ) ? $dispute['charge']['id'] : $dispute['charge'];
-		return $this->add_order_info_to_charge_object( $charge_id, $dispute );
+		$dispute   = $this->add_order_info_to_charge_object( $charge_id, $dispute );
+
+		if ( is_array( $dispute['charge'] ) ) {
+			$dispute['charge'] = $this->add_formatted_address_to_charge_object( $dispute['charge'], ', ' );
+		}
+
+		return $dispute;
 	}
 
 	/**
@@ -763,6 +780,26 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		return $this->request( $filters, self::DISPUTES_API . '/download', self::POST );
+	}
+
+	/**
+	 * Get summary of a specific dispute.
+	 *
+	 * @param string $dispute_id The ID of the dispute.
+	 *
+	 * @return array Dispute summary data.
+	 * @throws API_Exception - Exception thrown in case route validation fails.
+	 */
+	public function get_dispute_summary( $dispute_id ): array {
+		if ( ! preg_match( '/^\w+$/', $dispute_id ) ) {
+			throw new API_Exception(
+				__( 'Route param validation failed.', 'woocommerce-payments' ),
+				'wcpay_route_validation_failure',
+				400
+			);
+		}
+
+		return $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/summary', self::GET );
 	}
 
 	/**
@@ -2235,11 +2272,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Adds the formatted address to the Charge object
 	 *
-	 * @param array $charge - Charge object.
+	 * @param array  $charge    - Charge object.
+	 * @param string $separator - Separator for the formatted address. Defaults to '<br/>'.
 	 *
 	 * @return array
 	 */
-	public function add_formatted_address_to_charge_object( array $charge ): array {
+	public function add_formatted_address_to_charge_object( array $charge, string $separator = '<br/>' ): array {
 		$has_billing_details = isset( $charge['billing_details'] );
 
 		if ( $has_billing_details ) {
@@ -2253,7 +2291,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$billing_details['postcode']  = ( ! empty( $raw_details['postal_code'] ) ) ? $raw_details['postal_code'] : '';
 			$billing_details['state']     = ( ! empty( $raw_details['state'] ) ) ? $raw_details['state'] : '';
 
-			$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details );
+			$charge['billing_details']['formatted_address'] = WC()->countries->get_formatted_address( $billing_details, $separator );
 		}
 
 		return $charge;

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed stale WP object cache entries persisting after cache invalidation on sites with Memcached/Redis.

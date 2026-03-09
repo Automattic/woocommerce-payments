@@ -5,7 +5,10 @@
 /**
  * Internal dependencies
  */
-import { getRecommendedDocumentFields } from '../recommended-document-fields';
+import {
+	getRecommendedDocumentFields,
+	getRecommendedShippingDocumentFields,
+} from '../recommended-document-fields';
 import { RecommendedDocument } from '../types';
 
 declare const global: {
@@ -302,7 +305,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
 			} );
 
-			it( 'should return default fields for fraudulent + physical_product even when feature flag is enabled', () => {
+			it( 'should return matrix fields for fraudulent + physical_product when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -312,10 +315,21 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// Should fall back to default fraudulent fields since no matrix entry exists
-				expect( result ).toHaveLength( 5 );
+				// Matrix entry for fraudulent + physical_product
+				expect( result ).toHaveLength( 6 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
+				expect( result[ 1 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 1 ].label ).toBe(
+					'Prior undisputed transaction history'
+				);
+				expect( result[ 2 ].key ).toBe( 'customer_communication' ); // Base field auto-merged
+				expect( result[ 3 ].key ).toBe( 'customer_signature' );
+				expect( result[ 3 ].label ).toBe( "Customer's signature" );
+				expect( result[ 4 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].label ).toBe( 'Refund policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 5 ].label ).toBe( 'Other documents' );
 			} );
 
 			it( 'should return default fields for fraudulent when no product type is provided', () => {
@@ -542,7 +556,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 
-			it( 'should fall back to trunk product_not_received fields for physical_product when feature flag is enabled', () => {
+			it( 'should return matrix fields for product_not_received + physical_product when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -552,13 +566,18 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// Should fall back to trunk product_not_received fields since no matrix entry for physical_product
+				// Matrix entry for product_not_received + physical_product
 				expect( result ).toHaveLength( 5 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
 				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 1 ].label ).toBe( 'Customer communication' );
 				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 2 ].label ).toBe( "Customer's signature" );
 				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].label ).toBe( 'Refund policy' );
 				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 4 ].label ).toBe( 'Other documents' );
 			} );
 		} );
 
@@ -648,6 +667,48 @@ describe( 'Recommended Documents', () => {
 					'Any other relevant documents that will support your case.'
 				);
 			} );
+		} );
+	} );
+
+	describe( 'getRecommendedShippingDocumentFields', () => {
+		it( 'should return only proof of shipping by default', () => {
+			const result = getRecommendedShippingDocumentFields();
+			expect( result ).toHaveLength( 1 );
+			expect( result[ 0 ].key ).toBe( 'shipping_documentation' );
+			expect( result[ 0 ].label ).toBe( 'Proof of shipping' );
+		} );
+
+		it( 'should return only proof of shipping for non-matching reason', () => {
+			const result = getRecommendedShippingDocumentFields(
+				'fraudulent',
+				'physical_product'
+			);
+			expect( result ).toHaveLength( 1 );
+			expect( result[ 0 ].key ).toBe( 'shipping_documentation' );
+		} );
+
+		it( 'should return only proof of shipping for non-matching product type', () => {
+			const result = getRecommendedShippingDocumentFields(
+				'product_not_received',
+				'booking_reservation'
+			);
+			expect( result ).toHaveLength( 1 );
+			expect( result[ 0 ].key ).toBe( 'shipping_documentation' );
+		} );
+
+		it( 'should return proof of shipping and proof of delivery for product_not_received + physical_product', () => {
+			const result = getRecommendedShippingDocumentFields(
+				'product_not_received',
+				'physical_product'
+			);
+			expect( result ).toHaveLength( 2 );
+			expect( result[ 0 ].key ).toBe( 'shipping_documentation' );
+			expect( result[ 0 ].label ).toBe( 'Proof of shipping' );
+			expect( result[ 1 ].key ).toBe( 'customer_signature' );
+			expect( result[ 1 ].label ).toBe( 'Proof of delivery' );
+			expect( result[ 1 ].description ).toBe(
+				'A confirmation that the product was delivered.'
+			);
 		} );
 	} );
 } );

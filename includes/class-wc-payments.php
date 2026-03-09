@@ -339,6 +339,7 @@ class WC_Payments {
 		define( 'WCPAY_VERSION_NUMBER', self::get_plugin_headers()['Version'] );
 
 		include_once __DIR__ . '/class-wc-payments-utils.php';
+		include_once __DIR__ . '/class-wc-payments-styles-cache.php';
 		include_once __DIR__ . '/core/class-mode.php';
 
 		self::$mode = new Mode();
@@ -359,6 +360,11 @@ class WC_Payments {
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
+
+		// Invalidate the styles cache version when theme or styles change.
+		add_action( 'after_switch_theme', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
+		add_action( 'save_post_wp_global_styles', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
+		add_action( 'customize_save_after', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'disable_express_checkout_in_block_editor' ], 1 );
@@ -603,7 +609,7 @@ class WC_Payments {
 
 		// Build the card gateway first so that WC_Payments::get_gateway() is available
 		// during construction of the other gateways (e.g. for settings checks).
-		$card_payment_method                                        = $payment_methods[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ];
+		$card_payment_method                                        = $payment_methods[ \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::get_id() ];
 		self::$payment_method_map[ $card_payment_method->get_id() ] = $card_payment_method;
 		self::$card_gateway = new WC_Payment_Gateway_WCPay( self::$api_client, self::$account, self::$customer_service, self::$token_service, self::$action_scheduler_service, $card_payment_method, $payment_methods, self::$order_service, self::$duplicate_payment_prevention_service, self::$localization_service, self::$fraud_service, self::$duplicates_detection_service, self::$failed_transaction_rate_limiter );
 		self::$payment_gateway_map[ $card_payment_method->get_id() ] = self::$card_gateway;
@@ -709,6 +715,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-migrate-payment-request-to-express-checkout-enabled.php';
 		require_once __DIR__ . '/migrations/class-migrate-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
+		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -724,6 +731,8 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Payment_Request_To_Express_Checkout_Enabled(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -1963,7 +1972,11 @@ class WC_Payments {
 		wp_enqueue_script( 'WCPAY_CART' );
 
 		if ( WC_Payments_Utils::is_cart_block() ) {
-			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
+			// WC Core introduced a change ( https://github.com/woocommerce/woocommerce/pull/48010 ) that delays the registration of `wc-cart-block-frontend`.
+			// we need to conditionally add it to avoid polluting the logs with notices.
+			// by the time WordPress outputs scripts in the footer, WC Core's lazy registration has already run (the cart block renders before `wp_footer`).
+			$cart_block_deps = wp_script_is( 'wc-cart-block-frontend', 'registered' ) ? [ 'wc-cart-block-frontend' ] : [];
+			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', $cart_block_deps );
 			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
 
 			// Enqueue cart block styles.

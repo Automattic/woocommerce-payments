@@ -28,6 +28,8 @@ module.exports = {
 				'./includes/multi-currency/client/blocks/currency-switcher.js',
 			'multi-currency-analytics':
 				'./includes/multi-currency/client/analytics/index.js',
+			'multi-currency-async-renderer':
+				'./includes/multi-currency/client/async-renderer/index.js',
 			order: './client/order/index.js',
 			'subscriptions-empty-state':
 				'./client/subscriptions-empty-state/index.js',
