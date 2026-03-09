@@ -48,7 +48,6 @@ class WooPay_Scheduler {
 		add_action( 'activated_plugin', [ $this, 'show_warning_when_incompatible_extension_is_enabled' ] );
 		add_action( 'deactivated_plugin', [ $this, 'hide_warning_when_incompatible_extension_is_disabled' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'remove_legacy_schedule_action_name_on_update' ] );
-
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ $this, 'remove_scheduler' ] );
 	}
 
@@ -116,12 +115,6 @@ class WooPay_Scheduler {
 	 */
 	public function update_enabled_adapted_extensions( $active_plugins, $adapted_extensions ) {
 		$enabled_adapted_extensions = $this->get_extensions_in_list( $active_plugins, $adapted_extensions );
-
-		if ( count( $enabled_adapted_extensions ) > 0 ) {
-			update_option( '_wcpay_feature_woopay_first_party_auth', 0 );
-		} else {
-			update_option( '_wcpay_feature_woopay_first_party_auth', 1 );
-		}
 
 		update_option( self::ENABLED_ADAPTED_EXTENSIONS_OPTION_NAME, $enabled_adapted_extensions );
 	}
