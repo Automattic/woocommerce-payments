@@ -105,8 +105,15 @@ class WC_Payments_Styles_Cache {
 	/**
 	 * Stores the WooPay checkout appearance and font rules alongside the current cache version.
 	 *
+	 * The stored option (`wcpay_woopay_checkout_appearance`) has the structure:
+	 *   [
+	 *       'appearance' => [ 'variables' => [...], 'rules' => [...] ],
+	 *       'font_rules' => [ [ 'cssSrc' => 'https://fonts.googleapis.com/...' ], ... ],
+	 *       'version'    => '<cache_version_hash>',
+	 *   ]
+	 *
 	 * @param array $appearance The appearance object to store.
-	 * @param array $font_rules Font CDN stylesheet URLs.
+	 * @param array $font_rules Font CDN stylesheet URLs, each as [ 'cssSrc' => string ].
 	 */
 	public static function set_woopay_appearance( array $appearance, array $font_rules = [] ): void {
 		update_option(

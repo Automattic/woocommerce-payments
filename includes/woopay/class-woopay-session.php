@@ -635,11 +635,19 @@ class WooPay_Session {
 	/**
 	 * Sanitize font rules from the client.
 	 *
-	 * Validates each rule contains a cssSrc URL from an allowed font CDN domain.
-	 * Caps at 10 entries to prevent abuse.
+	 * Font rules are an array of external font CDN stylesheet references sent alongside
+	 * the WooPay appearance. Each rule is an associative array with a single key:
+	 *
+	 *   [ 'cssSrc' => 'https://fonts.googleapis.com/css2?family=...' ]
+	 *
+	 * Validation:
+	 * - Each entry must have a string `cssSrc` key.
+	 * - The URL must use HTTPS (enforced via esc_url_raw).
+	 * - The host must be in WC_Payments_Styles_Cache::ALLOWED_FONT_DOMAINS.
+	 * - Capped at 10 entries to prevent payload abuse.
 	 *
 	 * @param array $raw_rules Raw font rules array from the client.
-	 * @return array Sanitized font rules.
+	 * @return array Sanitized font rules, each as [ 'cssSrc' => string ].
 	 */
 	private static function sanitize_font_rules( $raw_rules ): array {
 		if ( ! is_array( $raw_rules ) ) {
