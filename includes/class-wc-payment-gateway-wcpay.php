@@ -3969,6 +3969,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order|null $order     The order that has been created.
 	 */
 	public function schedule_order_tracking( $order_id, $order = null ) {
+		// Prevent re-entrant scheduling when track_order() writes meta via save_meta_data(),
+		// which fires woocommerce_update_order and would schedule a spurious update event.
+		if ( doing_action( 'wcpay_track_new_order' ) || doing_action( 'wcpay_track_update_order' ) ) {
+			return;
+		}
+
 		$this->maybe_schedule_subscription_order_tracking( $order_id, $order );
 
 		// If Sift is not enabled, exit out and don't do the tracking here.
