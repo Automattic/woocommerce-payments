@@ -28,6 +28,9 @@ const handleWooPayDirectCheckout = async ( checkoutButtons ) => {
 		return;
 	}
 
+	// Filter out null/undefined elements (e.g. when a button getter returns null).
+	checkoutButtons = checkoutButtons.filter( Boolean );
+
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
