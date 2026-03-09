@@ -379,7 +379,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_amazon_pay_enabled(): bool {
-		return '1' === get_option( self::AMAZON_PAY_FLAG_NAME, '0' ) && self::is_ece_confirmation_tokens_enabled();
+		return '1' === get_option( self::AMAZON_PAY_FLAG_NAME, '1' ) && self::is_ece_confirmation_tokens_enabled();
 	}
 
 	/**

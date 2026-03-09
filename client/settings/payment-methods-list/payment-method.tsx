@@ -4,7 +4,6 @@
  */
 import clsx from 'clsx';
 import React, { useContext } from 'react';
-import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -39,6 +38,7 @@ import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import usePaymentMethodAvailability from './use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { useEnabledPaymentMethodIds, usePmPromotions } from 'wcpay/data';
+import PaymentMethodItem from 'wcpay/components/payment-method-item';
 
 interface PaymentMethodProps {
 	id: string;
@@ -180,86 +180,70 @@ const PaymentMethod = ( {
 	};
 
 	return (
-		<li className={ clsx( 'payment-method__list-item', className ) }>
-			<div className="payment-method">
-				<div className="payment-method__checkbox">
-					<CheckboxControl
-						label={ label }
-						checked={ enabledMethodIds.includes( id ) }
-						disabled={ ! isActionable || locked }
-						onChange={ handleChange }
-						__nextHasNoMarginBottom
-					/>
-				</div>
-				<div className="payment-method__text-container">
-					<div className="payment-method__icon">
-						<Icon />
-					</div>
-					<div className="payment-method__label payment-method__label-mobile">
+		<PaymentMethodItem
+			className={ clsx( 'payment-method__list-item', className ) }
+		>
+			<PaymentMethodItem.Checkbox
+				label={ label }
+				checked={ enabledMethodIds.includes( id ) }
+				disabled={ ! isActionable || locked }
+				onChange={ handleChange }
+			/>
+			<PaymentMethodItem.Body>
+				<PaymentMethodItem.Subgroup
+					Icon={ Icon }
+					label={
 						<PaymentMethodLabel
 							label={ label }
 							id={ id }
 							accountFees={ accountFees }
 							badgePromotion={ badgePromotion }
 						/>
-					</div>
-					<div className="payment-method__text">
-						<div className="payment-method__label-container">
-							<div className="payment-method__label payment-method__label-desktop">
-								<PaymentMethodLabel
-									label={ label }
-									id={ id }
-									accountFees={ accountFees }
-									badgePromotion={ badgePromotion }
-								/>
-							</div>
-							<div className="payment-method__description">
-								{ description }
-							</div>
-							{ id === PAYMENT_METHOD_IDS.CARD && (
-								<div className="payment-method__supported-cards">
-									<PaymentMethodsLogos
-										paymentMethods={ cardBrands }
-										maxElements={ 8 }
-										breakpointConfigs={ [
-											{ breakpoint: 480, maxElements: 8 },
-											{ breakpoint: 768, maxElements: 8 },
-										] }
-									/>
-								</div>
-							) }
+					}
+				>
+					{ description }
+					{ id === PAYMENT_METHOD_IDS.CARD && (
+						<div className="payment-method__supported-cards">
+							<PaymentMethodsLogos
+								paymentMethods={ cardBrands }
+								maxElements={ 8 }
+								breakpointConfigs={ [
+									{ breakpoint: 480, maxElements: 8 },
+									{ breakpoint: 768, maxElements: 8 },
+								] }
+							/>
 						</div>
-						{ accountFees && accountFees[ id ] && (
-							<div className="payment-method__fees">
-								<HoverTooltip
-									maxWidth={ '300px' }
-									content={ formatMethodFeesTooltip(
+					) }
+				</PaymentMethodItem.Subgroup>
+				{ accountFees && accountFees[ id ] && (
+					<PaymentMethodItem.Action className="payment-method__fees">
+						<HoverTooltip
+							maxWidth={ '300px' }
+							content={ formatMethodFeesTooltip(
+								accountFees[ id ]
+							) }
+						>
+							<Pill
+								aria-label={ sprintf(
+									__(
+										'Base transaction fees: %s',
+										'woocommerce-payments'
+									),
+									formatMethodFeesDescription(
+										accountFees[ id ]
+									)
+								) }
+							>
+								<span>
+									{ formatMethodFeesDescription(
 										accountFees[ id ]
 									) }
-								>
-									<Pill
-										aria-label={ sprintf(
-											__(
-												'Base transaction fees: %s',
-												'woocommerce-payments'
-											),
-											formatMethodFeesDescription(
-												accountFees[ id ]
-											)
-										) }
-									>
-										<span>
-											{ formatMethodFeesDescription(
-												accountFees[ id ]
-											) }
-										</span>
-									</Pill>
-								</HoverTooltip>
-							</div>
-						) }
-					</div>
-				</div>
-			</div>
+								</span>
+							</Pill>
+						</HoverTooltip>
+					</PaymentMethodItem.Action>
+				) }
+			</PaymentMethodItem.Body>
 			{ notice && (
 				<InlineNotice status={ noticeType } isDismissible={ false }>
 					{ notice }
@@ -275,7 +259,7 @@ const PaymentMethod = ( {
 					}
 				/>
 			) }
-		</li>
+		</PaymentMethodItem>
 	);
 };
 
