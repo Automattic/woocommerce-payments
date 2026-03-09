@@ -116,7 +116,7 @@ class WC_Payments_Styles_Cache {
 				'font_rules' => $font_rules,
 				'version'    => self::get_styles_cache_version(),
 			],
-			true
+			false
 		);
 	}
 
