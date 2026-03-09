@@ -20,7 +20,7 @@ fi
 PORT="${WORDPRESS_PORT:-8082}"
 
 echo "Stopping tunnel: ${subdomain}.jurassic.tube"
-jurassictube -b -s "$subdomain"
+jurassictube -b -s "$subdomain" || echo "Warning: tunnel may already be stopped"
 
 # Revert WordPress URLs to localhost
 echo "Reverting WordPress URLs to http://localhost:${PORT} ..."
