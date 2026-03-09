@@ -20,6 +20,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Styles_Cache {
 
 	/**
+	 * Font CDN domains allowed for WooPay appearance font rules.
+	 *
+	 * Shared between server-side extraction (get_font_rules_from_registered_styles)
+	 * and client-submitted validation (WooPay_Session::sanitize_font_rules).
+	 *
+	 * @var string[]
+	 */
+	const ALLOWED_FONT_DOMAINS = [
+		'fonts.googleapis.com',
+		'fonts.gstatic.com',
+		'use.typekit.net',
+		'fonts.bunny.net',
+	];
+
+	/**
 	 * Returns the styles cache version string used to invalidate localStorage
 	 * appearance caches. Reads from a stored WP option; if missing, computes
 	 * and stores it.
@@ -254,13 +269,7 @@ class WC_Payments_Styles_Cache {
 	 * @return array Array of font rules, each with a 'cssSrc' key. Capped at 10 entries.
 	 */
 	public static function get_font_rules_from_registered_styles(): array {
-		$wp_styles       = wp_styles();
-		$allowed_domains = [
-			'fonts.googleapis.com',
-			'fonts.gstatic.com',
-			'use.typekit.net',
-			'fonts.bunny.net',
-		];
+		$wp_styles = wp_styles();
 
 		$font_rules = [];
 		foreach ( $wp_styles->registered as $style ) {
@@ -268,7 +277,7 @@ class WC_Payments_Styles_Cache {
 				continue;
 			}
 			$host = wp_parse_url( $style->src, PHP_URL_HOST );
-			if ( $host && in_array( $host, $allowed_domains, true ) ) {
+			if ( $host && in_array( $host, self::ALLOWED_FONT_DOMAINS, true ) ) {
 				$font_rules[] = [ 'cssSrc' => $style->src ];
 			}
 		}

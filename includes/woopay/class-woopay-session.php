@@ -646,13 +646,6 @@ class WooPay_Session {
 			return [];
 		}
 
-		$allowed_domains = [
-			'fonts.googleapis.com',
-			'fonts.gstatic.com',
-			'use.typekit.net',
-			'fonts.bunny.net',
-		];
-
 		$sanitized = [];
 		foreach ( array_slice( $raw_rules, 0, 10 ) as $rule ) {
 			if ( ! isset( $rule['cssSrc'] ) || ! is_string( $rule['cssSrc'] ) ) {
@@ -660,7 +653,7 @@ class WooPay_Session {
 			}
 			$url  = esc_url_raw( $rule['cssSrc'] );
 			$host = wp_parse_url( $url, PHP_URL_HOST );
-			if ( $host && in_array( $host, $allowed_domains, true ) ) {
+			if ( $host && in_array( $host, \WC_Payments_Styles_Cache::ALLOWED_FONT_DOMAINS, true ) ) {
 				$sanitized[] = [ 'cssSrc' => $url ];
 			}
 		}
