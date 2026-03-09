@@ -83,6 +83,7 @@
 		"tube:setup": "./bin/jurassic-tube-setup.sh",
 		"tube:start": "./bin/jurassic-tube-start.sh",
 		"tube:stop": "./bin/jurassic-tube-stop.sh",
+		"tube:status": "./bin/jurassic-tube-status.sh",
 		"psalm": "./bin/run-psalm.sh",
 		"xdebug:toggle": "docker compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh",
 		"changelog": "./vendor/bin/changelogger add",
