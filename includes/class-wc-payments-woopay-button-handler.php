@@ -153,6 +153,9 @@ class WC_Payments_WooPay_Button_Handler {
 		$config['woopayAppearance']         = $this->gateway->is_woopay_global_theme_support_enabled()
 			? WC_Payments_Styles_Cache::get_woopay_appearance()
 			: null;
+		$config['woopayFontRules']          = $this->gateway->is_woopay_global_theme_support_enabled()
+			? WC_Payments_Styles_Cache::get_woopay_font_rules()
+			: [];
 
 		return $config;
 	}

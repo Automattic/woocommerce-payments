@@ -333,6 +333,11 @@ const WooPaySettings = ( { section } ) => {
 									? wcpaySettings.woopayAppearance
 									: null
 							}
+							fontRules={
+								isWooPayGlobalThemeSupportEnabled
+									? wcpaySettings.woopayFontRules
+									: null
+							}
 						/>
 					</BaseControl>
 				</CardBody>

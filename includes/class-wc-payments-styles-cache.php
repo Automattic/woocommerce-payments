@@ -20,6 +20,21 @@ if ( ! defined( 'ABSPATH' ) ) {
 class WC_Payments_Styles_Cache {
 
 	/**
+	 * Font CDN domains allowed for WooPay appearance font rules.
+	 *
+	 * Shared between server-side extraction (get_font_rules_from_registered_styles)
+	 * and client-submitted validation (WooPay_Session::sanitize_font_rules).
+	 *
+	 * @var string[]
+	 */
+	const ALLOWED_FONT_DOMAINS = [
+		'fonts.googleapis.com',
+		'fonts.gstatic.com',
+		'use.typekit.net',
+		'fonts.bunny.net',
+	];
+
+	/**
 	 * Returns the styles cache version string used to invalidate localStorage
 	 * appearance caches. Reads from a stored WP option; if missing, computes
 	 * and stores it.
@@ -62,7 +77,8 @@ class WC_Payments_Styles_Cache {
 		if ( wp_is_block_theme() ) {
 			$appearance = self::compute_woopay_appearance_from_theme();
 			if ( null !== $appearance ) {
-				self::set_woopay_appearance( $appearance );
+				$font_rules = self::get_font_rules_from_registered_styles();
+				self::set_woopay_appearance( $appearance, $font_rules );
 				return $appearance;
 			}
 		}
@@ -71,15 +87,40 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
-	 * Stores the WooPay checkout appearance alongside the current cache version.
+	 * Returns the stored WooPay font rules, or an empty array if not set or version mismatch.
+	 *
+	 * @return array The font rules array.
+	 */
+	public static function get_woopay_font_rules(): array {
+		$stored = get_option( 'wcpay_woopay_checkout_appearance' );
+		if ( ! empty( $stored ) && is_array( $stored ) ) {
+			if ( ( $stored['version'] ?? '' ) === self::get_styles_cache_version() ) {
+				return $stored['font_rules'] ?? [];
+			}
+		}
+
+		return [];
+	}
+
+	/**
+	 * Stores the WooPay checkout appearance and font rules alongside the current cache version.
+	 *
+	 * The stored option (`wcpay_woopay_checkout_appearance`) has the structure:
+	 *   [
+	 *       'appearance' => [ 'variables' => [...], 'rules' => [...] ],
+	 *       'font_rules' => [ [ 'cssSrc' => 'https://fonts.googleapis.com/...' ], ... ],
+	 *       'version'    => '<cache_version_hash>',
+	 *   ]
 	 *
 	 * @param array $appearance The appearance object to store.
+	 * @param array $font_rules Font CDN stylesheet URLs, each as [ 'cssSrc' => string ].
 	 */
-	public static function set_woopay_appearance( array $appearance ): void {
+	public static function set_woopay_appearance( array $appearance, array $font_rules = [] ): void {
 		update_option(
 			'wcpay_woopay_checkout_appearance',
 			[
 				'appearance' => $appearance,
+				'font_rules' => $font_rules,
 				'version'    => self::get_styles_cache_version(),
 			],
 			false
@@ -227,19 +268,45 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
+	 * Extracts font CDN stylesheet URLs from the WordPress registered styles queue.
+	 *
+	 * Scans wp_styles() for registered stylesheets from allowed font CDN domains.
+	 * Used as a server-side fallback for block themes where DOM extraction isn't available.
+	 *
+	 * @return array Array of font rules, each with a 'cssSrc' key. Capped at 10 entries.
+	 */
+	public static function get_font_rules_from_registered_styles(): array {
+		$wp_styles = wp_styles();
+
+		$font_rules = [];
+		foreach ( $wp_styles->registered as $style ) {
+			if ( empty( $style->src ) || ! is_string( $style->src ) ) {
+				continue;
+			}
+			$url  = esc_url_raw( $style->src, [ 'https' ] );
+			$host = wp_parse_url( $url, PHP_URL_HOST );
+			if ( $host && in_array( $host, self::ALLOWED_FONT_DOMAINS, true ) ) {
+				$font_rules[] = [ 'cssSrc' => $url ];
+			}
+		}
+		return array_slice( $font_rules, 0, 10 );
+	}
+
+	/**
 	 * Stores the WooPay appearance if no valid appearance exists for the current version.
 	 * Used by the shopper conditional write path.
 	 *
 	 * @param array $appearance The appearance object to store.
+	 * @param array $font_rules Font CDN stylesheet URLs.
 	 * @return bool True if stored, false if slot was already filled.
 	 */
-	public static function maybe_set_woopay_appearance( array $appearance ): bool {
+	public static function maybe_set_woopay_appearance( array $appearance, array $font_rules = [] ): bool {
 		$existing = self::get_woopay_appearance();
 		if ( null !== $existing ) {
 			return false;
 		}
 
-		self::set_woopay_appearance( $appearance );
+		self::set_woopay_appearance( $appearance, $font_rules );
 		return true;
 	}
 

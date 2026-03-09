@@ -184,4 +184,149 @@ describe( 'WooPayPreview', () => {
 		const root = container.querySelector( '.preview-layout' );
 		expect( root.style.fontFamily ).toBe( 'Georgia, serif' );
 	} );
+
+	it( 'applies themed footer colors', () => {
+		const appearance = {
+			variables: {},
+			rules: {
+				'.Footer': {
+					backgroundColor: '#222222',
+					color: '#cccccc',
+				},
+				'.Footer-link': { color: '#aaaaaa' },
+			},
+		};
+
+		const { container } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo=""
+				customMessage=""
+				appearance={ appearance }
+			/>
+		);
+
+		const footer = container.querySelector( '.preview-layout__footer' );
+		expect( footer.style.backgroundColor ).toBe( 'rgb(34, 34, 34)' );
+		expect( footer.style.color ).toBe( 'rgb(204, 204, 204)' );
+	} );
+
+	it( 'applies card border color derived from background', () => {
+		const appearance = {
+			variables: { colorBackground: '#ffffff' },
+			rules: {},
+		};
+
+		const { container } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo=""
+				customMessage=""
+				appearance={ appearance }
+			/>
+		);
+
+		const rightColumn = container.querySelector(
+			'.preview-layout__right-column'
+		);
+		// darkenColor('#ffffff', 6) = #f0f0f0
+		expect( rightColumn.style.borderColor ).toBe( '#f0f0f0' );
+	} );
+
+	it( 'applies text color to field values', () => {
+		const appearance = {
+			variables: { colorText: '#112233' },
+			rules: {},
+		};
+
+		const { container } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo=""
+				customMessage=""
+				appearance={ appearance }
+			/>
+		);
+
+		const fieldValue = container.querySelector(
+			'.preview-layout__field-value'
+		);
+		expect( fieldValue.style.color ).toBe( 'rgb(17, 34, 51)' );
+	} );
+
+	it( 'sets link color CSS custom property on custom message', () => {
+		const appearance = {
+			variables: {},
+			rules: {
+				'.Link': { color: '#ff6600' },
+			},
+		};
+
+		const { container } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo=""
+				customMessage="<a>Terms</a>"
+				appearance={ appearance }
+			/>
+		);
+
+		const textBox = container.querySelector( '.preview-layout__text-box' );
+		expect( textBox.style.getPropertyValue( '--preview-link-color' ) ).toBe(
+			'#ff6600'
+		);
+	} );
+
+	it( 'handles appearance with empty variables and rules', () => {
+		const appearance = {
+			variables: {},
+			rules: {},
+		};
+
+		const { container } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo=""
+				customMessage=""
+				appearance={ appearance }
+			/>
+		);
+
+		// Should render without errors and not apply any themed styles.
+		const root = container.querySelector( '.preview-layout' );
+		expect( root ).toBeInTheDocument();
+		expect( root.style.fontFamily ).toBe( '' );
+	} );
+
+	it( 'handles partial appearance with only some rules', () => {
+		const appearance = {
+			variables: {},
+			rules: {
+				'.Header': { backgroundColor: '#112233' },
+				// No .Label, .Footer, .Link, etc.
+			},
+		};
+
+		const { container } = render(
+			<WooPayPreview
+				storeName="Test Store"
+				storeLogo=""
+				customMessage=""
+				appearance={ appearance }
+			/>
+		);
+
+		const storeHeader = container.querySelector(
+			'.preview-layout__store-header'
+		);
+		expect( storeHeader.style.backgroundColor ).toBe( 'rgb(17, 34, 51)' );
+
+		// Section headers should have no inline color.
+		const sectionHeaders = container.querySelectorAll(
+			'.preview-layout__section-header'
+		);
+		sectionHeaders.forEach( ( header ) => {
+			expect( header.style.color ).toBe( '' );
+		} );
+	} );
 } );

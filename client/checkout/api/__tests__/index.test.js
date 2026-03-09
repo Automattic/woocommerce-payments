@@ -158,8 +158,12 @@ describe( 'WCPayAPI', () => {
 		expect( request ).toHaveBeenLastCalledWith( 'https://example.org/', {
 			_wpnonce: 'foo',
 			appearance: null,
+			font_rules: null,
 			email: 'foo@bar.com',
 			user_session: 'qwerty123',
+			order_id: undefined,
+			key: undefined,
+			billing_email: undefined,
 		} );
 	} );
 } );

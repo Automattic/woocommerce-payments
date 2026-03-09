@@ -8,7 +8,7 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
-import { getAppearance } from 'checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'checkout/upe-styles';
 import { getAppearanceType } from '../utils';
 import { isShortcodeCheckout } from 'wcpay/checkout/woopay/utils';
 
@@ -344,18 +344,22 @@ export default class WCPayAPI {
 			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 			const nonce = getConfig( 'initWooPayNonce' );
 			let appearance = null;
+			let fontRules = null;
 			if ( getConfig( 'isWooPayGlobalThemeSupportEnabled' ) ) {
 				if ( isShortcodeCheckout() ) {
 					const appearanceType = getAppearanceType();
 					appearance = getAppearance( appearanceType, true );
+					fontRules = getFontRulesFromPage();
 				} else {
 					appearance = getConfig( 'woopayAppearance' );
+					fontRules = getConfig( 'woopayFontRules' );
 				}
 			}
 
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 				_wpnonce: nonce,
 				appearance,
+				font_rules: fontRules,
 				email: userEmail,
 				user_session: woopayUserSession,
 				order_id: getConfig( 'order_id' ),

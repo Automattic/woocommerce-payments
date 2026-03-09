@@ -1027,6 +1027,7 @@ class WC_Payments_Admin {
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
 			'woopayAppearance'                   => WC_Payments_Styles_Cache::get_woopay_appearance(),
+			'woopayFontRules'                    => WC_Payments_Styles_Cache::get_woopay_font_rules(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
 			'formattedStoreAddress'              => WC()->countries->get_formatted_address(

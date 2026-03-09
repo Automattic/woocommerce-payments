@@ -605,8 +605,8 @@ export const getFontRulesFromPage = ( scope = document ) => {
 		fontDomains = [
 			'fonts.googleapis.com',
 			'fonts.gstatic.com',
-			'fast.fonts.com',
 			'use.typekit.net',
+			'fonts.bunny.net',
 		];
 	for ( let i = 0; i < sheets.length; i++ ) {
 		if ( ! sheets[ i ].href ) {
