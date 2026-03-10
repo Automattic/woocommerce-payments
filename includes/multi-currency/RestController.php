@@ -53,14 +53,18 @@ class RestController extends \WP_REST_Controller {
 	 * Configure REST API routes.
 	 */
 	public function register_routes() {
-		if ( \WC_Payments_Features::is_mc_cache_optimized_enabled() ) {
+		// Public endpoint for the async price renderer. Only registered when
+		// cache-optimized mode is active.
+		// Intentionally unauthenticated: it serves anonymous visitors so the
+		// client-side JS can convert prices without a WC session.
+		if ( $this->multi_currency->is_cache_optimized_mode() ) {
 			register_rest_route(
 				$this->namespace,
 				'/' . $this->rest_base . '/public/config',
 				[
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => [ $this, 'get_public_config' ],
-					'permission_callback' => [ $this, 'check_public_config_permission' ],
+					'permission_callback' => '__return_true',
 				]
 			);
 		}
@@ -284,26 +288,6 @@ class RestController extends \WP_REST_Controller {
 		// browser caching avoids repeated requests during a single browsing session.
 		$response->header( 'Cache-Control', 'private, max-age=300' );
 		return $response;
-	}
-
-	/**
-	 * Checks whether the public config endpoint should be accessible.
-	 *
-	 * The endpoint is only meaningful when the cache-optimized rendering mode
-	 * is active. Otherwise it returns a 403 to reduce the attack surface.
-	 *
-	 * @return true|\WP_Error
-	 */
-	public function check_public_config_permission() {
-		if ( ! $this->multi_currency->is_cache_optimized_mode() ) {
-			return new \WP_Error(
-				'wcpay_mc_public_config_not_available',
-				__( 'This endpoint is not available in the current configuration.', 'woocommerce-payments' ),
-				[ 'status' => 403 ]
-			);
-		}
-
-		return true;
 	}
 
 	/**
