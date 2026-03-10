@@ -24,7 +24,6 @@ class WC_Payments_Features {
 	const WCPAY_SUBSCRIPTIONS_FLAG_NAME                       = '_wcpay_feature_subscriptions';
 	const STRIPE_BILLING_FLAG_NAME                            = '_wcpay_feature_stripe_billing';
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME                   = '_wcpay_feature_woopay_express_checkout';
-	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME                   = '_wcpay_feature_woopay_first_party_auth';
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME                    = '_wcpay_feature_woopay_direct_checkout';
 	const DISPUTE_ISSUER_EVIDENCE                             = '_wcpay_feature_dispute_issuer_evidence';
 	const DISPUTE_ADDITIONAL_EVIDENCE_TYPES                   = '_wcpay_feature_dispute_additional_evidence_types';
@@ -218,15 +217,6 @@ class WC_Payments_Features {
 	public static function is_woopay_express_checkout_enabled() {
 		// Confirm woopay eligibility as well.
 		return '1' === get_option( self::WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME, '1' ) && self::is_woopay_eligible();
-	}
-
-	/**
-	 * Checks whether WooPay First Party Auth is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_woopay_first_party_auth_enabled() {
-		return '1' === get_option( self::WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME, '1' ) && self::is_woopay_express_checkout_enabled();
 	}
 
 	/**
