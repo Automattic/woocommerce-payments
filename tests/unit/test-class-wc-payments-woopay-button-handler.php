@@ -538,4 +538,36 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			$this->mock_pr->get_button_settings()
 		);
 	}
+
+	public function test_display_woopay_button_html_renders_div_placeholder() {
+		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+					$this->mock_woopay_utilities,
+					$this->mock_express_checkout_helper,
+				]
+			)
+			->setMethods( [ 'should_show_woopay_button' ] )
+			->getMock();
+
+		$mock_handler->method( 'should_show_woopay_button' )->willReturn( true );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		ob_start();
+		$mock_handler->display_woopay_button_html();
+		$output = ob_get_clean();
+
+		// The placeholder must be a <div> — never a <button> — to avoid triggering
+		// has_form_elements() in the Add to Cart + Options block, which would force
+		// legacy form mode and break the mini-cart drawer.
+		$this->assertStringNotContainsString( '<button', $output );
+		$this->assertStringNotContainsString( 'disabled', $output );
+		$this->assertStringContainsString( 'woopay-express-button', $output );
+		$this->assertStringContainsString( '<div id="wcpay-woopay-button"', $output );
+	}
 }
