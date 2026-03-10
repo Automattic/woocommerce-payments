@@ -107,8 +107,13 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 			.getByRole( 'link', { name: 'View Post' } );
 		await expect( viewPostLink ).toBeVisible( { timeout: 10000 } );
 
-		// The "View Post" link opens in a new tab.
+		// The "View Post" link opens in a new tab — navigate directly instead.
 		const postUrl = await viewPostLink.getAttribute( 'href' );
+		if ( ! postUrl ) {
+			throw new Error(
+				'View Post link does not have an href attribute.'
+			);
+		}
 		await page.goto( postUrl, { waitUntil: 'load' } );
 
 		// Verify the currency switcher block renders on the frontend.

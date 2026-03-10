@@ -113,6 +113,11 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 
 		// The "View Post" link opens in a new tab — navigate directly instead.
 		const postUrl = await viewPostLink.getAttribute( 'href' );
+		if ( ! postUrl ) {
+			throw new Error(
+				'View Post link does not have an href attribute.'
+			);
+		}
 		await adminPage.goto( postUrl, { waitUntil: 'load' } );
 
 		// Verify the currency switcher block renders on the frontend.

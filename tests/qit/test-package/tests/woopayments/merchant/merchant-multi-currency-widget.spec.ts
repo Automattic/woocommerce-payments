@@ -286,21 +286,15 @@ test.describe( 'Multi-currency widget setup', { tag: '@merchant' }, () => {
 				.locator( '.currency-switcher-holder select' )
 				.selectOption( 'EUR' );
 
-			// Wait for page to reload with new currency.
-			await customerPage.waitForLoadState( 'load' );
-
-			// Verify prices changed (now showing EUR).
-			const newPrice = await customerPage
+			// Wait for prices to update after the currency switch navigation.
+			const priceLocator = customerPage
 				.locator( '.woocommerce-Price-amount' )
-				.first()
-				.textContent();
+				.first();
+			await expect( priceLocator ).toContainText( '€' );
 
+			// Verify the price actually changed.
+			const newPrice = await priceLocator.textContent();
 			expect( newPrice ).not.toBe( initialPrice );
-			await expect(
-				customerPage
-					.locator( '.woocommerce-Price-amount' )
-					.first()
-			).toContainText( '€' );
 		}
 	);
 } );
