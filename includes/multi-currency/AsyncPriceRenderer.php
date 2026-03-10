@@ -78,10 +78,21 @@ class AsyncPriceRenderer {
 		// We use $price (the raw numeric value passed to wc_price) rather than
 		// $original_price because in cache-optimized mode FrontendPrices hooks
 		// are not active, so $price is the unconverted default-currency price.
+		//
+		// The screen-reader-text placeholder contains the original WC-formatted
+		// price so crawlers and screen readers on slow connections see a real
+		// price before JS loads. JS removes it after successful conversion.
+		//
+		// The wrapper reuses the woocommerce-Price-amount/amount classes so the
+		// DOM hierarchy matches what wc_price() normally produces. This avoids
+		// an extra nesting level that could break theme CSS selectors like
+		// `.price > .woocommerce-Price-amount`. JS replaces the <bdi> contents
+		// in-place rather than appending a new child element.
 		return sprintf(
-			'<span class="wcpay-async-price" data-wcpay-price="%s" data-wcpay-price-type="%s"><span class="wcpay-price-skeleton"></span></span>',
+			'<span class="woocommerce-Price-amount amount wcpay-async-price" data-wcpay-price="%s" data-wcpay-price-type="%s"><bdi class="wcpay-price-skeleton"></bdi><span class="screen-reader-text wcpay-price-placeholder">%s</span></span>',
 			esc_attr( $price ),
-			esc_attr( $price_type )
+			esc_attr( $price_type ),
+			wp_kses_post( $return )
 		);
 	}
 
@@ -100,7 +111,14 @@ class AsyncPriceRenderer {
 			'wcpay-multi-currency-async-renderer',
 			'wcpayAsyncPriceConfig',
 			[
-				'apiUrl' => rest_url( 'wc/v3/payments/multi-currency/public/config' ),
+				'apiUrl'          => rest_url( 'wc/v3/payments/multi-currency/public/config' ),
+				'defaultCurrency' => [
+					'symbol'       => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
+					'decimals'     => wc_get_price_decimals(),
+					'decimal_sep'  => wc_get_price_decimal_separator(),
+					'thousand_sep' => wc_get_price_thousand_separator(),
+					'symbol_pos'   => get_option( 'woocommerce_currency_pos' ),
+				],
 			]
 		);
 

@@ -28,6 +28,9 @@ const changeableSettings = [
 	'enable_auto_currency',
 ];
 
+const mockUpdateStoreSettingValues = jest.fn();
+const mockSaveStoreSettings = jest.fn();
+
 useCurrencies.mockReturnValue( {
 	currencies: {
 		enabled: {
@@ -47,7 +50,10 @@ useStoreSettings.mockReturnValue( {
 		site_theme: 'Storefront',
 		store_url: 'store_path',
 	},
-	submitStoreSettingsUpdate: jest.fn(),
+	isDirty: false,
+	isSaving: false,
+	updateStoreSettingValues: mockUpdateStoreSettingValues,
+	saveStoreSettings: mockSaveStoreSettings,
 } );
 
 useSettings.mockReturnValue( {
@@ -91,19 +97,23 @@ describe( 'Multi-Currency store settings', () => {
 		} );
 	} );
 
-	test( 'store settings are changed with clicking', () => {
+	test( 'store settings checkbox calls updateStoreSettingValues on click', () => {
 		createContainer();
-		changeableSettings.forEach( ( setting ) => {
-			fireEvent.click( screen.getByTestId( setting ) );
-			expect( screen.getByTestId( setting ) ).toBeChecked();
+		fireEvent.click( screen.getByTestId( 'enable_auto_currency' ) );
+		expect( mockUpdateStoreSettingValues ).toHaveBeenCalledWith( {
+			enable_auto_currency: true,
+		} );
+
+		fireEvent.click( screen.getByTestId( 'enable_storefront_switcher' ) );
+		expect( mockUpdateStoreSettingValues ).toHaveBeenCalledWith( {
+			enable_storefront_switcher: true,
 		} );
 	} );
 
-	test( 'multi-currency is enabled if it was previously disabled', async () => {
+	test( 'multi-currency is enabled if it was previously disabled', () => {
 		useMultiCurrency.mockReturnValue( [ false, jest.fn() ] );
 
 		createContainer();
-		const { submitStoreSettingsUpdate } = useStoreSettings();
 		const { saveSettings } = useSettings();
 		const [ , updateIsMultiCurrencyEnabled ] = useMultiCurrency();
 
@@ -113,62 +123,19 @@ describe( 'Multi-Currency store settings', () => {
 			} )
 		);
 
-		expect( saveSettings ).toBeCalled();
-		expect( updateIsMultiCurrencyEnabled ).toBeCalledWith( true );
-		expect( submitStoreSettingsUpdate ).toBeCalledWith(
-			false,
-			false,
-			'speed',
-			true
-		);
-
-		changeableSettings.forEach( ( setting ) => {
-			fireEvent.click( screen.getByTestId( setting ) );
-			expect( screen.getByTestId( setting ) ).toBeChecked();
-		} );
-		fireEvent.click(
-			screen.getByRole( 'button', {
-				name: /Continue/,
-			} )
-		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith(
-			true,
-			true,
-			'speed',
-			true
-		);
+		expect( saveSettings ).toHaveBeenCalled();
+		expect( updateIsMultiCurrencyEnabled ).toHaveBeenCalledWith( true );
+		expect( mockSaveStoreSettings ).toHaveBeenCalledWith( true );
 	} );
 
 	test( 'store settings are saved with continue button click', () => {
 		createContainer();
-		const { submitStoreSettingsUpdate } = useStoreSettings();
 		fireEvent.click(
 			screen.getByRole( 'button', {
 				name: /Continue/,
 			} )
 		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith(
-			false,
-			false,
-			'speed',
-			false
-		);
-
-		changeableSettings.forEach( ( setting ) => {
-			fireEvent.click( screen.getByTestId( setting ) );
-			expect( screen.getByTestId( setting ) ).toBeChecked();
-		} );
-		fireEvent.click(
-			screen.getByRole( 'button', {
-				name: /Continue/,
-			} )
-		);
-		expect( submitStoreSettingsUpdate ).toBeCalledWith(
-			true,
-			true,
-			'speed',
-			false
-		);
+		expect( mockSaveStoreSettings ).toHaveBeenCalledWith( false );
 	} );
 
 	test( 'store settings preview should open a modal with an iframe', () => {
@@ -193,8 +160,20 @@ describe( 'Multi-Currency store settings', () => {
 	} );
 
 	test( 'store settings preview should open a modal with an iframe with the correct settings', () => {
+		useStoreSettings.mockReturnValue( {
+			storeSettings: {
+				enable_storefront_switcher: true,
+				enable_auto_currency: false,
+				site_theme: 'Storefront',
+				store_url: 'store_path',
+			},
+			isDirty: true,
+			isSaving: false,
+			updateStoreSettingValues: mockUpdateStoreSettingValues,
+			saveStoreSettings: mockSaveStoreSettings,
+		} );
+
 		createContainer();
-		fireEvent.click( screen.getByTestId( 'enable_storefront_switcher' ) );
 
 		fireEvent.click(
 			screen.getByRole( 'button', {
