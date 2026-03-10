@@ -77,6 +77,15 @@ test.describe(
 
 		test( 'should be able to access wp-admin of fully onboarded WooPayments site', async () => {
 			await checkEditorAccess( editorPage, '/wp-admin', 'Dashboard' );
+
+			// Verify editor can access a WCPay page without errors.
+			await editorPage.goto(
+				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions'
+			);
+			await editorPage.waitForLoadState( 'domcontentloaded' );
+			await expect(
+				editorPage.locator( '#woocommerce-layout' )
+			).toBeVisible();
 		} );
 
 		test( 'should be able to access wp-admin before and after onboarding', async ( {

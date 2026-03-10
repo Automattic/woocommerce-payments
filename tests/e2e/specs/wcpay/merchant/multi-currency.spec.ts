@@ -55,7 +55,10 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 		await addMulticurrencyWidget( page );
 	} );
 
-	test( 'can add the currency switcher to a post/page', async () => {
+	test( 'can add the currency switcher to a post/page and verify on frontend', async () => {
+		// Restore currencies so the switcher block has currencies to display.
+		await restoreCurrencies( page );
+
 		await navigation.goToNewPost( page );
 
 		if ( await page.getByRole( 'button', { name: 'Close' } ).isVisible() ) {
@@ -80,6 +83,40 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 			.pressSequentially( 'switcher', { delay: 20 } );
 		await expect(
 			page.getByRole( 'option', { name: 'Currency Switcher Block' } )
+		).toBeVisible();
+
+		// Insert the block.
+		await page
+			.getByRole( 'option', { name: 'Currency Switcher Block' } )
+			.click();
+
+		// Publish the post.
+		await page
+			.getByRole( 'button', { name: 'Publish', exact: true } )
+			.click();
+		// Handle the confirmation panel if shown.
+		const confirmPublish = page.getByRole( 'button', {
+			name: 'Publish',
+			exact: true,
+		} );
+		if ( await confirmPublish.isVisible() ) {
+			await confirmPublish.click();
+		}
+
+		// Wait for publish confirmation.
+		await expect(
+			page
+				.getByText( 'Post published' )
+				.or( page.getByText( 'is now live' ) )
+		).toBeVisible( { timeout: 10000 } );
+
+		// Visit the published post.
+		await page.getByRole( 'link', { name: 'View Post' } ).click();
+		await page.waitForLoadState( 'load' );
+
+		// Verify the currency switcher block renders on the frontend.
+		await expect(
+			page.locator( '.currency-switcher-holder' )
 		).toBeVisible();
 	} );
 } );

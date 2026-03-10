@@ -268,4 +268,39 @@ test.describe( 'Multi-currency widget setup', { tag: '@merchant' }, () => {
 			).toHaveCSS( 'border-top-color', settings.borderColor );
 		}
 	);
+
+	test(
+		'currency switching works on the frontend',
+		{ tag: '@critical' },
+		async ( { customerPage } ) => {
+			await goToShop( customerPage );
+
+			// Get the initial price text.
+			const initialPrice = await customerPage
+				.locator( '.woocommerce-Price-amount' )
+				.first()
+				.textContent();
+
+			// Switch to EUR.
+			await customerPage
+				.locator( '.currency-switcher-holder select' )
+				.selectOption( { label: /EUR/ } );
+
+			// Wait for page to reload with new currency.
+			await customerPage.waitForLoadState( 'load' );
+
+			// Verify prices changed (now showing EUR).
+			const newPrice = await customerPage
+				.locator( '.woocommerce-Price-amount' )
+				.first()
+				.textContent();
+
+			expect( newPrice ).not.toBe( initialPrice );
+			await expect(
+				customerPage
+					.locator( '.woocommerce-Price-amount' )
+					.first()
+			).toContainText( '€' );
+		}
+	);
 } );

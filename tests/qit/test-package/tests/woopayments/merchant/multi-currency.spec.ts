@@ -51,9 +51,12 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 		await addMulticurrencyWidget( adminPage );
 	} );
 
-	test( 'can add the currency switcher to a post/page', async ( {
+	test( 'can add the currency switcher to a post/page and verify on frontend', async ( {
 		adminPage,
 	} ) => {
+		// Restore currencies so the switcher block has currencies to display.
+		await restoreCurrencies( adminPage );
+
 		await goToNewPost( adminPage );
 
 		if (
@@ -84,6 +87,42 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 			adminPage.getByRole( 'option', {
 				name: 'Currency Switcher Block',
 			} )
+		).toBeVisible();
+
+		// Insert the block.
+		await adminPage
+			.getByRole( 'option', { name: 'Currency Switcher Block' } )
+			.click();
+
+		// Publish the post.
+		await adminPage
+			.getByRole( 'button', { name: 'Publish', exact: true } )
+			.click();
+		// Handle the confirmation panel if shown.
+		const confirmPublish = adminPage.getByRole( 'button', {
+			name: 'Publish',
+			exact: true,
+		} );
+		if ( await confirmPublish.isVisible() ) {
+			await confirmPublish.click();
+		}
+
+		// Wait for publish confirmation.
+		await expect(
+			adminPage
+				.getByText( 'Post published' )
+				.or( adminPage.getByText( 'is now live' ) )
+		).toBeVisible( { timeout: 10000 } );
+
+		// Visit the published post.
+		await adminPage
+			.getByRole( 'link', { name: 'View Post' } )
+			.click();
+		await adminPage.waitForLoadState( 'load' );
+
+		// Verify the currency switcher block renders on the frontend.
+		await expect(
+			adminPage.locator( '.currency-switcher-holder' )
 		).toBeVisible();
 	} );
 } );
