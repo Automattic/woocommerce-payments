@@ -30,7 +30,9 @@ if [ -f "${REPO_ROOT}/.env" ]; then
 fi
 PORT="${WORDPRESS_PORT:-8082}"
 
-# Check if tunnel is active (SSH ControlMaster socket)
+# Check if tunnel is active via the SSH ControlMaster socket.
+# %h (hostname) and %p (port) are SSH ControlPath tokens, expanded by SSH at runtime.
+# This path mirrors the socket pattern used by the jurassictube CLI.
 SESSION_FILE="/tmp/jtube_session_%h_%p_${subdomain}"
 TUNNEL_STATUS="inactive"
 if ssh -S "$SESSION_FILE" -o ControlMaster=auto -O check jurassic.tube 2>/dev/null; then

@@ -268,8 +268,8 @@ Jurassic Tube creates public HTTPS tunnels (`<subdomain>.jurassic.tube`) to your
 | Command | Purpose |
 |---------|---------|
 | `npm run tube:setup` | First-time setup: registers subdomain, generates SSH keys, creates `bin/jurassictube/config.env` |
-| `npm run tube:start` | Starts tunnel and updates WordPress `siteurl`/`home` to the tunnel URL |
-| `npm run tube:stop` | Stops tunnel and reverts WordPress URLs to `localhost:<port>` |
+| `npm run tube:start` | Starts tunnel (WordPress URLs resolve automatically via `wp-config.php`) |
+| `npm run tube:stop` | Stops tunnel |
 | `npm run tube:status` | Shows subdomain, port, tunnel state, and worktree info |
 
 ### Worktree Support
@@ -304,7 +304,7 @@ npm run tube:stop
 **Key details:**
 - `bin/jurassictube/` is gitignored — config and keys are never committed
 - Port is resolved at runtime from `WORDPRESS_PORT` in `.env` (never hardcoded in config)
-- `tube:stop` reverts WordPress URLs even if the tunnel is already dead
+- WordPress URLs resolve automatically via `wp-config.php` (`DOCKER_HOST` from `HTTP_HOST`) — no DB updates needed
 
 ## Configuration Files
 

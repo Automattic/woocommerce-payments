@@ -12,20 +12,9 @@ fi
 # shellcheck source=/dev/null
 source "${JT_DIR}/config.env"
 
-# Resolve port from .env
-if [ -f "${REPO_ROOT}/.env" ]; then
-    # shellcheck source=/dev/null
-    source "${REPO_ROOT}/.env"
-fi
-PORT="${WORDPRESS_PORT:-8082}"
-
 echo "Stopping tunnel: ${subdomain}.jurassic.tube"
 jurassictube -b -s "$subdomain" || echo "Warning: could not stop tunnel (may already be stopped)"
 
-# Revert WordPress URLs to localhost
-echo "Reverting WordPress URLs to http://localhost:${PORT} ..."
-cd "$REPO_ROOT"
-docker compose exec -u www-data wordpress wp option update siteurl "http://localhost:${PORT}" --quiet
-docker compose exec -u www-data wordpress wp option update home "http://localhost:${PORT}" --quiet
-
-echo "Done. Site reverted to http://localhost:${PORT}/"
+# WordPress URLs revert automatically — wp-config.php derives WP_SITEURL/WP_HOME
+# from HTTP_HOST, so requests to localhost:<port> use the correct URL without DB changes.
+echo "Done. Tunnel stopped."

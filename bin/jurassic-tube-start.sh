@@ -50,13 +50,9 @@ HOST="localhost:${PORT}"
 echo "Starting tunnel: ${subdomain}.jurassic.tube → ${HOST}"
 
 # --- Start tunnel ---
+# WordPress URLs are handled automatically by wp-config.php (DOCKER_HOST derives from HTTP_HOST),
+# so no DB updates are needed — the tunnel's subdomain is picked up from the request headers.
 jurassictube -u "$username" -s "$subdomain" -h "$HOST"
-
-# --- Update WordPress URLs ---
-echo "Updating WordPress URLs to https://${subdomain}.jurassic.tube ..."
-cd "$REPO_ROOT"
-docker compose exec -u www-data wordpress wp option update siteurl "https://${subdomain}.jurassic.tube" --quiet
-docker compose exec -u www-data wordpress wp option update home "https://${subdomain}.jurassic.tube" --quiet
 
 echo ""
 echo "Tunnel ready: https://${subdomain}.jurassic.tube/"
