@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add client-side async price renderer for cache-optimized multi-currency mode
