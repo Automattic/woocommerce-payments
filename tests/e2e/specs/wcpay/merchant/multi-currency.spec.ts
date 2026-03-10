@@ -101,15 +101,16 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 			.getByRole( 'button', { name: 'Publish', exact: true } )
 			.click();
 
-		// Wait for publish confirmation.
+		// Wait for publish confirmation snackbar.
 		await expect(
-			page
-				.getByText( 'Post published' )
-				.or( page.getByText( 'is now live' ) )
+			page.locator( '.components-snackbar' ).getByText( 'published' )
 		).toBeVisible( { timeout: 10000 } );
 
 		// Visit the published post.
-		await page.getByRole( 'link', { name: 'View Post' } ).click();
+		await page
+			.locator( '.components-snackbar' )
+			.getByRole( 'link', { name: 'View Post' } )
+			.click();
 		await page.waitForLoadState( 'load' );
 
 		// Verify the currency switcher block renders on the frontend.

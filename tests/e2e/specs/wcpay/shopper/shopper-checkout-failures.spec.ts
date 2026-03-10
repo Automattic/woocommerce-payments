@@ -51,9 +51,9 @@ test.describe(
 					.click();
 				await merchantPage.waitForLoadState( 'load' );
 				await expect(
-					merchantPage.locator(
-						'#woocommerce-order-notes .note_content'
-					)
+					merchantPage
+						.locator( '#woocommerce-order-notes .note_content' )
+						.first()
 				).toContainText( /declined/i );
 			} finally {
 				await merchantContext.close();

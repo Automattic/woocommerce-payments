@@ -105,15 +105,16 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 			.getByRole( 'button', { name: 'Publish', exact: true } )
 			.click();
 
-		// Wait for publish confirmation.
+		// Wait for publish confirmation snackbar.
 		await expect(
 			adminPage
-				.getByText( 'Post published' )
-				.or( adminPage.getByText( 'is now live' ) )
+				.locator( '.components-snackbar' )
+				.getByText( 'published' )
 		).toBeVisible( { timeout: 10000 } );
 
 		// Visit the published post.
 		await adminPage
+			.locator( '.components-snackbar' )
 			.getByRole( 'link', { name: 'View Post' } )
 			.click();
 		await adminPage.waitForLoadState( 'load' );

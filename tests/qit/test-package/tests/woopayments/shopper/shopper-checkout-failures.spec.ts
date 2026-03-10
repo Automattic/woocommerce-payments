@@ -53,9 +53,11 @@ test.describe(
 				.click();
 			await adminPage.waitForLoadState( 'load' );
 			await expect(
-				adminPage.locator(
-					'#woocommerce-order-notes .note_content'
-				)
+				adminPage
+					.locator(
+						'#woocommerce-order-notes .note_content'
+					)
+					.first()
 			).toContainText( /declined/i );
 		} );
 
