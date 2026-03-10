@@ -2,15 +2,25 @@
  * Internal dependencies
  */
 import { WCPayAsyncPriceRenderer } from '../index';
+import type { PublicConfig, CurrencyConfig } from '../index';
+
+declare const global: {
+	fetch: jest.Mock;
+	wcpayAsyncPriceConfig: {
+		apiUrl: string;
+		defaultCurrency?: CurrencyConfig;
+	};
+	jQuery: jest.Mock;
+} & typeof globalThis;
 
 describe( 'WCPayAsyncPriceRenderer', () => {
-	let renderer;
+	let renderer: WCPayAsyncPriceRenderer;
 	// Save the global fetch reference (MSW-intercepted) so we can restore it
 	// after tests that override global.fetch with jest.fn(). Deleting
 	// global.fetch breaks MSW's server.close() cleanup.
-	let savedFetch;
+	let savedFetch: typeof global.fetch;
 
-	const mockConfig = {
+	const mockConfig: PublicConfig = {
 		default_currency: 'USD',
 		selected_currency: 'EUR',
 		charm_only_products: true,
@@ -64,16 +74,18 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		beforeEach( () => {
 			document.body.textContent = '';
 			global.wcpayAsyncPriceConfig = { apiUrl };
-			global.jQuery = jest.fn( () => ( {
+			global.jQuery = ( jest.fn( () => ( {
 				on: jest.fn().mockReturnThis(),
 				off: jest.fn(),
-			} ) );
+			} ) ) as unknown ) as jest.Mock;
+			sessionStorage.clear();
 		} );
 
 		afterEach( () => {
 			renderer.destroy();
-			delete global.jQuery;
-			delete global.wcpayAsyncPriceConfig;
+			delete ( global as Record< string, unknown > ).jQuery;
+			delete ( global as Record< string, unknown > )
+				.wcpayAsyncPriceConfig;
 			global.fetch = savedFetch;
 		} );
 
@@ -311,18 +323,18 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			renderer.convertAllPrices();
 
 			const el = document.querySelector( '.wcpay-async-price' );
-			expect( el.classList.contains( 'wcpay-price-converted' ) ).toBe(
+			expect( el!.classList.contains( 'wcpay-price-converted' ) ).toBe(
 				true
 			);
-			expect( el.querySelector( '.wcpay-price-skeleton' ) ).toBeNull();
+			expect( el!.querySelector( '.wcpay-price-skeleton' ) ).toBeNull();
 			// The <bdi> is appended directly — no extra wrapper.
-			const bdi = el.querySelector( 'bdi' );
+			const bdi = el!.querySelector( 'bdi' );
 			expect( bdi ).not.toBeNull();
 			expect(
-				bdi.querySelector( '.woocommerce-Price-currencySymbol' )
+				bdi!.querySelector( '.woocommerce-Price-currencySymbol' )
 			).not.toBeNull();
 			expect(
-				bdi.querySelector( '.woocommerce-Price-currencySymbol' )
+				bdi!.querySelector( '.woocommerce-Price-currencySymbol' )!
 					.textContent
 			).toBe( '\u20ac' ); // EUR is selected_currency in mockConfig
 		} );
@@ -373,12 +385,16 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		const apiUrl =
 			'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config';
 
-		const mockDefaultCurrency = {
+		const mockDefaultCurrency: CurrencyConfig = {
+			code: 'USD',
 			symbol: '$',
+			rate: 1,
 			decimals: 2,
 			decimal_sep: '.',
 			thousand_sep: ',',
 			symbol_pos: 'left',
+			rounding: 0,
+			charm: 0,
 		};
 
 		const createPriceWrapper = ( price = '10.00' ) => {
@@ -396,7 +412,8 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 
 		afterEach( () => {
-			delete global.wcpayAsyncPriceConfig;
+			delete ( global as Record< string, unknown > )
+				.wcpayAsyncPriceConfig;
 		} );
 
 		it( 'formats price with default currency when available', () => {
@@ -417,12 +434,12 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			// <bdi> is appended directly into wrapper.
 			const bdi = wrapper.querySelector( 'bdi' );
 			expect( bdi ).not.toBeNull();
-			expect( bdi.textContent ).toBe( '$10.00' );
+			expect( bdi!.textContent ).toBe( '$10.00' );
 			expect(
-				bdi.querySelector( '.woocommerce-Price-currencySymbol' )
+				bdi!.querySelector( '.woocommerce-Price-currencySymbol' )
 			).not.toBeNull();
 			expect(
-				bdi.querySelector( '.woocommerce-Price-currencySymbol' )
+				bdi!.querySelector( '.woocommerce-Price-currencySymbol' )!
 					.textContent
 			).toBe( '$' );
 		} );
@@ -470,7 +487,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 			const el = document.querySelector( '.wcpay-price-error' );
 			expect( el ).not.toBeNull();
-			expect( el.textContent ).toBe( '\u2014' );
+			expect( el!.textContent ).toBe( '\u2014' );
 		} );
 	} );
 
@@ -485,7 +502,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				'.woocommerce-Price-currencySymbol'
 			);
 			expect( symbol ).not.toBeNull();
-			expect( symbol.textContent ).toBe( '$' );
+			expect( symbol!.textContent ).toBe( '$' );
 			expect( bdi.textContent ).toBe( '$10.50' );
 		} );
 
@@ -497,51 +514,55 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			const symbol = bdi.querySelector(
 				'.woocommerce-Price-currencySymbol'
 			);
-			expect( symbol.textContent ).toBe( '\u20ac' );
+			expect( symbol!.textContent ).toBe( '\u20ac' );
 			expect( bdi.textContent ).toBe( '8,99\u00a0\u20ac' );
 		} );
 
 		it( 'creates correct markup for left_space position', () => {
 			const currency = {
 				...mockConfig.currencies.USD,
-				symbol_pos: 'left_space',
+				symbol_pos: 'left_space' as const,
 			};
 			const bdi = renderer.buildPriceBdi( '10.50', currency );
 			const symbol = bdi.querySelector(
 				'.woocommerce-Price-currencySymbol'
 			);
-			expect( symbol.textContent ).toBe( '$' );
+			expect( symbol!.textContent ).toBe( '$' );
 			expect( bdi.textContent ).toBe( '$\u00a010.50' );
 		} );
 
 		it( 'creates correct markup for right position', () => {
 			const currency = {
 				...mockConfig.currencies.USD,
-				symbol_pos: 'right',
+				symbol_pos: 'right' as const,
 			};
 			const bdi = renderer.buildPriceBdi( '10.50', currency );
 			const symbol = bdi.querySelector(
 				'.woocommerce-Price-currencySymbol'
 			);
-			expect( symbol.textContent ).toBe( '$' );
+			expect( symbol!.textContent ).toBe( '$' );
 			expect( bdi.textContent ).toBe( '10.50$' );
 		} );
 	} );
 
 	describe( 'listenToWooCommerceEvents', () => {
 		afterEach( () => {
-			delete global.jQuery;
+			delete ( global as Record< string, unknown > ).jQuery;
 		} );
 
 		it( 'calls convertAllPrices when a bound WooCommerce event fires', () => {
-			let boundHandler;
-			global.jQuery = jest.fn( () => ( {
-				on: jest.fn().mockImplementation( ( _events, handler ) => {
-					boundHandler = handler;
-					return { on: jest.fn() };
-				} ),
+			let boundHandler: () => void;
+			global.jQuery = ( jest.fn( () => ( {
+				on: jest
+					.fn()
+					.mockImplementation(
+						( _events: string, handler: () => void ) => {
+							boundHandler = handler;
+							return { on: jest.fn() };
+						}
+					),
 				off: jest.fn(),
-			} ) );
+			} ) ) as unknown ) as jest.Mock;
 
 			renderer.listenToWooCommerceEvents();
 
@@ -550,7 +571,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				.mockImplementation( () => {} );
 
 			// Simulate WooCommerce firing one of the bound events.
-			boundHandler();
+			boundHandler!();
 
 			expect( convertSpy ).toHaveBeenCalledTimes( 1 );
 			convertSpy.mockRestore();
@@ -560,9 +581,9 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	describe( 'destroy', () => {
 		it( 'disconnects observer and clears cache', () => {
 			const disconnectFn = jest.fn();
-			renderer.observer = {
+			renderer.observer = ( {
 				disconnect: disconnectFn,
-			};
+			} as unknown ) as MutationObserver;
 			renderer.cache.set( 'test', 'value' );
 
 			renderer.destroy();
@@ -575,7 +596,10 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		it( 'removes jQuery event listeners', () => {
 			const offFn = jest.fn().mockReturnThis();
 			const onFn = jest.fn().mockReturnThis();
-			global.jQuery = jest.fn( () => ( { on: onFn, off: offFn } ) );
+			global.jQuery = ( jest.fn( () => ( {
+				on: onFn,
+				off: offFn,
+			} ) ) as unknown ) as jest.Mock;
 
 			renderer.listenToWooCommerceEvents();
 			const handler = renderer.wcEventHandler;
@@ -588,17 +612,18 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			);
 			expect( renderer.wcEventHandler ).toBeNull();
 
-			delete global.jQuery;
+			delete ( global as Record< string, unknown > ).jQuery;
 		} );
 	} );
 
 	describe( 'decodeCurrencySymbols', () => {
 		it( 'decodes HTML entities in currency symbols', () => {
-			const config = {
+			const config: PublicConfig = {
+				...mockConfig,
 				currencies: {
-					EUR: { symbol: '&euro;' },
-					GBP: { symbol: '&pound;' },
-					JPY: { symbol: '&yen;' },
+					EUR: { ...mockConfig.currencies.EUR, symbol: '&euro;' },
+					GBP: { ...mockConfig.currencies.EUR, symbol: '&pound;' },
+					JPY: { ...mockConfig.currencies.JPY, symbol: '&yen;' },
 				},
 			};
 
@@ -610,9 +635,10 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 
 		it( 'leaves plain symbols unchanged', () => {
-			const config = {
+			const config: PublicConfig = {
+				...mockConfig,
 				currencies: {
-					USD: { symbol: '$' },
+					USD: { ...mockConfig.currencies.USD },
 				},
 			};
 
@@ -622,7 +648,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 
 		it( 'handles missing currencies gracefully', () => {
-			const config = {};
+			const config = {} as PublicConfig;
 			expect( () =>
 				renderer.decodeCurrencySymbols( config )
 			).not.toThrow();
@@ -635,11 +661,14 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 		beforeEach( () => {
 			global.wcpayAsyncPriceConfig = { apiUrl };
+			sessionStorage.clear();
 		} );
 
 		afterEach( () => {
-			delete global.wcpayAsyncPriceConfig;
+			delete ( global as Record< string, unknown > )
+				.wcpayAsyncPriceConfig;
 			global.fetch = savedFetch;
+			sessionStorage.clear();
 		} );
 
 		it( 'fetches config from the API URL', async () => {
@@ -683,6 +712,70 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			await expect( renderer.fetchConfig() ).rejects.toThrow(
 				'Config fetch failed: 500'
 			);
+		} );
+
+		it( 'stores config in sessionStorage after fetch', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			await renderer.fetchConfig();
+
+			const stored = sessionStorage.getItem( 'wcpay_mc_config' );
+			expect( stored ).not.toBeNull();
+			const parsed = JSON.parse( stored! );
+			expect( parsed.data ).toEqual( mockConfig );
+			expect( parsed.timestamp ).toBeGreaterThan( 0 );
+		} );
+
+		it( 'returns cached config without fetching', async () => {
+			const entry = {
+				data: mockConfig,
+				timestamp: Date.now(),
+			};
+			sessionStorage.setItem(
+				'wcpay_mc_config',
+				JSON.stringify( entry )
+			);
+			global.fetch = jest.fn();
+
+			const config = await renderer.fetchConfig();
+
+			expect( config ).toEqual( mockConfig );
+			expect( global.fetch ).not.toHaveBeenCalled();
+		} );
+
+		it( 'fetches fresh config when cache is expired', async () => {
+			const entry = {
+				data: mockConfig,
+				timestamp: Date.now() - 400000, // 6+ minutes ago.
+			};
+			sessionStorage.setItem(
+				'wcpay_mc_config',
+				JSON.stringify( entry )
+			);
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			await renderer.fetchConfig();
+
+			expect( global.fetch ).toHaveBeenCalledWith( apiUrl );
+		} );
+
+		it( 'fetches fresh config when sessionStorage has invalid data', async () => {
+			sessionStorage.setItem( 'wcpay_mc_config', 'not-json' );
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			const config = await renderer.fetchConfig();
+
+			expect( config ).toEqual( mockConfig );
+			expect( global.fetch ).toHaveBeenCalled();
 		} );
 	} );
 
