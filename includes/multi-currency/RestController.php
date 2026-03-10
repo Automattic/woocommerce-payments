@@ -60,7 +60,7 @@ class RestController extends \WP_REST_Controller {
 				[
 					'methods'             => \WP_REST_Server::READABLE,
 					'callback'            => [ $this, 'get_public_config' ],
-					'permission_callback' => '__return_true',
+					'permission_callback' => [ $this, 'check_public_config_permission' ],
 				]
 			);
 		}
@@ -284,6 +284,26 @@ class RestController extends \WP_REST_Controller {
 		// browser caching avoids repeated requests during a single browsing session.
 		$response->header( 'Cache-Control', 'private, max-age=300' );
 		return $response;
+	}
+
+	/**
+	 * Checks whether the public config endpoint should be accessible.
+	 *
+	 * The endpoint is only meaningful when the cache-optimized rendering mode
+	 * is active. Otherwise it returns a 403 to reduce the attack surface.
+	 *
+	 * @return true|\WP_Error
+	 */
+	public function check_public_config_permission() {
+		if ( ! $this->multi_currency->is_cache_optimized_mode() ) {
+			return new \WP_Error(
+				'wcpay_mc_public_config_not_available',
+				__( 'This endpoint is not available in the current configuration.', 'woocommerce-payments' ),
+				[ 'status' => 403 ]
+			);
+		}
+
+		return true;
 	}
 
 	/**

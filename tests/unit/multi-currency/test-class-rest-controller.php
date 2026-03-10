@@ -98,6 +98,8 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
 		delete_option( '_wcpay_feature_mc_cache_optimized' );
+		delete_option( 'wcpay_multi_currency_rendering_mode' );
+
 		parent::tear_down();
 	}
 
@@ -411,6 +413,44 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the response is what we expected.
 		$this->assertEquals( $expected, $response );
+	}
+
+	public function test_get_public_config_permission_denied_when_cache_mode_inactive() {
+		// Arrange: Feature flag on, but rendering mode = speed (default).
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		delete_option( 'wcpay_multi_currency_rendering_mode' );
+
+		// Act.
+		$result = $this->controller->check_public_config_permission();
+
+		// Assert.
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'wcpay_mc_public_config_not_available', $result->get_error_code() );
+	}
+
+	public function test_get_public_config_permission_denied_when_feature_flag_off() {
+		// Arrange: Feature flag off, rendering mode = cache.
+		delete_option( '_wcpay_feature_mc_cache_optimized' );
+		update_option( 'wcpay_multi_currency_rendering_mode', 'cache' );
+
+		// Act.
+		$result = $this->controller->check_public_config_permission();
+
+		// Assert.
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'wcpay_mc_public_config_not_available', $result->get_error_code() );
+	}
+
+	public function test_get_public_config_permission_granted_when_cache_mode_active() {
+		// Arrange: Both feature flag and cache rendering mode active.
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( 'wcpay_multi_currency_rendering_mode', 'cache' );
+
+		// Act.
+		$result = $this->controller->check_public_config_permission();
+
+		// Assert.
+		$this->assertTrue( $result );
 	}
 
 	private function get_mock_available_currencies() {
