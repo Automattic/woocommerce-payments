@@ -105,18 +105,14 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 			.getByRole( 'button', { name: 'Publish', exact: true } )
 			.click();
 
-		// Wait for publish confirmation snackbar.
-		await expect(
-			adminPage
-				.locator( '.components-snackbar' )
-				.getByText( 'published' )
-		).toBeVisible( { timeout: 10000 } );
+		// Wait for the post-publish panel to confirm and show the post link.
+		const viewPostLink = adminPage
+			.getByLabel( 'Editor publish' )
+			.getByRole( 'link', { name: 'View Post' } );
+		await expect( viewPostLink ).toBeVisible( { timeout: 10000 } );
 
 		// Visit the published post.
-		await adminPage
-			.locator( '.components-snackbar' )
-			.getByRole( 'link', { name: 'View Post' } )
-			.click();
+		await viewPostLink.click();
 		await adminPage.waitForLoadState( 'load' );
 
 		// Verify the currency switcher block renders on the frontend.
