@@ -224,7 +224,7 @@ gh pr edit <number> --add-label "pr: needs review"
 
 Worktrees provide isolated working directories for parallel feature work. Each worktree gets its own Docker port range (8180-8199).
 
-**Setup:** `npm run worktree:setup` (configures `.env`), `npm run worktree:status` (list all)
+**Setup:** `npm run worktree:setup` (configures `.env`), `npm run worktree:status` (list all), `npm run tube:start` (tunnel — see [Jurassic Tube](#jurassic-tube-ssh-tunnels))
 
 **CRITICAL: Never remove a worktree that is your current working directory.** Removing the CWD makes ALL subsequent commands fail irrecoverably — no `cd`, no subshell can fix it.
 
@@ -258,6 +258,53 @@ git -C /path/to/main/repo merge worktree-feat/branch-name
 - First-time: `npm run up:recreate`
 - Subsequent: `npm run up`
 - Xdebug ready (requires IDE path mapping)
+
+## Jurassic Tube (SSH Tunnels)
+
+Jurassic Tube creates public HTTPS tunnels (`<subdomain>.jurassic.tube`) to your local WordPress instance. Useful for testing webhooks, mobile devices, or sharing a dev site.
+
+### Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run tube:setup` | First-time setup: registers subdomain, generates SSH keys, creates `bin/jurassictube/config.env` |
+| `npm run tube:start` | Starts tunnel (WordPress URLs resolve automatically via `wp-config.php`) |
+| `npm run tube:stop` | Stops tunnel |
+| `npm run tube:status` | Shows subdomain, port, tunnel state, and worktree info |
+
+### Worktree Support
+
+`tube:start` is worktree-aware. It auto-detects worktrees and handles configuration automatically:
+
+**Default (one tunnel at a time):**
+- In a worktree, `tube:start` copies config/keys from the main repo if no local config exists
+- Reads `WORDPRESS_PORT` from the worktree's `.env` to forward the tunnel to the correct port
+- Only one tunnel can use a subdomain at a time — starting in a worktree redirects the subdomain to the worktree's port
+
+**Per-worktree subdomains (parallel tunnels):**
+- Run `npm run tube:setup` in the worktree to register a dedicated subdomain
+- Each worktree then has its own `bin/jurassictube/config.env` with a unique subdomain
+- Multiple tunnels can run simultaneously on different subdomains
+
+**Agent workflow for tunnels in worktrees:**
+```bash
+# 1. Ensure worktree has a port assigned
+npm run worktree:setup
+
+# 2. Ensure Docker is running
+npm run up
+
+# 3. Start tunnel (auto-copies config from main repo if needed)
+npm run tube:start
+
+# 4. When done
+npm run tube:stop
+```
+
+**Key details:**
+- `bin/jurassictube/` is gitignored — config and keys are never committed
+- Port is resolved at runtime from `WORDPRESS_PORT` in `.env` (never hardcoded in config)
+- WordPress URLs resolve automatically via `wp-config.php` (`DOCKER_HOST` from `HTTP_HOST`) — no DB updates needed
 
 ## Configuration Files
 
