@@ -1,13 +1,7 @@
 /**
  * External dependencies
  */
-import {
-	useCallback,
-	useEffect,
-	useState,
-	RawHTML,
-	useRef,
-} from '@wordpress/element';
+import { useEffect, useState, RawHTML, useRef } from '@wordpress/element';
 import { Elements } from '@stripe/react-stripe-js';
 // eslint-disable-next-line import/no-unresolved
 import { StoreNotice } from '@woocommerce/blocks-checkout';
@@ -27,7 +21,6 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import { useFingerprint } from './hooks';
 import PaymentProcessor from './payment-processor';
 import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
-import { CardSkeleton } from './components/skeleton/card-skeleton';
 
 const PaymentElements = ( { api, ...props } ) => {
 	const stripeForUPE = useStripeForUPE( api, props.paymentMethodId );
@@ -50,9 +43,6 @@ const PaymentElements = ( { api, ...props } ) => {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const currency = getUPEConfig( 'currency' ).toLowerCase();
 	const paymentMethodTypes = getPaymentMethodTypes( props.paymentMethodId );
-
-	const [ isStripeReady, setIsStripeReady ] = useState( false );
-	const [ showSkeleton, setShowSkeleton ] = useState( true );
 
 	const isReady = appearance && stripeForUPE;
 
@@ -90,63 +80,44 @@ const PaymentElements = ( { api, ...props } ) => {
 		props.paymentMethodId,
 	] );
 
-	// Remove skeleton from DOM after fade-out transition completes.
-	useEffect( () => {
-		if ( isStripeReady ) {
-			const timer = setTimeout( () => setShowSkeleton( false ), 300 );
-			return () => clearTimeout( timer );
-		}
-	}, [ isStripeReady ] );
-
-	const handleStripeReady = useCallback( () => {
-		setIsStripeReady( true );
-	}, [] );
-
 	return (
 		<>
-			<div className="wcpay-payment-element-wrapper">
-				{ showSkeleton && <CardSkeleton isHidden={ isStripeReady } /> }
-				{ isReady && (
-					<Elements
-						stripe={ stripeForUPE }
-						options={ {
-							mode: amount < 1 ? 'setup' : 'payment',
-							loader: 'never',
-							amount: amount,
-							currency: currency,
-							paymentMethodCreation: 'manual',
-							paymentMethodTypes: paymentMethodTypes,
-							appearance: appearance,
-							fonts: fontRules,
-						} }
-					>
-						{ paymentProcessorLoadErrorMessage?.error?.message && (
-							<div className="wc-block-components-notices">
-								<StoreNotice
-									status="error"
-									isDismissible={ false }
-								>
-									<RawHTML>
-										{
-											paymentProcessorLoadErrorMessage
-												.error.message
-										}
-									</RawHTML>
-								</StoreNotice>
-							</div>
-						) }
-						<PaymentProcessor
-							api={ api }
-							errorMessage={ errorMessage }
-							fingerprint={ fingerprint }
-							onLoadError={ setPaymentProcessorLoadErrorMessage }
-							onReady={ handleStripeReady }
-							theme={ appearance?.theme }
-							{ ...props }
-						/>
-					</Elements>
-				) }
-			</div>
+			{ isReady && (
+				<Elements
+					stripe={ stripeForUPE }
+					options={ {
+						mode: amount < 1 ? 'setup' : 'payment',
+						loader: 'never',
+						amount: amount,
+						currency: currency,
+						paymentMethodCreation: 'manual',
+						paymentMethodTypes: paymentMethodTypes,
+						appearance: appearance,
+						fonts: fontRules,
+					} }
+				>
+					{ paymentProcessorLoadErrorMessage?.error?.message && (
+						<div className="wc-block-components-notices">
+							<StoreNotice status="error" isDismissible={ false }>
+								<RawHTML>
+									{
+										paymentProcessorLoadErrorMessage.error
+											.message
+									}
+								</RawHTML>
+							</StoreNotice>
+						</div>
+					) }
+					<PaymentProcessor
+						api={ api }
+						errorMessage={ errorMessage }
+						fingerprint={ fingerprint }
+						onLoadError={ setPaymentProcessorLoadErrorMessage }
+						theme={ appearance?.theme }
+						{ ...props }
+					/>
+				</Elements>
+			) }
 			<div ref={ containerRef } />
 		</>
 	);

@@ -7,7 +7,7 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 /**
@@ -18,6 +18,7 @@ import { useCustomerData, getStripeElementOptions } from './utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import { CardSkeleton } from './components/skeleton/card-skeleton';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -54,11 +55,25 @@ const PaymentProcessor = ( {
 	shouldSavePayment,
 	fingerprint,
 	onLoadError = noop,
-	onReady = noop,
 	theme,
 } ) => {
 	const elements = useElements();
 	const hasLoadErrorRef = useRef( false );
+
+	const [ isStripeReady, setIsStripeReady ] = useState( false );
+	const [ showSkeleton, setShowSkeleton ] = useState( true );
+
+	// Remove skeleton from DOM after fade-out transition completes.
+	useEffect( () => {
+		if ( isStripeReady ) {
+			const timer = setTimeout( () => setShowSkeleton( false ), 300 );
+			return () => clearTimeout( timer );
+		}
+	}, [ isStripeReady ] );
+
+	const handleStripeReady = useCallback( () => {
+		setIsStripeReady( true );
+	}, [] );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
@@ -205,15 +220,18 @@ const PaymentProcessor = ( {
 					} }
 				/>
 			) }
-			<PaymentElement
-				options={ getStripeElementOptions(
-					shouldSavePayment,
-					paymentMethodsConfig
-				) }
-				onReady={ onReady }
-				onLoadError={ setHasLoadError }
-				className="wcpay-payment-element"
-			/>
+			<div className="wcpay-payment-element-wrapper">
+				{ showSkeleton && <CardSkeleton isHidden={ isStripeReady } /> }
+				<PaymentElement
+					options={ getStripeElementOptions(
+						shouldSavePayment,
+						paymentMethodsConfig
+					) }
+					onReady={ handleStripeReady }
+					onLoadError={ setHasLoadError }
+					className="wcpay-payment-element"
+				/>
+			</div>
 		</>
 	);
 };
