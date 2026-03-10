@@ -57,6 +57,20 @@ export function updateStoreSettings( data ) {
 	};
 }
 
+export function updateStoreSettingValues( payload ) {
+	return {
+		type: TYPES.SET_STORE_SETTINGS_VALUES,
+		data: payload,
+	};
+}
+
+export function updateIsSavingStoreSettings( isSaving, error ) {
+	return {
+		type: TYPES.SET_IS_SAVING_STORE_SETTINGS,
+		data: { isSaving, error },
+	};
+}
+
 export function* submitEnabledCurrenciesUpdate( currencies ) {
 	const enabledCurrencies = Object.keys(
 		select( STORE_NAME ).getEnabledCurrencies()
@@ -114,38 +128,42 @@ export function* submitCurrencySettings( currencyCode, settings ) {
 	}
 }
 
-export function* submitStoreSettingsUpdate(
-	isAutoSwitchEnabled,
-	isStorefrontSwitcherEnabled,
-	renderingMode = 'speed',
-	suppressNotices = false
-) {
+export function* saveStoreSettings( suppressNotices = false ) {
+	let error = null;
 	try {
+		const storeSettings = select( STORE_NAME ).getStoreSettings();
+
+		yield updateIsSavingStoreSettings( true, null );
+
 		const result = yield apiFetch( {
 			path: `${ NAMESPACE }/multi-currency/update-settings`,
 			method: 'POST',
 			data: {
-				wcpay_multi_currency_enable_auto_currency: isAutoSwitchEnabled
+				wcpay_multi_currency_enable_auto_currency: storeSettings.enable_auto_currency
 					? 'yes'
 					: 'no',
-				wcpay_multi_currency_enable_storefront_switcher: isStorefrontSwitcherEnabled
+				wcpay_multi_currency_enable_storefront_switcher: storeSettings.enable_storefront_switcher
 					? 'yes'
 					: 'no',
-				wcpay_multi_currency_rendering_mode: renderingMode,
+				wcpay_multi_currency_rendering_mode:
+					storeSettings.rendering_mode || 'speed',
 			},
 		} );
 
 		yield updateStoreSettings( result );
 
-		if ( suppressNotices ) return;
-
-		yield dispatch( 'core/notices' ).createSuccessNotice(
-			__( 'Store settings saved.', 'woocommerce-payments' )
-		);
+		if ( ! suppressNotices ) {
+			yield dispatch( 'core/notices' ).createSuccessNotice(
+				__( 'Store settings saved.', 'woocommerce-payments' )
+			);
+		}
 	} catch ( e ) {
+		error = e;
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving store settings.', 'woocommerce-payments' )
 		);
+	} finally {
+		yield updateIsSavingStoreSettings( false, error );
 	}
 }
 
