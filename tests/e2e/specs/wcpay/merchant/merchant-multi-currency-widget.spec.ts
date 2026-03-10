@@ -260,7 +260,7 @@ test.describe( 'Multi-currency widget setup', () => {
 			// Switch to EUR.
 			await shopperPage
 				.locator( '.currency-switcher-holder select' )
-				.selectOption( { label: /EUR/ } );
+				.selectOption( 'EUR' );
 
 			// Wait for page to reload with new currency.
 			await shopperPage.waitForLoadState( 'load' );

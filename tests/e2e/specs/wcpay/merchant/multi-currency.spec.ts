@@ -90,18 +90,16 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 			.getByRole( 'option', { name: 'Currency Switcher Block' } )
 			.click();
 
-		// Publish the post.
+		// Publish the post — click the top bar button to open the publish panel.
 		await page
+			.getByLabel( 'Editor top bar' )
+			.getByRole( 'button', { name: 'Publish' } )
+			.click();
+		// Confirm publish in the panel.
+		await page
+			.getByLabel( 'Editor publish' )
 			.getByRole( 'button', { name: 'Publish', exact: true } )
 			.click();
-		// Handle the confirmation panel if shown.
-		const confirmPublish = page.getByRole( 'button', {
-			name: 'Publish',
-			exact: true,
-		} );
-		if ( await confirmPublish.isVisible() ) {
-			await confirmPublish.click();
-		}
 
 		// Wait for publish confirmation.
 		await expect(

@@ -284,7 +284,7 @@ test.describe( 'Multi-currency widget setup', { tag: '@merchant' }, () => {
 			// Switch to EUR.
 			await customerPage
 				.locator( '.currency-switcher-holder select' )
-				.selectOption( { label: /EUR/ } );
+				.selectOption( 'EUR' );
 
 			// Wait for page to reload with new currency.
 			await customerPage.waitForLoadState( 'load' );

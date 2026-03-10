@@ -84,7 +84,7 @@ test.describe(
 			);
 			await editorPage.waitForLoadState( 'domcontentloaded' );
 			await expect(
-				editorPage.locator( '#woocommerce-layout' )
+				editorPage.locator( '#wpbody' )
 			).toBeVisible();
 		} );
 

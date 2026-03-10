@@ -48,9 +48,7 @@ test.describe( 'Non-admin WP-Admin access', { tag: '@critical' }, () => {
 			'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions'
 		);
 		await editorPage.waitForLoadState( 'domcontentloaded' );
-		await expect(
-			editorPage.locator( '#woocommerce-layout' )
-		).toBeVisible();
+		await expect( editorPage.locator( '#wpbody' ) ).toBeVisible();
 	} );
 
 	test( 'should be able to access wp-admin before and after onboarding', async () => {

@@ -45,15 +45,17 @@ test.describe(
 				'/wp-admin/admin.php?page=wc-orders&status=wc-failed',
 				{ waitUntil: 'load' }
 			);
+			// Click the most recent failed order link.
 			await adminPage
 				.locator( '.wp-list-table tbody tr' )
 				.first()
-				.locator( 'a' )
-				.first()
+				.locator( 'a.order-view' )
 				.click();
 			await adminPage.waitForLoadState( 'load' );
 			await expect(
-				adminPage.locator( '#woocommerce-order-notes' )
+				adminPage.locator(
+					'#woocommerce-order-notes .note_content'
+				)
 			).toContainText( /declined/i );
 		} );
 

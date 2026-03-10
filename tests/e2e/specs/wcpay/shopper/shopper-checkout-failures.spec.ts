@@ -35,22 +35,29 @@ test.describe(
 			await waitForBanner( page, 'Error: Your card was declined.' );
 
 			// Verify the failed order has a note about the decline in WC admin.
-			const { merchantPage } = await getMerchant( browser );
-			await merchantPage.goto(
-				'/wp-admin/admin.php?page=wc-orders&status=wc-failed',
-				{ waitUntil: 'load' }
+			const { merchantPage, merchantContext } = await getMerchant(
+				browser
 			);
-			await merchantPage
-				.locator( '.wp-list-table tbody tr' )
-				.first()
-				.locator( 'a' )
-				.first()
-				.click();
-			await merchantPage.waitForLoadState( 'load' );
-			await expect(
-				merchantPage.locator( '#woocommerce-order-notes' )
-			).toContainText( /declined/i );
-			await merchantPage.close();
+			try {
+				await merchantPage.goto(
+					'/wp-admin/admin.php?page=wc-orders&status=wc-failed',
+					{ waitUntil: 'load' }
+				);
+				// Click the most recent failed order link.
+				await merchantPage
+					.locator( '.wp-list-table tbody tr' )
+					.first()
+					.locator( 'a.order-view' )
+					.click();
+				await merchantPage.waitForLoadState( 'load' );
+				await expect(
+					merchantPage.locator(
+						'#woocommerce-order-notes .note_content'
+					)
+				).toContainText( /declined/i );
+			} finally {
+				await merchantContext.close();
+			}
 		} );
 
 		test( 'should throw an error that the card expiration date is in the past', async ( {
