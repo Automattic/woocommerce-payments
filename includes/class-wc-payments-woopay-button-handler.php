@@ -326,18 +326,23 @@ class WC_Payments_WooPay_Button_Handler {
 
 		$settings = $this->get_button_settings();
 
+		// Use a <div> placeholder instead of <button>. The Add to Cart + Options block
+		// scans hooked content for form elements (BUTTON, INPUT, etc.) to decide between
+		// Interactivity API mode and legacy form-submit mode. A <button> here forces
+		// legacy mode, which breaks the mini-cart drawer. The React component hydrates
+		// the #wcpay-woopay-button container regardless of the placeholder element type,
+		// and .woopay-express-button CSS fully styles the element, so <div> is visually
+		// identical.
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>
-			<?php // The WooPay express checkout button React component will go here. This is rendered as disabled for now, until the page is initialized. ?>
-			<button
-				class="woopay-express-button"
+			<div
+				class="woopay-express-button is-placeholder"
 				aria-label="<?php esc_attr_e( 'WooPay', 'woocommerce-payments' ); ?>"
 				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
 				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
 				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
 				style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $settings['radius'] ); ?>px"
-				disabled
-			></button>
+			></div>
 		</div>
 		<?php
 	}
