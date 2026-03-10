@@ -301,9 +301,13 @@ class MultiCurrency {
 		// Otherwise, use standard server-side price conversion.
 		// A ?currency= URL param means a session will be created (at init priority 11),
 		// so we use server-side conversion to show the correct currency immediately.
+		// Auto-switching is also required for the async renderer: without it, all
+		// session-less visitors always see the default currency, so skeletons add
+		// unnecessary JS latency with no benefit — PHP renders the default prices
+		// directly, which is still fully cacheable (same output for all visitors).
 		$has_pending_currency_switch = isset( $_GET['currency'] ); // phpcs:ignore WordPress.Security.NonceVerification
 
-		if ( ! $has_pending_currency_switch ) {
+		if ( ! $has_pending_currency_switch && $this->is_using_auto_currency_switching() ) {
 			$this->async_renderer->init_hooks();
 		}
 
