@@ -111,9 +111,9 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 			.getByRole( 'link', { name: 'View Post' } );
 		await expect( viewPostLink ).toBeVisible( { timeout: 10000 } );
 
-		// Visit the published post.
-		await viewPostLink.click();
-		await adminPage.waitForLoadState( 'load' );
+		// The "View Post" link opens in a new tab — navigate directly instead.
+		const postUrl = await viewPostLink.getAttribute( 'href' );
+		await adminPage.goto( postUrl, { waitUntil: 'load' } );
 
 		// Verify the currency switcher block renders on the frontend.
 		await expect(
