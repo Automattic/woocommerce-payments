@@ -27,6 +27,7 @@ import { getUPEConfig } from 'wcpay/utils/checkout';
 import { useFingerprint } from './hooks';
 import PaymentProcessor from './payment-processor';
 import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
+import { CardSkeleton } from './components/skeleton/card-skeleton';
 
 const PaymentElements = ( { api, ...props } ) => {
 	const stripeForUPE = useStripeForUPE( api, props.paymentMethodId );
@@ -104,20 +105,7 @@ const PaymentElements = ( { api, ...props } ) => {
 	return (
 		<>
 			<div className="wcpay-payment-element-wrapper">
-				{ showSkeleton && (
-					<div
-						className={ `wcpay-payment-element-skeleton ${
-							isStripeReady ? 'is-hidden' : ''
-						}` }
-						aria-hidden={ isStripeReady }
-					>
-						<div className="wcpay-skeleton-line" />
-						<div className="wcpay-skeleton-row">
-							<div className="wcpay-skeleton-line" />
-							<div className="wcpay-skeleton-line" />
-						</div>
-					</div>
-				) }
+				{ showSkeleton && <CardSkeleton isHidden={ isStripeReady } /> }
 				{ isReady && (
 					<Elements
 						stripe={ stripeForUPE }

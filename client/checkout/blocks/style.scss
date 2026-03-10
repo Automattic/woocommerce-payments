@@ -23,45 +23,18 @@
 	}
 }
 
-.wcpay-skeleton-line {
-	height: 40px;
-	border-radius: 4px;
-	background: linear-gradient(
-		90deg,
-		#f0f0f0 25%,
-		#e8e8e8 50%,
-		#f0f0f0 75%
-	);
-	background-size: 200% 100%;
-	animation: wcpay-skeleton-shimmer 1.6s ease-in-out infinite;
-
-	@media screen and ( prefers-reduced-motion: reduce ) {
-		animation: none;
-	}
-}
-
 .wcpay-skeleton-row {
 	display: flex;
 	gap: 12px;
 	margin-top: 12px;
 
-	.wcpay-skeleton-line {
+	.wc-block-components-skeleton__element {
 		flex: 1;
 	}
 }
 
-@keyframes wcpay-skeleton-shimmer {
-	0% {
-		background-position: 200% 0;
-	}
-
-	100% {
-		background-position: -200% 0;
-	}
-}
-
 .wcpay-payment-element {
-	margin-bottom: 0;
+	margin-bottom: 2rem;
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
