@@ -12,7 +12,7 @@ import './style.scss';
 
 const TIMEOUT_MS = 10000;
 const MAX_CACHE_SIZE = 500;
-const SESSION_CACHE_KEY = 'wcpay_mc_config';
+const SESSION_CACHE_KEY = 'wcpay_mc_async_config';
 const SESSION_CACHE_TTL_MS = 300000; // 5 minutes, matches Cache-Control max-age.
 
 type SymbolPosition = 'left' | 'left_space' | 'right' | 'right_space';
