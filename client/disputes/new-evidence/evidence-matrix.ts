@@ -208,6 +208,84 @@ const getDuplicateMatrix = (): {
 			order: 100,
 		},
 	],
+	// Digital Product/Service - It was a duplicate (Scenario A)
+	digital_product_or_service__is_duplicate: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+			label: __( 'Refund receipt', 'woocommerce-payments' ),
+			description: __(
+				'A confirmation that a refund was issued.',
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Digital Product/Service - It was not a duplicate (Scenario B)
+	digital_product_or_service__is_not_duplicate: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+			label: __( 'Any additional receipts', 'woocommerce-payments' ),
+			description: __(
+				'Receipt(s) for any other order(s) from this customer.',
+				'woocommerce-payments'
+			),
+			order: 12,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
 } );
 
 /**
@@ -288,6 +366,54 @@ const getSubscriptionCanceledMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Terms of service', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's terms of service.",
+				'woocommerce-payments'
+			),
+			order: 30,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Digital Product/Service product type
+	digital_product_or_service: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
+			label: __( 'Cancellation logs', 'woocommerce-payments' ),
+			description: __(
+				'Records showing no cancellation attempt or request was made before the charge, such as account activity, subscription status, or communication history.',
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __( 'Login or usage records', 'woocommerce-payments' ),
+			description: __(
+				'Any documents showing the login history, usage activity, or access logs for the digital product or service.',
+				'woocommerce-payments'
+			),
+			order: 22,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
@@ -424,6 +550,36 @@ const getProductNotReceivedMatrix = (): {
 			order: 100,
 		},
 	],
+	// Digital Product/Service product type
+	digital_product_or_service: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __( 'Login or usage records', 'woocommerce-payments' ),
+			description: __(
+				'Any documents showing the login history, usage activity, or access logs for the digital product or service.',
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
 	// Booking/Reservation product type
 	booking_reservation: [
 		{
@@ -511,6 +667,54 @@ const getProductUnacceptableMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 30,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Digital Product/Service product type
+	digital_product_or_service: [
+		{
+			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			label: __( 'Proof of delivered service', 'woocommerce-payments' ),
+			description: __(
+				'Screenshots or documents showing the digital product or service was delivered and accessible to the customer.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 12,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __( 'Login or usage records', 'woocommerce-payments' ),
+			description: __(
+				'Any documents showing the login history, usage activity, or access logs for the digital product or service.',
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
@@ -685,6 +889,72 @@ const getCreditNotProcessedMatrix = (): {
 			order: 100,
 		},
 	],
+	// Digital Product/Service - Refund has been issued (Scenario A)
+	// Note: CUSTOMER_COMMUNICATION is repurposed as "Other documents" to prevent
+	// the base "Customer communication" field from being auto-merged.
+	digital_product_or_service__refund_has_been_issued: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Refund receipt', 'woocommerce-payments' ),
+			description: __(
+				'A copy of the refund receipt, which can be found in the receipt history for this transaction.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
+			label: __( 'Cancellation logs', 'woocommerce-payments' ),
+			description: __(
+				'Records showing no cancellation attempt or request was made before the charge, such as account activity, subscription status, or communication history.',
+				'woocommerce-payments'
+			),
+			order: 20,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Digital Product/Service - Refund was not owed (Scenario B)
+	// Note: CUSTOMER_COMMUNICATION is used here as "Other documents" because
+	// UNCATEGORIZED_FILE is already used for "Proof of acceptance".
+	// Including CUSTOMER_COMMUNICATION in the matrix also prevents the base
+	// "Customer communication" field from being auto-merged.
+	digital_product_or_service__refund_was_not_owed: [
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Proof of acceptance', 'woocommerce-payments' ),
+			description: __(
+				'Screenshot or document showing where the customer agreed to or acknowledged the refund policy during checkout or on the receipt.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
 	// Booking/Reservation - Refund has been issued (Scenario A)
 	// Note: CUSTOMER_COMMUNICATION is repurposed as "Other documents" to prevent
 	// the base "Customer communication" field from being auto-merged.
@@ -799,6 +1069,41 @@ const getFraudulentMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 30,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Digital Product/Service product type
+	// Note: SERVICE_DOCUMENTATION is repurposed as "Prior undisputed transaction history"
+	// because ACCESS_ACTIVITY_LOG is already used for "Login or usage records".
+	digital_product_or_service: [
+		{
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __( 'Login or usage records', 'woocommerce-payments' ),
+			description: __(
+				'Any documents showing the login history, usage activity, or access logs for the digital product or service.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			label: __(
+				'Prior undisputed transaction history',
+				'woocommerce-payments'
+			),
+			description: __(
+				'Proof of past undisputed transactions from the same customer, with matching billing and device details.',
+				'woocommerce-payments'
+			),
+			order: 15,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
