@@ -79,7 +79,7 @@ class WC_Payments_Fraud_Service {
 	 * @return void
 	 */
 	public function init_hooks() {
-		add_action( 'init', [ $this, 'link_session_if_user_just_logged_in' ] );
+		add_action( 'wp_login', [ $this, 'link_session_if_user_just_logged_in' ] );
 		add_action( 'admin_print_footer_scripts', [ $this, 'add_sift_js_tracker_in_admin' ] );
 	}
 
