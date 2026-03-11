@@ -156,6 +156,7 @@ declare global {
 		defaultExpressCheckoutBorderRadius: string;
 		dateFormat: string;
 		timeFormat: string;
+		formattedStoreAddress: string;
 	};
 
 	const wooPaymentsPaymentMethodDefinitions: Record<
@@ -281,7 +282,6 @@ declare global {
 		wcAjaxUrl: string;
 		createSetupIntentNonce: string;
 		initWooPayNonce: string;
-		saveUPEAppearanceNonce: string;
 		genericErrorMessage: string;
 		fraudServices: unknown[];
 		features: string[];
@@ -307,13 +307,6 @@ declare global {
 		gatewayId: string;
 		isCheckout: boolean;
 		paymentMethodsConfig: typeof wooPaymentsPaymentMethodsConfig;
-		upeAppearance: string | false;
-		upeAddPaymentMethodAppearance: string | false;
-		upeBnplProductPageAppearance: string | false;
-		upeBnplClassicCartAppearance: string | false;
-		upeBnplCartBlockAppearance: string | false;
-		wcBlocksUPEAppearance: string | false;
-		wcBlocksUPEAppearanceTheme: string | false;
 		cartContainsSubscription: boolean;
 		currency: string;
 		cartTotal: number;
@@ -325,6 +318,7 @@ declare global {
 		>;
 		storeCountry: string;
 		isExpressCheckoutInPaymentMethodsEnabled: boolean;
+		stylesCacheVersion: string;
 		isOrderPay?: boolean;
 		orderId?: number;
 		isChangingPayment?: boolean;

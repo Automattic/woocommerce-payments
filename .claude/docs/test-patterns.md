@@ -209,6 +209,29 @@ npm run test:js -- --testPathPattern=settings  # Tests matching pattern
 npm run test:update-snapshots       # Update snapshots
 ```
 
+## Vanilla JS (Non-React) Storefront Tests
+
+Storefront JS that doesn't use React (e.g., `async-renderer/index.js`) uses plain Jest — no React Testing Library, no MSW.
+
+**Key patterns:**
+
+- **Mock `global.fetch`** directly, not via MSW:
+
+  ```js
+  beforeEach( () => { global.fetch = jest.fn(); } );
+  afterEach( () => { delete global.fetch; } );
+  ```
+
+- **Mock jQuery** with jest.fn() chains for WC event listener tests:
+
+  ```js
+  global.jQuery = jest.fn( () => ( { on: jest.fn().mockReturnThis(), off: jest.fn().mockReturnThis() } ) );
+  ```
+
+- **Reset DOM** state with `document.body.textContent = ''` in `beforeEach`.
+- **State leakage:** Always place global setup (`global.fetch`, `global.wcpayAsyncPriceConfig`) in `beforeEach`/`afterEach` — not at `describe` level — so state is cleaned even when assertions fail mid-test.
+- **Class under test:** Instantiate fresh in `beforeEach`. Set `.config` directly (not via `init()`) for unit tests that don't test the fetch path.
+
 ## E2E Tests (Playwright)
 
 ### Configuration
