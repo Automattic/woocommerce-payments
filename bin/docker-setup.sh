@@ -113,6 +113,10 @@ fi
 
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
+# Flush rewrite rules with --hard to ensure .htaccess is regenerated.
+# wp rewrite structure alone won't regenerate .htaccess if the WordPress
+# markers already exist but are empty, which breaks REST API routing.
+cli wp rewrite flush --hard
 
 echo "Installing and activating WooCommerce..."
 cli wp plugin install woocommerce --activate
@@ -129,6 +133,12 @@ cli wp option set woocommerce_store_postcode "94110"
 cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
+
+echo "Skipping WooCommerce onboarding wizard..."
+# The WC core profiler (setup wizard) crashes in local Docker environments because
+# it can't fetch remote country/locale data. Setting the onboarding profile as
+# skipped prevents WC from redirecting to the wizard on every admin page load.
+cli wp option set woocommerce_onboarding_profile --format=json '{"skipped":true}'
 
 echo "Deactivating Coming Soon mode in WooCommerce..."
 cli wp option set woocommerce_coming_soon "no"
