@@ -549,13 +549,6 @@ class WCPayAsyncPriceRenderer {
 
 // Export for testing.
 export { WCPayAsyncPriceRenderer };
-export type {
-	PublicConfig,
-	CurrencyConfig,
-	SessionCacheEntry,
-	PriceType,
-	SymbolPosition,
-};
 
 // Initialize when DOM is ready.
 if ( typeof wcpayAsyncPriceConfig !== 'undefined' ) {
