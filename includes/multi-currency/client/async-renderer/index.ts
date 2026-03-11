@@ -43,9 +43,17 @@ interface SessionCacheEntry {
 
 type PriceType = 'product' | 'shipping' | 'tax' | 'coupon' | 'exchange_rate';
 
+interface SrTextConfig {
+	sale_original: string;
+	sale_current: string;
+	range: string;
+	[ key: string ]: string;
+}
+
 declare const wcpayAsyncPriceConfig: {
 	apiUrl: string;
 	defaultCurrency?: CurrencyConfig;
+	srText?: SrTextConfig;
 };
 
 declare const jQuery: JQueryStatic | undefined;
@@ -377,7 +385,10 @@ class WCPayAsyncPriceRenderer {
 	 * @param {Object} currency        The currency config object.
 	 * @return {string} The formatted price text.
 	 */
-	buildPriceText( formattedNumber, currency ) {
+	buildPriceText(
+		formattedNumber: string,
+		currency: CurrencyConfig
+	): string {
 		switch ( currency.symbol_pos ) {
 			case 'right':
 				return formattedNumber + currency.symbol;
@@ -435,7 +446,7 @@ class WCPayAsyncPriceRenderer {
 	 * attributes; this method reads the raw prices, converts them, and rebuilds
 	 * the text using localized templates from wcpayAsyncPriceConfig.srText.
 	 */
-	convertScreenReaderText() {
+	convertScreenReaderText(): void {
 		const srConfig =
 			typeof wcpayAsyncPriceConfig !== 'undefined'
 				? wcpayAsyncPriceConfig.srText
@@ -444,11 +455,11 @@ class WCPayAsyncPriceRenderer {
 			return;
 		}
 
-		const selectedCode = this.config.selected_currency;
-		const selectedCurrency = this.config.currencies[ selectedCode ];
+		const selectedCode = this.config!.selected_currency;
+		const selectedCurrency = this.config!.currencies[ selectedCode ];
 		const effectiveCurrency =
-			! selectedCurrency || selectedCode === this.config.default_currency
-				? this.config.currencies[ this.config.default_currency ]
+			! selectedCurrency || selectedCode === this.config!.default_currency
+				? this.config!.currencies[ this.config!.default_currency ]
 				: selectedCurrency;
 
 		const elements = document.querySelectorAll(
@@ -515,10 +526,10 @@ class WCPayAsyncPriceRenderer {
 						el.querySelector?.(
 							'[data-wcpay-price]:not(.wcpay-price-converted)'
 						) ||
-						node.matches?.(
+						el.matches?.(
 							'[data-wcpay-sr-type]:not(.wcpay-sr-converted)'
 						) ||
-						node.querySelector?.(
+						el.querySelector?.(
 							'[data-wcpay-sr-type]:not(.wcpay-sr-converted)'
 						)
 					) {
