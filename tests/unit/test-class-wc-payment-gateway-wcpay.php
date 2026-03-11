@@ -31,6 +31,7 @@ use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 // Need to use WC_Mock_Data_Store.
@@ -4518,7 +4519,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_has_custom_place_order_button_not_set_for_non_express_checkout() {
 		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
 
-		$card_payment_method = new CC_Payment_Method( $this->mock_token_service );
+		$card_payment_method = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
 		$gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
