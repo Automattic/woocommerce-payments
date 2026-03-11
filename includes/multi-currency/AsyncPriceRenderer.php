@@ -55,6 +55,8 @@ class AsyncPriceRenderer {
 		}
 
 		add_filter( 'wc_price', [ $this, 'wrap_price_with_skeleton' ], 999, 5 );
+		add_filter( 'woocommerce_format_sale_price', [ $this, 'annotate_sale_price_sr_text' ], 999, 3 );
+		add_filter( 'woocommerce_format_price_range', [ $this, 'annotate_price_range_sr_text' ], 999, 3 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_async_renderer' ] );
 	}
 
@@ -119,6 +121,17 @@ class AsyncPriceRenderer {
 					'thousand_sep' => wc_get_price_thousand_separator(),
 					'symbol_pos'   => get_option( 'woocommerce_currency_pos' ),
 				],
+				// Uses WC's text domain so translations match WC core output in every locale.
+				// phpcs:disable WordPress.WP.I18n.TextDomainMismatch
+				'srText'          => [
+					/* translators: %s: formatted price */
+					'sale_original' => __( 'Original price was: %s.', 'woocommerce' ),
+					/* translators: %s: formatted price */
+					'sale_current'  => __( 'Current price is: %s.', 'woocommerce' ),
+					/* translators: %1$s: minimum price, %2$s: maximum price */
+					'range'         => __( 'Price range: %1$s through %2$s', 'woocommerce' ),
+				],
+				// phpcs:enable WordPress.WP.I18n.TextDomainMismatch
 			]
 		);
 
@@ -132,6 +145,68 @@ class AsyncPriceRenderer {
 			),
 			[],
 			$this->multi_currency->get_file_version( 'dist/multi-currency-async-renderer.css' )
+		);
+	}
+
+	/**
+	 * Annotates screen-reader-text spans in sale price HTML with data attributes
+	 * so the client-side renderer can rebuild them in the target currency.
+	 *
+	 * @param string $price_html    The formatted sale price HTML.
+	 * @param string $regular_price The regular price.
+	 * @param string $sale_price    The sale price.
+	 *
+	 * @return string The annotated HTML.
+	 */
+	public function annotate_sale_price_sr_text( $price_html, $regular_price, $sale_price ) {
+		if ( ! is_numeric( $regular_price ) || ! is_numeric( $sale_price ) ) {
+			return $price_html;
+		}
+
+		$count = 0;
+		return preg_replace_callback(
+			'/<span class="screen-reader-text">/',
+			function () use ( $regular_price, $sale_price, &$count ) {
+				$count++;
+				if ( 1 === $count ) {
+					return sprintf(
+						'<span class="screen-reader-text" data-wcpay-sr-type="sale_original" data-wcpay-sr-price="%s">',
+						esc_attr( $regular_price )
+					);
+				}
+				return sprintf(
+					'<span class="screen-reader-text" data-wcpay-sr-type="sale_current" data-wcpay-sr-price="%s">',
+					esc_attr( $sale_price )
+				);
+			},
+			$price_html
+		);
+	}
+
+	/**
+	 * Annotates the screen-reader-text span in price range HTML with data attributes
+	 * so the client-side renderer can rebuild it in the target currency.
+	 *
+	 * @param string $price_html The formatted price range HTML.
+	 * @param string $from       The "from" price.
+	 * @param string $to         The "to" price.
+	 *
+	 * @return string The annotated HTML.
+	 */
+	public function annotate_price_range_sr_text( $price_html, $from, $to ) {
+		if ( ! is_numeric( $from ) || ! is_numeric( $to ) ) {
+			return $price_html;
+		}
+
+		return preg_replace(
+			'/<span class="screen-reader-text">/',
+			sprintf(
+				'<span class="screen-reader-text" data-wcpay-sr-type="range" data-wcpay-sr-price-from="%s" data-wcpay-sr-price-to="%s">',
+				esc_attr( $from ),
+				esc_attr( $to )
+			),
+			$price_html,
+			1
 		);
 	}
 }
