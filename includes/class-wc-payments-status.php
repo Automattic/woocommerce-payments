@@ -202,7 +202,7 @@ class WC_Payments_Status {
 	 * @return string Success message.
 	 */
 	public function clear_styles_cache() {
-		WC_Payments_Utils::invalidate_styles_cache_version();
+		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
 		return __( 'WooPayments styles cleared', 'woocommerce-payments' );
 	}
 
