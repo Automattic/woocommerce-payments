@@ -140,6 +140,18 @@ class WC_Payments_Fraud_Service {
 	 *                   This means that the method is called before the `init` hook.
 	 */
 	public function link_session_if_user_just_logged_in() {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			return;
+		}
+
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return;
+		}
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return;
+		}
+
 		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
 		if ( ! $wpcom_blog_id ) {
 			// Don't do anything if Jetpack hasn't been connected yet.
