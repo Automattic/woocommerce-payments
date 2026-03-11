@@ -4467,6 +4467,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->card_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
 
 		$amazon_pay_payment_method = new UPE_Payment_Method(
 			$this->mock_token_service,

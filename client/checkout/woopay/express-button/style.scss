@@ -33,7 +33,7 @@
 			max-width: 100%;
 		}
 
-		&:not( :disabled ) {
+		&:not( :disabled ):not( .is-placeholder ) {
 			&:focus,
 			&:focus-within {
 				outline: 4px solid $studio-woocommerce-purple-10;
@@ -44,7 +44,8 @@
 			}
 		}
 
-		&:disabled {
+		&:disabled,
+		&.is-placeholder {
 			opacity: 0.5;
 			cursor: not-allowed;
 		}
@@ -109,7 +110,7 @@
 			svg {
 				fill: $white;
 			}
-			&:not( :disabled ):hover {
+			&:not( :disabled ):not( .is-placeholder ):hover {
 				border-color: $studio-woocommerce-purple-30;
 				background: $studio-woocommerce-purple-30;
 			}
@@ -117,7 +118,7 @@
 
 		&[data-theme='light-outline'] {
 			border: 1px solid $studio-black;
-			&:not( :disabled ):hover {
+			&:not( :disabled ):not( .is-placeholder ):hover {
 				background: #e0e0e0;
 			}
 		}

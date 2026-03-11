@@ -29,7 +29,7 @@ module.exports = {
 			'multi-currency-analytics':
 				'./includes/multi-currency/client/analytics/index.js',
 			'multi-currency-async-renderer':
-				'./includes/multi-currency/client/async-renderer/index.js',
+				'./includes/multi-currency/client/async-renderer/index.ts',
 			order: './client/order/index.js',
 			'subscriptions-empty-state':
 				'./client/subscriptions-empty-state/index.js',
