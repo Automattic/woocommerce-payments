@@ -48,9 +48,10 @@ class WC_Payments_Session_Service {
 			return false;
 		}
 
+		WC()->initialize_session();
 		$session_handler = WC()->session;
 		// The Store API SessionHandler (used by WooPay) doesn't provide this method.
-		if ( null === $session_handler || ! method_exists( $session_handler, 'get_session_cookie' ) ) {
+		if ( ! method_exists( $session_handler, 'get_session_cookie' ) ) {
 			return false;
 		}
 		$cookie = $session_handler->get_session_cookie();
