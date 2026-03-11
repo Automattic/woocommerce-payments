@@ -63,6 +63,7 @@ const PaymentProcessor = ( {
 
 	const [ isStripeReady, setIsStripeReady ] = useState( false );
 	const [ showSkeleton, setShowSkeleton ] = useState( true );
+	const isCardMethod = paymentMethodId === 'card';
 
 	// Remove skeleton from DOM after fade-out transition completes.
 	useEffect( () => {
@@ -221,9 +222,18 @@ const PaymentProcessor = ( {
 					} }
 				/>
 			) }
-			<div className="wcpay-payment-element-wrapper">
+			{ /* Skeleton overlay for Stripe PaymentElement loading state.
+				   Positioned absolutely over the iframe mount point and fades out
+				   when Stripe fires the `ready` event. */ }
+			<div
+				className="wcpay-payment-element-wrapper"
+				style={ {
+					position: 'relative',
+					minHeight: isCardMethod ? '130px' : '100px',
+				} }
+			>
 				{ showSkeleton &&
-					( paymentMethodId === 'card' ? (
+					( isCardMethod ? (
 						<CardSkeleton isHidden={ isStripeReady } />
 					) : (
 						<ApmSkeleton isHidden={ isStripeReady } />
