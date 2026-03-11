@@ -22,7 +22,7 @@ export const ApmSkeleton = ( {
 			}` }
 			aria-hidden={ isHidden }
 		>
-			<Skeleton height="100px" borderRadius="4px" />
+			<Skeleton height="6rem" borderRadius="4px" />
 		</div>
 	);
 };

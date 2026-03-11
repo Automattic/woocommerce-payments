@@ -5,7 +5,7 @@
 // when Stripe fires the `ready` event.
 .wcpay-payment-element-wrapper {
 	position: relative;
-	min-height: 120px;
+	min-height: 130px;
 }
 
 .wcpay-payment-element-skeleton {
@@ -28,14 +28,10 @@
 	display: flex;
 	gap: 12px;
 	margin-top: 12px;
-
-	.wc-block-components-skeleton__element {
-		flex: 1;
-	}
 }
 
 .wcpay-payment-element {
-	margin-bottom: 2rem;
+	margin-bottom: 1rem;
 }
 
 /* stylelint-disable-next-line selector-id-pattern */

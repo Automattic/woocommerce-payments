@@ -22,10 +22,10 @@ export const CardSkeleton = ( {
 			}` }
 			aria-hidden={ isHidden }
 		>
-			<Skeleton height="50px" borderRadius="4px" />
+			<Skeleton height="3.5rem" borderRadius="4px" />
 			<div className="wcpay-skeleton-row">
-				<Skeleton height="50px" borderRadius="4px" />
-				<Skeleton height="50px" borderRadius="4px" />
+				<Skeleton height="3.5rem" borderRadius="4px" />
+				<Skeleton height="3.5rem" borderRadius="4px" />
 			</div>
 		</div>
 	);
