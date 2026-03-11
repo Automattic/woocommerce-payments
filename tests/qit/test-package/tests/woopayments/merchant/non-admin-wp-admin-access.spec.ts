@@ -78,13 +78,15 @@ test.describe(
 		test( 'should be able to access wp-admin of fully onboarded WooPayments site', async () => {
 			await checkEditorAccess( editorPage, '/wp-admin', 'Dashboard' );
 
-			// Verify editor can access a WCPay page without errors.
+			// Verify editor gets a clean permission denial on a WCPay page.
 			await editorPage.goto(
 				'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions'
 			);
 			await editorPage.waitForLoadState( 'domcontentloaded' );
 			await expect(
-				editorPage.locator( '#wpbody' )
+				editorPage.getByText(
+					'Sorry, you are not allowed to access this page.'
+				)
 			).toBeVisible();
 		} );
 
