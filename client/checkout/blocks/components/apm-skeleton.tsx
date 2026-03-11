@@ -6,7 +6,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { Skeleton } from '../index';
+import { Skeleton } from './skeleton';
 
 interface ApmSkeletonProps {
 	isHidden?: boolean;

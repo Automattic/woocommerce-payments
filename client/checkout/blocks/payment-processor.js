@@ -18,8 +18,8 @@ import { useCustomerData, getStripeElementOptions } from './utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
-import { CardSkeleton } from './components/skeleton/card-skeleton';
-import { ApmSkeleton } from './components/skeleton/apm-skeleton';
+import { CardSkeleton } from './components/card-skeleton';
+import { ApmSkeleton } from './components/apm-skeleton';
 
 const getBillingDetails = ( billingData ) => {
 	return {
