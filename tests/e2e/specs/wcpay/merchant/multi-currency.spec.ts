@@ -116,9 +116,9 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 		}
 		await page.goto( postUrl, { waitUntil: 'load' } );
 
-		// Verify the currency switcher block renders on the frontend.
+		// Verify the currency switcher block renders in the post content.
 		await expect(
-			page.locator( '.currency-switcher-holder' )
+			page.locator( '.entry-content .currency-switcher-holder' )
 		).toBeVisible();
 	} );
 } );

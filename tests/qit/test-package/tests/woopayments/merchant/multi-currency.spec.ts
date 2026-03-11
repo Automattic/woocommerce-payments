@@ -120,9 +120,9 @@ test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 		}
 		await adminPage.goto( postUrl, { waitUntil: 'load' } );
 
-		// Verify the currency switcher block renders on the frontend.
+		// Verify the currency switcher block renders in the post content.
 		await expect(
-			adminPage.locator( '.currency-switcher-holder' )
+			adminPage.locator( '.entry-content .currency-switcher-holder' )
 		).toBeVisible();
 	} );
 } );
