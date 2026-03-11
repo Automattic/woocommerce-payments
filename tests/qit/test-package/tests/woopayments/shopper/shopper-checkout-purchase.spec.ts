@@ -69,14 +69,13 @@ test.describe( 'Successful purchase', { tag: '@shopper' }, () => {
 
 				// When CTP is disabled, verify the order in WC admin.
 				if ( ! ctpEnabled ) {
-					const orderText = await shopperPage
+					const orderId = await shopperPage
 						.locator(
-							'.woocommerce-order-overview__order strong'
+							'.woocommerce-order-overview__order.order > strong'
 						)
 						.innerText();
-					const orderNumber = orderText.replace( /\D/g, '' );
 
-					await goToOrder( merchantPage, orderNumber );
+					await goToOrder( merchantPage, orderId );
 					await expect(
 						merchantPage.locator( '#order_status' )
 					).toHaveValue( /wc-(processing|completed)/ );
