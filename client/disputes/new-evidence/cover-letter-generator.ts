@@ -82,6 +82,13 @@ export const generateAttachments = (
 	let attachmentCount = 0;
 
 	// Standard attachment definitions with optional restriction rules
+	// Array index determines default sort order in the cover letter.
+	// `orderForReasons` overrides use these indices — update if the array changes:
+	//   0: RECEIPT, 1: DUPLICATE_CHARGE_DOCUMENTATION, 2: ACCESS_ACTIVITY_LOG (fraudulent),
+	//   3: CUSTOMER_COMMUNICATION, 4: CUSTOMER_SIGNATURE, 5: REFUND_POLICY,
+	//   6: SHIPPING_DOCUMENTATION, 7: SERVICE_DOCUMENTATION, 8: ACCESS_ACTIVITY_LOG (non-fraudulent),
+	//   9: CANCELLATION_REBUTTAL, 10: CANCELLATION_POLICY, 11: UNCATEGORIZED_FILE
+	//
 	// Each attachment can specify:
 	// - `onlyForReasons`: only include for these dispute reasons
 	// - `onlyForProductTypes`: only include for these product types
@@ -114,6 +121,8 @@ export const generateAttachments = (
 			label: __( 'Order receipt', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
+					// For booking_reservation credit_not_processed, RECEIPT is "Refund receipt".
+					// For physical_product, RECEIPT stays "Order receipt" (REFUND_RECEIPT_DOCUMENTATION is "Refund receipt").
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Refund receipt', 'woocommerce-payments' ),
 					productTypes: [ 'booking_reservation' ],
@@ -125,13 +134,23 @@ export const generateAttachments = (
 			// For duplicate disputes:
 			// - is_duplicate: shows as "Refund receipt" (REFUND_RECEIPT_DOCUMENTATION maps to this)
 			// - is_not_duplicate: shows as "Any additional receipts"
+			// For credit_not_processed + physical_product + refund_has_been_issued:
+			// - shows as "Refund receipt" (REFUND_RECEIPT_DOCUMENTATION)
 			key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
 			label: __( 'Any additional receipts', 'woocommerce-payments' ),
-			onlyForReasons: [ 'duplicate' ],
+			onlyForReasons: [ 'duplicate', 'credit_not_processed' ],
 			labelForStatus: {
 				status: 'is_duplicate',
 				label: __( 'Refund receipt', 'woocommerce-payments' ),
 			},
+			labelForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					label: __( 'Refund receipt', 'woocommerce-payments' ),
+					refundStatuses: [ 'refund_has_been_issued' ],
+					productTypes: [ 'physical_product' ],
+				},
+			],
 		},
 		{
 			// For fraudulent disputes, this shows as "Prior undisputed transaction history"
@@ -148,6 +167,10 @@ export const generateAttachments = (
 			label: __( 'Customer communication', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
+					// For booking_reservation credit_not_processed, CUSTOMER_COMMUNICATION
+					// is repurposed as "Other documents". For physical_product, it keeps
+					// the default "Customer communication" label since the matrix includes
+					// it explicitly with its proper label.
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Other documents', 'woocommerce-payments' ),
 					productTypes: [ 'booking_reservation' ],
@@ -168,6 +191,13 @@ export const generateAttachments = (
 						'refund_has_been_issued',
 					],
 				},
+				{
+					// For product_unacceptable with physical_product, customer communication
+					// should appear after customer's signature (index 4) to match the UI order
+					reasons: [ 'product_unacceptable' ],
+					order: 5,
+					productTypes: [ 'physical_product' ],
+				},
 			],
 		},
 		{
@@ -178,11 +208,37 @@ export const generateAttachments = (
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
-			label: __( 'Store refund policy', 'woocommerce-payments' ),
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			// For subscription_canceled, refund policy should appear after cancellation logs (index 9).
+			// For duplicate, refund policy should appear after proof of active subscription (index 8).
+			orderForReasons: [
+				{
+					reasons: [ 'subscription_canceled', 'duplicate' ],
+					order: 10,
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
 			label: __( 'Proof of shipping', 'woocommerce-payments' ),
+			labelForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					label: __( 'Return tracking', 'woocommerce-payments' ),
+					refundStatuses: [ 'refund_has_been_issued' ],
+					productTypes: [ 'physical_product' ],
+				},
+			],
+			// For credit_not_processed with refund_has_been_issued, return tracking should
+			// appear after refund receipt (index 1) but before customer communication (index 3)
+			orderForReasons: [
+				{
+					reasons: [ 'credit_not_processed' ],
+					order: 2,
+					refundStatuses: [ 'refund_has_been_issued' ],
+					productTypes: [ 'physical_product' ],
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
@@ -206,6 +262,21 @@ export const generateAttachments = (
 					),
 					productTypes: [ 'booking_reservation' ],
 				},
+				{
+					// For product_unacceptable disputes with physical_product type
+					reasons: [ 'product_unacceptable' ],
+					label: __( "Item's condition", 'woocommerce-payments' ),
+					productTypes: [ 'physical_product' ],
+				},
+				{
+					// For credit_not_processed × physical_product × refund_was_not_owed,
+					// SERVICE_DOCUMENTATION is used as "Other documents" since
+					// UNCATEGORIZED_FILE is used for "Proof of acceptance".
+					reasons: [ 'credit_not_processed' ],
+					label: __( 'Other documents', 'woocommerce-payments' ),
+					refundStatuses: [ 'refund_was_not_owed' ],
+					productTypes: [ 'physical_product' ],
+				},
 			],
 			// For product_unacceptable with booking_reservation, this should appear first (before Order receipt)
 			orderForReasons: [
@@ -214,13 +285,30 @@ export const generateAttachments = (
 					order: -1,
 					productTypes: [ 'booking_reservation' ],
 				},
+				{
+					// For credit_not_processed refund_was_not_owed, Other documents should appear last
+					reasons: [ 'credit_not_processed' ],
+					order: 100,
+					refundStatuses: [ 'refund_was_not_owed' ],
+					productTypes: [ 'physical_product' ],
+				},
 			],
 		},
 		{
-			// For non-fraudulent disputes, "Subscription logs" appears in its original position
+			// For non-fraudulent disputes, "Subscription logs" appears in its original position.
+			// For duplicate disputes, relabeled as "Proof of active subscription".
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 			label: __( 'Subscription logs', 'woocommerce-payments' ),
 			excludeWhen: ( reason: string ) => reason === 'fraudulent',
+			labelForReasons: [
+				{
+					reasons: [ 'duplicate' ],
+					label: __(
+						'Proof of active subscription',
+						'woocommerce-payments'
+					),
+				},
+			],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
@@ -244,10 +332,10 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 			label: __( 'Cancellation policy', 'woocommerce-payments' ),
-			// For subscription_canceled disputes, this field is labeled "Terms of service" in the UI
+			// For subscription_canceled and duplicate disputes, this field is labeled "Terms of service"
 			labelForReasons: [
 				{
-					reasons: [ 'subscription_canceled' ],
+					reasons: [ 'subscription_canceled', 'duplicate' ],
 					label: __( 'Terms of service', 'woocommerce-payments' ),
 				},
 			],
@@ -259,7 +347,6 @@ export const generateAttachments = (
 				{
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Proof of acceptance', 'woocommerce-payments' ),
-					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [ 'refund_was_not_owed' ],
 				},
 			],
@@ -268,7 +355,6 @@ export const generateAttachments = (
 				{
 					reasons: [ 'credit_not_processed' ],
 					order: -1,
-					productTypes: [ 'booking_reservation' ],
 					refundStatuses: [ 'refund_was_not_owed' ],
 				},
 			],

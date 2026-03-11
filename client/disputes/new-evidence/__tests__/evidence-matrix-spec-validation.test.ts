@@ -13,22 +13,27 @@
  *   - fraudulent × booking_reservation
  *   - fraudulent × physical_product
  *   - product_not_received × booking_reservation
+ *   - product_not_received × physical_product
  *   - product_unacceptable × booking_reservation
+ *   - product_unacceptable × physical_product
  *   - subscription_canceled × booking_reservation
+ *   - subscription_canceled × physical_product
  *   - subscription_canceled × other
  *   - subscription_canceled × multiple
  *   - duplicate × booking_reservation (is_duplicate scenario)
  *   - duplicate × booking_reservation (is_not_duplicate scenario)
- *   - credit_not_processed × booking_reservation (refund_was_not_owed scenario)
+ *   - duplicate × physical_product (is_duplicate scenario)
+ *   - duplicate × physical_product (is_not_duplicate scenario)
  *   - credit_not_processed × booking_reservation (refund_has_been_issued scenario)
- *   - product_not_received × physical_product
+ *   - credit_not_processed × booking_reservation (refund_was_not_owed scenario)
+ *   - credit_not_processed × physical_product (refund_has_been_issued scenario)
+ *   - credit_not_processed × physical_product (refund_was_not_owed scenario)
  *
  * ⏳ Not yet implemented (in backlog):
- *   - Remaining combinations with physical_product (excluding fraudulent, product_not_received)
  *   - All combinations with digital_product_or_service
  *   - All combinations with offline_service
  *   - All combinations with event
- *   - credit_not_processed (remaining product types)
+ *   - Remaining combinations with other
  *   - general (all product types)
  */
 
@@ -118,7 +123,7 @@ const implementedCombinations: CombinationSpec[] = [
 				'Order receipt',
 				'Prior undisputed transaction history',
 				"Customer's signature",
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -233,12 +238,57 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
-			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Order receipt',
 				'Customer communication',
 				"Customer's signature",
-				'Store refund policy',
+				'Refund policy',
+				'Other documents',
+			],
+			shouldExclude: [],
+		},
+	},
+
+	// ============================================
+	// PRODUCT UNACCEPTABLE × PHYSICAL PRODUCT
+	// ============================================
+	{
+		reason: 'product_unacceptable',
+		productType: 'physical_product',
+		description:
+			"Product unacceptable for physical product - needs receipt, signature, refund policy, item's condition",
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION, // Shown separately in shipping step
+				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG, // Not for physical product product_unacceptable
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ]:
+					"Customer's signature",
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION ]:
+					"Item's condition",
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				"Item's condition",
+				'Customer communication',
+				"Customer's signature",
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -273,11 +323,10 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
-			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Event or booking documentation',
 				'Order receipt',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [ "Customer's signature" ],
@@ -380,7 +429,7 @@ const implementedCombinations: CombinationSpec[] = [
 			],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
-				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Store refund policy',
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
@@ -388,7 +437,7 @@ const implementedCombinations: CombinationSpec[] = [
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Order receipt',
-				'Store refund policy',
+				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -426,11 +475,10 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
-			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Order receipt',
 				'Refund receipt',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -463,11 +511,10 @@ const implementedCombinations: CombinationSpec[] = [
 			},
 		},
 		coverLetterAttachments: {
-			// Note: Cover letter uses "Store refund policy" label
 			shouldInclude: [
 				'Order receipt',
 				'Any additional receipts',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [],
@@ -544,10 +591,223 @@ const implementedCombinations: CombinationSpec[] = [
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Proof of acceptance',
-				'Store refund policy',
+				'Refund policy',
 				'Other documents',
 			],
 			shouldExclude: [ "Customer's signature" ],
+		},
+	},
+
+	// ============================================
+	// SUBSCRIPTION CANCELED × PHYSICAL PRODUCT
+	// ============================================
+	{
+		reason: 'subscription_canceled',
+		productType: 'physical_product',
+		description:
+			'Subscription canceled for physical product - needs cancellation logs, refund policy',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE, // Not for subscription_canceled
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ]:
+					'Cancellation logs',
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Cancellation logs',
+				'Refund policy',
+				'Terms of service',
+				'Other documents',
+			],
+			shouldExclude: [],
+		},
+	},
+
+	// ============================================
+	// DUPLICATE × PHYSICAL PRODUCT (IS DUPLICATE - Scenario A)
+	// ============================================
+	{
+		reason: 'duplicate',
+		productType: 'physical_product',
+		status: 'is_duplicate',
+		description:
+			'Duplicate dispute for physical product - it WAS a duplicate (refund issued)',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION ]:
+					'Refund receipt',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG ]:
+					'Proof of active subscription',
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Refund receipt',
+				'Proof of active subscription',
+				'Refund policy',
+				'Terms of service',
+				'Other documents',
+			],
+			shouldExclude: [],
+		},
+	},
+
+	// ============================================
+	// DUPLICATE × PHYSICAL PRODUCT (IS NOT DUPLICATE - Scenario B)
+	// ============================================
+	{
+		reason: 'duplicate',
+		productType: 'physical_product',
+		status: 'is_not_duplicate',
+		description:
+			'Duplicate dispute for physical product - it was NOT a duplicate (both charges valid)',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION ]:
+					'Any additional receipts',
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Any additional receipts',
+				'Refund policy',
+				'Other documents',
+			],
+			shouldExclude: [],
+		},
+	},
+
+	// ============================================
+	// CREDIT NOT PROCESSED × PHYSICAL PRODUCT (REFUND HAS BEEN ISSUED - Scenario A)
+	// ============================================
+	{
+		reason: 'credit_not_processed',
+		productType: 'physical_product',
+		refundStatus: 'refund_has_been_issued',
+		description:
+			'Credit not processed for physical product - refund has been issued (Scenario A) - 7 fields',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			shouldExclude: [ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
+				[ DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION ]:
+					'Refund receipt',
+				[ DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION ]:
+					'Return tracking',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ]:
+					"Customer's signature",
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Refund receipt',
+				'Return tracking',
+				'Customer communication',
+				"Customer's signature",
+				'Refund policy',
+				'Other documents',
+			],
+			shouldExclude: [],
+		},
+	},
+
+	// ============================================
+	// CREDIT NOT PROCESSED × PHYSICAL PRODUCT (REFUND WAS NOT OWED - Scenario B)
+	// ============================================
+	{
+		reason: 'credit_not_processed',
+		productType: 'physical_product',
+		refundStatus: 'refund_was_not_owed',
+		description:
+			'Credit not processed for physical product - refund was not owed (Scenario B) - 4 fields',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]:
+					'Proof of acceptance',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Customer communication',
+				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
+				[ DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION ]:
+					'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Proof of acceptance',
+				'Customer communication',
+				'Refund policy',
+				'Other documents',
+			],
+			shouldExclude: [],
 		},
 	},
 ];
@@ -855,37 +1115,33 @@ describe( 'Evidence Matrix Specification Validation', () => {
  * These should be tracked in Linear and added to implementedCombinations as they are completed.
  *
  * Fraudulent:
- * - physical_product (needs: Order receipt, Prior history, Customer communication, Customer's signature, Refund policy, Other)
  * - digital_product_or_service (needs: Login/usage records, Prior history, Other)
  * - offline_service (needs: Prior history, Other)
  * - event (needs: Prior history, Other)
  * - other (needs: Prior history, Other)
  *
  * Product Not Received:
- * - physical_product ✅ Implemented
  * - digital_product_or_service (needs: Order receipt, Login/usage records, Other)
  * - offline_service (needs: Order receipt, Proof of service completion, Other)
  * - event (needs: Order receipt, Attendance confirmation, Other)
  * - other (needs: Order receipt, Service completion records, Other)
  *
  * Product Unacceptable:
- * - physical_product (needs: Order receipt, Customer communication, Customer's signature, Refund policy, Item's condition, Other)
  * - digital_product_or_service (needs: Proof of delivered service, Order receipt, Login/usage records, Refund policy, Other)
  * - offline_service (needs: Proof of delivered service, Order receipt, Refund policy, Other)
  * - event (needs: Event/booking documentation, Order receipt, Refund policy, Other)
  * - other (needs: Order receipt, Terms of service, Other)
  *
  * Credit Not Processed (remaining product types):
- * - physical_product, digital_product_or_service, offline_service, event, other (all scenarios)
+ * - digital_product_or_service, offline_service, event, other (all scenarios)
  *
  * Subscription Canceled:
- * - physical_product (needs: Order receipt, Customer communication, Cancellation logs, Refund policy, Terms of service, Other)
  * - digital_product_or_service (needs: Order receipt, Cancellation logs, Login/usage records, Terms of service, Other)
  * - offline_service (needs: Order receipt, Cancellation logs, Terms of service, Other)
  * - event (needs: Order receipt, Cancellation logs, Terms of service, Other)
  *
- * Duplicate (all product types - Scenario A & B):
- * - physical_product, digital_product_or_service, offline_service, event, other
+ * Duplicate (remaining product types - Scenario A & B):
+ * - digital_product_or_service, offline_service, event, other
  *
  * General/Other:
  * - All product types (needs: Order receipt, Customer communication, Refund policy, Terms of service, Other)

@@ -295,7 +295,7 @@ describe( 'Cover Letter Generator', () => {
 				},
 			};
 			const result = generateAttachments( duplicateDispute );
-			// Verify the order: Order receipt, Any additional receipts, Customer communication, Store refund policy
+			// Verify the order: Order receipt, Any additional receipts, Customer communication, Refund policy
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
 			expect( result ).toContain(
 				'Any additional receipts (Attachment B)'
@@ -303,7 +303,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'Customer communication (Attachment C)'
 			);
-			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
 		} );
 
 		it( 'should include "Cancellation logs" for subscription_canceled disputes when cancellation_rebuttal is provided', () => {
@@ -433,7 +433,7 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).not.toContain( 'Item condition' );
 		} );
 
-		it( 'should use "Item condition" label for service_documentation in product_unacceptable disputes without booking_reservation product type', () => {
+		it( 'should use "Item\'s condition" label for service_documentation in product_unacceptable disputes with physical_product', () => {
 			const productUnacceptableDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'product_unacceptable' as DisputeReason,
@@ -448,7 +448,7 @@ describe( 'Cover Letter Generator', () => {
 				'physical_product'
 			);
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
-			expect( result ).toContain( 'Item condition (Attachment B)' );
+			expect( result ).toContain( "Item's condition (Attachment B)" );
 			expect( result ).not.toContain( 'Event or booking documentation' );
 		} );
 
@@ -476,11 +476,11 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'Customer communication (Attachment C)'
 			);
-			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 
-		it( 'should order all product_unacceptable attachments with standard order when not booking_reservation product type', () => {
+		it( 'should order all product_unacceptable attachments with standard order when physical_product', () => {
 			const productUnacceptableDispute: ExtendedDispute = {
 				...mockDispute,
 				reason: 'product_unacceptable' as DisputeReason,
@@ -497,14 +497,60 @@ describe( 'Cover Letter Generator', () => {
 				undefined,
 				'physical_product'
 			);
-			// Without booking_reservation, order should be standard (receipt first, not service_documentation)
+			// With physical_product, order should be standard (receipt first)
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
 			expect( result ).toContain(
 				'Customer communication (Attachment B)'
 			);
-			expect( result ).toContain( 'Store refund policy (Attachment C)' );
-			expect( result ).toContain( 'Item condition (Attachment D)' );
+			expect( result ).toContain( 'Refund policy (Attachment C)' );
+			expect( result ).toContain( "Item's condition (Attachment D)" );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should use "Subscription logs" label for access_activity_log in product_unacceptable disputes (no product-specific override)', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					access_activity_log: 'access_activity_log_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Subscription logs (Attachment B)' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly with full evidence and physical_product', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+					customer_communication: 'customer_communication_url',
+					customer_signature: 'customer_signature_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( "Customer's signature (Attachment B)" );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( "Item's condition (Attachment E)" );
+			expect( result ).toContain( 'Other documents (Attachment F)' );
 		} );
 
 		it( 'should use "Terms of service" label for cancellation_policy in subscription_canceled disputes', () => {
@@ -582,7 +628,7 @@ describe( 'Cover Letter Generator', () => {
 				'Customer communication (Attachment B)'
 			);
 			expect( result ).toContain( "Customer's signature (Attachment C)" );
-			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
 			expect( result ).toContain( 'Proof of shipping (Attachment E)' );
 			expect( result ).toContain( 'Other documents (Attachment F)' );
 		} );
@@ -614,7 +660,7 @@ describe( 'Cover Letter Generator', () => {
 				'Customer communication (Attachment C)'
 			);
 			expect( result ).toContain( "Customer's signature (Attachment D)" );
-			expect( result ).toContain( 'Store refund policy (Attachment E)' );
+			expect( result ).toContain( 'Refund policy (Attachment E)' );
 			expect( result ).toContain( 'Proof of shipping (Attachment F)' );
 			expect( result ).toContain( 'Other documents (Attachment G)' );
 		} );
@@ -685,14 +731,14 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Other documents' );
 			expect( result ).not.toContain( 'Customer communication' );
 
-			// Verify exact ordering: Proof of acceptance (A), Store refund policy (B), Other documents (C)
+			// Verify exact ordering: Proof of acceptance (A), Refund policy (B), Other documents (C)
 			const proofIndex = result.indexOf( 'Proof of acceptance' );
-			const refundPolicyIndex = result.indexOf( 'Store refund policy' );
+			const refundPolicyIndex = result.indexOf( 'Refund policy' );
 			const otherDocsIndex = result.indexOf( 'Other documents' );
 			expect( proofIndex ).toBeLessThan( refundPolicyIndex );
 			expect( refundPolicyIndex ).toBeLessThan( otherDocsIndex );
 			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
-			expect( result ).toContain( 'Store refund policy (Attachment B)' );
+			expect( result ).toContain( 'Refund policy (Attachment B)' );
 			expect( result ).toContain( 'Other documents (Attachment C)' );
 		} );
 
