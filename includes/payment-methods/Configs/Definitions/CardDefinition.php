@@ -79,7 +79,7 @@ class CardDefinition implements PaymentMethodDefinitionInterface {
 			'unknown' => __( 'unknown', 'woocommerce-payments' ),
 		];
 
-		$card_network = $details['display_brand'] ?? $details['network'] ?? $details['networks']['preferred'] ?? $details['networks']['available'][0];
+		$card_network = $details['display_brand'] ?? $details['network'] ?? $details['networks']['preferred'] ?? $details['networks']['available'][0] ?? 'card';
 		// Networks like `cartes_bancaires` may use underscores, so we replace them with spaces.
 		$card_network = str_replace( '_', ' ', $card_network );
 
@@ -87,7 +87,7 @@ class CardDefinition implements PaymentMethodDefinitionInterface {
 			// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
 			__( '%1$s %2$s card', 'woocommerce-payments' ),
 			ucwords( $card_network ),
-			$funding_types[ $details['funding'] ]
+			$funding_types[ $details['funding'] ?? 'unknown' ]
 		);
 
 		return $payment_method_title;
