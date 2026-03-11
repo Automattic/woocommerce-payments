@@ -747,7 +747,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 
 		it( 'fetches fresh config when sessionStorage has invalid data', async () => {
-			sessionStorage.setItem( 'wcpay_mc_config', 'not-json' );
+			sessionStorage.setItem( 'wcpay_mc_async_config', 'not-json' );
 			global.fetch = jest.fn().mockResolvedValue( {
 				ok: true,
 				json: () => Promise.resolve( mockConfig ),
