@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix translation pattern in admin authentication email templates to use esc_html_x for proper i18n support

@@ -7,7 +7,8 @@
 
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -159,8 +160,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method           = $this->createMock( CC_Payment_Method::class );
-		$mock_payment_method->method( 'get_id' )->willReturn( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID );
+		$mock_payment_method           = $this->createMock( UPE_Payment_Method::class );
+		$mock_payment_method->method( 'get_id' )->willReturn( CardDefinition::get_id() );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

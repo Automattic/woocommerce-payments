@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
-use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
@@ -443,7 +442,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payment-gateway-wcpay.php';
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
 		include_once __DIR__ . '/inline-script-payloads/class-woo-payments-payment-methods-config.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
@@ -580,23 +578,8 @@ class WC_Payments {
 		self::$token_service->init_hooks();
 		self::$fee_remediation->init();
 
-		/**
-		 * FLAG: PAYMENT_METHODS_LIST
-		 * As payment methods are converted to use definitions, they need to be removed from the list below.
-		 */
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
 		$payment_methods = [];
-		// Initialize legacy payment methods.
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			$payment_method                               = new $payment_method_class( self::$token_service );
-			$payment_methods[ $payment_method->get_id() ] = $payment_method;
-		}
 
-		// Initialize definition-based payment methods.
-		// Initialize and get payment method classes from the registry for those that have been converted.
 		$registry = PaymentMethodDefinitionRegistry::instance();
 		$registry->init();
 

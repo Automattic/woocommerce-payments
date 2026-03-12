@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Add REST API endpoint and skeleton markup for cache-optimized multi-currency rendering
