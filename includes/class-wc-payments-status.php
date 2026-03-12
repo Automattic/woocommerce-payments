@@ -202,6 +202,10 @@ class WC_Payments_Status {
 	 * @return string Success message.
 	 */
 	public function clear_styles_cache() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return __( 'You do not have permission to run this tool.', 'woocommerce-payments' );
+		}
+
 		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
 		return __( 'WooPayments styles cleared', 'woocommerce-payments' );
 	}
