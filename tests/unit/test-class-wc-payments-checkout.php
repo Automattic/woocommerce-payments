@@ -10,7 +10,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Method;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
@@ -344,8 +344,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			],
 		];
 
-		$card_pm = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
+		$card_pm = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, CardDefinition::class ] )
 			->onlyMethods( [ 'get_icon', 'get_dark_icon' ] )
 			->getMock();
 
@@ -482,7 +482,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->willReturn(
-				new CC_Payment_Method( $this->mock_token_service )
+				new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class )
 			);
 			$this->assertSame( false, $this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::CARD ]['showSaveOption'] );
 	}
@@ -511,7 +511,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->willReturn(
-				new CC_Payment_Method( $this->mock_token_service )
+				new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class )
 			);
 			$this->assertSame( false, $this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::CARD ]['showSaveOption'] );
 	}
@@ -540,7 +540,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->willReturn(
-				new CC_Payment_Method( $this->mock_token_service )
+				new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class )
 			);
 			$this->assertSame( true, $this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'][ Payment_Method::CARD ]['showSaveOption'] );
 	}
@@ -573,7 +573,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	 * @dataProvider country_test_cards_provider
 	 */
 	public function test_credit_card_testing_instructions_by_country( string $country, string $expected_card ) {
-		$cc_payment_method = new CC_Payment_Method( $this->mock_token_service );
+		$cc_payment_method = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
 		$this->mock_wcpay_account
 			->expects( $this->once() )
@@ -617,7 +617,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [ 'card' ] );
 
-		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+		$card_pm = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
@@ -652,7 +652,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [ 'card' ] );
 
-		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+		$card_pm = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
@@ -772,7 +772,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		);
 
 		// Mock payment method lookups.
-		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+		$card_pm = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
 		$mock_apple_pay_pm = $this->createMock( UPE_Payment_Method::class );
 		$mock_apple_pay_pm->method( 'is_reusable' )->willReturn( false );
@@ -834,7 +834,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [ 'card' ] );
 
-		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+		$card_pm = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->willReturn( $card_pm );
@@ -922,7 +922,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		);
 
 		// Mock payment method lookups.
-		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+		$card_pm = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
 		$mock_express_pm = $this->createMock( UPE_Payment_Method::class );
 		$mock_express_pm->method( 'is_reusable' )->willReturn( false );
@@ -973,7 +973,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [ 'card' ] );
 
-		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+		$card_pm = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
