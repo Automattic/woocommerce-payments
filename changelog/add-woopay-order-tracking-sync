@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add WooPay order tracking sync webhook to deliver shipment data to WooPay when fulfillments are created or updated
