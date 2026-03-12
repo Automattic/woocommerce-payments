@@ -470,6 +470,10 @@ class WCPayAsyncPriceRenderer {
 			const type = el.getAttribute( 'data-wcpay-sr-type' );
 
 			if ( type === 'sale_original' || type === 'sale_current' ) {
+				const template = srConfig[ type ];
+				if ( ! template ) {
+					return;
+				}
 				const rawPrice = el.getAttribute( 'data-wcpay-sr-price' );
 				if ( rawPrice === null ) {
 					return;
@@ -479,8 +483,12 @@ class WCPayAsyncPriceRenderer {
 					converted,
 					effectiveCurrency
 				);
-				el.textContent = srConfig[ type ].replace( '%s', priceText );
+				el.textContent = template.replace( '%s', priceText );
+				el.classList.add( 'wcpay-sr-converted' );
 			} else if ( type === 'range' ) {
+				if ( ! srConfig.range ) {
+					return;
+				}
 				const from = el.getAttribute( 'data-wcpay-sr-price-from' );
 				const to = el.getAttribute( 'data-wcpay-sr-price-to' );
 				if ( from === null || to === null ) {
@@ -499,9 +507,8 @@ class WCPayAsyncPriceRenderer {
 				el.textContent = srConfig.range
 					.replace( '%1$s', fromText )
 					.replace( '%2$s', toText );
+				el.classList.add( 'wcpay-sr-converted' );
 			}
-
-			el.classList.add( 'wcpay-sr-converted' );
 		} );
 	}
 

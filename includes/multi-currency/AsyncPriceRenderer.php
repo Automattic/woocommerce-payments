@@ -179,7 +179,8 @@ class AsyncPriceRenderer {
 					esc_attr( $sale_price )
 				);
 			},
-			$price_html
+			$price_html,
+			2
 		);
 	}
 
