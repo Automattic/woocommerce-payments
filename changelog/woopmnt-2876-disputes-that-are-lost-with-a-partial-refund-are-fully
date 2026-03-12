@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Use disputed amount to create a refund for lost disputes instead of an order total. Provide dispute fees and costs in the order view.
