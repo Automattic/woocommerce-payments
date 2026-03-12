@@ -7,6 +7,7 @@
 
 namespace WCPay\WooPay;
 
+use Automattic\WooCommerce\Internal\DataStores\Fulfillments\FulfillmentsDataStore;
 use WC_Payments_Account;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
@@ -54,7 +55,7 @@ class WooPay_Order_Tracking_Sync {
 		add_filter( 'woocommerce_valid_webhook_events', [ __CLASS__, 'add_event' ], 10, 1 );
 
 		add_action( 'woocommerce_fulfillment_after_create', [ __CLASS__, 'send_webhook' ], 10, 1 );
-		add_action( 'woocommerce_fulfillment_after_update', [ __CLASS__, 'send_webhook_on_update' ], 10, 3 );
+		add_action( 'woocommerce_fulfillment_after_update', [ __CLASS__, 'send_webhook' ], 10, 1 );
 		add_action( 'woocommerce_fulfillment_after_fulfill', [ __CLASS__, 'send_webhook' ], 10, 1 );
 		add_action( 'woocommerce_fulfillment_after_delete', [ __CLASS__, 'send_webhook' ], 10, 1 );
 
@@ -118,20 +119,26 @@ class WooPay_Order_Tracking_Sync {
 	 * @return void
 	 */
 	private function register_webhook() {
+		// Reuse the secret from the existing order status webhook so WooPay
+		// can validate both webhooks with the same store-level HMAC secret.
+		$status_webhooks = WooPay_Order_Status_Sync::get_webhook();
+		if ( empty( $status_webhooks ) ) {
+			return;
+		}
+
+		$status_webhook = wc_get_webhook( $status_webhooks[0] );
+		if ( ! $status_webhook ) {
+			return;
+		}
+
 		$webhook = new \WC_Webhook();
 		$webhook->set_name( self::get_webhook_name() );
 		$webhook->set_user_id( get_current_user_id() );
 		$webhook->set_topic( 'order.tracking_updated' );
-		$webhook->set_secret( wp_generate_password( 50, false ) );
+		$webhook->set_secret( $status_webhook->get_secret() );
 		$webhook->set_delivery_url( WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) );
 		$webhook->set_status( 'active' );
 		$webhook->save();
-
-		try {
-			$this->payments_api_client->update_woopay( [ 'tracking_webhook_secret' => $webhook->get_secret() ] );
-		} catch ( API_Exception $e ) {
-			$webhook->delete();
-		}
 	}
 
 	/**
@@ -192,32 +199,36 @@ class WooPay_Order_Tracking_Sync {
 	private static function get_order_shipments( $order ) {
 		$shipments = [];
 
-		if ( ! function_exists( 'wc_get_fulfillments' ) ) {
+		if ( ! class_exists( FulfillmentsDataStore::class ) ) {
 			return $shipments;
 		}
 
-		$fulfillments = wc_get_fulfillments( [ 'entity_id' => $order->get_id() ] );
+		$data_store   = wc_get_container()->get( FulfillmentsDataStore::class );
+		$fulfillments = $data_store->read_fulfillments( \WC_Order::class, '' . $order->get_id() );
 
 		foreach ( $fulfillments as $fulfillment ) {
-			$tracking_number = $fulfillment->get_meta( '_tracking_number' );
+			$tracking_number = $fulfillment->get_meta( '_tracking_number', true );
 
 			if ( empty( $tracking_number ) ) {
 				continue;
 			}
 
-			$items = [];
-			foreach ( $fulfillment->get_items() as $item ) {
-				$items[] = [
-					'name'     => $item->get_name(),
-					'quantity' => $item->get_quantity(),
+			$items             = [];
+			$fulfillment_items = $fulfillment->get_items();
+			foreach ( $fulfillment_items as $fulfillment_item ) {
+				$item_id    = $fulfillment_item['item_id'] ?? 0;
+				$order_item = $order->get_item( $item_id );
+				$items[]    = [
+					'name'     => $order_item ? $order_item->get_name() : '',
+					'quantity' => $fulfillment_item['qty'] ?? 0,
 				];
 			}
 
 			$shipments[] = [
 				'tracking_number' => $tracking_number,
-				'carrier_name'    => $fulfillment->get_meta( '_shipping_provider' ),
-				'tracking_url'    => $fulfillment->get_meta( '_tracking_url' ),
-				'date_shipped'    => $fulfillment->get_date_created() ? $fulfillment->get_date_created()->format( 'Y-m-d' ) : null,
+				'carrier_name'    => $fulfillment->get_meta( '_shipping_provider', true ),
+				'tracking_url'    => $fulfillment->get_meta( '_tracking_url', true ),
+				'date_shipped'    => $fulfillment->get_date_fulfilled(),
 				'status'          => $fulfillment->get_status(),
 				'items'           => $items,
 			];
@@ -265,18 +276,6 @@ class WooPay_Order_Tracking_Sync {
 		}
 
 		do_action( self::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED, $order_id );
-	}
-
-	/**
-	 * Trigger webhook delivery on fulfillment update, only if tracking-relevant props changed.
-	 *
-	 * @param object $fulfillment  The WC_Fulfillment object.
-	 * @param array  $changed_props Properties that changed.
-	 * @param array  $old_state     Previous state.
-	 * @return void
-	 */
-	public static function send_webhook_on_update( $fulfillment, $changed_props, $old_state ) {
-		self::send_webhook( $fulfillment );
 	}
 
 	/**
