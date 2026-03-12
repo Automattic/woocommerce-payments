@@ -68,6 +68,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 				on: jest.fn().mockReturnThis(),
 				off: jest.fn(),
 			} ) );
+			sessionStorage.clear();
 		} );
 
 		afterEach( () => {
@@ -374,11 +375,15 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			'https://example.com/wp-json/wc/v3/payments/multi-currency/public/config';
 
 		const mockDefaultCurrency = {
+			code: 'USD',
 			symbol: '$',
+			rate: 1,
 			decimals: 2,
 			decimal_sep: '.',
 			thousand_sep: ',',
 			symbol_pos: 'left',
+			rounding: 0,
+			charm: 0,
 		};
 
 		const createPriceWrapper = ( price = '10.00' ) => {
@@ -560,9 +565,7 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	describe( 'destroy', () => {
 		it( 'disconnects observer and clears cache', () => {
 			const disconnectFn = jest.fn();
-			renderer.observer = {
-				disconnect: disconnectFn,
-			};
+			renderer.observer = { disconnect: disconnectFn };
 			renderer.cache.set( 'test', 'value' );
 
 			renderer.destroy();
@@ -575,7 +578,10 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		it( 'removes jQuery event listeners', () => {
 			const offFn = jest.fn().mockReturnThis();
 			const onFn = jest.fn().mockReturnThis();
-			global.jQuery = jest.fn( () => ( { on: onFn, off: offFn } ) );
+			global.jQuery = jest.fn( () => ( {
+				on: onFn,
+				off: offFn,
+			} ) );
 
 			renderer.listenToWooCommerceEvents();
 			const handler = renderer.wcEventHandler;
@@ -595,10 +601,11 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 	describe( 'decodeCurrencySymbols', () => {
 		it( 'decodes HTML entities in currency symbols', () => {
 			const config = {
+				...mockConfig,
 				currencies: {
-					EUR: { symbol: '&euro;' },
-					GBP: { symbol: '&pound;' },
-					JPY: { symbol: '&yen;' },
+					EUR: { ...mockConfig.currencies.EUR, symbol: '&euro;' },
+					GBP: { ...mockConfig.currencies.EUR, symbol: '&pound;' },
+					JPY: { ...mockConfig.currencies.JPY, symbol: '&yen;' },
 				},
 			};
 
@@ -611,8 +618,9 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 		it( 'leaves plain symbols unchanged', () => {
 			const config = {
+				...mockConfig,
 				currencies: {
-					USD: { symbol: '$' },
+					USD: { ...mockConfig.currencies.USD },
 				},
 			};
 
@@ -635,11 +643,13 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 
 		beforeEach( () => {
 			global.wcpayAsyncPriceConfig = { apiUrl };
+			sessionStorage.clear();
 		} );
 
 		afterEach( () => {
 			delete global.wcpayAsyncPriceConfig;
 			global.fetch = savedFetch;
+			sessionStorage.clear();
 		} );
 
 		it( 'fetches config from the API URL', async () => {
@@ -683,6 +693,70 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			await expect( renderer.fetchConfig() ).rejects.toThrow(
 				'Config fetch failed: 500'
 			);
+		} );
+
+		it( 'stores config in sessionStorage after fetch', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			await renderer.fetchConfig();
+
+			const stored = sessionStorage.getItem( 'wcpay_mc_async_config' );
+			expect( stored ).not.toBeNull();
+			const parsed = JSON.parse( stored );
+			expect( parsed.data ).toEqual( mockConfig );
+			expect( parsed.timestamp ).toBeGreaterThan( 0 );
+		} );
+
+		it( 'returns cached config without fetching', async () => {
+			const entry = {
+				data: mockConfig,
+				timestamp: Date.now(),
+			};
+			sessionStorage.setItem(
+				'wcpay_mc_async_config',
+				JSON.stringify( entry )
+			);
+			global.fetch = jest.fn();
+
+			const config = await renderer.fetchConfig();
+
+			expect( config ).toEqual( mockConfig );
+			expect( global.fetch ).not.toHaveBeenCalled();
+		} );
+
+		it( 'fetches fresh config when cache is expired', async () => {
+			const entry = {
+				data: mockConfig,
+				timestamp: Date.now() - 400000, // 6+ minutes ago.
+			};
+			sessionStorage.setItem(
+				'wcpay_mc_async_config',
+				JSON.stringify( entry )
+			);
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			await renderer.fetchConfig();
+
+			expect( global.fetch ).toHaveBeenCalledWith( apiUrl );
+		} );
+
+		it( 'fetches fresh config when sessionStorage has invalid data', async () => {
+			sessionStorage.setItem( 'wcpay_mc_async_config', 'not-json' );
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( mockConfig ),
+			} );
+
+			const config = await renderer.fetchConfig();
+
+			expect( config ).toEqual( mockConfig );
+			expect( global.fetch ).toHaveBeenCalled();
 		} );
 	} );
 

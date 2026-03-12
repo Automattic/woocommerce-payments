@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Add evidence matrix support for credit_not_processed × booking_reservation (refund was not owed) dispute combination
