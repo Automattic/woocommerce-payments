@@ -109,8 +109,7 @@ class WooPay_Order_Tracking_Sync_Test extends WP_UnitTestCase {
 		$order->update_meta_data( 'is_woopay', true );
 		$order->save();
 
-		$fulfillment = $this->createMock( stdClass::class );
-		$fulfillment->method( 'get_entity_id' )->willReturn( $order->get_id() );
+		$fulfillment = $this->make_fulfillment_stub( $order->get_id() );
 
 		$action_fired = false;
 		$hook_name    = WooPay_Order_Tracking_Sync::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED;
@@ -136,8 +135,7 @@ class WooPay_Order_Tracking_Sync_Test extends WP_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
-		$fulfillment = $this->createMock( stdClass::class );
-		$fulfillment->method( 'get_entity_id' )->willReturn( $order->get_id() );
+		$fulfillment = $this->make_fulfillment_stub( $order->get_id() );
 
 		$action_fired = false;
 		$hook_name    = WooPay_Order_Tracking_Sync::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED;
@@ -165,6 +163,16 @@ class WooPay_Order_Tracking_Sync_Test extends WP_UnitTestCase {
 		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
 		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
 		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
+
+		// Create the status webhook first (tracking webhook depends on it for the shared secret).
+		$status_webhook = new \WC_Webhook();
+		$status_webhook->set_name( 'WooPayments woopay order status sync' );
+		$status_webhook->set_user_id( get_current_user_id() );
+		$status_webhook->set_topic( 'order.status_changed' );
+		$status_webhook->set_secret( wp_generate_password( 50, false ) );
+		$status_webhook->set_delivery_url( 'https://example.com/merchant-notification' );
+		$status_webhook->set_status( 'active' );
+		$status_webhook->save();
 
 		// Create the tracking webhook.
 		$this->tracking_sync->maybe_create_woopay_tracking_webhook();
@@ -195,6 +203,7 @@ class WooPay_Order_Tracking_Sync_Test extends WP_UnitTestCase {
 
 		$order->delete( true );
 		WooPay_Order_Tracking_Sync::remove_webhook();
+		$status_webhook->delete( true );
 	}
 
 	/**
@@ -237,5 +246,40 @@ class WooPay_Order_Tracking_Sync_Test extends WP_UnitTestCase {
 	 */
 	private function set_is_woopay_eligible( $is_woopay_eligible ) {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => $is_woopay_eligible ] );
+	}
+
+	/**
+	 * Creates a simple fulfillment stub with get_entity_id().
+	 *
+	 * @param int $order_id The order ID.
+	 * @return object
+	 */
+	private function make_fulfillment_stub( $order_id ) {
+		return new class( $order_id ) {
+			/**
+			 * Entity ID.
+			 *
+			 * @var string
+			 */
+			private $entity_id;
+
+			/**
+			 * Constructor.
+			 *
+			 * @param int $id Order ID.
+			 */
+			public function __construct( $id ) {
+				$this->entity_id = (string) $id;
+			}
+
+			/**
+			 * Get the entity ID.
+			 *
+			 * @return string
+			 */
+			public function get_entity_id() {
+				return $this->entity_id;
+			}
+		};
 	}
 }
