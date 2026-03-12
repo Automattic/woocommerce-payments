@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { forwardRef } from 'react';
 
 /**
  * Internal dependencies
@@ -12,17 +12,20 @@ interface ApmSkeletonProps {
 	isHidden?: boolean;
 }
 
-export const ApmSkeleton = ( {
-	isHidden = false,
-}: ApmSkeletonProps ): JSX.Element => {
-	return (
-		<div
-			className={ `wcpay-payment-element-skeleton ${
-				isHidden ? 'is-hidden' : ''
-			}` }
-			aria-hidden={ isHidden }
-		>
-			<Skeleton height="6rem" borderRadius="4px" />
-		</div>
-	);
-};
+export const ApmSkeleton = forwardRef< HTMLDivElement, ApmSkeletonProps >(
+	( { isHidden = false }, ref ): JSX.Element => {
+		return (
+			<div
+				ref={ ref }
+				className={ `wcpay-payment-element-skeleton ${
+					isHidden ? 'is-hidden' : ''
+				}` }
+				aria-hidden={ isHidden }
+			>
+				<Skeleton height="6rem" borderRadius="4px" />
+			</div>
+		);
+	}
+);
+
+ApmSkeleton.displayName = 'ApmSkeleton';

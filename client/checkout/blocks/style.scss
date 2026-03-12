@@ -1,5 +1,17 @@
 @import '../style';
 
+.wcpay-payment-element-wrapper {
+	position: relative;
+
+	&.is-loading-card {
+		min-height: 130px;
+	}
+
+	&.is-loading-apm {
+		min-height: 100px;
+	}
+}
+
 .wcpay-payment-element-skeleton {
 	position: absolute;
 	top: 0;

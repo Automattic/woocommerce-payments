@@ -63,13 +63,16 @@ const PaymentProcessor = ( {
 
 	const [ isStripeReady, setIsStripeReady ] = useState( false );
 	const [ showSkeleton, setShowSkeleton ] = useState( true );
+	const skeletonRef = useRef( null );
 	const isCardMethod = paymentMethodId === 'card';
 
 	// Remove skeleton from DOM after fade-out transition completes.
 	useEffect( () => {
-		if ( isStripeReady ) {
-			const timer = setTimeout( () => setShowSkeleton( false ), 300 );
-			return () => clearTimeout( timer );
+		if ( isStripeReady && skeletonRef.current ) {
+			const el = skeletonRef.current;
+			const handler = () => setShowSkeleton( false );
+			el.addEventListener( 'transitionend', handler, { once: true } );
+			return () => el.removeEventListener( 'transitionend', handler );
 		}
 	}, [ isStripeReady ] );
 
@@ -226,17 +229,22 @@ const PaymentProcessor = ( {
 				   Positioned absolutely over the iframe mount point and fades out
 				   when Stripe fires the `ready` event. */ }
 			<div
-				className="wcpay-payment-element-wrapper"
-				style={ {
-					position: 'relative',
-					minHeight: isCardMethod ? '130px' : '100px',
-				} }
+				className={ clsx( 'wcpay-payment-element-wrapper', {
+					'is-loading-card': showSkeleton && isCardMethod,
+					'is-loading-apm': showSkeleton && ! isCardMethod,
+				} ) }
 			>
 				{ showSkeleton &&
 					( isCardMethod ? (
-						<CardSkeleton isHidden={ isStripeReady } />
+						<CardSkeleton
+							ref={ skeletonRef }
+							isHidden={ isStripeReady }
+						/>
 					) : (
-						<ApmSkeleton isHidden={ isStripeReady } />
+						<ApmSkeleton
+							ref={ skeletonRef }
+							isHidden={ isStripeReady }
+						/>
 					) ) }
 				<PaymentElement
 					options={ getStripeElementOptions(
