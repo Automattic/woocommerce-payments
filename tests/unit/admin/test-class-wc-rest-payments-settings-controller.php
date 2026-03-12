@@ -15,7 +15,7 @@ use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
@@ -161,6 +161,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_payment_methods = [];
 
 		$payment_method_definitions = [
+			CardDefinition::class,
 			ApplePayDefinition::class,
 			BancontactDefinition::class,
 			BecsDefinition::class,
@@ -174,13 +175,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			SofortDefinition::class,
 		];
 
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
-		// Create the main payment method (CC) for the gateway constructor.
-		$mock_cc_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $token_service ] )
+		$mock_cc_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $token_service, CardDefinition::class ] )
 			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 		$mock_cc_payment_method->expects( $this->any() )
@@ -195,18 +191,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		foreach ( $payment_method_definitions as $definition_class ) {
 			$mock_payment_method_instance = $this->getMockBuilder( UPE_Payment_Method::class )
 				->setConstructorArgs( [ $token_service, $definition_class ] )
-				->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-				->getMock();
-			$mock_payment_method_instance->expects( $this->any() )
-				->method( 'is_subscription_item_in_cart' )
-				->will( $this->returnValue( false ) );
-
-			$mock_payment_methods[ $mock_payment_method_instance->get_id() ] = $mock_payment_method_instance;
-		}
-
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			$mock_payment_method_instance = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $token_service ] )
 				->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
 			$mock_payment_method_instance->expects( $this->any() )
