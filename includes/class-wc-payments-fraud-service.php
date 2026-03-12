@@ -144,11 +144,17 @@ class WC_Payments_Fraud_Service {
 			return;
 		}
 
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			return;
 		}
 
-		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+		/**
+		 * This method is run with the `init` action where REST_REQUEST is not yet defined.
+		 * Therefore, we need to manually catch it based on the request URI.
+		 */
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only used for prefix matching, not output.
+		if ( isset( $_SERVER['REQUEST_URI'] ) && false !== strpos( wp_unslash( $_SERVER['REQUEST_URI'] ), $rest_prefix ) ) {
 			return;
 		}
 
