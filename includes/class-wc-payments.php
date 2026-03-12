@@ -511,6 +511,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/class-woopay-store-api-token.php';
 		include_once __DIR__ . '/woopay/class-woopay-utilities.php';
 		include_once __DIR__ . '/woopay/class-woopay-order-status-sync.php';
+		include_once __DIR__ . '/woopay/class-woopay-order-tracking-sync.php';
 		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';
 		include_once __DIR__ . '/woopay/class-woopay-adapted-extensions.php';
