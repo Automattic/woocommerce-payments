@@ -50,6 +50,7 @@ use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
+use WCPay\WooPay\WooPay_Order_Tracking_Sync;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
@@ -2764,6 +2765,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( ! $is_woopay_enabled ) {
 				WooPay_Order_Status_Sync::remove_webhook();
+				WooPay_Order_Tracking_Sync::remove_webhook();
 			}
 		}
 	}

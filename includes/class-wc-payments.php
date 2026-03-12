@@ -18,6 +18,7 @@ use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
+use WCPay\WooPay\WooPay_Order_Tracking_Sync;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
@@ -646,6 +647,7 @@ class WC_Payments {
 			'setup_theme',
 			function () {
 				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Status_Sync::class, 'remove_webhook' ] );
+				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Tracking_Sync::class, 'remove_webhook' ] );
 
 				self::maybe_register_woopay_hooks();
 				self::maybe_init_woopay_direct_checkout();
@@ -1727,6 +1729,7 @@ class WC_Payments {
 			}
 
 			new WooPay_Order_Status_Sync( self::$api_client, self::$account );
+			new WooPay_Order_Tracking_Sync( self::$api_client, self::$account );
 		}
 	}
 
