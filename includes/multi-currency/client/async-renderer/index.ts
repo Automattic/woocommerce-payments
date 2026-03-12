@@ -483,7 +483,9 @@ class WCPayAsyncPriceRenderer {
 					converted,
 					effectiveCurrency
 				);
-				el.textContent = template.replace( '%s', priceText );
+				el.textContent = template
+					.replace( '%1$s', priceText )
+					.replace( '%s', priceText );
 				el.classList.add( 'wcpay-sr-converted' );
 			} else if ( type === 'range' ) {
 				if ( ! srConfig.range ) {

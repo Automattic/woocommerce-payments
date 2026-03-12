@@ -624,6 +624,27 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 			);
 		} );
 
+		it( 'handles positional %1$s placeholder in sale template', () => {
+			global.wcpayAsyncPriceConfig.srText.sale_original =
+				'Original price was: %1$s.';
+
+			const span = document.createElement( 'span' );
+			span.className = 'screen-reader-text';
+			span.setAttribute( 'data-wcpay-sr-type', 'sale_original' );
+			span.setAttribute( 'data-wcpay-sr-price', '50' );
+			span.textContent = 'Original price was: $50.00.';
+			document.body.appendChild( span );
+
+			renderer.convertScreenReaderText();
+
+			expect( span.classList.contains( 'wcpay-sr-converted' ) ).toBe(
+				true
+			);
+			expect( span.textContent ).toBe(
+				'Original price was: 42,99\u00a0\u20ac.'
+			);
+		} );
+
 		it( 'converts range screen-reader-text', () => {
 			const span = document.createElement( 'span' );
 			span.className = 'screen-reader-text';
