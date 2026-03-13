@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Build dev-tools plugin after pulling updates in post-merge hook
