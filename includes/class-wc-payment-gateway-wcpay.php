@@ -4314,9 +4314,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[]
 	 */
 	public function get_upe_available_payment_methods() {
-		$available_methods = [ 'card' ];
+		$available_methods = [];
 
-		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
 		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
 
 		foreach ( $payment_method_definitions as $definition_class ) {

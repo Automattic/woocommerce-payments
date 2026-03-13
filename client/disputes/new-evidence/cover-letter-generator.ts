@@ -128,6 +128,7 @@ export const generateAttachments = (
 					productTypes: [
 						'booking_reservation',
 						'digital_product_or_service',
+						'offline_service',
 					],
 					refundStatuses: [ 'refund_has_been_issued' ],
 				},
@@ -180,7 +181,7 @@ export const generateAttachments = (
 			label: __( 'Customer communication', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
-					// For booking_reservation/digital_product_or_service credit_not_processed,
+					// For booking_reservation/digital_product_or_service/offline_service credit_not_processed,
 					// CUSTOMER_COMMUNICATION is repurposed as "Other documents". For physical_product,
 					// it keeps the default "Customer communication" label since the matrix includes
 					// it explicitly with its proper label.
@@ -189,6 +190,7 @@ export const generateAttachments = (
 					productTypes: [
 						'booking_reservation',
 						'digital_product_or_service',
+						'offline_service',
 					],
 					refundStatuses: [
 						'refund_was_not_owed',
@@ -204,6 +206,7 @@ export const generateAttachments = (
 					productTypes: [
 						'booking_reservation',
 						'digital_product_or_service',
+						'offline_service',
 					],
 					refundStatuses: [
 						'refund_was_not_owed',
@@ -273,6 +276,15 @@ export const generateAttachments = (
 					productTypes: [ 'booking_reservation' ],
 				},
 				{
+					// For product_not_received disputes with offline_service product type
+					reasons: [ 'product_not_received' ],
+					label: __(
+						'Proof of service completion',
+						'woocommerce-payments'
+					),
+					productTypes: [ 'offline_service' ],
+				},
+				{
 					// For product_unacceptable disputes with booking_reservation product type
 					reasons: [ 'product_unacceptable' ],
 					label: __(
@@ -288,13 +300,16 @@ export const generateAttachments = (
 					productTypes: [ 'physical_product' ],
 				},
 				{
-					// For product_unacceptable disputes with digital_product_or_service type
+					// For product_unacceptable disputes with digital_product_or_service/offline_service type
 					reasons: [ 'product_unacceptable' ],
 					label: __(
 						'Proof of delivered service',
 						'woocommerce-payments'
 					),
-					productTypes: [ 'digital_product_or_service' ],
+					productTypes: [
+						'digital_product_or_service',
+						'offline_service',
+					],
 				},
 				{
 					// For fraudulent disputes with digital_product_or_service type,
@@ -317,7 +332,7 @@ export const generateAttachments = (
 					productTypes: [ 'physical_product' ],
 				},
 			],
-			// For product_unacceptable with booking_reservation/digital_product_or_service, this should appear first (before Order receipt)
+			// For product_unacceptable with booking_reservation/digital_product_or_service/offline_service, this should appear first (before Order receipt)
 			orderForReasons: [
 				{
 					reasons: [ 'product_unacceptable' ],
@@ -325,6 +340,7 @@ export const generateAttachments = (
 					productTypes: [
 						'booking_reservation',
 						'digital_product_or_service',
+						'offline_service',
 					],
 				},
 				{
@@ -340,6 +356,13 @@ export const generateAttachments = (
 					order: 100,
 					refundStatuses: [ 'refund_was_not_owed' ],
 					productTypes: [ 'physical_product' ],
+				},
+				{
+					// For product_not_received offline, "Proof of service completion" should appear
+					// after Order receipt (index 0) but before Customer communication (index 3).
+					reasons: [ 'product_not_received' ],
+					order: 1,
+					productTypes: [ 'offline_service' ],
 				},
 			],
 		},

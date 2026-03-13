@@ -247,6 +247,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$payment_method_definitions = [
 			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
@@ -259,10 +260,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
 		];
 
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
 		$this->mock_rate_limiter = $this->createMock( Session_Rate_Limiter::class );
 
 		$registry = PaymentMethodDefinitionRegistry::instance();
@@ -273,14 +270,6 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		foreach ( $payment_method_definitions as $definition_class ) {
 			$mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
 				->setConstructorArgs( [ $this->mock_token_service, $definition_class ] )
-				->onlyMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
-				->getMock();
-			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
-		}
-
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $this->mock_token_service ] )
 				->onlyMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
 				->getMock();
 			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
@@ -299,8 +288,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			)
 			->getMock();
 
-		$this->mock_payment_method = $this->getMockBuilder( $payment_method_class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
+		$this->mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class ] )
 			->onlyMethods( [ 'is_subscription_item_in_cart', 'get_icon' ] )
 			->getMock();
 		$this->mock_payment_methods[ $this->mock_payment_method->get_id() ] = $this->mock_payment_method;
