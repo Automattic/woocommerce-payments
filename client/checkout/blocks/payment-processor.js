@@ -223,10 +223,10 @@ const PaymentProcessor = ( {
 				   Positioned absolutely over the iframe mount point and fades out
 				   when Stripe fires the `ready` event. */ }
 			<div
-				className={ clsx( 'wcpay-payment-element-wrapper', {
-					'is-loading-card': showSkeleton && isCardMethod,
-					'is-loading-apm': showSkeleton && ! isCardMethod,
-				} ) }
+				className={ clsx(
+					'wcpay-payment-element-wrapper',
+					isCardMethod ? 'loading-card' : 'loading-apm'
+				) }
 			>
 				{ showSkeleton &&
 					( isCardMethod ? (
