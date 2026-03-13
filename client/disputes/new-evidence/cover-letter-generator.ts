@@ -121,7 +121,7 @@ export const generateAttachments = (
 			label: __( 'Order receipt', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
-					// For booking_reservation/digital_product_or_service credit_not_processed, RECEIPT is "Refund receipt".
+					// For non-physical product types credit_not_processed, RECEIPT is "Refund receipt".
 					// For physical_product, RECEIPT stays "Order receipt" (REFUND_RECEIPT_DOCUMENTATION is "Refund receipt").
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Refund receipt', 'woocommerce-payments' ),
