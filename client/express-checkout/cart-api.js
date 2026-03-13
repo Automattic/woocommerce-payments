@@ -1,5 +1,3 @@
-/* global jQuery */
-
 /**
  * External dependencies
  */
@@ -11,6 +9,10 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { getExpressCheckoutData } from './utils';
+import {
+	getProductId,
+	getQuantity,
+} from 'wcpay/utils/wc-product-page-selectors';
 
 export default class ExpressCheckoutCartApi {
 	// Used on product pages to interact with an anonymous cart.
@@ -170,8 +172,8 @@ export default class ExpressCheckoutCartApi {
 	async addProductToCart() {
 		const productData = {
 			// can be modified in case of variable products, WC bookings plugin, etc.
-			id: jQuery( '.single_add_to_cart_button' ).val(),
-			quantity: parseInt( jQuery( '.quantity .qty' ).val(), 10 ) || 1,
+			id: getProductId(),
+			quantity: getQuantity(),
 			// can be modified in case of variable products, WC bookings plugin, etc.
 			variation: [],
 		};
