@@ -194,6 +194,20 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		expect( onReadySpy ).toHaveBeenCalledTimes( 2 );
 	} );
 
+	it( 'should return false immediately when currency code is empty', async () => {
+		onReadySpy.mockClear();
+		ExpressCheckoutElement.mockClear();
+
+		const result = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '100.00', '' ),
+			mockApi
+		);
+
+		expect( result ).toBe( false );
+		expect( ExpressCheckoutElement ).not.toHaveBeenCalled();
+	} );
+
 	it( 'should handle cases where payment method is not available', async () => {
 		ExpressCheckoutElement.mockImplementation( ( { onReady } ) => {
 			React.useEffect( () => {

@@ -4,6 +4,29 @@
 import isEmail from 'validator/lib/isEmail';
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import {
+	getProductId,
+	getQuantity,
+} from 'wcpay/utils/wc-product-page-selectors';
+
+/**
+ * Get the product form element.
+ *
+ * Classic block / shortcode: form.cart
+ * Add to Cart + Options block: form.wp-block-add-to-cart-with-options
+ *
+ * @return {HTMLFormElement|null} The form element, or null.
+ */
+export const getProductFormElement = () => {
+	return (
+		document.querySelector( 'form.cart' ) ||
+		document.querySelector( 'form.wp-block-add-to-cart-with-options' )
+	);
+};
+
 const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {
 		const select = document
@@ -77,8 +100,11 @@ const useExpressCheckoutProductHandler = ( api ) => {
 	};
 
 	const getProductData = () => {
-		const productId = document.querySelector( '.single_add_to_cart_button' )
-			.value;
+		const productId = getProductId();
+
+		if ( ! productId ) {
+			return false;
+		}
 
 		// Check if product is a bundle product.
 		const bundleForm = document.querySelector( '.bundle_form' );
@@ -87,7 +113,7 @@ const useExpressCheckoutProductHandler = ( api ) => {
 
 		let data = {
 			product_id: productId,
-			quantity: document.querySelector( '.quantity .qty' ).value,
+			quantity: getQuantity(),
 		};
 
 		if ( variation && ! bundleForm ) {
@@ -98,28 +124,30 @@ const useExpressCheckoutProductHandler = ( api ) => {
 				? getAttributes()
 				: [];
 		} else {
-			const formData = new FormData(
-				document.querySelector( 'form.cart' )
-			);
+			const form = getProductFormElement();
 
-			// Remove add-to-cart attribute to prevent redirection
-			// when "Redirect to the cart page after successful addition"
-			// option is enabled.
-			formData.delete( 'add-to-cart' );
+			if ( form ) {
+				const formData = new FormData( form );
 
-			const attributes = {};
+				// Remove add-to-cart attribute to prevent redirection
+				// when "Redirect to the cart page after successful addition"
+				// option is enabled.
+				formData.delete( 'add-to-cart' );
 
-			for ( const fields of formData.entries() ) {
-				attributes[ fields[ 0 ] ] = fields[ 1 ];
+				const attributes = {};
+
+				for ( const fields of formData.entries() ) {
+					attributes[ fields[ 0 ] ] = fields[ 1 ];
+				}
+
+				data = {
+					...data,
+					...attributes,
+				};
 			}
-
-			data = {
-				...data,
-				...attributes,
-			};
 		}
 
-		const addOnForm = document.querySelector( 'form.cart' );
+		const addOnForm = getProductFormElement();
 
 		if ( addOnForm ) {
 			const formData = new FormData( addOnForm );

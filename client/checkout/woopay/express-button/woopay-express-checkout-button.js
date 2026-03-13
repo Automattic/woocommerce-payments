@@ -11,7 +11,9 @@ import clsx from 'clsx';
 import WoopayIcon from './woopay-icon';
 import WoopayIconLight from './woopay-icon-light';
 import { expressCheckoutIframe } from './express-checkout-iframe';
-import useExpressCheckoutProductHandler from './use-express-checkout-product-handler';
+import useExpressCheckoutProductHandler, {
+	getProductFormElement,
+} from './use-express-checkout-product-handler';
 import { recordUserEvent } from 'tracks';
 import { getConfig } from 'wcpay/utils/checkout';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
@@ -22,6 +24,7 @@ import {
 	isSupportedThemeEntrypoint,
 	isShortcodeCheckout,
 } from 'wcpay/checkout/woopay/utils';
+import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
@@ -114,9 +117,7 @@ export const WoopayExpressCheckoutButton = ( {
 			return true;
 		}
 
-		const addToCartButton = document.querySelector(
-			'.single_add_to_cart_button'
-		);
+		const addToCartButton = getAddToCartButtonElement();
 
 		if (
 			addToCartButton &&
@@ -180,7 +181,7 @@ export const WoopayExpressCheckoutButton = ( {
 						if ( res.submit ) {
 							// Some extensions needs to submit the form
 							// to show error messages.
-							document.querySelector( 'form.cart' ).submit();
+							getProductFormElement()?.submit();
 						}
 						return;
 					}

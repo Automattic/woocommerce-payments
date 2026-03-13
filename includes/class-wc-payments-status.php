@@ -114,6 +114,12 @@ class WC_Payments_Status {
 					),
 					'callback' => [ $this, 'delete_test_orders' ],
 				],
+				'clear_wcpay_styles_cache'             => [
+					'name'     => __( 'Clear WooPayments calculated styles', 'woocommerce-payments' ),
+					'button'   => __( 'Clear', 'woocommerce-payments' ),
+					'desc'     => __( 'This tool will clear the styles cached for the WooPayments gateway UI elements at checkout', 'woocommerce-payments' ),
+					'callback' => [ $this, 'clear_styles_cache' ],
+				],
 				'remediate_canceled_auth_fees_dry_run' => [
 					'name'     => __( 'Preview canceled authorization fix (Dry Run)', 'woocommerce-payments' ),
 					'button'   => $this->get_dry_run_button_text(),
@@ -188,6 +194,20 @@ class WC_Payments_Status {
 				$e->getMessage()
 			);
 		}
+	}
+
+	/**
+	 * Clears the cached styles for WooPayments gateway UI elements.
+	 *
+	 * @return string Success message.
+	 */
+	public function clear_styles_cache() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return __( 'You do not have permission to run this tool.', 'woocommerce-payments' );
+		}
+
+		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
+		return __( 'WooPayments styles cleared', 'woocommerce-payments' );
 	}
 
 	/**
