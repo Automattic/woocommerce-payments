@@ -63,18 +63,12 @@ const PaymentProcessor = ( {
 
 	const [ isStripeReady, setIsStripeReady ] = useState( false );
 	const [ showSkeleton, setShowSkeleton ] = useState( true );
-	const skeletonRef = useRef( null );
 	const isCardMethod = paymentMethodId === 'card';
 
 	// Remove skeleton from DOM after fade-out transition completes.
-	useEffect( () => {
-		if ( isStripeReady && skeletonRef.current ) {
-			const el = skeletonRef.current;
-			const handler = () => setShowSkeleton( false );
-			el.addEventListener( 'transitionend', handler, { once: true } );
-			return () => el.removeEventListener( 'transitionend', handler );
-		}
-	}, [ isStripeReady ] );
+	const handleSkeletonTransitionEnd = useCallback( () => {
+		setShowSkeleton( false );
+	}, [] );
 
 	const handleStripeReady = useCallback( () => {
 		setIsStripeReady( true );
@@ -237,13 +231,13 @@ const PaymentProcessor = ( {
 				{ showSkeleton &&
 					( isCardMethod ? (
 						<CardSkeleton
-							ref={ skeletonRef }
 							isHidden={ isStripeReady }
+							onTransitionEnd={ handleSkeletonTransitionEnd }
 						/>
 					) : (
 						<ApmSkeleton
-							ref={ skeletonRef }
 							isHidden={ isStripeReady }
+							onTransitionEnd={ handleSkeletonTransitionEnd }
 						/>
 					) ) }
 				<PaymentElement
