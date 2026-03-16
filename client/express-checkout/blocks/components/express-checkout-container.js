@@ -28,6 +28,8 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+	const isManualCaptureEnabled =
+		getExpressCheckoutData( 'flags' )?.isManualCaptureEnabled ?? false;
 
 	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
@@ -46,6 +48,9 @@ const ExpressCheckoutContainer = ( props ) => {
 		...( useConfirmationToken
 			? { paymentMethodTypes }
 			: { paymentMethodCreation: 'manual' } ),
+		...( useConfirmationToken && isManualCaptureEnabled
+			? { captureMethod: 'manual' }
+			: {} ),
 		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 		amount: applyFilters(
 			'wcpay.express-checkout.total-amount',

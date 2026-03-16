@@ -262,6 +262,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				],
 				'flags'  => [
 					'isEceUsingConfirmationTokens' => WC_Payments_Features::is_ece_confirmation_tokens_enabled(),
+					'isManualCaptureEnabled'       => 'yes' === $this->gateway->get_option( 'manual_capture' ),
 				],
 			]
 		);

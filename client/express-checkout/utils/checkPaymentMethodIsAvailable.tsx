@@ -96,6 +96,8 @@ const checkPaymentMethodIsAvailableInternal = (
 		const useConfirmationToken =
 			getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
 			true;
+		const isManualCaptureEnabled =
+			getExpressCheckoutData( 'flags' )?.isManualCaptureEnabled ?? false;
 		const paymentMethodTypes = [
 			[ 'applePay', 'googlePay' ].includes( paymentMethod ) && 'card',
 			paymentMethod === 'amazonPay' && 'amazon_pay',
@@ -110,6 +112,9 @@ const checkPaymentMethodIsAvailableInternal = (
 					...( useConfirmationToken
 						? { paymentMethodTypes }
 						: { paymentMethodCreation: 'manual' } ),
+					...( useConfirmationToken && isManualCaptureEnabled
+						? { captureMethod: 'manual' }
+						: {} ),
 					amount: Number( totalPrice ),
 					currency: currencyCode.toLowerCase(),
 				} }

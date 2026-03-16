@@ -90,6 +90,7 @@ export interface WCPayExpressCheckoutParams {
 	enabled_methods: Array< 'payment_request' | 'amazon_pay' >;
 	flags: {
 		isEceUsingConfirmationTokens: boolean;
+		isManualCaptureEnabled: boolean;
 	};
 }
 
