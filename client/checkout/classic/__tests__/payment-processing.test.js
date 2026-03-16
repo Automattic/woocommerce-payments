@@ -26,6 +26,7 @@ import {
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( '../../upe-styles' );
+jest.mock( 'wcpay/utils/appearance-cache' );
 
 jest.mock( '../upe-utils' );
 
@@ -33,13 +34,6 @@ jest.mock( 'wcpay/checkout/utils/upe' );
 
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getUPEConfig: jest.fn( ( argument ) => {
-		if (
-			argument === 'wcBlocksUPEAppearance' ||
-			argument === 'upeAppearance'
-		) {
-			return {};
-		}
-
 		if ( argument === 'paymentMethodsConfig' ) {
 			return {
 				card: {
@@ -51,7 +45,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 					forceNetworkSavedCards: false,
 				},
 				ideal: {
-					label: 'iDEAL',
+					label: 'iDEAL | Wero',
 					forceNetworkSavedCards: false,
 				},
 				sepa: {
@@ -107,7 +101,6 @@ const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
 } );
 
 const apiMock = {
-	saveUPEAppearance: jest.fn().mockResolvedValue( {} ),
 	getStripeForUPE: jest.fn( () =>
 		Promise.resolve( {
 			elements: mockElements,
@@ -124,13 +117,6 @@ describe( 'Stripe Payment Element mounting', () => {
 		mockDomElement = document.createElement( 'div' );
 		eventHandlersFromElementsCreate = {};
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if (
-				argument === 'wcBlocksUPEAppearance' ||
-				argument === 'upeAppearance'
-			) {
-				return {};
-			}
-
 			if ( argument === 'paymentMethodsConfig' ) {
 				return {
 					card: {
@@ -142,7 +128,7 @@ describe( 'Stripe Payment Element mounting', () => {
 						forceNetworkSavedCards: false,
 					},
 					ideal: {
-						label: 'iDEAL',
+						label: 'iDEAL | Wero',
 						forceNetworkSavedCards: false,
 					},
 					sepa: {
@@ -163,33 +149,17 @@ describe( 'Stripe Payment Element mounting', () => {
 	} );
 
 	[
-		{
-			elementsLocation: 'shortcode_checkout',
-			expectedProperty: 'upeAppearance',
-		},
-		{
-			elementsLocation: 'add_payment_method',
-			expectedProperty: 'upeAddPaymentMethodAppearance',
-		},
-		{
-			elementsLocation: 'other',
-			expectedProperty: 'upeAppearance',
-		},
-	].forEach( ( { elementsLocation, expectedProperty } ) => {
+		{ elementsLocation: 'shortcode_checkout' },
+		{ elementsLocation: 'add_payment_method' },
+		{ elementsLocation: 'other' },
+	].forEach( ( { elementsLocation } ) => {
 		describe( `when elementsLocation is ${ elementsLocation }`, () => {
 			beforeEach( () => {
 				__resetGatewayUPEComponentsElement( 'giropay' );
 			} );
 
-			test( 'initializes the appearance when it is not set and saves it', async () => {
+			test( 'initializes the appearance by computing it from the DOM', async () => {
 				getUPEConfig.mockImplementation( ( argument ) => {
-					if (
-						argument === 'upeAddPaymentMethodAppearance' ||
-						argument === 'upeAppearance'
-					) {
-						return null;
-					}
-
 					if ( argument === 'paymentMethodsConfig' ) {
 						return {
 							giropay: {
@@ -222,56 +192,10 @@ describe( 'Stripe Payment Element mounting', () => {
 					elementsLocation
 				);
 
-				expect( getAppearance ).toHaveBeenCalled();
-				expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
-					appearanceMock,
+				expect( getAppearance ).toHaveBeenCalledWith(
 					elementsLocation
 				);
-				expect( getUPEConfig ).toHaveBeenCalledWith( expectedProperty );
 				expect( dispatchMock ).toHaveBeenCalled();
-			} );
-
-			test( 'does not call getAppearance or saveUPEAppearance if appearance is already set', async () => {
-				const appearanceMock = { backgroundColor: '#fff' };
-				getAppearance.mockReturnValue( appearanceMock );
-				getFingerprint.mockImplementation( () => {
-					return 'fingerprint';
-				} );
-				getUPEConfig.mockImplementation( ( argument ) => {
-					if ( argument === 'currency' ) {
-						return 'eur';
-					}
-
-					if (
-						argument === 'upeAppearance' ||
-						argument === 'upeAddPaymentMethodAppearance'
-					) {
-						return {
-							backgroundColor: '#fff',
-						};
-					}
-
-					if ( argument === 'paymentMethodsConfig' ) {
-						return {
-							giropay: {
-								label: 'Giropay',
-								forceNetworkSavedCards: false,
-							},
-						};
-					}
-				} );
-
-				mockDomElement.dataset.paymentMethodType = 'giropay';
-
-				await mountStripePaymentElement(
-					apiMock,
-					mockDomElement,
-					elementsLocation
-				);
-
-				expect( getUPEConfig ).toHaveBeenCalledWith( expectedProperty );
-				expect( getAppearance ).not.toHaveBeenCalled();
-				expect( apiMock.saveUPEAppearance ).not.toHaveBeenCalled();
 			} );
 		} );
 	} );
@@ -338,13 +262,6 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getUPEConfig.mockImplementation( ( argument ) => {
-			if (
-				argument === 'wcBlocksUPEAppearance' ||
-				argument === 'upeAppearance'
-			) {
-				return {};
-			}
-
 			if ( argument === 'currency' ) {
 				return 'eur';
 			}

@@ -224,8 +224,38 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 
 		// Assert.
 		$this->assertStringContainsStringIgnoringCase( 'WooPayments is in test mode', $result );
+		$this->assertStringContainsString( 'test card numbers', $result );
+		$this->assertStringNotContainsString( 'development or staging environment', $result );
 		$this->assertStringNotContainsString( 'You are using a test account.', $result );
 		$this->assertStringNotContainsString( 'You are using a sandbox test account.', $result );
+	}
+
+	public function test_it_renders_test_mode_notice_with_dev_mode_explanation() {
+		// Arrange.
+		WC_Payments::mode()->dev();
+
+		$this->mock_gateway
+			->expects( $this->any() )
+			->method( 'is_connected' )
+			->willReturn( true );
+		$this->mock_account
+			->expects( $this->any() )
+			->method( 'is_stripe_account_valid' )
+			->willReturn( true );
+		$this->mock_account
+			->expects( $this->any() )
+			->method( 'get_is_live' )
+			->willReturn( true );
+
+		// Act.
+		ob_start();
+		$this->payments_admin_settings->maybe_show_test_mode_notice();
+		$result = ob_get_clean();
+
+		// Assert.
+		$this->assertStringContainsStringIgnoringCase( 'WooPayments is in test mode', $result );
+		$this->assertStringContainsString( 'development or staging environment', $result );
+		$this->assertStringNotContainsString( 'test card numbers', $result );
 	}
 
 	public function test_does_not_show_test_account_notice_when_not_connected() {

@@ -34,6 +34,13 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return 'Mock Method';
 	}
 
+	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+		if ( ! empty( $payment_details['dynamic_title'] ) ) {
+			return $payment_details['dynamic_title'];
+		}
+		return null;
+	}
+
 	public static function get_settings_label( ?string $account_country = null ): string {
 		return 'Mock Method';
 	}

@@ -17,9 +17,20 @@ import type {
 } from './types';
 
 /**
- * Cache for all tokens, may be shared between multiple selects.
+ * Cache for all tokens, keyed by "userId-gatewayId" to support multiple gateways.
  */
-const cachedTokens = new Map< number, Token[] >();
+const cachedTokens = new Map< string, Token[] >();
+
+/**
+ * Generates a cache key for tokens.
+ *
+ * @param {number} userId    The user ID.
+ * @param {string} gatewayId The gateway ID.
+ * @return {string} The cache key.
+ */
+const getCacheKey = ( userId: number, gatewayId: string ): string => {
+	return `${ userId }-${ gatewayId }`;
+};
 
 /**
  * Clears the token cache. Exported for testing purposes.
@@ -31,21 +42,24 @@ export const clearTokenCache = (): void => {
 /**
  * Fetch the tokens for a user from the back-end.
  *
- * @param {number} userId The user ID.
- * @param {string} ajaxUrl The AJAX URL.
- * @param {string} nonce The nonce.
+ * @param {number}  userId    The user ID.
+ * @param {string}  ajaxUrl   The AJAX URL.
+ * @param {string}  nonce     The nonce.
+ * @param {string} gatewayId Gateway ID to filter tokens.
  * @return {Promise<Token[]>} The tokens for the user.
  * @throws {Error} If the tokens cannot be fetched or the response is invalid.
  */
 export const fetchUserTokens = async (
 	userId: number,
 	ajaxUrl: string,
-	nonce: string
+	nonce: string,
+	gatewayId: string
 ): Promise< Token[] > => {
 	const formData = new FormData();
 	formData.append( 'action', 'wcpay_get_user_payment_tokens' );
 	formData.append( 'nonce', nonce );
 	formData.append( 'user_id', userId.toString() );
+	formData.append( 'gateway_id', gatewayId );
 
 	const response = await fetch( ajaxUrl, {
 		method: 'POST',
@@ -109,13 +123,15 @@ export const addCustomerSelectListener = (
 };
 
 /**
- * Get the default token for a user.
+ * Get the default token for a user and gateway.
  *
- * @param {number} userId The user ID.
+ * @param {number}  userId    The user ID.
+ * @param {string} gatewayId The gateway ID.
  * @return {number} The default token ID or 0 if no default token is found.
  */
-export const getDefaultUserToken = ( userId: number ): number => {
-	const userTokens = cachedTokens.get( userId );
+const getDefaultUserToken = ( userId: number, gatewayId: string ): number => {
+	const cacheKey = getCacheKey( userId, gatewayId );
+	const userTokens = cachedTokens.get( cacheKey );
 	if ( undefined === userTokens ) {
 		return 0;
 	}
@@ -133,6 +149,7 @@ export const PaymentMethodSelect = ( {
 	initialUserId,
 	nonce,
 	ajaxUrl,
+	gatewayId,
 }: PaymentMethodSelectProps ) => {
 	const [ value, setValue ] = useState< number >( initialValue );
 	const [ userId, setUserId ] = useState< number >( initialUserId );
@@ -142,12 +159,13 @@ export const PaymentMethodSelect = ( {
 
 	useEffect( () => {
 		return addCustomerSelectListener( async ( newUserId ) => {
-			const newValue = getDefaultUserToken( newUserId );
+			const cacheKey = getCacheKey( newUserId, gatewayId );
+			const newValue = getDefaultUserToken( newUserId, gatewayId );
 			setValue( newValue );
 			setUserId( newUserId );
 
 			// Loaded, loading, or errored out, we do not need to load anything.
-			if ( cachedTokens.has( newUserId ) ) {
+			if ( cachedTokens.has( cacheKey ) ) {
 				return;
 			}
 
@@ -156,11 +174,15 @@ export const PaymentMethodSelect = ( {
 				const tokens = await fetchUserTokens(
 					newUserId,
 					ajaxUrl,
-					nonce
+					nonce,
+					gatewayId
 				);
 
-				cachedTokens.set( newUserId, tokens );
-				const defaultToken = getDefaultUserToken( newUserId );
+				cachedTokens.set( cacheKey, tokens );
+				const defaultToken = getDefaultUserToken(
+					newUserId,
+					gatewayId
+				);
 				if ( newValue !== defaultToken ) {
 					setValue( defaultToken );
 				}
@@ -175,7 +197,7 @@ export const PaymentMethodSelect = ( {
 				);
 			}
 		} );
-	}, [ ajaxUrl, nonce ] );
+	}, [ ajaxUrl, nonce, gatewayId ] );
 
 	if ( userId <= 0 ) {
 		return (
@@ -209,11 +231,13 @@ export const PaymentMethodSelect = ( {
 					) }
 				</option>
 			) }
-			{ cachedTokens.get( userId )?.map( ( token ) => (
-				<option value={ token.tokenId } key={ token.tokenId }>
-					{ token.displayName }
-				</option>
-			) ) }
+			{ cachedTokens
+				.get( getCacheKey( userId, gatewayId ) )
+				?.map( ( token ) => (
+					<option value={ token.tokenId } key={ token.tokenId }>
+						{ token.displayName }
+					</option>
+				) ) }
 		</select>
 	);
 };
@@ -231,10 +255,11 @@ const setupPaymentSelector = ( element: HTMLSpanElement ): void => {
 	// Use the values from the data instead of input to ensure correct types.
 	const userId = data.userId ?? 0;
 	const value = data.value ?? 0;
+	const gatewayId = data.gatewayId ?? 'woocommerce_payments';
 
 	if ( userId ) {
 		// Initial cache population.
-		cachedTokens.set( userId, data.tokens ?? [] );
+		cachedTokens.set( getCacheKey( userId, gatewayId ), data.tokens ?? [] );
 	}
 
 	// In older Subscriptions versions, there was just a simple input.
@@ -257,6 +282,7 @@ const setupPaymentSelector = ( element: HTMLSpanElement ): void => {
 			initialUserId={ userId }
 			nonce={ data.nonce }
 			ajaxUrl={ data.ajaxUrl }
+			gatewayId={ gatewayId }
 		/>
 	);
 };

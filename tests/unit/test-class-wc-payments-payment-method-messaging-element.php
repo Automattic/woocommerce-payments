@@ -64,6 +64,21 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 	public function tear_down(): void {
 		parent::tear_down();
 		wp_reset_postdata();
+		wp_scripts()->remove( 'WCPAY_PRODUCT_DETAILS' );
+	}
+
+	private function setup_gateway_mocks() {
+		$this->mock_account->method( 'get_stripe_account_id' )->willReturn( 'acct_test' );
+		$this->mock_account->method( 'get_publishable_key' )->willReturn( 'pk_test_key' );
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn(
+			[ Payment_Method::AFFIRM ]
+		);
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_statuses' )->willReturn(
+			[ 'affirm_payments' => [ 'status' => 'active' ] ]
+		);
+		$this->mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn(
+			[ Payment_Method::AFFIRM => 'affirm_payments' ]
+		);
 	}
 
 	private function get_script_data() {
@@ -124,8 +139,6 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$this->assertNotContains( Payment_Method::AFTERPAY, $script_data['paymentMethods'], 'Afterpay should not be included' );
 		$this->assertNotContains( Payment_Method::CARD, $script_data['paymentMethods'], 'Card should not be included' );
 		$this->assertNotContains( Payment_Method::IDEAL, $script_data['paymentMethods'], 'iDEAL should not be included' );
-
-		wp_scripts()->remove( 'WCPAY_PRODUCT_DETAILS' );
 	}
 
 	/**
@@ -162,7 +175,59 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 
 		// no payment methods should be included.
 		$this->assertEmpty( $script_data['paymentMethods'], 'No BNPL methods should be included when all are inactive' );
+	}
 
-		wp_scripts()->remove( 'WCPAY_PRODUCT_DETAILS' );
+	/**
+	 * Test that init handles null WC()->customer gracefully.
+	 */
+	public function test_init_handles_null_customer() {
+		$this->setup_gateway_mocks();
+
+		$original_customer = WC()->customer;
+		WC()->customer     = null;
+
+		$result = $this->messaging_element->init();
+
+		WC()->customer = $original_customer;
+
+		// Should complete without fatal error and return the container div.
+		$this->assertSame( '<div id="payment-method-message"></div>', $result );
+	}
+
+	/**
+	 * Test that init handles null WC()->cart gracefully.
+	 */
+	public function test_init_handles_null_cart() {
+		$this->setup_gateway_mocks();
+
+		$original_cart = WC()->cart;
+		WC()->cart     = null;
+
+		$result = $this->messaging_element->init();
+
+		WC()->cart = $original_cart;
+
+		// Should complete without fatal error and return the container div.
+		$this->assertSame( '<div id="payment-method-message"></div>', $result );
+
+		$script_data = $this->get_script_data();
+		$this->assertEquals( 0, $script_data['cartTotal'] );
+	}
+
+	/**
+	 * Test that no wcpayConfig inline script is injected, to avoid claiming the global
+	 * before WooPay's full config can load on product pages.
+	 */
+	public function test_init_does_not_inject_wcpay_config_inline_script() {
+		$this->setup_gateway_mocks();
+
+		$this->messaging_element->init();
+
+		// No inline script should be added before WCPAY_PRODUCT_DETAILS.
+		$registered = wp_scripts()->registered['WCPAY_PRODUCT_DETAILS'];
+		$before     = $registered->extra['before'] ?? [];
+		$inline_js  = implode( '', $before );
+
+		$this->assertStringNotContainsString( 'wcpayConfig', $inline_js, 'No wcpayConfig inline script should be injected — it would break the WooPay button on product pages.' );
 	}
 }

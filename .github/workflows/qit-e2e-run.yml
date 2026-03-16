@@ -77,8 +77,8 @@ jobs:
             --env E2E_JP_SITE_ID=$E2E_JP_SITE_ID \
             --env E2E_JP_BLOG_TOKEN=$E2E_JP_BLOG_TOKEN \
             --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
-            --verbose \
             --wait \
+            --print-report-url \
             -- --project=${{ inputs.playwright-project }}
 
       - name: Upload test results

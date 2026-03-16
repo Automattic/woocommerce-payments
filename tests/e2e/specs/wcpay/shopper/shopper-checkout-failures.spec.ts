@@ -9,6 +9,7 @@ import { test, expect, Page } from '@playwright/test';
 
 import { config } from '../../../config/default';
 import * as shopper from '../../../utils/shopper';
+import { getMerchant } from '../../../utils/helpers';
 
 test.describe(
 	'Shopper > Checkout > Failures with various cards',
@@ -26,11 +27,37 @@ test.describe(
 
 		test( 'should throw an error that the card was simply declined', async ( {
 			page,
+			browser,
 		} ) => {
 			await shopper.fillCardDetails( page, config.cards.declined );
 			await shopper.placeOrder( page );
 
 			await waitForBanner( page, 'Error: Your card was declined.' );
+
+			// Verify the failed order has a note about the decline in WC admin.
+			const { merchantPage, merchantContext } = await getMerchant(
+				browser
+			);
+			try {
+				await merchantPage.goto(
+					'/wp-admin/admin.php?page=wc-orders&status=wc-failed',
+					{ waitUntil: 'load' }
+				);
+				// Click the most recent failed order link.
+				await merchantPage
+					.locator( '.wp-list-table tbody tr' )
+					.first()
+					.locator( 'a.order-view' )
+					.click();
+				await merchantPage.waitForLoadState( 'load' );
+				await expect(
+					merchantPage
+						.locator( '#woocommerce-order-notes .note_content' )
+						.first()
+				).toContainText( /declined/i );
+			} finally {
+				await merchantContext.close();
+			}
 		} );
 
 		test( 'should throw an error that the card expiration date is in the past', async ( {

@@ -59,7 +59,13 @@ const getRecommendedDocumentFields = (
 		}
 		// Use 'default' as placeholder to attempt matrix lookup (will fall back if no entry exists).
 		// For duplicate disputes, use duplicateStatus for composite key lookup.
-		const status = reason === 'duplicate' ? duplicateStatus : undefined;
+		// For credit_not_processed disputes, use refundStatus for composite key lookup.
+		let status: string | undefined;
+		if ( reason === 'duplicate' ) {
+			status = duplicateStatus;
+		} else if ( reason === 'credit_not_processed' ) {
+			status = refundStatus;
+		}
 		const effectiveProductType =
 			productType || ( reason === 'duplicate' ? 'default' : undefined );
 
@@ -431,10 +437,11 @@ const getRecommendedDocumentFields = (
 		} ) );
 };
 
-const getRecommendedShippingDocumentFields = (): Array<
-	RecommendedDocument
-> => {
-	return [
+const getRecommendedShippingDocumentFields = (
+	reason?: string,
+	productType?: string
+): Array< RecommendedDocument > => {
+	const fields: Array< RecommendedDocument > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
 			label: __( 'Proof of shipping', 'woocommerce-payments' ),
@@ -445,6 +452,23 @@ const getRecommendedShippingDocumentFields = (): Array<
 			order: 0,
 		},
 	];
+
+	if (
+		reason === 'product_not_received' &&
+		productType === 'physical_product'
+	) {
+		fields.push( {
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+			label: __( 'Proof of delivery', 'woocommerce-payments' ),
+			description: __(
+				'A confirmation that the product was delivered.',
+				'woocommerce-payments'
+			),
+			order: 1,
+		} );
+	}
+
+	return fields;
 };
 
 export { getRecommendedDocumentFields, getRecommendedShippingDocumentFields };

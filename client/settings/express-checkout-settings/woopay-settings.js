@@ -22,6 +22,7 @@ import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
 import WooPayPreview from './woopay-preview';
 import {
+	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
@@ -29,10 +30,13 @@ import {
 	useWooPayShowIncompatibilityNotice,
 	useWooPayGlobalThemeSupportEnabledSettings,
 } from 'wcpay/data';
+import InlineNotice from 'wcpay/components/inline-notice';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 
 const WooPaySettings = ( { section } ) => {
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
+
 	const [
 		isWooPayEnabled,
 		updateIsWooPayEnabled,
@@ -56,7 +60,10 @@ const WooPaySettings = ( { section } ) => {
 		updateWooPayLocations( location, isChecked );
 	};
 
-	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
+	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
+
+	const showIncompatibilityNotice =
+		useWooPayShowIncompatibilityNotice() && ! isStripeLinkEnabled;
 
 	return (
 		<Card
@@ -70,9 +77,18 @@ const WooPaySettings = ( { section } ) => {
 					{ showIncompatibilityNotice && (
 						<WooPayIncompatibilityNotice />
 					) }
+					{ isStripeLinkEnabled && (
+						<InlineNotice status="warning" isDismissible={ false }>
+							{ __(
+								'To enable WooPay, you must first disable Link by Stripe.',
+								'woocommerce-payments'
+							) }
+						</InlineNotice>
+					) }
 					<div className="wcpay-woopay-settings__enable">
 						<CheckboxControl
 							checked={ isWooPayEnabled }
+							disabled={ isStripeLinkEnabled }
 							onChange={ updateIsWooPayEnabled }
 							label={ __(
 								'Enable WooPay',

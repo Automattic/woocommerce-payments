@@ -1,0 +1,87 @@
+{
+  "title": "3-currencies, different order, settlement, and base fee",
+  "capturedEvent":
+    {
+        "type": "captured",
+        "amount": 2600,
+        "amount_captured": 2600,
+        "fee": 111,
+        "fee_rates": {
+            "percentage": 0.0335,
+            "fixed": 2,
+            "fixed_currency": "EUR",
+            "history": [
+                {
+                    "type": "base",
+                    "additional_type": "",
+                    "fee_id": "base-se-card-fee",
+                    "percentage_rate": 0.015,
+                    "fixed_rate": 20,
+                    "currency": "sek"
+                },
+                {
+                    "type": "discount",
+                    "additional_type": "",
+                    "fee_id": "wcpay-promo-2023-incentive-10off3m-se",
+                    "percentage_rate": -0.0015,
+                    "fixed_rate": -2,
+                    "currency": "sek"
+                },
+                {
+                    "type": "additional",
+                    "additional_type": "fx",
+                    "fee_id": "additional-se-card-fx-fee",
+                    "percentage_rate": 0.02,
+                    "fixed_rate": 0,
+                    "currency": "sek"
+                }
+            ],
+            "tax": {
+                "percentage_rate": 0.25,
+                "amount": 22,
+                "currency": "usd",
+                "description": "SE VAT"
+            },
+            "before_tax": {
+                "amount": 89,
+                "currency": "usd"
+            },
+            "fee_exchange_rate": {
+                "from_currency": "USD",
+                "to_currency": "EUR",
+                "from_amount": 111,
+                "to_amount": 94,
+                "rate": 1.181417251763560
+            }
+        },
+        "currency": "USD",
+        "datetime": 1770202475,
+        "deposit": null,
+        "transaction_id": "txn_3Sx3jDFrftSTz62v178CI0wb",
+        "transaction_details": {
+            "customer_currency": "USD",
+            "customer_amount": 2600,
+            "customer_amount_captured": 2600,
+            "customer_fee": 111,
+            "store_currency": "EUR",
+            "store_amount": 2201,
+            "store_amount_captured": 2201,
+            "store_fee": 94
+        }
+    },
+  "expectation": {
+    "fxString": "1,00 USD → 0,846538 EUR: 22,01 € EUR",
+    "feeString": "Fee (3.35% + 0,02 €): -0,75 €",
+    "feeBreakdown": {
+      "base": "Base fee: 1.5% + 0,20 kr",
+      "discount": {
+        "label": "Discount",
+        "variable": "Variable fee: -0.15%",
+        "fixed": "Fixed fee: -0,02 kr"
+      },
+      "additional-fx": "Currency conversion fee: 2%"
+    },
+    "taxString": "Tax SE VAT (25%): -0,18 €",
+    "netString": "Net payout: 21,07 € EUR"
+  }
+}

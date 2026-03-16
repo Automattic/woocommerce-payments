@@ -6,22 +6,55 @@ import { createRoot } from 'react-dom/client';
 import { ExpressCheckoutElement, Elements } from '@stripe/react-stripe-js';
 import type { AvailablePaymentMethods } from '@stripe/stripe-js';
 import { memoize } from 'lodash';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getExpressCheckoutData, getSetupFutureUsage } from '.';
+import { getExpressCheckoutData, getStripeElementsMode } from '.';
+import { transformPrice } from '../transformers/wc-to-stripe';
+import { getPaymentMethodsOverride } from './payment-method-overrides';
 
 // types from https://github.com/woocommerce/woocommerce/blob/360d9bc0f5709e6cf13c646860360fca9968ebb0/plugins/woocommerce/client/blocks/assets/js/types/type-defs/cart.ts
 interface CartTotals {
 	total_price: string;
 	currency_code: string;
+	currency_minor_unit: number;
 }
 
 interface Cart {
+	extensions: any;
+	cartItems: any;
 	cartTotals: CartTotals;
 }
+
+/**
+ * Gets the effective total price for Stripe initialization.
+ * Uses the wcpay.express-checkout.total-amount filter to allow modifications
+ * (e.g., for trial subscriptions with $0 initial payment).
+ *
+ * @param cart The cart object from WC Blocks.
+ * @return The total price to use for Stripe.
+ */
+const getEffectiveTotalPrice = ( cart: Cart ): string => {
+	// Apply filter to allow modifications (e.g., for trial subscriptions)
+	const filteredTotal = applyFilters(
+		'wcpay.express-checkout.total-amount',
+		// The filter expects numeric amounts, so we pass the transformed total
+		transformPrice(
+			parseInt( cart.cartTotals.total_price, 10 ),
+			cart.cartTotals
+		),
+		{
+			totals: cart.cartTotals,
+			items: cart.cartItems,
+			extensions: cart.extensions,
+		}
+	) as number;
+
+	return String( filteredTotal );
+};
 
 type PaymentMethod = keyof AvailablePaymentMethods;
 
@@ -36,6 +69,16 @@ const checkPaymentMethodIsAvailableInternal = (
 	currencyCode: string,
 	api: WCPayAPI
 ): Promise< boolean > => {
+	// Guard against empty currency code during WooCommerce Blocks store
+	// hydration. The cart store initialises with currency_code: '' before
+	// server-side preloaded data is applied. Passing an empty string to
+	// Stripe Elements throws: "Invalid value for elements(): currency should
+	// be one of ...". Returning false here lets WC Blocks re-evaluate once
+	// the cart data (and currency) is properly loaded.
+	if ( ! currencyCode ) {
+		return Promise.resolve( false );
+	}
+
 	return new Promise( ( resolve ) => {
 		const bodyElement = document.querySelector( 'body' );
 		if ( ! bodyElement ) {
@@ -63,12 +106,9 @@ const checkPaymentMethodIsAvailableInternal = (
 			<Elements
 				stripe={ api.loadStripeForExpressCheckout() }
 				options={ {
-					mode: 'payment',
+					mode: getStripeElementsMode(),
 					...( useConfirmationToken
-						? {
-								paymentMethodTypes,
-								...getSetupFutureUsage(),
-						  }
+						? { paymentMethodTypes }
 						: { paymentMethodCreation: 'manual' } ),
 					amount: Number( totalPrice ),
 					currency: currencyCode.toLowerCase(),
@@ -81,26 +121,7 @@ const checkPaymentMethodIsAvailableInternal = (
 						root.unmount();
 						containerEl.remove();
 					} }
-					options={ {
-						paymentMethods: {
-							applePay:
-								paymentMethod === 'applePay'
-									? 'always'
-									: 'never',
-							googlePay:
-								paymentMethod === 'googlePay'
-									? 'always'
-									: 'never',
-							amazonPay:
-								// amazon pay can be "auto" or "never", but not "always"
-								paymentMethod === 'amazonPay'
-									? 'auto'
-									: 'never',
-							link: 'never',
-							paypal: 'never',
-							klarna: 'never',
-						},
-					} }
+					options={ getPaymentMethodsOverride( paymentMethod ) }
 					onReady={ ( { availablePaymentMethods } ) => {
 						resolve(
 							Boolean(
@@ -147,7 +168,8 @@ export const checkPaymentMethodIsAvailable = (
 	}
 
 	return memoizedFn(
-		cart.cartTotals.total_price,
+		// Use effective total price to handle trial subscriptions with $0 initial payment
+		getEffectiveTotalPrice( cart ),
 		cart.cartTotals.currency_code
 	);
 };

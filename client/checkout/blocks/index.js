@@ -49,6 +49,19 @@ const api = new WCPayAPI(
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
+		// Label component renders the payment method title using the standard
+		// PaymentMethodLabel from WooCommerce Blocks, with icons as a sibling
+		// element for proper flexbox layout.
+		const Label = ( props ) => (
+			<PaymentMethodLabel
+				{ ...props }
+				title={ upeConfig.title }
+				paymentMethodId={ upeName }
+				icon={ upeConfig.icon }
+				darkIcon={ upeConfig.darkIcon }
+			/>
+		);
+
 		registerPaymentMethod( {
 			name: upeConfig.gatewayId,
 			content: getDeferredIntentCreationUPEFields(
@@ -75,16 +88,7 @@ Object.entries( enabledPaymentMethodsConfig )
 				return needsPayment && isAvailableInTheCountry;
 			},
 			paymentMethodId: upeConfig.gatewayId,
-			// see .wc-block-checkout__payment-method styles in blocks/style.scss
-			label: (
-				<PaymentMethodLabel
-					api={ api }
-					title={ upeConfig.title }
-					iconLight={ upeConfig.icon }
-					iconDark={ upeConfig.darkIcon }
-					upeName={ upeName }
-				/>
-			),
+			label: <Label />,
 			ariaLabel: 'WooPayments',
 			supports: {
 				showSavedCards: getUPEConfig( 'isSavedCardsEnabled' ) ?? false,
@@ -127,12 +131,20 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+// When express checkout methods are displayed in the payment methods list,
+// don't register them as separate express payment buttons.
+if (
+	getUPEConfig( 'isPaymentRequestEnabled' ) &&
+	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
+) {
 	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
 }
 
-if ( getUPEConfig( 'isAmazonPayEnabled' ) ) {
+if (
+	getUPEConfig( 'isAmazonPayEnabled' ) &&
+	! getUPEConfig( 'isExpressCheckoutInPaymentMethodsEnabled' )
+) {
 	registerExpressPaymentMethod( expressCheckoutElementAmazonPay( api ) );
 }
 window.addEventListener( 'load', () => {
