@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Build WCPay Dev Tools plugin after pulling updates in post-merge hook
