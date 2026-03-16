@@ -97,7 +97,7 @@ const checkPaymentMethodIsAvailableInternal = (
 			getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ??
 			true;
 		const isManualCaptureEnabled =
-			getExpressCheckoutData( 'flags' )?.isManualCaptureEnabled ?? false;
+			getExpressCheckoutData( 'is_manual_capture' ) ?? false;
 		const paymentMethodTypes = [
 			[ 'applePay', 'googlePay' ].includes( paymentMethod ) && 'card',
 			paymentMethod === 'amazonPay' && 'amazon_pay',

@@ -29,7 +29,7 @@ const ExpressCheckoutContainer = ( props ) => {
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 	const isManualCaptureEnabled =
-		getExpressCheckoutData( 'flags' )?.isManualCaptureEnabled ?? false;
+		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
 
 	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,

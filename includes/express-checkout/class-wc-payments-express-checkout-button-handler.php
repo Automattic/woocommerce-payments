@@ -244,6 +244,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'display_prices_with_tax'    => 'incl' === get_option( 'woocommerce_tax_display_cart' ),
 					],
 					'has_subscription'   => $this->express_checkout_helper->has_subscription_product(),
+					'is_manual_capture'  => 'yes' === $this->gateway->get_option( 'manual_capture' ),
 					'button'             => $this->get_button_settings(),
 					'login_confirmation' => $this->get_login_confirmation_settings(),
 					'button_context'     => $this->express_checkout_helper->get_button_context(),
@@ -262,7 +263,6 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				],
 				'flags'  => [
 					'isEceUsingConfirmationTokens' => WC_Payments_Features::is_ece_confirmation_tokens_enabled(),
-					'isManualCaptureEnabled'       => 'yes' === $this->gateway->get_option( 'manual_capture' ),
 				],
 			]
 		);

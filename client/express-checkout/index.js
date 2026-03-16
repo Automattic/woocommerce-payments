@@ -220,8 +220,7 @@ jQuery( ( $ ) => {
 				getExpressCheckoutData( 'flags' )
 					?.isEceUsingConfirmationTokens ?? true;
 			const isManualCaptureEnabled =
-				getExpressCheckoutData( 'flags' )?.isManualCaptureEnabled ??
-				false;
+				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
