@@ -31,6 +31,10 @@ test.describe(
 		let merchantPage: Page;
 		let wasMulticurrencyEnabled = false;
 		let originalEnabledCurrencies: string[] = [];
+		let originalRenderingMode: string;
+		let originalFeatureFlag: string;
+		let originalAutoSwitch: string;
+		let defaultCurrencySymbol: string;
 
 		test.beforeAll( async ( { browser } ) => {
 			test.setTimeout( 90000 );
@@ -46,6 +50,40 @@ test.describe(
 			wasMulticurrencyEnabled = await merchant.activateMulticurrency(
 				merchantPage
 			);
+
+			// Snapshot current WP option values before modifying them.
+			// Options may not exist yet, so catch errors and default to empty.
+			const getOption = async ( name: string ): Promise< string > => {
+				try {
+					return ( await qit.wp( `option get ${ name }`, true ) )
+						.stdout.trim();
+				} catch {
+					return '';
+				}
+			};
+			originalRenderingMode = await getOption(
+				'wcpay_multi_currency_rendering_mode'
+			);
+			originalFeatureFlag = await getOption(
+				'_wcpay_feature_mc_cache_optimized'
+			);
+			originalAutoSwitch = await getOption(
+				'wcpay_multi_currency_enable_auto_currency'
+			);
+
+			// Read the store's default currency symbol for assertions.
+			const currencyCode = (
+				await qit.wp( 'option get woocommerce_currency', true )
+			).stdout.trim();
+			const symbolMap: Record< string, string > = {
+				USD: '$',
+				EUR: '€',
+				GBP: '£',
+				JPY: '¥',
+				CAD: '$',
+				AUD: '$',
+			};
+			defaultCurrencySymbol = symbolMap[ currencyCode ] ?? currencyCode;
 
 			// Add EUR as an enabled currency.
 			await merchant.addCurrency( merchantPage, 'EUR' );
@@ -63,13 +101,26 @@ test.describe(
 		} );
 
 		test.afterAll( async () => {
-			// Restore original settings.
-			await qit.wp(
-				'option update wcpay_multi_currency_rendering_mode speed'
-			);
-			await qit.wp(
-				'option delete _wcpay_feature_mc_cache_optimized'
-			);
+			// Restore original WP option values.
+			if ( originalFeatureFlag ) {
+				await qit.wp(
+					`option update _wcpay_feature_mc_cache_optimized ${ originalFeatureFlag }`
+				);
+			} else {
+				await qit.wp(
+					'option delete _wcpay_feature_mc_cache_optimized'
+				);
+			}
+			if ( originalRenderingMode ) {
+				await qit.wp(
+					`option update wcpay_multi_currency_rendering_mode ${ originalRenderingMode }`
+				);
+			}
+			if ( originalAutoSwitch ) {
+				await qit.wp(
+					`option update wcpay_multi_currency_enable_auto_currency ${ originalAutoSwitch }`
+				);
+			}
 
 			await merchant.restoreCurrencies(
 				merchantPage,
@@ -142,21 +193,20 @@ test.describe(
 						.first()
 				).toBeVisible( { timeout: 15000 } );
 
-				// Verify screen-reader text annotations were converted
-				// (present on sale products and variable products).
+				// The shop page should have sale or variable products with
+				// screen-reader text annotations. Assert they exist and
+				// were converted — a count of 0 would mean the test is
+				// not exercising the feature.
 				const srConverted = shopperPage.locator(
 					'[data-wcpay-sr-type].wcpay-sr-converted'
 				);
 				const srCount = await srConverted.count();
+				expect( srCount ).toBeGreaterThan( 0 );
 
-				if ( srCount > 0 ) {
-					const srText = await srConverted
-						.first()
-						.textContent();
-					// Screen-reader text should contain a formatted price
-					// with a currency symbol.
-					expect( srText ).toMatch( /[\$€£¥]|USD|EUR/ );
-				}
+				// Screen-reader text should contain a formatted price
+				// with a currency symbol.
+				const srText = await srConverted.first().textContent();
+				expect( srText ).toMatch( /[\$€£¥]|USD|EUR/ );
 			} finally {
 				await shopperContext?.close();
 			}
@@ -193,11 +243,11 @@ test.describe(
 					shopperPage.locator( '.wcpay-price-skeleton' )
 				).toHaveCount( 0 );
 
-				// Fallback prices should be in the store's default currency (USD).
+				// Fallback prices should be in the store's default currency.
 				const priceText = await convertedPrice
 					.first()
 					.textContent();
-				expect( priceText ).toContain( '$' );
+				expect( priceText ).toContain( defaultCurrencySymbol );
 			} finally {
 				await shopperContext?.close();
 			}
