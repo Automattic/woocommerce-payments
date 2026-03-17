@@ -140,6 +140,24 @@ class WC_Payments_Fraud_Service {
 	 *                   This means that the method is called before the `init` hook.
 	 */
 	public function link_session_if_user_just_logged_in() {
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			return;
+		}
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			return;
+		}
+
+		/**
+		 * This method is run with the `init` action where REST_REQUEST is not yet defined.
+		 * Therefore, we need to manually catch it based on the request URI.
+		 */
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- only used for prefix matching, not output.
+		if ( isset( $_SERVER['REQUEST_URI'] ) && false !== strpos( wp_unslash( $_SERVER['REQUEST_URI'] ), $rest_prefix ) ) {
+			return;
+		}
+
 		$wpcom_blog_id = $this->payments_api_client->get_blog_id();
 		if ( ! $wpcom_blog_id ) {
 			// Don't do anything if Jetpack hasn't been connected yet.
