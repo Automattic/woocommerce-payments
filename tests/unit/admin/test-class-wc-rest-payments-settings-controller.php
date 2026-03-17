@@ -15,7 +15,7 @@ use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
@@ -27,7 +27,6 @@ use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 use WCPay\PaymentMethods\Configs\Definitions\SepaDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\Session_Rate_Limiter;
 
