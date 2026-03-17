@@ -121,18 +121,20 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * Test that the price data attribute uses the raw price value.
+	 * Test that the price data attribute uses the unformatted price, not the
+	 * locale-formatted $price parameter (which can contain commas).
 	 */
-	public function test_wrap_price_with_skeleton_uses_raw_price() {
+	public function test_wrap_price_with_skeleton_uses_unformatted_price() {
 		$result = $this->renderer->wrap_price_with_skeleton(
-			'<span>$25.99</span>',
-			25.99,
+			'<span>25,99 €</span>',
+			'25,99',  // Locale-formatted (European comma decimal).
 			[],
-			25.99,
+			25.99,    // Unformatted float — this is what should appear in the attribute.
 			25.99
 		);
 
 		$this->assertStringContainsString( 'data-wcpay-price="25.99"', $result );
+		$this->assertStringNotContainsString( 'data-wcpay-price="25,99"', $result );
 	}
 
 	/**

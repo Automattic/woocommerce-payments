@@ -77,9 +77,10 @@ class AsyncPriceRenderer {
 		// Default to 'product' since catalog pages only call wc_price for products.
 		$price_type = apply_filters( 'wcpay_multi_currency_async_price_type', 'product', $price, $args );
 
-		// We use $price (the raw numeric value passed to wc_price) rather than
-		// $original_price because in cache-optimized mode FrontendPrices hooks
-		// are not active, so $price is the unconverted default-currency price.
+		// We use $unformatted_price (the raw float before number_format) rather
+		// than $price (which is locale-formatted, e.g. "20,00" in European
+		// locales). The JS async renderer parses this with Decimal.js which
+		// expects dot-decimal notation.
 		//
 		// The screen-reader-text placeholder contains the original WC-formatted
 		// price so crawlers and screen readers on slow connections see a real
@@ -92,7 +93,7 @@ class AsyncPriceRenderer {
 		// in-place rather than appending a new child element.
 		return sprintf(
 			'<span class="woocommerce-Price-amount amount wcpay-async-price" data-wcpay-price="%s" data-wcpay-price-type="%s"><bdi class="wcpay-price-skeleton"></bdi><span class="screen-reader-text wcpay-price-placeholder">%s</span></span>',
-			esc_attr( $price ),
+			esc_attr( $unformatted_price ),
 			esc_attr( $price_type ),
 			wp_kses_post( $return )
 		);
