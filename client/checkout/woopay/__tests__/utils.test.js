@@ -1,11 +1,16 @@
 /**
  * Internal dependencies
  */
+import { getConfig } from 'wcpay/utils/checkout';
 import {
 	shouldSkipWooPay,
 	isShortcodeCheckout,
 	isSupportedThemeEntrypoint,
 } from 'wcpay/checkout/woopay/utils';
+
+jest.mock( 'wcpay/utils/checkout', () => ( {
+	getConfig: jest.fn(),
+} ) );
 
 describe( 'WooPay Utils', () => {
 	const originalDocumentCookie = window.document.cookie;
@@ -62,19 +67,23 @@ describe( 'WooPay Utils', () => {
 	} );
 
 	describe( 'isShortcodeCheckout', () => {
-		test( 'returns true when billing fields are present', () => {
-			document.body.innerHTML =
-				'<div class="woocommerce-billing-fields"></div>';
+		test( 'returns true when server flag is set', () => {
+			getConfig.mockReturnValue( true );
 			expect( isShortcodeCheckout() ).toBe( true );
 		} );
 
-		test( 'returns false when billing fields are absent', () => {
-			document.body.innerHTML = '<div></div>';
+		test( 'returns false when server flag is not set', () => {
+			getConfig.mockReturnValue( false );
+			expect( isShortcodeCheckout() ).toBe( false );
+		} );
+
+		test( 'returns false when server flag is undefined', () => {
+			getConfig.mockReturnValue( undefined );
 			expect( isShortcodeCheckout() ).toBe( false );
 		} );
 
 		afterEach( () => {
-			document.body.innerHTML = '';
+			getConfig.mockReset();
 		} );
 	} );
 

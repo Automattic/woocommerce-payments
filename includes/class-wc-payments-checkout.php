@@ -201,6 +201,7 @@ class WC_Payments_Checkout {
 			'isWooPayEmailInputEnabled'         => $this->woopay_util->is_woopay_email_input_enabled(),
 			'isWooPayDirectCheckoutEnabled'     => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 			'isWooPayGlobalThemeSupportEnabled' => $this->gateway->is_woopay_global_theme_support_enabled(),
+			'isShortcodeCheckout'               => is_checkout() && ! has_block( 'woocommerce/checkout' ),
 			'woopayHost'                        => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'              => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation'    => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),

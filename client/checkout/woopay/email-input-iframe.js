@@ -17,7 +17,7 @@ import {
 	isShortcodeCheckout,
 } from './utils';
 import { getAppearanceType } from '../utils';
-import { maybePersistAppearance } from 'wcpay/checkout/woopay/appearance/persist';
+import { maybePersistWoopayAppearance } from 'wcpay/checkout/woopay/appearance/persist';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -199,7 +199,7 @@ export const handleWooPayEmailInput = async (
 			appearance = getConfig( 'woopayAppearance' );
 			if ( ! appearance && isShortcodeCheckout() ) {
 				appearance = getAppearance( appearanceType, true );
-				maybePersistAppearance( appearance );
+				maybePersistWoopayAppearance( appearance );
 			}
 		}
 

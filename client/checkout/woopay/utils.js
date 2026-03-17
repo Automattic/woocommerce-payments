@@ -1,3 +1,8 @@
+/**
+ * Internal dependencies
+ */
+import { getConfig } from 'wcpay/utils/checkout';
+
 // Waits for the element to exist as in the Blocks checkout, sometimes the field is not immediately available.
 export const getTargetElement = ( selector ) => {
 	if ( ! selector ) {
@@ -96,12 +101,18 @@ export const deleteSkipWooPayCookie = () => {
 };
 
 /**
- * Returns true when the current page is a WooCommerce shortcode checkout.
+ * Returns true when the current page is a WooCommerce shortcode checkout
+ * (i.e. the checkout page using the [woocommerce_checkout] shortcode, not
+ * the Blocks-based checkout).
+ *
+ * Uses a server-side flag (`is_checkout() && ! has_block('woocommerce/checkout')`)
+ * exposed via wcpayConfig, which is more robust than DOM class detection
+ * (e.g. `.woocommerce-billing-fields` can be removed by checkout field
+ * editor plugins or custom code).
  *
  * @return {boolean} True on shortcode checkout pages.
  */
-export const isShortcodeCheckout = () =>
-	!! document.querySelector( '.woocommerce-billing-fields' );
+export const isShortcodeCheckout = () => !! getConfig( 'isShortcodeCheckout' );
 
 /**
  * Determine Global theming availability for the entrypoint based on the appearanceType.

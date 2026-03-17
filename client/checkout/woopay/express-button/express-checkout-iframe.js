@@ -20,7 +20,7 @@ import {
 import { getTracksIdentity } from 'tracks';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
-import { maybePersistAppearance } from 'wcpay/checkout/woopay/appearance/persist';
+import { maybePersistWoopayAppearance } from 'wcpay/checkout/woopay/appearance/persist';
 
 const getEmailValue = async ( emailSelector ) => {
 	const isPayForOrder = window.wcpayConfig?.pay_for_order === 'true';
@@ -124,7 +124,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			appearance = getConfig( 'woopayAppearance' );
 			if ( ! appearance && isShortcodeCheckout() ) {
 				appearance = getAppearance( appearanceType, true );
-				maybePersistAppearance( appearance );
+				maybePersistWoopayAppearance( appearance );
 			}
 		}
 

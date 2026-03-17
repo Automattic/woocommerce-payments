@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Send merchant font CDN stylesheet URLs to WooPay so checkout renders the merchant's actual web fonts.

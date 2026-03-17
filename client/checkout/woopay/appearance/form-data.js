@@ -6,7 +6,7 @@
  * @param {Object}   obj      The object to serialize.
  * @param {string}   prefix   Root key name (default: 'appearance').
  */
-export const appendObjectToFormData = (
+export const appendAppearanceToFormData = (
 	formData,
 	obj,
 	prefix = 'appearance'
@@ -20,7 +20,7 @@ export const appendObjectToFormData = (
 		}
 
 		if ( value && typeof value === 'object' && ! Array.isArray( value ) ) {
-			appendObjectToFormData( formData, value, fieldKey );
+			appendAppearanceToFormData( formData, value, fieldKey );
 		} else {
 			formData.append( fieldKey, value );
 		}

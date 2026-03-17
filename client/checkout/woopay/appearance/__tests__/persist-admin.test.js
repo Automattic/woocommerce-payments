@@ -40,7 +40,7 @@ const setupDefaults = () => {
 	global.fetch = jest.fn( () => Promise.resolve() );
 };
 
-describe( 'maybePersistAdminAppearance', () => {
+describe( 'maybePersistAdminWoopayAppearance', () => {
 	beforeEach( () => {
 		setupDefaults();
 		jest.resetModules();
@@ -56,7 +56,7 @@ describe( 'maybePersistAdminAppearance', () => {
 	// listeningForSaved) between tests.
 	const loadModule = () => {
 		const mod = require( '../persist-admin' );
-		return mod.maybePersistAdminAppearance;
+		return mod.maybePersistAdminWoopayAppearance;
 	};
 
 	describe( 'precondition guards', () => {
