@@ -1,3 +1,7 @@
+
+volumes:
+    mysql_data:
+
 services:
   wordpress:
     build: ./wordpress-xdebug
@@ -33,7 +37,8 @@ services:
     env_file:
       - ${E2E_ROOT}/env/default.env
     volumes:
-      - ${E2E_ROOT}/docker/data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+
   phpMyAdmin:
     container_name: wcp_e2e_phpmyadmin
     image: phpmyadmin/phpmyadmin:latest
