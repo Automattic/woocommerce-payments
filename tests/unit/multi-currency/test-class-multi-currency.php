@@ -1428,6 +1428,12 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_public_config_uses_wc_store_settings_for_default_currency() {
+		// Snapshot original WC options to restore after the test.
+		$original_decimal_sep  = get_option( 'woocommerce_price_decimal_sep' );
+		$original_thousand_sep = get_option( 'woocommerce_price_thousand_sep' );
+		$original_num_decimals = get_option( 'woocommerce_price_num_decimals' );
+		$original_currency_pos = get_option( 'woocommerce_currency_pos' );
+
 		// Custom WC settings that differ from the US locale defaults (. and ,).
 		$custom_decimal_sep  = ',';
 		$custom_thousand_sep = '.';
@@ -1453,6 +1459,12 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$gbp_format = $this->localization_service->get_currency_format( 'GBP' );
 		$this->assertEquals( $gbp_format['decimal_sep'], $gbp_data['decimal_sep'] );
 		$this->assertEquals( $gbp_format['thousand_sep'], $gbp_data['thousand_sep'] );
+
+		// Restore original WC options.
+		update_option( 'woocommerce_price_decimal_sep', $original_decimal_sep );
+		update_option( 'woocommerce_price_thousand_sep', $original_thousand_sep );
+		update_option( 'woocommerce_price_num_decimals', $original_num_decimals );
+		update_option( 'woocommerce_currency_pos', $original_currency_pos );
 	}
 
 	private function mock_currency_settings( $currency_code, $settings ) {
