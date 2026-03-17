@@ -27,6 +27,7 @@ use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 use WCPay\PaymentMethods\Configs\Definitions\SepaDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\Session_Rate_Limiter;
 
@@ -162,6 +163,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$payment_method_definitions = [
 			CardDefinition::class,
+			AmazonPayDefinition::class,
 			ApplePayDefinition::class,
 			BancontactDefinition::class,
 			BecsDefinition::class,
@@ -288,6 +290,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$available_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$expected_method_ids = [
+			Payment_Method::AMAZON_PAY,
 			Payment_Method::CARD,
 			Payment_Method::BECS,
 			Payment_Method::BANCONTACT,
@@ -509,6 +512,26 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( 'yes', $this->gateway->get_option( 'manual_capture' ) );
+	}
+
+	public function test_update_settings_manual_capture_keeps_payment_methods_with_capture_later_capability() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_manual_capture_enabled', true );
+		$request->set_param(
+			'enabled_payment_method_ids',
+			[ Payment_Method::CARD, Payment_Method::GOOGLE_PAY, Payment_Method::AMAZON_PAY, Payment_Method::IDEAL ]
+		);
+
+		$this->controller->update_settings( $request );
+
+		$enabled = WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' );
+
+		// Card, Google Pay, and Amazon Pay have CAPTURE_LATER capability and should remain enabled.
+		$this->assertContains( Payment_Method::CARD, $enabled );
+		$this->assertContains( Payment_Method::GOOGLE_PAY, $enabled );
+		$this->assertContains( Payment_Method::AMAZON_PAY, $enabled );
+		// iDEAL does not support manual capture and should be filtered out.
+		$this->assertNotContains( Payment_Method::IDEAL, $enabled );
 	}
 
 	public function test_update_settings_disables_manual_capture() {
