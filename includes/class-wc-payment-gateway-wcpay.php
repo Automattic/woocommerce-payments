@@ -3471,7 +3471,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $actions;
 		}
 
-		if ( $this->id !== $theorder->get_payment_method() ) {
+		if ( ! str_starts_with( $theorder->get_payment_method(), self::GATEWAY_ID ) ) {
 			return $actions;
 		}
 
