@@ -19,8 +19,33 @@ import { getAnonymousShopper } from '../../../utils/helpers';
 const interceptConfigEndpointWithFailure = async ( page: Page ) => {
 	await page.route(
 		'**/wc/v3/payments/multi-currency/public/config',
-		( route ) => route.abort( 'connectionfailed' )
+		( route ) => route.abort( 'failed' )
 	);
+};
+
+/**
+ * Reads a WP option value, returning empty string if the option does not exist.
+ */
+const getOption = async ( name: string ): Promise< string > => {
+	try {
+		return ( await qit.wp( `option get ${ name }`, true ) ).stdout.trim();
+	} catch {
+		return '';
+	}
+};
+
+/**
+ * Restores a WP option to its original value, or deletes it if it didn't exist.
+ */
+const restoreOption = async (
+	name: string,
+	original: string
+): Promise< void > => {
+	if ( original ) {
+		await qit.wp( `option update ${ name } ${ original }` );
+	} else {
+		await qit.wp( `option delete ${ name }` );
+	}
 };
 
 test.describe(
@@ -52,15 +77,6 @@ test.describe(
 			);
 
 			// Snapshot current WP option values before modifying them.
-			// Options may not exist yet, so catch errors and default to empty.
-			const getOption = async ( name: string ): Promise< string > => {
-				try {
-					return ( await qit.wp( `option get ${ name }`, true ) )
-						.stdout.trim();
-				} catch {
-					return '';
-				}
-			};
 			originalRenderingMode = await getOption(
 				'wcpay_multi_currency_rendering_mode'
 			);
@@ -71,19 +87,13 @@ test.describe(
 				'wcpay_multi_currency_enable_auto_currency'
 			);
 
-			// Read the store's default currency symbol for assertions.
-			const currencyCode = (
-				await qit.wp( 'option get woocommerce_currency', true )
+			// Read the store's default currency symbol via WooCommerce.
+			defaultCurrencySymbol = (
+				await qit.wp(
+					'eval "echo html_entity_decode( get_woocommerce_currency_symbol() );"',
+					true
+				)
 			).stdout.trim();
-			const symbolMap: Record< string, string > = {
-				USD: '$',
-				EUR: '€',
-				GBP: '£',
-				JPY: '¥',
-				CAD: '$',
-				AUD: '$',
-			};
-			defaultCurrencySymbol = symbolMap[ currencyCode ] ?? currencyCode;
 
 			// Add EUR as an enabled currency.
 			await merchant.addCurrency( merchantPage, 'EUR' );
@@ -101,26 +111,19 @@ test.describe(
 		} );
 
 		test.afterAll( async () => {
-			// Restore original WP option values.
-			if ( originalFeatureFlag ) {
-				await qit.wp(
-					`option update _wcpay_feature_mc_cache_optimized ${ originalFeatureFlag }`
-				);
-			} else {
-				await qit.wp(
-					'option delete _wcpay_feature_mc_cache_optimized'
-				);
-			}
-			if ( originalRenderingMode ) {
-				await qit.wp(
-					`option update wcpay_multi_currency_rendering_mode ${ originalRenderingMode }`
-				);
-			}
-			if ( originalAutoSwitch ) {
-				await qit.wp(
-					`option update wcpay_multi_currency_enable_auto_currency ${ originalAutoSwitch }`
-				);
-			}
+			// Restore original WP option values (delete if they didn't exist).
+			await restoreOption(
+				'_wcpay_feature_mc_cache_optimized',
+				originalFeatureFlag
+			);
+			await restoreOption(
+				'wcpay_multi_currency_rendering_mode',
+				originalRenderingMode
+			);
+			await restoreOption(
+				'wcpay_multi_currency_enable_auto_currency',
+				originalAutoSwitch
+			);
 
 			await merchant.restoreCurrencies(
 				merchantPage,
