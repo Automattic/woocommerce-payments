@@ -42,7 +42,10 @@ jobs:
           # 1 = invalid (bad arguments/config)
           # 2 = failed (critical security errors)
           # 3 = warning (non-critical issues)
-          if [ $EXIT_CODE -eq 2 ]; then
+          if [ $EXIT_CODE -eq 1 ]; then
+            echo "Security test failed: invalid arguments or configuration."
+            exit 1
+          elif [ $EXIT_CODE -eq 2 ]; then
             echo "Security test failed with critical errors."
             exit 1
           elif [ $EXIT_CODE -eq 3 ]; then
@@ -64,7 +67,10 @@ jobs:
           # 1 = invalid (bad arguments/config)
           # 2 = failed (critical malware detected)
           # 3 = warning
-          if [ $EXIT_CODE -eq 2 ]; then
+          if [ $EXIT_CODE -eq 1 ]; then
+            echo "Malware test failed: invalid arguments or configuration."
+            exit 1
+          elif [ $EXIT_CODE -eq 2 ]; then
             echo "Malware test failed."
             exit 1
           elif [ $EXIT_CODE -eq 3 ]; then
