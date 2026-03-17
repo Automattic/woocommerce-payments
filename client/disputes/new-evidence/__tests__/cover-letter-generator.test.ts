@@ -1007,6 +1007,211 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'Refund policy (Attachment D)' );
 			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
+
+		// Offline Service cover letter ordering tests
+
+		it( 'should order all fraudulent attachments correctly for offline_service', () => {
+			const fraudulentDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'fraudulent' as DisputeReason,
+				evidence: {
+					access_activity_log: 'url',
+					customer_communication: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				fraudulentDispute,
+				undefined,
+				'offline_service'
+			);
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment A)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+		} );
+
+		it( 'should order all product_not_received attachments correctly for offline_service', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					service_documentation: 'url',
+					customer_communication: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'offline_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Proof of service completion (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment D)' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly for offline_service', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'url',
+					receipt: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'offline_service'
+			);
+			expect( result ).toContain(
+				'Proof of delivered service (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all subscription_canceled attachments correctly for offline_service', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					customer_communication: 'url',
+					cancellation_rebuttal: 'url',
+					cancellation_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				subscriptionCanceledDispute,
+				undefined,
+				'offline_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Cancellation logs (Attachment C)' );
+			expect( result ).toContain( 'Terms of service (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario A attachments correctly for offline_service', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					cancellation_rebuttal: 'url',
+					customer_communication: 'url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'offline_service',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Refund receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Order receipt' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario B attachments correctly for offline_service', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'url',
+					refund_policy: 'url',
+					customer_communication: 'url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'offline_service',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
+			expect( result ).toContain( 'Refund policy (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		it( 'should order all duplicate is_duplicate attachments correctly for offline_service', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					duplicate_charge_documentation: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_duplicate',
+				'offline_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Refund receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all duplicate is_not_duplicate attachments correctly for offline_service', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					duplicate_charge_documentation: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_not_duplicate',
+				'offline_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
 	} );
 
 	describe( 'generateHeader', () => {
