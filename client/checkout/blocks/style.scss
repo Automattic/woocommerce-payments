@@ -3,10 +3,6 @@
 .wcpay-payment-element-wrapper {
 	position: relative;
 
-	&.loading-card {
-		min-height: 130px;
-	}
-
 	&.loading-apm {
 		min-height: 100px;
 	}

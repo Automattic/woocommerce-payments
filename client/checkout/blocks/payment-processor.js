@@ -63,7 +63,33 @@ const PaymentProcessor = ( {
 
 	const [ isStripeReady, setIsStripeReady ] = useState( false );
 	const [ showSkeleton, setShowSkeleton ] = useState( true );
+	const [ isSingleRowCard, setIsSingleRowCard ] = useState( false );
 	const isCardMethod = paymentMethodId === 'card';
+	const wrapperRef = useRef( null );
+
+	// Dynamically adjust skeleton layout and min-height based on wrapper
+	// width to match Stripe's responsive card field layout (1-row vs 2-row).
+	useEffect( () => {
+		if ( ! isCardMethod || isStripeReady || ! wrapperRef.current ) {
+			return;
+		}
+
+		const el = wrapperRef.current;
+		const observer = new ResizeObserver( ( entries ) => {
+			const width = entries[ 0 ].contentRect.width;
+			// Stripe renders card fields in a single row above ~660px,
+			// and wraps to two rows below that threshold.
+			const singleRow = width >= 660;
+			setIsSingleRowCard( singleRow );
+			el.style.minHeight = singleRow ? '70px' : '130px';
+		} );
+
+		observer.observe( el );
+		return () => {
+			observer.disconnect();
+			el.style.minHeight = '';
+		};
+	}, [ isCardMethod, isStripeReady ] );
 
 	// Remove skeleton from DOM after fade-out transition completes.
 	const handleSkeletonTransitionEnd = useCallback( () => {
@@ -223,9 +249,10 @@ const PaymentProcessor = ( {
 				   Positioned absolutely over the iframe mount point and fades out
 				   when Stripe fires the `ready` event. */ }
 			<div
+				ref={ wrapperRef }
 				className={ clsx(
 					'wcpay-payment-element-wrapper',
-					isCardMethod ? 'loading-card' : 'loading-apm'
+					! isCardMethod && 'loading-apm'
 				) }
 			>
 				{ showSkeleton &&
@@ -233,6 +260,7 @@ const PaymentProcessor = ( {
 						<CardSkeleton
 							isHidden={ isStripeReady }
 							onTransitionEnd={ handleSkeletonTransitionEnd }
+							isSingleRow={ isSingleRowCard }
 						/>
 					) : (
 						<ApmSkeleton
