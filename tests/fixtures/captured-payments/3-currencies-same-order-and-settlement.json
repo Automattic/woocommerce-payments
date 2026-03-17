@@ -1,0 +1,71 @@
+{
+  "title": "3-currencies, order and settlement currencies are the same",
+  "capturedEvent":
+    {
+        "type": "captured",
+        "amount": 6200,
+        "amount_captured": 6200,
+        "fee": 106,
+        "fee_rates": {
+            "percentage": 0.0135,
+            "fixed": 2,
+            "fixed_currency": "EUR",
+            "history": [
+                {
+                    "type": "base",
+                    "additional_type": "",
+                    "fee_id": "base-se-card-fee",
+                    "percentage_rate": 0.015,
+                    "fixed_rate": 20,
+                    "currency": "sek"
+                },
+                {
+                    "type": "discount",
+                    "additional_type": "",
+                    "fee_id": "wcpay-promo-2023-incentive-10off3m-se",
+                    "percentage_rate": -0.0015,
+                    "fixed_rate": -2,
+                    "currency": "sek"
+                }
+            ],
+            "tax": {
+                "percentage_rate": 0.25,
+                "amount": 21,
+                "currency": "eur",
+                "description": "SE VAT"
+            },
+            "before_tax": {
+                "amount": 85,
+                "currency": "eur"
+            },
+            "fee_exchange_rate": null
+        },
+        "currency": "EUR",
+        "datetime": 1770202445,
+        "deposit": null,
+        "transaction_id": "txn_3Sx3iiFrftSTz62v1PCjHEmg",
+        "transaction_details": {
+            "customer_currency": "EUR",
+            "customer_amount": 6200,
+            "customer_amount_captured": 6200,
+            "customer_fee": 106,
+            "store_currency": "EUR",
+            "store_amount": 6200,
+            "store_amount_captured": 6200,
+            "store_fee": 106
+        }
+    },
+  "expectation": {
+    "feeString": "Fee (1.35% + 0,02 €): -0,85 €",
+    "feeBreakdown": {
+      "base": "Base fee: 1.5% + 0,20 kr",
+      "discount": {
+        "label": "Discount",
+        "variable": "Variable fee: -0.15%",
+        "fixed": "Fixed fee: -0,02 kr"
+      }
+    },
+    "taxString": "Tax SE VAT (25%): -0,21 €",
+    "netString": "Net payout: 60,94 € EUR"
+  }
+}

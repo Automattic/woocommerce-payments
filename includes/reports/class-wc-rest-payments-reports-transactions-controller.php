@@ -281,12 +281,12 @@ class WC_REST_Payments_Reports_Transactions_Controller extends WC_Payments_REST_
 					'context'     => [ 'view' ],
 				],
 				'payment_method'       => [
-					'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
+					'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL | Wero, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
 					'type'        => 'object',
 					'context'     => [ 'view' ],
 					'properties'  => [
 						'type' => [
-							'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
+							'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL | Wero, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
 							'type'        => 'string',
 							'context'     => [ 'view' ],
 						],

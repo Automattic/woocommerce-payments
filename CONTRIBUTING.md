@@ -81,20 +81,22 @@ Docker can be used to setup a local development environment:
 
 * Ensure Docker is installed ([Docker Desktop](https://www.docker.com/products/docker-desktop) is a good option for developers)
 * Follow the steps above in the Development section to build the project's JavaScript
-* From the root of this project, run `docker compose up -d`
-* Once <http://localhost:8082> displays the WordPress install screen, run `./bin/docker-setup.sh`
-* The fully configured site can now be accessed on <http://localhost:8082>
+* Start WordPress and run setup: `npm run up:recreate` (auto-starts infrastructure if needed)
+* The fully configured site can now be accessed at `http://localhost:<PORT>/wp-admin/` (check `.env` for your port, default is 8082)
 * The prompt to run the setup wizard can be dismissed unless there is something specific you would like to configure
 
 To shutdown:
 
-* Use `docker compose down` to stop the running containers
-* The state of the environment will be persisted in `docker/wordpress` and `docker/data`. To restart the environment simply run `docker compose up` again. To start afresh, delete these folders and let `docker compose up` re-create them.
+* Use `npm run down` to stop this worktree's WordPress container
+* Use `npm run infra:down` to stop shared infrastructure (database, phpMyAdmin)
+* The state of the environment will be persisted in `docker/data` (database) and shared Docker volumes (plugins, themes, uploads, mu-plugins). To restart the environment simply run `npm run up` again. To start completely fresh, delete `docker/data` and remove the shared volumes:
+  ```bash
+  docker volume rm wcpay-plugins wcpay-themes wcpay-uploads wcpay-mu-plugins
+  ```
+  Then re-run `npm run up:recreate`.
+
+For more details, including git worktree support, see [docker/README.md](docker/README.md).
 
 IDE setup:
 
-* Adding `docker/wordpress` to your IDE's PHP include path will allow it to provide hinting for WordPress functions etc.
-* The WordPress container has xdebug setup. Add the following path mappings to your IDE so it can find the correct code:
-
-   * `<project folder>/ -> /var/www/html/wp-content/plugins/woocommerce-payments`
-   * `<project folder>/docker/wordpress -> /var/www/html`
+* The WordPress container has xdebug configured. For path mappings, PHP include paths, and other IDE configuration, see [docker/README.md](docker/README.md#ide-setup-for-xdebug).

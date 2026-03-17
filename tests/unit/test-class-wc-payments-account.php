@@ -3658,7 +3658,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$mock_gateway->method( 'get_option' )->willReturnCallback(
 			function ( $key, $default = null ) {
 				$options = [
-					'apple_google_pay_in_payment_methods_options' => 'yes',
+					'express_checkout_in_payment_methods'  => 'yes',
 					'manual_capture'                       => 'no',
 					'enable_logging'                       => 'no',
 					'payment_request_button_type'          => 'default',
@@ -3708,7 +3708,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'gateway', $captured_data );
 		$this->assertArrayHasKey( 'payment_methods', $captured_data );
 		$this->assertArrayHasKey( 'provider_capabilities', $captured_data );
-		$this->assertArrayHasKey( 'apple_google_pay_in_payment_methods_options_enabled', $captured_data );
+		$this->assertArrayHasKey( 'express_checkout_in_payment_methods_enabled', $captured_data );
 		$this->assertArrayHasKey( 'saved_cards_enabled', $captured_data );
 		$this->assertArrayHasKey( 'manual_capture_enabled', $captured_data );
 		$this->assertArrayHasKey( 'debug_log_enabled', $captured_data );
@@ -3755,7 +3755,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Assert: Verify simple boolean/string values match mocked data.
-		$this->assertEquals( 'yes', $captured_data['apple_google_pay_in_payment_methods_options_enabled'] );
+		$this->assertEquals( 'yes', $captured_data['express_checkout_in_payment_methods_enabled'] );
 		$this->assertTrue( $captured_data['saved_cards_enabled'] );
 		$this->assertFalse( $captured_data['manual_capture_enabled'] );
 		$this->assertFalse( $captured_data['debug_log_enabled'] );

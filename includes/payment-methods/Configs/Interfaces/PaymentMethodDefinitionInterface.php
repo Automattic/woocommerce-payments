@@ -42,6 +42,16 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_title( ?string $account_country = null ): string;
 
 	/**
+	 * Get a dynamic title based on charge details from Stripe.
+	 *
+	 * @param string $account_country The merchant's account country.
+	 * @param array  $payment_details The payment method details from the Stripe charge.
+	 *
+	 * @return string|null The dynamic title, or null to use the default get_title().
+	 */
+	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string;
+
+	/**
 	 * Get the title of the payment method for the settings page.
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.

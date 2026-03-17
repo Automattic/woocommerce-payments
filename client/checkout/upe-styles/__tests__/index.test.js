@@ -143,7 +143,7 @@ describe( 'Getting styles for automated theming', () => {
 
 		const appearance = upeStyles.getAppearance(
 			'shortcode_checkout',
-			true,
+			false,
 			scope
 		);
 		expect( appearance ).toEqual( {
@@ -225,58 +225,58 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 					backgroundColor: '#ffffff',
 				},
-				'.Heading': {
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
-				'.Button': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					outline: '1px solid rgb(150, 88, 138)',
-					padding: '10px',
-				},
-				'.Link': {
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
-				'.Container': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-				},
-				'.Footer': {
-					color: 'rgb(109, 109, 109)',
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
-				'.Footer-link': {
-					color: 'rgb(109, 109, 109)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
-				'.Header': {
-					color: 'rgb(109, 109, 109)',
-					backgroundColor: 'rgba(0, 0, 0, 0)',
-					fontFamily:
-						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-					fontSize: '12px',
-					padding: '10px',
-				},
 			},
 			labels: 'above',
 		} );
+	} );
+
+	test( 'getFieldStyles prioritizes content-area selectors over bare fallback', () => {
+		const contentElement = document.createElement( 'a' );
+		const bareElement = document.createElement( 'a' );
+		const accentColor = 'rgb(0, 102, 204)';
+		const navColor = 'rgb(255, 0, 0)';
+		const accentStyleDeclaration = {
+			...cssPropertiesCamel,
+			color: accentColor,
+			getPropertyValue: ( prop ) => {
+				if ( prop === 'color' ) return accentColor;
+				return cssPropertiesDashed[ prop ];
+			},
+		};
+		const navStyleDeclaration = {
+			...cssPropertiesCamel,
+			color: navColor,
+			getPropertyValue: ( prop ) => {
+				if ( prop === 'color' ) return navColor;
+				return cssPropertiesDashed[ prop ];
+			},
+		};
+
+		// Both 'form.checkout a' and bare 'a' match, but the first should win.
+		const scope = {
+			querySelector: jest.fn( ( selector ) => {
+				if ( selector === 'form.checkout a' ) return contentElement;
+				if ( selector === 'a' ) return bareElement;
+				return null;
+			} ),
+			defaultView: {
+				getComputedStyle: jest.fn( ( el ) =>
+					el === contentElement
+						? accentStyleDeclaration
+						: navStyleDeclaration
+				),
+			},
+		};
+
+		const fieldStyles = upeStyles.getFieldStyles(
+			[ 'form.checkout a', '.woocommerce a', 'a' ],
+			'.Label',
+			null,
+			scope
+		);
+
+		expect( fieldStyles.color ).toBe( accentColor );
+		expect( scope.querySelector ).toHaveBeenCalledWith( 'form.checkout a' );
 	} );
 
 	[

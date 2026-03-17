@@ -6,6 +6,7 @@
 import './style.scss';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
+import { getIconTheme } from 'wcpay/checkout/utils/icon-theme';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
@@ -70,9 +71,19 @@ jQuery( function ( $ ) {
 	} );
 
 	$( document.body ).on( 'updated_checkout', () => {
+		swapDarkIcons();
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
 		injectPaymentMethodLogos();
 	} );
+
+	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
+		'change',
+		function () {
+			this.closest( 'form.checkout' )
+				?.querySelectorAll( '.wcpay-upe-element' )
+				.forEach( restrictPaymentMethodToLocation );
+		}
+	);
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
 		if ( isBillingInformationMissing() ) {
@@ -113,10 +124,12 @@ jQuery( function ( $ ) {
 
 	if ( $addPaymentMethodForm.length ) {
 		maybeMountStripePaymentElement( 'add_payment_method' );
+		swapDarkIcons();
 	}
 
 	if ( $payForOrderForm.length ) {
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
+		swapDarkIcons();
 	}
 
 	$addPaymentMethodForm.on( 'submit', function () {
@@ -363,6 +376,26 @@ jQuery( function ( $ ) {
 		window.addEventListener( 'resize', updateLogos );
 	}
 
+	function swapDarkIcons() {
+		const useDark = getIconTheme( 'classic' ) === 'night';
+
+		document.querySelectorAll( '.wcpay-upe-element' ).forEach( ( el ) => {
+			const type = el.dataset.paymentMethodType;
+			if ( type === 'card' ) {
+				return;
+			}
+			const config = getUPEConfig( 'paymentMethodsConfig' )?.[ type ];
+			const targetIcon = useDark ? config?.darkIcon : config?.icon;
+			if ( targetIcon ) {
+				el.closest( '.wc_payment_method' )
+					?.querySelectorAll( 'label img' )
+					.forEach( ( img ) => {
+						img.src = targetIcon;
+					} );
+			}
+		} );
+	}
+
 	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
@@ -389,18 +422,6 @@ jQuery( function ( $ ) {
 	function restrictPaymentMethodToLocation( upeElement ) {
 		if ( hasPaymentMethodCountryRestrictions( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
-
-			const billingInput = upeElement
-				?.closest( 'form.checkout' )
-				?.querySelector(
-					`[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]`
-				);
-			if ( billingInput ) {
-				// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
-				$( billingInput ).on( 'change', function () {
-					togglePaymentMethodForCountry( upeElement );
-				} );
-			}
 		}
 	}
 } );

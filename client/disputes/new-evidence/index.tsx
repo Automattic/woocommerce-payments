@@ -254,7 +254,8 @@ export default ( { query }: { query: { id: string } } ) => {
 							settings,
 							bankName,
 							refundStatus,
-							duplicateStatus
+							duplicateStatus,
+							suggestedProductType
 						);
 						setIsCoverLetterManuallyEdited(
 							savedCoverLetter !== generatedContent
@@ -272,7 +273,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						settings,
 						bankName,
 						refundStatus,
-						duplicateStatus
+						duplicateStatus,
+						suggestedProductType
 					);
 					setCoverLetter( generatedCoverLetter );
 					setIsCoverLetterManuallyEdited( false );
@@ -284,11 +286,11 @@ export default ( { query }: { query: { id: string } } ) => {
 			}
 		};
 		fetchDispute();
-		// We intentionally exclude duplicateStatus from dependencies to prevent re-fetching dispute data
-		// when duplicate status changes (which would reset the product type selection).
+		// We intentionally exclude duplicateStatus and refundStatus from dependencies to prevent
+		// re-fetching dispute data when status changes (which would reset the product type selection).
 		// Cover letter regeneration on status changes is handled by the evidence update effect.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [ path, createErrorNotice, settings, bankName, refundStatus ] );
+	}, [ path, createErrorNotice, settings, bankName ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -348,24 +350,71 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		if ( ! dispute || ! settings ) return;
 
+		// Get the document fields that are applicable for the current reason + product type
+		// This ensures we only include evidence for fields shown in the current UI
+		const applicableDocumentFields = getRecommendedDocumentFields(
+			dispute.reason,
+			dispute.reason === 'credit_not_processed'
+				? refundStatus
+				: undefined,
+			dispute.reason === 'duplicate' ? duplicateStatus : undefined,
+			productType
+		);
+		const applicableFieldKeys = new Set(
+			applicableDocumentFields.map( ( field ) => field.key )
+		);
+
+		// Helper to get evidence value only if the field is applicable
+		const getApplicableEvidence = (
+			key: string,
+			value: string | undefined
+		) => ( applicableFieldKeys.has( key ) ? value || '' : '' );
+
 		// Create a dispute object with current evidence state for generation
+		// Only include evidence for fields that are applicable to the current product type
 		const disputeWithCurrentEvidence = {
 			...dispute,
 			evidence: {
 				...dispute.evidence,
 				product_description: productDescription,
-				receipt: evidence.receipt,
-				customer_communication: evidence.customer_communication,
-				customer_signature: evidence.customer_signature,
-				refund_policy: evidence.refund_policy,
-				duplicate_charge_documentation:
-					evidence.duplicate_charge_documentation,
+				receipt: getApplicableEvidence( 'receipt', evidence.receipt ),
+				customer_communication: getApplicableEvidence(
+					'customer_communication',
+					evidence.customer_communication
+				),
+				customer_signature: getApplicableEvidence(
+					'customer_signature',
+					evidence.customer_signature
+				),
+				refund_policy: getApplicableEvidence(
+					'refund_policy',
+					evidence.refund_policy
+				),
+				duplicate_charge_documentation: getApplicableEvidence(
+					'duplicate_charge_documentation',
+					evidence.duplicate_charge_documentation
+				),
 				shipping_documentation: evidence.shipping_documentation,
-				service_documentation: evidence.service_documentation,
-				cancellation_policy: evidence.cancellation_policy,
-				cancellation_rebuttal: evidence.cancellation_rebuttal,
-				access_activity_log: evidence.access_activity_log,
-				uncategorized_file: evidence.uncategorized_file,
+				service_documentation: getApplicableEvidence(
+					'service_documentation',
+					evidence.service_documentation
+				),
+				cancellation_policy: getApplicableEvidence(
+					'cancellation_policy',
+					evidence.cancellation_policy
+				),
+				cancellation_rebuttal: getApplicableEvidence(
+					'cancellation_rebuttal',
+					evidence.cancellation_rebuttal
+				),
+				access_activity_log: getApplicableEvidence(
+					'access_activity_log',
+					evidence.access_activity_log
+				),
+				uncategorized_file: getApplicableEvidence(
+					'uncategorized_file',
+					evidence.uncategorized_file
+				),
 				shipping_carrier: shippingCarrier,
 				shipping_date: shippingDate,
 				shipping_tracking_number: shippingTrackingNumber,
@@ -379,7 +428,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			settings,
 			bankName,
 			refundStatus,
-			duplicateStatus
+			duplicateStatus,
+			productType
 		);
 
 		// Only auto-update if not manually edited, or if the current content matches what was previously generated
@@ -404,6 +454,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		refundStatus,
 		duplicateStatus,
 		coverLetter,
+		productType,
 	] );
 
 	// --- Step logic ---
@@ -546,7 +597,23 @@ export default ( { query }: { query: { id: string } } ) => {
 				'shipping_address',
 			];
 
-			// Filter evidence: include shipping fields even if empty (to clear them),
+			// Define document/file field keys that need special handling
+			// These fields must be sent to Stripe even when empty to clear existing data
+			// when a document is removed by the user
+			const documentFieldKeys = [
+				'receipt',
+				'customer_communication',
+				'customer_signature',
+				'refund_policy',
+				'duplicate_charge_documentation',
+				'service_documentation',
+				'cancellation_policy',
+				'cancellation_rebuttal',
+				'access_activity_log',
+				'uncategorized_file',
+			];
+
+			// Filter evidence: include shipping and document fields even if empty (to clear them),
 			// but filter out other empty fields
 			const evidenceToSend = Object.fromEntries(
 				Object.entries( baseEvidence ).filter( ( [ key, value ] ) => {
@@ -554,7 +621,12 @@ export default ( { query }: { query: { id: string } } ) => {
 					if ( shippingFieldKeys.includes( key ) ) {
 						return true;
 					}
-					// For non-shipping fields, only include if they have a value
+					// Always include document fields (even if empty) to ensure they're cleared on Stripe
+					// when a document is removed by the user
+					if ( documentFieldKeys.includes( key ) ) {
+						return true;
+					}
+					// For other fields, only include if they have a value
 					return value && value !== '';
 				} )
 			);
@@ -743,6 +815,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	const updateProductType = ( newType: string ) => {
 		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
 		setProductType( newType );
+		// Reset the manual edit flag so the cover letter regenerates with the new product type
+		// This ensures attachment labels are updated to match the selected product type
+		setIsCoverLetterManuallyEdited( false );
 	};
 
 	const updateProductDescription = ( value: string ) => {
@@ -888,7 +963,10 @@ export default ( { query }: { query: { id: string } } ) => {
 		productType
 	);
 
-	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields();
+	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields(
+		disputeReason,
+		productType
+	);
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
 		( field: RecommendedDocument ) => ( {
 			key: field.key,
@@ -1210,7 +1288,8 @@ export default ( { query }: { query: { id: string } } ) => {
 									settings,
 									bankName,
 									refundStatus,
-									duplicateStatus
+									duplicateStatus,
+									productType
 								);
 								setCoverLetter( generatedContent );
 								setIsCoverLetterManuallyEdited( false );
@@ -1224,7 +1303,8 @@ export default ( { query }: { query: { id: string } } ) => {
 								settings,
 								bankName,
 								refundStatus,
-								duplicateStatus
+								duplicateStatus,
+								productType
 							);
 							setCoverLetter( newValue );
 							setIsCoverLetterManuallyEdited(

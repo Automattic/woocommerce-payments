@@ -20,13 +20,14 @@ jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn().mockReturnValue( {} ),
 	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 	useGetPaymentMethodStatuses: jest.fn(),
+	useEnabledPaymentMethodIds: jest.fn().mockReturnValue( [ [], jest.fn() ] ),
 	usePaymentRequestEnabledSettings: jest
 		.fn()
 		.mockReturnValue( [ true, jest.fn() ] ),
 	usePaymentRequestLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
-	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings: jest
+	useExpressCheckoutInPaymentMethodsEnabledSettings: jest
 		.fn()
 		.mockReturnValue( [ false, jest.fn() ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true, jest.fn() ] ),
