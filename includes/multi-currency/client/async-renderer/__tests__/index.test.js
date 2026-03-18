@@ -533,6 +533,219 @@ describe( 'WCPayAsyncPriceRenderer', () => {
 		} );
 	} );
 
+	describe( 'buildPriceText', () => {
+		it( 'formats price with left symbol position', () => {
+			const result = renderer.buildPriceText(
+				'10.50',
+				mockConfig.currencies.USD
+			);
+			expect( result ).toBe( '$10.50' );
+		} );
+
+		it( 'formats price with right_space symbol position', () => {
+			const result = renderer.buildPriceText(
+				'8,99',
+				mockConfig.currencies.EUR
+			);
+			expect( result ).toBe( '8,99\u00a0\u20ac' );
+		} );
+
+		it( 'formats price with left_space symbol position', () => {
+			const currency = {
+				...mockConfig.currencies.USD,
+				symbol_pos: 'left_space',
+			};
+			const result = renderer.buildPriceText( '10.50', currency );
+			expect( result ).toBe( '$\u00a010.50' );
+		} );
+
+		it( 'formats price with right symbol position', () => {
+			const currency = {
+				...mockConfig.currencies.USD,
+				symbol_pos: 'right',
+			};
+			const result = renderer.buildPriceText( '10.50', currency );
+			expect( result ).toBe( '10.50$' );
+		} );
+	} );
+
+	describe( 'convertScreenReaderText', () => {
+		beforeEach( () => {
+			document.body.textContent = '';
+			global.wcpayAsyncPriceConfig = {
+				apiUrl: 'https://example.com/api',
+				srText: {
+					sale_original: 'Original price was: %s.',
+					sale_current: 'Current price is: %s.',
+					range: 'Price range: %1$s through %2$s',
+				},
+			};
+		} );
+
+		afterEach( () => {
+			delete global.wcpayAsyncPriceConfig;
+		} );
+
+		it( 'converts sale_original screen-reader-text', () => {
+			const span = document.createElement( 'span' );
+			span.className = 'screen-reader-text';
+			span.setAttribute( 'data-wcpay-sr-type', 'sale_original' );
+			span.setAttribute( 'data-wcpay-sr-price', '50' );
+			span.textContent = 'Original price was: $50.00.';
+			document.body.appendChild( span );
+
+			renderer.convertScreenReaderText();
+
+			expect( span.classList.contains( 'wcpay-sr-converted' ) ).toBe(
+				true
+			);
+			// 50 USD * 0.85 = 42.50, rounded up to 43, charm -0.01 = 42.99
+			expect( span.textContent ).toBe(
+				'Original price was: 42,99\u00a0\u20ac.'
+			);
+		} );
+
+		it( 'converts sale_current screen-reader-text', () => {
+			const span = document.createElement( 'span' );
+			span.className = 'screen-reader-text';
+			span.setAttribute( 'data-wcpay-sr-type', 'sale_current' );
+			span.setAttribute( 'data-wcpay-sr-price', '35' );
+			span.textContent = 'Current price is: $35.00.';
+			document.body.appendChild( span );
+
+			renderer.convertScreenReaderText();
+
+			expect( span.classList.contains( 'wcpay-sr-converted' ) ).toBe(
+				true
+			);
+			// 35 USD * 0.85 = 29.75, rounded up to 30, charm -0.01 = 29.99
+			expect( span.textContent ).toBe(
+				'Current price is: 29,99\u00a0\u20ac.'
+			);
+		} );
+
+		it( 'handles positional %1$s placeholder in sale template', () => {
+			global.wcpayAsyncPriceConfig.srText.sale_original =
+				'Original price was: %1$s.';
+
+			const span = document.createElement( 'span' );
+			span.className = 'screen-reader-text';
+			span.setAttribute( 'data-wcpay-sr-type', 'sale_original' );
+			span.setAttribute( 'data-wcpay-sr-price', '50' );
+			span.textContent = 'Original price was: $50.00.';
+			document.body.appendChild( span );
+
+			renderer.convertScreenReaderText();
+
+			expect( span.classList.contains( 'wcpay-sr-converted' ) ).toBe(
+				true
+			);
+			expect( span.textContent ).toBe(
+				'Original price was: 42,99\u00a0\u20ac.'
+			);
+		} );
+
+		it( 'converts range screen-reader-text', () => {
+			const span = document.createElement( 'span' );
+			span.className = 'screen-reader-text';
+			span.setAttribute( 'data-wcpay-sr-type', 'range' );
+			span.setAttribute( 'data-wcpay-sr-price-from', '10' );
+			span.setAttribute( 'data-wcpay-sr-price-to', '30' );
+			span.textContent = 'Price range: $10.00 through $30.00';
+			document.body.appendChild( span );
+
+			renderer.convertScreenReaderText();
+
+			expect( span.classList.contains( 'wcpay-sr-converted' ) ).toBe(
+				true
+			);
+			// 10 * 0.85 = 8.50, rounded up to 9, charm -0.01 = 8.99
+			// 30 * 0.85 = 25.50, rounded up to 26, charm -0.01 = 25.99
+			expect( span.textContent ).toBe(
+				'Price range: 8,99\u00a0\u20ac through 25,99\u00a0\u20ac'
+			);
+		} );
+
+		it( 'skips already converted elements', () => {
+			const span = document.createElement( 'span' );
+			span.className = 'screen-reader-text wcpay-sr-converted';
+			span.setAttribute( 'data-wcpay-sr-type', 'sale_original' );
+			span.setAttribute( 'data-wcpay-sr-price', '50' );
+			span.textContent = 'Already converted text';
+			document.body.appendChild( span );
+
+			renderer.convertScreenReaderText();
+
+			expect( span.textContent ).toBe( 'Already converted text' );
+		} );
+
+		it( 'does nothing when srText config is missing', () => {
+			delete global.wcpayAsyncPriceConfig.srText;
+
+			const span = document.createElement( 'span' );
+			span.className = 'screen-reader-text';
+			span.setAttribute( 'data-wcpay-sr-type', 'sale_original' );
+			span.setAttribute( 'data-wcpay-sr-price', '50' );
+			span.textContent = 'Original text';
+			document.body.appendChild( span );
+
+			renderer.convertScreenReaderText();
+
+			expect( span.textContent ).toBe( 'Original text' );
+			expect( span.classList.contains( 'wcpay-sr-converted' ) ).toBe(
+				false
+			);
+		} );
+	} );
+
+	describe( 'convertAllPrices calls convertScreenReaderText', () => {
+		beforeEach( () => {
+			document.body.textContent = '';
+			global.wcpayAsyncPriceConfig = {
+				apiUrl: 'https://example.com/api',
+				srText: {
+					sale_original: 'Original price was: %s.',
+					sale_current: 'Current price is: %s.',
+					range: 'Price range: %1$s through %2$s',
+				},
+			};
+		} );
+
+		afterEach( () => {
+			delete global.wcpayAsyncPriceConfig;
+		} );
+
+		it( 'converts screen-reader-text alongside skeleton prices', () => {
+			// Add a skeleton price element.
+			const priceSpan = document.createElement( 'span' );
+			priceSpan.className =
+				'woocommerce-Price-amount amount wcpay-async-price';
+			priceSpan.setAttribute( 'data-wcpay-price', '10' );
+			priceSpan.setAttribute( 'data-wcpay-price-type', 'product' );
+			const skeleton = document.createElement( 'bdi' );
+			skeleton.className = 'wcpay-price-skeleton';
+			priceSpan.appendChild( skeleton );
+			document.body.appendChild( priceSpan );
+
+			// Add a screen-reader-text element.
+			const srSpan = document.createElement( 'span' );
+			srSpan.className = 'screen-reader-text';
+			srSpan.setAttribute( 'data-wcpay-sr-type', 'sale_original' );
+			srSpan.setAttribute( 'data-wcpay-sr-price', '50' );
+			srSpan.textContent = 'Original price was: $50.00.';
+			document.body.appendChild( srSpan );
+
+			renderer.convertAllPrices();
+
+			expect(
+				priceSpan.classList.contains( 'wcpay-price-converted' )
+			).toBe( true );
+			expect( srSpan.classList.contains( 'wcpay-sr-converted' ) ).toBe(
+				true
+			);
+		} );
+	} );
+
 	describe( 'listenToWooCommerceEvents', () => {
 		afterEach( () => {
 			delete global.jQuery;

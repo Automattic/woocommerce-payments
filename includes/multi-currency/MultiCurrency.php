@@ -1140,17 +1140,35 @@ class MultiCurrency {
 		$charm_only_products = $this->get_apply_charm_only_to_products();
 
 		$currencies_data = [];
+		$default_code    = $default_currency->get_code();
 		foreach ( $enabled_currencies as $currency ) {
-			$format = $this->localization_service->get_currency_format( $currency->get_code() );
+			$code = $currency->get_code();
 
-			$currencies_data[ $currency->get_code() ] = [
-				'code'         => $currency->get_code(),
-				'symbol'       => get_woocommerce_currency_symbol( $currency->get_code() ),
+			// For the default currency, use the merchant's WooCommerce store
+			// settings (which they can customize) instead of the localization
+			// service's hardcoded locale defaults. This ensures the JS-rendered
+			// prices match what wc_price() produces server-side.
+			if ( $code === $default_code ) {
+				$decimals     = wc_get_price_decimals();
+				$decimal_sep  = wc_get_price_decimal_separator();
+				$thousand_sep = wc_get_price_thousand_separator();
+				$symbol_pos   = get_option( 'woocommerce_currency_pos' );
+			} else {
+				$format       = $this->localization_service->get_currency_format( $code );
+				$decimals     = absint( $format['num_decimals'] );
+				$decimal_sep  = $format['decimal_sep'];
+				$thousand_sep = $format['thousand_sep'];
+				$symbol_pos   = $format['currency_pos'];
+			}
+
+			$currencies_data[ $code ] = [
+				'code'         => $code,
+				'symbol'       => get_woocommerce_currency_symbol( $code ),
 				'rate'         => $currency->get_rate(),
-				'decimals'     => absint( $format['num_decimals'] ),
-				'decimal_sep'  => $format['decimal_sep'],
-				'thousand_sep' => $format['thousand_sep'],
-				'symbol_pos'   => $format['currency_pos'],
+				'decimals'     => $decimals,
+				'decimal_sep'  => $decimal_sep,
+				'thousand_sep' => $thousand_sep,
+				'symbol_pos'   => $symbol_pos,
 				'rounding'     => (float) $currency->get_rounding(),
 				'charm'        => (float) $currency->get_charm(),
 			];
