@@ -43,9 +43,17 @@ interface SessionCacheEntry {
 
 type PriceType = 'product' | 'shipping' | 'tax' | 'coupon' | 'exchange_rate';
 
+interface SrTextConfig {
+	sale_original: string;
+	sale_current: string;
+	range: string;
+	[ key: string ]: string;
+}
+
 declare const wcpayAsyncPriceConfig: {
 	apiUrl: string;
 	defaultCurrency?: CurrencyConfig;
+	srText?: SrTextConfig;
 };
 
 declare const jQuery: JQueryStatic | undefined;
@@ -369,6 +377,32 @@ class WCPayAsyncPriceRenderer {
 	}
 
 	/**
+	 * Build a plain-text formatted price string (e.g. "$50.00", "50,00 €").
+	 *
+	 * Plain-text counterpart to buildPriceBdi() for use in screen-reader text.
+	 *
+	 * @param {string} formattedNumber The formatted number string (no symbol).
+	 * @param {Object} currency        The currency config object.
+	 * @return {string} The formatted price text.
+	 */
+	buildPriceText(
+		formattedNumber: string,
+		currency: CurrencyConfig
+	): string {
+		switch ( currency.symbol_pos ) {
+			case 'right':
+				return formattedNumber + currency.symbol;
+			case 'right_space':
+				return formattedNumber + '\u00a0' + currency.symbol;
+			case 'left_space':
+				return currency.symbol + '\u00a0' + formattedNumber;
+			default:
+				// 'left' or unknown: symbol precedes number with no space.
+				return currency.symbol + formattedNumber;
+		}
+	}
+
+	/**
 	 * Find all skeleton price elements and convert them.
 	 */
 	convertAllPrices(): void {
@@ -400,6 +434,84 @@ class WCPayAsyncPriceRenderer {
 			);
 			el.classList.add( 'wcpay-price-converted' );
 		} );
+
+		this.convertScreenReaderText();
+	}
+
+	/**
+	 * Convert annotated screen-reader-text spans to the target currency.
+	 *
+	 * Sale price and price range markup contain screen-reader-text spans with
+	 * default-currency prices. PHP annotates these with data-wcpay-sr-*
+	 * attributes; this method reads the raw prices, converts them, and rebuilds
+	 * the text using localized templates from wcpayAsyncPriceConfig.srText.
+	 */
+	convertScreenReaderText(): void {
+		const srConfig =
+			typeof wcpayAsyncPriceConfig !== 'undefined'
+				? wcpayAsyncPriceConfig.srText
+				: undefined;
+		if ( ! srConfig ) {
+			return;
+		}
+
+		const selectedCode = this.config!.selected_currency;
+		const selectedCurrency = this.config!.currencies[ selectedCode ];
+		const effectiveCurrency =
+			! selectedCurrency || selectedCode === this.config!.default_currency
+				? this.config!.currencies[ this.config!.default_currency ]
+				: selectedCurrency;
+
+		const elements = document.querySelectorAll(
+			'[data-wcpay-sr-type]:not(.wcpay-sr-converted)'
+		);
+
+		elements.forEach( ( el ) => {
+			const type = el.getAttribute( 'data-wcpay-sr-type' );
+
+			if ( type === 'sale_original' || type === 'sale_current' ) {
+				const template = srConfig[ type ];
+				if ( ! template ) {
+					return;
+				}
+				const rawPrice = el.getAttribute( 'data-wcpay-sr-price' );
+				if ( rawPrice === null ) {
+					return;
+				}
+				const converted = this.convertPrice( rawPrice, 'product' );
+				const priceText = this.buildPriceText(
+					converted,
+					effectiveCurrency
+				);
+				el.textContent = template
+					.replace( '%1$s', priceText )
+					.replace( '%s', priceText );
+				el.classList.add( 'wcpay-sr-converted' );
+			} else if ( type === 'range' ) {
+				if ( ! srConfig.range ) {
+					return;
+				}
+				const from = el.getAttribute( 'data-wcpay-sr-price-from' );
+				const to = el.getAttribute( 'data-wcpay-sr-price-to' );
+				if ( from === null || to === null ) {
+					return;
+				}
+				const convertedFrom = this.convertPrice( from, 'product' );
+				const convertedTo = this.convertPrice( to, 'product' );
+				const fromText = this.buildPriceText(
+					convertedFrom,
+					effectiveCurrency
+				);
+				const toText = this.buildPriceText(
+					convertedTo,
+					effectiveCurrency
+				);
+				el.textContent = srConfig.range
+					.replace( '%1$s', fromText )
+					.replace( '%2$s', toText );
+				el.classList.add( 'wcpay-sr-converted' );
+			}
+		} );
 	}
 
 	/**
@@ -422,6 +534,12 @@ class WCPayAsyncPriceRenderer {
 						) ||
 						el.querySelector?.(
 							'[data-wcpay-price]:not(.wcpay-price-converted)'
+						) ||
+						el.matches?.(
+							'[data-wcpay-sr-type]:not(.wcpay-sr-converted)'
+						) ||
+						el.querySelector?.(
+							'[data-wcpay-sr-type]:not(.wcpay-sr-converted)'
 						)
 					) {
 						hasNewPrices = true;
