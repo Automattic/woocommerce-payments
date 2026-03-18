@@ -1524,7 +1524,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( $payment_information->get_customer_id() ) {
-			$user        = $order->get_user();
+			$user = $order->get_user();
+			if ( false === $user ) {
+				$user = wp_get_current_user();
+			}
 			$customer_id = $payment_information->get_customer_id();
 		} else {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
