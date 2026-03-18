@@ -79,7 +79,7 @@ const PaymentMethodsSection = () => {
 							{ isManualCaptureEnabled && (
 								<BannerNotice
 									status="warning"
-									isDismissible={ false }
+									isDismissible={ true }
 									icon={ true }
 									className="manual-capture-notice"
 								>
