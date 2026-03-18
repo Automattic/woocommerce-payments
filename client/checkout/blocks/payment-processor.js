@@ -81,7 +81,7 @@ const PaymentProcessor = ( {
 			// and wraps to two rows below that threshold.
 			const singleRow = width >= 660;
 			setIsSingleRowCard( singleRow );
-			el.style.minHeight = singleRow ? '70px' : '130px';
+			el.style.minHeight = singleRow ? '70px' : '145px';
 		} );
 
 		observer.observe( el );

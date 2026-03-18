@@ -29,9 +29,9 @@ export const CardSkeleton = ( {
 		>
 			{ isSingleRow ? (
 				<div className="wcpay-skeleton-row">
-					<Skeleton width="50%" height="3.5rem" borderRadius="4px" />
-					<Skeleton width="25%" height="3.5rem" borderRadius="4px" />
-					<Skeleton width="25%" height="3.5rem" borderRadius="4px" />
+					<Skeleton width="50%" height="3rem" borderRadius="4px" />
+					<Skeleton width="25%" height="3rem" borderRadius="4px" />
+					<Skeleton width="25%" height="3rem" borderRadius="4px" />
 				</div>
 			) : (
 				<>
