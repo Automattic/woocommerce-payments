@@ -302,6 +302,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'actioned_notes'              => $actioned_notes,
 						'create_live_account'         => true,
 						'collect_payout_requirements' => false,
+						'woocommerce_store_id'        => get_option( 'woocommerce_store_id', '' ),
 						'compatibility_data'          => $this->get_mock_compatibility_data(),
 						'referral_code'               => null,
 					]
