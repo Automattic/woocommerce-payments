@@ -56,7 +56,11 @@ describe( 'ManualCaptureControl', () => {
 		expect( screen.getByRole( 'dialog' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				/Payments must be captured on the order details screen within 7 days of authorization/i
+				( content, element ) =>
+					element?.tagName === 'P' &&
+					!! element?.textContent?.includes(
+						'must be captured on the order details screen within 7 days of authorization'
+					)
 			)
 		).toBeInTheDocument();
 		const notices = screen.getAllByText(

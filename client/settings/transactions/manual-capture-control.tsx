@@ -73,9 +73,10 @@ const ManualCaptureControl = (): JSX.Element => {
 						'Enable manual capture',
 						'woocommerce-payments'
 					) }
+					className="manual-capture-confirmation-modal"
 					actions={
 						<>
-							<Button onClick={ handleModalCancel } isSecondary>
+							<Button onClick={ handleModalCancel } isTertiary>
 								{ __( 'Cancel', 'woocommerce-payments' ) }
 							</Button>
 							<Button
@@ -92,11 +93,17 @@ const ManualCaptureControl = (): JSX.Element => {
 					onRequestClose={ handleModalCancel }
 				>
 					<p>
-						{ __(
-							'Payments must be captured on the order details screen within 7 days ' +
-								'of authorization, otherwise the authorization and order will be canceled. ',
-							'woocommerce-payments'
-						) }
+						{ interpolateComponents( {
+							mixedString: __(
+								'Payments {{strong}}must be captured on the order details screen within 7 days ' +
+									'of authorization{{/strong}}, otherwise the authorization and order will be canceled.',
+								'woocommerce-payments'
+							),
+							components: {
+								strong: <strong />,
+							},
+						} ) }
+						<br />
 						{ interpolateComponents( {
 							mixedString: __(
 								'{{learnMoreLink}}Learn more about manual capture{{/learnMoreLink}}.',
