@@ -19,6 +19,7 @@ use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
