@@ -1909,23 +1909,27 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
+	private function create_mock_order( $total = 50 ) {
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
+		$mock_order->method( 'get_id' )->willReturn( 123 );
+		$mock_order->method( 'get_total' )->willReturn( $total );
+		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+		return $mock_order;
+	}
+
 	/**
 	 * Test that the customer update is deferred to the shutdown hook
 	 * when a customer already exists.
 	 */
 	public function test_customer_update_deferred_to_shutdown_hook() {
-		$mock_order = $this->createMock( 'WC_Order' );
-		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
-		$mock_order->method( 'get_id' )->willReturn( 123 );
-		$mock_order->method( 'get_total' )->willReturn( 50 );
-		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+		$order = $this->create_mock_order();
 
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		// The customer update should NOT be called synchronously.
 		$this->mock_customer_service
 			->expects( $this->never() )
 			->method( 'update_customer_for_user' );
@@ -1946,12 +1950,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service->expects( $this->once() )->method( 'attach_intent_info_to_order' );
 		$this->mock_order_service->expects( $this->once() )->method( 'update_order_status_from_intent' );
 
-		$mock_cart           = $this->createMock( 'WC_Cart' );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$this->mock_wcpay_gateway->process_payment_for_order( null, $payment_information );
 
-		$this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
-
-		// Assert the shutdown hook was registered.
 		$this->assertNotFalse( has_action( 'shutdown' ) );
 	}
 
@@ -1959,24 +1960,18 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 * Test that a missing customer error triggers recovery: recreate customer and retry.
 	 */
 	public function test_missing_customer_recovery_recreates_and_retries() {
-		$mock_order = $this->createMock( 'WC_Order' );
-		$mock_order->method( 'get_data_store' )->willReturn( new \WC_Mock_WC_Data_Store() );
-		$mock_order->method( 'get_id' )->willReturn( 123 );
-		$mock_order->method( 'get_total' )->willReturn( 50 );
-		$mock_order->method( 'get_user' )->willReturn( wp_get_current_user() );
+		$order = $this->create_mock_order();
 
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'get_customer_id_by_user_id' )
 			->willReturn( 'cus_mock' );
 
-		// Expect the customer to be recreated.
 		$this->mock_customer_service
 			->expects( $this->once() )
 			->method( 'recreate_customer_for_user' )
 			->willReturn( 'cus_new' );
 
-		// First call throws resource_missing for customer, second call succeeds.
 		$intent  = WC_Helper_Intention::create_intention();
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class, 2 );
 		$request->expects( $this->exactly( 2 ) )
@@ -1992,8 +1987,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				$intent
 			);
 
-		// set_customer_id_for_order is called twice: first with 'cus_mock' (normal flow),
-		// then with 'cus_new' (recovery flow).
 		$this->mock_order_service
 			->expects( $this->exactly( 2 ) )
 			->method( 'set_customer_id_for_order' )
@@ -2001,7 +1994,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				[ $this->isInstanceOf( WC_Order::class ), 'cus_mock' ],
 				[ $this->isInstanceOf( WC_Order::class ), 'cus_new' ]
 			);
-
 		$this->mock_order_service->expects( $this->once() )->method( 'set_payment_method_id_for_order' );
 		$this->mock_order_service->expects( $this->once() )->method( 'attach_intent_info_to_order' );
 		$this->mock_order_service->expects( $this->once() )->method( 'update_order_status_from_intent' );
@@ -2011,10 +2003,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( [ 'balance_transaction' => [ 'exchange_rate' => 0.86 ] ] );
 
-		$mock_cart           = $this->createMock( 'WC_Cart' );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $mock_order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
-		$result = $this->mock_wcpay_gateway->process_payment_for_order( $mock_cart, $payment_information );
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$result              = $this->mock_wcpay_gateway->process_payment_for_order( null, $payment_information );
 
 		$this->assertEquals( 'success', $result['result'] );
 	}
