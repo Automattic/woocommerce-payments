@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React from 'react';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -19,9 +20,9 @@ export const ApmSkeleton = ( {
 }: ApmSkeletonProps ): JSX.Element => {
 	return (
 		<div
-			className={ `wcpay-payment-element-skeleton ${
-				isHidden ? 'is-hidden' : ''
-			}` }
+			className={ clsx( 'wcpay-payment-element-skeleton', {
+				'is-hidden': isHidden,
+			} ) }
 			aria-hidden={ isHidden }
 			onTransitionEnd={ onTransitionEnd }
 		>
