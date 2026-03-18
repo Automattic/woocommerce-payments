@@ -1440,12 +1440,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
-			// Update the customer with order data asynchronously using the shutdown hook.
-			// This avoids blocking the payment response while still updating customer details.
-			// Using shutdown hook instead of ActionScheduler to reduce overhead.
+			/**
+			 * Update customer data asynchronously via shutdown hook to avoid blocking the payment response.
+			 *
+			 * The customer ID is read from user meta at execution time so that if the missing-customer
+			 * recovery flow recreates the customer, this hook uses the updated ID.
+			 */
 			add_action(
 				'shutdown',
-				function () use ( $order, $customer_id, $options ) {
+				function () use ( $user, $order, $options ) {
+					$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+					if ( null === $customer_id ) {
+						return;
+					}
+
 					$this->update_customer_with_order_data(
 						$order,
 						$customer_id,
