@@ -24,7 +24,7 @@ class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase 
 	 *
 	 * @var string
 	 */
-	private const EXPORT_ID_PATTERN = '/^[^\/\\\\%]+$/u';
+	private const EXPORT_ID_PATTERN = '/^[^\/\\\\%]+$/';
 
 	/**
 	 * @dataProvider valid_export_id_provider
@@ -48,7 +48,7 @@ class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase 
 			'UTF-8 characters'              => [ 'exporté123' ],
 			'mixed UTF-8 and ASCII'         => [ 'id-ñoño-2024' ],
 			'numeric only'                  => [ '1234567890' ],
-			'plus and equals (base64url)'   => [ 'aGVsbG8=' ],
+			'equals padding (base64)'       => [ 'aGVsbG8=' ],
 		];
 	}
 
