@@ -757,10 +757,12 @@ class MultiCurrency {
 			return;
 		}
 
-		// In cache-optimized mode, skip session/cookie for geolocation auto-switch
-		// (persist_change = false). This keeps catalog pages cacheable.
-		// Explicit user switches (persist_change = true, e.g. ?currency=XXX) still set the session.
-		if ( $this->is_cache_optimized_mode() && ! $persist_change ) {
+		// In cache-optimized mode without an active session, skip session/cookie
+		// for geolocation auto-switch (persist_change = false). This keeps
+		// catalog pages cacheable. Once a session exists (e.g. after add-to-cart),
+		// allow persistence so the geolocation currency carries forward.
+		// Explicit user switches (persist_change = true, e.g. ?currency=XXX) always set the session.
+		if ( $this->is_cache_optimized_mode() && ! $persist_change && ! $this->has_active_session() ) {
 			return;
 		}
 

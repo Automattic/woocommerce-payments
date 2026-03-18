@@ -145,6 +145,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->remove_currency_settings_mock( 'GBP', [ 'price_charm', 'price_rounding', 'manual_rate', 'exchange_rate' ] );
 		delete_option( self::ENABLED_CURRENCIES_OPTION );
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
+		delete_option( '_wcpay_feature_mc_cache_optimized' );
+		delete_option( 'wcpay_multi_currency_rendering_mode' );
 
 		parent::tear_down();
 	}
@@ -536,6 +538,53 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		// Assert: Confirm the session does not have a currency key set, and that the update notice action was not added.
 		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
 		$this->assertFalse( has_filter( 'wp_footer', [ $this->multi_currency, 'display_geolocation_currency_update_notice' ] ) );
+	}
+
+	public function test_update_selected_currency_by_geolocation_skips_persistence_in_cache_mode_without_session() {
+		// Enable cache-optimized mode and auto currency switching.
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( 'wcpay_multi_currency_rendering_mode', 'cache' );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->init_multi_currency();
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		// Without an active session, geolocation should be skipped entirely in cache mode.
+		$this->assertNull( WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+	}
+
+	public function test_update_selected_currency_by_geolocation_persists_in_cache_mode_with_active_session() {
+		// Enable cache-optimized mode and auto currency switching.
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( 'wcpay_multi_currency_rendering_mode', 'cache' );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->init_multi_currency();
+
+		// Simulate an active session (e.g. after add-to-cart) by setting the session cookie.
+		$cookie_name             = apply_filters( 'woocommerce_cookie', 'wp_woocommerce_session_' . COOKIEHASH );
+		$_COOKIE[ $cookie_name ] = 'test-session-id';
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		// With an active session, geolocation should persist the currency.
+		$this->assertSame( 'CAD', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+
+		// Clean up.
+		unset( $_COOKIE[ $cookie_name ] );
 	}
 
 	public function test_display_geolocation_currency_update_notice() {
