@@ -19,6 +19,7 @@ import {
 import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { useFingerprint } from './hooks';
+import { LoadableBlock } from 'wcpay/components/loadable';
 import PaymentProcessor from './payment-processor';
 import { getPaymentMethodTypes } from 'wcpay/checkout/utils/upe';
 
@@ -43,8 +44,6 @@ const PaymentElements = ( { api, ...props } ) => {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const currency = getUPEConfig( 'currency' ).toLowerCase();
 	const paymentMethodTypes = getPaymentMethodTypes( props.paymentMethodId );
-
-	const isReady = appearance && stripeForUPE;
 
 	useEffect( () => {
 		if ( ! appearance && containerRef.current ) {
@@ -82,7 +81,10 @@ const PaymentElements = ( { api, ...props } ) => {
 
 	return (
 		<>
-			{ isReady && (
+			<LoadableBlock
+				isLoading={ ! appearance || ! stripeForUPE }
+				numLines={ 3 }
+			>
 				<Elements
 					stripe={ stripeForUPE }
 					options={ {
@@ -117,7 +119,7 @@ const PaymentElements = ( { api, ...props } ) => {
 						{ ...props }
 					/>
 				</Elements>
-			) }
+			</LoadableBlock>
 			<div ref={ containerRef } />
 		</>
 	);
