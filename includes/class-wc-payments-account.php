@@ -2303,7 +2303,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					// We can let the code below re-create it if the server tells us onboarding is still disabled.
 					delete_transient( self::ONBOARDING_DISABLED_TRANSIENT );
 
-					$request  = Get_Account::create();
+					$request = Get_Account::create();
+					$request->set_woocommerce_store_id( get_option( 'woocommerce_store_id', '' ) );
 					$response = $request->send();
 					$account  = $response->to_array();
 

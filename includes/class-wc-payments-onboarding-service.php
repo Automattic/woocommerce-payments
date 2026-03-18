@@ -116,6 +116,7 @@ class WC_Payments_Onboarding_Service {
 	public function init_hooks() {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
+		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'add_woocommerce_store_id_to_request' ] );
 	}
 
 	/**
@@ -1414,6 +1415,18 @@ class WC_Payments_Onboarding_Service {
 			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		}
 
+		return $args;
+	}
+
+	/**
+	 * Add the WooCommerce store ID to outgoing onboarding request args.
+	 *
+	 * @param array $args The request args.
+	 *
+	 * @return array
+	 */
+	public function add_woocommerce_store_id_to_request( array $args ): array {
+		$args['woocommerce_store_id'] = get_option( 'woocommerce_store_id', '' );
 		return $args;
 	}
 
