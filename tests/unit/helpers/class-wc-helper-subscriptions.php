@@ -215,28 +215,28 @@ class WC_Subscriptions {
 	 */
 	public static $wcs_is_manual_renewal_enabled = null;
 
-	public static function set_wcs_order_contains_subscription( $function ) {
-		self::$wcs_order_contains_subscription = $function;
+	public static function set_wcs_order_contains_subscription( $callback ) {
+		self::$wcs_order_contains_subscription = $callback;
 	}
 
-	public static function set_wcs_get_subscriptions_for_order( $function ) {
-		self::$wcs_get_subscriptions_for_order = $function;
+	public static function set_wcs_get_subscriptions_for_order( $callback ) {
+		self::$wcs_get_subscriptions_for_order = $callback;
 	}
 
-	public static function set_wcs_get_subscriptions_for_renewal_order( $function ) {
-		self::$wcs_get_subscriptions_for_renewal_order = $function;
+	public static function set_wcs_get_subscriptions_for_renewal_order( $callback ) {
+		self::$wcs_get_subscriptions_for_renewal_order = $callback;
 	}
 
-	public static function set_wcs_is_subscription( $function ) {
-		self::$wcs_is_subscription = $function;
+	public static function set_wcs_is_subscription( $callback ) {
+		self::$wcs_is_subscription = $callback;
 	}
 
-	public static function set_wcs_get_subscription( $function ) {
-		self::$wcs_get_subscription = $function;
+	public static function set_wcs_get_subscription( $callback ) {
+		self::$wcs_get_subscription = $callback;
 	}
 
-	public static function set_wcs_get_subscriptions( $function ) {
-		self::$wcs_get_subscriptions = $function;
+	public static function set_wcs_get_subscriptions( $callback ) {
+		self::$wcs_get_subscriptions = $callback;
 	}
 
 	public static function wcs_cart_contains_renewal( $function ) {
