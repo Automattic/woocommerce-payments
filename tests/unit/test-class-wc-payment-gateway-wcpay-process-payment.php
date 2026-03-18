@@ -504,7 +504,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 	public function test_error_notice_added_on_failure() {
 		// Arrange: Reusable data.
-		$error_message = 'Error: No such customer: 123.';
+		$error_message = 'Error: No such payment_method: pm_123.';
 
 		// Arrange: Create an order to test with.
 		$order = WC_Helper_Order::create_order();
@@ -553,7 +553,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$notes = wc_get_order_notes( [ 'order_id' => $result_order->get_id() ] );
 		$this->assertCount( 2, $notes );
 		$this->assertEquals( 'Order status changed from Pending payment to Failed.', $notes[1]->content );
-		$this->assertStringContainsString( 'A payment of &#36;50.00 failed to complete with the following message: Error: No such customer: 123.', strip_tags( $notes[0]->content, '' ) );
+		$this->assertStringContainsString( 'A payment of &#36;50.00 failed to complete with the following message: Error: No such payment_method: pm_123.', strip_tags( $notes[0]->content, '' ) );
 	}
 
 	public function test_failure_result_returned_if_phone_number_is_invalid() {
