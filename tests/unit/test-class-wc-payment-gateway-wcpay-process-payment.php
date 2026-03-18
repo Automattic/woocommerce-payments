@@ -2048,9 +2048,6 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 				)
 			);
 
-		$mock_cart           = $this->createMock( 'WC_Cart' );
-		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id(), false );
 
 		$this->assertEquals( 'fail', $result['result'] );

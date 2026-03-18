@@ -788,9 +788,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that recreate_customer_for_user deletes the old customer ID and creates a new one.
-	 */
-	/**
 	 * Test that recreate_customer_for_user deletes the old ID and creates a new customer.
 	 */
 	public function test_recreate_customer_for_user_creates_new_customer() {
