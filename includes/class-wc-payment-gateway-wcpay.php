@@ -1449,17 +1449,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			add_action(
 				'shutdown',
 				function () use ( $user, $order, $options ) {
-					$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-					if ( null === $customer_id ) {
-						return;
-					}
+					try {
+						$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+						if ( null === $customer_id ) {
+							return;
+						}
 
-					$this->update_customer_with_order_data(
-						$order,
-						$customer_id,
-						WC_Payments::mode()->is_test(),
-						$options['is_woopay'] ?? false
-					);
+						$this->update_customer_with_order_data(
+							$order,
+							$customer_id,
+							WC_Payments::mode()->is_test(),
+							$options['is_woopay'] ?? false
+						);
+					} catch ( \Exception $e ) {
+						Logger::error( 'Failed to update customer during shutdown: ' . $e->getMessage() );
+					}
 				}
 			);
 		}
