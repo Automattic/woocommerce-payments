@@ -1411,7 +1411,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$result->set_payment_details(
 					array_merge(
 						$result->payment_details,
-						[ 'errorMessage' => wp_strip_all_tags( $error->getMessage() ) ]
+						[ 'errorMessage' => wp_strip_all_tags( WC_Payments_Utils::get_filtered_error_message( $error ) ) ]
 					)
 				);
 			}
