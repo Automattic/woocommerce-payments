@@ -63,12 +63,12 @@ const PaymentProcessor = ( {
 
 	const [ isStripeReady, setIsStripeReady ] = useState( false );
 	const [ showSkeleton, setShowSkeleton ] = useState( true );
-	const [ isSingleRowCard, setIsSingleRowCard ] = useState( false );
+	const [ cardRowCount, setCardRowCount ] = useState( 2 );
 	const isCardMethod = paymentMethodId === 'card';
 	const wrapperRef = useRef( null );
 
 	// Dynamically adjust skeleton layout and min-height based on wrapper
-	// width to match Stripe's responsive card field layout (1-row vs 2-row).
+	// width to match Stripe's responsive card field layout (1/2/3-row).
 	useEffect( () => {
 		if ( ! isCardMethod || isStripeReady || ! wrapperRef.current ) {
 			return;
@@ -77,11 +77,24 @@ const PaymentProcessor = ( {
 		const el = wrapperRef.current;
 		const observer = new ResizeObserver( ( entries ) => {
 			const width = entries[ 0 ].contentRect.width;
-			// Stripe renders card fields in a single row above ~660px,
-			// and wraps to two rows below that threshold.
-			const singleRow = width >= 660;
-			setIsSingleRowCard( singleRow );
-			el.style.minHeight = singleRow ? '70px' : '145px';
+			// Stripe renders card fields in:
+			// - 1 row above ~660px
+			// - 2 rows between ~415px and ~660px
+			// - 3 rows below ~415px
+			let rows;
+			let minHeight;
+			if ( width >= 660 ) {
+				rows = 1;
+				minHeight = '70px';
+			} else if ( width >= 415 ) {
+				rows = 2;
+				minHeight = '145px';
+			} else {
+				rows = 3;
+				minHeight = '220px';
+			}
+			setCardRowCount( rows );
+			el.style.minHeight = minHeight;
 		} );
 
 		observer.observe( el );
@@ -260,7 +273,7 @@ const PaymentProcessor = ( {
 						<CardSkeleton
 							isHidden={ isStripeReady }
 							onTransitionEnd={ handleSkeletonTransitionEnd }
-							isSingleRow={ isSingleRowCard }
+							rowCount={ cardRowCount }
 						/>
 					) : (
 						<ApmSkeleton
