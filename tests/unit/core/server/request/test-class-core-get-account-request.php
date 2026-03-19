@@ -45,6 +45,7 @@ class Get_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WC_Payments_API_Client::ACCOUNTS_API, $request->get_api() );
 		$this->assertSame( 'GET', $request->get_method() );
 	}
+
 	public function test_set_woocommerce_store_id() {
 		$request  = new Get_Account( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$store_id = 'test-store-uuid-1234';

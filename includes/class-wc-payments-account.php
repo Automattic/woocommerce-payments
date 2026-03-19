@@ -2304,7 +2304,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					delete_transient( self::ONBOARDING_DISABLED_TRANSIENT );
 
 					$request = Get_Account::create();
-					$request->set_woocommerce_store_id( get_option( 'woocommerce_store_id', '' ) );
+					$request->set_woocommerce_store_id(
+						( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) )
+							? get_option( \WC_Install::STORE_ID_OPTION, '' )
+							: ''
+					);
 					$response = $request->send();
 					$account  = $response->to_array();
 
