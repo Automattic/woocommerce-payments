@@ -150,12 +150,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	const isFeatureFlagEnabled =
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
 		false;
-	const isVisaCompliance = isVisaComplianceDispute( dispute );
 
 	// --- Data loading ---
 	useEffect( () => {
 		const fetchDispute = async () => {
 			try {
+				const isVisaCompliance = isVisaComplianceDispute( dispute );
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
@@ -461,6 +461,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const disputeReason = dispute?.reason;
 	const hasShipping = needsShipping( disputeReason, productType );
 	let panelHeadings = [ 'Purchase info', 'Review' ];
+	const isVisaCompliance = isVisaComplianceDispute( dispute );
 	if ( isVisaCompliance && isFeatureFlagEnabled ) {
 		panelHeadings = [ 'Dispute information' ];
 	} else if ( hasShipping ) {
