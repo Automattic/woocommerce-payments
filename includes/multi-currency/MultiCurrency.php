@@ -1107,7 +1107,9 @@ class MultiCurrency {
 	 * @return bool
 	 */
 	public function has_active_session(): bool {
-		return isset( WC()->session ) && WC()->session->has_session();
+		return isset( WC()->session )
+			&& is_callable( [ WC()->session, 'has_session' ] )
+			&& WC()->session->has_session();
 	}
 
 	/**
