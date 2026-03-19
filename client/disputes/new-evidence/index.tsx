@@ -155,10 +155,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		const fetchDispute = async () => {
 			try {
-				const isVisaCompliance = isVisaComplianceDispute( dispute );
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
+				const isVisaCompliance = isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
 				const suggestedProductType =
