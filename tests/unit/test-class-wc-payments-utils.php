@@ -1283,7 +1283,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
 
-		$this->assertEquals( 'The card has expired.', $result );
+		$this->assertEquals( 'Your card has expired.', $result );
 	}
 
 	/**
@@ -1304,7 +1304,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
 
-		$this->assertEquals( 'The card has insufficient funds.', $result );
+		$this->assertEquals( 'Your card has insufficient funds.', $result );
 	}
 
 	/**
@@ -1321,7 +1321,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
 
-		$this->assertEquals( 'The card was declined.', $result );
+		$this->assertEquals( 'Your card was declined.', $result );
 	}
 
 	/**

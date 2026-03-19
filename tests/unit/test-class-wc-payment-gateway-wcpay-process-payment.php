@@ -655,9 +655,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 	public function rate_limiter_error_code_provider() {
 		return [
-			'Card declined'    => [ 'The card was declined.', 'card_declined', 'Your card was declined.' ],
-			'Incorrect number' => [ 'The card number is incorrect.', 'incorrect_number', 'Your card number is incorrect.' ],
-			'Incorrect CVC'    => [ 'The card\'s security code is incorrect.', 'incorrect_cvc', 'Your card security code is incorrect.' ],
+			'Card declined'    => [ 'Your card was declined.', 'card_declined', 'Your card was declined.' ],
+			'Incorrect number' => [ 'Your card number is incorrect.', 'incorrect_number', 'Your card number is incorrect.' ],
+			'Incorrect CVC'    => [ "Your card's security code is incorrect.", 'incorrect_cvc', 'Your card security code is incorrect.' ],
 		];
 	}
 
