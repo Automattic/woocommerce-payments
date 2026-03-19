@@ -70,7 +70,7 @@ const PaymentProcessor = ( {
 	// Dynamically adjust skeleton layout and min-height based on wrapper
 	// width to match Stripe's responsive card field layout (1/2/3-row).
 	useEffect( () => {
-		if ( ! isCardMethod || isStripeReady || ! wrapperRef.current ) {
+		if ( ! isCardMethod || ! wrapperRef.current ) {
 			return;
 		}
 
@@ -102,7 +102,7 @@ const PaymentProcessor = ( {
 			observer.disconnect();
 			el.style.minHeight = '';
 		};
-	}, [ isCardMethod, isStripeReady ] );
+	}, [ isCardMethod ] );
 
 	// Remove skeleton from DOM after fade-out transition completes.
 	const handleSkeletonTransitionEnd = useCallback( () => {
@@ -265,7 +265,7 @@ const PaymentProcessor = ( {
 				ref={ wrapperRef }
 				className={ clsx(
 					'wcpay-payment-element-wrapper',
-					! isCardMethod && ! isStripeReady && 'is-apm'
+					! isCardMethod && 'is-apm'
 				) }
 			>
 				{ showSkeleton &&
