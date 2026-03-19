@@ -1,4 +1,4 @@
 Significance: minor
-Type: add
+Type: update
 
-Allow all payment methods when manual capture is enabled - non-card methods use automatic capture
+Update the manual capture settings UI with improved modal copy, Learn more link, and a warning banner on the payment methods list when manual capture is enabled
