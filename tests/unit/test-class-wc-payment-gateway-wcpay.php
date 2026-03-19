@@ -2587,9 +2587,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
 		$wp_current_filter[] = 'wcpay_track_new_order';
 
-		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
-
-		array_pop( $wp_current_filter );
+		try {
+			$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
+		} finally {
+			array_pop( $wp_current_filter );
+		}
 	}
 
 	public function test_schedule_order_tracking_skips_during_update_order_tracking_action() {
@@ -2611,9 +2613,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
 		$wp_current_filter[] = 'wcpay_track_update_order';
 
-		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
-
-		array_pop( $wp_current_filter );
+		try {
+			$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
+		} finally {
+			array_pop( $wp_current_filter );
+		}
 	}
 
 	public function test_outputs_payments_settings_screen() {
