@@ -23,6 +23,7 @@ const {
 	E2E_SLACK_TOKEN,
 	E2E_SLACK_CHANNEL_ID,
 	WC_E2E_SCREENSHOTS,
+	E2E_GH_TOKEN,
 	// Matrix context
 	E2E_WC_VERSION,
 	E2E_PHP_VERSION,
@@ -82,6 +83,62 @@ function getBuildLogUrl(): string | undefined {
 	return `${ server }/${ GITHUB_REPOSITORY }/actions/runs/${ GITHUB_RUN_ID }/attempts/${ attempt }`;
 }
 
+/**
+ * Resolve the direct URL to the current matrix job via the GitHub API.
+ * Falls back to undefined if the lookup fails for any reason.
+ */
+async function resolveJobUrl(): Promise< string | undefined > {
+	if ( ! GITHUB_ACTIONS || ! GITHUB_RUN_ID || ! E2E_GH_TOKEN ) {
+		return undefined;
+	}
+
+	try {
+		const apiUrl = `https://api.github.com/repos/${ GITHUB_REPOSITORY }/actions/runs/${ GITHUB_RUN_ID }/jobs?per_page=100`;
+		const response = await fetch( apiUrl, {
+			headers: {
+				Authorization: `token ${ E2E_GH_TOKEN }`,
+				Accept: 'application/vnd.github.v3+json',
+			},
+		} );
+
+		if ( ! response.ok ) {
+			return undefined;
+		}
+
+		const data = ( await response.json() ) as {
+			jobs: Array< { name: string; status: string; html_url: string } >;
+		};
+
+		// Match the current job by checking matrix env vars against job names.
+		// Job names follow patterns like:
+		//   "WC - latest | PHP - 8.3 | wcpay - merchant"
+		//   "WP - nightly | WC - latest | subscriptions - shopper"
+		const match = ( data.jobs || [] ).find( ( job ) => {
+			if ( job.status !== 'in_progress' ) {
+				return false;
+			}
+			const name = job.name;
+			if ( E2E_WC_VERSION && ! name.includes( E2E_WC_VERSION ) ) {
+				return false;
+			}
+			if ( E2E_PHP_VERSION && ! name.includes( E2E_PHP_VERSION ) ) {
+				return false;
+			}
+			if ( E2E_GROUP && ! name.includes( E2E_GROUP ) ) {
+				return false;
+			}
+			if ( E2E_BRANCH && ! name.includes( E2E_BRANCH ) ) {
+				return false;
+			}
+			return true;
+		} );
+
+		return match?.html_url;
+	} catch {
+		return undefined;
+	}
+}
+
 function getMatrixLabel(): string {
 	const parts: string[] = [];
 	if ( E2E_WP_VERSION && E2E_WP_VERSION !== 'latest' ) {
@@ -125,11 +182,14 @@ function stripAnsi( text: string ): string {
 
 // -- Message builders ---------------------------------------------------------
 
-function buildParentMessage( failureCount: number, done: boolean ): string {
+function buildParentMessage(
+	failureCount: number,
+	done: boolean,
+	buildLogUrl?: string
+): string {
 	const matrixLabel = getMatrixLabel();
 	const branch = getBranch();
 	const commit = getCommitShort();
-	const buildLogUrl = getBuildLogUrl();
 	const buildLogLink = buildLogUrl ? ` | <${ buildLogUrl }|Build Log>` : '';
 	const workflow = GITHUB_WORKFLOW ? ` (${ GITHUB_WORKFLOW })` : '';
 
@@ -137,13 +197,13 @@ function buildParentMessage( failureCount: number, done: boolean ): string {
 
 	if ( done ) {
 		return (
-			`:octagonal_sign: *Done — ${ failureCount } ${ noun }* | ${ matrixLabel }\n` +
+			`:red_circle: *Done — ${ failureCount } ${ noun }* | ${ matrixLabel }\n` +
 			`Branch: ${ branch } | Commit: ${ commit }${ workflow }${ buildLogLink }`
 		);
 	}
 
 	return (
-		`:red_circle: *Running* | ${ matrixLabel }\n` +
+		`:loading-dots: *Running* | ${ matrixLabel }\n` +
 		`Branch: ${ branch } | Commit: ${ commit }${ workflow }\n` +
 		`${ failureCount } ${ noun } so far${ buildLogLink }`
 	);
@@ -165,6 +225,7 @@ class SlackReporter implements Reporter {
 	private threadTs: string | undefined;
 	private failureCount = 0;
 	private enabled: boolean;
+	private buildLogUrl: string | undefined;
 
 	constructor() {
 		this.enabled = isEnabled();
@@ -172,6 +233,7 @@ class SlackReporter implements Reporter {
 			E2E_SLACK_TOKEN || '',
 			E2E_SLACK_CHANNEL_ID || ''
 		);
+		this.buildLogUrl = getBuildLogUrl();
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -197,17 +259,18 @@ class SlackReporter implements Reporter {
 
 		this.failureCount++;
 
-		// First failure: create the parent thread message.
+		// First failure: resolve job URL and create the parent thread message.
 		if ( ! this.threadTs ) {
 			await this.client.joinChannel();
+			this.buildLogUrl = ( await resolveJobUrl() ) ?? this.buildLogUrl;
 			this.threadTs = await this.client.postMessage(
-				buildParentMessage( this.failureCount, false )
+				buildParentMessage( this.failureCount, false, this.buildLogUrl )
 			);
 		} else {
 			// Update the parent message with the new count.
 			await this.client.updateMessage(
 				this.threadTs,
-				buildParentMessage( this.failureCount, false )
+				buildParentMessage( this.failureCount, false, this.buildLogUrl )
 			);
 		}
 
@@ -246,7 +309,7 @@ class SlackReporter implements Reporter {
 		// Final update: mark the parent message as done.
 		await this.client.updateMessage(
 			this.threadTs,
-			buildParentMessage( this.failureCount, true )
+			buildParentMessage( this.failureCount, true, this.buildLogUrl )
 		);
 	}
 }
