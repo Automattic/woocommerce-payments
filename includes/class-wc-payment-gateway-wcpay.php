@@ -59,6 +59,7 @@ use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
  * Gateway class for WooPayments
@@ -2219,14 +2220,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_method_types( $payment_information ): array {
-		// For Express Checkout payments, use the payment method types sent by the client.
-		// These must match the types used to initialize Stripe Elements on the frontend.
+		// For Express Checkout payments, validate the payment method types sent by the client
+		// against the server-authoritative list of enabled express payment methods.
 		// phpcs:ignore WordPress.Security.NonceVerification
 		if ( ! empty( $_POST['wcpay-express-payment-method-types'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
 			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $_POST['wcpay-express-payment-method-types'] ) ), true );
 			if ( is_array( $express_payment_method_types ) && ! empty( $express_payment_method_types ) ) {
-				return $express_payment_method_types;
+				$allowed   = $this->get_allowed_express_payment_method_types();
+				$validated = array_values( array_intersect( $express_payment_method_types, $allowed ) );
+
+				$rejected = array_diff( $express_payment_method_types, $allowed );
+				if ( ! empty( $rejected ) ) {
+					$logger = wc_get_logger();
+					$logger->warning(
+						sprintf(
+							'Express checkout payment method types rejected during validation: %s.',
+							implode( ', ', $rejected )
+						),
+						[ 'source' => 'woocommerce-payments' ]
+					);
+				}
+
+				if ( ! empty( $validated ) ) {
+					return $validated;
+				}
 			}
 		}
 
@@ -4620,6 +4638,35 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Original logic: single non-card payment method.
 		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
+	}
+
+	/**
+	 * Get the Stripe PaymentMethod types allowed for express checkout payments.
+	 *
+	 * Dynamically built from the payment method definitions registry by filtering
+	 * for EXPRESS_CHECKOUT capability and checking gateway availability.
+	 *
+	 * @return string[] Allowed Stripe PaymentMethod type strings (e.g., ['card', 'amazon_pay']).
+	 */
+	private function get_allowed_express_payment_method_types(): array {
+		$registry    = PaymentMethodDefinitionRegistry::instance();
+		$definitions = $registry->get_all_payment_method_definitions();
+		$allowed     = [];
+
+		foreach ( $definitions as $definition_class ) {
+			if ( ! PaymentMethodUtils::is_express_checkout( $definition_class ) ) {
+				continue;
+			}
+
+			$gateway = \WC_Payments::get_payment_gateway_by_id( $definition_class::get_id() );
+			if ( ! $gateway || ! $gateway->is_available_for_express_checkout() ) {
+				continue;
+			}
+
+			$allowed[] = $definition_class::get_stripe_payment_method_type();
+		}
+
+		return array_values( array_unique( $allowed ) );
 	}
 
 	/**

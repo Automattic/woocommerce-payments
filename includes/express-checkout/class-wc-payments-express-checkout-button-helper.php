@@ -335,14 +335,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if Amazon Pay can be used in Express Checkout.
+	 * Checks if Amazon Pay can be used as an express checkout button.
 	 *
 	 * This validates:
-	 * - Feature flag is enabled
-	 * - Gateway exists and is enabled
-	 * - Account has Amazon Pay fees configured (indicates availability)
-	 * - Tax settings are compatible
-	 * - Currency is supported for the account country
+	 * - Express checkout is not displayed in the payment methods list
+	 * - Gateway exists and is available for express checkout
+	 *   (feature flag is enforced at registration time — see PaymentMethodDefinitionRegistry::init())
+	 * - Tax settings are compatible (Amazon Pay doesn't support taxes based on billing address)
 	 *
 	 * @return boolean
 	 */
@@ -353,16 +352,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		if ( ! WC_Payments_Features::is_amazon_pay_enabled() ) {
-			return false;
-		}
-
+		// Check gateway-level availability. Feature flag gating is handled by the
+		// registry — AmazonPayDefinition is only registered in
+		// PaymentMethodDefinitionRegistry::init() when is_amazon_pay_enabled() is true.
 		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
-		if ( ! $amazon_pay_gateway ) {
-			return false;
-		}
-
-		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
+		if ( ! $amazon_pay_gateway || ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
 			return false;
 		}
 
