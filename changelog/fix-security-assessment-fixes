@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Handle duplicate KYC session initialization gracefully
