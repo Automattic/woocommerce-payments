@@ -18,6 +18,13 @@ test.describe( 'Merchant deposits', () => {
 			.locator( '.woocommerce-table__table.is-loading' )
 			.waitFor( { state: 'hidden' } );
 
+		expect( true ).toBe( false ); // TEMP: force failure to test Slack reporter
+
+		// Wait for the deposits table to load.
+		await page
+			.locator( '.woocommerce-table__table.is-loading' )
+			.waitFor( { state: 'hidden' } );
+
 		expect(
 			page.getByRole( 'heading', {
 				name: 'Payout history',

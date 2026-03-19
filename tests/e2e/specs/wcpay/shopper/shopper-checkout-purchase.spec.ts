@@ -48,6 +48,7 @@ test.describe( 'Successful purchase', () => {
 			test( 'using a basic card', { tag: '@critical' }, async () => {
 				await shopper.fillCardDetails( shopperPage );
 				await shopper.placeOrder( shopperPage );
+				expect( true ).toBe( false ); // TEMP: force failure to test Slack reporter
 
 				await expect(
 					shopperPage.getByRole( 'heading', {
