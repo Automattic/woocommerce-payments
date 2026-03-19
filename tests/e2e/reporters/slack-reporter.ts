@@ -66,19 +66,43 @@ function getBranch(): string {
 	return 'unknown';
 }
 
-function getCommitShort(): string {
-	if ( ! GITHUB_ACTIONS ) {
-		return 'latest';
-	}
-	return ( GITHUB_SHA || 'unknown' ).substring( 0, 7 );
+function makeCommitUrl( sha: string ): string {
+	const server = GITHUB_SERVER_URL || 'https://github.com';
+	return `${ server }/${ GITHUB_REPOSITORY }/commit/${ sha }`;
 }
 
-function getCommitUrl(): string | undefined {
-	if ( ! GITHUB_ACTIONS || ! GITHUB_SHA ) {
+/**
+ * For PRs, GITHUB_SHA is an ephemeral merge commit. Resolve the real
+ * PR head SHA via the GitHub API. Returns undefined on failure.
+ */
+async function resolveHeadSha(): Promise< string | undefined > {
+	if ( ! GITHUB_ACTIONS || ! E2E_GH_TOKEN ) {
 		return undefined;
 	}
-	const server = GITHUB_SERVER_URL || 'https://github.com';
-	return `${ server }/${ GITHUB_REPOSITORY }/commit/${ GITHUB_SHA }`;
+	const ref = GITHUB_REF || '';
+	if ( ! ref.startsWith( 'refs/pull/' ) ) {
+		return undefined;
+	}
+
+	const prNumber = ref.split( '/' )[ 2 ];
+	try {
+		const apiUrl = `https://api.github.com/repos/${ GITHUB_REPOSITORY }/pulls/${ prNumber }`;
+		const response = await fetch( apiUrl, {
+			headers: {
+				Authorization: `token ${ E2E_GH_TOKEN }`,
+				Accept: 'application/vnd.github.v3+json',
+			},
+		} );
+		if ( ! response.ok ) {
+			return undefined;
+		}
+		const data = ( await response.json() ) as {
+			head: { sha: string };
+		};
+		return data.head?.sha;
+	} catch {
+		return undefined;
+	}
 }
 
 function getBuildLogUrl(): string | undefined {
@@ -192,15 +216,16 @@ function stripAnsi( text: string ): string {
 function buildParentMessage(
 	failureCount: number,
 	done: boolean,
-	buildLogUrl?: string
+	buildLogUrl?: string,
+	commitSha?: string
 ): string {
 	const matrixLabel = getMatrixLabel();
 	const branch = getBranch();
-	const commit = getCommitShort();
-	const commitUrl = getCommitUrl();
-	const commitLink = commitUrl
-		? `<${ commitUrl }|\`${ commit }\`>`
-		: `\`${ commit }\``;
+	const sha = commitSha || GITHUB_SHA || '';
+	const shortSha = sha.substring( 0, 7 ) || 'unknown';
+	const commitLink = sha
+		? `<${ makeCommitUrl( sha ) }|\`${ shortSha }\`>`
+		: `\`${ shortSha }\``;
 	const jobTitle = buildLogUrl
 		? `<${ buildLogUrl }|${ matrixLabel }>`
 		: matrixLabel;
@@ -238,6 +263,7 @@ class SlackReporter implements Reporter {
 	private failureCount = 0;
 	private enabled: boolean;
 	private buildLogUrl: string | undefined;
+	private commitSha: string | undefined;
 
 	constructor() {
 		this.enabled = isEnabled();
@@ -246,6 +272,7 @@ class SlackReporter implements Reporter {
 			E2E_SLACK_CHANNEL_ID || ''
 		);
 		this.buildLogUrl = getBuildLogUrl();
+		this.commitSha = GITHUB_SHA || undefined;
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -271,18 +298,33 @@ class SlackReporter implements Reporter {
 
 		this.failureCount++;
 
-		// First failure: resolve job URL and create the parent thread message.
+		// First failure: resolve job URL + real commit SHA, create the parent thread.
 		if ( ! this.threadTs ) {
 			await this.client.joinChannel();
-			this.buildLogUrl = ( await resolveJobUrl() ) ?? this.buildLogUrl;
+			const [ jobUrl, headSha ] = await Promise.all( [
+				resolveJobUrl(),
+				resolveHeadSha(),
+			] );
+			this.buildLogUrl = jobUrl ?? this.buildLogUrl;
+			this.commitSha = headSha ?? this.commitSha;
 			this.threadTs = await this.client.postMessage(
-				buildParentMessage( this.failureCount, false, this.buildLogUrl )
+				buildParentMessage(
+					this.failureCount,
+					false,
+					this.buildLogUrl,
+					this.commitSha
+				)
 			);
 		} else {
 			// Update the parent message with the new count.
 			await this.client.updateMessage(
 				this.threadTs,
-				buildParentMessage( this.failureCount, false, this.buildLogUrl )
+				buildParentMessage(
+					this.failureCount,
+					false,
+					this.buildLogUrl,
+					this.commitSha
+				)
 			);
 		}
 
@@ -321,7 +363,12 @@ class SlackReporter implements Reporter {
 		// Final update: mark the parent message as done.
 		await this.client.updateMessage(
 			this.threadTs,
-			buildParentMessage( this.failureCount, true, this.buildLogUrl )
+			buildParentMessage(
+				this.failureCount,
+				true,
+				this.buildLogUrl,
+				this.commitSha
+			)
 		);
 	}
 }
