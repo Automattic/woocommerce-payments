@@ -39,7 +39,6 @@ const {
 	GITHUB_REPOSITORY,
 	GITHUB_RUN_ID,
 	GITHUB_RUN_ATTEMPT,
-	GITHUB_WORKFLOW,
 } = process.env;
 
 // -- Helpers ------------------------------------------------------------------
@@ -72,6 +71,14 @@ function getCommitShort(): string {
 		return 'latest';
 	}
 	return ( GITHUB_SHA || 'unknown' ).substring( 0, 7 );
+}
+
+function getCommitUrl(): string | undefined {
+	if ( ! GITHUB_ACTIONS || ! GITHUB_SHA ) {
+		return undefined;
+	}
+	const server = GITHUB_SERVER_URL || 'https://github.com';
+	return `${ server }/${ GITHUB_REPOSITORY }/commit/${ GITHUB_SHA }`;
 }
 
 function getBuildLogUrl(): string | undefined {
@@ -190,22 +197,27 @@ function buildParentMessage(
 	const matrixLabel = getMatrixLabel();
 	const branch = getBranch();
 	const commit = getCommitShort();
-	const buildLogLink = buildLogUrl ? ` | <${ buildLogUrl }|Build Log>` : '';
-	const workflow = GITHUB_WORKFLOW ? ` (${ GITHUB_WORKFLOW })` : '';
+	const commitUrl = getCommitUrl();
+	const commitLink = commitUrl
+		? `<${ commitUrl }|\`${ commit }\`>`
+		: `\`${ commit }\``;
+	const jobTitle = buildLogUrl
+		? `<${ buildLogUrl }|${ matrixLabel }>`
+		: matrixLabel;
 
 	const noun = failureCount === 1 ? 'failure' : 'failures';
 
 	if ( done ) {
 		return (
-			`:red_circle: *Done — ${ failureCount } ${ noun }* | ${ matrixLabel }\n` +
-			`Branch: ${ branch } | Commit: ${ commit }${ workflow }${ buildLogLink }`
+			`:red_circle: *Done — ${ failureCount } ${ noun }* | ${ jobTitle }\n` +
+			`\`${ branch }\` | ${ commitLink }`
 		);
 	}
 
 	return (
-		`:loading-dots: *Running* | ${ matrixLabel }\n` +
-		`Branch: ${ branch } | Commit: ${ commit }${ workflow }\n` +
-		`${ failureCount } ${ noun } so far${ buildLogLink }`
+		`:loading-dots: *Running* | ${ jobTitle }\n` +
+		`\`${ branch }\` | ${ commitLink }\n` +
+		`${ failureCount } ${ noun } so far`
 	);
 }
 
