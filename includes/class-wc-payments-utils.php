@@ -697,9 +697,17 @@ class WC_Payments_Utils {
 			$decline_code       = $e->get_decline_code();
 
 			if ( ! empty( $decline_code ) && isset( $localized_messages[ $decline_code ] ) ) {
-				$error_message = $localized_messages[ $decline_code ];
+				$error_message = sprintf(
+					// translators: This is an error API response.
+					_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+					$localized_messages[ $decline_code ]
+				);
 			} elseif ( isset( $localized_messages[ $error_code ] ) ) {
-				$error_message = $localized_messages[ $error_code ];
+				$error_message = sprintf(
+					// translators: This is an error API response.
+					_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+					$localized_messages[ $error_code ]
+				);
 			}
 		}
 
