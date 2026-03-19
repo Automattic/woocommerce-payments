@@ -8,8 +8,12 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { CheckboxControl, Button } from '@wordpress/components';
-import { useManualCapture, useStripeBilling } from 'wcpay/data';
+import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
+import {
+	useManualCapture,
+	useCardPresentEligible,
+	useStripeBilling,
+} from 'wcpay/data';
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -21,6 +25,7 @@ const ManualCaptureControl = (): JSX.Element => {
 		setIsManualCaptureEnabled,
 	] = useManualCapture();
 	const [ isStripeBillingEnabled ] = useStripeBilling();
+	const [ isCardPresentEligible ] = useCardPresentEligible();
 
 	const [
 		isManualDepositConfirmationModalOpen,
@@ -53,10 +58,29 @@ const ManualCaptureControl = (): JSX.Element => {
 				onChange={ handleCheckboxToggle }
 				data-testid={ 'capture-later-checkbox' }
 				label={ __( 'Enable manual capture', 'woocommerce-payments' ) }
-				help={ __(
-					'Issue an authorization on checkout, and capture later',
-					'woocommerce-payments'
-				) }
+				help={
+					<span>
+						{ __(
+							'Issue an authorization on checkout, and capture later',
+							'woocommerce-payments'
+						) }
+						{ isCardPresentEligible
+							? interpolateComponents( {
+									mixedString: __(
+										/** translators: {{a}}: opening and closing anchor tags. The white space at the beginning of the sentence is intentional. */
+										' The setting is not applied to {{a}}In-Person Payments{{/a}} (please note that In-Person Payments should be captured within 2 days of authorization).',
+										'woocommerce-payments'
+									),
+									components: {
+										a: (
+											// @ts-expect-error: children is provided when interpolating the component
+											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
+										),
+									},
+							  } )
+							: '' }
+					</span>
+				}
 				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (

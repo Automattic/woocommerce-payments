@@ -9,10 +9,15 @@ import { userEvent as user } from 'jest-utils/user-event-timers';
  * Internal dependencies
  */
 import ManualCaptureControl from '../manual-capture-control';
-import { useManualCapture, useStripeBilling } from 'wcpay/data';
+import {
+	useManualCapture,
+	useCardPresentEligible,
+	useStripeBilling,
+} from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useManualCapture: jest.fn(),
+	useCardPresentEligible: jest.fn(),
 	useStripeBilling: jest.fn(),
 } ) );
 
@@ -25,6 +30,7 @@ describe( 'ManualCaptureControl', () => {
 			false,
 			mockSetIsManualCaptureEnabled,
 		] );
+		( useCardPresentEligible as jest.Mock ).mockReturnValue( [ false ] );
 		( useStripeBilling as jest.Mock ).mockReturnValue( [
 			false,
 			jest.fn(),

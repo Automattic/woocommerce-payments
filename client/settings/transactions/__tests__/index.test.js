@@ -135,13 +135,31 @@ describe( 'Settings - Transactions', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'does not display In-Person Payments notice in help text', async () => {
+	it( 'display ipp payment notice', async () => {
 		useCardPresentEligible.mockReturnValue( [ true ] );
 
 		render( <Transactions /> );
 
 		expect(
+			screen.getByRole( 'link', { name: /In-Person Payments/i } )
+		).toBeInTheDocument();
+
+		expect(
+			screen.getByText( new RegExp( 'The setting is not applied to' ) )
+		).toBeInTheDocument();
+	} );
+
+	it( "shouldn't display ipp payment notice when it is not eligible for card present", async () => {
+		useCardPresentEligible.mockReturnValue( [ false ] );
+
+		render( <Transactions /> );
+
+		expect(
 			screen.queryByRole( 'link', { name: /In-Person Payments/i } )
+		).not.toBeInTheDocument();
+
+		expect(
+			screen.queryByText( new RegExp( 'The setting is not applied to' ) )
 		).not.toBeInTheDocument();
 	} );
 
