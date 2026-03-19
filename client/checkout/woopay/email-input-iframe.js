@@ -6,18 +6,14 @@ import { getConfig } from 'wcpay/utils/checkout';
 import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from 'utils/express-checkout';
-import { getAppearance } from 'checkout/upe-styles';
 import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
-	isSupportedThemeEntrypoint,
-	isShortcodeCheckout,
 } from './utils';
-import { getAppearanceType } from '../utils';
-import { maybePersistWoopayAppearance } from 'wcpay/checkout/woopay/appearance/persist';
+import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -188,20 +184,7 @@ export const handleWooPayEmailInput = async (
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
-		const appearanceType = getAppearanceType();
-		let appearance = null;
-		if (
-			isSupportedThemeEntrypoint( appearanceType ) &&
-			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-		) {
-			// Prefer server-computed appearance (available for themes with theme.json).
-			// Fall back to DOM extraction on checkout for classic themes.
-			appearance = getConfig( 'woopayAppearance' );
-			if ( ! appearance && isShortcodeCheckout() ) {
-				appearance = getAppearance( appearanceType, true );
-				maybePersistWoopayAppearance( appearance );
-			}
-		}
+		const appearance = resolveWoopayAppearance();
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(

@@ -21,14 +21,10 @@ import interpolateComponents from '@automattic/interpolate-components';
 import {
 	appendRedirectionParams,
 	deleteSkipWooPayCookie,
-	isSupportedThemeEntrypoint,
-	isShortcodeCheckout,
 } from 'wcpay/checkout/woopay/utils';
 import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
-import { getAppearanceType } from 'wcpay/checkout/utils';
-import { maybePersistWoopayAppearance } from 'wcpay/checkout/woopay/appearance/persist';
+import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -224,20 +220,7 @@ export const WoopayExpressCheckoutButton = ( {
 			isLoadingRef.current = true;
 			setIsLoading( true );
 
-			const appearanceType = getAppearanceType();
-			let appearance = null;
-			if (
-				isSupportedThemeEntrypoint( appearanceType ) &&
-				getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-			) {
-				// Prefer server-computed appearance (available for themes with theme.json).
-				// Fall back to DOM extraction on checkout for classic themes.
-				appearance = getConfig( 'woopayAppearance' );
-				if ( ! appearance && isShortcodeCheckout() ) {
-					appearance = getAppearance( appearanceType, true );
-					maybePersistWoopayAppearance( appearance );
-				}
-			}
+			const appearance = resolveWoopayAppearance();
 
 			if ( isProductPage ) {
 				const productData = getProductDataRef.current();
