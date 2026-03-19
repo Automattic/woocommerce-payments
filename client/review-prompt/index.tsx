@@ -94,7 +94,11 @@ const ReviewPrompt: React.FC = () => {
 			eventProps
 		);
 
-		const windowOpened = window.open( reviewUrl, '_blank' );
+		const windowOpened = window.open(
+			reviewUrl,
+			'_blank',
+			'noopener,noreferrer'
+		);
 		if ( ! windowOpened ) {
 			// Make sure the request completes before redirecting away.
 			await dismissPrompt();
