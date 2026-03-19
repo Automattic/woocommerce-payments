@@ -1426,9 +1426,10 @@ class WC_Payments_Onboarding_Service {
 	 * @return array
 	 */
 	public function add_woocommerce_store_id_to_request( array $args ): array {
-		$args['woocommerce_store_id'] = ( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) )
-			? get_option( \WC_Install::STORE_ID_OPTION, '' )
-			: '';
+		$store_id_key                 = ( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) )
+			? \WC_Install::STORE_ID_OPTION
+			: 'woocommerce_store_id';
+		$args['woocommerce_store_id'] = get_option( $store_id_key, '' );
 		return $args;
 	}
 
