@@ -288,9 +288,7 @@ const PaymentProcessor = ( {
 					) }
 					onReady={ handleStripeReady }
 					onLoadError={ setHasLoadError }
-					className={ clsx( 'wcpay-payment-element', {
-						'is-ready': isStripeReady,
-					} ) }
+					className="wcpay-payment-element"
 				/>
 			</div>
 		</>

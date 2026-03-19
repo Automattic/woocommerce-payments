@@ -32,12 +32,6 @@
 
 .wcpay-payment-element {
 	margin-bottom: 1rem;
-	opacity: 0;
-	transition: opacity 300ms ease-out;
-
-	&.is-ready {
-		opacity: 1;
-	}
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
