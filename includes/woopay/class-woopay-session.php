@@ -1202,16 +1202,16 @@ class WooPay_Session {
 	public static function ajax_admin_set_woopay_appearance() {
 		check_ajax_referer( 'wcpay_admin_woopay_appearance_nonce' );
 
-		if ( ! \WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			wp_send_json_error(
-				__( 'Global theme support is not enabled.', 'woocommerce-payments' ),
+				__( 'You aren\'t authorized to do that.', 'woocommerce-payments' ),
 				403
 			);
 		}
 
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! \WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
 			wp_send_json_error(
-				__( 'You aren\'t authorized to do that.', 'woocommerce-payments' ),
+				__( 'This action is not available.', 'woocommerce-payments' ),
 				403
 			);
 		}
@@ -1253,18 +1253,18 @@ class WooPay_Session {
 	 * @return void
 	 */
 	public static function ajax_shopper_set_woopay_appearance() {
-		if ( ! \WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
-			wp_send_json_error(
-				__( 'Global theme support is not enabled.', 'woocommerce-payments' ),
-				403
-			);
-		}
-
 		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
 
 		if ( ! $is_nonce_valid ) {
 			wp_send_json_error(
 				__( 'You aren\'t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( ! \WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
+			wp_send_json_error(
+				__( 'This action is not available.', 'woocommerce-payments' ),
 				403
 			);
 		}
