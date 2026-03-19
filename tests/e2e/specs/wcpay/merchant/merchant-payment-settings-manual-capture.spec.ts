@@ -24,7 +24,7 @@ test.describe(
 		} ) => {
 			await expect(
 				page.getByText(
-					'Payments must be captured within 7 days or the authorization will expire and money will be returned to the shopper'
+					/must be captured on the order details screen within 7 days of authorization/i
 				)
 			).toBeVisible( {
 				timeout: 10000,
@@ -56,7 +56,7 @@ test.describe(
 			).toBeDisabled();
 			await expect(
 				page.getByText(
-					'Bancontact is not available to your customers when the "manual capture" setting is enabled.'
+					/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i
 				)
 			).toBeVisible();
 		} );
