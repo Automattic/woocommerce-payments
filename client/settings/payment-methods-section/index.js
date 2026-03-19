@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card } from '@wordpress/components';
 
@@ -38,6 +38,7 @@ const PaymentMethodsDescription = () => (
 const PaymentMethodsSection = () => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 	const [ isManualCaptureEnabled ] = useManualCapture();
+	const [ isNoticeDismissed, setIsNoticeDismissed ] = useState( false );
 
 	const availableNonBuyNowPayLaterMethodIds = availablePaymentMethodIds
 		.filter(
@@ -76,12 +77,15 @@ const PaymentMethodsSection = () => {
 									) }
 								</h3>
 							</div>
-							{ isManualCaptureEnabled && (
+							{ isManualCaptureEnabled && ! isNoticeDismissed && (
 								<BannerNotice
 									status="warning"
 									isDismissible={ true }
 									icon={ true }
 									className="manual-capture-notice"
+									onRemove={ () =>
+										setIsNoticeDismissed( true )
+									}
 								>
 									{ __(
 										'Manual capture is enabled, so any payment methods that ' +

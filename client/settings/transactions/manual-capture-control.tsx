@@ -60,10 +60,21 @@ const ManualCaptureControl = (): JSX.Element => {
 				label={ __( 'Enable manual capture', 'woocommerce-payments' ) }
 				help={
 					<span>
-						{ __(
-							'Issue an authorization on checkout, and capture later',
-							'woocommerce-payments'
-						) }
+						{ interpolateComponents( {
+							mixedString: __(
+								'Issue an authorization on checkout and capture later. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
+								'woocommerce-payments'
+							),
+							components: {
+								learnMoreLink: (
+									<a
+										href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/"
+										target="_blank"
+										rel="noreferrer"
+									/>
+								),
+							},
+						} ) }
 						{ isCardPresentEligible
 							? interpolateComponents( {
 									mixedString: __(
@@ -135,7 +146,6 @@ const ManualCaptureControl = (): JSX.Element => {
 							),
 							components: {
 								learnMoreLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
 									<a
 										href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/"
 										target="_blank"

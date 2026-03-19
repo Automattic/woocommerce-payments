@@ -44,13 +44,20 @@ describe( 'ManualCaptureControl', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'shows simplified help text', () => {
+	it( 'shows simplified help text with Learn more link', () => {
 		render( <ManualCaptureControl /> );
 		expect(
 			screen.getByText(
-				'Issue an authorization on checkout, and capture later'
+				/Issue an authorization on checkout and capture later/i
 			)
 		).toBeInTheDocument();
+		const learnMoreLinks = screen.getAllByRole( 'link', {
+			name: /Learn more/i,
+		} );
+		expect( learnMoreLinks[ 0 ] ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/'
+		);
 	} );
 
 	it( 'opens modal when enabling manual capture', async () => {

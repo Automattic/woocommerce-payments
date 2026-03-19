@@ -116,11 +116,15 @@
 		position: fixed;
 	}
 
+	.payment-methods-list .payment-method__list-item:first-child {
+		box-shadow: inset 0 1px 0 0 #e8eaeb, inset 0 -1px 0 #e8eaeb;
+	}
+
 	// Manual capture notice styling to match Figma design
 	.manual-capture-notice.wcpay-banner-notice {
 		background-color: #fcf9e8; // Light yellow background
 		border-left: none;
-		margin: $gap $gap 0 $gap;
+		margin: $gap $gap $gap-large $gap;
 		padding: $gap;
 		border-radius: 2px;
 		align-items: center;
