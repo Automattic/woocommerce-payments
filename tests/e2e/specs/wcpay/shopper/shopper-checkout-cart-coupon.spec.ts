@@ -55,8 +55,6 @@ test.describe(
 		test( 'Checkout with a free coupon', async ( { page } ) => {
 			await goToCheckout( page );
 			await fillBillingAddress( page, config.addresses.customer.billing );
-			expect( true ).toBe( false ); // TEMP: force failure to test Slack reporter
-			await fillBillingAddress( page, config.addresses.customer.billing );
 			await placeOrder( page );
 			await page.waitForURL( /\/order-received\//, {
 				waitUntil: 'load',
