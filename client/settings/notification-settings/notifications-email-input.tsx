@@ -46,8 +46,8 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 
 	// Capture the initial email value once it loads from the server.
 	useEffect( () => {
-		if ( accountCommunicationsEmail && initialEmail === null ) {
-			setInitialEmail( accountCommunicationsEmail );
+		if ( initialEmail === null ) {
+			setInitialEmail( accountCommunicationsEmail ?? '' );
 		}
 	}, [ accountCommunicationsEmail, initialEmail ] );
 
