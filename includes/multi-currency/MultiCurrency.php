@@ -311,7 +311,7 @@ class MultiCurrency {
 			$this->async_renderer->init_hooks();
 		}
 
-		if ( ! $this->is_cache_optimized_mode() || $this->has_active_session() || $has_pending_currency_switch ) {
+		if ( ! $this->is_cache_optimized_mode() || $this->has_active_session() || $has_pending_currency_switch || Utils::is_store_api_request() ) {
 			$this->frontend_prices->init_hooks();
 			$this->frontend_currencies->init_hooks();
 		}
@@ -757,12 +757,13 @@ class MultiCurrency {
 			return;
 		}
 
-		// In cache-optimized mode without an active session, skip session/cookie
-		// for geolocation auto-switch (persist_change = false). This keeps
-		// catalog pages cacheable. Once a session exists (e.g. after add-to-cart),
-		// allow persistence so the geolocation currency carries forward.
+		// In cache-optimized mode without an active session or Store API context,
+		// skip session/cookie for geolocation auto-switch (persist_change = false).
+		// This keeps catalog pages cacheable. Allow persistence when a session
+		// exists (e.g. after add-to-cart) or during Store API requests (which use
+		// Cart-Token sessions that bypass has_active_session).
 		// Explicit user switches (persist_change = true, e.g. ?currency=XXX) always set the session.
-		if ( $this->is_cache_optimized_mode() && ! $persist_change && ! $this->has_active_session() ) {
+		if ( $this->is_cache_optimized_mode() && ! $persist_change && ! $this->has_active_session() && ! Utils::is_store_api_request() ) {
 			return;
 		}
 
@@ -821,9 +822,11 @@ class MultiCurrency {
 			return;
 		}
 
-		// In cache-optimized mode, currency switching is handled client-side
-		// via the REST API. Skip server-side geolocation and notice.
-		if ( $this->is_cache_optimized_mode() && ! $this->has_active_session() ) {
+		// In cache-optimized mode without a session or Store API context,
+		// currency switching is handled client-side via the async renderer.
+		// Store API requests need server-side geolocation because they return
+		// prices directly (Cart-Token sessions bypass has_active_session).
+		if ( $this->is_cache_optimized_mode() && ! $this->has_active_session() && ! Utils::is_store_api_request() ) {
 			return;
 		}
 

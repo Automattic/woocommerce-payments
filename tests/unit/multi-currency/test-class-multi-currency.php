@@ -587,6 +587,33 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		unset( $_COOKIE[ $cookie_name ] );
 	}
 
+	public function test_update_selected_currency_by_geolocation_persists_in_cache_mode_for_store_api_request() {
+		// Enable cache-optimized mode and auto currency switching.
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+		update_option( 'wcpay_multi_currency_rendering_mode', 'cache' );
+		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
+		$this->init_multi_currency();
+
+		// Simulate a Store API request (no session cookie, but Cart-Token based).
+		$original_request_uri   = $_SERVER['REQUEST_URI'] ?? '';
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc/store/v1/batch';
+
+		add_filter(
+			'woocommerce_geolocate_ip',
+			function () {
+				return 'CA';
+			}
+		);
+
+		$this->multi_currency->update_selected_currency_by_geolocation();
+
+		// Store API requests should persist geolocation currency even without a cookie session.
+		$this->assertSame( 'CAD', WC()->session->get( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY ) );
+
+		// Clean up.
+		$_SERVER['REQUEST_URI'] = $original_request_uri;
+	}
+
 	public function test_display_geolocation_currency_update_notice() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'CAD' );
 		add_filter(
