@@ -1712,29 +1712,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$request->set_mandate_data( $this->get_mandate_data() );
 				}
 
-				try {
-					/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-					$intent = $request->send();
-				} catch ( API_Exception $e ) {
-					if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
-						throw $e;
-					}
-
-					// Synchronous recovery for missing customer ID.
-					// This handles cases where the customer ID doesn't exist (e.g., after site migration).
-					Logger::info( 'Customer not found during payment intent creation. Recreating customer and retrying payment.' );
-
-					// Recreate the customer synchronously.
-					$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
-					$customer_id   = $this->customer_service->recreate_customer_for_user( $user, $customer_data );
-
-					// Update order meta with the new customer ID.
-					$this->order_service->set_customer_id_for_order( $order, $customer_id );
-
-					// Retry the payment intent creation with the new customer ID.
-					$request->set_customer( $customer_id );
-					$intent = $request->send();
-				}
+				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id );
 			}
 
 			$intent_id     = $intent->get_id();
@@ -1824,7 +1803,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $request->send();
+				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id );
 			}
 
 			$intent_id     = $intent->get_id();
@@ -4753,6 +4732,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return null;
 	}
 
+	/**
+	 * Sends an intent request with automatic recovery for missing Stripe customers.
+	 *
+	 * If the request fails with a `resource_missing` error referencing a customer,
+	 * the customer is recreated and the request is retried.
+	 *
+	 * @param mixed    $request     The intent request object (payment or setup).
+	 * @param WC_Order $order       The order being processed.
+	 * @param WP_User  $user        The user associated with the order.
+	 * @param string   $customer_id The current Stripe customer ID (updated by reference on recovery).
+	 *
+	 * @return mixed The intent response.
+	 * @throws API_Exception If the error is not a missing customer error.
+	 */
+	private function send_intent_request_with_customer_recovery( $request, WC_Order $order, WP_User $user, string &$customer_id ) {
+		try {
+			return $request->send();
+		} catch ( API_Exception $e ) {
+			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
+				throw $e;
+			}
+
+			Logger::info( 'Customer not found during intent creation. Recreating customer and retrying.' );
+
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+			$customer_id   = $this->customer_service->recreate_customer_for_user( $user, $customer_data );
+
+			$this->order_service->set_customer_id_for_order( $order, $customer_id );
+
+			$request->set_customer( $customer_id );
+			return $request->send();
+		}
+	}
 
 	/**
 	 * Modifies the create intent parameters when processing a payment.

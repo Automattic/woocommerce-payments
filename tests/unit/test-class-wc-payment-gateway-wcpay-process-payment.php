@@ -2044,6 +2044,61 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that a missing customer error triggers recovery for setup intents ($0 orders).
+	 */
+	public function test_missing_customer_recovery_for_setup_intent() {
+		$order = $this->create_mock_order( 0 );
+		$order->method( 'get_currency' )->willReturn( 'USD' );
+		$order->method( 'get_payment_tokens' )->willReturn( [] );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'recreate_customer_for_user' )
+			->willReturn( 'cus_new' );
+
+		$intent  = WC_Helper_Intention::create_setup_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Setup_Intention::class, 2 );
+		$request->expects( $this->exactly( 2 ) )
+			->method( 'format_response' )
+			->willReturnOnConsecutiveCalls(
+				$this->throwException(
+					new API_Exception(
+						'No such customer: cus_mock',
+						'resource_missing',
+						400
+					)
+				),
+				$intent
+			);
+
+		$this->mock_order_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'set_customer_id_for_order' )
+			->withConsecutive(
+				[ $this->isInstanceOf( WC_Order::class ), 'cus_mock' ],
+				[ $this->isInstanceOf( WC_Order::class ), 'cus_new' ]
+			);
+		$this->mock_order_service->expects( $this->once() )->method( 'set_payment_method_id_for_order' );
+		$this->mock_order_service->expects( $this->once() )->method( 'attach_intent_info_to_order' );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->willReturn( WC_Helper_Token::create_token( 'pm_mock' ) );
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information->must_save_payment_method_to_store();
+		$result = $this->mock_wcpay_gateway->process_payment_for_order( null, $payment_information );
+
+		$this->assertEquals( 'success', $result['result'] );
+	}
+
+	/**
 	 * Data provider for non-customer resource_missing errors that should be re-thrown.
 	 */
 	public function provider_non_customer_resource_missing_errors() {
