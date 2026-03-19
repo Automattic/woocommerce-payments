@@ -121,18 +121,20 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 	}
 
 	/**
-	 * Test that the price data attribute uses the raw price value.
+	 * Test that the price data attribute uses the unformatted price, not the
+	 * locale-formatted $price parameter (which can contain commas).
 	 */
-	public function test_wrap_price_with_skeleton_uses_raw_price() {
+	public function test_wrap_price_with_skeleton_uses_unformatted_price() {
 		$result = $this->renderer->wrap_price_with_skeleton(
-			'<span>$25.99</span>',
-			25.99,
+			'<span>25,99 €</span>',
+			'25,99',  // Locale-formatted (European comma decimal).
 			[],
-			25.99,
+			25.99,    // Unformatted float — this is what should appear in the attribute.
 			25.99
 		);
 
 		$this->assertStringContainsString( 'data-wcpay-price="25.99"', $result );
+		$this->assertStringNotContainsString( 'data-wcpay-price="25,99"', $result );
 	}
 
 	/**
@@ -193,6 +195,123 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 		$this->assertStringNotContainsString( '&#', $data );
 
 		remove_filter( 'woocommerce_currency', $force_eur, 901 );
+	}
+
+	/**
+	 * Test that annotate_sale_price_sr_text adds data attributes to both screen-reader-text spans.
+	 */
+	public function test_annotate_sale_price_sr_text_adds_data_attributes() {
+		$html = '<del aria-hidden="true"><span class="woocommerce-Price-amount amount"><bdi>$50.00</bdi></span></del>'
+			. ' <span class="screen-reader-text">Original price was: $50.00.</span>'
+			. ' <ins aria-hidden="true"><span class="woocommerce-Price-amount amount"><bdi>$35.00</bdi></span></ins>'
+			. ' <span class="screen-reader-text">Current price is: $35.00.</span>';
+
+		$result = $this->renderer->annotate_sale_price_sr_text( $html, '50', '35' );
+
+		$this->assertStringContainsString( 'data-wcpay-sr-type="sale_original"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-price="50"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-type="sale_current"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-price="35"', $result );
+	}
+
+	/**
+	 * Test that annotate_sale_price_sr_text passes through non-numeric prices.
+	 */
+	public function test_annotate_sale_price_sr_text_skips_non_numeric() {
+		$html = '<span class="screen-reader-text">Original price was: Free.</span>';
+
+		$result = $this->renderer->annotate_sale_price_sr_text( $html, 'Free', '0' );
+
+		$this->assertStringNotContainsString( 'data-wcpay-sr-type', $result );
+		$this->assertSame( $html, $result );
+	}
+
+	/**
+	 * Test that annotate_price_range_sr_text adds data attributes.
+	 */
+	public function test_annotate_price_range_sr_text_adds_data_attributes() {
+		$html = '<span class="woocommerce-Price-amount amount"><bdi>$10.00</bdi></span>'
+			. ' &ndash; '
+			. '<span class="woocommerce-Price-amount amount"><bdi>$30.00</bdi></span>'
+			. ' <span class="screen-reader-text">Price range: $10.00 through $30.00</span>';
+
+		$result = $this->renderer->annotate_price_range_sr_text( $html, '10', '30' );
+
+		$this->assertStringContainsString( 'data-wcpay-sr-type="range"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-price-from="10"', $result );
+		$this->assertStringContainsString( 'data-wcpay-sr-price-to="30"', $result );
+	}
+
+	/**
+	 * Test that annotate_price_range_sr_text passes through non-numeric prices.
+	 */
+	public function test_annotate_price_range_sr_text_skips_non_numeric() {
+		$html = '<span class="screen-reader-text">Price range: Free through $30.00</span>';
+
+		$result = $this->renderer->annotate_price_range_sr_text( $html, 'Free', '30' );
+
+		$this->assertStringNotContainsString( 'data-wcpay-sr-type', $result );
+		$this->assertSame( $html, $result );
+	}
+
+	/**
+	 * Test that init_hooks registers sale and range filters.
+	 */
+	public function test_init_hooks_registers_sale_and_range_filters() {
+		$this->mock_multi_currency
+			->method( 'is_cache_optimized_mode' )
+			->willReturn( true );
+		$this->mock_multi_currency
+			->method( 'has_active_session' )
+			->willReturn( false );
+
+		$this->renderer->init_hooks();
+
+		$this->assertSame(
+			999,
+			has_filter( 'woocommerce_format_sale_price', [ $this->renderer, 'annotate_sale_price_sr_text' ] )
+		);
+		$this->assertSame(
+			999,
+			has_filter( 'woocommerce_format_price_range', [ $this->renderer, 'annotate_price_range_sr_text' ] )
+		);
+	}
+
+	/**
+	 * Test that enqueue_async_renderer localizes srText strings.
+	 */
+	public function test_enqueue_async_renderer_localizes_sr_text() {
+		wp_register_script( 'wcpay-multi-currency-async-renderer', false, [], '1.0', true );
+
+		$this->mock_multi_currency
+			->method( 'register_script_with_dependencies' )
+			->willReturn( null );
+		$this->mock_multi_currency
+			->method( 'get_file_version' )
+			->willReturn( '1.0' );
+
+		$this->renderer->enqueue_async_renderer();
+
+		$data = wp_scripts()->get_data( 'wcpay-multi-currency-async-renderer', 'data' );
+		$this->assertStringContainsString( 'srText', $data );
+		$this->assertStringContainsString( 'sale_original', $data );
+		$this->assertStringContainsString( 'sale_current', $data );
+		$this->assertStringContainsString( 'range', $data );
+	}
+
+	/**
+	 * Test that annotate_sale_price_sr_text does not annotate wcpay-price-placeholder spans.
+	 */
+	public function test_annotate_sale_price_sr_text_ignores_placeholder_spans() {
+		$html = '<span class="screen-reader-text wcpay-price-placeholder">$50.00</span>'
+			. ' <span class="screen-reader-text">Original price was: $50.00.</span>';
+
+		$result = $this->renderer->annotate_sale_price_sr_text( $html, '50', '35' );
+
+		// The placeholder span should remain unchanged.
+		$this->assertStringContainsString( '<span class="screen-reader-text wcpay-price-placeholder">', $result );
+		// The real screen-reader-text span should be annotated.
+		$this->assertStringContainsString( 'data-wcpay-sr-type="sale_original"', $result );
 	}
 
 	/**
