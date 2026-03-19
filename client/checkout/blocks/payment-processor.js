@@ -265,7 +265,7 @@ const PaymentProcessor = ( {
 				ref={ wrapperRef }
 				className={ clsx(
 					'wcpay-payment-element-wrapper',
-					! isCardMethod && ! isStripeReady && 'is-apm'
+					! isCardMethod && 'is-apm'
 				) }
 			>
 				{ showSkeleton &&
