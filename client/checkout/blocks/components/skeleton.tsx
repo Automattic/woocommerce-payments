@@ -4,6 +4,21 @@
 import React from 'react';
 import clsx from 'clsx';
 
+/**
+ * Internal dependencies
+ */
+import { isVersionGreaterOrEqual } from 'utils';
+import './skeleton-fallback.scss';
+
+const hasCoreSkeleton = isVersionGreaterOrEqual(
+	window.wcSettings?.wcVersion ?? '0',
+	'10.2.0'
+);
+
+const skeletonClass = hasCoreSkeleton
+	? 'wc-block-components-skeleton__element'
+	: 'wcpay-skeleton__element';
+
 export interface SkeletonProps {
 	tag?: keyof JSX.IntrinsicElements;
 	width?: string;
@@ -28,9 +43,9 @@ export const Skeleton = ( {
 	return (
 		<Tag
 			className={ clsx(
-				'wc-block-components-skeleton__element',
+				skeletonClass,
 				{
-					'wc-block-components-skeleton__element--static': isStatic,
+					[ `${ skeletonClass }--static` ]: isStatic,
 				},
 				className
 			) }
