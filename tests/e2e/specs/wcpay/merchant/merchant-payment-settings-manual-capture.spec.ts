@@ -55,9 +55,11 @@ test.describe(
 				page.getByRole( 'checkbox', { name: 'Bancontact' } )
 			).toBeDisabled();
 			await expect(
-				page.getByText(
-					/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i
-				)
+				page
+					.locator( '#payment-methods' )
+					.getByText(
+						/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i
+					)
 			).toBeVisible();
 		} );
 	}
