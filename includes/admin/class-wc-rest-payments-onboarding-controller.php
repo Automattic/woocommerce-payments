@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Logger;
+
 /**
  * REST controller for account details and status.
  */
@@ -232,7 +234,8 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				$mode
 			);
 		} catch ( Exception $e ) {
-			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 409 ] );
+			Logger::error( 'Failed to create embedded KYC session: ' . $e->getMessage() );
+			return new WP_Error( 'wcpay_onboarding_duplicate_session', $e->getMessage(), [ 'status' => 409 ] );
 		}
 
 		if ( empty( $account_session ) ) {
