@@ -1,5 +1,5 @@
 Significance: patch
 Type: dev
-Comment: Minor change to ensure isVisaCompliance check always uses the current dispute data.
+Comment: Wnsure isVisaCompliance check always uses the current dispute data.
 
 
