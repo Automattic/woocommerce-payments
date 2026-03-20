@@ -10,12 +10,21 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import NotificationsEmailInput from '../notifications-email-input';
-import { useGetSavingError, useAccountCommunicationsEmail } from 'wcpay/data';
+import {
+	useGetSavingError,
+	useAccountCommunicationsEmail,
+	useSettings,
+} from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountCommunicationsEmail: jest.fn(),
 	useGetSavingError: jest.fn(),
+	useSettings: jest.fn(),
 } ) );
+
+const mockUseSettings = useSettings as jest.MockedFunction<
+	typeof useSettings
+>;
 
 const mockUseAccountCommunicationsEmail = useAccountCommunicationsEmail as jest.MockedFunction<
 	typeof useAccountCommunicationsEmail
@@ -31,6 +40,12 @@ describe( 'NotificationsEmailInput', () => {
 			jest.fn(),
 		] );
 		mockUseGetSavingError.mockReturnValue( null );
+		mockUseSettings.mockReturnValue( {
+			isLoading: false,
+			saveSettings: jest.fn(),
+			isSaving: false,
+			isDirty: false,
+		} );
 	} );
 
 	it( 'displays and updates email address', () => {
