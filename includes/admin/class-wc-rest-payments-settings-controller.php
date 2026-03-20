@@ -11,6 +11,8 @@ use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -681,9 +683,25 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$payment_method_ids_to_enable = $request->get_param( 'enabled_payment_method_ids' );
 		$available_payment_methods    = $this->wcpay_gateway->get_upe_available_payment_methods();
 
-		// Only 'card' and 'link' support manual capture. Leave them enabled if they're already enabled.
+		// Filter out payment methods that don't support manual capture when it's enabled.
 		if ( $request->has_param( 'is_manual_capture_enabled' ) && $request->get_param( 'is_manual_capture_enabled' ) ) {
-			$payment_method_ids_to_enable = array_intersect( $payment_method_ids_to_enable, [ Payment_Method::CARD, Payment_Method::LINK ] );
+			$registry                     = PaymentMethodDefinitionRegistry::instance();
+			$all_definitions              = $registry->get_all_payment_method_definitions();
+			$payment_method_ids_to_enable = array_values(
+				array_filter(
+					$payment_method_ids_to_enable,
+					function ( $payment_method_id ) use ( $all_definitions ) {
+						// Always allow Link since it follows the card's capture behavior.
+						if ( Payment_Method::LINK === $payment_method_id ) {
+							return true;
+						}
+						if ( isset( $all_definitions[ $payment_method_id ] ) ) {
+							return PaymentMethodUtils::allows_manual_capture( $all_definitions[ $payment_method_id ] );
+						}
+						return false;
+					}
+				)
+			);
 		}
 
 		$payment_method_ids_to_enable = array_values(

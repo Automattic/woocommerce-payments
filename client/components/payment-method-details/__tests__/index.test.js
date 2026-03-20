@@ -29,6 +29,13 @@ describe( 'PaymentMethodDetails', () => {
 		expect( paymentMethodDetails ).toMatchSnapshot();
 	} );
 
+	test( 'renders without error when payment type object is undefined (e.g. Link)', () => {
+		const { container } = render(
+			<PaymentMethodDetails payment={ { type: 'link' } } />
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
 	function renderCard( card ) {
 		return render(
 			<PaymentMethodDetails payment={ { card: card, type: 'card' } } />
