@@ -6,18 +6,15 @@ import clsx from 'clsx';
 
 /**
  * Internal dependencies
+ *
+ * This component is ported from WooCommerce core's Skeleton component:
+ * - Component: woocommerce/client/blocks/assets/js/base/components/skeleton/index.tsx
+ * - Styles: woocommerce/client/blocks/assets/js/base/components/skeleton/style.scss
+ * - Mixin: woocommerce/client/blocks/assets/css/abstracts/_mixins.scss (skeleton-animation, lines 352-383)
+ * - Variables: woocommerce/client/blocks/assets/css/abstracts/_variables.scss ($universal-border-radius: 4px)
+ * - Keyframes renamed from wc-skeleton-shimmer to wcpay-skeleton-shimmer to avoid collisions with core.
  */
-import { isVersionGreaterOrEqual } from 'utils/version';
-import './skeleton-fallback.scss';
-
-const hasCoreSkeleton = isVersionGreaterOrEqual(
-	window.wcSettings?.wcVersion ?? '0',
-	'10.2.0'
-);
-
-const skeletonClass = hasCoreSkeleton
-	? 'wc-block-components-skeleton__element'
-	: 'wcpay-skeleton__element';
+import './skeleton.scss';
 
 export interface SkeletonProps {
 	tag?: keyof JSX.IntrinsicElements;
@@ -43,9 +40,9 @@ export const Skeleton = ( {
 	return (
 		<Tag
 			className={ clsx(
-				skeletonClass,
+				'wcpay-skeleton__element',
 				{
-					[ `${ skeletonClass }--static` ]: isStatic,
+					'wcpay-skeleton__element--static': isStatic,
 				},
 				className
 			) }

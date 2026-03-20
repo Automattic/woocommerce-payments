@@ -19,8 +19,7 @@ import {
 } from 'wcpay/data';
 import InlineNotice from 'wcpay/components/inline-notice';
 import ErrorBoundary from 'wcpay/components/error-boundary';
-import { getAdminUrl } from 'wcpay/utils';
-import { isVersionGreaterOrEqual } from 'wcpay/utils/version';
+import { getAdminUrl, isVersionGreaterOrEqual } from 'wcpay/utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
 import CVCVerificationRuleCard from './cards/cvc-verification';
