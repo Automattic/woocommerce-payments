@@ -1267,4 +1267,26 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			)
 		);
 	}
+
+	/**
+	 * When a customer changes the payment method for a subscription order, updates the
+	 * payment method via WC_Subscriptions_Change_Payment_Gateway and adds a notice.
+	 *
+	 * @param WC_Order $order The order whose payment method was changed.
+	 */
+	public function maybe_update_subscription_payment_method( WC_Order $order ) {
+		if ( ! class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
+			return;
+		}
+
+		$payment_token = $this->get_payment_token( $order );
+		WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_token->get_gateway_id() );
+		$notice = __( 'Payment method updated.', 'woocommerce-payments' );
+
+		if ( WC_Subscriptions_Change_Payment_Gateway::will_subscription_update_all_payment_methods( $order ) && WC_Subscriptions_Change_Payment_Gateway::update_all_payment_methods_from_subscription( $order, $payment_token->get_gateway_id() ) ) {
+			$notice = __( 'Payment method updated for all your current subscriptions.', 'woocommerce-payments' );
+		}
+
+		wc_add_notice( $notice );
+	}
 }

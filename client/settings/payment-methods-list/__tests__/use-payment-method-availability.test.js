@@ -140,15 +140,13 @@ describe( 'usePaymentMethodAvailability', () => {
 		expect( result.current.noticeType ).toBe( 'error' );
 	} );
 
-	it( 'returns "manual capture disabled" notice', () => {
+	it( 'returns non-actionable for manual capture without individual notice', () => {
 		useManualCapture.mockReturnValue( [ true ] );
 		const { result } = renderHook( () =>
 			usePaymentMethodAvailability( 'bancontact' )
 		);
 		expect( result.current.isActionable ).toBe( false );
-		expect( result.current.notice ).toBe(
-			'Bancontact is not available to your customers when the "manual capture" setting is enabled.'
-		);
+		expect( result.current.notice ).toBeUndefined();
 	} );
 
 	it( 'returns missing currencies notice when multi-currency disabled', () => {
