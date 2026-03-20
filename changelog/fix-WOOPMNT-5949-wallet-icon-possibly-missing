@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensure that page doesn't crash if wallet icon is missing

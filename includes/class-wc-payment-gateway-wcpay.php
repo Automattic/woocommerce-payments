@@ -1412,7 +1412,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$result->set_payment_details(
 					array_merge(
 						$result->payment_details,
-						[ 'errorMessage' => wp_strip_all_tags( $error->getMessage() ) ]
+						[ 'errorMessage' => wp_strip_all_tags( WC_Payments_Utils::get_filtered_error_message( $error ) ) ]
 					)
 				);
 			}
@@ -3856,17 +3856,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$return_url = $this->get_return_url( $order );
 
 				if ( $is_changing_payment ) {
-					$payment_token = $this->get_payment_token( $order );
-					if ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
-						WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_token->get_gateway_id() );
-						$notice = __( 'Payment method updated.', 'woocommerce-payments' );
-
-						if ( WC_Subscriptions_Change_Payment_Gateway::will_subscription_update_all_payment_methods( $order ) && WC_Subscriptions_Change_Payment_Gateway::update_all_payment_methods_from_subscription( $order, $token->get_gateway_id() ) ) {
-							$notice = __( 'Payment method updated for all your current subscriptions.', 'woocommerce-payments' );
-						}
-
-						wc_add_notice( $notice );
-					}
+					$this->maybe_update_subscription_payment_method( $order );
 					$return_url = method_exists( $order, 'get_view_order_url' ) ? $order->get_view_order_url() : $this->get_return_url( $order );
 				}
 
@@ -3987,6 +3977,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param WC_Order|null $order     The order that has been created.
 	 */
 	public function schedule_order_tracking( $order_id, $order = null ) {
+		// Prevent re-entrant scheduling when track_order() writes meta via save_meta_data(),
+		// which fires woocommerce_update_order and would schedule a spurious update event.
+		if ( doing_action( 'wcpay_track_new_order' ) || doing_action( 'wcpay_track_update_order' ) ) {
+			return;
+		}
+
 		$this->maybe_schedule_subscription_order_tracking( $order_id, $order );
 
 		// If Sift is not enabled, exit out and don't do the tracking here.

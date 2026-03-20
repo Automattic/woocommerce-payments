@@ -617,7 +617,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider rate_limiter_error_code_provider
 	 */
-	public function test_failed_transaction_rate_limiter_bumped( $error_message, $error_code ) {
+	public function test_failed_transaction_rate_limiter_bumped( $expected_notice, $error_code, $raw_message ) {
 		$order = WC_Helper_Order::create_order();
 
 		$this->mock_rate_limiter
@@ -637,7 +637,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->will(
 				$this->throwException(
 					new API_Exception(
-						$error_message,
+						$raw_message,
 						$error_code,
 						400,
 						'card_error'
@@ -650,14 +650,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$error_notices = WC()->session->get( 'wc_notices' );
 		$this->assertNotEmpty( $error_notices );
-		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
+		$this->assertEquals( $expected_notice, $error_notices['error'][0]['notice'] );
 	}
 
 	public function rate_limiter_error_code_provider() {
 		return [
-			'Card declined'    => [ 'Your card was declined.', 'card_declined' ],
-			'Incorrect number' => [ 'Your card number is incorrect.', 'incorrect_number' ],
-			'Incorrect CVC'    => [ 'Your card security code is incorrect.', 'incorrect_cvc' ],
+			'Card declined'    => [ 'Error: Your card was declined.', 'card_declined', 'Your card was declined.' ],
+			'Incorrect number' => [ 'Error: Your card number is incorrect.', 'incorrect_number', 'Your card number is incorrect.' ],
+			'Incorrect CVC'    => [ "Error: Your card's security code is incorrect.", 'incorrect_cvc', 'Your card security code is incorrect.' ],
 		];
 	}
 
