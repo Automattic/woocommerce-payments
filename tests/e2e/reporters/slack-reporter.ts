@@ -92,6 +92,7 @@ async function resolveHeadSha(): Promise< string | undefined > {
 				Authorization: `token ${ E2E_GH_TOKEN }`,
 				Accept: 'application/vnd.github.v3+json',
 			},
+			signal: AbortSignal.timeout( 5000 ),
 		} );
 		if ( ! response.ok ) {
 			return undefined;
@@ -130,6 +131,7 @@ async function resolveJobUrl(): Promise< string | undefined > {
 				Authorization: `token ${ E2E_GH_TOKEN }`,
 				Accept: 'application/vnd.github.v3+json',
 			},
+			signal: AbortSignal.timeout( 5000 ),
 		} );
 
 		if ( ! response.ok ) {
@@ -149,6 +151,13 @@ async function resolveJobUrl(): Promise< string | undefined > {
 				return false;
 			}
 			const name = job.name;
+			if (
+				E2E_WP_VERSION &&
+				E2E_WP_VERSION !== 'latest' &&
+				! name.includes( E2E_WP_VERSION )
+			) {
+				return false;
+			}
 			if ( E2E_WC_VERSION && ! name.includes( E2E_WC_VERSION ) ) {
 				return false;
 			}
