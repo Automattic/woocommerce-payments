@@ -56,8 +56,13 @@ runs:
           echo " - $f"
         done
 
-        # Re-run only the failed spec files.
-        npm run test:e2e-ci "${FAILED_SPECS[@]}"
+        # Include the setup file so Playwright runs auth setup before retrying.
+        # Without this, passing spec files as positional args bypasses project
+        # dependency resolution and auth state files may not exist.
+        SETUP_FILE="tests/e2e/specs/auth.setup.ts"
+
+        # Re-run only the failed spec files (plus setup).
+        npm run test:e2e-ci "$SETUP_FILE" "${FAILED_SPECS[@]}"
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs

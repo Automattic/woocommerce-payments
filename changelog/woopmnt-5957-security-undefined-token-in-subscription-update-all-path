@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Refactor the update subscriptions token flow and improve test coverage.

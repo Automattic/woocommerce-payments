@@ -31,3 +31,25 @@ exports[`PaymentMethodDetails renders a valid card brand and last 4 digits 1`] =
   </span>
 </div>
 `;
+
+exports[`PaymentMethodDetails renders without error when payment type object is undefined (e.g. Link) 1`] = `
+<div>
+  <span
+    class="payment-method-details"
+  >
+    <button
+      class="wcpay-tooltip__content-wrapper"
+      type="button"
+    >
+      <div
+        class="wcpay-tooltip__content-wrapper"
+      >
+        <span
+          aria-label="link"
+          class="payment-method__brand payment-method__brand--link account-country--us"
+        />
+      </div>
+    </button>
+  </span>
+</div>
+`;

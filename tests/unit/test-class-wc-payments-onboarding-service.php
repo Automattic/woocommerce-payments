@@ -147,6 +147,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
+		$this->assertNotFalse( has_filter( 'wc_payments_get_onboarding_data_args', [ $this->onboarding_service, 'add_woocommerce_store_id_to_request' ] ) );
 	}
 
 	public function test_create_embedded_kyc_session() {
@@ -755,5 +756,24 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert.
 		$this->assertNotEmpty( $result );
+	}
+
+	public function test_add_woocommerce_store_id_to_request_adds_store_id() {
+		$store_id = 'test-store-uuid-1234';
+		update_option( 'woocommerce_store_id', $store_id );
+
+		$args   = [ 'existing_key' => 'value' ];
+		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( $args );
+
+		$this->assertSame( $store_id, $result['woocommerce_store_id'] );
+		$this->assertSame( 'value', $result['existing_key'] );
+	}
+
+	public function test_add_woocommerce_store_id_to_request_returns_empty_string_when_option_missing() {
+		delete_option( 'woocommerce_store_id' );
+
+		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( [] );
+
+		$this->assertSame( '', $result['woocommerce_store_id'] );
 	}
 }
