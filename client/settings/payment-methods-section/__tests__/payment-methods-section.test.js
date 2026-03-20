@@ -324,4 +324,34 @@ describe( 'PaymentMethodsSection', () => {
 			)
 		).toBeInTheDocument();
 	} );
+
+	it( 'should show manual capture banner when manual capture is enabled', () => {
+		useManualCapture.mockReturnValue( [ true, jest.fn() ] );
+
+		render( <PaymentMethodsSection /> );
+
+		expect(
+			screen.queryByText(
+				/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'should not show manual capture banner when manual capture is disabled', () => {
+		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
+
+		render( <PaymentMethodsSection /> );
+
+		expect(
+			screen.queryByText(
+				/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).not.toBeInTheDocument();
+	} );
 } );

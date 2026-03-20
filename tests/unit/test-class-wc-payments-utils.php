@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_Payments_Utils unit tests.
@@ -1225,5 +1226,190 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			'general'                   => [ 'general', 'General' ],
 			'default case'              => [ 'unknown_reason', 'General' ],
 		];
+	}
+
+	/**
+	 * Test that get_localized_messages returns an array of known Stripe error codes.
+	 */
+	public function test_get_localized_messages_returns_expected_keys() {
+		$messages = WC_Payments_Utils::get_localized_messages();
+
+		$this->assertIsArray( $messages );
+
+		// Verify a subset of expected keys exist.
+		$expected_keys = [
+			'expired_card',
+			'card_declined',
+			'incorrect_cvc',
+			'insufficient_funds',
+			'processing_error',
+			'incorrect_number',
+			'invalid_expiry_year',
+		];
+
+		foreach ( $expected_keys as $key ) {
+			$this->assertArrayHasKey( $key, $messages, "Missing expected error code: $key" );
+			$this->assertNotEmpty( $messages[ $key ], "Empty message for error code: $key" );
+		}
+	}
+
+	/**
+	 * Test that get_localized_messages is filterable via wcpay_localized_messages.
+	 */
+	public function test_get_localized_messages_is_filterable() {
+		$filter = function ( $messages ) {
+			$messages['custom_error'] = 'Custom error message';
+			return $messages;
+		};
+
+		add_filter( 'wcpay_localized_messages', $filter );
+		$messages = WC_Payments_Utils::get_localized_messages();
+		remove_filter( 'wcpay_localized_messages', $filter );
+
+		$this->assertArrayHasKey( 'custom_error', $messages );
+		$this->assertEquals( 'Custom error message', $messages['custom_error'] );
+	}
+
+	/**
+	 * Test that a card error with a known error code returns the localized message.
+	 */
+	public function test_get_filtered_error_message_card_error_known_code_returns_localized() {
+		$exception = new API_Exception(
+			'Error: Your card has expired.',
+			'expired_card',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card has expired.', $result );
+	}
+
+	/**
+	 * Test that a card_declined error with a known decline_code returns the localized message.
+	 *
+	 * Stripe returns some decline reasons (e.g. insufficient_funds) as decline_code
+	 * with error.code = "card_declined". The lookup must check decline_code as a fallback.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_known_decline_code_returns_localized() {
+		// API_Exception constructor: message, error_code, http_code, error_type, decline_code.
+		$exception = new API_Exception(
+			'Error: Your card has insufficient funds.',
+			'card_declined',
+			400,
+			'card_error',
+			'insufficient_funds'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card has insufficient funds.', $result );
+	}
+
+	/**
+	 * Test that a card_declined error with an unknown decline_code returns the card_declined localized message.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_unknown_decline_code_returns_card_declined() {
+		$exception = new API_Exception(
+			'Error: Your card was declined.',
+			'card_declined',
+			400,
+			'card_error',
+			'unknown_decline_reason'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card was declined.', $result );
+	}
+
+	/**
+	 * Test that a card error with an unknown error code falls back to the raw message.
+	 */
+	public function test_get_filtered_error_message_card_error_unknown_code_returns_raw() {
+		$exception = new API_Exception(
+			'Error: Some unknown card error.',
+			'unknown_card_code',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Some unknown card error.', $result );
+	}
+
+	/**
+	 * Test that a non-card API error still returns the generic message.
+	 */
+	public function test_get_filtered_error_message_non_card_error_returns_generic() {
+		$exception = new API_Exception(
+			'Error: Some API error.',
+			'some_api_error',
+			400,
+			'api_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( "We're not able to process this request. Please refresh the page and try again.", $result );
+	}
+
+	/**
+	 * Test that the incorrect_zip card error still returns the custom postal code message.
+	 */
+	public function test_get_filtered_error_message_incorrect_zip_returns_custom_message() {
+		$exception = new API_Exception(
+			'Error: Zip code validation failed.',
+			'incorrect_zip',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'We couldn' . "\xE2\x80\x99" . 't verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', $result );
+	}
+
+	/**
+	 * Test that incorrect_zip with blocked_by_fraud_rules preserves raw message.
+	 */
+	public function test_get_filtered_error_message_incorrect_zip_blocked_by_fraud_returns_raw() {
+		$exception = new API_Exception(
+			'Error: Zip code validation failed.',
+			'incorrect_zip',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception, true );
+
+		$this->assertEquals( 'Error: Zip code validation failed.', $result );
+	}
+
+	/**
+	 * Test that the wcpay_localized_messages filter can override messages in get_filtered_error_message.
+	 */
+	public function test_get_filtered_error_message_respects_filter() {
+		$filter = function ( $messages ) {
+			$messages['expired_card'] = 'Custom: card expired';
+			return $messages;
+		};
+
+		add_filter( 'wcpay_localized_messages', $filter );
+
+		$exception = new API_Exception(
+			'Error: Your card has expired.',
+			'expired_card',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		remove_filter( 'wcpay_localized_messages', $filter );
+
+		$this->assertEquals( 'Error: Custom: card expired', $result );
 	}
 }
