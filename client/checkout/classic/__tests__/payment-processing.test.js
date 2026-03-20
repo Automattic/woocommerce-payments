@@ -736,6 +736,50 @@ describe( 'Payment processing', () => {
 		document.body.appendChild( postcodeInput );
 		document.body.appendChild( stateInput );
 	}
+
+	test( 'Payment processing trims whitespace from postal code', async () => {
+		setupBillingDetailsFields();
+		document.getElementById( 'billing_postcode' ).value = ' NG8 4GP ';
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+				submit: checkoutForm.submit,
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		mockCreatePaymentMethod.mockReturnValue( {
+			paymentMethod: { id: 'paymentMethodId' },
+		} );
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				params: expect.objectContaining( {
+					billing_details: expect.objectContaining( {
+						address: expect.objectContaining( {
+							postal_code: 'NG8 4GP',
+						} ),
+					} ),
+				} ),
+			} )
+		);
+	} );
 } );
 
 describe( 'Setup intent creation and confirmation', () => {
