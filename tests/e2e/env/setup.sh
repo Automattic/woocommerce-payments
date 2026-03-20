@@ -129,6 +129,12 @@ if [[ ! -d "$DEV_TOOLS_PATH" ]]; then
 	git clone --depth=1 --branch "${WCP_DEV_TOOLS_BRANCH-trunk}" "$WCP_DEV_TOOLS_REPO" "$DEV_TOOLS_PATH"
 fi
 
+# Ensure dev tools dependencies are installed (required before WordPress loads the plugin).
+if [[ -d "$DEV_TOOLS_PATH" && ! -f "$DEV_TOOLS_PATH/vendor/autoload.php" ]]; then
+	step "Installing dev tools dependencies"
+	composer install --no-dev --no-interaction --working-dir="$DEV_TOOLS_PATH"
+fi
+
 step "Starting CLIENT containers"
 redirect_output docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
