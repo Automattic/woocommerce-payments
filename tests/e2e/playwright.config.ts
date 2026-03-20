@@ -99,8 +99,8 @@ export default defineConfig( {
 			name: 'basic',
 			use: { ...devices[ 'Desktop Chrome' ] },
 			testMatch: /basic.spec.ts/,
-			// When running blocks tests, filter by @blocks tag (project-level
-			// so it doesn't exclude setup tests from the setup project).
+			// When running blocks tests, filter by @blocks tag (project-level).
+			// This ensures it doesn't exclude setup tests from the setup project.
 			grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
 			dependencies: [ 'setup' ],
 		},
