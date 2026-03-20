@@ -10,6 +10,7 @@ import {
 	getRecommendedShippingDocumentFields,
 } from '../recommended-document-fields';
 import { RecommendedDocument } from '../types';
+import type { DisputeReason } from 'wcpay/types/disputes';
 
 declare const global: {
 	wcpaySettings: {
@@ -35,7 +36,7 @@ describe( 'Recommended Documents', () => {
 	} );
 	describe( 'getRecommendedDocumentFields', () => {
 		it( 'should return default fields when no specific reason is provided', () => {
-			const result = getRecommendedDocumentFields( '' );
+			const result = getRecommendedDocumentFields( '' as DisputeReason );
 			expect( result ).toHaveLength( 6 ); // Default fields + fields for the "general" reason
 			expect( result[ 0 ].key ).toBe( 'receipt' );
 			expect( result[ 1 ].key ).toBe( 'customer_communication' );

@@ -9,6 +9,8 @@ import { __ } from '@wordpress/i18n';
 import { RecommendedDocument } from './types';
 import { getMatrixFields } from './evidence-matrix';
 import { DOCUMENT_FIELD_KEYS } from './document-field-keys';
+import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
+import type { DisputeReason } from 'wcpay/types/disputes';
 
 // Re-export for backward compatibility
 export { DOCUMENT_FIELD_KEYS };
@@ -24,7 +26,7 @@ export { DOCUMENT_FIELD_KEYS };
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
-	reason: string,
+	reason: DisputeReason,
 	refundStatus?: string,
 	duplicateStatus?: string,
 	productType?: string,
@@ -38,8 +40,10 @@ const getRecommendedDocumentFields = (
 	if ( isFeatureFlagEnabled ) {
 		// Handle Visa Compliance disputes: reason is 'noncompliant' OR enhanced_eligibility_types includes 'visa_compliance'
 		if (
-			reason === 'noncompliant' ||
-			( enhancedEligibilityTypes || [] ).includes( 'visa_compliance' )
+			isVisaComplianceDispute( {
+				reason,
+				enhanced_eligibility_types: enhancedEligibilityTypes,
+			} )
 		) {
 			return [
 				{
