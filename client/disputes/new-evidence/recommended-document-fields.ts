@@ -20,13 +20,15 @@ export { DOCUMENT_FIELD_KEYS };
  * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
  * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
  * @param {string} productType - The product type (for subscription_canceled disputes)
+ * @param {string[]} enhancedEligibilityTypes - The enhanced eligibility types (e.g. ['visa_compliance'])
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
 	reason: string,
 	refundStatus?: string,
 	duplicateStatus?: string,
-	productType?: string
+	productType?: string,
+	enhancedEligibilityTypes?: string[]
 ): Array< RecommendedDocument > => {
 	// Feature flag gated: Check evidence matrix for reason + product type combinations
 	const isFeatureFlagEnabled =
@@ -34,8 +36,11 @@ const getRecommendedDocumentFields = (
 		false;
 
 	if ( isFeatureFlagEnabled ) {
-		// Handle Visa Compliance (noncompliant) disputes
-		if ( reason === 'noncompliant' ) {
+		// Handle Visa Compliance disputes: reason is 'noncompliant' OR enhanced_eligibility_types includes 'visa_compliance'
+		if (
+			reason === 'noncompliant' ||
+			( enhancedEligibilityTypes || [] ).includes( 'visa_compliance' )
+		) {
 			return [
 				{
 					key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,

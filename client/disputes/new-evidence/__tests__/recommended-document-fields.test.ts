@@ -721,6 +721,22 @@ describe( 'Recommended Documents', () => {
 					'Any other relevant documents that will support your case.'
 				);
 			} );
+
+			it( 'should return Visa Compliance fields when enhanced_eligibility_types includes visa_compliance', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+				const result = getRecommendedDocumentFields(
+					'fraudulent',
+					undefined,
+					undefined,
+					undefined,
+					[ 'visa_compliance' ]
+				);
+				expect( result ).toHaveLength( 2 );
+				expect( result[ 0 ].key ).toBe( 'customer_communication' );
+				expect( result[ 0 ].label ).toBe( 'Upload evidence' );
+				expect( result[ 1 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 1 ].label ).toBe( 'Other documents' );
+			} );
 		} );
 	} );
 

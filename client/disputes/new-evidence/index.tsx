@@ -358,7 +358,8 @@ export default ( { query }: { query: { id: string } } ) => {
 				? refundStatus
 				: undefined,
 			dispute.reason === 'duplicate' ? duplicateStatus : undefined,
-			productType
+			productType,
+			dispute.enhanced_eligibility_types
 		);
 		const applicableFieldKeys = new Set(
 			applicableDocumentFields.map( ( field ) => field.key )
@@ -961,7 +962,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		disputeReason,
 		disputeReason === 'credit_not_processed' ? refundStatus : undefined,
 		disputeReason === 'duplicate' ? duplicateStatus : undefined,
-		productType
+		productType,
+		dispute?.enhanced_eligibility_types
 	);
 
 	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields(
