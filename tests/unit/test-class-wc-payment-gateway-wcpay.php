@@ -2568,6 +2568,58 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
+	public function test_schedule_order_tracking_skips_during_new_order_tracking_action() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_payment_method_id', 'pm_123' );
+		$order->save_meta_data();
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->mock_fraud_service
+			->expects( $this->never() )
+			->method( 'get_fraud_services_config' );
+
+		// Simulate being inside the wcpay_track_new_order action callback.
+		global $wp_current_filter;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
+		$wp_current_filter[] = 'wcpay_track_new_order';
+
+		try {
+			$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
+		} finally {
+			array_pop( $wp_current_filter );
+		}
+	}
+
+	public function test_schedule_order_tracking_skips_during_update_order_tracking_action() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_payment_method_id', 'pm_123' );
+		$order->save_meta_data();
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->mock_fraud_service
+			->expects( $this->never() )
+			->method( 'get_fraud_services_config' );
+
+		// Simulate being inside the wcpay_track_update_order action callback.
+		global $wp_current_filter;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
+		$wp_current_filter[] = 'wcpay_track_update_order';
+
+		try {
+			$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
+		} finally {
+			array_pop( $wp_current_filter );
+		}
+	}
+
 	public function test_outputs_payments_settings_screen() {
 		ob_start();
 		$this->card_gateway->output_payments_settings_screen();
