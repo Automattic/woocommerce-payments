@@ -65,6 +65,7 @@ import { getRecommendedDocumentFields } from '../recommended-document-fields';
 import { generateAttachments } from '../cover-letter-generator';
 import { getMatrixFields } from '../evidence-matrix';
 import { DOCUMENT_FIELD_KEYS } from '../document-field-keys';
+import type { DisputeReason } from 'wcpay/types/disputes';
 
 // Mock wcpaySettings with feature flag enabled
 declare const global: {
@@ -85,7 +86,7 @@ declare const global: {
  * - labels: Expected labels for UI display
  */
 interface CombinationSpec {
-	reason: string;
+	reason: DisputeReason;
 	productType: string;
 	status?: string; // For duplicate disputes
 	refundStatus?: string; // For credit_not_processed disputes

@@ -10,7 +10,11 @@ import React, { useState, useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import { useAccountCommunicationsEmail, useGetSavingError } from 'wcpay/data';
+import {
+	useAccountCommunicationsEmail,
+	useGetSavingError,
+	useSettings,
+} from 'wcpay/data';
 
 /**
  * Validates an email address format.
@@ -38,18 +42,19 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 		accountCommunicationsEmail,
 		setAccountCommunicationsEmail,
 	] = useAccountCommunicationsEmail();
+	const { isLoading } = useSettings();
 
 	const [ hasBlurred, setHasBlurred ] = useState( false );
 	const [ confirmEmail, setConfirmEmail ] = useState( '' );
 	const [ hasConfirmBlurred, setHasConfirmBlurred ] = useState( false );
 	const [ initialEmail, setInitialEmail ] = useState< string | null >( null );
 
-	// Capture the initial email value once it loads from the server.
+	// Capture the initial email value once settings have loaded from the server.
 	useEffect( () => {
-		if ( accountCommunicationsEmail && initialEmail === null ) {
-			setInitialEmail( accountCommunicationsEmail );
+		if ( ! isLoading && initialEmail === null ) {
+			setInitialEmail( accountCommunicationsEmail ?? '' );
 		}
-	}, [ accountCommunicationsEmail, initialEmail ] );
+	}, [ isLoading, accountCommunicationsEmail, initialEmail ] );
 
 	const emailHasChanged =
 		initialEmail !== null && accountCommunicationsEmail !== initialEmail;

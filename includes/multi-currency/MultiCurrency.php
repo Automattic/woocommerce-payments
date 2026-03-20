@@ -297,21 +297,21 @@ class MultiCurrency {
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
 
-		// In cache-optimized mode without an active session, use async rendering.
-		// Otherwise, use standard server-side price conversion.
-		// A ?currency= URL param means a session will be created (at init priority 11),
-		// so we use server-side conversion to show the correct currency immediately.
-		// Auto-switching is also required for the async renderer: without it, all
-		// session-less visitors always see the default currency, so skeletons add
-		// unnecessary JS latency with no benefit — PHP renders the default prices
-		// directly, which is still fully cacheable (same output for all visitors).
+		// Use async (client-side) rendering only when should_use_async_rendering()
+		// is true: cache-optimized mode, no active session, and not a Store API
+		// request. Otherwise, use server-side FrontendPrices/FrontendCurrencies.
+		// A ?currency= URL param forces server-side conversion (session will be
+		// created at init priority 11). Auto-switching is also required: without
+		// it, session-less visitors always see the default currency, so skeletons
+		// add unnecessary JS latency with no benefit.
 		$has_pending_currency_switch = isset( $_GET['currency'] ); // phpcs:ignore WordPress.Security.NonceVerification
+		$use_async_rendering         = $this->should_use_async_rendering();
 
-		if ( ! $has_pending_currency_switch && $this->is_using_auto_currency_switching() ) {
+		if ( $use_async_rendering && ! $has_pending_currency_switch && $this->is_using_auto_currency_switching() ) {
 			$this->async_renderer->init_hooks();
 		}
 
-		if ( ! $this->is_cache_optimized_mode() || $this->has_active_session() || $has_pending_currency_switch ) {
+		if ( ! $use_async_rendering || $has_pending_currency_switch ) {
 			$this->frontend_prices->init_hooks();
 			$this->frontend_currencies->init_hooks();
 		}
@@ -757,10 +757,10 @@ class MultiCurrency {
 			return;
 		}
 
-		// In cache-optimized mode, skip session/cookie for geolocation auto-switch
-		// (persist_change = false). This keeps catalog pages cacheable.
-		// Explicit user switches (persist_change = true, e.g. ?currency=XXX) still set the session.
-		if ( $this->is_cache_optimized_mode() && ! $persist_change ) {
+		// Don't create a session during async rendering for automatic
+		// currency switches (e.g. geolocation). Explicit user switches
+		// (persist_change = true) always persist.
+		if ( $this->should_use_async_rendering() && ! $persist_change ) {
 			return;
 		}
 
@@ -779,8 +779,8 @@ class MultiCurrency {
 
 		if ( 0 === $user_id && WC()->session ) {
 			WC()->session->set( self::CURRENCY_SESSION_KEY, $currency->get_code() );
-			// Set the session cookie if is not yet to persist the selected currency.
-			if ( ! WC()->session->has_session() && ! headers_sent() && $persist_change ) {
+			// Set the session cookie if not yet set to persist the selected currency.
+			if ( ! $this->has_active_session() && ! headers_sent() && $persist_change ) {
 				$this->utils->set_customer_session_cookie( true );
 			}
 		} elseif ( $user_id ) {
@@ -819,9 +819,9 @@ class MultiCurrency {
 			return;
 		}
 
-		// In cache-optimized mode, currency switching is handled client-side
-		// via the REST API. Skip server-side geolocation and notice.
-		if ( $this->is_cache_optimized_mode() && ! $this->has_active_session() ) {
+		// When async rendering handles pricing, currency switching is done
+		// client-side via the JS renderer. Skip server-side geolocation.
+		if ( $this->should_use_async_rendering() ) {
 			return;
 		}
 
@@ -1102,12 +1102,36 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Checks if there is an active WooCommerce session.
+	 * Checks if there is an active cookie-based WooCommerce session.
+	 *
+	 * Returns false for Store API requests that use Cart-Token JWT sessions,
+	 * since WC's Store API SessionHandler does not implement has_session().
+	 * Use Utils::is_store_api_request() to detect those separately.
 	 *
 	 * @return bool
 	 */
 	public function has_active_session(): bool {
-		return isset( WC()->session ) && WC()->session->has_session();
+		return isset( WC()->session )
+			&& method_exists( WC()->session, 'has_session' )
+			&& WC()->session->has_session();
+	}
+
+	/**
+	 * Whether the async (client-side) price renderer should handle pricing
+	 * instead of server-side FrontendPrices.
+	 *
+	 * Returns true only when all conditions are met:
+	 * - Cache-optimized rendering mode is enabled.
+	 * - No active WC session (cookie-based).
+	 * - Not a Store API request (uses Cart-Token JWT sessions that bypass
+	 *   has_active_session, but still needs server-side conversion).
+	 *
+	 * @return bool
+	 */
+	private function should_use_async_rendering(): bool {
+		return $this->is_cache_optimized_mode()
+			&& ! $this->has_active_session()
+			&& ! Utils::is_store_api_request();
 	}
 
 	/**
