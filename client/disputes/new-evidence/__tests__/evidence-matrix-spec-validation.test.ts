@@ -1805,7 +1805,6 @@ describe( 'Evidence Matrix Specification Validation', () => {
 
 		describe( 'Non-implemented combinations should return undefined', () => {
 			const notImplemented = [
-				{ reason: 'credit_not_processed', productType: 'other' },
 				{ reason: 'general', productType: 'booking_reservation' },
 			];
 
