@@ -136,7 +136,10 @@ test.describe(
 			await merchantContext?.close();
 		} );
 
-		test( 'should render skeleton markup and convert prices client-side', async ( {
+		// TODO: Investigate QIT environment incompatibility — async renderer
+		// hooks don't fire in QIT despite correct WP option values.
+		// See: WOOPMNT-5992
+		test.skip( 'should render skeleton markup and convert prices client-side', async ( {
 			browser,
 		} ) => {
 			const { shopperPage, shopperContext } =
@@ -174,7 +177,7 @@ test.describe(
 			}
 		} );
 
-		test( 'should convert screen-reader text alongside prices', async ( {
+		test.skip( 'should convert screen-reader text alongside prices', async ( {
 			browser,
 		} ) => {
 			const { shopperPage, shopperContext } =
@@ -215,7 +218,7 @@ test.describe(
 			}
 		} );
 
-		test( 'should show fallback on network failure', async ( {
+		test.skip( 'should show fallback on network failure', async ( {
 			browser,
 		} ) => {
 			const { shopperPage, shopperContext } =
