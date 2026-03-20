@@ -7,7 +7,7 @@ import {
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 
 /**
@@ -18,6 +18,8 @@ import { useCustomerData, getStripeElementOptions } from './utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import { CardSkeleton } from './components/card-skeleton';
+import { ApmSkeleton } from './components/apm-skeleton';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -58,6 +60,58 @@ const PaymentProcessor = ( {
 } ) => {
 	const elements = useElements();
 	const hasLoadErrorRef = useRef( false );
+
+	const [ isStripeReady, setIsStripeReady ] = useState( false );
+	const [ showSkeleton, setShowSkeleton ] = useState( true );
+	const [ cardRowCount, setCardRowCount ] = useState( 2 );
+	const isCardMethod = paymentMethodId === 'card';
+	const wrapperRef = useRef( null );
+
+	// Dynamically adjust skeleton layout and min-height based on wrapper
+	// width to match Stripe's responsive card field layout (1/2/3-row).
+	useEffect( () => {
+		if ( ! isCardMethod || ! wrapperRef.current ) {
+			return;
+		}
+
+		const el = wrapperRef.current;
+		const observer = new ResizeObserver( ( entries ) => {
+			const width = entries[ 0 ].contentRect.width;
+			// Stripe renders card fields in:
+			// - 1 row above ~660px
+			// - 2 rows between ~415px and ~660px
+			// - 3 rows below ~415px
+			let rows;
+			let minHeight;
+			if ( width >= 660 ) {
+				rows = 1;
+				minHeight = '70px';
+			} else if ( width >= 415 ) {
+				rows = 2;
+				minHeight = '145px';
+			} else {
+				rows = 3;
+				minHeight = '220px';
+			}
+			setCardRowCount( rows );
+			el.style.minHeight = minHeight;
+		} );
+
+		observer.observe( el );
+		return () => {
+			observer.disconnect();
+			el.style.minHeight = '';
+		};
+	}, [ isCardMethod ] );
+
+	// Remove skeleton from DOM after fade-out transition completes.
+	const handleSkeletonTransitionEnd = useCallback( () => {
+		setShowSkeleton( false );
+	}, [] );
+
+	const handleStripeReady = useCallback( () => {
+		setIsStripeReady( true );
+	}, [] );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
@@ -204,14 +258,39 @@ const PaymentProcessor = ( {
 					} }
 				/>
 			) }
-			<PaymentElement
-				options={ getStripeElementOptions(
-					shouldSavePayment,
-					paymentMethodsConfig
+			{ /* Skeleton overlay for Stripe PaymentElement loading state.
+				   Positioned absolutely over the iframe mount point and fades out
+				   when Stripe fires the `ready` event. */ }
+			<div
+				ref={ wrapperRef }
+				className={ clsx(
+					'wcpay-payment-element-wrapper',
+					! isCardMethod && 'is-apm'
 				) }
-				onLoadError={ setHasLoadError }
-				className="wcpay-payment-element"
-			/>
+			>
+				{ showSkeleton &&
+					( isCardMethod ? (
+						<CardSkeleton
+							isHidden={ isStripeReady }
+							onTransitionEnd={ handleSkeletonTransitionEnd }
+							rowCount={ cardRowCount }
+						/>
+					) : (
+						<ApmSkeleton
+							isHidden={ isStripeReady }
+							onTransitionEnd={ handleSkeletonTransitionEnd }
+						/>
+					) ) }
+				<PaymentElement
+					options={ getStripeElementOptions(
+						shouldSavePayment,
+						paymentMethodsConfig
+					) }
+					onReady={ handleStripeReady }
+					onLoadError={ setHasLoadError }
+					className="wcpay-payment-element"
+				/>
+			</div>
 		</>
 	);
 };

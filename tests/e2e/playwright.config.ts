@@ -93,20 +93,21 @@ export default defineConfig( {
 	testMatch: getTestMatch( E2E_GROUP, E2E_BRANCH ),
 	testIgnore: /specs\/performance/,
 
-	// When running blocks tests, filter by @blocks tag
-	grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
-
 	/* Configure projects for major browsers */
 	projects: [
 		{
 			name: 'basic',
 			use: { ...devices[ 'Desktop Chrome' ] },
 			testMatch: /basic.spec.ts/,
+			// When running blocks tests, filter by @blocks tag (project-level).
+			// This ensures it doesn't exclude setup tests from the setup project.
+			grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
 			dependencies: [ 'setup' ],
 		},
 		{
 			name: 'chromium',
 			use: { ...devices[ 'Desktop Chrome' ] },
+			grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
 			dependencies: [ 'setup' ],
 		},
 		// Setup project
