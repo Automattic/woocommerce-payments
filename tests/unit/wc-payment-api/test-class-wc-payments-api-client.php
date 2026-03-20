@@ -254,6 +254,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws API_Exception
 	 */
 	public function test_get_onboarding_data() {
+		update_option( 'woocommerce_store_id', 'test-store-id-12345' );
+
 		$site_data = [
 			'site_username' => 'admin',
 			'site_locale'   => 'en_US',
@@ -302,6 +304,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'actioned_notes'              => $actioned_notes,
 						'create_live_account'         => true,
 						'collect_payout_requirements' => false,
+						'woocommerce_store_id'        => 'test-store-id-12345',
 						'compatibility_data'          => $this->get_mock_compatibility_data(),
 						'referral_code'               => null,
 					]
