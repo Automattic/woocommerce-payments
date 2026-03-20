@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix multi-currency cache mode: retain geolocation currency across session creation and Store API requests
