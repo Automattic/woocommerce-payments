@@ -7,7 +7,7 @@ import clsx from 'clsx';
 /**
  * Internal dependencies
  */
-import { isVersionGreaterOrEqual } from 'utils';
+import { isVersionGreaterOrEqual } from 'utils/version';
 import './skeleton-fallback.scss';
 
 const hasCoreSkeleton = isVersionGreaterOrEqual(
