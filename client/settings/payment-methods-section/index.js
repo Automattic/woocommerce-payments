@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card } from '@wordpress/components';
 
@@ -12,11 +12,12 @@ import { Card } from '@wordpress/components';
 import SettingsSection from '../settings-section';
 import LoadableSettingsSection from '../loadable-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import { useGetAvailablePaymentMethodIds } from '../../data';
+import { useGetAvailablePaymentMethodIds, useManualCapture } from '../../data';
 import CardBody from 'wcpay/settings/card-body';
 import PaymentMethodsList from '../payment-methods-list';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
+import BannerNotice from 'wcpay/components/banner-notice';
 
 const PaymentMethodsDescription = () => (
 	<>
@@ -36,6 +37,8 @@ const PaymentMethodsDescription = () => (
 
 const PaymentMethodsSection = () => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+	const [ isManualCaptureEnabled ] = useManualCapture();
+	const [ isNoticeDismissed, setIsNoticeDismissed ] = useState( false );
 
 	const availableNonBuyNowPayLaterMethodIds = availablePaymentMethodIds
 		.filter(
@@ -66,6 +69,31 @@ const PaymentMethodsSection = () => {
 				<ErrorBoundary>
 					<Card className="payment-methods">
 						<CardBody size={ null }>
+							<div className="payment-methods__header">
+								<h3 className="payment-methods__heading">
+									{ __(
+										'Payment methods',
+										'woocommerce-payments'
+									) }
+								</h3>
+							</div>
+							{ isManualCaptureEnabled && ! isNoticeDismissed && (
+								<BannerNotice
+									status="warning"
+									isDismissible={ true }
+									icon={ true }
+									className="manual-capture-notice"
+									onRemove={ () =>
+										setIsNoticeDismissed( true )
+									}
+								>
+									{ __(
+										'Manual capture is enabled, so any payment methods that ' +
+											"don't support it have been automatically disabled.",
+										'woocommerce-payments'
+									) }
+								</BannerNotice>
+							) }
 							<PaymentMethodsList
 								methodIds={
 									availableNonBuyNowPayLaterMethodIds
