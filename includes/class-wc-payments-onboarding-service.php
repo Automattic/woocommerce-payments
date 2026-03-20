@@ -1146,12 +1146,12 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'page=wc-admin&task=payments' ) ) {
 			return self::FROM_WCADMIN_PAYMENTS_TASK;
 		}
-		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
-			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
-		}
 		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) &&
 			false !== strpos( $referer, 'path=/woopayments/onboarding' ) ) {
 			return self::FROM_WCADMIN_NOX_IN_CONTEXT;
+		}
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
+			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
 		}
 		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' ) ) {
 			return self::FROM_WCADMIN_INCENTIVE;
