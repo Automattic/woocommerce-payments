@@ -17,7 +17,8 @@ use WCPay\Exceptions\Connection_Exception;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 
 // Need to use WC_Mock_Data_Store.
 require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
@@ -147,7 +148,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
 		$this->mock_dpps     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method = $this->createMock( UPE_Payment_Method::class );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -616,7 +617,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider rate_limiter_error_code_provider
 	 */
-	public function test_failed_transaction_rate_limiter_bumped( $error_message, $error_code ) {
+	public function test_failed_transaction_rate_limiter_bumped( $expected_notice, $error_code, $raw_message ) {
 		$order = WC_Helper_Order::create_order();
 
 		$this->mock_rate_limiter
@@ -636,7 +637,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->will(
 				$this->throwException(
 					new API_Exception(
-						$error_message,
+						$raw_message,
 						$error_code,
 						400,
 						'card_error'
@@ -649,14 +650,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$error_notices = WC()->session->get( 'wc_notices' );
 		$this->assertNotEmpty( $error_notices );
-		$this->assertEquals( $error_message, $error_notices['error'][0]['notice'] );
+		$this->assertEquals( $expected_notice, $error_notices['error'][0]['notice'] );
 	}
 
 	public function rate_limiter_error_code_provider() {
 		return [
-			'Card declined'    => [ 'Your card was declined.', 'card_declined' ],
-			'Incorrect number' => [ 'Your card number is incorrect.', 'incorrect_number' ],
-			'Incorrect CVC'    => [ 'Your card security code is incorrect.', 'incorrect_cvc' ],
+			'Card declined'    => [ 'Error: Your card was declined.', 'card_declined', 'Your card was declined.' ],
+			'Incorrect number' => [ 'Error: Your card number is incorrect.', 'incorrect_number', 'Your card number is incorrect.' ],
+			'Incorrect CVC'    => [ "Error: Your card's security code is incorrect.", 'incorrect_cvc', 'Your card security code is incorrect.' ],
 		];
 	}
 

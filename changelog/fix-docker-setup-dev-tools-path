@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Respect custom dev-tools path in Docker setup script via local.env.

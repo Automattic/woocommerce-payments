@@ -162,23 +162,24 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 		).toBe( cart );
 	} );
 
-	it( 'all filters pass through for subscriptions with sign-up fees', () => {
-		// Sign-up fees are charged immediately, so the item is not a
-		// "free trial" even though it has trial_length > 0.
+	it( 'total-amount and eligibility filters pass through for subscriptions with sign-up fees (non-zero cart total)', () => {
+		// Sign-up fees produce a non-zero cart total, so the $0-cart
+		// overrides (total-amount, eligibility) don't activate.
 		const cart = buildTrialCart( {
 			items: [ buildTrialSubscriptionItem( { signUpFees: '500' } ) ],
+			totalPrice: '500',
 		} );
 
 		expect(
-			applyFilters( 'wcpay.express-checkout.total-amount', 0, cart )
-		).toBe( 0 );
+			applyFilters( 'wcpay.express-checkout.total-amount', 500, cart )
+		).toBe( 500 );
 		expect(
 			applyFilters(
 				'wcpay.express-checkout.is-cart-eligible',
-				false,
+				true,
 				cart
 			)
-		).toBe( false );
+		).toBe( true );
 	} );
 
 	describe( 'total-amount filter', () => {
@@ -322,6 +323,36 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 				)
 			).toEqual( subscriptionRates );
 		} );
+
+		it( 'falls back to subscription shipping rates for trial with sign-up fee', () => {
+			const subscriptionRates = [
+				{
+					rate_id: 'free_shipping:1',
+					name: 'Free shipping',
+					price: '0',
+				},
+				{
+					rate_id: 'flat_rate:5',
+					name: 'Express shipping',
+					price: '1000',
+				},
+			];
+			const cart = buildTrialCart( {
+				items: [ buildTrialSubscriptionItem( { signUpFees: '200' } ) ],
+				totalPrice: '217',
+				subscriptions: [
+					subscriptionWithShipping( subscriptionRates ),
+				],
+			} );
+
+			expect(
+				applyFilters(
+					'wcpay.express-checkout.shipping-rates',
+					[],
+					cart
+				)
+			).toEqual( subscriptionRates );
+		} );
 	} );
 
 	describe( 'shipping-package-id filter', () => {
@@ -368,6 +399,26 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 					'unknown_rate:99'
 				)
 			).toBe( 0 );
+		} );
+
+		it( 'returns the subscription package ID for trial with sign-up fee', () => {
+			const cart = {
+				...cartWithShippingPackage( 'sub_month_0', [
+					{ rate_id: 'flat_rate:1' },
+					{ rate_id: 'flat_rate:2' },
+				] ),
+				items: [ buildTrialSubscriptionItem( { signUpFees: '200' } ) ],
+			};
+			cart.totals.total_price = '217';
+
+			expect(
+				applyFilters(
+					'wcpay.express-checkout.shipping-package-id',
+					0,
+					cart,
+					'flat_rate:2'
+				)
+			).toBe( 'sub_month_0' );
 		} );
 	} );
 

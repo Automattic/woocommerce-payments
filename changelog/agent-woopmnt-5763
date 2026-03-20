@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix express checkout buttons appearing on block-based cart when the cart location is unchecked in display settings.

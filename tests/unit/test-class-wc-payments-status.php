@@ -58,13 +58,14 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that debug_tools filter adds both tools.
+	 * Test that debug_tools filter adds all tools.
 	 */
 	public function test_debug_tools_adds_wcpay_tools() {
 		$tools = $this->status->debug_tools( [] );
 
 		$this->assertArrayHasKey( 'clear_wcpay_account_cache', $tools );
 		$this->assertArrayHasKey( 'delete_wcpay_test_orders', $tools );
+		$this->assertArrayHasKey( 'clear_wcpay_styles_cache', $tools );
 	}
 
 	/**
@@ -104,6 +105,32 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'deletes all test mode orders placed via', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'Orders placed via other gateways will not be affected', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'cannot be undone', $delete_tool['desc'] );
+	}
+
+	/**
+	 * Test that the clear styles cache tool has correct structure.
+	 */
+	public function test_clear_styles_cache_tool_structure() {
+		$tools = $this->status->debug_tools( [] );
+
+		$clear_styles_tool = $tools['clear_wcpay_styles_cache'];
+
+		$this->assertEquals( 'Clear WooPayments calculated styles', $clear_styles_tool['name'] );
+		$this->assertEquals( 'Clear', $clear_styles_tool['button'] );
+		$this->assertEquals( 'This tool will clear the styles cached for the WooPayments gateway UI elements at checkout', $clear_styles_tool['desc'] );
+		$this->assertIsCallable( $clear_styles_tool['callback'] );
+	}
+
+	/**
+	 * Test that clear_styles_cache deletes the option and returns expected message.
+	 */
+	public function test_clear_styles_cache_clears_option_and_returns_message() {
+		update_option( 'wcpay_styles_cache_version', 'test_version' );
+
+		$result = $this->status->clear_styles_cache();
+
+		$this->assertEquals( 'WooPayments styles cleared', $result );
+		$this->assertFalse( get_option( 'wcpay_styles_cache_version' ) );
 	}
 
 	/**

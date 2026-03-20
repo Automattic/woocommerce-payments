@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Intermittent empty cart after switching from guest to an existing customer
