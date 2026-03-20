@@ -1,5 +1,10 @@
 // Fallback skeleton styles for WooCommerce < 10.2 where
 // wc-block-components-skeleton__element is not available.
+//
+// Sourced from WooCommerce core:
+// - Mixin: woocommerce/client/blocks/assets/css/abstracts/_mixins.scss (skeleton-animation, lines 352-383)
+// - Variables: woocommerce/client/blocks/assets/css/abstracts/_variables.scss ($universal-border-radius: 4px)
+// - Keyframes renamed from wc-skeleton-shimmer to wcpay-skeleton-shimmer to avoid collisions with core.
 .wcpay-skeleton__element {
 	background: color-mix( in srgb, currentColor 5%, transparent );
 	border: none;
