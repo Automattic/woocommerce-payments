@@ -525,7 +525,7 @@ class WC_Payments_Order_Service {
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
 		// Trigger the failed order status hook to send notifications etc only if the order status was not already failed to avoid duplicate notifications.
-		if ( Order_Status::FAILED === $order_status_before_update ) {
+		if ( Order_Status::FAILED !== $order_status_before_update ) {
 			do_action( 'woocommerce_order_status_pending_to_failed_notification', $order->get_id(), $order );
 			do_action( 'woocommerce_order_status_failed_notification', $order->get_id(), $order );
 		}

@@ -1191,6 +1191,52 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		remove_all_filters( 'wcpay_terminal_payment_completed_order_status' );
 	}
 
+	public function test_mark_terminal_payment_failed_sends_notification_on_first_failure() {
+		// Arrange: Create the intent and ensure order is in pending status.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::PENDING );
+		$this->order->save();
+
+		$notification_fired = false;
+		add_action(
+			'woocommerce_order_status_failed_notification',
+			function () use ( &$notification_fired ) {
+				$notification_fired = true;
+			}
+		);
+
+		// Act: Mark the terminal payment as failed.
+		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test123', 'Card declined' );
+
+		// Assert: Notification should fire on first failure.
+		$this->assertTrue( $notification_fired, 'Failed notification should fire when order was not already failed.' );
+
+		remove_all_actions( 'woocommerce_order_status_failed_notification' );
+	}
+
+	public function test_mark_terminal_payment_failed_skips_notification_when_already_failed() {
+		// Arrange: Create the intent and set order to already failed.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::FAILED );
+		$this->order->save();
+
+		$notification_fired = false;
+		add_action(
+			'woocommerce_order_status_failed_notification',
+			function () use ( &$notification_fired ) {
+				$notification_fired = true;
+			}
+		);
+
+		// Act: Mark the terminal payment as failed again.
+		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test456', 'Card declined' );
+
+		// Assert: Notification should NOT fire when order was already failed.
+		$this->assertFalse( $notification_fired, 'Failed notification should not fire when order was already failed.' );
+
+		remove_all_actions( 'woocommerce_order_status_failed_notification' );
+	}
+
 	/**
 	 * @dataProvider provider_order_note_exists
 	 */
