@@ -35,6 +35,7 @@ env:
     WCPAY_ARTIFACT_DIRECTORY: 'zipfile'
     NODE_ENV: 'test'
     FORCE_E2E_DEPS_SETUP: true
+    E2E_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
