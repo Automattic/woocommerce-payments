@@ -291,7 +291,7 @@ class Payment_Information {
 			$error_message = empty( $request['wcpay-payment-method-error-message'] )
 				? __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' )
 				: $request['wcpay-payment-method-error-message'];
-			$error_code    = $request['wcpay-payment-method-error-code'] ?? 'unknown-error';
+			$error_code    = empty( $request['wcpay-payment-method-error-code'] ) ? 'unknown-error' : $request['wcpay-payment-method-error-code'];
 			$error         = new \WP_Error( $error_code, $error_message );
 			$payment_information->set_error( $error );
 		}
