@@ -278,6 +278,10 @@ class MultiCurrency {
 		// (e.g. a custom currency was removed), bail out to avoid fatal errors.
 		// Multi-Currency cannot function without a valid base currency.
 		if ( ! array_key_exists( get_woocommerce_currency(), get_woocommerce_currencies() ) ) {
+			// Initialize properties to safe defaults so lazy-init getters and
+			// later init-hook callbacks don't re-trigger init() or fatal.
+			$this->available_currencies = [];
+			$this->enabled_currencies   = [];
 			return;
 		}
 
