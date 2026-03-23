@@ -274,6 +274,13 @@ class MultiCurrency {
 	 * @return void
 	 */
 	public function init() {
+		// If the store currency is not in the list of available WooCommerce currencies
+		// (e.g. a custom currency was removed), bail out to avoid fatal errors.
+		// Multi-Currency cannot function without a valid base currency.
+		if ( ! array_key_exists( get_woocommerce_currency(), get_woocommerce_currencies() ) ) {
+			return;
+		}
+
 		$store_currency_updated = $this->check_store_currency_for_change();
 
 		$this->initialize_available_currencies();
