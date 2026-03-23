@@ -24,6 +24,7 @@ const {
 	E2E_SLACK_CHANNEL_ID,
 	WC_E2E_SCREENSHOTS,
 	E2E_GH_TOKEN,
+	E2E_HEAD_SHA,
 	// Matrix context
 	E2E_WC_VERSION,
 	E2E_PHP_VERSION,
@@ -69,41 +70,6 @@ function getBranch(): string {
 function makeCommitUrl( sha: string ): string {
 	const server = GITHUB_SERVER_URL || 'https://github.com';
 	return `${ server }/${ GITHUB_REPOSITORY }/commit/${ sha }`;
-}
-
-/**
- * For PRs, GITHUB_SHA is an ephemeral merge commit. Resolve the real
- * PR head SHA via the GitHub API. Returns undefined on failure.
- */
-async function resolveHeadSha(): Promise< string | undefined > {
-	if ( ! GITHUB_ACTIONS || ! E2E_GH_TOKEN ) {
-		return undefined;
-	}
-	const ref = GITHUB_REF || '';
-	if ( ! ref.startsWith( 'refs/pull/' ) ) {
-		return undefined;
-	}
-
-	const prNumber = ref.split( '/' )[ 2 ];
-	try {
-		const apiUrl = `https://api.github.com/repos/${ GITHUB_REPOSITORY }/pulls/${ prNumber }`;
-		const response = await fetch( apiUrl, {
-			headers: {
-				Authorization: `token ${ E2E_GH_TOKEN }`,
-				Accept: 'application/vnd.github.v3+json',
-			},
-			signal: AbortSignal.timeout( 5000 ),
-		} );
-		if ( ! response.ok ) {
-			return undefined;
-		}
-		const data = ( await response.json() ) as {
-			head: { sha: string };
-		};
-		return data.head?.sha;
-	} catch {
-		return undefined;
-	}
 }
 
 function getBuildLogUrl(): string | undefined {
@@ -281,7 +247,7 @@ class SlackReporter implements Reporter {
 			E2E_SLACK_CHANNEL_ID || ''
 		);
 		this.buildLogUrl = getBuildLogUrl();
-		this.commitSha = GITHUB_SHA || undefined;
+		this.commitSha = E2E_HEAD_SHA || GITHUB_SHA || undefined;
 	}
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -307,15 +273,11 @@ class SlackReporter implements Reporter {
 
 		this.failureCount++;
 
-		// First failure: resolve job URL + real commit SHA, create the parent thread.
+		// First failure: resolve job URL, create the parent thread.
 		if ( ! this.threadTs ) {
 			await this.client.joinChannel();
-			const [ jobUrl, headSha ] = await Promise.all( [
-				resolveJobUrl(),
-				resolveHeadSha(),
-			] );
+			const jobUrl = await resolveJobUrl();
 			this.buildLogUrl = jobUrl ?? this.buildLogUrl;
-			this.commitSha = headSha ?? this.commitSha;
 			this.threadTs = await this.client.postMessage(
 				buildParentMessage(
 					this.failureCount,
