@@ -51,6 +51,7 @@ const PaymentProcessor = ( {
 	testingInstructions,
 	eventRegistration: { onPaymentSetup, onCheckoutSuccess, onCheckoutFail },
 	emitResponse,
+	components: { Skeleton: CoreSkeleton } = {},
 	paymentMethodId,
 	upeMethods,
 	errorMessage,
@@ -275,11 +276,13 @@ const PaymentProcessor = ( {
 							isHidden={ isStripeReady }
 							onTransitionEnd={ handleSkeletonTransitionEnd }
 							rowCount={ cardRowCount }
+							skeletonComponent={ CoreSkeleton }
 						/>
 					) : (
 						<ApmSkeleton
 							isHidden={ isStripeReady }
 							onTransitionEnd={ handleSkeletonTransitionEnd }
+							skeletonComponent={ CoreSkeleton }
 						/>
 					) ) }
 				<PaymentElement

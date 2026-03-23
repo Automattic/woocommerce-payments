@@ -6,45 +6,60 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { Skeleton } from './skeleton';
+import { Skeleton as LocalSkeleton } from './skeleton';
+
+type SkeletonComponentType = typeof LocalSkeleton;
 
 interface CardSkeletonProps {
 	isHidden?: boolean;
 	onTransitionEnd?: () => void;
 	rowCount?: number;
+	skeletonComponent?: SkeletonComponentType;
 }
 
-const SingleRowSkeleton = () => (
+const SingleRowSkeleton = ( {
+	skeletonComponent: SkeletonEl,
+}: {
+	skeletonComponent: SkeletonComponentType;
+} ) => (
 	<div className="wcpay-skeleton-row">
-		<Skeleton width="50%" height="3rem" borderRadius="4px" />
-		<Skeleton width="25%" height="3rem" borderRadius="4px" />
-		<Skeleton width="25%" height="3rem" borderRadius="4px" />
+		<SkeletonEl width="50%" height="3rem" borderRadius="4px" />
+		<SkeletonEl width="25%" height="3rem" borderRadius="4px" />
+		<SkeletonEl width="25%" height="3rem" borderRadius="4px" />
 	</div>
 );
 
-const TwoRowSkeleton = () => (
+const TwoRowSkeleton = ( {
+	skeletonComponent: SkeletonEl,
+}: {
+	skeletonComponent: SkeletonComponentType;
+} ) => (
 	<>
-		<Skeleton height="3.5rem" borderRadius="4px" />
+		<SkeletonEl height="3.5rem" borderRadius="4px" />
 		<div className="wcpay-skeleton-row">
-			<Skeleton height="3.5rem" borderRadius="4px" />
-			<Skeleton height="3.5rem" borderRadius="4px" />
+			<SkeletonEl height="3.5rem" borderRadius="4px" />
+			<SkeletonEl height="3.5rem" borderRadius="4px" />
 		</div>
 	</>
 );
 
-const ThreeRowSkeleton = () => (
+const ThreeRowSkeleton = ( {
+	skeletonComponent: SkeletonEl,
+}: {
+	skeletonComponent: SkeletonComponentType;
+} ) => (
 	<>
-		<Skeleton
+		<SkeletonEl
 			className="wcpay-skeleton-row"
 			height="3.5rem"
 			borderRadius="4px"
 		/>
-		<Skeleton
+		<SkeletonEl
 			className="wcpay-skeleton-row"
 			height="3.5rem"
 			borderRadius="4px"
 		/>
-		<Skeleton
+		<SkeletonEl
 			className="wcpay-skeleton-row"
 			height="3.5rem"
 			borderRadius="4px"
@@ -52,7 +67,10 @@ const ThreeRowSkeleton = () => (
 	</>
 );
 
-const skeletonByRowCount: Record< number, React.FC > = {
+const skeletonByRowCount: Record<
+	number,
+	React.FC< { skeletonComponent: SkeletonComponentType } >
+> = {
 	1: SingleRowSkeleton,
 	2: TwoRowSkeleton,
 	3: ThreeRowSkeleton,
@@ -62,6 +80,7 @@ export const CardSkeleton = ( {
 	isHidden = false,
 	onTransitionEnd,
 	rowCount = 2,
+	skeletonComponent: SkeletonEl = LocalSkeleton,
 }: CardSkeletonProps ): JSX.Element => {
 	const SkeletonLayout = skeletonByRowCount[ rowCount ] || TwoRowSkeleton;
 
@@ -73,7 +92,7 @@ export const CardSkeleton = ( {
 			aria-hidden={ isHidden }
 			onTransitionEnd={ onTransitionEnd }
 		>
-			<SkeletonLayout />
+			<SkeletonLayout skeletonComponent={ SkeletonEl } />
 		</div>
 	);
 };

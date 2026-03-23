@@ -7,16 +7,20 @@ import clsx from 'clsx';
 /**
  * Internal dependencies
  */
-import { Skeleton } from './skeleton';
+import { Skeleton as LocalSkeleton } from './skeleton';
+
+type SkeletonComponentType = typeof LocalSkeleton;
 
 interface ApmSkeletonProps {
 	isHidden?: boolean;
 	onTransitionEnd?: () => void;
+	skeletonComponent?: SkeletonComponentType;
 }
 
 export const ApmSkeleton = ( {
 	isHidden = false,
 	onTransitionEnd,
+	skeletonComponent: SkeletonEl = LocalSkeleton,
 }: ApmSkeletonProps ): JSX.Element => {
 	return (
 		<div
@@ -26,7 +30,7 @@ export const ApmSkeleton = ( {
 			aria-hidden={ isHidden }
 			onTransitionEnd={ onTransitionEnd }
 		>
-			<Skeleton height="6rem" borderRadius="4px" />
+			<SkeletonEl height="6rem" borderRadius="4px" />
 		</div>
 	);
 };
