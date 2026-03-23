@@ -1191,7 +1191,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		remove_all_filters( 'wcpay_terminal_payment_completed_order_status' );
 	}
 
-	public function test_mark_terminal_payment_failed_sends_notification_on_first_failure() {
+	public function test_mark_terminal_payment_failed_fires_notification_via_wc_core_on_first_failure() {
 		// Arrange: Create the intent and ensure order is in pending status.
 		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$this->order->set_status( Order_Status::PENDING );
@@ -1202,11 +1202,11 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Act: Mark the terminal payment as failed.
 		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test123', 'Card declined' );
 
-		// Assert: Notification should fire on first failure.
-		$this->assertGreaterThan( $action_count_before, did_action( 'woocommerce_order_status_failed_notification' ), 'Failed notification should fire when order was not already failed.' );
+		// Assert: WC core fires the notification on status transition (pending → failed).
+		$this->assertGreaterThan( $action_count_before, did_action( 'woocommerce_order_status_failed_notification' ), 'Notification should fire via WC core on first failure.' );
 	}
 
-	public function test_mark_terminal_payment_failed_skips_notification_when_already_failed() {
+	public function test_mark_terminal_payment_failed_fires_notification_manually_on_repeated_failure() {
 		// Arrange: Create the intent and set order to already failed.
 		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
 		$this->order->set_status( Order_Status::FAILED );
@@ -1217,8 +1217,8 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Act: Mark the terminal payment as failed again.
 		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test456', 'Card declined' );
 
-		// Assert: Notification should NOT fire when order was already failed.
-		$this->assertSame( $action_count_before, did_action( 'woocommerce_order_status_failed_notification' ), 'Failed notification should not fire when order was already failed.' );
+		// Assert: WC core won't fire hooks (status didn't change), so our code manually triggers the notification.
+		$this->assertGreaterThan( $action_count_before, did_action( 'woocommerce_order_status_failed_notification' ), 'Notification should fire manually when order was already failed.' );
 	}
 
 	/**

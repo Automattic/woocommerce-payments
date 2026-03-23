@@ -1,4 +1,4 @@
 Significance: patch
-Type: fix
+Type: dev
 
-fix: Send terminal payment failure notifications on first failure instead of on repeated failures
+dev: Clarify terminal payment failure notification logic and add tests
