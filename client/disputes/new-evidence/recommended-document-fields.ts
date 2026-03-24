@@ -9,6 +9,8 @@ import { __ } from '@wordpress/i18n';
 import { RecommendedDocument } from './types';
 import { getMatrixFields } from './evidence-matrix';
 import { DOCUMENT_FIELD_KEYS } from './document-field-keys';
+import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
+import type { DisputeReason } from 'wcpay/types/disputes';
 
 // Re-export for backward compatibility
 export { DOCUMENT_FIELD_KEYS };
@@ -20,13 +22,15 @@ export { DOCUMENT_FIELD_KEYS };
  * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
  * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
  * @param {string} productType - The product type (for subscription_canceled disputes)
+ * @param {string[]} enhancedEligibilityTypes - The enhanced eligibility types (e.g. ['visa_compliance'])
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
-	reason: string,
+	reason: DisputeReason,
 	refundStatus?: string,
 	duplicateStatus?: string,
-	productType?: string
+	productType?: string,
+	enhancedEligibilityTypes?: string[]
 ): Array< RecommendedDocument > => {
 	// Feature flag gated: Check evidence matrix for reason + product type combinations
 	const isFeatureFlagEnabled =
@@ -34,8 +38,13 @@ const getRecommendedDocumentFields = (
 		false;
 
 	if ( isFeatureFlagEnabled ) {
-		// Handle Visa Compliance (noncompliant) disputes
-		if ( reason === 'noncompliant' ) {
+		// Handle Visa Compliance disputes: reason is 'noncompliant' OR enhanced_eligibility_types includes 'visa_compliance'
+		if (
+			isVisaComplianceDispute( {
+				reason,
+				enhanced_eligibility_types: enhancedEligibilityTypes,
+			} )
+		) {
 			return [
 				{
 					key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
@@ -59,7 +68,13 @@ const getRecommendedDocumentFields = (
 		}
 		// Use 'default' as placeholder to attempt matrix lookup (will fall back if no entry exists).
 		// For duplicate disputes, use duplicateStatus for composite key lookup.
-		const status = reason === 'duplicate' ? duplicateStatus : undefined;
+		// For credit_not_processed disputes, use refundStatus for composite key lookup.
+		let status: string | undefined;
+		if ( reason === 'duplicate' ) {
+			status = duplicateStatus;
+		} else if ( reason === 'credit_not_processed' ) {
+			status = refundStatus;
+		}
 		const effectiveProductType =
 			productType || ( reason === 'duplicate' ? 'default' : undefined );
 
@@ -431,10 +446,11 @@ const getRecommendedDocumentFields = (
 		} ) );
 };
 
-const getRecommendedShippingDocumentFields = (): Array<
-	RecommendedDocument
-> => {
-	return [
+const getRecommendedShippingDocumentFields = (
+	reason?: string,
+	productType?: string
+): Array< RecommendedDocument > => {
+	const fields: Array< RecommendedDocument > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
 			label: __( 'Proof of shipping', 'woocommerce-payments' ),
@@ -445,6 +461,23 @@ const getRecommendedShippingDocumentFields = (): Array<
 			order: 0,
 		},
 	];
+
+	if (
+		reason === 'product_not_received' &&
+		productType === 'physical_product'
+	) {
+		fields.push( {
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+			label: __( 'Proof of delivery', 'woocommerce-payments' ),
+			description: __(
+				'A confirmation that the product was delivered.',
+				'woocommerce-payments'
+			),
+			order: 1,
+		} );
+	}
+
+	return fields;
 };
 
 export { getRecommendedDocumentFields, getRecommendedShippingDocumentFields };

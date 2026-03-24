@@ -104,7 +104,8 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$payment_method = $this->createMock( UPE_Payment_Method::class );
 		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
 		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
-		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '/grabpay.svg' );
+		$payment_method->method( 'get_icon' )->willReturn( '/grabpay.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( '/grabpay.svg' );
 
 		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method );
 
@@ -114,6 +115,22 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'src="/grabpay.svg"', $result );
 	}
 
+	public function test_show_lpm_payment_method_name_with_dark_icon() {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_account_country' )->willReturn( 'NL' );
+
+		$payment_method = $this->createMock( UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'iDEAL' );
+		$payment_method->method( 'get_id' )->willReturn( 'ideal' );
+		$payment_method->method( 'get_icon' )->willReturn( '/ideal.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( '/ideal-dark.svg' );
+
+		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method );
+
+		$this->assertStringContainsString( 'src="/ideal.svg"', $result );
+		$this->assertStringContainsString( 'data-dark-src="/ideal-dark.svg"', $result );
+	}
+
 	public function test_show_lpm_payment_method_name_icon_not_found() {
 		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
@@ -121,7 +138,8 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$payment_method = $this->createMock( UPE_Payment_Method::class );
 		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
 		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
-		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '' );
+		$payment_method->method( 'get_icon' )->willReturn( '' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( '' );
 
 		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method, true );
 

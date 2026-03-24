@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WC_Payments;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -70,7 +70,7 @@ class Duplicates_Detection_Service {
 
 		foreach ( $this->get_enabled_gateways() as $gateway ) {
 			if ( $this->gateway_contains_keyword( $gateway->id, $keywords ) || in_array( $gateway->id, $special_keywords, true ) ) {
-				$this->gateways_qualified_by_duplicates_detector[ CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID ][] = $gateway->id;
+				$this->gateways_qualified_by_duplicates_detector[ CardDefinition::get_id() ][] = $gateway->id;
 			}
 		}
 

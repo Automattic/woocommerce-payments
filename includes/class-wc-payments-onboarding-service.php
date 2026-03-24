@@ -116,6 +116,7 @@ class WC_Payments_Onboarding_Service {
 	public function init_hooks() {
 		add_filter( 'admin_body_class', [ $this, 'add_admin_body_classes' ] );
 		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'maybe_add_test_drive_settings_to_new_account_request' ] );
+		add_filter( 'wc_payments_get_onboarding_data_args', [ $this, 'add_woocommerce_store_id_to_request' ] );
 	}
 
 	/**
@@ -297,16 +298,18 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
-	 * @param array $self_assessment_data Self assessment data.
-	 * @param array $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
-	 *                           indicating whether the capability should be requested when the account is created
-	 *                           and enabled in the settings.
+	 * @param array       $self_assessment_data Self assessment data.
+	 * @param array       $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                                  indicating whether the capability should be requested when the account is created
+	 *                                  and enabled in the settings.
+	 * @param string|null $explicit_mode Optional. The user's explicit mode selection ('live' or 'test').
+	 *                                   When provided, overrides the auto-detected mode (unless dev mode is active).
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [] ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [], ?string $explicit_mode = null ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: Jetpack connection not available.' );
 			return [];
@@ -320,7 +323,14 @@ class WC_Payments_Onboarding_Service {
 
 		$this->set_onboarding_init_in_progress();
 
-		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
+		// Determine setup mode: dev mode always forces test; explicit user selection overrides auto-detection.
+		if ( WC_Payments::mode()->is_dev() ) {
+			$setup_mode = 'test';
+		} elseif ( null !== $explicit_mode && in_array( strtolower( $explicit_mode ), [ 'live', 'test' ], true ) ) {
+			$setup_mode = $explicit_mode;
+		} else {
+			$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
+		}
 
 		// Make sure the onboarding test mode DB flag is set.
 		self::set_test_mode( 'live' !== $setup_mode );
@@ -1136,12 +1146,12 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'page=wc-admin&task=payments' ) ) {
 			return self::FROM_WCADMIN_PAYMENTS_TASK;
 		}
-		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
-			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
-		}
 		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) &&
 			false !== strpos( $referer, 'path=/woopayments/onboarding' ) ) {
 			return self::FROM_WCADMIN_NOX_IN_CONTEXT;
+		}
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
+			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
 		}
 		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' ) ) {
 			return self::FROM_WCADMIN_INCENTIVE;
@@ -1405,6 +1415,21 @@ class WC_Payments_Onboarding_Service {
 			delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 		}
 
+		return $args;
+	}
+
+	/**
+	 * Add the WooCommerce store ID to outgoing onboarding request args.
+	 *
+	 * @param array $args The request args.
+	 *
+	 * @return array
+	 */
+	public function add_woocommerce_store_id_to_request( array $args ): array {
+		$store_id_key                 = ( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) )
+			? \WC_Install::STORE_ID_OPTION
+			: 'woocommerce_store_id';
+		$args['woocommerce_store_id'] = get_option( $store_id_key, '' );
 		return $args;
 	}
 

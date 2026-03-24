@@ -129,6 +129,12 @@ if [[ ! -d "$DEV_TOOLS_PATH" ]]; then
 	git clone --depth=1 --branch "${WCP_DEV_TOOLS_BRANCH-trunk}" "$WCP_DEV_TOOLS_REPO" "$DEV_TOOLS_PATH"
 fi
 
+# Ensure dev tools dependencies are installed (required before WordPress loads the plugin).
+if [[ -d "$DEV_TOOLS_PATH" && ! -f "$DEV_TOOLS_PATH/vendor/autoload.php" ]]; then
+	step "Installing dev tools dependencies"
+	composer install --no-dev --no-interaction --working-dir="$DEV_TOOLS_PATH"
+fi
+
 step "Starting CLIENT containers"
 redirect_output docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
@@ -202,6 +208,10 @@ cli wp config set DISABLE_JETPACK_ACCOUNT_PROTECTION true --raw
 
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
+# Flush rewrite rules with --hard to ensure .htaccess is regenerated.
+# wp rewrite structure alone won't regenerate .htaccess if the WordPress
+# markers already exist but are empty, which breaks REST API routing.
+cli wp rewrite flush --hard
 
 echo "Installing and activating WordPress Importer..."
 cli wp plugin install wordpress-importer --activate
@@ -232,6 +242,12 @@ cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
+
+echo "Skipping WooCommerce onboarding wizard..."
+# The WC core profiler (setup wizard) crashes in local Docker environments because
+# it can't fetch remote country/locale data. Setting the onboarding profile as
+# skipped prevents WC from redirecting to the wizard on every admin page load.
+cli wp option set woocommerce_onboarding_profile --format=json '{"skipped":true}'
 
 echo "Deactivating Coming Soon mode in WooCommerce..."
 cli wp option set woocommerce_coming_soon "no"

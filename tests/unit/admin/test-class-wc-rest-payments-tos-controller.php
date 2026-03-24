@@ -11,7 +11,8 @@ use WCPay\Core\Server\Request\Add_Account_Tos_Agreement;
 use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -67,7 +68,7 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_compatibility_service        = $this->createMock( Compatibility_Service::class );
 		$action_scheduler_service          = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service, $mock_compatibility_service );
 		$mock_dpps                         = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method               = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method               = $this->createMock( UPE_Payment_Method::class );
 		$mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
 		$this->gateway    = new WC_Payment_Gateway_WCPay(

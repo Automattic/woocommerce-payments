@@ -69,7 +69,7 @@ const formatDetails = ( payment: Payment ): ReactNode => {
 };
 
 const WalletIcon = ( { payment }: PaymentMethodDetailsProps ) => {
-	const { wallet } = payment[ payment.type ];
+	const wallet = payment[ payment.type ]?.wallet;
 	if ( ! wallet ) return null;
 
 	if ( ! wallet.type ) return null;

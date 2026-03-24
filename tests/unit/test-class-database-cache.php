@@ -518,6 +518,47 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		remove_all_filters( 'query' );
 	}
 
+	public function test_delete_clears_wp_object_cache_even_when_db_option_missing() {
+		$cache_contents = [
+			'data'    => [ 'stale' => true ],
+			'fetched' => time() - HOUR_IN_SECONDS,
+			'errored' => false,
+		];
+
+		// Seed the WP object cache directly (simulating Memcached having a stale entry).
+		wp_cache_set( self::MOCK_KEY, $cache_contents, 'options' );
+
+		// Ensure there's NO DB option row — simulates the double-delete scenario.
+		delete_option( self::MOCK_KEY );
+
+		// Sanity check: WP object cache has the stale entry.
+		$this->assertNotFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'Precondition: WP object cache should have the stale entry.' );
+
+		// Act: delete via Database_Cache.
+		$this->database_cache->delete( self::MOCK_KEY );
+
+		// Assert: WP object cache entry must be gone.
+		$this->assertFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'wp_cache_delete should be called even when delete_option returns false.' );
+	}
+
+	public function test_delete_clears_wp_object_cache_when_db_option_exists() {
+		$value = [ 'mock' => true ];
+
+		// Write a valid cache entry to DB (non-autoloaded, matching production behavior).
+		$this->write_mock_cache( $value );
+
+		// Sanity check: both DB and WP object cache have the entry.
+		$this->assertNotFalse( get_option( self::MOCK_KEY ), 'Precondition: DB option should exist.' );
+		$this->assertNotFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'Precondition: WP object cache should have the entry.' );
+
+		// Act: delete via Database_Cache.
+		$this->database_cache->delete( self::MOCK_KEY );
+
+		// Assert: both DB and WP object cache entries must be gone.
+		$this->assertFalse( get_option( self::MOCK_KEY ), 'DB option should be deleted.' );
+		$this->assertFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'WP object cache entry should be deleted.' );
+	}
+
 	public function test_get_or_add_does_not_refresh_if_disabled() {
 		$refreshed = false;
 		$value     = [ 'mock' => true ];
@@ -549,7 +590,8 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 				'data'    => $data,
 				'fetched' => $fetch_time ?? time(),
 				'errored' => $errored,
-			]
+			],
+			'no' // Match production: Database_Cache stores options as non-autoloaded.
 		);
 	}
 

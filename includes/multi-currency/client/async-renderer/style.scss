@@ -1,0 +1,42 @@
+// Mimics the WooCommerce blocks skeleton-animation() mixin for visual
+// consistency with the block-based cart/checkout skeleton loaders.
+// Uses transform (GPU-accelerated) for the shimmer animation.
+.wcpay-price-skeleton {
+	display: inline-block;
+	min-width: 60px;
+	height: 1em;
+	border-radius: 2px;
+	background: rgba( 0, 0, 0, 0.05 );
+	position: relative;
+	overflow: hidden;
+	border: none;
+
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		transform: translateX( -100% );
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba( 0, 0, 0, 0.05 ) 50%,
+			transparent 100%
+		);
+		animation: wcpay-skeleton-shimmer 1.25s infinite;
+
+		@media ( prefers-reduced-motion: reduce ) {
+			animation: none;
+		}
+	}
+}
+
+@keyframes wcpay-skeleton-shimmer {
+	100% {
+		transform: translateX( 100% );
+	}
+}
+
+.wcpay-price-error {
+	color: #999;
+	font-style: italic;
+}

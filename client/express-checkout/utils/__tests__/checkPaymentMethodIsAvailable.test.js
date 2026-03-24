@@ -63,6 +63,7 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		cartTotals: {
 			total_price: totalPrice,
 			currency_code: currencyCode,
+			currency_minor_unit: 2,
 		},
 	} );
 
@@ -191,6 +192,20 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 
 		// onReady should be called twice for different payment methods (separate caches)
 		expect( onReadySpy ).toHaveBeenCalledTimes( 2 );
+	} );
+
+	it( 'should return false immediately when currency code is empty', async () => {
+		onReadySpy.mockClear();
+		ExpressCheckoutElement.mockClear();
+
+		const result = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '100.00', '' ),
+			mockApi
+		);
+
+		expect( result ).toBe( false );
+		expect( ExpressCheckoutElement ).not.toHaveBeenCalled();
 	} );
 
 	it( 'should handle cases where payment method is not available', async () => {

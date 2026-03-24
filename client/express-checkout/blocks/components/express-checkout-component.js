@@ -2,6 +2,7 @@
  * External dependencies
  */
 import { ExpressCheckoutElement } from '@stripe/react-stripe-js';
+import { select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
@@ -10,56 +11,14 @@ import {
 	shippingRateChangeHandler,
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
-import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
-
-const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
-	const allDisabled = {
-		applePay: 'never',
-		googlePay: 'never',
-		amazonPay: 'never',
-		link: 'never',
-		paypal: 'never',
-		klarna: 'never',
-	};
-
-	const enabledParam = [ 'applePay', 'googlePay' ].includes(
-		enabledPaymentMethod
-	)
-		? 'always'
-		: 'auto';
-
-	return {
-		paymentMethods: {
-			...allDisabled,
-			[ enabledPaymentMethod ]: enabledParam,
-		},
-	};
-};
-
-// Visual adjustments to horizontally align the buttons.
-const adjustButtonHeights = ( buttonOptions, expressPaymentMethod ) => {
-	// Apple Pay has a nearly imperceptible height difference. We increase it by 1px here.
-	if ( buttonOptions.buttonTheme.applePay === 'black' ) {
-		if ( expressPaymentMethod === 'applePay' ) {
-			buttonOptions.buttonHeight = buttonOptions.buttonHeight + 0.4;
-		}
-	}
-
-	// GooglePay with the white theme has a 2px height difference due to its border.
-	if (
-		expressPaymentMethod === 'googlePay' &&
-		buttonOptions.buttonTheme.googlePay === 'white'
-	) {
-		buttonOptions.buttonHeight = buttonOptions.buttonHeight - 2;
-	}
-
-	// Clamp the button height to the allowed range 40px to 55px.
-	buttonOptions.buttonHeight = Math.max(
-		40,
-		Math.min( buttonOptions.buttonHeight, 55 )
-	);
-	return buttonOptions;
-};
+import {
+	PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
+	WC_STORE_CART,
+} from 'wcpay/checkout/constants';
+import {
+	getPaymentMethodsOverride,
+	adjustButtonHeights,
+} from '../../utils/payment-method-overrides';
 
 /**
  * ExpressCheckout express payment method component.
@@ -99,7 +58,11 @@ const ExpressCheckoutComponent = ( {
 		shippingAddressChangeHandler( event, elements );
 
 	const onShippingRateChange = ( event ) =>
-		shippingRateChangeHandler( event, elements );
+		shippingRateChangeHandler(
+			event,
+			elements,
+			select( WC_STORE_CART )?.getCartData()
+		);
 
 	const onElementsReady = ( event ) => {
 		const paymentMethodContainer = document.getElementById(

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix reset account modal always hiding pre-reset guidance steps

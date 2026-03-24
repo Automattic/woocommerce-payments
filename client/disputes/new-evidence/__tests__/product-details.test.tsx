@@ -92,6 +92,7 @@ describe( 'ProductDetails', () => {
 			( option ) => ( option as HTMLOptionElement ).value
 		);
 		expect( options ).toContain( 'booking_reservation' );
+		expect( options ).toContain( 'event' );
 		expect( options ).toContain( 'other' );
 		expect( options ).not.toContain( 'multiple' );
 		expect( options ).toEqual( [
@@ -99,6 +100,7 @@ describe( 'ProductDetails', () => {
 			'digital_product_or_service',
 			'offline_service',
 			'booking_reservation',
+			'event',
 			'other',
 		] );
 	} );

@@ -18,6 +18,7 @@ import {
 	usePaymentRequestButtonSize,
 	useAmazonPayEnabledSettings,
 	useAmazonPayLocations,
+	useExpressCheckoutInPaymentMethodsEnabledSettings,
 } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
 import ExpressCheckoutSettingsNotices from './express-checkout-settings-notices';
@@ -87,6 +88,10 @@ const AmazonPaySettings = ( { section } ) => {
 		amazonPayLocations,
 		updateAmazonPayLocations,
 	] = useAmazonPayLocations();
+	const [
+		isExpressCheckoutInPaymentMethodsEnabled,
+		updateIsExpressCheckoutInPaymentMethodsEnabled,
+	] = useExpressCheckoutInPaymentMethodsEnabledSettings();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
 		updateAmazonPayLocations( location, isChecked );
@@ -112,6 +117,29 @@ const AmazonPaySettings = ( { section } ) => {
 							) }
 							__nextHasNoMarginBottom
 						/>
+						{ wcpaySettings.featureFlags
+							.isDynamicCheckoutPlaceOrderButtonEnabled && (
+							<CheckboxControl
+								className="wcpay-payment-request-settings__enable__checkbox"
+								checked={
+									isExpressCheckoutInPaymentMethodsEnabled
+								}
+								onChange={
+									updateIsExpressCheckoutInPaymentMethodsEnabled
+								}
+								label={ __(
+									'Enable express checkout methods as options in the payment methods list',
+									'woocommerce-payments'
+								) }
+								help={ __(
+									// Amazon Pay settings page always has Amazon Pay available.
+									'Apple Pay, Google Pay, and Amazon Pay will appear as options in the payment methods list ' +
+										'instead of as separate express checkout buttons.',
+									'woocommerce-payments'
+								) }
+								__nextHasNoMarginBottom
+							/>
+						) }
 						{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
 						<BaseControl
 							__next40pxDefaultSize
@@ -120,12 +148,17 @@ const AmazonPaySettings = ( { section } ) => {
 							<ul className="payment-request-settings__location">
 								<li>
 									<CheckboxControl
-										disabled={ ! isAmazonPayEnabled }
+										disabled={
+											! isAmazonPayEnabled ||
+											isExpressCheckoutInPaymentMethodsEnabled
+										}
 										checked={
-											isAmazonPayEnabled &&
-											amazonPayLocations.includes(
-												'product'
-											)
+											isExpressCheckoutInPaymentMethodsEnabled
+												? false
+												: isAmazonPayEnabled &&
+												  amazonPayLocations.includes(
+														'product'
+												  )
 										}
 										onChange={ makeLocationChangeHandler(
 											'product'
@@ -139,12 +172,17 @@ const AmazonPaySettings = ( { section } ) => {
 								</li>
 								<li>
 									<CheckboxControl
-										disabled={ ! isAmazonPayEnabled }
+										disabled={
+											! isAmazonPayEnabled ||
+											isExpressCheckoutInPaymentMethodsEnabled
+										}
 										checked={
-											isAmazonPayEnabled &&
-											amazonPayLocations.includes(
-												'cart'
-											)
+											isExpressCheckoutInPaymentMethodsEnabled
+												? false
+												: isAmazonPayEnabled &&
+												  amazonPayLocations.includes(
+														'cart'
+												  )
 										}
 										onChange={ makeLocationChangeHandler(
 											'cart'
@@ -158,12 +196,17 @@ const AmazonPaySettings = ( { section } ) => {
 								</li>
 								<li>
 									<CheckboxControl
-										disabled={ ! isAmazonPayEnabled }
+										disabled={
+											! isAmazonPayEnabled ||
+											isExpressCheckoutInPaymentMethodsEnabled
+										}
 										checked={
-											isAmazonPayEnabled &&
-											amazonPayLocations.includes(
-												'checkout'
-											)
+											isExpressCheckoutInPaymentMethodsEnabled
+												? true
+												: isAmazonPayEnabled &&
+												  amazonPayLocations.includes(
+														'checkout'
+												  )
 										}
 										onChange={ makeLocationChangeHandler(
 											'checkout'
