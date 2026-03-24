@@ -188,8 +188,24 @@ function stripAnsi( text: string ): string {
 
 // -- Message builders ---------------------------------------------------------
 
+function buildStatusSummary(
+	failureCount: number,
+	flakyCount: number
+): string {
+	const parts: string[] = [];
+	if ( failureCount > 0 ) {
+		const noun = failureCount === 1 ? 'failure' : 'failures';
+		parts.push( `${ failureCount } ${ noun }` );
+	}
+	if ( flakyCount > 0 ) {
+		parts.push( `${ flakyCount } flaky` );
+	}
+	return parts.join( ', ' );
+}
+
 function buildParentMessage(
 	failureCount: number,
+	flakyCount: number,
 	done: boolean,
 	buildLogUrl?: string,
 	commitSha?: string
@@ -205,11 +221,12 @@ function buildParentMessage(
 		? `<${ buildLogUrl }|${ matrixLabel }>`
 		: matrixLabel;
 
-	const noun = failureCount === 1 ? 'failure' : 'failures';
+	const summary = buildStatusSummary( failureCount, flakyCount );
 
 	if ( done ) {
+		const icon = failureCount > 0 ? ':red_circle:' : ':warning:';
 		return (
-			`:red_circle: *Done — ${ failureCount } ${ noun }* | ${ jobTitle }\n` +
+			`${ icon } *Done — ${ summary }* | ${ jobTitle }\n` +
 			`\`${ branch }\` | ${ commitLink }`
 		);
 	}
@@ -217,7 +234,7 @@ function buildParentMessage(
 	return (
 		`:loading-dots: *Running* | ${ jobTitle }\n` +
 		`\`${ branch }\` | ${ commitLink }\n` +
-		`${ failureCount } ${ noun } so far`
+		`${ summary } so far`
 	);
 }
 
@@ -236,9 +253,13 @@ class SlackReporter implements Reporter {
 	private client: SlackClient;
 	private threadTs: string | undefined;
 	private failureCount = 0;
+	private flakyCount = 0;
 	private enabled: boolean;
 	private buildLogUrl: string | undefined;
 	private commitSha: string | undefined;
+
+	// Maps test ID → reply ts, so we can update the reply if the test recovers.
+	private reportedTests = new Map< string, string >();
 
 	constructor() {
 		this.enabled = isEnabled();
@@ -263,11 +284,19 @@ class SlackReporter implements Reporter {
 			return;
 		}
 
-		// Skip retries and non-failures.
-		if ( result.retry !== 0 ) {
+		const isRetry = result.retry > 0;
+		const wasReported = this.reportedTests.has( test.id );
+
+		// Retry of a previously reported test — check if it recovered.
+		// Use result.status directly instead of test.outcome() to avoid
+		// depending on whether Playwright has recorded this result yet.
+		if ( isRetry && wasReported && result.status === 'passed' ) {
+			await this.markTestAsFlaky( test );
 			return;
 		}
-		if ( test.outcome() !== 'unexpected' ) {
+
+		// Only report first-attempt unexpected failures.
+		if ( isRetry || test.outcome() !== 'unexpected' ) {
 			return;
 		}
 
@@ -281,6 +310,7 @@ class SlackReporter implements Reporter {
 			this.threadTs = await this.client.postMessage(
 				buildParentMessage(
 					this.failureCount,
+					this.flakyCount,
 					false,
 					this.buildLogUrl,
 					this.commitSha
@@ -292,6 +322,7 @@ class SlackReporter implements Reporter {
 				this.threadTs,
 				buildParentMessage(
 					this.failureCount,
+					this.flakyCount,
 					false,
 					this.buildLogUrl,
 					this.commitSha
@@ -307,10 +338,14 @@ class SlackReporter implements Reporter {
 		// Post failure details as a threaded reply.
 		const testTitle = test.titlePath().join( ' › ' );
 		const errorMsg = result.errors?.[ 0 ]?.message;
-		await this.client.postReply(
+		const replyTs = await this.client.postReply(
 			this.threadTs,
 			buildFailureReply( testTitle, errorMsg )
 		);
+
+		// Track the reply so we can update it if the test recovers on retry.
+		// Store even if replyTs is missing so failureCount is still adjusted.
+		this.reportedTests.set( test.id, replyTs ?? '' );
 
 		// Upload screenshot as a threaded reply.
 		const screenshots = result.attachments.filter(
@@ -327,7 +362,11 @@ class SlackReporter implements Reporter {
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	async onEnd( result: FullResult ) {
-		if ( ! this.enabled || ! this.threadTs || this.failureCount === 0 ) {
+		if (
+			! this.enabled ||
+			! this.threadTs ||
+			( this.failureCount === 0 && this.flakyCount === 0 )
+		) {
 			return;
 		}
 
@@ -336,11 +375,44 @@ class SlackReporter implements Reporter {
 			this.threadTs,
 			buildParentMessage(
 				this.failureCount,
+				this.flakyCount,
 				true,
 				this.buildLogUrl,
 				this.commitSha
 			)
 		);
+	}
+
+	/**
+	 * A test that was reported as failed has now passed on retry.
+	 * Update the reply to show it recovered, and adjust the counts.
+	 */
+	private async markTestAsFlaky( test: TestCase ): Promise< void > {
+		this.failureCount--;
+		this.flakyCount++;
+
+		const replyTs = this.reportedTests.get( test.id );
+		if ( replyTs && this.threadTs ) {
+			const testTitle = test.titlePath().join( ' › ' );
+			await this.client.updateMessage(
+				replyTs,
+				`:recycle: ~${ testTitle }~ passed on retry`
+			);
+		}
+
+		// Update the parent message with adjusted counts.
+		if ( this.threadTs ) {
+			await this.client.updateMessage(
+				this.threadTs,
+				buildParentMessage(
+					this.failureCount,
+					this.flakyCount,
+					false,
+					this.buildLogUrl,
+					this.commitSha
+				)
+			);
+		}
 	}
 }
 
