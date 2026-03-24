@@ -573,8 +573,15 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 		page.locator( '.enabled-currency .enabled-currency__action.delete' );
 
 	while ( await deleteButtons().count() ) {
-		await deleteButtons().first().click();
-		await expectSnackbarWithText( page, 'Enabled currencies updated.' );
+		await Promise.all( [
+			page.waitForResponse(
+				( resp ) =>
+					resp.url().includes( 'update-enabled-currencies' ) &&
+					resp.request().method() === 'POST' &&
+					resp.status() === 200
+			),
+			deleteButtons().first().click(),
+		] );
 	}
 };
 
