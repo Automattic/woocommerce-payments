@@ -47,26 +47,36 @@ const PaymentElements = ( { api, ...props } ) => {
 
 	useEffect( () => {
 		if ( ! appearance && containerRef.current ) {
-			setFontRules(
-				getFontRulesFromPage( containerRef.current.ownerDocument )
-			);
-			// Generate UPE input styles.
-			const upeAppearance = getAppearance(
-				'blocks_checkout',
-				false,
-				containerRef.current.ownerDocument
-			);
-			dispatchAppearanceEvent( upeAppearance, 'blocks_checkout' );
-			setCachedAppearance(
-				'blocks_checkout',
-				getUPEConfig( 'stylesCacheVersion' ),
-				upeAppearance
-			);
-			setAppearance( upeAppearance );
-			// Defer dispatch so all payment method label listeners are attached first.
-			setTimeout( () => {
-				window.dispatchEvent( new Event( 'wcpay-appearance-cached' ) );
-			}, 0 );
+			const ownerDoc = containerRef.current.ownerDocument;
+			// Wait for web fonts to load before reading computed styles so
+			// getComputedStyle returns the actual theme font, not a fallback.
+			const fontsReady = ownerDoc.fonts?.ready ?? Promise.resolve();
+			fontsReady.then( () => {
+				// Guard against unmount or cache being set while we waited.
+				if ( ! containerRef.current ) {
+					return;
+				}
+				setFontRules( getFontRulesFromPage( ownerDoc ) );
+				// Generate UPE input styles.
+				const upeAppearance = getAppearance(
+					'blocks_checkout',
+					false,
+					ownerDoc
+				);
+				dispatchAppearanceEvent( upeAppearance, 'blocks_checkout' );
+				setCachedAppearance(
+					'blocks_checkout',
+					getUPEConfig( 'stylesCacheVersion' ),
+					upeAppearance
+				);
+				setAppearance( upeAppearance );
+				// Defer dispatch so all payment method label listeners are attached first.
+				setTimeout( () => {
+					window.dispatchEvent(
+						new Event( 'wcpay-appearance-cached' )
+					);
+				}, 0 );
+			} );
 		}
 
 		if ( fingerprintErrorMessage ) {

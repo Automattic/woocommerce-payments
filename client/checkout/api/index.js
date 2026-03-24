@@ -337,18 +337,24 @@ export default class WCPayAPI {
 		return setupIntent;
 	}
 
-	initWooPay( userEmail, woopayUserSession ) {
+	async initWooPay( userEmail, woopayUserSession ) {
 		if ( ! this.isWooPayRequesting ) {
 			this.isWooPayRequesting = true;
 			const wcAjaxUrl = getConfig( 'wcAjaxUrl' );
 			const nonce = getConfig( 'initWooPayNonce' );
 			const appearanceType = getAppearanceType();
 
+			let appearance = null;
+			if ( getConfig( 'isWooPayGlobalThemeSupportEnabled' ) ) {
+				if ( document.fonts?.ready ) {
+					await document.fonts.ready;
+				}
+				appearance = getAppearance( appearanceType, true );
+			}
+
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 				_wpnonce: nonce,
-				appearance: getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-					? getAppearance( appearanceType, true )
-					: null,
+				appearance,
 				email: userEmail,
 				user_session: woopayUserSession,
 				order_id: getConfig( 'order_id' ),

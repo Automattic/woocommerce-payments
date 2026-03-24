@@ -20,8 +20,12 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 const mockAppearance = {
 	rules: {
 		'.Block': {},
-		'.Input': {},
-		'.Input--invalid': {},
+		'.Input': {
+			backgroundColor: '#ffffff',
+		},
+		'.Input--invalid': {
+			backgroundColor: '#ffffff',
+		},
 		'.Label': {},
 		'.Label--resting': {},
 		'.Tab': {},

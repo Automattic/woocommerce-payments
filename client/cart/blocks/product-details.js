@@ -58,14 +58,17 @@ const ProductDetail = ( { cart, context } ) => {
 
 	useEffect( () => {
 		if ( ! appearance ) {
-			const computed = getAppearance( 'bnpl_cart_block' );
-			dispatchAppearanceEvent( computed, 'bnpl_cart_block' );
-			setCachedAppearance(
-				'bnpl_cart_block',
-				getUPEConfig( 'stylesCacheVersion' ),
-				computed
-			);
-			setAppearance( computed );
+			const fontsReady = document.fonts?.ready ?? Promise.resolve();
+			fontsReady.then( () => {
+				const computed = getAppearance( 'bnpl_cart_block' );
+				dispatchAppearanceEvent( computed, 'bnpl_cart_block' );
+				setCachedAppearance(
+					'bnpl_cart_block',
+					getUPEConfig( 'stylesCacheVersion' ),
+					computed
+				);
+				setAppearance( computed );
+			} );
 		}
 	}, [ appearance ] );
 

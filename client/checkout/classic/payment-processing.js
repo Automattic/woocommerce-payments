@@ -49,15 +49,22 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 
 /**
  * Initializes the appearance of the payment element by computing it from the DOM.
+ * Waits for web fonts to load before reading computed styles.
  *
  * @param {string} elementsLocation The location of the UPE elements.
- * @return {Object} The appearance object for the UPE.
+ * @return {Promise<Object>} The appearance object for the UPE.
  */
-function initializeAppearance( elementsLocation ) {
+async function initializeAppearance( elementsLocation ) {
 	const version = getUPEConfig( 'stylesCacheVersion' );
 	const cached = getCachedAppearance( elementsLocation, version );
 	if ( cached ) {
 		return cached;
+	}
+
+	// Wait for web fonts to load so getComputedStyle returns the actual
+	// theme font instead of a fallback generic family.
+	if ( document.fonts?.ready ) {
+		await document.fonts.ready;
 	}
 
 	const appearance = getAppearance( elementsLocation );
@@ -251,7 +258,7 @@ async function createStripePaymentElement(
 ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
-	const appearance = initializeAppearance( elementsLocation );
+	const appearance = await initializeAppearance( elementsLocation );
 	document
 		.querySelector(
 			`.wcpay-upe-element[data-payment-method-type="${ paymentMethodType }"]`

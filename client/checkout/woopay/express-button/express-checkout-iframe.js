@@ -108,15 +108,20 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			Math.floor( window.innerWidth / 2 - iframeRect.width / 2 ) + 'px';
 	};
 
-	iframe.addEventListener( 'load', () => {
+	iframe.addEventListener( 'load', async () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
 		const appearanceType = getAppearanceType();
-		const appearance =
+		let appearance = null;
+		if (
 			isSupportedThemeEntrypoint( appearanceType ) &&
 			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? getAppearance( appearanceType, true )
-				: null;
+		) {
+			if ( document.fonts?.ready ) {
+				await document.fonts.ready;
+			}
+			appearance = getAppearance( appearanceType, true );
+		}
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(

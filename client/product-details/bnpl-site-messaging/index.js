@@ -68,6 +68,10 @@ export const initializeBnplSiteMessaging = async () => {
 	const cacheVersion = window.wcpayStripeSiteMessaging.stylesCacheVersion;
 	let appearance = getCachedAppearance( location, cacheVersion );
 	if ( ! appearance ) {
+		// Wait for web fonts to load before reading computed styles.
+		if ( document.fonts?.ready ) {
+			await document.fonts.ready;
+		}
 		appearance = getAppearance( location );
 		dispatchAppearanceEvent( appearance, location );
 		setCachedAppearance( location, cacheVersion, appearance );
