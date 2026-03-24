@@ -59,9 +59,6 @@
  *   - credit_not_processed × other (refund_was_not_owed scenario)
  *   - duplicate × other (is_duplicate scenario)
  *   - duplicate × other (is_not_duplicate scenario)
- *
- * ⏳ Not yet implemented (in backlog):
- *   - general (all product types)
  */
 
 /**
@@ -2059,7 +2056,6 @@ describe( 'Evidence Matrix Specification Validation', () => {
 
 		describe( 'Non-implemented combinations should return undefined', () => {
 			const notImplemented = [
-				{ reason: 'general', productType: 'booking_reservation' },
 				// Status-less call for credit_not_processed × other should return undefined
 				// (only composite keys other__refund_has_been_issued / other__refund_was_not_owed exist)
 				{
@@ -2264,13 +2260,3 @@ describe( 'Evidence Matrix Specification Validation', () => {
 		} );
 	} );
 } );
-
-/**
- * Summary of Not Yet Implemented Combinations
- *
- * The following combinations are defined in the specification but not yet implemented.
- * These should be tracked in Linear and added to implementedCombinations as they are completed.
- *
- * General:
- * - All product types (needs: Order receipt, Customer communication, Refund policy, Terms of service, Other)
- */
