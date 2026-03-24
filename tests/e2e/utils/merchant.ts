@@ -216,6 +216,7 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 			page.waitForResponse(
 				( resp ) =>
 					resp.url().includes( 'update-enabled-currencies' ) &&
+					resp.request().method() === 'POST' &&
 					resp.status() === 200
 			),
 			page
