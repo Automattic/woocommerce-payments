@@ -207,9 +207,12 @@ async function createStripePaymentMethod(
 					line2: document.querySelector(
 						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.address_2 }`
 					)?.value,
-					postal_code: document.querySelector(
-						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.postcode }`
-					)?.value,
+					// Trim to avoid Stripe AVS mismatches on leading/trailing whitespace.
+					postal_code: document
+						.querySelector(
+							`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.postcode }`
+						)
+						?.value?.trim(),
 					state: document.querySelector(
 						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.state }`
 					)?.value,

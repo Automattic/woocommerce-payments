@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: avoid fatal error on invalid currency option in DB
