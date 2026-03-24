@@ -2271,21 +2271,6 @@ describe( 'Evidence Matrix Specification Validation', () => {
  * The following combinations are defined in the specification but not yet implemented.
  * These should be tracked in Linear and added to implementedCombinations as they are completed.
  *
- * Fraudulent:
- * - other (needs: Prior history, Other)
- *
- * Product Not Received:
- * - other (needs: Order receipt, Service completion records, Other)
- *
- * Product Unacceptable:
- * - other (needs: Order receipt, Terms of service, Other)
- *
- * Credit Not Processed (remaining product types):
- * - other (all scenarios)
- *
- * Duplicate (remaining product types - Scenario A & B):
- * - other
- *
- * General/Other:
+ * General:
  * - All product types (needs: Order receipt, Customer communication, Refund policy, Terms of service, Other)
  */
