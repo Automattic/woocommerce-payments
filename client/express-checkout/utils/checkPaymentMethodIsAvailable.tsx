@@ -12,7 +12,7 @@ import { applyFilters } from '@wordpress/hooks';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getExpressCheckoutData, getStripeElementsMode } from '.';
+import { getExpressCheckoutData } from '.';
 import { transformPrice } from '../transformers/wc-to-stripe';
 import { getPaymentMethodsOverride } from './payment-method-overrides';
 
@@ -108,12 +108,16 @@ const checkPaymentMethodIsAvailableInternal = (
 			<Elements
 				stripe={ api.loadStripeForExpressCheckout() }
 				options={ {
-					mode: getStripeElementsMode(),
+					mode: 'payment',
 					...( useConfirmationToken
 						? { paymentMethodTypes }
 						: { paymentMethodCreation: 'manual' } ),
 					...( useConfirmationToken && isManualCaptureEnabled
 						? { captureMethod: 'manual' }
+						: {} ),
+					...( useConfirmationToken &&
+					getExpressCheckoutData( 'has_subscription' )
+						? { setupFutureUsage: 'off_session' }
 						: {} ),
 					amount: Number( totalPrice ),
 					currency: currencyCode.toLowerCase(),

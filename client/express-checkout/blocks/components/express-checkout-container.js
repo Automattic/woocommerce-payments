@@ -13,7 +13,6 @@ import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
-	getStripeElementsMode,
 } from '../../utils';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
@@ -30,6 +29,8 @@ const ExpressCheckoutContainer = ( props ) => {
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 	const isManualCaptureEnabled =
 		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
+	const hasSubscription =
+		getExpressCheckoutData( 'has_subscription' ) ?? false;
 
 	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
@@ -44,12 +45,15 @@ const ExpressCheckoutContainer = ( props ) => {
 	}, [ enabledMethods ] );
 
 	const options = {
-		mode: getStripeElementsMode(),
+		mode: 'payment',
 		...( useConfirmationToken
 			? { paymentMethodTypes }
 			: { paymentMethodCreation: 'manual' } ),
 		...( useConfirmationToken && isManualCaptureEnabled
 			? { captureMethod: 'manual' }
+			: {} ),
+		...( useConfirmationToken && hasSubscription
+			? { setupFutureUsage: 'off_session' }
 			: {} ),
 		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 		amount: applyFilters(
