@@ -63,9 +63,11 @@ const expectSnackbarWithText = async (
 	expectedText: string,
 	timeout = 10000
 ) => {
-	const snackbar = page.locator( '.components-snackbar__content', {
-		hasText: expectedText,
-	} );
+	const snackbar = page
+		.locator( '.components-snackbar__content', {
+			hasText: expectedText,
+		} )
+		.first();
 
 	await expect( snackbar ).toBeVisible( { timeout } );
 	await page.waitForTimeout( 2000 );
