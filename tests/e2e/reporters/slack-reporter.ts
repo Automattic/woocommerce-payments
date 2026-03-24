@@ -288,7 +288,9 @@ class SlackReporter implements Reporter {
 		const wasReported = this.reportedTests.has( test.id );
 
 		// Retry of a previously reported test — check if it recovered.
-		if ( isRetry && wasReported && test.outcome() === 'flaky' ) {
+		// Use result.status directly instead of test.outcome() to avoid
+		// depending on whether Playwright has recorded this result yet.
+		if ( isRetry && wasReported && result.status === 'passed' ) {
 			await this.markTestAsFlaky( test );
 			return;
 		}
