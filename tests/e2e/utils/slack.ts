@@ -126,16 +126,21 @@ export class SlackClient {
 	/**
 	 * Post a threaded reply under a parent message.
 	 */
-	async postReply( threadTs: string, text: string ): Promise< void > {
+	async postReply(
+		threadTs: string,
+		text: string
+	): Promise< string | undefined > {
 		try {
-			await this.getWeb().chat.postMessage( {
+			const response = await this.getWeb().chat.postMessage( {
 				channel: this.channelId,
 				token: this.token,
 				thread_ts: threadTs,
 				text,
 			} );
+			return response.ts;
 		} catch ( error ) {
 			handleRequestError( error, 'Failed to post reply to Slack thread' );
+			return undefined;
 		}
 	}
 
