@@ -112,6 +112,54 @@ describe( 'UPE Utilities to generate UPE styles', () => {
 		expect( upeUtils.isColorLight( lightGrey ) ).toEqual( true );
 	} );
 
+	describe( 'isTransparentColor', () => {
+		test( 'returns true for fully transparent rgba', () => {
+			expect( upeUtils.isTransparentColor( 'rgba(0, 0, 0, 0)' ) ).toBe(
+				true
+			);
+		} );
+
+		test( 'returns true for the keyword "transparent"', () => {
+			expect( upeUtils.isTransparentColor( 'transparent' ) ).toBe( true );
+		} );
+
+		test( 'returns true for empty string', () => {
+			expect( upeUtils.isTransparentColor( '' ) ).toBe( true );
+		} );
+
+		test( 'returns true for undefined', () => {
+			expect( upeUtils.isTransparentColor( undefined ) ).toBe( true );
+		} );
+
+		test( 'returns true for low-alpha colors (alpha < 0.5)', () => {
+			expect(
+				upeUtils.isTransparentColor( 'rgba(129, 110, 153, 0.14)' )
+			).toBe( true );
+			expect( upeUtils.isTransparentColor( 'rgba(0, 0, 0, 0.49)' ) ).toBe(
+				true
+			);
+		} );
+
+		test( 'returns false for opaque colors', () => {
+			expect( upeUtils.isTransparentColor( '#ffffff' ) ).toBe( false );
+			expect( upeUtils.isTransparentColor( 'rgb(255, 255, 255)' ) ).toBe(
+				false
+			);
+			expect( upeUtils.isTransparentColor( 'rgba(0, 0, 0, 1)' ) ).toBe(
+				false
+			);
+		} );
+
+		test( 'returns false for colors with alpha >= 0.5', () => {
+			expect( upeUtils.isTransparentColor( 'rgba(0, 0, 0, 0.5)' ) ).toBe(
+				false
+			);
+			expect(
+				upeUtils.isTransparentColor( 'rgba(100, 200, 50, 0.8)' )
+			).toBe( false );
+		} );
+	} );
+
 	test( 'maybeConvertRGBAtoRGB returns valid colors', () => {
 		const hex = '#ffffff';
 		const color = 'red';

@@ -157,7 +157,7 @@ describe( 'Getting styles for automated theming', () => {
 			theme: 'stripe',
 			rules: {
 				'.Input': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: '#ffffff',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -166,7 +166,7 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 				'.Input--invalid': {
-					backgroundColor: 'rgba(0, 0, 0, 0)',
+					backgroundColor: '#ffffff',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -228,6 +228,68 @@ describe( 'Getting styles for automated theming', () => {
 			},
 			labels: 'above',
 		} );
+	} );
+
+	test( 'getAppearance replaces transparent .Input backgrounds with page background color', () => {
+		const inputElement = document.createElement( 'input' );
+		const backgroundElement = document.createElement( 'div' );
+		const pageBackgroundColor = 'rgb(245, 245, 245)';
+
+		// Input has transparent background.
+		const transparentInputStyles = {
+			...cssPropertiesCamel,
+			backgroundColor: 'rgba(0, 0, 0, 0)',
+			getPropertyValue: ( prop ) => {
+				if ( prop === 'background-color' ) return 'rgba(0, 0, 0, 0)';
+				return cssPropertiesDashed[ prop ];
+			},
+		};
+
+		// Page background is opaque.
+		const opaqueBackgroundStyles = {
+			...cssPropertiesCamel,
+			backgroundColor: pageBackgroundColor,
+			getPropertyValue: ( prop ) => {
+				if ( prop === 'background-color' ) return pageBackgroundColor;
+				return cssPropertiesDashed[ prop ];
+			},
+		};
+
+		const scope = {
+			querySelector: jest.fn( ( selector ) => {
+				// Background selectors — the first one in the list resolves
+				// to an element with an opaque background.
+				if ( selector === 'li.wc_payment_method .wc-payment-form' ) {
+					return backgroundElement;
+				}
+				return inputElement;
+			} ),
+			createElement: jest.fn( ( htmlTag ) =>
+				document.createElement( htmlTag )
+			),
+			defaultView: {
+				getComputedStyle: jest.fn( ( el ) =>
+					el === backgroundElement
+						? opaqueBackgroundStyles
+						: transparentInputStyles
+				),
+			},
+		};
+
+		const appearance = upeStyles.getAppearance(
+			'shortcode_checkout',
+			false,
+			scope
+		);
+
+		// Both .Input and .Input--invalid should use the page background,
+		// not the transparent value from the computed input styles.
+		expect( appearance.rules[ '.Input' ].backgroundColor ).toBe(
+			pageBackgroundColor
+		);
+		expect( appearance.rules[ '.Input--invalid' ].backgroundColor ).toBe(
+			pageBackgroundColor
+		);
 	} );
 
 	test( 'getFieldStyles prioritizes content-area selectors over bare fallback', () => {

@@ -152,6 +152,29 @@ export const isColorLight = ( color ) => {
 };
 
 /**
+ * Determines whether a color is transparent or nearly transparent (alpha < 0.5).
+ *
+ * Stripe Elements renders in an iframe and cannot inherit the page background.
+ * Block themes commonly set input backgrounds to `transparent`, which results
+ * in a white-on-white (or dark-on-dark) appearance inside the iframe.  Use
+ * this helper to detect such values so they can be replaced with an explicit
+ * fallback.
+ *
+ * @param {string|undefined} color CSS color value.
+ * @return {boolean} True when the color is transparent or nearly so.
+ */
+export const isTransparentColor = ( color ) => {
+	if ( ! color ) {
+		return true;
+	}
+	const tc = tinycolor( color );
+	if ( ! tc.isValid() ) {
+		return true;
+	}
+	return tc.getAlpha() < 0.5;
+};
+
+/**
  * Converts rgba to rgb format, since Stripe Appearances API does not accept rgba format for text color.
  *
  * @param {string} color CSS color value.

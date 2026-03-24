@@ -6,6 +6,7 @@ import {
 	generateHoverRules,
 	generateOutlineStyle,
 	isColorLight,
+	isTransparentColor,
 	getBackgroundColor,
 	maybeConvertRGBAtoRGB,
 	handleAppearanceForFloatingLabel,
@@ -659,6 +660,18 @@ export const getAppearance = (
 		selectors.backgroundSelectors,
 		scope
 	);
+
+	// Stripe Elements renders in an iframe and cannot inherit the page
+	// background.  Block themes commonly set input `background-color` to
+	// `transparent`, which would result in a white (or mismatched) background
+	// inside the iframe.  Fall back to the resolved page background instead.
+	if ( isTransparentColor( inputRules.backgroundColor ) ) {
+		inputRules.backgroundColor = backgroundColor;
+	}
+	if ( isTransparentColor( inputInvalidRules.backgroundColor ) ) {
+		inputInvalidRules.backgroundColor = backgroundColor;
+	}
+
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
