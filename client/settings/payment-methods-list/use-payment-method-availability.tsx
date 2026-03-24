@@ -178,14 +178,6 @@ const usePaymentMethodAvailability = ( id: string ) => {
 	if ( isManualCaptureEnabled && ! isAllowingManualCapture ) {
 		return {
 			isActionable: false,
-			notice: sprintf(
-				/* translators: %s: a payment method name. */
-				__(
-					'%s is not available to your customers when the "manual capture" setting is enabled.',
-					'woocommerce-payments'
-				),
-				label
-			),
 		};
 	}
 

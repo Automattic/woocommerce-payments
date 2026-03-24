@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix additional wc pay tracking call on order creation

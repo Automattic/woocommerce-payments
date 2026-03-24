@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+feat: allow translation of Stripe card error messages at checkout

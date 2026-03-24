@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Re-introduce asynchronous customer updates as an optimization of the checkout process.
