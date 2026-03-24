@@ -746,6 +746,10 @@ export const disablePaymentMethods = async (
 		if ( await checkbox.isChecked() ) {
 			await checkbox.click();
 			atLeastOnePaymentMethodDisabled = true;
+			const removeButton = page.getByRole( 'button', { name: 'Remove' } );
+			if ( await removeButton.isVisible() ) {
+				await removeButton.click();
+			}
 		}
 	}
 
