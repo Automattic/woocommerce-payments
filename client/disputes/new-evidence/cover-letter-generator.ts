@@ -183,7 +183,7 @@ export const generateAttachments = (
 			label: __( 'Customer communication', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
-					// For booking_reservation/digital_product_or_service/offline_service/event credit_not_processed,
+					// For most product types with credit_not_processed,
 					// CUSTOMER_COMMUNICATION is repurposed as "Other documents". For physical_product,
 					// it keeps the default "Customer communication" label since the matrix includes
 					// it explicitly with its proper label.
@@ -383,7 +383,7 @@ export const generateAttachments = (
 					productTypes: [ 'physical_product' ],
 				},
 				{
-					// For product_not_received offline/event, documentation should appear
+					// For product_not_received non-physical/non-digital types, documentation should appear
 					// after Order receipt (index 0) but before Customer communication (index 3).
 					reasons: [ 'product_not_received' ],
 					order: 1,
