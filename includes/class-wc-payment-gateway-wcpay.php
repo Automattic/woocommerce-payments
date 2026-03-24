@@ -3499,7 +3499,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $actions;
 		}
 
-		if ( $this->id !== $theorder->get_payment_method() ) {
+		if ( strpos( $theorder->get_payment_method(), self::GATEWAY_ID ) !== 0 ) {
 			return $actions;
 		}
 
