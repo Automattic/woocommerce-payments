@@ -344,9 +344,8 @@ class SlackReporter implements Reporter {
 		);
 
 		// Track the reply so we can update it if the test recovers on retry.
-		if ( replyTs ) {
-			this.reportedTests.set( test.id, replyTs );
-		}
+		// Store even if replyTs is missing so failureCount is still adjusted.
+		this.reportedTests.set( test.id, replyTs ?? '' );
 
 		// Upload screenshot as a threaded reply.
 		const screenshots = result.attachments.filter(

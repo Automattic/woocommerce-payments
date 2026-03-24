@@ -125,6 +125,7 @@ export class SlackClient {
 
 	/**
 	 * Post a threaded reply under a parent message.
+	 * Returns the reply `ts` (for later updates), or `undefined` on failure.
 	 */
 	async postReply(
 		threadTs: string,
