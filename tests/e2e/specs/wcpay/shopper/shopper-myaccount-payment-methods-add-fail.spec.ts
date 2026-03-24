@@ -30,7 +30,7 @@ const cards: Array< CardType > = [
 	[
 		'declined-incorrect',
 		config.cards[ 'declined-incorrect' ],
-		'Your card number is invalid.',
+		'Error: Your card number is incorrect.',
 	],
 	[
 		'declined-expired',
@@ -83,7 +83,7 @@ test.describe( 'Payment Methods', () => {
 					errorText
 				);
 
-				// Declined incorrect card also puts the errorText under the card number field.
+				// Declined incorrect card also puts a validation error under the card number field.
 				if ( 'declined-incorrect' === cardType ) {
 					await expect(
 						shopperPage
@@ -92,7 +92,7 @@ test.describe( 'Payment Methods', () => {
 							)
 							.first()
 							.getByRole( 'alert' )
-					).toContainText( errorText );
+					).toContainText( 'Your card number is' );
 				}
 
 				// Verify that the card is not added to the list of payment methods.

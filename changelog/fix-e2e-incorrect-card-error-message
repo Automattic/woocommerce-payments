@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: fix: update E2E expected error message for declined-incorrect card after #11456 localized Stripe errors
+
+
