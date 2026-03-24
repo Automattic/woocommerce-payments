@@ -111,6 +111,31 @@ describe( 'Getting styles for automated theming', () => {
 		] );
 	} );
 
+	test( 'getFontRulesFromPage returns font rules from Bunny Fonts provider', () => {
+		const mockStyleSheets = {
+			length: 2,
+			0: {
+				href:
+					'https://not-supported-fonts-domain.com/style.css?ver=1.1.1',
+			},
+			1: {
+				href:
+					'https://fonts.bunny.net/css?family=DM+Sans:400,500,700&display=swap',
+			},
+		};
+		jest.spyOn( document, 'styleSheets', 'get' ).mockReturnValue(
+			mockStyleSheets
+		);
+
+		const fontRules = upeStyles.getFontRulesFromPage();
+		expect( fontRules ).toEqual( [
+			{
+				cssSrc:
+					'https://fonts.bunny.net/css?family=DM+Sans:400,500,700&display=swap',
+			},
+		] );
+	} );
+
 	test( 'getFontRulesFromPage returns empty array if there are no fonts from allowed providers', () => {
 		const mockStyleSheets = {
 			length: 2,
