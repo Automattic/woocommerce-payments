@@ -1743,6 +1743,7 @@ const implementedCombinations: CombinationSpec[] = [
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Prior undisputed transaction history',
+				'Customer communication',
 				'Other documents',
 			],
 			shouldExclude: [ "Customer's signature" ],
@@ -1778,6 +1779,7 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Service completion records',
+				'Customer communication',
 				'Other documents',
 			],
 			shouldExclude: [ "Customer's signature" ],
@@ -1807,6 +1809,7 @@ const implementedCombinations: CombinationSpec[] = [
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Order receipt',
+				'Customer communication',
 				'Terms of service',
 				'Other documents',
 			],
@@ -1921,6 +1924,7 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Refund receipt',
+				'Customer communication',
 				'Refund policy',
 				'Other documents',
 			],
@@ -1955,6 +1959,7 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Any additional receipts',
+				'Customer communication',
 				'Refund policy',
 				'Other documents',
 			],
