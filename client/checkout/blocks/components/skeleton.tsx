@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { createContext, useContext } from 'react';
 import clsx from 'clsx';
 
 /**
@@ -27,7 +27,17 @@ export interface SkeletonProps {
 	ariaMessage?: string;
 }
 
-export const Skeleton = ( {
+/**
+ * Context to allow injecting WooCommerce core's Skeleton component.
+ * When core provides a Skeleton via PaymentMethodInterface `components` prop,
+ * it can be set here so all child components use it automatically.
+ */
+const SkeletonContext = createContext< React.ComponentType<
+	SkeletonProps
+> | null >( null );
+export const SkeletonProvider = SkeletonContext.Provider;
+
+const LocalSkeleton = ( {
 	tag: Tag = 'div',
 	width = '100%',
 	height = '8px',
@@ -61,5 +71,14 @@ export const Skeleton = ( {
 				maxWidth,
 			} }
 		/>
+	);
+};
+
+export const Skeleton = ( props: SkeletonProps ): JSX.Element => {
+	const CoreSkeleton = useContext( SkeletonContext );
+	return CoreSkeleton ? (
+		<CoreSkeleton { ...props } />
+	) : (
+		<LocalSkeleton { ...props } />
 	);
 };
