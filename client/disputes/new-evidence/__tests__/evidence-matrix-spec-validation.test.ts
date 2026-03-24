@@ -2060,6 +2060,12 @@ describe( 'Evidence Matrix Specification Validation', () => {
 		describe( 'Non-implemented combinations should return undefined', () => {
 			const notImplemented = [
 				{ reason: 'general', productType: 'booking_reservation' },
+				// Status-less call for credit_not_processed × other should return undefined
+				// (only composite keys other__refund_has_been_issued / other__refund_was_not_owed exist)
+				{
+					reason: 'credit_not_processed',
+					productType: 'other',
+				},
 			];
 
 			it.each( notImplemented )(
