@@ -1308,6 +1308,23 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that a card_declined error with authentication_required decline_code returns a specific message.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_authentication_required_returns_localized() {
+		$exception = new API_Exception(
+			'Error: Your card was declined.',
+			'card_declined',
+			400,
+			'card_error',
+			'authentication_required'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card was declined because additional authentication is required. Please contact your card issuer or try a different payment method.', $result );
+	}
+
+	/**
 	 * Test that a card_declined error with an unknown decline_code returns the card_declined localized message.
 	 */
 	public function test_get_filtered_error_message_card_declined_with_unknown_decline_code_returns_card_declined() {
