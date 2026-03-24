@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: fix: include test orders in QIT analytics so WC 10.7+ test order exclusion does not break E2E tests
+
+
