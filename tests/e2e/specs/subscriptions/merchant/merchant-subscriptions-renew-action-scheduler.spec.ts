@@ -65,8 +65,11 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 				} )
 				.click();
 
-			await merchantPage.getByRole( 'link', { name: 'Run' } ).focus();
-			await merchantPage.getByRole( 'link', { name: 'Run' } ).click();
+			const actionRow = merchantPage
+				.locator( 'tr' )
+				.filter( { hasText: actionSchedulerHook } )
+				.first();
+			await actionRow.getByRole( 'link', { name: 'Run' } ).click();
 
 			await expect(
 				merchantPage.getByText( actionSchedulerHook, { exact: true } )
