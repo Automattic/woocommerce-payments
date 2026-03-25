@@ -1540,6 +1540,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
 
+		// If an error happened during the payment setup in the client it will be saved in the payment information so we can throw
+		// the error here and follow the standard failed order flow. This must happen before writing to order meta to avoid
+		// persisting the error sentinel string as _payment_method_id.
+		$error = $payment_information->get_error();
+		if ( ! is_null( $error ) ) {
+			throw new \Exception( $error->get_error_message() );
+		}
+
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		// Note: For confirmation tokens (ctoken_*), we don't store them here as they are not valid
 		// payment method IDs. The real payment method ID will be stored after intent creation.
@@ -1549,13 +1557,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
-
-		// If an error happened during the payment setup in the client it will be saved in the payment information so we can throw
-		// the error here and follow the standard failed order flow.
-		$error = $payment_information->get_error();
-		if ( ! is_null( $error ) ) {
-			throw new \Exception( $error->get_error_message() );
-		}
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
@@ -3498,7 +3499,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $actions;
 		}
 
-		if ( $this->id !== $theorder->get_payment_method() ) {
+		if ( strpos( $theorder->get_payment_method(), self::GATEWAY_ID ) !== 0 ) {
 			return $actions;
 		}
 

@@ -215,7 +215,9 @@ describe( 'PaymentMethodsSection', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'renders the delete modal on an already active payment method', async () => {
+	it( 'disables an already active payment method without confirmation modal', async () => {
+		const mockUnselect = jest.fn();
+		useUnselectedPaymentMethod.mockReturnValue( [ null, mockUnselect ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'bancontact' ],
 			jest.fn(),
@@ -230,25 +232,17 @@ describe( 'PaymentMethodsSection', () => {
 
 		render( <PaymentMethodsSection /> );
 
-		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
-
 		const bancontactCheckbox = screen.getByLabelText( 'Bancontact' );
-
 		expect( bancontactCheckbox ).toBeChecked();
 
-		jest.useFakeTimers();
-
-		// Disabling an already active PM should show the delete modal
 		await user.click( bancontactCheckbox );
-		jest.runOnlyPendingTimers();
 
+		expect( mockUnselect ).toHaveBeenCalledWith( 'bancontact' );
 		expect(
 			screen.queryByText(
 				/Your customers will no longer be able to pay using Bancontact\./
 			)
-		).toBeInTheDocument();
-
-		jest.useRealTimers();
+		).not.toBeInTheDocument();
 	} );
 
 	it( "renders the setup tooltip correctly when multi currency is disabled and store currency doesn't support the LPM", () => {

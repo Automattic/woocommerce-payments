@@ -26,6 +26,13 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->payments_order_success_page = new WC_Payments_Order_Success_Page();
 	}
 
+	public function tear_down() {
+		global $wp;
+		unset( $_GET['key'] );
+		unset( $wp->query_vars['order-received'] );
+		parent::tear_down();
+	}
+
 	public function test_show_card_payment_method_name_without_card_brand() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'woocommerce_payments' );
@@ -153,9 +160,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 50 ); // Ensure order needs payment.
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		$original_text = 'Thank you. Your order has been received.';
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
@@ -171,9 +179,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->add_meta_data( '_intent_id', 'pi_123' );
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		// Mock the Get_Intention request.
 		$mock_intent = WC_Helper_Intention::create_intention(
@@ -201,9 +210,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->set_status( 'processing' );
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		$original_text = 'Thank you. Your order has been received.';
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
@@ -215,6 +225,42 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		// Set up global wp query vars with invalid order ID.
 		global $wp;
 		$wp->query_vars['order-received'] = 999999;
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_replace_order_received_text_for_failed_orders_with_invalid_order_key() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'failed' );
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_total( 50 );
+		$order->save();
+
+		// Set up global wp query vars with invalid order key.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = 'wc_order_INVALID';
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_replace_order_received_text_for_failed_orders_with_missing_order_key() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'failed' );
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_total( 50 );
+		$order->save();
+
+		// Set up global wp query vars without order key.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		unset( $_GET['key'] );
 
 		$original_text = 'Thank you. Your order has been received.';
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );

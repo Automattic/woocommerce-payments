@@ -10,6 +10,7 @@ import {
 	getRecommendedShippingDocumentFields,
 } from '../recommended-document-fields';
 import { RecommendedDocument } from '../types';
+import type { DisputeReason } from 'wcpay/types/disputes';
 
 declare const global: {
 	wcpaySettings: {
@@ -35,7 +36,7 @@ describe( 'Recommended Documents', () => {
 	} );
 	describe( 'getRecommendedDocumentFields', () => {
 		it( 'should return default fields when no specific reason is provided', () => {
-			const result = getRecommendedDocumentFields( '' );
+			const result = getRecommendedDocumentFields( '' as DisputeReason );
 			expect( result ).toHaveLength( 6 ); // Default fields + fields for the "general" reason
 			expect( result[ 0 ].key ).toBe( 'receipt' );
 			expect( result[ 1 ].key ).toBe( 'customer_communication' );
@@ -720,6 +721,22 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 1 ].description ).toBe(
 					'Any other relevant documents that will support your case.'
 				);
+			} );
+
+			it( 'should return Visa Compliance fields when enhanced_eligibility_types includes visa_compliance', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+				const result = getRecommendedDocumentFields(
+					'fraudulent',
+					undefined,
+					undefined,
+					undefined,
+					[ 'visa_compliance' ]
+				);
+				expect( result ).toHaveLength( 2 );
+				expect( result[ 0 ].key ).toBe( 'customer_communication' );
+				expect( result[ 0 ].label ).toBe( 'Upload evidence' );
+				expect( result[ 1 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 1 ].label ).toBe( 'Other documents' );
 			} );
 		} );
 	} );
