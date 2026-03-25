@@ -1061,7 +1061,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 							networkCost.amount,
 							networkCost.currency.toUpperCase(),
 							false,
-							event?.fee?.currency.toUpperCase()
+							event?.fee?.currency?.toUpperCase()
 					  )
 					: '';
 			const isCrossCurrencyNetworkCost =

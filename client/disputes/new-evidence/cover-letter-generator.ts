@@ -121,13 +121,15 @@ export const generateAttachments = (
 			label: __( 'Order receipt', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
-					// For booking_reservation/digital_product_or_service credit_not_processed, RECEIPT is "Refund receipt".
+					// For non-physical product types credit_not_processed, RECEIPT is "Refund receipt".
 					// For physical_product, RECEIPT stays "Order receipt" (REFUND_RECEIPT_DOCUMENTATION is "Refund receipt").
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Refund receipt', 'woocommerce-payments' ),
 					productTypes: [
 						'booking_reservation',
 						'digital_product_or_service',
+						'offline_service',
+						'event',
 					],
 					refundStatuses: [ 'refund_has_been_issued' ],
 				},
@@ -180,7 +182,7 @@ export const generateAttachments = (
 			label: __( 'Customer communication', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
-					// For booking_reservation/digital_product_or_service credit_not_processed,
+					// For booking_reservation/digital_product_or_service/offline_service/event credit_not_processed,
 					// CUSTOMER_COMMUNICATION is repurposed as "Other documents". For physical_product,
 					// it keeps the default "Customer communication" label since the matrix includes
 					// it explicitly with its proper label.
@@ -189,6 +191,8 @@ export const generateAttachments = (
 					productTypes: [
 						'booking_reservation',
 						'digital_product_or_service',
+						'offline_service',
+						'event',
 					],
 					refundStatuses: [
 						'refund_was_not_owed',
@@ -204,6 +208,8 @@ export const generateAttachments = (
 					productTypes: [
 						'booking_reservation',
 						'digital_product_or_service',
+						'offline_service',
+						'event',
 					],
 					refundStatuses: [
 						'refund_was_not_owed',
@@ -273,13 +279,31 @@ export const generateAttachments = (
 					productTypes: [ 'booking_reservation' ],
 				},
 				{
-					// For product_unacceptable disputes with booking_reservation product type
+					// For product_not_received disputes with offline_service product type
+					reasons: [ 'product_not_received' ],
+					label: __(
+						'Proof of service completion',
+						'woocommerce-payments'
+					),
+					productTypes: [ 'offline_service' ],
+				},
+				{
+					// For product_not_received disputes with event product type
+					reasons: [ 'product_not_received' ],
+					label: __(
+						'Attendance confirmation',
+						'woocommerce-payments'
+					),
+					productTypes: [ 'event' ],
+				},
+				{
+					// For product_unacceptable disputes with booking_reservation/event product type
 					reasons: [ 'product_unacceptable' ],
 					label: __(
 						'Event or booking documentation',
 						'woocommerce-payments'
 					),
-					productTypes: [ 'booking_reservation' ],
+					productTypes: [ 'booking_reservation', 'event' ],
 				},
 				{
 					// For product_unacceptable disputes with physical_product type
@@ -288,13 +312,16 @@ export const generateAttachments = (
 					productTypes: [ 'physical_product' ],
 				},
 				{
-					// For product_unacceptable disputes with digital_product_or_service type
+					// For product_unacceptable disputes with digital_product_or_service/offline_service type
 					reasons: [ 'product_unacceptable' ],
 					label: __(
 						'Proof of delivered service',
 						'woocommerce-payments'
 					),
-					productTypes: [ 'digital_product_or_service' ],
+					productTypes: [
+						'digital_product_or_service',
+						'offline_service',
+					],
 				},
 				{
 					// For fraudulent disputes with digital_product_or_service type,
@@ -317,7 +344,7 @@ export const generateAttachments = (
 					productTypes: [ 'physical_product' ],
 				},
 			],
-			// For product_unacceptable with booking_reservation/digital_product_or_service, this should appear first (before Order receipt)
+			// For product_unacceptable with booking_reservation/digital_product_or_service/offline_service/event, this should appear first (before Order receipt)
 			orderForReasons: [
 				{
 					reasons: [ 'product_unacceptable' ],
@@ -325,6 +352,8 @@ export const generateAttachments = (
 					productTypes: [
 						'booking_reservation',
 						'digital_product_or_service',
+						'offline_service',
+						'event',
 					],
 				},
 				{
@@ -340,6 +369,13 @@ export const generateAttachments = (
 					order: 100,
 					refundStatuses: [ 'refund_was_not_owed' ],
 					productTypes: [ 'physical_product' ],
+				},
+				{
+					// For product_not_received offline/event, documentation should appear
+					// after Order receipt (index 0) but before Customer communication (index 3).
+					reasons: [ 'product_not_received' ],
+					order: 1,
+					productTypes: [ 'offline_service', 'event' ],
 				},
 			],
 		},

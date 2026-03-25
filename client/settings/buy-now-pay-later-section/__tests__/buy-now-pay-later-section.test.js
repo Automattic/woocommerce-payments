@@ -162,7 +162,9 @@ describe( 'BuyNowPayLaterSection', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'should render the delete modal on an already active payment method', async () => {
+	it( 'should disable an already active payment method without confirmation modal', async () => {
+		const mockUnselect = jest.fn();
+		useUnselectedPaymentMethod.mockReturnValue( [ null, mockUnselect ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'affirm' ],
 			jest.fn(),
@@ -184,18 +186,13 @@ describe( 'BuyNowPayLaterSection', () => {
 		expect( affirmCheckbox ).toBeInTheDocument();
 		expect( affirmCheckbox ).toBeChecked();
 
-		jest.useFakeTimers();
-
-		// Disabling an already active PM should show the delete modal
 		await user.click( affirmCheckbox );
-		jest.runOnlyPendingTimers();
 
+		expect( mockUnselect ).toHaveBeenCalledWith( 'affirm' );
 		expect(
 			screen.queryByText(
 				/Your customers will no longer be able to pay using Affirm\./
 			)
-		).toBeInTheDocument();
-
-		jest.useRealTimers();
+		).not.toBeInTheDocument();
 	} );
 } );

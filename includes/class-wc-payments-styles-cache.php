@@ -61,6 +61,9 @@ class WC_Payments_Styles_Cache {
 		// Theme mods capture Customizer changes (classic themes).
 		$parts .= wp_json_encode( get_theme_mods() );
 
+		// just making sure that it gets updated each time this method is called.
+		$parts .= time();
+
 		return md5( $parts );
 	}
 }
