@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed UPE payment input field background color and font rendering on block theme checkouts
