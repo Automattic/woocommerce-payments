@@ -1,5 +1,5 @@
 Significance: patch
-Type: fix
-Comment: fix: action scheduler hook name in e2e tests
+Type: dev
+Comment: dev: stabilize Action Scheduler E2E test row/link selection
 
 
