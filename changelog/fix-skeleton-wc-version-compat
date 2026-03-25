@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add fallback skeleton styles for WooCommerce versions before 10.2

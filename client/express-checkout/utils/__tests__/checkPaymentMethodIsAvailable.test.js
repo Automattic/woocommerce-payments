@@ -216,6 +216,20 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 			expect( result ).toBe( false );
 		} );
 
+		it( 'returns false immediately when currency code is empty', async () => {
+			const result = await checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '1000', '' ),
+				mockApi
+			);
+
+			expect( result ).toBe( false );
+			// Should not attempt to load Stripe at all.
+			expect(
+				mockApi.loadStripeForExpressCheckout
+			).not.toHaveBeenCalled();
+		} );
+
 		it( 'different methods with same cart share one check', async () => {
 			await checkPaymentMethodIsAvailable(
 				'applePay',

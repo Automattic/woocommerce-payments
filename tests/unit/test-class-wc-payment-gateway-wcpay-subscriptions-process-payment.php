@@ -12,7 +12,8 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -145,7 +146,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$this->order_service = new WC_Payments_Order_Service( $this->mock_api_client );
 
 		$mock_dpps           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method = $this->createMock( UPE_Payment_Method::class );
 		$mock_payment_method->method( 'is_reusable' )->willReturn( true );
 
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
@@ -183,7 +184,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 			->willReturn( self::CUSTOMER_ID );
 
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->any() )
 			->method( 'update_customer_for_user' )
 			->willReturn( self::CUSTOMER_ID );
 

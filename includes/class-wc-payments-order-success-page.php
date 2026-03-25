@@ -392,8 +392,16 @@ class WC_Payments_Order_Success_Page {
 	public function replace_order_received_text_for_failed_orders( $text ) {
 		global $wp;
 
-		$order_id = absint( $wp->query_vars['order-received'] );
-		$order    = wc_get_order( $order_id );
+		$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ?? 0 ) );
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$order = false;
+		if ( $order_id > 0 ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order instanceof WC_Order || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+				$order = false;
+			}
+		}
 
 		if ( ! $order ||
 			! $order->needs_payment() ||

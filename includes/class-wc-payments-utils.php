@@ -691,9 +691,67 @@ class WC_Payments_Utils {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() ) {
+			$localized_messages = self::get_localized_messages();
+			$error_code         = $e->get_error_code();
+			$decline_code       = $e->get_decline_code();
+
+			if ( ! empty( $decline_code ) && isset( $localized_messages[ $decline_code ] ) ) {
+				$error_message = sprintf(
+					// translators: This is an error API response.
+					_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+					$localized_messages[ $decline_code ]
+				);
+			} elseif ( isset( $localized_messages[ $error_code ] ) ) {
+				$error_message = sprintf(
+					// translators: This is an error API response.
+					_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+					$localized_messages[ $error_code ]
+				);
+			}
 		}
 
 		return $error_message;
+	}
+
+	/**
+	 * Returns an array of Stripe error codes mapped to translatable customer-facing messages.
+	 *
+	 * Error codes come from Stripe's API: https://docs.stripe.com/error-codes
+	 * Messages use the woocommerce-payments text domain so they are translatable
+	 * via standard WordPress translation tools.
+	 *
+	 * @return array<string, string> Map of error code/type to translated message.
+	 */
+	public static function get_localized_messages() {
+		return apply_filters(
+			'wcpay_localized_messages',
+			[
+				'invalid_number'                        => __( 'The card number is not a valid credit card number.', 'woocommerce-payments' ),
+				'invalid_expiry_month'                  => __( 'Your card\'s expiration month is invalid.', 'woocommerce-payments' ),
+				'invalid_expiry_year'                   => __( 'Your card\'s expiration year is invalid.', 'woocommerce-payments' ),
+				'invalid_cvc'                           => __( 'Your card\'s security code is invalid.', 'woocommerce-payments' ),
+				'incorrect_number'                      => __( 'Your card number is incorrect.', 'woocommerce-payments' ),
+				'incomplete_number'                     => __( 'Your card number is incomplete.', 'woocommerce-payments' ),
+				'incomplete_cvc'                        => __( 'Your card\'s security code is incomplete.', 'woocommerce-payments' ),
+				'incomplete_expiry'                     => __( 'Your card\'s expiration date is incomplete.', 'woocommerce-payments' ),
+				'expired_card'                          => __( 'Your card has expired.', 'woocommerce-payments' ),
+				'incorrect_cvc'                         => __( "Your card's security code is incorrect.", 'woocommerce-payments' ),
+				'postal_code_invalid'                   => __( 'Invalid zip code, please correct and try again.', 'woocommerce-payments' ),
+				'invalid_expiry_year_past'              => __( 'Your card\'s expiration year is in the past.', 'woocommerce-payments' ),
+				'card_declined'                         => __( 'Your card was declined.', 'woocommerce-payments' ),
+				'missing'                               => __( 'There is no card on a customer that is being charged.', 'woocommerce-payments' ),
+				'processing_error'                      => __( 'An error occurred while processing your card. Try again in a little bit.', 'woocommerce-payments' ),
+				'invalid_sofort_country'                => __( 'The billing country is not accepted by Sofort. Please try another country.', 'woocommerce-payments' ),
+				'email_invalid'                         => __( 'Invalid email address, please correct and try again.', 'woocommerce-payments' ),
+				'country_code_invalid'                  => __( 'Invalid country code, please try again with a valid country code.', 'woocommerce-payments' ),
+				'tax_id_invalid'                        => __( 'Invalid Tax ID, please try again with a valid tax ID.', 'woocommerce-payments' ),
+				'invalid_wallet_type'                   => __( 'Invalid wallet payment type, please try again or use an alternative method.', 'woocommerce-payments' ),
+				'payment_intent_authentication_failure' => __( 'We are unable to authenticate your payment method. Please choose a different payment method and try again.', 'woocommerce-payments' ),
+				'authentication_required'               => __( 'Your card was declined because additional authentication is required. Please contact your card issuer or try a different payment method.', 'woocommerce-payments' ),
+				'insufficient_funds'                    => __( 'Your card has insufficient funds.', 'woocommerce-payments' ),
+			]
+		);
 	}
 
 	/**
@@ -1389,32 +1447,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Returns the styles cache version string used to invalidate localStorage
-	 * appearance caches. Reads from a stored WP option; if missing, computes
-	 * and stores it.
-	 *
-	 * @return string MD5 hash representing the current styles version.
-	 */
-	public static function get_styles_cache_version(): string {
-		$version = get_option( 'wcpay_styles_cache_version' );
-		if ( ! empty( $version ) ) {
-			return $version;
-		}
-
-		$version = self::compute_styles_cache_version();
-		update_option( 'wcpay_styles_cache_version', $version, true );
-		return $version;
-	}
-
-	/**
-	 * Deletes the stored cache version so it recomputes on the next page load.
-	 * Hooked to after_switch_theme, save_post_wp_global_styles, and customize_save_after.
-	 */
-	public static function invalidate_styles_cache_version(): void {
-		delete_option( 'wcpay_styles_cache_version' );
-	}
-
-	/**
 	 * Extract the REST route from the current request URL.
 	 *
 	 * @return string The REST route, or empty string if not found.
@@ -1443,24 +1475,5 @@ class WC_Payments_Utils {
 
 		// Fallback: simple prefix replacement for non-multisite cases.
 		return str_replace( $rest_prefix, '', $request_path );
-	}
-
-	/**
-	 * Computes a fresh styles cache version hash from plugin version,
-	 * theme stylesheet, and global styles (color palettes, style variations).
-	 *
-	 * @return string MD5 hash.
-	 */
-	private static function compute_styles_cache_version(): string {
-		$parts = WCPAY_VERSION_NUMBER . wp_get_theme()->get_stylesheet();
-
-		if ( function_exists( 'wp_get_global_styles' ) ) {
-			$parts .= wp_json_encode( wp_get_global_styles() );
-		}
-
-		// Theme mods capture Customizer changes (classic themes).
-		$parts .= wp_json_encode( get_theme_mods() );
-
-		return md5( $parts );
 	}
 }

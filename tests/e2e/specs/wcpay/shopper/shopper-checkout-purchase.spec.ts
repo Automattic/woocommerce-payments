@@ -11,6 +11,7 @@ import { config } from '../../../config/default';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
 import { getMerchant, getShopper } from '../../../utils/helpers';
+import { goToOrder } from '../../../utils/merchant-navigation';
 
 test.describe( 'Successful purchase', () => {
 	let merchantPage: Page;
@@ -53,6 +54,20 @@ test.describe( 'Successful purchase', () => {
 						name: 'Order received',
 					} )
 				).toBeVisible();
+
+				// When CTP is disabled, verify the order in WC admin.
+				if ( ! ctpEnabled ) {
+					const orderId = await shopperPage
+						.locator(
+							'.woocommerce-order-overview__order.order > strong'
+						)
+						.innerText();
+
+					await goToOrder( merchantPage, orderId );
+					await expect(
+						merchantPage.locator( '#order_status' )
+					).toHaveValue( /wc-(processing|completed)/ );
+				}
 			} );
 
 			test( 'using a 3DS card', { tag: '@critical' }, async () => {

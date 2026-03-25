@@ -124,6 +124,17 @@ describe( 'Settings - Transactions', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'display manual capture conflict notice', async () => {
+		useStripeBilling.mockReturnValue( [ true, jest.fn() ] );
+
+		render( <Transactions /> );
+		expect(
+			screen.getAllByText(
+				/Manual capture is not available when Stripe Billing is active/i
+			)[ 0 ]
+		).toBeInTheDocument();
+	} );
+
 	it( 'display ipp payment notice', async () => {
 		useCardPresentEligible.mockReturnValue( [ true ] );
 
@@ -135,17 +146,6 @@ describe( 'Settings - Transactions', () => {
 
 		expect(
 			screen.getByText( new RegExp( 'The setting is not applied to' ) )
-		).toBeInTheDocument();
-	} );
-
-	it( 'display manual capture conflict notice', async () => {
-		useStripeBilling.mockReturnValue( [ true, jest.fn() ] );
-
-		render( <Transactions /> );
-		expect(
-			screen.getAllByText(
-				/Manual capture is not available when Stripe Billing is active/i
-			)[ 0 ]
 		).toBeInTheDocument();
 	} );
 

@@ -28,10 +28,10 @@ use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 // Need to use WC_Mock_Data_Store.
@@ -264,8 +264,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
 		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
-		$this->mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
+		$this->mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, \WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class ] )
 			->setMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 
@@ -1126,7 +1126,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		return [
 			'card only'                  => [
 				[ 'card' => [ 'base' => 0.1 ] ],
-				[ 'card' ],
+				[ 'card', 'apple_pay', 'google_pay' ],
 			],
 			'no match with fees'         => [
 				[ 'some_other_payment_method' => [ 'base' => 0.1 ] ],
@@ -1137,7 +1137,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'card'       => [ 'base' => 0.1 ],
 					'bancontact' => [ 'base' => 0.2 ],
 				],
-				[ 'card', 'bancontact' ],
+				[ 'card', 'bancontact', 'apple_pay', 'google_pay' ],
 			],
 			'no fees no methods'         => [
 				[],
@@ -2568,6 +2568,58 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
 	}
 
+	public function test_schedule_order_tracking_skips_during_new_order_tracking_action() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_payment_method_id', 'pm_123' );
+		$order->save_meta_data();
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->mock_fraud_service
+			->expects( $this->never() )
+			->method( 'get_fraud_services_config' );
+
+		// Simulate being inside the wcpay_track_new_order action callback.
+		global $wp_current_filter;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
+		$wp_current_filter[] = 'wcpay_track_new_order';
+
+		try {
+			$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
+		} finally {
+			array_pop( $wp_current_filter );
+		}
+	}
+
+	public function test_schedule_order_tracking_skips_during_update_order_tracking_action() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( '_payment_method_id', 'pm_123' );
+		$order->save_meta_data();
+
+		$this->mock_action_scheduler_service
+			->expects( $this->never() )
+			->method( 'schedule_job' );
+
+		$this->mock_fraud_service
+			->expects( $this->never() )
+			->method( 'get_fraud_services_config' );
+
+		// Simulate being inside the wcpay_track_update_order action callback.
+		global $wp_current_filter;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Necessary to simulate doing_action() in tests.
+		$wp_current_filter[] = 'wcpay_track_update_order';
+
+		try {
+			$this->card_gateway->schedule_order_tracking( $order->get_id(), $order );
+		} finally {
+			array_pop( $wp_current_filter );
+		}
+	}
+
 	public function test_outputs_payments_settings_screen() {
 		ob_start();
 		$this->card_gateway->output_payments_settings_screen();
@@ -2840,12 +2892,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
 
 		$order = WC_Helper_Order::create_order();
-		$pi    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi    = new Payment_Information( Payment_Information::PAYMENT_METHOD_ERROR, $order, null, null, null, null, null, '', 'card' );
 		$pi->set_error( new \WP_Error( 'invalid_card', 'Invalid Card' ) );
 
-		$this->expectException( \Exception::class );
-		$this->expectExceptionMessage( 'Invalid Card' );
-		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+		try {
+			$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+			$this->fail( 'Expected exception was not thrown.' );
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'Invalid Card', $e->getMessage() );
+		}
+
+		// Ensure the error sentinel was not persisted as the payment method ID on the order.
+		$this->assertNotEquals( Payment_Information::PAYMENT_METHOD_ERROR, $order->get_meta( '_payment_method_id', true ) );
 	}
 
 	public function test_process_payment_for_order_rejects_with_order_id_mismatch() {
@@ -4290,6 +4348,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$payment_methods = [];
 
 		$payment_method_definitions = [
+			\WCPay\PaymentMethods\Configs\Definitions\CardDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::class,
@@ -4305,16 +4364,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class,
 		];
-
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			$payment_method                               = new $payment_method_class( $this->mock_token_service );
-			$payment_methods[ $payment_method->get_id() ] = $payment_method;
-		}
 
 		$registry = PaymentMethodDefinitionRegistry::instance();
 		foreach ( $payment_method_definitions as $definition_class ) {
@@ -4467,6 +4519,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		}
 
 		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
+		$this->card_gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
 
 		$amazon_pay_payment_method = new UPE_Payment_Method(
 			$this->mock_token_service,
@@ -4524,7 +4577,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_has_custom_place_order_button_not_set_for_non_express_checkout() {
 		update_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '1' );
 
-		$card_payment_method = new CC_Payment_Method( $this->mock_token_service );
+		$card_payment_method = new UPE_Payment_Method( $this->mock_token_service, CardDefinition::class );
 
 		$gateway = new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,

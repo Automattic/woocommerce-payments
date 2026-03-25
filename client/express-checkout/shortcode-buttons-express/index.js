@@ -46,6 +46,7 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from '../transformers/wc-to-stripe';
+import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
 const fetchNewCartData = async () => {
@@ -257,7 +258,9 @@ jQuery( ( $ ) => {
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
-					const addToCartButton = $( '.single_add_to_cart_button' );
+					const addToCartButton = jQuery(
+						getAddToCartButtonElement()
+					);
 
 					// First check if product can be added to cart.
 					if ( addToCartButton.is( '.disabled' ) ) {
@@ -496,8 +499,8 @@ jQuery( ( $ ) => {
 					if (
 						getExpressCheckoutData( 'button_context' ) === 'product'
 					) {
-						const addToCartButton = $(
-							'.single_add_to_cart_button'
+						const addToCartButton = jQuery(
+							getAddToCartButtonElement()
 						);
 
 						// First check if product can be added to cart.

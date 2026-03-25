@@ -108,6 +108,10 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 | `bin/` | Helper scripts | |
 | `tasks/` | Build and release automation | |
 
+**Namespace caveat for `includes/`:** ~12 files in `includes/` use the `WCPay` namespace (e.g., `class-wc-payments-checkout.php`, `class-database-cache.php`). When referencing a global-namespace class from these files, you must add a `use` import or prefix with `\`. PHPStan catches this but local PHPCS won't — run `composer run phpstan` before pushing changes that introduce new cross-namespace references.
+
+**No `declare(strict_types=1)` in `includes/`:** The project's PHPCS rules require the file docblock immediately after `<?php`. Adding `declare(strict_types=1)` between them causes lint failures. Files in `src/` (PSR-4) may use it, but `includes/` files must not.
+
 ## Technology Stack
 
 | Layer | Technologies |
@@ -216,6 +220,33 @@ gh pr edit <number> --add-reviewer Automattic/gamma
 gh pr edit <number> --add-label "pr: needs review"
 ```
 
+## Git Worktrees
+
+Worktrees provide isolated working directories for parallel feature work. Each worktree gets its own Docker port range (8180-8199).
+
+**Setup:** `npm run worktree:setup` (configures `.env`), `npm run worktree:status` (list all), `npm run tube:start` (tunnel — see [Jurassic Tube](#jurassic-tube-ssh-tunnels))
+
+**CRITICAL: Never remove a worktree that is your current working directory.** Removing the CWD makes ALL subsequent commands fail irrecoverably — no `cd`, no subshell can fix it.
+
+**Safe cleanup sequence (always from the main repo):**
+```bash
+# 1. Switch to main repo FIRST
+cd /path/to/main/repo
+
+# 2. Now safe to remove
+git worktree remove /path/to/worktree
+
+# 3. Clean up
+git worktree prune
+git branch -d worktree-feat/branch-name
+```
+
+**Merging worktree work:** `git checkout main` fails inside a worktree when main is checked out elsewhere. Use `git -C` from the main repo:
+```bash
+cd /path/to/main/repo
+git -C /path/to/main/repo merge worktree-feat/branch-name
+```
+
 ## Docker Environment
 
 | Service | URL/Port |
@@ -226,8 +257,54 @@ gh pr edit <number> --add-label "pr: needs review"
 
 - First-time: `npm run up:recreate`
 - Subsequent: `npm run up`
-- Worktrees: `npm run worktree:setup` (configure `.env`), `npm run worktree:status` (list all)
 - Xdebug ready (requires IDE path mapping)
+
+## Jurassic Tube (SSH Tunnels)
+
+Jurassic Tube creates public HTTPS tunnels (`<subdomain>.jurassic.tube`) to your local WordPress instance. Useful for testing webhooks, mobile devices, or sharing a dev site.
+
+### Commands
+
+| Command | Purpose |
+|---------|---------|
+| `npm run tube:setup` | First-time setup: registers subdomain, generates SSH keys, creates `bin/jurassictube/config.env` |
+| `npm run tube:start` | Starts tunnel (WordPress URLs resolve automatically via `wp-config.php`) |
+| `npm run tube:stop` | Stops tunnel |
+| `npm run tube:status` | Shows subdomain, port, tunnel state, and worktree info |
+
+### Worktree Support
+
+`tube:start` is worktree-aware. It auto-detects worktrees and handles configuration automatically:
+
+**Default (one tunnel at a time):**
+- In a worktree, `tube:start` copies config/keys from the main repo if no local config exists
+- Reads `WORDPRESS_PORT` from the worktree's `.env` to forward the tunnel to the correct port
+- Only one tunnel can use a subdomain at a time — starting in a worktree redirects the subdomain to the worktree's port
+
+**Per-worktree subdomains (parallel tunnels):**
+- Run `npm run tube:setup` in the worktree to register a dedicated subdomain
+- Each worktree then has its own `bin/jurassictube/config.env` with a unique subdomain
+- Multiple tunnels can run simultaneously on different subdomains
+
+**Agent workflow for tunnels in worktrees:**
+```bash
+# 1. Ensure worktree has a port assigned
+npm run worktree:setup
+
+# 2. Ensure Docker is running
+npm run up
+
+# 3. Start tunnel (auto-copies config from main repo if needed)
+npm run tube:start
+
+# 4. When done
+npm run tube:stop
+```
+
+**Key details:**
+- `bin/jurassictube/` is gitignored — config and keys are never committed
+- Port is resolved at runtime from `WORDPRESS_PORT` in `.env` (never hardcoded in config)
+- WordPress URLs resolve automatically via `wp-config.php` (`DOCKER_HOST` from `HTTP_HOST`) — no DB updates needed
 
 ## Configuration Files
 
@@ -296,3 +373,6 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 - PHP tests require Docker — ensure it's running before executing
 - Always push only current branch: `git push origin HEAD`
 - Always pull with rebase: `git pull origin $(git branch --show-current) --rebase`
+- **PHPCS class structure ordering:** `SlevomatCodingStandard.Classes.ClassStructure.IncorrectGroupOrder` requires methods in order: public → protected → private. When adding new private methods, place them after all public and protected methods. Run `vendor/bin/phpcbf --standard=phpcs.xml.dist <file>` to auto-fix ordering violations.
+- **Migration version_compare:** When adding a migration class in `includes/migrations/`, the `version_compare()` threshold must match the version in the `@since` tag (e.g., `version_compare('10.6.0', $previous_version, '>')` for `@since 10.6.0`). The version represents when the migration ships, not when the old behavior was introduced.
+- **Styles cache invalidation on plugin update:** `WC_Payments_Utils::compute_styles_cache_version()` uses `WCPAY_VERSION_NUMBER` in its hash, but the cached WP option persists across updates. Hook `invalidate_styles_cache_version` to `woocommerce_woocommerce_payments_updated` to clear stale caches.

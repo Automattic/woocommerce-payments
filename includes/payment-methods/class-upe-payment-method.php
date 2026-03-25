@@ -173,6 +173,12 @@ class UPE_Payment_Method {
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
 		if ( null !== $this->definition ) {
+			if ( is_array( $payment_details ) && ! empty( $payment_details ) ) {
+				$dynamic_title = $this->definition::get_title_from_charge_details( $account_country ?? '', $payment_details );
+				if ( null !== $dynamic_title ) {
+					return $dynamic_title;
+				}
+			}
 			return $this->definition::get_title( $account_country );
 		}
 		return $this->title;
