@@ -2892,12 +2892,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		set_transient( 'wcpay_minimum_amount_usd', '50', DAY_IN_SECONDS );
 
 		$order = WC_Helper_Order::create_order();
-		$pi    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+		$pi    = new Payment_Information( Payment_Information::PAYMENT_METHOD_ERROR, $order, null, null, null, null, null, '', 'card' );
 		$pi->set_error( new \WP_Error( 'invalid_card', 'Invalid Card' ) );
 
-		$this->expectException( \Exception::class );
-		$this->expectExceptionMessage( 'Invalid Card' );
-		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+		try {
+			$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+			$this->fail( 'Expected exception was not thrown.' );
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'Invalid Card', $e->getMessage() );
+		}
+
+		// Ensure the error sentinel was not persisted as the payment method ID on the order.
+		$this->assertNotEquals( Payment_Information::PAYMENT_METHOD_ERROR, $order->get_meta( '_payment_method_id', true ) );
 	}
 
 	public function test_process_payment_for_order_rejects_with_order_id_mismatch() {
