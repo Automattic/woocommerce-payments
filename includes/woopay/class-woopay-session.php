@@ -1234,7 +1234,7 @@ class WooPay_Session {
 
 		$font_rules = [];
 		if ( ! empty( $_POST['font_rules'] ) ) {
-			$raw_font_rules = json_decode( sanitize_text_field( wp_unslash( $_POST['font_rules'] ) ), true );
+			$raw_font_rules = json_decode( wp_unslash( $_POST['font_rules'] ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- decoded values are sanitized by sanitize_font_rules().
 			$font_rules     = is_array( $raw_font_rules ) ? self::sanitize_font_rules( $raw_font_rules ) : [];
 		}
 
@@ -1287,7 +1287,7 @@ class WooPay_Session {
 
 		$font_rules = [];
 		if ( ! empty( $_POST['font_rules'] ) ) {
-			$raw_font_rules = json_decode( sanitize_text_field( wp_unslash( $_POST['font_rules'] ) ), true );
+			$raw_font_rules = json_decode( wp_unslash( $_POST['font_rules'] ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- decoded values are sanitized by sanitize_font_rules().
 			$font_rules     = is_array( $raw_font_rules ) ? self::sanitize_font_rules( $raw_font_rules ) : [];
 		}
 
