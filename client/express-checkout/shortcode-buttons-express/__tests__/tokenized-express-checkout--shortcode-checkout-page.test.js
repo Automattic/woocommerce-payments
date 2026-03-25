@@ -8,7 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
 import {
 	cartWithItemsMock,
 	cartWithItemsAndCouponMock,
-} from '../__fixtures__/cart';
+} from '../../__fixtures__/cart';
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
