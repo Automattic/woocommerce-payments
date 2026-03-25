@@ -61,13 +61,7 @@ async function initializeAppearance( elementsLocation ) {
 		return cached;
 	}
 
-	// Wait for web fonts to load so getComputedStyle returns the actual
-	// theme font instead of a fallback generic family.
-	if ( document.fonts?.ready ) {
-		await document.fonts.ready;
-	}
-
-	const appearance = getAppearance( elementsLocation );
+	const appearance = await getAppearance( elementsLocation );
 	dispatchAppearanceEvent( appearance, elementsLocation );
 	setCachedAppearance( elementsLocation, version, appearance );
 	return appearance;

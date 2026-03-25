@@ -47,18 +47,11 @@ const PaymentElements = ( { api, ...props } ) => {
 
 	useEffect( () => {
 		if ( ! appearance && containerRef.current ) {
-			const ownerDoc = containerRef.current.ownerDocument;
-			// Wait for web fonts to load before reading computed styles so
-			// getComputedStyle returns the actual theme font, not a fallback.
-			const fontsReady = ownerDoc.fonts?.ready ?? Promise.resolve();
-			fontsReady.then( () => {
-				// Guard against unmount or cache being set while we waited.
-				if ( ! containerRef.current ) {
-					return;
-				}
+			( async () => {
+				const ownerDoc = containerRef.current.ownerDocument;
 				setFontRules( getFontRulesFromPage( ownerDoc ) );
 				// Generate UPE input styles.
-				const upeAppearance = getAppearance(
+				const upeAppearance = await getAppearance(
 					'blocks_checkout',
 					false,
 					ownerDoc
@@ -76,7 +69,7 @@ const PaymentElements = ( { api, ...props } ) => {
 						new Event( 'wcpay-appearance-cached' )
 					);
 				}, 0 );
-			} );
+			} )();
 		}
 
 		if ( fingerprintErrorMessage ) {

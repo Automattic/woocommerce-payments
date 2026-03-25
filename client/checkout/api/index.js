@@ -344,13 +344,9 @@ export default class WCPayAPI {
 			const nonce = getConfig( 'initWooPayNonce' );
 			const appearanceType = getAppearanceType();
 
-			let appearance = null;
-			if ( getConfig( 'isWooPayGlobalThemeSupportEnabled' ) ) {
-				if ( document.fonts?.ready ) {
-					await document.fonts.ready;
-				}
-				appearance = getAppearance( appearanceType, true );
-			}
+			const appearance = getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+				? await getAppearance( appearanceType, true )
+				: null;
 
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {
 				_wpnonce: nonce,

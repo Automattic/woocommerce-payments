@@ -4,7 +4,13 @@
 import * as upeStyles from '..';
 
 describe( 'Getting styles for automated theming', () => {
-	const mockElement = document.createElement( 'input' );
+	// Recreated per-test so DOM nodes from hiddenElementsForUPE.init()
+	// don't accumulate across tests (the mock querySelector returns this
+	// for every selector, so cleanup() can't find the real hidden container).
+	let mockElement;
+	beforeEach( () => {
+		mockElement = document.createElement( 'input' );
+	} );
 	// camelCase for direct property access (styles.fontFamily)
 	const cssPropertiesCamel = {
 		fontFamily:
@@ -155,7 +161,7 @@ describe( 'Getting styles for automated theming', () => {
 		expect( fontRules ).toEqual( [] );
 	} );
 
-	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', () => {
+	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', async () => {
 		const scope = {
 			querySelector: jest.fn( () => mockElement ),
 			createElement: jest.fn( ( htmlTag ) =>
@@ -166,7 +172,7 @@ describe( 'Getting styles for automated theming', () => {
 			},
 		};
 
-		const appearance = upeStyles.getAppearance(
+		const appearance = await upeStyles.getAppearance(
 			'shortcode_checkout',
 			false,
 			scope
@@ -255,7 +261,7 @@ describe( 'Getting styles for automated theming', () => {
 		} );
 	} );
 
-	test( 'getAppearance replaces transparent .Input backgrounds with page background color', () => {
+	test( 'getAppearance replaces transparent .Input backgrounds with page background color', async () => {
 		const inputElement = document.createElement( 'input' );
 		const backgroundElement = document.createElement( 'div' );
 		const pageBackgroundColor = 'rgb(245, 245, 245)';
@@ -301,7 +307,7 @@ describe( 'Getting styles for automated theming', () => {
 			},
 		};
 
-		const appearance = upeStyles.getAppearance(
+		const appearance = await upeStyles.getAppearance(
 			'shortcode_checkout',
 			false,
 			scope
@@ -396,7 +402,7 @@ describe( 'Getting styles for automated theming', () => {
 		},
 	].forEach( ( { elementsLocation, expectedSelectors } ) => {
 		describe( `when elementsLocation is ${ elementsLocation }`, () => {
-			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
+			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', async () => {
 				const scope = {
 					querySelector: jest.fn( () => mockElement ),
 					createElement: jest.fn( ( htmlTag ) =>
@@ -409,7 +415,7 @@ describe( 'Getting styles for automated theming', () => {
 					},
 				};
 
-				upeStyles.getAppearance( elementsLocation, false, scope );
+				await upeStyles.getAppearance( elementsLocation, false, scope );
 
 				expectedSelectors.forEach( ( selector ) => {
 					expect( scope.querySelector ).toHaveBeenCalledWith(

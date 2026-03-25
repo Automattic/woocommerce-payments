@@ -187,16 +187,11 @@ export const handleWooPayEmailInput = async (
 		// Set the initial value.
 		iframeHeaderValue = true;
 		const appearanceType = getAppearanceType();
-		let appearance = null;
-		if (
+		const appearance =
 			isSupportedThemeEntrypoint( appearanceType ) &&
 			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-		) {
-			if ( document.fonts?.ready ) {
-				await document.fonts.ready;
-			}
-			appearance = getAppearance( appearanceType, true );
-		}
+				? await getAppearance( appearanceType, true )
+				: null;
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(

@@ -592,11 +592,17 @@ function ensureFontSizeSmallerThan(
 	return `${ fontSizeNumber }px`;
 }
 
-export const getAppearance = (
+export const getAppearance = async (
 	elementsLocation,
 	forWooPay = false,
 	scope = document
 ) => {
+	// Wait for web fonts to load so getComputedStyle returns the actual
+	// theme font instead of a fallback generic family.
+	if ( scope.fonts?.ready ) {
+		await scope.fonts.ready;
+	}
+
 	const selectors = appearanceSelectors.getSelectors(
 		elementsLocation,
 		scope
