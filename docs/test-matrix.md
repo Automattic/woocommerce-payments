@@ -8,7 +8,7 @@ Structured inventory of every test suite used in the WooPayments plugin — auto
 
 ## Ownership
 
-All test suites, CI workflows, and release processes are owned and maintained by the **WooPayments team**. The **QIT platform** used by some suites is maintained by a separate **QualityOps team**, but the WooPayments-specific QIT test specs and CI integration are the WooPayments team's responsibility. Release-specific manual activities (#21-26) are led by the **release lead** (rotating within the team).
+All test suites, CI workflows, and release processes are owned and maintained by the **WooPayments team**. The **QIT platform** used by some suites is maintained by a separate **QualityOps team**, but the WooPayments-specific QIT test specs and CI integration are the WooPayments team's responsibility. Release process activities (#21-26) are led by the **release lead** (rotating within the team).
 
 ---
 
@@ -36,12 +36,14 @@ All test suites, CI workflows, and release processes are owned and maintained by
 | 18 | [WC/WP Compatibility](#18-wcwp-compatibility) | Compatibility | WooPayments | PR | Partial | No |
 | 19 | [Changelog Check](#19-changelog-check) | Process | WooPayments | PR (develop, release/*) | Yes | No |
 | 20 | [Bundle Size](#20-bundle-size) | Performance | WooPayments | PR | Yes | No |
+| | **Release Testing** | | | | | |
 | 21 | [Internal Testing](#21-internal-testing) | Manual QA | Release lead | Week 4 Fri – Week 5 Mon | N/A | Yes |
-| 22 | [Call for Testing](#22-call-for-testing) | Manual QA | Release lead | Week 4 Thu | N/A | Yes |
-| 23 | [Apple Pay Testing](#23-apple-pay-testing) | Manual QA | Release lead | Week 4 Thu | N/A | Yes |
-| 24 | [AI-Assisted Code Review](#24-ai-assisted-code-review) | Semi-Auto | Release lead | Week 4 Thu | N/A | Informational |
-| 25 | [Release Branch E2E Re-run](#25-release-branch-e2e-re-run) | Semi-Auto | Release lead | Week 4 Thu | N/A | Yes |
-| 26 | [Release Branch QIT Tests](#26-release-branch-qit-tests) | Semi-Auto | Release lead | Week 4 Thu | N/A | Yes |
+| 22 | [Apple Pay Testing](#22-apple-pay-testing) | Manual QA | Release lead | Week 4 Thu | N/A | Yes |
+| 23 | [Release Branch E2E Re-run](#23-release-branch-e2e-re-run) | Semi-Auto | Release lead | Week 4 Thu | N/A | Yes |
+| 24 | [Release Branch QIT Tests](#24-release-branch-qit-tests) | Semi-Auto | Release lead | Week 4 Thu | N/A | Yes |
+| | **Release Review & Communication** | | | | | |
+| 25 | [Call for Testing](#25-call-for-testing) | Process | Release lead | Week 4 Thu | N/A | Yes |
+| 26 | [AI-Assisted Code Review](#26-ai-assisted-code-review) | Review | Release lead | Week 4 Thu | N/A | Informational |
 
 ---
 
@@ -456,9 +458,11 @@ Monitors JS/CSS bundle sizes using `preactjs/compressed-size-action`. Tracks `re
 
 ---
 
-## Release-Specific Testing
+## Release Process Activities
 
 These activities occur during the release cycle (5-week cadence). Code freeze is Week 4 Wednesday.
+
+### Release Testing
 
 ### 21. Internal Testing
 
@@ -473,20 +477,7 @@ Team members manually test the release candidate against a checklist covering ke
 
 ---
 
-### 22. Call for Testing
-
-| Field | Value |
-|-------|-------|
-| **Category** | Manual QA |
-| **Trigger** | Week 4 Thursday (P2 post) |
-| **DRI** | Release lead |
-| **Gates release** | Yes |
-
-P2 post inviting broader team to test the release candidate. Includes a summary of changes and areas to focus on.
-
----
-
-### 23. Apple Pay Testing
+### 22. Apple Pay Testing
 
 | Field | Value |
 |-------|-------|
@@ -499,20 +490,7 @@ Manual verification of Apple Pay flows on real devices. Cannot be fully automate
 
 ---
 
-### 24. AI-Assisted Code Review
-
-| Field | Value |
-|-------|-------|
-| **Category** | Semi-Automated |
-| **Trigger** | Week 4 Thursday |
-| **DRI** | Release lead |
-| **Gates release** | Informational only |
-
-AI reviews the diff between the previous release and the release candidate, flagging potential issues. Results are reviewed but do not block the release.
-
----
-
-### 25. Release Branch E2E Re-run
+### 23. Release Branch E2E Re-run
 
 | Field | Value |
 |-------|-------|
@@ -525,7 +503,7 @@ Full E2E suite re-run against the release branch to catch any regressions introd
 
 ---
 
-### 26. Release Branch QIT Tests
+### 24. Release Branch QIT Tests
 
 | Field | Value |
 |-------|-------|
@@ -535,6 +513,34 @@ Full E2E suite re-run against the release branch to catch any regressions introd
 | **Gates release** | Yes |
 
 QIT E2E and security tests run against the release branch. Uses `qit-e2e-prerelease.yml` workflow.
+
+---
+
+### Release Review & Communication
+
+### 25. Call for Testing
+
+| Field | Value |
+|-------|-------|
+| **Category** | Process |
+| **Trigger** | Week 4 Thursday (P2 post) |
+| **DRI** | Release lead |
+| **Gates release** | Yes |
+
+P2 post inviting broader team to test the release candidate. Includes a summary of changes and areas to focus on.
+
+---
+
+### 26. AI-Assisted Code Review
+
+| Field | Value |
+|-------|-------|
+| **Category** | Review |
+| **Trigger** | Week 4 Thursday |
+| **DRI** | Release lead |
+| **Gates release** | Informational only |
+
+AI reviews the diff between the previous release and the release candidate, flagging potential issues. Results are reviewed but do not block the release.
 
 ---
 
