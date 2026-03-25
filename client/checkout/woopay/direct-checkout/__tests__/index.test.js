@@ -268,19 +268,15 @@ describe( 'WooPay direct checkout iAPI mini-cart', () => {
 
 		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
-		// Should be called 3 times: mini-cart button, footer button, and main checkout buttons.
+		// All buttons (checkout + iAPI mini-cart) are merged into a single call
+		// to avoid concurrent isUserLoggedIn races via postMessage.
 		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledTimes( 3 );
+		).toHaveBeenCalledTimes( 1 );
 
-		// Verify mini-cart button got a listener.
+		// Verify both mini-cart buttons are included in the single call.
 		expect(
 			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( [ miniCartButton ], false );
-
-		// Verify footer button got a listener.
-		expect(
-			WooPayDirectCheckout.addRedirectToWooPayEventListener
-		).toHaveBeenCalledWith( [ footerButton ], false );
+		).toHaveBeenCalledWith( [ miniCartButton, footerButton ], false );
 	} );
 } );
