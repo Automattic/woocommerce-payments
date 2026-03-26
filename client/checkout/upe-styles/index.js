@@ -72,6 +72,8 @@ export const appearanceSelectors = {
 			'#payment-method',
 			'form.wc-block-checkout__form',
 			'.wc-block-checkout',
+			'main',
+			'.wp-block-group',
 			'body',
 		],
 		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
