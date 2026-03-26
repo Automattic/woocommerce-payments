@@ -42,49 +42,6 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    # Fast smoke test — runs only @critical tests for quick PR feedback.
-    wcpay-e2e-critical:
-        runs-on: ubuntu-latest
-
-        name: Critical smoke (WC latest)
-
-        env:
-            E2E_WP_VERSION: 'latest'
-            E2E_WC_VERSION: 'latest'
-
-        steps:
-            - name: Checkout WCPay repository
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ inputs.repo-branch || github.ref }}
-
-            - name: 'Download WooCommerce Payments build file'
-              if: ${{ inputs.wcpay-use-build-artifact }}
-              uses: actions/download-artifact@v4
-              with:
-                  name: woocommerce-payments
-                  path: ${{ env.WCPAY_ARTIFACT_DIRECTORY }}
-
-            - name: Setup E2E environment
-              uses: ./.github/actions/e2e/env-setup
-
-            - name: Run @critical tests
-              shell: bash
-              run: npm run test:e2e-ci-critical
-
-            - name: Archive screenshots & logs on failure
-              if: ${{ failure() }}
-              uses: actions/upload-artifact@v4
-              with:
-                  name: critical-smoke-artifacts
-                  path: |
-                    playwright-report/
-                    tests/e2e/test-results
-                    ${{ env.E2E_RESULT_FILEPATH }}
-                  if-no-files-found: ignore
-                  retention-days: 7
-
-    # Full E2E suite — runs all tests.
     wcpay-e2e-tests:
         runs-on: ubuntu-latest
 

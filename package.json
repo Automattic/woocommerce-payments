@@ -36,7 +36,6 @@
 		"test:e2e-reset": "npm run test:e2e-down && npm run test:e2e-cleanup",
 		"test:e2e": "./tests/e2e/test-e2e.sh",
 		"test:e2e-ci": "npx playwright test --config=tests/e2e/playwright.config.ts --grep-invert @todo",
-		"test:e2e-ci-critical": "npx playwright test --config=tests/e2e/playwright.config.ts --grep @critical --grep-invert @todo",
 		"test:e2e-ui": "./tests/e2e/test-e2e-ui.sh",
 		"test:e2e-performance": "./tests/e2e/test-e2e-performance.sh",
 		"test:e2e-update-snapshots": "npm run test:e2e -- --update-snapshots",
