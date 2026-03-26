@@ -9,7 +9,7 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getStripeElementsMode } from '.';
+import { getExpressCheckoutData, getStripeElementsMode } from '.';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 interface CartTotals {
@@ -49,15 +49,21 @@ const getEffectiveTotalPrice = ( cart: Cart ): string => {
 };
 
 /**
- * Core function: creates a hidden Stripe Express Checkout Element to detect
- * which express payment methods are available on the current device/browser.
+ * Mounts a hidden Stripe Express Checkout Element to detect which express
+ * payment methods are available on the current device/browser.
+ *
+ * Both 'card' and 'amazon_pay' must be in paymentMethodTypes for Stripe to
+ * report their availability — this matches the product page's Elements config.
  */
-function checkAllMethodsInternal(
+function checkAvailablePaymentMethods(
 	stripe: Stripe,
 	amount: number,
 	currency: string,
 	mode: string
 ): Promise< Partial< AvailablePaymentMethods > > {
+	const useConfirmationToken =
+		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+
 	return new Promise( ( resolve ) => {
 		try {
 			const container = document.createElement( 'div' );
@@ -70,7 +76,9 @@ function checkAllMethodsInternal(
 				mode: mode as 'payment' | 'subscription',
 				amount: Math.max( amount, 1 ),
 				currency,
-				paymentMethodCreation: 'manual',
+				...( useConfirmationToken
+					? { paymentMethodTypes: [ 'card', 'amazon_pay' ] }
+					: { paymentMethodCreation: 'manual' } ),
 			} );
 
 			const eceButton = elements.create( 'expressCheckout', {
@@ -79,6 +87,9 @@ function checkAllMethodsInternal(
 					applePay: 'always',
 					googlePay: 'always',
 					amazonPay: 'auto',
+					link: 'never',
+					paypal: 'never',
+					klarna: 'never',
 				},
 			} );
 
@@ -101,7 +112,7 @@ function checkAllMethodsInternal(
 	} );
 }
 
-// Module-level cache for the Stripe promise and memoized check function.
+// Module-level cache for the Stripe promise and memoized probe.
 let cachedStripePromise: Promise< Stripe > | null = null;
 let memoizedCheck:
 	| ( (
@@ -140,7 +151,12 @@ export async function checkAllExpressMethodsAvailability(
 		memoizedCheck = memoize(
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			( _amount: number, _currency: string, _mode: string ) =>
-				checkAllMethodsInternal( stripe, _amount, _currency, _mode ),
+				checkAvailablePaymentMethods(
+					stripe,
+					_amount,
+					_currency,
+					_mode
+				),
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			( _amount: number, _currency: string, _mode: string ) =>
 				`${ _amount }-${ _currency }-${ _mode }`
