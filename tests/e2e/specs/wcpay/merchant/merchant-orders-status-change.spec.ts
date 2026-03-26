@@ -23,7 +23,8 @@ const orderPriceSelector =
 
 const saveOrder = async ( page: Page ) => {
 	await page.locator( '.save_order' ).click();
-	await page.waitForLoadState( 'networkidle' );
+	// Wait for the page to reload after saving.
+	await page.waitForLoadState( 'load' );
 };
 
 const verifyOrderStatus = async ( page: Page, status: string ) => {
@@ -92,7 +93,8 @@ test.describe( 'Order > Status Change', { tag: '@critical' }, () => {
 			await merchantPage
 				.getByRole( 'button', { name: 'Cancel order' } )
 				.click();
-			await merchantPage.waitForLoadState( 'networkidle' );
+			// Wait for the cancellation to process before verifying status.
+			await merchantPage.waitForLoadState( 'load' );
 
 			// Verify the order status is set to cancel.
 			await verifyOrderStatus( merchantPage, 'Cancelled' );
@@ -151,9 +153,9 @@ test.describe( 'Order > Status Change', { tag: '@critical' }, () => {
 			// Click on Refund order.
 			await merchantPage.locator( refundConfirmSelector ).click();
 
-			// Wait for refund to be processed
+			// Wait for refund to be processed.
 			await isUIUnblocked( merchantPage );
-			await merchantPage.waitForLoadState( 'networkidle' );
+			await merchantPage.waitForLoadState( 'load' );
 
 			// Get the order price
 			const priceElement = await merchantPage.$( orderPriceSelector );

@@ -25,6 +25,11 @@ test.describe(
 			await shopper.selectPaymentMethod( page );
 		} );
 
+		// Reload after each test to prevent state leaking between tests.
+		test.afterEach( async ( { page } ) => {
+			await page.reload();
+		} );
+
 		test( 'should throw an error that the card was simply declined', async ( {
 			page,
 			browser,

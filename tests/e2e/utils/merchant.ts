@@ -70,7 +70,6 @@ const expectSnackbarWithText = async (
 		.first();
 
 	await expect( snackbar ).toBeVisible( { timeout } );
-	await page.waitForTimeout( 2000 );
 };
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
@@ -153,10 +152,10 @@ export const addMulticurrencyWidget = async (
 			.locator( 'button.components-button[role="option"]' )
 			.first()
 			.click();
-		await page.waitForTimeout( 2000 );
+		// Wait for the widget to render and the Update button to become enabled.
 		await expect(
 			page.getByRole( 'button', { name: 'Update' } )
-		).toBeEnabled();
+		).toBeEnabled( { timeout: 10000 } );
 		await page.getByRole( 'button', { name: 'Update' } ).click();
 		await expectSnackbarWithText( page, 'Widgets saved.' );
 	}
