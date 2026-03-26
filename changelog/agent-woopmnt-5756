@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add Link payment method token support in subscription payment method change order notes

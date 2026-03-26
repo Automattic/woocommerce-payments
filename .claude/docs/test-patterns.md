@@ -106,7 +106,7 @@ Located in `tests/unit/helpers/`:
 | `WC_Helper_Intention` | `create_setup_intention($data)` — creates mock setup intent |
 | `WC_Helper_Product` | `create_simple_product()` — creates WC_Product |
 | `WC_Helper_Subscription` | Creates subscription products and customer subscriptions |
-| `WC_Helper_Token` | Creates payment method tokens |
+| `WC_Helper_Token` | `create_token($pm, $user_id)` — CC (visa, 4242), `create_amazon_pay_token($pm, $user_id, $email)`, `create_link_token($pm, $user_id, $email)` |
 
 ### Running PHP Tests
 
