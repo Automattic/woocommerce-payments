@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix undefined array key warnings in CC_Payment_Method::get_title() when Stripe Link is used

@@ -38,7 +38,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
-		if ( ! $payment_details ) {
+		if ( ! $payment_details || ! isset( $payment_details[ $this->stripe_id ] ) ) {
 			return __( 'Card', 'woocommerce-payments' );
 		}
 
@@ -50,7 +50,10 @@ class CC_Payment_Method extends UPE_Payment_Method {
 			'unknown' => __( 'unknown', 'woocommerce-payments' ),
 		];
 
-		$card_network = $details['display_brand'] ?? $details['network'] ?? $details['networks']['preferred'] ?? $details['networks']['available'][0];
+		$card_network = $details['display_brand'] ?? $details['network'] ?? $details['networks']['preferred'] ?? $details['networks']['available'][0] ?? null;
+		if ( ! $card_network ) {
+			return __( 'Card', 'woocommerce-payments' );
+		}
 		// Networks like `cartes_bancaires` may use underscores, so we replace them with spaces.
 		$card_network = str_replace( '_', ' ', $card_network );
 
@@ -58,7 +61,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 			// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
 			__( '%1$s %2$s card', 'woocommerce-payments' ),
 			ucwords( $card_network ),
-			$funding_types[ $details['funding'] ]
+			$funding_types[ $details['funding'] ] ?? $funding_types['unknown']
 		);
 
 		return $payment_method_title;

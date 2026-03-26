@@ -727,6 +727,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Card', $card_method->get_title( 'US' ) );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
+		// When payment details exist but lack the 'card' key (e.g. Stripe Link), fall back to generic title.
+		$this->assertEquals( 'Card', $card_method->get_title( 'US', [ 'type' => 'card' ] ) );
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertTrue( $card_method->is_reusable() );
 		$this->assertEquals( $mock_token, $card_method->get_payment_token_for_user( $mock_user, $mock_payment_method_id ) );
