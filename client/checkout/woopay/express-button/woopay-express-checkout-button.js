@@ -25,7 +25,7 @@ import {
 } from 'wcpay/checkout/woopay/utils';
 import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
+import { resolveAppearance } from 'wcpay/utils/appearance-cache';
 import { getAppearanceType } from 'wcpay/checkout/utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
@@ -226,7 +226,7 @@ export const WoopayExpressCheckoutButton = ( {
 			const appearance =
 				isSupportedThemeEntrypoint( appearanceType ) &&
 				getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-					? await getAppearance( appearanceType, true )
+					? await resolveAppearance( appearanceType, null, true )
 					: null;
 
 			if ( isProductPage ) {

@@ -10,8 +10,8 @@ import {
 	__resetHasCheckoutCompleted,
 	isMissingRequiredAddressFieldsForBNPL,
 } from '../payment-processing';
-import { getAppearance } from '../../upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
+import { resolveAppearance } from 'wcpay/utils/appearance-cache';
 import {
 	getFingerprint,
 	appendFingerprintInputToForm,
@@ -179,7 +179,7 @@ describe( 'Stripe Payment Element mounting', () => {
 				document.body.dispatchEvent = dispatchMock;
 
 				const appearanceMock = { backgroundColor: '#fff' };
-				getAppearance.mockReturnValue( appearanceMock );
+				resolveAppearance.mockResolvedValue( appearanceMock );
 				getFingerprint.mockImplementation( () => {
 					return 'fingerprint';
 				} );
@@ -192,10 +192,7 @@ describe( 'Stripe Payment Element mounting', () => {
 					elementsLocation
 				);
 
-				expect( getAppearance ).toHaveBeenCalledWith(
-					elementsLocation
-				);
-				expect( dispatchMock ).toHaveBeenCalled();
+				expect( resolveAppearance ).toHaveBeenCalled();
 			} );
 		} );
 	} );

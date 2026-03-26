@@ -10,11 +10,10 @@ import { select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import {
 	getCachedAppearance,
-	setCachedAppearance,
-	dispatchAppearanceEvent,
+	resolveAppearance,
 } from 'wcpay/utils/appearance-cache';
 import { useStripeAsync } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'utils/checkout';
@@ -58,16 +57,12 @@ const ProductDetail = ( { cart, context } ) => {
 
 	useEffect( () => {
 		if ( ! appearance ) {
-			( async () => {
-				const computed = await getAppearance( 'bnpl_cart_block' );
-				dispatchAppearanceEvent( computed, 'bnpl_cart_block' );
-				setCachedAppearance(
-					'bnpl_cart_block',
-					getUPEConfig( 'stylesCacheVersion' ),
-					computed
-				);
+			resolveAppearance(
+				'bnpl_cart_block',
+				getUPEConfig( 'stylesCacheVersion' )
+			).then( ( computed ) => {
 				setAppearance( computed );
-			} )();
+			} );
 		}
 	}, [ appearance ] );
 

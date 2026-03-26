@@ -8,7 +8,7 @@ import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
 } from 'wcpay/utils/express-checkout';
-import { getAppearance } from 'checkout/upe-styles';
+import { resolveAppearance } from 'wcpay/utils/appearance-cache';
 import { getAppearanceType } from '../utils';
 
 /**
@@ -345,7 +345,7 @@ export default class WCPayAPI {
 			const appearanceType = getAppearanceType();
 
 			const appearance = getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? await getAppearance( appearanceType, true )
+				? await resolveAppearance( appearanceType, null, true )
 				: null;
 
 			return this.request( buildAjaxURL( wcAjaxUrl, 'init_woopay' ), {

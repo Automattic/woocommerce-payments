@@ -17,7 +17,7 @@ import {
 	isSupportedThemeEntrypoint,
 } from '../utils';
 import { getTracksIdentity } from 'tracks';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
+import { resolveAppearance } from 'wcpay/utils/appearance-cache';
 import { getAppearanceType } from 'wcpay/checkout/utils';
 
 const getEmailValue = async ( emailSelector ) => {
@@ -115,7 +115,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		const appearance =
 			isSupportedThemeEntrypoint( appearanceType ) &&
 			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? await getAppearance( appearanceType, true )
+				? await resolveAppearance( appearanceType, null, true )
 				: null;
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {

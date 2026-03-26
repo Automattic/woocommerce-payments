@@ -10,11 +10,10 @@ import { StoreNotice } from '@woocommerce/blocks-checkout';
  * Internal dependencies
  */
 import './style.scss';
-import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import {
 	getCachedAppearance,
-	setCachedAppearance,
-	dispatchAppearanceEvent,
+	resolveAppearance,
 } from 'wcpay/utils/appearance-cache';
 import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -47,21 +46,14 @@ const PaymentElements = ( { api, ...props } ) => {
 
 	useEffect( () => {
 		if ( ! appearance && containerRef.current ) {
-			( async () => {
-				const ownerDoc = containerRef.current.ownerDocument;
-				setFontRules( getFontRulesFromPage( ownerDoc ) );
-				// Generate UPE input styles.
-				const upeAppearance = await getAppearance(
-					'blocks_checkout',
-					false,
-					ownerDoc
-				);
-				dispatchAppearanceEvent( upeAppearance, 'blocks_checkout' );
-				setCachedAppearance(
-					'blocks_checkout',
-					getUPEConfig( 'stylesCacheVersion' ),
-					upeAppearance
-				);
+			const ownerDoc = containerRef.current.ownerDocument;
+			setFontRules( getFontRulesFromPage( ownerDoc ) );
+			resolveAppearance(
+				'blocks_checkout',
+				getUPEConfig( 'stylesCacheVersion' ),
+				false,
+				ownerDoc
+			).then( ( upeAppearance ) => {
 				setAppearance( upeAppearance );
 				// Defer dispatch so all payment method label listeners are attached first.
 				setTimeout( () => {
@@ -69,7 +61,7 @@ const PaymentElements = ( { api, ...props } ) => {
 						new Event( 'wcpay-appearance-cached' )
 					);
 				}, 0 );
-			} )();
+			} );
 		}
 
 		if ( fingerprintErrorMessage ) {

@@ -7,12 +7,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getAppearance, getFontRulesFromPage } from '../upe-styles';
-import {
-	getCachedAppearance,
-	setCachedAppearance,
-	dispatchAppearanceEvent,
-} from 'wcpay/utils/appearance-cache';
+import { getFontRulesFromPage } from '../upe-styles';
+import { resolveAppearance } from 'wcpay/utils/appearance-cache';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -48,23 +44,16 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 }
 
 /**
- * Initializes the appearance of the payment element by computing it from the DOM.
- * Waits for web fonts to load before reading computed styles.
+ * Initializes the appearance of the payment element.
  *
  * @param {string} elementsLocation The location of the UPE elements.
  * @return {Promise<Object>} The appearance object for the UPE.
  */
-async function initializeAppearance( elementsLocation ) {
-	const version = getUPEConfig( 'stylesCacheVersion' );
-	const cached = getCachedAppearance( elementsLocation, version );
-	if ( cached ) {
-		return cached;
-	}
-
-	const appearance = await getAppearance( elementsLocation );
-	dispatchAppearanceEvent( appearance, elementsLocation );
-	setCachedAppearance( elementsLocation, version, appearance );
-	return appearance;
+function initializeAppearance( elementsLocation ) {
+	return resolveAppearance(
+		elementsLocation,
+		getUPEConfig( 'stylesCacheVersion' )
+	);
 }
 
 /**

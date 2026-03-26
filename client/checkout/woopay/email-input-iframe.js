@@ -6,7 +6,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from 'utils/express-checkout';
-import { getAppearance } from 'checkout/upe-styles';
+import { resolveAppearance } from 'wcpay/utils/appearance-cache';
 import {
 	getTargetElement,
 	validateEmail,
@@ -190,7 +190,7 @@ export const handleWooPayEmailInput = async (
 		const appearance =
 			isSupportedThemeEntrypoint( appearanceType ) &&
 			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? await getAppearance( appearanceType, true )
+				? await resolveAppearance( appearanceType, null, true )
 				: null;
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {

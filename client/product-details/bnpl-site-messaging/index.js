@@ -4,12 +4,8 @@
  */
 import './style.scss';
 import WCPayAPI from 'wcpay/checkout/api';
-import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
-import {
-	getCachedAppearance,
-	setCachedAppearance,
-	dispatchAppearanceEvent,
-} from 'wcpay/utils/appearance-cache';
+import { getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { resolveAppearance } from 'wcpay/utils/appearance-cache';
 import apiRequest from 'wcpay/checkout/utils/request';
 
 const elementsLocations = {
@@ -66,12 +62,7 @@ export const initializeBnplSiteMessaging = async () => {
 
 	const location = elementsLocations[ elementLocation ];
 	const cacheVersion = window.wcpayStripeSiteMessaging.stylesCacheVersion;
-	let appearance = getCachedAppearance( location, cacheVersion );
-	if ( ! appearance ) {
-		appearance = await getAppearance( location );
-		dispatchAppearanceEvent( appearance, location );
-		setCachedAppearance( location, cacheVersion, appearance );
-	}
+	const appearance = await resolveAppearance( location, cacheVersion );
 
 	const elementsOptions = {
 		appearance,

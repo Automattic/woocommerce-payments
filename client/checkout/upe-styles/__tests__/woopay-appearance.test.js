@@ -42,7 +42,7 @@ describe( 'WooPay appearance theming', () => {
 			cssPropertiesDashed[ propertyName ],
 	};
 
-	test( 'getAppearance for woopay_shortcode_checkout includes WooPay rules with correct link priority', async () => {
+	test( 'getAppearance for woopay_shortcode_checkout includes WooPay rules with correct link priority', () => {
 		const contentLink = document.createElement( 'a' );
 		const navLink = document.createElement( 'a' );
 		const accentColor = 'rgb(0, 102, 204)';
@@ -86,7 +86,7 @@ describe( 'WooPay appearance theming', () => {
 			},
 		};
 
-		const appearance = await upeStyles.getAppearance(
+		const appearance = upeStyles.getAppearance(
 			'woopay_shortcode_checkout',
 			true,
 			scope
@@ -109,7 +109,7 @@ describe( 'WooPay appearance theming', () => {
 		expect( scope.querySelector ).toHaveBeenCalledWith( 'form.checkout a' );
 	} );
 
-	test( 'getAppearance routes woopay_shortcode_checkout to wooPayClassicCheckout selectors', async () => {
+	test( 'getAppearance routes woopay_shortcode_checkout to wooPayClassicCheckout selectors', () => {
 		const scope = {
 			querySelector: jest.fn( () => mockElement ),
 			createElement: jest.fn( ( htmlTag ) =>
@@ -120,11 +120,7 @@ describe( 'WooPay appearance theming', () => {
 			},
 		};
 
-		await upeStyles.getAppearance(
-			'woopay_shortcode_checkout',
-			false,
-			scope
-		);
+		upeStyles.getAppearance( 'woopay_shortcode_checkout', false, scope );
 
 		expect( scope.querySelector ).toHaveBeenCalledWith(
 			upeStyles.appearanceSelectors.wooPayClassicCheckout

@@ -1,3 +1,8 @@
+/**
+ * Internal dependencies
+ */
+import { getAppearance } from 'wcpay/checkout/upe-styles';
+
 const CACHE_KEY_PREFIX = 'wcpay_appearance_';
 
 function getCacheKey( location ) {
@@ -75,4 +80,42 @@ export function dispatchAppearanceEvent( appearance, elementsLocation ) {
 			detail: { appearance, elementsLocation },
 		} )
 	);
+}
+
+/**
+ * Returns a ready-to-use Stripe Elements appearance object.
+ *
+ * On cache hit the cached value is returned immediately.
+ * On cache miss it waits for web fonts to finish loading (so
+ * getComputedStyle captures the real theme font), computes the
+ * appearance from the DOM, dispatches the customisation event,
+ * and stores the result in the cache.
+ *
+ * @param {string} location  The elements location (e.g. 'blocks_checkout').
+ * @param {string} version   The current cache version for invalidation.
+ * @param {boolean} forWooPay Whether to include WooPay-specific rules.
+ * @param {Object} scope     The document scope to read styles from.
+ * @return {Promise<Object>} The appearance object.
+ */
+export async function resolveAppearance(
+	location,
+	version,
+	forWooPay = false,
+	scope = document
+) {
+	const cached = getCachedAppearance( location, version );
+	if ( cached ) {
+		return cached;
+	}
+
+	// Wait for web fonts to load so getComputedStyle captures the actual
+	// theme font instead of a fallback generic family.
+	if ( scope.fonts?.ready ) {
+		await scope.fonts.ready;
+	}
+
+	const appearance = getAppearance( location, forWooPay, scope );
+	dispatchAppearanceEvent( appearance, location );
+	setCachedAppearance( location, version, appearance );
+	return appearance;
 }

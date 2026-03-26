@@ -161,7 +161,7 @@ describe( 'Getting styles for automated theming', () => {
 		expect( fontRules ).toEqual( [] );
 	} );
 
-	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', async () => {
+	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', () => {
 		const scope = {
 			querySelector: jest.fn( () => mockElement ),
 			createElement: jest.fn( ( htmlTag ) =>
@@ -172,7 +172,7 @@ describe( 'Getting styles for automated theming', () => {
 			},
 		};
 
-		const appearance = await upeStyles.getAppearance(
+		const appearance = upeStyles.getAppearance(
 			'shortcode_checkout',
 			false,
 			scope
@@ -261,7 +261,7 @@ describe( 'Getting styles for automated theming', () => {
 		} );
 	} );
 
-	test( 'getAppearance replaces transparent .Input backgrounds with page background color', async () => {
+	test( 'getAppearance replaces transparent .Input backgrounds with page background color', () => {
 		const inputElement = document.createElement( 'input' );
 		const backgroundElement = document.createElement( 'div' );
 		const pageBackgroundColor = 'rgb(245, 245, 245)';
@@ -307,7 +307,7 @@ describe( 'Getting styles for automated theming', () => {
 			},
 		};
 
-		const appearance = await upeStyles.getAppearance(
+		const appearance = upeStyles.getAppearance(
 			'shortcode_checkout',
 			false,
 			scope
@@ -402,7 +402,7 @@ describe( 'Getting styles for automated theming', () => {
 		},
 	].forEach( ( { elementsLocation, expectedSelectors } ) => {
 		describe( `when elementsLocation is ${ elementsLocation }`, () => {
-			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', async () => {
+			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
 				const scope = {
 					querySelector: jest.fn( () => mockElement ),
 					createElement: jest.fn( ( htmlTag ) =>
@@ -415,7 +415,7 @@ describe( 'Getting styles for automated theming', () => {
 					},
 				};
 
-				await upeStyles.getAppearance( elementsLocation, false, scope );
+				upeStyles.getAppearance( elementsLocation, false, scope );
 
 				expectedSelectors.forEach( ( selector ) => {
 					expect( scope.querySelector ).toHaveBeenCalledWith(
