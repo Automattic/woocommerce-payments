@@ -974,6 +974,42 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->wcpay_gateway->has_refund_failed( $order ) );
 	}
 
+	public function test_process_refund_insufficient_balance_does_not_trigger_undefined_note() {
+		$intent_id = 'pi_xxxxxxxxxxxxx';
+		$charge_id = 'ch_yyyyyyyyyyyyy';
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $intent_id );
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->update_status( Order_Status::PROCESSING );
+		$order->save();
+
+		$this->mock_order_service
+			->method( 'get_charge_id_for_order' )
+			->willReturn( $charge_id );
+
+		$this->mock_order_service
+			->expects( $this->once() )
+			->method( 'handle_insufficient_balance_for_refund' );
+
+		$order_id = $order->get_id();
+
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_charge' )
+			->with( $charge_id );
+
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willThrowException( new API_Exception( 'Insufficient balance', 'insufficient_balance_for_refund', 400 ) );
+
+		$result = $this->wcpay_gateway->process_refund( $order_id, 19.99 );
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
+	}
+
 	public function test_process_refund_on_api_error() {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';

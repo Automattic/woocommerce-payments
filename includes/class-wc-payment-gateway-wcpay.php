@@ -2520,6 +2520,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
+			$note = $e->getMessage();
 			if ( $e instanceof API_Exception && 'insufficient_balance_for_refund' === $e->get_error_code() ) {
 				// Handle insufficient_balance_for_refund error.
 				$this->order_service->handle_insufficient_balance_for_refund( $order, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
