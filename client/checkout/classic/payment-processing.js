@@ -96,7 +96,11 @@ export function unblockUI( $form ) {
  * @param {Object} jQueryForm The jQuery object for the form being submitted.
  */
 function submitForm( jQueryForm ) {
-	jQueryForm.removeClass( 'processing' ).submit();
+	jQueryForm.removeClass( 'processing' );
+	// Use the native DOM submit to bypass jQuery event handlers and avoid
+	// re-triggering WooCommerce's checkout_place_order events, which can
+	// cause a double-click issue when multiple payment gateways are active.
+	jQueryForm.get( 0 ).submit();
 }
 
 /**
