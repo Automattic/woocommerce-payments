@@ -202,8 +202,23 @@ class WC_Payments_Order_Success_Page {
 
 		$payment_method = $gateway->get_payment_method( $order );
 
-		// Handle card-based payments (Card, Link).
-		if ( in_array( $payment_method->get_id(), [ Payment_Method::CARD ], true ) ) {
+		// Link payments go through the card gateway (woocommerce_payments), so the gateway's
+		// payment method is 'card'. Detect Link by checking the order's payment tokens.
+		if ( Payment_Method::CARD === $payment_method->get_id() ) {
+			$token_ids = $order->get_payment_tokens();
+			if ( ! empty( $token_ids ) ) {
+				$last_token = \WC_Payment_Tokens::get( end( $token_ids ) );
+				if ( $last_token instanceof \WC_Payment_Token_WCPay_Link ) {
+					$link_pm = WC_Payments::get_payment_method_by_id( Payment_Method::LINK );
+					if ( $link_pm ) {
+						$payment_method = $link_pm;
+					}
+				}
+			}
+		}
+
+		// Handle card payments.
+		if ( Payment_Method::CARD === $payment_method->get_id() ) {
 			return $this->show_card_payment_method_name( $order, $payment_method );
 		}
 
