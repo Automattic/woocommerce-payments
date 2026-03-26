@@ -1580,22 +1580,46 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
 				$payment_token = $payment_information->get_payment_token();
-				$note          = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the last 4 digit of the credit card */
-						__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-						]
-					),
-					$payment_token instanceof WC_Payment_Token_CC ? $payment_token->get_last4() : '----'
-				);
+
+				if ( $payment_token instanceof \WC_Payment_Token_WCPay_Link ) {
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1$s: redacted email address for Link payment method */
+							__( 'Payment method is changed to: <strong>Link ending in %1$s</strong>.', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+							]
+						),
+						$payment_token->get_redacted_email()
+					);
+				} else {
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1$s: the last 4 digit of the credit card */
+							__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+							]
+						),
+						$payment_token instanceof WC_Payment_Token_CC ? $payment_token->get_last4() : '----'
+					);
+				}
+
 				$order->add_order_note( $note );
 
 				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_token );
 			}
 
-			$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
+			if ( $payment_information->is_using_saved_payment_method() ) {
+				$token_for_title = $payment_information->get_payment_token();
+				if ( $token_for_title instanceof \WC_Payment_Token_WCPay_Link ) {
+					$order->set_payment_method_title( __( 'Link', 'woocommerce-payments' ) );
+				} else {
+					$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
+				}
+			} else {
+				$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
+			}
 			$order->save();
 
 			return [
@@ -1960,6 +1984,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type = $payment_method_details['type'] ?? null;
 			if ( ! $payment_method_type && $intent ) {
 				$payment_method_type = $intent->get_payment_method_type();
+			}
+
+			// Detect Link via the card wallet type (new payments) or saved token type (saved PM payments).
+			if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details )
+				|| $payment_information->get_payment_token() instanceof \WC_Payment_Token_WCPay_Link ) {
+				$payment_method_type = Payment_Method::LINK;
 			}
 
 			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
@@ -2342,6 +2372,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
 	 */
 	public function set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details ) {
+		// Stripe returns type='card' for Link payments because Link wraps a stored card.
+		if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details ) ) {
+			$payment_method_type = Payment_Method::LINK;
+		}
+
 		$payment_method = $this->get_selected_payment_method( $payment_method_type );
 		if ( ! $payment_method ) {
 			return;
@@ -4473,7 +4508,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|null Payment method type or nothing.
 	 */
 	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
-		return $payment_method_details['type'] ?? null;
+		$type = $payment_method_details['type'] ?? null;
+
+		if ( self::is_link_card_wallet( $type, $payment_method_details ) ) {
+			return Payment_Method::LINK;
+		}
+
+		return $type;
+	}
+
+	/**
+	 * Check if charge payment_method_details represent a Link payment.
+	 *
+	 * Stripe returns type='card' for Link payments because Link wraps a stored card,
+	 * but includes card.wallet.type='link' to identify it.
+	 *
+	 * @param string|null $payment_method_type The payment method type from Stripe.
+	 * @param array|bool  $payment_method_details The payment method details from the charge.
+	 * @return bool True if this is a Link payment disguised as a card.
+	 */
+	public static function is_link_card_wallet( $payment_method_type, $payment_method_details ) {
+		return 'card' === $payment_method_type
+			&& is_array( $payment_method_details )
+			&& 'link' === ( $payment_method_details['card']['wallet']['type'] ?? null );
 	}
 
 	/**

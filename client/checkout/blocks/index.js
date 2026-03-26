@@ -29,6 +29,7 @@ import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
+import { maybePersistAdminWoopayAppearance } from '../woopay/appearance/persist-admin';
 import '../utils/copy-test-number';
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
@@ -150,6 +151,7 @@ if (
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();
+	maybePersistAdminWoopayAppearance();
 } );
 
 // If multi-currency is enabled, add currency code to total amount in cart and checkout blocks.
