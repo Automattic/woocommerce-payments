@@ -442,6 +442,84 @@ const getDuplicateMatrix = (): {
 			order: 100,
 		},
 	],
+	// Other - It was a duplicate (Scenario A)
+	other__is_duplicate: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+			label: __( 'Refund receipt', 'woocommerce-payments' ),
+			description: __(
+				'A confirmation that a refund was issued.',
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Other - It was not a duplicate (Scenario B)
+	other__is_not_duplicate: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+			label: __( 'Any additional receipts', 'woocommerce-payments' ),
+			description: __(
+				'Receipt(s) for any other order(s) from this customer.',
+				'woocommerce-payments'
+			),
+			order: 12,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
 } );
 
 /**
@@ -916,6 +994,36 @@ const getProductNotReceivedMatrix = (): {
 			order: 100,
 		},
 	],
+	// Other product type
+	other: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			label: __( 'Service completion records', 'woocommerce-payments' ),
+			description: __(
+				'Screenshots or documents showing the service was completed and delivered to the customer.',
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
 } );
 
 /**
@@ -1129,6 +1237,36 @@ const getProductUnacceptableMatrix = (): {
 			label: __( 'Refund policy', 'woocommerce-payments' ),
 			description: __(
 				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Other product type
+	other: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+			description: __(
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Terms of service', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's terms of service.",
 				'woocommerce-payments'
 			),
 			order: 25,
@@ -1528,6 +1666,73 @@ const getCreditNotProcessedMatrix = (): {
 			order: 100,
 		},
 	],
+	// Other - Refund has been issued (Scenario A)
+	// Note: CUSTOMER_COMMUNICATION is repurposed as "Other documents" to prevent
+	// the base "Customer communication" field from being auto-merged.
+	// Uses SHIPPING_DOCUMENTATION for "Return tracking" per spec.
+	other__refund_has_been_issued: [
+		{
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
+			label: __( 'Refund receipt', 'woocommerce-payments' ),
+			description: __(
+				'A copy of the refund receipt, which can be found in the receipt history for this transaction.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
+			label: __( 'Return tracking', 'woocommerce-payments' ),
+			description: __(
+				'A confirmation that a merchant is waiting for a return prior to refund (if applicable).',
+				'woocommerce-payments'
+			),
+			order: 15,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Other - Refund was not owed (Scenario B)
+	// Note: CUSTOMER_COMMUNICATION is used here as "Other documents" because
+	// UNCATEGORIZED_FILE is already used for "Proof of acceptance".
+	// Including CUSTOMER_COMMUNICATION in the matrix also prevents the base
+	// "Customer communication" field from being auto-merged.
+	other__refund_was_not_owed: [
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Proof of acceptance', 'woocommerce-payments' ),
+			description: __(
+				'Screenshot or document showing where the customer agreed to or acknowledged the refund policy during checkout or on the receipt.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
 } );
 
 /**
@@ -1672,6 +1877,30 @@ const getFraudulentMatrix = (): {
 	],
 	// Event product type
 	event: [
+		{
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __(
+				'Prior undisputed transaction history',
+				'woocommerce-payments'
+			),
+			description: __(
+				'Proof of past undisputed transactions from the same customer, with matching billing and device details.',
+				'woocommerce-payments'
+			),
+			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
+			description: __(
+				'Any other relevant documents that will support your case.',
+				'woocommerce-payments'
+			),
+			order: 100,
+		},
+	],
+	// Other product type
+	other: [
 		{
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 			label: __(

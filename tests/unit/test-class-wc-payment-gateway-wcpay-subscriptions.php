@@ -645,6 +645,36 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $last_token->get_display_name(), $payment_method_to_display );
 	}
 
+	public function test_link_subscription_payment_method_display_overrides_card() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->set_payment_method( $this->wcpay_gateway->id );
+
+		$link_token = WC_Helper_Token::create_link_token( 'pm_link_123', self::USER_ID, 'test@example.com' );
+		$subscription->add_payment_token( $link_token );
+
+		$result = $this->wcpay_gateway->maybe_override_link_subscription_payment_method_display( 'Card', $subscription );
+		$this->assertEquals( $link_token->get_display_name(), $result );
+	}
+
+	public function test_link_subscription_payment_method_display_skips_card_tokens() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->set_payment_method( $this->wcpay_gateway->id );
+
+		$card_token = WC_Helper_Token::create_token( 'pm_card_123', self::USER_ID );
+		$subscription->add_payment_token( $card_token );
+
+		$result = $this->wcpay_gateway->maybe_override_link_subscription_payment_method_display( 'Card', $subscription );
+		$this->assertEquals( 'Card', $result );
+	}
+
+	public function test_link_subscription_payment_method_display_skips_other_gateways() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->set_payment_method( 'other_gateway' );
+
+		$result = $this->wcpay_gateway->maybe_override_link_subscription_payment_method_display( 'Via Other', $subscription );
+		$this->assertEquals( 'Via Other', $result );
+	}
+
 	public function test_display_save_payment_method_checkbox_for_subs_cart() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 

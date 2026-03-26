@@ -213,19 +213,20 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_available_currencies_adds_store_currency() {
+		// Use a real WooCommerce currency that is not in the mock Stripe account currencies.
 		add_filter(
 			'woocommerce_currency',
 			function () {
-				return 'DEFAULT';
+				return 'JPY';
 			},
 			901
 		);
 
 		$this->init_multi_currency();
 
-		$default_currency = $this->multi_currency->get_available_currencies()['DEFAULT'];
+		$default_currency = $this->multi_currency->get_available_currencies()['JPY'];
 
-		$this->assertSame( 'DEFAULT', $default_currency->get_code() );
+		$this->assertSame( 'JPY', $default_currency->get_code() );
 		$this->assertSame( 1.0, $default_currency->get_rate() );
 	}
 
@@ -1602,6 +1603,22 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_post_meta( $order_id, '_order_currency', $currency );
 
 		return $order_id;
+	}
+
+	public function test_init_returns_early_when_store_currency_not_in_available_wc_currencies() {
+		// Remove lingering woocommerce_currency filters from previous init (e.g. FrontendCurrencies at priority 900).
+		remove_all_filters( 'woocommerce_currency' );
+
+		// Simulate a removed custom currency by setting the store currency to a non-existent code.
+		update_option( 'woocommerce_currency', 'CUSTOM' );
+
+		$this->init_multi_currency();
+
+		// After init with an invalid store currency, enabled currencies should be empty
+		// because init() returned early before initializing them.
+		$this->assertEmpty( $this->multi_currency->get_enabled_currencies() );
+
+		update_option( 'woocommerce_currency', 'USD' );
 	}
 
 	private function mock_theme( $theme ) {
