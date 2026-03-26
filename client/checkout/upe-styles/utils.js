@@ -102,7 +102,13 @@ export const getBackgroundColor = ( selectors, scope = document ) => {
 	let color = null;
 	let i = 0;
 	while ( ! color && i < selectors.length ) {
-		const element = scope.querySelector( selectors[ i ] );
+		let element;
+		try {
+			element = scope.querySelector( selectors[ i ] );
+		} catch ( e ) {
+			i++;
+			continue;
+		}
 		if ( ! element ) {
 			i++;
 			continue;
