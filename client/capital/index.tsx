@@ -103,7 +103,6 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 				href={ getAdminUrl( {
 					page: 'wc-admin',
 					path: '/payments/transactions',
-					type: 'charge',
 					filter: 'advanced',
 					loan_id_is: loan.stripe_loan_id,
 				} ) }

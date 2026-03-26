@@ -1174,7 +1174,6 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 										href={ getAdminUrl( {
 											page: 'wc-admin',
 											path: '/payments/transactions',
-											type: 'charge',
 											filter: 'advanced',
 											loan_id_is: event.loan_id,
 										} ) }

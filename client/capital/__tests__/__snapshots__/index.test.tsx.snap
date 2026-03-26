@@ -639,7 +639,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
                       tabindex="-1"
                     >
                       Oct 28, 2024
@@ -651,7 +651,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
                       tabindex="-1"
                     >
                       <span
@@ -667,7 +667,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
                       tabindex="-1"
                     >
                       $1,000.00
@@ -679,7 +679,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
                       tabindex="-1"
                     >
                       $100.00
@@ -691,7 +691,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
                       tabindex="-1"
                     >
                       15%
@@ -703,7 +703,7 @@ exports[`CapitalPage renders the TableCard component with loan data 1`] = `
                     <a
                       class="woocommerce-table__clickable-cell"
                       data-link-type="wc-admin"
-                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&loan_id_is=financingoffer_1QEpQ2J5cIRIG92xWoVJJE3S"
                       tabindex="-1"
                     >
                       -

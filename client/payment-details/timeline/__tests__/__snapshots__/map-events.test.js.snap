@@ -1150,7 +1150,7 @@ exports[`mapTimelineEvents single currency events formats financing paydown even
       <React.Fragment>
         Loan repayment: 
         <Link
-          href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&type=charge&filter=advanced&loan_id_is=flxln_1KOKzdR4ByxURRrFX9A65q40"
+          href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&filter=advanced&loan_id_is=flxln_1KOKzdR4ByxURRrFX9A65q40"
         >
           Loan flxln_1KOKzdR4ByxURRrFX9A65q40
         </Link>
