@@ -2805,11 +2805,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Get the basic enabled value from settings.
 		$is_enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ];
 
-		// Card and express checkout methods are not in the UPE enabled list,
-		// so they only need the basic enabled setting check. Without this
-		// early return, they would fall through to the UPE list verification
-		// below and always end up disabled.
-		if ( 'card' === $this->stripe_id || $this->payment_method->is_express_checkout() ) {
+		// Card, Apple Pay, and Google Pay use their own enabled setting and are
+		// not in the UPE enabled list. Amazon Pay uses upe_enabled_payment_method_ids
+		// as its single source of truth, so it must fall through to the UPE list
+		// verification below.
+		if ( 'card' === $this->stripe_id || ( $this->payment_method->is_express_checkout() && Payment_Method::AMAZON_PAY !== $this->stripe_id ) ) {
 			return;
 		}
 

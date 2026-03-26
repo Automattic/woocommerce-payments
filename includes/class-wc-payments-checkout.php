@@ -298,12 +298,10 @@ class WC_Payments_Checkout {
 				$enabled_payment_methods[] = 'google_pay';
 			}
 
-			// Add Amazon Pay if the feature flag is enabled and the gateway is enabled.
-			if ( WC_Payments_Features::is_amazon_pay_enabled() ) {
-				$amazon_pay_gateway = \WC_Payments::get_payment_gateway_by_id( 'amazon_pay' );
-				if ( $amazon_pay_gateway && $amazon_pay_gateway->is_enabled() ) {
-					$enabled_payment_methods[] = 'amazon_pay';
-				}
+			// Add Amazon Pay if the gateway is registered and enabled.
+			$amazon_pay_gateway = \WC_Payments::get_payment_gateway_by_id( 'amazon_pay' );
+			if ( $amazon_pay_gateway && $amazon_pay_gateway->is_enabled() ) {
+				$enabled_payment_methods[] = 'amazon_pay';
 			}
 		}
 
