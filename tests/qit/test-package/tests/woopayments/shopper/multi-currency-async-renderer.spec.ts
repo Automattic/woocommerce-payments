@@ -129,12 +129,14 @@ const goToShopAndWaitForConversion = async (
 					: [],
 				hasDefaultCurrency: !! win.wcpayAsyncPriceConfig
 					?.defaultCurrency,
+				wcpayAssetsDefined: typeof win.wcpayAssets !== 'undefined',
 				skeletons: document.querySelectorAll( '[data-wcpay-price]' )
 					.length,
 				converted: document.querySelectorAll( '.wcpay-price-converted' )
 					.length,
 				errors: document.querySelectorAll( '.wcpay-price-error' )
 					.length,
+				jsErrors: ( win.__wcpayJsErrors || [] ).slice( 0, 5 ),
 			};
 		} );
 
@@ -155,8 +157,16 @@ const getCleanAnonymousShopper = async ( browser: Browser ) => {
 		browser
 	);
 
+	// Clear session cache and install a global error handler to capture
+	// any JS errors that prevent the async renderer from executing.
 	await shopperPage.addInitScript( () => {
 		sessionStorage.removeItem( 'wcpay_mc_async_config' );
+		( window as any ).__wcpayJsErrors = [];
+		window.addEventListener( 'error', ( e ) => {
+			( window as any ).__wcpayJsErrors.push(
+				`${ e.message } at ${ e.filename }:${ e.lineno }`
+			);
+		} );
 	} );
 
 	return { shopperPage, shopperContext };
