@@ -110,8 +110,10 @@ else
 	PREFLIGHT_OK=false
 fi
 
-# local.env
-if [[ -f "$E2E_ROOT/config/local.env" ]]; then
+# local.env (not required in CI — env vars come from GitHub secrets)
+if [[ -n "$CI" ]]; then
+	success "Running in CI (local.env not required)"
+elif [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	success "local.env exists"
 else
 	fail "local.env is missing"
