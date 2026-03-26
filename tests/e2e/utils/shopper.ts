@@ -10,13 +10,25 @@ import { config, CustomerAddress, Product } from '../config/default';
 import { isUIUnblocked } from './helpers';
 
 /**
- * Waits for the UI to refresh after a user interaction.
+ * Waits for WooCommerce to finish refreshing the checkout order review.
  *
- * Woo core blocks and refreshes the UI after 1s after each key press
- * in a text field or immediately after a select field changes.
- * We need to wait to make sure that all key presses were processed by that mechanism.
+ * WC triggers an update_order_review AJAX call after billing field changes
+ * (debounced by 1s). We wait for that response rather than using a fixed timeout.
+ * Falls back to a short delay if no AJAX fires (e.g. when no fields changed).
  */
-export const waitForUiRefresh = ( page: Page ) => page.waitForTimeout( 1000 );
+export const waitForUiRefresh = async ( page: Page ) => {
+	try {
+		await page.waitForResponse(
+			( resp ) =>
+				resp.url().includes( 'wc-ajax=update_order_review' ) &&
+				resp.status() === 200,
+			{ timeout: 3000 }
+		);
+	} catch {
+		// No order review update fired — fields may not have changed.
+		await page.waitForTimeout( 500 );
+	}
+};
 
 /**
  * Takes off the focus out of the Stripe elements to let Stripe logic
