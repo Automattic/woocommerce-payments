@@ -49,11 +49,25 @@ const getEffectiveTotalPrice = ( cart: Cart ): string => {
 };
 
 /**
+ * Builds the paymentMethodTypes array from enabled_methods, matching the
+ * product page's express-checkout-container.js. Stripe requires each type
+ * to be listed explicitly to report its availability.
+ */
+function getPaymentMethodTypes(): string[] {
+	const enabledMethods = getExpressCheckoutData( 'enabled_methods' ) ?? [];
+
+	return [
+		enabledMethods.includes( 'payment_request' ) && 'card',
+		enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
+	].filter( Boolean ) as string[];
+}
+
+/**
  * Mounts a hidden Stripe Express Checkout Element to detect which express
  * payment methods are available on the current device/browser.
  *
- * Both 'card' and 'amazon_pay' must be in paymentMethodTypes for Stripe to
- * report their availability — this matches the product page's Elements config.
+ * The paymentMethodTypes passed to stripe.elements() are derived from the
+ * server-side enabled_methods — this matches the product page's Elements config.
  */
 function checkAvailablePaymentMethods(
 	stripe: Stripe,
@@ -64,9 +78,11 @@ function checkAvailablePaymentMethods(
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 
+	let container: HTMLDivElement | null = null;
+
 	return new Promise( ( resolve ) => {
 		try {
-			const container = document.createElement( 'div' );
+			container = document.createElement( 'div' );
 			container.style.position = 'absolute';
 			container.style.left = '-9999px';
 			container.style.top = '-9999px';
@@ -77,7 +93,7 @@ function checkAvailablePaymentMethods(
 				amount: Math.max( amount, 1 ),
 				currency,
 				...( useConfirmationToken
-					? { paymentMethodTypes: [ 'card', 'amazon_pay' ] }
+					? { paymentMethodTypes: getPaymentMethodTypes() }
 					: { paymentMethodCreation: 'manual' } ),
 			} );
 
@@ -95,18 +111,19 @@ function checkAvailablePaymentMethods(
 
 			eceButton.on( 'ready', ( { availablePaymentMethods } ) => {
 				eceButton.unmount();
-				container.remove();
+				container?.remove();
 				resolve( availablePaymentMethods || {} );
 			} );
 
 			eceButton.on( 'loaderror', () => {
 				eceButton.unmount();
-				container.remove();
+				container?.remove();
 				resolve( {} );
 			} );
 
 			eceButton.mount( container );
 		} catch {
+			container?.remove();
 			resolve( {} );
 		}
 	} );
@@ -140,10 +157,14 @@ async function checkAllExpressMethodsAvailability(
 	try {
 		stripe = await cachedStripePromise;
 	} catch {
+		cachedStripePromise = null;
+		memoizedCheck = null;
 		return {};
 	}
 
 	if ( ( ( stripe as unknown ) as { error: unknown } )?.error ) {
+		cachedStripePromise = null;
+		memoizedCheck = null;
 		return {};
 	}
 

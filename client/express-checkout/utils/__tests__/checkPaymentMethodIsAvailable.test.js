@@ -12,6 +12,9 @@ jest.mock( '..', () => ( {
 		if ( key === 'checkout' ) {
 			return { currency_decimals: 2 };
 		}
+		if ( key === 'enabled_methods' ) {
+			return [ 'payment_request', 'amazon_pay' ];
+		}
 		return null;
 	} ),
 	getStripeElementsMode: jest.fn( () => 'payment' ),
