@@ -152,10 +152,11 @@ export const addMulticurrencyWidget = async (
 			.locator( 'button.components-button[role="option"]' )
 			.first()
 			.click();
-		// Wait for the widget to render and the Update button to become enabled.
+		// Wait for the widget to render before clicking Update.
+		await page.waitForTimeout( 2000 );
 		await expect(
 			page.getByRole( 'button', { name: 'Update' } )
-		).toBeEnabled( { timeout: 10000 } );
+		).toBeEnabled();
 		await page.getByRole( 'button', { name: 'Update' } ).click();
 		await expectSnackbarWithText( page, 'Widgets saved.' );
 	}

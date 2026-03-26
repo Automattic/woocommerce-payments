@@ -644,9 +644,9 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				} )
 			).toBeVisible( { timeout: 10000 } );
 
-			// Stripe does not guarantee immediate read-after-write consistency, but
-			// the polling `.toPass()` block below handles eventual consistency by
-			// retrying navigation until the saved value appears.
+			// Stripe does not guarantee immediate read-after-write consistency.
+			// Allow time for the write to propagate before navigating away.
+			await merchantPage.waitForTimeout( 3000 );
 		} );
 
 		await test.step(
