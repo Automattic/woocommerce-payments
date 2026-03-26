@@ -59,8 +59,8 @@ export default defineConfig( {
 	forbidOnly: !! process.env.CI,
 	// Retry once in CI to handle transient failures; keep 0 locally for fast feedback.
 	retries: process.env.CI ? 1 : 0,
-	// Use 2 workers in CI to reduce wall time; keep 1 locally for simpler debugging.
-	workers: process.env.CI ? 2 : 1,
+	/* Opt out of parallel tests — merchant tests share global state (settings, capture mode). */
+	workers: 1,
 	/* Reporters to use. See https://playwright.dev/docs/test-reporters */
 	reporter: process.env.CI
 		? [
