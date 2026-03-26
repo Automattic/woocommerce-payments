@@ -66,4 +66,13 @@ class WCPay_Multi_Currency_Currency_Tests extends WCPAY_UnitTestCase {
 		$this->assertFalse( $decimal_currency->get_is_zero_decimal() );
 		$this->assertTrue( $zero_decimal_currency->get_is_zero_decimal() );
 	}
+
+	public function test_get_name_returns_currency_code_when_currency_not_in_woocommerce_list() {
+		$currency = new Currency( $this->localization_service, 'CUSTOM' );
+		$this->assertSame( 'CUSTOM', $currency->get_name() );
+	}
+
+	public function test_get_name_returns_currency_name_for_valid_currency() {
+		$this->assertSame( 'United States (US) dollar', $this->currency->get_name() );
+	}
 }

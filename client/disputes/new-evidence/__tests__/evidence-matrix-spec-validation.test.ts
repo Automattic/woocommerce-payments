@@ -52,10 +52,13 @@
  *   - credit_not_processed × event (refund_was_not_owed scenario)
  *   - duplicate × event (is_duplicate scenario)
  *   - duplicate × event (is_not_duplicate scenario)
- *
- * ⏳ Not yet implemented (in backlog):
- *   - Remaining combinations with other
- *   - general (all product types)
+ *   - fraudulent × other
+ *   - product_not_received × other
+ *   - product_unacceptable × other
+ *   - credit_not_processed × other (refund_has_been_issued scenario)
+ *   - credit_not_processed × other (refund_was_not_owed scenario)
+ *   - duplicate × other (is_duplicate scenario)
+ *   - duplicate × other (is_not_duplicate scenario)
  */
 
 /**
@@ -1711,6 +1714,258 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldExclude: [],
 		},
 	},
+
+	// ============================================
+	// FRAUDULENT × OTHER
+	// ============================================
+	{
+		reason: 'fraudulent',
+		productType: 'other',
+		description:
+			'Fraudulent dispute for other product type - needs prior history, other documents',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG ]:
+					'Prior undisputed transaction history',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Prior undisputed transaction history',
+				'Customer communication',
+				'Other documents',
+			],
+			shouldExclude: [ "Customer's signature" ],
+		},
+	},
+
+	// ============================================
+	// PRODUCT NOT RECEIVED × OTHER
+	// ============================================
+	{
+		reason: 'product_not_received',
+		productType: 'other',
+		description:
+			'Product not received for other product type - needs receipt, service completion records, other documents',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION ]:
+					'Service completion records',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Service completion records',
+				'Customer communication',
+				'Other documents',
+			],
+			shouldExclude: [ "Customer's signature" ],
+		},
+	},
+
+	// ============================================
+	// PRODUCT UNACCEPTABLE × OTHER
+	// ============================================
+	{
+		reason: 'product_unacceptable',
+		productType: 'other',
+		description:
+			'Product unacceptable for other product type - needs receipt, terms of service, other documents',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			shouldExclude: [ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Customer communication',
+				'Terms of service',
+				'Other documents',
+			],
+			shouldExclude: [ "Customer's signature" ],
+		},
+	},
+
+	// ============================================
+	// CREDIT NOT PROCESSED × OTHER (REFUND HAS BEEN ISSUED - Scenario A)
+	// ============================================
+	{
+		reason: 'credit_not_processed',
+		productType: 'other',
+		refundStatus: 'refund_has_been_issued',
+		description:
+			'Credit not processed for other product type - refund has been issued (Scenario A)',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Refund receipt',
+				[ DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION ]:
+					'Return tracking',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Refund receipt',
+				'Return tracking',
+				'Other documents',
+			],
+			shouldExclude: [
+				'Order receipt',
+				"Customer's signature",
+				'Customer communication',
+			],
+		},
+	},
+
+	// ============================================
+	// CREDIT NOT PROCESSED × OTHER (REFUND WAS NOT OWED - Scenario B)
+	// ============================================
+	{
+		reason: 'credit_not_processed',
+		productType: 'other',
+		refundStatus: 'refund_was_not_owed',
+		description:
+			'Credit not processed for other product type - refund was not owed (Scenario B)',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]:
+					'Proof of acceptance',
+				[ DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION ]:
+					'Other documents',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Proof of acceptance',
+				'Refund policy',
+				'Other documents',
+			],
+			shouldExclude: [ "Customer's signature", 'Customer communication' ],
+		},
+	},
+
+	// ============================================
+	// DUPLICATE × OTHER (IS DUPLICATE - Scenario A)
+	// ============================================
+	{
+		reason: 'duplicate',
+		productType: 'other',
+		status: 'is_duplicate',
+		description:
+			'Duplicate dispute for other product type - it WAS a duplicate (refund issued)',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			],
+			shouldExclude: [ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION ]:
+					'Refund receipt',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Refund receipt',
+				'Customer communication',
+				'Refund policy',
+				'Other documents',
+			],
+			shouldExclude: [ "Customer's signature" ],
+		},
+	},
+
+	// ============================================
+	// DUPLICATE × OTHER (IS NOT DUPLICATE - Scenario B)
+	// ============================================
+	{
+		reason: 'duplicate',
+		productType: 'other',
+		status: 'is_not_duplicate',
+		description:
+			'Duplicate dispute for other product type - it was NOT a duplicate (both charges valid)',
+		uiFields: {
+			shouldInclude: [
+				DOCUMENT_FIELD_KEYS.RECEIPT,
+				DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+			],
+			shouldExclude: [ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ],
+			expectedLabels: {
+				[ DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION ]:
+					'Any additional receipts',
+			},
+		},
+		coverLetterAttachments: {
+			shouldInclude: [
+				'Order receipt',
+				'Any additional receipts',
+				'Customer communication',
+				'Refund policy',
+				'Other documents',
+			],
+			shouldExclude: [ "Customer's signature" ],
+		},
+	},
 ];
 
 describe( 'Evidence Matrix Specification Validation', () => {
@@ -1806,8 +2061,12 @@ describe( 'Evidence Matrix Specification Validation', () => {
 
 		describe( 'Non-implemented combinations should return undefined', () => {
 			const notImplemented = [
-				{ reason: 'credit_not_processed', productType: 'other' },
-				{ reason: 'general', productType: 'booking_reservation' },
+				// Status-less call for credit_not_processed × other should return undefined
+				// (only composite keys other__refund_has_been_issued / other__refund_was_not_owed exist)
+				{
+					reason: 'credit_not_processed',
+					productType: 'other',
+				},
 			];
 
 			it.each( notImplemented )(
@@ -2006,28 +2265,3 @@ describe( 'Evidence Matrix Specification Validation', () => {
 		} );
 	} );
 } );
-
-/**
- * Summary of Not Yet Implemented Combinations
- *
- * The following combinations are defined in the specification but not yet implemented.
- * These should be tracked in Linear and added to implementedCombinations as they are completed.
- *
- * Fraudulent:
- * - other (needs: Prior history, Other)
- *
- * Product Not Received:
- * - other (needs: Order receipt, Service completion records, Other)
- *
- * Product Unacceptable:
- * - other (needs: Order receipt, Terms of service, Other)
- *
- * Credit Not Processed (remaining product types):
- * - other (all scenarios)
- *
- * Duplicate (remaining product types - Scenario A & B):
- * - other
- *
- * General/Other:
- * - All product types (needs: Order receipt, Customer communication, Refund policy, Terms of service, Other)
- */

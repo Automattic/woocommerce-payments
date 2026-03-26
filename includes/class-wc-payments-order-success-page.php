@@ -202,8 +202,23 @@ class WC_Payments_Order_Success_Page {
 
 		$payment_method = $gateway->get_payment_method( $order );
 
-		// Handle card-based payments (Card, Link).
-		if ( in_array( $payment_method->get_id(), [ Payment_Method::CARD ], true ) ) {
+		// Link payments go through the card gateway (woocommerce_payments), so the gateway's
+		// payment method is 'card'. Detect Link by checking the order's payment tokens.
+		if ( Payment_Method::CARD === $payment_method->get_id() ) {
+			$token_ids = $order->get_payment_tokens();
+			if ( ! empty( $token_ids ) ) {
+				$last_token = \WC_Payment_Tokens::get( end( $token_ids ) );
+				if ( $last_token instanceof \WC_Payment_Token_WCPay_Link ) {
+					$link_pm = WC_Payments::get_payment_method_by_id( Payment_Method::LINK );
+					if ( $link_pm ) {
+						$payment_method = $link_pm;
+					}
+				}
+			}
+		}
+
+		// Handle card payments.
+		if ( Payment_Method::CARD === $payment_method->get_id() ) {
 			return $this->show_card_payment_method_name( $order, $payment_method );
 		}
 
@@ -392,8 +407,16 @@ class WC_Payments_Order_Success_Page {
 	public function replace_order_received_text_for_failed_orders( $text ) {
 		global $wp;
 
-		$order_id = absint( $wp->query_vars['order-received'] );
-		$order    = wc_get_order( $order_id );
+		$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ?? 0 ) );
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$order = false;
+		if ( $order_id > 0 ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order instanceof WC_Order || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+				$order = false;
+			}
+		}
 
 		if ( ! $order ||
 			! $order->needs_payment() ||

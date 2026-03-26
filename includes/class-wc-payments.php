@@ -360,10 +360,12 @@ class WC_Payments {
 		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
-		// Invalidate the styles cache version when theme or styles change.
-		add_action( 'after_switch_theme', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
-		add_action( 'save_post_wp_global_styles', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
-		add_action( 'customize_save_after', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
+		// Invalidate styles cache and recompute WooPay appearance when theme or styles change.
+		add_action( 'after_switch_theme', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
+		add_action( 'save_post_wp_global_styles', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
+		add_action( 'customize_save_after', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
+		add_action( 'save_post_wp_template_part', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
+		add_action( 'save_post_wp_template', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'disable_express_checkout_in_block_editor' ], 1 );
@@ -715,7 +717,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Express_Checkout_Locations(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Delete_Appearance_Transients(), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'invalidate_styles_cache_version' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ 'WC_Payments_Styles_Cache', 'handle_theme_change' ] );
 
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
@@ -1679,6 +1681,10 @@ class WC_Payments {
 			add_action( 'wc_ajax_wcpay_set_woopay_phone_number', [ WooPay_Session::class, 'ajax_set_woopay_phone_number' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_signature', [ __CLASS__, 'ajax_get_woopay_signature' ] );
 			add_action( 'wc_ajax_wcpay_get_woopay_minimum_session_data', [ WooPay_Session::class, 'ajax_get_woopay_minimum_session_data' ] );
+			// Admin-only endpoint: always accepts appearance write (requires manage_woocommerce).
+			add_action( 'wp_ajax_wcpay_admin_set_woopay_appearance', [ WooPay_Session::class, 'ajax_admin_set_woopay_appearance' ] );
+			// Shopper endpoint: conditional write (only if slot is empty for current version).
+			add_action( 'wc_ajax_wcpay_shopper_set_woopay_appearance', [ WooPay_Session::class, 'ajax_shopper_set_woopay_appearance' ] );
 
 			// This injects the payments API and draft orders into core, so the WooCommerce Blocks plugin is not necessary.
 			// We should remove this once both features are available by default in the WC minimum supported version.

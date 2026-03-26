@@ -69,7 +69,7 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				</style>
 			</head>
 			<body>
-				<pre>${ value }</pre>
+				<pre id="cover-letter-content"></pre>
 				<div class="print-button-container no-print">
 					<button onclick="window.print()" style="
 						padding: 8px 16px;
@@ -92,9 +92,21 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 
 		// Clean up the blob URL after the window loads
 		if ( printWindow ) {
-			printWindow.onload = () => {
-				URL.revokeObjectURL( url );
-			};
+			printWindow.addEventListener(
+				'load',
+				() => {
+					URL.revokeObjectURL( url );
+					const pre = printWindow.document.getElementById(
+						'cover-letter-content'
+					);
+					if ( pre ) {
+						pre.textContent = value;
+					}
+				},
+				{ once: true }
+			);
+		} else {
+			URL.revokeObjectURL( url );
 		}
 	};
 

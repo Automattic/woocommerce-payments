@@ -452,4 +452,183 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Payment_Method_Order_Note_Test exte
 		// New should show Amazon Pay email.
 		$this->assertStringContainsString( '***cher@test.com', $new_payment_method_title_modified );
 	}
+
+	public function test_link_old_payment_method_displays_email() {
+		$old_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'customer@example.com' );
+
+		$newer_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$newer_token->set_last4( '9999' );
+		$newer_token->save();
+
+		$this->renewal_order->add_payment_token( $old_token );
+		$this->renewal_order->add_payment_token( $newer_token );
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			'Stripe Link',
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		$this->assertStringContainsString( '***omer@example.com', $old_payment_method_title_modified );
+		$this->assertStringContainsString( 'Stripe Link', $old_payment_method_title_modified );
+	}
+
+	public function test_link_new_saved_payment_method_displays_email() {
+		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'buyer@link.com' );
+
+		$this->renewal_order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$this->renewal_order->set_payment_method_title( 'Stripe Link' );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
+
+		$new_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_new_payment_method_title',
+			'Stripe Link',
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		$this->assertStringContainsString( '***uyer@link.com', $new_payment_method_title_modified );
+		$this->assertStringContainsString( 'Stripe Link', $new_payment_method_title_modified );
+	}
+
+	public function test_switching_from_card_to_link() {
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Credit card';
+		$new_payment_method_title = 'Stripe Link';
+
+		// Old payment is a card (already set up in setUp with token1 and token2).
+		$new_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'switcher@test.com' );
+		$this->renewal_order->add_payment_token( $new_token );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $new_token->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+		$new_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_new_payment_method_title',
+			$new_payment_method_title,
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		// Old should show card last4.
+		$this->assertStringContainsString( $this->last4digits[2], $old_payment_method_title_modified );
+		// New should show Link email.
+		$this->assertStringContainsString( '***cher@test.com', $new_payment_method_title_modified );
+	}
+
+	public function test_switching_from_link_to_card_uses_stripe_link_title_even_when_gateway_says_card() {
+		// WC Subscriptions passes the gateway title ("Card") as the default, not "Stripe Link".
+		// Our filter should produce "Stripe Link (email)" regardless.
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Card';
+		$new_payment_method_title = 'Credit card';
+
+		$link_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'linker@test.com' );
+		$card_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$card_token->set_last4( '7777' );
+		$card_token->save();
+
+		$this->renewal_order->add_payment_token( $link_token );
+		$this->renewal_order->add_payment_token( $card_token );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $card_token->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+
+		// Should say "Stripe Link (email)" not "Card (email)".
+		$this->assertStringContainsString( 'Stripe Link', $old_payment_method_title_modified );
+		$this->assertStringContainsString( '***nker@test.com', $old_payment_method_title_modified );
+		$this->assertStringNotContainsString( 'Card (', $old_payment_method_title_modified );
+	}
+
+	public function test_switching_from_link_to_card() {
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Stripe Link';
+		$new_payment_method_title = 'Credit card';
+
+		// Replace setup's CC tokens with Link + CC tokens on the renewal order.
+		$link_token = WC_Helper_Token::create_link_token( 'pm_link_1', self::USER_ID, 'linker@test.com' );
+		$card_token = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$card_token->set_last4( '7777' );
+		$card_token->save();
+
+		$this->renewal_order->add_payment_token( $link_token );
+		$this->renewal_order->add_payment_token( $card_token );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $card_token->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+		$new_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_new_payment_method_title',
+			$new_payment_method_title,
+			WC_Payment_Gateway_WCPay::GATEWAY_ID,
+			$this->subscription
+		);
+
+		// Old should show Link email.
+		$this->assertStringContainsString( '***nker@test.com', $old_payment_method_title_modified );
+		// New should show card brand and last4, not "Credit card ending in".
+		$this->assertStringContainsString( 'Visa', $new_payment_method_title_modified );
+		$this->assertStringContainsString( '7777', $new_payment_method_title_modified );
+	}
+
+	/**
+	 * Regression test: when $default is "Link" (subscription's stored title) but the
+	 * actual token is a CC, the note should show "Visa ending in XXXX" not "Link ending in XXXX".
+	 */
+	public function test_cc_token_with_link_default_uses_card_brand_not_link() {
+		$old_payment_method       = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$old_payment_method_title = 'Link';
+
+		// Simulate: subscription had Link, but the second-to-last token is a CC
+		// (e.g., from a prior card payment before the Link payment was set up).
+		$card_token_old = WC_Helper_Token::create_token( 'pm_card_old', self::USER_ID );
+		$card_token_old->set_last4( '4242' );
+		$card_token_old->set_card_type( 'visa' );
+		$card_token_old->save();
+
+		$card_token_new = WC_Helper_Token::create_token( 'pm_card_new', self::USER_ID );
+		$card_token_new->set_last4( '8888' );
+		$card_token_new->set_card_type( 'mastercard' );
+		$card_token_new->save();
+
+		$this->renewal_order->add_payment_token( $card_token_old );
+		$this->renewal_order->add_payment_token( $card_token_new );
+
+		$_POST['payment_method']                      = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$_POST[ $this->post_payment_token_parameter ] = $card_token_new->get_id();
+
+		$old_payment_method_title_modified = (string) apply_filters(
+			'woocommerce_subscription_note_old_payment_method_title',
+			$old_payment_method_title,
+			$old_payment_method,
+			$this->subscription
+		);
+
+		// Should say "Visa ending in 4242", NOT "Link ending in 4242".
+		$this->assertStringContainsString( 'Visa', $old_payment_method_title_modified );
+		$this->assertStringContainsString( '4242', $old_payment_method_title_modified );
+		$this->assertStringNotContainsString( 'Link', $old_payment_method_title_modified );
+	}
 }

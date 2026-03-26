@@ -63,9 +63,11 @@ const expectSnackbarWithText = async (
 	expectedText: string,
 	timeout = 10000
 ) => {
-	const snackbar = page.locator( '.components-snackbar__content', {
-		hasText: expectedText,
-	} );
+	const snackbar = page
+		.locator( '.components-snackbar__content', {
+			hasText: expectedText,
+		} )
+		.first();
 
 	await expect( snackbar ).toBeVisible( { timeout } );
 	await page.waitForTimeout( 2000 );
@@ -210,18 +212,18 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 	}
 
 	for ( let i = 0; i < deleteButtons.length; i++ ) {
-		await page
-			.locator( '.enabled-currency .enabled-currency__action.delete' )
-			.first()
-			.click();
-
-		const snackbar = page.locator( '.components-snackbar__content', {
-			hasText: 'Enabled currencies updated.',
-		} );
-
-		await expect( snackbar ).toBeVisible( { timeout: 10000 } );
-		await snackbar.click();
-		await expect( snackbar ).toBeHidden( { timeout: 10000 } );
+		await Promise.all( [
+			page.waitForResponse(
+				( resp ) =>
+					resp.url().includes( 'update-enabled-currencies' ) &&
+					resp.request().method() === 'POST' &&
+					resp.status() === 200
+			),
+			page
+				.locator( '.enabled-currency .enabled-currency__action.delete' )
+				.first()
+				.click(),
+		] );
 	}
 };
 
@@ -369,7 +371,6 @@ export const disablePaymentMethods = async (
 		if ( await checkbox.isChecked() ) {
 			await checkbox.click();
 			atLeastOnePaymentMethodDisabled = true;
-			await page.getByRole( 'button', { name: 'Remove' } ).click();
 		}
 	}
 
