@@ -122,6 +122,33 @@ else
 	PREFLIGHT_OK=false
 fi
 
+# Load local.env early so we can validate server config below.
+if [[ -f "$E2E_ROOT/config/local.env" ]]; then
+	. "$E2E_ROOT/config/local.env"
+fi
+
+# Transact Platform Server (local mode only)
+if [[ "$E2E_USE_LOCAL_SERVER" != false && -z "$CI" ]]; then
+	if [[ -z "$TRANSACT_PLATFORM_SERVER_REPO" ]]; then
+		fail "TRANSACT_PLATFORM_SERVER_REPO is not set in local.env"
+		PREFLIGHT_OK=false
+	else
+		# Resolve the repo path (could be a local path or git URL)
+		if [[ -d "$TRANSACT_PLATFORM_SERVER_REPO" ]]; then
+			# Check for the gitignored server/ code that must be populated via 'npm run pull'
+			if [[ -d "$TRANSACT_PLATFORM_SERVER_REPO/server/wp-content/rest-api-plugins" ]]; then
+				success "Transact server repo has server code"
+			else
+				fail "Transact server repo is missing server/ code"
+				info "Run 'npm run pull' in your transact-platform-server repo first."
+				PREFLIGHT_OK=false
+			fi
+		else
+			success "Transact server repo: $TRANSACT_PLATFORM_SERVER_REPO (remote)"
+		fi
+	fi
+fi
+
 if [[ "$PREFLIGHT_OK" != true ]]; then
 	echo ""
 	fail "Preflight checks failed. Fix the issues above and re-run."
@@ -140,12 +167,6 @@ if [[ -z "$CI" && "$WCPAY_USE_BUILD_ARTIFACT" != true ]]; then
 	else
 		success "Client already built (dist/ exists)"
 	fi
-fi
-
-# ─── Load configuration ──────────────────────────────────────────────────────
-
-if [[ -f "$E2E_ROOT/config/local.env" ]]; then
-	. "$E2E_ROOT/config/local.env"
 fi
 
 # Function to handle permissions in a cross-platform way
@@ -197,6 +218,19 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 		rm -rf "$SERVER_PATH"
 		git clone --depth=1 --branch "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "$TRANSACT_PLATFORM_SERVER_REPO" "$SERVER_PATH"
 		success "Server cloned"
+
+		# The server/ and missioncontrol/ directories are gitignored in the
+		# transact-platform-server repo — they're populated via 'npm run pull'.
+		# If the source repo is a local path with those dirs, sync them over.
+		if [[ -d "$TRANSACT_PLATFORM_SERVER_REPO" ]]; then
+			for dir in server missioncontrol; do
+				if [[ -d "$TRANSACT_PLATFORM_SERVER_REPO/$dir" ]]; then
+					info "Syncing $dir/ from source repo..."
+					rsync -a --delete "$TRANSACT_PLATFORM_SERVER_REPO/$dir/" "$SERVER_PATH/$dir/"
+					success "Synced $dir/"
+				fi
+			done
+		fi
 	else
 		success "Using cached server at ${SERVER_PATH}"
 	fi
