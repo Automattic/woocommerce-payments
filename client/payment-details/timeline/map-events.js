@@ -162,6 +162,16 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 			// eslint-disable-next-line jsx-a11y/anchor-has-content
 			a: <Link href={ depositUrl } />,
 		} );
+	} else if ( ! event.charge_id ) {
+		// Bank debit paydowns have no associated charge or payout — the merchant's
+		// connected bank account was debited directly for the monthly minimum.
+		headline = sprintf(
+			__(
+				'%s was debited from your bank account.',
+				'woocommerce-payments'
+			),
+			formattedAmount
+		);
 	} else {
 		headline = sprintf(
 			__(

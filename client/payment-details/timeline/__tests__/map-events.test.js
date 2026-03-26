@@ -501,7 +501,7 @@ describe( 'mapTimelineEvents', () => {
 			).toMatchSnapshot();
 		} );
 
-		test( 'formats financing paydown events', () => {
+		test( 'formats financing paydown events (bank debit)', () => {
 			expect(
 				mapTimelineEvents( [
 					{
@@ -509,6 +509,20 @@ describe( 'mapTimelineEvents', () => {
 						datetime: 1643717044,
 						amount: -11000,
 						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats financing paydown events (pending charge withholding)', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						type: 'financing_paydown',
+						datetime: 1643717044,
+						amount: -11000,
+						loan_id: 'flxln_1KOKzdR4ByxURRrFX9A65q40',
+						charge_id: 'ch_mock1234',
 					},
 				] )
 			).toMatchSnapshot();
