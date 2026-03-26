@@ -111,6 +111,39 @@ const goToShopAndWaitForConversion = async (
 		);
 	}
 
+	// Verify the JS bundle loaded correctly. The CI build can produce a
+	// truncated file (observed: 615 bytes vs expected ~21KB) that contains
+	// the webpack runtime but not the actual renderer code. If the bundle
+	// is broken, the renderer IIFE crashes silently and no conversion occurs.
+	const bundleCheck = await page.evaluate( () => {
+		const win = window as any;
+		const scriptEl = document.getElementById(
+			'wcpay-multi-currency-async-renderer-js'
+		) as HTMLScriptElement | null;
+		return {
+			scriptExists: !! scriptEl,
+			scriptSrc: scriptEl?.src || '',
+			// The renderer sets a 10s timeout inside init(). If neither
+			// converted nor error elements appear, the IIFE likely crashed.
+			configKeys: win.wcpayAsyncPriceConfig
+				? Object.keys( win.wcpayAsyncPriceConfig )
+				: [],
+			hasDefaultCurrency: !! win.wcpayAsyncPriceConfig?.defaultCurrency,
+			wcpayAssetsDefined: typeof win.wcpayAssets !== 'undefined',
+			jsErrors: ( win.__wcpayJsErrors || [] ).slice( 0, 5 ),
+		};
+	} );
+
+	// If the JS bundle is broken, fail fast with a clear message.
+	if ( bundleCheck.jsErrors.length > 0 || ! bundleCheck.wcpayAssetsDefined ) {
+		throw new Error(
+			'Async renderer JS bundle appears broken — the IIFE likely crashed during initialization. ' +
+				`Diagnostics: ${ JSON.stringify( bundleCheck ) }. ` +
+				'This is typically caused by a truncated dist/multi-currency-async-renderer.js ' +
+				'in the build artifact (e.g. 615 bytes instead of ~21KB).'
+		);
+	}
+
 	// Wait for the JS renderer to convert at least one price.
 	const convertedPrice = page.locator(
 		'[data-wcpay-price].wcpay-price-converted'
@@ -122,6 +155,16 @@ const goToShopAndWaitForConversion = async (
 		// Capture JS-side diagnostics on failure.
 		const diagnostics = await page.evaluate( () => {
 			const win = window as any;
+			const scriptEl = document.getElementById(
+				'wcpay-multi-currency-async-renderer-js'
+			) as HTMLScriptElement | null;
+			// Use Performance API to check the actual size of the loaded JS file.
+			const perfEntries = performance.getEntriesByType(
+				'resource'
+			) as PerformanceResourceTiming[];
+			const rendererEntry = perfEntries.find( ( e ) =>
+				e.name.includes( 'async-renderer.js' )
+			);
 			return {
 				configDefined: typeof win.wcpayAsyncPriceConfig !== 'undefined',
 				configKeys: win.wcpayAsyncPriceConfig
@@ -130,6 +173,9 @@ const goToShopAndWaitForConversion = async (
 				hasDefaultCurrency: !! win.wcpayAsyncPriceConfig
 					?.defaultCurrency,
 				wcpayAssetsDefined: typeof win.wcpayAssets !== 'undefined',
+				scriptSrc: scriptEl?.src || '',
+				jsBundleTransferSize: rendererEntry?.transferSize ?? -1,
+				jsBundleDecodedSize: rendererEntry?.decodedBodySize ?? -1,
 				skeletons: document.querySelectorAll( '[data-wcpay-price]' )
 					.length,
 				converted: document.querySelectorAll( '.wcpay-price-converted' )
