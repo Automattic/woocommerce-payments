@@ -159,13 +159,28 @@ fi
 # Skip in CI where builds are handled separately or via artifact.
 
 if [[ -z "$CI" && "$WCPAY_USE_BUILD_ARTIFACT" != true ]]; then
+	BUILD_NEEDED=false
+
 	if [[ ! -d "dist" || -z "$(ls -A dist/ 2>/dev/null)" ]]; then
+		BUILD_NEEDED=true
+		BUILD_REASON="dist/ is empty or missing"
+	else
+		# Rebuild if any client source file is newer than the oldest dist output.
+		DIST_TIME=$(find dist -type f -print0 2>/dev/null | xargs -0 stat -f '%m' 2>/dev/null | sort -n | head -1)
+		CLIENT_TIME=$(find client -type f -newer dist/checkout.js -print -quit 2>/dev/null)
+		if [[ -n "$CLIENT_TIME" ]]; then
+			BUILD_NEEDED=true
+			BUILD_REASON="client/ has changes newer than dist/"
+		fi
+	fi
+
+	if [[ "$BUILD_NEEDED" == true ]]; then
 		section "Building client"
-		info "dist/ is empty or missing — running npm run build:client"
+		info "$BUILD_REASON — running npm run build:client"
 		npm run build:client
 		success "Client built"
 	else
-		success "Client already built (dist/ exists)"
+		success "Client build is up to date"
 	fi
 fi
 
