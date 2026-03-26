@@ -2,18 +2,147 @@
 
 set -e
 
-# Check for script dependencies.
-# Exit if dependencies are not met.
-if ! command -v jq &> /dev/null
-then
-    echo "The script requires jq library to be installed. For more info visit https://stedolan.github.io/jq/download/."
-    exit 1
-fi
-
 . ./tests/e2e/env/shared.sh
 
+# ─── Output helpers ───────────────────────────────────────────────────────────
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m'
+
+info()    { echo -e "  ${BLUE}${BOLD}info${NC}  $1"; }
+success() { echo -e "  ${GREEN}${BOLD}  ok${NC}  $1"; }
+warn()    { echo -e "  ${YELLOW}${BOLD}warn${NC}  $1"; }
+fail()    { echo -e "  ${RED}${BOLD}fail${NC}  $1"; }
+
+section() {
+	echo ""
+	echo -e "${BOLD}── $1 ──${NC}"
+	echo ""
+}
+
+# ─── Preflight checks ────────────────────────────────────────────────────────
+# Catch common problems before spending minutes on Docker setup.
+
+section "Preflight checks"
+
+PREFLIGHT_OK=true
+
+# jq
+if command -v jq &> /dev/null; then
+	success "jq is installed"
+else
+	fail "jq is not installed"
+	info "Install it: brew install jq (macOS) or sudo apt install jq (Linux)"
+	PREFLIGHT_OK=false
+fi
+
+# Docker
+if command -v docker &> /dev/null; then
+	if docker info &> /dev/null; then
+		success "Docker is installed and running"
+	else
+		fail "Docker is installed but the daemon is not running"
+		info "Start Docker Desktop or run: sudo systemctl start docker"
+		PREFLIGHT_OK=false
+	fi
+else
+	fail "Docker is not installed"
+	info "Install Docker Desktop from https://docs.docker.com/get-docker/"
+	PREFLIGHT_OK=false
+fi
+
+# docker compose
+if docker compose version &> /dev/null; then
+	success "docker compose is available"
+else
+	fail "docker compose is not available"
+	info "Docker Compose V2 is required. Update Docker Desktop or install the compose plugin."
+	PREFLIGHT_OK=false
+fi
+
+# Node.js
+if command -v node &> /dev/null; then
+	NODE_CURRENT=$(node -v | sed 's/v//')
+	NODE_EXPECTED=$(cat .nvmrc 2>/dev/null || echo "unknown")
+	NODE_MAJOR_CURRENT=$(echo "$NODE_CURRENT" | cut -d. -f1)
+	NODE_MAJOR_EXPECTED=$(echo "$NODE_EXPECTED" | cut -d. -f1)
+	if [[ "$NODE_MAJOR_CURRENT" == "$NODE_MAJOR_EXPECTED" ]]; then
+		success "Node.js v${NODE_CURRENT} (expected ${NODE_EXPECTED})"
+	else
+		warn "Node.js v${NODE_CURRENT} (expected ${NODE_EXPECTED} from .nvmrc)"
+		info "Run: nvm use"
+	fi
+else
+	fail "Node.js is not installed"
+	info "Install via nvm: nvm install"
+	PREFLIGHT_OK=false
+fi
+
+# composer
+if command -v composer &> /dev/null; then
+	success "Composer is installed"
+else
+	fail "Composer is not installed"
+	info "Install from https://getcomposer.org/download/"
+	PREFLIGHT_OK=false
+fi
+
+# node_modules
+if [[ -d "node_modules" ]]; then
+	success "node_modules exists"
+else
+	fail "node_modules is missing"
+	info "Run: npm install"
+	PREFLIGHT_OK=false
+fi
+
+# vendor
+if [[ -f "vendor/autoload.php" ]]; then
+	success "vendor dependencies installed"
+else
+	fail "vendor dependencies are missing"
+	info "Run: composer install"
+	PREFLIGHT_OK=false
+fi
+
+# local.env
 if [[ -f "$E2E_ROOT/config/local.env" ]]; then
-	echo "Loading local env variables"
+	success "local.env exists"
+else
+	fail "local.env is missing"
+	info "Run: bin/setup-e2e-local.sh"
+	info "Or copy tests/e2e/config/.env.example and fill in your values."
+	PREFLIGHT_OK=false
+fi
+
+if [[ "$PREFLIGHT_OK" != true ]]; then
+	echo ""
+	fail "Preflight checks failed. Fix the issues above and re-run."
+	exit 1
+fi
+
+# ─── Build client if needed ──────────────────────────────────────────────────
+# Skip in CI where builds are handled separately or via artifact.
+
+if [[ -z "$CI" && "$WCPAY_USE_BUILD_ARTIFACT" != true ]]; then
+	if [[ ! -d "dist" || -z "$(ls -A dist/ 2>/dev/null)" ]]; then
+		section "Building client"
+		info "dist/ is empty or missing — running npm run build:client"
+		npm run build:client
+		success "Client built"
+	else
+		success "Client already built (dist/ exists)"
+	fi
+fi
+
+# ─── Load configuration ──────────────────────────────────────────────────────
+
+if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
@@ -21,14 +150,10 @@ fi
 handle_permissions() {
     local path=$1
     if [[ "$(uname)" == "Darwin" ]]; then
-        # For MacOS environments, use less strict permissions
-        echo "Setting MacOS compatible permissions for $path"
         chmod -R 755 "$path"
     else
-        # For Linux/CI environments
-        echo "Setting Linux/CI permissions for $path"
         if ! sudo chown www-data:www-data -R "$path"; then
-            echo "Failed to set permissions on $path"
+            fail "Failed to set permissions on $path"
             exit 1
         fi
     fi
@@ -53,26 +178,30 @@ if [[ $FORCE_E2E_DEPS_SETUP ]]; then
 	sudo rm -rf tests/e2e/deps
 fi
 
-# Setup Transact Platform local server instance.
+# ─── Transact Platform Server ────────────────────────────────────────────────
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
+
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
+	section "Transact Platform Server"
+
 	if [[ ! -d "$SERVER_PATH" ]]; then
-		step "Fetching server (branch ${TRANSACT_PLATFORM_SERVER_BRANCH-trunk})"
+		info "Cloning server (branch ${TRANSACT_PLATFORM_SERVER_BRANCH-trunk})..."
 
 		if [[ -z $TRANSACT_PLATFORM_SERVER_REPO ]]; then
-			echo "TRANSACT_PLATFORM_SERVER_REPO env variable is not defined"
+			fail "TRANSACT_PLATFORM_SERVER_REPO is not set in local.env"
 			exit 1;
 		fi
 
 		rm -rf "$SERVER_PATH"
 		git clone --depth=1 --branch "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "$TRANSACT_PLATFORM_SERVER_REPO" "$SERVER_PATH"
+		success "Server cloned"
 	else
-		echo "Using cached server at ${SERVER_PATH}"
+		success "Using cached server at ${SERVER_PATH}"
 	fi
 
 	cd "$SERVER_PATH"
 
-	step "Creating server secrets"
+	info "Creating server secrets..."
 	SECRETS="<?php
 	define( 'WCPAY_STRIPE_TEST_PUBLIC_KEY', '$E2E_WCPAY_STRIPE_TEST_PUBLIC_KEY' );
 	define( 'WCPAY_STRIPE_TEST_SECRET_KEY', '$E2E_WCPAY_STRIPE_TEST_SECRET_KEY' );
@@ -84,33 +213,34 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	define( 'WOOPAY_BLOG_ID', '$E2E_WOOPAY_BLOG_ID' );
 	"
 	printf "$SECRETS" > "local/secrets.php"
-	echo "Secrets created"
+	success "Secrets created"
 
-	step "Starting SERVER containers"
+	info "Starting server containers..."
 	redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
-	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
 	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
-	echo "WordPress instance listening on port ${WP_LISTEN_PORT}"
+	success "Server listening on port ${WP_LISTEN_PORT}"
 
 	if [[ -n $CI ]]; then
-		echo "Setting docker folder permissions"
 		handle_permissions "$SERVER_PATH/docker/wordpress"
 		touch "$SERVER_PATH/logstash.log"
 		handle_permissions "$SERVER_PATH/logstash.log"
 	fi
 
-	step "Setting up SERVER containers"
+	info "Running server setup..."
 	"$SERVER_PATH"/local/bin/docker-setup.sh
+	success "Server setup complete"
 
-	step "Configuring server with stripe account"
+	info "Linking Stripe account..."
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
+	success "Stripe account linked"
 
-	step "Ensuring the site has the required flags for the e2e tests running against the local server"
+	info "Configuring account flags..."
 	"$SERVER_PATH"/local/bin/setup-account-metas.sh "$BLOG_ID"
+	success "Account flags configured"
 
 	if [[ -n $CI ]]; then
-		step "Disable Xdebug on server container"
+		info "Disabling Xdebug on server container..."
 		docker exec "$SERVER_CONTAINER" \
 		sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
 	fi
@@ -118,64 +248,71 @@ fi
 
 cd "$cwd"
 
+# ─── Dev Tools ────────────────────────────────────────────────────────────────
+
+section "Dev Tools"
+
 if [[ ! -d "$DEV_TOOLS_PATH" ]]; then
-	step "Fetching dev tools"
 	if [[ -z $WCP_DEV_TOOLS_REPO ]]; then
-		echo "WCP_DEV_TOOLS_REPO env variable is not defined"
+		fail "WCP_DEV_TOOLS_REPO is not set in local.env"
 		exit 1;
 	fi
 
+	info "Cloning dev tools..."
 	rm -rf "$DEV_TOOLS_PATH"
 	git clone --depth=1 --branch "${WCP_DEV_TOOLS_BRANCH-trunk}" "$WCP_DEV_TOOLS_REPO" "$DEV_TOOLS_PATH"
+	success "Dev tools cloned"
+else
+	success "Dev tools already present"
 fi
 
-# Ensure dev tools dependencies are installed (required before WordPress loads the plugin).
 if [[ -d "$DEV_TOOLS_PATH" && ! -f "$DEV_TOOLS_PATH/vendor/autoload.php" ]]; then
-	step "Installing dev tools dependencies"
+	info "Installing dev tools dependencies..."
 	composer install --no-dev --no-interaction --working-dir="$DEV_TOOLS_PATH"
+	success "Dev tools dependencies installed"
 fi
 
-step "Starting CLIENT containers"
+# ─── Client containers ───────────────────────────────────────────────────────
+
+section "WordPress client"
+
+info "Starting containers..."
 redirect_output docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
 	docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
 fi
+success "Containers started"
 
 if [[ -n $CI ]]; then
-	step "Disabling Xdebug on client container"
+	info "Disabling Xdebug on client container..."
 	docker exec "$CLIENT_CONTAINER" \
 	sh -c 'echo "#zend_extension=xdebug" > /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && echo "Xdebug disabled."'
 fi
 
-echo
-step "Setting up CLIENT site"
-
-# Wait for containers to be started up before the setup.
-# The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
+# Wait for database
+info "Waiting for database..."
 set +e
 cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
-	echo "Waiting until the service is ready..."
 	sleep 5
 	cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 done
-echo "Client DB is up and running..."
 set -e
-
-echo
-echo "Setting up environment..."
-echo
+success "Database is ready"
 
 if [[ -n $CI ]]; then
-	echo "Setting docker folder permissions"
 	handle_permissions "$E2E_ROOT/docker/wordpress/wp-content"
 	redirect_output ls -al "$E2E_ROOT"/docker/wordpress
 fi
 
-echo "Pulling the WordPress CLI docker image..."
+# ─── WordPress setup ─────────────────────────────────────────────────────────
+
+section "WordPress setup"
+
+info "Pulling WordPress CLI image..."
 docker pull wordpress:cli > /dev/null
 
-echo "Setting up WordPress..."
+info "Installing WordPress core..."
 cli wp core install \
 	--path=/var/www/html \
 	--url="$SITE_URL" \
@@ -186,53 +323,51 @@ cli wp core install \
 	--skip-email
 
 if [[ -n "$E2E_WP_VERSION" && "$E2E_WP_VERSION" != "latest" ]]; then
-	echo "Installing specified WordPress version..."
+	info "Installing WordPress ${E2E_WP_VERSION}..."
 	cli wp core update --version="$E2E_WP_VERSION" --force --quiet
 else
-	echo "Updating WordPress to the latest version..."
+	info "Updating WordPress to latest..."
 	cli wp core update --quiet
 fi
 
-echo "Updating the WordPress database..."
 cli wp core update-db --quiet
 
-# Disable displaying errors & log to file with WP_DEBUG when DEBUG flag is not present or false.
 if [[ "$DEBUG" != true ]]; then
 	cli wp config set WP_DEBUG_DISPLAY false --raw
 	cli wp config set WP_DEBUG_LOG true --raw
 fi
 
-# Ensuring that the jetpack "account protection" feature is disabled,
-# since the passwords for the locally run e2e tests can be allowed to be weak.
 cli wp config set DISABLE_JETPACK_ACCOUNT_PROTECTION true --raw
 
-echo "Updating permalink structure"
+info "Configuring permalinks..."
 cli wp rewrite structure '/%postname%/'
-# Flush rewrite rules with --hard to ensure .htaccess is regenerated.
-# wp rewrite structure alone won't regenerate .htaccess if the WordPress
-# markers already exist but are empty, which breaks REST API routing.
 cli wp rewrite flush --hard
 
-echo "Installing and activating WordPress Importer..."
+success "WordPress installed"
+
+# ─── WooCommerce ──────────────────────────────────────────────────────────────
+
+section "WooCommerce"
+
+info "Installing WordPress Importer..."
 cli wp plugin install wordpress-importer --activate
 
-# Install WooCommerce
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
-	echo "Installing and activating specified WooCommerce version..."
+	info "Installing WooCommerce ${E2E_WC_VERSION}..."
 	cli wp plugin install woocommerce --version="$E2E_WC_VERSION" --activate
 else
-	echo "Installing and activating latest WooCommerce version..."
+	info "Installing latest WooCommerce..."
 	cli wp plugin install woocommerce --activate
 fi
 
-echo "Installing basic auth plugin for interfacing with the API"
+info "Installing REST API auth plugin..."
 cli wp plugin install https://github.com/WP-API/Basic-Auth/archive/master.zip --activate --force
 
-echo "Installing and activating Storefront theme..."
+info "Installing themes..."
 cli wp theme install storefront --activate
 cli wp theme install twentytwentyfour
 
-echo "Adding basic WooCommerce settings..."
+info "Configuring WooCommerce settings..."
 cli wp option set woocommerce_store_address "60 29th Street"
 cli wp option set woocommerce_store_address_2 "#343"
 cli wp option set woocommerce_store_city "San Francisco"
@@ -242,114 +377,93 @@ cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
-
-echo "Skipping WooCommerce onboarding wizard..."
-# The WC core profiler (setup wizard) crashes in local Docker environments because
-# it can't fetch remote country/locale data. Setting the onboarding profile as
-# skipped prevents WC from redirecting to the wizard on every admin page load.
 cli wp option set woocommerce_onboarding_profile --format=json '{"skipped":true}'
-
-echo "Deactivating Coming Soon mode in WooCommerce..."
 cli wp option set woocommerce_coming_soon "no"
-
-echo "Enabling company field as an optional parameter in checkout form..."
 cli wp option set woocommerce_checkout_company_field "optional"
 
-echo "Importing WooCommerce shop pages..."
+info "Importing shop pages..."
 cli wp wc --user=admin tool run install_pages
 
 INSTALLED_WC_VERSION=$(cli_debug wp plugin get woocommerce --field=version)
 
-# Start - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
-# To be removed when WooPayments L-2 support is >= WC 8.3
+# Workaround for WC > 8.3: use shortcode-based cart & checkout pages.
 IS_WORKAROUND_REQUIRED=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.3\", \">=\");")
 
 if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
-	echo "Updating cart & checkout pages for WC > 8.3 compatibility..."
-	# Get cart & checkout page IDs.
+	info "Setting up shortcode checkout pages (WC > 8.3)..."
 	CART_PAGE_ID=$(cli_debug wp option get woocommerce_cart_page_id)
 	CHECKOUT_PAGE_ID=$(cli_debug wp option get woocommerce_checkout_page_id)
 
 	CART_SHORTCODE="<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->"
 	CHECKOUT_SHORTCODE="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
 
-	# Ensuring that a "checkout-wcb" page exists, which is the one that will contain the "WooCommerce Blocks" checkout
 	cli wp post create --from-post="$CHECKOUT_PAGE_ID" --post_type="page" --post_title="Checkout WCB" --post_status="publish" --post_name="checkout-wcb"
 	CHECKOUT_WCB_PAGE_ID=$(cli_debug wp post url-to-id checkout-wcb)
 
-	# Update cart & checkout pages to use shortcode.
 	cli wp post update "$CART_PAGE_ID" --post_content="$CART_SHORTCODE"
 	cli wp post update "$CHECKOUT_PAGE_ID" --post_content="$CHECKOUT_SHORTCODE"
-
-	# making the checkout pages full width, so that the sidebar doesn't take too much room in the UI.
 	cli wp post meta update "$CHECKOUT_PAGE_ID" _wp_page_template "template-fullwidth.php"
 	cli wp post meta update "$CHECKOUT_WCB_PAGE_ID" _wp_page_template "template-fullwidth.php"
 fi
-# End - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
 
-echo "Importing some sample data..."
+info "Importing sample data..."
 cli wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip
 
-echo "Removing customer account if present ..."
-cli wp user delete "$WC_CUSTOMER_EMAIL" --yes
+success "WooCommerce configured (v${INSTALLED_WC_VERSION})"
 
-echo "Removing guest account if present ..."
-cli wp user delete "$WC_GUEST_EMAIL" --yes
+# ─── User accounts ───────────────────────────────────────────────────────────
 
-echo "Adding customer account ..."
+section "User accounts"
+
+info "Setting up test accounts..."
+cli wp user delete "$WC_CUSTOMER_EMAIL" --yes 2>/dev/null || true
+cli wp user delete "$WC_GUEST_EMAIL" --yes 2>/dev/null || true
 cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
-
-echo "Adding editor account ..."
 cli wp user create "$WP_EDITOR" "$WP_EDITOR_EMAIL" --role=editor --user_pass="$WP_EDITOR_PASSWORD"
 
-# TODO: Build a zip and use it to install plugin to make sure production build is under test.
+success "Test accounts created (admin, customer, editor)"
+
+# ─── WooPayments ──────────────────────────────────────────────────────────────
+
+section "WooPayments"
+
 if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
-	echo "Creating WooPayments zip file from GitHub artifact..."
+	info "Installing from build artifact..."
 	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
     cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
-
-	echo "Installing & activating the WooPayments plugin using the zip file created..."
 	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
 else
-	echo "Activating the WooPayments plugin..."
+	info "Activating WooPayments plugin..."
 	cli wp plugin activate woocommerce-payments
 fi
 
-echo "Setting up WooPayments..."
-if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
-	echo "Creating WooPayments settings"
-	cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
-else
-	echo "Updating WooPayments settings"
-	cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
-fi
+cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 
-echo "Activating dev tools plugin"
+info "Activating dev tools..."
 cli wp plugin activate "$DEV_TOOLS_DIR"
-
-echo "Disabling WPCOM requests proxy"
 cli wp option set wcpaydev_proxy 0
 
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
-	echo "Setting redirection to local server"
-	# host.docker.internal is not available in linux. Use ip address for docker0 interface to redirect requests from container.
+	info "Connecting to local server..."
 	if [[ -n $CI ]]; then
 		DOCKER_HOST=$(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
 	fi
 	cli wp wcpay_dev redirect_to "http://${DOCKER_HOST-host.docker.internal}:${WP_LISTEN_PORT}/wp-json/"
-
-	echo "Setting Jetpack blog_id"
 	cli wp wcpay_dev set_blog_id "$BLOG_ID"
-
-	echo "Refresh WCPay Account Data"
 	cli wp wcpay_dev refresh_account_data
+	success "Connected to local Transact server"
 else
-	echo "Setting Jetpack blog_id"
+	info "Connecting to live server..."
 	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_JP_BLOG_TOKEN" --user_token="$E2E_JP_USER_TOKEN"
+	success "Connected to live server"
 fi
 
+# ─── Optional plugins ────────────────────────────────────────────────────────
+
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
-	echo "Install and activate the latest release of WooCommerce Subscriptions"
+	section "WooCommerce Subscriptions"
+
+	info "Installing latest release..."
 	cd "$E2E_ROOT"/deps
 
 	LATEST_RELEASE_ASSET_ID=$(curl -H "Authorization: token $E2E_GH_TOKEN" https://api.github.com/repos/"$WC_SUBSCRIPTIONS_REPO"/releases/latest | jq -r '.assets[0].id')
@@ -362,82 +476,63 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 
 	unzip -qq woocommerce-subscriptions.zip -d woocommerce-subscriptions-source
 
-	echo "Moving the unzipped plugin files..."
 	sudo mv woocommerce-subscriptions-source/woocommerce-subscriptions/* woocommerce-subscriptions
-
 	cli wp plugin activate woocommerce-subscriptions
-
 	rm -rf woocommerce-subscriptions-source
 
-	echo "Import WooCommerce Subscription products"
+	info "Importing subscription products..."
 	cli wp import wp-content/plugins/woocommerce-payments/tests/e2e/env/wc-subscription-products.xml --authors=skip
 
-else
-	echo "Skipping install of WooCommerce Subscriptions"
+	success "WooCommerce Subscriptions installed"
 fi
 
 if [[ ! ${SKIP_WC_ACTION_SCHEDULER_TESTS} ]]; then
-	echo "Install and activate the latest release of Action Scheduler"
+	info "Installing Action Scheduler..."
 	cli wp plugin install action-scheduler --activate
-else
-	echo "Skipping install of Action Scheduler"
+	success "Action Scheduler installed"
 fi
 
-echo "Removing some WooCommerce Core 'tour' options so they don't interfere with tests"
-cli wp option set woocommerce_orders_report_date_tour_shown yes
+# ─── Final configuration ─────────────────────────────────────────────────────
 
-echo "Creating screenshots directory"
+section "Final configuration"
+
+info "Configuring test settings..."
+cli wp option set woocommerce_orders_report_date_tour_shown yes
 mkdir -p $WCP_ROOT/screenshots
 handle_permissions $WCP_ROOT/screenshots
-
-echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
-
-echo "Dismissing fraud protection welcome tour in E2E tests"
 cli wp option set wcpay_fraud_protection_welcome_tour_dismissed 1
 
-echo "Removing all coupons ..."
+info "Setting up test coupon..."
 cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m.post_id WHERE p.post_type = 'shop_coupon'"
-
-echo "Setting up a coupon for E2E tests"
 cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
 
-# HPOS was officially released in WooCommerce 8.2.0, so we need to check if we should sync COT or HPOS data.
 IS_HPOS_AVAILABLE=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.2\", \">=\");")
-
 if [[ ${IS_HPOS_AVAILABLE} ]]; then
-	echo "Syncing HPOS data"
+	info "Syncing HPOS data..."
 	cli wp wc hpos sync
 else
-	echo "Syncing COT data"
+	info "Syncing COT data..."
 	cli wp wc cot sync
 fi
 
-# Log test configuration for visibility
-echo
-echo "*******************************************************"
-echo "Current test configuration"
-echo "*******************************************************"
+success "Configuration complete"
 
-echo
-echo "WordPress version:"
-cli_debug wp core version
+# ─── Summary ─────────────────────────────────────────────────────────────────
 
-echo
-echo "WooCommerce version:"
-cli_debug wp plugin get woocommerce --field=version
+section "Setup complete"
 
+echo -e "  ${DIM}WordPress${NC}      $(cli_debug wp core version)"
+echo -e "  ${DIM}WooCommerce${NC}    $(cli_debug wp plugin get woocommerce --field=version)"
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
-	echo
-    echo "WooCommerce Subscriptions version:"
-	cli_debug wp plugin get woocommerce-subscriptions --field=version
+	echo -e "  ${DIM}Subscriptions${NC}  $(cli_debug wp plugin get woocommerce-subscriptions --field=version)"
 fi
-
-echo
-echo "Docker environment:"
-cli_debug wp cli info
-
-echo
-echo "*******************************************************"
-
-step "Client site is up and running at http://${WP_URL}/wp-admin/"
+echo ""
+echo -e "  ${GREEN}${BOLD}Site ready${NC}  http://${WP_URL}/wp-admin/"
+if [[ -z $CI ]]; then
+	echo -e "  ${DIM}phpMyAdmin${NC}  http://localhost:8085"
+fi
+echo ""
+echo -e "  Run tests:  ${BOLD}npm run test:e2e${NC}"
+echo -e "  UI mode:    ${BOLD}npm run test:e2e-ui${NC}"
+echo ""
