@@ -112,7 +112,7 @@ function checkAvailablePaymentMethods(
 	} );
 }
 
-// Module-level cache for the Stripe promise and memoized probe.
+// Module-level cache for the Stripe promise and memoized check.
 let cachedStripePromise: Promise< Stripe > | null = null;
 let memoizedCheck:
 	| ( (
@@ -123,15 +123,23 @@ let memoizedCheck:
 	| null = null;
 
 /**
- * Checks which express payment methods are available on the current device/browser.
+ * Checks if a specific express payment method is available.
  * Results are memoized by amount+currency+mode combination.
  */
-export async function checkAllExpressMethodsAvailability(
-	api: WCPayAPI,
-	amount: number,
-	currency: string,
-	mode = 'payment'
-): Promise< Partial< AvailablePaymentMethods > > {
+export async function checkPaymentMethodIsAvailable(
+	paymentMethod: PaymentMethod,
+	cart: Cart,
+	api: WCPayAPI
+): Promise< boolean > {
+	// Guard against empty currency code during WooCommerce Blocks store
+	// hydration. The cart store initialises with currency_code: '' before
+	// server-side preloaded data is applied. Passing an empty string to
+	// Stripe Elements throws. Returning false here lets WC Blocks
+	// re-evaluate once the cart data (and currency) is properly loaded.
+	if ( ! cart.cartTotals.currency_code ) {
+		return false;
+	}
+
 	if ( ! cachedStripePromise ) {
 		cachedStripePromise = api.loadStripeForExpressCheckout();
 	}
@@ -140,11 +148,11 @@ export async function checkAllExpressMethodsAvailability(
 	try {
 		stripe = await cachedStripePromise;
 	} catch {
-		return {};
+		return false;
 	}
 
 	if ( ( ( stripe as unknown ) as { error: unknown } )?.error ) {
-		return {};
+		return false;
 	}
 
 	if ( ! memoizedCheck ) {
@@ -163,32 +171,10 @@ export async function checkAllExpressMethodsAvailability(
 		);
 	}
 
-	return memoizedCheck( amount, currency, mode );
-}
-
-/**
- * Checks if a specific express payment method is available.
- * Thin wrapper for blocks consumers — delegates to checkAllExpressMethodsAvailability.
- */
-export async function checkPaymentMethodIsAvailable(
-	paymentMethod: PaymentMethod,
-	cart: Cart,
-	api: WCPayAPI
-): Promise< boolean > {
-	// Guard against empty currency code during WooCommerce Blocks store
-	// hydration. The cart store initialises with currency_code: '' before
-	// server-side preloaded data is applied. Passing an empty string to
-	// Stripe Elements throws. Returning false here lets WC Blocks
-	// re-evaluate once the cart data (and currency) is properly loaded.
-	if ( ! cart.cartTotals.currency_code ) {
-		return false;
-	}
-
 	const totalPrice = getEffectiveTotalPrice( cart );
 	const mode = getStripeElementsMode();
 
-	const availablePaymentMethods = await checkAllExpressMethodsAvailability(
-		api,
+	const availablePaymentMethods = await memoizedCheck(
 		Number( totalPrice ),
 		cart.cartTotals.currency_code.toLowerCase(),
 		mode
