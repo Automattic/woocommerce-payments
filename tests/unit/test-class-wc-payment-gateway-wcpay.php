@@ -4630,9 +4630,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$mock_google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
 		$mock_google_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
 
 		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_amazon_pay_gateway->method( 'is_enabled' )->willReturn( true );
 		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( false );
 
 		$this->set_payment_gateway_map(
@@ -4681,9 +4683,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$mock_google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
 		$mock_google_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
 
 		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_amazon_pay_gateway->method( 'is_enabled' )->willReturn( true );
 		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
 
 		$this->set_payment_gateway_map(
@@ -4715,6 +4719,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$mock_google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
 		$mock_google_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
 
 		$this->set_payment_gateway_map(
