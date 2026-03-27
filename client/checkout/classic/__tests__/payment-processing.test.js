@@ -855,8 +855,8 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 
 	test( 'returns false for affirm with complete address and name', () => {
 		const params = {
-			name: 'John Doe',
 			billing_details: {
+				name: 'John Doe',
 				address: {
 					line1: '123 Main St',
 					city: 'New York',
@@ -892,8 +892,8 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 
 	test( 'returns true for affirm with complete address but empty name', () => {
 		const params = {
-			name: '',
 			billing_details: {
+				name: '',
 				address: {
 					line1: '123 Main St',
 					city: 'New York',
@@ -911,8 +911,8 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 
 	test( 'returns true for affirm with complete address but null name', () => {
 		const params = {
-			name: null,
 			billing_details: {
+				name: null,
 				address: {
 					line1: '123 Main St',
 					city: 'New York',

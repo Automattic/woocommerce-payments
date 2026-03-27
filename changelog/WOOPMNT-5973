@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix Affirm BNPL name validation checking wrong field path, which caused billing address to be stripped on order-pay pages

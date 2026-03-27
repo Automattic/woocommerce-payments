@@ -139,7 +139,10 @@ function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
 		}
 	}
 
-	if ( paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM && ! params.name ) {
+	if (
+		paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM &&
+		! params.billing_details?.name
+	) {
 		// Name is required for Affirm.
 		return true;
 	}
