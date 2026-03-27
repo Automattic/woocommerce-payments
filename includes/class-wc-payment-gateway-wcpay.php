@@ -2282,8 +2282,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// against the server-authoritative list of enabled express payment methods.
 		// phpcs:ignore WordPress.Security.NonceVerification
 		if ( ! empty( $_POST['wcpay-express-payment-method-types'] ) ) {
-			// phpcs:ignore WordPress.Security.NonceVerification
-			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $_POST['wcpay-express-payment-method-types'] ) ), true );
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$raw_types = $_POST['wcpay-express-payment-method-types'];
+			// Guard against the field being sent as an array (e.g. wcpay-express-payment-method-types[]=...)
+			// which would cause sanitize_text_field/json_decode to emit warnings.
+			if ( ! is_string( $raw_types ) ) {
+				$raw_types = '';
+			}
+			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $raw_types ) ), true );
 			// Normalize to a flat list of strings — guard against nested arrays/objects in the JSON payload.
 			$express_payment_method_types = is_array( $express_payment_method_types )
 				? array_values( array_filter( $express_payment_method_types, 'is_string' ) )
@@ -2294,13 +2300,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$rejected = array_diff( $express_payment_method_types, $allowed );
 				if ( ! empty( $rejected ) ) {
-					$logger = wc_get_logger();
-					$logger->warning(
+					Logger::warning(
 						sprintf(
 							'Express checkout payment method types rejected during validation: %s.',
 							implode( ', ', $rejected )
-						),
-						[ 'source' => 'woocommerce-payments' ]
+						)
 					);
 				}
 
