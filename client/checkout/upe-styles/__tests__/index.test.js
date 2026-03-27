@@ -85,7 +85,7 @@ describe( 'Getting styles for automated theming', () => {
 
 	test( 'getFontRulesFromPage returns font rules from allowed font providers', () => {
 		const mockStyleSheets = {
-			length: 3,
+			length: 4,
 			0: {
 				href:
 					'https://not-supported-fonts-domain.com/style.css?ver=1.1.1',
@@ -95,6 +95,9 @@ describe( 'Getting styles for automated theming', () => {
 				href:
 					// eslint-disable-next-line max-len
 					'https://fonts.googleapis.com/css?family=Source+Sans+Pro%3A400%2C300%2C300italic%2C400italic%2C600%2C700%2C900&subset=latin%2Clatin-ext&ver=3.6.0',
+			},
+			3: {
+				href: 'https://fonts.bunny.net/css?family=Inter:400,700',
 			},
 		};
 		jest.spyOn( document, 'styleSheets', 'get' ).mockReturnValue(
@@ -108,6 +111,7 @@ describe( 'Getting styles for automated theming', () => {
 					// eslint-disable-next-line max-len
 					'https://fonts.googleapis.com/css?family=Source+Sans+Pro%3A400%2C300%2C300italic%2C400italic%2C600%2C700%2C900&subset=latin%2Clatin-ext&ver=3.6.0',
 			},
+			{ cssSrc: 'https://fonts.bunny.net/css?family=Inter:400,700' },
 		] );
 	} );
 

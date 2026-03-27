@@ -11,6 +11,7 @@ import { getConfig } from 'utils/checkout';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
+import { maybePersistAdminWoopayAppearance } from '../appearance/persist-admin';
 
 const oldWoopayRoots = [];
 
@@ -76,7 +77,10 @@ jQuery( ( $ ) => {
 	listenForCartChanges.start();
 } );
 
-window.addEventListener(
-	'load',
-	renderWooPayExpressCheckoutButtonWithCallbacks
-);
+window.addEventListener( 'load', () => {
+	renderWooPayExpressCheckoutButtonWithCallbacks();
+
+	// When the checkout is loaded inside the Customizer preview, capture
+	// the live DOM appearance and persist it via the admin endpoint.
+	maybePersistAdminWoopayAppearance();
+} );

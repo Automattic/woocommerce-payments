@@ -487,7 +487,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 */
 	public function payment_method_title_provider() {
 		return [
-			'Visa credit card'  => [
+			'Visa credit card'       => [
 				'payment_details'  => [
 					'type' => 'card',
 					'card' => [
@@ -498,7 +498,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'expected_title'   => 'Visa credit card',
 				'expected_gateway' => 'woocommerce_payments',
 			],
-			'Visa debit card'   => [
+			'Visa debit card'        => [
 				'payment_details'  => [
 					'type' => 'card',
 					'card' => [
@@ -509,7 +509,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'expected_title'   => 'Visa debit card',
 				'expected_gateway' => 'woocommerce_payments',
 			],
-			'Mastercard credit' => [
+			'Mastercard credit'      => [
 				'payment_details'  => [
 					'type' => 'card',
 					'card' => [
@@ -520,50 +520,67 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'expected_title'   => 'Mastercard credit card',
 				'expected_gateway' => 'woocommerce_payments',
 			],
-			'giropay'           => [
+			'giropay'                => [
 				'payment_details'  => [ 'type' => 'giropay' ],
 				'expected_title'   => 'giropay',
 				'expected_gateway' => 'woocommerce_payments_giropay',
 			],
-			'Sofort'            => [
+			'Sofort'                 => [
 				'payment_details'  => [ 'type' => 'sofort' ],
 				'expected_title'   => 'Sofort',
 				'expected_gateway' => 'woocommerce_payments_sofort',
 			],
-			'Bancontact'        => [
+			'Bancontact'             => [
 				'payment_details'  => [ 'type' => 'bancontact' ],
 				'expected_title'   => 'Bancontact',
 				'expected_gateway' => 'woocommerce_payments_bancontact',
 			],
-			'EPS'               => [
+			'EPS'                    => [
 				'payment_details'  => [ 'type' => 'eps' ],
 				'expected_title'   => 'EPS',
 				'expected_gateway' => 'woocommerce_payments_eps',
 			],
-			'Przelewy24 (P24)'  => [
+			'Przelewy24 (P24)'       => [
 				'payment_details'  => [ 'type' => 'p24' ],
 				'expected_title'   => 'Przelewy24 (P24)',
 				'expected_gateway' => 'woocommerce_payments_p24',
 			],
-			'iDEAL | Wero'      => [
+			'iDEAL | Wero'           => [
 				'payment_details'  => [ 'type' => 'ideal' ],
 				'expected_title'   => 'iDEAL | Wero',
 				'expected_gateway' => 'woocommerce_payments_ideal',
 			],
-			'SEPA Direct Debit' => [
+			'SEPA Direct Debit'      => [
 				'payment_details'  => [ 'type' => 'sepa_debit' ],
 				'expected_title'   => 'SEPA Direct Debit',
 				'expected_gateway' => 'woocommerce_payments_sepa_debit',
 			],
-			'BECS Direct Debit' => [
+			'BECS Direct Debit'      => [
 				'payment_details'  => [ 'type' => 'au_becs_debit' ],
 				'expected_title'   => 'BECS Direct Debit',
 				'expected_gateway' => 'woocommerce_payments_au_becs_debit',
 			],
-			'GrabPay'           => [
+			'GrabPay'                => [
 				'payment_details'  => [ 'type' => 'grabpay' ],
 				'expected_title'   => 'GrabPay',
 				'expected_gateway' => 'woocommerce_payments_grabpay',
+			],
+			'Link'                   => [
+				'payment_details'  => [ 'type' => 'link' ],
+				'expected_title'   => 'Link',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+			'Link (via card wallet)' => [
+				'payment_details'  => [
+					'type' => 'card',
+					'card' => [
+						'wallet' => [
+							'type' => 'link',
+						],
+					],
+				],
+				'expected_title'   => 'Link',
+				'expected_gateway' => 'woocommerce_payments',
 			],
 		];
 	}
