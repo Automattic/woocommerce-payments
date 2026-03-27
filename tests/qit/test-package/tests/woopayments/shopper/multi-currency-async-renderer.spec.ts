@@ -218,6 +218,13 @@ const getCleanAnonymousShopper = async ( browser: Browser ) => {
 	return { shopperPage, shopperContext };
 };
 
+/**
+ * Minimum expected file size (in bytes) for the async renderer JS bundle.
+ * The production build produces ~21 KB. A value below this threshold indicates
+ * a truncated build artifact (e.g. only the webpack runtime / public-path.js).
+ */
+const minBundleSizeBytes = 5000;
+
 test.describe(
 	'Multi-currency async price renderer',
 	{ tag: '@shopper' },
@@ -230,9 +237,20 @@ test.describe(
 		let originalFeatureFlag: string;
 		let originalAutoSwitch: string;
 		let defaultCurrencySymbol: string;
+		let bundleSizeBytes = 0;
 
 		test.beforeAll( async ( { browser } ) => {
 			test.setTimeout( 120000 );
+
+			// Verify the JS bundle is not truncated. QIT may serve a stale
+			// or incomplete build artifact (observed: 615 bytes vs ~21 KB).
+			// When the bundle is broken, all JS-dependent tests will fail,
+			// so we check upfront and skip with a clear message.
+			const { stdout: sizeStr } = await qit.wp(
+				`eval "echo filesize( WP_PLUGIN_DIR . '/woocommerce-payments/dist/multi-currency-async-renderer.js' );"`,
+				true
+			);
+			bundleSizeBytes = parseInt( sizeStr.trim(), 10 ) || 0;
 
 			merchantContext = await browser.newContext( {
 				storageState: await getAuthState( browser, 'admin' ),
@@ -320,6 +338,12 @@ test.describe(
 		test( 'should render skeleton markup and convert prices client-side', async ( {
 			browser,
 		} ) => {
+			test.skip(
+				bundleSizeBytes < minBundleSizeBytes,
+				`JS bundle is truncated (${ bundleSizeBytes } bytes, expected >=${ minBundleSizeBytes }). ` +
+					'The build artifact may be stale in QIT — see WOOPMNT-5992.'
+			);
+
 			const {
 				shopperPage,
 				shopperContext,
@@ -347,6 +371,12 @@ test.describe(
 		test( 'should convert screen-reader text alongside prices', async ( {
 			browser,
 		} ) => {
+			test.skip(
+				bundleSizeBytes < minBundleSizeBytes,
+				`JS bundle is truncated (${ bundleSizeBytes } bytes, expected >=${ minBundleSizeBytes }). ` +
+					'The build artifact may be stale in QIT — see WOOPMNT-5992.'
+			);
+
 			const {
 				shopperPage,
 				shopperContext,
@@ -377,6 +407,12 @@ test.describe(
 		test( 'should show fallback on network failure', async ( {
 			browser,
 		} ) => {
+			test.skip(
+				bundleSizeBytes < minBundleSizeBytes,
+				`JS bundle is truncated (${ bundleSizeBytes } bytes, expected >=${ minBundleSizeBytes }). ` +
+					'The build artifact may be stale in QIT — see WOOPMNT-5992.'
+			);
+
 			const {
 				shopperPage,
 				shopperContext,
