@@ -804,9 +804,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
-			// Subscriptions with a free trial are not supported because the payment sheet
-			// cannot display a $0 initial amount — it would show the recurring price instead.
-			|| ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && WC_Subscriptions_Product::get_trial_length( $product ) > 0 )
+			// Subscriptions with a free trial and no sign-up fee are not supported
+			// because ECE and ConfirmationToken do not deal well with Setup Intent.
+			// When a sign-up fee exists, the initial charge is non-zero, so ECE can display it correctly.
+			|| ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && WC_Subscriptions_Product::get_trial_length( $product ) > 0 && 0.0 >= (float) WC_Subscriptions_Product::get_sign_up_fee( $product ) )
 		) {
 			$is_supported = false;
 		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
