@@ -85,9 +85,8 @@ test.describe( 'Payment Methods', () => {
 					await expect(
 						shopperPage
 							.frameLocator(
-								'iframe[name^="__privateStripeFrame"]'
+								'iframe[title="Secure payment input frame"]'
 							)
-							.first()
 							.getByRole( 'alert' )
 					).toContainText( errorText );
 				} else {
