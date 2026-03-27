@@ -29,6 +29,8 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 		const customerBillingConfig =
 			config.addresses[ 'subscriptions-customer' ].billing;
 
+		let subscriptionId: string;
+
 		test.beforeAll( async ( { browser }, { project } ) => {
 			const { shopperPage } = await getShopper(
 				browser,
@@ -46,6 +48,17 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 			await expect(
 				shopperPage.getByRole( 'heading', { name: 'Order received' } )
 			).toBeVisible();
+
+			// Capture the subscription ID for the Action Scheduler lookup.
+			subscriptionId = (
+				await shopperPage
+					.getByRole( 'link', {
+						name: 'View subscription number',
+					} )
+					.textContent()
+			 )
+				.trim()
+				.replace( '#', '' );
 		} );
 
 		test( 'should renew a subscription with action scheduler', async ( {
@@ -65,8 +78,12 @@ describeif( shouldRunSubscriptionsTests && shouldRunActionSchedulerTests )(
 				} )
 				.click();
 
-			await merchantPage.getByRole( 'link', { name: 'Run' } ).focus();
-			await merchantPage.getByRole( 'link', { name: 'Run' } ).click();
+			// Find the action row matching our subscription ID in the args column.
+			const actionRow = merchantPage
+				.locator( 'tr' )
+				.filter( { hasText: subscriptionId } )
+				.first();
+			await actionRow.getByRole( 'link', { name: 'Run' } ).click();
 
 			await expect(
 				merchantPage.getByText( actionSchedulerHook, { exact: true } )

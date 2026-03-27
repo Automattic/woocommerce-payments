@@ -19,12 +19,15 @@ import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { ExternalLink } from '@wordpress/components';
 import { ChipType } from 'wcpay/components/chip';
+import { getAdminUrl } from 'wcpay/utils';
 
 const documentationTypeMap = {
 	DEFAULT:
 		'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
 	BNPLS:
 		'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
+	DELAYED_APPROVAL:
+		'https://woocommerce.com/document/woopayments/payment-methods/local-payment-methods/#approval-delays',
 };
 
 const getDocumentationUrlForDisabledPaymentMethod = (
@@ -71,7 +74,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 			notice: interpolateComponents( {
 				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
 				mixedString: __(
-					'We need more information from you to enable this method. ' +
+					'More information is needed to finish setting up this payment method. ' +
 						'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 					'woocommerce-payments'
 				),
@@ -103,15 +106,30 @@ const usePaymentMethodAvailability = ( id: string ) => {
 			isActionable: false,
 			chip: __( 'Approval pending', 'woocommerce-payments' ),
 			notice: paymentMethodsWithDelayedApproval.includes( id )
-				? sprintf(
-						__(
-							'%s requires your store to be live and fully functional before it can be reviewed for use with their service. This approval process usually takes 2-3 days.',
+				? interpolateComponents( {
+						// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
+						mixedString: __(
+							'Your store must be live and fully functional before this payment method can be offered. Approval typically takes 2–3 days. ' +
+								'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						),
-						label
-				  )
+						components: {
+							learnMoreLink: (
+								// @ts-expect-error: children is provided when interpolating the component
+								<ExternalLink
+									title={ __(
+										'Learn more about approval delays',
+										'woocommerce-payments'
+									) }
+									href={
+										documentationTypeMap.DELAYED_APPROVAL
+									}
+								/>
+							),
+						},
+				  } )
 				: __(
-						'This payment method is pending approval. Once approved, you will be able to use it.',
+						"This payment method is pending approval. It won't be available at checkout until it's approved.",
 						'woocommerce-payments'
 				  ),
 		};
@@ -121,24 +139,27 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		return {
 			isActionable: false,
 			chip: __( 'Pending verification', 'woocommerce-payments' ),
-			notice: wcpaySettings?.accountEmail
-				? sprintf(
-						__(
-							"%s won't be visible to your customers until you provide the required " +
-								'information. Follow the instructions sent by our partner Stripe to %s.',
-							'woocommerce-payments'
-						),
-						label,
-						wcpaySettings?.accountEmail
-				  )
-				: sprintf(
-						__(
-							"%s won't be visible to your customers until you provide the required " +
-								'information. Follow the instructions sent by our partner Stripe to your email.',
-							'woocommerce-payments'
-						),
-						label
-				  ),
+			notice: interpolateComponents( {
+				mixedString: sprintf(
+					// translators: %s: payment method label. {{overviewLink}}: placeholders are opening and closing anchor tags.
+					__(
+						"%s won't be available at checkout yet. To finish setting it up, review the required steps in {{overviewLink}}Payments overview{{/overviewLink}}.",
+						'woocommerce-payments'
+					),
+					label
+				),
+				components: {
+					overviewLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content -- children injected by interpolateComponents
+						<a
+							href={ getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/overview',
+							} ) }
+						/>
+					),
+				},
+			} ),
 		};
 	}
 
@@ -148,10 +169,10 @@ const usePaymentMethodAvailability = ( id: string ) => {
 			chip: __( 'Rejected', 'woocommerce-payments' ),
 			chipType: 'alert' as ChipType,
 			notice: interpolateComponents( {
-				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
+				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
 				mixedString: sprintf(
 					__(
-						'Your application to use %s has been rejected, please check your email for more information. Need help? {{contactSupportLink}}Contact support{{/contactSupportLink}}',
+						'Your application to use %s has been rejected. Need help? {{contactSupportLink}}Contact support{{/contactSupportLink}}',
 						'woocommerce-payments'
 					),
 					label

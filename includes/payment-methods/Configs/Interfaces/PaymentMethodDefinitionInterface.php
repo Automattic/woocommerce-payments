@@ -34,6 +34,17 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_stripe_id(): string;
 
 	/**
+	 * Get the Stripe PaymentMethod type used in PaymentIntent payment_method_types[].
+	 *
+	 * For most payment methods this matches get_id(). For wallet payment methods
+	 * processed as card payments by Stripe (Google Pay, Apple Pay), this returns 'card'.
+	 *
+	 * @see https://stripe.com/docs/api/payment_methods/object#payment_method_object-type
+	 * @return string
+	 */
+	public static function get_stripe_payment_method_type(): string;
+
+	/**
 	 * Get the customer-facing title of the payment method
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
