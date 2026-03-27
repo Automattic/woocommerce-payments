@@ -638,15 +638,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 			}
 		);
 
-		// When the feature flag is off, no Amazon Pay gateway exists in the map
-		// (AmazonPayDefinition is not registered, so no gateway is created).
-		if ( $feature_flag_enabled ) {
-			$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-			$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( $gateway_available );
-			$this->set_payment_gateway_map( [ 'amazon_pay' => $mock_amazon_pay_gateway ] );
-		} else {
-			$this->set_payment_gateway_map( [] );
-		}
+		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( $gateway_available );
+		$this->set_payment_gateway_map( [ 'amazon_pay' => $mock_amazon_pay_gateway ] );
 
 		$mock_account = $this->createMock( WC_Payments_Account::class );
 		$mock_account->method( 'get_account_country' )->willReturn( 'US' );
