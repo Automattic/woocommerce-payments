@@ -6,7 +6,7 @@ import { getMissingCurrenciesTooltipMessage } from 'multi-currency/utils/missing
 describe( 'getMissingCurrenciesTooltipMessage', () => {
 	it( 'returns correct string for a single currency', () => {
 		expect( getMissingCurrenciesTooltipMessage( 'x', [ 'EUR' ] ) ).toBe(
-			'x requires the EUR currency. In order to enable the payment method, you must add this currency to your store.'
+			'x requires the EUR currency. Add EUR to your store to offer this payment method.'
 		);
 	} );
 
@@ -14,7 +14,7 @@ describe( 'getMissingCurrenciesTooltipMessage', () => {
 		expect(
 			getMissingCurrenciesTooltipMessage( 'x', [ 'EUR', 'PLN' ] )
 		).toBe(
-			'x requires at least one of the following currencies: EUR or PLN. You must add at least one of these currencies to your store.'
+			'x requires at least one of the following currencies: EUR or PLN. Add at least one of these currencies to your store to offer this payment method.'
 		);
 	} );
 
@@ -22,7 +22,7 @@ describe( 'getMissingCurrenciesTooltipMessage', () => {
 		expect(
 			getMissingCurrenciesTooltipMessage( 'x', [ 'EUR', 'PLN', 'TRY' ] )
 		).toBe(
-			'x requires at least one of the following currencies: EUR, PLN, or TRY. You must add at least one of these currencies to your store.'
+			'x requires at least one of the following currencies: EUR, PLN, or TRY. Add at least one of these currencies to your store to offer this payment method.'
 		);
 	} );
 } );

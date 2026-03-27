@@ -86,11 +86,11 @@ describe( 'usePaymentMethodAvailability', () => {
 		expect( result.current.chip ).toBe( 'More information needed' );
 		// Since in this case we use `interpolateComponents`, I'm using `render` to render the notice, and asserting on its text content.
 		expect( render( result.current.notice ).container.textContent ).toMatch(
-			/We need more information from you to enable this method./
+			/More information is needed to finish setting up this payment method./
 		);
 	} );
 
-	it( 'returns "Approval pending" for the "pending" status and Alipay', () => {
+	it( 'returns "Approval pending" for the "pending" status and Alipay with Learn more link', () => {
 		const { result } = renderHook( () =>
 			usePaymentMethodAvailability( 'alipay' )
 		);
@@ -98,9 +98,14 @@ describe( 'usePaymentMethodAvailability', () => {
 		expect( result.current.isActionable ).toBe( false );
 		expect( result.current.chip ).toBe( 'Approval pending' );
 		// Since in this case we use `interpolateComponents`, I'm using `render` to render the notice, and asserting on its text content.
-		expect( render( result.current.notice ).container.textContent ).toMatch(
-			/Alipay requires your store to be live and fully functional before it can be reviewed for use with their service./
+		const { container } = render( result.current.notice );
+		expect( container.textContent ).toMatch(
+			/Your store must be live and fully functional before this payment method can be offered./
 		);
+		expect( container.textContent ).toMatch(
+			/Approval typically takes 2–3 days./
+		);
+		expect( container.querySelector( 'a' ) ).not.toBeNull();
 	} );
 
 	it( 'returns "Approval pending" message for the "pending" status', () => {
@@ -110,19 +115,24 @@ describe( 'usePaymentMethodAvailability', () => {
 		expect( result.current.isActionable ).toBe( false );
 		expect( result.current.chip ).toBe( 'Approval pending' );
 		expect( result.current.notice ).toBe(
-			'This payment method is pending approval. Once approved, you will be able to use it.'
+			"This payment method is pending approval. It won't be available at checkout until it's approved."
 		);
 	} );
 
-	it( 'returns "Pending verification" for the "pending_verification" status', () => {
+	it( 'returns "Pending verification" for the "pending_verification" status with Payments overview link', () => {
 		const { result } = renderHook( () =>
 			usePaymentMethodAvailability( 'sepa_debit' )
 		);
 		expect( result.current.isActionable ).toBe( false );
 		expect( result.current.chip ).toBe( 'Pending verification' );
-		expect( result.current.notice ).toBe(
-			"SEPA Direct Debit won't be visible to your customers until you provide the required information." +
-				' Follow the instructions sent by our partner Stripe to test@woo.com.'
+		const { container } = render( result.current.notice );
+		expect( container.textContent ).toMatch(
+			/SEPA Direct Debit won't be available at checkout yet/
+		);
+		expect( container.textContent ).toMatch( /Payments overview/ );
+		expect( container.querySelector( 'a' ) ).not.toBeNull();
+		expect( container.querySelector( 'a' ).href ).toMatch(
+			/payments(%2F|\/)overview/
 		);
 	} );
 
@@ -134,8 +144,12 @@ describe( 'usePaymentMethodAvailability', () => {
 		expect( result.current.chip ).toBe( 'Rejected' );
 		expect( result.current.chipType ).toBe( 'alert' );
 		// Since in this case we use `interpolateComponents`, I'm using `render` to render the notice, and asserting on its text content.
-		expect( render( result.current.notice ).container.textContent ).toMatch(
-			/Your application to use Affirm has been rejected, please check your email for more information. Need help?/
+		const { container } = render( result.current.notice );
+		expect( container.textContent ).toMatch(
+			/Your application to use Affirm has been rejected\. Need help\?/
+		);
+		expect( container.textContent ).not.toMatch(
+			/please check your email/
 		);
 		expect( result.current.noticeType ).toBe( 'error' );
 	} );
