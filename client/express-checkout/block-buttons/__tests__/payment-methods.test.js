@@ -10,7 +10,34 @@ jest.mock( '../../utils/checkPaymentMethodIsAvailable', () => ( {
 
 jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn().mockReturnValue( [] ),
-	getUPEConfig: jest.fn().mockReturnValue( null ),
+	getUPEConfig: jest.fn( ( key ) => {
+		if ( key === 'paymentMethodsConfig' ) {
+			return {
+				apple_pay: {
+					isExpressCheckout: true,
+					gatewayId: 'woocommerce_payments_apple_pay',
+					title: 'Apple Pay',
+					description: 'Apple Pay description',
+					stripePaymentMethodType: 'card',
+				},
+				google_pay: {
+					isExpressCheckout: true,
+					gatewayId: 'woocommerce_payments_google_pay',
+					title: 'Google Pay',
+					description: 'Google Pay description',
+					stripePaymentMethodType: 'card',
+				},
+				amazon_pay: {
+					isExpressCheckout: true,
+					gatewayId: 'woocommerce_payments_amazon_pay',
+					title: 'Amazon Pay',
+					description: 'Amazon Pay description',
+					stripePaymentMethodType: 'amazon_pay',
+				},
+			};
+		}
+		return null;
+	} ),
 } ) );
 
 jest.mock( '../constants', () => ( {
@@ -19,38 +46,8 @@ jest.mock( '../constants', () => ( {
 } ) );
 
 jest.mock( '../../constants', () => ( {
-	EXPRESS_PAYMENT_METHODS: {
-		applePay: {
-			key: 'apple_pay',
-			expressPaymentType: 'apple_pay',
-			paymentMethodTypes: [ 'card' ],
-			gatewayId: 'woocommerce_payments_apple_pay',
-			title: 'WooPayments - Apple Pay',
-			description: 'Apple Pay description',
-			ariaLabel: 'Apple Pay',
-			fallbackTitle: 'Apple Pay',
-		},
-		googlePay: {
-			key: 'google_pay',
-			expressPaymentType: 'google_pay',
-			paymentMethodTypes: [ 'card' ],
-			gatewayId: 'woocommerce_payments_google_pay',
-			title: 'WooPayments - Google Pay',
-			description: 'Google Pay description',
-			ariaLabel: 'Google Pay',
-			fallbackTitle: 'Google Pay',
-		},
-		amazonPay: {
-			key: 'amazon_pay',
-			expressPaymentType: 'amazon_pay',
-			paymentMethodTypes: [ 'amazon_pay' ],
-			gatewayId: 'woocommerce_payments_amazon_pay',
-			title: 'WooPayments - Amazon Pay',
-			description: 'Amazon Pay description',
-			ariaLabel: 'Amazon Pay',
-			fallbackTitle: 'Amazon Pay',
-		},
-	},
+	snakeToCamel: ( snake ) =>
+		snake.replace( /_([a-z])/g, ( _, l ) => l.toUpperCase() ),
 } ) );
 
 const mockCart = {

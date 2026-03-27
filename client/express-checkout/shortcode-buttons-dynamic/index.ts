@@ -28,7 +28,7 @@ import {
 } from 'wcpay/checkout/utils/fingerprint';
 import { getPaymentMethodsOverride } from 'wcpay/express-checkout/utils/payment-method-overrides';
 import { checkAllExpressMethodsAvailability } from 'wcpay/express-checkout/utils/checkPaymentMethodIsAvailable';
-import { getExpressMethodByConfigKey } from 'wcpay/express-checkout/constants';
+import { snakeToCamel } from 'wcpay/express-checkout/constants';
 import type WCPayAPI from 'wcpay/checkout/api';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,6 +59,7 @@ declare const wc: {
 interface PaymentMethodConfig {
 	isExpressCheckout?: boolean;
 	gatewayId: string;
+	stripePaymentMethodType?: string;
 }
 
 // Track which gateways have been registered to avoid duplicate registration.
@@ -138,18 +139,13 @@ function registerCustomPlaceOrderButton(
 		return;
 	}
 
-	const { gatewayId } = config;
+	const { gatewayId, stripePaymentMethodType } = config;
+	const camelKey = snakeToCamel( paymentMethodId );
 	const currency = ( getUPEConfig( 'currency' ) as
 		| string
 		| undefined )?.toLowerCase();
 
 	const useConfirmationTokens = shouldUseConfirmationTokens();
-
-	const expressMethod = getExpressMethodByConfigKey( paymentMethodId );
-	if ( ! expressMethod ) {
-		return;
-	}
-	const { camelKey, config: methodConfig } = expressMethod;
 
 	// Use the shared utility for payment method overrides.
 	const paymentMethodOptions = getPaymentMethodsOverride( camelKey )
@@ -181,10 +177,9 @@ function registerCustomPlaceOrderButton(
 					mode: 'payment',
 					amount: cartTotal,
 					currency: currency!,
-					...( useConfirmationTokens
+					...( useConfirmationTokens && stripePaymentMethodType
 						? {
-								paymentMethodTypes:
-									methodConfig.paymentMethodTypes,
+								paymentMethodTypes: [ stripePaymentMethodType ],
 						  }
 						: { paymentMethodCreation: 'manual' as const } ),
 				} );
@@ -258,7 +253,7 @@ function registerCustomPlaceOrderButton(
 
 						appendExpressPaymentTypeToForm(
 							$form,
-							methodConfig.expressPaymentType
+							paymentMethodId
 						);
 						appendFingerprintInputToForm( $form, fingerprint );
 						appendFraudPreventionTokenInputToForm( $form );
@@ -351,14 +346,11 @@ async function registerExpressPaymentMethods( api: WCPayAPI ): Promise< void > {
 	}
 
 	for ( const [ paymentMethodId, config ] of eceExpressMethods ) {
-		const expressMethod = getExpressMethodByConfigKey( paymentMethodId );
-		if ( ! expressMethod ) {
-			continue;
-		}
+		const camelKey = snakeToCamel( paymentMethodId );
 
 		if (
 			! availablePaymentMethods[
-				expressMethod.camelKey as keyof AvailablePaymentMethods
+				camelKey as keyof AvailablePaymentMethods
 			]
 		) {
 			continue;

@@ -13,7 +13,6 @@ import DynamicButtonContainer from './components/dynamic-button-container';
 import PaymentMethodLabel from 'wcpay/checkout/blocks/payment-method-label';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
 import { getExpressCheckoutData } from '../utils';
-import { EXPRESS_PAYMENT_METHODS } from '../constants';
 import '../compatibility/wc-order-attribution';
 import '../compatibility/wc-subscriptions';
 
@@ -26,6 +25,9 @@ const enabledMethodMap = {
 	googlePay: 'payment_request',
 	amazonPay: 'amazon_pay',
 };
+
+const camelToSnake = ( camel ) =>
+	camel.replace( /[A-Z]/g, ( letter ) => `_${ letter.toLowerCase() }` );
 
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
 
@@ -57,13 +59,15 @@ const previewComponents = {
 };
 
 export const makeExpressCheckoutElement = ( api, methodKey ) => {
-	const method = EXPRESS_PAYMENT_METHODS[ methodKey ];
+	const snakeKey = camelToSnake( methodKey );
+	const serverConfig =
+		getUPEConfig( 'paymentMethodsConfig' )?.[ snakeKey ] ?? {};
 	const Preview = previewComponents[ methodKey ];
 	return {
 		paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-		name: method.gatewayId,
-		title: method.title,
-		description: method.description,
+		name: serverConfig.gatewayId,
+		title: serverConfig.title,
+		description: serverConfig.description,
 		gatewayId: 'woocommerce_payments',
 		content: (
 			<ExpressCheckoutContainer
@@ -95,32 +99,38 @@ export const makeExpressCheckoutElement = ( api, methodKey ) => {
 const EmptyContent = () => null;
 
 export const makeDynamicPlaceOrderButton = ( api, methodKey ) => {
-	const method = EXPRESS_PAYMENT_METHODS[ methodKey ];
+	const snakeKey = camelToSnake( methodKey );
+	const serverConfig =
+		getUPEConfig( 'paymentMethodsConfig' )?.[ snakeKey ] ?? {};
 	const Preview = previewComponents[ methodKey ];
-	const config = getUPEConfig( 'paymentMethodsConfig' )?.[ method.key ];
 
 	return {
-		paymentMethodId: method.gatewayId,
-		name: method.gatewayId,
+		paymentMethodId: serverConfig.gatewayId,
+		name: serverConfig.gatewayId,
 		content: <EmptyContent />,
 		edit: <Preview />,
 		savedTokenComponent: null,
 		label: (
 			<PaymentMethodLabel
-				title={ config?.title ?? method.fallbackTitle }
-				paymentMethodId={ method.key }
-				icon={ config?.icon }
-				darkIcon={ config?.darkIcon }
+				title={ serverConfig.title }
+				paymentMethodId={ snakeKey }
+				icon={ serverConfig.icon }
+				darkIcon={ serverConfig.darkIcon }
 			/>
 		),
 		placeOrderButton: ( props ) => (
 			<DynamicButtonContainer
 				expressPaymentMethod={ methodKey }
+				expressPaymentType={ snakeKey }
+				stripePaymentMethodType={
+					serverConfig.stripePaymentMethodType ?? snakeKey
+				}
+				gatewayId={ serverConfig.gatewayId }
 				api={ api }
 				{ ...props }
 			/>
 		),
-		ariaLabel: method.ariaLabel,
+		ariaLabel: serverConfig.title,
 		canMakePayment: ( { cart } ) => {
 			return checkPaymentMethodIsAvailable( methodKey, cart, api );
 		},

@@ -565,6 +565,10 @@ class WC_Payments_Checkout {
 		$should_enable_network_saved_cards = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
 		$config['forceNetworkSavedCards']  = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
 
+		if ( $payment_method->is_express_checkout() ) {
+			$config['stripePaymentMethodType'] = $payment_method->get_stripe_payment_method_type();
+		}
+
 		return $config;
 	}
 
