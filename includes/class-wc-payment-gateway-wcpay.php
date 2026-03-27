@@ -2300,10 +2300,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$rejected = array_diff( $express_payment_method_types, $allowed );
 				if ( ! empty( $rejected ) ) {
+					// Cap the logged list to avoid log spam from unbounded client input.
+					$rejected_log = substr( implode( ', ', array_slice( array_values( $rejected ), 0, 5 ) ), 0, 200 );
 					Logger::warning(
 						sprintf(
 							'Express checkout payment method types rejected during validation: %s.',
-							implode( ', ', $rejected )
+							$rejected_log
 						)
 					);
 				}
@@ -2316,6 +2318,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
+		$payment_methods          = [];
 
 		if ( ! empty( $requested_payment_method ) ) {
 			// All checkout requests should contain $_POST context, so we check this first.
