@@ -70,7 +70,7 @@ jobs:
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
         run: |
           qit run:e2e woocommerce-payments \
-            --zip woocommerce-payments.zip \
+            --zip=woocommerce-payments.zip \
             --config tests/qit/qit.json \
             --woo=${{ inputs.woocommerce-version }} \
             --wp=${{ inputs.wordpress-version }} \
