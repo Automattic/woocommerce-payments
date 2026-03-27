@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed the 'Continue with challenge' banner not appearing on the transaction page after saving dispute evidence for later.

@@ -131,7 +131,10 @@ export default ( { query }: { query: { id: string } } ) => {
 		createInfoNotice,
 	} = useDispatch( 'core/notices' );
 	const storeDispatch = useDispatch( WCPAY_STORE_NAME ) as {
-		invalidateResolutionForStoreSelector: ( selector: string ) => void;
+		invalidateResolutionForStoreSelector: (
+			selector: string,
+			args?: unknown[]
+		) => void;
 	};
 	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 	const settings = useGetSettings();
@@ -666,7 +669,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			// Invalidate payment intent cache so that payment details page shows updated dispute info
 			if ( dispute.charge?.payment_intent ) {
 				storeDispatch.invalidateResolutionForStoreSelector(
-					'getPaymentIntent'
+					'getPaymentIntent',
+					[ dispute.charge.payment_intent ]
 				);
 			}
 

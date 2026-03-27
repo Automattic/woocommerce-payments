@@ -855,7 +855,7 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 		await waitFor( () => {
 			expect(
 				mockInvalidateResolutionForStoreSelector
-			).toHaveBeenCalledWith( 'getPaymentIntent' );
+			).toHaveBeenCalledWith( 'getPaymentIntent', [ 'pi_test_123' ] );
 		} );
 	} );
 
@@ -931,7 +931,7 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 		await waitFor( () => {
 			expect(
 				mockInvalidateResolutionForStoreSelector
-			).toHaveBeenCalledWith( 'getPaymentIntent' );
+			).toHaveBeenCalledWith( 'getPaymentIntent', [ 'pi_test_123' ] );
 		} );
 	} );
 } );
