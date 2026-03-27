@@ -2284,7 +2284,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! empty( $_POST['wcpay-express-payment-method-types'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification
 			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $_POST['wcpay-express-payment-method-types'] ) ), true );
-			if ( is_array( $express_payment_method_types ) && ! empty( $express_payment_method_types ) ) {
+			// Normalize to a flat list of strings — guard against nested arrays/objects in the JSON payload.
+			$express_payment_method_types = is_array( $express_payment_method_types )
+				? array_values( array_filter( $express_payment_method_types, 'is_string' ) )
+				: [];
+			if ( ! empty( $express_payment_method_types ) ) {
 				$allowed   = $this->get_allowed_express_payment_method_types();
 				$validated = array_values( array_intersect( $express_payment_method_types, $allowed ) );
 
