@@ -29,6 +29,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
+import { maybePersistAdminWoopayAppearance } from 'wcpay/checkout/woopay/appearance/persist-admin';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
@@ -78,7 +79,7 @@ jQuery( function ( $ ) {
 		} );
 
 		$( document.body ).on( 'updated_checkout', () => {
-      swapDarkIcons();
+			swapDarkIcons();
 			maybeMountStripePaymentElement( 'shortcode_checkout' );
 			injectPaymentMethodLogos();
 			expressModule.then( ( { initExpressPaymentMethods } ) => {
@@ -87,7 +88,7 @@ jQuery( function ( $ ) {
 		} );
 	} else {
 		$( document.body ).on( 'updated_checkout', () => {
-      swapDarkIcons();
+			swapDarkIcons();
 			maybeMountStripePaymentElement( 'shortcode_checkout' );
 			injectPaymentMethodLogos();
 		} );
@@ -190,6 +191,14 @@ jQuery( function ( $ ) {
 	) {
 		handleWooPayEmailInput( '#billing_email', api );
 	}
+
+	// In the Customizer preview, capture the live appearance and persist it.
+	// Stylesheets are already loaded in the Customizer preview iframe, so
+	// window.load isn't strictly needed here — but we use it to stay
+	// consistent with blocks/index.js and express-button/index.js.
+	window.addEventListener( 'load', () => {
+		maybePersistAdminWoopayAppearance();
+	} );
 
 	async function injectPaymentMethodLogos() {
 		const cardLabel = document.querySelector(
