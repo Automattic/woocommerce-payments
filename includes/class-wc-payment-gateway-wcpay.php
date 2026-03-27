@@ -4744,7 +4744,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			$gateway = \WC_Payments::get_payment_gateway_by_id( $definition_class::get_id() );
-			if ( ! $gateway || ! $gateway->is_available_for_express_checkout() ) {
+			if ( ! $gateway || ! $gateway->is_enabled() || ! $gateway->is_available_for_express_checkout() ) {
 				continue;
 			}
 
