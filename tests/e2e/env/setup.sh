@@ -383,10 +383,9 @@ fi
 
 cli wp core update-db --quiet
 
-if [[ "$DEBUG" != true ]]; then
-	cli wp config set WP_DEBUG_DISPLAY false --raw
-	cli wp config set WP_DEBUG_LOG true --raw
-fi
+# Keep notices out of rendered pages even when verbose setup output is enabled.
+cli wp config set WP_DEBUG_DISPLAY false --raw
+cli wp config set WP_DEBUG_LOG true --raw
 
 cli wp config set DISABLE_JETPACK_ACCOUNT_PROTECTION true --raw
 

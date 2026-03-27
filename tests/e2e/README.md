@@ -30,7 +30,15 @@ CI coverage differences:
 
 ## Setting up & running E2E tests
 
-For running E2E tests locally, create a new file named `local.env` under `tests/e2e/config` folder with the following env variables (replace values as required).
+The preferred local setup flow is:
+
+1. Run `npm install` and `composer install` if you have not already done so.
+2. Run `bin/setup-e2e-local.sh` to generate `tests/e2e/config/local.env` from your local infrastructure.
+3. Run `npm run test:e2e-setup` to provision the E2E Docker environment.
+
+The setup script runs preflight checks before provisioning and will build the client automatically if `dist/` is missing or stale.
+
+If the generator cannot detect everything you need, copy `tests/e2e/config/.env.example` to `tests/e2e/config/local.env` and fill in the remaining values manually.
 
 ### Required env variables
 
@@ -122,8 +130,8 @@ E2E_WC_VERSION='<woocommerce_version>'
 
 ### Initialize E2E docker environment
 
-1. Make sure to run `npm install`, `composer install` and `npm run build:client` before running the setup script.
-2. Run the setup script `npm run test:e2e-setup` to spin up E2E environment in docker containers.
+1. Generate `tests/e2e/config/local.env` with `bin/setup-e2e-local.sh`.
+2. Run `npm run test:e2e-setup` to spin up E2E environment in docker containers.
 
 After the E2E environment is up, you can access the containers on:
 
@@ -240,13 +248,15 @@ E2E_SLACK_CHANNEL_ID='<public slack channel id>'
 
 **I'm getting errors that host.docker.internal is not found.**
 
-This is because the `host.docker.internal` alias is not available on Linux. You can use the `localhost` alias instead. To apply it, create a file called `docker-compose.override.yml` in the `tests/e2e` directory and add the following content:
+The Playwright Docker service already maps `host.docker.internal` to Docker's `host-gateway`. If you still see this error, your Docker installation is likely too old to support that mapping. Upgrade Docker first.
+
+If you need a manual fallback, add the same mapping explicitly in `tests/e2e/docker-compose.override.yml`:
 
 ```yaml
 services:
   playwright:
-    environment:
-      - BASE_URL=http://localhost:8084
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 ```
 
 **How do I wait for a page or element to load?**
