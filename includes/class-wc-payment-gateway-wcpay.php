@@ -1441,8 +1441,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
 		} else {
-			// Update the customer with order data async.
-			$this->update_customer_with_order_data( $order, $customer_id, WC_Payments::mode()->is_test(), $options['is_woopay'] ?? false );
+			/**
+			 * Update customer data asynchronously via shutdown hook to avoid blocking the payment response.
+			 *
+			 * The customer ID is read from user meta at execution time so that if the missing-customer
+			 * recovery flow recreates the customer, this hook uses the updated ID.
+			 */
+			add_action(
+				'shutdown',
+				function () use ( $user, $order, $options ) {
+					try {
+						$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+						if ( null === $customer_id ) {
+							return;
+						}
+
+						$this->update_customer_with_order_data(
+							$order,
+							$customer_id,
+							WC_Payments::mode()->is_test(),
+							$options['is_woopay'] ?? false
+						);
+					} catch ( \Exception $e ) {
+						Logger::error( 'Failed to update customer during shutdown: ' . $e->getMessage() );
+					}
+				}
+			);
 		}
 
 		return [ $user, $customer_id ];
@@ -1505,7 +1529,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		if ( $payment_information->get_customer_id() ) {
-			$user        = $order->get_user();
+			$user = $order->get_user();
+			if ( false === $user ) {
+				$user = wp_get_current_user();
+			}
 			$customer_id = $payment_information->get_customer_id();
 		} else {
 			list( $user, $customer_id ) = $this->manage_customer_details_for_order( $order, $customer_details_options );
@@ -1513,6 +1540,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$intent_failed  = false;
 		$payment_needed = $amount > 0;
+
+		// If an error happened during the payment setup in the client it will be saved in the payment information so we can throw
+		// the error here and follow the standard failed order flow. This must happen before writing to order meta to avoid
+		// persisting the error sentinel string as _payment_method_id.
+		$error = $payment_information->get_error();
+		if ( ! is_null( $error ) ) {
+			throw new \Exception( $error->get_error_message() );
+		}
 
 		// Make sure that we attach the payment method and the customer ID to the order meta data.
 		// Note: For confirmation tokens (ctoken_*), we don't store them here as they are not valid
@@ -1523,13 +1558,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 		$this->order_service->set_customer_id_for_order( $order, $customer_id );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
-
-		// If an error happened during the payment setup in the client it will be saved in the payment information so we can throw
-		// the error here and follow the standard failed order flow.
-		$error = $payment_information->get_error();
-		if ( ! is_null( $error ) ) {
-			throw new \Exception( $error->get_error_message() );
-		}
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
 		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
@@ -1553,22 +1581,46 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $is_changing_payment_method_for_subscription && $payment_information->is_using_saved_payment_method() ) {
 				$payment_token = $payment_information->get_payment_token();
-				$note          = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the last 4 digit of the credit card */
-						__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
-						[
-							'strong' => '<strong>',
-						]
-					),
-					$payment_token instanceof WC_Payment_Token_CC ? $payment_token->get_last4() : '----'
-				);
+
+				if ( $payment_token instanceof \WC_Payment_Token_WCPay_Link ) {
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1$s: redacted email address for Link payment method */
+							__( 'Payment method is changed to: <strong>Link ending in %1$s</strong>.', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+							]
+						),
+						$payment_token->get_redacted_email()
+					);
+				} else {
+					$note = sprintf(
+						WC_Payments_Utils::esc_interpolated_html(
+							/* translators: %1$s: the last 4 digit of the credit card */
+							__( 'Payment method is changed to: <strong>Credit card ending in %1$s</strong>.', 'woocommerce-payments' ),
+							[
+								'strong' => '<strong>',
+							]
+						),
+						$payment_token instanceof WC_Payment_Token_CC ? $payment_token->get_last4() : '----'
+					);
+				}
+
 				$order->add_order_note( $note );
 
 				do_action( 'woocommerce_payments_changed_subscription_payment_method', $order, $payment_token );
 			}
 
-			$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
+			if ( $payment_information->is_using_saved_payment_method() ) {
+				$token_for_title = $payment_information->get_payment_token();
+				if ( $token_for_title instanceof \WC_Payment_Token_WCPay_Link ) {
+					$order->set_payment_method_title( __( 'Link', 'woocommerce-payments' ) );
+				} else {
+					$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
+				}
+			} else {
+				$order->set_payment_method_title( __( 'Credit / Debit Cards', 'woocommerce-payments' ) );
+			}
 			$order->save();
 
 			return [
@@ -1687,7 +1739,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				/** @var WC_Payments_API_Payment_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $request->send();
+				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id );
 			}
 
 			$intent_id     = $intent->get_id();
@@ -1777,7 +1829,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 
 				/** @var WC_Payments_API_Setup_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
-				$intent = $request->send();
+				$intent = $this->send_intent_request_with_customer_recovery( $request, $order, $user, $customer_id );
 			}
 
 			$intent_id     = $intent->get_id();
@@ -1933,6 +1985,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_method_type = $payment_method_details['type'] ?? null;
 			if ( ! $payment_method_type && $intent ) {
 				$payment_method_type = $intent->get_payment_method_type();
+			}
+
+			// Detect Link via the card wallet type (new payments) or saved token type (saved PM payments).
+			if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details )
+				|| $payment_information->get_payment_token() instanceof \WC_Payment_Token_WCPay_Link ) {
+				$payment_method_type = Payment_Method::LINK;
 			}
 
 			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
@@ -2332,6 +2390,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @param array|bool $payment_method_details Array of payment method details from charge or false.
 	 */
 	public function set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details ) {
+		// Stripe returns type='card' for Link payments because Link wraps a stored card.
+		if ( self::is_link_card_wallet( $payment_method_type, $payment_method_details ) ) {
+			$payment_method_type = Payment_Method::LINK;
+		}
+
 		$payment_method = $this->get_selected_payment_method( $payment_method_type );
 		if ( ! $payment_method ) {
 			return;
@@ -3489,7 +3552,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $actions;
 		}
 
-		if ( $this->id !== $theorder->get_payment_method() ) {
+		if ( strpos( $theorder->get_payment_method(), self::GATEWAY_ID ) !== 0 ) {
 			return $actions;
 		}
 
@@ -4463,7 +4526,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|null Payment method type or nothing.
 	 */
 	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
-		return $payment_method_details['type'] ?? null;
+		$type = $payment_method_details['type'] ?? null;
+
+		if ( self::is_link_card_wallet( $type, $payment_method_details ) ) {
+			return Payment_Method::LINK;
+		}
+
+		return $type;
+	}
+
+	/**
+	 * Check if charge payment_method_details represent a Link payment.
+	 *
+	 * Stripe returns type='card' for Link payments because Link wraps a stored card,
+	 * but includes card.wallet.type='link' to identify it.
+	 *
+	 * @param string|null $payment_method_type The payment method type from Stripe.
+	 * @param array|bool  $payment_method_details The payment method details from the charge.
+	 * @return bool True if this is a Link payment disguised as a card.
+	 */
+	public static function is_link_card_wallet( $payment_method_type, $payment_method_details ) {
+		return 'card' === $payment_method_type
+			&& is_array( $payment_method_details )
+			&& 'link' === ( $payment_method_details['card']['wallet']['type'] ?? null );
 	}
 
 	/**
@@ -4748,6 +4833,39 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return null;
 	}
 
+	/**
+	 * Sends an intent request with automatic recovery for missing Stripe customers.
+	 *
+	 * If the request fails with a `resource_missing` error referencing a customer,
+	 * the customer is recreated and the request is retried.
+	 *
+	 * @param mixed    $request     The intent request object (payment or setup).
+	 * @param WC_Order $order       The order being processed.
+	 * @param WP_User  $user        The user associated with the order.
+	 * @param string   $customer_id The current Stripe customer ID (updated by reference on recovery).
+	 *
+	 * @return mixed The intent response.
+	 * @throws API_Exception If the error is not a missing customer error.
+	 */
+	private function send_intent_request_with_customer_recovery( $request, WC_Order $order, WP_User $user, string &$customer_id ) {
+		try {
+			return $request->send();
+		} catch ( API_Exception $e ) {
+			if ( 'resource_missing' !== $e->get_error_code() || false === strpos( $e->getMessage(), 'customer' ) ) {
+				throw $e;
+			}
+
+			Logger::info( 'Customer not found during intent creation. Recreating customer and retrying.' );
+
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+			$customer_id   = $this->customer_service->recreate_customer_for_user( $user, $customer_data );
+
+			$this->order_service->set_customer_id_for_order( $order, $customer_id );
+
+			$request->set_customer( $customer_id );
+			return $request->send();
+		}
+	}
 
 	/**
 	 * Modifies the create intent parameters when processing a payment.

@@ -150,7 +150,6 @@ export default ( { query }: { query: { id: string } } ) => {
 	const isFeatureFlagEnabled =
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
 		false;
-	const isVisaCompliance = isVisaComplianceDispute( dispute );
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -159,6 +158,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
+				const isFetchedDisputeVisaCompliance = isVisaComplianceDispute(
+					d
+				);
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
 				const suggestedProductType =
@@ -206,7 +208,10 @@ export default ( { query }: { query: { id: string } } ) => {
 				const savedCoverLetter = d.evidence?.uncategorized_text;
 				if ( savedCoverLetter ) {
 					setCoverLetter( savedCoverLetter );
-					if ( isVisaCompliance && isFeatureFlagEnabled ) {
+					if (
+						isFetchedDisputeVisaCompliance &&
+						isFeatureFlagEnabled
+					) {
 						// For Visa Compliance disputes, always consider the cover letter as manually edited
 						setIsCoverLetterManuallyEdited( true );
 					} else {
@@ -261,7 +266,10 @@ export default ( { query }: { query: { id: string } } ) => {
 							savedCoverLetter !== generatedContent
 						);
 					}
-				} else if ( isVisaCompliance && isFeatureFlagEnabled ) {
+				} else if (
+					isFetchedDisputeVisaCompliance &&
+					isFeatureFlagEnabled
+				) {
 					setCoverLetter( '' );
 					// For Visa Compliance disputes, always consider the cover letter as manually edited
 					setIsCoverLetterManuallyEdited( true );
@@ -358,7 +366,8 @@ export default ( { query }: { query: { id: string } } ) => {
 				? refundStatus
 				: undefined,
 			dispute.reason === 'duplicate' ? duplicateStatus : undefined,
-			productType
+			productType,
+			dispute.enhanced_eligibility_types
 		);
 		const applicableFieldKeys = new Set(
 			applicableDocumentFields.map( ( field ) => field.key )
@@ -461,6 +470,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const disputeReason = dispute?.reason;
 	const hasShipping = needsShipping( disputeReason, productType );
 	let panelHeadings = [ 'Purchase info', 'Review' ];
+	const isVisaCompliance = isVisaComplianceDispute( dispute );
 	if ( isVisaCompliance && isFeatureFlagEnabled ) {
 		panelHeadings = [ 'Dispute information' ];
 	} else if ( hasShipping ) {
@@ -960,7 +970,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		disputeReason,
 		disputeReason === 'credit_not_processed' ? refundStatus : undefined,
 		disputeReason === 'duplicate' ? duplicateStatus : undefined,
-		productType
+		productType,
+		dispute?.enhanced_eligibility_types
 	);
 
 	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields(

@@ -37,6 +37,12 @@ $request->set_payment_methods( $payment_methods );     // ['card'], ['card', 'li
 $response = $request->send();
 ```
 
+### Stripe Link Charge Quirk
+
+Stripe returns `payment_method_details.type = 'card'` (not `'link'`) in charge objects for Link payments, because Link wraps a stored card. To correctly identify Link:
+- **Don't** rely on `charge.payment_method_details.type` — it's `'card'` for Link
+- **Do** check `card.wallet.type === 'link'` via `WC_Payment_Gateway_WCPay::is_link_card_wallet()`, or the saved token type (`WC_Payment_Token_WCPay_Link`)
+
 ### 3. Request Execution
 
 **`Request::send()`** (final method, cannot be overridden)
@@ -153,6 +159,16 @@ Key difference from shortcode path: The shortcode path uses `should_show_express
 | `wcpay_api_request_params` | Before building HTTP request | `WC_Payments_API_Client` |
 | `wcpay_api_request_headers` | Before sending HTTP request | `WC_Payments_API_Client` |
 | `wcpay_api_request_response` | After receiving HTTP response | `WC_Payments_API_Client` |
+
+## Subscription Payment Method Change Flow
+
+When a customer changes their subscription's payment method, the order total is $0. Two paths exist:
+- **Saved token path** (`$save_payment_method_to_store = true`): Skips zero-amount shortcut, creates a SetupIntent to confirm the payment method. After confirmation, `WC_Subscriptions_Change_Payment_Gateway::update_payment_method()` is called.
+- **New payment method path**: Frontend handles SetupIntent confirmation, then `update_order_status()` saves the token and updates the subscription.
+
+The functional flow works for all token types (CC, Link, Amazon Pay). Display logic is separate — order notes and `set_payment_method_title()` must handle each token type explicitly.
+
+Key files: `trait-wc-payment-gateway-wcpay-subscriptions.php` (subscription hooks, token title helpers), gateway `process_payment_for_order()` (zero-amount path at ~line 1564).
 
 ## Common Request Classes
 

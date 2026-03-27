@@ -32,7 +32,8 @@ const getBillingDetails = ( billingData ) => {
 
 			line1: billingData.address_1,
 			line2: billingData.address_2,
-			postal_code: billingData.postcode,
+			// Trim to avoid Stripe AVS mismatches on leading/trailing whitespace.
+			postal_code: billingData.postcode?.trim(),
 			state: billingData.state,
 		},
 	};

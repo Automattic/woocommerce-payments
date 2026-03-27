@@ -119,3 +119,43 @@ jobs:
           fi
 
           echo "Translations update triggered."
+
+  notify-failure:
+    name: "Notify Slack on failure"
+    needs: i18n-release
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Slack ping"
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "⚠️ I18N weekly release failed",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The scheduled weekly I18N build has failed. Translations may not be updated this week."
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|View workflow run>"
+                  }
+                }
+              ]
+            }

@@ -473,6 +473,11 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
 				[ 'wcpay-connect' => '1' ],
 			],
+			'Via the referer URL - NOX in-context'         => [
+				'WCADMIN_NOX_IN_CONTEXT',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout&path=/woopayments/onboarding',
+				[ 'wcpay-connect' => '1' ],
+			],
 			'Via the referer URL - incentive page'         => [
 				'WCADMIN_PAYMENT_INCENTIVE',
 				'/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page',

@@ -130,6 +130,7 @@ export const generateAttachments = (
 						'digital_product_or_service',
 						'offline_service',
 						'event',
+						'other',
 					],
 					refundStatuses: [ 'refund_has_been_issued' ],
 				},
@@ -182,7 +183,7 @@ export const generateAttachments = (
 			label: __( 'Customer communication', 'woocommerce-payments' ),
 			labelForReasons: [
 				{
-					// For booking_reservation/digital_product_or_service/offline_service/event credit_not_processed,
+					// For most product types with credit_not_processed,
 					// CUSTOMER_COMMUNICATION is repurposed as "Other documents". For physical_product,
 					// it keeps the default "Customer communication" label since the matrix includes
 					// it explicitly with its proper label.
@@ -193,6 +194,7 @@ export const generateAttachments = (
 						'digital_product_or_service',
 						'offline_service',
 						'event',
+						'other',
 					],
 					refundStatuses: [
 						'refund_was_not_owed',
@@ -210,6 +212,7 @@ export const generateAttachments = (
 						'digital_product_or_service',
 						'offline_service',
 						'event',
+						'other',
 					],
 					refundStatuses: [
 						'refund_was_not_owed',
@@ -251,7 +254,7 @@ export const generateAttachments = (
 					reasons: [ 'credit_not_processed' ],
 					label: __( 'Return tracking', 'woocommerce-payments' ),
 					refundStatuses: [ 'refund_has_been_issued' ],
-					productTypes: [ 'physical_product' ],
+					productTypes: [ 'physical_product', 'other' ],
 				},
 			],
 			// For credit_not_processed with refund_has_been_issued, return tracking should
@@ -261,7 +264,7 @@ export const generateAttachments = (
 					reasons: [ 'credit_not_processed' ],
 					order: 2,
 					refundStatuses: [ 'refund_has_been_issued' ],
-					productTypes: [ 'physical_product' ],
+					productTypes: [ 'physical_product', 'other' ],
 				},
 			],
 		},
@@ -295,6 +298,15 @@ export const generateAttachments = (
 						'woocommerce-payments'
 					),
 					productTypes: [ 'event' ],
+				},
+				{
+					// For product_not_received disputes with other product type
+					reasons: [ 'product_not_received' ],
+					label: __(
+						'Service completion records',
+						'woocommerce-payments'
+					),
+					productTypes: [ 'other' ],
 				},
 				{
 					// For product_unacceptable disputes with booking_reservation/event product type
@@ -371,11 +383,11 @@ export const generateAttachments = (
 					productTypes: [ 'physical_product' ],
 				},
 				{
-					// For product_not_received offline/event, documentation should appear
+					// For product_not_received non-physical/non-digital types, documentation should appear
 					// after Order receipt (index 0) but before Customer communication (index 3).
 					reasons: [ 'product_not_received' ],
 					order: 1,
-					productTypes: [ 'offline_service', 'event' ],
+					productTypes: [ 'offline_service', 'event', 'other' ],
 				},
 			],
 		},
@@ -451,6 +463,11 @@ export const generateAttachments = (
 				{
 					reasons: [ 'subscription_canceled', 'duplicate' ],
 					label: __( 'Terms of service', 'woocommerce-payments' ),
+				},
+				{
+					reasons: [ 'product_unacceptable' ],
+					label: __( 'Terms of service', 'woocommerce-payments' ),
+					productTypes: [ 'other' ],
 				},
 			],
 		},
