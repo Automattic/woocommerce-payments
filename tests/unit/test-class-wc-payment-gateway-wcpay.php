@@ -338,6 +338,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			// phpcs:enable WordPress.Security.NonceVerification.Missing
 		}
 
+		// Reset the PaymentMethodDefinitionRegistry singleton to prevent test pollution.
+		// Tests that call reset_registry_with_definitions() leave custom definitions registered.
+		$registry_reflection = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$registry_instance   = $registry_reflection->getProperty( 'instance' );
+		$registry_instance->setAccessible( true );
+		$registry_instance->setValue( null, null );
+		$registry_instance->setAccessible( false );
+
 		wcpay_get_test_container()->reset_all_replacements();
 		WC()->session->set( 'wc_notices', [] );
 		WC()->countries->locale = $this->locale_backup;
