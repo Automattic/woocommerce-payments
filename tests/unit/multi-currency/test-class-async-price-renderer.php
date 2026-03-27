@@ -153,9 +153,8 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 
 		$this->renderer->enqueue_async_renderer();
 
-		$inline = wp_scripts()->get_data( 'wcpay-multi-currency-async-renderer', 'before' );
-		$this->assertNotEmpty( $inline, 'wp_add_inline_script should have set inline data on the script handle.' );
-		$data = implode( "\n", $inline );
+		$data = wp_scripts()->get_data( 'wcpay-multi-currency-async-renderer', 'data' );
+		$this->assertNotEmpty( $data, 'wp_localize_script should have set data on the script handle.' );
 		$this->assertStringContainsString( 'wcpayAsyncPriceConfig', $data );
 		$this->assertStringContainsString( 'apiUrl', $data );
 		$this->assertStringContainsString( 'defaultCurrency', $data );
@@ -188,8 +187,7 @@ class WCPay_Multi_Currency_Async_Price_Renderer_Tests extends WCPAY_UnitTestCase
 
 		$this->renderer->enqueue_async_renderer();
 
-		$inline = wp_scripts()->get_data( 'wcpay-multi-currency-async-renderer', 'before' );
-		$data   = implode( "\n", $inline );
+		$data = wp_scripts()->get_data( 'wcpay-multi-currency-async-renderer', 'data' );
 
 		// Decoded euro sign must be present; raw entity must not.
 		$this->assertStringContainsString( json_encode( '€' ), $data );

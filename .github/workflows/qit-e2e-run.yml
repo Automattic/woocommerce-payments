@@ -63,14 +63,6 @@ jobs:
       - name: Authenticate QIT
         run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
 
-      # TODO: Remove this step after WOOPMNT-5992 is resolved.
-      - name: Verify plugin zip contents
-        run: |
-          echo "=== Checking async-renderer files in zip ==="
-          unzip -l woocommerce-payments.zip | grep async-renderer || echo "WARNING: async-renderer files not found in zip!"
-          echo "=== Zip file size ==="
-          ls -la woocommerce-payments.zip
-
       - name: Run QIT E2E Tests
         env:
           E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
@@ -88,8 +80,7 @@ jobs:
             --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
             --wait \
             --print-report-url \
-            --verbose \
-            -- --project=${{ inputs.playwright-project }} multi-currency-async-renderer
+            -- --project=${{ inputs.playwright-project }}
 
       - name: Upload test results
         if: always()

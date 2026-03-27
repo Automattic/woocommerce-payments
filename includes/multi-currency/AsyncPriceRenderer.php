@@ -110,36 +110,30 @@ class AsyncPriceRenderer {
 			'dist/multi-currency-async-renderer'
 		);
 
-		// Uses wp_add_inline_script() instead of wp_localize_script() because
-		// wp_localize_script() can drop nested arrays in some WordPress
-		// configurations (observed in QIT with WP 6.9.4 and persistent
-		// object cache). wp_add_inline_script() with wp_json_encode()
-		// reliably serializes the full data structure.
-		// phpcs:disable WordPress.WP.I18n.TextDomainMismatch
-		$config = [
-			'apiUrl'          => rest_url( 'wc/v3/payments/multi-currency/public/config' ),
-			'defaultCurrency' => [
-				'symbol'       => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
-				'decimals'     => wc_get_price_decimals(),
-				'decimal_sep'  => wc_get_price_decimal_separator(),
-				'thousand_sep' => wc_get_price_thousand_separator(),
-				'symbol_pos'   => get_option( 'woocommerce_currency_pos' ),
-			],
-			'srText'          => [
-				/* translators: %s: formatted price */
-				'sale_original' => __( 'Original price was: %s.', 'woocommerce' ),
-				/* translators: %s: formatted price */
-				'sale_current'  => __( 'Current price is: %s.', 'woocommerce' ),
-				/* translators: %1$s: minimum price, %2$s: maximum price */
-				'range'         => __( 'Price range: %1$s through %2$s', 'woocommerce' ),
-			],
-		];
-		// phpcs:enable WordPress.WP.I18n.TextDomainMismatch
-
-		wp_add_inline_script(
+		wp_localize_script(
 			'wcpay-multi-currency-async-renderer',
-			'var wcpayAsyncPriceConfig = ' . wp_json_encode( $config ) . ';',
-			'before'
+			'wcpayAsyncPriceConfig',
+			[
+				'apiUrl'          => rest_url( 'wc/v3/payments/multi-currency/public/config' ),
+				'defaultCurrency' => [
+					'symbol'       => html_entity_decode( get_woocommerce_currency_symbol(), ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
+					'decimals'     => wc_get_price_decimals(),
+					'decimal_sep'  => wc_get_price_decimal_separator(),
+					'thousand_sep' => wc_get_price_thousand_separator(),
+					'symbol_pos'   => get_option( 'woocommerce_currency_pos' ),
+				],
+				// Uses WC's text domain so translations match WC core output in every locale.
+				// phpcs:disable WordPress.WP.I18n.TextDomainMismatch
+				'srText'          => [
+					/* translators: %s: formatted price */
+					'sale_original' => __( 'Original price was: %s.', 'woocommerce' ),
+					/* translators: %s: formatted price */
+					'sale_current'  => __( 'Current price is: %s.', 'woocommerce' ),
+					/* translators: %1$s: minimum price, %2$s: maximum price */
+					'range'         => __( 'Price range: %1$s through %2$s', 'woocommerce' ),
+				],
+				// phpcs:enable WordPress.WP.I18n.TextDomainMismatch
+			]
 		);
 
 		wp_enqueue_script( 'wcpay-multi-currency-async-renderer' );
