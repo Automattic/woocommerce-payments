@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import type { Browser, BrowserContext, Page } from '@playwright/test';
+import type { BrowserContext, Page } from '@playwright/test';
 import qit from '@qit/helpers';
 
 /**
@@ -48,183 +48,6 @@ const restoreOption = async (
 	}
 };
 
-/**
- * Ensures at least one sale product exists in WooCommerce.
- *
- * QIT's default dataset may not include sale products, which the
- * screen-reader test needs for [data-wcpay-sr-type] elements.
- */
-const ensureSaleProductExists = async (): Promise< void > => {
-	const { stdout } = await qit.wp(
-		'wc product list --on_sale=true --status=publish --format=count --user=1',
-		true
-	);
-	const saleCount = parseInt( stdout.trim(), 10 );
-	if ( saleCount > 0 ) {
-		return;
-	}
-
-	// Find any published simple product and add a sale price.
-	const { stdout: productIds } = await qit.wp(
-		'wc product list --type=simple --status=publish --format=ids --user=1',
-		true
-	);
-	const firstId = productIds.trim().split( /\s+/ )[ 0 ];
-	if ( firstId ) {
-		await qit.wp(
-			`wc product update ${ firstId } --sale_price=5.00 --user=1`
-		);
-	}
-};
-
-/**
- * Navigates to the shop page and waits for the async price renderer to convert
- * skeleton prices. Includes a diagnostic pre-flight check to provide actionable
- * error messages if the renderer infrastructure is missing.
- */
-const goToShopAndWaitForConversion = async (
-	page: Page,
-	{ timeout = 20000 }: { timeout?: number } = {}
-) => {
-	await navigation.goToShop( page );
-
-	// Pre-flight: verify skeleton markup exists before waiting for conversion.
-	// If the PHP-side async renderer didn't fire, the skeletons won't be in
-	// the DOM and waiting for conversion would always time out.
-	const skeletonCount = await page.locator( '[data-wcpay-price]' ).count();
-
-	if ( skeletonCount === 0 ) {
-		// Capture diagnostic data for debugging.
-		const configDefined = await page.evaluate(
-			() => typeof ( window as any ).wcpayAsyncPriceConfig !== 'undefined'
-		);
-		const html = await page.content();
-		const hasAsyncClass = html.includes( 'wcpay-async-price' );
-
-		throw new Error(
-			'Async renderer pre-flight failed: no [data-wcpay-price] elements found on the shop page. ' +
-				`Diagnostics: wcpayAsyncPriceConfig defined=${ configDefined }, ` +
-				`wcpay-async-price class in HTML=${ hasAsyncClass }, ` +
-				`skeleton count=${ skeletonCount }. ` +
-				'The PHP async renderer hooks may not have fired — check that ' +
-				'is_cache_optimized_mode() returns true and there is no active WC session.'
-		);
-	}
-
-	// Verify the JS bundle loaded correctly. The CI build can produce a
-	// truncated file (observed: 615 bytes vs expected ~21KB) that contains
-	// the webpack runtime but not the actual renderer code. If the bundle
-	// is broken, the renderer IIFE crashes silently and no conversion occurs.
-	const bundleCheck = await page.evaluate( () => {
-		const win = window as any;
-		const scriptEl = document.getElementById(
-			'wcpay-multi-currency-async-renderer-js'
-		) as HTMLScriptElement | null;
-		return {
-			scriptExists: !! scriptEl,
-			scriptSrc: scriptEl?.src || '',
-			// The renderer sets a 10s timeout inside init(). If neither
-			// converted nor error elements appear, the IIFE likely crashed.
-			configKeys: win.wcpayAsyncPriceConfig
-				? Object.keys( win.wcpayAsyncPriceConfig )
-				: [],
-			hasDefaultCurrency: !! win.wcpayAsyncPriceConfig?.defaultCurrency,
-			wcpayAssetsDefined: typeof win.wcpayAssets !== 'undefined',
-			jsErrors: ( win.__wcpayJsErrors || [] ).slice( 0, 5 ),
-		};
-	} );
-
-	// If the JS bundle is broken, fail fast with a clear message.
-	if ( bundleCheck.jsErrors.length > 0 || ! bundleCheck.wcpayAssetsDefined ) {
-		throw new Error(
-			'Async renderer JS bundle appears broken — the IIFE likely crashed during initialization. ' +
-				`Diagnostics: ${ JSON.stringify( bundleCheck ) }. ` +
-				'This is typically caused by a truncated dist/multi-currency-async-renderer.js ' +
-				'in the build artifact (e.g. 615 bytes instead of ~21KB).'
-		);
-	}
-
-	// Wait for the JS renderer to convert at least one price.
-	const convertedPrice = page.locator(
-		'[data-wcpay-price].wcpay-price-converted'
-	);
-
-	try {
-		await expect( convertedPrice.first() ).toBeVisible( { timeout } );
-	} catch ( error ) {
-		// Capture JS-side diagnostics on failure.
-		const diagnostics = await page.evaluate( () => {
-			const win = window as any;
-			const scriptEl = document.getElementById(
-				'wcpay-multi-currency-async-renderer-js'
-			) as HTMLScriptElement | null;
-			// Use Performance API to check the actual size of the loaded JS file.
-			const perfEntries = performance.getEntriesByType(
-				'resource'
-			) as PerformanceResourceTiming[];
-			const rendererEntry = perfEntries.find( ( e ) =>
-				e.name.includes( 'async-renderer.js' )
-			);
-			return {
-				configDefined: typeof win.wcpayAsyncPriceConfig !== 'undefined',
-				configKeys: win.wcpayAsyncPriceConfig
-					? Object.keys( win.wcpayAsyncPriceConfig )
-					: [],
-				hasDefaultCurrency: !! win.wcpayAsyncPriceConfig
-					?.defaultCurrency,
-				wcpayAssetsDefined: typeof win.wcpayAssets !== 'undefined',
-				scriptSrc: scriptEl?.src || '',
-				jsBundleTransferSize: rendererEntry?.transferSize ?? -1,
-				jsBundleDecodedSize: rendererEntry?.decodedBodySize ?? -1,
-				skeletons: document.querySelectorAll( '[data-wcpay-price]' )
-					.length,
-				converted: document.querySelectorAll( '.wcpay-price-converted' )
-					.length,
-				errors: document.querySelectorAll( '.wcpay-price-error' )
-					.length,
-				jsErrors: ( win.__wcpayJsErrors || [] ).slice( 0, 5 ),
-			};
-		} );
-
-		throw new Error(
-			`Async price conversion did not complete within ${ timeout }ms. ` +
-				`JS diagnostics: ${ JSON.stringify( diagnostics ) }. ` +
-				`Original error: ${ ( error as Error ).message }`
-		);
-	}
-};
-
-/**
- * Creates a fresh anonymous shopper context with sessionStorage pre-cleared
- * to prevent cached config from interfering with the async renderer.
- */
-const getCleanAnonymousShopper = async ( browser: Browser ) => {
-	const { shopperPage, shopperContext } = await getAnonymousShopper(
-		browser
-	);
-
-	// Clear session cache and install a global error handler to capture
-	// any JS errors that prevent the async renderer from executing.
-	await shopperPage.addInitScript( () => {
-		sessionStorage.removeItem( 'wcpay_mc_async_config' );
-		( window as any ).__wcpayJsErrors = [];
-		window.addEventListener( 'error', ( e ) => {
-			( window as any ).__wcpayJsErrors.push(
-				`${ e.message } at ${ e.filename }:${ e.lineno }`
-			);
-		} );
-	} );
-
-	return { shopperPage, shopperContext };
-};
-
-/**
- * Minimum expected file size (in bytes) for the async renderer JS bundle.
- * The production build produces ~21 KB. A value below this threshold indicates
- * a truncated build artifact (e.g. only the webpack runtime / public-path.js).
- */
-const minBundleSizeBytes = 5000;
-
 test.describe(
 	'Multi-currency async price renderer',
 	{ tag: '@shopper' },
@@ -237,20 +60,9 @@ test.describe(
 		let originalFeatureFlag: string;
 		let originalAutoSwitch: string;
 		let defaultCurrencySymbol: string;
-		let bundleSizeBytes = 0;
 
 		test.beforeAll( async ( { browser } ) => {
-			test.setTimeout( 120000 );
-
-			// Verify the JS bundle is not truncated. QIT may serve a stale
-			// or incomplete build artifact (observed: 615 bytes vs ~21 KB).
-			// When the bundle is broken, all JS-dependent tests will fail,
-			// so we check upfront and skip with a clear message.
-			const { stdout: sizeStr } = await qit.wp(
-				`eval "echo filesize( WP_PLUGIN_DIR . '/woocommerce-payments/dist/multi-currency-async-renderer.js' );"`,
-				true
-			);
-			bundleSizeBytes = parseInt( sizeStr.trim(), 10 ) || 0;
+			test.setTimeout( 90000 );
 
 			merchantContext = await browser.newContext( {
 				storageState: await getAuthState( browser, 'admin' ),
@@ -258,9 +70,8 @@ test.describe(
 			merchantPage = await merchantContext.newPage();
 
 			// Save original state for cleanup.
-			originalEnabledCurrencies = await merchant.getEnabledCurrenciesSnapshot(
-				merchantPage
-			);
+			originalEnabledCurrencies =
+				await merchant.getEnabledCurrenciesSnapshot( merchantPage );
 			wasMulticurrencyEnabled = await merchant.activateMulticurrency(
 				merchantPage
 			);
@@ -282,28 +93,21 @@ test.describe(
 					'eval "echo html_entity_decode( get_woocommerce_currency_symbol() );"',
 					true
 				)
-			 ).stdout.trim();
+			).stdout.trim();
 
 			// Add EUR as an enabled currency.
 			await merchant.addCurrency( merchantPage, 'EUR' );
 
-			// Ensure at least one sale product exists for screen-reader tests.
-			await ensureSaleProductExists();
-
 			// Enable cache-optimized mode via WP options.
-			await qit.wp( 'option update _wcpay_feature_mc_cache_optimized 1' );
+			await qit.wp(
+				'option update _wcpay_feature_mc_cache_optimized 1'
+			);
 			await qit.wp(
 				'option update wcpay_multi_currency_rendering_mode cache'
 			);
 			await qit.wp(
 				'option update wcpay_multi_currency_enable_auto_currency yes'
 			);
-
-			// Flush the object cache so the web server sees the updated
-			// options immediately. QIT may use a persistent object cache
-			// (Redis) where WP-CLI option updates aren't visible to PHP-FPM
-			// until the cache is invalidated.
-			await qit.wp( 'cache flush' );
 		} );
 
 		test.afterAll( async () => {
@@ -321,9 +125,6 @@ test.describe(
 				originalAutoSwitch
 			);
 
-			// Flush cache again so restored values are immediately visible.
-			await qit.wp( 'cache flush' );
-
 			await merchant.restoreCurrencies(
 				merchantPage,
 				originalEnabledCurrencies
@@ -338,19 +139,25 @@ test.describe(
 		test( 'should render skeleton markup and convert prices client-side', async ( {
 			browser,
 		} ) => {
-			test.skip(
-				bundleSizeBytes < minBundleSizeBytes,
-				`JS bundle is truncated (${ bundleSizeBytes } bytes, expected >=${ minBundleSizeBytes }). ` +
-					'The build artifact may be stale in QIT — see WOOPMNT-5992.'
-			);
-
-			const {
-				shopperPage,
-				shopperContext,
-			} = await getCleanAnonymousShopper( browser );
+			const { shopperPage, shopperContext } =
+				await getAnonymousShopper( browser );
 
 			try {
-				await goToShopAndWaitForConversion( shopperPage );
+				// Clear sessionStorage to prevent cached config from a prior run.
+				await shopperPage.addInitScript( () => {
+					sessionStorage.removeItem( 'wcpay_mc_async_config' );
+				} );
+
+				await navigation.goToShop( shopperPage );
+
+				// The async renderer JS fetches the real config endpoint and
+				// converts skeleton prices. Wait for at least one conversion.
+				const convertedPrice = shopperPage.locator(
+					'[data-wcpay-price].wcpay-price-converted'
+				);
+				await expect( convertedPrice.first() ).toBeVisible( {
+					timeout: 15000,
+				} );
 
 				// Skeleton placeholders should be removed after conversion.
 				await expect(
@@ -358,10 +165,9 @@ test.describe(
 				).toHaveCount( 0 );
 
 				// The converted price should contain a currency symbol.
-				const convertedPrice = shopperPage.locator(
-					'[data-wcpay-price].wcpay-price-converted'
-				);
-				const priceText = await convertedPrice.first().textContent();
+				const priceText = await convertedPrice
+					.first()
+					.textContent();
 				expect( priceText ).toMatch( /[\$€£¥]|USD|EUR/ );
 			} finally {
 				await shopperContext?.close();
@@ -371,19 +177,24 @@ test.describe(
 		test( 'should convert screen-reader text alongside prices', async ( {
 			browser,
 		} ) => {
-			test.skip(
-				bundleSizeBytes < minBundleSizeBytes,
-				`JS bundle is truncated (${ bundleSizeBytes } bytes, expected >=${ minBundleSizeBytes }). ` +
-					'The build artifact may be stale in QIT — see WOOPMNT-5992.'
-			);
-
-			const {
-				shopperPage,
-				shopperContext,
-			} = await getCleanAnonymousShopper( browser );
+			const { shopperPage, shopperContext } =
+				await getAnonymousShopper( browser );
 
 			try {
-				await goToShopAndWaitForConversion( shopperPage );
+				await shopperPage.addInitScript( () => {
+					sessionStorage.removeItem( 'wcpay_mc_async_config' );
+				} );
+
+				await navigation.goToShop( shopperPage );
+
+				// Wait for price conversion to complete.
+				await expect(
+					shopperPage
+						.locator(
+							'[data-wcpay-price].wcpay-price-converted'
+						)
+						.first()
+				).toBeVisible( { timeout: 15000 } );
 
 				// The shop page should have sale or variable products with
 				// screen-reader text annotations. Assert they exist and
@@ -407,18 +218,14 @@ test.describe(
 		test( 'should show fallback on network failure', async ( {
 			browser,
 		} ) => {
-			test.skip(
-				bundleSizeBytes < minBundleSizeBytes,
-				`JS bundle is truncated (${ bundleSizeBytes } bytes, expected >=${ minBundleSizeBytes }). ` +
-					'The build artifact may be stale in QIT — see WOOPMNT-5992.'
-			);
-
-			const {
-				shopperPage,
-				shopperContext,
-			} = await getCleanAnonymousShopper( browser );
+			const { shopperPage, shopperContext } =
+				await getAnonymousShopper( browser );
 
 			try {
+				await shopperPage.addInitScript( () => {
+					sessionStorage.removeItem( 'wcpay_mc_async_config' );
+				} );
+
 				// Abort the config fetch to simulate a network error.
 				await interceptConfigEndpointWithFailure( shopperPage );
 
@@ -431,7 +238,7 @@ test.describe(
 					'[data-wcpay-price].wcpay-price-converted'
 				);
 				await expect( convertedPrice.first() ).toBeVisible( {
-					timeout: 20000,
+					timeout: 15000,
 				} );
 
 				// Skeleton placeholders should be removed.
@@ -440,7 +247,9 @@ test.describe(
 				).toHaveCount( 0 );
 
 				// Fallback prices should be in the store's default currency.
-				const priceText = await convertedPrice.first().textContent();
+				const priceText = await convertedPrice
+					.first()
+					.textContent();
 				expect( priceText ).toContain( defaultCurrencySymbol );
 			} finally {
 				await shopperContext?.close();
@@ -450,9 +259,8 @@ test.describe(
 		test( 'should use server-side rendering when currency is set via URL', async ( {
 			browser,
 		} ) => {
-			const { shopperPage, shopperContext } = await getAnonymousShopper(
-				browser
-			);
+			const { shopperPage, shopperContext } =
+				await getAnonymousShopper( browser );
 
 			try {
 				// ?currency=EUR creates a WC session and triggers
