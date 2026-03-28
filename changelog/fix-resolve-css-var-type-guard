@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix fatal error in WooPay appearance computation when theme.json returns non-string values for typography properties.
