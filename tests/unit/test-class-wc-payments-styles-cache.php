@@ -397,26 +397,32 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_resolve_css_var_returns_empty_string_for_non_string_input() {
+	public function test_resolve_css_var_returns_fallback_for_non_string_input() {
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_css_var' );
 		$method->setAccessible( true );
 
 		// Array value (the actual bug: fontFamily can be an array in theme.json v3).
-		$this->assertSame( '', $method->invoke( null, [ 'System Sans-Serif' ] ) );
+		$this->assertSame( 'inherit', $method->invoke( null, [ 'System Sans-Serif' ], 'inherit' ) );
 
 		// Integer.
-		$this->assertSame( '', $method->invoke( null, 42 ) );
+		$this->assertSame( '16px', $method->invoke( null, 42, '16px' ) );
 
 		// Null.
-		$this->assertSame( '', $method->invoke( null, null ) );
+		$this->assertSame( '#000000', $method->invoke( null, null, '#000000' ) );
 
 		// Boolean.
 		$this->assertSame( '', $method->invoke( null, true ) );
 
-		// Normal string still works.
-		$this->assertSame( '#ffffff', $method->invoke( null, '#ffffff' ) );
+		// Empty string returns fallback.
+		$this->assertSame( '#ffffff', $method->invoke( null, '', '#ffffff' ) );
+
+		// Non-string without fallback returns empty string.
+		$this->assertSame( '', $method->invoke( null, [ 'array' ] ) );
+
+		// Normal string still works (fallback ignored).
+		$this->assertSame( '#ffffff', $method->invoke( null, '#ffffff', 'ignored' ) );
 
 		// CSS var string passes through (unresolvable var returns original).
-		$this->assertSame( 'var(--unknown-prop)', $method->invoke( null, 'var(--unknown-prop)' ) );
+		$this->assertSame( 'var(--unknown-prop)', $method->invoke( null, 'var(--unknown-prop)', 'ignored' ) );
 	}
 }

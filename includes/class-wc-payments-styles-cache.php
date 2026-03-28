@@ -157,40 +157,41 @@ class WC_Payments_Styles_Cache {
 
 		// Extract colors and resolve any CSS custom property references
 		// like var(--wp--preset--color--base) to concrete values.
-		$bg_color   = self::resolve_css_var( $styles['color']['background'] ?? '#ffffff' );
-		$text_color = self::resolve_css_var( $styles['color']['text'] ?? '#000000' );
+		$bg_color   = self::resolve_css_var( $styles['color']['background'] ?? '', '#ffffff' );
+		$text_color = self::resolve_css_var( $styles['color']['text'] ?? '', '#000000' );
 		$link_color = self::resolve_css_var(
 			$styles['elements']['link']['color']['text']
 				?? $styles['elements']['a']['color']['text']
-				?? $text_color
+				?? '',
+			$text_color
 		);
 
 		// Extract typography.
-		$font_family = self::resolve_css_var( $styles['typography']['fontFamily'] ?? 'inherit' );
-		$font_size   = self::resolve_css_var( $styles['typography']['fontSize'] ?? '16px' );
+		$font_family = self::resolve_css_var( $styles['typography']['fontFamily'] ?? '', 'inherit' );
+		$font_size   = self::resolve_css_var( $styles['typography']['fontSize'] ?? '', '16px' );
 
 		// Extract heading styles.
-		$heading_color       = self::resolve_css_var( $styles['elements']['heading']['color']['text'] ?? $text_color );
-		$heading_font_family = self::resolve_css_var( $styles['elements']['heading']['typography']['fontFamily'] ?? $font_family );
+		$heading_color       = self::resolve_css_var( $styles['elements']['heading']['color']['text'] ?? '', $text_color );
+		$heading_font_family = self::resolve_css_var( $styles['elements']['heading']['typography']['fontFamily'] ?? '', $font_family );
 
 		// Extract button styles.
-		$button_bg_color   = self::resolve_css_var( $styles['elements']['button']['color']['background'] ?? $bg_color );
-		$button_text_color = self::resolve_css_var( $styles['elements']['button']['color']['text'] ?? $text_color );
-		$button_font_size  = self::resolve_css_var( $styles['elements']['button']['typography']['fontSize'] ?? $font_size );
+		$button_bg_color   = self::resolve_css_var( $styles['elements']['button']['color']['background'] ?? '', $bg_color );
+		$button_text_color = self::resolve_css_var( $styles['elements']['button']['color']['text'] ?? '', $text_color );
+		$button_font_size  = self::resolve_css_var( $styles['elements']['button']['typography']['fontSize'] ?? '', $font_size );
 
 		// Extract input styles if available.
-		$input_border_color  = self::resolve_css_var( $styles['elements']['input']['border']['color'] ?? $text_color );
-		$input_border_radius = self::resolve_css_var( $styles['elements']['input']['border']['radius'] ?? '0px' );
+		$input_border_color  = self::resolve_css_var( $styles['elements']['input']['border']['color'] ?? '', $text_color );
+		$input_border_radius = self::resolve_css_var( $styles['elements']['input']['border']['radius'] ?? '', '0px' );
 
 		// Extract button font family.
-		$button_font_family = self::resolve_css_var( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family );
+		$button_font_family = self::resolve_css_var( $styles['elements']['button']['typography']['fontFamily'] ?? '', $font_family );
 
 		// Extract header/footer colors. First try the actual header template
 		// part block attributes, then fall back to template part default styles.
 		$header_colors     = self::get_template_part_colors( 'header' );
 		$footer_colors     = self::get_template_part_colors( 'footer' );
-		$header_bg_color   = $header_colors['background'] ?? self::resolve_css_var( $tp_styles['color']['background'] ?? $bg_color );
-		$header_text_color = $header_colors['text'] ?? self::resolve_css_var( $tp_styles['color']['text'] ?? $text_color );
+		$header_bg_color   = $header_colors['background'] ?? self::resolve_css_var( $tp_styles['color']['background'] ?? '', $bg_color );
+		$header_text_color = $header_colors['text'] ?? self::resolve_css_var( $tp_styles['color']['text'] ?? '', $text_color );
 
 		// Determine theme (light vs dark) from background color.
 		$theme = self::is_color_light( $bg_color ) ? 'stripe' : 'night';
@@ -243,7 +244,7 @@ class WC_Payments_Styles_Cache {
 					'color'           => $footer_colors['text'] ?? $text_color,
 				],
 				'.Footer-link'    => [
-					'color' => self::resolve_css_var( $tp_styles['elements']['link']['color']['text'] ?? $link_color ),
+					'color' => self::resolve_css_var( $tp_styles['elements']['link']['color']['text'] ?? '', $link_color ),
 				],
 				'.Button'         => [
 					'color'           => $button_text_color,
@@ -500,14 +501,15 @@ class WC_Payments_Styles_Cache {
 	 *
 	 * Accepts mixed input because wp_get_global_styles() can return arrays
 	 * for some values (e.g. fontFamily in newer theme.json specs). Non-string
-	 * values are returned as an empty string so callers fall back gracefully.
+	 * values return the provided fallback so callers get a sensible default.
 	 *
-	 * @param mixed $value The CSS value, possibly a var() reference.
-	 * @return string The resolved value or the original.
+	 * @param mixed  $value    The CSS value, possibly a var() reference.
+	 * @param string $fallback Value to return when $value is non-string or empty.
+	 * @return string The resolved value, the original, or the fallback.
 	 */
-	private static function resolve_css_var( $value ): string {
-		if ( ! is_string( $value ) ) {
-			return '';
+	private static function resolve_css_var( $value, string $fallback = '' ): string {
+		if ( ! is_string( $value ) || '' === $value ) {
+			return $fallback;
 		}
 		if ( 0 !== strpos( $value, 'var(' ) ) {
 			return $value;
