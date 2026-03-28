@@ -396,4 +396,27 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			remove_filter( 'stylesheet', $stylesheet_filter );
 		}
 	}
+
+	public function test_resolve_css_var_returns_empty_string_for_non_string_input() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_css_var' );
+		$method->setAccessible( true );
+
+		// Array value (the actual bug: fontFamily can be an array in theme.json v3).
+		$this->assertSame( '', $method->invoke( null, [ 'System Sans-Serif' ] ) );
+
+		// Integer.
+		$this->assertSame( '', $method->invoke( null, 42 ) );
+
+		// Null.
+		$this->assertSame( '', $method->invoke( null, null ) );
+
+		// Boolean.
+		$this->assertSame( '', $method->invoke( null, true ) );
+
+		// Normal string still works.
+		$this->assertSame( '#ffffff', $method->invoke( null, '#ffffff' ) );
+
+		// CSS var string passes through (unresolvable var returns original).
+		$this->assertSame( 'var(--unknown-prop)', $method->invoke( null, 'var(--unknown-prop)' ) );
+	}
 }
