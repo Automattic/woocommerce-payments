@@ -1641,6 +1641,137 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
+	public function test_charge_refunded_webhook_is_scheduled_not_processed_immediately(): void {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'status'              => 'succeeded',
+						'amount'              => 900,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+			'captured' => true,
+		];
+
+		// The order service should NOT be called during scheduling —
+		// processing happens later when the scheduled action fires.
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'create_refund_for_order' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+
+		// Verify an action was scheduled.
+		$this->assertTrue(
+			as_has_scheduled_action(
+				WC_Payments_Webhook_Processing_Service::PROCESS_CHARGE_REFUNDED_WEBHOOK_ACTION,
+				[ $this->event_body ],
+				'woocommerce_payments'
+			)
+		);
+	}
+
+	public function test_charge_refunded_webhook_duplicate_scheduling_is_prevented(): void {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'status'              => 'succeeded',
+						'amount'              => 900,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+			'captured' => true,
+		];
+
+		// Process the same webhook twice (simulates Stripe retry).
+		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process( $this->event_body );
+
+		// Should only have one scheduled action, not two.
+		$scheduled_actions = as_get_scheduled_actions(
+			[
+				'hook'   => WC_Payments_Webhook_Processing_Service::PROCESS_CHARGE_REFUNDED_WEBHOOK_ACTION,
+				'args'   => [ $this->event_body ],
+				'group'  => 'woocommerce_payments',
+				'status' => ActionScheduler_Store::STATUS_PENDING,
+			]
+		);
+
+		$this->assertCount( 1, $scheduled_actions );
+	}
+
+	public function test_delayed_charge_refunded_webhook_processes_refund(): void {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'status'              => Refund_Status::SUCCEEDED,
+						'amount'              => 900,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+			'captured' => true,
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_total' )
+			->willReturn( 18 );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$mock_refund = $this->createMock( WC_Order_Refund::class );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'create_refund_for_order' )
+			->willReturn( $mock_refund );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'add_note_and_metadata_for_created_refund' )
+			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
+
+		// Call the method directly (simulating Action Scheduler firing the hook).
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
+	}
+
 	public function test_process_full_refund_succeeded(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
@@ -1696,7 +1827,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'add_note_and_metadata_for_created_refund' )
 			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
 
-		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
 	}
 
 	public function test_process_partial_refund_succeeded(): void {
@@ -1745,7 +1876,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'add_note_and_metadata_for_created_refund' )
 			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
 
-		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
 	}
 
 	public function test_process_refund_ignores_processed_event(): void {
@@ -1806,7 +1937,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'add_note_and_metadata_for_created_refund' );
 
-		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
 	}
 
 	public function test_process_refund_ignores_event(): void {
@@ -1850,6 +1981,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service
 			->expects( $this->never() )
 			->method( 'add_note_and_metadata_for_created_refund' );
+
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
 	}
 
 	public function test_process_refund_throws_when_order_not_found(): void {
@@ -1880,7 +2013,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->expectException( Order_Not_Found_Exception::class );
 
-		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
 	}
 
 	public function test_process_refund_throws_with_negative_amount(): void {
@@ -1915,7 +2048,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->expectException( Invalid_Webhook_Data_Exception::class );
 
-		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
 	}
 
 	public function test_process_refund_throws_with_invalid_refunded_amount(): void {
@@ -1951,7 +2084,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->expectException( Invalid_Webhook_Data_Exception::class );
 
-		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
 	}
 
 	public function test_process_refund_ignores_uncaptured_charge(): void {
@@ -1995,7 +2128,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'add_note_and_metadata_for_created_refund' );
 
-		$this->webhook_processing_service->process( $this->event_body );
+		$this->webhook_processing_service->process_webhook_refund_triggered_externally( $this->event_body );
 	}
 
 	/**

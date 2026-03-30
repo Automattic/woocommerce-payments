@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed a race condition causing duplicate refund amounts and order notes during partial refunds.
