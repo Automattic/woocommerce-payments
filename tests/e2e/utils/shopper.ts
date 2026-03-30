@@ -142,17 +142,48 @@ export const fillBillingAddressWCB = async (
 // Guarded with a max-attempt limit to avoid infinite loops when submission fails silently.
 export const placeOrder = async ( page: Page ) => {
 	const maxAttempts = 10;
+	await focusPlaceOrderButton( page );
+	await isUIUnblocked( page );
+
 	for ( let attempt = 1; attempt <= maxAttempts; attempt++ ) {
-		await page.locator( '#place_order' ).click();
+		if ( page.url().includes( '/checkout/order-received/' ) ) {
+			return;
+		}
+
+		await page.locator( 'form.checkout' ).evaluate( ( formElement ) => {
+			const form = formElement as HTMLFormElement;
+			const submitter = form.querySelector(
+				'#place_order'
+			) as HTMLButtonElement | null;
+
+			if ( submitter && typeof form.requestSubmit === 'function' ) {
+				form.requestSubmit( submitter );
+				return;
+			}
+
+			submitter?.click();
+		} );
 
 		try {
-			await page
-				.locator( '.blockUI' )
-				.waitFor( { state: 'attached', timeout: 500 } );
+			await Promise.race( [
+				page
+					.locator( '.blockUI' )
+					.waitFor( { state: 'attached', timeout: 3000 } ),
+				page.waitForURL( /\/checkout\/order-received\//, {
+					timeout: 10000,
+				} ),
+			] );
 			return;
 		} catch {
 			// The checkout submit did not start yet, so retry.
 		}
+
+		if ( page.url().includes( '/checkout/order-received/' ) ) {
+			return;
+		}
+
+		await focusPlaceOrderButton( page );
+		await isUIUnblocked( page );
 
 		// Brief pause between retries to avoid hammering the button.
 		await page.waitForTimeout( 500 );
