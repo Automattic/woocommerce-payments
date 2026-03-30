@@ -46,7 +46,9 @@ is_local_git_repo() {
 has_server_code() {
 	local repo=$1
 
-	[[ -d "$repo/server/wp-content/rest-api-plugins" ]]
+	local plugins_dir="$repo/server/wp-content/rest-api-plugins"
+
+	[[ -d "$plugins_dir" ]] && find "$plugins_dir" -mindepth 1 -print -quit | grep -q .
 }
 
 sync_server_code_from_local_repo() {
