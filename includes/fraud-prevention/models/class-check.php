@@ -84,22 +84,22 @@ class Check {
 	/**
 	 * Creates a Check instance from an array.
 	 *
-	 * @param  array $array  The Check configuration.
+	 * @param  array $data  The Check configuration.
 	 *
 	 * @return Check
 	 * @throws Fraud_Ruleset_Exception When the array validation fails.
 	 */
-	public static function from_array( array $array ): Check {
+	public static function from_array( array $data ): Check {
 		// Check if this is a valid candidate for a rule. Rules should have keys, outcomes, and checks defined and not empty.
-		if ( ! self::validate_array( $array ) ) {
+		if ( ! self::validate_array( $data ) ) {
 			throw new Fraud_Ruleset_Exception( 'Check definition not valid.' );
 		}
 		$check           = new self();
-		$check->key      = $array['key'] ?? null;
-		$check->operator = $array['operator'];
-		$check->value    = $array['value'] ?? null;
-		if ( isset( $array['checks'] ) ) {
-			foreach ( $array['checks'] as $check_definition ) {
+		$check->key      = $data['key'] ?? null;
+		$check->operator = $data['operator'];
+		$check->value    = $data['value'] ?? null;
+		if ( isset( $data['checks'] ) ) {
+			foreach ( $data['checks'] as $check_definition ) {
 				$check->checks[] = self::from_array( $check_definition );
 			}
 		}
@@ -109,32 +109,32 @@ class Check {
 	/**
 	 * Validates the given array if it's structured to become a Check object.
 	 *
-	 * @param   array $array  The array to validate.
+	 * @param   array $data  The array to validate.
 	 *
-	 * @return  bool          Whether it is a valid Check array.
+	 * @return  bool         Whether it is a valid Check array.
 	 */
-	public static function validate_array( array $array ): bool {
+	public static function validate_array( array $data ): bool {
 		// Check if this array contains an operator. In all cases it should have an operator field.
-		if ( ! isset( $array['operator'] ) ) {
+		if ( ! isset( $data['operator'] ) ) {
 			return false;
 		}
-		if ( in_array( $array['operator'], self::$list_operators, true ) ) {
+		if ( in_array( $data['operator'], self::$list_operators, true ) ) {
 			// This should be a checklist, and should have checks.
-			if ( ! isset( $array['checks'] ) || empty( $array['checks'] ) ) {
+			if ( ! isset( $data['checks'] ) || empty( $data['checks'] ) ) {
 				return false;
 			}
 			// Validate child checks.
-			foreach ( $array['checks'] as $check ) {
+			foreach ( $data['checks'] as $check ) {
 				if ( ! self::validate_array( $check ) ) {
 					return false;
 				}
 			}
-		} elseif ( in_array( $array['operator'], self::$check_operators, true ) ) {
+		} elseif ( in_array( $data['operator'], self::$check_operators, true ) ) {
 			// This should be a single check, and should have key and value.
-			if ( ! isset( $array['value'] ) ) {
+			if ( ! isset( $data['value'] ) ) {
 				return false;
 			}
-			if ( ! isset( $array['key'] ) ) {
+			if ( ! isset( $data['key'] ) ) {
 				return false;
 			}
 		} else {

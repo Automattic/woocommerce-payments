@@ -423,8 +423,8 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$mock_product->set_price( $price );
 		$mock_product->save();
 
-		$fn_pass_param = function ( $bool ) {
-			return $bool;
+		$fn_pass_param = function ( $value ) {
+			return $value;
 		};
 
 		$spy_return_store_currency    = PHPUnit_Utils::function_spy();

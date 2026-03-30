@@ -609,16 +609,16 @@ class WooPay_Session {
 	 * Recursively map an array.
 	 *
 	 * @param callable $callback The sanitize_text_field function.
-	 * @param array    $array    The nested array.
+	 * @param array    $data     The nested array.
 	 *
 	 * @return array A new appearance array.
 	 */
-	private static function array_map_recursive( $callback, $array ) {
+	private static function array_map_recursive( $callback, $data ) {
 		$func = function ( $item ) use ( &$func, &$callback ) {
 			return is_array( $item ) ? array_map( $func, $item ) : call_user_func( $callback, $item );
 		};
 
-		return array_map( $func, $array );
+		return array_map( $func, $data );
 	}
 
 	/**
