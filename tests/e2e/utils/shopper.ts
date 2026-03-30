@@ -150,18 +150,16 @@ export const placeOrder = async ( page: Page ) => {
 			return;
 		}
 
-		await page.locator( 'form.checkout' ).evaluate( ( formElement ) => {
-			const form = formElement as HTMLFormElement;
-			const submitter = form.querySelector(
-				'#place_order'
-			) as HTMLButtonElement | null;
+		await page.locator( '#place_order' ).evaluate( ( buttonElement ) => {
+			const submitter = buttonElement as HTMLButtonElement;
+			const form = submitter.form;
 
-			if ( submitter && typeof form.requestSubmit === 'function' ) {
+			if ( form && typeof form.requestSubmit === 'function' ) {
 				form.requestSubmit( submitter );
 				return;
 			}
 
-			submitter?.click();
+			submitter.click();
 		} );
 
 		try {

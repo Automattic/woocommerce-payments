@@ -162,6 +162,8 @@ export const addMulticurrencyWidget = async (
 				.getByRole( 'heading', { name: widgetName } )
 				.waitFor( { timeout: 5000 } );
 		}
+		// Give the widgets editor a moment to register the inserted block before saving.
+		await page.waitForTimeout( 2000 );
 		await expect(
 			page.getByRole( 'button', { name: 'Update' } )
 		).toBeEnabled();
