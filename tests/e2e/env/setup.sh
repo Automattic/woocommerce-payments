@@ -51,6 +51,45 @@ has_server_code() {
 	[[ -d "$plugins_dir" ]] && find "$plugins_dir" -mindepth 1 -print -quit | grep -q .
 }
 
+get_sandbox_host() {
+	local repo=$1
+	local sandbox_host=""
+
+	if [[ -f "$repo/.env" ]]; then
+		sandbox_host=$(grep '^WCPAY_SANDBOX_HOST=' "$repo/.env" | tail -n 1 | cut -d= -f2-)
+		sandbox_host=${sandbox_host#\'}
+		sandbox_host=${sandbox_host%\'}
+		sandbox_host=${sandbox_host#\"}
+		sandbox_host=${sandbox_host%\"}
+	fi
+
+	echo "${sandbox_host:-wpcomsandbox}"
+}
+
+print_pull_failure_help() {
+	local repo=$1
+	local pull_output=$2
+	local sandbox_host=""
+
+	sandbox_host=$(get_sandbox_host "$repo")
+
+	info "Bootstrap pull needs SSH access to the sandbox host '${sandbox_host}' and a working rsync binary."
+
+	if grep -Eqi "rsync could not be found|Detected an rsync-compatible implementation" <<< "$pull_output"; then
+		info "Fix: install the standard rsync binary and re-run setup. On macOS: brew install rsync"
+	elif grep -Eqi "Could not resolve hostname|Name or service not known|No address associated with hostname" <<< "$pull_output"; then
+		info "Fix: configure an SSH host named '${sandbox_host}' in ~/.ssh/config, or set WCPAY_SANDBOX_HOST in ${repo}/.env to a working sandbox alias."
+	elif grep -Eqi "Permission denied|publickey" <<< "$pull_output"; then
+		info "Fix: make sure your SSH key is loaded and that 'ssh ${sandbox_host} \"echo ok\"' succeeds before re-running setup."
+	elif grep -Eqi "Connection timed out|Operation timed out|Connection refused" <<< "$pull_output"; then
+		info "Fix: verify the sandbox host '${sandbox_host}' is reachable over SSH and that you are connected to the correct network or VPN."
+	else
+		info "Fix: run 'cd ${repo} && npm run pull -- -s' directly to verify your sandbox configuration, then re-run E2E setup."
+	fi
+
+	info "You can also prepare your local checkout first with 'cd $TRANSACT_PLATFORM_SERVER_REPO && npm run pull -- -s', then run E2E setup again."
+}
+
 sync_server_code_from_local_repo() {
 	local source_repo=$1
 	local destination_repo=$2
@@ -81,9 +120,10 @@ pull_server_code_into_repo() {
 	fi
 
 	fail "Failed to pull sandbox server code into E2E clone"
-	echo "$pull_output"
-	info "This step requires sandbox SSH access (default host: wpcomsandbox) and rsync."
-	info "If you already have a local transact-platform-server checkout, you can also run 'npm run pull -- -s' there first."
+	echo ""
+	echo "Pull output (last 20 lines):"
+	printf '%s\n' "$pull_output" | tail -n 20
+	print_pull_failure_help "$repo" "$pull_output"
 	return 1
 }
 
