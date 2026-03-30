@@ -9,6 +9,9 @@ import * as navigation from './shopper-navigation';
 import { config, CustomerAddress, Product } from '../config/default';
 import { isUIUnblocked } from './helpers';
 
+const placeOrderButtonSelector =
+	'#place_order, button[name="woocommerce_change_payment"]';
+
 /**
  * Waits for WooCommerce to finish refreshing the checkout order review.
  *
@@ -35,7 +38,7 @@ export const waitForUiRefresh = async ( page: Page ) => {
  * wrap up and make sure the Place Order button is clickable.
  */
 export const focusPlaceOrderButton = async ( page: Page ) => {
-	await page.locator( '#place_order' ).focus();
+	await page.locator( placeOrderButtonSelector ).first().focus();
 	await waitForUiRefresh( page );
 };
 
@@ -138,8 +141,8 @@ export const fillBillingAddressWCB = async (
 		.fill( billingAddress.phone );
 };
 
-// Retry clicking Place Order until the checkout form submits (blockUI overlay appears).
-// Guarded with a max-attempt limit to avoid infinite loops when submission fails silently.
+// Retry clicking Place Order until submission starts, checkout completes,
+// or the flow redirects to a success page such as subscription payment updates.
 export const placeOrder = async ( page: Page ) => {
 	const maxAttempts = 10;
 	await focusPlaceOrderButton( page );
@@ -150,17 +153,8 @@ export const placeOrder = async ( page: Page ) => {
 			return;
 		}
 
-		await page.locator( '#place_order' ).evaluate( ( buttonElement ) => {
-			const submitter = buttonElement as HTMLButtonElement;
-			const form = submitter.form;
-
-			if ( form && typeof form.requestSubmit === 'function' ) {
-				form.requestSubmit( submitter );
-				return;
-			}
-
-			submitter.click();
-		} );
+		const submitUrl = page.url();
+		await page.locator( placeOrderButtonSelector ).first().click();
 
 		try {
 			await Promise.race( [
@@ -170,10 +164,23 @@ export const placeOrder = async ( page: Page ) => {
 				page.waitForURL( /\/checkout\/order-received\//, {
 					timeout: 10000,
 				} ),
+				page.waitForURL( ( url ) => url.toString() !== submitUrl, {
+					timeout: 10000,
+				} ),
+				page
+					.locator(
+						'.woocommerce-message, .woocommerce-notice--success'
+					)
+					.first()
+					.waitFor( { state: 'visible', timeout: 10000 } ),
 			] );
 			return;
 		} catch {
 			// The checkout submit did not start yet, so retry.
+		}
+
+		if ( page.url() !== submitUrl ) {
+			return;
 		}
 
 		if ( page.url().includes( '/checkout/order-received/' ) ) {
