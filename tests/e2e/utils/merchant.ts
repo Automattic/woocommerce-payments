@@ -152,8 +152,16 @@ export const addMulticurrencyWidget = async (
 			.locator( 'button.components-button[role="option"]' )
 			.first()
 			.click();
-		// Wait for the widget to render before clicking Update.
-		await page.waitForTimeout( 2000 );
+		// Wait for the newly inserted widget/block to render before clicking Update.
+		if ( blocksVersion ) {
+			await page
+				.locator( `[data-title="${ widgetName }"]` )
+				.waitFor( { timeout: 5000 } );
+		} else {
+			await page
+				.getByRole( 'heading', { name: widgetName } )
+				.waitFor( { timeout: 5000 } );
+		}
 		await expect(
 			page.getByRole( 'button', { name: 'Update' } )
 		).toBeEnabled();

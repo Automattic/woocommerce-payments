@@ -22,7 +22,7 @@ export const waitForUiRefresh = async ( page: Page ) => {
 			( resp ) =>
 				resp.url().includes( 'wc-ajax=update_order_review' ) &&
 				resp.status() === 200,
-			{ timeout: 3000 }
+			{ timeout: 5000 }
 		);
 	} catch {
 		// No order review update fired — fields may not have changed.
@@ -145,8 +145,13 @@ export const placeOrder = async ( page: Page ) => {
 	for ( let attempt = 1; attempt <= maxAttempts; attempt++ ) {
 		await page.locator( '#place_order' ).click();
 
-		if ( await page.$( '.blockUI' ) ) {
+		try {
+			await page
+				.locator( '.blockUI' )
+				.waitFor( { state: 'attached', timeout: 500 } );
 			return;
+		} catch {
+			// The checkout submit did not start yet, so retry.
 		}
 
 		// Brief pause between retries to avoid hammering the button.
