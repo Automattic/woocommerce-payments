@@ -892,6 +892,11 @@ class WC_Payments {
 			return $providers;
 		}
 
+		// Don't offer address autocomplete if the account is rejected or suspended (under review).
+		if ( self::$account->is_account_rejected() || self::$account->is_account_under_review() ) {
+			return $providers;
+		}
+
 		if ( ! class_exists( 'Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider' ) ) {
 			return $providers;
 		}
