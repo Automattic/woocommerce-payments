@@ -145,16 +145,29 @@ export const fillBillingAddressWCB = async (
 // or the flow redirects to a success page such as subscription payment updates.
 export const placeOrder = async ( page: Page ) => {
 	const maxAttempts = 10;
+	const initialUrl = page.url();
 	await focusPlaceOrderButton( page );
 	await isUIUnblocked( page );
 
 	for ( let attempt = 1; attempt <= maxAttempts; attempt++ ) {
-		if ( page.url().includes( '/checkout/order-received/' ) ) {
+		const successNotice = page
+			.locator( '.woocommerce-message, .woocommerce-notice--success' )
+			.first();
+		const currentUrl = page.url();
+
+		if (
+			currentUrl.includes( '/checkout/order-received/' ) ||
+			currentUrl !== initialUrl ||
+			( await successNotice.isVisible().catch( () => false ) )
+		) {
 			return;
 		}
 
-		const submitUrl = page.url();
-		await page.locator( placeOrderButtonSelector ).first().click();
+		const submitUrl = currentUrl;
+		await page
+			.locator( placeOrderButtonSelector )
+			.first()
+			.click( { noWaitAfter: true } );
 
 		try {
 			await Promise.race( [
@@ -167,12 +180,7 @@ export const placeOrder = async ( page: Page ) => {
 				page.waitForURL( ( url ) => url.toString() !== submitUrl, {
 					timeout: 10000,
 				} ),
-				page
-					.locator(
-						'.woocommerce-message, .woocommerce-notice--success'
-					)
-					.first()
-					.waitFor( { state: 'visible', timeout: 10000 } ),
+				successNotice.waitFor( { state: 'visible', timeout: 10000 } ),
 			] );
 			return;
 		} catch {
