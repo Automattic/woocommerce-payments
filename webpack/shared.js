@@ -7,6 +7,13 @@ const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/depe
 const WebpackRTLPlugin = require( './webpack-rtl-plugin' );
 
 module.exports = {
+	cache: {
+		type: 'filesystem',
+		cacheDirectory: path.resolve(
+			process.cwd(),
+			'node_modules/.cache/webpack'
+		),
+	},
 	entry: mapValues(
 		{
 			index: './client/index.js',
@@ -60,7 +67,7 @@ module.exports = {
 		rules: [
 			{
 				test: /\.tsx?$/,
-				use: [ 'babel-loader', 'ts-loader' ],
+				use: [ 'babel-loader' ],
 				exclude: /node_modules/,
 			},
 			{
