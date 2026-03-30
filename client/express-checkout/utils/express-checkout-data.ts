@@ -35,6 +35,7 @@ export interface WCPayExpressCheckoutParams {
 	};
 
 	has_subscription?: boolean;
+	is_manual_capture?: boolean;
 
 	/**
 	 * Indicates whether the page has a Cart or Checkout Block on it.

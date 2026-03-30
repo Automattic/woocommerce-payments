@@ -1,63 +1,38 @@
 /**
- * External dependencies
- */
-import React, { act } from 'react';
-import { Elements, ExpressCheckoutElement } from '@stripe/react-stripe-js';
-
-/**
  * Internal dependencies
  */
-import { checkPaymentMethodIsAvailable } from '../checkPaymentMethodIsAvailable';
+import {
+	checkPaymentMethodIsAvailable,
+	_resetForTesting,
+} from '../checkPaymentMethodIsAvailable';
 
-jest.mock( '@stripe/react-stripe-js', () => ( {
-	Elements: jest.fn().mockReturnValue( null ),
-	ExpressCheckoutElement: jest.fn().mockReturnValue( null ),
+// Mock the utils index module.
+jest.mock( '..', () => ( {
+	getExpressCheckoutData: jest.fn( ( key ) => {
+		if ( key === 'checkout' ) {
+			return { currency_decimals: 2 };
+		}
+		if ( key === 'enabled_methods' ) {
+			return [ 'payment_request', 'amazon_pay' ];
+		}
+		return null;
+	} ),
+} ) );
+
+jest.mock( '../../transformers/wc-to-stripe', () => ( {
+	transformPrice: jest.fn( ( price ) => price ),
+} ) );
+
+jest.mock( '@wordpress/hooks', () => ( {
+	applyFilters: jest.fn( ( _, value ) => value ),
 } ) );
 
 describe( 'checkPaymentMethodIsAvailable', () => {
 	let mockApi;
-	let onReadySpy;
-
-	beforeAll( () => {
-		jest.spyOn( console, 'error' ).mockImplementation( () => null );
-		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
-	} );
-
-	beforeEach( () => {
-		jest.useFakeTimers();
-		mockApi = {
-			loadStripeForExpressCheckout: jest.fn().mockResolvedValue( {} ),
-		};
-		onReadySpy = jest.fn();
-
-		Elements.mockImplementation( ( { children } ) => (
-			<div data-testid="stripe-elements">{ children }</div>
-		) );
-		ExpressCheckoutElement.mockImplementation( ( { onReady, options } ) => {
-			// simulating a brief delay
-			React.useEffect( () => {
-				setTimeout( () => {
-					const paymentMethods = options?.paymentMethods || {};
-					const availablePaymentMethods = {};
-
-					// Set availability based on 'always' configuration
-					Object.keys( paymentMethods ).forEach( ( method ) => {
-						availablePaymentMethods[ method ] =
-							paymentMethods[ method ] === 'always';
-					} );
-
-					onReadySpy();
-					onReady( { availablePaymentMethods } );
-				}, 10 );
-			}, [ onReady, options ] );
-
-			return <div data-testid="express-checkout-element" />;
-		} );
-	} );
-
-	afterEach( () => {
-		jest.useRealTimers();
-	} );
+	let mockEceButton;
+	let mockElements;
+	let mockStripe;
+	let eventHandlers;
 
 	const createCart = ( totalPrice, currencyCode ) => ( {
 		cartTotals: {
@@ -67,175 +42,181 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		},
 	} );
 
-	it( 'should return the same result for subsequent calls with identical cart contents', async () => {
-		// the two cart objects are two different objects, but they have the same contents.
-		let result1Promise;
-		act( () => {
-			result1Promise = checkPaymentMethodIsAvailable(
-				'applePay',
-				createCart( '100.00', 'USD' ),
-				mockApi
-			);
-		} );
+	beforeEach( () => {
+		_resetForTesting();
+		eventHandlers = {};
 
-		// advancing the timers to trigger the `setTimeout`.
-		act( () => {
-			jest.runAllTimers();
-		} );
+		mockEceButton = {
+			on: jest.fn( ( event, handler ) => {
+				eventHandlers[ event ] = handler;
+			} ),
+			mount: jest.fn( () => {
+				// Trigger the ready event asynchronously after mount.
+				Promise.resolve().then( () => {
+					if ( eventHandlers.ready ) {
+						eventHandlers.ready( {
+							availablePaymentMethods: {
+								applePay: true,
+								googlePay: false,
+								amazonPay: true,
+							},
+						} );
+					}
+				} );
+			} ),
+			unmount: jest.fn(),
+		};
 
-		let result1;
-		await act( async () => {
-			result1 = await result1Promise;
-		} );
+		mockElements = {
+			create: jest.fn( () => mockEceButton ),
+		};
 
-		const result2Promise = checkPaymentMethodIsAvailable(
+		mockStripe = {
+			elements: jest.fn( () => mockElements ),
+		};
+
+		mockApi = {
+			loadStripeForExpressCheckout: jest
+				.fn()
+				.mockResolvedValue( mockStripe ),
+		};
+	} );
+
+	it( 'returns true for available method', async () => {
+		const result = await checkPaymentMethodIsAvailable(
 			'applePay',
-			createCart( '100.00', 'USD' ),
+			createCart( '1000', 'USD' ),
 			mockApi
 		);
 
-		// advancing the timers again.
-		jest.runAllTimers();
-		const result2 = await result2Promise;
-
-		expect( result1 ).toBe( true );
-		expect( result2 ).toBe( true );
-
-		// onReady should only be called once due to memoization
-		expect( onReadySpy ).toHaveBeenCalledTimes( 1 );
+		expect( result ).toBe( true );
 	} );
 
-	it( 'should handle different cart contents correctly', async () => {
-		// Clear the spy to start fresh for this test
-		onReadySpy.mockClear();
+	it( 'returns false for unavailable method', async () => {
+		const result = await checkPaymentMethodIsAvailable(
+			'googlePay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
 
-		// the two cart objects are two different objects with different contents
-		let result1Promise;
-		act( () => {
-			result1Promise = checkPaymentMethodIsAvailable(
-				'applePay',
-				createCart( '150.00', 'USD' ),
-				mockApi
-			);
-		} );
-		act( () => {
-			jest.runAllTimers();
-		} );
-		let result1;
-		await act( async () => {
-			result1 = await result1Promise;
-		} );
-
-		let result2Promise;
-		act( () => {
-			result2Promise = checkPaymentMethodIsAvailable(
-				'applePay',
-				createCart( '250.00', 'USD' ),
-				mockApi
-			);
-		} );
-		act( () => {
-			jest.runAllTimers();
-		} );
-		let result2;
-		await act( async () => {
-			result2 = await result2Promise;
-		} );
-
-		expect( result1 ).toBe( true );
-		expect( result2 ).toBe( true );
-
-		// onReady should be called twice for different cart contents (different cache keys)
-		expect( onReadySpy ).toHaveBeenCalledTimes( 2 );
+		expect( result ).toBe( false );
 	} );
 
-	it( 'should return results for different payment methods', async () => {
-		// Clear the spy to start fresh for this test
-		onReadySpy.mockClear();
+	it( 'returns false immediately when currency code is empty', async () => {
+		const result = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '1000', '' ),
+			mockApi
+		);
 
-		const cart = createCart( '80.00', 'EUR' );
-
-		let applePayPromise;
-		act( () => {
-			applePayPromise = checkPaymentMethodIsAvailable(
-				'applePay',
-				cart,
-				mockApi
-			);
-		} );
-		act( () => {
-			jest.runAllTimers();
-		} );
-		let applePayResult;
-		await act( async () => {
-			applePayResult = await applePayPromise;
-		} );
-
-		let googlePayPromise;
-		act( () => {
-			googlePayPromise = checkPaymentMethodIsAvailable(
-				'googlePay',
-				cart,
-				mockApi
-			);
-		} );
-		act( () => {
-			jest.runAllTimers();
-		} );
-		let googlePayResult;
-		await act( async () => {
-			googlePayResult = await googlePayPromise;
-		} );
-
-		expect( applePayResult ).toBe( true );
-		expect( googlePayResult ).toBe( true );
-
-		// onReady should be called twice for different payment methods (separate caches)
-		expect( onReadySpy ).toHaveBeenCalledTimes( 2 );
+		expect( result ).toBe( false );
+		// Should not attempt to load Stripe at all.
+		expect( mockApi.loadStripeForExpressCheckout ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should return false immediately when currency code is empty', async () => {
-		onReadySpy.mockClear();
-		ExpressCheckoutElement.mockClear();
+	it( 'returns false when stripe has error', async () => {
+		mockApi.loadStripeForExpressCheckout.mockResolvedValue( {
+			error: 'some error',
+		} );
 
 		const result = await checkPaymentMethodIsAvailable(
 			'applePay',
-			createCart( '100.00', '' ),
+			createCart( '1000', 'USD' ),
 			mockApi
 		);
 
 		expect( result ).toBe( false );
-		expect( ExpressCheckoutElement ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should handle cases where payment method is not available', async () => {
-		ExpressCheckoutElement.mockImplementation( ( { onReady } ) => {
-			React.useEffect( () => {
-				setTimeout( () => {
-					// returning no methods
-					onReady( {} );
-				}, 10 );
-			}, [ onReady ] );
+	it( 'returns false when stripe loading throws', async () => {
+		mockApi.loadStripeForExpressCheckout.mockRejectedValue(
+			new Error( 'load failed' )
+		);
 
-			return <div data-testid="express-checkout-element" />;
-		} );
-
-		let resultPromise;
-		act( () => {
-			resultPromise = checkPaymentMethodIsAvailable(
-				'applePay',
-				createCart( '300.00', 'AUD' ),
-				mockApi
-			);
-		} );
-		act( () => {
-			jest.runAllTimers();
-		} );
-		let result;
-		await act( async () => {
-			result = await resultPromise;
-		} );
+		const result = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
 
 		expect( result ).toBe( false );
+	} );
+
+	it( 'returns false on loaderror event', async () => {
+		mockEceButton.mount.mockImplementation( () => {
+			Promise.resolve().then( () => {
+				if ( eventHandlers.loaderror ) {
+					eventHandlers.loaderror();
+				}
+			} );
+		} );
+
+		const result = await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
+
+		expect( result ).toBe( false );
+	} );
+
+	it( 'different methods with same cart share one check', async () => {
+		await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
+		await checkPaymentMethodIsAvailable(
+			'googlePay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
+
+		// Only one stripe.elements() call since both share the same check.
+		expect( mockStripe.elements ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'different cart totals trigger separate checks', async () => {
+		await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
+		await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '2000', 'EUR' ),
+			mockApi
+		);
+
+		expect( mockStripe.elements ).toHaveBeenCalledTimes( 2 );
+	} );
+
+	it( 'loads stripe only once across multiple calls', async () => {
+		await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
+		await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '2000', 'EUR' ),
+			mockApi
+		);
+
+		expect( mockApi.loadStripeForExpressCheckout ).toHaveBeenCalledTimes(
+			1
+		);
+	} );
+
+	it( 'uses amount of at least 1', async () => {
+		await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '0', 'USD' ),
+			mockApi
+		);
+
+		expect( mockStripe.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( { amount: 1 } )
+		);
 	} );
 } );
