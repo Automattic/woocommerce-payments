@@ -78,21 +78,23 @@ test.describe( 'Payment Methods', () => {
 					await isUIUnblocked( shopperPage );
 				}
 
-				// Verify that we get the expected error message.
-				await expect( shopperPage.getByRole( 'alert' ) ).toHaveText(
-					errorText
-				);
-
-				// Declined incorrect card also puts the errorText under the card number field.
+				// For declined-incorrect, Stripe validates client-side and shows
+				// the error only in the iframe - the form is never submitted to
+				// WooCommerce so no page-level alert is shown.
 				if ( 'declined-incorrect' === cardType ) {
 					await expect(
 						shopperPage
 							.frameLocator(
-								'iframe[name^="__privateStripeFrame"]'
+								'iframe[title="Secure payment input frame"]'
 							)
-							.first()
 							.getByRole( 'alert' )
 					).toContainText( errorText );
+				} else {
+					// For all other decline types, the error comes from the
+					// server and displays as a WooCommerce notice on the page.
+					await expect( shopperPage.getByRole( 'alert' ) ).toHaveText(
+						errorText
+					);
 				}
 
 				// Verify that the card is not added to the list of payment methods.
