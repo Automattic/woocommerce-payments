@@ -43,6 +43,64 @@ is_local_git_repo() {
 	git -C "$repo" rev-parse --is-inside-work-tree > /dev/null 2>&1
 }
 
+has_server_code() {
+	local repo=$1
+
+	[[ -d "$repo/server/wp-content/rest-api-plugins" ]]
+}
+
+sync_server_code_from_local_repo() {
+	local source_repo=$1
+	local destination_repo=$2
+
+	for dir in server missioncontrol; do
+		if [[ -d "$source_repo/$dir" ]]; then
+			info "Syncing $dir/ from source repo..."
+			rsync -a --delete "$source_repo/$dir/" "$destination_repo/$dir/"
+			success "Synced $dir/"
+		fi
+	done
+}
+
+pull_server_code_into_repo() {
+	local repo=$1
+	local pull_output=""
+
+	info "Pulling sandbox server code into E2E clone..."
+
+	set +e
+	pull_output=$(cd "$repo" && npm run pull -- -s 2>&1)
+	local exit_code=$?
+	set -e
+
+	if [[ $exit_code -eq 0 ]] && has_server_code "$repo"; then
+		success "Pulled sandbox server code into E2E clone"
+		return 0
+	fi
+
+	fail "Failed to pull sandbox server code into E2E clone"
+	echo "$pull_output"
+	info "This step requires sandbox SSH access (default host: wpcomsandbox) and rsync."
+	info "If you already have a local transact-platform-server checkout, you can also run 'npm run pull -- -s' there first."
+	return 1
+}
+
+ensure_server_code_in_clone() {
+	local source_repo=$1
+	local destination_repo=$2
+
+	if [[ -d "$source_repo" ]] && has_server_code "$source_repo"; then
+		sync_server_code_from_local_repo "$source_repo" "$destination_repo"
+	fi
+
+	if has_server_code "$destination_repo"; then
+		success "Server clone has sandbox-backed code"
+		return 0
+	fi
+
+	pull_server_code_into_repo "$destination_repo"
+}
+
 check_remote_repo_access() {
 	local repo=$1
 	local branch=$2
@@ -246,17 +304,17 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false && -z "$CI" ]]; then
 				info "Path: $TRANSACT_PLATFORM_SERVER_REPO"
 				info "Use a local checkout or a reachable Git URL."
 				PREFLIGHT_OK=false
-			# Check for the gitignored server/ code that must be populated via 'npm run pull'
-			elif [[ -d "$TRANSACT_PLATFORM_SERVER_REPO/server/wp-content/rest-api-plugins" ]]; then
+			elif has_server_code "$TRANSACT_PLATFORM_SERVER_REPO"; then
 				success "Transact server repo has server code"
 			else
-				fail "Transact server repo is missing server/ code"
-				info "Run 'npm run pull' in your transact-platform-server repo first."
-				PREFLIGHT_OK=false
+				warn "Transact server repo is missing sandbox-backed server code"
+				info "Setup will try a one-shot 'npm run pull -- -s' in the E2E clone."
 			fi
 		elif is_remote_git_repo "$TRANSACT_PLATFORM_SERVER_REPO"; then
 			if ! check_remote_repo_access "$TRANSACT_PLATFORM_SERVER_REPO" "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "Transact server repo"; then
 				PREFLIGHT_OK=false
+			else
+				info "Setup will pull sandbox-backed server code into the E2E clone after cloning."
 			fi
 		else
 			fail "TRANSACT_PLATFORM_SERVER_REPO does not exist locally"
@@ -349,22 +407,11 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 		rm -rf "$SERVER_PATH"
 		clone_repo "$TRANSACT_PLATFORM_SERVER_REPO" "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "$SERVER_PATH" "Server"
-
-		# The server/ and missioncontrol/ directories are gitignored in the
-		# transact-platform-server repo — they're populated via 'npm run pull'.
-		# If the source repo is a local path with those dirs, sync them over.
-		if [[ -d "$TRANSACT_PLATFORM_SERVER_REPO" ]]; then
-			for dir in server missioncontrol; do
-				if [[ -d "$TRANSACT_PLATFORM_SERVER_REPO/$dir" ]]; then
-					info "Syncing $dir/ from source repo..."
-					rsync -a --delete "$TRANSACT_PLATFORM_SERVER_REPO/$dir/" "$SERVER_PATH/$dir/"
-					success "Synced $dir/"
-				fi
-			done
-		fi
 	else
 		success "Using cached server at ${SERVER_PATH}"
 	fi
+
+	ensure_server_code_in_clone "$TRANSACT_PLATFORM_SERVER_REPO" "$SERVER_PATH"
 
 	cd "$SERVER_PATH"
 

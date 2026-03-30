@@ -62,9 +62,11 @@ By default, the local E2E environment is configured to use the Transact Platform
 
 ```bash
 # Transact Platform Server Repo
-# Prefer a local checkout when available. Remote GitHub URLs require working
-# SSH or HTTPS auth.
-TRANSACT_PLATFORM_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
+# Prefer a local checkout when you need uncommitted server changes mirrored into
+# E2E. If the sandbox-backed server/ and missioncontrol/ directories are
+# missing, setup will try `npm run pull -- -s` in the E2E clone, which requires
+# sandbox SSH access and rsync.
+TRANSACT_PLATFORM_SERVER_REPO='/path/to/transact-platform-server or git@github.com:org/server-repo.git'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
 # These values can be obtained from the Stripe Dashboard: https://dashboard.stripe.com/test/apikeys

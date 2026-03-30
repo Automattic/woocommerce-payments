@@ -417,7 +417,7 @@ if [[ "$MODE" == "local" && -n "$SERVER_PATH" ]]; then
         fi
     else
         warn "Server code (server/, missioncontrol/) not found in $SERVER_PATH"
-        warn "Run 'npm run pull' in the transact-platform-server repo first."
+        warn "E2E setup will try a one-shot 'npm run pull -- -s' in its clone if sandbox access is configured."
     fi
 fi
 
