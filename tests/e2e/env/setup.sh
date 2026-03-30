@@ -25,6 +25,93 @@ section() {
 	echo ""
 }
 
+is_remote_git_repo() {
+	local repo=$1
+
+	[[ "$repo" =~ ^git@ ]] || [[ "$repo" =~ ^ssh:// ]] || [[ "$repo" =~ ^https?:// ]]
+}
+
+is_github_ssh_repo() {
+	local repo=$1
+
+	[[ "$repo" =~ ^git@github\.com: ]] || [[ "$repo" =~ ^ssh://git@github\.com/ ]]
+}
+
+is_local_git_repo() {
+	local repo=$1
+
+	git -C "$repo" rev-parse --is-inside-work-tree > /dev/null 2>&1
+}
+
+check_remote_repo_access() {
+	local repo=$1
+	local branch=$2
+	local label=$3
+
+	if git ls-remote --exit-code --heads "$repo" "$branch" > /dev/null 2>&1; then
+		success "$label is reachable"
+		return 0
+	fi
+
+	fail "$label is not reachable"
+	info "Repo: $repo"
+	info "Branch: $branch"
+
+	if is_github_ssh_repo "$repo"; then
+		info "This URL uses GitHub SSH. Ensure your SSH key is loaded, or switch local.env to a local path or HTTPS URL."
+	else
+		info "Confirm the repo URL, branch name, and that your Git credentials allow access."
+	fi
+
+	return 1
+}
+
+clone_repo() {
+	local repo=$1
+	local branch=$2
+	local destination=$3
+	local label=$4
+
+	if git clone --depth=1 --branch "$branch" "$repo" "$destination"; then
+		success "$label cloned"
+		return 0
+	fi
+
+	fail "Failed to clone $label"
+	info "Repo: $repo"
+	info "Branch: $branch"
+
+	if is_github_ssh_repo "$repo"; then
+		info "This URL uses GitHub SSH. Ensure your SSH key is loaded, or switch local.env to a local path or HTTPS URL."
+	fi
+
+	exit 1
+}
+
+link_server_account() {
+	local blog_id=$1
+	local stripe_account_id=$2
+	local link_output=""
+
+	set +e
+	link_output=$("$SERVER_PATH"/local/bin/link-account.sh "$blog_id" "$stripe_account_id" test 1 1 2>&1)
+	local exit_code=$?
+	set -e
+
+	if [[ $exit_code -eq 0 ]]; then
+		echo "$link_output"
+		return 0
+	fi
+
+	if [[ "$link_output" == *"the Stripe account ID is already linked to the blog"* ]]; then
+		warn "Stripe account is already linked to the blog; skipping relink"
+		return 0
+	fi
+
+	echo "$link_output"
+	return $exit_code
+}
+
 # ─── Preflight checks ────────────────────────────────────────────────────────
 # Catch common problems before spending minutes on Docker setup.
 
@@ -127,6 +214,25 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
+# Dev tools repo
+if [[ -z "$WCP_DEV_TOOLS_REPO" ]]; then
+	fail "WCP_DEV_TOOLS_REPO is not set in local.env"
+	PREFLIGHT_OK=false
+elif [[ -d "$WCP_DEV_TOOLS_REPO" ]]; then
+	if is_local_git_repo "$WCP_DEV_TOOLS_REPO"; then
+		success "Dev tools repo exists"
+	else
+		fail "Dev tools repo path is not a Git checkout"
+		info "Path: $WCP_DEV_TOOLS_REPO"
+		info "Use a local checkout or a reachable Git URL."
+		PREFLIGHT_OK=false
+	fi
+elif check_remote_repo_access "$WCP_DEV_TOOLS_REPO" "${WCP_DEV_TOOLS_BRANCH-trunk}" "Dev tools repo"; then
+	:
+else
+	PREFLIGHT_OK=false
+fi
+
 # Transact Platform Server (local mode only)
 if [[ "$E2E_USE_LOCAL_SERVER" != false && -z "$CI" ]]; then
 	if [[ -z "$TRANSACT_PLATFORM_SERVER_REPO" ]]; then
@@ -135,16 +241,27 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false && -z "$CI" ]]; then
 	else
 		# Resolve the repo path (could be a local path or git URL)
 		if [[ -d "$TRANSACT_PLATFORM_SERVER_REPO" ]]; then
+			if ! is_local_git_repo "$TRANSACT_PLATFORM_SERVER_REPO"; then
+				fail "Transact server repo path is not a Git checkout"
+				info "Path: $TRANSACT_PLATFORM_SERVER_REPO"
+				info "Use a local checkout or a reachable Git URL."
+				PREFLIGHT_OK=false
 			# Check for the gitignored server/ code that must be populated via 'npm run pull'
-			if [[ -d "$TRANSACT_PLATFORM_SERVER_REPO/server/wp-content/rest-api-plugins" ]]; then
+			elif [[ -d "$TRANSACT_PLATFORM_SERVER_REPO/server/wp-content/rest-api-plugins" ]]; then
 				success "Transact server repo has server code"
 			else
 				fail "Transact server repo is missing server/ code"
 				info "Run 'npm run pull' in your transact-platform-server repo first."
 				PREFLIGHT_OK=false
 			fi
+		elif is_remote_git_repo "$TRANSACT_PLATFORM_SERVER_REPO"; then
+			if ! check_remote_repo_access "$TRANSACT_PLATFORM_SERVER_REPO" "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "Transact server repo"; then
+				PREFLIGHT_OK=false
+			fi
 		else
-			success "Transact server repo: $TRANSACT_PLATFORM_SERVER_REPO (remote)"
+			fail "TRANSACT_PLATFORM_SERVER_REPO does not exist locally"
+			info "Use a local transact-platform-server checkout or a reachable Git URL."
+			PREFLIGHT_OK=false
 		fi
 	fi
 fi
@@ -231,8 +348,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 		fi
 
 		rm -rf "$SERVER_PATH"
-		git clone --depth=1 --branch "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "$TRANSACT_PLATFORM_SERVER_REPO" "$SERVER_PATH"
-		success "Server cloned"
+		clone_repo "$TRANSACT_PLATFORM_SERVER_REPO" "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "$SERVER_PATH" "Server"
 
 		# The server/ and missioncontrol/ directories are gitignored in the
 		# transact-platform-server repo — they're populated via 'npm run pull'.
@@ -283,8 +399,8 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	success "Server setup complete"
 
 	info "Linking Stripe account..."
-	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
-	success "Stripe account linked"
+	link_server_account "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID"
+	success "Stripe account is ready"
 
 	info "Configuring account flags..."
 	"$SERVER_PATH"/local/bin/setup-account-metas.sh "$BLOG_ID"
@@ -311,8 +427,7 @@ if [[ ! -d "$DEV_TOOLS_PATH" ]]; then
 
 	info "Cloning dev tools..."
 	rm -rf "$DEV_TOOLS_PATH"
-	git clone --depth=1 --branch "${WCP_DEV_TOOLS_BRANCH-trunk}" "$WCP_DEV_TOOLS_REPO" "$DEV_TOOLS_PATH"
-	success "Dev tools cloned"
+	clone_repo "$WCP_DEV_TOOLS_REPO" "${WCP_DEV_TOOLS_BRANCH-trunk}" "$DEV_TOOLS_PATH" "Dev tools"
 else
 	success "Dev tools already present"
 fi
@@ -466,8 +581,11 @@ success "WooCommerce configured (v${INSTALLED_WC_VERSION})"
 section "User accounts"
 
 info "Setting up test accounts..."
+cli wp user delete "$WC_CUSTOMER_USERNAME" --yes 2>/dev/null || true
 cli wp user delete "$WC_CUSTOMER_EMAIL" --yes 2>/dev/null || true
 cli wp user delete "$WC_GUEST_EMAIL" --yes 2>/dev/null || true
+cli wp user delete "$WP_EDITOR" --yes 2>/dev/null || true
+cli wp user delete "$WP_EDITOR_EMAIL" --yes 2>/dev/null || true
 cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
 cli wp user create "$WP_EDITOR" "$WP_EDITOR_EMAIL" --role=editor --user_pass="$WP_EDITOR_PASSWORD"
 

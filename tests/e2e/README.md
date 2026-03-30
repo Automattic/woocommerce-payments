@@ -44,6 +44,8 @@ If the generator cannot detect everything you need, copy `tests/e2e/config/.env.
 
 ```bash
 # WooPayments Dev Tools Repo
+# Prefer a local checkout when available. Remote GitHub URLs require working
+# SSH or HTTPS auth.
 WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo-ci.git or git@github.com:org/dev-tools-repo-ci.git'
 
 # Optional to see additional verbose output. Default false.
@@ -60,6 +62,8 @@ By default, the local E2E environment is configured to use the Transact Platform
 
 ```bash
 # Transact Platform Server Repo
+# Prefer a local checkout when available. Remote GitHub URLs require working
+# SSH or HTTPS auth.
 TRANSACT_PLATFORM_SERVER_REPO='https://github.com/server-repo.git or git@github.com:org/server-repo.git'
 
 # Stripe account data. Need to support level 3 data to run tests successfully.
