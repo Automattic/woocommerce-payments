@@ -8,20 +8,19 @@ import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import WCPayAPI from '../checkout/api';
-import '../checkout/express-checkout-buttons.scss';
+import WCPayAPI from '../../checkout/api';
+import '../../checkout/express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
-import './compatibility/wc-order-attribution';
+import '../compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
 import './compatibility/wc-product-bundles';
-import './compatibility/wc-subscriptions';
+import '../compatibility/wc-subscriptions';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
-	getStripeElementsMode,
 	displayLoginConfirmation,
-} from './utils';
+} from '../utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -33,16 +32,16 @@ import {
 	shippingRateChangeHandler,
 	setCartApiHandler,
 	getCartApiHandler,
-} from './event-handlers';
-import ExpressCheckoutOrderApi from './order-api';
-import ExpressCheckoutCartApi from './cart-api';
+} from '../event-handlers';
+import ExpressCheckoutOrderApi from '../order-api';
+import ExpressCheckoutCartApi from '../cart-api';
 import { getConfig } from 'wcpay/utils/checkout';
 import expressCheckoutButtonUi from './button-ui';
 import {
 	transformCartDataForDisplayItems,
 	transformCartDataForShippingRates,
 	transformPrice,
-} from './transformers/wc-to-stripe';
+} from '../transformers/wc-to-stripe';
 import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 
 let cachedCartData = null;
@@ -219,6 +218,10 @@ jQuery( ( $ ) => {
 			const useConfirmationToken =
 				getExpressCheckoutData( 'flags' )
 					?.isEceUsingConfirmationTokens ?? true;
+			const isManualCaptureEnabled =
+				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
+			const hasSubscription =
+				getExpressCheckoutData( 'has_subscription' ) ?? false;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -231,12 +234,18 @@ jQuery( ( $ ) => {
 
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
-				mode: getStripeElementsMode(),
+				mode: 'payment',
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
 				...( useConfirmationToken
 					? { paymentMethodTypes }
 					: { paymentMethodCreation: 'manual' } ),
+				...( useConfirmationToken && isManualCaptureEnabled
+					? { captureMethod: 'manual' }
+					: {} ),
+				...( useConfirmationToken && hasSubscription
+					? { setupFutureUsage: 'off_session' }
+					: {} ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );
