@@ -425,21 +425,16 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
 		$method->setAccessible( true );
 
-		add_filter(
-			'wp_theme_json_data_default',
-			function ( $theme_json ) {
-				$data                                       = $theme_json->get_data();
-				$data['styles']['typography']['fontFamily'] = 'TestFont, sans-serif';
-				return $theme_json->update_with( $data );
-			}
-		);
+		$styles_context = [
+			'typography' => [
+				'fontFamily' => 'TestFont, sans-serif',
+			],
+		];
 
 		$ref_value = [ 'ref' => 'styles.typography.fontFamily' ];
-		$result    = $method->invoke( null, $ref_value, 'inherit' );
+		$result    = $method->invoke( null, $ref_value, 'inherit', $styles_context );
 
 		$this->assertSame( 'TestFont, sans-serif', $result );
-
-		remove_all_filters( 'wp_theme_json_data_default' );
 	}
 
 	public function test_compute_woopay_appearance_does_not_fatal_with_ref_objects() {

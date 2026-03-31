@@ -164,41 +164,42 @@ class WC_Payments_Styles_Cache {
 		// Extract colors. CSS custom property references are already resolved
 		// by the 'resolve-variables' transform. resolve_style_value() handles
 		// any remaining ref objects from theme.json.
-		$bg_color   = self::resolve_style_value( $styles['color']['background'] ?? '#ffffff', '#ffffff' );
-		$text_color = self::resolve_style_value( $styles['color']['text'] ?? '#000000', '#000000' );
+		$bg_color   = self::resolve_style_value( $styles['color']['background'] ?? '#ffffff', '#ffffff', $styles );
+		$text_color = self::resolve_style_value( $styles['color']['text'] ?? '#000000', '#000000', $styles );
 		$link_color = self::resolve_style_value(
 			$styles['elements']['link']['color']['text']
 				?? $styles['elements']['a']['color']['text']
 				?? $text_color,
-			$text_color
+			$text_color,
+			$styles
 		);
 
 		// Extract typography.
-		$font_family = self::resolve_style_value( $styles['typography']['fontFamily'] ?? 'inherit', 'inherit' );
-		$font_size   = self::resolve_style_value( $styles['typography']['fontSize'] ?? '16px', '16px' );
+		$font_family = self::resolve_style_value( $styles['typography']['fontFamily'] ?? 'inherit', 'inherit', $styles );
+		$font_size   = self::resolve_style_value( $styles['typography']['fontSize'] ?? '16px', '16px', $styles );
 
 		// Extract heading styles.
-		$heading_color       = self::resolve_style_value( $styles['elements']['heading']['color']['text'] ?? $text_color, $text_color );
-		$heading_font_family = self::resolve_style_value( $styles['elements']['heading']['typography']['fontFamily'] ?? $font_family, $font_family );
+		$heading_color       = self::resolve_style_value( $styles['elements']['heading']['color']['text'] ?? $text_color, $text_color, $styles );
+		$heading_font_family = self::resolve_style_value( $styles['elements']['heading']['typography']['fontFamily'] ?? $font_family, $font_family, $styles );
 
 		// Extract button styles.
-		$button_bg_color   = self::resolve_style_value( $styles['elements']['button']['color']['background'] ?? $bg_color, $bg_color );
-		$button_text_color = self::resolve_style_value( $styles['elements']['button']['color']['text'] ?? $text_color, $text_color );
-		$button_font_size  = self::resolve_style_value( $styles['elements']['button']['typography']['fontSize'] ?? $font_size, $font_size );
+		$button_bg_color   = self::resolve_style_value( $styles['elements']['button']['color']['background'] ?? $bg_color, $bg_color, $styles );
+		$button_text_color = self::resolve_style_value( $styles['elements']['button']['color']['text'] ?? $text_color, $text_color, $styles );
+		$button_font_size  = self::resolve_style_value( $styles['elements']['button']['typography']['fontSize'] ?? $font_size, $font_size, $styles );
 
 		// Extract input styles if available.
-		$input_border_color  = self::resolve_style_value( $styles['elements']['input']['border']['color'] ?? $text_color, $text_color );
-		$input_border_radius = self::resolve_style_value( $styles['elements']['input']['border']['radius'] ?? '0px', '0px' );
+		$input_border_color  = self::resolve_style_value( $styles['elements']['input']['border']['color'] ?? $text_color, $text_color, $styles );
+		$input_border_radius = self::resolve_style_value( $styles['elements']['input']['border']['radius'] ?? '0px', '0px', $styles );
 
 		// Extract button font family.
-		$button_font_family = self::resolve_style_value( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family, $font_family );
+		$button_font_family = self::resolve_style_value( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family, $font_family, $styles );
 
 		// Extract header/footer colors. First try the actual header template
 		// part block attributes, then fall back to template part default styles.
 		$header_colors     = self::get_template_part_colors( 'header' );
 		$footer_colors     = self::get_template_part_colors( 'footer' );
-		$header_bg_color   = $header_colors['background'] ?? self::resolve_style_value( $tp_styles['color']['background'] ?? $bg_color, $bg_color );
-		$header_text_color = $header_colors['text'] ?? self::resolve_style_value( $tp_styles['color']['text'] ?? $text_color, $text_color );
+		$header_bg_color   = $header_colors['background'] ?? self::resolve_style_value( $tp_styles['color']['background'] ?? $bg_color, $bg_color, $tp_styles );
+		$header_text_color = $header_colors['text'] ?? self::resolve_style_value( $tp_styles['color']['text'] ?? $text_color, $text_color, $tp_styles );
 
 		// Determine theme (light vs dark) from background color.
 		$theme = self::is_color_light( $bg_color ) ? 'stripe' : 'night';
@@ -251,7 +252,7 @@ class WC_Payments_Styles_Cache {
 					'color'           => $footer_colors['text'] ?? $text_color,
 				],
 				'.Footer-link'    => [
-					'color' => self::resolve_style_value( $tp_styles['elements']['link']['color']['text'] ?? $link_color, $link_color ),
+					'color' => self::resolve_style_value( $tp_styles['elements']['link']['color']['text'] ?? $link_color, $link_color, $tp_styles ),
 				],
 				'.Button'         => [
 					'color'           => $button_text_color,
@@ -505,22 +506,24 @@ class WC_Payments_Styles_Cache {
 	/**
 	 * Ensures a theme style value is a string. Handles ref objects
 	 * (e.g. {"ref": "styles.typography.fontFamily"}) by resolving them
-	 * via wp_get_global_styles(). Returns the default for any non-string
-	 * value that cannot be resolved.
+	 * against the provided styles context array. Returns the default for
+	 * any non-string value that cannot be resolved.
 	 *
-	 * @param mixed  $value   The style value — string, ref object array, or other.
-	 * @param string $default Fallback value when resolution fails.
+	 * @param mixed  $value          The style value — string, ref object array, or other.
+	 * @param string $default        Fallback value when resolution fails.
+	 * @param array  $styles_context The already-resolved styles array to look up refs in.
 	 * @return string The resolved string value or the default.
 	 */
-	private static function resolve_style_value( $value, string $default ): string {
+	private static function resolve_style_value( $value, string $default, array $styles_context = [] ): string {
 		// Handle ref objects: {"ref": "styles.typography.fontFamily"}.
 		if ( is_array( $value ) && isset( $value['ref'] ) ) {
 			$path = explode( '.', $value['ref'] );
-			// wp_get_global_styles() already scopes to the 'styles' subtree.
+			// Strip the leading 'styles' segment since $styles_context
+			// is already scoped to the styles subtree.
 			if ( ! empty( $path ) && 'styles' === $path[0] ) {
 				array_shift( $path );
 			}
-			$value = wp_get_global_styles( $path, [ 'transforms' => [ 'resolve-variables' ] ] );
+			$value = _wp_array_get( $styles_context, $path );
 		}
 
 		if ( ! is_string( $value ) ) {
