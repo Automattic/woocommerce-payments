@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Redact PII from GET request URL in API log context

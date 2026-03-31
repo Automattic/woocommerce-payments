@@ -2647,7 +2647,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			Logger::info(
 				sprintf( 'API REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
 				[
-					'request' => $request_args,
+					'request' => array_merge( $request_args, [ 'url' => $redacted_url ] ),
 					null !== $body ? [ 'body' => $redacted_params ] : [],
 				]
 			);
