@@ -441,4 +441,37 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 
 		remove_all_filters( 'wp_theme_json_data_default' );
 	}
+
+	public function test_compute_woopay_appearance_does_not_fatal_with_ref_objects() {
+		// Simulate a theme that returns ref objects for fontFamily.
+		add_filter(
+			'wp_theme_json_data_default',
+			function ( $theme_json ) {
+				$data                                       = $theme_json->get_data();
+				$data['styles']['typography']['fontFamily'] = [
+					'ref' => 'styles.typography.fontFamily',
+				];
+				$data['styles']['elements']['button']['typography']['fontFamily'] = [
+					'ref' => 'styles.typography.fontFamily',
+				];
+				return $theme_json->update_with( $data );
+			}
+		);
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			// This should NOT throw a TypeError.
+			$result = $method->invoke( null );
+
+			$this->assertIsArray( $result );
+			$this->assertArrayHasKey( 'variables', $result );
+			$this->assertArrayHasKey( 'rules', $result );
+			// fontFamily should be a string (resolved or fallback), never an array.
+			$this->assertIsString( $result['variables']['fontFamily'] );
+		} finally {
+			remove_all_filters( 'wp_theme_json_data_default' );
+		}
+	}
 }
