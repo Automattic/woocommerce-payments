@@ -396,4 +396,49 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			remove_filter( 'stylesheet', $stylesheet_filter );
 		}
 	}
+
+	public function test_resolve_style_value_returns_string_as_is() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( null, '#ffffff', '#000000' );
+		$this->assertEquals( '#ffffff', $result );
+	}
+
+	public function test_resolve_style_value_returns_default_for_non_string_array() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( null, [ 'unexpected' => 'array' ], '#000000' );
+		$this->assertEquals( '#000000', $result );
+	}
+
+	public function test_resolve_style_value_returns_default_for_non_string_non_array() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( null, 12345, 'fallback' );
+		$this->assertEquals( 'fallback', $result );
+	}
+
+	public function test_resolve_style_value_resolves_ref_object() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		add_filter(
+			'wp_theme_json_data_default',
+			function ( $theme_json ) {
+				$data                                       = $theme_json->get_data();
+				$data['styles']['typography']['fontFamily'] = 'TestFont, sans-serif';
+				return $theme_json->update_with( $data );
+			}
+		);
+
+		$ref_value = [ 'ref' => 'styles.typography.fontFamily' ];
+		$result    = $method->invoke( null, $ref_value, 'inherit' );
+
+		$this->assertIsString( $result );
+
+		remove_all_filters( 'wp_theme_json_data_default' );
+	}
 }

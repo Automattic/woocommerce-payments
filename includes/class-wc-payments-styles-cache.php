@@ -495,6 +495,30 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
+	 * Ensures a theme style value is a string. Handles ref objects
+	 * (e.g. {"ref": "styles.typography.fontFamily"}) by resolving them
+	 * via wp_get_global_styles(). Returns the default for any non-string
+	 * value that cannot be resolved.
+	 *
+	 * @param mixed  $value   The style value — string, ref object array, or other.
+	 * @param string $default Fallback value when resolution fails.
+	 * @return string The resolved string value or the default.
+	 */
+	private static function resolve_style_value( $value, string $default ): string {
+		// Handle ref objects: {"ref": "styles.typography.fontFamily"}.
+		if ( is_array( $value ) && isset( $value['ref'] ) ) {
+			$path  = explode( '.', $value['ref'] );
+			$value = wp_get_global_styles( $path, [ 'transforms' => [ 'resolve-variables' ] ] );
+		}
+
+		if ( ! is_string( $value ) ) {
+			return $default;
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Attempts to resolve a CSS var() reference to a concrete value using
 	 * the global styles presets. Returns the original string if unresolvable.
 	 *
