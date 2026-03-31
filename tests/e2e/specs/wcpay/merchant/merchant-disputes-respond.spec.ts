@@ -112,8 +112,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						.getByTestId( 'accept-dispute-button' )
 						.click();
 
-					// Wait for the network request to complete
-					await merchantPage.waitForLoadState( 'networkidle' );
+					// Wait for the accept request to complete.
+					await merchantPage.waitForLoadState( 'load' );
 				}
 			);
 
@@ -312,7 +312,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					// Poll for the final status, refreshing the page if needed
 					await expect( async () => {
 						await merchantPage.goto( paymentDetailsLink );
-						await merchantPage.waitForLoadState( 'networkidle' );
+						await merchantPage.waitForLoadState( 'load' );
 
 						// Check that we're no longer "Under Review"
 						await expect(
@@ -491,7 +491,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					// Poll for the final status, refreshing the page if needed
 					await expect( async () => {
 						await merchantPage.goto( paymentDetailsLink );
-						await merchantPage.waitForLoadState( 'networkidle' );
+						await merchantPage.waitForLoadState( 'load' );
 
 						// Check that we're no longer "Under Review"
 						await expect(
@@ -644,9 +644,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				} )
 			).toBeVisible( { timeout: 10000 } );
 
-			// Allow Stripe API to complete the write operation before we navigate away.
-			// Without this delay, fetching the dispute again may return stale data
-			// because Stripe does not guarantee immediate read-after-write consistency.
+			// Stripe does not guarantee immediate read-after-write consistency.
+			// Allow time for the write to propagate before navigating away.
 			await merchantPage.waitForTimeout( 3000 );
 		} );
 
@@ -660,7 +659,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				// dispute status checks in the winning/losing evidence tests.
 				await expect( async () => {
 					await merchantPage.goto( paymentDetailsLink );
-					await merchantPage.waitForLoadState( 'networkidle' );
+					await merchantPage.waitForLoadState( 'load' );
 
 					await merchantPage
 						.getByTestId( 'challenge-dispute-button' )

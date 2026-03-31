@@ -62,6 +62,11 @@ test.describe( 'Saved cards', { tag: '@critical' }, () => {
 					await emptyCart( shopperPage );
 				} );
 
+				// Reload after each test to prevent state leaking between tests.
+				test.afterEach( async () => {
+					await shopperPage.reload();
+				} );
+
 				test( 'should save the card', async ( {} ) => {
 					await setupProductCheckout( shopperPage, [
 						[ products[ 0 ], 1 ],
@@ -96,7 +101,8 @@ test.describe( 'Saved cards', { tag: '@critical' }, () => {
 					if ( cardType === '3ds' ) {
 						await confirmCardAuthentication( shopperPage );
 					}
-					await shopperPage.waitForLoadState( 'networkidle' );
+					// Wait for the order confirmation page to load.
+					await shopperPage.waitForLoadState( 'load' );
 					await expect(
 						shopperPage.getByText( 'Order received' ).first()
 					).toBeVisible();

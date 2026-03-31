@@ -131,9 +131,8 @@ test.describe( 'Payment Methods', () => {
 			await shopperPage
 				.getByRole( 'button', { name: 'Add payment method' } )
 				.click();
-			// Give the page a moment to handle the submit without selected gateway
-			await shopperPage.waitForTimeout( 300 );
-
+			// Verify no error alert appears after submitting without a selected gateway.
+			// Playwright's auto-retry on `not.toBeVisible()` handles the timing.
 			await expect( shopperPage.getByRole( 'alert' ) ).not.toBeVisible();
 		}
 	);

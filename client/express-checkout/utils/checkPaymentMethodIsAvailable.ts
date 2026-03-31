@@ -9,7 +9,7 @@ import type { Stripe, AvailablePaymentMethods } from '@stripe/stripe-js';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
-import { getExpressCheckoutData, getStripeElementsMode } from '.';
+import { getExpressCheckoutData } from '.';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 interface CartTotals {
@@ -77,6 +77,10 @@ function checkAvailablePaymentMethods(
 ): Promise< Partial< AvailablePaymentMethods > > {
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+	const isManualCaptureEnabled =
+		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
+	const hasSubscription =
+		getExpressCheckoutData( 'has_subscription' ) ?? false;
 
 	let container: HTMLDivElement | null = null;
 
@@ -95,6 +99,12 @@ function checkAvailablePaymentMethods(
 				...( useConfirmationToken
 					? { paymentMethodTypes: getPaymentMethodTypes() }
 					: { paymentMethodCreation: 'manual' } ),
+				...( useConfirmationToken && isManualCaptureEnabled
+					? { captureMethod: 'manual' }
+					: {} ),
+				...( useConfirmationToken && hasSubscription
+					? { setupFutureUsage: 'off_session' }
+					: {} ),
 			} );
 
 			const eceButton = elements.create( 'expressCheckout', {
@@ -206,13 +216,11 @@ export async function checkPaymentMethodIsAvailable(
 	}
 
 	const totalPrice = getEffectiveTotalPrice( cart );
-	const mode = getStripeElementsMode();
 
 	const availablePaymentMethods = await checkAllExpressMethodsAvailability(
 		api,
 		Number( totalPrice ),
-		cart.cartTotals.currency_code.toLowerCase(),
-		mode
+		cart.cartTotals.currency_code.toLowerCase()
 	);
 
 	return Boolean( availablePaymentMethods[ paymentMethod ] );
