@@ -533,7 +533,11 @@ class WC_Payments_Styles_Cache {
 	 * @param string $value The CSS value, possibly a var() reference.
 	 * @return string The resolved value or the original.
 	 */
-	private static function resolve_css_var( string $value ): string {
+	private static function resolve_css_var( $value ): string {
+		if ( ! is_string( $value ) ) {
+			return '';
+		}
+
 		if ( 0 !== strpos( $value, 'var(' ) ) {
 			return $value;
 		}
