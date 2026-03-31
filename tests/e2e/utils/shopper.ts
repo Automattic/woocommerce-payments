@@ -12,23 +12,6 @@ import { isUIUnblocked } from './helpers';
 const placeOrderButtonSelector =
 	'#place_order, button[name="woocommerce_change_payment"]';
 
-const submitPlaceOrderButton = async ( page: Page ) => {
-	await page
-		.locator( placeOrderButtonSelector )
-		.first()
-		.evaluate( ( button ) => {
-			const submitButton = button as HTMLButtonElement;
-			const form = submitButton.form ?? submitButton.closest( 'form' );
-
-			if ( form && typeof form.requestSubmit === 'function' ) {
-				form.requestSubmit( submitButton );
-				return;
-			}
-
-			submitButton.click();
-		} );
-};
-
 /**
  * Waits for WooCommerce to finish refreshing the checkout order review.
  *
@@ -158,77 +141,20 @@ export const fillBillingAddressWCB = async (
 		.fill( billingAddress.phone );
 };
 
-// Retry clicking Place Order until checkout responds with a navigation, notice,
-// or 3DS challenge instead of assuming only a successful order page is valid.
+// The Stripe element can swallow the first click, so keep retrying until
+// checkout shows the blocking overlay or reaches the order-received page.
 export const placeOrder = async ( page: Page ) => {
-	const maxAttempts = 10;
-	const initialUrl = page.url();
-	await focusPlaceOrderButton( page );
-	await isUIUnblocked( page );
-
-	for ( let attempt = 1; attempt <= maxAttempts; attempt++ ) {
-		const successNotice = page
-			.locator(
-				'.woocommerce-message:visible, .woocommerce-notice--success:visible'
-			)
-			.first();
-		const errorNotice = page
-			.locator(
-				'.woocommerce-error:visible, .woocommerce-NoticeGroup-checkout:visible'
-			)
-			.first();
-		const threeDSFrame = page.locator(
-			'body > div > iframe[name^="__privateStripeFrame"]'
-		);
-		const currentUrl = page.url();
+	let orderPlaced = false;
+	while ( ! orderPlaced ) {
+		await page.locator( placeOrderButtonSelector ).first().click();
 
 		if (
-			currentUrl.includes( '/checkout/order-received/' ) ||
-			currentUrl !== initialUrl ||
-			( await successNotice.isVisible().catch( () => false ) ) ||
-			( await errorNotice.isVisible().catch( () => false ) ) ||
-			( await threeDSFrame.isVisible().catch( () => false ) )
+			( await page.$( '.blockUI' ) ) ||
+			page.url().includes( '/checkout/order-received/' )
 		) {
-			return;
+			orderPlaced = true;
 		}
-
-		const submitUrl = currentUrl;
-		await submitPlaceOrderButton( page );
-
-		try {
-			await Promise.race( [
-				page
-					.locator( '.blockUI' )
-					.waitFor( { state: 'attached', timeout: 3000 } ),
-				page.waitForURL( /\/checkout\/order-received\//, {
-					timeout: 10000,
-				} ),
-				page.waitForURL( ( url ) => url.toString() !== submitUrl, {
-					timeout: 10000,
-				} ),
-				successNotice.waitFor( { state: 'visible', timeout: 10000 } ),
-				errorNotice.waitFor( { state: 'visible', timeout: 10000 } ),
-				threeDSFrame.waitFor( { state: 'visible', timeout: 10000 } ),
-			] );
-			return;
-		} catch {
-			// The checkout submit did not start yet, so retry.
-		}
-
-		if ( page.url().includes( '/checkout/order-received/' ) ) {
-			return;
-		}
-
-		await focusPlaceOrderButton( page );
-		await isUIUnblocked( page );
-
-		// Brief pause between retries to avoid hammering the button.
-		await page.waitForTimeout( 500 );
 	}
-
-	throw new Error(
-		`placeOrder: form not submitted after ${ maxAttempts } attempts`
-	);
 };
 
 export const placeOrderWCB = async (
