@@ -437,7 +437,7 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$ref_value = [ 'ref' => 'styles.typography.fontFamily' ];
 		$result    = $method->invoke( null, $ref_value, 'inherit' );
 
-		$this->assertIsString( $result );
+		$this->assertSame( 'TestFont, sans-serif', $result );
 
 		remove_all_filters( 'wp_theme_json_data_default' );
 	}

@@ -515,7 +515,11 @@ class WC_Payments_Styles_Cache {
 	private static function resolve_style_value( $value, string $default ): string {
 		// Handle ref objects: {"ref": "styles.typography.fontFamily"}.
 		if ( is_array( $value ) && isset( $value['ref'] ) ) {
-			$path  = explode( '.', $value['ref'] );
+			$path = explode( '.', $value['ref'] );
+			// wp_get_global_styles() already scopes to the 'styles' subtree.
+			if ( ! empty( $path ) && 'styles' === $path[0] ) {
+				array_shift( $path );
+			}
 			$value = wp_get_global_styles( $path, [ 'transforms' => [ 'resolve-variables' ] ] );
 		}
 
