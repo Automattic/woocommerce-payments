@@ -40,7 +40,6 @@ const columns = [
 		key: 'status',
 		label: __( 'Status', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
-		required: true,
 		cellClassName: 'is-center-aligned',
 	},
 	{
@@ -55,7 +54,6 @@ const columns = [
 		key: 'fee_amount',
 		label: __( 'Fixed fee', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Fixed fee', 'woocommerce-payments' ),
-		required: true,
 		isLeftAligned: false,
 		isNumeric: true,
 	},
@@ -63,7 +61,6 @@ const columns = [
 		key: 'withhold_rate',
 		label: __( 'Withhold rate', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Withhold rate', 'woocommerce-payments' ),
-		required: true,
 		isLeftAligned: false,
 		isNumeric: true,
 	},
@@ -71,7 +68,6 @@ const columns = [
 		key: 'first_paydown_at',
 		label: __( 'First paydown', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'First paydown', 'woocommerce-payments' ),
-		required: true,
 		isLeftAligned: false,
 		isNumeric: true, // Hack: this is not a numeric field, but "isNumeric" is needed for it to be right-aligned
 	},
@@ -229,8 +225,7 @@ const CapitalPage = (): JSX.Element => {
 				rows={ getRowsData( loans ) }
 				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
-				// The Capital Loan table does not have column configuration enabled, see issue #10106.
-				showMenu={ false }
+				showMenu={ true }
 			/>
 		</Page>
 	);
