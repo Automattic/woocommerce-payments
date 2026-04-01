@@ -9,21 +9,36 @@ import * as navigation from './shopper-navigation';
 import { config, CustomerAddress, Product } from '../config/default';
 import { isUIUnblocked } from './helpers';
 
+const placeOrderButtonSelector =
+	'#place_order, button[name="woocommerce_change_payment"]';
+
 /**
- * Waits for the UI to refresh after a user interaction.
+ * Waits for WooCommerce to finish refreshing the checkout order review.
  *
- * Woo core blocks and refreshes the UI after 1s after each key press
- * in a text field or immediately after a select field changes.
- * We need to wait to make sure that all key presses were processed by that mechanism.
+ * WC triggers an update_order_review AJAX call after billing field changes
+ * (debounced by 1s). We wait for that response rather than using a fixed timeout.
+ * Falls back to a short delay if no AJAX fires (e.g. when no fields changed).
  */
-export const waitForUiRefresh = ( page: Page ) => page.waitForTimeout( 1000 );
+export const waitForUiRefresh = async ( page: Page ) => {
+	try {
+		await page.waitForResponse(
+			( resp ) =>
+				resp.url().includes( 'wc-ajax=update_order_review' ) &&
+				resp.status() === 200,
+			{ timeout: 5000 }
+		);
+	} catch {
+		// No order review update fired — fields may not have changed.
+		await page.waitForTimeout( 500 );
+	}
+};
 
 /**
  * Takes off the focus out of the Stripe elements to let Stripe logic
  * wrap up and make sure the Place Order button is clickable.
  */
 export const focusPlaceOrderButton = async ( page: Page ) => {
-	await page.locator( '#place_order' ).focus();
+	await page.locator( placeOrderButtonSelector ).first().focus();
 	await waitForUiRefresh( page );
 };
 
@@ -126,14 +141,17 @@ export const fillBillingAddressWCB = async (
 		.fill( billingAddress.phone );
 };
 
-// This is currently the source of some flaky tests since sometimes the form is not submitted
-// after the first click, so we retry until the ui is blocked.
+// The Stripe element can swallow the first click, so keep retrying until
+// checkout shows the blocking overlay or reaches the order-received page.
 export const placeOrder = async ( page: Page ) => {
 	let orderPlaced = false;
 	while ( ! orderPlaced ) {
-		await page.locator( '#place_order' ).click();
+		await page.locator( placeOrderButtonSelector ).first().click();
 
-		if ( await page.$( '.blockUI' ) ) {
+		if (
+			( await page.$( '.blockUI' ) ) ||
+			page.url().includes( '/checkout/order-received/' )
+		) {
 			orderPlaced = true;
 		}
 	}
@@ -252,11 +270,8 @@ export const confirmCardAuthentication = async (
 	page: Page,
 	authorize = true
 ) => {
-	// Give the Stripe modal a moment to appear.
-	await page.waitForTimeout( 2000 );
-
-	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
-	// appears at the top of the DOM. If it never appears, skip gracefully.
+	// Wait for the Stripe 3DS modal iframe to appear at the top of the DOM.
+	// If it never appears within the timeout, skip gracefully.
 	const privateFrame = page.locator(
 		'body > div > iframe[name^="__privateStripeFrame"]'
 	);
@@ -350,53 +365,18 @@ export const selectPaymentMethod = async (
 	page: Page,
 	paymentMethod = 'Card'
 ) => {
-	// Wait for the page to be stable before attempting to select payment method
-	// Use a more reliable approach than networkidle which can timeout
 	await page.waitForLoadState( 'domcontentloaded' );
-
-	// Ensure UI is not blocked
 	await isUIUnblocked( page );
 
-	// Wait for payment methods to be fully loaded and stable
-	await page.waitForSelector( '.wc_payment_methods', { timeout: 10000 } );
+	// Wait for payment methods list to render.
+	await page.locator( '.wc_payment_methods' ).waitFor( { timeout: 10000 } );
 
-	// Try to find and click the payment method with retry logic
-	const maxRetries = 3;
-	for ( let attempt = 1; attempt <= maxRetries; attempt++ ) {
-		try {
-			// Use a more robust locator that handles mixed content in labels
-			// Look for the label containing the payment method text
-			const paymentMethodElement = page
-				.locator( `label:has-text("${ paymentMethod }")` )
-				.first();
-
-			// Wait for the element to be visible and stable
-			await expect( paymentMethodElement ).toBeVisible( {
-				timeout: 5000,
-			} );
-
-			// Ensure the element is in viewport
-			await paymentMethodElement.scrollIntoViewIfNeeded();
-
-			// Wait a bit more for any animations to complete
-			await page.waitForTimeout( 200 );
-
-			// Click the payment method
-			await paymentMethodElement.click();
-
-			// Wait a moment to ensure the click was processed
-			await page.waitForTimeout( 100 );
-
-			// If we get here, the click was successful
-			break;
-		} catch ( error ) {
-			if ( attempt === maxRetries ) {
-				throw error;
-			}
-			// Wait a bit before retrying
-			await page.waitForTimeout( 1000 );
-		}
-	}
+	// Click the label and let Playwright's auto-retry handle actionability.
+	const label = page
+		.locator( `label:has-text("${ paymentMethod }")` )
+		.first();
+	await label.scrollIntoViewIfNeeded();
+	await label.click();
 };
 
 /**
@@ -450,16 +430,13 @@ export async function setupProductCheckout(
 		while ( qty-- ) {
 			await addToCartFromShopPage( page, product, currency );
 
-			// Make sure the number of items in the cart is incremented before adding another item.
+			// Wait for the cart count to reflect the newly added item before proceeding.
 			await expect( page.locator( '.cart-contents .count' ) ).toHaveText(
 				new RegExp( `${ ++cartSize } items?` ),
 				{
 					timeout: 30000,
 				}
 			);
-
-			// Wait for the cart to update before adding another item.
-			await page.waitForTimeout( 500 );
 		}
 	}
 
