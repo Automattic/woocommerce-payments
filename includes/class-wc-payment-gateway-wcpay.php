@@ -970,7 +970,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the setting to allow saved cards is enabled or not.
 	 */
 	public function is_saved_cards_enabled() {
-		return 'yes' === $this->get_option( 'saved_cards' );
+		// Read from stored settings directly to avoid triggering get_form_fields()
+		// which uses __() too early during plugins_loaded on a fresh install
+		// (before settings exist in the database). See WOOPMNT-5380.
+		if ( empty( $this->settings ) ) {
+			$this->init_settings();
+		}
+
+		return 'yes' === ( $this->settings['saved_cards'] ?? 'yes' );
 	}
 
 	/**
@@ -2663,6 +2670,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_option( $key, $empty_value = null ) {
 		switch ( $key ) {
 			case 'enabled':
+				// Before init, avoid parent::get_option which triggers get_form_fields() / __().
+				if ( ! did_action( 'init' ) && isset( $this->settings ) && ! isset( $this->settings[ static::METHOD_ENABLED_KEY ] ) ) {
+					return $empty_value ?? 'no';
+				}
 				return parent::get_option( static::METHOD_ENABLED_KEY, $empty_value );
 			case 'account_country':
 				return $this->get_account_country();
@@ -2714,6 +2725,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->get_advanced_fraud_protection_settings();
 
 			default:
+				// On fresh installs (no settings in DB), parent::get_option() calls
+				// get_form_fields() for defaults, which triggers __() too early during
+				// plugins_loaded. Return the stored value or empty string directly to
+				// avoid this. Settings will be fully populated once the admin saves them.
+				// See WOOPMNT-5380.
+				if ( ! did_action( 'init' ) && isset( $this->settings ) && ! isset( $this->settings[ $key ] ) ) {
+					return $empty_value ?? '';
+				}
 				return parent::get_option( $key, $empty_value );
 		}
 	}
@@ -2798,9 +2817,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Init settings for gateways.
+	 *
+	 * Overrides the parent to avoid calling get_form_fields() when no settings
+	 * exist in the database (fresh install). The parent method calls
+	 * get_form_fields() to populate defaults, which triggers __() too early
+	 * during plugins_loaded before textdomains are loaded. See WOOPMNT-5380.
 	 */
 	public function init_settings() {
-		parent::init_settings();
+		$this->settings = get_option( $this->get_option_key(), null );
+
+		if ( ! is_array( $this->settings ) ) {
+			// On fresh installs, use an empty array instead of calling
+			// get_form_fields() for defaults. Individual get_option() calls
+			// will fall back to their own defaults as needed.
+			$this->settings = [];
+		}
 
 		// Get the basic enabled value from settings.
 		$is_enabled = ! empty( $this->settings[ static::METHOD_ENABLED_KEY ] ) && 'yes' === $this->settings[ static::METHOD_ENABLED_KEY ];
