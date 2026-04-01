@@ -40,6 +40,12 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		alternateSelectors: {
+			appendTarget: 'form.checkout',
+			upeThemeInputSelector: 'form.checkout input[type="text"]',
+			upeThemeLabelSelector: 'form.checkout label',
+			upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+		},
 		backgroundSelectors: [
 			'li.wc_payment_method .wc-payment-form',
 			'li.wc_payment_method .payment_box',
@@ -158,6 +164,11 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		alternateSelectors: {
+			appendTarget: 'form.checkout',
+			upeThemeInputSelector: 'form.checkout input[type="text"]',
+			upeThemeLabelSelector: 'form.checkout label',
+		},
 		backgroundSelectors: [
 			'#customer_details',
 			'#order_review',
