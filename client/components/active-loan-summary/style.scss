@@ -22,11 +22,17 @@
 			padding-bottom: 0;
 		}
 	}
+
+	@media (max-width: 782px) {
+		flex-wrap: wrap;
+	}
 }
 
 .wcpay-loan-summary-block {
 	padding: 24px 16px;
 	margin-right: 0;
+	min-width: 0;
+	overflow: hidden;
 
 	& + & {
 		border-left: 1px solid $gray-200;
@@ -36,6 +42,8 @@
 		font-size: 12px;
 		line-height: 16px;
 		color: $gray-600;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	&__value {
@@ -43,10 +51,20 @@
 		font-size: 13px;
 		line-height: 20px;
 		padding: 8px 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
 
 		.is-big {
 			font-size: 20px;
 			line-height: 27px;
+		}
+	}
+
+	@media (max-width: 782px) {
+		min-width: 50%;
+
+		& + & {
+			border-left: none;
 		}
 	}
 }
