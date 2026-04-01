@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Cache and reuse React root in WooPay save-user section to prevent multiple roots on the same DOM node.

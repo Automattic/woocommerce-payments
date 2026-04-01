@@ -9,6 +9,8 @@ import { createRoot } from 'react-dom/client';
  */
 import CheckoutPageSaveUser from 'wcpay/components/woopay/save-user/checkout-page-save-user';
 
+let blocksCheckoutRoot = null;
+
 const renderSaveUserSection = () => {
 	const saveUserSection = document.getElementsByClassName(
 		'woopay-save-new-user-container'
@@ -49,8 +51,12 @@ const renderSaveUserSection = () => {
 			}
 		}
 
-		const root = createRoot( checkoutPageSaveUserContainer );
-		root.render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
+		if ( ! blocksCheckoutRoot ) {
+			blocksCheckoutRoot = createRoot( checkoutPageSaveUserContainer );
+		}
+		blocksCheckoutRoot.render(
+			<CheckoutPageSaveUser isBlocksCheckout={ true } />
+		);
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =
