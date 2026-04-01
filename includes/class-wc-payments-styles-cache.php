@@ -32,6 +32,7 @@ class WC_Payments_Styles_Cache {
 		'fonts.gstatic.com',
 		'use.typekit.net',
 		'fonts.bunny.net',
+		'fonts.wp.com',
 	];
 
 	/**
