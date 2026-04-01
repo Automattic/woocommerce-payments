@@ -1,0 +1,190 @@
+/**
+ * Internal dependencies
+ */
+import { isEmail } from '../use-express-checkout-product-handler';
+
+jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
+
+describe( 'isEmail', () => {
+	it.each( [
+		[ 'user@example.com', true ],
+		[ 'user+tag@sub.example.com', true ],
+		[ 'a@b.co', true ],
+		[ 'name@domain.travel', true ],
+		[ 'USER@EXAMPLE.COM', true ],
+	] )( 'accepts valid email: %s', ( email, expected ) => {
+		expect( isEmail( email ) ).toBe( expected );
+	} );
+
+	it.each( [
+		[ '', false ],
+		[ 'notanemail', false ],
+		[ '@nodomain.com', false ],
+		[ 'user@', false ],
+		[ 'user@nodot', false ],
+		[ 'user @example.com', false ],
+		[ ' ', false ],
+		[ '@', false ],
+		[ 'user@.com', false ],
+	] )( 'rejects invalid email: %s', ( email, expected ) => {
+		expect( isEmail( email ) ).toBe( expected );
+	} );
+
+	it( 'rejects emails exceeding RFC 5321 max length of 254 characters', () => {
+		const longEmail = 'a'.repeat( 243 ) + '@example.com'; // 255 chars
+		expect( longEmail.length ).toBe( 255 );
+		expect( isEmail( longEmail ) ).toBe( false );
+	} );
+
+	it( 'accepts emails at exactly 254 characters', () => {
+		const maxEmail = 'a'.repeat( 242 ) + '@example.com'; // 254 chars
+		expect( maxEmail.length ).toBe( 254 );
+		expect( isEmail( maxEmail ) ).toBe( true );
+	} );
+} );
+
+describe( 'validateGiftCardFields', () => {
+	beforeEach( () => {
+		jest.resetModules();
+		window.alert.mockClear();
+	} );
+
+	// To test validateGiftCardFields without DOM complexity,
+	// we re-import the module and exercise it through getProductData
+	// with a minimal DOM that includes gift card fields in a form.
+	const setupDomWithGiftCardForm = ( formFields = {} ) => {
+		// Create form.cart with gift card fields
+		const form = document.createElement( 'form' );
+		form.classList.add( 'cart' );
+
+		// Add the add-to-cart button (required by getProductData)
+		const addToCartButton = document.createElement( 'button' );
+		addToCartButton.classList.add( 'single_add_to_cart_button' );
+		addToCartButton.value = '123';
+		form.appendChild( addToCartButton );
+
+		// Add quantity input
+		const qtyWrapper = document.createElement( 'div' );
+		qtyWrapper.classList.add( 'quantity' );
+		const qtyInput = document.createElement( 'input' );
+		qtyInput.classList.add( 'qty' );
+		qtyInput.value = '1';
+		qtyWrapper.appendChild( qtyInput );
+		form.appendChild( qtyWrapper );
+
+		// Add gift card fields as hidden inputs
+		Object.entries( formFields ).forEach( ( [ name, value ] ) => {
+			const input = document.createElement( 'input' );
+			input.type = 'hidden';
+			input.name = name;
+			input.value = value;
+			form.appendChild( input );
+		} );
+
+		document.body.appendChild( form );
+		return form;
+	};
+
+	const getProductDataFromHook = () => {
+		const handler = require( '../use-express-checkout-product-handler' )
+			.default;
+		const { getProductData } = handler( {} );
+		return getProductData;
+	};
+
+	afterEach( () => {
+		const form = document.querySelector( 'form.cart' );
+		if ( form ) {
+			document.body.removeChild( form );
+		}
+	} );
+
+	it( 'returns data when no gift card fields are present', () => {
+		setupDomWithGiftCardForm();
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).not.toBe( false );
+		expect( result.product_id ).toBe( '123' );
+	} );
+
+	it( 'returns false when required gift card field is empty', () => {
+		setupDomWithGiftCardForm( { wc_gc_giftcard_to: '' } );
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).toBe( false );
+		expect( window.alert ).toHaveBeenCalledWith(
+			'Please fill out all required fields'
+		);
+	} );
+
+	it( 'returns data when single recipient email is valid', () => {
+		setupDomWithGiftCardForm( {
+			wc_gc_giftcard_to: 'recipient@example.com',
+			wc_gc_giftcard_from: 'Sender',
+		} );
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).not.toBe( false );
+	} );
+
+	it( 'returns false when single recipient email is invalid', () => {
+		setupDomWithGiftCardForm( {
+			wc_gc_giftcard_to: 'notanemail',
+			wc_gc_giftcard_from: 'Sender',
+		} );
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).toBe( false );
+		expect( window.alert ).toHaveBeenCalledWith(
+			'Please type only valid emails'
+		);
+	} );
+
+	it( 'returns data when multiple recipient emails are all valid', () => {
+		setupDomWithGiftCardForm( {
+			wc_gc_giftcard_to_multiple: 'a@example.com,b@example.com',
+		} );
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).not.toBe( false );
+	} );
+
+	it( 'returns false when one of multiple recipient emails is invalid', () => {
+		setupDomWithGiftCardForm( {
+			wc_gc_giftcard_to_multiple: 'a@example.com,notanemail',
+		} );
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).toBe( false );
+		expect( window.alert ).toHaveBeenCalledWith(
+			'Please type only valid emails'
+		);
+	} );
+
+	it( 'handles whitespace around commas in multiple recipients', () => {
+		setupDomWithGiftCardForm( {
+			wc_gc_giftcard_to_multiple: ' a@example.com , b@example.com ',
+		} );
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).not.toBe( false );
+	} );
+
+	it( 'returns false for trailing comma in multiple recipients', () => {
+		setupDomWithGiftCardForm( {
+			wc_gc_giftcard_to_multiple: 'a@example.com,',
+		} );
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).toBe( false );
+	} );
+
+	it( 'returns false for empty segment in multiple recipients', () => {
+		setupDomWithGiftCardForm( {
+			wc_gc_giftcard_to_multiple: 'a@example.com,,b@example.com',
+		} );
+		const getProductData = getProductDataFromHook();
+		const result = getProductData();
+		expect( result ).toBe( false );
+	} );
+} );

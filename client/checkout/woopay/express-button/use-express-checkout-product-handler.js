@@ -26,7 +26,8 @@ export const getProductFormElement = () => {
 	);
 };
 
-const isEmail = ( email ) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( email );
+export const isEmail = ( email ) =>
+	email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( email );
 
 const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {
