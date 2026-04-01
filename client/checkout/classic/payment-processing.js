@@ -12,6 +12,7 @@ import {
 	getCachedAppearance,
 	setCachedAppearance,
 	dispatchAppearanceEvent,
+	isAppearanceValid,
 } from 'wcpay/utils/appearance-cache';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
@@ -62,7 +63,14 @@ function initializeAppearance( elementsLocation ) {
 
 	const appearance = getAppearance( elementsLocation );
 	dispatchAppearanceEvent( appearance, elementsLocation );
-	setCachedAppearance( elementsLocation, version, appearance );
+
+	// Only cache if extraction produced meaningful rules.
+	// Empty results (e.g. non-standard theme markup) should not be cached
+	// so the next page load can retry extraction.
+	if ( isAppearanceValid( appearance ) ) {
+		setCachedAppearance( elementsLocation, version, appearance );
+	}
+
 	return appearance;
 }
 
