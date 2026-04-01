@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { isEmail } from '../use-express-checkout-product-handler';
+import { isEmail, isEmailEAI } from '../use-express-checkout-product-handler';
 
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
@@ -30,15 +30,9 @@ describe( 'isEmail', () => {
 		expect( isEmail( email ) ).toBe( expected );
 	} );
 
-	describe( 'internationalized email addresses (EAI/RFC 6531)', () => {
-		it.each( [
-			[ '用户@example.com', true ],
-			[ 'user@例え.jp', true ],
-			[ 'Pelstrø@example.com', true ],
-			[ 'пользователь@пример.рф', true ],
-		] )( 'accepts internationalized email: %s', ( email, expected ) => {
-			expect( isEmail( email ) ).toBe( expected );
-		} );
+	it( 'rejects internationalized emails to match server-side validation', () => {
+		expect( isEmail( '用户@example.com' ) ).toBe( false );
+		expect( isEmail( 'Pelstrø@example.com' ) ).toBe( false );
 	} );
 
 	it( 'rejects emails exceeding RFC 5321 max length of 254 characters', () => {
@@ -54,27 +48,44 @@ describe( 'isEmail', () => {
 	} );
 } );
 
+describe( 'isEmailEAI (future: internationalized email support)', () => {
+	it.each( [
+		[ 'user@example.com', true ],
+		[ 'user+tag@sub.example.com', true ],
+	] )( 'accepts standard email: %s', ( email, expected ) => {
+		expect( isEmailEAI( email ) ).toBe( expected );
+	} );
+
+	it.each( [
+		[ '用户@example.com', true ],
+		[ 'user@例え.jp', true ],
+		[ 'Pelstrø@example.com', true ],
+		[ 'пользователь@пример.рф', true ],
+	] )( 'accepts internationalized email: %s', ( email, expected ) => {
+		expect( isEmailEAI( email ) ).toBe( expected );
+	} );
+
+	it( 'rejects emails exceeding 254 characters', () => {
+		const longEmail = 'a'.repeat( 243 ) + '@example.com';
+		expect( isEmailEAI( longEmail ) ).toBe( false );
+	} );
+} );
+
 describe( 'validateGiftCardFields', () => {
 	beforeEach( () => {
 		jest.resetModules();
 		window.alert.mockClear();
 	} );
 
-	// To test validateGiftCardFields without DOM complexity,
-	// we re-import the module and exercise it through getProductData
-	// with a minimal DOM that includes gift card fields in a form.
 	const setupDomWithGiftCardForm = ( formFields = {} ) => {
-		// Create form.cart with gift card fields
 		const form = document.createElement( 'form' );
 		form.classList.add( 'cart' );
 
-		// Add the add-to-cart button (required by getProductData)
 		const addToCartButton = document.createElement( 'button' );
 		addToCartButton.classList.add( 'single_add_to_cart_button' );
 		addToCartButton.value = '123';
 		form.appendChild( addToCartButton );
 
-		// Add quantity input
 		const qtyWrapper = document.createElement( 'div' );
 		qtyWrapper.classList.add( 'quantity' );
 		const qtyInput = document.createElement( 'input' );
@@ -83,7 +94,6 @@ describe( 'validateGiftCardFields', () => {
 		qtyWrapper.appendChild( qtyInput );
 		form.appendChild( qtyWrapper );
 
-		// Add gift card fields as hidden inputs
 		Object.entries( formFields ).forEach( ( [ name, value ] ) => {
 			const input = document.createElement( 'input' );
 			input.type = 'hidden';
