@@ -82,7 +82,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 		$this->mock_multi_currency = $this->getMockBuilder( MultiCurrency::class )
 			->setConstructorArgs( [ $mock_settings, $mock_api_client, $mock_account, $mock_localization, $mock_cache ] )
 			->enableOriginalConstructor()
-			->onlyMethods( [ 'get_available_currencies' ] )
+			->onlyMethods( [ 'get_available_currencies', 'get_public_config' ] )
 			->getMock();
 
 		$this->mock_multi_currency->expects( $this->any() )
@@ -97,6 +97,7 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		remove_all_filters( 'wcpay_multi_currency_available_currencies' );
+		delete_option( '_wcpay_feature_mc_cache_optimized' );
 		parent::tear_down();
 	}
 
@@ -326,6 +327,62 @@ class WCPay_Multi_Currency_Rest_Controller_Tests extends WCPAY_UnitTestCase {
 
 		// Assert: Confirm the response is what we expected.
 		$this->assertEquals( $expected, $response );
+	}
+
+	public function test_get_public_config_returns_expected_response() {
+		// Arrange: Enable the feature flag.
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+
+		// Arrange: Set up mock public config data.
+		$mock_config = [
+			'default_currency'    => 'USD',
+			'selected_currency'   => 'USD',
+			'charm_only_products' => false,
+			'currencies'          => [
+				'USD' => [
+					'code'         => 'USD',
+					'symbol'       => '$',
+					'rate'         => 1,
+					'decimals'     => 2,
+					'decimal_sep'  => '.',
+					'thousand_sep' => ',',
+					'symbol_pos'   => 'left',
+					'rounding'     => 0.0,
+					'charm'        => 0.0,
+				],
+			],
+		];
+		$this->mock_multi_currency
+			->method( 'get_public_config' )
+			->willReturn( $mock_config );
+
+		// Act: Call the endpoint.
+		$response = $this->controller->get_public_config();
+
+		// Assert: Response contains the expected data.
+		$this->assertInstanceOf( WP_REST_Response::class, $response );
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'default_currency', $data );
+		$this->assertArrayHasKey( 'selected_currency', $data );
+		$this->assertArrayHasKey( 'currencies', $data );
+		$this->assertEquals( 'USD', $data['default_currency'] );
+	}
+
+	public function test_get_public_config_sets_cache_control_header() {
+		// Arrange: Enable the feature flag.
+		update_option( '_wcpay_feature_mc_cache_optimized', '1' );
+
+		$this->mock_multi_currency
+			->method( 'get_public_config' )
+			->willReturn( [ 'default_currency' => 'USD' ] );
+
+		// Act: Call the endpoint.
+		$response = $this->controller->get_public_config();
+
+		// Assert: Cache-Control header is set correctly.
+		$headers = $response->get_headers();
+		$this->assertArrayHasKey( 'Cache-Control', $headers );
+		$this->assertEquals( 'private, max-age=300', $headers['Cache-Control'] );
 	}
 
 	public function test_update_multi_currency_settings() {

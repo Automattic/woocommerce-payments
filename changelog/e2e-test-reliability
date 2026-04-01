@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Improve E2E test reliability: guard placeOrder loop, replace waitForTimeout/networkidle, enable retries, add afterEach reloads, increase CI workers

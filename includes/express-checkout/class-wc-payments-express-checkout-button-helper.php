@@ -238,10 +238,41 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
+		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
+		if ( 'pay_for_order' === $location ) {
+			$location = 'checkout';
+		}
+
 		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
 
 		if ( $enabled_methods && is_array( $enabled_methods ) ) {
 			return in_array( $method_id, $enabled_methods, true );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( $this->is_product() ) {
+			$product = $this->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		}
+
+		if ( $this->is_checkout() || $this->is_cart() ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
+			}
 		}
 
 		return false;
@@ -260,6 +291,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return boolean
 	 */
 	public function can_use_amazon_pay() {
+		// When express checkout methods are displayed in the payment methods list,
+		// Amazon Pay should not appear as a separate express button.
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return false;
+		}
+
 		if ( ! WC_Payments_Features::is_amazon_pay_enabled() ) {
 			return false;
 		}
@@ -465,6 +502,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return bool
 	 */
 	public function should_show_express_checkout_button() {
+		// When express checkout methods are displayed in the payment methods list,
+		// don't show them as separate express buttons.
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return false;
+		}
+
 		// If account is not connected, then bail.
 		if ( ! $this->account->is_stripe_connected( false ) ) {
 			return false;
@@ -536,9 +579,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Cart total is 0 or is on product page and product price is 0.
 		// Exclude pay-for-order pages from this check.
 		if (
-			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
-			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
-
+			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) )
+			|| ( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 		) {
 			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
 			return false;
@@ -614,13 +656,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			 * @param object  $_product     Product object.
 			 */
 			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
-				return false;
-			}
-
-			/**
-			 * Trial subscriptions with shipping are not supported.
-			 */
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
 		}
@@ -764,26 +799,24 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		if ( is_null( $product ) || ! is_object( $product ) ) {
 			$is_supported = false;
-		} else {
-			// Simple subscription that needs shipping with free trials is not supported.
-			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
-
-			if (
+		} elseif (
 			! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| $is_free_trial_simple_subs
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
-			) {
-				$is_supported = false;
-			} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
-				// File upload addon not supported.
-				$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
-				foreach ( $product_addons as $addon ) {
-					if ( 'file_upload' === $addon['type'] ) {
-						$is_supported = false;
-						break;
-					}
+			// Subscriptions with a free trial and no sign-up fee are not supported
+			// because ECE and ConfirmationToken do not deal well with Setup Intent.
+			// When a sign-up fee exists, the initial charge is non-zero, so ECE can display it correctly.
+			|| ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && WC_Subscriptions_Product::get_trial_length( $product ) > 0 && 0.0 >= (float) WC_Subscriptions_Product::get_sign_up_fee( $product ) )
+		) {
+			$is_supported = false;
+		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+			// File upload addon not supported.
+			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
+			foreach ( $product_addons as $addon ) {
+				if ( 'file_upload' === $addon['type'] ) {
+					$is_supported = false;
+					break;
 				}
 			}
 		}

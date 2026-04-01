@@ -15,10 +15,11 @@ use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
@@ -161,6 +162,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_payment_methods = [];
 
 		$payment_method_definitions = [
+			CardDefinition::class,
+			AmazonPayDefinition::class,
 			ApplePayDefinition::class,
 			BancontactDefinition::class,
 			BecsDefinition::class,
@@ -174,13 +177,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			SofortDefinition::class,
 		];
 
-		$payment_method_classes = [
-			CC_Payment_Method::class,
-		];
-
-		// Create the main payment method (CC) for the gateway constructor.
-		$mock_cc_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $token_service ] )
+		$mock_cc_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $token_service, CardDefinition::class ] )
 			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 		$mock_cc_payment_method->expects( $this->any() )
@@ -195,18 +193,6 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		foreach ( $payment_method_definitions as $definition_class ) {
 			$mock_payment_method_instance = $this->getMockBuilder( UPE_Payment_Method::class )
 				->setConstructorArgs( [ $token_service, $definition_class ] )
-				->onlyMethods( [ 'is_subscription_item_in_cart' ] )
-				->getMock();
-			$mock_payment_method_instance->expects( $this->any() )
-				->method( 'is_subscription_item_in_cart' )
-				->will( $this->returnValue( false ) );
-
-			$mock_payment_methods[ $mock_payment_method_instance->get_id() ] = $mock_payment_method_instance;
-		}
-
-		foreach ( $payment_method_classes as $payment_method_class ) {
-			$mock_payment_method_instance = $this->getMockBuilder( $payment_method_class )
-				->setConstructorArgs( [ $token_service ] )
 				->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
 			$mock_payment_method_instance->expects( $this->any() )
@@ -304,6 +290,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$available_method_ids = $response->get_data()['available_payment_method_ids'];
 
 		$expected_method_ids = [
+			Payment_Method::AMAZON_PAY,
 			Payment_Method::CARD,
 			Payment_Method::BECS,
 			Payment_Method::BANCONTACT,
@@ -527,6 +514,26 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'yes', $this->gateway->get_option( 'manual_capture' ) );
 	}
 
+	public function test_update_settings_manual_capture_keeps_payment_methods_with_capture_later_capability() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_manual_capture_enabled', true );
+		$request->set_param(
+			'enabled_payment_method_ids',
+			[ Payment_Method::CARD, Payment_Method::GOOGLE_PAY, Payment_Method::AMAZON_PAY, Payment_Method::IDEAL ]
+		);
+
+		$this->controller->update_settings( $request );
+
+		$enabled = WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' );
+
+		// Card, Google Pay, and Amazon Pay have CAPTURE_LATER capability and should remain enabled.
+		$this->assertContains( Payment_Method::CARD, $enabled );
+		$this->assertContains( Payment_Method::GOOGLE_PAY, $enabled );
+		$this->assertContains( Payment_Method::AMAZON_PAY, $enabled );
+		// iDEAL does not support manual capture and should be filtered out.
+		$this->assertNotContains( Payment_Method::IDEAL, $enabled );
+	}
+
 	public function test_update_settings_disables_manual_capture() {
 		$request = new WP_REST_Request();
 		$request->set_param( 'is_manual_capture_enabled', false );
@@ -690,33 +697,33 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'book', $this->gateway->get_option( 'payment_request_button_type' ) );
 	}
 
-	public function test_update_settings_enables_apple_google_pay_in_payment_methods_options() {
+	public function test_update_settings_enables_express_checkout_in_payment_methods() {
 		$request = new WP_REST_Request();
-		$request->set_param( 'is_apple_google_pay_in_payment_methods_options_enabled', true );
+		$request->set_param( 'is_express_checkout_in_payment_methods_enabled', true );
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( 'yes', $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'express_checkout_in_payment_methods' ) );
 	}
 
-	public function test_update_settings_disables_apple_google_pay_in_payment_methods_options() {
+	public function test_update_settings_disables_express_checkout_in_payment_methods() {
 		$request = new WP_REST_Request();
-		$request->set_param( 'is_apple_google_pay_in_payment_methods_options_enabled', false );
+		$request->set_param( 'is_express_checkout_in_payment_methods_enabled', false );
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( 'no', $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+		$this->assertEquals( 'no', $this->gateway->get_option( 'express_checkout_in_payment_methods' ) );
 	}
 
-	public function test_update_settings_does_not_toggle_apple_google_pay_in_payment_methods_options_if_not_supplied() {
-		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'yes' );
-		$status_before_request = $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' );
+	public function test_update_settings_does_not_toggle_express_checkout_in_payment_methods_if_not_supplied() {
+		$this->gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
+		$status_before_request = $this->gateway->get_option( 'express_checkout_in_payment_methods' );
 
 		$request = new WP_REST_Request();
 
 		$this->controller->update_settings( $request );
 
-		$this->assertEquals( $status_before_request, $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+		$this->assertEquals( $status_before_request, $this->gateway->get_option( 'express_checkout_in_payment_methods' ) );
 	}
 
 	public function test_update_settings_does_not_save_account_if_not_supplied() {
@@ -981,28 +988,28 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->gateway->update_option( 'platform_checkout', $current_platform_checkout );
 	}
 
-	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_true(): void {
-		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'yes' );
+	public function test_get_settings_returns_express_checkout_in_payment_methods_enabled_true(): void {
+		$this->gateway->update_option( 'express_checkout_in_payment_methods', 'yes' );
 
 		$response = $this->controller->get_settings();
 
-		$this->assertTrue( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
+		$this->assertTrue( $response->get_data()['is_express_checkout_in_payment_methods_enabled'] );
 	}
 
-	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_false(): void {
-		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'no' );
+	public function test_get_settings_returns_express_checkout_in_payment_methods_enabled_false(): void {
+		$this->gateway->update_option( 'express_checkout_in_payment_methods', 'no' );
 
 		$response = $this->controller->get_settings();
 
-		$this->assertFalse( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
+		$this->assertFalse( $response->get_data()['is_express_checkout_in_payment_methods_enabled'] );
 	}
 
-	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_false_by_default(): void {
-		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', '' );
+	public function test_get_settings_returns_express_checkout_in_payment_methods_enabled_false_by_default(): void {
+		$this->gateway->update_option( 'express_checkout_in_payment_methods', '' );
 
 		$response = $this->controller->get_settings();
 
-		$this->assertFalse( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
+		$this->assertFalse( $response->get_data()['is_express_checkout_in_payment_methods_enabled'] );
 	}
 
 	/**

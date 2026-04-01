@@ -7,6 +7,13 @@ const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/depe
 const WebpackRTLPlugin = require( './webpack-rtl-plugin' );
 
 module.exports = {
+	cache: {
+		type: 'filesystem',
+		cacheDirectory: path.resolve(
+			process.cwd(),
+			'node_modules/.cache/webpack'
+		),
+	},
 	entry: mapValues(
 		{
 			index: './client/index.js',
@@ -19,7 +26,8 @@ module.exports = {
 				'./client/checkout/woopay/direct-checkout/index.js',
 			cart: './client/cart/index.js',
 			checkout: './client/checkout/classic/event-handlers.js',
-			'express-checkout': './client/express-checkout/index.js',
+			'express-checkout':
+				'./client/express-checkout/shortcode-buttons-express/index.js',
 			'subscription-edit-page':
 				'./client/subscription-edit-page/index.tsx',
 			tos: './client/tos/index.tsx',
@@ -28,6 +36,8 @@ module.exports = {
 				'./includes/multi-currency/client/blocks/currency-switcher.js',
 			'multi-currency-analytics':
 				'./includes/multi-currency/client/analytics/index.js',
+			'multi-currency-async-renderer':
+				'./includes/multi-currency/client/async-renderer/index.ts',
 			order: './client/order/index.js',
 			'subscriptions-empty-state':
 				'./client/subscriptions-empty-state/index.js',
@@ -57,7 +67,7 @@ module.exports = {
 		rules: [
 			{
 				test: /\.tsx?$/,
-				use: [ 'babel-loader', 'ts-loader' ],
+				use: [ 'babel-loader' ],
 				exclude: /node_modules/,
 			},
 			{

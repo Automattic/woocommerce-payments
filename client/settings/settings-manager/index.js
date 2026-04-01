@@ -150,6 +150,9 @@ const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
+	const [ isNotificationEmailValid, setNotificationEmailValid ] = useState(
+		true
+	);
 
 	const { isLoading, isDirty } = useSettings();
 
@@ -290,7 +293,11 @@ const SettingsManager = () => {
 			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<NotificationSettings />
+						<NotificationSettings
+							setNotificationEmailValid={
+								setNotificationEmailValid
+							}
+						/>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
@@ -314,7 +321,11 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
+			<SaveSettingsSection
+				disabled={
+					! isTransactionInputsValid || ! isNotificationEmailValid
+				}
+			/>
 			<VatFormModal
 				isModalOpen={ isVatFormModalOpen }
 				setModalOpen={ handleVatFormModalClose }

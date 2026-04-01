@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: prevent payment error string being written in the order meta

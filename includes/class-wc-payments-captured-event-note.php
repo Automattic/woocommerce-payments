@@ -115,8 +115,8 @@ class WC_Payments_Captured_Event_Note {
 			$fee_amount   = $before_tax['amount'];
 			$fee_currency = $before_tax['currency'];
 		} else {
-			$fee_currency = $data['transaction_details']['store_currency'];
-			$fee_amount   = (int) $data['transaction_details']['store_fee'];
+			$fee_currency = $data['transaction_details']['customer_currency'];
+			$fee_amount   = (int) $data['transaction_details']['customer_fee'];
 		}
 
 		$formatted_fee_amount = $this->convert_and_format_fee_amount( $fee_amount, $fee_currency );
@@ -144,7 +144,7 @@ class WC_Payments_Captured_Event_Note {
 			WC_Payments_Utils::format_currency( $fixed, $fixed_currency ),
 			$is_same_symbol ? ' ' . $data['transaction_details']['customer_currency'] : '',
 			$formatted_fee_amount,
-			$is_same_symbol ? " $fee_currency" : ''
+			$is_same_symbol ? " {$data['transaction_details']['store_currency']}" : ''
 		);
 	}
 
@@ -582,22 +582,22 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	private function convert_and_format_fee_amount( float $fee_amount, string $fee_currency ) {
 		$fee_exchange_rate = $this->captured_event['fee_rates']['fee_exchange_rate'] ?? null;
-		if ( ! $this->is_fx_event() || ! $fee_exchange_rate ) {
+		$store_currency    = $this->captured_event['transaction_details']['store_currency'] ?? null;
+		if ( ( strtoupper( $fee_currency ) === strtoupper( $store_currency ) ) || ! $this->is_fx_event() || ! $fee_exchange_rate ) {
 			return WC_Payments_Utils::format_currency(
 				-abs( WC_Payments_Utils::interpret_stripe_amount( $fee_amount, $fee_currency ) ),
 				$fee_currency
 			);
 		}
 
-		$rate           = $fee_exchange_rate['rate'];
-		$from_currency  = $fee_exchange_rate['from_currency'] ?? null;
-		$store_currency = $this->captured_event['transaction_details']['store_currency'] ?? null;
+		$rate          = $fee_exchange_rate['rate'];
+		$from_currency = $fee_exchange_rate['from_currency'] ?? null;
 
 		// Convert based on the direction of the exchange rate.
 		$converted_amount =
-			$fee_currency === $from_currency
-			? $fee_amount * $rate // Converting from store currency to customer currency.
-			: $fee_amount / $rate; // Converting from customer currency to store currency.
+			strtoupper( $fee_currency ) === strtoupper( $from_currency )
+			? $fee_amount / $rate // Converting from store currency to customer currency.
+			: $fee_amount * $rate; // Converting from customer currency to store currency.
 
 		return WC_Payments_Utils::format_currency(
 			-abs( WC_Payments_Utils::interpret_stripe_amount( $converted_amount, $store_currency ) ),

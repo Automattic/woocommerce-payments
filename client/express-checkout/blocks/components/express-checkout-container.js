@@ -3,6 +3,8 @@
  */
 import { useMemo } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
+import { select } from '@wordpress/data';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -11,13 +13,13 @@ import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
-	getSetupFutureUsage,
 } from '../../utils';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
+import { WC_STORE_CART } from 'wcpay/checkout/constants';
 
 const ExpressCheckoutContainer = ( props ) => {
-	const { api, billing, buttonAttributes, isPreview } = props;
+	const { api, billing, buttonAttributes } = props;
 
 	const stripePromise = useMemo( () => {
 		return api.loadStripeForExpressCheckout();
@@ -25,6 +27,10 @@ const ExpressCheckoutContainer = ( props ) => {
 
 	const useConfirmationToken =
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
+	const isManualCaptureEnabled =
+		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
+	const hasSubscription =
+		getExpressCheckoutData( 'has_subscription' ) ?? false;
 
 	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
@@ -41,18 +47,23 @@ const ExpressCheckoutContainer = ( props ) => {
 	const options = {
 		mode: 'payment',
 		...( useConfirmationToken
-			? {
-					paymentMethodTypes,
-					...getSetupFutureUsage(),
-			  }
+			? { paymentMethodTypes }
 			: { paymentMethodCreation: 'manual' } ),
-		// ensuring that the total amount is transformed to the correct format.
-		amount: ! isPreview
-			? transformPrice( billing.cartTotal.value, {
-					currency_minor_unit: billing.currency.minorUnit ?? 0,
-			  } )
-			: 10,
-		currency: ! isPreview ? billing.currency.code.toLowerCase() : 'usd',
+		...( useConfirmationToken && isManualCaptureEnabled
+			? { captureMethod: 'manual' }
+			: {} ),
+		...( useConfirmationToken && hasSubscription
+			? { setupFutureUsage: 'off_session' }
+			: {} ),
+		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+		amount: applyFilters(
+			'wcpay.express-checkout.total-amount',
+			transformPrice( billing.cartTotal.value, {
+				currency_minor_unit: billing.currency.minorUnit ?? 0,
+			} ),
+			select( WC_STORE_CART )?.getCartData()
+		),
+		currency: billing.currency.code.toLowerCase(),
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};

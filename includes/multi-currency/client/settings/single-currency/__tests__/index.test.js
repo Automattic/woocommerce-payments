@@ -123,7 +123,10 @@ useStoreSettings.mockReturnValue( {
 		site_theme: 'Storefront',
 		store_url: 'store_path',
 	},
-	submitStoreSettingsUpdate: jest.fn(),
+	isDirty: false,
+	isSaving: false,
+	updateStoreSettingValues: jest.fn(),
+	saveStoreSettings: jest.fn(),
 } );
 
 const containerContext = {

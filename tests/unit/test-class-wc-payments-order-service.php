@@ -1191,6 +1191,37 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		remove_all_filters( 'wcpay_terminal_payment_completed_order_status' );
 	}
 
+	public function test_mark_terminal_payment_failed_triggers_status_transition_on_first_failure() {
+		// Arrange: Create the intent and ensure order is in pending status.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::PENDING );
+		$this->order->save();
+
+		$action_count_before = did_action( 'woocommerce_order_status_pending_to_failed' );
+
+		// Act: Mark the terminal payment as failed.
+		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test123', 'Card declined' );
+
+		// Assert: WC core fires the status transition hook (pending → failed), which
+		// triggers notifications via WC_Emails when the email system is initialized.
+		$this->assertGreaterThan( $action_count_before, did_action( 'woocommerce_order_status_pending_to_failed' ), 'Status transition hook should fire on first failure.' );
+	}
+
+	public function test_mark_terminal_payment_failed_fires_notification_manually_on_repeated_failure() {
+		// Arrange: Create the intent and set order to already failed.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::FAILED );
+		$this->order->save();
+
+		$action_count_before = did_action( 'woocommerce_order_status_failed_notification' );
+
+		// Act: Mark the terminal payment as failed again.
+		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test456', 'Card declined' );
+
+		// Assert: WC core won't fire hooks (status didn't change), so our code manually triggers the notification.
+		$this->assertGreaterThan( $action_count_before, did_action( 'woocommerce_order_status_failed_notification' ), 'Notification should fire manually when order was already failed.' );
+	}
+
 	/**
 	 * @dataProvider provider_order_note_exists
 	 */
@@ -1825,6 +1856,184 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Check that the refund status was set to failed.
 		$this->assertSame( Refund_Status::FAILED, $this->order_service->get_wcpay_refund_status_for_order( $order ) );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed handles dispute summary data correctly.
+	 */
+	public function test_mark_payment_dispute_closed_with_dispute_summary(): void {
+		// Create a test order and set it to on-hold status (as dispute would).
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Test dispute summary data.
+		$dispute_summary = [
+			'disputed_amount' => 5000, // $50.00 in cents
+			'currency'        => 'usd',
+			'fee'             => 1500, // $15.00 in cents
+			'network_cost'    => 500,  // $5.00 in cents
+			'exchange_rate'   => 1,
+		];
+
+		// Act: Mark payment dispute closed with dispute summary.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Assert: Check that the order status was left in on-hold status.
+		$this->assertTrue( $order->has_status( [ Order_Status::ON_HOLD ] ) );
+
+		// Assert: Check that a refund was created with the correct amount.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -50.00, $refunds[0]->get_total() );
+
+		// Assert: Full dispute (disputed amount == order total) should include line items.
+		$this->assertNotEmpty( $refunds[0]->get_items(), 'Full dispute refund should include line items.' );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertStringContainsString( 'Dispute has been closed with status lost', $notes[0]->content );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed handles partial refunds correctly.
+	 */
+	public function test_mark_payment_dispute_closed_with_partial_refund(): void {
+		// Create a test order with a total of $100.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Test dispute summary data with disputed amount less than order total.
+		$dispute_summary = [
+			'disputed_amount' => 3000, // $30.00 in cents (partial amount)
+			'currency'        => 'usd',
+			'fee'             => 1500, // $15.00 in cents
+			'network_cost'    => 500,  // $5.00 in cents
+			'exchange_rate'   => 1,
+		];
+
+		// Act: Mark payment dispute closed with dispute summary.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Assert: Check that a refund was created with the partial amount.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -30.00, $refunds[0]->get_total(), 'Refund is created for the partial amount from the dispute summary.' );
+
+		// Assert: Partial dispute should have empty line items to avoid inconsistency.
+		$this->assertEmpty( $refunds[0]->get_items(), 'Partial dispute refund should have empty line items.' );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed handles missing amount in refund.
+	 */
+	public function test_mark_payment_dispute_closed_with_missing_amount_in_summary(): void {
+		// Create a test order with a total of $100.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 100.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Test dispute summary data with disputed amount less than order total.
+		$dispute_summary = [
+			'currency'      => 'usd',
+			'fee'           => 1500, // $15.00 in cents
+			'network_cost'  => 500,  // $5.00 in cents
+			'exchange_rate' => 1,
+		];
+
+		// Act: Mark payment dispute closed with dispute summary.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Assert: Check that a refund was created with the total order amount.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -100.00, $refunds[0]->get_total(), 'Refund is created with order total if dispute summary amount is missing.' );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+
+	/**
+	 * Tests that mark_payment_dispute_closed handles disputed amount exceeding order total.
+	 */
+	public function test_mark_payment_dispute_closed_with_excessive_disputed_amount(): void {
+		// Create a test order with a total of $50.
+		$order = WC_Helper_Order::create_order();
+		$order->set_total( 50.00 );
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Test dispute summary data with disputed amount greater than order total.
+		$dispute_summary = [
+			'disputed_amount' => 6000, // $60.00 in cents (more than order total)
+			'currency'        => 'usd',
+			'fee'             => 1500, // $15.00 in cents
+			'network_cost'    => 500,  // $5.00 in cents
+			'exchange_rate'   => 1,
+		];
+
+		// Act: Mark payment dispute closed with dispute summary.
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Assert: Check that a refund was created with the order total amount (not exceeding).
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -50.00, $refunds[0]->get_total() );
+
+		// Assert: Disputed amount >= order total means full dispute, so line items should be present.
+		$this->assertNotEmpty( $refunds[0]->get_items(), 'Full dispute refund should include line items.' );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that mark_payment_dispute_closed works without dispute summary (backward compatibility).
+	 */
+	public function test_mark_payment_dispute_closed_without_dispute_summary(): void {
+		// Create a test order and set it to on-hold status.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::ON_HOLD );
+		$order->save();
+
+		$charge_id = 'ch_123';
+		$status    = 'lost';
+
+		// Act: Mark payment dispute closed without dispute summary (old behavior).
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+
+		// Assert: Check that the order status was left in on-hold status.
+		$this->assertTrue( $order->has_status( [ Order_Status::ON_HOLD ] ) );
+
+		// Assert: Check that a refund was created with the full order amount.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( -$order->get_total(), $refunds[0]->get_total() );
 
 		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );

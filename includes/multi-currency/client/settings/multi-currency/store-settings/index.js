@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import {
@@ -10,6 +10,7 @@ import {
 	CardBody,
 	CheckboxControl,
 	ExternalLink,
+	RadioControl,
 } from '@wordpress/components';
 
 /**
@@ -21,7 +22,6 @@ import {
 	SettingsSection,
 } from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
-import MultiCurrencySettingsContext from 'multi-currency/context';
 
 const StoreSettingsDescription = () => (
 	<>
@@ -49,60 +49,19 @@ const StoreSettings = () => {
 	const {
 		storeSettings,
 		isLoading,
-		submitStoreSettingsUpdate,
+		isDirty,
+		isSaving,
+		updateStoreSettingValues,
+		saveStoreSettings,
 	} = useStoreSettings();
-	const [ isSavingSettings, setIsSavingSettings ] = useState( false );
-	const [
-		isAutomaticSwitchEnabledValue,
-		setIsAutomaticSwitchEnabledValue,
-	] = useState( false );
-
-	const [
-		isStorefrontSwitcherEnabledValue,
-		setIsStorefrontSwitcherEnabledValue,
-	] = useState( false );
-
-	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
-
-	const {
-		setIsCurrentScreenDirty: setIsDirty,
-		isCurrentScreenDirty: isDirty,
-	} = useContext( MultiCurrencySettingsContext );
 
 	useEffect( () => {
-		if ( Object.keys( storeSettings ).length ) {
-			setIsStorefrontSwitcherEnabledValue(
-				storeSettings.enable_storefront_switcher
-			);
-			setIsAutomaticSwitchEnabledValue(
-				storeSettings.enable_auto_currency
-			);
+		if ( ! isDirty ) {
+			window.onbeforeunload = null;
 		}
-	}, [
-		setIsAutomaticSwitchEnabledValue,
-		setIsStorefrontSwitcherEnabledValue,
-		storeSettings,
-	] );
+	}, [ isDirty ] );
 
-	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
-		setIsAutomaticSwitchEnabledValue( value );
-		setIsDirty( true );
-	};
-
-	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
-		setIsStorefrontSwitcherEnabledValue( value );
-		setIsDirty( true );
-	};
-
-	const saveSettings = () => {
-		setIsSavingSettings( true );
-		submitStoreSettingsUpdate(
-			isAutomaticSwitchEnabledValue,
-			isStorefrontSwitcherEnabledValue
-		);
-		setIsSavingSettings( false );
-		setIsDirty( false );
-	};
+	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
 	return (
 		<>
@@ -114,8 +73,14 @@ const StoreSettings = () => {
 					<Card className="multi-currency-settings__wrapper">
 						<CardBody className="wcpay-card-body">
 							<CheckboxControl
-								checked={ isAutomaticSwitchEnabledValue }
-								onChange={ handleIsAutomaticSwitchEnabledClick }
+								checked={
+									!! storeSettings.enable_auto_currency
+								}
+								onChange={ ( value ) =>
+									updateStoreSettingValues( {
+										enable_auto_currency: value,
+									} )
+								}
 								data-testid={ 'enable_auto_currency' }
 								label={ __(
 									'Automatically switch customers to their local currency if it has been enabled',
@@ -141,11 +106,51 @@ const StoreSettings = () => {
 								) }
 								__nextHasNoMarginBottom
 							/>
+							{ storeSettings.is_cache_optimized_feature_enabled ? (
+								<RadioControl
+									label={ __(
+										'Price rendering mode',
+										'woocommerce-payments'
+									) }
+									help={ __(
+										'Choose how multi-currency prices are rendered. "Optimized for caching" outputs identical HTML for all visitors and converts prices client-side, allowing hosting providers to cache pages effectively.',
+										'woocommerce-payments'
+									) }
+									selected={
+										storeSettings.rendering_mode || 'speed'
+									}
+									options={ [
+										{
+											label: __(
+												'Optimized for speed (default)',
+												'woocommerce-payments'
+											),
+											value: 'speed',
+										},
+										{
+											label: __(
+												'Optimized for caching',
+												'woocommerce-payments'
+											),
+											value: 'cache',
+										},
+									] }
+									onChange={ ( value ) =>
+										updateStoreSettingValues( {
+											rendering_mode: value,
+										} )
+									}
+								/>
+							) : null }
 							{ storeSettings.site_theme === 'Storefront' ? (
 								<CheckboxControl
-									checked={ isStorefrontSwitcherEnabledValue }
-									onChange={
-										handleIsStorefrontSwitcherEnabledClick
+									checked={
+										!! storeSettings.enable_storefront_switcher
+									}
+									onChange={ ( value ) =>
+										updateStoreSettingValues( {
+											enable_storefront_switcher: value,
+										} )
 									}
 									data-testid={ 'enable_storefront_switcher' }
 									label={ __(
@@ -185,9 +190,9 @@ const StoreSettings = () => {
 			<SettingsSection className="multi-currency-settings-save-settings-section">
 				<Button
 					isPrimary
-					isBusy={ isSavingSettings }
-					disabled={ isSavingSettings || ! isDirty }
-					onClick={ saveSettings }
+					isBusy={ isSaving }
+					disabled={ isSaving || ! isDirty }
+					onClick={ saveStoreSettings }
 					__next40pxDefaultSize
 				>
 					{ __( 'Save changes', 'woocommerce-payments' ) }

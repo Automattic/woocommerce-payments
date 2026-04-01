@@ -28,6 +28,9 @@ const handleWooPayDirectCheckout = async ( checkoutButtons ) => {
 		return;
 	}
 
+	// Filter out null/undefined elements (e.g. when a button getter returns null).
+	checkoutButtons = checkoutButtons.filter( Boolean );
+
 	if ( isThirdPartyCookieEnabled ) {
 		if ( await WooPayDirectCheckout.isUserLoggedIn() ) {
 			WooPayDirectCheckout.maybePrefetchEncryptedSessionData();
@@ -64,18 +67,36 @@ const addFooterCartEventListener = () => {
 };
 
 /**
- * If the mini cart widget is available on the page, observe when the drawer element gets added to the DOM.
+ * If the mini cart widget is available on the page, attach event listeners to the checkout buttons.
  *
- * As of today, no window events are triggered when the mini cart is opened or closed,
- * nor there are attribute changes to the "open" button, so we have to rely on a MutationObserver
- * attached to the `document.body`, which is where the mini cart drawer element is added.
+ * Supports two rendering modes:
+ * - iAPI (WooCommerce 10.4+): The overlay and buttons are server-side rendered and already in the
+ *   DOM at page load. Returns the button elements so the caller can merge them into a single
+ *   handleWooPayDirectCheckout call (avoids concurrent isUserLoggedIn races).
+ * - Legacy React: The drawer is dynamically injected into the DOM when opened, so we use a
+ *   MutationObserver to detect insertion and then wait for the buttons to render.
+ *
+ * @return {HTMLElement[]} iAPI mini-cart buttons (empty array for legacy/absent mini-cart).
  */
 const maybeObserveMiniCart = () => {
-	// Check if the widget is available on the page.
+	// iAPI mini-cart (WC 10.4+): overlay & buttons are SSR'd, already in the DOM.
+	// Return them so the caller can batch all buttons into one handleWooPayDirectCheckout call.
+	if (
+		document.querySelector(
+			'[data-wp-interactive="woocommerce/mini-cart"]'
+		)
+	) {
+		return [
+			WooPayDirectCheckout.getMiniCartProceedToCheckoutButton(),
+			WooPayDirectCheckout.getFooterMiniCartProceedToCheckoutButton(),
+		];
+	}
+
+	// Legacy React mini-cart: check if the widget is available on the page.
 	if (
 		! document.querySelector( '[data-block-name="woocommerce/mini-cart"]' )
 	) {
-		return;
+		return [];
 	}
 
 	// Create a MutationObserver to check when the mini cart drawer is added to the DOM.
@@ -109,6 +130,8 @@ const maybeObserveMiniCart = () => {
 	} );
 
 	observer.observe( document.body, { childList: true } );
+
+	return [];
 };
 
 /**
@@ -250,11 +273,13 @@ window.addEventListener( 'load', async () => {
 		removeItemCallback
 	);
 
-	// If the mini cart is available, check when it's opened so we can add the event listener to the mini cart's checkout button.
-	maybeObserveMiniCart();
+	// Collect iAPI mini-cart buttons (if present) and merge with checkout buttons
+	// into a single handleWooPayDirectCheckout call to avoid concurrent isUserLoggedIn races.
+	// Legacy React mini-cart sets up a MutationObserver internally and returns [].
+	const miniCartButtons = maybeObserveMiniCart();
 
 	const checkoutButtons = WooPayDirectCheckout.getCheckoutButtonElements();
-	handleWooPayDirectCheckout( checkoutButtons );
+	handleWooPayDirectCheckout( [ ...checkoutButtons, ...miniCartButtons ] );
 } );
 
 jQuery( ( $ ) => {

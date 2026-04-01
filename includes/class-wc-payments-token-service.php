@@ -18,9 +18,10 @@ use WCPay\Constants\Payment_Method;
  */
 class WC_Payments_Token_Service {
 	const REUSABLE_GATEWAYS_BY_PAYMENT_METHOD = [
-		Payment_Method::CARD => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-		Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
-		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::CARD       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::SEPA       => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
+		Payment_Method::LINK       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+		Payment_Method::AMAZON_PAY => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY,
 	];
 
 	const CACHED_PAYMENT_METHODS_META_KEY = '_wcpay_payment_methods';
@@ -60,6 +61,7 @@ class WC_Payments_Token_Service {
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_link' ], 10, 2 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_wallet' ], 10, 2 );
+		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_amazon_pay' ], 10, 2 );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_stripe_link_label' ] );
 	}
@@ -87,6 +89,15 @@ class WC_Payments_Token_Service {
 				$gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
+				break;
+			case Payment_Method::AMAZON_PAY:
+				$token      = new WC_Payment_Token_WCPay_Amazon_Pay();
+				$gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::AMAZON_PAY;
+				$token->set_gateway_id( $gateway_id );
+				// Amazon Pay stores email in billing_details. The token class handles redaction.
+				if ( ! empty( $payment_method['billing_details']['email'] ) ) {
+					$token->set_email( $payment_method['billing_details']['email'] );
+				}
 				break;
 			case Payment_Method::CARD_PRESENT:
 				$token = new WC_Payment_Token_CC();
@@ -333,6 +344,11 @@ class WC_Payments_Token_Service {
 			$types[] = Payment_Method::LINK;
 		}
 
+		$amazon_pay = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
+		if ( $amazon_pay && $amazon_pay->is_enabled() ) {
+			$types[] = Payment_Method::AMAZON_PAY;
+		}
+
 		return $types;
 	}
 	/**
@@ -486,6 +502,21 @@ class WC_Payments_Token_Service {
 			$original_brand
 		);
 
+		return $item;
+	}
+
+	/**
+	 * Controls the output for Amazon Pay tokens on the My Account page.
+	 *
+	 * @param  array                                              $item          Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Amazon_Pay $payment_token The payment token associated with this method entry.
+	 * @return array                                            Filtered item.
+	 */
+	public function get_account_saved_payment_methods_list_item_amazon_pay( $item, $payment_token ) {
+		if ( WC_Payment_Token_WCPay_Amazon_Pay::TYPE === strtolower( $payment_token->get_type() ) ) {
+			$item['method']['last4'] = $payment_token->get_email();
+			$item['method']['brand'] = esc_html__( 'Amazon Pay', 'woocommerce-payments' );
+		}
 		return $item;
 	}
 

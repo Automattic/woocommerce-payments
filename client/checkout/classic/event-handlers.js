@@ -6,6 +6,7 @@
 import './style.scss';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
+import { getIconTheme } from 'wcpay/checkout/utils/icon-theme';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
@@ -28,6 +29,7 @@ import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
+import { maybePersistAdminWoopayAppearance } from 'wcpay/checkout/woopay/appearance/persist-admin';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
@@ -70,9 +72,19 @@ jQuery( function ( $ ) {
 	} );
 
 	$( document.body ).on( 'updated_checkout', () => {
+		swapDarkIcons();
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
 		injectPaymentMethodLogos();
 	} );
+
+	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
+		'change',
+		function () {
+			this.closest( 'form.checkout' )
+				?.querySelectorAll( '.wcpay-upe-element' )
+				.forEach( restrictPaymentMethodToLocation );
+		}
+	);
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
 		if ( isBillingInformationMissing() ) {
@@ -113,10 +125,12 @@ jQuery( function ( $ ) {
 
 	if ( $addPaymentMethodForm.length ) {
 		maybeMountStripePaymentElement( 'add_payment_method' );
+		swapDarkIcons();
 	}
 
 	if ( $payForOrderForm.length ) {
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
+		swapDarkIcons();
 	}
 
 	$addPaymentMethodForm.on( 'submit', function () {
@@ -155,6 +169,14 @@ jQuery( function ( $ ) {
 	) {
 		handleWooPayEmailInput( '#billing_email', api );
 	}
+
+	// In the Customizer preview, capture the live appearance and persist it.
+	// Stylesheets are already loaded in the Customizer preview iframe, so
+	// window.load isn't strictly needed here — but we use it to stay
+	// consistent with blocks/index.js and express-button/index.js.
+	window.addEventListener( 'load', () => {
+		maybePersistAdminWoopayAppearance();
+	} );
 
 	async function injectPaymentMethodLogos() {
 		const cardLabel = document.querySelector(
@@ -363,6 +385,26 @@ jQuery( function ( $ ) {
 		window.addEventListener( 'resize', updateLogos );
 	}
 
+	function swapDarkIcons() {
+		const useDark = getIconTheme( 'classic' ) === 'night';
+
+		document.querySelectorAll( '.wcpay-upe-element' ).forEach( ( el ) => {
+			const type = el.dataset.paymentMethodType;
+			if ( type === 'card' ) {
+				return;
+			}
+			const config = getUPEConfig( 'paymentMethodsConfig' )?.[ type ];
+			const targetIcon = useDark ? config?.darkIcon : config?.icon;
+			if ( targetIcon ) {
+				el.closest( '.wc_payment_method' )
+					?.querySelectorAll( 'label img' )
+					.forEach( ( img ) => {
+						img.src = targetIcon;
+					} );
+			}
+		} );
+	}
+
 	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
@@ -389,18 +431,6 @@ jQuery( function ( $ ) {
 	function restrictPaymentMethodToLocation( upeElement ) {
 		if ( hasPaymentMethodCountryRestrictions( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
-
-			const billingInput = upeElement
-				?.closest( 'form.checkout' )
-				?.querySelector(
-					`[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]`
-				);
-			if ( billingInput ) {
-				// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
-				$( billingInput ).on( 'change', function () {
-					togglePaymentMethodForCountry( upeElement );
-				} );
-			}
 		}
 	}
 } );

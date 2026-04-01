@@ -112,8 +112,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						.getByTestId( 'accept-dispute-button' )
 						.click();
 
-					// Wait for the network request to complete
-					await merchantPage.waitForLoadState( 'networkidle' );
+					// Wait for the accept request to complete.
+					await merchantPage.waitForLoadState( 'load' );
 				}
 			);
 
@@ -312,7 +312,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					// Poll for the final status, refreshing the page if needed
 					await expect( async () => {
 						await merchantPage.goto( paymentDetailsLink );
-						await merchantPage.waitForLoadState( 'networkidle' );
+						await merchantPage.waitForLoadState( 'load' );
 
 						// Check that we're no longer "Under Review"
 						await expect(
@@ -491,7 +491,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					// Poll for the final status, refreshing the page if needed
 					await expect( async () => {
 						await merchantPage.goto( paymentDetailsLink );
-						await merchantPage.waitForLoadState( 'networkidle' );
+						await merchantPage.waitForLoadState( 'load' );
 
 						// Check that we're no longer "Under Review"
 						await expect(
@@ -586,28 +586,28 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'offline_service' );
-				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
-					.fill( 'my product description' );
 
-				// Blur the field to ensure value is committed to state before saving
-				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
-					.press( 'Tab' );
+				// The product description field is auto-populated asynchronously.
+				// An async React effect may overwrite user input after initial load,
+				// so we retry the fill+verify cycle until the value sticks.
+				await expect( async () => {
+					await merchantPage
+						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.fill( 'my product description' );
 
-				// Verify the value was set correctly immediately after filling
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-				).toHaveValue( 'my product description' );
+					// Blur the field to ensure value is committed to state
+					await merchantPage
+						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.press( 'Tab' );
+
+					await expect(
+						merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					).toHaveValue( 'my product description', {
+						timeout: 2000,
+					} );
+				} ).toPass( { timeout: 20000, intervals: [ 2000 ] } );
 			}
 		);
-
-		await test.step( 'Verify form values before saving', async () => {
-			// Double-check that the form value is still correct before saving
-			await expect(
-				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-			).toHaveValue( 'my product description' );
-		} );
 
 		await test.step( 'Save the dispute challenge for later', async () => {
 			const waitResponse = merchantPage.waitForResponse(
@@ -643,49 +643,44 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					hasText: 'Evidence saved!',
 				} )
 			).toBeVisible( { timeout: 10000 } );
-		} );
 
-		await test.step( 'Go back to the payment details page', async () => {
-			await merchantPage.goto( paymentDetailsLink );
+			// Stripe does not guarantee immediate read-after-write consistency.
+			// Allow time for the write to propagate before navigating away.
+			await merchantPage.waitForTimeout( 3000 );
 		} );
 
 		await test.step(
-			'Navigate to the payment details screen and click the challenge dispute button',
+			'Navigate back and verify previously saved values are restored',
 			async () => {
-				await merchantPage
-					.getByTestId( 'challenge-dispute-button' )
-					.click();
+				// Poll by reloading the challenge page on each retry.
+				// The Stripe API may not return the saved evidence immediately,
+				// so we retry the full navigation cycle until the saved value
+				// appears. This follows the same polling pattern used by the
+				// dispute status checks in the winning/losing evidence tests.
+				await expect( async () => {
+					await merchantPage.goto( paymentDetailsLink );
+					await merchantPage.waitForLoadState( 'load' );
 
-				// Wait for the challenge screen initial loading spinner to disappear
-				await expect(
-					merchantPage.getByTestId( 'new-evidence-loading' )
-				).toBeHidden( { timeout: 20000 } );
-			}
-		);
+					await merchantPage
+						.getByTestId( 'challenge-dispute-button' )
+						.click();
 
-		await test.step(
-			'Verify previously saved values are restored',
-			async () => {
-				await test.step(
-					'Confirm we are on the challenge dispute page',
-					async () => {
-						await expect(
-							merchantPage.getByText( "Let's gather the basics", {
-								exact: true,
-							} )
-						).toBeVisible();
-					}
-				);
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 
-				// Wait for description control to be visible
-				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
-					.waitFor( { timeout: 10000, state: 'visible' } );
+					await expect(
+						merchantPage.getByText( "Let's gather the basics", {
+							exact: true,
+						} )
+					).toBeVisible();
 
-				// Assert the product description persisted (server stores this under evidence)
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-				).toHaveValue( 'my product description', { timeout: 15000 } );
+					await expect(
+						merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					).toHaveValue( 'my product description', {
+						timeout: 5000,
+					} );
+				} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 			}
 		);
 	} );

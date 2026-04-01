@@ -3658,7 +3658,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$mock_gateway->method( 'get_option' )->willReturnCallback(
 			function ( $key, $default = null ) {
 				$options = [
-					'apple_google_pay_in_payment_methods_options' => 'yes',
+					'express_checkout_in_payment_methods'  => 'yes',
 					'manual_capture'                       => 'no',
 					'enable_logging'                       => 'no',
 					'payment_request_button_type'          => 'default',
@@ -3708,7 +3708,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'gateway', $captured_data );
 		$this->assertArrayHasKey( 'payment_methods', $captured_data );
 		$this->assertArrayHasKey( 'provider_capabilities', $captured_data );
-		$this->assertArrayHasKey( 'apple_google_pay_in_payment_methods_options_enabled', $captured_data );
+		$this->assertArrayHasKey( 'express_checkout_in_payment_methods_enabled', $captured_data );
 		$this->assertArrayHasKey( 'saved_cards_enabled', $captured_data );
 		$this->assertArrayHasKey( 'manual_capture_enabled', $captured_data );
 		$this->assertArrayHasKey( 'debug_log_enabled', $captured_data );
@@ -3755,7 +3755,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Assert: Verify simple boolean/string values match mocked data.
-		$this->assertEquals( 'yes', $captured_data['apple_google_pay_in_payment_methods_options_enabled'] );
+		$this->assertEquals( 'yes', $captured_data['express_checkout_in_payment_methods_enabled'] );
 		$this->assertTrue( $captured_data['saved_cards_enabled'] );
 		$this->assertFalse( $captured_data['manual_capture_enabled'] );
 		$this->assertFalse( $captured_data['debug_log_enabled'] );
@@ -3922,5 +3922,66 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Assert.
 		$this->assertSame( $expected, $result );
+	}
+
+	public function test_get_cached_account_data_sends_woocommerce_store_id() {
+		$store_id = 'test-store-uuid-5678';
+		update_option( 'woocommerce_store_id', $store_id );
+
+		$this->mock_jetpack_connection();
+		$this->mock_empty_cache();
+
+		$request_mock = $this->mock_wcpay_request( Get_Account::class );
+		$request_mock
+			->expects( $this->once() )
+			->method( 'set_woocommerce_store_id' )
+			->with( $store_id );
+		$request_mock
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_test_',
+						'test_publishable_key'     => 'pk_live_',
+						'has_pending_requirements' => false,
+						'current_deadline'         => 0,
+						'is_live'                  => true,
+					]
+				)
+			);
+
+		$this->wcpay_account->get_cached_account_data();
+	}
+
+	public function test_get_cached_account_data_sends_empty_store_id_when_option_missing() {
+		delete_option( 'woocommerce_store_id' );
+
+		$this->mock_jetpack_connection();
+		$this->mock_empty_cache();
+
+		$request_mock = $this->mock_wcpay_request( Get_Account::class );
+		$request_mock
+			->expects( $this->once() )
+			->method( 'set_woocommerce_store_id' )
+			->with( '' );
+		$request_mock
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_test_',
+						'test_publishable_key'     => 'pk_live_',
+						'has_pending_requirements' => false,
+						'current_deadline'         => 0,
+						'is_live'                  => true,
+					]
+				)
+			);
+
+		$this->wcpay_account->get_cached_account_data();
 	}
 }

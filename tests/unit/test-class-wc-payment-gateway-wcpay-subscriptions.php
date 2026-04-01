@@ -12,7 +12,8 @@ use WCPay\Duplicates_Detection_Service;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -148,8 +149,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
 		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
-		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
+		$mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, CardDefinition::class ] )
 			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 
@@ -371,7 +372,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 			->willReturn( WC_Helper_Intention::create_intention() );
 
 		$this->mock_customer_service
-			->expects( $this->once() )
+			->expects( $this->any() )
 			->method( 'update_customer_for_user' )
 			->willReturn( self::CUSTOMER_ID );
 
@@ -642,6 +643,36 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 		$payment_method_to_display = $this->wcpay_gateway->maybe_render_subscription_payment_method( 'Via Credit card', $subscription );
 		$this->assertEquals( $last_token->get_display_name(), $payment_method_to_display );
+	}
+
+	public function test_link_subscription_payment_method_display_overrides_card() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->set_payment_method( $this->wcpay_gateway->id );
+
+		$link_token = WC_Helper_Token::create_link_token( 'pm_link_123', self::USER_ID, 'test@example.com' );
+		$subscription->add_payment_token( $link_token );
+
+		$result = $this->wcpay_gateway->maybe_override_link_subscription_payment_method_display( 'Card', $subscription );
+		$this->assertEquals( $link_token->get_display_name(), $result );
+	}
+
+	public function test_link_subscription_payment_method_display_skips_card_tokens() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->set_payment_method( $this->wcpay_gateway->id );
+
+		$card_token = WC_Helper_Token::create_token( 'pm_card_123', self::USER_ID );
+		$subscription->add_payment_token( $card_token );
+
+		$result = $this->wcpay_gateway->maybe_override_link_subscription_payment_method_display( 'Card', $subscription );
+		$this->assertEquals( 'Card', $result );
+	}
+
+	public function test_link_subscription_payment_method_display_skips_other_gateways() {
+		$subscription = WC_Helper_Order::create_order( self::USER_ID );
+		$subscription->set_payment_method( 'other_gateway' );
+
+		$result = $this->wcpay_gateway->maybe_override_link_subscription_payment_method_display( 'Via Other', $subscription );
+		$this->assertEquals( 'Via Other', $result );
 	}
 
 	public function test_display_save_payment_method_checkbox_for_subs_cart() {
@@ -945,8 +976,8 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	public function test_adds_custom_payment_meta_input_for_all_versions() {
 		remove_all_actions( 'woocommerce_admin_order_data_after_billing_address' );
 
-		$mock_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
+		$mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, CardDefinition::class ] )
 			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 

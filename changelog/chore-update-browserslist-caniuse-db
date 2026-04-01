@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+chore: update browserslist / caniuse-lite database from 1.0.30001718 to 1.0.30001780

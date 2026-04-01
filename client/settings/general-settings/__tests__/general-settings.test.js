@@ -171,4 +171,40 @@ describe( 'GeneralSettings', () => {
 			)
 		).toBeInTheDocument();
 	} );
+
+	it( 'disables test mode checkbox when dev mode is enabled', () => {
+		useDevMode.mockReturnValue( true );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		const enableTestModeCheckbox = screen.getByLabelText(
+			'Enable test mode (enabled by development mode)'
+		);
+
+		expect( enableTestModeCheckbox ).toBeDisabled();
+		expect( enableTestModeCheckbox ).toBeChecked();
+	} );
+
+	it( 'shows dev mode help text when dev mode is enabled', () => {
+		useDevMode.mockReturnValue( true );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		expect(
+			screen.queryByText( /development or staging environment/i )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not disable test mode checkbox when dev mode is not enabled', () => {
+		useDevMode.mockReturnValue( false );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		const enableTestModeCheckbox = screen.getByLabelText(
+			'Enable test mode'
+		);
+
+		expect( enableTestModeCheckbox ).not.toBeDisabled();
+		expect( enableTestModeCheckbox ).not.toBeChecked();
+	} );
 } );

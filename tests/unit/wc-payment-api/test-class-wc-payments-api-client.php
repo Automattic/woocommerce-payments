@@ -254,6 +254,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws API_Exception
 	 */
 	public function test_get_onboarding_data() {
+		update_option( 'woocommerce_store_id', 'test-store-id-12345' );
+
 		$site_data = [
 			'site_username' => 'admin',
 			'site_locale'   => 'en_US',
@@ -302,6 +304,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'actioned_notes'              => $actioned_notes,
 						'create_live_account'         => true,
 						'collect_payout_requirements' => false,
+						'woocommerce_store_id'        => 'test-store-id-12345',
 						'compatibility_data'          => $this->get_mock_compatibility_data(),
 						'referral_code'               => null,
 					]
@@ -1617,5 +1620,67 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		foreach ( $post_ids as $post_id ) {
 			wp_delete_post( (int) $post_id, true );
 		}
+	}
+
+	/**
+	 * Tests that get_dispute_summary returns correct data for a valid dispute ID.
+	 */
+	public function test_get_dispute_summary_success(): void {
+		$dispute_id = 'dp_123456789';
+
+		// Mock the expected response from the API.
+		$expected_response = [
+			'id'              => $dispute_id,
+			'fee'             => 1500,
+			'network_cost'    => 500,
+			'currency'        => 'usd',
+			'disputed_amount' => 5000,
+			'exchange_rate'   => 1,
+		];
+
+		$this->set_http_mock_response( 200, $expected_response );
+
+		// Act: Call the method.
+		$result = $this->payments_api_client->get_dispute_summary( $dispute_id );
+
+		// Assert: Check that the response matches the expected data.
+		$this->assertEquals( $expected_response, $result );
+	}
+
+	/**
+	 * Tests that get_dispute_summary throws exception for invalid dispute ID.
+	 */
+	public function test_get_dispute_summary_invalid_id(): void {
+		$dispute_id = 'invalid_id_with_special_chars!';
+
+		// Expect an API exception to be thrown.
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Route param validation failed.' );
+
+		// Act: Call the method with invalid ID.
+		$this->payments_api_client->get_dispute_summary( $dispute_id );
+	}
+
+	/**
+	 * Tests that get_dispute_summary handles API errors correctly.
+	 */
+	public function test_get_dispute_summary_api_error(): void {
+		$dispute_id = 'dp_123456789';
+
+		// Mock an API error response.
+		$error_response = [
+			'error' => [
+				'code'    => 'resource_missing',
+				'message' => 'No such dispute',
+			],
+		];
+
+		$this->set_http_mock_response( 404, $error_response );
+
+		// Expect an API exception to be thrown.
+		$this->expectException( API_Exception::class );
+
+		// Act: Call the method.
+		$this->payments_api_client->get_dispute_summary( $dispute_id );
 	}
 }
