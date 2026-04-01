@@ -30,6 +30,17 @@ describe( 'isEmail', () => {
 		expect( isEmail( email ) ).toBe( expected );
 	} );
 
+	describe( 'internationalized email addresses (EAI/RFC 6531)', () => {
+		it.each( [
+			[ '用户@example.com', true ],
+			[ 'user@例え.jp', true ],
+			[ 'Pelstrø@example.com', true ],
+			[ 'пользователь@пример.рф', true ],
+		] )( 'accepts internationalized email: %s', ( email, expected ) => {
+			expect( isEmail( email ) ).toBe( expected );
+		} );
+	} );
+
 	it( 'rejects emails exceeding RFC 5321 max length of 254 characters', () => {
 		const longEmail = 'a'.repeat( 243 ) + '@example.com'; // 255 chars
 		expect( longEmail.length ).toBe( 255 );
