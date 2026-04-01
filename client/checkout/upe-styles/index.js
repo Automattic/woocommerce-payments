@@ -277,9 +277,28 @@ export const appearanceSelectors = {
 			Object.entries( selectors.alternateSelectors ).forEach(
 				( altSelector ) => {
 					const [ key, value ] = altSelector;
+					const current = selectors[ key ];
 
-					if ( ! scope.querySelector( selectors[ key ] ) ) {
-						selectors[ key ] = value;
+					if ( Array.isArray( current ) ) {
+						// For array selectors, check if any element matches.
+						const anyMatch = current.some( ( s ) => {
+							try {
+								return scope.querySelector( s );
+							} catch ( e ) {
+								return false;
+							}
+						} );
+						if ( ! anyMatch ) {
+							selectors[ key ] = value;
+						}
+					} else {
+						try {
+							if ( ! scope.querySelector( selectors[ key ] ) ) {
+								selectors[ key ] = value;
+							}
+						} catch ( e ) {
+							selectors[ key ] = value;
+						}
 					}
 				}
 			);
