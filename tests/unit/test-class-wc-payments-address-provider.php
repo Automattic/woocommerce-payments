@@ -164,4 +164,44 @@ class WC_Payments_Address_Provider_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'cached_jwt_token', $result );
 	}
+
+	public function test_get_address_service_jwt_returns_wp_error_when_cache_returns_null() {
+		// When get_or_add returns null (e.g. after a failed fetch with no prior cached data),
+		// the method should return a WP_Error instead of null.
+		$this->mock_database_cache
+			->method( 'get_or_add' )
+			->willReturn( null );
+
+		$result = $this->provider->get_address_service_jwt();
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'wcpay_address_service_error', $result->get_error_code() );
+	}
+
+	public function test_generator_returns_null_on_api_failure_for_cache_error_detection() {
+		// Verify the generator returns null (not INVALID_TOKEN) so that
+		// Database_Cache::get_or_add treats it as an error and uses a shorter TTL.
+		$this->mock_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$captured_generator = null;
+		$this->mock_database_cache
+			->method( 'get_or_add' )
+			->willReturnCallback(
+				function ( $key, $generator ) use ( &$captured_generator ) {
+					$captured_generator = $generator;
+					return $generator();
+				}
+			);
+
+		$this->mock_api_client
+			->method( 'get_address_autocomplete_token' )
+			->willThrowException( new Exception( 'API error' ) );
+
+		$this->provider->get_address_service_jwt();
+
+		// Call the generator directly to verify it returns null, not INVALID_TOKEN.
+		$this->assertNull( $captured_generator() );
+	}
 }

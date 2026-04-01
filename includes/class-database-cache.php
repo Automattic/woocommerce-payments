@@ -438,7 +438,12 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
-				$ttl = 12 * HOUR_IN_SECONDS;
+				if ( $cache_contents['errored'] ) {
+					// Retry quickly after a transient failure so address autocomplete recovers promptly.
+					$ttl = 2 * MINUTE_IN_SECONDS;
+				} else {
+					$ttl = 12 * HOUR_IN_SECONDS;
+				}
 				break;
 			default:
 				// Default to 24h.
