@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import isEmail from 'validator/lib/isEmail';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -26,6 +25,8 @@ export const getProductFormElement = () => {
 		document.querySelector( 'form.wp-block-add-to-cart-with-options' )
 	);
 };
+
+const isEmail = ( email ) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( email );
 
 const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {
