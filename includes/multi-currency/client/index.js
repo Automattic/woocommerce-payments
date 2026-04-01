@@ -3,6 +3,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,23 +19,22 @@ const MultiCurrencySettingsPage = () => {
 		_setCurrencyCodeToShowSettingsFor,
 	] = useState( null );
 	const [ isCurrentScreenDirty, setIsCurrentScreenDirty ] = useState( false );
-	useEffect(
-		useConfirmNavigation( () => {
-			if ( isCurrentScreenDirty ) {
-				return __(
-					'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
-					'woocommerce-payments'
-				);
-			}
-		} ),
-		[ isCurrentScreenDirty ]
-	);
+	const confirmLeaveCallback = useConfirmNavigation( () => {
+		if ( isCurrentScreenDirty ) {
+			return __(
+				'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
+				'woocommerce-payments'
+			);
+		}
+	} );
+	useEffect( confirmLeaveCallback, [ isCurrentScreenDirty ] );
 	useEffect( () => {
 		setIsCurrentScreenDirty( false );
 	}, [ currencyCodeToShowSettingsFor ] );
 	const setCurrencyCodeToShowSettingsFor = useCallback(
 		( currency ) => {
 			if (
+				! isCurrentScreenDirty ||
 				confirm(
 					__(
 						'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
