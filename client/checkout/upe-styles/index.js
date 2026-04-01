@@ -168,6 +168,7 @@ export const appearanceSelectors = {
 			appendTarget: 'form.checkout',
 			upeThemeInputSelector: 'form.checkout input[type="text"]',
 			upeThemeLabelSelector: 'form.checkout label',
+			upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
 		},
 		backgroundSelectors: [
 			'#customer_details',
