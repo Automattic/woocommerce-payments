@@ -2038,4 +2038,67 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
+
+	/**
+	 * Test that add_fee_breakdown_to_order_notes returns early when timeline data is missing.
+	 */
+	public function test_add_fee_breakdown_returns_early_when_timeline_data_missing() {
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client->expects( $this->once() )
+			->method( 'get_timeline' )
+			->willReturn( [] ); // No 'data' key.
+
+		$order_service = new WC_Payments_Order_Service( $mock_api_client );
+
+		$notes_before = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), 'pi_test_123' );
+
+		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ), $notes_after );
+	}
+
+	/**
+	 * Test that add_fee_breakdown_to_order_notes returns early when timeline data is not an array.
+	 */
+	public function test_add_fee_breakdown_returns_early_when_timeline_data_not_array() {
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client->expects( $this->once() )
+			->method( 'get_timeline' )
+			->willReturn( [ 'data' => null ] );
+
+		$order_service = new WC_Payments_Order_Service( $mock_api_client );
+
+		$notes_before = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), 'pi_test_123' );
+
+		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ), $notes_after );
+	}
+
+	/**
+	 * Test that add_fee_breakdown_to_order_notes returns early when no captured event is found.
+	 */
+	public function test_add_fee_breakdown_returns_early_when_no_captured_event() {
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client->expects( $this->once() )
+			->method( 'get_timeline' )
+			->willReturn(
+				[
+					'data' => [
+						[ 'type' => 'authorized' ],
+					],
+				]
+			);
+
+		$order_service = new WC_Payments_Order_Service( $mock_api_client );
+
+		$notes_before = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), 'pi_test_123' );
+
+		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ), $notes_after );
+	}
 }
