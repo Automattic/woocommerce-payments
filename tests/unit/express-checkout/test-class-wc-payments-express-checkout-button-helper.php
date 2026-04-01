@@ -737,157 +737,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		);
 	}
 
-	public function test_is_cart_zero_total_with_trial_subscription_returns_false_when_not_on_cart_or_checkout() {
-		WC_Subscriptions_Product::$is_subscription = true;
-		WC_Subscriptions_Product::$trial_length    = 1;
-		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
-
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
-			->getMock();
-
-		$helper->method( 'is_cart' )->willReturn( false );
-		$helper->method( 'is_checkout' )->willReturn( false );
-
-		$this->assertFalse( $helper->is_cart_zero_total_with_trial_subscription() );
-	}
-
-	public function test_is_cart_zero_total_with_trial_subscription_returns_false_when_cart_total_not_zero() {
-		// set_up already adds a simple product with non-zero price, so cart total > 0.
-		WC_Subscriptions_Product::$is_subscription = true;
-		WC_Subscriptions_Product::$trial_length    = 1;
-		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
-
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
-			->getMock();
-
-		$helper->method( 'is_cart' )->willReturn( true );
-		$helper->method( 'is_checkout' )->willReturn( false );
-
-		$this->assertFalse( $helper->is_cart_zero_total_with_trial_subscription() );
-	}
-
-	public function test_is_cart_zero_total_with_trial_subscription_returns_false_when_no_subscriptions() {
-		// Empty cart so total is zero.
-		WC()->cart->empty_cart();
-		WC()->cart->calculate_totals();
-
-		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
-
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
-			->getMock();
-
-		$helper->method( 'is_cart' )->willReturn( true );
-		$helper->method( 'is_checkout' )->willReturn( false );
-
-		$this->assertFalse( $helper->is_cart_zero_total_with_trial_subscription() );
-	}
-
-	public function test_is_cart_zero_total_with_trial_subscription_returns_false_when_no_trial() {
-		// Subscription without a trial should not qualify.
-		WC()->cart->empty_cart();
-		$product = new WC_Product_Simple();
-		$product->set_props(
-			[
-				'name'          => 'Regular Subscription',
-				'regular_price' => 0,
-				'price'         => 0,
-			]
-		);
-		$product->save();
-		WC()->cart->add_to_cart( $product->get_id(), 1 );
-		WC()->cart->calculate_totals();
-
-		WC_Subscriptions_Product::$is_subscription = true;
-		WC_Subscriptions_Product::$trial_length    = 0;
-		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
-
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
-			->getMock();
-
-		$helper->method( 'is_cart' )->willReturn( true );
-		$helper->method( 'is_checkout' )->willReturn( false );
-
-		$this->assertFalse( $helper->is_cart_zero_total_with_trial_subscription() );
-	}
-
-	public function test_is_cart_zero_total_with_trial_subscription_returns_false_when_cart_is_virtual_only() {
-		// Virtual-only carts should not qualify because Express Checkout
-		// won't collect a shipping address, so we can't calculate taxes.
-		WC()->cart->empty_cart();
-		$product = new WC_Product_Simple();
-		$product->set_props(
-			[
-				'name'          => 'Virtual Trial Subscription',
-				'regular_price' => 0,
-				'price'         => 0,
-				'virtual'       => true,
-			]
-		);
-		$product->save();
-		WC()->cart->add_to_cart( $product->get_id(), 1 );
-		WC()->cart->calculate_totals();
-
-		WC_Subscriptions_Product::$is_subscription = true;
-		WC_Subscriptions_Product::$trial_length    = 1;
-		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
-
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_cart', 'is_checkout' ] )
-			->getMock();
-
-		$helper->method( 'is_cart' )->willReturn( true );
-		$helper->method( 'is_checkout' )->willReturn( false );
-
-		$this->assertFalse( $helper->is_cart_zero_total_with_trial_subscription() );
-	}
-
-	public function test_should_show_express_checkout_button_with_zero_total_trial_subscription() {
-		// Set up a zero-total cart.
-		WC()->cart->empty_cart();
-		$product = new WC_Product_Simple();
-		$product->set_props(
-			[
-				'name'          => 'Trial Subscription',
-				'regular_price' => 0,
-				'price'         => 0,
-				'virtual'       => true,
-			]
-		);
-		$product->save();
-		WC()->cart->add_to_cart( $product->get_id(), 1 );
-		WC()->cart->calculate_totals();
-
-		$this->mock_wcpay_account
-			->method( 'is_stripe_connected' )
-			->willReturn( true );
-		WC_Payments::mode()->dev();
-
-		// Mock is_cart_zero_total_with_trial_subscription to return true,
-		// since WC_Subscriptions_Product::get_price() cannot be mocked
-		// (the test mock extends WC_Product which has a non-static get_price).
-		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_cart_zero_total_with_trial_subscription' ] )
-			->getMock();
-
-		$helper->method( 'is_product' )->willReturn( false );
-		$helper->method( 'is_cart' )->willReturn( true );
-		$helper->method( 'is_checkout' )->willReturn( false );
-		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
-		$helper->method( 'is_cart_zero_total_with_trial_subscription' )->willReturn( true );
-
-		$this->assertTrue( $helper->should_show_express_checkout_button() );
-	}
-
 	public function test_should_not_show_express_checkout_button_with_zero_total_and_no_trial_subscription() {
 		// Set up a zero-total cart without trial subscriptions.
 		WC()->cart->empty_cart();
@@ -911,14 +760,13 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page', 'is_cart_zero_total_with_trial_subscription' ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'is_pay_for_order_page' ] )
 			->getMock();
 
 		$helper->method( 'is_product' )->willReturn( false );
 		$helper->method( 'is_cart' )->willReturn( true );
 		$helper->method( 'is_checkout' )->willReturn( false );
 		$helper->method( 'is_pay_for_order_page' )->willReturn( false );
-		$helper->method( 'is_cart_zero_total_with_trial_subscription' )->willReturn( false );
 
 		$this->assertFalse( $helper->should_show_express_checkout_button() );
 	}

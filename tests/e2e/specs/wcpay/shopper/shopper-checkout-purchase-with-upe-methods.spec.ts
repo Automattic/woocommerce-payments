@@ -86,6 +86,11 @@ test.describe(
 						}
 					} );
 
+					// Reload after each test to prevent state leaking between tests.
+					test.afterEach( async () => {
+						await shopperPage.reload();
+					} );
+
 					test( 'should successfully place order with Bancontact', async () => {
 						await addToCartFromShopPage( shopperPage );
 						await goToCheckout( shopperPage );

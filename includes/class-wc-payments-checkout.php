@@ -201,6 +201,7 @@ class WC_Payments_Checkout {
 			'isWooPayEmailInputEnabled'         => $this->woopay_util->is_woopay_email_input_enabled(),
 			'isWooPayDirectCheckoutEnabled'     => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 			'isWooPayGlobalThemeSupportEnabled' => $this->gateway->is_woopay_global_theme_support_enabled(),
+			'isShortcodeCheckout'               => is_checkout() && ! has_block( 'woocommerce/checkout' ),
 			'woopayHost'                        => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'              => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation'    => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
@@ -211,6 +212,12 @@ class WC_Payments_Checkout {
 			'icon'                              => $this->gateway->get_icon_url(),
 			'woopayMinimumSessionData'          => WooPay_Session::get_woopay_minimum_session_data(),
 		];
+
+		// Provide the admin nonce when previewing in the Customizer so the
+		// frontend can POST the live appearance to the admin endpoint.
+		if ( is_customize_preview() && current_user_can( 'manage_woocommerce' ) ) {
+			$js_config['adminAppearanceNonce'] = wp_create_nonce( 'wcpay_admin_woopay_appearance_nonce' );
+		}
 
 		$payment_fields = $js_config;
 

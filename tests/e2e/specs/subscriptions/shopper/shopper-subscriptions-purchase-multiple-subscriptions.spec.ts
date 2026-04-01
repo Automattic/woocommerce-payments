@@ -95,7 +95,8 @@ describeif( shouldRunSubscriptionsTests )(
 					.nth( 0 )
 					.click();
 
-				await shopperPage.waitForLoadState( 'networkidle' );
+				// Wait for the subscription details page to load.
+				await shopperPage.waitForLoadState( 'load' );
 
 				// Ensure 'Subscription totals' section lists the subscription products with the correct price.
 				const subTotalsRows = shopperPage.locator(
