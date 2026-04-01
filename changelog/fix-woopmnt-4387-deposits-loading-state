@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix help icon showing through loading skeleton in Deposits overview card.

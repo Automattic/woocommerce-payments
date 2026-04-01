@@ -103,16 +103,7 @@ const DepositsOverview: React.FC = () => {
 				<CardBody className="wcpay-deposits-overview__schedule__container">
 					<Loadable
 						isLoading
-						placeholder={
-							<DepositSchedule
-								depositsSchedule={ {
-									delay_days: 0,
-									interval: 'daily',
-									monthly_anchor: 1,
-									weekly_anchor: 'monday',
-								} }
-							/>
-						}
+						placeholder="Available funds are automatically dispatched every day."
 					/>
 				</CardBody>
 			</Card>
