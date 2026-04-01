@@ -198,6 +198,9 @@ describe( 'validateGiftCardFields', () => {
 		const getProductData = getProductDataFromHook();
 		const result = getProductData();
 		expect( result ).toBe( false );
+		expect( window.alert ).toHaveBeenCalledWith(
+			'Please type only valid emails'
+		);
 	} );
 
 	it( 'returns false for empty segment in multiple recipients', () => {
@@ -207,5 +210,8 @@ describe( 'validateGiftCardFields', () => {
 		const getProductData = getProductDataFromHook();
 		const result = getProductData();
 		expect( result ).toBe( false );
+		expect( window.alert ).toHaveBeenCalledWith(
+			'Please type only valid emails'
+		);
 	} );
 } );
