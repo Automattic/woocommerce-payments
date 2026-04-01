@@ -406,7 +406,7 @@ const hiddenElementsForUPE = {
 	 * @param {Object} scope The scope of the elements.
 	 */
 	init: function ( elementsLocation, scope ) {
-		const selectors = appearanceSelectors.getSelectors( elementsLocation ),
+		const selectors = appearanceSelectors.getSelectors( elementsLocation, scope ),
 			appendTarget = scope.querySelector( selectors.appendTarget ),
 			elementToClone = scope.querySelector(
 				selectors.upeThemeInputSelector

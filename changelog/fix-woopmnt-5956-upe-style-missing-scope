@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Pass scope argument through to getSelectors in UPE style init to prevent TypeError in block checkout.
