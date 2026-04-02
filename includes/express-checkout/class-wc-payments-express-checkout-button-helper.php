@@ -283,10 +283,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 *
 	 * This validates:
 	 * - Feature flag is enabled
-	 * - Gateway exists and is enabled
-	 * - Account has Amazon Pay fees configured (indicates availability)
-	 * - Tax settings are compatible
-	 * - Currency is supported for the account country
+	 * - Gateway exists and is available for express checkout
 	 *
 	 * @return boolean
 	 */
@@ -307,11 +304,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
-			return false;
-		}
-
-		// Amazon Pay doesn't support taxes based on billing address.
-		if ( wc_tax_enabled() && 'billing' === get_option( 'woocommerce_tax_based_on' ) && ! $this->is_pay_for_order_page() ) {
 			return false;
 		}
 
@@ -555,25 +547,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
 			return $this->is_pay_for_order_supported();
-		}
-
-		// Non-shipping product and tax is calculated based on shopper billing address. Excludes Pay for Order page.
-		if (
-			// If the product doesn't needs shipping.
-			(
-				// on the product page.
-				( $this->is_product() && ! $this->product_needs_shipping( $this->get_product() ) ) ||
-
-				// on the cart or checkout page.
-				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
-			)
-
-			// ...and tax is calculated based on billing address.
-			&& wc_tax_enabled()
-			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
-			&& 'yes' !== get_option( 'woocommerce_prices_include_tax' )
-		) {
-			return false;
 		}
 
 		// Cart total is 0 or is on product page and product price is 0.

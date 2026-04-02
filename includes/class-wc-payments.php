@@ -452,6 +452,7 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-ajax-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-handler.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-total-mismatch-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -629,6 +630,11 @@ class WC_Payments {
 		// Only register hooks of the new `src` service with the same feature of Duplicate_Payment_Prevention_Service.
 		// To avoid register the same hooks twice.
 		wcpay_get_container()->get( \WCPay\Internal\Service\DuplicatePaymentPreventionService::class )->init_hooks();
+
+		// Register hooks for Express Checkout total mismatch detection.
+		// This handles cases where tax recalculation based on billing address causes total changes.
+		$express_checkout_total_mismatch_handler = new WC_Payments_Express_Checkout_Total_Mismatch_Handler();
+		$express_checkout_total_mismatch_handler->init();
 
 		self::$apple_pay_registration = new WC_Payments_Apple_Pay_Registration( self::$api_client, self::$account, self::get_gateway() );
 		self::$apple_pay_registration->init_hooks();

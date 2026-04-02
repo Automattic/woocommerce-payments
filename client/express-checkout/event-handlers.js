@@ -174,6 +174,13 @@ export const onConfirmHandler = async (
 		} );
 
 		if ( orderResponse.payment_result.payment_status !== 'success' ) {
+			// Redirect without showing error - the redirected page will display the message.
+			const redirectUrl = orderResponse.payment_result?.redirect_url;
+			if ( redirectUrl ) {
+				window.location.href = redirectUrl;
+				return;
+			}
+
 			return abortPayment(
 				getErrorMessageFromNotice(
 					orderResponse.message ??
@@ -210,10 +217,17 @@ export const onConfirmHandler = async (
 			e = await Promise.resolve( e.json() );
 		}
 
+		// Redirect without showing error - the redirected page will display the message.
+		const redirectUrl = e.payment_result?.redirect_url;
+		if ( redirectUrl ) {
+			window.location.href = redirectUrl;
+			return;
+		}
+
 		return abortPayment(
 			getErrorMessageFromNotice(
 				e.message ||
-					e.payment_result?.payment_details.find(
+					e.payment_result?.payment_details?.find(
 						( detail ) => detail.key === 'errorMessage'
 					)?.value ||
 					__(

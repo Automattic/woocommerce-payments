@@ -723,6 +723,84 @@ describe( 'Express checkout event handlers', () => {
 			expect( completePayment ).not.toHaveBeenCalled();
 		} );
 
+		describe( 'redirect on failure with redirect_url', () => {
+			let originalLocationDescriptor;
+
+			beforeEach( () => {
+				originalLocationDescriptor = Object.getOwnPropertyDescriptor(
+					window,
+					'location'
+				);
+				Object.defineProperty( window, 'location', {
+					configurable: true,
+					writable: true,
+					value: { href: '' },
+				} );
+			} );
+
+			afterEach( () => {
+				Object.defineProperty(
+					window,
+					'location',
+					originalLocationDescriptor
+				);
+			} );
+
+			it( 'should redirect without calling abortPayment when payment_status is failure but redirect_url is set', async () => {
+				const payForOrderUrl =
+					'https://example.com/checkout/order-pay/123/?pay_for_order=true&key=wc_order_abc&wcpay_ece_mismatch=1';
+
+				cartApiPlaceOrderMock.mockResolvedValue( {
+					payment_result: {
+						payment_status: 'failure',
+						redirect_url: payForOrderUrl,
+					},
+				} );
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					event
+				);
+
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalled();
+				expect( window.location.href ).toBe( payForOrderUrl );
+				expect( abortPayment ).not.toHaveBeenCalled();
+				expect( completePayment ).not.toHaveBeenCalled();
+			} );
+
+			it( 'should redirect without calling abortPayment when placeOrder throws with redirect_url in error response', async () => {
+				const payForOrderUrl =
+					'https://example.com/checkout/order-pay/456/?pay_for_order=true&key=wc_order_def&wcpay_ece_mismatch=1';
+
+				cartApiPlaceOrderMock.mockRejectedValue( {
+					json: () =>
+						Promise.resolve( {
+							payment_result: {
+								redirect_url: payForOrderUrl,
+							},
+						} ),
+				} );
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					event
+				);
+
+				expect( cartApiPlaceOrderMock ).toHaveBeenCalled();
+				expect( window.location.href ).toBe( payForOrderUrl );
+				expect( abortPayment ).not.toHaveBeenCalled();
+				expect( completePayment ).not.toHaveBeenCalled();
+			} );
+		} );
+
 		it( 'should extract redirect URL from payment_details when redirect_url is empty for 3DS authentication', async () => {
 			const threeDSRedirectUrl =
 				'#wcpay-confirm-pi:123:pi_1234567890abcdef_secret_test1234567890abcdef:fake_nonce';
