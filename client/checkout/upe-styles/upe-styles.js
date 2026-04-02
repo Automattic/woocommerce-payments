@@ -125,7 +125,7 @@ export const upeRestrictedProperties = {
 	'.Container': upeSupportedProperties[ '.Container' ],
 	'.Header': upeSupportedProperties[ '.Header' ],
 	'.Footer': upeSupportedProperties[ '.Footer' ],
-	'.Footer--link': upeSupportedProperties[ '.Text' ],
+	'.Footer-link': upeSupportedProperties[ '.Text' ],
 	'.Text': upeSupportedProperties[ '.Text' ],
 	'.Text--redirect': upeSupportedProperties[ '.Text' ],
 };
