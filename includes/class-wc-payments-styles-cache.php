@@ -628,6 +628,11 @@ class WC_Payments_Styles_Cache {
 		}
 
 		$blocks = parse_blocks( $template->content );
+
+		// Resolve core/pattern references — template parts commonly contain
+		// a single pattern reference instead of inline blocks.
+		$blocks = self::resolve_pattern_blocks( $blocks );
+
 		$target = self::find_primary_block( $blocks );
 
 		if ( null === $target ) {
@@ -697,6 +702,44 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
+	 * Resolves core/pattern block references to their actual block content.
+	 *
+	 * Template parts commonly contain a single `<!-- wp:pattern {"slug":"theme/footer"} /-->`
+	 * instead of inline blocks. `parse_blocks()` returns the raw pattern reference with no
+	 * inner blocks, so we resolve it via the pattern registry.
+	 *
+	 * @param array $blocks Parsed blocks that may contain core/pattern references.
+	 * @return array Blocks with pattern references replaced by their content.
+	 */
+	private static function resolve_pattern_blocks( array $blocks ): array {
+		$registry = WP_Block_Patterns_Registry::get_instance();
+		$resolved = [];
+
+		foreach ( $blocks as $block ) {
+			if ( 'core/pattern' !== $block['blockName'] || empty( $block['attrs']['slug'] ) ) {
+				$resolved[] = $block;
+				continue;
+			}
+
+			$slug = $block['attrs']['slug'];
+			if ( ! $registry->is_registered( $slug ) ) {
+				$resolved[] = $block;
+				continue;
+			}
+
+			$pattern = $registry->get_registered( $slug );
+			if ( ! empty( $pattern['content'] ) ) {
+				$pattern_blocks = parse_blocks( $pattern['content'] );
+				foreach ( $pattern_blocks as $pattern_block ) {
+					$resolved[] = $pattern_block;
+				}
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
 	 * Extracts background and text colors from a block's attributes.
 	 *
 	 * @param array $block A parsed block.
@@ -731,7 +774,63 @@ class WC_Payments_Styles_Cache {
 			$colors['text'] = self::resolve_css_var( $block['attrs']['style']['color']['text'] );
 		}
 
+		// Check block style variations (e.g. "is-style-section-1") when no
+		// inline attributes were found. Style variations use CSS class-based
+		// color schemes defined in theme.json partials.
+		if ( empty( $colors ) && ! empty( $block['attrs']['className'] ) && ! empty( $block['blockName'] ) ) {
+			$colors = self::get_style_variation_colors( $block['blockName'], $block['attrs']['className'] );
+		}
+
 		return $colors;
+	}
+
+	/**
+	 * Extracts colors from a block style variation by looking up the variation
+	 * in the merged theme.json data.
+	 *
+	 * Modern block themes use CSS class-based color schemes (e.g. "is-style-section-1")
+	 * instead of inline color attributes. The variation definitions are stored in
+	 * theme.json partial files (e.g. styles/block/section-1.json).
+	 *
+	 * @param string $block_name Block name (e.g. 'core/group').
+	 * @param string $class_name The block's className attribute.
+	 * @return array Colors array with optional 'background' and 'text' keys.
+	 */
+	private static function get_style_variation_colors( string $block_name, string $class_name ): array {
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' ) ) {
+			return [];
+		}
+
+		$variation_names = wp_get_block_style_variation_name_from_class( $class_name );
+		if ( empty( $variation_names ) ) {
+			return [];
+		}
+
+		// Only the first variation with data is used (same as WP core).
+		foreach ( $variation_names as $variation ) {
+			$variation_color = wp_get_global_styles(
+				[ 'variations', $variation, 'color' ],
+				[ 'block_name' => $block_name ]
+			);
+
+			if ( ! is_array( $variation_color ) ) {
+				continue;
+			}
+
+			$colors = [];
+			if ( ! empty( $variation_color['background'] ) ) {
+				$colors['background'] = self::resolve_css_var( $variation_color['background'] );
+			}
+			if ( ! empty( $variation_color['text'] ) ) {
+				$colors['text'] = self::resolve_css_var( $variation_color['text'] );
+			}
+
+			if ( ! empty( $colors ) ) {
+				return $colors;
+			}
+		}
+
+		return [];
 	}
 
 	/**
