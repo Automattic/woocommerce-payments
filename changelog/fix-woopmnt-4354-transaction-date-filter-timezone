@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed transaction date filter sending incorrect UTC offset when store and browser timezones differ
