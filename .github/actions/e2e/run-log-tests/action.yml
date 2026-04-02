@@ -20,10 +20,6 @@ runs:
               | .file ] | unique | length' "$RESULTS_JSON" )
           echo "FIRST_RUN_FAILED_TEST_SUITES=$FAILED_SPECS_COUNT" >> $GITHUB_OUTPUT
           echo "RESULTS_JSON=$RESULTS_JSON" >> $GITHUB_OUTPUT
-          if [[ ${FAILED_SPECS_COUNT} -gt 0 ]]; then
-            echo "::notice::${FAILED_SPECS_COUNT} spec file(s) failed in the first run. We will re-run only the failed specs."
-            exit 0
-          fi
 
           # Report flaky tests for visibility, but don't re-run them.
           FLAKY_COUNT=$( jq -r '[ .. | objects | select(has("specs")) | .specs[]
@@ -31,6 +27,11 @@ runs:
               | .file ] | unique | length' "$RESULTS_JSON" )
           if [[ ${FLAKY_COUNT} -gt 0 ]]; then
             echo "::warning::${FLAKY_COUNT} spec file(s) had flaky tests (passed on Playwright retry)."
+          fi
+
+          if [[ ${FAILED_SPECS_COUNT} -gt 0 ]]; then
+            echo "::notice::${FAILED_SPECS_COUNT} spec file(s) failed in the first run. We will re-run only the failed specs."
+            exit 0
           fi
         else
           echo "FIRST_RUN_FAILED_TEST_SUITES=0" >> $GITHUB_OUTPUT
