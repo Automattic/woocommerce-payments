@@ -397,6 +397,47 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_find_template_part_slug_by_area_finds_header() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'find_template_part_slug_by_area' );
+		$method->setAccessible( true );
+
+		// Simulates WooCommerce's page-checkout.html block content.
+		$blocks = parse_blocks(
+			'<!-- wp:template-part {"slug":"checkout-header","theme":"woocommerce/woocommerce","tagName":"header"} /-->'
+			. '<!-- wp:group {"tagName":"main"} --><main class="wp-block-group"><!-- wp:post-content /--></main><!-- /wp:group -->'
+		);
+
+		$result = $method->invoke( null, $blocks, 'header' );
+		$this->assertSame( 'checkout-header', $result );
+	}
+
+	public function test_find_template_part_slug_by_area_returns_null_when_area_absent() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'find_template_part_slug_by_area' );
+		$method->setAccessible( true );
+
+		// Template with header but no footer.
+		$blocks = parse_blocks(
+			'<!-- wp:template-part {"slug":"checkout-header","theme":"woocommerce/woocommerce","tagName":"header"} /-->'
+			. '<!-- wp:group {"tagName":"main"} --><main class="wp-block-group"><!-- wp:post-content /--></main><!-- /wp:group -->'
+		);
+
+		$result = $method->invoke( null, $blocks, 'footer' );
+		$this->assertNull( $result );
+	}
+
+	public function test_find_template_part_slug_by_area_matches_area_attribute() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'find_template_part_slug_by_area' );
+		$method->setAccessible( true );
+
+		// Some templates use "area" instead of "tagName".
+		$blocks = parse_blocks(
+			'<!-- wp:template-part {"slug":"custom-footer","area":"footer"} /-->'
+		);
+
+		$result = $method->invoke( null, $blocks, 'footer' );
+		$this->assertSame( 'custom-footer', $result );
+	}
+
 	public function test_resolve_style_value_returns_string_as_is() {
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
 		$method->setAccessible( true );
