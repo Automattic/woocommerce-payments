@@ -261,21 +261,23 @@ const PaymentCardIcons = () => {
 const PreviewFooter = ( { themedStyle, guestTextStyle } ) => {
 	return (
 		<div className="preview-layout__footer" style={ themedStyle }>
-			<div className="preview-layout__footer-links">
-				<span
-					className="preview-layout__footer-guest-text"
-					style={ guestTextStyle }
-				>
-					Checkout as guest
-				</span>
-				<span className="preview-layout__footer-dot">•</span>
-				<span>Terms of use</span>
-				<span className="preview-layout__footer-dot">•</span>
-				<span>Privacy policy</span>
-				<span className="preview-layout__footer-dot">•</span>
-				<span>Help</span>
+			<div className="preview-layout__footer-inner">
+				<div className="preview-layout__footer-links">
+					<span
+						className="preview-layout__footer-guest-text"
+						style={ guestTextStyle }
+					>
+						Checkout as guest
+					</span>
+					<span className="preview-layout__footer-dot">•</span>
+					<span>Terms of use</span>
+					<span className="preview-layout__footer-dot">•</span>
+					<span>Privacy policy</span>
+					<span className="preview-layout__footer-dot">•</span>
+					<span>Help</span>
+				</div>
+				<PaymentCardIcons />
 			</div>
-			<PaymentCardIcons />
 		</div>
 	);
 };
