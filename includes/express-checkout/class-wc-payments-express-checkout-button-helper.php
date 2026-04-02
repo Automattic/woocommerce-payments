@@ -301,7 +301,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
-		if ( ! $amazon_pay_gateway || ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
+		if ( ! $amazon_pay_gateway ) {
+			return false;
+		}
+
+		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
 			return false;
 		}
 
