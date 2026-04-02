@@ -525,18 +525,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Product page, but no express checkout methods available in settings.
-		if ( $this->is_product() && ! $this->is_any_express_checkout_method_enabled_at( 'product' ) ) {
-			return false;
-		}
-
-		// Checkout page, but no express checkout methods available in settings.
-		if ( $this->is_checkout() && ! $this->is_any_express_checkout_method_enabled_at( 'checkout' ) ) {
-			return false;
-		}
-
-		// Cart page, but no express checkout methods available in settings.
-		if ( $this->is_cart() && ! $this->is_any_express_checkout_method_enabled_at( 'cart' ) ) {
+		// No express checkout methods are actually enabled for the current page context
+		// (checks both location settings and feature flags/availability).
+		if ( empty( $this->get_enabled_express_checkout_methods_for_context() ) ) {
 			return false;
 		}
 
