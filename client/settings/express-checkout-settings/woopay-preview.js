@@ -444,6 +444,11 @@ export default ( {
 		<div
 			className="preview-layout"
 			style={ { ...style, ...themed.root } }
+			role="img"
+			aria-label={ __(
+				'WooPay checkout preview',
+				'woocommerce-payments'
+			) }
 			{ ...restProps }
 		>
 			{
