@@ -250,7 +250,7 @@ const PaymentProcessor = ( {
 	};
 
 	return (
-		<SkeletonProvider value={ CoreSkeleton || null }>
+		<SkeletonProvider value={ CoreSkeleton }>
 			{ isTestMode && (
 				<p
 					className={ clsx( 'content', {

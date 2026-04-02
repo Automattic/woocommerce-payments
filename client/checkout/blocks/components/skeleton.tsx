@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { createContext, useContext } from 'react';
+import React, { useContext } from 'react';
 import clsx from 'clsx';
 
 /**
@@ -15,6 +15,7 @@ import clsx from 'clsx';
  * - Keyframes renamed from wc-skeleton-shimmer to wcpay-skeleton-shimmer to avoid collisions with core.
  */
 import './skeleton.scss';
+import SkeletonContext from './skeleton-context';
 
 export interface SkeletonProps {
 	tag?: keyof JSX.IntrinsicElements;
@@ -27,15 +28,7 @@ export interface SkeletonProps {
 	ariaMessage?: string;
 }
 
-/**
- * Context to allow injecting WooCommerce core's Skeleton component.
- * When core provides a Skeleton via PaymentMethodInterface `components` prop,
- * it can be set here so all child components use it automatically.
- */
-const SkeletonContext = createContext< React.ComponentType<
-	SkeletonProps
-> | null >( null );
-export const SkeletonProvider = SkeletonContext.Provider;
+export { SkeletonProvider } from './skeleton-context';
 
 const LocalSkeleton = ( {
 	tag: Tag = 'div',
