@@ -197,9 +197,18 @@ class WC_Payments_Styles_Cache {
 		// Extract header/footer colors from the checkout page template's parts,
 		// not the global site header/footer. Falls back to global parts if
 		// no checkout-specific template exists.
-		$checkout_slugs    = self::get_checkout_template_part_slugs();
-		$header_slug       = $checkout_slugs['header'] ?? 'header';
-		$header_colors     = self::get_template_part_colors( $header_slug );
+		$checkout_slugs = self::get_checkout_template_part_slugs();
+		$header_slug    = $checkout_slugs['header'] ?? 'header';
+		$header_colors  = self::get_template_part_colors( $header_slug );
+		// WooCommerce's checkout template deliberately omits a footer — the
+		// checkout flow is distraction-free. When no footer template part is
+		// found, $footer_colors stays empty and the .Footer rule falls back
+		// to page-level colors ($bg_color, $text_color, $link_color). This
+		// keeps WooPay's functional footer (policy links, guest checkout,
+		// accepted cards) visually blended with the checkout page rather than
+		// introducing a distinct branded band that competes with the CTA.
+		// If WooCommerce adds a footer template part to checkout in the
+		// future, it will be picked up automatically here.
 		$footer_slug       = $checkout_slugs['footer'] ?? null;
 		$footer_colors     = $footer_slug ? self::get_template_part_colors( $footer_slug ) : [];
 		$header_bg_color   = $header_colors['background'] ?? self::resolve_style_value( $tp_styles['color']['background'] ?? $bg_color, $bg_color, $tp_styles );
