@@ -194,10 +194,13 @@ class WC_Payments_Styles_Cache {
 		// Extract button font family.
 		$button_font_family = self::resolve_style_value( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family, $font_family, $styles );
 
-		// Extract header/footer colors. First try the actual header template
-		// part block attributes, then fall back to template part default styles.
-		$header_colors     = self::get_template_part_colors( 'header' );
-		$footer_colors     = self::get_template_part_colors( 'footer' );
+		// Extract header/footer colors from the checkout page template's parts,
+		// not the global site header/footer. Falls back to global parts if
+		// no checkout-specific template exists.
+		$header_slug       = self::get_checkout_template_part_slug( 'header' ) ?? 'header';
+		$header_colors     = self::get_template_part_colors( $header_slug );
+		$footer_slug       = self::get_checkout_template_part_slug( 'footer' );
+		$footer_colors     = $footer_slug ? self::get_template_part_colors( $footer_slug ) : [];
 		$header_bg_color   = $header_colors['background'] ?? self::resolve_style_value( $tp_styles['color']['background'] ?? $bg_color, $bg_color, $tp_styles );
 		$header_text_color = $header_colors['text'] ?? self::resolve_style_value( $tp_styles['color']['text'] ?? $text_color, $text_color, $tp_styles );
 
@@ -621,7 +624,14 @@ class WC_Payments_Styles_Cache {
 	 * @return array Associative array with 'background' and/or 'text' keys, or empty.
 	 */
 	private static function get_template_part_colors( string $slug ): array {
+		// Try active theme first.
 		$template = get_block_template( get_stylesheet() . '//' . $slug, 'wp_template_part' );
+
+		// Fall back to WooCommerce-provided template parts (e.g. checkout-header).
+		if ( ( ! $template || empty( $template->content ) ) && 'woocommerce/woocommerce' !== get_stylesheet() ) {
+			$template = get_block_template( 'woocommerce/woocommerce//' . $slug, 'wp_template_part' );
+		}
+
 		if ( ! $template || empty( $template->content ) ) {
 			return [];
 		}
@@ -751,5 +761,58 @@ class WC_Payments_Styles_Cache {
 		$parts .= time();
 
 		return md5( $parts );
+	}
+
+	/**
+	 * Resolves the template part slug used by the checkout page template for a given area.
+	 *
+	 * Parses the checkout page block template to find which template part it references
+	 * for the specified area (header or footer). Returns null if the checkout template
+	 * has no template part for that area (e.g., WooCommerce checkout has no footer).
+	 *
+	 * @param string $area The template part area: 'header' or 'footer'.
+	 * @return string|null The template part slug, or null if not found.
+	 */
+	private static function get_checkout_template_part_slug( string $area ): ?string {
+		// Try the active theme's checkout template first, then WooCommerce's.
+		$template = get_block_template( get_stylesheet() . '//page-checkout', 'wp_template' );
+		if ( ! $template || empty( $template->content ) ) {
+			$template = get_block_template( 'woocommerce/woocommerce//page-checkout', 'wp_template' );
+		}
+
+		if ( ! $template || empty( $template->content ) ) {
+			return $area; // Fall back to global slug.
+		}
+
+		return self::find_template_part_slug_by_area( parse_blocks( $template->content ), $area );
+	}
+
+	/**
+	 * Recursively searches parsed blocks for a wp:template-part block
+	 * matching the given area (via tagName or area attribute).
+	 *
+	 * @param array  $blocks Parsed blocks.
+	 * @param string $area   The area to match: 'header' or 'footer'.
+	 * @return string|null The template part slug, or null.
+	 */
+	private static function find_template_part_slug_by_area( array $blocks, string $area ): ?string {
+		foreach ( $blocks as $block ) {
+			if ( 'core/template-part' === ( $block['blockName'] ?? '' ) ) {
+				$attrs = $block['attrs'] ?? [];
+				if (
+					( $attrs['tagName'] ?? '' ) === $area ||
+					( $attrs['area'] ?? '' ) === $area
+				) {
+					return $attrs['slug'] ?? null;
+				}
+			}
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$found = self::find_template_part_slug_by_area( $block['innerBlocks'], $area );
+				if ( $found ) {
+					return $found;
+				}
+			}
+		}
+		return null;
 	}
 }
