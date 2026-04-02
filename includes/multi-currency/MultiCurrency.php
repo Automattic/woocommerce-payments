@@ -301,6 +301,7 @@ class MultiCurrency {
 		// If the store currency has been updated, we need to update the notice that will display any manual currencies.
 		if ( $store_currency_updated ) {
 			$this->update_manual_rate_currencies_notice_option();
+			$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
 		}
 
 		$admin_notices = new AdminNotices();
