@@ -4741,12 +4741,27 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string[] Allowed Stripe PaymentMethod type strings (e.g., ['card', 'amazon_pay']).
 	 */
 	private function get_allowed_express_payment_method_types(): array {
+		$allowed = [];
+
+		// Google Pay and Apple Pay use 'card' as their Stripe payment method type.
+		// Check via is_payment_request_enabled() on the main gateway rather than
+		// looking up split gateways, which may fail availability checks designed
+		// for regular checkout gateways (e.g., is_available_for_express_checkout()).
+		if ( $this->is_payment_request_enabled() ) {
+			$allowed[] = 'card';
+		}
+
+		// Check other express checkout methods (e.g., Amazon Pay) via their split gateways.
 		$registry    = PaymentMethodDefinitionRegistry::instance();
 		$definitions = $registry->get_all_payment_method_definitions();
-		$allowed     = [];
 
 		foreach ( $definitions as $definition_class ) {
 			if ( ! PaymentMethodUtils::is_express_checkout( $definition_class ) ) {
+				continue;
+			}
+
+			// Skip methods that use 'card' — already handled above.
+			if ( 'card' === $definition_class::get_stripe_payment_method_type() ) {
 				continue;
 			}
 
