@@ -586,8 +586,12 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_extract_block_colors_from_style_variation() {
-		// Block style variations require WP 6.6+ (wp_get_block_style_variation_name_from_class).
-		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' ) ) {
+		// Block style variations require WP 6.6+ (wp_get_block_style_variation_name_from_class)
+		// and theme.json v3 schema support (WP 6.6+). Older WP/Gutenberg combinations may
+		// have the function polyfilled but lack proper theme.json v3 handling, causing
+		// variation data to be silently stripped during schema validation.
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' )
+			|| version_compare( get_bloginfo( 'version' ), '6.6', '<' ) ) {
 			$this->markTestSkipped( 'Block style variations require WordPress 6.6+.' );
 		}
 
