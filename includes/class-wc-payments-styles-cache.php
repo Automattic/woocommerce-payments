@@ -806,7 +806,9 @@ class WC_Payments_Styles_Cache {
 
 	/**
 	 * Recursively searches parsed blocks for a wp:template-part block
-	 * matching the given area (via tagName or area attribute).
+	 * matching the given area. Checks tagName, area attribute, and falls
+	 * back to slug matching (WordPress omits tagName/area when they match
+	 * the registered template part's default area).
 	 *
 	 * @param array  $blocks Parsed blocks.
 	 * @param string $area   The area to match: 'header' or 'footer'.
@@ -816,11 +818,13 @@ class WC_Payments_Styles_Cache {
 		foreach ( $blocks as $block ) {
 			if ( 'core/template-part' === ( $block['blockName'] ?? '' ) ) {
 				$attrs = $block['attrs'] ?? [];
+				$slug  = $attrs['slug'] ?? '';
 				if (
 					( $attrs['tagName'] ?? '' ) === $area ||
-					( $attrs['area'] ?? '' ) === $area
+					( $attrs['area'] ?? '' ) === $area ||
+					$slug === $area
 				) {
-					return $attrs['slug'] ?? null;
+					return '' !== $slug ? $slug : null;
 				}
 			}
 			if ( ! empty( $block['innerBlocks'] ) ) {

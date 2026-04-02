@@ -440,6 +440,20 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'nested-header', $result );
 	}
 
+	public function test_find_template_part_slug_by_area_matches_slug_as_area() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'find_template_part_slug_by_area' );
+		$method->setAccessible( true );
+
+		// WordPress omits tagName/area when they match the template part's
+		// registered default. The slug itself serves as the area identifier.
+		$blocks = parse_blocks(
+			'<!-- wp:template-part {"slug":"footer","theme":"twentytwentyfive"} /-->'
+		);
+
+		$result = $method->invoke( null, $blocks, 'footer' );
+		$this->assertSame( 'footer', $result );
+	}
+
 	public function test_find_template_part_slug_by_area_matches_area_attribute() {
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'find_template_part_slug_by_area' );
 		$method->setAccessible( true );
