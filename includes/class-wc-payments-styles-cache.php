@@ -197,9 +197,10 @@ class WC_Payments_Styles_Cache {
 		// Extract header/footer colors from the checkout page template's parts,
 		// not the global site header/footer. Falls back to global parts if
 		// no checkout-specific template exists.
-		$header_slug       = self::get_checkout_template_part_slug( 'header' ) ?? 'header';
+		$checkout_slugs    = self::get_checkout_template_part_slugs();
+		$header_slug       = $checkout_slugs['header'] ?? 'header';
 		$header_colors     = self::get_template_part_colors( $header_slug );
-		$footer_slug       = self::get_checkout_template_part_slug( 'footer' );
+		$footer_slug       = $checkout_slugs['footer'] ?? null;
 		$footer_colors     = $footer_slug ? self::get_template_part_colors( $footer_slug ) : [];
 		$header_bg_color   = $header_colors['background'] ?? self::resolve_style_value( $tp_styles['color']['background'] ?? $bg_color, $bg_color, $tp_styles );
 		$header_text_color = $header_colors['text'] ?? self::resolve_style_value( $tp_styles['color']['text'] ?? $text_color, $text_color, $tp_styles );
@@ -764,16 +765,15 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
-	 * Resolves the template part slug used by the checkout page template for a given area.
+	 * Resolves the template part slugs used by the checkout page template.
 	 *
-	 * Parses the checkout page block template to find which template part it references
-	 * for the specified area (header or footer). Returns null if the checkout template
-	 * has no template part for that area (e.g., WooCommerce checkout has no footer).
+	 * Fetches and parses the checkout page block template once, then extracts
+	 * the header and footer template part slugs. Returns null for an area if
+	 * the checkout template has no template part for it (e.g., no footer).
 	 *
-	 * @param string $area The template part area: 'header' or 'footer'.
-	 * @return string|null The template part slug, or null if not found.
+	 * @return array{header: string|null, footer: string|null}
 	 */
-	private static function get_checkout_template_part_slug( string $area ): ?string {
+	private static function get_checkout_template_part_slugs(): array {
 		// Try the active theme's checkout template first, then WooCommerce's.
 		$template = get_block_template( get_stylesheet() . '//page-checkout', 'wp_template' );
 		if ( ! $template || empty( $template->content ) ) {
@@ -781,10 +781,18 @@ class WC_Payments_Styles_Cache {
 		}
 
 		if ( ! $template || empty( $template->content ) ) {
-			return $area; // Fall back to global slug.
+			return [
+				'header' => null,
+				'footer' => null,
+			];
 		}
 
-		return self::find_template_part_slug_by_area( parse_blocks( $template->content ), $area );
+		$blocks = parse_blocks( $template->content );
+
+		return [
+			'header' => self::find_template_part_slug_by_area( $blocks, 'header' ),
+			'footer' => self::find_template_part_slug_by_area( $blocks, 'footer' ),
+		];
 	}
 
 	/**

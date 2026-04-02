@@ -425,6 +425,21 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $result );
 	}
 
+	public function test_find_template_part_slug_by_area_finds_nested_template_part() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'find_template_part_slug_by_area' );
+		$method->setAccessible( true );
+
+		// Template part nested inside a wrapper group block.
+		$blocks = parse_blocks(
+			'<!-- wp:group --><div class="wp-block-group">'
+			. '<!-- wp:template-part {"slug":"nested-header","tagName":"header"} /-->'
+			. '</div><!-- /wp:group -->'
+		);
+
+		$result = $method->invoke( null, $blocks, 'header' );
+		$this->assertSame( 'nested-header', $result );
+	}
+
 	public function test_find_template_part_slug_by_area_matches_area_attribute() {
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'find_template_part_slug_by_area' );
 		$method->setAccessible( true );
