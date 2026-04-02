@@ -319,29 +319,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if any express checkout method (Google/Apple Pay or Amazon Pay) is enabled at a given location in settings.
-	 *
-	 * This only checks location settings (express_checkout_{location}_methods), not feature flags.
-	 * Feature flags are checked at initialization and in get_enabled_express_checkout_methods_for_context().
-	 *
-	 * @param string $location Location (product, cart, checkout).
-	 * @return boolean
-	 */
-	public function is_any_express_checkout_method_enabled_at( $location ) {
-		// Check Google Pay / Apple Pay (payment_request).
-		if ( $this->is_express_checkout_method_enabled_at( $location, 'payment_request' ) ) {
-			return true;
-		}
-
-		// Check Amazon Pay.
-		if ( $this->is_express_checkout_method_enabled_at( $location, 'amazon_pay' ) ) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
 	 * Gets the list of enabled express checkout methods for the current page context.
 	 *
 	 * This method checks:
