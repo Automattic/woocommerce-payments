@@ -586,6 +586,11 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_extract_block_colors_from_style_variation() {
+		// Block style variations require WP 6.6+ (wp_get_block_style_variation_name_from_class).
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' ) ) {
+			$this->markTestSkipped( 'Block style variations require WordPress 6.6+.' );
+		}
+
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'extract_block_colors' );
 		$method->setAccessible( true );
 
@@ -685,6 +690,10 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_style_variation_colors_returns_empty_without_classname() {
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' ) ) {
+			$this->markTestSkipped( 'Block style variations require WordPress 6.6+.' );
+		}
+
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'get_style_variation_colors' );
 		$method->setAccessible( true );
 
@@ -693,6 +702,10 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_style_variation_colors_returns_empty_for_default_style() {
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' ) ) {
+			$this->markTestSkipped( 'Block style variations require WordPress 6.6+.' );
+		}
+
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'get_style_variation_colors' );
 		$method->setAccessible( true );
 
