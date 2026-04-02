@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix WooPay header and footer colors to match the checkout page instead of the site-wide header.
