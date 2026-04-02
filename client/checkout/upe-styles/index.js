@@ -607,6 +607,7 @@ export const getFontRulesFromPage = ( scope = document ) => {
 			'fonts.gstatic.com',
 			'use.typekit.net',
 			'fonts.bunny.net',
+			'fonts.wp.com',
 		];
 	for ( let i = 0; i < sheets.length; i++ ) {
 		if ( ! sheets[ i ].href ) {

@@ -351,6 +351,7 @@ const ALLOWED_FONT_DOMAINS = [
 	'fonts.gstatic.com',
 	'use.typekit.net',
 	'fonts.bunny.net',
+	'fonts.wp.com',
 ];
 
 export default ( {
