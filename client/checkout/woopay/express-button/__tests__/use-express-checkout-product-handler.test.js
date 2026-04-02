@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { isEmail, isEmailEAI } from '../use-express-checkout-product-handler';
+import { isEmail } from '../email-validation';
 
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
@@ -45,29 +45,6 @@ describe( 'isEmail', () => {
 		const maxEmail = 'a'.repeat( 242 ) + '@example.com'; // 254 chars
 		expect( maxEmail.length ).toBe( 254 );
 		expect( isEmail( maxEmail ) ).toBe( true );
-	} );
-} );
-
-describe( 'isEmailEAI (future: internationalized email support)', () => {
-	it.each( [
-		[ 'user@example.com', true ],
-		[ 'user+tag@sub.example.com', true ],
-	] )( 'accepts standard email: %s', ( email, expected ) => {
-		expect( isEmailEAI( email ) ).toBe( expected );
-	} );
-
-	it.each( [
-		[ '用户@example.com', true ],
-		[ 'user@例え.jp', true ],
-		[ 'Pelstrø@example.com', true ],
-		[ 'пользователь@пример.рф', true ],
-	] )( 'accepts internationalized email: %s', ( email, expected ) => {
-		expect( isEmailEAI( email ) ).toBe( expected );
-	} );
-
-	it( 'rejects emails exceeding 254 characters', () => {
-		const longEmail = 'a'.repeat( 243 ) + '@example.com';
-		expect( isEmailEAI( longEmail ) ).toBe( false );
 	} );
 } );
 

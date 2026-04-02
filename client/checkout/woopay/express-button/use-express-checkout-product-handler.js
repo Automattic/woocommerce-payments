@@ -10,6 +10,7 @@ import {
 	getProductId,
 	getQuantity,
 } from 'wcpay/utils/wc-product-page-selectors';
+import { isEmail } from './email-validation';
 
 /**
  * Get the product form element.
@@ -25,23 +26,6 @@ export const getProductFormElement = () => {
 		document.querySelector( 'form.wp-block-add-to-cart-with-options' )
 	);
 };
-
-// ASCII-only email validation matching WordPress is_email() and Stripe's
-// server-side requirements. See isEmailEAI for future Unicode support.
-export const isEmail = ( email ) =>
-	email.length <= 254 &&
-	/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$/.test(
-		email
-	);
-
-// EAI-ready (RFC 6531) email validation for when the WordPress/WooCommerce/Stripe
-// stack adds internationalized email support. Not currently used because:
-// - WordPress is_email() rejects non-ASCII local parts
-// - sanitize_email() silently strips Unicode characters
-// - Stripe API returns email_invalid for non-ASCII emails
-// - wp_mail()/PHPMailer does not enable SMTPUTF8 by default
-export const isEmailEAI = ( email ) =>
-	email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test( email );
 
 const useExpressCheckoutProductHandler = ( api ) => {
 	const getAttributes = () => {
