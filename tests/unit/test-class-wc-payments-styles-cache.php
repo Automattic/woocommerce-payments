@@ -396,4 +396,112 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			remove_filter( 'stylesheet', $stylesheet_filter );
 		}
 	}
+
+	public function test_resolve_style_value_returns_string_as_is() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( null, '#ffffff', '#000000' );
+		$this->assertSame( '#ffffff', $result );
+	}
+
+	public function test_resolve_style_value_returns_default_for_non_string_array() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( null, [ 'unexpected' => 'array' ], '#000000' );
+		$this->assertSame( '#000000', $result );
+	}
+
+	public function test_resolve_style_value_returns_default_for_non_string_non_array() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( null, 12345, 'fallback' );
+		$this->assertSame( 'fallback', $result );
+	}
+
+	public function test_resolve_style_value_resolves_ref_object() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$styles_context = [
+			'typography' => [
+				'fontFamily' => 'TestFont, sans-serif',
+			],
+		];
+
+		$ref_value = [ 'ref' => 'styles.typography.fontFamily' ];
+		$result    = $method->invoke( null, $ref_value, 'inherit', $styles_context );
+
+		$this->assertSame( 'TestFont, sans-serif', $result );
+	}
+
+	public function test_resolve_style_value_returns_default_for_null() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( null, null, 'default_val' );
+		$this->assertSame( 'default_val', $result );
+	}
+
+	public function test_resolve_style_value_returns_default_for_non_existent_ref_path() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_style_value' );
+		$method->setAccessible( true );
+
+		$styles_context = [
+			'typography' => [
+				'fontFamily' => 'TestFont, sans-serif',
+			],
+		];
+
+		$ref_value = [ 'ref' => 'styles.nonexistent.key' ];
+		$result    = $method->invoke( null, $ref_value, 'fallback', $styles_context );
+		$this->assertSame( 'fallback', $result );
+	}
+
+	public function test_resolve_css_var_returns_empty_string_for_non_string_input() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_css_var' );
+		$method->setAccessible( true );
+
+		$this->assertSame( '', $method->invoke( null, 12345 ) );
+		$this->assertSame( '', $method->invoke( null, null ) );
+		$this->assertSame( '', $method->invoke( null, [ 'ref' => 'something' ] ) );
+	}
+
+	public function test_compute_woopay_appearance_does_not_fatal_with_ref_objects() {
+		// Simulate a theme where button fontFamily is a ref object pointing
+		// to the root typography fontFamily (a concrete string value).
+		// Note: whether wp_get_global_styles() surfaces filtered data depends
+		// on the active theme (block vs classic) — CI may not have a block theme.
+		// The ref-resolution logic itself is covered by the resolve_style_value tests.
+		add_filter(
+			'wp_theme_json_data_default',
+			function ( $theme_json ) {
+				$data                                       = $theme_json->get_data();
+				$data['styles']['typography']['fontFamily'] = 'TestFont, sans-serif';
+				$data['styles']['elements']['button']['typography']['fontFamily'] = [
+					'ref' => 'styles.typography.fontFamily',
+				];
+				return $theme_json->update_with( $data );
+			}
+		);
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			// This should NOT throw a TypeError.
+			$result = $method->invoke( null );
+
+			$this->assertIsArray( $result );
+			$this->assertArrayHasKey( 'variables', $result );
+			$this->assertArrayHasKey( 'rules', $result );
+			// fontFamily must be a string (resolved or fallback), never an array.
+			$this->assertIsString( $result['variables']['fontFamily'] );
+			$this->assertIsString( $result['rules']['.Button']['fontFamily'] );
+		} finally {
+			remove_all_filters( 'wp_theme_json_data_default' );
+		}
+	}
 }
