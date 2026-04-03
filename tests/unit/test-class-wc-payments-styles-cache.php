@@ -817,6 +817,13 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_compute_woopay_appearance_maps_input_element_styles() {
+		// WooPay requires WP 6.5+. The textInput element key and proper
+		// elements.link resolution require WP 6.1+. Skip on older versions
+		// where wp_get_global_styles() strips unrecognized element keys.
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
 		$filter = function ( $theme_json ) {
 			return $theme_json->update_with(
 				[
@@ -858,6 +865,12 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_footer_link_falls_back_to_link_color_when_no_footer_part() {
+		// WooPay requires WP 6.5+. The elements.link resolution used by
+		// this test requires WP 6.1+. Skip on older versions.
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
 		// When no footer template part is in the checkout template,
 		// $footer_colors is empty, so .Footer-link should fall back to $link_color.
 		$filter = function ( $theme_json ) {
