@@ -195,10 +195,14 @@ class WC_Payments_Styles_Cache {
 		// Extract button font family.
 		$button_font_family = self::resolve_style_value( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family, $font_family, $styles );
 
-		// Extract header/footer colors. First try the actual header template
-		// part block attributes, then fall back to template part default styles.
-		$header_colors     = self::get_template_part_colors( 'header' );
-		$footer_colors     = self::get_template_part_colors( 'footer' );
+		// Only extract header/footer colors from template parts that are
+		// actually present in the checkout template. If the theme's checkout
+		// template omits the footer, the footer rule should fall back to the
+		// main background color — not the footer template part's color.
+		// The map is keyed by area ('header', 'footer') → slug.
+		$checkout_parts    = self::get_checkout_template_part_slugs();
+		$header_colors     = isset( $checkout_parts['header'] ) ? self::get_template_part_colors( $checkout_parts['header'] ) : [];
+		$footer_colors     = isset( $checkout_parts['footer'] ) ? self::get_template_part_colors( $checkout_parts['footer'] ) : [];
 		$header_bg_color   = $header_colors['background'] ?? self::resolve_style_value( $tp_styles['color']['background'] ?? $bg_color, $bg_color, $tp_styles );
 		$header_text_color = $header_colors['text'] ?? self::resolve_style_value( $tp_styles['color']['text'] ?? $text_color, $text_color, $tp_styles );
 
@@ -612,6 +616,70 @@ class WC_Payments_Styles_Cache {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns the set of template part slugs (e.g. 'header', 'footer') that are
+	 * referenced by the checkout page template.
+	 *
+	 * Loads the active checkout template, parses its blocks, and collects the
+	 * `slug` attribute from every `core/template-part` block. This tells the
+	 * caller which template parts are actually visible on checkout — so we
+	 * don't extract colors from a footer the shopper never sees.
+	 *
+	 * @return string[] Template part slugs present in the checkout template.
+	 */
+	private static function get_checkout_template_part_slugs(): array {
+		// Theme override takes priority, then WooCommerce's registered template.
+		$template = get_block_template( get_stylesheet() . '//page-checkout' )
+			?? get_block_template( 'woocommerce//page-checkout' );
+
+		if ( ! $template || empty( $template->content ) ) {
+			return [];
+		}
+
+		$blocks = parse_blocks( $template->content );
+
+		return self::collect_template_part_slugs( $blocks );
+	}
+
+	/**
+	 * Recursively collects template part slugs from a block tree, keyed by area.
+	 *
+	 * The `core/template-part` block carries a `tagName` and optional `area` hint,
+	 * but the authoritative area lives on the template part entity itself. We look
+	 * it up via `get_block_template()` so that a part registered as area=footer
+	 * (e.g. "footer-dark") is correctly identified even if the block attributes
+	 * don't include an explicit `area`.
+	 *
+	 * @param array $blocks Parsed blocks.
+	 * @return array<string, string> Map of area ('header'|'footer'|'uncategorized') to slug.
+	 *                               Only the first part per area is kept.
+	 */
+	private static function collect_template_part_slugs( array $blocks ): array {
+		$parts = [];
+		foreach ( $blocks as $block ) {
+			if ( 'core/template-part' === ( $block['blockName'] ?? '' ) && ! empty( $block['attrs']['slug'] ) ) {
+				$slug = $block['attrs']['slug'];
+				$area = $block['attrs']['area'] ?? null;
+
+				// If the block doesn't carry an explicit area, look it up from
+				// the registered template part entity.
+				if ( ! $area ) {
+					$part = get_block_template( get_stylesheet() . '//' . $slug, 'wp_template_part' );
+					$area = $part->area ?? 'uncategorized';
+				}
+
+				// Keep only the first template part per area.
+				if ( ! isset( $parts[ $area ] ) ) {
+					$parts[ $area ] = $slug;
+				}
+			}
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$parts += self::collect_template_part_slugs( $block['innerBlocks'] );
+			}
+		}
+		return $parts;
 	}
 
 	/**
