@@ -690,7 +690,7 @@ class WC_Payments_Styles_Cache {
 			$area = $block['attrs']['area'] ?? null;
 			if ( ! $area ) {
 				$part = get_block_template( get_stylesheet() . '//' . $block['attrs']['slug'], 'wp_template_part' );
-				$area = $part->area ?? null;
+				$area = $part ? $part->area : null;
 			}
 			if ( in_array( $area, [ 'header', 'footer' ], true ) ) {
 				return $area;
