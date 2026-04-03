@@ -25,7 +25,20 @@ runs:
       run: |
         mkdir screenshots
 
-    - name: Install Playwright
+    - name: Get Playwright version
+      id: playwright-version
+      shell: bash
+      run: echo "version=$(node -e "console.log(require('./package.json').devDependencies['@playwright/test'])")" >> $GITHUB_OUTPUT
+
+    - name: Cache Playwright browsers
+      id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+    - name: Install Playwright browsers
+      if: ${{ steps.playwright-cache.outputs.cache-hit != 'true' }}
       shell: bash
       run: npx playwright install chromium
 

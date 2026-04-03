@@ -287,7 +287,14 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		add_filter( 'woocommerce_is_checkout', '__return_true' );
 
-		$this->assertTrue( $this->system_under_test->should_show_express_checkout_button() );
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		$this->assertTrue( $helper->should_show_express_checkout_button() );
 
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 	}
@@ -306,11 +313,41 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		update_option( 'woocommerce_tax_based_on', 'billing' );
 		update_option( 'woocommerce_prices_include_tax', 'yes' );
 
-		$this->assertTrue( $this->system_under_test->should_show_express_checkout_button() );
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'get_enabled_express_checkout_methods_for_context' ] )
+			->getMock();
+
+		$helper->method( 'get_enabled_express_checkout_methods_for_context' )->willReturn( [ 'payment_request' ] );
+
+		$this->assertTrue( $helper->should_show_express_checkout_button() );
 
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 		remove_filter( 'wc_tax_enabled', '__return_true' );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
+	}
+
+	public function test_should_not_show_express_checkout_button_when_no_methods_enabled_at_location() {
+		$this->mock_wcpay_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		WC_Payments::mode()->dev();
+
+		add_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		// Clear all express checkout methods from the checkout location.
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [] );
+
+		// Without mocking get_enabled_express_checkout_methods_for_context, it should
+		// return empty because no methods are enabled at the checkout location, causing
+		// should_show_express_checkout_button to return false.
+		$this->assertFalse( $this->system_under_test->should_show_express_checkout_button() );
+
+		remove_filter( 'woocommerce_is_checkout', '__return_true' );
+
+		// Restore for other tests.
+		$this->mock_wcpay_gateway->update_option( 'express_checkout_checkout_methods', [ 'payment_request', 'woopay' ] );
 	}
 
 	public function test_should_not_show_express_checkout_button_for_non_shipping_but_price_does_not_include_tax() {

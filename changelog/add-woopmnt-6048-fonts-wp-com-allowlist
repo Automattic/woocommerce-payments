@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add fonts.wp.com to the WooPay font domain allow list so merchants using Automattic's GDPR-compliant font proxy see their theme fonts in WooPay checkout.

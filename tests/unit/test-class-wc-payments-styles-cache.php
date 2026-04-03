@@ -323,6 +323,7 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		// phpcs:disable WordPress.WP.EnqueuedResourceParameters.MissingVersion -- Test fixtures for CDN font stylesheets.
 		wp_register_style( 'test-google-font', 'https://fonts.googleapis.com/css?family=Roboto', [], null );
 		wp_register_style( 'test-bunny-font', 'https://fonts.bunny.net/css?family=Inter', [], null );
+		wp_register_style( 'test-wp-font', 'https://fonts.wp.com/css?family=Open+Sans', [], null );
 		// phpcs:enable WordPress.WP.EnqueuedResourceParameters.MissingVersion
 
 		try {
@@ -331,9 +332,11 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			$sources = array_column( $result, 'cssSrc' );
 			$this->assertContains( 'https://fonts.googleapis.com/css?family=Roboto', $sources );
 			$this->assertContains( 'https://fonts.bunny.net/css?family=Inter', $sources );
+			$this->assertContains( 'https://fonts.wp.com/css?family=Open+Sans', $sources );
 		} finally {
 			wp_deregister_style( 'test-google-font' );
 			wp_deregister_style( 'test-bunny-font' );
+			wp_deregister_style( 'test-wp-font' );
 		}
 	}
 
