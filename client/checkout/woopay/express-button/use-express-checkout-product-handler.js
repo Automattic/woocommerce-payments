@@ -1,7 +1,6 @@
 /**
  * External dependencies
  */
-import isEmail from 'validator/lib/isEmail';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -11,6 +10,7 @@ import {
 	getProductId,
 	getQuantity,
 } from 'wcpay/utils/wc-product-page-selectors';
+import { isEmail } from './email-validation';
 
 /**
  * Get the product form element.
