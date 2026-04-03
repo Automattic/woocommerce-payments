@@ -188,11 +188,13 @@ class WC_Payments_Styles_Cache {
 		$button_text_color = self::resolve_style_value( $styles['elements']['button']['color']['text'] ?? $text_color, $text_color, $styles );
 		$button_font_size  = self::resolve_style_value( $styles['elements']['button']['typography']['fontSize'] ?? $font_size, $font_size, $styles );
 
-		// Extract input styles if available.
-		$input_bg_color      = self::resolve_style_value( $styles['elements']['input']['color']['background'] ?? $bg_color, $bg_color, $styles );
-		$input_text_color    = self::resolve_style_value( $styles['elements']['input']['color']['text'] ?? $text_color, $text_color, $styles );
-		$input_border_color  = self::resolve_style_value( $styles['elements']['input']['border']['color'] ?? $text_color, $text_color, $styles );
-		$input_border_radius = self::resolve_style_value( $styles['elements']['input']['border']['radius'] ?? '0px', '0px', $styles );
+		// Extract input styles. WordPress theme.json uses 'textInput' as the
+		// element name (maps to textarea + text-like input types).
+		$input_el            = $styles['elements']['textInput'] ?? $styles['elements']['input'] ?? [];
+		$input_bg_color      = self::resolve_style_value( $input_el['color']['background'] ?? $bg_color, $bg_color, $styles );
+		$input_text_color    = self::resolve_style_value( $input_el['color']['text'] ?? $text_color, $text_color, $styles );
+		$input_border_color  = self::resolve_style_value( $input_el['border']['color'] ?? $text_color, $text_color, $styles );
+		$input_border_radius = self::resolve_style_value( $input_el['border']['radius'] ?? '0px', '0px', $styles );
 
 		// Extract button font family.
 		$button_font_family = self::resolve_style_value( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family, $font_family, $styles );

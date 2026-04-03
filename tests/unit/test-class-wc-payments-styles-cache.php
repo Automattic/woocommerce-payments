@@ -717,4 +717,184 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$result = $method->invoke( null, 'core/group', 'is-style-default' );
 		$this->assertEmpty( $result );
 	}
+
+	public function test_collect_template_part_slugs_returns_area_keyed_map() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'collect_template_part_slugs' );
+		$method->setAccessible( true );
+
+		$blocks = [
+			[
+				'blockName'    => 'core/template-part',
+				'attrs'        => [
+					'slug' => 'header',
+					'area' => 'header',
+				],
+				'innerBlocks'  => [],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+			[
+				'blockName'    => 'core/template-part',
+				'attrs'        => [
+					'slug' => 'footer-dark',
+					'area' => 'footer',
+				],
+				'innerBlocks'  => [],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+		];
+
+		$result = $method->invoke( null, $blocks );
+
+		$this->assertSame( 'header', $result['header'] );
+		$this->assertSame( 'footer-dark', $result['footer'] );
+		$this->assertCount( 2, $result );
+	}
+
+	public function test_collect_template_part_slugs_recurses_into_inner_blocks() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'collect_template_part_slugs' );
+		$method->setAccessible( true );
+
+		$blocks = [
+			[
+				'blockName'    => 'core/group',
+				'attrs'        => [],
+				'innerBlocks'  => [
+					[
+						'blockName'    => 'core/template-part',
+						'attrs'        => [
+							'slug' => 'footer',
+							'area' => 'footer',
+						],
+						'innerBlocks'  => [],
+						'innerHTML'    => '',
+						'innerContent' => [],
+					],
+				],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+		];
+
+		$result = $method->invoke( null, $blocks );
+
+		$this->assertArrayHasKey( 'footer', $result );
+		$this->assertSame( 'footer', $result['footer'] );
+	}
+
+	public function test_collect_template_part_slugs_keeps_first_per_area() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'collect_template_part_slugs' );
+		$method->setAccessible( true );
+
+		$blocks = [
+			[
+				'blockName'    => 'core/template-part',
+				'attrs'        => [
+					'slug' => 'header',
+					'area' => 'header',
+				],
+				'innerBlocks'  => [],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+			[
+				'blockName'    => 'core/template-part',
+				'attrs'        => [
+					'slug' => 'header-minimal',
+					'area' => 'header',
+				],
+				'innerBlocks'  => [],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+		];
+
+		$result = $method->invoke( null, $blocks );
+
+		// First header wins.
+		$this->assertSame( 'header', $result['header'] );
+	}
+
+	public function test_compute_woopay_appearance_maps_input_element_styles() {
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color'    => [
+							'background' => '#ffffff',
+							'text'       => '#000000',
+						],
+						'elements' => [
+							'textInput' => [
+								'color' => [
+									'background' => '#f0f0f0',
+									'text'       => '#333333',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			$this->assertArrayHasKey( 'rules', $result );
+			$this->assertSame( '#f0f0f0', $result['rules']['.Input']['backgroundColor'] );
+			$this->assertSame( '#333333', $result['rules']['.Input']['color'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_footer_link_falls_back_to_link_color_when_no_footer_part() {
+		// When no footer template part is in the checkout template,
+		// $footer_colors is empty, so .Footer-link should fall back to $link_color.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color'    => [
+							'background' => '#ffffff',
+							'text'       => '#000000',
+						],
+						'elements' => [
+							'link' => [
+								'color' => [
+									'text' => '#0066cc',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			// Footer-link should use the global link color as fallback.
+			$this->assertSame( '#0066cc', $result['rules']['.Footer-link']['color'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
 }
