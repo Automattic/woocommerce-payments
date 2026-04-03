@@ -879,11 +879,14 @@ class WC_Payments_Styles_Cache {
 			$colors['text'] = self::resolve_css_var( $block['attrs']['style']['color']['text'] );
 		}
 
-		// Check block style variations (e.g. "is-style-section-1") when no
-		// inline attributes were found. Style variations use CSS class-based
-		// color schemes defined in theme.json partials.
-		if ( empty( $colors ) && ! empty( $block['attrs']['className'] ) && ! empty( $block['blockName'] ) ) {
-			$colors = self::get_style_variation_colors( $block['blockName'], $block['attrs']['className'] );
+		// Fill in missing colors from block style variations (e.g.
+		// "is-style-section-1"). Inline attributes take precedence per-key,
+		// but the variation provides defaults for keys not set inline.
+		// Example: user overrides text color in Site Editor but background
+		// still comes from the variation.
+		if ( ! empty( $block['attrs']['className'] ) && ! empty( $block['blockName'] ) ) {
+			$variation_colors = self::get_style_variation_colors( $block['blockName'], $block['attrs']['className'] );
+			$colors           = array_merge( $variation_colors, $colors );
 		}
 
 		return $colors;
