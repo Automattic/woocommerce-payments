@@ -717,7 +717,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that PII in GET request query parameters is redacted in the log context URL.
+	 * Test that data in GET request query parameters is redacted in the log context URL.
 	 *
 	 * Regression test for WOOPMNT-5954: the raw URL (containing e.g. email, name) was
 	 * passed directly into the log context, while the human-readable log message correctly
