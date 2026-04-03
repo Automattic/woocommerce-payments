@@ -189,6 +189,8 @@ class WC_Payments_Styles_Cache {
 		$button_font_size  = self::resolve_style_value( $styles['elements']['button']['typography']['fontSize'] ?? $font_size, $font_size, $styles );
 
 		// Extract input styles if available.
+		$input_bg_color      = self::resolve_style_value( $styles['elements']['input']['color']['background'] ?? $bg_color, $bg_color, $styles );
+		$input_text_color    = self::resolve_style_value( $styles['elements']['input']['color']['text'] ?? $text_color, $text_color, $styles );
 		$input_border_color  = self::resolve_style_value( $styles['elements']['input']['border']['color'] ?? $text_color, $text_color, $styles );
 		$input_border_radius = self::resolve_style_value( $styles['elements']['input']['border']['radius'] ?? '0px', '0px', $styles );
 
@@ -223,13 +225,13 @@ class WC_Payments_Styles_Cache {
 			'labels'    => 'floating',
 			'rules'     => [
 				'.Input'          => [
-					'color'             => $text_color,
+					'color'             => $input_text_color,
 					'fontFamily'        => $font_family,
 					'fontSize'          => $font_size,
 					'borderColor'       => $input_border_color,
 					'borderBottomColor' => $input_border_color,
 					'borderRadius'      => $input_border_radius,
-					'backgroundColor'   => $bg_color,
+					'backgroundColor'   => $input_bg_color,
 				],
 				'.Input--invalid' => [
 					'borderBottomColor' => $error_color,
@@ -257,7 +259,7 @@ class WC_Payments_Styles_Cache {
 					'color'           => $footer_colors['text'] ?? $text_color,
 				],
 				'.Footer-link'    => [
-					'color' => self::resolve_style_value( $tp_styles['elements']['link']['color']['text'] ?? $link_color, $link_color, $tp_styles ),
+					'color' => $footer_colors['text'] ?? $link_color,
 				],
 				'.Button'         => [
 					'color'           => $button_text_color,
