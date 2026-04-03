@@ -3584,7 +3584,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$capture_intention_request->set_amount_to_capture( WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
 			$capture_intention_request->set_metadata( $merged_metadata );
 			$capture_intention_request->set_hook_args( $order );
-			if ( $include_level3 ) {
+			if ( $include_level3 && 'woocommerce_payments_amazon_pay' !== $order->get_payment_method() ) {
 				$capture_intention_request->set_level3( $this->get_level3_data_from_order( $order ) );
 			}
 			$intent = $capture_intention_request->send();

@@ -155,13 +155,8 @@ jobs:
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
 
-      - name: Install Playwright
-        shell: bash
-        run: npx playwright install chromium
-
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests
-
 
 
   # Run tests against WP Nightly & WC latest
@@ -194,10 +189,6 @@ jobs:
 
       - name: Setup E2E environment
         uses: ./.github/actions/e2e/env-setup
-
-      - name: Install Playwright
-        shell: bash
-        run: npx playwright install chromium
 
       - name: Run tests, upload screenshots & logs
         uses: ./.github/actions/e2e/run-log-tests

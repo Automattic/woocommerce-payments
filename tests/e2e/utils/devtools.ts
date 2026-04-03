@@ -10,7 +10,8 @@ const goToDevToolsSettings = ( page: Page ) =>
 
 const saveDevToolsSettings = async ( page: Page ) => {
 	await page.getByRole( 'button', { name: 'Save Changes' } ).click();
-	await page.waitForLoadState( 'networkidle' );
+	// Wait for the save request to complete and verify success.
+	await page.waitForLoadState( 'load' );
 	await expect( page.getByText( /Settings saved/ ) ).toBeVisible();
 };
 
