@@ -199,14 +199,12 @@ class WC_Payments_Styles_Cache {
 		// Extract button font family.
 		$button_font_family = self::resolve_style_value( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family, $font_family, $styles );
 
-		// Only extract header/footer colors from template parts that are
-		// actually present in the checkout template. If the theme's checkout
-		// template omits the footer, the footer rule should fall back to the
-		// main background color — not the footer template part's color.
-		// The map is keyed by area ('header', 'footer') → slug.
-		$checkout_parts    = self::get_checkout_template_part_slugs();
-		$header_colors     = isset( $checkout_parts['header'] ) ? self::get_template_part_colors( $checkout_parts['header'] ) : [];
-		$footer_colors     = isset( $checkout_parts['footer'] ) ? self::get_template_part_colors( $checkout_parts['footer'] ) : [];
+		// Extract header/footer colors from the checkout template. Handles
+		// both core/template-part references and inline blocks with category
+		// metadata (e.g. Assembler inlines footer as a styled core/group).
+		$checkout_colors   = self::get_checkout_section_colors();
+		$header_colors     = $checkout_colors['header'] ?? [];
+		$footer_colors     = $checkout_colors['footer'] ?? [];
 		$header_bg_color   = $header_colors['background'] ?? self::resolve_style_value( $tp_styles['color']['background'] ?? $bg_color, $bg_color, $tp_styles );
 		$header_text_color = $header_colors['text'] ?? self::resolve_style_value( $tp_styles['color']['text'] ?? $text_color, $text_color, $tp_styles );
 
@@ -623,17 +621,19 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
-	 * Returns the set of template part slugs (e.g. 'header', 'footer') that are
-	 * referenced by the checkout page template.
+	 * Extracts header and footer colors from the checkout page template.
 	 *
-	 * Loads the active checkout template, parses its blocks, and collects the
-	 * `slug` attribute from every `core/template-part` block. This tells the
-	 * caller which template parts are actually visible on checkout — so we
-	 * don't extract colors from a footer the shopper never sees.
+	 * Walks the checkout template blocks looking for header/footer sections.
+	 * These can appear as:
+	 * - `core/template-part` blocks with area "header"/"footer" (standard pattern)
+	 * - Inline blocks with `metadata.categories` containing "header"/"footer"
+	 *   (e.g. Assembler inlines the footer as a core/group with is-style-section-1)
+	 * - Blocks with `tagName` "header"/"footer"
 	 *
-	 * @return string[] Template part slugs present in the checkout template.
+	 * @return array<string, array> Map of area ('header'|'footer') to color arrays
+	 *                              with optional 'background' and 'text' keys.
 	 */
-	private static function get_checkout_template_part_slugs(): array {
+	private static function get_checkout_section_colors(): array {
 		// Theme override takes priority, then WooCommerce's registered template.
 		$template = get_block_template( get_stylesheet() . '//page-checkout' )
 			?? get_block_template( 'woocommerce//page-checkout' );
@@ -642,48 +642,81 @@ class WC_Payments_Styles_Cache {
 			return [];
 		}
 
-		$blocks = parse_blocks( $template->content );
+		$blocks   = parse_blocks( $template->content );
+		$blocks   = self::resolve_pattern_blocks( $blocks );
+		$sections = [];
 
-		return self::collect_template_part_slugs( $blocks );
+		foreach ( $blocks as $block ) {
+			$block_name = $block['blockName'] ?? '';
+			if ( empty( $block_name ) ) {
+				continue;
+			}
+
+			$area = self::classify_block_area( $block );
+			if ( ! $area || isset( $sections[ $area ] ) ) {
+				continue;
+			}
+
+			if ( 'core/template-part' === $block_name && ! empty( $block['attrs']['slug'] ) ) {
+				$colors = self::get_template_part_colors( $block['attrs']['slug'] );
+			} else {
+				$colors = self::extract_block_colors( $block );
+			}
+
+			if ( ! empty( $colors ) ) {
+				$sections[ $area ] = $colors;
+			}
+		}
+
+		return $sections;
 	}
 
 	/**
-	 * Recursively collects template part slugs from a block tree, keyed by area.
+	 * Determines if a block serves as a header or footer section.
 	 *
-	 * The `core/template-part` block carries a `tagName` and optional `area` hint,
-	 * but the authoritative area lives on the template part entity itself. We look
-	 * it up via `get_block_template()` so that a part registered as area=footer
-	 * (e.g. "footer-dark") is correctly identified even if the block attributes
-	 * don't include an explicit `area`.
+	 * Checks (in priority order):
+	 * 1. Template part area attribute or registered entity area
+	 * 2. Block metadata categories containing "header" or "footer"
+	 * 3. Block tagName attribute ("header" or "footer")
 	 *
-	 * @param array $blocks Parsed blocks.
-	 * @return array<string, string> Map of area ('header'|'footer'|'uncategorized') to slug.
-	 *                               Only the first part per area is kept.
+	 * @param array $block A parsed block.
+	 * @return string|null 'header', 'footer', or null if not a section block.
 	 */
-	private static function collect_template_part_slugs( array $blocks ): array {
-		$parts = [];
-		foreach ( $blocks as $block ) {
-			if ( 'core/template-part' === ( $block['blockName'] ?? '' ) && ! empty( $block['attrs']['slug'] ) ) {
-				$slug = $block['attrs']['slug'];
-				$area = $block['attrs']['area'] ?? null;
+	private static function classify_block_area( array $block ): ?string {
+		$block_name = $block['blockName'] ?? '';
 
-				// If the block doesn't carry an explicit area, look it up from
-				// the registered template part entity.
-				if ( ! $area ) {
-					$part = get_block_template( get_stylesheet() . '//' . $slug, 'wp_template_part' );
-					$area = $part->area ?? 'uncategorized';
-				}
-
-				// Keep only the first template part per area.
-				if ( ! isset( $parts[ $area ] ) ) {
-					$parts[ $area ] = $slug;
-				}
+		// Template parts: check area from attrs or registered entity.
+		if ( 'core/template-part' === $block_name && ! empty( $block['attrs']['slug'] ) ) {
+			$area = $block['attrs']['area'] ?? null;
+			if ( ! $area ) {
+				$part = get_block_template( get_stylesheet() . '//' . $block['attrs']['slug'], 'wp_template_part' );
+				$area = $part->area ?? null;
 			}
-			if ( ! empty( $block['innerBlocks'] ) ) {
-				$parts += self::collect_template_part_slugs( $block['innerBlocks'] );
+			if ( in_array( $area, [ 'header', 'footer' ], true ) ) {
+				return $area;
 			}
+			return null;
 		}
-		return $parts;
+
+		// Inline blocks: check metadata categories.
+		$categories = $block['attrs']['metadata']['categories'] ?? [];
+		if ( in_array( 'footer', $categories, true ) ) {
+			return 'footer';
+		}
+		if ( in_array( 'header', $categories, true ) ) {
+			return 'header';
+		}
+
+		// Fallback: check tagName.
+		$tag = $block['attrs']['tagName'] ?? '';
+		if ( 'footer' === $tag ) {
+			return 'footer';
+		}
+		if ( 'header' === $tag ) {
+			return 'header';
+		}
+
+		return null;
 	}
 
 	/**

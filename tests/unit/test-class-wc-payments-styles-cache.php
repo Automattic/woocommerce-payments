@@ -718,102 +718,72 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $result );
 	}
 
-	public function test_collect_template_part_slugs_returns_area_keyed_map() {
-		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'collect_template_part_slugs' );
+	public function test_classify_block_area_detects_template_part_area() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
 		$method->setAccessible( true );
 
-		$blocks = [
-			[
-				'blockName'    => 'core/template-part',
-				'attrs'        => [
-					'slug' => 'header',
-					'area' => 'header',
-				],
-				'innerBlocks'  => [],
-				'innerHTML'    => '',
-				'innerContent' => [],
+		$block = [
+			'blockName'    => 'core/template-part',
+			'attrs'        => [
+				'slug' => 'footer-dark',
+				'area' => 'footer',
 			],
-			[
-				'blockName'    => 'core/template-part',
-				'attrs'        => [
-					'slug' => 'footer-dark',
-					'area' => 'footer',
-				],
-				'innerBlocks'  => [],
-				'innerHTML'    => '',
-				'innerContent' => [],
-			],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
 		];
 
-		$result = $method->invoke( null, $blocks );
-
-		$this->assertSame( 'header', $result['header'] );
-		$this->assertSame( 'footer-dark', $result['footer'] );
-		$this->assertCount( 2, $result );
+		$this->assertSame( 'footer', $method->invoke( null, $block ) );
 	}
 
-	public function test_collect_template_part_slugs_recurses_into_inner_blocks() {
-		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'collect_template_part_slugs' );
+	public function test_classify_block_area_detects_metadata_categories() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
 		$method->setAccessible( true );
 
-		$blocks = [
-			[
-				'blockName'    => 'core/group',
-				'attrs'        => [],
-				'innerBlocks'  => [
-					[
-						'blockName'    => 'core/template-part',
-						'attrs'        => [
-							'slug' => 'footer',
-							'area' => 'footer',
-						],
-						'innerBlocks'  => [],
-						'innerHTML'    => '',
-						'innerContent' => [],
-					],
+		$block = [
+			'blockName'    => 'core/group',
+			'attrs'        => [
+				'metadata'  => [
+					'categories' => [ 'footer' ],
 				],
-				'innerHTML'    => '',
-				'innerContent' => [],
+				'className' => 'is-style-section-1',
 			],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
 		];
 
-		$result = $method->invoke( null, $blocks );
-
-		$this->assertArrayHasKey( 'footer', $result );
-		$this->assertSame( 'footer', $result['footer'] );
+		$this->assertSame( 'footer', $method->invoke( null, $block ) );
 	}
 
-	public function test_collect_template_part_slugs_keeps_first_per_area() {
-		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'collect_template_part_slugs' );
+	public function test_classify_block_area_detects_tag_name() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
 		$method->setAccessible( true );
 
-		$blocks = [
-			[
-				'blockName'    => 'core/template-part',
-				'attrs'        => [
-					'slug' => 'header',
-					'area' => 'header',
-				],
-				'innerBlocks'  => [],
-				'innerHTML'    => '',
-				'innerContent' => [],
-			],
-			[
-				'blockName'    => 'core/template-part',
-				'attrs'        => [
-					'slug' => 'header-minimal',
-					'area' => 'header',
-				],
-				'innerBlocks'  => [],
-				'innerHTML'    => '',
-				'innerContent' => [],
-			],
+		$block = [
+			'blockName'    => 'core/group',
+			'attrs'        => [ 'tagName' => 'header' ],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
 		];
 
-		$result = $method->invoke( null, $blocks );
+		$this->assertSame( 'header', $method->invoke( null, $block ) );
+	}
 
-		// First header wins.
-		$this->assertSame( 'header', $result['header'] );
+	public function test_classify_block_area_returns_null_for_content_blocks() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
+		$method->setAccessible( true );
+
+		$block = [
+			'blockName'    => 'core/group',
+			'attrs'        => [ 'tagName' => 'main' ],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
+		];
+
+		$this->assertNull( $method->invoke( null, $block ) );
 	}
 
 	public function test_compute_woopay_appearance_maps_input_element_styles() {
