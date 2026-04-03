@@ -28,8 +28,6 @@ export interface SkeletonProps {
 	ariaMessage?: string;
 }
 
-export { SkeletonProvider } from './skeleton-context';
-
 const LocalSkeleton = ( {
 	tag: Tag = 'div',
 	width = '100%',

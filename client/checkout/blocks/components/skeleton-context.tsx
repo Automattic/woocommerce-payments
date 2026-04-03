@@ -18,4 +18,3 @@ const SkeletonContext = createContext< React.ComponentType<
 > | null >( null );
 
 export default SkeletonContext;
-export const SkeletonProvider = SkeletonContext.Provider;

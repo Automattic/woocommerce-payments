@@ -20,7 +20,7 @@ import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 import { CardSkeleton } from './components/card-skeleton';
 import { ApmSkeleton } from './components/apm-skeleton';
-import { SkeletonProvider } from './components/skeleton';
+import SkeletonContext from './components/skeleton-context';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -250,7 +250,7 @@ const PaymentProcessor = ( {
 	};
 
 	return (
-		<SkeletonProvider value={ CoreSkeleton }>
+		<SkeletonContext.Provider value={ CoreSkeleton }>
 			{ isTestMode && (
 				<p
 					className={ clsx( 'content', {
@@ -294,7 +294,7 @@ const PaymentProcessor = ( {
 					className="wcpay-payment-element"
 				/>
 			</div>
-		</SkeletonProvider>
+		</SkeletonContext.Provider>
 	);
 };
 
