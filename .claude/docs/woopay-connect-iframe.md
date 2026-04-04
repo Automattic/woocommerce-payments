@@ -29,6 +29,21 @@ Follow the pattern in `user-connect.js`:
 
 Timeouts (default 5s) are handled automatically — the method rejects and the caller receives `null` or `false`.
 
+5. **Clean up after use:** Each `new WoopayConnect()` subclass adds a `window.addEventListener('message', ...)` in the constructor. Call `userConnect.detachMessageListener()` after the query resolves to prevent listener leaks. In React `useEffect`, return it as the cleanup function:
+
+```javascript
+useEffect( () => {
+    const userConnect = new WooPayUserConnect();
+    userConnect.getPreferredPaymentMethod().then( ( card ) => {
+        // handle result
+        userConnect.detachMessageListener();
+    } );
+    return () => userConnect.detachMessageListener();
+}, [] );
+```
+
+The iframe itself is deduplicated via `INJECTED_STATE` — only one is ever created regardless of how many Connect instances exist. But each instance adds its own message listener.
+
 ## Timing
 
 The Connect iframe loads **after** the WooPay button renders:
