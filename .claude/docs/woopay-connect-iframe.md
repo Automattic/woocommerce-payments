@@ -73,6 +73,6 @@ jest.mock( 'wcpay/checkout/woopay/connect/user-connect', () => {
 
 ## Security
 
-- All messages verified via `event.origin.startsWith(getConfig('woopayHost'))`
+- All messages verified via `getConfig('woopayHost').startsWith(event.origin)`
 - postMessage timeout prevents hanging on unresponsive iframes
 - User identification via WooPay's first-party cookies (no email/PII crosses domains)

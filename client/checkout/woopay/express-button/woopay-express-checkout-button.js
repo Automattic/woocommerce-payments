@@ -62,9 +62,7 @@ export const WoopayExpressCheckoutButton = ( {
 		radius: borderRadius,
 	} = buttonSettings;
 	const [ isLoading, setIsLoading ] = useState( false );
-	const [ buttonWidthType, setButtonWidthType ] = useState(
-		buttonWidthTypes.wide
-	);
+	const [ buttonWidthType, setButtonWidthType ] = useState( null );
 	const buttonSizeMap = new Map();
 	buttonSizeMap.set( '40', 'small' );
 	buttonSizeMap.set( '48', 'medium' );
