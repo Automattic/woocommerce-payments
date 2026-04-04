@@ -25,6 +25,7 @@ import {
 import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
+import { getCardBrands } from 'wcpay/utils/card-brands';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -43,6 +44,7 @@ export const WoopayExpressCheckoutButton = ( {
 	isProductPage = false,
 	emailSelector = '#email',
 	buttonAttributes,
+	preferredCard = null,
 } ) => {
 	const buttonWidthTypes = {
 		narrow: 'narrow',
@@ -360,6 +362,46 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
+	const cardBrandIcon =
+		preferredCard && buttonWidthType === buttonWidthTypes.wide
+			? getCardBrands().find(
+					( brand ) => brand.name === preferredCard.brand
+			  )
+			: null;
+
+	const renderButtonContent = () => {
+		if ( cardBrandIcon && preferredCard ) {
+			return (
+				<div className="button-content">
+					<ThemedWooPayIcon />
+					<span className="woopay-button-separator" />
+					<img
+						src={ cardBrandIcon.component }
+						alt={ preferredCard.brand }
+						className="woopay-button-card-brand"
+					/>
+					<span className="woopay-button-last4">
+						{ preferredCard.last4 }
+					</span>
+				</div>
+			);
+		}
+
+		return (
+			<div className="button-content">
+				{ interpolateComponents( {
+					mixedString: buttonText.replace(
+						ButtonTypeTextMap.default,
+						'{{wooPayLogo /}}'
+					),
+					components: {
+						wooPayLogo: <ThemedWooPayIcon />,
+					},
+				} ) }
+			</div>
+		);
+	};
+
 	const sharedProps = {
 		ref: buttonRef,
 		'aria-label': buttonText,
@@ -380,17 +422,7 @@ export const WoopayExpressCheckoutButton = ( {
 	const buttonContent = isLoading ? (
 		<span className="wc-block-components-spinner" />
 	) : (
-		<div className="button-content">
-			{ interpolateComponents( {
-				mixedString: buttonText.replace(
-					ButtonTypeTextMap.default,
-					'{{wooPayLogo /}}'
-				),
-				components: {
-					wooPayLogo: <ThemedWooPayIcon />,
-				},
-			} ) }
-		</div>
+		renderButtonContent()
 	);
 
 	return (
