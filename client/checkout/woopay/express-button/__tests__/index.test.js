@@ -12,6 +12,12 @@ jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 
+jest.mock( 'wcpay/checkout/woopay/connect/user-connect', () => {
+	return jest.fn().mockImplementation( () => ( {
+		getPreferredPaymentMethod: jest.fn().mockResolvedValue( null ),
+	} ) );
+} );
+
 jest.mock( '../woopay-express-checkout-button', () => ( {
 	__esModule: true,
 	WoopayExpressCheckoutButton: () => {
