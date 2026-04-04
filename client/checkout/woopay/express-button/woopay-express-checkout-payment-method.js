@@ -12,9 +12,11 @@ import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import { getConfig } from '../../../utils/checkout';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
-import WooPayUserConnect from 'wcpay/checkout/woopay/connect/user-connect';
-
-const PREFERRED_CARD_CACHE_KEY = 'woopay_preferred_card';
+import {
+	getCachedPreferredCard,
+	setCachedPreferredCard,
+	fetchPreferredCard,
+} from './preferred-card-utils';
 
 export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
 	'woocommerce_payments_woopay_express_checkout';
@@ -31,37 +33,19 @@ const api = new WCPayAPI(
 );
 
 const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
-	const [ preferredCard, setPreferredCard ] = useState( () => {
-		try {
-			const cached = localStorage.getItem( PREFERRED_CARD_CACHE_KEY );
-			return cached ? JSON.parse( cached ) : null;
-		} catch {
-			return null;
-		}
-	} );
+	const [ preferredCard, setPreferredCard ] = useState(
+		getCachedPreferredCard
+	);
 
 	useEffect( () => {
-		const fetchPreferredCard = async () => {
-			try {
-				const userConnect = new WooPayUserConnect();
-				const card = await userConnect.getPreferredPaymentMethod();
-
-				if ( card && card.brand && card.last4 ) {
-					localStorage.setItem(
-						PREFERRED_CARD_CACHE_KEY,
-						JSON.stringify( card )
-					);
-				} else {
-					localStorage.removeItem( PREFERRED_CARD_CACHE_KEY );
-				}
-
+		fetchPreferredCard()
+			.then( ( card ) => {
+				setCachedPreferredCard( card );
 				setPreferredCard( card );
-			} catch {
+			} )
+			.catch( () => {
 				// Connect iframe unavailable — keep cached state.
-			}
-		};
-
-		fetchPreferredCard();
+			} );
 	}, [] );
 
 	const onRefChange = useCallback(

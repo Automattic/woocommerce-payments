@@ -68,6 +68,15 @@ jest.mock( 'wcpay/utils/card-brands', () => ( {
 	],
 } ) );
 
+jest.mock( '../preferred-card-utils', () => ( {
+	isValidPreferredCard: ( card ) =>
+		card &&
+		typeof card.brand === 'string' &&
+		card.brand.length > 0 &&
+		typeof card.last4 === 'string' &&
+		/^\d{4}$/.test( card.last4 ),
+} ) );
+
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
 global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );

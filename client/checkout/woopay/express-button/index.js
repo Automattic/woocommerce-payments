@@ -12,45 +12,13 @@ import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
 import { maybePersistAdminWoopayAppearance } from '../appearance/persist-admin';
-import WooPayUserConnect from 'wcpay/checkout/woopay/connect/user-connect';
-
-const PREFERRED_CARD_CACHE_KEY = 'woopay_preferred_card';
+import {
+	getCachedPreferredCard,
+	setCachedPreferredCard,
+	fetchPreferredCard as fetchPreferredCardFromConnect,
+} from './preferred-card-utils';
 
 const oldWoopayRoots = [];
-
-/**
- * Reads the cached preferred card from localStorage.
- *
- * @return {Object|null} The cached preferred card ({ brand, last4 }) or null.
- */
-const getCachedPreferredCard = () => {
-	try {
-		const cached = localStorage.getItem( PREFERRED_CARD_CACHE_KEY );
-		return cached ? JSON.parse( cached ) : null;
-	} catch {
-		return null;
-	}
-};
-
-/**
- * Writes or clears the preferred card cache in localStorage.
- *
- * @param {Object|null} card The preferred card data or null to clear.
- */
-const setCachedPreferredCard = ( card ) => {
-	try {
-		if ( card && card.brand && card.last4 ) {
-			localStorage.setItem(
-				PREFERRED_CARD_CACHE_KEY,
-				JSON.stringify( card )
-			);
-		} else {
-			localStorage.removeItem( PREFERRED_CARD_CACHE_KEY );
-		}
-	} catch {
-		// localStorage unavailable (e.g. private browsing) — silently ignore.
-	}
-};
 
 const renderWooPayExpressCheckoutButton = (
 	listenForCartChanges = {},
@@ -110,8 +78,7 @@ const renderWooPayExpressCheckoutButtonWithCallbacks = () => {
  */
 const fetchPreferredCard = async () => {
 	try {
-		const userConnect = new WooPayUserConnect();
-		const card = await userConnect.getPreferredPaymentMethod();
+		const card = await fetchPreferredCardFromConnect();
 
 		setCachedPreferredCard( card );
 

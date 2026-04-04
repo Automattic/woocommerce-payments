@@ -26,6 +26,7 @@ import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 import { getCardBrands } from 'wcpay/utils/card-brands';
+import { isValidPreferredCard } from './preferred-card-utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -363,7 +364,8 @@ export const WoopayExpressCheckoutButton = ( {
 	}, [] );
 
 	const cardBrandIcon =
-		preferredCard && buttonWidthType === buttonWidthTypes.wide
+		isValidPreferredCard( preferredCard ) &&
+		buttonWidthType === buttonWidthTypes.wide
 			? getCardBrands().find(
 					( brand ) => brand.name === preferredCard.brand
 			  )
