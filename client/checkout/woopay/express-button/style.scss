@@ -45,6 +45,38 @@
 			max-width: 100%;
 		}
 
+		.woopay-button-separator {
+			display: inline-block;
+			width: 1px;
+			height: 1.2em;
+			background-color: rgba( 0, 0, 0, 0.3 );
+			margin: 0 8px;
+		}
+
+		.woopay-button-card-brand {
+			height: 20px;
+			width: auto;
+			margin-right: 6px;
+			vertical-align: middle;
+		}
+
+		.woopay-button-last4 {
+			font-size: 0.85em;
+			letter-spacing: 0.5px;
+		}
+
+		&[data-size='small'] {
+			.woopay-button-card-brand {
+				height: 16px;
+			}
+		}
+
+		&[data-size='large'] {
+			.woopay-button-card-brand {
+				height: 24px;
+			}
+		}
+
 		&:not( :disabled ):not( .is-placeholder ) {
 			&:focus-visible {
 				box-shadow: inset 0 0 0 2px $studio-woocommerce-purple-60;
@@ -123,6 +155,11 @@
 			svg {
 				fill: $white;
 			}
+
+			.woopay-button-separator {
+				background-color: rgba( 255, 255, 255, 0.4 );
+			}
+
 			&:not( :disabled ):not( .is-placeholder ):hover {
 				border-color: $studio-woocommerce-purple-30;
 				background: $studio-woocommerce-purple-30;
