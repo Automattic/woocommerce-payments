@@ -23,13 +23,13 @@ export const isValidPreferredCard = ( card ) => {
 };
 
 /**
- * Reads the cached preferred card from sessionStorage.
+ * Reads the cached preferred card from localStorage.
  *
  * @return {Object|null} The cached preferred card ({ brand, last4 }) or null.
  */
 export const getCachedPreferredCard = () => {
 	try {
-		const cached = sessionStorage.getItem( PREFERRED_CARD_CACHE_KEY );
+		const cached = localStorage.getItem( PREFERRED_CARD_CACHE_KEY );
 		if ( ! cached ) {
 			return null;
 		}
@@ -41,22 +41,22 @@ export const getCachedPreferredCard = () => {
 };
 
 /**
- * Writes or clears the preferred card cache in sessionStorage.
+ * Writes or clears the preferred card cache in localStorage.
  *
  * @param {Object|null} card The preferred card data or null to clear.
  */
 export const setCachedPreferredCard = ( card ) => {
 	try {
 		if ( isValidPreferredCard( card ) ) {
-			sessionStorage.setItem(
+			localStorage.setItem(
 				PREFERRED_CARD_CACHE_KEY,
 				JSON.stringify( { brand: card.brand, last4: card.last4 } )
 			);
 		} else {
-			sessionStorage.removeItem( PREFERRED_CARD_CACHE_KEY );
+			localStorage.removeItem( PREFERRED_CARD_CACHE_KEY );
 		}
 	} catch {
-		// sessionStorage unavailable (e.g. private browsing) — silently ignore.
+		// localStorage unavailable (e.g. private browsing) — silently ignore.
 	}
 };
 
