@@ -60,6 +60,14 @@ jest.mock( 'tracks', () => ( {
 
 jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 
+jest.mock( 'wcpay/utils/card-brands', () => ( {
+	getCardBrands: () => [
+		{ name: 'visa', component: 'visa-icon.svg' },
+		{ name: 'mastercard', component: 'mastercard-icon.svg' },
+		{ name: 'amex', component: 'amex-icon.svg' },
+	],
+} ) );
+
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
 global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );
@@ -307,6 +315,80 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		await waitFor( () => {
 			expect( request ).not.toHaveBeenCalled();
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'Preferred Card Display', () => {
+		let getBoundingClientRectSpy;
+
+		beforeEach( () => {
+			// Mock button width to be above BUTTON_WIDTH_THRESHOLD (140)
+			// so the button renders in "wide" mode.
+			getBoundingClientRectSpy = jest
+				.spyOn( HTMLElement.prototype, 'getBoundingClientRect' )
+				.mockReturnValue( { width: 300 } );
+		} );
+
+		afterEach( () => {
+			getBoundingClientRectSpy.mockRestore();
+		} );
+
+		test( 'renders card brand logo and last4 when preferredCard is provided', () => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+					preferredCard={ { brand: 'visa', last4: '4242' } }
+				/>
+			);
+
+			const cardBrandImg = screen.getByAltText( 'visa' );
+			expect( cardBrandImg ).toBeInTheDocument();
+			expect( cardBrandImg ).toHaveAttribute( 'src', 'visa-icon.svg' );
+			expect( screen.getByText( '4242' ) ).toBeInTheDocument();
+		} );
+
+		test( 'renders default button text when preferredCard is null', () => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+					preferredCard={ null }
+				/>
+			);
+
+			expect(
+				screen.queryByRole( 'button', { name: 'WooPay' } )
+			).toBeInTheDocument();
+			expect( screen.queryByText( '4242' ) ).not.toBeInTheDocument();
+		} );
+
+		test( 'falls back to default text for unknown card brand', () => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+					preferredCard={ {
+						brand: 'unknown_brand',
+						last4: '1234',
+					} }
+				/>
+			);
+
+			// Unknown brand should fall back to default button text
+			expect(
+				screen.queryByRole( 'button', { name: 'WooPay' } )
+			).toBeInTheDocument();
+			expect( screen.queryByText( '1234' ) ).not.toBeInTheDocument();
 		} );
 	} );
 
