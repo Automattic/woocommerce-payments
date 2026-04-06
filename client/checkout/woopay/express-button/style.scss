@@ -57,6 +57,7 @@
 		}
 
 		&:disabled,
+		&[aria-disabled='true'],
 		&.is-placeholder {
 			opacity: 0.5;
 			cursor: not-allowed;

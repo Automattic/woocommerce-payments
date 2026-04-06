@@ -362,7 +362,6 @@ export const WoopayExpressCheckoutButton = ( {
 
 	const sharedProps = {
 		ref: buttonRef,
-		key: `${ buttonType }-${ theme }-${ buttonSize }`,
 		'aria-label': buttonText,
 		onClick: ( e ) => onClickCallbackRef.current( e ),
 		className: clsx( 'woopay-express-button', {
@@ -398,15 +397,21 @@ export const WoopayExpressCheckoutButton = ( {
 		<div id="wcpay-woopay-button">
 			{ isFirstPartyAuth ? (
 				<a
+					key={ `${ buttonType }-${ theme }-${ buttonSize }` }
 					{ ...sharedProps }
-					href={ woopayUrl }
+					href={ isLoading ? undefined : woopayUrl }
 					aria-disabled={ isLoading || undefined }
 					tabIndex={ isLoading ? -1 : undefined }
 				>
 					{ buttonContent }
 				</a>
 			) : (
-				<button { ...sharedProps } disabled={ isLoading } type="button">
+				<button
+					key={ `${ buttonType }-${ theme }-${ buttonSize }` }
+					{ ...sharedProps }
+					disabled={ isLoading }
+					type="button"
+				>
 					{ buttonContent }
 				</button>
 			) }

@@ -124,6 +124,44 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		expect( button ).toHaveAttribute( 'type', 'button' );
 	} );
 
+	test( 'link variant sets aria-disabled and removes href when loading', async () => {
+		getConfig.mockImplementation( ( v ) => {
+			switch ( v ) {
+				case 'isWoopayFirstPartyAuthEnabled':
+					return true;
+				case 'woopayHost':
+					return 'https://pay.woo.com';
+				case 'woopaySessionNonce':
+					return 'nonce';
+				default:
+					return 'foo';
+			}
+		} );
+
+		render(
+			<WoopayExpressCheckoutButton
+				isPreview={ false }
+				buttonSettings={ buttonSettings }
+				api={ api }
+				isProductPage={ false }
+				emailSelector="#email"
+			/>
+		);
+
+		const link = screen.queryByRole( 'link', { name: 'WooPay' } );
+		expect( link ).toBeInTheDocument();
+		expect( link ).toHaveAttribute( 'href', 'https://pay.woo.com/woopay/' );
+		expect( link ).not.toHaveAttribute( 'aria-disabled' );
+
+		await userEvent.click( link );
+
+		await waitFor( () => {
+			const el = screen.getByLabelText( 'WooPay' );
+			expect( el ).toHaveAttribute( 'aria-disabled', 'true' );
+			expect( el ).not.toHaveAttribute( 'href' );
+		} );
+	} );
+
 	test( 'respect buttonAttributes API when available ', () => {
 		render(
 			<WoopayExpressCheckoutButton
