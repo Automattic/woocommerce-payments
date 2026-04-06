@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent caching empty disputes list on API failure, which could hide active disputes from admin task list
