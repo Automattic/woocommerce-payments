@@ -225,7 +225,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
                   <p
                     class="payment-details-summary__amount"
                   >
-                    $15.00
+                    $ 15,00
                     <span
                       class="payment-details-summary__amount-currency"
                     >
@@ -243,11 +243,11 @@ exports[`Order details page should match the snapshot - Charge without payment i
                 >
                   <p>
                     Fees: 
-                    -$0.00
+                    -$ 0,00
                   </p>
                   <p>
                     Net: 
-                    $15.00
+                    $ 15,00
                   </p>
                 </div>
               </div>
