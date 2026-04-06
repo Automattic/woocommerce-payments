@@ -19,7 +19,6 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
-	getStripeElementsMode,
 	displayLoginConfirmation,
 } from '../utils';
 import {
@@ -219,6 +218,10 @@ jQuery( ( $ ) => {
 			const useConfirmationToken =
 				getExpressCheckoutData( 'flags' )
 					?.isEceUsingConfirmationTokens ?? true;
+			const isManualCaptureEnabled =
+				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
+			const hasSubscription =
+				getExpressCheckoutData( 'has_subscription' ) ?? false;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -231,12 +234,18 @@ jQuery( ( $ ) => {
 
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
-				mode: getStripeElementsMode(),
+				mode: 'payment',
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
 				...( useConfirmationToken
 					? { paymentMethodTypes }
 					: { paymentMethodCreation: 'manual' } ),
+				...( useConfirmationToken && isManualCaptureEnabled
+					? { captureMethod: 'manual' }
+					: {} ),
+				...( useConfirmationToken && hasSubscription
+					? { setupFutureUsage: 'off_session' }
+					: {} ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 			} );

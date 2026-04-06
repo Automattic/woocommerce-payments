@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix WooPay Direct Checkout not working in iAPI mini-cart (WooCommerce 10.4+)
