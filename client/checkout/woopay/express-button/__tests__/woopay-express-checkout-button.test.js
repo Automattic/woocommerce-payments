@@ -87,7 +87,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		jest.clearAllMocks();
 	} );
 
-	test( 'render the express checkout button', () => {
+	test( 'renders as a link when first-party auth is enabled', () => {
 		render(
 			<WoopayExpressCheckoutButton
 				isPreview={ false }
@@ -98,9 +98,30 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		expect(
-			screen.queryByRole( 'button', { name: 'WooPay' } )
-		).toBeInTheDocument();
+		const link = screen.queryByRole( 'link', { name: 'WooPay' } );
+		expect( link ).toBeInTheDocument();
+		expect( link.tagName ).toBe( 'A' );
+		expect( link ).toHaveAttribute( 'href', 'foo/woopay/' );
+	} );
+
+	test( 'renders as a button when first-party auth is disabled', () => {
+		getConfig.mockImplementation( ( v ) => {
+			return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+		} );
+		render(
+			<WoopayExpressCheckoutButton
+				isPreview={ false }
+				buttonSettings={ buttonSettings }
+				api={ api }
+				isProductPage={ false }
+				emailSelector="#email"
+			/>
+		);
+
+		const button = screen.queryByRole( 'button', { name: 'WooPay' } );
+		expect( button ).toBeInTheDocument();
+		expect( button.tagName ).toBe( 'BUTTON' );
+		expect( button ).toHaveAttribute( 'type', 'button' );
 	} );
 
 	test( 'respect buttonAttributes API when available ', () => {
@@ -118,8 +139,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		const button = screen.queryByRole( 'button', { name: 'WooPay' } );
-		expect( button.getAttribute( 'style' ) ).toBe(
+		const link = screen.queryByRole( 'link', { name: 'WooPay' } );
+		expect( link.getAttribute( 'style' ) ).toBe(
 			'height: 55px; border-radius: 20px;'
 		);
 	} );
@@ -186,7 +207,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		const expressButton = screen.queryByRole( 'button', {
+		const expressButton = screen.queryByRole( 'link', {
 			name: 'WooPay',
 		} );
 		await userEvent.click( expressButton );
@@ -240,7 +261,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		const expressButton = screen.queryByRole( 'button', {
+		const expressButton = screen.queryByRole( 'link', {
 			name: 'WooPay',
 		} );
 		await userEvent.click( expressButton );
