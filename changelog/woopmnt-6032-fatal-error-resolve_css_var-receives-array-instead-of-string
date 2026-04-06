@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix fatal error when themes use ref objects in theme.json for style values like fontFamily
