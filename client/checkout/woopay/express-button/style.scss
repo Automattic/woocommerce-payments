@@ -115,7 +115,9 @@
 				background: $studio-woocommerce-purple-30;
 			}
 			&:not( :disabled ):not( .is-placeholder ):focus-visible {
-				box-shadow: inset 0 0 0 2px $white;
+				box-shadow: none;
+				outline: 2px solid $studio-woocommerce-purple-80;
+				outline-offset: 2px;
 			}
 		}
 
