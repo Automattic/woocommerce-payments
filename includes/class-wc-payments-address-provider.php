@@ -84,13 +84,17 @@ class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 	 * @return string|WP_Error The JWT token on success, WP_Error on failure.
 	 */
 	public function get_address_service_jwt() {
+		if ( ! $this->account->is_stripe_connected( true ) ) {
+			$this->database_cache->delete( Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY );
+			return new WP_Error(
+				'wcpay_address_service_error',
+				'An unexpected error occurred while retrieving the address service token.'
+			);
+		}
+
 		$token = $this->database_cache->get_or_add(
 			Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY,
 			function () {
-				if ( ! $this->account->is_stripe_connected() ) {
-					return null;
-				}
-
 				try {
 					$response = $this->payments_api_client->get_address_autocomplete_token();
 					return $response['token'] ?? null;

@@ -88,16 +88,21 @@ class WC_Payments_Address_Provider_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_address_service_jwt_returns_wp_error_when_not_stripe_connected() {
 		$this->mock_account
+			->expects( $this->once() )
 			->method( 'is_stripe_connected' )
+			->with( true )
 			->willReturn( false );
 
+		// Should not reach the cache at all.
 		$this->mock_database_cache
-			->method( 'get_or_add' )
-			->willReturnCallback(
-				function ( $key, $generator ) {
-					return $generator();
-				}
-			);
+			->expects( $this->never() )
+			->method( 'get_or_add' );
+
+		// Should clear any previously cached token.
+		$this->mock_database_cache
+			->expects( $this->once() )
+			->method( 'delete' )
+			->with( Database_Cache::ADDRESS_AUTOCOMPLETE_JWT_KEY );
 
 		$result = $this->provider->get_address_service_jwt();
 
@@ -151,6 +156,10 @@ class WC_Payments_Address_Provider_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_address_service_jwt_returns_cached_token() {
+		$this->mock_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
 		$this->mock_database_cache
 			->method( 'get_or_add' )
 			->willReturn( 'cached_jwt_token' );
@@ -166,6 +175,10 @@ class WC_Payments_Address_Provider_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_address_service_jwt_returns_wp_error_when_cache_returns_null() {
+		$this->mock_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
 		// When get_or_add returns null (e.g. after a failed fetch with no prior cached data),
 		// the method should return a WP_Error instead of null.
 		$this->mock_database_cache
@@ -203,5 +216,45 @@ class WC_Payments_Address_Provider_Test extends WCPAY_UnitTestCase {
 
 		// Call the generator directly to verify it returns null, not INVALID_TOKEN.
 		$this->assertNull( $captured_generator() );
+	}
+
+	public function test_get_address_service_jwt_returns_wp_error_for_legacy_cached_invalid_token() {
+		// Backward compat: a cached INVALID_TOKEN string from a pre-fix version
+		// should still be treated as an error.
+		$this->mock_account
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$this->mock_database_cache
+			->method( 'get_or_add' )
+			->willReturn( WC_Payments_Address_Provider::INVALID_TOKEN );
+
+		$result = $this->provider->get_address_service_jwt();
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'wcpay_address_service_error', $result->get_error_code() );
+	}
+
+	public function test_get_address_service_jwt_proceeds_to_cache_when_connection_check_errors() {
+		// When is_stripe_connected throws (account data unavailable), the on_error=true
+		// parameter makes it return true, so we proceed to the cache rather than
+		// deleting a potentially valid cached token.
+		$this->mock_account
+			->expects( $this->once() )
+			->method( 'is_stripe_connected' )
+			->with( true )
+			->willReturn( true );
+
+		$this->mock_database_cache
+			->expects( $this->never() )
+			->method( 'delete' );
+
+		$this->mock_database_cache
+			->method( 'get_or_add' )
+			->willReturn( 'cached_jwt_token' );
+
+		$result = $this->provider->get_address_service_jwt();
+
+		$this->assertSame( 'cached_jwt_token', $result );
 	}
 }
