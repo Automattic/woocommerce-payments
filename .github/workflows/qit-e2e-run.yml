@@ -81,7 +81,6 @@ jobs:
             --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
             --wait \
             --print-report-url \
-            --verbose \
             -- --project=${{ inputs.playwright-project }}
 
       - name: Upload test results
