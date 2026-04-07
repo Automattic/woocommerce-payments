@@ -15,6 +15,7 @@ import {
 	getCachedAppearance,
 	setCachedAppearance,
 	dispatchAppearanceEvent,
+	isAppearanceValid,
 } from 'wcpay/utils/appearance-cache';
 import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -57,11 +58,17 @@ const PaymentElements = ( { api, ...props } ) => {
 				containerRef.current.ownerDocument
 			);
 			dispatchAppearanceEvent( upeAppearance, 'blocks_checkout' );
-			setCachedAppearance(
-				'blocks_checkout',
-				getUPEConfig( 'stylesCacheVersion' ),
-				upeAppearance
-			);
+
+			// Only cache if extraction produced meaningful rules.
+			// Empty results (e.g. non-standard theme markup) should not be cached
+			// so the next page load can retry extraction.
+			if ( isAppearanceValid( upeAppearance ) ) {
+				setCachedAppearance(
+					'blocks_checkout',
+					getUPEConfig( 'stylesCacheVersion' ),
+					upeAppearance
+				);
+			}
 			setAppearance( upeAppearance );
 			// Defer dispatch so all payment method label listeners are attached first.
 			setTimeout( () => {
