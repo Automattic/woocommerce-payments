@@ -83,16 +83,18 @@ echo "Latest beta version: $LATEST_BETA_VERSION" >&2
 # Build the version array
 VERSIONS=("7.7.0")  # Keep for business reasons (significant TPV)
 
-# Add major versions latest stable (excluding current major since we'll use 'latest')
+# Add major versions latest stable (excluding current major since it's added below)
 for version in "${MAJOR_VERSIONS[@]}"; do
-    # Skip the current major version since we'll use 'latest' instead
+    # Skip the current major version since it's added as LATEST_WC_VERSION below
     if [[ "$version" != "$LATEST_WC_VERSION" ]]; then
         VERSIONS+=("$version")
     fi
 done
 
-# Add latest, beta, rc (with actual versions)
-VERSIONS+=("latest")
+# Add latest stable, beta, rc (with actual versions)
+# Use the resolved version number instead of "latest" to avoid QIT CLI
+# constructing invalid wporg download URLs (woocommerce.latest.zip → 404).
+VERSIONS+=("$LATEST_WC_VERSION")
 if [[ -n "$LATEST_BETA_VERSION" && "$LATEST_BETA_VERSION" != "null" ]]; then
     VERSIONS+=("$LATEST_BETA_VERSION")
     echo "Including beta version: $LATEST_BETA_VERSION" >&2

@@ -50,14 +50,18 @@ jobs:
           [[ "$BETA_VERSION" == "null" ]] && BETA_VERSION=""
           [[ "$RC_VERSION" == "null" ]] && RC_VERSION=""
 
-          echo "L-1 version: $L1_VERSION" >&2
+          # Resolve "latest" to actual version number to avoid QIT CLI
+          # constructing invalid wporg download URLs (woocommerce.latest.zip → 404).
+          LATEST_WC_VERSION=$(curl -s https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.version')
+
+          echo "L-1 version: $L1_VERSION, Latest WC: $LATEST_WC_VERSION" >&2
           [[ -n "$BETA_VERSION" ]] && echo "Beta version: $BETA_VERSION" >&2 || echo "No beta version available" >&2
           [[ -n "$RC_VERSION" ]] && echo "RC version: $RC_VERSION" >&2 || echo "No RC version available" >&2
 
-          # Build scheduled matrix: L-1 + latest + nightly WC, PHP 8.3, all projects
+          # Build scheduled matrix: L-1 + latest stable + nightly WC, PHP 8.3, all projects
           # All combinations use WP latest by default
           MATRIX_ENTRIES=()
-          for wc_version in "$L1_VERSION" "latest" "nightly"; do
+          for wc_version in "$L1_VERSION" "$LATEST_WC_VERSION" "nightly"; do
             for project in "shopper" "merchant" "subscriptions"; do
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"wordpress\":\"latest\",\"php\":\"8.3\",\"project\":\"$project\"}")
             done
