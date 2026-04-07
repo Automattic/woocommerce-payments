@@ -3,6 +3,18 @@
 	container-type: inline-size;
 	container-name: woopay-button;
 
+	a.woopay-express-button {
+		text-decoration: none;
+		color: inherit;
+
+		&:hover,
+		&:focus,
+		&:visited {
+			text-decoration: none;
+			color: inherit;
+		}
+	}
+
 	.woopay-express-button {
 		font-size: 18px;
 		font-weight: 500;
@@ -45,6 +57,7 @@
 		}
 
 		&:disabled,
+		&[aria-disabled='true'],
 		&.is-placeholder {
 			opacity: 0.5;
 			cursor: not-allowed;
