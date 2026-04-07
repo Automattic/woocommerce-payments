@@ -294,6 +294,12 @@ class MultiCurrency {
 
 		$store_currency_updated = $this->check_store_currency_for_change();
 
+		// If the store currency has been updated, invalidate the exchange rate cache
+		// before initializing currencies so fresh rates are fetched immediately.
+		if ( $store_currency_updated ) {
+			$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
+		}
+
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
