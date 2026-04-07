@@ -143,14 +143,12 @@ fi
 RESULT=$(jq -n \
     --argjson versions "$(printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s .)" \
     --arg l1_version "$L1_VERSION" \
-    --arg latest_stable "$LATEST_WC_VERSION" \
     --arg rc_version "${INCLUDED_RC_VERSION}" \
     --arg beta_version "${LATEST_BETA_VERSION}" \
     '{
         versions: $versions,
         metadata: {
             l1_version: $l1_version,
-            latest_stable: $latest_stable,
             rc_version: (if ($rc_version // "") == "" or ($rc_version == "null") then null else $rc_version end),
             beta_version: (if ($beta_version // "") == "" or ($beta_version == "null") then null else $beta_version end)
         }
