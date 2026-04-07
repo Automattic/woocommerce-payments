@@ -734,17 +734,21 @@ class WC_Payments_Onboarding_Service {
 			$capabilities
 		);
 
+		// Attempt to create the account.
+		// Filter out empty values first, then merge additional data so that
+		// boolean `false` values (e.g. `extra_bootstrapping: false`) are preserved.
+		$account_data = WC_Payments_Utils::array_filter_recursive( $account_data );
+
 		if ( ! empty( $additional_account_data ) ) {
 			$account_data = WC_Payments_Utils::array_merge_recursive_distinct( $account_data, $additional_account_data );
 		}
 
-		// Attempt to create the account.
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			false,
 			WC_Payments_Account::get_connect_url(),
 			$site_data,
 			WC_Payments_Utils::array_filter_recursive( $user_data ),
-			WC_Payments_Utils::array_filter_recursive( $account_data ),
+			$account_data,
 			self::get_actioned_notes(),
 		);
 
