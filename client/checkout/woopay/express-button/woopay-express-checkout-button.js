@@ -82,6 +82,9 @@ export const WoopayExpressCheckoutButton = ( {
 
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
 
+	const isFirstPartyAuth = getConfig( 'isWoopayFirstPartyAuthEnabled' );
+	const woopayUrl = getConfig( 'woopayHost' ) + '/woopay/';
+
 	const { addToCart, getProductData } = useExpressCheckoutProductHandler(
 		api
 	);
@@ -357,43 +360,61 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
+	const sharedProps = {
+		ref: buttonRef,
+		'aria-label': buttonText,
+		onClick: ( e ) => onClickCallbackRef.current( e ),
+		className: clsx( 'woopay-express-button', {
+			'is-loading': isLoading,
+		} ),
+		'data-type': buttonType,
+		'data-size': buttonSize,
+		'data-theme': theme,
+		'data-width-type': buttonWidthType,
+		style: {
+			height: `${ buttonHeight }px`,
+			borderRadius: `${ borderRadius }px`,
+		},
+	};
+
+	const buttonContent = isLoading ? (
+		<span className="wc-block-components-spinner" />
+	) : (
+		<div className="button-content">
+			{ interpolateComponents( {
+				mixedString: buttonText.replace(
+					ButtonTypeTextMap.default,
+					'{{wooPayLogo /}}'
+				),
+				components: {
+					wooPayLogo: <ThemedWooPayIcon />,
+				},
+			} ) }
+		</div>
+	);
+
 	return (
 		<div id="wcpay-woopay-button">
-			<button
-				ref={ buttonRef }
-				key={ `${ buttonType }-${ theme }-${ buttonSize }` }
-				aria-label={ buttonText }
-				onClick={ ( e ) => onClickCallbackRef.current( e ) }
-				className={ clsx( 'woopay-express-button', {
-					'is-loading': isLoading,
-				} ) }
-				data-type={ buttonType }
-				data-size={ buttonSize }
-				data-theme={ theme }
-				data-width-type={ buttonWidthType }
-				style={ {
-					height: `${ buttonHeight }px`,
-					borderRadius: `${ borderRadius }px`,
-				} }
-				disabled={ isLoading }
-				type="button"
-			>
-				{ isLoading ? (
-					<span className="wc-block-components-spinner" />
-				) : (
-					<div className="button-content">
-						{ interpolateComponents( {
-							mixedString: buttonText.replace(
-								ButtonTypeTextMap.default,
-								'{{wooPayLogo /}}'
-							),
-							components: {
-								wooPayLogo: <ThemedWooPayIcon />,
-							},
-						} ) }
-					</div>
-				) }
-			</button>
+			{ isFirstPartyAuth ? (
+				<a
+					key={ `${ buttonType }-${ theme }-${ buttonSize }` }
+					{ ...sharedProps }
+					href={ isLoading ? undefined : woopayUrl }
+					aria-disabled={ isLoading || undefined }
+					tabIndex={ isLoading ? -1 : undefined }
+				>
+					{ buttonContent }
+				</a>
+			) : (
+				<button
+					key={ `${ buttonType }-${ theme }-${ buttonSize }` }
+					{ ...sharedProps }
+					disabled={ isLoading }
+					type="button"
+				>
+					{ buttonContent }
+				</button>
+			) }
 		</div>
 	);
 };
