@@ -48,9 +48,7 @@ jobs:
           SCRIPT_RESULT=$(.github/scripts/generate-wc-matrix.sh)
           L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
 
-          # Resolve "latest" to actual version number to avoid QIT CLI
-          # constructing invalid wporg download URLs (woocommerce.latest.zip → 404).
-          LATEST_WC_VERSION=$(curl -s https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.version')
+          LATEST_WC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.latest_wc_version')
           echo "L-1 version: $L1_VERSION, Latest WC: $LATEST_WC_VERSION" >&2
 
           # Build PR matrix: L-1 + latest stable, PHP 8.3 only, all projects
