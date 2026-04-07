@@ -23,7 +23,7 @@
 		}
 	}
 
-	@media (max-width: 782px) {
+	@media ( max-width: 782px ) {
 		flex-wrap: wrap;
 	}
 }
@@ -44,6 +44,7 @@
 		color: $gray-600;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	&__value {
@@ -53,6 +54,7 @@
 		padding: 8px 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
 
 		.is-big {
 			font-size: 20px;
@@ -60,7 +62,7 @@
 		}
 	}
 
-	@media (max-width: 782px) {
+	@media ( max-width: 782px ) {
 		min-width: 50%;
 
 		& + & {
