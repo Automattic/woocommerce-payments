@@ -48,11 +48,12 @@ jobs:
           SCRIPT_RESULT=$(.github/scripts/generate-wc-matrix.sh)
           L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
 
-          echo "L-1 version: $L1_VERSION" >&2
+          LATEST_WC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.latest_wc_version')
+          echo "L-1 version: $L1_VERSION, Latest WC: $LATEST_WC_VERSION" >&2
 
-          # Build PR matrix: L-1 + latest, PHP 8.3 only, all projects
+          # Build PR matrix: L-1 + latest stable, PHP 8.3 only, all projects
           MATRIX_ENTRIES=()
-          for wc_version in "$L1_VERSION" "latest"; do
+          for wc_version in "$L1_VERSION" "$LATEST_WC_VERSION"; do
             for project in "shopper" "merchant" "subscriptions"; do
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$wc_version\",\"wordpress\":\"latest\",\"php\":\"8.3\",\"project\":\"$project\"}")
             done
