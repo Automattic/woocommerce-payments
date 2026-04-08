@@ -1,5 +1,7 @@
 *** WooPayments Changelog ***
 
+= 10.7.0-test-1 - 2026-xx-xx =
+
 = 10.7.0 - 2026-04-15 =
 * Add - Add client-side async price renderer for cache-optimized multi-currency mode
 * Add - Add digital product/service evidence matrix entries for all dispute reasons
