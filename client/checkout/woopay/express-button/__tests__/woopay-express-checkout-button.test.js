@@ -87,7 +87,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		jest.clearAllMocks();
 	} );
 
-	test( 'render the express checkout button', () => {
+	test( 'renders as a link when first-party auth is enabled', () => {
 		render(
 			<WoopayExpressCheckoutButton
 				isPreview={ false }
@@ -98,9 +98,68 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		expect(
-			screen.queryByRole( 'button', { name: 'WooPay' } )
-		).toBeInTheDocument();
+		const link = screen.queryByRole( 'link', { name: 'WooPay' } );
+		expect( link ).toBeInTheDocument();
+		expect( link.tagName ).toBe( 'A' );
+		expect( link ).toHaveAttribute( 'href', 'foo/woopay/' );
+	} );
+
+	test( 'renders as a button when first-party auth is disabled', () => {
+		getConfig.mockImplementation( ( v ) => {
+			return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
+		} );
+		render(
+			<WoopayExpressCheckoutButton
+				isPreview={ false }
+				buttonSettings={ buttonSettings }
+				api={ api }
+				isProductPage={ false }
+				emailSelector="#email"
+			/>
+		);
+
+		const button = screen.queryByRole( 'button', { name: 'WooPay' } );
+		expect( button ).toBeInTheDocument();
+		expect( button.tagName ).toBe( 'BUTTON' );
+		expect( button ).toHaveAttribute( 'type', 'button' );
+	} );
+
+	test( 'link variant sets aria-disabled and removes href when loading', async () => {
+		getConfig.mockImplementation( ( v ) => {
+			switch ( v ) {
+				case 'isWoopayFirstPartyAuthEnabled':
+					return true;
+				case 'woopayHost':
+					return 'https://pay.woo.com';
+				case 'woopaySessionNonce':
+					return 'nonce';
+				default:
+					return 'foo';
+			}
+		} );
+
+		render(
+			<WoopayExpressCheckoutButton
+				isPreview={ false }
+				buttonSettings={ buttonSettings }
+				api={ api }
+				isProductPage={ false }
+				emailSelector="#email"
+			/>
+		);
+
+		const link = screen.queryByRole( 'link', { name: 'WooPay' } );
+		expect( link ).toBeInTheDocument();
+		expect( link ).toHaveAttribute( 'href', 'https://pay.woo.com/woopay/' );
+		expect( link ).not.toHaveAttribute( 'aria-disabled' );
+
+		await userEvent.click( link );
+
+		await waitFor( () => {
+			const el = screen.getByLabelText( 'WooPay' );
+			expect( el ).toHaveAttribute( 'aria-disabled', 'true' );
+			expect( el ).not.toHaveAttribute( 'href' );
+		} );
 	} );
 
 	test( 'respect buttonAttributes API when available ', () => {
@@ -118,8 +177,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		const button = screen.queryByRole( 'button', { name: 'WooPay' } );
-		expect( button.getAttribute( 'style' ) ).toBe(
+		const link = screen.queryByRole( 'link', { name: 'WooPay' } );
+		expect( link.getAttribute( 'style' ) ).toBe(
 			'height: 55px; border-radius: 20px;'
 		);
 	} );
@@ -186,7 +245,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		const expressButton = screen.queryByRole( 'button', {
+		const expressButton = screen.queryByRole( 'link', {
 			name: 'WooPay',
 		} );
 		await userEvent.click( expressButton );
@@ -240,7 +299,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			/>
 		);
 
-		const expressButton = screen.queryByRole( 'button', {
+		const expressButton = screen.queryByRole( 'link', {
 			name: 'WooPay',
 		} );
 		await userEvent.click( expressButton );
