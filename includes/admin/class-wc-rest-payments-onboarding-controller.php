@@ -186,6 +186,16 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 							],
 						],
 					],
+					'account_data' => [
+						'description'          => 'Additional account data to pass to the platform during account creation.',
+						'type'                 => 'object',
+						'default'              => [],
+						'required'             => false,
+						'properties'           => [
+							'extra_bootstrapping' => [ 'type' => 'boolean' ],
+						],
+						'additionalProperties' => false,
+					],
 				],
 			]
 		);
@@ -350,7 +360,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		}
 
 		try {
-			$success = $this->onboarding_service->init_test_drive_account( $country, $request->get_param( 'capabilities' ) );
+			$success = $this->onboarding_service->init_test_drive_account( $country, $request->get_param( 'capabilities' ) ?? [], $request->get_param( 'account_data' ) ?? [] );
 		} catch ( Exception $e ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
 		}
