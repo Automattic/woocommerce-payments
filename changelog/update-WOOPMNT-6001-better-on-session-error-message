@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: add better on-session error message for `authentication_required` decline

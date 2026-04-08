@@ -524,7 +524,7 @@ class WC_Payments_Order_Service {
 
 		$order->add_order_note( $note );
 		$this->complete_order_processing( $order, $intent_status );
-		// Trigger the failed order status hook to send notifications etc only if the order status was not already failed to avoid duplicate notifications.
+		// When the order is already in 'failed' status, WC core won't fire notification hooks (status didn't change). Manually trigger them so the merchant is notified on every terminal payment failure.
 		if ( Order_Status::FAILED === $order_status_before_update ) {
 			do_action( 'woocommerce_order_status_pending_to_failed_notification', $order->get_id(), $order );
 			do_action( 'woocommerce_order_status_failed_notification', $order->get_id(), $order );
@@ -574,6 +574,11 @@ class WC_Payments_Order_Service {
 		try {
 			$events = $this->api_client->get_timeline( $intent_id );
 
+			if ( ! isset( $events['data'] ) || ! is_array( $events['data'] ) ) {
+				Logger::log( sprintf( 'Timeline data missing or malformed for intent_id %s.', $intent_id ) );
+				return;
+			}
+
 			$captured_event = current(
 				array_filter(
 					$events['data'],
@@ -582,6 +587,11 @@ class WC_Payments_Order_Service {
 					}
 				)
 			);
+
+			if ( ! is_array( $captured_event ) ) {
+				Logger::log( sprintf( 'No captured event found in timeline for intent_id %s.', $intent_id ) );
+				return;
+			}
 
 			$details = ( new WC_Payments_Captured_Event_Note( $captured_event ) )->generate_html_note();
 

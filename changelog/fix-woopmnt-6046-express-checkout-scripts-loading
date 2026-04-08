@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent unnecessary Stripe JS and express checkout scripts from loading when no express checkout methods are actually available

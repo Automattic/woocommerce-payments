@@ -160,7 +160,7 @@ class Currency implements \JsonSerializable {
 	 */
 	public function get_name(): string {
 		$wc_currencies = get_woocommerce_currencies();
-		return $wc_currencies[ $this->code ];
+		return $wc_currencies[ $this->code ] ?? $this->code;
 	}
 
 	/**

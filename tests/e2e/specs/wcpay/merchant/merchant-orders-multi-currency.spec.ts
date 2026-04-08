@@ -157,8 +157,8 @@ test.describe( 'Admin Multi-Currency Orders', () => {
 		merchantPage.once( 'dialog', ( dialog ) => dialog.accept() );
 		await refundButton.click();
 
-		// Wait for refund to process
-		await merchantPage.waitForLoadState( 'networkidle' );
+		// Wait for the refund to finish processing.
+		await merchantPage.waitForLoadState( 'load' );
 
 		// Verify refund details show EUR currency with the correct amount
 		await expect(

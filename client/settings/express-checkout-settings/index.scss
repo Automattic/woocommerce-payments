@@ -119,6 +119,8 @@
 			box-shadow: 0 2px 6px 0 rgba( 0, 0, 0, 0.05 );
 			padding: 0;
 			position: relative;
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+				'Arial', sans-serif;
 
 			&__v-spacer {
 				background-color: #0000;
@@ -141,31 +143,62 @@
 
 			&__store-header {
 				width: 100%;
+				height: 32px;
 				display: flex;
-				justify-content: center;
-				position: relative;
+				justify-content: space-between;
+				align-items: center;
+				background-color: $studio-white;
+				box-shadow: 0 1px 0 $studio-gray-5;
+				padding: 0 3.797%;
+				box-sizing: border-box;
+				border-radius: $grid-unit-05 $grid-unit-05 0 0;
 
 				.header-text {
-					color: $studio-gray-60;
-					font-size: 1.125rem;
-					letter-spacing: 0.1rem;
+					color: #404040;
+					font-size: 0.4375rem;
+					font-weight: 400;
 					overflow: hidden;
 					text-overflow: ellipsis;
 					white-space: nowrap;
+				}
 
-					@media screen and ( max-width: $break-mobile ) {
-						// The chevronLeft icon is 5.66% from the left and
-						// has a width of 1.5rem. This padding is to ensure
-						// the text doesn't overlap with the icon.
-						padding-left: calc( 5.66% + 1.5rem );
-					}
+				img {
+					max-height: 0.875rem;
+					width: auto;
+					display: block;
 				}
 			}
 
-			&__chevron-left {
-				position: absolute;
-				left: 5.66%;
-				top: 0;
+			&__back-button {
+				display: flex;
+				align-items: center;
+				gap: 0.0625rem;
+				flex-shrink: 0;
+
+				svg {
+					width: 0.5rem;
+					height: 0.5rem;
+				}
+			}
+
+			&__back-button-label {
+				font-size: 0.25rem;
+				color: $studio-gray-40;
+				white-space: nowrap;
+			}
+
+			&__store-branding {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				flex: 1;
+				min-width: 0;
+			}
+
+			&__store-header-spacer {
+				flex-shrink: 0;
+				// Match back-button width to keep branding centered.
+				width: 2rem;
 			}
 
 			&__container {
@@ -184,6 +217,7 @@
 
 			&__left-column {
 				width: 59.08%;
+				max-width: 242px;
 			}
 
 			&__contact-section {
@@ -192,7 +226,7 @@
 			}
 
 			&__contact-field {
-				padding: 0.5rem;
+				padding: 0.375rem;
 
 				&:not( :last-child ) {
 					border-bottom: 0.03125rem solid #11111121;
@@ -201,19 +235,35 @@
 
 			&__right-column {
 				width: 35.59%;
+				max-width: 146px;
+				border: 0.03125rem solid #11111121;
+				border-radius: 0.25rem;
+				padding: 0.3125rem;
+				align-self: flex-start;
 			}
 
 			&__columns-container {
-				padding: 0 3.797% 0 3.797%;
+				padding: 0 3.797%;
 				display: flex;
-				justify-content: space-between;
+				justify-content: center;
+				gap: 28px;
+			}
+
+			&__woopay-logo {
+				display: flex;
+				align-items: center;
+
+				svg {
+					height: 0.375rem;
+					width: auto;
+				}
 			}
 
 			&__section-header {
 				font-weight: 500;
-				font-size: 0.5rem;
+				font-size: 0.4375rem;
 				color: $studio-gray-80;
-				line-height: 0.74669rem;
+				line-height: 0.625rem;
 				letter-spacing: 0.01rem;
 				display: flex;
 				justify-content: space-between;
@@ -221,13 +271,230 @@
 
 			&__loading-box {
 				background-color: $studio-gray-0;
-				border-radius: 0.25rem;
+				border-radius: 0.1875rem;
 				width: 100%;
+			}
+
+			&__field-value {
+				font-size: 0.375rem;
+				color: $studio-gray-80;
+				line-height: 1.4;
+				padding-top: 0.375rem;
+			}
+
+			&__pay-with-value {
+				display: flex;
+				align-items: center;
+				gap: 0.1875rem;
+			}
+
+			&__visa-icon {
+				display: flex;
+				flex-shrink: 0;
+
+				svg {
+					width: 1.25rem;
+					height: auto;
+				}
+			}
+
+			&__chevron-down {
+				font-size: 0.4375rem;
+				color: $studio-gray-40;
+				transform: rotate( 90deg );
+				display: inline-block;
+			}
+
+			&__chevron-up {
+				font-size: 0.4375rem;
+				transform: rotate( -90deg );
+				display: inline-block;
+			}
+
+			&__cart-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				font-size: 0.375rem;
+				color: $studio-gray-80;
+
+				&-text {
+					font-weight: 400;
+				}
+
+				&-toggle {
+					display: flex;
+					align-items: center;
+					gap: 0.0625rem;
+					color: $studio-woocommerce-purple-50;
+					font-weight: 500;
+					font-size: 0.3125rem;
+				}
+			}
+
+			&__order-item {
+				display: grid;
+				grid-template-columns: max-content 1fr max-content;
+				grid-template-rows: 1fr 1fr;
+				height: 1.25rem;
+				column-gap: 0.375rem;
+				row-gap: 0;
+				font-size: 0.375rem;
+				color: $studio-gray-80;
+
+				&-image {
+					position: relative;
+					width: 1.25rem;
+					height: 1.25rem;
+					flex-shrink: 0;
+					grid-row: 1 / 3;
+				}
+
+				&-img {
+					width: 100%;
+					height: 100%;
+					border-radius: 0.1875rem;
+					object-fit: cover;
+					display: block;
+					background-color: #f2e6d9;
+				}
+
+				&-qty {
+					position: absolute;
+					top: -0.125rem;
+					right: -0.125rem;
+					background: $studio-woocommerce-purple-90;
+					color: $studio-white;
+					font-size: 0.25rem;
+					line-height: 1;
+					min-width: 0.4375rem;
+					min-height: 0.4375rem;
+					border-radius: 0.4375rem;
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					z-index: 1;
+				}
+
+				&-details {
+					display: contents;
+					min-width: 0;
+				}
+
+				&-name {
+					font-weight: 400;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+					grid-column: 2;
+					grid-row: 1;
+					align-self: start;
+				}
+
+				&-unit-price {
+					font-size: 0.3125rem;
+					color: $studio-gray-50;
+					grid-column: 2;
+					grid-row: 2;
+					align-self: end;
+				}
+
+				&-price {
+					white-space: nowrap;
+					grid-row: 1 / 3;
+					text-align: right;
+				}
+			}
+
+			&__add-coupon {
+				display: flex;
+				align-items: center;
+				gap: 0.0625rem;
+				font-size: 0.3125rem;
+				color: $studio-woocommerce-purple-50;
+				font-weight: 500;
+
+				&-icon {
+					width: 0.375rem;
+					height: 0.375rem;
+				}
+			}
+
+			&__order-row {
+				display: flex;
+				justify-content: space-between;
+				font-size: 0.3125rem;
+				color: $studio-gray-80;
+				line-height: 1.8;
+			}
+
+			&__hr--dotted {
+				border-style: dotted;
+				border-color: $studio-gray-10;
+			}
+
+			&__footer {
+				background-color: $studio-white;
+				border-radius: 0 0 $grid-unit-05 $grid-unit-05;
+				box-shadow: 0 -1px 0 $studio-gray-5;
+				padding: 0.1875rem 0;
+			}
+
+			// Mirrors columns-container layout so footer content aligns
+			// with the column edges.
+			&__footer-inner {
+				padding: 0 3.797%;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				gap: 28px;
+
+				.preview-layout__footer-links {
+					width: 59.08%;
+					max-width: 242px;
+				}
+
+				.preview-layout__footer-cards {
+					width: 35.59%;
+					max-width: 146px;
+					justify-content: flex-end;
+				}
+			}
+
+			&__footer-links {
+				display: flex;
+				align-items: center;
+				gap: 0.125rem;
+				font-size: 0.25rem;
+				color: $studio-gray-50;
+			}
+
+			&__footer-guest-text {
+				color: $studio-woocommerce-purple-40;
+				font-weight: 500;
+			}
+
+			&__footer-dot {
+				color: #72767c;
+				font-size: 0.1875rem;
+			}
+
+			&__footer-cards {
+				display: flex;
+				align-items: center;
+				flex-shrink: 0;
+				height: 0.5rem;
+				width: auto;
+
+				svg {
+					height: 0.5rem;
+					width: auto;
+				}
 			}
 
 			&__text-box {
 				width: 100%;
-				font-size: 0.625rem;
+				font-size: 0.375rem;
 				color: $studio-gray-50;
 				text-align: center;
 				font-weight: 400;
@@ -236,7 +503,10 @@
 			}
 
 			&__shortcode-link {
-				color: $studio-woocommerce-purple-60;
+				color: var(
+					--preview-link-color,
+					$studio-woocommerce-purple-60
+				);
 			}
 
 			&__checkout-button {
@@ -247,9 +517,9 @@
 				justify-content: center;
 
 				color: $studio-white;
-				font-size: 0.625em;
+				font-size: 0.5rem;
 				font-weight: 600;
-				line-height: 0.56rem;
+				line-height: 0.5rem;
 				letter-spacing: 0.0125rem;
 			}
 		}

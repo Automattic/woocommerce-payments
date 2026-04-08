@@ -111,7 +111,8 @@ export const getShopper = async (
 		const shopperContext = await browser.newContext();
 		const shopperPage = await shopperContext.newPage();
 		await wpAdminLogin( shopperPage, config.users.customer );
-		await shopperPage.waitForLoadState( 'networkidle' );
+		// Wait for login page to finish loading before navigating.
+		await shopperPage.waitForLoadState( 'load' );
 		await shopperPage.goto( '/my-account' );
 		expect(
 			shopperPage.locator(

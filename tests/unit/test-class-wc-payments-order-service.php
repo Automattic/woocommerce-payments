@@ -1191,6 +1191,37 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		remove_all_filters( 'wcpay_terminal_payment_completed_order_status' );
 	}
 
+	public function test_mark_terminal_payment_failed_triggers_status_transition_on_first_failure() {
+		// Arrange: Create the intent and ensure order is in pending status.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::PENDING );
+		$this->order->save();
+
+		$action_count_before = did_action( 'woocommerce_order_status_pending_to_failed' );
+
+		// Act: Mark the terminal payment as failed.
+		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test123', 'Card declined' );
+
+		// Assert: WC core fires the status transition hook (pending → failed), which
+		// triggers notifications via WC_Emails when the email system is initialized.
+		$this->assertGreaterThan( $action_count_before, did_action( 'woocommerce_order_status_pending_to_failed' ), 'Status transition hook should fire on first failure.' );
+	}
+
+	public function test_mark_terminal_payment_failed_fires_notification_manually_on_repeated_failure() {
+		// Arrange: Create the intent and set order to already failed.
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::REQUIRES_PAYMENT_METHOD ] );
+		$this->order->set_status( Order_Status::FAILED );
+		$this->order->save();
+
+		$action_count_before = did_action( 'woocommerce_order_status_failed_notification' );
+
+		// Act: Mark the terminal payment as failed again.
+		$this->order_service->mark_terminal_payment_failed( $this->order, $intent->get_id(), $intent->get_status(), 'ch_test456', 'Card declined' );
+
+		// Assert: WC core won't fire hooks (status didn't change), so our code manually triggers the notification.
+		$this->assertGreaterThan( $action_count_before, did_action( 'woocommerce_order_status_failed_notification' ), 'Notification should fire manually when order was already failed.' );
+	}
+
 	/**
 	 * @dataProvider provider_order_note_exists
 	 */
@@ -2006,5 +2037,68 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Test that add_fee_breakdown_to_order_notes returns early when timeline data is missing.
+	 */
+	public function test_add_fee_breakdown_returns_early_when_timeline_data_missing() {
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client->expects( $this->once() )
+			->method( 'get_timeline' )
+			->willReturn( [] ); // No 'data' key.
+
+		$order_service = new WC_Payments_Order_Service( $mock_api_client );
+
+		$notes_before = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), 'pi_test_123' );
+
+		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ), $notes_after );
+	}
+
+	/**
+	 * Test that add_fee_breakdown_to_order_notes returns early when timeline data is not an array.
+	 */
+	public function test_add_fee_breakdown_returns_early_when_timeline_data_not_array() {
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client->expects( $this->once() )
+			->method( 'get_timeline' )
+			->willReturn( [ 'data' => null ] );
+
+		$order_service = new WC_Payments_Order_Service( $mock_api_client );
+
+		$notes_before = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), 'pi_test_123' );
+
+		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ), $notes_after );
+	}
+
+	/**
+	 * Test that add_fee_breakdown_to_order_notes returns early when no captured event is found.
+	 */
+	public function test_add_fee_breakdown_returns_early_when_no_captured_event() {
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client->expects( $this->once() )
+			->method( 'get_timeline' )
+			->willReturn(
+				[
+					'data' => [
+						[ 'type' => 'authorized' ],
+					],
+				]
+			);
+
+		$order_service = new WC_Payments_Order_Service( $mock_api_client );
+
+		$notes_before = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), 'pi_test_123' );
+
+		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertCount( count( $notes_before ), $notes_after );
 	}
 }

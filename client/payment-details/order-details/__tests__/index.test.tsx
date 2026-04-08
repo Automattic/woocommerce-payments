@@ -168,6 +168,10 @@ describe( 'Order details page', () => {
 	beforeAll( () => {
 		jest.spyOn( console, 'error' ).mockImplementation( () => null );
 		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+		// Freeze time so moment().fromNow() produces stable relative dates.
+		jest.useFakeTimers( {
+			now: new Date( '2022-09-28T12:00:00Z' ),
+		} );
 	} );
 
 	beforeEach( () => {
@@ -214,6 +218,7 @@ describe( 'Order details page', () => {
 	} );
 
 	afterAll( () => {
+		jest.useRealTimers();
 		Object.defineProperty( window, 'location', {
 			configurable: true,
 			value: location,

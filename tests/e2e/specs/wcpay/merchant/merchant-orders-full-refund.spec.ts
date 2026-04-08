@@ -83,8 +83,8 @@ test.describe( 'WooCommerce Payments - Full Refund', () => {
 			merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
 			await refundButton.click();
 
-			// Wait for refund to process
-			await merchantPage.waitForLoadState( 'networkidle' );
+			// Wait for the refund to finish processing.
+			await merchantPage.waitForLoadState( 'load' );
 
 			// Verify refund details
 			await expect(

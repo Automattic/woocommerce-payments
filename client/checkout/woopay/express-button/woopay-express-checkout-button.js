@@ -21,12 +21,10 @@ import interpolateComponents from '@automattic/interpolate-components';
 import {
 	appendRedirectionParams,
 	deleteSkipWooPayCookie,
-	isSupportedThemeEntrypoint,
 } from 'wcpay/checkout/woopay/utils';
 import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
-import { getAppearance } from 'wcpay/checkout/upe-styles';
-import { getAppearanceType } from 'wcpay/checkout/utils';
+import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -83,6 +81,9 @@ export const WoopayExpressCheckoutButton = ( {
 		ButtonTypeTextMap.default;
 
 	const ThemedWooPayIcon = theme === 'dark' ? WoopayIcon : WoopayIconLight;
+
+	const isFirstPartyAuth = getConfig( 'isWoopayFirstPartyAuthEnabled' );
+	const woopayUrl = getConfig( 'woopayHost' ) + '/woopay/';
 
 	const { addToCart, getProductData } = useExpressCheckoutProductHandler(
 		api
@@ -222,12 +223,7 @@ export const WoopayExpressCheckoutButton = ( {
 			isLoadingRef.current = true;
 			setIsLoading( true );
 
-			const appearanceType = getAppearanceType();
-			const appearance =
-				isSupportedThemeEntrypoint( appearanceType ) &&
-				getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-					? getAppearance( appearanceType, true )
-					: null;
+			const appearance = resolveWoopayAppearance();
 
 			if ( isProductPage ) {
 				const productData = getProductDataRef.current();
@@ -364,43 +360,61 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
+	const sharedProps = {
+		ref: buttonRef,
+		'aria-label': buttonText,
+		onClick: ( e ) => onClickCallbackRef.current( e ),
+		className: clsx( 'woopay-express-button', {
+			'is-loading': isLoading,
+		} ),
+		'data-type': buttonType,
+		'data-size': buttonSize,
+		'data-theme': theme,
+		'data-width-type': buttonWidthType,
+		style: {
+			height: `${ buttonHeight }px`,
+			borderRadius: `${ borderRadius }px`,
+		},
+	};
+
+	const buttonContent = isLoading ? (
+		<span className="wc-block-components-spinner" />
+	) : (
+		<div className="button-content">
+			{ interpolateComponents( {
+				mixedString: buttonText.replace(
+					ButtonTypeTextMap.default,
+					'{{wooPayLogo /}}'
+				),
+				components: {
+					wooPayLogo: <ThemedWooPayIcon />,
+				},
+			} ) }
+		</div>
+	);
+
 	return (
 		<div id="wcpay-woopay-button">
-			<button
-				ref={ buttonRef }
-				key={ `${ buttonType }-${ theme }-${ buttonSize }` }
-				aria-label={ buttonText }
-				onClick={ ( e ) => onClickCallbackRef.current( e ) }
-				className={ clsx( 'woopay-express-button', {
-					'is-loading': isLoading,
-				} ) }
-				data-type={ buttonType }
-				data-size={ buttonSize }
-				data-theme={ theme }
-				data-width-type={ buttonWidthType }
-				style={ {
-					height: `${ buttonHeight }px`,
-					borderRadius: `${ borderRadius }px`,
-				} }
-				disabled={ isLoading }
-				type="button"
-			>
-				{ isLoading ? (
-					<span className="wc-block-components-spinner" />
-				) : (
-					<div className="button-content">
-						{ interpolateComponents( {
-							mixedString: buttonText.replace(
-								ButtonTypeTextMap.default,
-								'{{wooPayLogo /}}'
-							),
-							components: {
-								wooPayLogo: <ThemedWooPayIcon />,
-							},
-						} ) }
-					</div>
-				) }
-			</button>
+			{ isFirstPartyAuth ? (
+				<a
+					key={ `${ buttonType }-${ theme }-${ buttonSize }` }
+					{ ...sharedProps }
+					href={ isLoading ? undefined : woopayUrl }
+					aria-disabled={ isLoading || undefined }
+					tabIndex={ isLoading ? -1 : undefined }
+				>
+					{ buttonContent }
+				</a>
+			) : (
+				<button
+					key={ `${ buttonType }-${ theme }-${ buttonSize }` }
+					{ ...sharedProps }
+					disabled={ isLoading }
+					type="button"
+				>
+					{ buttonContent }
+				</button>
+			) }
 		</div>
 	);
 };

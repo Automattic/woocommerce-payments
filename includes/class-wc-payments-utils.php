@@ -748,6 +748,7 @@ class WC_Payments_Utils {
 				'tax_id_invalid'                        => __( 'Invalid Tax ID, please try again with a valid tax ID.', 'woocommerce-payments' ),
 				'invalid_wallet_type'                   => __( 'Invalid wallet payment type, please try again or use an alternative method.', 'woocommerce-payments' ),
 				'payment_intent_authentication_failure' => __( 'We are unable to authenticate your payment method. Please choose a different payment method and try again.', 'woocommerce-payments' ),
+				'authentication_required'               => __( 'Your card was declined because additional authentication is required. Please contact your card issuer or try a different payment method.', 'woocommerce-payments' ),
 				'insufficient_funds'                    => __( 'Your card has insufficient funds.', 'woocommerce-payments' ),
 			]
 		);

@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import tinycolor from 'tinycolor2';
+
+/**
  * Internal dependencies
  */
 import { upeRestrictedProperties } from './upe-styles';
@@ -35,6 +40,12 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		alternateSelectors: {
+			appendTarget: 'form.checkout',
+			upeThemeInputSelector: 'form.checkout input[type="text"]',
+			upeThemeLabelSelector: 'form.checkout label',
+			upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+		},
 		backgroundSelectors: [
 			'li.wc_payment_method .wc-payment-form',
 			'li.wc_payment_method .payment_box',
@@ -153,6 +164,12 @@ export const appearanceSelectors = {
 			'woocommerce-invalid',
 			'woocommerce-invalid-required-field',
 		],
+		alternateSelectors: {
+			appendTarget: 'form.checkout',
+			upeThemeInputSelector: 'form.checkout input[type="text"]',
+			upeThemeLabelSelector: 'form.checkout label',
+			upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+		},
 		backgroundSelectors: [
 			'#customer_details',
 			'#order_review',
@@ -173,9 +190,70 @@ export const appearanceSelectors = {
 		],
 		containerSelectors: [ '.woocommerce-checkout-review-order-table' ],
 		headerSelectors: [
+			'header > div:has(nav)',
+			'header > div:has(.site-logo)',
+			'header > div:has(.custom-logo)',
 			'.site-header',
 			'#masthead',
-			'header > div',
+			'header > div:last-of-type',
+			'header',
+		],
+		footerSelectors: [
+			'.site-footer',
+			'#colophon',
+			'footer > div',
+			'footer',
+		],
+		footerLink: [ '.site-footer a', 'footer a' ],
+	},
+	wooPayBlocksCheckout: {
+		appendTarget: '.wc-block-checkout__contact-fields',
+		upeThemeInputSelector: '.wc-block-components-text-input #email',
+		upeThemeLabelSelector: '.wc-block-components-text-input label',
+		upeThemeTextSelectors: [
+			'.wc-block-components-checkout-step__description',
+			'.wc-block-components-text-input',
+			'.wc-block-components-radio-control__label',
+			'.wc-block-checkout__terms',
+		],
+		rowElement: 'div',
+		validClasses: [ 'wc-block-components-text-input', 'is-active' ],
+		invalidClasses: [ 'wc-block-components-text-input', 'has-error' ],
+		alternateSelectors: {
+			appendTarget: '#billing.wc-block-components-address-form',
+			upeThemeInputSelector: '#billing-first_name',
+			upeThemeLabelSelector:
+				'.wc-block-components-checkout-step__description',
+		},
+		backgroundSelectors: [
+			'#payment-method .wc-block-components-radio-control-accordion-option',
+			'#payment-method',
+			'form.wc-block-checkout__form',
+			'.wc-block-checkout',
+			'body',
+		],
+		headingSelectors: [ 'h1', 'h2', 'h3', 'h4', 'h5', 'h6' ],
+		buttonSelectors: [ '.wc-block-components-checkout-place-order-button' ],
+		linkSelectors: [
+			'.wc-block-checkout a',
+			'.wc-block-components-main a',
+			'main a',
+			'.entry-content a',
+			'.site-content a',
+			'#content a',
+			'#primary a',
+			'a',
+		],
+		containerSelectors: [
+			'.wp-block-woocommerce-checkout-order-summary-block',
+		],
+		headerSelectors: [
+			'header > div:has(nav)',
+			'header > div:has(.site-logo)',
+			'header > div:has(.custom-logo)',
+			'.site-header',
+			'#masthead',
+			'header > div:last-of-type',
 			'header',
 		],
 		footerSelectors: [
@@ -200,9 +278,28 @@ export const appearanceSelectors = {
 			Object.entries( selectors.alternateSelectors ).forEach(
 				( altSelector ) => {
 					const [ key, value ] = altSelector;
+					const current = selectors[ key ];
 
-					if ( ! scope.querySelector( selectors[ key ] ) ) {
-						selectors[ key ] = value;
+					if ( Array.isArray( current ) ) {
+						// For array selectors, check if any element matches.
+						const anyMatch = current.some( ( s ) => {
+							try {
+								return scope.querySelector( s );
+							} catch ( e ) {
+								return false;
+							}
+						} );
+						if ( ! anyMatch ) {
+							selectors[ key ] = value;
+						}
+					} else {
+						try {
+							if ( ! scope.querySelector( selectors[ key ] ) ) {
+								selectors[ key ] = value;
+							}
+						} catch ( e ) {
+							selectors[ key ] = value;
+						}
 					}
 				}
 			);
@@ -242,6 +339,9 @@ export const appearanceSelectors = {
 				break;
 			case 'woopay_shortcode_checkout':
 				appearanceSelector = this.wooPayClassicCheckout;
+				break;
+			case 'woopay_blocks_checkout':
+				appearanceSelector = this.wooPayBlocksCheckout;
 				break;
 		}
 
@@ -438,8 +538,15 @@ export const getFieldStyles = (
 	scope
 ) => {
 	// getting one element per selector to avoid performance issues with selectors matching too many elements.
+	// try/catch guards against selectors using :has() in browsers that don't support it.
 	const elements = ( Array.isArray( selector ) ? selector : [ selector ] )
-		.map( ( s ) => scope.querySelector( s ) )
+		.map( ( s ) => {
+			try {
+				return scope.querySelector( s );
+			} catch ( e ) {
+				return null;
+			}
+		} )
 		.filter( Boolean );
 
 	if ( ! elements.length ) {
@@ -529,8 +636,9 @@ export const getFontRulesFromPage = ( scope = document ) => {
 		fontDomains = [
 			'fonts.googleapis.com',
 			'fonts.gstatic.com',
-			'fast.fonts.com',
 			'use.typekit.net',
+			'fonts.bunny.net',
+			'fonts.wp.com',
 		];
 	for ( let i = 0; i < sheets.length; i++ ) {
 		if ( ! sheets[ i ].href ) {
@@ -590,18 +698,28 @@ function ensureFontSizeSmallerThan(
 	return `${ fontSizeNumber }px`;
 }
 
+// Maps standard element locations to WooPay-specific selector sets that
+// include header, footer, link, and button selectors needed by WooPay.
+const woopayLocationMap = {
+	blocks_checkout: 'woopay_blocks_checkout',
+	shortcode_checkout: 'woopay_shortcode_checkout',
+};
+
 export const getAppearance = (
 	elementsLocation,
 	forWooPay = false,
 	scope = document
 ) => {
+	const selectorLocation = forWooPay
+		? woopayLocationMap[ elementsLocation ] ?? elementsLocation
+		: elementsLocation;
 	const selectors = appearanceSelectors.getSelectors(
-		elementsLocation,
+		selectorLocation,
 		scope
 	);
 
 	// Add hidden fields to DOM for generating styles.
-	hiddenElementsForUPE.init( elementsLocation, scope );
+	hiddenElementsForUPE.init( selectorLocation, scope );
 
 	const inputRules = getFieldStyles(
 		selectors.hiddenInput,
@@ -681,7 +799,9 @@ export const getAppearance = (
 		);
 	}
 
-	const isFloatingLabel = elementsLocation === 'blocks_checkout';
+	const isFloatingLabel =
+		elementsLocation === 'blocks_checkout' ||
+		selectorLocation === 'woopay_blocks_checkout';
 
 	let appearance = {
 		variables: globalRules,
@@ -719,6 +839,44 @@ export const getAppearance = (
 	}
 
 	if ( forWooPay ) {
+		const headerRules = getFieldStyles(
+			selectors.headerSelectors,
+			'.Header',
+			null,
+			scope
+		);
+		const footerRules = getFieldStyles(
+			selectors.footerSelectors,
+			'.Footer',
+			null,
+			scope
+		);
+
+		// When the header/footer has a transparent background (e.g.
+		// Storefront), walk the selectors with getBackgroundColor to
+		// find the first ancestor with a solid background.  We can't
+		// reuse `backgroundColor` here because that comes from the
+		// checkout content-area selectors, which may differ from what
+		// sits behind the header/footer.
+		if (
+			! headerRules.backgroundColor ||
+			tinycolor( headerRules.backgroundColor ).getAlpha() < 0.5
+		) {
+			headerRules.backgroundColor = getBackgroundColor(
+				[ ...( selectors.headerSelectors ?? [] ), 'body' ],
+				scope
+			);
+		}
+		if (
+			! footerRules.backgroundColor ||
+			tinycolor( footerRules.backgroundColor ).getAlpha() < 0.5
+		) {
+			footerRules.backgroundColor = getBackgroundColor(
+				[ ...( selectors.footerSelectors ?? [] ), 'body' ],
+				scope
+			);
+		}
+
 		appearance.rules = {
 			...appearance.rules,
 			'.Heading': getFieldStyles(
@@ -727,18 +885,8 @@ export const getAppearance = (
 				null,
 				scope
 			),
-			'.Header': getFieldStyles(
-				selectors.headerSelectors,
-				'.Header',
-				null,
-				scope
-			),
-			'.Footer': getFieldStyles(
-				selectors.footerSelectors,
-				'.Footer',
-				null,
-				scope
-			),
+			'.Header': headerRules,
+			'.Footer': footerRules,
 			'.Footer-link': getFieldStyles(
 				selectors.footerLink,
 				'.Footer--link',
