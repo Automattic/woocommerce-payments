@@ -507,4 +507,377 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			remove_all_filters( 'wp_theme_json_data_default' );
 		}
 	}
+
+	public function test_resolve_pattern_blocks_replaces_pattern_with_content() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_pattern_blocks' );
+		$method->setAccessible( true );
+
+		$pattern_content = '<!-- wp:group {"backgroundColor":"vivid-red"} --><div class="wp-block-group has-vivid-red-background-color has-background"></div><!-- /wp:group -->';
+
+		$registry = WP_Block_Patterns_Registry::get_instance();
+		$registry->register(
+			'test/resolve-pattern',
+			[
+				'title'   => 'Test Pattern',
+				'content' => $pattern_content,
+			]
+		);
+
+		try {
+			$blocks = [
+				[
+					'blockName'    => 'core/pattern',
+					'attrs'        => [ 'slug' => 'test/resolve-pattern' ],
+					'innerBlocks'  => [],
+					'innerHTML'    => '',
+					'innerContent' => [],
+				],
+			];
+
+			$resolved = $method->invoke( null, $blocks );
+
+			$this->assertNotEmpty( $resolved );
+			$this->assertSame( 'core/group', $resolved[0]['blockName'] );
+			$this->assertSame( 'vivid-red', $resolved[0]['attrs']['backgroundColor'] );
+		} finally {
+			$registry->unregister( 'test/resolve-pattern' );
+		}
+	}
+
+	public function test_resolve_pattern_blocks_passes_through_non_pattern_blocks() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_pattern_blocks' );
+		$method->setAccessible( true );
+
+		$blocks = [
+			[
+				'blockName'    => 'core/group',
+				'attrs'        => [ 'backgroundColor' => 'vivid-red' ],
+				'innerBlocks'  => [],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+		];
+
+		$resolved = $method->invoke( null, $blocks );
+
+		$this->assertCount( 1, $resolved );
+		$this->assertSame( 'core/group', $resolved[0]['blockName'] );
+		$this->assertSame( 'vivid-red', $resolved[0]['attrs']['backgroundColor'] );
+	}
+
+	public function test_resolve_pattern_blocks_keeps_unregistered_pattern() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_pattern_blocks' );
+		$method->setAccessible( true );
+
+		$blocks = [
+			[
+				'blockName'    => 'core/pattern',
+				'attrs'        => [ 'slug' => 'nonexistent/pattern' ],
+				'innerBlocks'  => [],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+		];
+
+		$resolved = $method->invoke( null, $blocks );
+
+		$this->assertCount( 1, $resolved );
+		$this->assertSame( 'core/pattern', $resolved[0]['blockName'] );
+	}
+
+	public function test_extract_block_colors_from_style_variation() {
+		// Block style variations require WP 6.6+ (wp_get_block_style_variation_name_from_class)
+		// and theme.json v3 schema support (WP 6.6+). Older WP/Gutenberg combinations may
+		// have the function polyfilled but lack proper theme.json v3 handling, causing
+		// variation data to be silently stripped during schema validation.
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' )
+			|| version_compare( get_bloginfo( 'version' ), '6.6', '<' ) ) {
+			$this->markTestSkipped( 'Block style variations require WordPress 6.6+.' );
+		}
+
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'extract_block_colors' );
+		$method->setAccessible( true );
+
+		// Ensure core/group is a registered block type so theme.json schema
+		// validation accepts block-level style data for it.
+		$registered_group = WP_Block_Type_Registry::get_instance()->is_registered( 'core/group' );
+		if ( ! $registered_group ) {
+			register_block_type( 'core/group', [] );
+		}
+
+		// Register the block style variation so WP_Theme_JSON::sanitize()
+		// doesn't strip it during schema validation.
+		register_block_style(
+			'core/group',
+			[
+				'name'  => 'test-variation',
+				'label' => 'Test',
+			]
+		);
+
+		// Clear any cached theme.json data before injecting our variation.
+		WP_Theme_JSON_Resolver::clean_cached_data();
+
+		// Inject a style variation via the wp_theme_json_data_default filter.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'blocks' => [
+							'core/group' => [
+								'variations' => [
+									'test-variation' => [
+										'color' => [
+											'background' => '#112233',
+											'text'       => '#aabbcc',
+										],
+									],
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$block = [
+				'blockName'    => 'core/group',
+				'attrs'        => [ 'className' => 'is-style-test-variation' ],
+				'innerBlocks'  => [],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			];
+
+			$colors = $method->invoke( null, $block );
+
+			$this->assertSame( '#112233', $colors['background'] );
+			$this->assertSame( '#aabbcc', $colors['text'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			unregister_block_style( 'core/group', 'test-variation' );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			if ( ! $registered_group ) {
+				unregister_block_type( 'core/group' );
+			}
+		}
+	}
+
+	public function test_extract_block_colors_inline_attrs_take_precedence_over_variation() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'extract_block_colors' );
+		$method->setAccessible( true );
+
+		$block = [
+			'blockName'    => 'core/group',
+			'attrs'        => [
+				'className' => 'is-style-some-variation',
+				'style'     => [
+					'color' => [
+						'background' => '#inline-bg',
+						'text'       => '#inline-text',
+					],
+				],
+			],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
+		];
+
+		$colors = $method->invoke( null, $block );
+
+		// Inline attributes should win — style variation lookup only runs
+		// when no inline colors were found (empty($colors) guard).
+		$this->assertSame( '#inline-bg', $colors['background'] );
+		$this->assertSame( '#inline-text', $colors['text'] );
+	}
+
+	public function test_get_style_variation_colors_returns_empty_without_classname() {
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' ) ) {
+			$this->markTestSkipped( 'Block style variations require WordPress 6.6+.' );
+		}
+
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'get_style_variation_colors' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( null, 'core/group', '' );
+		$this->assertEmpty( $result );
+	}
+
+	public function test_get_style_variation_colors_returns_empty_for_default_style() {
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' ) ) {
+			$this->markTestSkipped( 'Block style variations require WordPress 6.6+.' );
+		}
+
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'get_style_variation_colors' );
+		$method->setAccessible( true );
+
+		// "is-style-default" should be excluded per WP core behavior.
+		$result = $method->invoke( null, 'core/group', 'is-style-default' );
+		$this->assertEmpty( $result );
+	}
+
+	public function test_classify_block_area_detects_template_part_area() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
+		$method->setAccessible( true );
+
+		$block = [
+			'blockName'    => 'core/template-part',
+			'attrs'        => [
+				'slug' => 'footer-dark',
+				'area' => 'footer',
+			],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
+		];
+
+		$this->assertSame( 'footer', $method->invoke( null, $block ) );
+	}
+
+	public function test_classify_block_area_detects_metadata_categories() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
+		$method->setAccessible( true );
+
+		$block = [
+			'blockName'    => 'core/group',
+			'attrs'        => [
+				'metadata'  => [
+					'categories' => [ 'footer' ],
+				],
+				'className' => 'is-style-section-1',
+			],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
+		];
+
+		$this->assertSame( 'footer', $method->invoke( null, $block ) );
+	}
+
+	public function test_classify_block_area_detects_tag_name() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
+		$method->setAccessible( true );
+
+		$block = [
+			'blockName'    => 'core/group',
+			'attrs'        => [ 'tagName' => 'header' ],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
+		];
+
+		$this->assertSame( 'header', $method->invoke( null, $block ) );
+	}
+
+	public function test_classify_block_area_returns_null_for_content_blocks() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
+		$method->setAccessible( true );
+
+		$block = [
+			'blockName'    => 'core/group',
+			'attrs'        => [ 'tagName' => 'main' ],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
+		];
+
+		$this->assertNull( $method->invoke( null, $block ) );
+	}
+
+	public function test_compute_woopay_appearance_maps_input_element_styles() {
+		// WooPay requires WP 6.5+. The textInput element key and proper
+		// elements.link resolution require WP 6.1+. Skip on older versions
+		// where wp_get_global_styles() strips unrecognized element keys.
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color'    => [
+							'background' => '#ffffff',
+							'text'       => '#000000',
+						],
+						'elements' => [
+							'textInput' => [
+								'color' => [
+									'background' => '#f0f0f0',
+									'text'       => '#333333',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			$this->assertArrayHasKey( 'rules', $result );
+			$this->assertSame( '#f0f0f0', $result['rules']['.Input']['backgroundColor'] );
+			$this->assertSame( '#333333', $result['rules']['.Input']['color'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_footer_link_falls_back_to_link_color_when_no_footer_part() {
+		// WooPay requires WP 6.5+. The elements.link resolution used by
+		// this test requires WP 6.1+. Skip on older versions.
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// When no footer template part is in the checkout template,
+		// $footer_colors is empty, so .Footer-link should fall back to $link_color.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color'    => [
+							'background' => '#ffffff',
+							'text'       => '#000000',
+						],
+						'elements' => [
+							'link' => [
+								'color' => [
+									'text' => '#0066cc',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			// Footer-link should use the global link color as fallback.
+			$this->assertSame( '#0066cc', $result['rules']['.Footer-link']['color'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
 }

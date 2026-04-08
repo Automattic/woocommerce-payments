@@ -46,9 +46,9 @@
 		}
 
 		&:not( :disabled ):not( .is-placeholder ) {
-			&:focus,
-			&:focus-within {
-				outline: 4px solid $studio-woocommerce-purple-10;
+			&:focus-visible {
+				box-shadow: inset 0 0 0 2px $studio-woocommerce-purple-60;
+				outline: none;
 			}
 
 			&:hover {
@@ -127,12 +127,20 @@
 				border-color: $studio-woocommerce-purple-30;
 				background: $studio-woocommerce-purple-30;
 			}
+			&:not( :disabled ):not( .is-placeholder ):focus-visible {
+				box-shadow: none;
+				outline: 2px solid $studio-woocommerce-purple-80;
+				outline-offset: 2px;
+			}
 		}
 
 		&[data-theme='light-outline'] {
 			border: 1px solid $studio-black;
 			&:not( :disabled ):not( .is-placeholder ):hover {
 				background: #e0e0e0;
+			}
+			&:not( :disabled ):not( .is-placeholder ):focus-visible {
+				box-shadow: inset 0 0 0 2px $studio-black;
 			}
 		}
 
