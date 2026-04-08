@@ -198,6 +198,7 @@ test.describe(
 		test.beforeAll( async ( { browser: b } ) => {
 			browser = b;
 			shopperPage = ( await getShopper( browser ) ).shopperPage;
+			await shopper.emptyCart( shopperPage );
 			await shopper.addToCartFromShopPage( shopperPage );
 		} );
 
