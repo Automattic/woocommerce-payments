@@ -763,6 +763,62 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( $result );
 	}
 
+	public function test_init_test_drive_account_merges_additional_account_data() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$captured_account_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturnCallback(
+				function ( $collect_payout_requirements, $return_url, $site_data, $user_data, $account_data ) use ( &$captured_account_data ) {
+					$captured_account_data = $account_data;
+					return [
+						'url' => false,
+					];
+				}
+			);
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( 'US', [], [ 'extra_bootstrapping' => false ] );
+
+		// Assert: The `extra_bootstrapping => false` key should survive into the API call.
+		$this->assertArrayHasKey( 'extra_bootstrapping', $captured_account_data );
+		$this->assertFalse( $captured_account_data['extra_bootstrapping'] );
+	}
+
+	public function test_init_test_drive_account_without_additional_data_leaves_account_data_unchanged() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$captured_account_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturnCallback(
+				function ( $collect_payout_requirements, $return_url, $site_data, $user_data, $account_data ) use ( &$captured_account_data ) {
+					$captured_account_data = $account_data;
+					return [
+						'url' => false,
+					];
+				}
+			);
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( 'US', [] );
+
+		// Assert: No extra_bootstrapping key should be present.
+		$this->assertArrayNotHasKey( 'extra_bootstrapping', $captured_account_data );
+		// The base account data should still contain the expected keys.
+		$this->assertArrayHasKey( 'setup_mode', $captured_account_data );
+		$this->assertSame( 'test_drive', $captured_account_data['setup_mode'] );
+	}
+
 	public function test_add_woocommerce_store_id_to_request_adds_store_id() {
 		$store_id = 'test-store-uuid-1234';
 		update_option( 'woocommerce_store_id', $store_id );
