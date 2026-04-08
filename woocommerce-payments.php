@@ -17,6 +17,8 @@
  * @package WooCommerce\Payments
  */
 
+// This is a test
+
 defined( 'ABSPATH' ) || exit;
 
 define( 'WCPAY_PLUGIN_FILE', __FILE__ );
