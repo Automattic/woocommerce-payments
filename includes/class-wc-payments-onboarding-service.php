@@ -684,17 +684,18 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Note: This is a subset of the WC_Payments_Account::maybe_handle_onboarding method.
 	 *
-	 * @param string $country      The country code to use for the account.
-	 *                             This is a ISO 3166-1 alpha-2 country code.
-	 * @param array  $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
-	 *                             indicating whether the capability should be requested when the account is created
-	 *                             and enabled in the settings.
+	 * @param string $country                 The country code to use for the account.
+	 *                                         This is a ISO 3166-1 alpha-2 country code.
+	 * @param array  $capabilities             Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                                         indicating whether the capability should be requested when the account is created
+	 *                                         and enabled in the settings.
+	 * @param array  $additional_account_data  Optional. Additional account data to merge into the account data sent to the platform.
 	 *
 	 * @return bool Whether the account was created.
 	 * @throws API_Exception When the API request fails.
 	 * @throws Exception When an onboarding initialization is already in progress.
 	 */
-	public function init_test_drive_account( string $country, array $capabilities = [] ): bool {
+	public function init_test_drive_account( string $country, array $capabilities = [], array $additional_account_data = [] ): bool {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
@@ -734,12 +735,20 @@ class WC_Payments_Onboarding_Service {
 		);
 
 		// Attempt to create the account.
+		// Filter out empty values first, then merge additional data so that
+		// boolean `false` values (e.g. `extra_bootstrapping: false`) are preserved.
+		$account_data = WC_Payments_Utils::array_filter_recursive( $account_data );
+
+		if ( ! empty( $additional_account_data ) ) {
+			$account_data = WC_Payments_Utils::array_merge_recursive_distinct( $account_data, $additional_account_data );
+		}
+
 		$onboarding_data = $this->payments_api_client->get_onboarding_data(
 			false,
 			WC_Payments_Account::get_connect_url(),
 			$site_data,
 			WC_Payments_Utils::array_filter_recursive( $user_data ),
-			WC_Payments_Utils::array_filter_recursive( $account_data ),
+			$account_data,
 			self::get_actioned_notes(),
 		);
 

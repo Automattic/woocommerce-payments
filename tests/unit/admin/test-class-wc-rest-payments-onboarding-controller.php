@@ -101,6 +101,58 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_init_test_drive_account_forwards_account_data_to_service() {
+		$account_data = [ 'extra_bootstrapping' => false ];
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->with( 'US', [], $account_data )
+			->willReturn( true );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
+			[
+				'country'      => 'US',
+				'account_data' => $account_data,
+			]
+		);
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame( [ 'success' => true ], $response->get_data() );
+	}
+
+	public function test_init_test_drive_account_defaults_account_data_to_empty_array() {
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->with( 'US', [], [] )
+			->willReturn( true );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params( [ 'country' => 'US' ] );
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertSame( 200, $response->status );
+		$this->assertSame( [ 'success' => true ], $response->get_data() );
+	}
+
+	public function test_init_test_drive_account_returns_error_on_service_exception() {
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'init_test_drive_account' )
+			->willThrowException( new Exception( 'Something went wrong' ) );
+
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params( [ 'country' => 'US' ] );
+
+		$response = $this->controller->init_test_drive_account( $request );
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'bad_request', $response->get_error_code() );
+		$this->assertSame( 'Something went wrong', $response->get_error_message() );
+	}
+
 	public function test_finalize_embedded_kyc() {
 		$response_data = [
 			'success'           => true,
