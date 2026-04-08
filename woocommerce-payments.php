@@ -17,7 +17,7 @@
  * @package WooCommerce\Payments
  */
 
-// This is a test
+// This is a test.
 
 defined( 'ABSPATH' ) || exit;
 
