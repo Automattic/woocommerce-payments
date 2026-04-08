@@ -33,8 +33,18 @@ const useConfirmNavigation = ( getMessage ) => {
 			event.preventDefault();
 			event.returnValue = '';
 		};
+
+		// Block address change (hard navigation).
 		window.addEventListener( 'beforeunload', handler );
-		const unblock = getHistory().block( message );
+
+		// Block history change (soft navigation).
+		const unblock = getHistory().block( ( location ) => {
+			if ( window.confirm( message ) ) {
+				unblock();
+				location.retry();
+			}
+			return true;
+		} );
 
 		return () => {
 			window.removeEventListener( 'beforeunload', handler );

@@ -14,6 +14,7 @@ export const Outcomes = {
 };
 
 export const Rules = {
+	RULE_AVS_VERIFICATION: 'avs_verification',
 	RULE_ADDRESS_MISMATCH: 'address_mismatch',
 	RULE_INTERNATIONAL_IP_ADDRESS: 'international_ip_address',
 	RULE_IP_ADDRESS_MISMATCH: 'ip_address_mismatch',
@@ -22,6 +23,7 @@ export const Rules = {
 };
 
 export const Checks = {
+	CHECK_AVS_MISMATCH: 'avs_mismatch',
 	CHECK_BILLING_SHIPPING_ADDRESS_SAME: 'billing_shipping_address_same',
 	CHECK_IP_COUNTRY: 'ip_country',
 	CHECK_IP_BILLING_COUNTRY_SAME: 'ip_billing_country_same',

@@ -11,16 +11,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
-use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * Mostly a wrapper containing information on a single payment.
  */
 class Payment_Information {
+	/**
+	 * Key used to indicate that an error occurred during the payment method creation in the client.
+	 *
+	 * @type string
+	 */
+	const PAYMENT_METHOD_ERROR = 'woocommerce_payments_payment_method_error';
+
 	/**
 	 * The ID of the payment method used for this payment.
 	 *
@@ -31,14 +38,14 @@ class Payment_Information {
 	/**
 	 * The order object.
 	 *
-	 * @var \WC_Order/NULL
+	 * @var ?\WC_Order
 	 */
 	private $order;
 
 	/**
 	 * The payment token used for this payment.
 	 *
-	 * @var \WC_Payment_Token/NULL
+	 * @var ?\WC_Payment_Token
 	 */
 	private $token;
 
@@ -52,14 +59,14 @@ class Payment_Information {
 	/**
 	 * Indicates whether the payment is merchant-initiated (true) or customer-initiated (false).
 	 *
-	 * @var Payment_Initiated_By
+	 * @var ?Payment_Initiated_By
 	 */
 	private $payment_initiated_by;
 
 	/**
 	 * Indicates whether the payment will be only authorized (true) or captured immediately (false).
 	 *
-	 * @var Payment_Capture_Type
+	 * @var ?Payment_Capture_Type
 	 */
 	private $manual_capture;
 
@@ -99,6 +106,27 @@ class Payment_Information {
 	private $fingerprint = '';
 
 	/**
+	 * The Stripe ID of the payment method used for this payment.
+	 *
+	 * @var string
+	 */
+	private $payment_method_stripe_id;
+
+	/**
+	 * The WCPay Customer ID that owns the payment token.
+	 *
+	 * @var string
+	 */
+	private $customer_id;
+
+	/**
+	 * Will be set if there was an error during setup.
+	 *
+	 * @var ?\WP_Error
+	 */
+	private $error = null;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -109,34 +137,40 @@ class Payment_Information {
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
 	 * @param string               $cvc_confirmation The CVC confirmation for this payment method.
 	 * @param string               $fingerprint The attached fingerprint.
+	 * @param string               $payment_method_stripe_id The Stripe ID of the payment method used for this payment.
+	 * @param string               $customer_id The WCPay Customer ID that owns the payment token.
 	 *
 	 * @throws Invalid_Payment_Method_Exception When no payment method is found in the provided request.
 	 */
 	public function __construct(
 		string $payment_method,
-		\WC_Order $order = null,
-		Payment_Type $payment_type = null,
-		\WC_Payment_Token $token = null,
-		Payment_Initiated_By $payment_initiated_by = null,
-		Payment_Capture_Type $manual_capture = null,
-		string $cvc_confirmation = null,
-		string $fingerprint = ''
+		?\WC_Order $order = null,
+		?Payment_Type $payment_type = null,
+		?\WC_Payment_Token $token = null,
+		?Payment_Initiated_By $payment_initiated_by = null,
+		?Payment_Capture_Type $manual_capture = null,
+		?string $cvc_confirmation = null,
+		string $fingerprint = '',
+		?string $payment_method_stripe_id = null,
+		?string $customer_id = null
 	) {
 		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
 			throw new Invalid_Payment_Method_Exception(
-				__( 'Invalid payment method. Please input a new card number.', 'woocommerce-payments' ),
+				esc_html__( 'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.', 'woocommerce-payments' ),
 				'payment_method_not_provided'
 			);
 		}
-		$this->payment_method       = $payment_method;
-		$this->order                = $order;
-		$this->token                = $token;
-		$this->payment_initiated_by = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
-		$this->manual_capture       = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
-		$this->payment_type         = $payment_type ?? Payment_Type::SINGLE();
-		$this->cvc_confirmation     = $cvc_confirmation;
-		$this->fingerprint          = $fingerprint;
+		$this->payment_method           = $payment_method;
+		$this->order                    = $order;
+		$this->token                    = $token;
+		$this->payment_initiated_by     = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
+		$this->manual_capture           = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
+		$this->payment_type             = $payment_type ?? Payment_Type::SINGLE();
+		$this->cvc_confirmation         = $cvc_confirmation;
+		$this->fingerprint              = $fingerprint;
+		$this->payment_method_stripe_id = $payment_method_stripe_id;
+		$this->customer_id              = $customer_id;
 	}
 
 	/**
@@ -149,9 +183,9 @@ class Payment_Information {
 	}
 
 	/**
-	 * Returns the payment method ID.
+	 * Returns the payment method ID or confirmation token.
 	 *
-	 * @return string The payment method ID.
+	 * @return string The payment method ID or confirmation token.
 	 */
 	public function get_payment_method(): string {
 		// Use the token if we have it.
@@ -163,11 +197,22 @@ class Payment_Information {
 	}
 
 	/**
+	 * Returns whether the payment is using a confirmation token or a payment method.
+	 *
+	 * @see https://docs.stripe.com/payments/mobile/migration-confirmation-tokens
+	 *
+	 * @return bool True if using a confirmation token, false otherwise.
+	 */
+	public function is_using_confirmation_token(): bool {
+		return 0 === strpos( $this->get_payment_method(), 'ctoken_' );
+	}
+
+	/**
 	 * Returns the order object.
 	 *
-	 * @return \WC_Order The order object.
+	 * @return ?\WC_Order The order object.
 	 */
-	public function get_order(): \WC_Order {
+	public function get_order(): ?\WC_Order {
 		return $this->order;
 	}
 
@@ -178,9 +223,9 @@ class Payment_Information {
 	 * since the return type is nullable, as per
 	 * https://www.php.net/manual/en/functions.returning-values.php#functions.returning-values.type-declaration
 	 *
-	 * @return \WC_Payment_Token/NULL The payment token.
+	 * @return ?\WC_Payment_Token The payment token.
 	 */
-	public function get_payment_token(): \WC_Payment_Token {
+	public function get_payment_token(): ?\WC_Payment_Token {
 		return $this->token;
 	}
 
@@ -219,15 +264,17 @@ class Payment_Information {
 	 * @param Payment_Type         $payment_type The type of the payment.
 	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
 	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
+	 * @param string               $payment_method_stripe_id The Stripe ID of the payment method used for this payment.
 	 *
 	 * @throws \Exception - If no payment method is found in the provided request.
 	 */
 	public static function from_payment_request(
 		array $request,
-		\WC_Order $order = null,
-		Payment_Type $payment_type = null,
-		Payment_Initiated_By $payment_initiated_by = null,
-		Payment_Capture_Type $manual_capture = null
+		?\WC_Order $order = null,
+		?Payment_Type $payment_type = null,
+		?Payment_Initiated_By $payment_initiated_by = null,
+		?Payment_Capture_Type $manual_capture = null,
+		?string $payment_method_stripe_id = null
 	): Payment_Information {
 		$payment_method   = self::get_payment_method_from_request( $request );
 		$token            = self::get_token_from_request( $request );
@@ -238,18 +285,30 @@ class Payment_Information {
 			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
-		return new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint );
+		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
+
+		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {
+			$error_message = empty( $request['wcpay-payment-method-error-message'] )
+				? __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' )
+				: $request['wcpay-payment-method-error-message'];
+			$error_code    = empty( $request['wcpay-payment-method-error-code'] ) ? 'unknown-error' : $request['wcpay-payment-method-error-code'];
+			$error         = new \WP_Error( $error_code, $error_message );
+			$payment_information->set_error( $error );
+		}
+
+		return $payment_information;
 	}
 
 	/**
-	 * Extracts the payment method from the provided request.
+	 * Extracts the payment method or confirmation token from the provided request.
 	 *
 	 * @param array $request Associative array containing payment request information.
 	 *
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		foreach ( [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ] as $key ) {
+		// Check for confirmation token first (new ECE flow), then fall back to payment method (legacy flow).
+		foreach ( [ 'wcpay-confirmation-token', 'wcpay-payment-method', 'wcpay-payment-method-sepa' ] as $key ) {
 			if ( ! empty( $request[ $key ] ) ) {
 				$normalized = wc_clean( $request[ $key ] );
 				return is_string( $normalized ) ? $normalized : '';
@@ -414,5 +473,52 @@ class Payment_Information {
 	 */
 	public function get_fingerprint() {
 		return $this->fingerprint;
+	}
+
+	/**
+	 * Returns the Stripe ID of payment method.
+	 *
+	 * @return string The Stripe ID of payment method.
+	 */
+	public function get_payment_method_stripe_id() {
+		return $this->payment_method_stripe_id;
+	}
+
+	/**
+	 * Returns the WCPay Customer ID that owns the payment token.
+	 *
+	 * @return string The WCPay Customer ID.
+	 */
+	public function get_customer_id() {
+		return $this->customer_id;
+	}
+
+
+	/**
+	 * Sets the error data.
+	 *
+	 * @param \WP_Error $error The error to be set.
+	 * @return void
+	 */
+	public function set_error( \WP_Error $error ) {
+		$this->error = $error;
+	}
+
+	/**
+	 * Returns the error data.
+	 *
+	 * @return ?\WP_Error
+	 */
+	public function get_error() {
+		return $this->error;
+	}
+
+	/**
+	 * Returns true if the payment method is an offline payment method, false otherwise.
+	 *
+	 * @return bool True if the payment method is an offline payment method, false otherwise.
+	 */
+	public function is_offline_payment_method(): bool {
+		return in_array( $this->payment_method_stripe_id, Payment_Method::OFFLINE_PAYMENT_METHODS, true );
 	}
 }

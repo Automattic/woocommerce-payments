@@ -38,6 +38,7 @@ declare module '@woocommerce/components' {
 		path?: string;
 		query?: Query;
 		showDatePicker: boolean;
+		onAdvancedFilterAction?: ( args: string ) => void;
 		// some properties are omitted, as we are not currently using them
 	}
 
@@ -78,6 +79,7 @@ declare module '@woocommerce/components' {
 		defaultOrder?: 'desc' | 'asc';
 		isSortable?: boolean;
 		defaultSort?: boolean;
+		visible?: boolean;
 	}
 
 	interface TableCardBodyColumn {
@@ -89,13 +91,14 @@ declare module '@woocommerce/components' {
 		className?: string;
 		title?: string;
 		isLoading?: boolean;
-		rowsPerPage?: number;
+		rowsPerPage: number;
 		totalRows?: number;
 		headers?: TableCardColumn[];
 		rows?: TableCardBodyColumn[][];
 		summary?: { label: string; value: string | number | boolean }[];
 		query?: Query;
 		onQueryChange?: unknown;
+		onColumnsChange?: ( showCols: Array< string >, key?: string ) => void;
 		actions?: React.ReactNode[];
 		showMenu?: boolean;
 	}
@@ -103,6 +106,16 @@ declare module '@woocommerce/components' {
 }
 
 declare module '@woocommerce/navigation' {
+	import type { BrowserHistory, Location } from 'history';
+	/**
+	 * Extension of history.BrowserHistory but also adds { pathname: string } to the location object.
+	 */
+	interface WooBrowserHistory extends BrowserHistory {
+		location: Location & {
+			pathname: string;
+		};
+	}
+
 	// TODO: replace the `unknown` types with actual types.
 	interface Query {
 		path?: unknown;
@@ -117,8 +130,19 @@ declare module '@woocommerce/navigation' {
 		date_between?: string[];
 		type_is?: unknown;
 		type_is_not?: unknown;
+		type_is_in?: unknown;
+		source_device_is?: unknown;
+		source_device_is_not?: unknown;
+		channel_is?: string;
+		channel_is_not?: string;
+		customer_country_is?: string;
+		customer_country_is_not?: string;
+		risk_level_is?: string;
+		risk_level_is_not?: string;
 		customer_currency_is?: unknown;
 		customer_currency_is_not?: unknown;
+		source_is?: string;
+		source_is_not?: string;
 		store_currency_is?: string;
 		loan_id_is?: string;
 		search?: string[];
@@ -137,6 +161,7 @@ declare module '@woocommerce/navigation' {
 		path?: string,
 		currentQuery?: Query
 	) => void;
+	const getHistory: () => WooBrowserHistory;
 }
 
 declare module '@woocommerce/csv-export' {

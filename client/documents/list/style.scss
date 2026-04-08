@@ -1,4 +1,4 @@
-@import 'node_modules/@wordpress/components/src/tooltip/style.scss';
+@import '~@wordpress/components/src/tooltip/style.scss';
 
 $space-header-item: 12px;
 
@@ -15,6 +15,11 @@ $space-header-item: 12px;
 	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
 	}
+}
+
+// Adjusting the "Download"padding to match the column header alignment
+button.components-button.documents-list__download-button {
+	padding: 3px;
 }
 
 /**

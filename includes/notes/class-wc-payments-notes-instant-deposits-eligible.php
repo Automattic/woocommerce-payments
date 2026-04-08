@@ -11,7 +11,7 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WC_Payments_Notes_Set_Https_For_Checkout
+ * Class WC_Payments_Notes_Instant_Deposits_Eligible
  */
 class WC_Payments_Notes_Instant_Deposits_Eligible {
 	use NoteTraits;
@@ -27,11 +27,21 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 	public static function get_note() {
 		$note = new Note();
 
-		$note->set_title( __( 'You’re now eligible to receive Instant Deposits with WooCommerce Payments', 'woocommerce-payments' ) );
+		$note->set_title(
+			sprintf(
+				/* translators: %s: WooPayments */
+				__( 'You’re now eligible to receive Instant Payouts with %s', 'woocommerce-payments' ),
+				'WooPayments'
+			)
+		);
 		$note->set_content(
 			WC_Payments_Utils::esc_interpolated_html(
-				__( "Get immediate access to your funds when you need them – including nights, weekends, and holidays. With WooCommerce Payments' <a>Instant Deposits feature</a>, you're able to transfer your earnings to a debit card within minutes.", 'woocommerce-payments' ),
-				[ 'a' => '<a href="https://woocommerce.com/document/payments/instant-deposits/">' ]
+				sprintf(
+					/* translators: %s: WooPayments */
+					__( "Get immediate access to your funds when you need them – including nights, weekends, and holidays. With %s' <a>Instant Payouts feature</a>, you're able to transfer your earnings to a debit card within minutes.", 'woocommerce-payments' ),
+					'WooPayments'
+				),
+				[ 'a' => '<a href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/">' ]
 			)
 		);
 		$note->set_content_data( (object) [] );
@@ -40,8 +50,8 @@ class WC_Payments_Notes_Instant_Deposits_Eligible {
 		$note->set_source( 'woocommerce-payments' );
 		$note->add_action(
 			self::NOTE_NAME,
-			__( 'Request an instant deposit', 'woocommerce-payments' ),
-			'https://woocommerce.com/document/payments/instant-deposits/#section-2',
+			__( 'Request an instant payout', 'woocommerce-payments' ),
+			'https://woocommerce.com/document/woopayments/payouts/instant-payouts/#request-an-instant-payout',
 			'unactioned',
 			true
 		);

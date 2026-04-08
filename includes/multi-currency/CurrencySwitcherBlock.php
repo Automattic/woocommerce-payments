@@ -7,9 +7,7 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Payments;
 use function http_build_query;
-use function implode;
 use function urldecode;
 
 defined( 'ABSPATH' ) || exit;
@@ -42,7 +40,14 @@ class CurrencySwitcherBlock {
 	public function __construct( MultiCurrency $multi_currency, Compatibility $compatibility ) {
 		$this->multi_currency = $multi_currency;
 		$this->compatibility  = $compatibility;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		add_action( 'init', [ $this, 'init_block_widget' ] );
 	}
 
@@ -53,12 +58,12 @@ class CurrencySwitcherBlock {
 	 */
 	public function init_block_widget() {
 		// Automatically load dependencies and version.
-		WC_Payments::register_script_with_dependencies( 'woocommerce-payments/multi-currency-switcher', 'dist/multi-currency-switcher-block' );
+		$this->multi_currency->register_script_with_dependencies( 'woocommerce-payments/multi-currency-switcher', 'dist/multi-currency-switcher-block', [ 'wp-components' ] );
 
 		register_block_type(
 			'woocommerce-payments/multi-currency-switcher',
 			[
-				'api_version'     => 2,
+				'api_version'     => '3',
 				'editor_script'   => 'woocommerce-payments/multi-currency-switcher',
 				'render_callback' => [ $this, 'render_block_widget' ],
 				'attributes'      => [
@@ -109,15 +114,19 @@ class CurrencySwitcherBlock {
 	 * block here because the currencies enabled on a site could change, and this would not update
 	 * properly on the Gutenberg block, because it is cached.
 	 *
-	 * @param array  $block_attributes The attributes (settings) applicable to this block. We expect this will contain
+	 * @param array $block_attributes The attributes (settings) applicable to this block. We expect this will contain
 	 * the widget title, and whether or not we should render both flags and symbols.
-	 * @param string $content The existing widget content. Will be an empty string, because the `save()` function
-	 * on the JS side is set to return null to force usage of the dynamic widget render_callback.
 	 *
 	 * @return string The content to be displayed inside the block widget.
 	 */
-	public function render_block_widget( $block_attributes, $content ): string {
-		if ( $this->compatibility->should_hide_widgets() ) {
+	public function render_block_widget( $block_attributes ): string {
+		if ( $this->compatibility->should_disable_currency_switching() ) {
+			return '';
+		}
+
+		$enabled_currencies = $this->multi_currency->get_enabled_currencies();
+
+		if ( 1 === count( $enabled_currencies ) ) {
 			return '';
 		}
 
@@ -130,14 +139,17 @@ class CurrencySwitcherBlock {
 
 		$widget_content  = '<form>';
 		$widget_content .= $this->get_get_params();
-		$widget_content .= '<div class="currency-switcher-holder" style="' . $div_styles . '">';
-		$widget_content .= '<select name="currency" onchange="this.form.submit()" style="' . $select_styles . '">';
+		$widget_content .= '<div class="currency-switcher-holder" style="' . esc_attr( $div_styles ) . '">';
+		$widget_content .= '<select name="currency" onchange="this.form.submit()" style="' . esc_attr( $select_styles ) . '">';
 
-		foreach ( $this->multi_currency->get_enabled_currencies() as $currency ) {
+		foreach ( $enabled_currencies as $currency ) {
 			$widget_content .= $this->render_currency_option( $currency, $with_symbol, $with_flag );
 		}
 
 		$widget_content .= '</select></div></form>';
+
+		// Silence XSS warning because we are manually constructing the content and escaping everything above.
+		// nosemgrep: audit.php.wp.security.xss.block-attr -- reason: we are manually constructing the content and escaping everything above.
 		return $widget_content;
 	}
 
@@ -163,7 +175,7 @@ class CurrencySwitcherBlock {
 			$text = $currency->get_flag() . ' ' . $text;
 		}
 
-		return '<option value="' . $code . '" ' . $selected . '>' . $text . '</option>';
+		return '<option value="' . esc_attr( $code ) . '" ' . $selected . '>' . esc_html( $text ) . '</option>';
 	}
 
 	/**

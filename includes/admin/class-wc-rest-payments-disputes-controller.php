@@ -36,6 +36,15 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/download/(?P<export_id>[^/\\\\%]+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_export_url' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/summary',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -89,11 +98,21 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	public function get_disputes( WP_REST_Request $request ) {
 		$wcpay_request = List_Disputes::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request( 'wcpay_list_disputes_request', $request );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**
-	 * Retrieve transactions summary to respond with via API.
+	 * Get the disputes export URL for a given export ID, if available.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_export_url( $request ) {
+		$export_id = $request->get_param( 'export_id' );
+		return $this->forward_request( 'get_disputes_export_url', [ $export_id ] );
+	}
+
+	/**
+	 * Retrieve disputes summary to respond with via API.
 	 *
 	 * @param  WP_REST_Request $request Request data.
 	 * @return WP_REST_Response|WP_Error
@@ -148,9 +167,10 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 */
 	public function get_disputes_export( $request ) {
 		$user_email = $request->get_param( 'user_email' );
+		$locale     = $request->get_param( 'locale' );
 		$filters    = $this->get_disputes_filters( $request );
 
-		return $this->forward_request( 'get_disputes_export', [ $filters, $user_email ] );
+		return $this->forward_request( 'get_disputes_export', [ $filters, $user_email, $locale ] );
 	}
 
 	/**

@@ -98,7 +98,6 @@ class List_Deposits_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $filters['key'], $params['key'] );
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::DEPOSITS_API, $request->get_api() );
-
 	}
 	public function test_list_deposits_request_will_be_date_using_from_rest_request_function() {
 		$page          = 2;

@@ -3,13 +3,6 @@
  */
 import { createContext } from 'react';
 
-const WCPaySettingsContext = createContext( {
-	accountFees: {},
-	accountLoans: {},
-	accountStatus: {},
-	featureFlags: {
-		isAuthAndCaptureEnabled: false,
-	},
-} );
+const WCPaySettingsContext = createContext( window.wcpaySettings );
 
 export default WCPaySettingsContext;

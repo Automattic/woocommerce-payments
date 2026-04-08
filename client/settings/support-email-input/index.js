@@ -17,7 +17,7 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 		?.account_business_support_email?.message;
 
 	const currentEmail = useRef( supportEmail ).current;
-	if ( '' === supportEmail && '' !== currentEmail ) {
+	if ( supportEmail === '' && currentEmail !== '' ) {
 		supportEmailError = __(
 			'Support email cannot be empty once it has been set before, please specify.',
 			'woocommerce-payments'
@@ -48,6 +48,8 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 				value={ supportEmail }
 				onChange={ setSupportEmail }
 				data-testid={ 'account-business-support-email-input' }
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
 			/>
 		</>
 	);

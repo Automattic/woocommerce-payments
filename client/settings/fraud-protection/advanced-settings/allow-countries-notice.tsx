@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
 import FraudPreventionSettingsContext from './context';
 import FraudProtectionRuleCardNotice from './rule-card-notice';
 import { getSettingCountries, getSupportedCountriesType } from './utils';
+import { decodeEntities } from '@wordpress/html-entities';
 
 const getNoticeText = ( filterType: string, blocking: boolean ) => {
 	if ( 'all_except' === filterType ) {
@@ -44,7 +45,7 @@ interface AllowedCountriesNoticeProps {
 const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 	setting,
 } ) => {
-	const { protectionSettingsUI, protectionSettingsChanged } = useContext(
+	const { protectionSettingsUI } = useContext(
 		FraudPreventionSettingsContext
 	);
 	const [ isBlocking, setIsBlocking ] = useState(
@@ -52,32 +53,24 @@ const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 	);
 	useEffect( () => {
 		setIsBlocking( protectionSettingsUI[ setting ]?.block ?? false );
-	}, [ protectionSettingsUI, setting, protectionSettingsChanged ] );
+	}, [ protectionSettingsUI, setting ] );
 
 	const supportedCountriesType = getSupportedCountriesType();
 	const settingCountries = getSettingCountries();
 
-	if ( 'all' === supportedCountriesType ) {
-		return (
-			<FraudProtectionRuleCardNotice type={ 'warning' }>
-				{ __(
-					'Enabling this filter will not have any effect because you are selling to all countries.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleCardNotice>
-		);
-	}
 	return (
-		<FraudProtectionRuleCardNotice type={ 'info' }>
+		<FraudProtectionRuleCardNotice type="info">
 			{ getNoticeText( supportedCountriesType, isBlocking ) }
 			<strong>
-				{ settingCountries
-					.map(
-						( countryCode ) =>
-							wcSettings.countries[ countryCode ] ?? false
-					)
-					.filter( ( element ) => element )
-					.join( ', ' ) }
+				{ decodeEntities(
+					settingCountries
+						.map(
+							( countryCode ) =>
+								wcSettings.countries[ countryCode ] ?? false
+						)
+						.filter( ( element ) => element )
+						.join( ', ' )
+				) }
 			</strong>
 		</FraudProtectionRuleCardNotice>
 	);

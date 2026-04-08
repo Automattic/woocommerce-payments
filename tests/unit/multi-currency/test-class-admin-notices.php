@@ -23,6 +23,7 @@ class WCPay_Multi_Currency_Admin_Notices_Tests extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->admin_notices = new WCPay\MultiCurrency\AdminNotices();
+		$this->admin_notices->init_hooks();
 	}
 
 	public function test_admin_notices_displays_currency_changed_notice() {

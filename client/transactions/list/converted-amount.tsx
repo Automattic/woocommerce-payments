@@ -11,36 +11,39 @@ import SyncIcon from 'gridicons/dist/sync';
 /**
  * Internal dependencies
  */
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 
 interface ConversionIndicatorProps {
 	amount: number;
 	currency: string;
 	baseCurrency: string;
+	fallback?: boolean;
 }
 
 const ConversionIndicator = ( {
 	amount,
 	currency,
 	baseCurrency,
-}: ConversionIndicatorProps ): React.ReactElement => (
-	<Tooltip
-		text={ sprintf(
-			/* translators: %s is a monetary amount */
-			__( 'Converted from %s', 'woocommerce-payments' ),
-			formatExplicitCurrency( amount, currency, false, baseCurrency )
-		) }
-		position="bottom center"
-	>
-		<span
-			className="conversion-indicator"
-			data-testid="conversion-indicator"
-			style={ { height: '18px', width: '18px' } }
+}: ConversionIndicatorProps ): React.ReactElement => {
+	return (
+		<Tooltip
+			text={ sprintf(
+				/* translators: %s is a monetary amount */
+				__( 'Converted from %s', 'woocommerce-payments' ),
+				formatExplicitCurrency( amount, currency, false, baseCurrency )
+			) }
+			placement="bottom"
 		>
-			<SyncIcon size={ 18 } />
-		</span>
-	</Tooltip>
-);
+			<span
+				className="conversion-indicator"
+				data-testid="conversion-indicator"
+				style={ { height: '18px', width: '18px' } }
+			>
+				<SyncIcon size={ 18 } />
+			</span>
+		</Tooltip>
+	);
+};
 
 interface ConvertedAmountProps {
 	amount: number;

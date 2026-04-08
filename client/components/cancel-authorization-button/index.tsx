@@ -20,7 +20,9 @@ interface CancelAuthorizationButtonProps {
 	onClick?: () => void;
 }
 
-const CancelAuthorizationButton: React.FC< CancelAuthorizationButtonProps > = ( {
+const CancelAuthorizationButton: React.FC< React.PropsWithChildren<
+	CancelAuthorizationButtonProps
+> > = ( {
 	orderId,
 	children,
 	paymentIntentId,
@@ -47,6 +49,7 @@ const CancelAuthorizationButton: React.FC< CancelAuthorizationButtonProps > = ( 
 			} }
 			isBusy={ isLoading && IsCancelRequested } // Button should be in busy state when the cancel is requested
 			disabled={ ( isLoading && IsCancelRequested ) || isRequesting } // Button should be disabled when the cancel is requested
+			__next40pxDefaultSize
 		>
 			{ children || __( 'Cancel', 'woocommerce-payments' ) }
 		</Button>

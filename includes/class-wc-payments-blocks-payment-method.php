@@ -8,6 +8,7 @@
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\WC_Payments_Checkout;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -34,8 +35,6 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 		$this->name                 = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 		$this->gateway              = WC_Payments::get_gateway();
 		$this->wc_payments_checkout = WC_Payments::get_wc_payments_checkout();
-
-		add_filter( 'the_content', [ $this, 'maybe_add_card_testing_token' ] );
 	}
 
 	/**
@@ -53,12 +52,16 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return string[] A list of script handles.
 	 */
 	public function get_payment_method_script_handles() {
-		wp_enqueue_style(
-			'wc-blocks-checkout-style',
-			plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
-			[],
-			'1.0'
-		);
+		if ( ( is_cart() || is_checkout() || is_product() || has_block( 'woocommerce/checkout' ) || has_block( 'woocommerce/cart' ) || is_admin() ) ) {
+			WC_Payments_Utils::enqueue_style(
+				'wc-blocks-checkout-style',
+				plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
+				[],
+				WC_Payments::get_file_version( 'dist/checkout.css' ),
+				'all'
+			);
+		}
+
 		wp_register_script(
 			'stripe',
 			'https://js.stripe.com/v3/',
@@ -68,7 +71,10 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', [ 'stripe' ] );
+
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
+
+		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
 		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
 	}
@@ -85,7 +91,7 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 
 		if ( $is_woopay_eligible && $is_woopay_enabled ) {
 			$woopay_config = [
-				'woopayHost' => defined( 'PLATFORM_CHECKOUT_FRONTEND_HOST' ) ? PLATFORM_CHECKOUT_FRONTEND_HOST : 'https://pay.woo.com',
+				'woopayHost' => WooPay_Utilities::get_woopay_url(),
 			];
 		}
 
@@ -98,25 +104,5 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			$woopay_config,
 			$this->wc_payments_checkout->get_payment_fields_js_config()
 		);
-	}
-
-	/**
-	 * Adds the hidden input containing the card testing prevention token to the blocks checkout page.
-	 *
-	 * @param   string $content  The content that's going to be flushed to the browser.
-	 *
-	 * @return  string
-	 */
-	public function maybe_add_card_testing_token( $content ) {
-		if ( ! wp_script_is( 'WCPAY_BLOCKS_CHECKOUT' ) || ! WC()->session ) {
-			return $content;
-		}
-
-		$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		if ( $fraud_prevention_service->is_enabled() ) {
-			$content .= '<input type="hidden" name="wcpay-fraud-prevention-token" id="wcpay-fraud-prevention-token" value="' . esc_attr( Fraud_Prevention_Service::get_instance()->get_token() ) . '">';
-		}
-		return $content;
 	}
 }

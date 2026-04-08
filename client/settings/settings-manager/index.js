@@ -2,16 +2,16 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import AdvancedSettings from '../advanced-settings';
-import PaymentMethods from '../../payment-methods';
 import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
@@ -19,28 +19,23 @@ import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
-import WCPaySettingsContext from '../wcpay-settings-context';
 import LoadableSettingsSection from '../loadable-settings-section';
-import WcPayUpeContextProvider from '../wcpay-upe-toggle/provider';
+import PaymentMethodsSection from '../payment-methods-section';
+import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
-import { useDepositDelayDays, useSettings } from '../../data';
+import NotificationSettings, {
+	NotificationSettingsDescription,
+} from '../notification-settings';
+import {
+	useDepositDelayDays,
+	useGetDuplicatedPaymentMethodIds,
+	useSettings,
+} from '../../data';
 import FraudProtection from '../fraud-protection';
-
-const PaymentMethodsDescription = () => (
-	<>
-		<h2>
-			{ __( 'Payments accepted on checkout', 'woocommerce-payments' ) }
-		</h2>
-		<p>
-			{ __(
-				'Add and edit payments available to customers at checkout. ' +
-					'Based on their device type, location, and purchase history, ' +
-					'your customers will only see the most relevant payment methods.',
-				'woocommerce-payments'
-			) }
-		</p>
-	</>
-);
+import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import VatFormModal from '../../vat/form-modal';
+import SpotlightPromotion from 'promotions/spotlight';
+import './style.scss';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -52,7 +47,7 @@ const ExpressCheckoutDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/settings-guide/#express-checkouts">
+		<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#express-checkouts">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
@@ -62,9 +57,13 @@ const GeneralSettingsDescription = () => (
 	<>
 		<h2>{ __( 'General', 'woocommerce-payments' ) }</h2>
 		<p>
-			{ __(
-				'Enable or disable WooCommerce Payments on your store and turn on test mode to simulate transactions.',
-				'woocommerce-payments'
+			{ sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'Enable or disable %s on your store.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			) }
 		</p>
 	</>
@@ -79,8 +78,8 @@ const TransactionsDescription = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/payments/faq/">
-			{ __( 'View frequently asked questions', 'woocommerce-payments' ) }
+		<ExternalLink href="https://woocommerce.com/document/woopayments/">
+			{ __( 'View our documentation', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>
 );
@@ -90,17 +89,17 @@ const DepositsDescription = () => {
 
 	return (
 		<>
-			<h2>{ __( 'Deposits', 'woocommerce-payments' ) }</h2>
+			<h2>{ __( 'Payouts', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ sprintf(
 					__(
-						'Funds are available for deposit %s business days after they’re received.',
+						'Funds are available for payout %s business days after they’re received.',
 						'woocommerce-payments'
 					),
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/payments/faq/deposit-schedule/#section-2">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -116,13 +115,13 @@ const FraudProtectionDescription = () => {
 			<h2>{ __( 'Fraud protection', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ __(
-					'Help avoid chargebacks by setting your security and fraud protection risk level.',
+					'Help avoid unauthorized transactions and disputes by setting your fraud protection level.',
 					'woocommerce-payments'
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/">
 				{ __(
-					'Learn more about risk filtering',
+					'Learn more about fraud protection',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
@@ -130,19 +129,38 @@ const FraudProtectionDescription = () => {
 	);
 };
 
+const AdvancedDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Advanced settings', 'woocommerce-payments' ) }</h2>
+			<p>
+				{ __(
+					'More options for specific payment needs.',
+					'woocommerce-payments'
+				) }
+			</p>
+			<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings">
+				{ __( 'View our documentation', 'woocommerce-payments' ) }
+			</ExternalLink>
+		</>
+	);
+};
+
 const SettingsManager = () => {
-	const {
-		featureFlags: {
-			upeSettingsPreview: isUPESettingsPreviewEnabled,
-			upe: isUpeEnabled,
-			upeType,
-		},
-	} = useContext( WCPaySettingsContext );
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
+	const [ isNotificationEmailValid, setNotificationEmailValid ] = useState(
+		true
+	);
 
-	const { isLoading } = useSettings();
+	const { isLoading, isDirty } = useSettings();
+
+	useEffect( () => {
+		if ( ! isDirty ) {
+			window.onbeforeunload = null;
+		}
+	}, [ isDirty ] );
 
 	useLayoutEffect( () => {
 		const { anchor } = getQuery();
@@ -172,6 +190,48 @@ const SettingsManager = () => {
 		}
 	}, [ isLoading ] );
 
+	const [
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
+	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+
+	useEffect( () => {
+		const urlParams = new URLSearchParams( window.location.search );
+		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
+			if ( ! wcpaySettings.accountStatus.isDocumentsEnabled ) {
+				dispatch( 'core/notices' ).createErrorNotice(
+					__(
+						'Tax details collection is not available for your account.',
+						'woocommerce-payments'
+					)
+				);
+			} else if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+				setVatFormModalOpen( true );
+			} else {
+				dispatch( 'core/notices' ).createInfoNotice(
+					__(
+						'Tax details are already submitted.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		}
+	}, [] );
+
+	const handleVatFormModalClose = () => {
+		setVatFormModalOpen( false );
+		// Remove the URL parameter when the modal is closed.
+		updateQueryString( { 'woopayments-vat-details-modal': undefined } );
+	};
+
+	const handleVatFormModalCompleted = () => {
+		dispatch( 'core/notices' ).createInfoNotice(
+			__( 'Tax details updated', 'woocommerce-payments' )
+		);
+		handleVatFormModalClose();
+	};
+
 	return (
 		<SettingsLayout>
 			<SettingsSection
@@ -184,53 +244,42 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ isUPESettingsPreviewEnabled && (
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: useGetDuplicatedPaymentMethodIds(),
+					dismissedDuplicateNotices: dismissedDuplicateNotices,
+					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
+				} }
+			>
+				<PaymentMethodsSection />
+				<BuyNowPayLaterSection />
 				<SettingsSection
-					description={ PaymentMethodsDescription }
-					id="payment-methods"
+					id="express-checkouts"
+					description={ ExpressCheckoutDescription }
 				>
-					<LoadableSettingsSection numLines={ 60 }>
+					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
-							<WcPayUpeContextProvider
-								defaultIsUpeEnabled={ isUpeEnabled }
-								defaultUpeType={ upeType }
-							>
-								<PaymentMethods />
-							</WcPayUpeContextProvider>
+							<ExpressCheckout />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
-			) }
-			<SettingsSection
-				id="express-checkouts"
-				description={ ExpressCheckoutDescription }
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<ExpressCheckout />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
+			</DuplicatedPaymentMethodsContext.Provider>
 			<SettingsSection
 				description={ TransactionsDescription }
 				id="transactions"
 			>
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
-						<WcPayUpeContextProvider
-							defaultIsUpeEnabled={ isUpeEnabled }
-						>
-							<Transactions
-								setTransactionInputsValid={
-									setTransactionInputsValid
-								}
-							/>
-						</WcPayUpeContextProvider>
+						<Transactions
+							setTransactionInputsValid={
+								setTransactionInputsValid
+							}
+						/>
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection description={ DepositsDescription } id="deposits">
-				<div id={ 'deposit-schedule' }>
+				<div id="payout-schedule">
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
 							<Deposits />
@@ -238,20 +287,53 @@ const SettingsManager = () => {
 					</LoadableSettingsSection>
 				</div>
 			</SettingsSection>
-			{ wcpaySettings.isFraudProtectionSettingsEnabled && (
-				<SettingsSection
-					description={ FraudProtectionDescription }
-					id="fp-settings"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<FraudProtection />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
-			<AdvancedSettings />
-			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
+			<SettingsSection
+				description={ NotificationSettingsDescription }
+				id="notification-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<NotificationSettings
+							setNotificationEmailValid={
+								setNotificationEmailValid
+							}
+						/>
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
+				description={ FraudProtectionDescription }
+				id="fp-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<FraudProtection />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
+				description={ AdvancedDescription }
+				id="advanced-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<AdvancedSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SaveSettingsSection
+				disabled={
+					! isTransactionInputsValid || ! isNotificationEmailValid
+				}
+			/>
+			<VatFormModal
+				isModalOpen={ isVatFormModalOpen }
+				setModalOpen={ handleVatFormModalClose }
+				onCompleted={ handleVatFormModalCompleted }
+			/>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</SettingsLayout>
 	);
 };

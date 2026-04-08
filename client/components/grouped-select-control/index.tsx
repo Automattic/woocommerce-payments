@@ -2,8 +2,8 @@
  * External Dependencies
  */
 import React, { useRef, useState } from 'react';
-import { Icon, check, chevronDown, chevronUp } from '@wordpress/icons';
-import classNames from 'classnames';
+import { check, chevronDown, chevronUp, Icon } from '@wordpress/icons';
+import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
 import { useSelect, UseSelectState } from 'downshift';
 
@@ -24,14 +24,16 @@ export interface ListItem {
 export interface GroupedSelectControlProps< ItemType > {
 	label: string;
 	options: ItemType[];
-	value?: ItemType;
+	value?: ItemType | null;
 	placeholder?: string;
 	searchable?: boolean;
+	name?: string;
 	className?: string;
 	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
 }
 
 const GroupedSelectControl = < ItemType extends ListItem >( {
+	name,
 	className,
 	label,
 	options: listItems,
@@ -72,7 +74,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 		getItemProps,
 	} = useSelect( {
 		items: itemsToRender,
-		itemToString: ( item ) => item.name,
+		itemToString: ( item ) => item?.name || '',
 		selectedItem: value || ( {} as ItemType ),
 		onSelectedItemChange,
 		stateReducer: ( state, { changes, type } ) => {
@@ -157,7 +159,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 
 	return (
 		<div
-			className={ classNames(
+			className={ clsx(
 				'wcpay-component-grouped-select-control',
 				className
 			) }
@@ -172,14 +174,15 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 			<button
 				{ ...getToggleButtonProps( {
 					type: 'button',
-					className: classNames(
+					className: clsx(
 						'components-text-control__input wcpay-component-grouped-select-control__button',
 						{ placeholder }
 					),
+					name,
 				} ) }
 			>
 				<span className="wcpay-component-grouped-select-control__button-value">
-					{ selectedItem.name || placeholder }
+					{ selectedItem?.name || placeholder }
 				</span>
 				<Icon
 					icon={ chevronDown }
@@ -214,7 +217,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 											item,
 											index,
 											key: item.key,
-											className: classNames(
+											className: clsx(
 												'wcpay-component-grouped-select-control__item',
 												item.className,
 												{
@@ -231,7 +234,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 										<div className="wcpay-component-grouped-select-control__item-content">
 											{ item.name }
 										</div>
-										{ item.key === selectedItem.key && (
+										{ item.key === selectedItem?.key && (
 											<Icon icon={ check } />
 										) }
 										{ ! searchText && isGroup && (

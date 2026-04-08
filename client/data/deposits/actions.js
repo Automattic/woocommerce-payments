@@ -6,7 +6,7 @@
 import { apiFetch } from '@wordpress/data-controls';
 import { dispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 
 /**
  * Internal Dependencies
@@ -19,20 +19,6 @@ export function updateDeposit( data ) {
 	return {
 		type: TYPES.SET_DEPOSIT,
 		data,
-	};
-}
-
-export function updateDepositsOverview( data ) {
-	return {
-		type: TYPES.SET_DEPOSITS_OVERVIEW,
-		data,
-	};
-}
-
-export function updateErrorForDepositsOverview( data, error ) {
-	return {
-		type: TYPES.SET_ERROR_FOR_DEPOSITS_OVERVIEW,
-		error,
 	};
 }
 
@@ -98,10 +84,10 @@ export function updateInstantDeposit( data ) {
 	};
 }
 
-export function* submitInstantDeposit( transactionIds ) {
+export function* submitInstantDeposit( currency ) {
 	try {
 		yield dispatch( STORE_NAME ).startResolution( 'getInstantDeposit', [
-			transactionIds,
+			currency,
 		] );
 
 		const deposit = yield apiFetch( {
@@ -109,24 +95,24 @@ export function* submitInstantDeposit( transactionIds ) {
 			method: 'POST',
 			data: {
 				type: 'instant',
-				transaction_ids: transactionIds,
+				currency,
 			},
 		} );
 
 		yield updateInstantDeposit( deposit );
 
-		// Need to invalidate the resolution so that the components will render again.
+		// Invalidate deposits and deposits overview queries to ensure that the UI is updated with fresh data.
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
 			'getDeposits'
 		);
 		yield dispatch( STORE_NAME ).invalidateResolutionForStoreSelector(
-			'getDepositsOverview'
+			'getAllDepositsOverviews'
 		);
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			sprintf(
 				__(
-					'Instant deposit for %s in transit.',
+					'Instant payout for %s in transit.',
 					'woocommerce-payments'
 				),
 				formatCurrency( deposit.amount )
@@ -137,7 +123,7 @@ export function* submitInstantDeposit( transactionIds ) {
 						label: __( 'View details', 'woocommerce-payments' ),
 						url: getAdminUrl( {
 							page: 'wc-admin',
-							path: '/payments/deposits/details',
+							path: '/payments/payouts/details',
 							id: deposit.id,
 						} ),
 					},
@@ -146,11 +132,11 @@ export function* submitInstantDeposit( transactionIds ) {
 		);
 	} catch {
 		yield dispatch( 'core/notices' ).createErrorNotice(
-			__( 'Error creating instant deposit.', 'woocommerce-payments' )
+			__( 'Error creating instant payout.', 'woocommerce-payments' )
 		);
 	} finally {
 		yield dispatch( STORE_NAME ).finishResolution( 'getInstantDeposit', [
-			transactionIds,
+			currency,
 		] );
 	}
 }

@@ -2,18 +2,11 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
-import {
-	createInterpolateElement,
-	render,
-	useEffect,
-	useState,
-} from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
+import { createInterpolateElement, render, useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
 
-import wcpayTracks from '../tracks';
-
-import ConnectedImage from 'assets/images/subscriptions-empty-state-connected.svg?asset';
+import { recordEvent } from '../tracks';
 import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnected.svg?asset';
 
 import './style.scss';
@@ -22,23 +15,19 @@ const {
 	wcpay: { connectUrl, isConnected, newProductUrl },
 } = window;
 
-const Image = () => (
-	<img src={ isConnected ? ConnectedImage : UnconnectedImage } alt="" />
-);
+const Image = () => <img src={ UnconnectedImage } alt="" />;
 
 const Description = () => (
-	<p className="wcpay-empty-subscriptions__description">
-		{ isConnected
-			? __(
-					'This is where you’ll see and manage all subscriptions in your store. Create a ' +
-						'subscription product to turn one-time purchases into a steady income.',
-					'woocommerce-payments'
-			  )
-			: __(
-					'Track recurring revenue and manage active subscriptions directly from your store’s ' +
-						'dashboard — powered by WooCommerce Payments.',
-					'woocommerce-payments'
-			  ) }
+	<p className="woo_subscriptions_empty_state__description">
+		{ sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'Track recurring revenue and manage active subscriptions directly from your store’s ' +
+					'dashboard — powered by %s.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
+		) }
 	</p>
 );
 
@@ -68,36 +57,34 @@ const ActionButtons = () => {
 	const [ isCreatingProduct, setIsCreatingProduct ] = useState( false );
 
 	return (
-		<div className="wcpay-empty-subscriptions__button_container">
-			{ ! isConnected && (
-				<Button
-					disabled={ isFinishingSetup }
-					href={ connectUrl }
-					isBusy={ isFinishingSetup }
-					isPrimary
-					onClick={ () => {
-						wcpayTracks.recordEvent(
-							wcpayTracks.events
-								.SUBSCRIPTIONS_EMPTY_STATE_FINISH_SETUP
-						);
-						setIsFinishingSetup( true );
-					} }
-				>
-					{ __( 'Finish setup', 'woocommerce-payments' ) }
-				</Button>
-			) }
+		<div className="woo_subscriptions_empty_state__button_container">
+			<Button
+				disabled={ isFinishingSetup }
+				href={ connectUrl }
+				isBusy={ isFinishingSetup }
+				variant="primary"
+				onClick={ () => {
+					recordEvent(
+						'wcpay_subscriptions_empty_state_finish_setup'
+					);
+					setIsFinishingSetup( true );
+				} }
+				__next40pxDefaultSize
+			>
+				{ __( 'Finish setup', 'woocommerce-payments' ) }
+			</Button>
 			<Button
 				disabled={ isCreatingProduct }
 				href={ newProductUrl }
 				isBusy={ isCreatingProduct }
-				isSecondary
+				variant="secondary"
 				onClick={ () => {
-					wcpayTracks.recordEvent(
-						wcpayTracks.events
-							.SUBSCRIPTIONS_EMPTY_STATE_CREATE_PRODUCT
+					recordEvent(
+						'wcpay_subscriptions_empty_state_create_product'
 					);
 					setIsCreatingProduct( true );
 				} }
+				__next40pxDefaultSize
 			>
 				{ __( 'Create subscription product', 'woocommerce-payments' ) }
 			</Button>
@@ -106,26 +93,26 @@ const ActionButtons = () => {
 };
 
 const EmptyState = () => {
-	useEffect( () => {
-		wcpayTracks.recordEvent(
-			wcpayTracks.events.SUBSCRIPTIONS_EMPTY_STATE_VIEW,
-			{
-				is_connected: isConnected ? 'yes' : 'no',
-			}
-		);
-	}, [] );
-
 	return (
-		<div className="wcpay-empty-subscriptions__container">
+		<div className="woo_subscriptions_empty_state__container">
 			<Image />
 			<Description />
-			{ ! isConnected && <TOS /> }
+			<TOS />
 			<ActionButtons />
 		</div>
 	);
 };
 
-render(
-	<EmptyState />,
-	document.querySelector( '#wcpay_subscriptions_empty_state' )
+const emptyStateContainer = document.querySelector(
+	'#woo_subscriptions_empty_state'
 );
+
+if ( emptyStateContainer ) {
+	recordEvent( 'wcpay_subscriptions_empty_state_view', {
+		is_connected: isConnected ? 'yes' : 'no',
+	} );
+
+	if ( ! isConnected ) {
+		render( <EmptyState />, emptyStateContainer );
+	}
+}

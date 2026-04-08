@@ -18,6 +18,7 @@ export interface DiscountFee extends BaseFee {
 	volume_currency: string | null;
 	current_volume: number | null;
 	discount?: number;
+	tc_url?: string;
 }
 
 export interface FeeStructure {

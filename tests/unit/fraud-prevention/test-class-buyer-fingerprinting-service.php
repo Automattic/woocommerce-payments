@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 
@@ -45,10 +46,10 @@ class Buyer_Fingerprinting_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_it_hashes_order_info() {
 		$fingerprint = 'abc123';
-		$ip_country  = 'GB';
+		$ip_country  = Country_Code::UNITED_KINGDOM;
 		add_filter(
 			'woocommerce_geolocate_ip',
-			function() use ( $ip_country ) {
+			function () use ( $ip_country ) {
 				return $ip_country;
 			}
 		);
@@ -58,8 +59,11 @@ class Buyer_Fingerprinting_Service_Test extends WCPAY_UnitTestCase {
 			'fraud_prevention_data_shopper_ip_hash' => hash( 'sha512', '127.0.0.1', false ),
 			'fraud_prevention_data_shopper_ua_hash' => $fingerprint,
 			'fraud_prevention_data_ip_country'      => $ip_country,
+			'fraud_prevention_data_cart_contents'   => 0,
 		];
 
 		$this->assertSame( $order_hashes, $expected_hashed_array );
+
+		remove_all_filters( 'woocommerce_geolocate_ip' );
 	}
 }

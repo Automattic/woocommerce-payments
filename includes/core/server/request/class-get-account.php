@@ -14,7 +14,14 @@ use WC_Payments_API_Client;
  * Request class for getting account data.
  */
 class Get_Account extends Request {
-	use Use_Test_Mode_Only_When_Dev_Mode;
+	use Use_Test_Mode_Only_When_Test_Mode_Onboarding;
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_get_account';
 
 	/**
 	 * Returns the request's API.
@@ -30,5 +37,14 @@ class Get_Account extends Request {
 	 */
 	public function get_method(): string {
 		return 'GET';
+	}
+
+	/**
+	 * Set the WooCommerce store ID to send with the account request.
+	 *
+	 * @param string $woocommerce_store_id The WooCommerce store ID (UUID).
+	 */
+	public function set_woocommerce_store_id( string $woocommerce_store_id ): void {
+		$this->set_param( 'woocommerce_store_id', $woocommerce_store_id );
 	}
 }

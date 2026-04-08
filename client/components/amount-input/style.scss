@@ -1,38 +1,16 @@
-.components-amount-input {
-	&__input_container {
+.wcpay-components-amount-input {
+	.components-base-control__field {
+		margin-bottom: 0;
+	}
+
+	p {
+		margin-bottom: 0;
+	}
+
+	.text-control-with-affixes__prefix {
+		line-height: 16px;
 		display: flex;
-		position: relative;
 		align-items: center;
-	}
-	&__prefix {
-		position: absolute;
-		padding: 0 12px;
-		font-size: 13px;
-		line-height: 16px;
-		font-weight: 400;
-		color: #757575;
-	}
-	&__input.components-text-control__input {
-		text-align: end;
-		padding: 4px 12px 4px 32px;
-		color: #1e1e1e;
-		display: block;
-		flex: 1;
-		font-size: 13px;
-		line-height: 16px;
-		font-weight: 400;
-		border: 1px solid #757575;
-		border-radius: 2px;
-		::placeholder {
-			color: #949494;
-		}
-	}
-	&__help_text {
-		display: block;
-		font-weight: 400;
-		font-size: 12px;
-		line-height: 16px;
-		margin-top: 8px;
-		color: #757575;
+		padding: 7px 12px;
 	}
 }

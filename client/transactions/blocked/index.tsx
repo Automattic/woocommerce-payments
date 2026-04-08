@@ -29,32 +29,36 @@ import {
 	useFraudOutcomeTransactionsSummary,
 } from 'data/index';
 import Page from '../../components/page';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import {
+	Column,
 	getBlockedListColumns,
 	getBlockedListColumnsStructure,
 } from './columns';
-import { formatExplicitCurrency } from '../../utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import autocompleter from '../fraud-protection/autocompleter';
 import DownloadButton from '../../components/download-button';
 import { getFraudOutcomeTransactionsExport } from '../../data/transactions/resolvers';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 export const BlockedList = (): JSX.Element => {
 	const [ isDownloading, setIsDownloading ] = useState( false );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const query = getQuery();
 
-	const columnsToDisplay = getBlockedListColumns();
+	const columns = getBlockedListColumns();
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		Column
+	>( 'wc_payments_transactions_blocked_hidden_columns', columns );
 	const { isLoading, transactions } = useFraudOutcomeTransactions(
 		'block',
-		query,
-		'review'
+		query
 	);
 
 	const {
 		transactionsSummary,
 		isLoading: isSummaryLoading,
-	} = useFraudOutcomeTransactionsSummary( 'block', query, 'review' );
+	} = useFraudOutcomeTransactionsSummary( 'block', query );
 
 	const rows = transactions.map( ( transaction ) =>
 		getBlockedListColumnsStructure( transaction, columnsToDisplay )
@@ -91,7 +95,7 @@ export const BlockedList = (): JSX.Element => {
 	}
 
 	useEffect( () => {
-		wcpayTracks.recordEvent( 'page_view', {
+		recordEvent( 'page_view', {
 			path: 'payments_transactions_blocked',
 		} );
 	}, [] );
@@ -145,13 +149,10 @@ export const BlockedList = (): JSX.Element => {
 				generateCSVDataFromTable( columnsToDisplay, populatedRows )
 			);
 
-			wcpayTracks.recordEvent(
-				'wcpay_fraud_outcome_transactions_download',
-				{
-					exported_transactions: rows.length,
-					total_transactions: transactionsSummary.count,
-				}
-			);
+			recordEvent( 'wcpay_fraud_outcome_transactions_download', {
+				exported_transactions: rows.length,
+				total_transactions: transactionsSummary.count,
+			} );
 		} catch ( e ) {
 			createNotice(
 				'error',
@@ -178,6 +179,7 @@ export const BlockedList = (): JSX.Element => {
 				summary={ summary }
 				query={ query }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					<Search
 						inlineTags

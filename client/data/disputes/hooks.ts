@@ -15,32 +15,61 @@ import type {
 	CachedDisputes,
 	DisputesSummary,
 } from 'wcpay/types/disputes';
+import type { ApiError } from 'wcpay/types/errors';
 import { STORE_NAME } from '../constants';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
+/**
+ * Returns the dispute object, error object, and loading state.
+ * Fetches the dispute object if it is not already cached.
+ */
 export const useDispute = (
 	id: string
 ): {
-	dispute: Dispute;
+	dispute?: Dispute;
+	error?: ApiError;
 	isLoading: boolean;
-	doAccept: () => void;
 } => {
-	const { dispute, isLoading } = useSelect(
+	const { dispute, error, isLoading } = useSelect(
 		( select ) => {
-			const { getDispute, isResolving } = select( STORE_NAME );
+			const { getDispute, getDisputeError, isResolving } = select(
+				STORE_NAME
+			);
 
 			return {
-				dispute: <Dispute>getDispute( id ),
+				dispute: <Dispute | undefined>getDispute( id ),
+				error: <ApiError | undefined>getDisputeError( id ),
 				isLoading: <boolean>isResolving( 'getDispute', [ id ] ),
 			};
 		},
 		[ id ]
 	);
 
-	const { acceptDispute } = useDispatch( STORE_NAME );
-	const doAccept = () => acceptDispute( id );
+	return { dispute, isLoading, error };
+};
 
-	return { dispute, isLoading, doAccept };
+/**
+ * Returns the dispute accept function and loading state.
+ * Does not return or fetch the dispute object.
+ */
+export const useDisputeAccept = (
+	dispute: Dispute
+): {
+	doAccept: () => void;
+	isLoading: boolean;
+} => {
+	const { isLoading } = useSelect(
+		( select ) => {
+			const { isResolving } = select( STORE_NAME );
+
+			return {
+				isLoading: isResolving( 'getDispute', [ dispute.id ] ),
+			};
+		},
+		[ dispute.id ]
+	);
+	const { acceptDispute } = useDispatch( STORE_NAME );
+	const doAccept = () => acceptDispute( dispute );
+	return { doAccept, isLoading };
 };
 
 export const useDisputeEvidence = (): {
@@ -68,11 +97,6 @@ export const useDisputes = ( {
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
-
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
 					? '1'
@@ -89,7 +113,7 @@ export const useDisputes = ( {
 					dateBetween.sort( ( a, b ) =>
 						moment( a ).diff( moment( b ) )
 					),
-				search,
+				filter,
 				statusIs,
 				statusIsNot,
 				orderBy: orderBy || 'created',
@@ -133,11 +157,6 @@ export const useDisputesSummary = ( {
 		( select ) => {
 			const { getDisputesSummary, isResolving } = select( STORE_NAME );
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
-
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
 					? '1'
@@ -150,7 +169,7 @@ export const useDisputesSummary = ( {
 				dateBefore,
 				dateAfter,
 				dateBetween,
-				search,
+				filter,
 				statusIs,
 				statusIsNot,
 			};

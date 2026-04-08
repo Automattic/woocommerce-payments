@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Change WooPay express button to an anchor element when first-party auth is enabled for correct screen reader semantics.

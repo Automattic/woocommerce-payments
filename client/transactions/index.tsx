@@ -3,42 +3,35 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
-import { Experiment } from '@woocommerce/explat';
-import { TabPanel } from '@wordpress/components';
+import React from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { TabPanel } from '@wordpress/components';
 import Page from 'components/page';
 import TransactionsList from './list';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
-import {
-	EmptyStateList,
-	EmptyStateTableHeaders,
-} from '../empty-state-table/list';
-import EmptyStateTable from 'empty-state-table';
-import ListBanner from 'assets/images/transactions-banner.svg?asset';
+import { TestModeNotice } from 'components/test-mode-notice';
 import Authorizations from './uncaptured';
 import './style.scss';
 import {
 	useManualCapture,
 	useSettings,
 	useAuthorizationsSummary,
-	useFraudOutcomeTransactionsSummary,
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
-import RiskReviewList from './risk-review';
 import BlockedList from './blocked';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
+import ErrorBoundary from 'components/error-boundary';
+import SpotlightPromotion from 'promotions/spotlight';
 
 declare const window: any;
 
 export const TransactionsPage: React.FC = () => {
 	const currentQuery = getQuery();
 	const initialTab = currentQuery.tab ?? null;
-	const { isFraudProtectionSettingsEnabled } = wcpaySettings;
 
 	const onTabSelected = ( tab: string ) => {
 		// When switching tabs, make sure to revert the query strings to default values
@@ -54,71 +47,27 @@ export const TransactionsPage: React.FC = () => {
 		);
 	};
 
-	const defaultExperience = (
-		<>
-			<TestModeNotice topic={ topics.transactions } />
-			<TransactionsList />
-		</>
-	);
-
-	const treatmentExperience = wcpaySettings.accountStatus.status ? (
-		defaultExperience
-	) : (
-		<EmptyStateTable
-			headers={ EmptyStateTableHeaders }
-			title="Transactions"
-			content={
-				<EmptyStateList
-					listBanner={ ( props ) => (
-						<img
-							src={ ListBanner }
-							alt="transaction banner"
-							{ ...props }
-						/>
-					) }
-				/>
-			}
-		/>
-	);
-
 	const tabsComponentMap = {
 		'transactions-page': (
-			<Experiment
-				name="wcpay_empty_state_preview_mode_v5"
-				treatmentExperience={ treatmentExperience }
-				defaultExperience={ defaultExperience }
-			/>
+			<>
+				<TransactionsList />
+			</>
 		),
 		'uncaptured-page': (
 			<>
-				<TestModeNotice topic={ topics.authorizations } />
 				<Authorizations />
-			</>
-		),
-		'review-page': (
-			<>
-				<TestModeNotice topic={ topics.riskReviewTransactions } />
-				<RiskReviewList />
 			</>
 		),
 		'blocked-page': (
 			<>
-				<TestModeNotice topic={ topics.blockedTransactions } />
 				<BlockedList />
 			</>
 		),
 	};
 
-	const {
-		featureFlags: { isAuthAndCaptureEnabled },
-	} = useContext( WCPaySettingsContext );
 	const [ getIsManualCaptureEnabled ] = useManualCapture();
 	const { isLoading: isLoadingSettings } = useSettings();
 	const { authorizationsSummary } = useAuthorizationsSummary( {} );
-
-	const {
-		transactionsSummary: riskReviewSummary,
-	} = useFraudOutcomeTransactionsSummary( 'review', {} );
 
 	// The Uncaptured authorizations screen will be shown only if:
 	// 1. The feature is turned on for all accounts
@@ -145,44 +94,21 @@ export const TransactionsPage: React.FC = () => {
 			className: 'authorizations-list',
 		},
 		{
-			name: 'review-page',
-			title: sprintf(
-				/* translators: %1: number of transactions hold for review */
-				__( 'Risk Review (%1$s)', 'woocommerce-payments' ),
-				riskReviewSummary.count ?? '...'
-			),
-			className: 'review-list',
-		},
-		{
 			name: 'blocked-page',
 			title: __( 'Blocked', 'woocommerce-payments' ),
 			className: 'blocked-list',
 		},
 	].filter( ( item ) => {
-		// @todo Remove feature flag
-		if (
-			! isFraudProtectionSettingsEnabled &&
-			[ 'review-page', 'blocked-page' ].includes( item.name )
-		) {
-			return false;
-		}
-
 		if ( 'uncaptured-page' !== item.name ) return true;
 
-		return isAuthAndCaptureEnabled && shouldShowUncapturedTab;
+		return shouldShowUncapturedTab;
 	} );
 
-	// @todo Remove feature flag
-	if (
-		! isFraudProtectionSettingsEnabled &&
-		typeof shouldShowUncapturedTab === 'undefined'
-	)
-		return tabsComponentMap[ 'transactions-page' ];
-
 	return (
-		<Page>
+		<Page className="wcpay-transactions-page">
+			<MaybeShowMerchantFeedbackPrompt />
+			<TestModeNotice currentPage="transactions" />
 			<TabPanel
-				className="wcpay-transactions-page"
 				activeClass="active-tab"
 				onSelect={ onTabSelected }
 				initialTabName={ initialTab || 'transactions-page' }
@@ -196,16 +122,17 @@ export const TransactionsPage: React.FC = () => {
 					);
 				} }
 			</TabPanel>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };
 
 export default (): JSX.Element => {
 	return (
-		<Page>
-			<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-				<TransactionsPage />
-			</WCPaySettingsContext.Provider>
-		</Page>
+		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+			<TransactionsPage />
+		</WCPaySettingsContext.Provider>
 	);
 };

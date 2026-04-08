@@ -18,7 +18,9 @@ import {
 	updateDispute,
 	updateDisputes,
 	updateDisputesSummary,
+	updateErrorForDispute,
 } from './actions';
+import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
 const formatQueryFilters = ( query ) => ( {
 	user_email: query.userEmail,
@@ -30,14 +32,19 @@ const formatQueryFilters = ( query ) => ( {
 		formatDateValue( query.dateBetween[ 0 ] ),
 		formatDateValue( query.dateBetween[ 1 ], true ),
 	],
-	search: query.search,
+	search:
+		query.filter === 'awaiting_response'
+			? disputeAwaitingResponseStatuses
+			: query.search,
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
+	locale: query.locale,
 } );
 
-export function getDisputesCSV( query ) {
+export const disputesDownloadEndpoint = `${ NAMESPACE }/disputes/download`;
+export function getDisputesCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/disputes/download`,
+		disputesDownloadEndpoint,
 		formatQueryFilters( query )
 	);
 
@@ -61,6 +68,7 @@ export function* getDispute( id ) {
 			'createErrorNotice',
 			__( 'Error retrieving dispute.', 'woocommerce-payments' )
 		);
+		yield updateErrorForDispute( id, undefined, e );
 	}
 }
 

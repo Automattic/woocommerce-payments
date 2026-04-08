@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Database_Cache;
+use Automattic\Jetpack\Constants;
 
 /**
  * WC_Payments_Admin unit tests.
@@ -24,6 +25,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_gateway;
 
 	/**
+	 * Mock WC_Payments_API_Client.
+	 *
+	 * @var WC_Payments_API_Client|MockObject
+	 */
+	private $mock_api_client;
+
+	/**
 	 * Mock Onboarding Service.
 	 *
 	 * @var WC_Payments_Onboarding_Service|MockObject;
@@ -31,11 +39,46 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_onboarding_service;
 
 	/**
+	 * Mock Order Service.
+	 *
+	 * @var WC_Payments_Order_Service|MockObject;
+	 */
+	private $mock_order_service;
+
+	/**
+	 * Mock Incentives Service.
+	 *
+	 * @var WC_Payments_Incentives_Service|MockObject;
+	 */
+	private $mock_incentives_service;
+
+	/**
+	 * Mock Fraud Service.
+	 *
+	 * @var WC_Payments_Fraud_Service|MockObject;
+	 */
+	private $mock_fraud_service;
+
+	/**
+	 * Mock PM Promotions Service.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service|MockObject;
+	 */
+	private $mock_pm_promotions_service;
+
+	/**
 	 * Mock database cache.
 	 *
 	 * @var Database_Cache|MockObject;
 	 */
 	private $mock_database_cache;
+
+	/**
+	 * Backup object of $GLOBALS['current_screen'].
+	 *
+	 * @var object
+	 */
+	private $current_screen_backup;
 
 	/**
 	 * @var WC_Payments_Admin
@@ -48,7 +91,14 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$menu    = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$submenu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 
-		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
+		// Mock screen.
+		$this->current_screen_backup = $GLOBALS['current_screen'] ?? null;
+		$GLOBALS['current_screen']   = $this->get_screen_mock(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		if ( ! did_action( 'current_screen' ) ) {
+			do_action( 'current_screen', $GLOBALS['current_screen'] ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		}
+
+		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -61,6 +111,22 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->mock_onboarding_service = $this->getMockBuilder( WC_Payments_Onboarding_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_incentives_service = $this->getMockBuilder( WC_Payments_Incentives_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_fraud_service = $this->getMockBuilder( WC_Payments_Fraud_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$this->mock_pm_promotions_service = $this->getMockBuilder( WC_Payments_PM_Promotions_Service::class )
 			->disableOriginalConstructor()
 			->getMock();
 
@@ -77,36 +143,35 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->payments_admin = new WC_Payments_Admin(
-			$mock_api_client,
+			$this->mock_api_client,
 			$this->mock_gateway,
 			$this->mock_account,
 			$this->mock_onboarding_service,
+			$this->mock_order_service,
+			$this->mock_incentives_service,
+			$this->mock_pm_promotions_service,
+			$this->mock_fraud_service,
 			$this->mock_database_cache
 		);
 	}
 
 	public function tear_down() {
-		unset( $_GET );
-		set_current_screen( 'front' );
+		// Restore screen backup.
+		if ( $this->current_screen_backup ) {
+			$GLOBALS['current_screen'] = $this->current_screen_backup; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		}
+
 		parent::tear_down();
 	}
 
-	/**
-	 * @dataProvider feature_flag_combinations_not_causing_settings_badge_render_provider
-	 *
-	 * @param bool $is_upe_settings_preview_enabled
-	 * @param bool $is_upe_enabled
-	 */
-	public function test_it_does_not_render_settings_badge( $is_upe_settings_preview_enabled, $is_upe_enabled ) {
+	public function test_it_does_not_render_settings_badge(): void {
 		global $submenu;
 
 		$this->mock_current_user_is_admin();
 
-		update_option( '_wcpay_feature_upe_settings_preview', $is_upe_settings_preview_enabled ? '1' : '0' );
-		update_option( '_wcpay_feature_upe', $is_upe_enabled ? '1' : '0' );
-
 		// Make sure we render the menu with submenu items.
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu['wc-admin&path=/payments/overview'], 0, 2 );
@@ -121,6 +186,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		// Make sure we render the menu with submenu items.
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $menu, 0, 2 );
@@ -132,7 +198,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		global $menu;
 		$this->mock_current_user_is_admin();
 
-		// Make sure we render the menu with submenu items.
+		// Make sure we render the menu without submenu items.
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( false );
 		update_option( 'wcpay_activation_timestamp', time() - ( 3 * DAY_IN_SECONDS ) );
 		$this->payments_admin->add_payments_menu();
@@ -146,7 +212,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		global $menu;
 		$this->mock_current_user_is_admin();
 
-		// Make sure we render the menu with submenu items.
+		// Make sure we render the menu without submenu items.
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( false );
 		update_option( 'wcpay_menu_badge_hidden', 'no' );
 		update_option( 'wcpay_activation_timestamp', time() - ( DAY_IN_SECONDS * 2 ) );
@@ -157,49 +223,49 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
 	}
 
-	public function feature_flag_combinations_not_causing_settings_badge_render_provider() {
-		return [
-			[ false, false ],
-			[ false, true ],
-			[ true, false ],
-			[ true, true ],
-		];
-	}
-
 	private function mock_current_user_is_admin() {
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_user );
 	}
 
 	/**
-	 * @dataProvider data_maybe_redirect_to_onboarding
+	 * @dataProvider data_maybe_redirect_from_payments_admin_child_pages
 	 */
-	public function test_maybe_redirect_to_onboarding( $expected_times_redirect_called, $is_stripe_connected, $get_params ) {
+	public function test_maybe_redirect_from_payments_admin_child_pages( $expected_times_redirect_called, $has_working_jetpack_connection, $is_stripe_account_valid, $get_params ) {
+		$this->mock_current_user_is_admin();
+		$this->payments_admin->add_payments_menu();
+
 		$_GET = $get_params;
 
 		$this->mock_account
-			->method( 'is_stripe_connected' )
-			->willReturn( $is_stripe_connected );
+			->method( 'has_working_jetpack_connection' )
+			->willReturn( $has_working_jetpack_connection );
+
+		$this->mock_account
+			->method( 'is_stripe_account_valid' )
+			->willReturn( $is_stripe_account_valid );
 
 		$this->mock_account
 			->expects( $this->exactly( $expected_times_redirect_called ) )
-			->method( 'redirect_to_onboarding_page' );
+			->method( 'redirect_to_onboarding_welcome_page' );
 
-		$this->payments_admin->maybe_redirect_to_onboarding();
+		$this->payments_admin->maybe_redirect_from_payments_admin_child_pages();
 	}
 
 	/**
-	 * Data provider for test_maybe_redirect_to_onboarding
+	 * Data provider for test_maybe_redirect_from_payments_admin_child_pages
 	 */
-	public function data_maybe_redirect_to_onboarding() {
+	public function data_maybe_redirect_from_payments_admin_child_pages() {
 		return [
 			'no_get_params'        => [
 				0,
+				false,
 				false,
 				[],
 			],
 			'empty_page_param'     => [
 				0,
+				false,
 				false,
 				[
 					'path' => '/payments/overview',
@@ -207,6 +273,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_page_param' => [
 				0,
+				false,
 				false,
 				[
 					'page' => 'wc-settings',
@@ -216,107 +283,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'empty_path_param'     => [
 				0,
 				false,
-				[
-					'page' => 'wc-admin',
-				],
-			],
-			'incorrect_path_param' => [
-				0,
-				false,
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/does-not-exist',
-				],
-			],
-			'stripe_connected'     => [
-				0,
-				true,
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/overview',
-				],
-			],
-			'happy_path'           => [
-				1,
-				false,
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/overview',
-				],
-			],
-		];
-	}
-
-	/**
-	 * @dataProvider data_maybe_redirect_overview_to_connect
-	 */
-	public function test_maybe_redirect_overview_to_connect( $expected_times_redirect_called, $is_wc_registered_page, $get_params ) {
-		global $wp_actions;
-		// Avoid WP doing_it_wrong warnings.
-		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-		$wp_actions['current_screen'] = true;
-
-		$_GET = $get_params;
-
-		// Register the Payments > Connect page as the top level menu item.
-		wc_admin_register_page(
-			[
-				'id'         => 'wc-payments',
-				'title'      => __( 'Payments', 'woocommerce-payments' ),
-				'capability' => 'manage_woocommerce',
-				'path'       => '/payments/connect',
-				'position'   => '55.7', // After WooCommerce & Product menu items.
-				'icon'       => '',
-				'nav_args'   => [
-					'title'        => __( 'WooCommerce Payments', 'woocommerce-payments' ),
-					'is_category'  => false,
-					'menuId'       => 'plugins',
-					'is_top_level' => true,
-				],
-			]
-		);
-
-		// Whether the current page should be treated as a registered WC admin page or not.
-		if ( $is_wc_registered_page ) {
-			add_filter( 'woocommerce_navigation_is_registered_page', '__return_true', 999 );
-		}
-
-		$this->mock_account
-			->expects( $this->exactly( $expected_times_redirect_called ) )
-			->method( 'redirect_to_onboarding_page' );
-
-		$this->payments_admin->maybe_redirect_overview_to_connect();
-
-		remove_filter( 'woocommerce_navigation_is_registered_page', '__return_true', 999 );
-	}
-
-	/**
-	 * Data provider for test_maybe_redirect_overview_to_connect
-	 */
-	public function data_maybe_redirect_overview_to_connect() {
-		return [
-			'no_get_params'        => [
-				0,
-				false,
-				[],
-			],
-			'empty_page_param'     => [
-				0,
-				false,
-				[
-					'path' => '/payments/overview',
-				],
-			],
-			'incorrect_page_param' => [
-				0,
-				false,
-				[
-					'page' => 'wc-settings',
-					'path' => '/payments/overview',
-				],
-			],
-			'empty_path_param'     => [
-				0,
 				false,
 				[
 					'page' => 'wc-admin',
@@ -325,25 +291,37 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'incorrect_path_param' => [
 				0,
 				false,
+				false,
 				[
 					'page' => 'wc-admin',
 					'path' => '/payments/does-not-exist',
 				],
 			],
-			'wc registered page'   => [
-				0,
-				true,
-				[
-					'page' => 'wc-admin',
-					'path' => '/payments/overview',
-				],
-			],
-			'happy_path'           => [
+			'working Jetpack connection - invalid Stripe account' => [
 				1,
+				true,
 				false,
 				[
 					'page' => 'wc-admin',
-					'path' => '/payments/overview',
+					'path' => '/payments/payouts',
+				],
+			],
+			'not working Jetpack connection - valid Stripe account' => [
+				1,
+				false,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/payouts',
+				],
+			],
+			'working Jetpack connection - valid Stripe account' => [
+				0,
+				true,
+				true,
+				[
+					'page' => 'wc-admin',
+					'path' => '/payments/transactions',
 				],
 			],
 		];
@@ -372,6 +350,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		// Make sure we render the menu with submenu items.
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
@@ -413,6 +392,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		// Make sure we render the menu with submenu items.
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
@@ -426,8 +406,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_transactions_notification_badge_display() {
 		global $submenu;
-
-		update_option( \WC_Payments_Features::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
 
 		// Mock the manual capture setting as being enabled.
 		$this->mock_gateway
@@ -456,6 +434,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		// Make sure we render the menu with submenu items.
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
@@ -476,8 +455,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_transactions_notification_badge_no_display() {
 		global $submenu;
-
-		update_option( \WC_Payments_Features::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
 
 		// Mock the manual capture setting as being enabled.
 		$this->mock_gateway
@@ -501,11 +478,203 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		// Make sure we render the menu with submenu items.
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
 		$this->payments_admin->add_payments_menu();
 
 		$item_names_by_urls     = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
 		$transactions_menu_item = $item_names_by_urls['wc-admin&path=/payments/transactions'];
 
 		$this->assertSame( 'Transactions', $transactions_menu_item );
+	}
+
+	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_wrong_page() {
+		global $wp_scripts, $wp_styles;
+
+		// Arrange.
+		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$_GET['page'] = 'wc-payments';
+		$_GET['tab']  = 'products'; // Wrong WC settings tab.
+
+		// Mock the current screen.
+		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+
+		// Mock the WooCommerce version to be at the minimum required version.
+		Constants::set_constant( 'WC_VERSION', '9.9.2' );
+
+		// Act.
+		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
+
+		// Assert.
+		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+
+		// Clean up.
+		unset( $_GET['page'], $_GET['tab'] );
+		Constants::clear_constants();
+	}
+
+	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_old_wc_version() {
+		global $wp_scripts, $wp_styles;
+
+		// Arrange.
+		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$_GET['page'] = 'wc-payments';
+		$_GET['tab']  = 'checkout';
+
+		// Mock the current screen.
+		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+
+		// Mock the WooCommerce version to NOT be at the minimum required version.
+		Constants::set_constant( 'WC_VERSION', '9.9.1' );
+
+		// Act.
+		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
+
+		// Assert.
+		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+
+		// Clean up.
+		unset( $_GET['page'], $_GET['tab'] );
+		Constants::clear_constants();
+	}
+
+	/**
+	 * Data provider for test_should_show_review_prompt.
+	 *
+	 * @return array
+	 */
+	public function provider_should_show_review_prompt() {
+		return [
+			'should not show on section page'            => [
+				'page_setup'  => [
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when account not eligible'  => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => false,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when permanently dismissed' => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => time(),
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when in cooldown'           => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => time() - ( 5 * DAY_IN_SECONDS ), // 5 days ago.
+				'expected'    => false,
+			],
+			'should show when cooldown expired'          => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => time() - ( 11 * DAY_IN_SECONDS ), // 11 days ago.
+				'expected'    => true,
+			],
+			'should show when all conditions pass'       => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => true,
+			],
+		];
+	}
+
+	/**
+	 * Test should_show_review_prompt method with various scenarios.
+	 *
+	 * @dataProvider provider_should_show_review_prompt
+	 *
+	 * @param array $page_setup   Page setup parameters.
+	 * @param bool  $is_eligible  Whether account is eligible.
+	 * @param int   $dismissed    Timestamp when dismissed (0 if not dismissed).
+	 * @param int   $maybe_later  Timestamp when maybe later clicked (0 if not).
+	 * @param bool  $expected     Expected return value.
+	 */
+	public function test_should_show_review_prompt( $page_setup, $is_eligible, $dismissed, $maybe_later, $expected ) {
+		// Arrange: Set up page.
+		foreach ( $page_setup as $key => $value ) {
+			$_REQUEST[ $key ] = $value;
+		}
+
+		// Mock the current screen.
+		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+
+		// Mock account eligibility.
+		$this->mock_account->method( 'is_review_prompt_eligible' )->willReturn( $is_eligible );
+
+		// Mock current user and set user meta.
+		$user_id = 1;
+		wp_set_current_user( $user_id );
+
+		if ( $dismissed > 0 ) {
+			update_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed', $dismissed );
+		}
+
+		if ( $maybe_later > 0 ) {
+			update_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later', $maybe_later );
+		}
+
+		// Act.
+		$result = $this->payments_admin->should_show_review_prompt();
+
+		// Assert.
+		$this->assertSame( $expected, $result );
+
+		// Clean up.
+		foreach ( array_keys( $page_setup ) as $key ) {
+			unset( $_REQUEST[ $key ] );
+		}
+		delete_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed' );
+		delete_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later' );
+	}
+
+	/**
+	 * Returns an object mocking what we need from \WP_Screen.
+	 *
+	 * @return object
+	 */
+	private function get_screen_mock(): object {
+		$screen_mock = $this->getMockBuilder( \stdClass::class )->setMethods( [ 'in_admin', 'add_option' ] )->getMock();
+		$screen_mock->method( 'in_admin' )->willReturn( true );
+		foreach ( [ 'id', 'base', 'action', 'post_type' ] as $key ) {
+			$screen_mock->{$key} = '';
+		}
+
+		return $screen_mock;
 	}
 }

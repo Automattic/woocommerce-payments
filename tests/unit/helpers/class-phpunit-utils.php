@@ -27,4 +27,33 @@ class PHPUnit_Utils {
 
 		return $method->invokeArgs( $obj, $args );
 	}
+
+	/**
+	 * Utility function to that supplies a spy function.
+	 *
+	 * @return object An object that handles spying on a function.
+	 */
+	public static function function_spy() {
+		$the_args = null;
+		$fn       = function ( ...$args ) use ( &$the_args ) {
+			$the_args = $args;
+
+			return $args;
+		};
+
+		return (object) [
+			'fn'            => $fn,
+			'computed_fn'   => function ( $compute_fn ) use ( $fn ) {
+				return function ( ...$args ) use ( $fn, $compute_fn ) {
+					return $compute_fn( ...$fn( ...$args ) );
+				};
+			},
+			'received_args' => function () use ( &$the_args ) {
+				return $the_args;
+			},
+			'received_arg'  => function ( $n ) use ( &$the_args ) {
+				return $the_args[ $n ];
+			},
+		];
+	}
 }

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * External dependencies
@@ -23,30 +23,34 @@ const renderSaveUserSection = () => {
 	);
 
 	if ( blocksCheckout.length ) {
-		const checkoutPageSaveUserContainer = document.createElement(
-			'fieldset'
+		let checkoutPageSaveUserContainer = document.querySelector(
+			'#remember-me'
 		);
-		checkoutPageSaveUserContainer.className =
-			'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block ' +
-			'wc-block-components-checkout-step wc-block-components-checkout-step--with-step-number';
-		checkoutPageSaveUserContainer.id = 'remember-me';
 
-		const paymentOptions = document.getElementsByClassName(
-			'wp-block-woocommerce-checkout-payment-block'
-		)?.[ 0 ];
+		if ( ! checkoutPageSaveUserContainer ) {
+			const paymentOptions = document.getElementsByClassName(
+				'wp-block-woocommerce-checkout-payment-block'
+			)?.[ 0 ];
 
-		if ( paymentOptions ) {
-			// Render right after the payment options block, as a sibling element.
-			paymentOptions.parentNode.insertBefore(
-				checkoutPageSaveUserContainer,
-				paymentOptions.nextSibling
+			checkoutPageSaveUserContainer = document.createElement(
+				'fieldset'
 			);
 
-			ReactDOM.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ true } />,
-				checkoutPageSaveUserContainer
-			);
+			checkoutPageSaveUserContainer.className =
+				'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block wc-block-components-checkout-step ';
+			checkoutPageSaveUserContainer.id = 'remember-me';
+
+			if ( paymentOptions ) {
+				// Render right after the payment options block, as a sibling element.
+				paymentOptions.parentNode.insertBefore(
+					checkoutPageSaveUserContainer,
+					paymentOptions.nextSibling
+				);
+			}
 		}
+
+		const root = createRoot( checkoutPageSaveUserContainer );
+		root.render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =
@@ -63,10 +67,8 @@ const renderSaveUserSection = () => {
 				placeOrderButton
 			);
 
-			ReactDOM.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ false } />,
-				checkoutPageSaveUserContainer
-			);
+			const root = createRoot( checkoutPageSaveUserContainer );
+			root.render( <CheckoutPageSaveUser isBlocksCheckout={ false } /> );
 		}
 	}
 };

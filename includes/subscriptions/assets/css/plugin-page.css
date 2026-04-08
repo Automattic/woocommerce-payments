@@ -1,4 +1,4 @@
-#wcpay-subscriptions-plugin-warning-notice .button {
+.woopayments-plugin-warning-modal .button {
 	height: 36px;
 	align-items: center;
 	box-sizing: border-box;
@@ -7,10 +7,10 @@
 	line-height: normal;
 	cursor: pointer;
 }
-#wcpay-subscriptions-plugin-warning-notice .button-secondary {
+.woopayments-plugin-warning-modal .button-secondary {
 	background: transparent;
 }
-#wcpay-subscriptions-plugin-warning-notice .button.busy {
+.woopayments-plugin-warning-modal .button.busy {
 	animation: wcpay-plugin-notice-submit-button-busy 3000ms infinite linear;
 	background-image: linear-gradient(
 		-45deg,
@@ -21,59 +21,56 @@
 	);
 	background-size: 100px 100%;
 }
-#wcpay-subscriptions-plugin-warning-notice
-	footer
-	.inner
-	> *:not( :first-child ) {
+.woopayments-plugin-warning-modal footer .inner > *:not( :first-child ) {
 	margin-left: 16px;
 }
-#wcpay-subscriptions-plugin-warning-notice h1 {
+.woopayments-plugin-warning-modal h1 {
 	font-size: 1rem;
 	font-weight: 600;
 	line-height: 1;
 }
-#wcpay-subscriptions-plugin-warning-notice header,
-#wcpay-subscriptions-plugin-warning-notice footer {
+.woopayments-plugin-warning-modal header,
+.woopayments-plugin-warning-modal footer {
 	background: initial;
 	box-shadow: initial;
 }
-#wcpay-subscriptions-plugin-warning-notice header {
+.woopayments-plugin-warning-modal header {
 	margin: 0 -24px;
 	padding-top: 24px;
 	padding-left: 24px;
 	height: 60px;
 	border-bottom: 1px solid #dcdcde;
 }
-#wcpay-subscriptions-plugin-warning-notice footer {
+.woopayments-plugin-warning-modal footer {
 	padding: 24px;
 	border-top: 1px solid #dcdcde;
 }
-#wcpay-subscriptions-plugin-warning-notice .wc-backbone-modal-content {
+.woopayments-plugin-warning-modal .wc-backbone-modal-content {
 	border-radius: 2px;
 	padding: 0 24px 24px;
 }
-#wcpay-subscriptions-plugin-warning-notice .modal-close-link {
+.woopayments-plugin-warning-modal .modal-close-link {
 	height: 100%;
 	width: 60px;
 	border-left: none;
 }
-#wcpay-subscriptions-plugin-warning-notice .modal-close-link:hover {
+.woopayments-plugin-warning-modal .modal-close-link:hover {
 	background: transparent;
 }
-#wcpay-subscriptions-plugin-warning-notice article {
+.woopayments-plugin-warning-modal article {
 	padding: 1.5em 0;
 }
-#wcpay-subscriptions-plugin-warning-notice .wc-backbone-modal-main {
+.woopayments-plugin-warning-modal .wc-backbone-modal-main {
 	padding-bottom: 60px;
 }
-#wcpay-subscriptions-plugin-warning-notice .modal-close-link:hover::before {
+.woopayments-plugin-warning-modal .modal-close-link:hover::before {
 	color: initial;
 }
-#wcpay-subscriptions-plugin-warning-notice ul {
+.woopayments-plugin-warning-modal ul {
 	padding-left: 24px;
 	list-style: disc;
 }
-#wcpay-subscriptions-plugin-warning-notice ul > li > ul {
+.woopayments-plugin-warning-modal ul > li > ul {
 	margin-top: 6px;
 	list-style: circle;
 }

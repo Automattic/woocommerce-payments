@@ -65,5 +65,3 @@ trait Order_Info {
 		);
 	}
 }
-
-

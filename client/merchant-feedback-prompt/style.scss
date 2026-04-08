@@ -1,0 +1,84 @@
+// This is a temporary style to ensure the prompt is rendered in the WC footer.
+// It will be removed once the campaign is complete (paJDYF-gvt-p2).
+
+.wcpay-merchant-feedback-prompt-wrap {
+	&.components-snackbar-list {
+		// Borrowed from https://github.com/woocommerce/woocommerce/blob/7e7916106abc835c16388ac24097ba390a5f8d41/plugins/woocommerce/client/admin/client/layout/transient-notices/style.scss
+		position: absolute;
+		left: $gap;
+		right: $gap;
+		bottom: 100%;
+		margin-bottom: $gap-small;
+		width: auto;
+
+		// Prevent SnackbarList animations to reduce annoyance on each page transition.
+		// Required due to the React portal workaround used to render the prompt in the WC footer.
+		&__notice-container,
+		> div {
+			transition: none !important;
+			animation: none !important;
+			transform: none !important;
+			opacity: 1 !important;
+			height: auto !important;
+		}
+	}
+
+	.wcpay-merchant-feedback-prompt {
+		&__action.components-button {
+			color: inherit;
+			text-decoration: none;
+			display: flex;
+			align-items: center;
+		}
+
+		&__action-label {
+			margin-left: 0.3em;
+			text-decoration: underline;
+			text-underline-offset: 3px;
+		}
+
+		@include breakpoint( '<480px' ) {
+			&__action.components-button {
+				margin-right: 10px;
+			}
+
+			&__action-label {
+				display: none;
+			}
+		}
+	}
+}
+
+.wcpay-merchant-feedback-positive-modal {
+	.components-modal__content {
+		max-width: 600px;
+	}
+}
+
+.wcpay-merchant-feedback-negative-modal {
+	&__content {
+		max-width: 600px;
+	}
+
+	&__question {
+		font-weight: bold;
+	}
+
+	&__textarea {
+		width: 100%;
+		min-height: 120px;
+		padding: 8px;
+	}
+
+	&__privacy {
+		a {
+			text-decoration: none;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+	}
+}

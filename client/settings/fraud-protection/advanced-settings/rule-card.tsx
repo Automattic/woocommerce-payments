@@ -7,35 +7,23 @@ import { Card } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import './rule-card.scss';
 import CardBody from '../../card-body';
 
 interface FraudProtectionRuleCardProps {
 	title: string;
-	description: React.ReactNode;
 	id: string;
 }
 
-const FraudProtectionRuleCard: React.FC< FraudProtectionRuleCardProps > = ( {
-	title,
-	description,
-	children,
-	id,
-} ) => {
+const FraudProtectionRuleCard: React.FC< React.PropsWithChildren<
+	FraudProtectionRuleCardProps
+> > = ( { title, children, id } ) => {
 	return (
 		<Card id={ id } className="fraud-protection-rule-card">
-			<CardBody className="fraud-protection-rule-card-header-container">
-				<div>
-					<p className="fraud-protection-rule-card-header">
-						{ title }
-					</p>
-					<p className="fraud-protection-rule-card-description">
-						{ description }
-					</p>
-				</div>
+			<CardBody className="wcpay-card-body">
+				<h4>{ title }</h4>
+				{ children }
 			</CardBody>
-			<hr></hr>
-			<CardBody>{ children }</CardBody>
 		</Card>
 	);
 };

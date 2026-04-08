@@ -21,8 +21,7 @@
 		"wcpaySettings": true,
 		"page": true,
 		"browser": true,
-		"context": true,
-		"jestPuppeteer": true
+		"context": true
 	},
 	"settings": {
 		"react": {
@@ -32,7 +31,7 @@
 			"typescript": {}
 		}
 	},
-	"ignorePatterns": [ "docs/rest-api/source/**/*.js" ],
+	"ignorePatterns": [ "docs/rest-api/source/**/*.js", "playwright-report/**/*.js" ],
 	"rules": {
 		"camelcase": [
 			"error",
@@ -76,7 +75,6 @@
 				"definedTags": [ "format" ]
 			}
 		],
-		"yoda": [ "error", "always" ],
 		/* partially disable rules to get @woocommerce/eslint-plugin integration done */
 		"jsdoc/no-undefined-types": "off",
 		"jsdoc/require-param": "off",
@@ -135,10 +133,14 @@
 				"@typescript-eslint/no-explicit-any": "off",
 				"no-use-before-define": "off",
 				"@typescript-eslint/no-use-before-define": [ "error" ],
+				"@typescript-eslint/explicit-module-boundary-types": "off",
 				"wpcalypso/jsx-classname-namespace": "off",
 				"react/react-in-jsx-scope": "error",
 				"no-shadow": "off",
-				"@typescript-eslint/no-shadow": "error"
+				"@typescript-eslint/no-shadow": "error",
+				"jsdoc/require-param-type": 0,
+				"jsdoc/require-returns-type": 0,
+				"valid-jsdoc": "off"
 			}
 		}
 	]

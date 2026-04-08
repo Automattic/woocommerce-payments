@@ -127,8 +127,8 @@ $global_formats = [
 
 return [
 	'AED' => [
-		'ar_AE'   => $global_formats['rs_comma_dot_rtl'],
-		'default' => $global_formats['rs_comma_dot_rtl'],
+		'ar_AE'   => $global_formats['rs_dot_comma_rtl'],
+		'default' => $global_formats['rs_dot_comma_rtl'],
 	],
 	'AFN' => [
 		'fa_AF'   => $global_formats['ls_comma_dot_rtl'],
@@ -328,6 +328,7 @@ return [
 		'am_ET'   => $global_formats['lx_dot_comma_ltr'],
 	],
 	'EUR' => [
+		'bg_BG'      => $global_formats['rs_comma_dot_ltr'],
 		'ca_AD'      => $global_formats['rs_comma_dot_ltr'],
 		'de_AT'      => $global_formats['ls_comma_space_ltr'],
 		'de_BE'      => $global_formats['rs_comma_dot_ltr'],
@@ -723,8 +724,8 @@ return [
 		'rw_RW'   => $global_formats['ls_comma_dot_ltr'],
 	],
 	'SAR' => [
-		'ar_SA'   => $global_formats['rs_comma_dot_rtl'],
-		'default' => $global_formats['rs_comma_dot_rtl'],
+		'ar_SA'   => $global_formats['rs_dot_comma_rtl'],
+		'default' => $global_formats['rs_dot_comma_rtl'],
 	],
 	'SBD' => [
 		'en_SB'   => $global_formats['lx_dot_comma_ltr'],
@@ -930,7 +931,7 @@ return [
 		'fr_NC'   => $global_formats['rs_comma_space_ltr'],
 		'fr_PF'   => $global_formats['rs_comma_space_ltr'],
 		'fr_WF'   => $global_formats['rs_comma_space_ltr'],
-		'default' => $global_formats['rs_comma_space_ltr'],
+		'default' => $global_formats['ls_dot_comma_ltr'],
 	],
 	'YER' => [
 		'ar_YE'   => $global_formats['rs_comma_dot_rtl'],

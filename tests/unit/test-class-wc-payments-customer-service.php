@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 
@@ -39,11 +40,18 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_account;
 
 	/**
-	 * Mock Database_Cache.
+	 * Mock WC_Payments_Session_Service.
 	 *
-	 * @var Database_Cache|MockObject
+	 * @var WC_Payments_Session_Service|MockObject
 	 */
-	private $mock_db_cache;
+	private $mock_session_service;
+
+	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|MockObject
+	 */
+	private $mock_order_service;
 
 	/**
 	 * Pre-test setup
@@ -51,10 +59,11 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client  = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_account     = $this->createMock( WC_Payments_Account::class );
-		$this->mock_db_cache    = $this->createMock( Database_Cache::class );
-		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_db_cache );
+		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_account         = $this->createMock( WC_Payments_Account::class );
+		$this->mock_session_service = $this->createMock( WC_Payments_Session_Service::class );
+
+		$this->customer_service = new WC_Payments_Customer_Service( $this->mock_api_client, $this->mock_account, $this->mock_session_service, WC_Payments::get_order_service() );
 	}
 
 	/**
@@ -169,16 +178,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 
 		$mock_customer_data = $this->get_mock_customer_data();
 
-		$this->mock_account->expects( $this->once() )
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( 'sift_session_id' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'woo_session_id' ]
+					[ 'session_id' => 'sift_session_id' ]
 				)
 			)
 			->willReturn( 'cus_test12345' );
@@ -200,16 +209,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 
 		$mock_customer_data = $this->get_mock_customer_data();
 
-		$this->mock_account
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( 'sift_session_id' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'woo_session_id' ]
+					[ 'session_id' => 'sift_session_id' ]
 				)
 			)
 			->willReturn( 'cus_test12345' );
@@ -255,16 +264,16 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$mock_customer_data = $this->get_mock_customer_data();
 		$customer_id        = 'cus_test12345';
 
-		$this->mock_account->expects( $this->once() )
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( 'sift_session_id' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'woo_session_id' ]
+					[ 'session_id' => 'sift_session_id' ]
 				)
 			)
 			->willReturn( $customer_id );
@@ -279,7 +288,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 			WC()->session->get( WC_Payments_Customer_Service::CUSTOMER_ID_SESSION_KEY ),
 			$customer_id
 		);
-
 	}
 
 	/**
@@ -424,39 +432,6 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $mock_payment_methods, $response );
 	}
 
-	public function test_get_payment_methods_for_customer_fetches_from_database_cache() {
-		$mock_payment_methods = [
-			[ 'id' => 'pm_mock1' ],
-			[ 'id' => 'pm_mock2' ],
-		];
-		$customer_id          = 'cus_12345';
-		$payment_method_name  = 'card';
-		$cache_key            = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $payment_method_name;
-
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_payment_methods' )
-			->with( $customer_id, $payment_method_name )
-			->willReturn( [ 'data' => $mock_payment_methods ] );
-
-		$this->mock_db_cache
-			->expects( $this->exactly( 2 ) )
-			->method( 'get' )
-			->withConsecutive( [ $cache_key ], [ $cache_key ] )
-			->willReturnOnConsecutiveCalls( null, $mock_payment_methods );
-
-		$this->mock_db_cache
-			->expects( $this->once() )
-			->method( 'add' )
-			->with( $cache_key, $mock_payment_methods );
-
-		$response = $this->customer_service->get_payment_methods_for_customer( $customer_id );
-		$this->assertEquals( $mock_payment_methods, $response );
-
-		$response = $this->customer_service->get_payment_methods_for_customer( $customer_id );
-		$this->assertEquals( $mock_payment_methods, $response );
-	}
-
 	public function test_get_payment_methods_for_customer_no_customer() {
 		$this->mock_api_client
 			->expects( $this->never() )
@@ -476,8 +451,9 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 					'billing_details' => [
 						'address' => [
 							'city'        => 'WooCity',
-							'country'     => 'US',
+							'country'     => Country_Code::UNITED_STATES,
 							'line1'       => 'WooAddress',
+							'line2'       => '',
 							'postal_code' => '12345',
 							'state'       => 'NY',
 						],
@@ -491,6 +467,43 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 
 		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
+	}
+
+	public function test_update_payment_method_with_billing_details_from_checkout_fields() {
+		add_filter(
+			'woocommerce_billing_fields',
+			function ( $fields ) {
+				unset( $fields['billing_company'] );
+				unset( $fields['billing_country'] );
+				unset( $fields['billing_address_1'] );
+				unset( $fields['billing_address_2'] );
+				unset( $fields['billing_city'] );
+				unset( $fields['billing_state'] );
+				unset( $fields['billing_phone'] );
+				return $fields;
+			}
+		);
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_payment_method' )
+			->with(
+				'pm_mock',
+				[
+					'billing_details' => [
+						'address' => [
+							'postal_code' => '12345',
+						],
+						'email'   => 'admin@example.org',
+						'name'    => 'Jeroen Sormani',
+					],
+				]
+			);
+
+		$order = WC_Helper_Order::create_order();
+
+		$this->customer_service->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
+
+		remove_all_filters( 'woocommerce_billing_fields' );
 	}
 
 	public function test_get_payment_methods_for_customer_not_throw_resource_missing_code_exception() {
@@ -580,7 +593,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				'get_billing_postcode'    => '09876',
 				'get_billing_city'        => 'City',
 				'get_billing_state'       => 'State',
-				'get_billing_country'     => 'US',
+				'get_billing_country'     => Country_Code::UNITED_STATES,
 				'get_shipping_first_name' => 'Shipping',
 				'get_shipping_last_name'  => 'Ship',
 				'get_shipping_address_1'  => '2 Street St',
@@ -588,7 +601,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				'get_shipping_postcode'   => '76543',
 				'get_shipping_city'       => 'City2',
 				'get_shipping_state'      => 'State2',
-				'get_shipping_country'    => 'US',
+				'get_shipping_country'    => Country_Code::UNITED_STATES,
 			],
 			$mock_return_overrides
 		);
@@ -613,7 +626,7 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 					'postal_code' => '09876',
 					'city'        => 'City',
 					'state'       => 'State',
-					'country'     => 'US',
+					'country'     => Country_Code::UNITED_STATES,
 				],
 				'shipping'    => [
 					'name'    => 'Shipping Ship',
@@ -623,12 +636,104 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 						'postal_code' => '76543',
 						'city'        => 'City2',
 						'state'       => 'State2',
-						'country'     => 'US',
+						'country'     => Country_Code::UNITED_STATES,
 					],
 				],
 			],
 			$overrides
 		);
+	}
+
+	/**
+	 * Test get_prepared_customer_data returns null when not on a relevant page.
+	 */
+	public function test_get_prepared_customer_data_returns_null_when_not_on_relevant_page() {
+		unset( $_GET['pay_for_order'] );
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertNull( $result );
+	}
+
+	/**
+	 * Test get_prepared_customer_data returns order data when the user can pay for the order.
+	 */
+	public function test_get_prepared_customer_data_returns_order_data_when_user_can_pay() {
+		global $wp;
+
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Set the current user to the order owner so current_user_can( 'pay_for_order' ) passes.
+		wp_set_current_user( $order->get_customer_id() );
+
+		$_GET['pay_for_order']       = 'true';
+		$wp->query_vars['order-pay'] = $order->get_id();
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertIsArray( $result );
+		$this->assertNotEmpty( $result['name'] );
+		$this->assertNotEmpty( $result['email'] );
+		$this->assertIsArray( $result['address'] );
+		$this->assertNotEmpty( $result['address']['country'] );
+
+		// Clean up.
+		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
+	}
+
+	/**
+	 * Test get_prepared_customer_data does not return order data when the user cannot pay for the order.
+	 */
+	public function test_get_prepared_customer_data_omits_order_data_when_user_cannot_pay() {
+		global $wp;
+
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Set a different user who is not the order owner.
+		$other_user_id = $this->factory->user->create( [ 'role' => 'customer' ] );
+		wp_set_current_user( $other_user_id );
+
+		$_GET['pay_for_order']       = 'true';
+		$wp->query_vars['order-pay'] = $order->get_id();
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertIsArray( $result );
+		$this->assertSame( ' ', $result['name'] );
+		$this->assertEmpty( $result['email'] );
+		$this->assertNull( $result['address'] );
+
+		// Clean up.
+		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
+	}
+
+	/**
+	 * Test get_prepared_customer_data returns order data for a guest order (no user assigned).
+	 */
+	public function test_get_prepared_customer_data_returns_order_data_for_guest_order() {
+		global $wp;
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_customer_id( 0 );
+		$order->save();
+
+		// Any logged-in user can pay for a guest order per WooCommerce's pay_for_order capability.
+		$user_id = $this->factory->user->create( [ 'role' => 'customer' ] );
+		wp_set_current_user( $user_id );
+
+		$_GET['pay_for_order']       = 'true';
+		$wp->query_vars['order-pay'] = $order->get_id();
+
+		$result = $this->customer_service->get_prepared_customer_data();
+
+		$this->assertIsArray( $result );
+		$this->assertNotEmpty( $result['email'] );
+		$this->assertIsArray( $result['address'] );
+
+		// Clean up.
+		unset( $_GET['pay_for_order'], $wp->query_vars['order-pay'] );
 	}
 
 	/**
@@ -661,20 +766,20 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 				'postal_code' => '12345',
 				'city'        => 'WooCity',
 				'state'       => 'NY',
-				'country'     => 'US',
+				'country'     => Country_Code::UNITED_STATES,
 			],
 		];
 
-		$this->mock_account
-			->method( 'get_fraud_services_config' )
-			->willReturn( [ 'sift' => [ 'session_id' => 'woo_session_id' ] ] );
+		$this->mock_session_service
+			->method( 'get_sift_session_id' )
+			->willReturn( 'sift_session_id' );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_customer' )
 			->with(
 				array_merge(
 					$mock_customer_data,
-					[ 'session_id' => 'woo_session_id' ]
+					[ 'session_id' => 'sift_session_id' ]
 				)
 			)
 			->willReturn( 'wcpay_cus_test12345' );
@@ -682,20 +787,20 @@ class WC_Payments_Customer_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $this->customer_service->get_customer_id_for_order( $order ), 'wcpay_cus_test12345' );
 	}
 
-	public function test_clear_cached_payment_methods_for_user() {
-		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test12345' );
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( 1 );
+	/**
+	 * Test that recreate_customer_for_user deletes the old ID and creates a new customer.
+	 */
+	public function test_recreate_customer_for_user_creates_new_customer() {
+		$user = wp_get_current_user();
 
-		$expected_card_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_card';
-		$expected_sepa_cache_key = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_sepa_debit';
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_customer' )
+			->willReturn( 'cus_new' );
 
-		$this->mock_db_cache
-			->expects( $this->exactly( 2 ) )
-			->method( 'delete' )
-			->withConsecutive(
-				[ $expected_card_cache_key ],
-				[ $expected_sepa_cache_key ]
-			);
-		$this->customer_service->clear_cached_payment_methods_for_user( 1 );
+		$result = $this->customer_service->recreate_customer_for_user( $user, [ 'name' => 'Test User' ] );
+
+		$this->assertEquals( 'cus_new', $result );
+		$this->assertEquals( 'cus_new', $this->customer_service->get_customer_id_by_user_id( $user->ID ) );
 	}
 }

@@ -1,11 +1,20 @@
 /**
+ * External dependencies
+ */
+import { useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
-import { PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT } from '../../constants';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import { getConfig } from '../../../utils/checkout';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
+
+export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
+	'woocommerce_payments_woopay_express_checkout';
 
 // Create an API object, which will be used throughout the checkout.
 const api = new WCPayAPI(
@@ -18,15 +27,37 @@ const api = new WCPayAPI(
 	request
 );
 
+const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
+	const onRefChange = useCallback(
+		( node ) => {
+			if ( node ) {
+				const root = createRoot( node );
+
+				root.render(
+					<WoopayExpressCheckoutButton
+						buttonSettings={ getConfig( 'woopayButton' ) }
+						api={ api }
+						emailSelector="#email"
+						buttonAttributes={ buttonAttributes }
+					/>
+				);
+			}
+		},
+		[ buttonAttributes ]
+	);
+
+	return <span ref={ onRefChange } />;
+};
+
 const wooPayExpressCheckoutPaymentMethod = () => ( {
 	name: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
-	content: (
-		<WoopayExpressCheckoutButton
-			buttonSettings={ getConfig( 'woopayButton' ) }
-			api={ api }
-			emailSelector="#email"
-		/>
+	title: 'WooPayments - WooPay',
+	description: __(
+		'A one-click, high-converting, secure checkout built for Woo — themed to your brand.',
+		'woocommerce-payments'
 	),
+	gatewayId: 'woocommerce_payments',
+	content: <WooPayExpressCheckoutButtonContainer />,
 	edit: (
 		<WoopayExpressCheckoutButton
 			buttonSettings={ getConfig( 'woopayButton' ) }
@@ -34,10 +65,11 @@ const wooPayExpressCheckoutPaymentMethod = () => ( {
 			emailSelector="#email"
 		/>
 	),
-	canMakePayment: () => 'undefined' !== typeof wcpayConfig,
+	canMakePayment: () => typeof wcpayConfig !== 'undefined',
 	paymentMethodId: PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT,
 	supports: {
 		features: getConfig( 'features' ),
+		style: [ 'height', 'borderRadius' ],
 	},
 } );
 

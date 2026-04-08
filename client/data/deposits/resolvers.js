@@ -17,8 +17,6 @@ import {
 	updateDeposits,
 	updateDepositsCount,
 	updateErrorForDepositQuery,
-	updateDepositsOverview,
-	updateErrorForDepositsOverview,
 	updateDepositsSummary,
 	updateErrorForDepositsSummary,
 	updateAllDepositsOverviews,
@@ -32,6 +30,12 @@ import { formatDateValue } from 'utils';
  * @param {string} id Identifier for specified deposit to retrieve.
  */
 export function* getDeposit( id ) {
+	// Validate input to avoid path traversal request.
+	// Avoid lookup if the id contains any unexpected characters.
+	if ( /\W/.test( id ) ) {
+		return;
+	}
+
 	const path = addQueryArgs( `${ NAMESPACE }/deposits/${ id }` );
 
 	try {
@@ -41,27 +45,8 @@ export function* getDeposit( id ) {
 		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
-			__( 'Error retrieving deposit.', 'woocommerce-payments' )
+			__( 'Error retrieving payout.', 'woocommerce-payments' )
 		);
-	}
-}
-
-/**
- * Retrieve deposits overview from the deposits API.
- */
-export function* getDepositsOverview() {
-	const path = addQueryArgs( `${ NAMESPACE }/deposits/overview` );
-
-	try {
-		const result = yield apiFetch( { path } );
-		yield updateDepositsOverview( result );
-	} catch ( e ) {
-		yield controls.dispatch(
-			'core/notices',
-			'createErrorNotice',
-			__( 'Error retrieving deposits overview.', 'woocommerce-payments' )
-		);
-		yield updateErrorForDepositsOverview( e );
 	}
 }
 
@@ -79,7 +64,7 @@ export function* getAllDepositsOverviews() {
 			'core/notices',
 			'createErrorNotice',
 			__(
-				"Error retrieving all deposits' overviews.",
+				"Error retrieving all payouts' overviews.",
 				'woocommerce-payments'
 			)
 		);
@@ -99,11 +84,13 @@ const formatQueryFilters = ( query ) => ( {
 	],
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
+	locale: query.locale,
 } );
 
-export function getDepositsCSV( query ) {
+export const payoutsDownloadEndpoint = `${ NAMESPACE }/deposits/download`;
+export function getPayoutsCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/deposits/download`,
+		payoutsDownloadEndpoint,
 		formatQueryFilters( query )
 	);
 
@@ -143,7 +130,7 @@ export function* getDeposits( query ) {
 		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
-			__( 'Error retrieving deposits.', 'woocommerce-payments' )
+			__( 'Error retrieving payouts.', 'woocommerce-payments' )
 		);
 		yield updateErrorForDepositQuery( query, null, e );
 	}

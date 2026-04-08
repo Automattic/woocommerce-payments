@@ -2,11 +2,14 @@
 /**
  * Class WC_Payments_Apple_Pay_Registration_Test
  *
- * @package WooCommerce\Payments\Tests
+ * @package WooCommerce\\Payments\\Tests
  */
 
 /**
  * WC_Payments_Apple_Pay_Registration unit tests.
+ *
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
  */
 class WC_Payments_Apple_Pay_Registration_Test extends WCPAY_UnitTestCase {
 
@@ -32,24 +35,40 @@ class WC_Payments_Apple_Pay_Registration_Test extends WCPAY_UnitTestCase {
 	private $mock_account;
 
 	/**
-	 * Domain association file name.
+	 * Mock Gateway (card gateway, passed to constructor).
 	 *
-	 * @var string
+	 * @var WC_Payment_Gateway_WCPay|PHPUnit_Framework_MockObject_MockObject
 	 */
-	private $file_name;
+	private $mock_gateway;
 
 	/**
-	 * Domain association file contents.
+	 * Mock Apple Pay Gateway.
+	 *
+	 * @var WC_Payment_Gateway_WCPay|PHPUnit_Framework_MockObject_MockObject
+	 */
+	private $mock_apple_pay_gateway;
+
+	/**
+	 * Expected domain name for testing.
 	 *
 	 * @var string
 	 */
-	private $initial_file_contents;
+	private $expected_domain;
+
+	/**
+	 * Original payment_gateway_map.
+	 *
+	 * @var array
+	 */
+	private $original_payment_gateway_map;
 
 	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		$this->expected_domain = wp_parse_url( get_site_url(), PHP_URL_HOST );
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -59,67 +78,209 @@ class WC_Payments_Apple_Pay_Registration_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+		$this->mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->getMock();
 
-		$this->wc_apple_pay_registration = new WC_Payments_Apple_Pay_Registration( $this->mock_api_client, $this->mock_account, $mock_gateway );
+		$this->mock_apple_pay_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->disableOriginalConstructor()
+			->getMock();
 
-		$this->file_name             = 'apple-developer-merchantid-domain-association';
-		$this->initial_file_contents = file_get_contents( WCPAY_ABSPATH . '/' . $this->file_name ); // @codingStandardsIgnoreLine
+		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
+
+		$this->wc_apple_pay_registration = new WC_Payments_Apple_Pay_Registration( $this->mock_api_client, $this->mock_account, $this->mock_gateway );
+		$this->wc_apple_pay_registration->init_hooks();
 	}
 
+	/**
+	 * Tear down test.
+	 */
 	public function tear_down() {
+		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
+		delete_option( WC_Payments_Apple_Pay_Registration::APPLE_PAY_DOMAIN_ERROR_OPTION );
 		parent::tear_down();
-
-		$path     = untrailingslashit( ABSPATH );
-		$dir      = '.well-known';
-		$fullpath = $path . '/' . $dir . '/' . $this->file_name;
-		// Unlink domain association file before tests.
-		@unlink( $fullpath ); // @codingStandardsIgnoreLine
 	}
 
-	public function test_update_domain_association_file() {
-		$path     = untrailingslashit( ABSPATH );
-		$dir      = '.well-known';
-		$fullpath = $path . '/' . $dir . '/' . $this->file_name;
+	public function test_verify_domain_on_new_settings_when_enabled() {
+		$this->mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
 
-		$this->wc_apple_pay_registration->update_domain_association_file();
-		$updated_file_contents = file_get_contents( $fullpath ); // @codingStandardsIgnoreLine
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'register_domain' )
+			->with( $this->expected_domain )
+			->willReturn(
+				[
+					'id'        => 'domain_123',
+					'apple_pay' => [ 'status' => 'active' ],
+				]
+			);
 
-		$this->assertEquals( $updated_file_contents, $this->initial_file_contents );
-	}
+		$this->mock_gateway->expects( $this->exactly( 2 ) )
+			->method( 'update_option' )
+			->withConsecutive(
+				[ 'apple_pay_verified_domain', $this->expected_domain ],
+				[ 'apple_pay_domain_set', 'yes' ]
+			);
 
-	public function test_add_domain_association_rewrite_rule() {
-		$this->set_permalink_structure( '/%postname%/' );
-		$this->wc_apple_pay_registration->add_domain_association_rewrite_rule();
-		flush_rewrite_rules();
-
-		global $wp_rewrite;
-		$rewrite_rule = 'index.php?' . $this->file_name . '=1';
-
-		$this->assertContains( $rewrite_rule, $wp_rewrite->rewrite_rules() );
-	}
-
-	public function test_it_adds_rewrite_rules_before_init_priority_10() {
-		$add_rewrite_rules_callback_priority = has_action(
-			'init',
-			[ $this->wc_apple_pay_registration, 'add_domain_association_rewrite_rule' ]
-		);
-
-		$this->assertIsInt( $add_rewrite_rules_callback_priority );
-		$this->assertLessThan(
-			10,
-			$add_rewrite_rules_callback_priority
+		$this->wc_apple_pay_registration->verify_domain_on_new_settings(
+			'option_name',
+			[ 'enabled' => 'yes' ]
 		);
 	}
 
-	public function test_it_verifies_domain_during_upgrade() {
-		$verify_callback_priority = has_action(
-			'woocommerce_woocommerce_payments_updated',
-			[ $this->wc_apple_pay_registration, 'verify_domain_on_update' ]
+	public function test_verify_domain_on_new_settings_when_not_enabled() {
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( false );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
+
+		$this->mock_api_client->expects( $this->never() )->method( 'register_domain' );
+		$this->mock_gateway->expects( $this->never() )->method( 'update_option' );
+
+		$this->wc_apple_pay_registration->verify_domain_on_new_settings(
+			'option_name',
+			[ 'enabled' => 'no' ]
+		);
+	}
+
+	public function test_verify_domain_on_updated_settings_when_not_enabled() {
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( false );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
+
+		$this->mock_api_client->expects( $this->never() )->method( 'register_domain' );
+		$this->mock_gateway->expects( $this->never() )->method( 'update_option' );
+
+		$this->wc_apple_pay_registration->verify_domain_on_updated_settings(
+			[ 'enabled' => 'no' ],
+			[ 'enabled' => 'no' ]
+		);
+	}
+
+	public function test_verify_domain_on_updated_settings_when_enabled() {
+		$this->mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'register_domain' )
+			->with( $this->expected_domain )
+			->willReturn(
+				[
+					'id'        => 'domain_123',
+					'apple_pay' => [ 'status' => 'active' ],
+				]
+			);
+
+		$this->mock_gateway->expects( $this->exactly( 2 ) )
+			->method( 'update_option' )
+			->withConsecutive(
+				[ 'apple_pay_verified_domain', $this->expected_domain ],
+				[ 'apple_pay_domain_set', 'yes' ]
+			);
+
+		$this->wc_apple_pay_registration->verify_domain_on_updated_settings(
+			[ 'enabled' => 'no' ],
+			[ 'enabled' => 'yes' ]
+		);
+	}
+
+	public function test_verify_domain_on_updated_settings_when_already_enabled() {
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
+
+		$this->mock_api_client->expects( $this->never() )->method( 'register_domain' );
+		$this->mock_gateway->expects( $this->never() )->method( 'update_option' );
+
+		$this->wc_apple_pay_registration->verify_domain_on_updated_settings(
+			[ 'enabled' => 'yes' ],
+			[ 'enabled' => 'yes' ]
+		);
+	}
+
+	public function test_register_domain_stores_error_on_failure() {
+		$this->mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
+
+		$error_message = 'Domain verification failed: invalid domain';
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'register_domain' )
+			->with( $this->expected_domain )
+			->willReturn(
+				[
+					'id'        => 'domain_123',
+					'apple_pay' => [
+						'status'         => 'failed',
+						'status_details' => [ 'error_message' => $error_message ],
+					],
+				]
+			);
+
+		$this->wc_apple_pay_registration->verify_domain_on_new_settings(
+			'option_name',
+			[ 'enabled' => 'yes' ]
 		);
 
-		$this->assertIsInt( $verify_callback_priority );
+		$this->assertEquals( $error_message, get_option( WC_Payments_Apple_Pay_Registration::APPLE_PAY_DOMAIN_ERROR_OPTION ) );
+	}
+
+	public function test_register_domain_clears_error_on_success() {
+		$this->mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
+
+		update_option( WC_Payments_Apple_Pay_Registration::APPLE_PAY_DOMAIN_ERROR_OPTION, 'Previous error' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'register_domain' )
+			->with( $this->expected_domain )
+			->willReturn(
+				[
+					'id'        => 'domain_123',
+					'apple_pay' => [ 'status' => 'active' ],
+				]
+			);
+
+		$this->wc_apple_pay_registration->verify_domain_on_new_settings(
+			'option_name',
+			[ 'enabled' => 'yes' ]
+		);
+
+		$this->assertFalse( get_option( WC_Payments_Apple_Pay_Registration::APPLE_PAY_DOMAIN_ERROR_OPTION ) );
+	}
+
+	public function test_display_error_notice_clears_error_after_display() {
+		$this->mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
+		$this->mock_account->method( 'get_is_live' )->willReturn( true );
+		$this->mock_gateway->method( 'get_option' )
+			->with( 'apple_pay_domain_set' )
+			->willReturn( 'no' );
+
+		update_option( WC_Payments_Apple_Pay_Registration::APPLE_PAY_DOMAIN_ERROR_OPTION, 'Test error message' );
+
+		ob_start();
+		$this->wc_apple_pay_registration->display_error_notice();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Test error message', $output );
+		$this->assertFalse( get_option( WC_Payments_Apple_Pay_Registration::APPLE_PAY_DOMAIN_ERROR_OPTION ) );
+	}
+
+	public function test_display_error_notice_shows_generic_message_when_no_error_stored() {
+		$this->mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->mock_apple_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$this->set_payment_gateway_map( [ 'apple_pay' => $this->mock_apple_pay_gateway ] );
+		$this->mock_account->method( 'get_is_live' )->willReturn( true );
+		$this->mock_gateway->method( 'get_option' )
+			->with( 'apple_pay_domain_set' )
+			->willReturn( 'no' );
+
+		ob_start();
+		$this->wc_apple_pay_registration->display_error_notice();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Apple Pay domain verification failed.', $output );
 	}
 }

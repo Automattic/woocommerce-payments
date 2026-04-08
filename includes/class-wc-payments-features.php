@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Country_Code;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
@@ -13,102 +15,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * WC Payments Features class
  */
 class WC_Payments_Features {
-	const UPE_FLAG_NAME                     = '_wcpay_feature_upe';
-	const UPE_SPLIT_FLAG_NAME               = '_wcpay_feature_upe_split';
-	const UPE_DEFERRED_INTENT_FLAG_NAME     = '_wcpay_feature_upe_deferred_intent';
-	const WCPAY_SUBSCRIPTIONS_FLAG_NAME     = '_wcpay_feature_subscriptions';
-	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME = '_wcpay_feature_woopay_express_checkout';
-	const AUTH_AND_CAPTURE_FLAG_NAME        = '_wcpay_feature_auth_and_capture';
-	const PROGRESSIVE_ONBOARDING_FLAG_NAME  = '_wcpay_feature_progressive_onboarding';
-
 	/**
-	 * Checks whether any UPE gateway is enabled.
-	 *
-	 * @return bool
+	 * If you need to remove or deprecate a flag:
+	 * - Please update the `Erase_Deprecated_Flags_And_Options` migration with:
+	 *   - The next version of WooPayments.
+	 *   - The flag to be deleted.
 	 */
-	public static function is_upe_enabled() {
-		return self::is_upe_legacy_enabled() || self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled();
-	}
-
-	/**
-	 * Returns the "type" of UPE that will be displayed at checkout.
-	 *
-	 * @return string
-	 */
-	public static function get_enabled_upe_type() {
-		if ( self::is_upe_split_enabled() || self::is_upe_deferred_intent_enabled() ) {
-			return 'split';
-		}
-
-		if ( self::is_upe_legacy_enabled() ) {
-			return 'legacy';
-		}
-
-		return '';
-	}
-
-	/**
-	 * Checks whether the legacy UPE gateway is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_upe_legacy_enabled() {
-		$upe_flag_value = '1' === get_option( self::UPE_FLAG_NAME, '0' );
-		if ( $upe_flag_value ) {
-			return true;
-		}
-
-		$upe_split_flag_value    = '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
-		$upe_deferred_flag_value = '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' );
-
-		// if the merchant is not eligible for the Split UPE, but they have the flag enabled, fallback to the "legacy" UPE (for now).
-		return ( $upe_split_flag_value || $upe_deferred_flag_value )
-			&& ! self::is_upe_split_eligible();
-	}
-
-	/**
-	 * Checks whether the Split-UPE gateway is enabled
-	 */
-	public static function is_upe_split_enabled() {
-		return '1' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
-	}
-
-	/**
-	 * Checks whether the Split UPE with deferred intent is enabled
-	 */
-	public static function is_upe_deferred_intent_enabled() {
-		return '1' === get_option( self::UPE_DEFERRED_INTENT_FLAG_NAME, '0' ) && self::is_upe_split_eligible();
-	}
-
-	/**
-	 * Checks for the requirements to have the split-UPE enabled.
-	 */
-	private static function is_upe_split_eligible() {
-		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		if ( empty( $account['capabilities']['sepa_debit_payments'] ) ) {
-			return true;
-		}
-
-		return 'active' !== $account['capabilities']['sepa_debit_payments'];
-	}
-
-	/**
-	 * Checks whether the UPE gateway is enabled
-	 *
-	 * @return bool
-	 */
-	public static function did_merchant_disable_upe() {
-		return 'disabled' === get_option( self::UPE_FLAG_NAME, '0' ) || 'disabled' === get_option( self::UPE_SPLIT_FLAG_NAME, '0' );
-	}
-
-	/**
-	 * Checks whether the UPE settings redesign is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_upe_settings_preview_enabled() {
-		return '1' === get_option( '_wcpay_feature_upe_settings_preview', '1' );
-	}
+	const WCPAY_SUBSCRIPTIONS_FLAG_NAME                       = '_wcpay_feature_subscriptions';
+	const STRIPE_BILLING_FLAG_NAME                            = '_wcpay_feature_stripe_billing';
+	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME                   = '_wcpay_feature_woopay_express_checkout';
+	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME                    = '_wcpay_feature_woopay_direct_checkout';
+	const DISPUTE_ISSUER_EVIDENCE                             = '_wcpay_feature_dispute_issuer_evidence';
+	const DISPUTE_ADDITIONAL_EVIDENCE_TYPES                   = '_wcpay_feature_dispute_additional_evidence_types';
+	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
+	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
+	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
+	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -144,63 +66,113 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Returns if the encryption libraries are loaded and the encrypt method exists.
-	 *
-	 * @return bool
-	 */
-	public static function is_client_secret_encryption_eligible() {
-		return extension_loaded( 'openssl' ) && function_exists( 'openssl_encrypt' );
-	}
-
-	/**
-	 * Checks whether the client secret encryption feature is enabled.
-	 *
-	 * @return  bool
-	 */
-	public static function is_client_secret_encryption_enabled() {
-		$enabled = '1' === get_option( '_wcpay_feature_client_secret_encryption', '0' );
-		// Check if it can be enabled when it's enabled, it needs openssl to operate.
-		if ( $enabled && ! self::is_client_secret_encryption_eligible() ) {
-			update_option( '_wcpay_feature_client_secret_encryption', '0' );
-			$enabled = false;
-		}
-		return $enabled;
-	}
-
-	/**
-	 * Checks whether Account Overview page is enabled
-	 *
-	 * @return bool
-	 */
-	public static function is_account_overview_task_list_enabled() {
-		return '1' === get_option( '_wcpay_feature_account_overview_task_list', '1' );
-	}
-
-	/**
 	 * Checks whether WCPay Subscriptions is enabled.
 	 *
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_enabled() {
-		$enabled = get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, null );
+		// After completing the WooCommerce onboarding, check if the merchant has chosen Subscription product types and enable the feature flag.
+		if ( (bool) get_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', false ) ) {
+			if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
+				self::maybe_enable_wcpay_subscriptions_after_onboarding( [], get_option( 'woocommerce_onboarding_profile', [] ) );
+			}
 
-		// Enable the feature by default for stores that are eligible.
-		if ( null === $enabled && function_exists( 'wc_get_base_location' ) && self::is_wcpay_subscriptions_eligible() ) {
-			$enabled = '1';
-			update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $enabled );
+			delete_option( 'wcpay_check_subscriptions_eligibility_after_onboarding' );
 		}
 
-		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === $enabled );
+		return apply_filters( 'wcpay_is_wcpay_subscriptions_enabled', '1' === get_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' ) );
 	}
 
 	/**
-	 * Returns whether WCPay Subscriptions is eligible, based on the stores base country.
+	 * Returns whether the store is eligible to use WCPay Subscriptions (the free subscriptions bundled in WooPayments)
+	 *
+	 * Stores are eligible for the WCPay Subscriptions feature if:
+	 * 1. The store has existing WCPay Subscriptions, or
+	 * 2. The store has Stripe Billing product metadata on at least 1 product subscription product.
 	 *
 	 * @return bool
 	 */
 	public static function is_wcpay_subscriptions_eligible() {
-		$store_base_location = wc_get_base_location();
-		return ! empty( $store_base_location['country'] ) && 'US' === $store_base_location['country'];
+		/**
+		 * Check if they have at least 1 WCPay Subscription.
+		 *
+		 * Note: this is only possible if WCPay Subscriptions is enabled, otherwise the wcs_get_subscriptions function wouldn't exist.
+		 */
+		if ( function_exists( 'wcs_get_subscriptions' ) ) {
+			$wcpay_subscriptions = wcs_get_subscriptions(
+				[
+					'subscriptions_per_page' => 1,
+					'subscription_status'    => 'any',
+					'meta_query'             => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_wcpay_subscription_id',
+							'compare' => 'EXISTS',
+						],
+					],
+				]
+			);
+
+			if ( ( is_countable( $wcpay_subscriptions ) ? count( $wcpay_subscriptions ) : 0 ) > 0 ) {
+				return true;
+			}
+		}
+
+		/**
+		 * Check if they have at least 1 Stripe Billing enabled product.
+		 */
+		$stripe_billing_meta_query_handler = function ( $query, $query_vars ) {
+			if ( ! empty( $query_vars['stripe_billing_product'] ) ) {
+				$query['meta_query'][] = [
+					'key'     => '_wcpay_product_hash',
+					'compare' => 'EXISTS',
+				];
+			}
+
+			return $query;
+		};
+
+		add_filter( 'woocommerce_product_data_store_cpt_get_products_query', $stripe_billing_meta_query_handler, 10, 2 );
+
+		$subscription_products = wc_get_products(
+			[
+				'limit'                  => 1,
+				'type'                   => [ 'subscription', 'variable-subscription' ],
+				'status'                 => 'publish',
+				'return'                 => 'ids',
+				'stripe_billing_product' => 'true',
+			]
+		);
+
+		remove_filter( 'woocommerce_product_data_store_cpt_get_products_query', $stripe_billing_meta_query_handler, 10, 2 );
+
+		if ( ( is_countable( $subscription_products ) ? count( $subscription_products ) : 0 ) > 0 ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether the merchant has chosen Subscription product types during onboarding
+	 * WooCommerce and is elible for WCPay Subscriptions, if so, enables the feature flag.
+	 *
+	 * @since 6.2.0
+	 *
+	 * @param array $onboarding_data Onboarding data.
+	 * @param array $updated         Updated onboarding settings.
+	 *
+	 * @return void
+	 */
+	public static function maybe_enable_wcpay_subscriptions_after_onboarding( $onboarding_data, $updated ) {
+		if ( empty( $updated['product_types'] ) || ! is_array( $updated['product_types'] ) || ! in_array( 'subscriptions', $updated['product_types'], true ) ) {
+			return;
+		}
+
+		if ( ! self::is_wcpay_subscriptions_eligible() ) {
+			return;
+		}
+
+		update_option( self::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '1' );
 	}
 
 	/**
@@ -216,7 +188,15 @@ class WC_Payments_Features {
 
 		// read directly from cache, ignore cache expiration check.
 		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		return is_array( $account ) && ( $account['platform_checkout_eligible'] ?? false );
+
+		$is_account_rejected = WC_Payments::get_account_service()->is_account_rejected();
+
+		$is_account_under_review = WC_Payments::get_account_service()->is_account_under_review();
+
+		return is_array( $account )
+			&& ( $account['platform_checkout_eligible'] ?? false )
+			&& ! $is_account_rejected
+			&& ! $is_account_under_review;
 	}
 
 	/**
@@ -225,9 +205,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_documents_section_enabled() {
-		$account              = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY );
-		$is_documents_enabled = is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
-		return '1' === get_option( '_wcpay_feature_documents', $is_documents_enabled ? '1' : '0' );
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		return is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
 	}
 
 	/**
@@ -241,21 +220,27 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
+	 * Checks whether WooPay Direct Checkout is enabled.
 	 *
-	 * @return bool
+	 * @return bool True if Direct Checkout is enabled, false otherwise.
 	 */
-	public static function is_auth_and_capture_enabled() {
-		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
+	public static function is_woopay_direct_checkout_enabled() {
+		$account_cache                   = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		$is_direct_checkout_eligible     = is_array( $account_cache ) && ( $account_cache['platform_direct_checkout_eligible'] ?? false );
+		$is_direct_checkout_flag_enabled = '1' === get_option( self::WOOPAY_DIRECT_CHECKOUT_FLAG_NAME, '1' );
+
+		return $is_direct_checkout_eligible && $is_direct_checkout_flag_enabled && self::is_woopayments_gateway_enabled() && self::is_woopay_enabled();
 	}
 
 	/**
-	 * Checks whether Progressive Onboarding is enabled.
+	 * Checks whether WooPay global theme support is eligible.
 	 *
 	 * @return bool
 	 */
-	public static function is_progressive_onboarding_enabled(): bool {
-		return '1' === get_option( self::PROGRESSIVE_ONBOARDING_FLAG_NAME, '0' );
+	public static function is_woopay_global_theme_support_eligible() {
+		$account_cache = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account_cache ) && ( $account_cache['platform_global_theme_support_enabled'] ?? false );
 	}
 
 	/**
@@ -263,8 +248,8 @@ class WC_Payments_Features {
 	 *
 	 * @return  bool
 	 */
-	public static function is_fraud_protection_settings_enabled(): bool {
-		return '1' === get_option( 'wcpay_fraud_protection_settings_active', '0' );
+	public static function is_frt_review_feature_active(): bool {
+		return '1' === get_option( 'wcpay_frt_review_feature_active', '0' );
 	}
 
 	/**
@@ -277,6 +262,130 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Stripe Billing feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_billing_enabled(): bool {
+		return '1' === get_option( self::STRIPE_BILLING_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks if the site is eligible for Stripe Billing.
+	 *
+	 * Only US merchants are eligible for Stripe Billing.
+	 *
+	 * @return bool
+	 */
+	public static function is_stripe_billing_eligible() {
+		if ( ! function_exists( 'wc_get_base_location' ) ) {
+			return false;
+		}
+
+		$store_base_location = wc_get_base_location();
+		return ! empty( $store_base_location['country'] ) && Country_Code::UNITED_STATES === $store_base_location['country'];
+	}
+
+	/**
+	 * Checks whether the merchant is using WCPay Subscription or opted into Stripe Billing.
+	 *
+	 * Note: Stripe Billing is only used when the merchant is using WooCommerce Subscriptions and turned it on or is still using WCPay Subscriptions.
+	 *
+	 * @return bool
+	 */
+	public static function should_use_stripe_billing() {
+		// We intentionally check for the existence of the 'WC_Subscriptions' class here as we want to confirm the Plugin is active.
+		if ( self::is_wcpay_subscriptions_enabled() && ! class_exists( 'WC_Subscriptions' ) ) {
+			return true;
+		}
+
+		if ( self::is_stripe_billing_enabled() && class_exists( 'WC_Subscriptions' ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks whether Dispute issuer evidence feature should be enabled. Disabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_dispute_issuer_evidence_enabled(): bool {
+		return '1' === get_option( self::DISPUTE_ISSUER_EVIDENCE, '0' );
+	}
+
+	/**
+	 * Checks whether Dispute Additional Evidence Types feature should be enabled. Disabled by default.
+	 *
+	 * This gates the new evidence form types (event, booking_reservation, other) for dispute challenges.
+	 *
+	 * @return bool
+	 */
+	public static function is_dispute_additional_evidence_types_enabled(): bool {
+		return '1' === get_option( self::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+	}
+
+	/**
+	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
+	 *
+	 * @return bool
+	 */
+	public static function is_next_deposit_notice_dismissed(): bool {
+		return '1' === get_option( 'wcpay_next_deposit_notice_dismissed', '0' );
+	}
+
+	/**
+	 * Checks whether the dynamic checkout place order button feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_dynamic_checkout_place_order_button_enabled(): bool {
+		if ( '1' !== get_option( self::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME, '0' ) ) {
+			return false;
+		}
+
+		// Dev mode bypasses WC version requirements for local testing.
+		if ( WC_Payments::mode()->is_dev() ) {
+			return true;
+		}
+
+		// Requires WooCommerce 10.6.0+ for the Custom Place Order Button API.
+		return defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '10.6.0', '>=' );
+	}
+
+	/**
+	 * Checks whether the multi-currency cache-optimized rendering mode is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_mc_cache_optimized_enabled(): bool {
+		return '1' === get_option( self::MC_CACHE_OPTIMIZED_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks whether Amazon Pay is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_amazon_pay_enabled(): bool {
+		return '1' === get_option( self::AMAZON_PAY_FLAG_NAME, '1' ) && self::is_ece_confirmation_tokens_enabled();
+	}
+
+	/**
+	 * Checks whether ECE should use confirmation tokens instead of payment methods.
+	 *
+	 * @see https://docs.stripe.com/payments/finalize-payments-on-the-server-migration
+	 *
+	 * @return bool
+	 */
+	public static function is_ece_confirmation_tokens_enabled(): bool {
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+
+		return is_array( $account ) && ! ( $account['ece_confirmation_tokens_disabled'] ?? false );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -284,19 +393,29 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'upe'                     => self::is_upe_enabled(),
-				'upeSplit'                => self::is_upe_split_enabled(),
-				'upeDeferred'             => self::is_upe_deferred_intent_enabled(),
-				'upeSettingsPreview'      => self::is_upe_settings_preview_enabled(),
-				'multiCurrency'           => self::is_customer_multi_currency_enabled(),
-				'accountOverviewTaskList' => self::is_account_overview_task_list_enabled(),
-				'woopay'                  => self::is_woopay_eligible(),
-				'documents'               => self::is_documents_section_enabled(),
-				'clientSecretEncryption'  => self::is_client_secret_encryption_enabled(),
-				'woopayExpressCheckout'   => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled' => self::is_auth_and_capture_enabled(),
-				'progressiveOnboarding'   => self::is_progressive_onboarding_enabled(),
+				'multiCurrency'                            => self::is_customer_multi_currency_enabled(),
+				'woopay'                                   => self::is_woopay_eligible(),
+				'documents'                                => self::is_documents_section_enabled(),
+				'woopayExpressCheckout'                    => self::is_woopay_express_checkout_enabled(),
+				'isDisputeIssuerEvidenceEnabled'           => self::is_dispute_issuer_evidence_enabled(),
+				'isDisputeAdditionalEvidenceTypesEnabled'  => self::is_dispute_additional_evidence_types_enabled(),
+				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
+				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
+				'amazonPay'                                => self::is_amazon_pay_enabled(),
+				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 			]
 		);
+	}
+
+	/**
+	 * Checks if WooCommerce Payments gateway is enabled.
+	 *
+	 * @return bool True if WooCommerce Payments gateway is enabled, false otherwise.
+	 */
+	private static function is_woopayments_gateway_enabled() {
+		$woopayments_settings        = get_option( 'woocommerce_woocommerce_payments_settings' );
+		$woopayments_enabled_setting = $woopayments_settings['enabled'] ?? 'no';
+
+		return 'yes' === $woopayments_enabled_setting;
 	}
 }

@@ -5,14 +5,6 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	FlexItem,
-	FlexBlock,
-} from '@wordpress/components';
-import { Badge } from '@woocommerce/components';
 import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 import { useDispatch } from '@wordpress/data';
 import { useCallback, useEffect, useState } from '@wordpress/element';
@@ -20,11 +12,11 @@ import { useCallback, useEffect, useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { TIME } from '../../constants';
+import { TIME } from 'wcpay/constants/time';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { createNotice } = useDispatch( 'core/notices' );
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ visibleTasks, setVisibleTasks ] = useState( tasks );
 	const {
 		deletedTodoTasks,
@@ -60,9 +52,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissedTasks.splice( dismissedTodoTasks.indexOf( key ), 1 );
 		setVisibleTasks( getVisibleTasks() );
 
-		await updateOptions( {
-			[ optionName ]: updatedDismissedTasks,
-		} );
+		saveOption( optionName, updatedDismissedTasks );
 	};
 
 	const dismissSelectedTask = async ( {
@@ -76,9 +66,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissedTasks.push( key );
 		setVisibleTasks( getVisibleTasks() );
 
-		await updateOptions( {
-			[ optionName ]: [ ...dismissedTasks ],
-		} );
+		saveOption( optionName, [ ...dismissedTasks ] );
 
 		createNotice( 'success', noticeMessage, {
 			actions: [
@@ -96,7 +84,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 
 	const dismissTask = ( task, type ) => {
 		const params =
-			'dismiss' === type
+			type === 'dismiss'
 				? {
 						task,
 						dismissedTasks: dismissedTodoTasks,
@@ -128,9 +116,10 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		delete remindMeLaterTodoTasks[ key ];
 		setVisibleTasks( getVisibleTasks() );
 
-		await updateOptions( {
-			woocommerce_remind_me_later_todo_tasks: updatedRemindMeLaterTasks,
-		} );
+		saveOption(
+			'woocommerce_remind_me_later_todo_tasks',
+			updatedRemindMeLaterTasks
+		);
 	};
 
 	const remindTaskLater = async ( { key, onDismiss } ) => {
@@ -138,11 +127,9 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		remindMeLaterTodoTasks[ key ] = dismissTime;
 		setVisibleTasks( getVisibleTasks() );
 
-		await updateOptions( {
-			woocommerce_remind_me_later_todo_tasks: {
-				...remindMeLaterTodoTasks,
-				[ key ]: dismissTime,
-			},
+		saveOption( 'woocommerce_remind_me_later_todo_tasks', {
+			...remindMeLaterTodoTasks,
+			[ key ]: dismissTime,
 		} );
 
 		createNotice(
@@ -166,73 +153,53 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		return <div></div>;
 	}
 
-	const pendingTaskCount = visibleTasks.filter( ( task ) => ! task.completed )
-		.length;
 	return (
-		<Card
-			size="large"
-			className="woocommerce-task-card woocommerce-homescreen-card"
+		<CollapsibleList
+			className={ 'wcpay-task-list' }
+			collapsed={ false }
+			show={ 5 }
+			collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
+			expandLabel={ __( 'Show tasks', 'woocommerce-payments' ) }
 		>
-			<CardHeader size="medium" justify="left">
-				<FlexItem>
-					{ __( 'Things to do', 'woocommerce-payments' ) }
-				</FlexItem>
-				<FlexBlock>
-					{ 0 < pendingTaskCount && (
-						<Badge count={ pendingTaskCount } />
-					) }
-				</FlexBlock>
-			</CardHeader>
-			<CardBody>
-				<CollapsibleList
-					className={ 'wcpay-task-list' }
-					collapsed={ false }
-					show={ 5 }
-					collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
-					expandLabel={ __( 'Show tasks', 'woocommerce-payments' ) }
-				>
-					{ visibleTasks.map( ( task ) => (
-						<TaskItem
-							key={ task.key }
-							title={ task.title }
-							actionLabel={ task.actionLabel }
-							completed={ task.completed }
-							content={ task.content }
-							additionalInfo={ task.additionalInfo }
-							showActionButton={ task.showActionButton }
-							expandable={ task.expandable }
-							expanded={ task.expanded }
-							enter={
-								task.enter !== undefined ? task.enter : false
-							}
-							action={
-								task.action !== undefined
-									? task.action
-									: task.onClick
-							}
-							onClick={ task.onClick }
-							time={ task.time }
-							level={ task.level }
-							onDelete={
-								task.isDeletable && task.completed
-									? () => dismissTask( task, 'delete' )
-									: undefined
-							}
-							onDismiss={
-								task.isDismissable
-									? () => dismissTask( task, 'dismiss' )
-									: undefined
-							}
-							onSnooze={
-								task.allowSnooze
-									? () => remindTaskLater( task )
-									: undefined
-							}
-						/>
-					) ) }
-				</CollapsibleList>
-			</CardBody>
-		</Card>
+			{ visibleTasks.map( ( task ) => (
+				<TaskItem
+					key={ task.key }
+					data-key={ task.key }
+					// Pass in optional data attributes.
+					{ ...( task.dataAttrs || {} ) }
+					title={ task.title }
+					actionLabel={ task.actionLabel }
+					completed={ task.completed }
+					content={ task.content }
+					additionalInfo={ task.additionalInfo }
+					showActionButton={ task.showActionButton }
+					expandable={ task.expandable }
+					expanded={ task.expanded }
+					enter={ task.enter !== undefined ? task.enter : false }
+					action={
+						task.action !== undefined ? task.action : task.onClick
+					}
+					onClick={ task.onClick }
+					time={ task.time }
+					level={ task.level }
+					onDelete={
+						task.isDeletable && task.completed
+							? () => dismissTask( task, 'delete' )
+							: undefined
+					}
+					onDismiss={
+						task.isDismissable
+							? () => dismissTask( task, 'dismiss' )
+							: undefined
+					}
+					onSnooze={
+						task.allowSnooze
+							? () => remindTaskLater( task )
+							: undefined
+					}
+				/>
+			) ) }
+		</CollapsibleList>
 	);
 };
 

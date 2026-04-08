@@ -3,7 +3,9 @@
  */
 import React, { HTMLAttributes } from 'react';
 
-const ShieldIcon: React.FC< HTMLAttributes< SVGElement > > = ( props ) => {
+const ShieldIcon: React.FC< React.PropsWithChildren<
+	HTMLAttributes< SVGElement >
+> > = ( props ) => {
 	return (
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

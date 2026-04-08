@@ -69,6 +69,9 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool Indicates whether the save payment method checkbox should be displayed or not.
 	 */
 	public function display_save_payment_method_checkbox( $display ) {
+		if ( ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() || $this->is_changing_payment_method_for_subscription() ) {
 			return false;
 		}
@@ -83,7 +86,7 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool
 	 */
 	public function is_subscription_item_in_cart() {
-		if ( $this->is_subscriptions_enabled() ) {
+		if ( class_exists( 'WC_Subscriptions_Cart' ) && $this->is_subscriptions_enabled() ) {
 			return WC_Subscriptions_Cart::cart_contains_subscription() || $this->cart_contains_renewal();
 		}
 		return false;
@@ -132,5 +135,33 @@ trait WC_Payments_Subscriptions_Utilities {
 			return $subscriptions_core_instance->get_library_version();
 		}
 		return $subscriptions_core_instance ? $subscriptions_core_instance->get_plugin_version() : null;
+	}
+
+	/**
+	 * Gets the total number of subscriptions that have already been migrated.
+	 *
+	 * @return int The total number of subscriptions migrated.
+	 */
+	public function get_subscription_migrated_count() {
+		if ( ! function_exists( 'wcs_get_orders_with_meta_query' ) ) {
+			return 0;
+		}
+
+		return count(
+			wcs_get_orders_with_meta_query(
+				[
+					'status'     => 'any',
+					'return'     => 'ids',
+					'type'       => 'shop_subscription',
+					'limit'      => -1,
+					'meta_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+						[
+							'key'     => '_migrated_wcpay_subscription_id',
+							'compare' => 'EXISTS',
+						],
+					],
+				]
+			)
+		);
 	}
 }

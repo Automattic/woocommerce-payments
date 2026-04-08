@@ -1,0 +1,921 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConnectAccountPage should render correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-4 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
+  >
+    <div
+      class="components-surface components-card emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="emotion-2 emotion-1"
+      >
+        <div
+          class="connect-account-page__heading"
+        >
+          <img
+            alt="logo"
+            src="assets/images/woopayments.svg"
+          />
+          <h2>
+            Hi, Welcome to WooPayments!
+          </h2>
+        </div>
+        <div
+          class="connect-account-page__content"
+        >
+          <div
+            class="wcpay-component-tip-box yellow"
+          >
+            <svg
+              height="24"
+              viewBox="-4 -4 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                clip-rule="evenodd"
+                d="M8 1.33a4.67 4.67 0 0 0-2.67 8.5v1.5c0 .37.3.67.67.67h4c.37 0 .67-.3.67-.67v-1.5A4.66 4.66 0 0 0 8 1.33ZM6 14c0 .37.3.67.67.67h2.66c.37 0 .67-.3.67-.67v-.67H6V14Zm3.33-4.87.57-.4a3.33 3.33 0 1 0-3.8 0l.57.4v1.54h2.66V9.13Z"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <div
+              class="wcpay-component-tip-box__content"
+            >
+              You'll need to verify your business and payment details to 
+              <button
+                class="components-button is-next-40px-default-size is-link"
+                type="button"
+              >
+                enable payouts.
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="connect-account-page__payment-methods"
+        >
+          <div
+            class="connect-account-page__payment-methods--logos"
+          >
+            <img
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
+            />
+            <img
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
+            />
+            <img
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
+            />
+            <img
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
+            />
+            <img
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
+            />
+            <img
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
+            />
+            <img
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
+            />
+            <img
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
+            />
+            <img
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
+            />
+            <img
+              alt="cartebancaire"
+              height="24"
+              src="assets/images/cards/cartes_bancaires.svg"
+              width="38"
+            />
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
+            >
+              + 
+              9
+            </div>
+          </div>
+          <div
+            class="connect-account-page__payment-methods__description"
+          >
+            <div>
+              <p>
+                Payouts
+              </p>
+              <span>
+                Automatic - Daily
+              </span>
+            </div>
+            <div
+              class="connect-account-page__payment-methods__description__divider"
+            />
+            <div>
+              <p>
+                Payments capture
+              </p>
+              <span>
+                Capture on order
+              </span>
+            </div>
+            <div
+              class="connect-account-page__payment-methods__description__divider"
+            />
+            <div>
+              <p>
+                Recurring payments
+              </p>
+              <span>
+                Supported
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="connect-account-page__buttons"
+        >
+          <button
+            class="components-button is-next-40px-default-size is-primary"
+            type="button"
+          >
+            Verify business details
+          </button>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="connect-account-page__sandbox-mode-panel components-panel"
+    >
+      <div
+        class="components-panel__body"
+      >
+        <h2
+          class="components-panel__body-title"
+        >
+          <button
+            aria-expanded="false"
+            class="components-button components-panel__body-toggle is-next-40px-default-size"
+            type="button"
+          >
+            <span
+              aria-hidden="true"
+            >
+              <svg
+                aria-hidden="true"
+                class="components-panel__arrow"
+                focusable="false"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                />
+              </svg>
+            </span>
+            I'm setting up a store for someone else.
+          </button>
+        </h2>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-6 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
+  >
+    <div
+      class="components-surface components-card emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="emotion-2 emotion-1"
+      >
+        <div
+          class="components-card__body components-card-body emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          We've temporarily paused new account creation. We'll notify you when we resume!
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-6 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-6 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-4 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
+  >
+    <div
+      class="components-surface components-card emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="emotion-2 emotion-1"
+      >
+        <div
+          class="connect-account-page__heading"
+        >
+          <img
+            alt="logo"
+            src="assets/images/woopayments.svg"
+          />
+          <h2>
+            Hi, Welcome to WooPayments!
+          </h2>
+        </div>
+        <div
+          class="connect-account-page__content"
+        >
+          <div
+            class="wcpay-component-tip-box yellow"
+          >
+            <svg
+              height="24"
+              viewBox="-4 -4 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                clip-rule="evenodd"
+                d="M8 1.33a4.67 4.67 0 0 0-2.67 8.5v1.5c0 .37.3.67.67.67h4c.37 0 .67-.3.67-.67v-1.5A4.66 4.66 0 0 0 8 1.33ZM6 14c0 .37.3.67.67.67h2.66c.37 0 .67-.3.67-.67v-.67H6V14Zm3.33-4.87.57-.4a3.33 3.33 0 1 0-3.8 0l.57.4v1.54h2.66V9.13Z"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <div
+              class="wcpay-component-tip-box__content"
+            >
+              You'll need to verify your business and payment details to 
+              <button
+                class="components-button is-next-40px-default-size is-link"
+                type="button"
+              >
+                enable payouts.
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="connect-account-page__payment-methods"
+        >
+          <div
+            class="connect-account-page__payment-methods--logos"
+          >
+            <img
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
+            />
+            <img
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
+            />
+            <img
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
+            />
+            <img
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
+            />
+            <img
+              alt="woopay"
+              height="24"
+              src="assets/images/payment-method-icons/woopay.svg"
+              width="38"
+            />
+            <img
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
+            />
+            <img
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
+            />
+            <img
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
+            />
+            <img
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
+            />
+            <img
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
+            />
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
+            >
+              + 
+              10
+            </div>
+          </div>
+          <div
+            class="connect-account-page__payment-methods__description"
+          >
+            <div>
+              <p>
+                Payouts
+              </p>
+              <span>
+                Automatic - Daily
+              </span>
+            </div>
+            <div
+              class="connect-account-page__payment-methods__description__divider"
+            />
+            <div>
+              <p>
+                Payments capture
+              </p>
+              <span>
+                Capture on order
+              </span>
+            </div>
+            <div
+              class="connect-account-page__payment-methods__description__divider"
+            />
+            <div>
+              <p>
+                Recurring payments
+              </p>
+              <span>
+                Supported
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="connect-account-page__buttons"
+        >
+          <button
+            class="components-button is-next-40px-default-size is-primary"
+            type="button"
+          >
+            Verify business details
+          </button>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="connect-account-page__sandbox-mode-panel components-panel"
+    >
+      <div
+        class="components-panel__body"
+      >
+        <h2
+          class="components-panel__body-title"
+        >
+          <button
+            aria-expanded="false"
+            class="components-button components-panel__body-toggle is-next-40px-default-size"
+            type="button"
+          >
+            <span
+              aria-hidden="true"
+            >
+              <svg
+                aria-hidden="true"
+                class="components-panel__arrow"
+                focusable="false"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                />
+              </svg>
+            </span>
+            I'm setting up a store for someone else.
+          </button>
+        </h2>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-4 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
+<div>
+  <div
+    class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
+  >
+    <div
+      class="components-surface components-card emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="emotion-2 emotion-1"
+      >
+        <div
+          class="connect-account-page__heading"
+        >
+          <img
+            alt="logo"
+            src="assets/images/woopayments.svg"
+          />
+          <h2>
+            Hi, Welcome to WooPayments!
+          </h2>
+        </div>
+        <div
+          class="connect-account-page__content"
+        >
+          <div
+            class="wcpay-component-tip-box yellow"
+          >
+            <svg
+              height="24"
+              viewBox="-4 -4 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                clip-rule="evenodd"
+                d="M8 1.33a4.67 4.67 0 0 0-2.67 8.5v1.5c0 .37.3.67.67.67h4c.37 0 .67-.3.67-.67v-1.5A4.66 4.66 0 0 0 8 1.33ZM6 14c0 .37.3.67.67.67h2.66c.37 0 .67-.3.67-.67v-.67H6V14Zm3.33-4.87.57-.4a3.33 3.33 0 1 0-3.8 0l.57.4v1.54h2.66V9.13Z"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <div
+              class="wcpay-component-tip-box__content"
+            >
+              You'll need to verify your business and payment details to 
+              <button
+                class="components-button is-next-40px-default-size is-link"
+                type="button"
+              >
+                enable payouts.
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="connect-account-page__payment-methods"
+        >
+          <div
+            class="connect-account-page__payment-methods--logos"
+          >
+            <img
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
+            />
+            <img
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
+            />
+            <img
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
+            />
+            <img
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
+            />
+            <img
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
+            />
+            <img
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
+            />
+            <img
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
+            />
+            <img
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
+            />
+            <img
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
+            />
+            <img
+              alt="cartebancaire"
+              height="24"
+              src="assets/images/cards/cartes_bancaires.svg"
+              width="38"
+            />
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
+            >
+              + 
+              9
+            </div>
+          </div>
+          <div
+            class="connect-account-page__payment-methods__description"
+          >
+            <div>
+              <p>
+                Payouts
+              </p>
+              <span>
+                Automatic - Daily
+              </span>
+            </div>
+            <div
+              class="connect-account-page__payment-methods__description__divider"
+            />
+            <div>
+              <p>
+                Payments capture
+              </p>
+              <span>
+                Capture on order
+              </span>
+            </div>
+            <div
+              class="connect-account-page__payment-methods__description__divider"
+            />
+            <div>
+              <p>
+                Recurring payments
+              </p>
+              <span>
+                Supported
+              </span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="connect-account-page__buttons"
+        >
+          <button
+            class="components-button is-next-40px-default-size is-primary"
+            type="button"
+          >
+            Verify business details
+          </button>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="connect-account-page__incentive"
+    >
+      <div
+        class="connect-account-page__incentive-pill"
+      >
+        Limited time offer
+      </div>
+      <h2>
+        incentive-description*
+      </h2>
+      <p>
+        Discount will be applied to payments processed via WooPayments upon completion of installation, setup, and connection.
+      </p>
+      <p>
+        *See 
+        <a
+          href="incentive-tc-url"
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Terms and Conditions
+        </a>
+         for details.
+      </p>
+    </div>
+    <div
+      class="connect-account-page__sandbox-mode-panel components-panel"
+    >
+      <div
+        class="components-panel__body"
+      >
+        <h2
+          class="components-panel__body-title"
+        >
+          <button
+            aria-expanded="false"
+            class="components-button components-panel__body-toggle is-next-40px-default-size"
+            type="button"
+          >
+            <span
+              aria-hidden="true"
+            >
+              <svg
+                aria-hidden="true"
+                class="components-panel__arrow"
+                focusable="false"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                />
+              </svg>
+            </span>
+            I'm setting up a store for someone else.
+          </button>
+        </h2>
+      </div>
+    </div>
+  </div>
+</div>
+`;

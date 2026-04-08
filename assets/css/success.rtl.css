@@ -1,0 +1,186 @@
+.wc-payment-gateway-method-logo-wrapper {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	line-height: 1;
+	padding-top: 4px;
+}
+
+.wc-payment-gateway-method-logo-wrapper img {
+	margin-left: 0.5rem;
+	max-height: 20px;
+}
+
+.wc-payment-gateway-method-logo-wrapper.wc-payment-lpm-logo img {
+	max-height: 26px;
+}
+
+.wc-payment-gateway-method-logo-wrapper.wc-payment-card-logo img {
+	max-height: 1em;
+}
+
+#wc-payment-gateway-multibanco-instructions-container {
+	/* Default values */
+	--woopayments-multibanco-text-color: rgb( 109, 109, 109 );
+	--woopayments-multibanco-bg-color: rgba( 109, 109, 109, 0.06 );
+	--woopayments-multibanco-border-color: rgba( 109, 109, 109, 0.16 );
+	--woopayments-multibanco-card-bg-color: rgb( 255, 255, 255 );
+	font-size: initial;
+	display: flex;
+	justify-content: center;
+	margin: 2em 0;
+	background-color: var( --woopayments-multibanco-bg-color );
+}
+
+#wc-payment-gateway-multibanco-instructions-container .card {
+	background-color: var( --woopayments-multibanco-card-bg-color );
+	border: 1px solid var( --woopayments-multibanco-border-color );
+	border-radius: 4px;
+	padding: 20px;
+	max-width: 500px;
+	width: 100%;
+	margin: 30px 0;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .print-btn {
+	width: 100%;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .copy-link-btn {
+	width: 100%;
+	background: transparent;
+	border: none;
+	color: var( --woopayments-multibanco-text-color );
+	font-weight: normal;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .copy-link-btn:focus {
+	outline: none;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-instructions p {
+	margin-bottom: 0;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-instructions ol {
+	margin: 0;
+	padding-right: 20px;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .card-header {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	margin-bottom: 24px;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .logo-container {
+	flex-shrink: 0;
+	width: 57px;
+	height: 57px;
+	padding: 10px;
+	background-color: #f6f7f7;
+	border: 1px solid var( --woopayments-multibanco-border-color );
+	border-radius: 4px;
+	box-sizing: border-box;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .logo-container img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-details {
+	flex-grow: 1;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-header {
+	font-size: 1.5rem;
+	font-weight: 400;
+	line-height: 1.2;
+	margin-bottom: 5px;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-box {
+	background-color: var( --woopayments-multibanco-bg-color );
+	border: 1px solid var( --woopayments-multibanco-border-color );
+	border-radius: 4px;
+	margin: 15px 0;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-box-row {
+	padding: 15px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+#wc-payment-gateway-multibanco-instructions-container
+	.payment-box-row:not( :last-child ) {
+	border-bottom: 1px solid var( --woopayments-multibanco-border-color );
+}
+
+#wc-payment-gateway-multibanco-instructions-container i.copy-icon {
+	display: inline-block;
+	width: 1.2em;
+	height: 1.2em;
+	mask-image: url( '../images/icons/copy.svg' );
+	mask-size: contain;
+	mask-repeat: no-repeat;
+	mask-position: center;
+	background-color: currentColor;
+	vertical-align: middle;
+	margin-right: 5px;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .copied i.copy-icon {
+	mask-image: url( '../images/icons/check-green.svg' );
+}
+
+#wc-payment-gateway-multibanco-instructions-container .badge {
+	background-color: #fff2d7;
+	border-radius: 4px;
+	padding: 4px 6px;
+	font-size: 12px;
+	font-weight: 400;
+	line-height: 16px;
+	color: #4d3716;
+	justify-self: start;
+	width: max-content;
+	margin-right: 5px;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-box-value {
+	background: none;
+	border: none;
+	padding: 0;
+	margin: 0;
+	font: inherit;
+	color: inherit;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	font-weight: 600;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-box-value:focus {
+	outline: none;
+}
+
+#wc-payment-gateway-multibanco-instructions-container .payment-box-value:hover {
+	background-color: transparent;
+	opacity: 0.7;
+
+	i {
+		opacity: 0.7;
+	}
+}
+
+@media screen and ( max-width: 568px ) {
+	#wc-payment-gateway-multibanco-instructions-container {
+		margin: 0;
+		width: 100%;
+		background: none;
+	}
+}

@@ -21,5 +21,5 @@ declare module '*?asset' {
 }
 
 type ReactImgFuncComponent = React.FunctionComponent<
-	React.ImgHTMLAttributes< HTMLImageElement >
+	React.PropsWithChildren< React.ImgHTMLAttributes< HTMLImageElement > >
 >;

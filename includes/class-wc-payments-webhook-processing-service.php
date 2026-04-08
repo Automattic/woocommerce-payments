@@ -11,8 +11,11 @@ use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
+use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -72,18 +75,25 @@ class WC_Payments_Webhook_Processing_Service {
 	private $wcpay_gateway;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payments_Customer_Service
-	 */
-	private $customer_service;
-
-	/**
 	 * Database_Cache instance.
 	 *
 	 * @var Database_Cache
 	 */
 	private $database_cache;
+
+	/**
+	 * WC_Payments_Onboarding_Service instance.
+	 *
+	 * @var WC_Payments_Onboarding_Service
+	 */
+	private $onboarding_service;
+
+	/**
+	 * WC_Payments_Token_Service instance.
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private $token_service;
 
 	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
@@ -95,8 +105,9 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
 	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
 	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Customer_Service                    $customer_service    WC_Payments_Customer_Service instance.
 	 * @param Database_Cache                                  $database_cache      Database_Cache instance.
+	 * @param WC_Payments_Onboarding_Service                  $onboarding_service  WC_Payments_Onboarding_Service instance.
+	 * @param WC_Payments_Token_Service                       $token_service       WC_Payments_Token_Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -106,8 +117,9 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Customer_Service $customer_service,
-		Database_Cache $database_cache
+		Database_Cache $database_cache,
+		WC_Payments_Onboarding_Service $onboarding_service,
+		WC_Payments_Token_Service $token_service
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
@@ -116,8 +128,9 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->api_client          = $api_client;
 		$this->receipt_service     = $receipt_service;
 		$this->wcpay_gateway       = $wcpay_gateway;
-		$this->customer_service    = $customer_service;
 		$this->database_cache      = $database_cache;
+		$this->onboarding_service  = $onboarding_service;
+		$this->token_service       = $token_service;
 	}
 
 	/**
@@ -132,16 +145,23 @@ class WC_Payments_Webhook_Processing_Service {
 	public function process( array $event_body ) {
 		// Extract information about the webhook event.
 		$event_type = $this->read_webhook_property( $event_body, 'type' );
+		$event_id   = '';
+		try {
+			$event_id = $this->read_webhook_property( $event_body, 'id' );
+		} catch ( Invalid_Webhook_Data_Exception $e ) {
+			Logger::error( 'Webhook event ID not found' );
+		}
 
-		Logger::debug( 'Webhook received: ' . $event_type );
 		Logger::debug(
-			'Webhook body: '
-			. var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			'WEBHOOK RECEIVED: ' . $event_type . ' ' . $event_id,
+			[
+				'body' => WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ),
+			]
 		);
 
 		if ( $this->is_webhook_mode_mismatch( $event_body ) ) {
 			return;
-		};
+		}
 
 		try {
 			do_action( 'woocommerce_payments_before_webhook_delivery', $event_type, $event_body );
@@ -150,6 +170,9 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		switch ( $event_type ) {
+			case 'charge.refunded':
+				$this->process_webhook_refund_triggered_externally( $event_body );
+				break;
 			case 'charge.refund.updated':
 				$this->process_webhook_refund_updated( $event_body );
 				break;
@@ -169,7 +192,21 @@ class WC_Payments_Webhook_Processing_Service {
 				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
-				$this->customer_service->delete_cached_payment_methods();
+				$this->token_service->clear_all_cached_payment_methods();
+				break;
+			case 'account.deleted':
+				$this->onboarding_service->cleanup_on_account_reset();
+				// Reset the WooCommerce NOX data, if it is not already.
+				delete_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY );
+				// NOX onboarding should be unlocked by the time we receive this event,
+				// but unlock it just in case, to maintain sanity.
+				delete_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY );
+
+				// Refetch the account data to allow the platform to drive the available next steps.
+				$this->account->refresh_account_data();
+
+				// Use the opportunity to clear cached payment methods.
+				$this->token_service->clear_all_cached_payment_methods();
 				break;
 			case 'wcpay.notification':
 				$this->process_wcpay_notification( $event_body );
@@ -187,13 +224,9 @@ class WC_Payments_Webhook_Processing_Service {
 				$this->process_webhook_payment_intent_amount_capturable_updated( $event_body );
 				break;
 			case 'invoice.upcoming':
-				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $event_body );
-				break;
 			case 'invoice.paid':
-				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_paid( $event_body );
-				break;
 			case 'invoice.payment_failed':
-				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $event_body );
+				$this->process_webhook_stripe_billing_invoice( $event_type, $event_body );
 				break;
 		}
 
@@ -213,6 +246,10 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Event mode does not match the gateway mode.
 	 */
 	private function is_webhook_mode_mismatch( array $event_body ): bool {
+		if ( ! $this->has_webhook_property( $event_body, 'livemode' ) ) {
+			return false;
+		}
+
 		$is_gateway_live_mode = WC_Payments::mode()->is_live();
 		$is_event_live_mode   = $this->read_webhook_property( $event_body, 'livemode' );
 
@@ -244,17 +281,15 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
-		// First, check the reason for the update. We're only interested in a status of failed.
-		$status = $this->read_webhook_property( $event_object, 'status' );
-		if ( 'failed' !== $status ) {
-			return;
-		}
-
 		// Fetch the details of the failed refund so that we can find the associated order and write a note.
-		$charge_id = $this->read_webhook_property( $event_object, 'charge' );
-		$refund_id = $this->read_webhook_property( $event_object, 'id' );
-		$amount    = $this->read_webhook_property( $event_object, 'amount' );
-		$currency  = $this->read_webhook_property( $event_object, 'currency' );
+		$charge_id           = $this->read_webhook_property( $event_object, 'charge' );
+		$refund_id           = $this->read_webhook_property( $event_object, 'id' );
+		$amount              = $this->read_webhook_property( $event_object, 'amount' );
+		$currency            = $this->read_webhook_property( $event_object, 'currency' );
+		$status              = $this->read_webhook_property( $event_object, 'status' );
+		$balance_transaction = $this->has_webhook_property( $event_object, 'balance_transaction' )
+			? $this->read_webhook_property( $event_object, 'balance_transaction' )
+			: null;
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -269,52 +304,42 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$note = sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-			/* translators: %1: the refund amount, %2: ID of the refund */
-				__( 'A refund of %1$s was <strong>unsuccessful</strong> using WooCommerce Payments (<code>%2$s</code>).', 'woocommerce-payments' ),
-				[
-					'strong' => '<strong>',
-					'code'   => '<code>',
-				]
-			),
-			WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-				wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
-				$order
-			),
-			$refund_id
-		);
-
-		if ( $this->order_service->order_note_exists( $order, $note ) ) {
-			return;
-		}
-
+		$matched_wc_refund = null;
 		/**
-		 * Get refunds from order and delete refund if matches wcpay refund id.
+		 * Get the WC_Refund from the WCPay refund ID.
 		 *
-		 * @var $wc_refunds WC_Order_Refund[]
+		 * @var WC_Order_Refund[] $wc_refunds
 		 * */
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {
 			foreach ( $wc_refunds as $wc_refund ) {
 				$wcpay_refund_id = $this->order_service->get_wcpay_refund_id_for_order( $wc_refund );
 				if ( $refund_id === $wcpay_refund_id ) {
-					// Delete WC Refund.
-					$wc_refund->delete();
+					$matched_wc_refund = $wc_refund;
 					break;
 				}
 			}
 		}
 
-		// Update order status if order is fully refunded.
-		$current_order_status = $order->get_status();
-		if ( Order_Status::REFUNDED === $current_order_status ) {
-			$order->update_status( Order_Status::FAILED );
+		// Refund update webhook events can be either failed, cancelled (basically it's also a failure but triggered by the merchant), succeeded only.
+		switch ( $status ) {
+			case Refund_Status::FAILED:
+				$failure_reason = $this->has_webhook_property( $event_object, 'failure_reason' )
+					? $this->read_webhook_property( $event_object, 'failure_reason' )
+					: null;
+				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund, false, $failure_reason );
+				break;
+			case Refund_Status::CANCELED:
+				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund, true );
+				break;
+			case Refund_Status::SUCCEEDED:
+				if ( $matched_wc_refund ) {
+					$this->order_service->add_note_and_metadata_for_created_refund( $order, $matched_wc_refund, $refund_id, $balance_transaction ?? null );
+				}
+				break;
+			default:
+				throw new Invalid_Webhook_Data_Exception( 'Invalid refund update status: ' . $status );
 		}
-
-		$order->add_order_note( $note );
-		$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
-		$order->save();
 	}
 
 	/**
@@ -349,7 +374,8 @@ class WC_Payments_Webhook_Processing_Service {
 		$intent_id = $event_object['payment_intent'] ?? $order->get_meta( '_intent_id' );
 
 		$request = Get_Intention::create( $intent_id );
-		$intent  = $request->send( 'wcpay_get_intent_request', $order );
+		$request->set_hook_args( $order );
+		$intent = $request->send();
 
 		$intent_status = $intent->get_status();
 
@@ -404,8 +430,10 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$actionable_methods = [
 			Payment_Method::CARD,
+			Payment_Method::CARD_PRESENT,
 			Payment_Method::US_BANK_ACCOUNT,
 			Payment_Method::BECS,
+			Payment_Method::WECHAT_PAY,
 		];
 
 		if ( empty( $payment_method_type ) || ! in_array( $payment_method_type, $actionable_methods, true ) ) {
@@ -413,12 +441,14 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		// Get the order and make sure it is an order and the payment methods match.
-		$order             = $this->get_order_from_event_body_intent_id( $event_body );
+		$order             = $this->get_order_from_event_body( $event_body );
 		$payment_method_id = $payment_method['id'] ?? null;
 
-		if ( ! $order
-			|| empty( $payment_method_id )
-			|| $payment_method_id !== $order->get_meta( '_payment_method_id' ) ) {
+		if ( ! $order || empty( $payment_method_id ) ) {
+			return;
+		}
+
+		if ( Payment_Method::CARD_PRESENT !== $payment_method_type && $payment_method_id !== $order->get_meta( '_payment_method_id' ) ) {
 			return;
 		}
 
@@ -426,8 +456,12 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object  = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$intent_status = $this->read_webhook_property( $event_object, 'status' );
-
-		$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );  }
+		if ( Payment_Method::CARD_PRESENT === $payment_method_type ) {
+			$this->order_service->mark_terminal_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+		} else {
+			$this->order_service->mark_payment_failed( $order, $intent_id, $intent_status, $charge_id, $this->get_failure_message_from_error( $last_payment_error ) );
+		}
+	}
 
 	/**
 	 * Process webhook for a successful payment intent.
@@ -442,12 +476,11 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object  = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$currency      = $this->read_webhook_property( $event_object, 'currency' );
-		$order         = $this->get_order_from_event_body_intent_id( $event_body );
-		$intent_status = $this->read_webhook_property( $event_object, 'status' );
+		$order         = $this->get_order_from_event_body( $event_body );
 		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
-		$metadata      = $this->read_webhook_property( $event_object, 'metadata' );
+		$charge_amount = $this->read_webhook_property( $event_object, 'amount' );
 
 		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
 		if ( ! $order ) {
@@ -469,8 +502,13 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+
 		if ( $application_fee_amount ) {
-			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
+
+			$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
+			$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
 		}
 
 		foreach ( $meta_data_to_update as $key => $value ) {
@@ -482,16 +520,19 @@ class WC_Payments_Webhook_Processing_Service {
 		// Save the order after updating the meta data values.
 		$order->save();
 
-		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
-		$intent_data    = [
-			'id'                  => $intent_id,
-			'status'              => $intent_status,
-			'charge_id'           => $charge_id,
-			'fraud_outcome'       => $metadata['fraud_outcome'] ?? '',
-			'payment_method_type' => $payment_method,
-		];
-		$this->order_service->update_order_status_from_intent( $order, $intent_data );
+		// This is an incoming request from WCPay server rather than an outgoing request to WCPay server.
+		// However, the shape of the payment intent object are the same.
+		// Using this extraction method will reduce the code duplication.
+		$ipp_channel      = $event_object['metadata']['ipp_channel'] ?? '';
+		$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
+		if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
+			$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
+		}
 
+		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
+		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
+
+		$payment_method = $charges_data[0]['payment_method_details']['type'] ?? null;
 		// Send the customer a card reader receipt if it's an in person payment type.
 		if ( Payment_Method::CARD_PRESENT === $payment_method || Payment_Method::INTERAC_PRESENT === $payment_method ) {
 			$merchant_settings = [
@@ -518,13 +559,25 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_created( $event_body ) {
-		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$reason       = $this->read_webhook_property( $event_object, 'reason' );
-		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
+		$amount_raw   = $this->read_webhook_property( $event_object, 'amount' );
+		$evidence     = $this->read_webhook_property( $event_object, 'evidence_details' );
+		$status       = $this->read_webhook_property( $event_object, 'status' );
+		$due_by       = $this->read_webhook_property( $evidence, 'due_by' );
+
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+
+		$currency      = $order->get_currency();
+		$amount_string = wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount_raw, $currency ), [ 'currency' => strtoupper( $currency ) ] );
+
+		// Explicitly add currency info if needed (multi-currency stores).
+		$amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price_with_currency( $amount_string, $currency );
+
+		// Convert due_by to a date string in the store timezone.
+		$due_by = date_i18n( wc_date_format(), $due_by );
 
 		if ( ! $order ) {
 			throw new Invalid_Webhook_Data_Exception(
@@ -536,10 +589,10 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_created( $order, $dispute_id, $reason );
+		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status );
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		// Clear dispute caches to trigger a fetch of new data.
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**
@@ -550,12 +603,11 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @throws Invalid_Webhook_Data_Exception Required parameters not found.
 	 */
 	private function process_webhook_dispute_closed( $event_body ) {
-		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$status       = $this->read_webhook_property( $event_object, 'status' );
+		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		if ( ! $order ) {
@@ -568,10 +620,25 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_closed( $order, $dispute_id, $status );
+		// Fetch dispute summary data.
+		$dispute_summary = [];
+		try {
+			$dispute_summary = $this->api_client->get_dispute_summary( $dispute_id );
+		} catch ( Exception $e ) {
+			Logger::error(
+				sprintf(
+					'Failed to fetch dispute summary for dispute %1$s (charge %2$s): %3$s',
+					$dispute_id,
+					$charge_id,
+					$e->getMessage()
+				)
+			);
+		}
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
+
+		// Clear dispute caches to trigger a fetch of new data.
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**
@@ -585,7 +652,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_type   = $this->read_webhook_property( $event_body, 'type' );
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
-		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
@@ -601,7 +667,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		switch ( $event_type ) {
 			case 'charge.dispute.funds_withdrawn':
-				$message = __( 'Payment dispute funds have been withdrawn', 'woocommerce-payments' );
+				$message = __( 'Payment dispute and fees have been deducted from your next payout', 'woocommerce-payments' );
 				break;
 			case 'charge.dispute.funds_reinstated':
 				$message = __( 'Payment dispute funds have been reinstated', 'woocommerce-payments' );
@@ -615,8 +681,8 @@ class WC_Payments_Webhook_Processing_Service {
 			__( '%1$s. See <a href="%2$s">dispute overview</a> for more details.', 'woocommerce-payments' ),
 			$message,
 			add_query_arg(
-				[ 'id' => $dispute_id ],
-				admin_url( 'admin.php?page=wc-admin&path=/payments/disputes/details' )
+				[ 'id' => $charge_id ],
+				admin_url( 'admin.php?page=wc-admin&path=/payments/transactions/details' )
 			)
 		);
 
@@ -626,8 +692,8 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$order->add_order_note( $note );
 
-		// Clear the dispute statuses cache to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
+		// Clear dispute caches to trigger a fetch of new data.
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**
@@ -654,14 +720,14 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Safely get a value from the webhook event body array.
 	 *
-	 * @param array  $array Array to read from.
+	 * @param array  $items Array to read from.
 	 * @param string $key   ID to fetch on.
 	 *
 	 * @return string|array|int|bool
 	 * @throws Invalid_Webhook_Data_Exception Thrown if ID not set.
 	 */
-	private function read_webhook_property( $array, $key ) {
-		if ( ! isset( $array[ $key ] ) ) {
+	private function read_webhook_property( $items, $key ) {
+		if ( ! isset( $items[ $key ] ) ) {
 			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
 				/* translators: %1: ID being fetched */
@@ -670,42 +736,79 @@ class WC_Payments_Webhook_Processing_Service {
 				)
 			);
 		}
-		return $array[ $key ];
+		return $items[ $key ];
 	}
 
 	/**
-	 * Gets the order related to the event intent id.
+	 * Safely check whether a webhook contains a property.
+	 *
+	 * @param array  $items Array to read from.
+	 * @param string $key   ID to fetch on.
+	 *
+	 * @return bool
+	 */
+	private function has_webhook_property( $items, $key ) {
+		return isset( $items[ $key ] );
+	}
+
+	/**
+	 * Gets the order related to the event.
 	 *
 	 * @param array $event_body The event that triggered the webhook.
 	 *
 	 * @throws Invalid_Webhook_Data_Exception   Required parameters not found.
 	 * @throws Invalid_Payment_Method_Exception When unable to resolve intent ID to order.
 	 *
-	 * @return boolean|WC_Order|WC_Order_Refund
+	 * @return null|WC_Order
 	 */
-	private function get_order_from_event_body_intent_id( $event_body ) {
+	private function get_order_from_event_body( $event_body ) {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id    = $this->read_webhook_property( $event_object, 'id' );
+		$order_key    = $this->read_webhook_property( $event_object, 'metadata' )['order_key'] ?? null;
 
 		// Look up the order related to this intent.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
 
-		if ( ! $order ) {
+		if ( ! $order instanceof \WC_Order ) {
 			// Retrieving order with order_id in case intent_id was not properly set.
 			Logger::debug( 'intent_id not found, using order_id to retrieve order' );
 			$metadata = $this->read_webhook_property( $event_object, 'metadata' );
+			$order_id = $metadata['order_id'] ?? null;
+			// If metadata order id is null, try to read from the charges metadata.
+			if ( null === $order_id ) {
+				$charges  = $this->read_webhook_property( $event_object, 'charges' );
+				$charge   = $charges[0] ?? [];
+				$order_id = $charge['metadata']['order_id'] ?? null;
+			}
 
-			if ( isset( $metadata['order_id'] ) ) {
-				$order_id = $metadata['order_id'];
-				$order    = $this->wcpay_db->order_from_order_id( $order_id );
+			if ( $order_id ) {
+				$order = $this->wcpay_db->order_from_order_id( $order_id );
 			} elseif ( ! empty( $event_object['invoice'] ) ) {
 				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
-				return false;
+				return null;
 			}
 		}
 
-		if ( ! $order ) {
+		/**
+		 * If the order has been found, but there is an order key mismatch, it
+		 * could be caused by another site creating orders with the same IDs
+		 * while this site remains the primary webhook receiver.
+		 */
+		if ( null !== $order_key && $order instanceof WC_Order && $order->get_order_key() !== $order_key ) {
+			Logger::debug(
+				'Mismatching order key found while retrieving an order for webhook processing',
+				[
+					'intent_id'         => $intent_id,
+					'order_id'          => $order->get_id(),
+					'webhook_order_key' => $order_key,
+					'local_order_key'   => $order->get_order_key(),
+				]
+			);
+			return null;
+		}
+
+		if ( ! $order instanceof \WC_Order ) {
 			throw new Invalid_Payment_Method_Exception(
 				sprintf(
 				/* translators: %1: intent ID */
@@ -727,7 +830,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @return string The failure message.
 	 */
-	private function get_failure_message_from_error( $error ):string {
+	private function get_failure_message_from_error( $error ): string {
 		$code         = $error['code'] ?? '';
 		$decline_code = $error['decline_code'] ?? '';
 		$message      = $error['message'] ?? '';
@@ -745,6 +848,8 @@ class WC_Payments_Webhook_Processing_Service {
 				return __( 'Microdeposit transfers failed. Please check the account, institution and transit numbers.', 'woocommerce-payments' );
 			case 'payment_method_microdeposit_verification_attempts_exceeded':
 				return __( 'You have exceeded the number of allowed verification attempts.', 'woocommerce-payments' );
+			case 'payment_intent_mandate_invalid':
+				return __( 'The mandate used for this renewal payment is invalid. You may need to bring the customer back to your store and ask them to resubmit their payment information.', 'woocommerce-payments' );
 			case 'card_declined':
 				switch ( $decline_code ) {
 					case 'debit_notification_undelivered':
@@ -756,5 +861,109 @@ class WC_Payments_Webhook_Processing_Service {
 
 		// translators: %s Stripe error message.
 		return sprintf( __( 'With the following message: <code>%s</code>', 'woocommerce-payments' ), $message );
+	}
+
+	/**
+	 * Process webhook refund for events triggered externally.
+	 *
+	 * @param array $event_body The event that triggered the webhook.
+	 *
+	 * @throws Invalid_Webhook_Data_Exception           Required parameters not found.
+	 * @throws Invalid_Webhook_Data_Exception           When the refund amount is not valid.
+	 * @throws Order_Not_Found_Exception                When unable to resolve charge ID to order.
+	 */
+	private function process_webhook_refund_triggered_externally( array $event_body ): void {
+		$event_data   = $this->read_webhook_property( $event_body, 'data' );
+		$event_object = $this->read_webhook_property( $event_data, 'object' );
+
+		$is_refunded_event = isset( $event_body['type'] ) && 'charge.refunded' === $event_body['type'];
+		$status            = $this->read_webhook_property( $event_object, 'status' );
+		if ( 'succeeded' !== $status || ! $is_refunded_event ) {
+			return;
+		}
+
+		// Check if the charge was actually captured before processing the refund.
+		// Stripe sends charge.refunded webhooks for cancelled authorizations even though no payment was captured.
+		// We should not create WooCommerce refund objects for these cases as they cause negative values in analytics.
+		$captured = $event_object['captured'] ?? false;
+		if ( ! $captured ) {
+			return;
+		}
+
+		// Fetch the details of the refund so that we can find the associated order and write a note.
+		$charge_id                     = $this->read_webhook_property( $event_object, 'id' );
+		$refund                        = $this->read_webhook_property( $event_object, 'refunds' )['data'][0]; // Most recent refund.
+		$refund_id                     = $refund['id'] ?? '';
+		$refund_reason                 = $refund['reason'] ?? '';
+		$refund_balance_transaction_id = $refund['balance_transaction'] ?? '';
+		$charge_amount                 = $this->read_webhook_property( $event_object, 'amount' );
+		$currency                      = $this->read_webhook_property( $event_object, 'currency' );
+		$refunded_amount               = WC_Payments_Utils::interpret_stripe_amount( $refund['amount'], $currency );
+		$is_partial_refund             = $refund['amount'] < $charge_amount;
+
+		// Look up the order related to this charge.
+		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
+		if ( ! $order ) {
+			throw new Order_Not_Found_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'Could not find order via charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				),
+				'order_not_found'
+			);
+		}
+		// Only care about refunds that are triggered externally, i.e. outside WP Admin.
+		// Refunds triggered in WP Admin are handled by WC_Payment_Gateway_WCPay::process_refund.
+		$wc_refunds = $order->get_refunds();
+		if ( ! empty( $wc_refunds ) ) {
+			foreach ( $wc_refunds as $wc_refund ) {
+				$wcpay_refund_id = $this->order_service->get_wcpay_refund_id_for_order( $wc_refund );
+				if ( $refund_id === $wcpay_refund_id ) {
+					return;
+				}
+			}
+		}
+		if ( $charge_amount < 0 || $refunded_amount > $order->get_total() ) {
+			throw new Invalid_Webhook_Data_Exception(
+				sprintf(
+				/* translators: %1: charge ID */
+					__( 'The refund amount is not valid for charge ID: %1$s', 'woocommerce-payments' ),
+					$charge_id
+				)
+			);
+		}
+
+		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
+		// Process the refund in the order service.
+		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id, Refund_Status::PENDING === $refund['status'] );
+	}
+
+	/**
+	 * Process webhook for Stripe Billing invoice events.
+	 *
+	 * @param string $event_type The type of event that triggered the webhook.
+	 * @param array  $event_body The event that triggered the webhook.
+	 *
+	 * @return void
+	 *
+	 * @throws Invalid_Webhook_Data_Exception When the linked subscription is not found.
+	 */
+	private function process_webhook_stripe_billing_invoice( $event_type, $event_body ) {
+		if ( ! class_exists( 'WC_Payments_Subscriptions' ) ) {
+			return;
+		}
+
+		switch ( $event_type ) {
+			case 'invoice.upcoming':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_upcoming( $event_body );
+				break;
+			case 'invoice.paid':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_paid( $event_body );
+				break;
+			case 'invoice.payment_failed':
+				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $event_body );
+				break;
+		}
 	}
 }

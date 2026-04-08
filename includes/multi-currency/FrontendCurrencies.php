@@ -8,7 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Order;
-use WC_Payments_Localization_Service;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -24,9 +24,9 @@ class FrontendCurrencies {
 	protected $multi_currency;
 
 	/**
-	 * WC_Payments_Localization_Service instance.
+	 * MultiCurrencyLocalizationInterface instance.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var MultiCurrencyLocalizationInterface
 	 */
 	protected $localization_service;
 
@@ -89,17 +89,24 @@ class FrontendCurrencies {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency                    $multi_currency       The MultiCurrency instance.
-	 * @param WC_Payments_Localization_Service $localization_service The Localization Service instance.
-	 * @param Utils                            $utils                Utils instance.
-	 * @param Compatibility                    $compatibility        Compatibility instance.
+	 * @param MultiCurrency                      $multi_currency       The MultiCurrency instance.
+	 * @param MultiCurrencyLocalizationInterface $localization_service The Localization Service instance.
+	 * @param Utils                              $utils                Utils instance.
+	 * @param Compatibility                      $compatibility        Compatibility instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service, Utils $utils, Compatibility $compatibility ) {
+	public function __construct( MultiCurrency $multi_currency, MultiCurrencyLocalizationInterface $localization_service, Utils $utils, Compatibility $compatibility ) {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
 		$this->utils                = $utils;
 		$this->compatibility        = $compatibility;
+	}
 
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
 			// Currency hooks.
 			add_filter( 'woocommerce_currency', [ $this, 'get_woocommerce_currency' ], 900 );
@@ -108,6 +115,8 @@ class FrontendCurrencies {
 			add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
 			add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 			add_action( 'before_woocommerce_pay', [ $this, 'init_order_currency_from_query_vars' ] );
+			add_action( 'woocommerce_order_get_total', [ $this, 'maybe_init_order_currency_from_order_total_prop' ], 900, 2 );
+			add_action( 'woocommerce_get_formatted_order_total', [ $this, 'maybe_clear_order_currency_after_formatted_order_total' ], 900, 4 );
 		}
 
 		add_filter( 'woocommerce_thankyou_order_id', [ $this, 'init_order_currency' ] );
@@ -126,6 +135,22 @@ class FrontendCurrencies {
 		$this->price_decimal_separators = [];
 		$this->woocommerce_currency     = null;
 		$this->store_currency           = null;
+	}
+
+	/**
+	 * Removes 'min_price' and 'max_price' from the URL query parameters.
+	 *
+	 * Clears existing price filters when the currency is changed to prevent inconsistencies.
+	 *
+	 * @return void
+	 */
+	public function clear_url_price_params() {
+		if ( isset( $_GET['min_price'] ) || isset( $_GET['max_price'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$url = remove_query_arg( [ 'min_price', 'max_price' ] );
+
+			wp_safe_redirect( $url );
+			exit;
+		}
 	}
 
 	/**
@@ -183,7 +208,6 @@ class FrontendCurrencies {
 		$store_currency_code = $this->get_store_currency()->get_code();
 
 		if ( $currency_code === $store_currency_code ) {
-			$currency_code                                    = $store_currency_code;
 			$this->price_decimal_separators[ $currency_code ] = $separator;
 		}
 
@@ -261,7 +285,17 @@ class FrontendCurrencies {
 			return $arg;
 		}
 
+		// We remove these filters here because 'wc_get_order'
+		// can trigger them, leading to an infinitely recursive call.
+		remove_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
+		remove_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
+		remove_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		remove_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
 		$order = ! $arg instanceof WC_Order ? wc_get_order( $arg ) : $arg;
+		add_filter( 'wc_get_price_decimals', [ $this, 'get_price_decimals' ], 900 );
+		add_filter( 'wc_get_price_decimal_separator', [ $this, 'get_price_decimal_separator' ], 900 );
+		add_filter( 'wc_get_price_thousand_separator', [ $this, 'get_price_thousand_separator' ], 900 );
+		add_filter( 'woocommerce_price_format', [ $this, 'get_woocommerce_price_format' ], 900 );
 
 		if ( $order ) {
 			$this->order_currency = $order->get_currency();
@@ -281,6 +315,10 @@ class FrontendCurrencies {
 		global $wp;
 		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
 			$this->init_order_currency( $wp->query_vars['order-pay'] );
+		} elseif ( ! empty( $wp->query_vars['order-received'] ) ) {
+			$this->init_order_currency( $wp->query_vars['order-received'] );
+		} elseif ( ! empty( $wp->query_vars['view-order'] ) ) {
+			$this->init_order_currency( $wp->query_vars['view-order'] );
 		}
 	}
 
@@ -299,12 +337,63 @@ class FrontendCurrencies {
 	}
 
 	/**
+	 * Returns the current value of order_currency.
+	 *
+	 * @return ?string The currency code or null.
+	 */
+	public function get_order_currency() {
+		return $this->order_currency;
+	}
+
+	/**
+	 * Maybe init the order_currency when the order total is queried if we should_use_order_currency.
+	 *
+	 * This works off of filtering during WC_Abstract_Order->get_total, which states it returns a float, however, in the instances of orders with negative
+	 * amounts, such as refund orders, it will return a string.
+	 *
+	 * @param mixed    $total The order total.
+	 * @param WC_Order $order The order being worked on.
+	 *
+	 * @return mixed The unmodified total.
+	 */
+	public function maybe_init_order_currency_from_order_total_prop( $total, $order ) {
+		if ( $this->should_use_order_currency() ) {
+			$this->init_order_currency( $order );
+		}
+
+		return $total;
+	}
+
+	/**
+	 * If the order_currency is set and we should be using the order currency, clear it.
+	 *
+	 * This should only be happening on the instances tested for in should_use_order_currency. We would need to clear the order currency once the total
+	 * filter is run so that if another total comes up, like in the order list, we use the next order's currency.
+	 *
+	 * @param string   $formatted_total  Total to display.
+	 * @param WC_Order $order            Order data.
+	 * @param string   $tax_display      Type of tax display.
+	 * @param bool     $display_refunded If should include refunded value.
+	 *
+	 * @return string The unmodified formatted total.
+	 */
+	public function maybe_clear_order_currency_after_formatted_order_total( $formatted_total, $order, $tax_display, $display_refunded ): string {
+		if ( null !== $this->order_currency && $this->should_use_order_currency() ) {
+			$this->order_currency = null;
+		}
+
+		return $formatted_total;
+	}
+
+	/**
 	 * Gets the currency code for us to use.
 	 *
 	 * @return string|null Three letter currency code.
 	 */
 	private function get_currency_code() {
 		if ( $this->should_use_order_currency() ) {
+			$this->init_order_currency_from_query_vars();
+
 			return $this->order_currency;
 		}
 
@@ -332,7 +421,7 @@ class FrontendCurrencies {
 	 */
 	private function should_use_order_currency(): bool {
 		$pages = [ 'my-account', 'checkout' ];
-		$vars  = [ 'order-received', 'order-pay', 'order-received', 'orders' ];
+		$vars  = [ 'order-received', 'order-pay', 'orders', 'view-order' ];
 
 		if ( $this->utils->is_page_with_vars( $pages, $vars ) ) {
 			return $this->utils->is_call_in_backtrace(

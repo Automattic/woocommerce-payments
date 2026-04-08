@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Run only pending timers to avoid recursive loop for AddPaymentMethodsTask tests.

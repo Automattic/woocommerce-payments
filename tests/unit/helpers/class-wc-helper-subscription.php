@@ -6,7 +6,7 @@
  */
 
 // WC_Mock_WC_Data is needed to mock '*_meta_data' methods required in tests.
-require_once dirname( __FILE__ ) . '/class-wc-mock-wc-data.php';
+require_once __DIR__ . '/class-wc-mock-wc-data.php';
 
 /**
  * Class WC_Subscription.
@@ -114,6 +114,27 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $billing_interval = 1;
 
 	/**
+	 * If the subscription has a certain product in it.
+	 *
+	 * @var bool
+	 */
+	public $has_product = false;
+
+	/**
+	 * The customer ID for the subscription.
+	 *
+	 * @var null|int
+	 */
+	public $customer_id = null;
+
+	/**
+	 * Payment tokens.
+	 *
+	 * @var array
+	 */
+	public $payment_tokens = [];
+
+	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
 	 *
 	 * Attempts to get the value by checking if it has been set as an object property.
@@ -207,6 +228,10 @@ class WC_Subscription extends WC_Mock_WC_Data {
 		return $this->currency;
 	}
 
+	public function set_currency( $currency = 'USD' ) {
+		$this->currency = $currency;
+	}
+
 	public function add_order_note( $note = '' ) {
 		// do nothing.
 	}
@@ -241,5 +266,29 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function update_status( $status ) {
 		$this->status = $status;
+	}
+
+	public function set_has_product( bool $has_product ) {
+		$this->has_product = $has_product;
+	}
+
+	public function has_product() {
+		return $this->has_product;
+	}
+
+	public function get_customer_id() {
+		return $this->customer_id ?? get_current_user_id();
+	}
+
+	public function set_customer_id( $customer_id = null ) {
+		$this->customer_id = $customer_id ?? get_current_user_id();
+	}
+
+	public function get_payment_tokens() {
+		return $this->payment_tokens;
+	}
+
+	public function set_payment_tokens( $tokens ) {
+		$this->payment_tokens = $tokens;
 	}
 }

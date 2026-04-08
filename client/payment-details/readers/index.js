@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
@@ -15,24 +16,25 @@ import { TableCard } from '@woocommerce/components';
  * Internal dependencies
  */
 import { useCardReaderStats } from 'wcpay/data';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import Page from 'components/page';
 import DownloadButton from 'components/download-button';
-import * as React from 'react';
-import { formatExplicitCurrency } from 'utils/currency';
+import {
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'multi-currency/interface/functions';
 
 const PaymentCardReaderChargeDetails = ( props ) => {
 	const { readers, chargeError, isLoading } = useCardReaderStats(
 		props.chargeId,
 		props.transactionId
 	);
-	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
 	// Check instance of chargeError because its default value is empty object
 	if ( ! isLoading && chargeError instanceof Error ) {
 		return (
 			<Page maxWidth={ 1032 } className="wcpay-payment-details">
-				{ testModeNotice }
+				<TestModeNotice currentPage="payments" isDetailsView={ true } />
 				<Card>
 					<CardBody>
 						{ __(
@@ -56,7 +58,6 @@ const PaymentCardReaderChargeDetails = ( props ) => {
 const RenderPaymentCardReaderChargeDetails = ( props ) => {
 	const readers = props.readers;
 	const isLoading = props.isLoading;
-	const testModeNotice = <TestModeNotice topic={ topics.paymentDetails } />;
 
 	const headers = [
 		{
@@ -86,7 +87,7 @@ const RenderPaymentCardReaderChargeDetails = ( props ) => {
 	];
 
 	const rows =
-		0 < readers.length
+		readers.length > 0
 			? readers.map( ( reader ) => {
 					return [
 						{
@@ -102,7 +103,12 @@ const RenderPaymentCardReaderChargeDetails = ( props ) => {
 							display: reader.count,
 						},
 						{
-							value: reader.fee ? reader.fee.amount / 100 : 0,
+							value: reader.fee
+								? formatExportAmount(
+										reader.fee.amount,
+										reader.fee.currency
+								  )
+								: 0,
 							display: reader.fee
 								? formatExplicitCurrency(
 										reader.fee.amount,
@@ -128,7 +134,7 @@ const RenderPaymentCardReaderChargeDetails = ( props ) => {
 	const downloadable = !! rows.length;
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
-			{ testModeNotice }
+			<TestModeNotice currentPage="payments" isDetailsView={ true } />
 			<TableCard
 				className="transactions-list woocommerce-report-table has-search"
 				title={ __( 'Card readers', 'woocommerce-payments' ) }

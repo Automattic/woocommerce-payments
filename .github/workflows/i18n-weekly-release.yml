@@ -6,38 +6,34 @@ on:
 jobs:
   i18n-release:
     name: Release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       # clone the repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Use project specific node version
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
 
       # enable dependencies caching (vendor and node_modules are wiped during build so they are ignored here)
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/composer/
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
-      - uses: actions/cache@v3
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
+      - uses: actions/cache@v4
         with:
           path: ~/.npm/
           key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
       # setup PHP, but without debug extensions for reasonable performance
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.4'
-          tools:       composer
-          coverage:    none
-
+      - name: "Set up PHP"
+        uses: ./.github/actions/setup-php
       - name: Build release
         run: |
           npm ci
           npm run build
-          
+
           if [[ ! -f woocommerce-payments.zip ]]; then
             echo "Failed to create release zip"
             exit 1
@@ -123,3 +119,43 @@ jobs:
           fi
 
           echo "Translations update triggered."
+
+  notify-failure:
+    name: "Notify Slack on failure"
+    needs: i18n-release
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Slack ping"
+        uses: slackapi/slack-github-action@v1.25.0
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "⚠️ I18N weekly release failed",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "The scheduled weekly I18N build has failed. Translations may not be updated this week."
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<https://github.com/Automattic/woocommerce-payments/actions/runs/${{ github.run_id }}|View workflow run>"
+                  }
+                }
+              ]
+            }

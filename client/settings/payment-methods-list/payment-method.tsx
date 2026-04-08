@@ -1,0 +1,266 @@
+/** @format */
+/**
+ * External dependencies
+ */
+import clsx from 'clsx';
+import React, { useContext } from 'react';
+
+/**
+ * Internal dependencies
+ */
+import { __, sprintf } from '@wordpress/i18n';
+import { HoverTooltip } from 'components/tooltip';
+import { FeeStructure } from 'wcpay/types/fees';
+import {
+	formatMethodFeesDescription,
+	formatMethodFeesTooltip,
+	getDiscountBadgeText,
+	getDiscountTooltipText,
+} from 'wcpay/utils/account-fees';
+import WCPaySettingsContext from '../wcpay-settings-context';
+import { PmPromotion } from 'wcpay/data/pm-promotions/types';
+import Chip from 'wcpay/components/chip';
+import PromotionalBadge from 'wcpay/components/promotional-badge';
+import Pill from 'wcpay/components/pill';
+import './payment-method.scss';
+import DuplicateNotice from 'wcpay/components/duplicate-notice';
+import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
+import { PaymentMethodsLogos } from 'wcpay/checkout/blocks/payment-methods-logos/payment-methods-logos';
+import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
+import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
+import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
+import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
+import Diners from 'assets/images/cards/diners.svg?asset';
+import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
+import Cartebancaire from 'assets/images/cards/cartes_bancaires.svg?asset';
+import UnionPay from 'assets/images/cards/unionpay.svg?asset';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
+import usePaymentMethodAvailability from './use-payment-method-availability';
+import InlineNotice from 'wcpay/components/inline-notice';
+import { useEnabledPaymentMethodIds, usePmPromotions } from 'wcpay/data';
+import PaymentMethodItem from 'wcpay/components/payment-method-item';
+
+interface PaymentMethodProps {
+	id: string;
+	label: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	Icon: () => JSX.Element | null;
+	description: string;
+	onCheckClick: ( id: string ) => void;
+	onUncheckClick: ( id: string ) => void;
+	className?: string;
+	locked: boolean;
+}
+
+const PaymentMethodLabel = ( {
+	id,
+	label,
+	accountFees,
+	badgePromotion,
+}: {
+	id: string;
+	label: string;
+	accountFees?: Record< string, FeeStructure >;
+	badgePromotion?: PmPromotion;
+} ): React.ReactElement => {
+	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
+
+	const discountFee = accountFees?.[ id ]?.discount?.[ 0 ];
+	const hasDiscount = discountFee?.discount;
+
+	// Show badge for either: active discount fee OR badge-type promotion.
+	const showPromotionalBadge = hasDiscount || badgePromotion;
+
+	// Determine badge content based on source.
+	const getBadgeContent = () => {
+		if ( hasDiscount ) {
+			return {
+				message: getDiscountBadgeText( discountFee ),
+				tooltip: getDiscountTooltipText( discountFee ),
+				tooltipLabel: __( 'Discount details', 'woocommerce-payments' ),
+			};
+		}
+		if ( badgePromotion ) {
+			return {
+				message: badgePromotion.title,
+				tooltip: badgePromotion.description,
+				tooltipLabel: __( 'Promotion details', 'woocommerce-payments' ),
+				tcUrl: badgePromotion.tc_url,
+				tcLabel: badgePromotion.tc_label,
+				type: badgePromotion.badge_type,
+			};
+		}
+		return null;
+	};
+
+	const badgeContent = getBadgeContent();
+
+	return (
+		<>
+			{ label }
+			{ PAYMENT_METHOD_IDS.CARD === id && (
+				<span className="payment-method__required-label">
+					{ '(' + __( 'Required', 'woocommerce-payments' ) + ')' }
+				</span>
+			) }
+			{ chip && <Chip message={ chip } type={ chipType } /> }
+			{ showPromotionalBadge && badgeContent && (
+				<PromotionalBadge
+					message={ badgeContent.message }
+					tooltip={ badgeContent.tooltip }
+					tooltipLabel={ badgeContent.tooltipLabel }
+					tcUrl={ badgeContent.tcUrl }
+					tcLabel={ badgeContent.tcLabel }
+					type={ badgeContent.type }
+				/>
+			) }
+		</>
+	);
+};
+
+// Define the supported card brands
+const cardBrands = [
+	{ name: 'visa', component: Visa },
+	{ name: 'mastercard', component: Mastercard },
+	{ name: 'amex', component: Amex },
+	{ name: 'discover', component: Discover },
+	{ name: 'diners', component: Diners },
+	{ name: 'jcb', component: Jcb },
+	{ name: 'cartes_bancaires', component: Cartebancaire },
+	{ name: 'unionpay', component: UnionPay },
+];
+
+const PaymentMethod = ( {
+	id,
+	label,
+	Icon = () => null,
+	description,
+	onCheckClick,
+	onUncheckClick,
+	className,
+	locked,
+}: PaymentMethodProps ): React.ReactElement => {
+	// APMs are not actionable if they are inactive or if Progressive Onboarding is enabled and not yet complete.
+	const {
+		isActionable,
+		notice,
+		noticeType = 'warning' as const,
+	} = usePaymentMethodAvailability( id );
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
+
+	const {
+		accountFees,
+	}: { accountFees?: Record< string, FeeStructure > } = useContext(
+		WCPaySettingsContext
+	);
+
+	// Get badge-type promotion for this payment method.
+	const { pmPromotions = [] } = usePmPromotions();
+	const badgePromotion = pmPromotions?.find(
+		( promo ) => promo.payment_method === id && promo.type === 'badge'
+	);
+
+	const {
+		duplicates,
+		dismissedDuplicateNotices,
+		setDismissedDuplicateNotices,
+	} = useContext( DuplicatedPaymentMethodsContext );
+	const isDuplicate = Object.keys( duplicates ).includes( id );
+
+	const handleChange = ( newStatus: boolean ) => {
+		// If the payment method control is locked, reject any changes.
+		if ( locked ) {
+			return;
+		}
+
+		if ( newStatus ) {
+			return onCheckClick( id );
+		}
+		return onUncheckClick( id );
+	};
+
+	return (
+		<PaymentMethodItem
+			className={ clsx( 'payment-method__list-item', className ) }
+		>
+			<PaymentMethodItem.Checkbox
+				label={ label }
+				checked={ enabledMethodIds.includes( id ) }
+				disabled={ ! isActionable || locked }
+				onChange={ handleChange }
+			/>
+			<PaymentMethodItem.Body>
+				<PaymentMethodItem.Subgroup
+					Icon={ Icon }
+					label={
+						<PaymentMethodLabel
+							label={ label }
+							id={ id }
+							accountFees={ accountFees }
+							badgePromotion={ badgePromotion }
+						/>
+					}
+				>
+					{ description }
+					{ id === PAYMENT_METHOD_IDS.CARD && (
+						<div className="payment-method__supported-cards">
+							<PaymentMethodsLogos
+								paymentMethods={ cardBrands }
+								maxElements={ 8 }
+								breakpointConfigs={ [
+									{ breakpoint: 480, maxElements: 8 },
+									{ breakpoint: 768, maxElements: 8 },
+								] }
+							/>
+						</div>
+					) }
+				</PaymentMethodItem.Subgroup>
+				{ accountFees && accountFees[ id ] && (
+					<PaymentMethodItem.Action className="payment-method__fees">
+						<HoverTooltip
+							maxWidth={ '300px' }
+							content={ formatMethodFeesTooltip(
+								accountFees[ id ]
+							) }
+						>
+							<Pill
+								aria-label={ sprintf(
+									__(
+										'Base transaction fees: %s',
+										'woocommerce-payments'
+									),
+									formatMethodFeesDescription(
+										accountFees[ id ]
+									)
+								) }
+							>
+								<span>
+									{ formatMethodFeesDescription(
+										accountFees[ id ]
+									) }
+								</span>
+							</Pill>
+						</HoverTooltip>
+					</PaymentMethodItem.Action>
+				) }
+			</PaymentMethodItem.Body>
+			{ notice && (
+				<InlineNotice status={ noticeType } isDismissible={ false }>
+					{ notice }
+				</InlineNotice>
+			) }
+			{ isDuplicate && ! notice && (
+				<DuplicateNotice
+					paymentMethod={ id }
+					gatewaysEnablingPaymentMethod={ duplicates[ id ] }
+					dismissedNotices={ dismissedDuplicateNotices }
+					setDismissedDuplicateNotices={
+						setDismissedDuplicateNotices
+					}
+				/>
+			) }
+		</PaymentMethodItem>
+	);
+};
+
+export default PaymentMethod;

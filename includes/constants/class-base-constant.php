@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Base constant class to hold common logic for all constants.
  */
-abstract class Base_Constant {
+abstract class Base_Constant implements \JsonSerializable {
 
 	/**
 	 * Enum value
@@ -27,18 +27,23 @@ abstract class Base_Constant {
 	protected $value;
 
 	/**
-	 * Class constructor.
+	 * Static objects cache.
 	 *
-	 * @param mixed $value Constant from class.
+	 * @var array
+	 */
+	protected static $object_cache = [];
+
+	/**
+	 * Class constructor. Keep it private to only allow initializing from __callStatic()
+	 *
+	 * @param string $value Constant from class.
 	 * @throws \InvalidArgumentException
 	 */
-	public function __construct( $value ) {
+	final private function __construct( string $value ) {
 		if ( $value instanceof static ) {
 			$value = $value->get_value();
-		} else {
-			if ( ! defined( static::class . "::$value" ) ) {
+		} elseif ( ! defined( static::class . "::$value" ) ) {
 				throw new \InvalidArgumentException( "Constant with name '$value' does not exist." );
-			}
 		}
 
 		$this->value = $value;
@@ -61,7 +66,7 @@ abstract class Base_Constant {
 	 * @return bool
 	 */
 	final public function equals( $variable = null ): bool {
-		return $variable instanceof Base_Constant && $this->get_value() === $variable->get_value() && static::class === \get_class( $variable );
+		return $this === $variable;
 	}
 
 	/**
@@ -92,7 +97,11 @@ abstract class Base_Constant {
 	 * @throws \InvalidArgumentException
 	 */
 	public static function __callStatic( $name, $arguments ) {
-		return new static( $name );
+		if ( ! isset( static::$object_cache[ $name ] ) ) {
+			// Instantiating constants by class name using the 'new static($name)' approach is integral to this method's functionality.
+			static::$object_cache[ $name ] = new static( $name );
+		}
+		return static::$object_cache[ $name ];
 	}
 
 	/**
@@ -102,5 +111,15 @@ abstract class Base_Constant {
 	 */
 	public function __toString() {
 		return constant( \get_class( $this ) . '::' . $this->get_value() );
+	}
+
+	/**
+	 * Specify the value which should be serialized to JSON.
+	 *
+	 * @return mixed|string
+	 */
+	#[\ReturnTypeWillChange]
+	public function jsonSerialize() {
+		return $this->__toString();
 	}
 }

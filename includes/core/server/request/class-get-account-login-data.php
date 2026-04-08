@@ -15,11 +15,18 @@ use WC_Payments_API_Client;
  * Request class for getting one-time dashboard login url.
  */
 class Get_Account_Login_Data extends Request {
-	use Use_Test_Mode_Only_When_Dev_Mode;
+	use Use_Test_Mode_Only_When_Test_Mode_Onboarding;
 
 	const REQUIRED_PARAMS = [
 		'redirect_url',
 	];
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wpcay_get_account_login_data';
 
 	/**
 	 * Returns the request's API.

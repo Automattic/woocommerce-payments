@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
 import React from 'react';
 import { CardReader } from 'wcpay/types/card-readers';
@@ -18,7 +18,7 @@ const CardReaderListItem: React.FunctionComponent< {
 		: __( 'Inactive', 'woocommerce-payments' );
 
 	return (
-		<li className={ classNames( 'card-readers-item', id ) }>
+		<li className={ clsx( 'card-readers-item', id ) }>
 			<div className="card-readers-item__id">
 				<span>{ id }</span>
 			</div>

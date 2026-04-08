@@ -6,14 +6,18 @@
  * Internal dependencies
  */
 
-export type PaymentMethod =
-	| 'au_becs_debit'
-	| 'bancontact'
-	| 'card'
-	| 'card_present'
-	| 'eps'
-	| 'giropay'
-	| 'ideal'
-	| 'p24'
-	| 'sepa_debit'
-	| 'sofort';
+export interface PaymentMethodServerDefinition {
+	id: string;
+	label: string;
+	description: string;
+	settings_icon_url: string;
+	currencies: string[];
+	stripe_key: string;
+	allows_manual_capture: boolean;
+	allows_pay_later: boolean;
+	accepts_only_domestic_payment: boolean;
+}
+
+export interface PaymentMethodMapEntry extends PaymentMethodServerDefinition {
+	icon: ReactImgFuncComponent;
+}

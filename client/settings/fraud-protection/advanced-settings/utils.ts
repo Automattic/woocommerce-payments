@@ -71,6 +71,13 @@ const buildRuleset = (
 	const ruleBase = getRuleBase( ruleKey, shouldBlock );
 
 	switch ( ruleKey ) {
+		case Rules.RULE_AVS_VERIFICATION:
+			ruleBase.check = {
+				key: Checks.CHECK_AVS_MISMATCH,
+				operator: CheckOperators.OPERATOR_EQUALS,
+				value: true,
+			};
+			break;
 		case Rules.RULE_ADDRESS_MISMATCH:
 			ruleBase.check = {
 				key: Checks.CHECK_BILLING_SHIPPING_ADDRESS_SAME,
@@ -226,28 +233,44 @@ export const writeRuleset = (
 	return rulesetConfig.filter( ( rule ) => rule );
 };
 
+const getRuleBlockStatus = ( outcome: string ) => {
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
+
+	if ( ! isFRTReviewFeatureActive ) {
+		return true;
+	}
+
+	return outcome === Outcomes.BLOCK;
+};
+
 export const readRuleset = (
 	rulesetConfig: FraudProtectionRule[] | string
 ): ProtectionSettingsUI => {
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
+	const isAVSChecksEnabled =
+		wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure ||
+		false;
+
+	const defaultEnableConfig = {
+		enabled: false,
+		block: ! isFRTReviewFeatureActive,
+	};
+
 	const defaultUIConfig = {
-		[ Rules.RULE_ADDRESS_MISMATCH ]: { enabled: false, block: false },
-		[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: {
-			enabled: false,
-			block: false,
+		[ Rules.RULE_AVS_VERIFICATION ]: {
+			enabled: isAVSChecksEnabled,
+			block: isAVSChecksEnabled,
 		},
-		[ Rules.RULE_IP_ADDRESS_MISMATCH ]: {
-			enabled: false,
-			block: false,
-		},
+		[ Rules.RULE_ADDRESS_MISMATCH ]: { ...defaultEnableConfig },
+		[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: { ...defaultEnableConfig },
+		[ Rules.RULE_IP_ADDRESS_MISMATCH ]: { ...defaultEnableConfig },
 		[ Rules.RULE_ORDER_ITEMS_THRESHOLD ]: {
-			enabled: false,
-			block: false,
+			...defaultEnableConfig,
 			min_items: null,
 			max_items: null,
 		},
 		[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
-			enabled: false,
-			block: false,
+			...defaultEnableConfig,
 			min_amount: null,
 			max_amount: null,
 		},
@@ -259,22 +282,28 @@ export const readRuleset = (
 			const rule = rulesetConfig[ id ];
 
 			switch ( rule.key ) {
+				case Rules.RULE_AVS_VERIFICATION:
+					parsedUIConfig[ rule.key ] = {
+						enabled: true,
+						block: getRuleBlockStatus( rule.outcome ),
+					};
+					break;
 				case Rules.RULE_ADDRESS_MISMATCH:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_INTERNATIONAL_IP_ADDRESS:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_IP_ADDRESS_MISMATCH:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_ORDER_ITEMS_THRESHOLD:
@@ -290,7 +319,7 @@ export const readRuleset = (
 					) as FraudProtectionSettingsSingleCheck;
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 						min_items: minItemsCheck.value ?? '',
 						max_items: maxItemsCheck.value ?? '',
 					};
@@ -308,7 +337,7 @@ export const readRuleset = (
 					) as FraudProtectionSettingsSingleCheck;
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 						min_amount: readFormattedRulePrice(
 							minAmountCheck.value
 						),

@@ -10,16 +10,12 @@
  * External Dependencies
  */
 import React from 'react';
-import { Button } from '@wordpress/components';
-import { Icon, check, chevronDown } from '@wordpress/icons';
+import { check, chevronDown, Icon } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { __, sprintf } from '@wordpress/i18n';
 import { useSelect, UseSelectState } from 'downshift';
-
-/**
- * Internal Dependencies
- */
+import { Button } from '@wordpress/components';
 import './style.scss';
 
 export interface Item {
@@ -30,17 +26,18 @@ export interface Item {
 }
 
 export interface ControlProps< ItemType > {
+	name?: string;
 	className?: string;
 	label: string;
 	describedBy?: string;
 	options: ItemType[];
-	value?: ItemType;
+	value?: ItemType | null;
 	placeholder?: string;
 	onChange?: ( changes: Partial< UseSelectState< ItemType > > ) => void;
 	children?: ( item: ItemType ) => JSX.Element;
 }
 
-const itemToString = ( item: { name?: string } ) => item?.name || '';
+const itemToString = ( item: { name?: string } | null ) => item?.name || '';
 // This is needed so that in Windows, where
 // the menu does not necessarily open on
 // key up/down, you can still switch between
@@ -81,6 +78,7 @@ const stateReducer = (
 };
 
 function CustomSelectControl< ItemType extends Item >( {
+	name,
 	className,
 	label,
 	describedBy,
@@ -128,7 +126,7 @@ function CustomSelectControl< ItemType extends Item >( {
 	} );
 
 	const onKeyDownHandler = useCallback(
-		( e ) => {
+		( e: any ) => {
 			e.stopPropagation();
 			menuProps?.onKeyDown?.( e );
 		},
@@ -143,7 +141,7 @@ function CustomSelectControl< ItemType extends Item >( {
 	}
 	return (
 		<div
-			className={ classNames(
+			className={ clsx(
 				'wcpay components-custom-select-control',
 				className
 			) }
@@ -164,11 +162,13 @@ function CustomSelectControl< ItemType extends Item >( {
 					'aria-label': label,
 					'aria-labelledby': undefined,
 					'aria-describedby': getDescribedBy(),
-					className: classNames(
+					className: clsx(
 						'components-custom-select-control__button',
 						{ placeholder: ! itemString }
 					),
+					name,
 				} ) }
+				__next40pxDefaultSize
 			>
 				<span className="components-custom-select-control__button-value">
 					{ itemString || placeholder }
@@ -188,7 +188,7 @@ function CustomSelectControl< ItemType extends Item >( {
 								item,
 								index,
 								key: item.key,
-								className: classNames(
+								className: clsx(
 									item.className,
 									'components-custom-select-control__item',
 									{

@@ -2,23 +2,24 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 export default {
 	button: __( 'Finish setup', 'woocommerce-payments' ),
 
-	heading: __(
-		'Update WooCommerce Payments business details',
-		'woocommerce-payments'
+	heading: sprintf(
+		/* translators: %s: WooPayments */
+		__( 'Update %s business details', 'woocommerce-payments' ),
+		'WooPayments'
 	),
 
 	restrictedDescription: __(
-		'Payments and deposits are disabled for this account until missing information is updated. Please update the following information in the Stripe dashboard.',
+		'Payments and payouts are disabled for this account until missing information is updated. Please update the following information in the Stripe dashboard.',
 		'woocommerce-payments'
 	),
 
 	restrictedSoonDescription: __(
-		'Additional information is required to verify your business. Update by %s to avoid a disruption in deposits.',
+		'Additional information is required to verify your business. Update by %s to avoid a disruption in payouts.',
 		'woocommerce-payments'
 	),
 

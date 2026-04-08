@@ -20,13 +20,14 @@ class Create_And_Confirm_Intention extends Create_Intention {
 		'amount',
 		'currency',
 		'payment_method',
+		'confirmation_token',
+		'payment_method_update_data',
 		'return_url',
 	];
 
 	const REQUIRED_PARAMS = [
 		'amount',
 		'currency',
-		'payment_method',
 		'customer',
 		'metadata',
 	];
@@ -35,6 +36,13 @@ class Create_And_Confirm_Intention extends Create_Intention {
 		'confirm'        => true, // By the definition of the request.
 		'capture_method' => 'automatic',
 	];
+
+	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_create_and_confirm_intent_request';
 
 	/**
 	 * Returns the request's API.
@@ -80,15 +88,18 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	 * @throws Invalid_Request_Parameter_Exception  When there are no payment methods provided.
 	 */
 	public function set_payment_methods( array $payment_methods ) {
-		// Hard to validate without hardcoding a list here.
-		if ( empty( $payment_methods ) ) {
-			throw new Invalid_Request_Parameter_Exception(
-				__( 'Intentions require at least one payment method', 'woocommerce-payments' ),
-				'wcpay_core_invalid_request_parameter_missing_payment_method_types'
-			);
-		}
-
 		$this->set_param( 'payment_method_types', $payment_methods );
+	}
+
+	/**
+	 * Payment method update data setter.
+	 *
+	 * @param array $payment_method_update_data Data to update on payment method.
+	 *
+	 * @return void
+	 */
+	public function set_payment_method_update_data( array $payment_method_update_data ) {
+		$this->set_param( 'payment_method_update_data', $payment_method_update_data );
 	}
 
 	/**
@@ -103,7 +114,7 @@ class Create_And_Confirm_Intention extends Create_Intention {
 	/**
 	 * Return URL setter.
 	 *
-	 * @param string $return_url The URL to redirect the customer back to after they authenticate their payment on the payment method’s site.
+	 * @param string $return_url The URL to redirect the customer back to after they authenticate their payment on the payment method's site.
 	 */
 	public function set_return_url( $return_url ) {
 		$this->set_param( 'return_url', $return_url );

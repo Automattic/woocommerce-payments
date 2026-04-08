@@ -37,14 +37,18 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 	 * @param WC_Payments_Account $account account service instance.
 	 */
 	public function __construct( WC_Payments_Account $account ) {
+		$this->account = $account;
+
+		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
+			return;
+		}
+
 		// This action is triggered on product save but after other required subscriptions logic is triggered.
 		add_action( 'woocommerce_admin_process_product_object', [ $this, 'product_save' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'account_data_refreshed' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_modal_scripts_and_styles' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_toast_script' ] );
 		add_filter( 'woocommerce_subscriptions_admin_pointer_script_parameters', [ $this, 'filter_admin_pointer_script_parameters' ] );
-
-		$this->account = $account;
 	}
 
 	/**
@@ -85,7 +89,7 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 		// Change the default WP saved post URL to correctly reflect the draft status and to add our saved-as-draft flag.
 		add_filter(
 			'redirect_post_location',
-			function() use ( $product ) {
+			function () use ( $product ) {
 				return add_query_arg( // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 					[
 						'message' => 10, // Post saved as draft message.
@@ -191,11 +195,12 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			]
 		);
 
-		wp_register_style(
+		WC_Payments_Utils::register_style(
 			'wcpay-subscription-product-onboarding-modal',
 			plugins_url( 'dist/subscription-product-onboarding-modal.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/subscription-product-onboarding-modal.css' )
+			WC_Payments::get_file_version( 'dist/subscription-product-onboarding-modal.css' ),
+			'all'
 		);
 
 		wp_enqueue_script( 'wcpay-subscription-product-onboarding-modal' );
@@ -253,8 +258,8 @@ class WC_Payments_Subscriptions_Onboarding_Handler {
 			return $pointer_params;
 		}
 
-		// translators: %1$s: <h3> tag, %2$s: </h3> tag, %3$s: <p> tag, %4$s: <em> tag, %5$s: </em> tag, %6$s: <em> tag, %7$s: </em> tag, %8$s: </p> tag.
-		$pointer_params['typePointerContent'] = sprintf( _x( '%1$sChoose Subscription%2$s%3$sWooCommerce Payments adds two new subscription product types - %4$sSimple subscription%5$s and %6$sVariable subscription%7$s.%8$s', 'used in admin pointer script params in javascript as type pointer content', 'woocommerce-payments' ), '<h3>', '</h3>', '<p>', '<em>', '</em>', '<em>', '</em>', '</p>' );
+		// translators: %1$s: <h3> tag, %2$s: </h3> tag, %3$s: <p> tag, %4$s: WooPayments, %5$s: <em> tag, %6$s: </em> tag, %7$s: <em> tag, %8$s: </em> tag, %9$s: </p> tag.
+		$pointer_params['typePointerContent'] = sprintf( _x( '%1$sChoose Subscription%2$s%3$s%4$s adds two new subscription product types - %5$sSimple subscription%6$s and %7$sVariable subscription%8$s.%9$s', 'used in admin pointer script params in javascript as type pointer content', 'woocommerce-payments' ), '<h3>', '</h3>', '<p>', 'WooPayments', '<em>', '</em>', '<em>', '</em>', '</p>' );
 
 		return $pointer_params;
 	}

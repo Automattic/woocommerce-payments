@@ -4,11 +4,22 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
-import { Card, CardBody, CardFooter, CardDivider } from '@wordpress/components';
+import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
-import React, { useContext } from 'react';
+import React, { useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import _ from 'lodash';
+import {
+	CardDivider,
+	DropdownMenu,
+	MenuGroup,
+	MenuItem,
+	Card,
+	CardBody,
+	Flex,
+	ExternalLink,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -18,24 +29,46 @@ import {
 	getChargeStatus,
 	getChargeChannel,
 	isOnHoldByFraudTools,
+	getBankName,
 } from 'utils/charge';
+import CardNotice from 'wcpay/components/card-notice';
+import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
-import HorizontalList from 'components/horizontal-list';
+import { HorizontalList, HorizontalListItem } from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import {
+	formatCurrency,
+	formatExplicitCurrency,
+} from 'multi-currency/interface/functions';
 import CustomerLink from 'components/customer-link';
+import { ClickTooltip } from 'components/tooltip';
+import DisputeStatusChip from 'components/dispute-status-chip';
+import {
+	getDisputeFeeFormatted,
+	isAwaitingResponse,
+	isRefundable,
+} from 'wcpay/disputes/utils';
 import { useAuthorization } from 'wcpay/data';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import './style.scss';
 import { Charge } from 'wcpay/types/charges';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import WCPaySettingsContext from '../../settings/wcpay-settings-context';
 import { FraudOutcome } from '../../types/fraud-outcome';
 import CancelAuthorizationButton from '../../components/cancel-authorization-button';
 import { PaymentIntent } from '../../types/payment-intents';
+import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
+import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
+import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import ErrorBoundary from 'components/error-boundary';
+import RefundModal from 'wcpay/payment-details/summary/refund-modal';
+import {
+	formatDateTimeFromString,
+	formatDateTimeFromTimestamp,
+} from 'wcpay/utils/date-time';
 
 declare const window: any;
 
@@ -56,11 +89,7 @@ const placeholderValues = {
 };
 
 const isTapToPay = ( model: string ) => {
-	if ( model === 'COTS_DEVICE' ) {
-		return true;
-	}
-
-	return false;
+	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
 };
 
 const getTapToPayChannel = ( platform: string ) => {
@@ -69,7 +98,7 @@ const getTapToPayChannel = ( platform: string ) => {
 	}
 
 	if ( platform === 'android' ) {
-		__( 'Tap to Pay on Android', 'woocommerce-payments' );
+		return __( 'Tap to Pay on Android', 'woocommerce-payments' );
 	}
 
 	return __( 'Tap to Pay', 'woocommerce-payments' );
@@ -81,32 +110,38 @@ const composePaymentSummaryItems = ( {
 }: {
 	charge: Charge;
 	metadata: Record< string, any >;
-} ) =>
+} ): HorizontalListItem[] =>
 	[
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
 			content: charge.created
-				? dateI18n(
-						'M j, Y, g:ia',
-						moment( charge.created * 1000 ).toISOString()
-				  )
+				? formatDateTimeFromTimestamp( charge.created, {
+						separator: ', ',
+						includeTime: true,
+				  } )
 				: '–',
 		},
 		{
-			title: __( 'Channel', 'woocommerce-payments' ),
+			title: __( 'Sales channel', 'woocommerce-payments' ),
 			content: (
 				<span>
 					{ isTapToPay( metadata?.reader_model )
 						? getTapToPayChannel( metadata?.platform )
 						: getChargeChannel(
-								charge.payment_method_details?.type
+								charge.payment_method_details?.type,
+								metadata
 						  ) }
 				</span>
 			),
 		},
 		{
 			title: __( 'Customer', 'woocommerce-payments' ),
-			content: <CustomerLink customer={ charge.billing_details } />,
+			content: (
+				<CustomerLink
+					billing_details={ charge.billing_details }
+					order_details={ charge.order }
+				/>
+			),
 		},
 		{
 			title: __( 'Order', 'woocommerce-payments' ),
@@ -137,7 +172,61 @@ const composePaymentSummaryItems = ( {
 				? riskMappings[ charge.outcome.risk_level ]
 				: '–',
 		},
-	].filter( Boolean );
+	].filter( isValueTruthy );
+
+const composePaymentSummaryItemsForDispute = ( {
+	charge = {} as Charge,
+}: {
+	charge: Charge;
+} ): HorizontalListItem[] =>
+	[
+		{
+			title: __( 'Date', 'woocommerce-payments' ),
+			content: charge.created
+				? formatDateTimeFromTimestamp( charge.created, {
+						customFormat: 'F j, Y g:i A',
+				  } )
+				: '–',
+		},
+		{
+			title: __( 'Customer', 'woocommerce-payments' ),
+			content: (
+				<CustomerLink
+					billing_details={ charge.billing_details }
+					order_details={ charge.order }
+				/>
+			),
+		},
+		{
+			title: __( 'Order', 'woocommerce-payments' ),
+			content: <OrderLink order={ charge.order } />,
+		},
+		wcpaySettings.isSubscriptionsActive && {
+			title: __( 'Subscription', 'woocommerce-payments' ),
+			content: charge.order?.subscriptions?.length ? (
+				charge.order.subscriptions.map( ( subscription, i, all ) => [
+					<OrderLink key={ i } order={ subscription } />,
+					i !== all.length - 1 && ', ',
+				] )
+			) : (
+				<OrderLink order={ null } />
+			),
+		},
+		{
+			title: __( 'Payment method', 'woocommerce-payments' ),
+			content: (
+				<PaymentMethodDetails
+					payment={ charge.payment_method_details }
+				/>
+			),
+		},
+		{
+			title: __( 'Risk evaluation', 'woocommerce-payments' ),
+			content: charge.outcome?.risk_level
+				? riskMappings[ charge.outcome.risk_level ]
+				: '–',
+		},
+	].filter( isValueTruthy );
 
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,
@@ -151,26 +240,50 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 
-	const {
-		featureFlags: { isAuthAndCaptureEnabled },
-	} = useContext( WCPaySettingsContext );
-
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
 	// We also need to exclude failed payments and payments that have been refunded, because capture === false in those cases, even
 	// if the capture is automatic.
 	const shouldFetchAuthorization =
 		! charge.captured &&
 		charge.status !== 'failed' &&
-		charge.amount_refunded === 0 &&
-		isAuthAndCaptureEnabled;
+		charge.amount_refunded === 0;
 
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
-		charge.order?.number as number,
+		charge.order?.id as number,
 		shouldFetchAuthorization
 	);
 
 	const isFraudOutcomeReview = isOnHoldByFraudTools( charge, paymentIntent );
+
+	const disputeFee =
+		charge.dispute && getDisputeFeeFormatted( charge.dispute );
+
+	// If this transaction is disputed, check if it is refundable.
+	const isDisputeRefundable = charge.dispute
+		? isRefundable( charge.dispute.status )
+		: true;
+
+	// Partial refunds are done through the order page. If order number is not
+	// present, partial refund is not possible.
+	const isPartiallyRefundable = charge.order && charge.order.number;
+
+	const isPartiallyRefunded = charge.amount_refunded > 0;
+
+	// Control menu only shows refund actions for now. In the future, it may show other actions.
+	const showControlMenu =
+		charge.captured && ! charge.refunded && isDisputeRefundable;
+
+	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
+	const transactionFee = charge.balance_transaction
+		? {
+				fee: charge.balance_transaction.fee,
+				currency: charge.balance_transaction.currency,
+		  }
+		: {
+				fee: charge.application_fee_amount,
+				currency: charge.currency,
+		  };
 
 	// WP translation strings are injected into Moment.js for relative time terms, since Moment's own translation library increases the bundle size significantly.
 	moment.updateLocale( 'en', {
@@ -186,150 +299,451 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		},
 	} );
 
+	const formattedAmount = formatCurrency(
+		charge.amount,
+		charge.currency,
+		balance.currency
+	);
+
+	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
+
+	const bankName = getBankName( charge );
 	return (
 		<Card>
 			<CardBody>
-				<div className="payment-details-summary">
-					<div className="payment-details-summary__section">
-						<p className="payment-details-summary__amount">
-							<Loadable
-								isLoading={ isLoading }
-								placeholder="Amount placeholder"
-							>
-								{ formatCurrency(
-									charge.amount,
-									charge.currency,
-									balance.currency
+				<Flex direction="row" align="start">
+					<div className="payment-details-summary">
+						<div className="payment-details-summary__section">
+							<div className="payment-details-summary__amount-wrapper">
+								<p className="payment-details-summary__amount">
+									<Loadable
+										isLoading={ isLoading }
+										placeholder={ __(
+											'Amount placeholder',
+											'woocommerce-payments'
+										) }
+									>
+										{ formattedAmount }
+										<span className="payment-details-summary__amount-currency">
+											{ charge.currency || 'USD' }
+										</span>
+									</Loadable>
+								</p>
+								{ charge.dispute ? (
+									<DisputeStatusChip
+										className="payment-details-summary__status"
+										status={ charge.dispute.status }
+										prefixDisputeType={ true }
+									/>
+								) : (
+									<PaymentStatusChip
+										className="payment-details-summary__status"
+										status={ getChargeStatus(
+											charge,
+											paymentIntent
+										) }
+									/>
 								) }
-								<span className="payment-details-summary__amount-currency">
-									{ charge.currency || 'USD' }
-								</span>
-								<PaymentStatusChip
-									status={ getChargeStatus(
-										charge,
-										paymentIntent
-									) }
-								/>
-							</Loadable>
-						</p>
-						<div className="payment-details-summary__breakdown">
-							{ renderStorePrice ? (
+							</div>
+							<div className="payment-details-summary__breakdown">
+								{ renderStorePrice ? (
+									<p className="payment-details-summary__breakdown__settlement-currency">
+										{ formatExplicitCurrency(
+											balance.amount,
+											balance.currency
+										) }
+									</p>
+								) : null }
+								{ balance.refunded ? (
+									<p>
+										{ `${
+											disputeFee
+												? __(
+														'Deducted',
+														'woocommerce-payments'
+												  )
+												: __(
+														'Refunded',
+														'woocommerce-payments'
+												  )
+										}: ` }
+										{ formatExplicitCurrency(
+											-balance.refunded,
+											balance.currency
+										) }
+									</p>
+								) : (
+									''
+								) }
 								<p>
-									{ formatExplicitCurrency(
-										balance.amount,
-										balance.currency
-									) }
+									<Loadable
+										isLoading={ isLoading }
+										placeholder={ __(
+											'Fee amount',
+											'woocommerce-payments'
+										) }
+									>
+										{ `${ __(
+											'Fees',
+											'woocommerce-payments'
+										) }: ` }
+										{ formatCurrency(
+											-balance.fee,
+											balance.currency
+										) }
+										{ disputeFee && (
+											<ClickTooltip
+												className="payment-details-summary__breakdown__fee-tooltip"
+												buttonIcon={
+													<HelpOutlineIcon />
+												}
+												buttonLabel={ __(
+													'Fee breakdown',
+													'woocommerce-payments'
+												) }
+												content={
+													<>
+														<Flex>
+															<label>
+																{ __(
+																	'Transaction fee',
+																	'woocommerce-payments'
+																) }
+															</label>
+															<span
+																aria-label={ __(
+																	'Transaction fee',
+																	'woocommerce-payments'
+																) }
+															>
+																{ formatCurrency(
+																	transactionFee.fee,
+																	transactionFee.currency
+																) }
+															</span>
+														</Flex>
+														<Flex>
+															<label>
+																{ __(
+																	'Dispute fee',
+																	'woocommerce-payments'
+																) }
+															</label>
+															<span
+																aria-label={ __(
+																	'Dispute fee',
+																	'woocommerce-payments'
+																) }
+															>
+																{ disputeFee }
+															</span>
+														</Flex>
+														<Flex>
+															<label>
+																{ __(
+																	'Total fees',
+																	'woocommerce-payments'
+																) }
+															</label>
+															<span
+																aria-label={ __(
+																	'Total fees',
+																	'woocommerce-payments'
+																) }
+															>
+																{ formatCurrency(
+																	balance.fee,
+																	balance.currency
+																) }
+															</span>
+														</Flex>
+													</>
+												}
+											/>
+										) }
+									</Loadable>
 								</p>
-							) : null }
-							{ balance.refunded ? (
+								{ charge.paydown ? (
+									<p>
+										{ `${ __(
+											'Loan repayment',
+											'woocommerce-payments'
+										) }: ` }
+										{ formatExplicitCurrency(
+											charge.paydown.amount,
+											balance.currency
+										) }
+									</p>
+								) : (
+									''
+								) }
 								<p>
-									{ `${ __(
-										'Refunded',
-										'woocommerce-payments'
-									) }: ` }
-									{ formatExplicitCurrency(
-										-balance.refunded,
-										balance.currency
-									) }
+									<Loadable
+										isLoading={ isLoading }
+										placeholder={ __(
+											'Net amount',
+											'woocommerce-payments'
+										) }
+									>
+										{ `${ __(
+											'Net',
+											'woocommerce-payments'
+										) }: ` }
+										{ formatExplicitCurrency(
+											charge.paydown
+												? balance.net -
+														Math.abs(
+															charge.paydown
+																.amount
+														)
+												: balance.net,
+											balance.currency
+										) }
+									</Loadable>
 								</p>
-							) : (
-								''
+							</div>
+						</div>
+						<div className="payment-details-summary__section">
+							{ ! isLoading && isFraudOutcomeReview && (
+								<div className="payment-details-summary__fraud-outcome-action">
+									<CancelAuthorizationButton
+										orderId={ charge.order?.id || 0 }
+										paymentIntentId={
+											charge.payment_intent || ''
+										}
+										onClick={ () => {
+											recordEvent(
+												'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+											recordEvent(
+												'payments_transactions_details_cancel_charge_button_click',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+										} }
+									>
+										{ __( 'Block transaction' ) }
+									</CancelAuthorizationButton>
+
+									<CaptureAuthorizationButton
+										buttonIsPrimary
+										orderId={ charge.order?.id || 0 }
+										paymentIntentId={
+											charge.payment_intent || ''
+										}
+										buttonIsSmall={ false }
+										onClick={ () => {
+											recordEvent(
+												'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+											recordEvent(
+												'payments_transactions_details_capture_charge_button_click',
+												{
+													payment_intent_id:
+														charge.payment_intent,
+												}
+											);
+										} }
+									>
+										{ __(
+											'Approve Transaction',
+											'woocommerce-payments'
+										) }
+									</CaptureAuthorizationButton>
+								</div>
 							) }
-							<p>
+							<div className="payment-details-summary__id">
 								<Loadable
 									isLoading={ isLoading }
-									placeholder="Fee amount"
+									placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
 								>
-									{ `${ __(
-										'Fee',
-										'woocommerce-payments'
-									) }: ` }
-									{ formatCurrency(
-										-balance.fee,
-										balance.currency
+									{ charge.payment_intent && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Payment ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.payment_intent }
+											</span>
+										</div>
+									) }
+									{ charge.id && (
+										<div className="payment-details-summary__id_wrapper">
+											<span className="payment-details-summary__id_label">
+												{ `${ __(
+													'Charge ID',
+													'woocommerce-payments'
+												) }: ` }
+											</span>
+											<span className="payment-details-summary__id_value">
+												{ charge.id }
+											</span>
+										</div>
 									) }
 								</Loadable>
-							</p>
-							{ charge.paydown ? (
-								<p>
-									{ `${ __(
-										'Loan repayment',
-										'woocommerce-payments'
-									) }: ` }
-									{ formatExplicitCurrency(
-										charge.paydown.amount,
-										balance.currency
-									) }
-								</p>
-							) : (
-								''
-							) }
-							<p>
-								<Loadable
-									isLoading={ isLoading }
-									placeholder="Net amount"
-								>
-									{ `${ __(
-										'Net',
-										'woocommerce-payments'
-									) }: ` }
-									{ formatExplicitCurrency(
-										charge.paydown
-											? balance.net -
-													Math.abs(
-														charge.paydown.amount
-													)
-											: balance.net,
-										balance.currency
-									) }
-								</Loadable>
-							</p>
+							</div>
 						</div>
 					</div>
-					<div className="payment-details-summary__section">
-						{ ! isLoading && isFraudOutcomeReview && (
-							<div className="payment-details-summary__fraud-outcome-action">
-								<CancelAuthorizationButton
-									orderId={ charge.order?.number || 0 }
-									paymentIntentId={
-										charge.payment_intent || ''
-									}
-									onClick={ () => {
-										wcpayTracks.recordEvent(
-											'wcpay_fraud_protection_transaction_reviewed_merchant_blocked',
-											{
-												payment_intent_id:
-													charge.payment_intent,
-											}
-										);
-										wcpayTracks.recordEvent(
-											'payments_transactions_details_cancel_charge_button_click',
-											{
-												payment_intent_id:
-													charge.payment_intent,
-											}
-										);
+					<div className="payment-details__refund-controls">
+						{ showControlMenu && (
+							<Loadable
+								isLoading={ isLoading }
+								placeholder={ moreVertical }
+							>
+								<DropdownMenu
+									icon={ moreVertical }
+									label={ __(
+										'Transaction actions',
+										'woocommerce-payments'
+									) }
+									popoverProps={ {
+										position: 'bottom left',
 									} }
+									className="refund-controls__dropdown-menu"
 								>
-									{ __( 'Block transaction' ) }
-								</CancelAuthorizationButton>
+									{ ( { onClose } ) => (
+										<MenuGroup>
+											{ ! isPartiallyRefunded && (
+												<MenuItem
+													onClick={ () => {
+														setIsRefundModalOpen(
+															true
+														);
+														recordEvent(
+															'payments_transactions_details_refund_modal_open',
+															{
+																payment_intent_id:
+																	charge.payment_intent,
+															}
+														);
+														onClose();
+													} }
+												>
+													{ __(
+														'Refund in full',
+														'woocommerce-payments'
+													) }
+												</MenuItem>
+											) }
+											{ isPartiallyRefundable && (
+												<MenuItem
+													onClick={ () => {
+														recordEvent(
+															'payments_transactions_details_partial_refund',
+															{
+																payment_intent_id:
+																	charge.payment_intent,
+																order_id:
+																	charge.order
+																		?.id,
+															}
+														);
+														window.location =
+															charge.order?.url;
+													} }
+												>
+													{ __(
+														'Partial refund',
+														'woocommerce-payments'
+													) }
+												</MenuItem>
+											) }
+										</MenuGroup>
+									) }
+								</DropdownMenu>
+							</Loadable>
+						) }
+					</div>
+				</Flex>
+			</CardBody>
+			<CardDivider />
+			<CardBody>
+				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
+					<HorizontalList
+						items={
+							charge.dispute
+								? composePaymentSummaryItemsForDispute( {
+										charge,
+								  } )
+								: composePaymentSummaryItems( {
+										charge,
+										metadata,
+								  } )
+						}
+					/>
+				</LoadableBlock>
+			</CardBody>
 
+			{ charge.dispute && (
+				<ErrorBoundary>
+					{ isAwaitingResponse( charge.dispute.status ) ? (
+						<DisputeAwaitingResponseDetails
+							dispute={ charge.dispute }
+							customer={ charge.billing_details }
+							chargeCreated={ charge.created }
+							orderUrl={ charge.order?.url }
+							paymentMethod={
+								charge.payment_method_details?.type
+							}
+							bankName={ bankName }
+						/>
+					) : (
+						<DisputeResolutionFooter
+							dispute={ charge.dispute }
+							bankName={ bankName }
+						/>
+					) }
+				</ErrorBoundary>
+			) }
+			{ isRefundModalOpen && (
+				<RefundModal
+					charge={ charge }
+					formattedAmount={ formattedAmount }
+					onModalClose={ () => {
+						setIsRefundModalOpen( false );
+						recordEvent(
+							'payments_transactions_details_refund_modal_close',
+							{
+								payment_intent_id: charge.payment_intent,
+							}
+						);
+					} }
+				/>
+			) }
+			{ ! _.isEmpty( charge ) && ! charge.order && ! isLoading && (
+				<MissingOrderNotice
+					charge={ charge }
+					isLoading={ isLoading }
+					onButtonClick={ () => setIsRefundModalOpen( true ) }
+				/>
+			) }
+			{ authorization && ! authorization.captured && (
+				<Loadable isLoading={ isLoading } placeholder="">
+					<CardNotice
+						actions={
+							! isFraudOutcomeReview ? (
 								<CaptureAuthorizationButton
-									buttonIsPrimary
-									orderId={ charge.order?.number || 0 }
+									orderId={ charge.order?.id || 0 }
 									paymentIntentId={
 										charge.payment_intent || ''
 									}
+									buttonIsPrimary={ true }
 									buttonIsSmall={ false }
 									onClick={ () => {
-										wcpayTracks.recordEvent(
-											'wcpay_fraud_protection_transaction_reviewed_merchant_approved',
-											{
-												payment_intent_id:
-													charge.payment_intent,
-											}
-										);
-										wcpayTracks.recordEvent(
+										recordEvent(
 											'payments_transactions_details_capture_charge_button_click',
 											{
 												payment_intent_id:
@@ -337,112 +751,49 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											}
 										);
 									} }
-								>
-									{ __( 'Approve Transaction' ) }
-								</CaptureAuthorizationButton>
-							</div>
-						) }
-						<div className="payment-details-summary__id">
-							<Loadable
-								isLoading={ isLoading }
-								placeholder="Payment ID: pi_xxxxxxxxxxxxxxxxxxxxxxxx"
-							>
-								{ `${ __(
-									'Payment ID',
-									'woocommerce-payments'
-								) }: ` }
-								{ charge.payment_intent
-									? charge.payment_intent
-									: charge.id }
-							</Loadable>
-						</div>
-					</div>
-				</div>
-			</CardBody>
-			<CardDivider />
-			<CardBody>
-				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
-					<HorizontalList
-						items={ composePaymentSummaryItems( {
-							charge,
-							metadata,
-						} ) }
-					/>
-				</LoadableBlock>
-			</CardBody>
-			{ isAuthAndCaptureEnabled &&
-				authorization &&
-				! authorization.captured && (
-					<Loadable isLoading={ isLoading } placeholder="">
-						<CardFooter className="payment-details-capture-notice">
-							<div className="payment-details-capture-notice__section">
-								<div className="payment-details-capture-notice__text">
-									{ createInterpolateElement(
-										__(
-											'You must <a>capture</a> this charge within the next',
-											'woocommerce-payments'
-										),
-										{
-											a: (
-												// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
-												<a
-													href="https://woocommerce.com/document/woocommerce-payments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-													target="_blank"
-													rel="noreferer"
-												/>
-											),
-										}
-									) }{ ' ' }
-									<abbr
-										title={ dateI18n(
-											'M j, Y / g:iA',
-											moment
-												.utc( authorization.created )
-												.add( 7, 'days' ),
-											'UTC'
-										) }
-									>
-										<b>
-											{ moment
-												.utc( authorization.created )
-												.add( 7, 'days' )
-												.fromNow( true ) }
-										</b>
-									</abbr>
-									{ isFraudOutcomeReview &&
-										`. ${ __(
-											'Approving this transaction will capture the charge.',
-											'woocommerce-payments'
-										) }` }
-								</div>
-
-								{ ! isFraudOutcomeReview && (
-									<div className="payment-details-capture-notice__button">
-										<CaptureAuthorizationButton
-											orderId={
-												charge.order?.number || 0
-											}
-											paymentIntentId={
-												charge.payment_intent || ''
-											}
-											buttonIsPrimary={ true }
-											buttonIsSmall={ false }
-											onClick={ () => {
-												wcpayTracks.recordEvent(
-													'payments_transactions_details_capture_charge_button_click',
-													{
-														payment_intent_id:
-															charge.payment_intent,
-													}
-												);
-											} }
-										/>
-									</div>
-								) }
-							</div>
-						</CardFooter>
-					</Loadable>
-				) }
+								/>
+							) : (
+								<></>
+							)
+						}
+					>
+						{ createInterpolateElement(
+							__(
+								'You must <a>capture</a> this charge within the next',
+								'woocommerce-payments'
+							),
+							{
+								a: (
+									// @ts-expect-error: children is provided when interpolating the component
+									<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders" />
+								),
+							}
+						) }{ ' ' }
+						<abbr
+							title={ formatDateTimeFromString(
+								// TODO: is this string?
+								moment
+									.utc( authorization.created )
+									.add( 7, 'days' )
+									.toISOString(),
+								{ includeTime: true }
+							) }
+						>
+							<b>
+								{ moment
+									.utc( authorization.created )
+									.add( 7, 'days' )
+									.fromNow( true ) }
+							</b>
+						</abbr>
+						{ isFraudOutcomeReview &&
+							`. ${ __(
+								'Approving this transaction will capture the charge.',
+								'woocommerce-payments'
+							) }` }
+					</CardNotice>
+				</Loadable>
+			) }
 		</Card>
 	);
 };

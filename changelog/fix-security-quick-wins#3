@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix email confirmation field not appearing on first-time email setup

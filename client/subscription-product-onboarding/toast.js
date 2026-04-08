@@ -5,7 +5,7 @@ import { useDispatch } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { removeQueryArgs } from '@wordpress/url';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 const { pluginScope } = window.wcpaySubscriptionProductOnboardingToast;
 
@@ -25,9 +25,13 @@ const SubscriptionProductOnboardingToast = () => {
 		}
 
 		createInfoNotice(
-			__(
-				'Thank you for setting up WooCommerce Payments! We’ve published your first subscription product.',
-				'woocommerce-payments'
+			sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'Thank you for setting up %s! We’ve published your first subscription product.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			)
 		);
 	}, [ createInfoNotice ] );

@@ -4,12 +4,12 @@
  * External dependencies
  */
 import React from 'react';
-import { Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { Modal } from '@wordpress/components';
 import VatForm from '../form';
 import { VatFormOnCompleted } from '../types';
 
@@ -24,7 +24,7 @@ const VatFormModal = ( {
 } ): JSX.Element | null => {
 	return isModalOpen ? (
 		<Modal
-			title={ __( 'VAT details', 'woocommerce-payments' ) }
+			title={ __( 'Set your tax details', 'woocommerce-payments' ) }
 			onRequestClose={ () => setModalOpen( false ) }
 		>
 			<VatForm onCompleted={ onCompleted } />

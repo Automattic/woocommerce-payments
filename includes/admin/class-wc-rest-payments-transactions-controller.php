@@ -46,6 +46,15 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/download/(?P<export_id>[^/\\\\%]+)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_export_url' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/summary',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -98,15 +107,6 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/(?P<transaction_id>\w+)',
-			[
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => [ $this, 'get_transaction' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
 	}
 
 	/**
@@ -118,7 +118,7 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 
 		$wcpay_request = List_Transactions::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request( 'wcpay_list_transactions_request' );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**
@@ -173,19 +173,20 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	public function get_transactions_export( $request ) {
 		$user_email = $request->get_param( 'user_email' );
 		$deposit_id = $request->get_param( 'deposit_id' );
+		$locale     = $request->get_param( 'locale' );
 		$filters    = $this->get_transactions_filters( $request );
 
-		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id ] );
+		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id, $locale ] );
 	}
 
 	/**
-	 * Retrieve transaction to respond with via API.
+	 * Get the export URL for a given export ID, if available.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
-	public function get_transaction( $request ) {
-		$transaction_id = $request->get_param( 'transaction_id' );
-		return $this->forward_request( 'get_transactions', [ 'transaction_id' ] );
+	public function get_export_url( $request ) {
+		$export_id = $request->get_param( 'export_id' );
+		return $this->forward_request( 'get_transactions_export_url', [ $export_id ] );
 	}
 
 	/**
@@ -235,9 +236,19 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 				'date_between'             => $date_between_filter,
 				'type_is'                  => $request->get_param( 'type_is' ),
 				'type_is_not'              => $request->get_param( 'type_is_not' ),
+				'source_device_is'         => $request->get_param( 'source_device_is' ),
+				'source_device_is_not'     => $request->get_param( 'source_device_is_not' ),
+				'channel_is'               => $request->get_param( 'channel_is' ),
+				'channel_is_not'           => $request->get_param( 'channel_is_not' ),
+				'customer_country_is'      => $request->get_param( 'customer_country_is' ),
+				'customer_country_is_not'  => $request->get_param( 'customer_country_is_not' ),
+				'risk_level_is'            => $request->get_param( 'risk_level_is' ),
+				'risk_level_is_not'        => $request->get_param( 'risk_level_is_not' ),
 				'store_currency_is'        => $request->get_param( 'store_currency_is' ),
 				'customer_currency_is'     => $request->get_param( 'customer_currency_is' ),
 				'customer_currency_is_not' => $request->get_param( 'customer_currency_is_not' ),
+				'source_is'                => $request->get_param( 'source_is' ),
+				'source_is_not'            => $request->get_param( 'source_is_not' ),
 				'loan_id_is'               => $request->get_param( 'loan_id_is' ),
 				'search'                   => $request->get_param( 'search' ),
 			],

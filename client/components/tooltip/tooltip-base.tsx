@@ -3,7 +3,7 @@
  */
 import React, { useEffect, useRef, useState, memo } from 'react';
 import { createPortal } from 'react-dom';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { debounce, noop } from 'lodash';
 
 /**
@@ -138,29 +138,29 @@ type TooltipPortalProps = {
 	parentElement: HTMLElement;
 };
 
-const TooltipPortal: React.FC< TooltipPortalProps > = memo(
-	( { children, parentElement } ) => {
-		const node = useRef< HTMLElement | null >( null );
-		if ( ! node.current ) {
-			node.current = document.createElement( 'div' );
-			parentElement.appendChild( node.current );
-		}
-
-		// on component unmount, clear any reference to the created node
-		useEffect( () => {
-			return () => {
-				if ( node.current ) {
-					parentElement.removeChild( node.current );
-					node.current = null;
-				}
-			};
-		}, [ parentElement ] );
-
-		return createPortal( children, node.current );
+const TooltipPortal: React.FC< React.PropsWithChildren<
+	TooltipPortalProps
+> > = memo( ( { children, parentElement } ) => {
+	const node = useRef< HTMLElement | null >( null );
+	if ( ! node.current ) {
+		node.current = document.createElement( 'div' );
+		parentElement.appendChild( node.current );
 	}
-);
 
-export type TooltipBaseProps = {
+	// on component unmount, clear any reference to the created node
+	useEffect( () => {
+		return () => {
+			if ( node.current ) {
+				parentElement.removeChild( node.current );
+				node.current = null;
+			}
+		};
+	}, [ parentElement ] );
+
+	return createPortal( children, node.current );
+} );
+
+type TooltipBaseProps = {
 	className?: string;
 	children?: React.ReactNode;
 	content: React.ReactNode;
@@ -171,7 +171,7 @@ export type TooltipBaseProps = {
 	maxWidth?: string;
 };
 
-const TooltipBase: React.FC< TooltipBaseProps > = ( {
+const TooltipBase: React.FC< React.PropsWithChildren< TooltipBaseProps > > = ( {
 	className,
 	children,
 	content,
@@ -222,9 +222,20 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 			const elementMiddle =
 				wrappedElement.offsetWidth / 2 + wrappedElementRect.left;
 			const tooltipWidth = tooltipElement.offsetWidth;
-			tooltipElement.style.left = `${
-				elementMiddle - tooltipWidth / 2
-			}px`;
+			let tooltipLeft = elementMiddle - tooltipWidth / 2;
+			const tooltipRight =
+				window.innerWidth -
+				( wrappedElementRect.left + tooltipElement.offsetWidth );
+
+			if ( tooltipLeft < 0 ) {
+				// create a gap with the left edge if the element is out of view port
+				tooltipLeft = 45;
+			} else if ( tooltipRight < 0 ) {
+				// create a gap with the right edge if the element is out of view port
+				tooltipLeft = tooltipLeft - 85;
+			}
+
+			tooltipElement.style.left = `${ tooltipLeft }px`;
 
 			// make it visible only after all the calculations are done.
 			tooltipElement.style.visibility = 'visible';
@@ -253,14 +264,13 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 				<TooltipPortal parentElement={ parentElement }>
 					<div
 						ref={ tooltipWrapperRef }
-						className={ classNames(
-							'wcpay-tooltip__tooltip-wrapper',
-							{ 'is-hiding': ! isVisible }
-						) }
+						className={ clsx( 'wcpay-tooltip__tooltip-wrapper', {
+							'is-hiding': ! isVisible,
+						} ) }
 						role="tooltip"
 					>
 						<div
-							className={ classNames(
+							className={ clsx(
 								'wcpay-tooltip__tooltip',
 								className
 							) }

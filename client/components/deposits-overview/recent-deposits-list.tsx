@@ -1,7 +1,10 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
+import { calendar } from '@wordpress/icons';
+import { Link } from '@woocommerce/components';
+import { __ } from '@wordpress/i18n';
 import {
 	CardBody,
 	CardDivider,
@@ -9,102 +12,54 @@ import {
 	FlexItem,
 	Icon,
 } from '@wordpress/components';
-import { calendar } from '@wordpress/icons';
-import { Link } from '@woocommerce/components';
-import InfoOutlineIcon from 'gridicons/dist/info-outline';
-import { Fragment } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import './style.scss';
-import DepositStatusPill from 'components/deposit-status-pill';
+import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { getDetailsURL } from 'wcpay/components/details-link';
-import BannerNotice from '../banner-notice';
-
-interface DepositRowProps {
-	deposit: CachedDeposit;
-}
 
 interface RecentDepositsProps {
 	deposits: CachedDeposit[];
 }
 
-const tableClass = 'wcpay-deposits-overview__table';
-
 /**
- * Renders a recent deposits table row.
+ * Renders the Recent Deposit list component.
  *
- * @return {JSX.Element} Deposit table row.
+ * This component includes the recent deposit heading, table and notice.
  */
-const DepositTableRow: React.FC< DepositRowProps > = ( {
-	deposit,
-} ): JSX.Element => {
-	return (
-		<Flex className={ `${ tableClass }__row` }>
+const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
+	deposits,
+} ) => {
+	if ( deposits.length === 0 ) {
+		return null;
+	}
+
+	const tableClass = 'wcpay-deposits-overview__table';
+
+	const depositRows = deposits.map( ( deposit ) => (
+		<Flex className={ `${ tableClass }__row` } key={ deposit.id }>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				<Icon icon={ calendar } size={ 17 } />
-				<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
+				<Link href={ getDetailsURL( deposit.id, 'payouts' ) }>
 					{ getDepositDate( deposit ) }
 				</Link>
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
-				<DepositStatusPill status={ deposit.status } />
+				<DepositStatusChip deposit={ deposit } />
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				{ formatCurrency( deposit.amount, deposit.currency ) }
 			</FlexItem>
 		</Flex>
-	);
-};
-
-/**
- * Renders the Recent Deposit details component.
- *
- * This component includes the recent deposit heading, table and notice.
- *
- * @param {RecentDepositsProps} props Recent Deposit props.
- * @return {JSX.Element} Rendered element with Next Deposit details.
- */
-const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
-	deposits,
-} ): JSX.Element => {
-	if ( deposits.length === 0 ) {
-		return <></>;
-	}
-
-	// Add a notice indicating the potential business day delay for pending and in_transit deposits.
-	// The notice is added after the oldest pending or in_transit deposit.
-	const oldestPendingDepositId = [ ...deposits ]
-		.reverse()
-		.find(
-			( deposit ) =>
-				'pending' === deposit.status || 'in_transit' === deposit.status
-		)?.id;
-	const depositRows = deposits.map( ( deposit ) => (
-		<Fragment key={ deposit.id }>
-			<DepositTableRow deposit={ deposit } />
-			{ deposit.id === oldestPendingDepositId && (
-				<BannerNotice
-					className="wcpay-deposits-overview__business-day-delay-notice"
-					status="info"
-					icon={ <InfoOutlineIcon /> }
-					children={
-						'Deposits pending or in-transit may take 1-2 business days to appear in your bank account once dispatched'
-					}
-					isDismissible={ false }
-				/>
-			) }
-		</Fragment>
 	) );
 
 	return (
 		<>
-			{ /* Next Deposit Table */ }
 			<CardBody className={ `${ tableClass }__container` }>
 				<Flex className={ `${ tableClass }__row__header` }>
 					<FlexItem className={ `${ tableClass }__cell` }>

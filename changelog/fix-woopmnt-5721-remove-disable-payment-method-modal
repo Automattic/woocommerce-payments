@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove unnecessary confirmation modal when disabling payment methods on the settings page

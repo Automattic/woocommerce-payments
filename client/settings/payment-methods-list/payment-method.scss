@@ -1,0 +1,53 @@
+.payment-method__list-item {
+	.payment-method__required-label {
+		font-size: 12px;
+		font-weight: normal;
+		color: $gray-700;
+		margin-left: $gap-smaller;
+	}
+
+	.payment-method__fees {
+		display: flex;
+		white-space: nowrap;
+
+		@include breakpoint( '>660px' ) {
+			justify-content: flex-end;
+			margin-left: 16px;
+			flex-shrink: 0;
+		}
+	}
+
+	.chip {
+		margin-left: $gap-smaller;
+		padding: 2px $gap-smaller;
+
+		@include breakpoint( '<660px' ) {
+			margin-left: 2px;
+		}
+	}
+
+	.payment-method__supported-cards {
+		margin-top: 16px;
+
+		@include breakpoint( '<660px' ) {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+
+		.payment-methods--logos {
+			> div {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 8px;
+
+				img {
+					width: 32px;
+					height: 20px;
+					object-fit: contain;
+					margin-right: 0;
+				}
+			}
+		}
+	}
+}

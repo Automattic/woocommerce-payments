@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Core\WC_Payments_Customer_Service_API;
@@ -40,7 +41,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Filter callback to return the mock http client
 	 *
-	 * @return void
+	 * @return WC_Payments_Http|MockObject
 	 */
 	public function replace_http_client() {
 		return $this->mock_http_client;
@@ -51,6 +52,10 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		// Reset the mode.
+		WC_Payments::mode()->live();
+
 		// mock WC_Payments_Http and use it to set up system under test.
 		$this->mock_http_client = $this
 			->getMockBuilder( 'WC_Payments_Http' )
@@ -61,20 +66,23 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 			'wc_payments_http',
 			[ $this, 'replace_http_client' ]
 		);
-		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_database_cache() );
-		$this->customer_service_api = new WC_Payments_Customer_Service_API( $this->customer_service );
-
+		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_session_service(), WC_Payments::get_order_service() );
+		$this->customer_service_api = new WC_Payments_Customer_Service_API( $this->customer_service, WC_Payments::get_token_service() );
 	}
 
 	/**
 	 * Post-test teardown
 	 */
 	public function tear_down() {
-		parent::tear_down();
 		remove_filter(
 			'wc_payments_http',
 			[ $this, 'replace_http_client' ]
 		);
+
+		// Clear the cache after each test.
+		$this->customer_service_api->delete_cached_payment_methods();
+
+		parent::tear_down();
 	}
 
 	/**
@@ -311,7 +319,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 
 		$response = $this->customer_service_api->get_payment_methods_for_customer( 'cus_12345' );
 
-		// When the payment methods are unable to update, a empty array is sent back.
+		// When the payment methods are unable to update, an empty array is sent back.
 		$this->assertEquals( [], $response );
 	}
 
@@ -339,15 +347,16 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 						'test_mode'       => false,
 						'billing_details' => [
 							'address' => [
-								'city'        => $order->get_billing_city(),
 								'country'     => $order->get_billing_country(),
 								'line1'       => $order->get_billing_address_1(),
-								'postal_code' => $order->get_billing_postcode(),
+								'line2'       => $order->get_billing_address_2(),
+								'city'        => $order->get_billing_city(),
 								'state'       => $order->get_billing_state(),
+								'postal_code' => $order->get_billing_postcode(),
 							],
+							'phone'   => $order->get_billing_phone(),
 							'email'   => $order->get_billing_email(),
 							'name'    => $order->get_billing_first_name() . ' ' . $order->get_billing_last_name(),
-							'phone'   => $order->get_billing_phone(),
 						],
 					]
 				),
@@ -406,57 +415,6 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 		$this->customer_service_api->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
 	}
 
-
-	/**
-	 * Test clearing cached payment methods.
-	 *
-	 * @return void
-	 */
-	public function test_clear_cached_payment_methods_for_user() {
-		// get payment methods for a customer so that it gets cached.
-		$mock_payment_methods = [
-			[ 'id' => 'pm_mock1' ],
-			[ 'id' => 'pm_mock2' ],
-		];
-		$this->mock_http_client
-			->expects( $this->exactly( 1 ) )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->assertSame( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/payment_methods?test_mode=0&customer=cus_123&type=card&limit=100', $data['url'] );
-						$this->assertSame( 'GET', $data['method'] );
-						return true;
-					}
-				)
-			)->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'data' => $mock_payment_methods ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-		$response = $this->customer_service_api->get_payment_methods_for_customer( 'cus_123' );
-		$this->assertEquals( $mock_payment_methods, $response );
-
-		// check if can retrieve from cache.
-		$db_cache       = WC_Payments::get_database_cache();
-		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_123_card' );
-		$this->assertEquals( $mock_payment_methods, $cache_response );
-
-		// set up the user for customer.
-		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_test123' );
-
-		// run the method.
-		$this->customer_service_api->clear_cached_payment_methods_for_user( 'cus_123' );
-
-		// check that cache is empty.
-		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_12345_card' );
-		$this->assertEquals( null, $cache_response );
-	}
-
 	/**
 	 * Get mock customer data.
 	 *
@@ -474,7 +432,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 				'postal_code' => '09876',
 				'city'        => 'City',
 				'state'       => 'State',
-				'country'     => 'US',
+				'country'     => Country_Code::UNITED_STATES,
 			],
 			'shipping'    => [
 				'name'    => 'Shipping Ship',
@@ -484,10 +442,9 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 					'postal_code' => '76543',
 					'city'        => 'City2',
 					'state'       => 'State2',
-					'country'     => 'US',
+					'country'     => Country_Code::UNITED_STATES,
 				],
 			],
 		];
 	}
-
 }

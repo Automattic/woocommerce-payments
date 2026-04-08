@@ -6,3 +6,12 @@ $space-header-item: 12px;
 		margin-right: $space-header-item;
 	}
 }
+
+// Tweak dismiss button height so text is vertically centered.
+// This is a short-term hack, this notice will be moving inside table and
+// use an InlineNotice in future.
+// https://github.com/Automattic/woocommerce-payments/issues/8260
+// Can delete this rule when that issue is fixed.
+button.components-button.wcpay-banner-notice__dismiss.has-icon {
+	height: 20px;
+}

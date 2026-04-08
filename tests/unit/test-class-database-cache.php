@@ -41,7 +41,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() {
+			function () {
 				$this->fail( 'Should not call the generator.' );
 			},
 			'__return_true',
@@ -59,7 +59,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -80,7 +80,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_false',
@@ -101,7 +101,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -122,7 +122,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -145,7 +145,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( &$called_generator ) {
+			function () use ( &$called_generator ) {
 				$called_generator = true;
 				throw new \Exception( 'test' );
 			},
@@ -163,11 +163,10 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	public function test_get_or_add_handles_error_when_there_was_no_old_data() {
 		$refreshed        = false;
 		$called_generator = false;
-		$value            = [ 'mock' => true ];
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( &$called_generator ) {
+			function () use ( &$called_generator ) {
 				$called_generator = true;
 				throw new \Exception( 'test' );
 			},
@@ -197,7 +196,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -220,7 +219,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value, &$called_generator ) {
 				$called_generator = true;
 				return $value;
 			},
@@ -235,6 +234,331 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assert_cache_contains( $old, true );
 	}
 
+	public function test_get_or_add_does_not_refresh_on_subsequent_db_write_errors() {
+		$old           = [ 'old' => true ];
+		$value         = [ 'mock' => true ];
+		$another_value = [ 'another_mock' => true ];
+
+		// Write an expired cache value.
+		$this->write_mock_cache( $old, time() - YEAR_IN_SECONDS );
+
+		// All DB write queries will fail.
+		add_filter(
+			'query',
+			function ( $query ) {
+				if ( str_starts_with( $query, 'UPDATE' ) || str_starts_with( $query, 'INSERT INTO' ) ) {
+					return false;
+				}
+
+				return $query;
+			}
+		);
+
+		// First call will call the generator, fail to write to the DB, and cache the value in the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $value, &$called_generator ) {
+				$called_generator = true;
+
+				return $value;
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $value, $res );
+		$this->assertTrue( $refreshed );
+		$this->assertTrue( $called_generator );
+		$this->assert_cache_contains( $old );
+
+		// The second call will NOT call the generator, but the value will be returned from the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( &$called_generator ) {
+				$called_generator = true;
+
+				return [];
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $value, $res );
+		$this->assertFalse( $refreshed );
+		$this->assertFalse( $called_generator );
+		$this->assert_cache_contains( $old );
+
+		remove_all_filters( 'query' );
+
+		// The third call will NOT call the generator, NOT write to the DB, but the value will be returned from the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( &$called_generator ) {
+				$called_generator = true;
+
+				return [];
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $value, $res );
+		$this->assertFalse( $refreshed );
+		$this->assertFalse( $called_generator );
+		$this->assert_cache_contains( $old );
+
+		// Fourth call will call the generator, write to the DB, and cache the value in the in-memory cache,
+		// but only because we are forcing it to refresh.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $another_value, &$called_generator ) {
+				$called_generator = true;
+
+				return $another_value;
+			},
+			'__return_true',
+			true, // It will refresh only because we are forcing it.
+			$refreshed
+		);
+
+		$this->assertEquals( $another_value, $res );
+		$this->assertTrue( $refreshed );
+		$this->assertTrue( $called_generator );
+		$this->assert_cache_contains( $another_value );
+	}
+
+	public function test_get_or_add_with_no_cached_data_fetches_but_does_not_refresh_on_subsequent_db_write_errors() {
+		$value         = [ 'mock' => true ];
+		$another_value = [ 'another_mock' => true ];
+
+		// All DB write queries will fail.
+		add_filter(
+			'query',
+			function ( $query ) {
+				if ( str_starts_with( $query, 'UPDATE' ) || str_starts_with( $query, 'INSERT INTO' ) ) {
+					return false;
+				}
+
+				return $query;
+			}
+		);
+
+		// First call will call the generator, fail to write to the DB, and cache the value in the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $value, &$called_generator ) {
+				$called_generator = true;
+
+				return $value;
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $value, $res );
+		$this->assertTrue( $refreshed );
+		$this->assertTrue( $called_generator );
+
+		// The second call will NOT call the generator, but the value will be returned from the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( &$called_generator ) {
+				$called_generator = true;
+
+				return [];
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $value, $res );
+		$this->assertFalse( $refreshed );
+		$this->assertFalse( $called_generator );
+
+		remove_all_filters( 'query' );
+
+		// Third call will call the generator, write to the DB, and cache the value in the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $another_value, &$called_generator ) {
+				$called_generator = true;
+
+				return $another_value;
+			},
+			'__return_true',
+			true, // It will refresh only because we are forcing it.
+			$refreshed
+		);
+
+		$this->assertEquals( $another_value, $res );
+		$this->assertTrue( $refreshed );
+		$this->assertTrue( $called_generator );
+		$this->assert_cache_contains( $another_value );
+	}
+
+	public function test_get_or_add_refreshes_on_cache_cleared_despite_previous_db_write_errors() {
+		$old           = [ 'old' => true ];
+		$value         = [ 'mock' => true ];
+		$another_value = [ 'another_mock' => true ];
+
+		// Write an expired cache value.
+		$this->write_mock_cache( $old, time() - YEAR_IN_SECONDS );
+
+		// All DB write queries will fail.
+		add_filter(
+			'query',
+			function ( $query ) {
+				if ( str_starts_with( $query, 'UPDATE' ) || str_starts_with( $query, 'INSERT INTO' ) ) {
+					return false;
+				}
+
+				return $query;
+			}
+		);
+
+		// First call will call the generator, fail to write to the DB, and cache the value in the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $value, &$called_generator ) {
+				$called_generator = true;
+
+				return $value;
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $value, $res );
+		$this->assertTrue( $refreshed );
+		$this->assertTrue( $called_generator );
+		$this->assert_cache_contains( $old );
+
+		// The second call will NOT call the generator, but the value will be returned from the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( &$called_generator ) {
+				$called_generator = true;
+
+				return [];
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $value, $res );
+		$this->assertFalse( $refreshed );
+		$this->assertFalse( $called_generator );
+
+		// Clear the cache.
+		$this->database_cache->delete( self::MOCK_KEY );
+
+		// Third call will call the generator, fail to write to the DB, and cache the value in the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $another_value, &$called_generator ) {
+				$called_generator = true;
+
+				return $another_value;
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $another_value, $res );
+		$this->assertTrue( $refreshed );
+		$this->assertTrue( $called_generator );
+
+		// Fourth call will NOT call the generator, but the value will be returned from the in-memory cache.
+		$called_generator = false;
+		$refreshed        = false;
+		$res              = $this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( &$called_generator ) {
+				$called_generator = true;
+
+				return [];
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertEquals( $another_value, $res );
+		$this->assertFalse( $refreshed );
+		$this->assertFalse( $called_generator );
+
+		remove_all_filters( 'query' );
+	}
+
+	public function test_delete_clears_wp_object_cache_even_when_db_option_missing() {
+		$cache_contents = [
+			'data'    => [ 'stale' => true ],
+			'fetched' => time() - HOUR_IN_SECONDS,
+			'errored' => false,
+		];
+
+		// Seed the WP object cache directly (simulating Memcached having a stale entry).
+		wp_cache_set( self::MOCK_KEY, $cache_contents, 'options' );
+
+		// Ensure there's NO DB option row — simulates the double-delete scenario.
+		delete_option( self::MOCK_KEY );
+
+		// Sanity check: WP object cache has the stale entry.
+		$this->assertNotFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'Precondition: WP object cache should have the stale entry.' );
+
+		// Act: delete via Database_Cache.
+		$this->database_cache->delete( self::MOCK_KEY );
+
+		// Assert: WP object cache entry must be gone.
+		$this->assertFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'wp_cache_delete should be called even when delete_option returns false.' );
+	}
+
+	public function test_delete_clears_wp_object_cache_when_db_option_exists() {
+		$value = [ 'mock' => true ];
+
+		// Write a valid cache entry to DB (non-autoloaded, matching production behavior).
+		$this->write_mock_cache( $value );
+
+		// Sanity check: both DB and WP object cache have the entry.
+		$this->assertNotFalse( get_option( self::MOCK_KEY ), 'Precondition: DB option should exist.' );
+		$this->assertNotFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'Precondition: WP object cache should have the entry.' );
+
+		// Act: delete via Database_Cache.
+		$this->database_cache->delete( self::MOCK_KEY );
+
+		// Assert: both DB and WP object cache entries must be gone.
+		$this->assertFalse( get_option( self::MOCK_KEY ), 'DB option should be deleted.' );
+		$this->assertFalse( wp_cache_get( self::MOCK_KEY, 'options' ), 'WP object cache entry should be deleted.' );
+	}
+
 	public function test_get_or_add_does_not_refresh_if_disabled() {
 		$refreshed = false;
 		$value     = [ 'mock' => true ];
@@ -246,7 +570,7 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 		$res = $this->database_cache->get_or_add(
 			self::MOCK_KEY,
-			function() use ( $value ) {
+			function () use ( $value ) {
 				return $value;
 			},
 			'__return_true',
@@ -259,27 +583,6 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assert_cache_contains( $old );
 	}
 
-	public function test_delete_cache_by_prefix_will_not_delete_values_that_are_not_cache_keys() {
-		$cache_value = 'foo';
-		$this->write_mock_cache( $cache_value, time() + YEAR_IN_SECONDS );
-
-		$this->database_cache->delete_by_prefix( self::MOCK_KEY );
-
-		$this->assert_cache_contains( $cache_value );
-	}
-
-	public function test_delete_cache_by_prefix_will_delete_cached_data_that_starts_with_prefix() {
-		$payment_method_cache_key_one = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . '1';
-		$payment_method_cache_key_two = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . '2';
-		$this->database_cache->add( $payment_method_cache_key_one, 'foo' );
-		$this->database_cache->add( $payment_method_cache_key_two, 'bar' );
-
-		$this->database_cache->delete_by_prefix( Database_Cache::PAYMENT_METHODS_KEY_PREFIX );
-
-		$this->assertNull( $this->database_cache->get( $payment_method_cache_key_one ) );
-		$this->assertNull( $this->database_cache->get( $payment_method_cache_key_two ) );
-	}
-
 	private function write_mock_cache( $data, ?int $fetch_time = null, bool $errored = false ) {
 		update_option(
 			self::MOCK_KEY,
@@ -287,7 +590,8 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 				'data'    => $data,
 				'fetched' => $fetch_time ?? time(),
 				'errored' => $errored,
-			]
+			],
+			'no' // Match production: Database_Cache stores options as non-autoloaded.
 		);
 	}
 

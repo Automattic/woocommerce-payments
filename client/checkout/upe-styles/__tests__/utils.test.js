@@ -1,0 +1,140 @@
+/**
+ * External dependencies
+ */
+import tinycolor from 'tinycolor2';
+
+/**
+ * Internal dependencies
+ */
+import * as upeUtils from '../utils';
+
+describe( 'UPE Utilities to generate UPE styles', () => {
+	test( 'generateHoverColors returns new darker background and colors are readable', () => {
+		const hoverColors = upeUtils.generateHoverColors(
+			'#333333', //rgb(51,51,51) Storefront place order button background color.
+			'#ffffff'
+		);
+		expect( hoverColors ).toEqual( {
+			backgroundColor: 'rgb(33, 33, 33)', // A darker color
+			color: 'rgb(255, 255, 255)',
+		} );
+		expect(
+			tinycolor.isReadable(
+				hoverColors.backgroundColor,
+				hoverColors.color
+			)
+		).toBe( true );
+	} );
+
+	test( 'generateHoverColors returns lighter background when brigthness < 50 and colors are readable', () => {
+		const hoverColors = upeUtils.generateHoverColors(
+			'rgb(40, 48, 61)', // 2021 place order button background color.
+			'rgb(209, 228, 221)'
+		);
+		expect( hoverColors ).toEqual( {
+			backgroundColor: 'rgb(54, 65, 83)', // A lighter color
+			color: 'rgb(209, 228, 221)',
+		} );
+		expect(
+			tinycolor.isReadable(
+				hoverColors.backgroundColor,
+				hoverColors.color
+			)
+		).toBe( true );
+	} );
+
+	test( 'generateHoverColors returns readable colors using fallbacks', () => {
+		let hoverColors = upeUtils.generateHoverColors(
+			'#333333',
+			'#333333' // Unreadable
+		);
+		expect( hoverColors ).toEqual( {
+			backgroundColor: 'rgb(33, 33, 33)',
+			color: 'rgb(255, 255, 255)', //Returns white
+		} );
+		expect(
+			tinycolor.isReadable(
+				hoverColors.backgroundColor,
+				hoverColors.color
+			)
+		).toBe( true );
+
+		hoverColors = upeUtils.generateHoverColors(
+			'rgb(40, 48, 61)',
+			'rgb(40, 48, 61)' // Unreadable
+		);
+		expect( hoverColors ).toEqual( {
+			backgroundColor: 'rgb(54, 65, 83)',
+			color: 'rgb(255, 255, 255)', //Returns white
+		} );
+		expect(
+			tinycolor.isReadable(
+				hoverColors.backgroundColor,
+				hoverColors.color
+			)
+		).toBe( true );
+
+		hoverColors = upeUtils.generateHoverColors(
+			'rgb(209, 228, 221)',
+			'rgb(209, 228, 221)' // Unreadable
+		);
+		expect( hoverColors ).toEqual( {
+			backgroundColor: 'rgb(186, 215, 204)',
+			color: 'rgb(0, 0, 0)', //Returns black
+		} );
+		expect(
+			tinycolor.isReadable(
+				hoverColors.backgroundColor,
+				hoverColors.color
+			)
+		).toBe( true );
+	} );
+	test( 'generateHoverColors returns empty colors if provided colors are not valid', () => {
+		const hoverColors = upeUtils.generateHoverColors(
+			'notacolor',
+			'rgb(209, 228, 221)'
+		);
+		expect( hoverColors ).toEqual( {
+			backgroundColor: '',
+			color: '',
+		} );
+	} );
+
+	test( 'isColorLight returns valid brightness values', () => {
+		const white = '#ffffff';
+		const black = '#000000';
+		const darkGrey = '#454545';
+		const lightGrey = '#dbdbdb';
+
+		expect( upeUtils.isColorLight( white ) ).toEqual( true );
+		expect( upeUtils.isColorLight( black ) ).toEqual( false );
+		expect( upeUtils.isColorLight( darkGrey ) ).toEqual( false );
+		expect( upeUtils.isColorLight( lightGrey ) ).toEqual( true );
+	} );
+
+	test( 'maybeConvertRGBAtoRGB returns valid colors', () => {
+		const hex = '#ffffff';
+		const color = 'red';
+		const rgb = 'rgb(1, 2, 3)';
+		const rgbNoSpaces = 'rgb(1,2,3)';
+		const rgba = 'rgba(1, 2, 3, 1)';
+		const rgbaNoSpaces = 'rgba(1,2,3,1)';
+		const shadow = 'rgb(1,2,3) 0px 1px 1px 0px';
+		const shadowTransparent = 'rgba(1,2,3,1) 0px 1px 1px 0px';
+		const pixel = '0px';
+
+		expect( upeUtils.maybeConvertRGBAtoRGB( hex ) ).toEqual( hex );
+		expect( upeUtils.maybeConvertRGBAtoRGB( color ) ).toEqual( color );
+		expect( upeUtils.maybeConvertRGBAtoRGB( rgb ) ).toEqual( rgb );
+		expect( upeUtils.maybeConvertRGBAtoRGB( rgbNoSpaces ) ).toEqual(
+			rgbNoSpaces
+		);
+		expect( upeUtils.maybeConvertRGBAtoRGB( rgba ) ).toEqual( rgb );
+		expect( upeUtils.maybeConvertRGBAtoRGB( rgbaNoSpaces ) ).toEqual( rgb );
+		expect( upeUtils.maybeConvertRGBAtoRGB( shadow ) ).toEqual( shadow );
+		expect( upeUtils.maybeConvertRGBAtoRGB( shadowTransparent ) ).toEqual(
+			shadowTransparent
+		);
+		expect( upeUtils.maybeConvertRGBAtoRGB( pixel ) ).toEqual( pixel );
+	} );
+} );
