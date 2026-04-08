@@ -124,7 +124,7 @@ class WC_REST_Payments_Terminal_Locations_Controller extends WC_Payments_REST_Co
 		);
 
 		// Special handling for Puerto Rico - treat as US state rather than country.
-		if ( 'PR' === $location_address['country'] ) {
+		if ( 'PR' === ( $location_address['country'] ?? '' ) ) {
 			$location_address['country'] = 'US';
 			$location_address['state']   = 'PR';
 		}

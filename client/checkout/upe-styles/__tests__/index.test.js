@@ -2,6 +2,107 @@
  * Internal dependencies
  */
 import * as upeStyles from '..';
+import { appearanceSelectors } from '..';
+
+describe( 'appearanceSelectors.updateSelectors', () => {
+	let scope;
+
+	beforeEach( () => {
+		scope = document;
+		document.body.innerHTML = '';
+	} );
+
+	it( 'uses primary selectors when they exist in the DOM', () => {
+		document.body.innerHTML =
+			'<div class="woocommerce-billing-fields__field-wrapper">' +
+			'<input id="billing_first_name" type="text" />' +
+			'</div>';
+
+		const selectors = {
+			appendTarget: '.woocommerce-billing-fields__field-wrapper',
+			upeThemeInputSelector: '#billing_first_name',
+			alternateSelectors: {
+				appendTarget: 'form.checkout',
+				upeThemeInputSelector: 'form.checkout input[type="text"]',
+			},
+		};
+
+		const result = appearanceSelectors.updateSelectors( selectors, scope );
+		expect( result.appendTarget ).toBe(
+			'.woocommerce-billing-fields__field-wrapper'
+		);
+		expect( result.upeThemeInputSelector ).toBe( '#billing_first_name' );
+		expect( result ).not.toHaveProperty( 'alternateSelectors' );
+	} );
+
+	it( 'falls back to alternate selectors when primary are missing', () => {
+		document.body.innerHTML =
+			'<form class="checkout">' +
+			'<input type="text" name="name" />' +
+			'</form>';
+
+		const selectors = {
+			appendTarget: '.woocommerce-billing-fields__field-wrapper',
+			upeThemeInputSelector: '#billing_first_name',
+			alternateSelectors: {
+				appendTarget: 'form.checkout',
+				upeThemeInputSelector: 'form.checkout input[type="text"]',
+			},
+		};
+
+		const result = appearanceSelectors.updateSelectors( selectors, scope );
+		expect( result.appendTarget ).toBe( 'form.checkout' );
+		expect( result.upeThemeInputSelector ).toBe(
+			'form.checkout input[type="text"]'
+		);
+	} );
+
+	it( 'falls back array selectors when none of the primary match', () => {
+		document.body.innerHTML =
+			'<form class="checkout">' +
+			'<div class="woocommerce">content</div>' +
+			'</form>';
+
+		const selectors = {
+			upeThemeTextSelectors: [
+				'#payment .payment_methods li .payment_box fieldset',
+				'.woocommerce-checkout .form-row',
+			],
+			alternateSelectors: {
+				upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+			},
+		};
+
+		const result = appearanceSelectors.updateSelectors( selectors, scope );
+		expect( result.upeThemeTextSelectors ).toEqual( [
+			'form.checkout',
+			'.woocommerce',
+		] );
+	} );
+
+	it( 'keeps array selectors when at least one primary matches', () => {
+		document.body.innerHTML =
+			'<div class="woocommerce-checkout">' +
+			'<div class="form-row">content</div>' +
+			'</div>';
+
+		const selectors = {
+			upeThemeTextSelectors: [
+				'#payment .payment_methods li .payment_box fieldset',
+				'.woocommerce-checkout .form-row',
+			],
+			alternateSelectors: {
+				upeThemeTextSelectors: [ 'form.checkout', '.woocommerce' ],
+			},
+		};
+
+		const result = appearanceSelectors.updateSelectors( selectors, scope );
+		expect( result.upeThemeTextSelectors ).toEqual( [
+			'#payment .payment_methods li .payment_box fieldset',
+			'.woocommerce-checkout .form-row',
+		] );
+	} );
+} );
 
 describe( 'Getting styles for automated theming', () => {
 	const mockElement = document.createElement( 'input' );

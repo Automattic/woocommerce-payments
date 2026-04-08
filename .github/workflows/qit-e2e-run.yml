@@ -57,8 +57,9 @@ jobs:
           coverage: none
 
       - name: Install QIT CLI
-        # Use dev-trunk because test packages feature is not yet in stable releases
-        run: composer global require woocommerce/qit-cli:dev-trunk
+        # Pin to a stable release to avoid regressions from dev-trunk.
+        # Test packages feature is available since 1.1.0.
+        run: composer global require woocommerce/qit-cli:1.1.8
 
       - name: Authenticate QIT
         run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
@@ -70,6 +71,7 @@ jobs:
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
         run: |
           qit run:e2e woocommerce-payments \
+            --zip=woocommerce-payments.zip \
             --config tests/qit/qit.json \
             --woo=${{ inputs.woocommerce-version }} \
             --wp=${{ inputs.wordpress-version }} \
