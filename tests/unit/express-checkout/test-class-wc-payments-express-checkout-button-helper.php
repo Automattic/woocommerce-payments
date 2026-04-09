@@ -428,19 +428,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_get_enabled_express_checkout_methods_for_context_returns_amazon_pay_when_enabled() {
-		add_filter(
-			'pre_option__wcpay_feature_amazon_pay',
-			function () {
-				return '1';
-			}
-		);
-
-		// is_amazon_pay_enabled() internally checks is_ece_confirmation_tokens_enabled() which reads from cache.
-		$mock_cache = $this->createMock( WCPay\Database_Cache::class );
-		$mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
-		$original_cache = WC_Payments::get_database_cache();
-		WC_Payments::set_database_cache( $mock_cache );
-
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( false );
 		$mock_gateway->method( 'get_option' )
@@ -467,25 +454,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$enabled_methods = $helper->get_enabled_express_checkout_methods_for_context();
 
 		$this->assertContains( 'amazon_pay', $enabled_methods );
-
-		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
-		WC_Payments::set_database_cache( $original_cache );
 	}
 
 	public function test_get_enabled_express_checkout_methods_for_context_returns_both_when_both_enabled() {
-		add_filter(
-			'pre_option__wcpay_feature_amazon_pay',
-			function () {
-				return '1';
-			}
-		);
-
-		// is_amazon_pay_enabled() internally checks is_ece_confirmation_tokens_enabled() which reads from cache.
-		$mock_cache = $this->createMock( WCPay\Database_Cache::class );
-		$mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
-		$original_cache = WC_Payments::get_database_cache();
-		WC_Payments::set_database_cache( $mock_cache );
-
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( true );
 		$mock_gateway->method( 'get_option' )
@@ -513,9 +484,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$this->assertContains( 'payment_request', $enabled_methods );
 		$this->assertContains( 'amazon_pay', $enabled_methods );
-
-		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
-		WC_Payments::set_database_cache( $original_cache );
 	}
 
 	public function test_get_enabled_express_checkout_methods_for_context_returns_empty_when_no_valid_context() {
@@ -554,19 +522,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	public function test_get_enabled_express_checkout_methods_for_context_excludes_amazon_pay_when_currency_not_supported() {
-		add_filter(
-			'pre_option__wcpay_feature_amazon_pay',
-			function () {
-				return '1';
-			}
-		);
-
-		// is_amazon_pay_enabled() internally checks is_ece_confirmation_tokens_enabled() which reads from cache.
-		$mock_cache = $this->createMock( WCPay\Database_Cache::class );
-		$mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
-		$original_cache = WC_Payments::get_database_cache();
-		WC_Payments::set_database_cache( $mock_cache );
-
 		// EUR is not supported for US merchants.
 		add_filter( 'woocommerce_currency', [ $this, 'return_eur_currency' ] );
 
@@ -600,9 +555,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$this->assertNotContains( 'amazon_pay', $enabled_methods );
 
-		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
 		remove_filter( 'woocommerce_currency', [ $this, 'return_eur_currency' ] );
-		WC_Payments::set_database_cache( $original_cache );
 	}
 
 	/**
@@ -628,29 +581,20 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	 */
 	public function can_use_amazon_pay_provider() {
 		return [
-			'feature flag disabled' => [
-				'feature_flag_enabled' => false,
-				'gateway_available'    => true,
-				'tax_on_billing'       => false,
-				'expected'             => false,
-			],
 			'gateway not available' => [
-				'feature_flag_enabled' => true,
-				'gateway_available'    => false,
-				'tax_on_billing'       => false,
-				'expected'             => false,
+				'gateway_available' => false,
+				'tax_on_billing'    => false,
+				'expected'          => false,
 			],
 			'tax based on billing'  => [
-				'feature_flag_enabled' => true,
-				'gateway_available'    => true,
-				'tax_on_billing'       => true,
-				'expected'             => false,
+				'gateway_available' => true,
+				'tax_on_billing'    => true,
+				'expected'          => false,
 			],
 			'all conditions met'    => [
-				'feature_flag_enabled' => true,
-				'gateway_available'    => true,
-				'tax_on_billing'       => false,
-				'expected'             => true,
+				'gateway_available' => true,
+				'tax_on_billing'    => false,
+				'expected'          => true,
 			],
 		];
 	}
@@ -658,22 +602,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	/**
 	 * @dataProvider can_use_amazon_pay_provider
 	 */
-	public function test_can_use_amazon_pay( $feature_flag_enabled, $gateway_available, $tax_on_billing, $expected ) {
+	public function test_can_use_amazon_pay( $gateway_available, $tax_on_billing, $expected ) {
 		$original_gateway_map     = WC_Payments::get_payment_gateway_map();
 		$original_account_service = WC_Payments::get_account_service();
-		$original_cache           = WC_Payments::get_database_cache();
-
-		// is_amazon_pay_enabled() internally checks is_ece_confirmation_tokens_enabled() which reads from cache.
-		$mock_cache = $this->createMock( WCPay\Database_Cache::class );
-		$mock_cache->method( 'get' )->willReturn( [ 'ece_confirmation_tokens_disabled' => false ] );
-		WC_Payments::set_database_cache( $mock_cache );
-
-		add_filter(
-			'pre_option__wcpay_feature_amazon_pay',
-			function () use ( $feature_flag_enabled ) {
-				return $feature_flag_enabled ? '1' : '0';
-			}
-		);
 
 		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( $gateway_available );
@@ -702,12 +633,10 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$this->assertSame( $expected, $result );
 
-		remove_all_filters( 'pre_option__wcpay_feature_amazon_pay' );
 		$this->set_payment_gateway_map( $original_gateway_map );
 		if ( $original_account_service ) {
 			WC_Payments::set_account_service( $original_account_service );
 		}
-		WC_Payments::set_database_cache( $original_cache );
 		remove_filter( 'wc_tax_enabled', '__return_true' );
 		remove_filter( 'wc_tax_enabled', '__return_false' );
 		delete_option( 'woocommerce_tax_based_on' );

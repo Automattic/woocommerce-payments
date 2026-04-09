@@ -29,7 +29,6 @@ class WC_Payments_Features {
 	const DISPUTE_ADDITIONAL_EVIDENCE_TYPES                   = '_wcpay_feature_dispute_additional_evidence_types';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
-	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 
 	/**
@@ -364,15 +363,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Amazon Pay is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_amazon_pay_enabled(): bool {
-		return '1' === get_option( self::AMAZON_PAY_FLAG_NAME, '1' ) && self::is_ece_confirmation_tokens_enabled();
-	}
-
-	/**
 	 * Checks whether ECE should use confirmation tokens instead of payment methods.
 	 *
 	 * @see https://docs.stripe.com/payments/finalize-payments-on-the-server-migration
@@ -401,7 +391,7 @@ class WC_Payments_Features {
 				'isDisputeAdditionalEvidenceTypesEnabled'  => self::is_dispute_additional_evidence_types_enabled(),
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
-				'amazonPay'                                => self::is_amazon_pay_enabled(),
+				'amazonPay'                                => self::is_ece_confirmation_tokens_enabled(),
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 			]
 		);

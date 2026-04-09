@@ -103,8 +103,8 @@ class PaymentMethodDefinitionRegistry {
 			$this->register_payment_method( $definition );
 		}
 
-		// When Amazon Pay is promoted from feature flag, we can register it directly in the `available_definitions` array.
-		if ( \WC_Payments_Features::is_amazon_pay_enabled() ) {
+		// Amazon Pay requires confirmation tokens support from the Stripe account.
+		if ( \WC_Payments_Features::is_ece_confirmation_tokens_enabled() ) {
 			$this->register_payment_method( AmazonPayDefinition::class );
 		}
 	}

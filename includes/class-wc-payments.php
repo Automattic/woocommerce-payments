@@ -700,6 +700,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-migrate-payment-request-to-express-checkout-enabled.php';
 		require_once __DIR__ . '/migrations/class-migrate-express-checkout-locations.php';
 		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-express-checkout-locations.php';
+		require_once __DIR__ . '/migrations/class-add-amazon-pay-to-upe-enabled-methods.php';
 		require_once __DIR__ . '/migrations/class-delete-appearance-transients.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
@@ -711,6 +712,7 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), GiropayDefinition::get_id(), '7.9.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), SofortDefinition::get_id(), '8.9.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Add_Amazon_Pay_To_Upe_Enabled_Methods( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Migrate_Payment_Request_To_Express_Checkout_Enabled(), 'maybe_migrate' ] );

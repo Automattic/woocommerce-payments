@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: remove client-side amazon pay feature flag & ensure amazon pay relies on upe enabled payment method ids
