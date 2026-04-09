@@ -450,6 +450,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										variant="primary"
 										disabled
 										tabIndex={ -1 }
+										aria-hidden="true"
 										data-testid="challenge-dispute-button-disabled"
 										__next40pxDefaultSize
 									>
