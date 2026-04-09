@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add authentication guard to shopper WooPay appearance endpoint
