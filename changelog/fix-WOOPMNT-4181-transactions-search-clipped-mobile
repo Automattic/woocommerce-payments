@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix transactions search box placeholder text being clipped on mobile viewports.
