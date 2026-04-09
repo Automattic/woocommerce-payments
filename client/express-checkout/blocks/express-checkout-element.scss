@@ -15,11 +15,12 @@
 	height: 20px;
 }
 
+// Give the button list padding so Stripe's iframe overflow
+// (margin: -4px; width: calc(100% + 8px)) and focus outlines
+// are not clipped by the container.
 .wc-block-components-express-payment
-	.wc-block-components-express-payment__event-buttons
-	> li {
-	margin-left: 1px !important;
-	width: 99% !important;
+	.wc-block-components-express-payment__event-buttons {
+	padding: 0 4px;
 }
 
 // Preview button
