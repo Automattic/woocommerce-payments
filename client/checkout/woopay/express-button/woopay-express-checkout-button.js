@@ -26,7 +26,7 @@ import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 import { getCardBrands } from 'wcpay/utils/card-brands';
-import { isValidPreferredCard } from './preferred-card-utils';
+import { isValidPreferredCard, normalizeBrand } from './preferred-card-utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
 
@@ -361,11 +361,14 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
+	const normalizedBrand = isValidPreferredCard( preferredCard )
+		? normalizeBrand( preferredCard.brand )
+		: null;
+
 	const cardBrandIcon =
-		isValidPreferredCard( preferredCard ) &&
-		buttonWidthType === buttonWidthTypes.wide
+		normalizedBrand && buttonWidthType === buttonWidthTypes.wide
 			? getCardBrands().find(
-					( brand ) => brand.name === preferredCard.brand
+					( brand ) => brand.name === normalizedBrand
 			  )
 			: null;
 
@@ -377,7 +380,7 @@ export const WoopayExpressCheckoutButton = ( {
 					<span className="woopay-button-separator" />
 					<img
 						src={ cardBrandIcon.component }
-						alt={ preferredCard.brand }
+						alt={ normalizedBrand }
 						className="woopay-button-card-brand"
 					/>
 					<span className="woopay-button-last4">

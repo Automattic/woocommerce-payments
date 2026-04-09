@@ -68,14 +68,22 @@ jest.mock( 'wcpay/utils/card-brands', () => ( {
 	],
 } ) );
 
-jest.mock( '../preferred-card-utils', () => ( {
-	isValidPreferredCard: ( card ) =>
-		card &&
-		typeof card.brand === 'string' &&
-		card.brand.length > 0 &&
-		typeof card.last4 === 'string' &&
-		/^\d{4}$/.test( card.last4 ),
-} ) );
+jest.mock( '../preferred-card-utils', () => {
+	const BRAND_ALIASES = {
+		american_express: 'amex',
+		diners_club: 'diners',
+		china_unionpay: 'unionpay',
+	};
+	return {
+		isValidPreferredCard: ( card ) =>
+			card &&
+			typeof card.brand === 'string' &&
+			card.brand.length > 0 &&
+			typeof card.last4 === 'string' &&
+			/^\d{4}$/.test( card.last4 ),
+		normalizeBrand: ( brand ) => BRAND_ALIASES[ brand ] || brand,
+	};
+} );
 
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
@@ -358,6 +366,27 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			expect( cardBrandImg ).toBeInTheDocument();
 			expect( cardBrandImg ).toHaveAttribute( 'src', 'visa-icon.svg' );
 			expect( screen.getByText( '4242' ) ).toBeInTheDocument();
+		} );
+
+		test( 'normalizes american_express display_brand to amex icon', () => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+					preferredCard={ {
+						brand: 'american_express',
+						last4: '1008',
+					} }
+				/>
+			);
+
+			const cardBrandImg = screen.getByAltText( 'amex' );
+			expect( cardBrandImg ).toBeInTheDocument();
+			expect( cardBrandImg ).toHaveAttribute( 'src', 'amex-icon.svg' );
+			expect( screen.getByText( '1008' ) ).toBeInTheDocument();
 		} );
 
 		test( 'renders default button text when preferredCard is null', () => {

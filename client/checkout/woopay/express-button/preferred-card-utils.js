@@ -7,6 +7,28 @@ const PREFERRED_CARD_CACHE_KEY = 'woopay_preferred_card';
 const LAST4_PATTERN = /^\d{4}$/;
 
 /**
+ * Maps Stripe display_brand values to the short brand names used by getCardBrands().
+ * WCPay's token service stores display_brand (e.g. "american_express") when available,
+ * but our card icon lookup uses the short form (e.g. "amex").
+ */
+const BRAND_ALIASES = {
+	american_express: 'amex',
+	diners_club: 'diners',
+	china_unionpay: 'unionpay',
+};
+
+/**
+ * Normalizes a card brand name from Stripe's display_brand format to the
+ * short form used by getCardBrands().
+ *
+ * @param {string} brand The brand string (may be display_brand or short form).
+ * @return {string} The normalized short brand name.
+ */
+export const normalizeBrand = ( brand ) => {
+	return BRAND_ALIASES[ brand ] || brand;
+};
+
+/**
  * Validates that a preferred card object has the expected shape.
  *
  * @param {Object|null} card The card data to validate.
