@@ -436,7 +436,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									'woocommerce-payments'
 								) }
 							>
-								<span>
+								<span className="transaction-details-dispute-details-body__challenge-disabled">
 									<Button
 										variant="primary"
 										disabled
