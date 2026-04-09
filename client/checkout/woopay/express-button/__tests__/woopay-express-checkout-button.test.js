@@ -60,12 +60,7 @@ jest.mock( 'tracks', () => ( {
 
 jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 
-jest.mock( 'wcpay/utils/card-brands', () => ( {
-	getCardBrands: () => [
-		{ name: 'visa', component: 'visa-icon.svg' },
-		{ name: 'mastercard', component: 'mastercard-icon.svg' },
-		{ name: 'amex', component: 'amex-icon.svg' },
-	],
+jest.mock( 'wcpay/utils/woopay-card-brands', () => ( {
 	getWoopayCardBrands: () => [
 		{ name: 'visa', component: 'visa-icon.svg' },
 		{ name: 'mastercard', component: 'mastercard-icon.svg' },

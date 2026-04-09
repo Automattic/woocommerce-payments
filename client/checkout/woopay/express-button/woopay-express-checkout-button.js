@@ -25,7 +25,7 @@ import {
 import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
-import { getWoopayCardBrands } from 'wcpay/utils/card-brands';
+import { getWoopayCardBrands } from 'wcpay/utils/woopay-card-brands';
 import { isValidPreferredCard, normalizeBrand } from './preferred-card-utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
