@@ -1,4 +1,9 @@
 #wcpay-woopay-button {
+	// Match Stripe ECE iframe's overflow (margin: -4px; width: calc(100% + 8px))
+	// so WooPay button aligns with Apple Pay / Google Pay buttons.
+	margin: 0 -4px;
+	width: calc( 100% + 8px );
+
 	// Enable container queries on the button wrapper
 	container-type: inline-size;
 	container-name: woopay-button;
