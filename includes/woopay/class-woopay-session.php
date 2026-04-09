@@ -1253,9 +1253,7 @@ class WooPay_Session {
 	 * @return void
 	 */
 	public static function ajax_shopper_set_woopay_appearance() {
-		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
-
-		if ( ! $is_nonce_valid ) {
+		if ( ! is_user_logged_in() || ! check_ajax_referer( 'woopay_session_nonce', false, false ) ) {
 			wp_send_json_error(
 				__( 'You aren\'t authorized to do that.', 'woocommerce-payments' ),
 				403
