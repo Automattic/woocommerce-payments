@@ -401,9 +401,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			expect(
-				screen.queryByRole( 'button', { name: 'WooPay' } )
-			).toBeInTheDocument();
+			expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
 			expect( screen.queryByText( '4242' ) ).not.toBeInTheDocument();
 		} );
 
@@ -423,9 +421,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			// Unknown brand should fall back to default button text
-			expect(
-				screen.queryByRole( 'button', { name: 'WooPay' } )
-			).toBeInTheDocument();
+			expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
 			expect( screen.queryByText( '1234' ) ).not.toBeInTheDocument();
 		} );
 	} );
