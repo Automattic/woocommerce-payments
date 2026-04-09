@@ -1,4 +1,3 @@
-import moment from 'moment';
 import React, { useEffect } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
@@ -85,12 +84,13 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 	}
 
 	// Get current time in UTC for consistent timezone-independent comparison
-	const now = moment().utc();
+	const now = new Date();
 	// Parse the Unix timestamp as UTC since it's stored that way in the API
-	const dueBy = moment.unix( dispute.evidence_details?.due_by ).utc();
+	const dueBy = new Date( dispute.evidence_details?.due_by * 1000 );
 
 	// If the dispute is due in the past, don't show notice.
-	if ( ! now.isBefore( dueBy ) ) {
+	const isPastDue = now.getTime() >= dueBy.getTime();
+	if ( isPastDue ) {
 		return null;
 	}
 
@@ -104,7 +104,9 @@ const DisputedOrderNoticeHandler = ( { chargeId, onDisableOrderRefund } ) => {
 			) }
 			isPreDisputeInquiry={ isInquiry( dispute.status ) }
 			dueBy={ dueBy }
-			countdownDays={ Math.floor( dueBy.diff( now, 'days', true ) ) }
+			countdownDays={ Math.floor(
+				( dueBy.getTime() - now.getTime() ) / 86_400_000
+			) }
 			disputeDetailsUrl={ disputeDetailsUrl }
 		/>
 	);

@@ -1,10 +1,10 @@
 /** @format */
 
 /**
- * External dependencies
+ * Internal dependencies
  */
-import moment from 'moment';
+import { getTimezoneOffsetString } from 'utils/date-time';
 
 export function getUserTimeZone() {
-	return moment( new Date() ).format( 'Z' );
+	return getTimezoneOffsetString();
 }

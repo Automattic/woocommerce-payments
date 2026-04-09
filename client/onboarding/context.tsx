@@ -1,7 +1,13 @@
 /**
  * External dependencies
  */
-import React, { createContext, useContext, useState } from 'react';
+import React, {
+	createContext,
+	useCallback,
+	useContext,
+	useMemo,
+	useState,
+} from 'react';
 import { isNil, omitBy } from 'lodash';
 
 /**
@@ -14,17 +20,33 @@ const useContextValue = ( initialState = {} as OnboardingFields ) => {
 	const [ errors, setErrors ] = useState( {} as OnboardingFields );
 	const [ touched, setTouched ] = useState( {} as OnboardingFields );
 
-	return {
-		data,
-		setData: ( value: Record< string, string | undefined > ) =>
+	const updateData = useCallback(
+		( value: Record< string, string | undefined > ) =>
 			setData( ( prev ) => ( { ...prev, ...value } ) ),
-		errors,
-		setErrors: ( value: Record< string, string | undefined > ) =>
+		[]
+	);
+	const updateErrors = useCallback(
+		( value: Record< string, string | undefined > ) =>
 			setErrors( ( prev ) => omitBy( { ...prev, ...value }, isNil ) ),
-		touched,
-		setTouched: ( value: Record< string, boolean > ) =>
+		[]
+	);
+	const updateTouched = useCallback(
+		( value: Record< string, boolean > ) =>
 			setTouched( ( prev ) => ( { ...prev, ...value } ) ),
-	};
+		[]
+	);
+
+	return useMemo(
+		() => ( {
+			data,
+			setData: updateData,
+			errors,
+			setErrors: updateErrors,
+			touched,
+			setTouched: updateTouched,
+		} ),
+		[ data, errors, touched, updateData, updateErrors, updateTouched ]
+	);
 };
 
 type ContextValue = ReturnType< typeof useContextValue >;

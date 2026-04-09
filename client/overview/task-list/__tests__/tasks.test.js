@@ -1,12 +1,6 @@
 /** @format */
 
 /**
- * External dependencies
- */
-
-import moment from 'moment';
-
-/**
  * Internal dependencies
  */
 import { getTasks, taskSort } from '../tasks';
@@ -103,13 +97,13 @@ const mockActiveDisputes = [
 ];
 
 describe( 'getTasks()', () => {
-	// Get current timezone
-	const currentTimezone = moment.tz.guess();
+	let originalTZ;
 
 	beforeEach( () => {
 		// set local timezone to EST (not daylight savings time)
 		// Note Etc/GMT+5 === UTC-5
-		moment.tz.setDefault( 'Etc/GMT+5' );
+		originalTZ = process.env.TZ;
+		process.env.TZ = 'Etc/GMT+5';
 		// mock Date.now that moment library uses to get current date for testing purposes
 		Date.now = jest.fn( () => new Date( '2023-02-01T08:00:00.000Z' ) );
 
@@ -142,7 +136,7 @@ describe( 'getTasks()', () => {
 	afterEach( () => {
 		// roll it back
 		Date.now = () => new Date();
-		moment.tz.setDefault( currentTimezone );
+		process.env.TZ = originalTZ;
 	} );
 	it( 'should include business details when flag is set', () => {
 		const actual = getTasks( {

@@ -2,7 +2,6 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -14,7 +13,11 @@ import { formatCurrency } from 'multi-currency/interface/functions';
 import { getAdminUrl } from 'wcpay/utils';
 import { recordEvent } from 'tracks';
 import { isDueWithin } from 'wcpay/disputes/utils';
-import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import {
+	formatDateTimeFromString,
+	getRelativeTimeString,
+	toUtcIsoString,
+} from 'wcpay/utils/date-time';
 
 /**
  * Returns an array of disputes that are due within the specified number of days.
@@ -41,7 +44,10 @@ export const getDisputeResolutionTask = (
 	// Create a new array and sort by `due_by` ascending.
 	activeDisputes = [ ...activeDisputes ]
 		.filter( ( dispute ) => dispute.due_by !== '' )
-		.sort( ( a, b ) => moment( a.due_by ).diff( moment( b.due_by ) ) );
+		.sort(
+			( a, b ) =>
+				new Date( a.due_by ).getTime() - new Date( b.due_by ).getTime()
+		);
 
 	const activeDisputeCount = activeDisputes.length;
 
@@ -153,7 +159,9 @@ export const getDisputeResolutionTask = (
 						),
 						// Show due_by date in local timezone: e.g. "Jan 1, 2021".
 						formatDateTimeFromString( dispute.due_by ),
-						moment.utc( dispute.due_by ).fromNow( true ) // E.g. "2 days".
+						getRelativeTimeString(
+							new Date( toUtcIsoString( dispute.due_by ) )
+						) // E.g. "2 days".
 				  );
 
 		return disputeTask;

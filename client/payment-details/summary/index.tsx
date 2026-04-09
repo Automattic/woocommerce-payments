@@ -5,7 +5,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
-import moment from 'moment';
 import React, { useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
@@ -68,6 +67,8 @@ import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import {
 	formatDateTimeFromString,
 	formatDateTimeFromTimestamp,
+	addDaysToDate,
+	getRelativeTimeString,
 } from 'wcpay/utils/date-time';
 
 declare const window: any;
@@ -284,20 +285,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				fee: charge.application_fee_amount,
 				currency: charge.currency,
 		  };
-
-	// WP translation strings are injected into Moment.js for relative time terms, since Moment's own translation library increases the bundle size significantly.
-	moment.updateLocale( 'en', {
-		relativeTime: {
-			s: __( 'a second', 'woocommerce-payments' ),
-			ss: __( '%d seconds', 'woocommerce-payments' ),
-			m: __( 'a minute', 'woocommerce-payments' ),
-			mm: __( '%d minutes', 'woocommerce-payments' ),
-			h: __( 'an hour', 'woocommerce-payments' ),
-			hh: __( '%d hours', 'woocommerce-payments' ),
-			d: __( 'a day', 'woocommerce-payments' ),
-			dd: __( '%d days', 'woocommerce-payments' ),
-		},
-	} );
 
 	const formattedAmount = formatCurrency(
 		charge.amount,
@@ -771,19 +758,19 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 						) }{ ' ' }
 						<abbr
 							title={ formatDateTimeFromString(
-								// TODO: is this string?
-								moment
-									.utc( authorization.created )
-									.add( 7, 'days' )
-									.toISOString(),
+								addDaysToDate( authorization.created, 7 ),
 								{ includeTime: true }
 							) }
 						>
 							<b>
-								{ moment
-									.utc( authorization.created )
-									.add( 7, 'days' )
-									.fromNow( true ) }
+								{ getRelativeTimeString(
+									new Date(
+										addDaysToDate(
+											authorization.created,
+											7
+										)
+									)
+								) }
 							</b>
 						</abbr>
 						{ isFraudOutcomeReview &&

@@ -25,3 +25,5 @@ jobs:
               with:
                   pattern: '{release/**/*.js,release/**/*.css}'
                   exclude: '{release/vendor/**}'
+                  maximum-threshold: '5%'
+                  minimum-threshold: '0%'

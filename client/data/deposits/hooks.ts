@@ -4,12 +4,12 @@
  * External dependencies
  */
 import { useSelect, useDispatch } from '@wordpress/data';
-import moment from 'moment';
 
 /**
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import { sortDatesAsc } from 'utils/date-time';
 import type { Query } from '@woocommerce/navigation';
 import type {
 	CachedDeposits,
@@ -95,7 +95,7 @@ export const useAllDepositsOverviews = (): AccountOverview.OverviewsResponse =>
 				! hasFinishedResolution( 'getAllDepositsOverviews' ) ||
 				isResolving( 'getAllDepositsOverviews' ),
 		};
-	} );
+	}, [] );
 
 export const useDeposits = ( {
 	paged,
@@ -132,11 +132,7 @@ export const useDeposits = ( {
 				match,
 				dateBefore,
 				dateAfter,
-				dateBetween:
-					dateBetween &&
-					dateBetween.sort( ( a, b ) =>
-						moment( a ).diff( moment( b ) )
-					),
+				dateBetween: dateBetween && sortDatesAsc( dateBetween ),
 				statusIs,
 				statusIsNot,
 			};
@@ -206,14 +202,17 @@ export const useDepositsSummary = ( {
 export const useInstantDeposit = (
 	currency: string
 ): { inProgress: boolean; submit: () => void; deposit: unknown } => {
-	const { deposit, inProgress } = useSelect( ( select ) => {
-		const { getInstantDeposit, isResolving } = select( STORE_NAME );
+	const { deposit, inProgress } = useSelect(
+		( select ) => {
+			const { getInstantDeposit, isResolving } = select( STORE_NAME );
 
-		return {
-			deposit: getInstantDeposit( [ currency ] ),
-			inProgress: isResolving( 'getInstantDeposit', [ currency ] ),
-		};
-	} );
+			return {
+				deposit: getInstantDeposit( [ currency ] ),
+				inProgress: isResolving( 'getInstantDeposit', [ currency ] ),
+			};
+		},
+		[ currency ]
+	);
 	const { submitInstantDeposit } = useDispatch( STORE_NAME );
 	const submit = () => submitInstantDeposit( currency );
 

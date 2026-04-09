@@ -3,10 +3,10 @@
  */
 import { addQueryArgs } from '@wordpress/url';
 import { capitalize, partial } from 'lodash';
-import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { numberFormat } from '@woocommerce/number';
+import { endOfDayUtc, startOfDayUtc } from './date-time';
 
 /**
  * Returns whether a value is an object.
@@ -227,16 +227,16 @@ export const formatStringValue = ( value ) =>
  * @return {string} Formatted date string to use in server query.
  */
 export const formatDateValue = ( date, upperBound = false ) => {
+	if ( ! date ) {
+		return undefined;
+	}
 	const adjustedDate = upperBound
-		? moment( date ).endOf( 'day' ).utc().toISOString()
-		: moment( date ).startOf( 'day' ).utc().toISOString();
-	return (
-		date &&
-		dateI18n(
-			'Y-m-d H:i:s',
-			adjustedDate,
-			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-		)
+		? endOfDayUtc( date )
+		: startOfDayUtc( date );
+	return dateI18n(
+		'Y-m-d H:i:s',
+		adjustedDate,
+		true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
 	);
 };
 

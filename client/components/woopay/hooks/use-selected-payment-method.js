@@ -40,7 +40,7 @@ const useSelectedPaymentMethod = ( isBlocksCheckout ) => {
 			isWCPayChosenOnBlocksCheckout:
 				store.getActivePaymentMethod() === 'woocommerce_payments',
 		};
-	} );
+	}, [] );
 
 	const [ isWCPayChosen, setIsWCPayChosen ] = useState(
 		! isBlocksCheckout && getWCPayRadioButtonStatus()

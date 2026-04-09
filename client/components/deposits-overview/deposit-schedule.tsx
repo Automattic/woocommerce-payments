@@ -4,7 +4,6 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
@@ -44,11 +43,15 @@ const DepositScheduleSummary: React.FC< DepositScheduleProps > = ( {
 				},
 			} );
 		case 'weekly':
-			const dayOfWeek = moment()
-				.locale( 'en' )
-				.day( depositsSchedule.weekly_anchor )
-				.locale( moment.locale() )
-				.format( 'dddd' );
+			// weekly_anchor can be a day name string (e.g., 'Monday') from the API.
+			// Capitalize it for display (the API returns lowercase).
+			const dayOfWeek =
+				String( depositsSchedule.weekly_anchor )
+					.charAt( 0 )
+					.toUpperCase() +
+				String( depositsSchedule.weekly_anchor )
+					.slice( 1 )
+					.toLowerCase();
 
 			return interpolateComponents( {
 				mixedString: sprintf(

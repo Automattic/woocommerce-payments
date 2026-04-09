@@ -6,7 +6,6 @@
 import React from 'react';
 import { recordEvent } from 'tracks';
 import { _n, __, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
@@ -40,7 +39,10 @@ import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import './style.scss';
-import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import {
+	formatDateTimeFromString,
+	toUtcIsoString,
+} from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
 import { useDispatch } from '@wordpress/data';
@@ -161,10 +163,11 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 		return '';
 	}
 	// Get current time in UTC.
-	const now = moment().utc();
-	const dueBy = moment.utc( dispute.due_by );
-	const diffHours = dueBy.diff( now, 'hours', false );
-	const diffDays = dueBy.diff( now, 'days', false );
+	const now = new Date();
+	const dueByDate = new Date( toUtcIsoString( dispute.due_by ) );
+	const diffMs = dueByDate.getTime() - now.getTime();
+	const diffHours = Math.floor( diffMs / 3_600_000 );
+	const diffDays = Math.floor( diffMs / 86_400_000 );
 
 	// if the dispute is past due, return an empty string.
 	if ( diffHours <= 0 ) {

@@ -1,10 +1,4 @@
 /**
- * External dependencies
- */
-
-import moment from 'moment';
-
-/**
  * Internal dependencies
  */
 import type {
@@ -44,19 +38,20 @@ export const isDueWithin = ( { dueBy, days }: IsDueWithinProps ): boolean => {
 	}
 
 	// Parse the due by date. If it's a number, it's a unix timestamp.
-	const dueByMoment =
+	const dueByDate =
 		typeof dueBy === 'number'
-			? moment.unix( dueBy as number )
-			: moment.utc( dueBy as string, true );
+			? new Date( ( dueBy as number ) * 1000 )
+			: new Date( dueBy as string );
 
-	if ( ! dueByMoment.isValid() ) {
+	if ( isNaN( dueByDate.getTime() ) ) {
 		// If we can't parse the date, we assume it's not urgent.
 		return false;
 	}
 
-	const now = moment().utc();
-	const isWithinDays = dueByMoment.diff( now, 'days', true ) <= days;
-	const isPastDue = now.isAfter( dueByMoment );
+	const nowMs = Date.now();
+	const daysDiff = ( dueByDate.getTime() - nowMs ) / 86_400_000;
+	const isWithinDays = daysDiff <= days;
+	const isPastDue = nowMs > dueByDate.getTime();
 	return isWithinDays && ! isPastDue;
 };
 

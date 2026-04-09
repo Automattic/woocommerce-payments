@@ -1,9 +1,4 @@
 /**
- * External dependencies
- */
-import momentLib from 'moment';
-
-/**
  * Internal dependencies
  */
 import { getDepositDate, getDepositMonthlyAnchorLabel } from '../';
@@ -81,7 +76,7 @@ describe( 'Deposits Overview Utils / getDepositMonthlyAnchorLabel', () => {
 	];
 
 	test( 'returns the expected label', () => {
-		momentLib.locale( 'en' );
+		document.documentElement.lang = 'en';
 		expectedLabels.forEach( ( expectedLabel ) => {
 			expect(
 				getDepositMonthlyAnchorLabel( {
@@ -92,7 +87,7 @@ describe( 'Deposits Overview Utils / getDepositMonthlyAnchorLabel', () => {
 	} );
 
 	test( 'returns a lowercase value with false capitalize argument', () => {
-		momentLib.locale( 'en' );
+		document.documentElement.lang = 'en';
 		expect(
 			getDepositMonthlyAnchorLabel( {
 				monthlyAnchor: 31,
