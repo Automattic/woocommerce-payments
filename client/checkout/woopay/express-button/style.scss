@@ -5,13 +5,24 @@
 
 	a.woopay-express-button {
 		text-decoration: none;
-		color: inherit;
 
+		&,
 		&:hover,
 		&:focus,
-		&:visited {
+		&:visited,
+		&:active {
 			text-decoration: none;
-			color: inherit;
+			// Use the same explicit color as .woopay-express-button to prevent
+			// theme link styles (e.g. Storefront a:hover) from overriding.
+			color: $studio-black;
+		}
+
+		&[data-theme='dark'],
+		&[data-theme='dark']:hover,
+		&[data-theme='dark']:focus,
+		&[data-theme='dark']:visited,
+		&[data-theme='dark']:active {
+			color: $white;
 		}
 	}
 

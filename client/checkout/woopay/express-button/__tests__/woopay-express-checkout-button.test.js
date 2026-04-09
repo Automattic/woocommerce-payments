@@ -365,6 +365,9 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			const cardBrandImg = screen.getByAltText( 'visa' );
 			expect( cardBrandImg ).toBeInTheDocument();
 			expect( cardBrandImg ).toHaveAttribute( 'src', 'visa-icon.svg' );
+			expect(
+				screen.getByLabelText( 'WooPay with visa ending in 4242' )
+			).toBeInTheDocument();
 			expect( screen.getByText( '4242' ) ).toBeInTheDocument();
 		} );
 

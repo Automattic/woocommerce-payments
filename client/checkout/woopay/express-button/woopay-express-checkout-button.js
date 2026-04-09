@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import clsx from 'clsx';
 
@@ -377,7 +377,10 @@ export const WoopayExpressCheckoutButton = ( {
 			return (
 				<div className="button-content">
 					<ThemedWooPayIcon />
-					<span className="woopay-button-separator" />
+					<span
+						className="woopay-button-separator"
+						aria-hidden="true"
+					/>
 					<img
 						src={ cardBrandIcon.component }
 						alt={ normalizedBrand }
@@ -405,9 +408,18 @@ export const WoopayExpressCheckoutButton = ( {
 		);
 	};
 
+	const ariaLabel = cardBrandIcon
+		? sprintf(
+				/* translators: %1$s: card brand name (e.g. "visa"), %2$s: last 4 digits of card */
+				__( 'WooPay with %1$s ending in %2$s', 'woocommerce-payments' ),
+				normalizedBrand,
+				preferredCard.last4
+		  )
+		: buttonText;
+
 	const sharedProps = {
 		ref: buttonRef,
-		'aria-label': buttonText,
+		'aria-label': ariaLabel,
 		onClick: ( e ) => onClickCallbackRef.current( e ),
 		className: clsx( 'woopay-express-button', {
 			'is-loading': isLoading,

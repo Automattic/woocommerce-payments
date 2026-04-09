@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
@@ -48,24 +48,27 @@ const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
 			} );
 	}, [] );
 
-	const onRefChange = useCallback(
-		( node ) => {
-			if ( node ) {
-				const root = createRoot( node );
+	const rootRef = useRef( null );
 
-				root.render(
-					<WoopayExpressCheckoutButton
-						buttonSettings={ getConfig( 'woopayButton' ) }
-						api={ api }
-						emailSelector="#email"
-						buttonAttributes={ buttonAttributes }
-						preferredCard={ preferredCard }
-					/>
-				);
-			}
-		},
-		[ buttonAttributes, preferredCard ]
-	);
+	const onRefChange = useCallback( ( node ) => {
+		if ( node && ! rootRef.current ) {
+			rootRef.current = createRoot( node );
+		}
+	}, [] );
+
+	useEffect( () => {
+		if ( rootRef.current ) {
+			rootRef.current.render(
+				<WoopayExpressCheckoutButton
+					buttonSettings={ getConfig( 'woopayButton' ) }
+					api={ api }
+					emailSelector="#email"
+					buttonAttributes={ buttonAttributes }
+					preferredCard={ preferredCard }
+				/>
+			);
+		}
+	}, [ buttonAttributes, preferredCard ] );
 
 	return <span ref={ onRefChange } />;
 };
