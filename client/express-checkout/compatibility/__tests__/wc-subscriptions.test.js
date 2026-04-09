@@ -467,7 +467,7 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 			// Should keep original prices (sign-up fee), not replace with recurring.
 			expect( item.totals.line_subtotal ).toBe( '200' );
 			expect( item.totals.line_total ).toBe( '200' );
-			// Should add First payment metadata with recurring price.
+			// Should add Recurring total metadata with recurring price.
 			expect( item.item_data ).toContainEqual( {
 				name: 'Recurring total',
 				value: '$7.58 / month on 2026-03-19',

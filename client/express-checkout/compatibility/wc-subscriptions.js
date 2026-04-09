@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { addFilter } from '@wordpress/hooks';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 // This module is imported by both the shortcode entry point (express-checkout/index.js)
 // and the blocks entry point (express-checkout/blocks/index.js). Because addFilter
@@ -193,6 +193,45 @@ const getRecurringCartTotal = ( cartData ) => {
 };
 
 /**
+ * Returns a localized billing period string, e.g. "month" or "2 months".
+ *
+ * @param {string} period Billing period from Store API ('day','week','month','year').
+ * @param {number} interval Billing interval (number of periods between renewals).
+ * @return {string} Localized period string.
+ */
+const getLocalizedBillingPeriod = ( period, interval ) => {
+	if ( interval > 1 ) {
+		const plurals = {
+			day: sprintf(
+				_n( '%d day', '%d days', interval, 'woocommerce-payments' ),
+				interval
+			),
+			week: sprintf(
+				_n( '%d week', '%d weeks', interval, 'woocommerce-payments' ),
+				interval
+			),
+			month: sprintf(
+				_n( '%d month', '%d months', interval, 'woocommerce-payments' ),
+				interval
+			),
+			year: sprintf(
+				_n( '%d year', '%d years', interval, 'woocommerce-payments' ),
+				interval
+			),
+		};
+		return plurals[ period ] || `${ interval } ${ period }s`;
+	}
+
+	const singulars = {
+		day: __( 'day', 'woocommerce-payments' ),
+		week: __( 'week', 'woocommerce-payments' ),
+		month: __( 'month', 'woocommerce-payments' ),
+		year: __( 'year', 'woocommerce-payments' ),
+	};
+	return singulars[ period ] || period;
+};
+
+/**
  * Formats a subscription's recurring total as a human-readable price with
  * billing period, e.g. "$18.41 / month" or "$100.00 / 3 months".
  * Uses the currency formatting fields from the Store API subscription data.
@@ -218,11 +257,17 @@ const formatRecurringTotal = ( subscription ) => {
 
 	const formattedPrice = `${ prefix }${ formatted }${ suffix }`;
 
-	const interval = subscription.billing_interval ?? 1;
-	const period = subscription.billing_period;
-	const periodLabel = interval > 1 ? `${ interval } ${ period }s` : period;
+	const periodLabel = getLocalizedBillingPeriod(
+		subscription.billing_period,
+		subscription.billing_interval ?? 1
+	);
 
-	return `${ formattedPrice } / ${ periodLabel }`;
+	/* translators: %1$s: formatted price (e.g. "$7.58"), %2$s: billing period (e.g. "month", "2 months") */
+	return sprintf(
+		__( '%1$s / %2$s', 'woocommerce-payments' ),
+		formattedPrice,
+		periodLabel
+	);
 };
 
 /**
@@ -428,9 +473,12 @@ addFilter(
 								'Recurring total',
 								'woocommerce-payments'
 							),
-							value: `${ formatRecurringTotal(
-								subscription
-							) } on ${ subscription.next_payment_date }`,
+							/* translators: %1$s: recurring price with period (e.g. "$7.58 / month"), %2$s: date (e.g. "May 9, 2026") */
+							value: sprintf(
+								__( '%1$s on %2$s', 'woocommerce-payments' ),
+								formatRecurringTotal( subscription ),
+								subscription.next_payment_date
+							),
 						},
 					],
 				};
