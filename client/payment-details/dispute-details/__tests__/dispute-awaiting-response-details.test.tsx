@@ -553,12 +553,8 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 		);
 
 		// Challenge dispute button should be present but disabled
-		const challengeButtons = screen.getAllByRole( 'button', {
-			name: /Challenge dispute/i,
-		} );
-		const disabledButton = challengeButtons.find(
-			( btn ) =>
-				btn.getAttribute( 'data-testid' ) === 'challenge-dispute-button'
+		const disabledButton = screen.getByTestId(
+			'challenge-dispute-button-disabled'
 		);
 		expect( disabledButton ).toBeInTheDocument();
 		expect( disabledButton ).toBeDisabled();
