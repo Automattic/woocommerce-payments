@@ -32,10 +32,30 @@ const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
 	const preferredCard = usePreferredCard();
 
 	const rootRef = useRef( null );
+	const propsRef = useRef( { buttonAttributes, preferredCard } );
+	propsRef.current = { buttonAttributes, preferredCard };
+
+	useEffect( () => {
+		return () => {
+			const root = rootRef.current;
+			rootRef.current = null;
+			// Defer unmount to avoid race with React's own unmount cycle.
+			setTimeout( () => root?.unmount(), 0 );
+		};
+	}, [] );
 
 	const onRefChange = useCallback( ( node ) => {
 		if ( node && ! rootRef.current ) {
 			rootRef.current = createRoot( node );
+			rootRef.current.render(
+				<WoopayExpressCheckoutButton
+					buttonSettings={ getConfig( 'woopayButton' ) }
+					api={ api }
+					emailSelector="#email"
+					buttonAttributes={ propsRef.current.buttonAttributes }
+					preferredCard={ propsRef.current.preferredCard }
+				/>
+			);
 		}
 	}, [] );
 

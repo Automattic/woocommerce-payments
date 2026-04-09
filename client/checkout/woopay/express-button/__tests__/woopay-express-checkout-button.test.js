@@ -474,7 +474,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			// diners_club normalizes to "diners" but no icon exists in getCardBrands()
+			// diners_club normalizes to "diners", but the express button falls back because no icon exists in getWoopayCardBrands()
 			expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
 			expect( screen.queryByText( '3600' ) ).not.toBeInTheDocument();
 		} );
