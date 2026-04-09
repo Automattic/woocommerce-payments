@@ -15,12 +15,17 @@
 	height: 20px;
 }
 
-// Give the button list padding so Stripe's iframe overflow
-// (margin: -4px; width: calc(100% + 8px)) and focus outlines
-// are not clipped by the container.
+// WC Blocks sets overflow:hidden on both the <ul> and <li> which clips
+// Stripe's iframe bleed (margin: -4px; width: calc(100% + 8px)) and
+// focus outlines. Override with padding to create space instead.
 .wc-block-components-express-payment
 	.wc-block-components-express-payment__event-buttons {
+	overflow: visible !important;
 	padding: 0 4px;
+
+	> li {
+		overflow: visible !important;
+	}
 }
 
 // Preview button
