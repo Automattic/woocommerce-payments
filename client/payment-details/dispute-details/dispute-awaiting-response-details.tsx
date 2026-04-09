@@ -436,10 +436,20 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									'woocommerce-payments'
 								) }
 							>
-								<span className="transaction-details-dispute-details-body__challenge-disabled">
+								<span
+									className="transaction-details-dispute-details-body__challenge-disabled"
+									tabIndex={ 0 }
+									role="button"
+									aria-disabled="true"
+									aria-label={ __(
+										'Challenge dispute — available if the inquiry escalates to a dispute',
+										'woocommerce-payments'
+									) }
+								>
 									<Button
 										variant="primary"
 										disabled
+										tabIndex={ -1 }
 										data-testid="challenge-dispute-button"
 										__next40pxDefaultSize
 									>

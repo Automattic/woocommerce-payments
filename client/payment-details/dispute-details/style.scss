@@ -264,10 +264,11 @@
 	&__actions {
 		margin-top: $grid-unit-30;
 	}
+}
 
-	&__challenge-disabled .components-button.is-primary:disabled {
-		color: rgba( 255, 255, 255, 0.3 );
-	}
+.transaction-details-dispute-details-body__challenge-disabled
+	.components-button.is-primary:disabled {
+	color: rgba( 255, 255, 255, 0.3 );
 }
 
 .transaction-details-dispute-footer {
