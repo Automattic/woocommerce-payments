@@ -154,7 +154,7 @@ describe( 'preferred-card-utils', () => {
 			).toBeNull();
 		} );
 
-		test( 'silently ignores when localStorage throws', () => {
+		test( 'silently ignores when localStorage.setItem throws', () => {
 			jest.spyOn( Storage.prototype, 'setItem' ).mockImplementation(
 				() => {
 					throw new Error( 'quota exceeded' );
@@ -167,6 +167,16 @@ describe( 'preferred-card-utils', () => {
 				} )
 			).not.toThrow();
 			Storage.prototype.setItem.mockRestore();
+		} );
+
+		test( 'silently ignores when localStorage.removeItem throws', () => {
+			jest.spyOn( Storage.prototype, 'removeItem' ).mockImplementation(
+				() => {
+					throw new Error( 'private browsing' );
+				}
+			);
+			expect( () => setCachedPreferredCard( null ) ).not.toThrow();
+			Storage.prototype.removeItem.mockRestore();
 		} );
 	} );
 

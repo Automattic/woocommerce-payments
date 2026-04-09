@@ -68,22 +68,15 @@ jest.mock( 'wcpay/utils/card-brands', () => ( {
 	],
 } ) );
 
-jest.mock( '../preferred-card-utils', () => {
-	const BRAND_ALIASES = {
-		american_express: 'amex',
-		diners_club: 'diners',
-		china_unionpay: 'unionpay',
-	};
-	return {
-		isValidPreferredCard: ( card ) =>
-			card &&
-			typeof card.brand === 'string' &&
-			card.brand.length > 0 &&
-			typeof card.last4 === 'string' &&
-			/^\d{4}$/.test( card.last4 ),
-		normalizeBrand: ( brand ) => BRAND_ALIASES[ brand ] || brand,
-	};
-} );
+// Mock user-connect to prevent iframe injection when preferred-card-utils
+// loads via requireActual.
+jest.mock( 'wcpay/checkout/woopay/connect/user-connect', () =>
+	jest.fn().mockImplementation( () => ( {} ) )
+);
+
+jest.mock( '../preferred-card-utils', () => ( {
+	...jest.requireActual( '../preferred-card-utils' ),
+} ) );
 
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
@@ -426,6 +419,45 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			// Unknown brand should fall back to default button text
 			expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
 			expect( screen.queryByText( '1234' ) ).not.toBeInTheDocument();
+		} );
+
+		test( 'hides card info when button is narrow', () => {
+			getBoundingClientRectSpy.mockReturnValue( { width: 100 } );
+
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+					preferredCard={ { brand: 'visa', last4: '4242' } }
+				/>
+			);
+
+			// Card info should not render in narrow mode
+			expect( screen.queryByAltText( 'visa' ) ).not.toBeInTheDocument();
+			expect( screen.queryByText( '4242' ) ).not.toBeInTheDocument();
+		} );
+
+		test( 'falls back to default text for diners_club (no icon available)', () => {
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+					preferredCard={ {
+						brand: 'diners_club',
+						last4: '3600',
+					} }
+				/>
+			);
+
+			// diners_club normalizes to "diners" but no icon exists in getCardBrands()
+			expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
+			expect( screen.queryByText( '3600' ) ).not.toBeInTheDocument();
 		} );
 	} );
 
