@@ -25,10 +25,11 @@ import {
 import { getAddToCartButtonElement } from 'wcpay/utils/wc-product-page-selectors';
 import WooPayFirstPartyAuth from 'wcpay/checkout/woopay/express-button/woopay-first-party-auth';
 import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
-import { getCardBrands } from 'wcpay/utils/card-brands';
+import { getWoopayCardBrands } from 'wcpay/utils/card-brands';
 import { isValidPreferredCard, normalizeBrand } from './preferred-card-utils';
 
 const BUTTON_WIDTH_THRESHOLD = 140;
+const CARD_DISPLAY_WIDTH_THRESHOLD = 220;
 
 const ButtonTypeTextMap = {
 	default: __( 'WooPay', 'woocommerce-payments' ),
@@ -62,7 +63,7 @@ export const WoopayExpressCheckoutButton = ( {
 		radius: borderRadius,
 	} = buttonSettings;
 	const [ isLoading, setIsLoading ] = useState( false );
-	const [ buttonWidthType, setButtonWidthType ] = useState( null );
+	const [ measuredWidth, setMeasuredWidth ] = useState( null );
 	const buttonSizeMap = new Map();
 	buttonSizeMap.set( '40', 'small' );
 	buttonSizeMap.set( '48', 'medium' );
@@ -97,12 +98,8 @@ export const WoopayExpressCheckoutButton = ( {
 			return;
 		}
 
-		const buttonWidth = buttonRef.current.getBoundingClientRect().width;
-		const isButtonWide = buttonWidth > BUTTON_WIDTH_THRESHOLD;
-		setButtonWidthType(
-			isButtonWide ? buttonWidthTypes.wide : buttonWidthTypes.narrow
-		);
-	}, [ buttonWidthTypes.narrow, buttonWidthTypes.wide ] );
+		setMeasuredWidth( buttonRef.current.getBoundingClientRect().width );
+	}, [] );
 
 	useEffect( () => {
 		if ( ! isPreview ) {
@@ -361,13 +358,21 @@ export const WoopayExpressCheckoutButton = ( {
 		};
 	}, [] );
 
+	let buttonWidthType = null;
+	if ( measuredWidth !== null ) {
+		buttonWidthType =
+			measuredWidth > BUTTON_WIDTH_THRESHOLD
+				? buttonWidthTypes.wide
+				: buttonWidthTypes.narrow;
+	}
+
 	const normalizedBrand = isValidPreferredCard( preferredCard )
 		? normalizeBrand( preferredCard.brand )
 		: null;
 
 	const cardBrandIcon =
-		normalizedBrand && buttonWidthType === buttonWidthTypes.wide
-			? getCardBrands().find(
+		normalizedBrand && measuredWidth >= CARD_DISPLAY_WIDTH_THRESHOLD
+			? getWoopayCardBrands().find(
 					( brand ) => brand.name === normalizedBrand
 			  )
 			: null;

@@ -66,6 +66,11 @@ jest.mock( 'wcpay/utils/card-brands', () => ( {
 		{ name: 'mastercard', component: 'mastercard-icon.svg' },
 		{ name: 'amex', component: 'amex-icon.svg' },
 	],
+	getWoopayCardBrands: () => [
+		{ name: 'visa', component: 'visa-icon.svg' },
+		{ name: 'mastercard', component: 'mastercard-icon.svg' },
+		{ name: 'amex', component: 'amex-icon.svg' },
+	],
 } ) );
 
 // Mock user-connect to prevent iframe injection when preferred-card-utils
@@ -436,6 +441,25 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			// Card info should not render in narrow mode
+			expect( screen.queryByAltText( 'visa' ) ).not.toBeInTheDocument();
+			expect( screen.queryByText( '4242' ) ).not.toBeInTheDocument();
+		} );
+
+		test( 'hides card info when button is wide but below card display threshold', () => {
+			getBoundingClientRectSpy.mockReturnValue( { width: 180 } );
+
+			render(
+				<WoopayExpressCheckoutButton
+					isPreview={ false }
+					buttonSettings={ buttonSettings }
+					api={ api }
+					isProductPage={ false }
+					emailSelector="#email"
+					preferredCard={ { brand: 'visa', last4: '4242' } }
+				/>
+			);
+
+			// Button is wide enough for text but not for card info
 			expect( screen.queryByAltText( 'visa' ) ).not.toBeInTheDocument();
 			expect( screen.queryByText( '4242' ) ).not.toBeInTheDocument();
 		} );

@@ -70,7 +70,7 @@ const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
 		}
 	}, [ buttonAttributes, preferredCard ] );
 
-	return <span ref={ onRefChange } />;
+	return <div ref={ onRefChange } />;
 };
 
 const wooPayExpressCheckoutPaymentMethod = () => ( {
