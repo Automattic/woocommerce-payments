@@ -55,6 +55,8 @@
 			justify-content: center;
 			transform: scale( 0.9 );
 			max-width: 100%;
+			// (2) Min padding so content doesn't bleed at narrow widths.
+			padding: 0 12px;
 		}
 
 		.woopay-button-separator {
@@ -62,30 +64,44 @@
 			width: 1px;
 			height: 1.2em;
 			background-color: rgba( 0, 0, 0, 0.3 );
-			margin: 0 8px;
+			// (1) Visually equal spacing around the separator.
+			// The WooPay SVG has ~5px of dead space on its right edge
+			// (viewBox is wider than the artwork), so we use less left
+			// margin to compensate.
+			margin: 0 10px 0 4px;
 		}
 
 		.woopay-button-card-brand {
-			height: 20px;
+			// (3) Slightly smaller icon to better match the WooPay logo weight.
+			height: 18px;
 			width: auto;
-			margin-right: 6px;
+			margin-right: 4px;
 			vertical-align: middle;
 		}
 
 		.woopay-button-last4 {
-			font-size: 0.85em;
+			// (3) Smaller digits to reduce visual weight vs the WooPay logo.
+			font-size: 0.75em;
 			letter-spacing: 0.5px;
 		}
 
 		&[data-size='small'] {
 			.woopay-button-card-brand {
-				height: 16px;
+				height: 14px;
+			}
+
+			.woopay-button-last4 {
+				font-size: 0.7em;
 			}
 		}
 
 		&[data-size='large'] {
 			.woopay-button-card-brand {
-				height: 24px;
+				height: 22px;
+			}
+
+			.woopay-button-last4 {
+				font-size: 0.8em;
 			}
 		}
 
