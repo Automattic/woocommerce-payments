@@ -36,7 +36,7 @@ class WC_Payments_Tasks {
 	public static function add_task_disputes_need_response() {
 		$account_service = WC_Payments::get_account_service();
 		// The task is not required if the account is not connected, under review, or rejected.
-		if ( ! $account_service || ! $account_service->is_stripe_account_valid() || $account_service->is_account_under_review() || $account_service->is_account_rejected() ) {
+		if ( ! $account_service || ! $account_service->is_stripe_account_valid() ) {
 			return;
 		}
 		include_once WCPAY_ABSPATH . 'includes/admin/tasks/class-wc-payments-task-disputes.php';
