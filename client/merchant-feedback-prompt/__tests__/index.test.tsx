@@ -337,9 +337,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 		fireEvent.click( sendButton );
 
 		// Expect the event to be recorded
-		expect(
-			recordEvent
-		).toHaveBeenCalledWith(
+		expect( recordEvent ).toHaveBeenCalledWith(
 			'wcpay_merchant_feedback_prompt_negative_feedback',
 			{ feedback: 'some feedback' }
 		);

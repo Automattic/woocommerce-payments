@@ -202,7 +202,7 @@ export const getTransactionChannel = ( channel: string ): string => {
  * whose ipp_channel value can be mobile_store_management or mobile_pos that indicates whether the channel is from store
  * management or POS in the mobile apps.
  *
- * @param {string} type The transaction charge type, which can be card_present or interac_present for In-Person payments.
+ * @param {string}              type     The transaction charge type, which can be card_present or interac_present for In-Person payments.
  * @param {Record<string, any>} metadata The transaction metadata, which may include ipp_channel indicating the channel source.
  * @return {string} Returns 'Online store', 'In-Person', or 'In-Person (POS)' based on the transaction type and metadata.
  */

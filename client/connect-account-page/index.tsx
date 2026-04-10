@@ -69,7 +69,8 @@ const TestDriveLoader: React.FunctionComponent< {
 			<Loader.ProgressBar progress={ progress ?? 0 } />
 			<Loader.Sequence interval={ 0 }>
 				{ __(
-					"In just a few moments, you'll be ready to test payments on your store."
+					"In just a few moments, you'll be ready to test payments on your store.",
+					'woocommerce-payments'
 				) }
 			</Loader.Sequence>
 		</Loader.Layout>
@@ -85,15 +86,12 @@ const ConnectAccountPage: React.FC = () => {
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
-		false
-	);
-	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] = useState(
-		false
-	);
-	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] = useState(
-		5
-	);
+	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] =
+		useState( false );
+	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] =
+		useState( false );
+	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] =
+		useState( 5 );
 
 	// Create a reference object.
 	const loaderProgressRef = useRef( testDriveLoaderProgress );

@@ -59,10 +59,9 @@ export const FileUploadControl = ( {
 		// connection or general error or just need to select it again.
 		// This workaround is useful until we update @wordpress/components to a
 		// version the supports this: https://github.com/WordPress/gutenberg/issues/39267
-		const fileInput:
-			| HTMLInputElement
-			| null
-			| undefined = ( event.target as HTMLButtonElement )
+		const fileInput: HTMLInputElement | null | undefined = (
+			event.target as HTMLButtonElement
+		 )
 			.closest( '.components-form-file-upload' )
 			?.querySelector( 'input[type="file"]' );
 

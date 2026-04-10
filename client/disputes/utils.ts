@@ -32,9 +32,9 @@ interface IsDueWithinProps {
  * Returns false if the dispute due_by date is not within the specified number of days
  * or if the due_by value is not a valid date.
  *
- * @param {IsDueWithinProps} props - An object containing function arguments.
- * @param {number} props.dueBy - The dispute due_by date. Accepts a unix timestamp {@link EvidenceDetails} or a date string {@link CachedDispute}.
- * @param {number} props.days - The number of days to check.
+ * @param {IsDueWithinProps} props       - An object containing function arguments.
+ * @param {number}           props.dueBy - The dispute due_by date. Accepts a unix timestamp {@link EvidenceDetails} or a date string {@link CachedDispute}.
+ * @param {number}           props.days  - The number of days to check.
  *
  * @return {boolean} True if the dispute is due within the specified number of days.
  */

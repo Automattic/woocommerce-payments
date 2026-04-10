@@ -42,14 +42,11 @@ interface PurchasePriceThresholdCustomFormProps {
 	setting: string;
 }
 
-const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFormProps > = ( {
-	setting,
-} ) => {
-	const {
-		protectionSettingsUI,
-		setProtectionSettingsUI,
-		setIsDirty,
-	} = useContext( FraudPreventionSettingsContext );
+const PurchasePriceThresholdCustomForm: React.FC<
+	PurchasePriceThresholdCustomFormProps
+> = ( { setting } ) => {
+	const { protectionSettingsUI, setProtectionSettingsUI, setIsDirty } =
+		useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
 		() =>
@@ -84,7 +81,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
-			<strong>{ __( 'Limits', 'woocommerce-components' ) }</strong>
+			<strong>{ __( 'Limits', 'woocommerce-payments' ) }</strong>
 			<div className="fraud-protection-rule-toggle-children-horizontal-form">
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
 					<AmountInput

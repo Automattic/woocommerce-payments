@@ -119,7 +119,7 @@ export const getRiskReviewListRowContent = (
 					onClick={ handleActionButtonClick }
 					__next40pxDefaultSize
 				>
-					{ __( 'Review' ) }
+					{ __( 'Review', 'woocommerce-payments' ) }
 				</Button>
 			),
 		},

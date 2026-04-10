@@ -40,10 +40,8 @@ const PhoneNumberInput = ( {
 	...props
 }: PhoneNumberInputProps ): JSX.Element => {
 	const [ focusLost, setFocusLost ] = useState< boolean >( false );
-	const [
-		inputInstance,
-		setInputInstance,
-	] = useState< intlTelInput.Plugin | null >( null );
+	const [ inputInstance, setInputInstance ] =
+		useState< intlTelInput.Plugin | null >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
 
 	// in some special cases, the phone number is valid but the library doesn't recognize it as such

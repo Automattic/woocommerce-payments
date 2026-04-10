@@ -134,9 +134,8 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 
 const getActiveLoanId = () => {
 	for ( const i in wcpaySettings.accountLoans.loans ) {
-		const [ loanId, status ] = wcpaySettings.accountLoans.loans[ i ].split(
-			'|'
-		);
+		const [ loanId, status ] =
+			wcpaySettings.accountLoans.loans[ i ].split( '|' );
 		if ( 'active' === status ) {
 			return loanId;
 		}

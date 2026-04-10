@@ -84,21 +84,17 @@ const getDocumentDescription = ( document: Document ) => {
 
 export const DocumentsList = (): JSX.Element => {
 	const { documents, isLoading } = useDocuments( getQuery() );
-	const {
-		documentsSummary,
-		isLoading: isSummaryLoading,
-	} = useDocumentsSummary( getQuery() );
+	const { documentsSummary, isLoading: isSummaryLoading } =
+		useDocumentsSummary( getQuery() );
 
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
 
-	const [
-		interruptedDownloadDocument,
-		setInterruptedDownloadDocument,
-	] = useState< {
-		documentId: Document[ 'document_id' ];
-		type: Document[ 'type' ];
-		newTab: boolean;
-	} | null >( null );
+	const [ interruptedDownloadDocument, setInterruptedDownloadDocument ] =
+		useState< {
+			documentId: Document[ 'document_id' ];
+			type: Document[ 'type' ];
+			newTab: boolean;
+		} | null >( null );
 
 	const handleDocumentDownload = (
 		documentId: Document[ 'document_id' ],
@@ -163,9 +159,11 @@ export const DocumentsList = (): JSX.Element => {
 
 	const columns = getColumns();
 
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		Column
-	>( 'wc_payments_documents_hidden_columns', columns );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_documents_hidden_columns',
+			columns
+		);
 
 	const totalRows = documentsSummary.count || 0;
 	const rows = documents.map( ( document: Document ) => {

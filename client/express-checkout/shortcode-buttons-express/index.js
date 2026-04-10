@@ -373,9 +373,9 @@ jQuery( ( $ ) => {
 					shippingRates: options.shippingAddressRequired
 						? shippingOptionsWithFallback
 						: undefined,
-					allowedShippingCountries: getExpressCheckoutData(
-						'checkout'
-					).allowed_shipping_countries,
+					allowedShippingCountries:
+						getExpressCheckoutData( 'checkout' )
+							.allowed_shipping_countries,
 				} );
 			} );
 

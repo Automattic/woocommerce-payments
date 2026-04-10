@@ -106,14 +106,14 @@ const getColumns = (): Column[] =>
 
 export const AuthorizationsList = (): JSX.Element => {
 	const columns = getColumns();
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		Column
-	>( 'wc_payments_transactions_uncaptured_hidden_columns', columns );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_transactions_uncaptured_hidden_columns',
+			columns
+		);
 
-	const {
-		authorizationsSummary,
-		isLoading: isSummaryLoading,
-	} = useAuthorizationsSummary( getQuery() );
+	const { authorizationsSummary, isLoading: isSummaryLoading } =
+		useAuthorizationsSummary( getQuery() );
 
 	const { authorizations, isLoading } = useAuthorizations( getQuery() );
 

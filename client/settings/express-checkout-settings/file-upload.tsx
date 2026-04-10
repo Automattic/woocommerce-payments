@@ -120,10 +120,9 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 	};
 
 	const openFileDialog = ( event: React.MouseEvent< HTMLButtonElement > ) => {
-		const fileInput:
-			| HTMLInputElement
-			| null
-			| undefined = ( event.target as HTMLButtonElement )
+		const fileInput: HTMLInputElement | null | undefined = (
+			event.target as HTMLButtonElement
+		 )
 			.closest( '.woopay-settings__update-store-logo' )
 			?.querySelector( 'input[type="file"]' );
 

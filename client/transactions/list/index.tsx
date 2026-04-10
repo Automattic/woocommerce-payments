@@ -295,21 +295,18 @@ export const TransactionsList = (
 		getQuery(),
 		props.depositId ?? ''
 	);
-	const {
-		transactionsSummary,
-		isLoading: isSummaryLoading,
-	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
+	const { transactionsSummary, isLoading: isSummaryLoading } =
+		useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
 	const { requestReportExport, isExportInProgress } = useReportExport();
 
 	const { createNotice } = useDispatch( 'core/notices' );
 
-	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
-		Column
-	>(
-		'wc_payments_transactions_hidden_columns',
-		getColumns( ! props.depositId, wcpaySettings.isSubscriptionsActive )
-	);
+	const { onColumnsChange, columnsToDisplay } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_transactions_hidden_columns',
+			getColumns( ! props.depositId, wcpaySettings.isSubscriptionsActive )
+		);
 
 	const totalRows = transactionsSummary.count || 0;
 	const rows = transactions.map( ( txn ) => {

@@ -104,9 +104,11 @@ export const DepositsList = (): JSX.Element => {
 
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
 	const columns = getColumns( sortByDate );
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		DepositsTableHeader
-	>( 'wc_payments_payouts_hidden_columns', columns );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< DepositsTableHeader >(
+			'wc_payments_payouts_hidden_columns',
+			columns
+		);
 
 	const totalRows = depositsSummary.count || 0;
 

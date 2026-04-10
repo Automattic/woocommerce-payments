@@ -17,10 +17,8 @@ interface UserPreferences extends ReturnType< typeof useUserPreferences > {
  * It returns the current visibility state and a function to update the state.
  */
 export const useMerchantFeedbackPromptState = () => {
-	const {
-		updateUserPreferences,
-		...userPrefs
-	} = useUserPreferences() as UserPreferences;
+	const { updateUserPreferences, ...userPrefs } =
+		useUserPreferences() as UserPreferences;
 
 	const isAccountEligible =
 		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;

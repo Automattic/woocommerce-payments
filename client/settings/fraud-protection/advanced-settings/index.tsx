@@ -130,10 +130,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	const cardObserver = useRef< IntersectionObserver >();
 
-	const [
-		currentProtectionLevel,
-		updateProtectionLevel,
-	] = useCurrentProtectionLevel();
+	const [ currentProtectionLevel, updateProtectionLevel ] =
+		useCurrentProtectionLevel();
 	const [
 		advancedFraudProtectionSettings,
 		updateAdvancedFraudProtectionSettings,
@@ -141,9 +139,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [ validationError, setValidationError ] = useState< string | null >(
 		null
 	);
-	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState<
-		ProtectionSettingsUI
-	>( {} );
+	const [ protectionSettingsUI, setProtectionSettingsUI ] =
+		useState< ProtectionSettingsUI >( {} );
 
 	useEffect( () => {
 		setProtectionSettingsUI(
@@ -207,9 +204,10 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		if (
 			wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure
 		) {
-			wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
-				( setting ) => setting.key === 'avs_verification'
-			);
+			wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure =
+				settings.some(
+					( setting ) => setting.key === 'avs_verification'
+				);
 		}
 
 		updateAdvancedFraudProtectionSettings( settings );

@@ -20,9 +20,9 @@ interface LogoPopoverProps {
 	dataTestId?: string;
 }
 
-export const LogoPopover: React.FC< React.PropsWithChildren<
-	LogoPopoverProps
-> > = ( { id, className, children, anchor, open, onClose, dataTestId } ) => {
+export const LogoPopover: React.FC<
+	React.PropsWithChildren< LogoPopoverProps >
+> = ( { id, className, children, anchor, open, onClose, dataTestId } ) => {
 	const popoverRef = useRef< HTMLDivElement >( null );
 	const [ isPositioned, setIsPositioned ] = useState( false );
 

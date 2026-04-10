@@ -211,21 +211,14 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
  * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
  */
 export function MaybeShowMerchantFeedbackPrompt() {
-	const {
-		isAccountEligible,
-		hasUserDismissedPrompt,
-		dismissPrompt,
-	} = useMerchantFeedbackPromptState();
+	const { isAccountEligible, hasUserDismissedPrompt, dismissPrompt } =
+		useMerchantFeedbackPromptState();
 
-	const [
-		isPositiveFeedbackModalOpen,
-		setIsPositiveFeedbackModalOpen,
-	] = useState( false );
+	const [ isPositiveFeedbackModalOpen, setIsPositiveFeedbackModalOpen ] =
+		useState( false );
 
-	const [
-		isNegativeFeedbackModalOpen,
-		setIsNegativeFeedbackModalOpen,
-	] = useState( false );
+	const [ isNegativeFeedbackModalOpen, setIsNegativeFeedbackModalOpen ] =
+		useState( false );
 
 	if ( isPositiveFeedbackModalOpen ) {
 		return (

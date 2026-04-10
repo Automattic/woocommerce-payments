@@ -170,10 +170,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	paymentMethod,
 	bankName,
 } ) => {
-	const {
-		doAccept,
-		isLoading: isDisputeAcceptRequestPending,
-	} = useDisputeAccept( dispute );
+	const { doAccept, isLoading: isDisputeAcceptRequestPending } =
+		useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const [
@@ -374,8 +372,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										? ''
 										: getAdminUrl( {
 												page: 'wc-admin',
-												path:
-													'/payments/disputes/challenge',
+												path: '/payments/disputes/challenge',
 												id: dispute.id,
 										  } )
 								}

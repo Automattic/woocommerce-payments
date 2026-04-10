@@ -37,11 +37,8 @@ jQuery( async function ( $ ) {
 		return;
 	}
 
-	const {
-		productVariations,
-		productId,
-		isCart,
-	} = window.wcpayStripeSiteMessaging;
+	const { productVariations, productId, isCart } =
+		window.wcpayStripeSiteMessaging;
 
 	let baseProductAmount;
 	let productCurrency;
@@ -81,8 +78,8 @@ jQuery( async function ( $ ) {
 	 * If the amount is less than or equal to zero, or if the currency is not provided,
 	 * the function will exit early without making updates.
 	 *
-	 * @param {number} amount - The total amount for the BNPL message.
-	 * @param {string} currency - The currency code (e.g., 'USD', 'EUR') for the BNPL message.
+	 * @param {number} amount       - The total amount for the BNPL message.
+	 * @param {string} currency     - The currency code (e.g., 'USD', 'EUR') for the BNPL message.
 	 * @param {number} [quantity=1] - The quantity of the product being purchased. Defaults to 1.
 	 */
 	const updateBnplPaymentMessage = ( amount, currency, quantity = 1 ) => {

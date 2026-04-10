@@ -19,10 +19,8 @@ import PaymentMethodItem from 'wcpay/components/payment-method-item';
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const id = 'apple_pay_google_pay';
 
-	const [
-		isPaymentRequestEnabled,
-		updateIsPaymentRequestEnabled,
-	] = usePaymentRequestEnabledSettings();
+	const [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ] =
+		usePaymentRequestEnabledSettings();
 
 	const {
 		duplicates,

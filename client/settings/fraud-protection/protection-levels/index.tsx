@@ -30,14 +30,11 @@ const ProtectionLevels: React.FC = () => {
 	const initialProtectionLevelRef = useRef< string | null >( null );
 	const initialSettingsRef = useRef< Record< string, any > | null >( null );
 
-	const [
-		currentProtectionLevel,
-		updateProtectionLevel,
-	] = useCurrentProtectionLevel();
+	const [ currentProtectionLevel, updateProtectionLevel ] =
+		useCurrentProtectionLevel();
 
-	const [
-		advancedFraudProtectionSettings,
-	] = useAdvancedFraudProtectionSettings();
+	const [ advancedFraudProtectionSettings ] =
+		useAdvancedFraudProtectionSettings();
 
 	const { isDirty } = useSettings();
 	const currentSettings = useGetSettings();
