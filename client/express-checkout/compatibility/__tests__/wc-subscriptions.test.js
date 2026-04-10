@@ -477,6 +477,44 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 			expect( result.totals.total_price ).toBe( '217' );
 		} );
 
+		it( 'formats plural billing interval in recurring metadata for sign-up fee carts', () => {
+			const cart = buildTrialCart( {
+				items: [
+					buildTrialSubscriptionItem( {
+						name: 'Quarterly Plan',
+						billingPeriod: 'month',
+						signUpFees: '500',
+						lineSubtotal: '500',
+						lineTotal: '500',
+					} ),
+				],
+				totalPrice: '500',
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						billingPeriod: 'month',
+						billingInterval: 3,
+						totalPrice: '2997',
+						totalItems: '2997',
+					} ),
+				],
+			} );
+
+			const result = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				cart
+			);
+
+			const item = result.items[ 0 ];
+			expect( item.name ).toBe( 'Quarterly Plan (recurring)' );
+			// Should keep original prices (sign-up fee).
+			expect( item.totals.line_subtotal ).toBe( '500' );
+			// Should format plural interval as "3 months".
+			expect( item.item_data ).toContainEqual( {
+				name: 'Recurring total',
+				value: '$29.97 / 3 months on 2026-03-19',
+			} );
+		} );
+
 		it( 'replaces $0 trial items with recurring amounts and metadata', () => {
 			const cart = buildTrialCart();
 			const result = applyFilters(
