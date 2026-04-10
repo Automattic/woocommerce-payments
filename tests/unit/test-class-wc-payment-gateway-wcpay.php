@@ -579,7 +579,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						],
 					],
 				],
-				'expected_title'   => 'Link',
+				'expected_title'   => 'Link (WooPayments)',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 		];
