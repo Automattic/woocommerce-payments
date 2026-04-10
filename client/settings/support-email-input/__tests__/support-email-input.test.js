@@ -52,6 +52,68 @@ describe( 'SupportEmailInput', () => {
 		).toBeNull();
 	} );
 
+	it( 'calls setInputVallid with false when email format is invalid', () => {
+		const setInputVallid = jest.fn();
+		useAccountBusinessSupportEmail.mockReturnValue( [
+			'test@test',
+			jest.fn(),
+		] );
+
+		render( <SupportEmailInput setInputVallid={ setInputVallid } /> );
+
+		expect( setInputVallid ).toHaveBeenLastCalledWith( false );
+	} );
+
+	it( 'displays client-side validation error for invalid email after blur', () => {
+		useAccountBusinessSupportEmail.mockReturnValue( [
+			'test@test',
+			jest.fn(),
+		] );
+
+		const { container } = render( <SupportEmailInput /> );
+
+		// Error should not be shown before blur
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+
+		// Trigger blur event
+		fireEvent.blur( screen.getByLabelText( 'Support email' ) );
+
+		// Error should be shown after blur
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+				?.textContent
+		).toMatch( /Please enter a valid email address./ );
+	} );
+
+	it( 'does not display client-side validation error for valid email after blur', () => {
+		useAccountBusinessSupportEmail.mockReturnValue( [
+			'valid@test.com',
+			jest.fn(),
+		] );
+
+		const { container } = render( <SupportEmailInput /> );
+
+		fireEvent.blur( screen.getByLabelText( 'Support email' ) );
+
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+	} );
+
+	it( 'calls setInputVallid with true when email format is valid', () => {
+		const setInputVallid = jest.fn();
+		useAccountBusinessSupportEmail.mockReturnValue( [
+			'test@test.com',
+			jest.fn(),
+		] );
+
+		render( <SupportEmailInput setInputVallid={ setInputVallid } /> );
+
+		expect( setInputVallid ).toHaveBeenLastCalledWith( true );
+	} );
+
 	it( 'displays the error message for invalid email', async () => {
 		useAccountBusinessSupportEmail.mockReturnValue( [
 			'invalid.email',

@@ -91,9 +91,11 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 	// Notify parent of validation state changes.
 	useEffect( () => {
 		if ( onValidationChange ) {
-			onValidationChange( emailsMatch );
+			onValidationChange(
+				emailsMatch && isValidEmail( accountCommunicationsEmail )
+			);
 		}
-	}, [ emailsMatch, onValidationChange ] );
+	}, [ emailsMatch, onValidationChange, accountCommunicationsEmail ] );
 
 	return (
 		<>

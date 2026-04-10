@@ -403,6 +403,39 @@ describe( 'NotificationsEmailInput', () => {
 		expect( onValidationChange ).toHaveBeenLastCalledWith( false );
 	} );
 
+	it( 'calls onValidationChange with false when email format is invalid', () => {
+		const onValidationChange = jest.fn();
+		const setEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'original@test.com',
+			setEmail,
+		] );
+
+		const { rerender } = render(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		// Simulate email change to an invalid format (missing TLD)
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'test@test',
+			setEmail,
+		] );
+		rerender(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		// Type matching confirm email — emails match but format is invalid
+		fireEvent.change( screen.getByLabelText( 'Confirm email address' ), {
+			target: { value: 'test@test' },
+		} );
+
+		expect( onValidationChange ).toHaveBeenLastCalledWith( false );
+	} );
+
 	it( 'calls onValidationChange with true when confirm email matches', () => {
 		const onValidationChange = jest.fn();
 		const setEmail = jest.fn();

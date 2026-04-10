@@ -8,10 +8,19 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useAccountBusinessSupportEmail, useGetSavingError } from 'wcpay/data';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+const isValidEmail = ( email ) => {
+	if ( ! email ) {
+		return true; // Empty is allowed (validated separately)
+	}
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+	return emailRegex.test( email );
+};
 
 const SupportEmailInput = ( { setInputVallid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
+	const [ hasBlurred, setHasBlurred ] = useState( false );
 
 	let supportEmailError = useGetSavingError()?.data?.details
 		?.account_business_support_email?.message;
@@ -24,17 +33,30 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 		);
 	}
 
+	const hasInvalidFormat = ! isValidEmail( supportEmail );
+
+	const clientValidationError =
+		hasBlurred && hasInvalidFormat
+			? __(
+					'Please enter a valid email address.',
+					'woocommerce-payments'
+			  )
+			: null;
+
+	// Server error takes precedence over client validation error
+	const errorMessage = supportEmailError || clientValidationError;
+
 	useEffect( () => {
 		if ( setInputVallid ) {
-			setInputVallid( ! supportEmailError );
+			setInputVallid( ! supportEmailError && ! hasInvalidFormat );
 		}
-	}, [ supportEmailError, setInputVallid ] );
+	}, [ supportEmailError, setInputVallid, hasInvalidFormat ] );
 
 	return (
 		<>
-			{ supportEmailError && (
+			{ errorMessage && (
 				<Notice status="error" isDismissible={ false }>
-					<span>{ supportEmailError }</span>
+					<span>{ errorMessage }</span>
 				</Notice>
 			) }
 
@@ -47,6 +69,7 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 				label={ __( 'Support email', 'woocommerce-payments' ) }
 				value={ supportEmail }
 				onChange={ setSupportEmail }
+				onBlur={ () => setHasBlurred( true ) }
 				data-testid={ 'account-business-support-email-input' }
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
