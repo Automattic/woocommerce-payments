@@ -463,6 +463,7 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
+	bankName,
 } ) => {
 	let emailLink;
 	if ( customer?.email ) {
@@ -619,9 +620,13 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 									className="dispute-steps__notice-content"
 								>
 									{ createInterpolateElement(
-										__(
-											'<strong>The outcome of this inquiry will be determined by Klarna.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
-											'woocommerce-payments'
+										sprintf(
+											/* translators: %s is the payment provider name, eg "Klarna". */
+											__(
+												'<strong>The outcome of this inquiry will be determined by %s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
+												'woocommerce-payments'
+											),
+											bankName
 										),
 										{
 											strong: <strong />,
