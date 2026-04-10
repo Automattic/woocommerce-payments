@@ -57,7 +57,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			/* translators: %s is the deadline date, eg "11:59 PM on Aug 5, 2026". */
 			noticeText = sprintf(
 				__(
-					"The customer has filed an inquiry through Klarna, reporting a return. This is a standard part of Klarna's returns process. Once you receive the item, issue the refund as usual. If it remains unresolved by %s, the inquiry may escalate to a dispute, which you can challenge with evidence. <a>Learn more about Klarna inquiries and disputes ↗</a>",
+					"<strong>The customer has filed an inquiry through Klarna, reporting a return.</strong> This is a standard part of Klarna's returns process. Once you receive the item, issue the refund as usual. If it remains unresolved by %s, the inquiry may escalate to a dispute, which you can challenge with evidence. <a>Learn more about Klarna inquiries and disputes ↗</a>",
 					'woocommerce-payments'
 				),
 				dueByDate
@@ -97,7 +97,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			/* translators: %1$s is the reason clause, eg "claiming this transaction was unauthorized". %2$s is the deadline date. */
 			noticeText = sprintf(
 				__(
-					'The customer has filed an inquiry through Klarna, %1$s. You can resolve this by working it out with the customer directly or issuing a refund. If unresolved by %2$s, the inquiry may escalate to a dispute, which you can challenge with evidence.',
+					'<strong>The customer has filed an inquiry through Klarna, %1$s.</strong> You can resolve this by working it out with the customer directly or issuing a refund. If unresolved by %2$s, the inquiry may escalate to a dispute, which you can challenge with evidence.',
 					'woocommerce-payments'
 				),
 				reasonClause,

@@ -77,7 +77,10 @@ exports[`DisputeNotice - Klarna Inquiries renders fallback banner for unknown Kl
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
-          The customer has filed an inquiry through Klarna, regarding this transaction. You can resolve this by working it out with the customer directly or issuing a refund. If unresolved by 11:59 PM on September 9, 2023, the inquiry may escalate to a dispute, which you can challenge with evidence.
+          <strong>
+            The customer has filed an inquiry through Klarna, regarding this transaction.
+          </strong>
+           You can resolve this by working it out with the customer directly or issuing a refund. If unresolved by 11:59 PM on September 9, 2023, the inquiry may escalate to a dispute, which you can challenge with evidence.
         </div>
       </div>
       <div
@@ -165,7 +168,10 @@ exports[`DisputeNotice - Klarna Inquiries renders per-reason banner for fraudule
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
-          The customer has filed an inquiry through Klarna, claiming this transaction was unauthorized. You can resolve this by working it out with the customer directly or issuing a refund. If unresolved by 11:59 PM on September 9, 2023, the inquiry may escalate to a dispute, which you can challenge with evidence.
+          <strong>
+            The customer has filed an inquiry through Klarna, claiming this transaction was unauthorized.
+          </strong>
+           You can resolve this by working it out with the customer directly or issuing a refund. If unresolved by 11:59 PM on September 9, 2023, the inquiry may escalate to a dispute, which you can challenge with evidence.
         </div>
       </div>
       <div
@@ -253,7 +259,10 @@ exports[`DisputeNotice - Klarna Inquiries renders return-specific banner for cre
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
-          The customer has filed an inquiry through Klarna, reporting a return. This is a standard part of Klarna's returns process. Once you receive the item, issue the refund as usual. If it remains unresolved by 11:59 PM on September 9, 2023, the inquiry may escalate to a dispute, which you can challenge with evidence. 
+          <strong>
+            The customer has filed an inquiry through Klarna, reporting a return.
+          </strong>
+           This is a standard part of Klarna's returns process. Once you receive the item, issue the refund as usual. If it remains unresolved by 11:59 PM on September 9, 2023, the inquiry may escalate to a dispute, which you can challenge with evidence. 
           <a
             href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns"
             rel="noopener noreferrer"
