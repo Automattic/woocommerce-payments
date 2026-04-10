@@ -223,7 +223,7 @@ export const PaymentMethodSelect = ( {
 	return (
 		// eslint-disable-next-line
 		<select name={ inputName } defaultValue={ value } key={ userId }>
-			{ 0 === value && (
+			{ value === 0 && (
 				<option value={ 0 } key={ 'select' } disabled>
 					{ __(
 						'Please select a payment method',

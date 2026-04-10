@@ -72,7 +72,7 @@ export const RiskReviewList = (): JSX.Element => {
 	const isTransactionsSummaryLoaded =
 		transactionsSummary.count !== undefined &&
 		transactionsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		isSummaryLoading === false;
 	const totalRows = transactionsSummary.count || 0;
 
 	if ( isTransactionsSummaryLoaded ) {

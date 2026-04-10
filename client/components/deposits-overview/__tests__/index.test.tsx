@@ -187,7 +187,7 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 	mockUseSelectedCurrencyOverview.mockReturnValue( {
 		account: mockAccount,
 		overview: currencies[ 0 ],
-		isLoading: null === currencies || ! currencies.length,
+		isLoading: currencies === null || ! currencies.length,
 	} );
 };
 // Mocks the useSelectedCurrency hook to return no previously selected currency.
@@ -204,7 +204,7 @@ const mockDepositOverviews = ( currencies: AccountOverview.Overview[] ) => {
 			currencies: currencies,
 			account: mockAccount,
 		},
-		isLoading: null === currencies || ! currencies.length,
+		isLoading: currencies === null || ! currencies.length,
 	} );
 };
 

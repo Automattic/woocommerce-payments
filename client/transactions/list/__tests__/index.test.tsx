@@ -257,7 +257,7 @@ describe( 'Transactions list', () => {
 	test( 'renders correctly when filtered by payout', () => {
 		mockUseTransactions.mockReturnValue( {
 			transactions: getMockTransactions().filter(
-				( txn: Transaction ) => 'po_mock' === txn.deposit_id
+				( txn: Transaction ) => txn.deposit_id === 'po_mock'
 			),
 			transactionsError: undefined,
 			isLoading: false,

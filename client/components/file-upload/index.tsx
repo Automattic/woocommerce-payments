@@ -45,7 +45,7 @@ export const FileUploadControl = ( {
 	uploadButtonLabel,
 	type = 'file',
 }: FileUploadControlProps ): JSX.Element => {
-	const hasError = ( error && 0 < error.length ) || false;
+	const hasError = ( error && error.length > 0 ) || false;
 
 	const IconType = type === 'image' ? ImageIcon : AddOutlineIcon;
 	const Icon = isDone && ! hasError ? CheckmarkIcon : IconType;

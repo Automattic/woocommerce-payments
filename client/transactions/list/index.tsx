@@ -318,12 +318,12 @@ export const TransactionsList = (
 			'&transaction_id=' +
 			txn.transaction_id +
 			'&transaction_type=' +
-			( txn.metadata && 'card_reader_fee' === txn.metadata.charge_type
+			( txn.metadata && txn.metadata.charge_type === 'card_reader_fee'
 				? txn.metadata.charge_type
 				: txn.type );
 		const clickable =
-			'financing_payout' !== txn.type &&
-			! ( 'financing_paydown' === txn.type && '' === txn.charge_id )
+			txn.type !== 'financing_payout' &&
+			! ( txn.type === 'financing_paydown' && txn.charge_id === '' )
 				? ( children: React.ReactNode ) => (
 						<ClickableCell href={ detailsURL }>
 							{ children }
@@ -417,8 +417,8 @@ export const TransactionsList = (
 		};
 
 		const isFinancingType =
-			-1 !==
-			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
+			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type ) !==
+			-1;
 
 		const isReaderFee = dataType === 'card_reader_fee';
 
@@ -702,17 +702,17 @@ export const TransactionsList = (
 		);
 	}
 
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	const isCurrencyFiltered = typeof getQuery().store_currency_is === 'string';
 
 	const isSingleCurrency =
-		2 > ( transactionsSummary.store_currencies || [] ).length;
+		( transactionsSummary.store_currencies || [] ).length < 2;
 
 	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isTransactionsSummaryDataLoaded =
 		transactionsSummary.count !== undefined &&
 		transactionsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		isSummaryLoading === false;
 
 	// Generate summary only if the data has been loaded
 	if ( isTransactionsSummaryDataLoaded ) {

@@ -226,7 +226,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		entries.forEach( ( entry: IntersectionObserverEntry ) => {
 			const { target, intersectionRatio } = entry;
 
-			if ( 0 < intersectionRatio ) {
+			if ( intersectionRatio > 0 ) {
 				// Element is at least partially visible.
 				const { id } = target;
 				const event = observerEventMapping[ id ] || null;
@@ -338,7 +338,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 								) }
 							</InlineNotice>
 						) }
-						{ 'error' === advancedFraudProtectionSettings && (
+						{ advancedFraudProtectionSettings === 'error' && (
 							<InlineNotice
 								className="fraud-protection-advanced-settings-error-notice"
 								status="error"
@@ -381,8 +381,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 								disabled={
 									isSaving ||
 									isLoading ||
-									'error' ===
-										advancedFraudProtectionSettings ||
+									advancedFraudProtectionSettings ===
+										'error' ||
 									! isDirty
 								}
 							>

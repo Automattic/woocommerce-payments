@@ -213,7 +213,7 @@ export const AuthorizationsList = (): JSX.Element => {
 	const isAuthorizationsSummaryLoaded =
 		authorizationsSummary.count !== undefined &&
 		authorizationsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		isSummaryLoading === false;
 	const totalRows = authorizationsSummary.count || 0;
 
 	if ( isAuthorizationsSummaryLoaded ) {

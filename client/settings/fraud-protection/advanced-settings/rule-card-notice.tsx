@@ -26,7 +26,7 @@ const FraudProtectionRuleCardNotice: React.FC<
 	}
 
 	// If the type is info, we want to use the info icon, otherwise, the default icon for these notices is the (!) icon.
-	const icon = 'info' === type ? <TipIcon /> : <NoticeOutlineIcon />;
+	const icon = type === 'info' ? <TipIcon /> : <NoticeOutlineIcon />;
 
 	return (
 		<InlineNotice

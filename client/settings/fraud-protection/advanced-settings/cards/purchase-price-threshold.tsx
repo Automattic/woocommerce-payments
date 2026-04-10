@@ -21,13 +21,13 @@ import {
 } from '../../interfaces';
 
 const getFloatValue = ( value: string ) => {
-	return '' === value || '0' === value ? 0 : parseFloat( value );
+	return value === '' || value === '0' ? 0 : parseFloat( value );
 };
 
 const getCurrencySymbol = () => {
 	const fallbackCurrency = { symbol: '$' };
 
-	if ( '1' !== wcpaySettings.isMultiCurrencyEnabled ) {
+	if ( wcpaySettings.isMultiCurrencyEnabled !== '1' ) {
 		return fallbackCurrency.symbol;
 	}
 

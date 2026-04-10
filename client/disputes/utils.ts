@@ -77,7 +77,7 @@ export const isInquiry = ( status: DisputeStatus ): boolean => {
 
 export const isRefundable = ( status: DisputeStatus ): boolean => {
 	// Refundable dispute statuses are one of `warning_needs_response`, `warning_under_review`, `warning_closed` or `won`.
-	return isInquiry( status ) || 'won' === status;
+	return isInquiry( status ) || status === 'won';
 };
 
 /**

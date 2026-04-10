@@ -80,7 +80,7 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 			currencies: currencies,
 			account: mockAccount,
 		},
-		isLoading: null === currencies || ! currencies.length,
+		isLoading: currencies === null || ! currencies.length,
 	} );
 };
 
