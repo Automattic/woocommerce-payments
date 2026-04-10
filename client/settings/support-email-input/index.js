@@ -71,6 +71,7 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 				onChange={ setSupportEmail }
 				onBlur={ () => setHasBlurred( true ) }
 				data-testid={ 'account-business-support-email-input' }
+				type="email"
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 			/>
