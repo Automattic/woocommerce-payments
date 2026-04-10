@@ -574,6 +574,11 @@ class WC_Payments_Order_Service {
 		try {
 			$events = $this->api_client->get_timeline( $intent_id );
 
+			if ( ! isset( $events['data'] ) || ! is_array( $events['data'] ) ) {
+				Logger::log( sprintf( 'Timeline data missing or malformed for intent_id %s.', $intent_id ) );
+				return;
+			}
+
 			$captured_event = current(
 				array_filter(
 					$events['data'],
@@ -582,6 +587,11 @@ class WC_Payments_Order_Service {
 					}
 				)
 			);
+
+			if ( ! is_array( $captured_event ) ) {
+				Logger::log( sprintf( 'No captured event found in timeline for intent_id %s.', $intent_id ) );
+				return;
+			}
 
 			$details = ( new WC_Payments_Captured_Event_Note( $captured_event ) )->generate_html_note();
 

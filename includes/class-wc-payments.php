@@ -892,6 +892,11 @@ class WC_Payments {
 			return $providers;
 		}
 
+		// Don't offer address autocomplete if the account is rejected or suspended (under review).
+		if ( self::$account->is_account_rejected() || self::$account->is_account_under_review() ) {
+			return $providers;
+		}
+
 		if ( ! class_exists( 'Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider' ) ) {
 			return $providers;
 		}
@@ -986,9 +991,6 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
-
-				// WPORG 2025 merchant feedback prompt user dismissed state.
-				'wc_payments_wporg_review_2025_prompt_dismissed',
 
 				// WooPayments review prompt user preferences.
 				'wc_payments_review_prompt_dismissed',

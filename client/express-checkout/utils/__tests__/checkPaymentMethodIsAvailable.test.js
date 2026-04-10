@@ -15,7 +15,6 @@ jest.mock( '..', () => ( {
 		}
 		return null;
 	} ),
-	getStripeElementsMode: jest.fn( () => 'payment' ),
 } ) );
 
 jest.mock( '../../transformers/wc-to-stripe', () => ( {

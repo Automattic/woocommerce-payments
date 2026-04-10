@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+E2E tests for the repeated checkout attempt after the card decline.

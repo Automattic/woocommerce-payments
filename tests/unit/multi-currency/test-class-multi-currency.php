@@ -148,6 +148,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'no' );
 		delete_option( '_wcpay_feature_mc_cache_optimized' );
 		delete_option( 'wcpay_multi_currency_rendering_mode' );
+		delete_option( 'wcpay_multi_currency_store_currency' );
 
 		parent::tear_down();
 	}
@@ -1603,6 +1604,59 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		update_post_meta( $order_id, '_order_currency', $currency );
 
 		return $order_id;
+	}
+
+	public function test_init_invalidates_cache_when_store_currency_changes() {
+		// Simulate previously known currency was USD, but store currency is now EUR.
+		update_option( 'wcpay_multi_currency_store_currency', 'USD' );
+
+		// Clear filters from prior init (FrontendCurrencies adds one at priority 900).
+		remove_all_filters( 'woocommerce_currency' );
+		add_filter( 'woocommerce_currency', fn() => 'EUR' );
+
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+		$mock_cache->expects( $this->once() )
+			->method( 'delete' )
+			->with( MultiCurrencyCacheInterface::CURRENCIES_KEY );
+
+		$this->init_multi_currency( null, true, null, $mock_cache );
+
+		// Verify the stored currency was updated to the new value.
+		$this->assertSame( 'EUR', get_option( 'wcpay_multi_currency_store_currency' ) );
+	}
+
+	public function test_init_does_not_invalidate_cache_when_store_currency_unchanged() {
+		// Store currency matches the current WooCommerce currency (both USD).
+		update_option( 'wcpay_multi_currency_store_currency', 'USD' );
+
+		// Clear filters from prior init to ensure get_woocommerce_currency() returns USD.
+		remove_all_filters( 'woocommerce_currency' );
+
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+		$mock_cache->expects( $this->never() )
+			->method( 'delete' );
+
+		$this->init_multi_currency( null, true, null, $mock_cache );
+	}
+
+	public function test_init_does_not_invalidate_cache_on_first_install() {
+		// No store_currency option exists yet (first-time install).
+		delete_option( 'wcpay_multi_currency_store_currency' );
+
+		// Clear filters from prior init to ensure get_woocommerce_currency() returns USD.
+		remove_all_filters( 'woocommerce_currency' );
+
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+		$mock_cache->expects( $this->never() )
+			->method( 'delete' );
+
+		$this->init_multi_currency( null, true, null, $mock_cache );
+
+		// Verify the option was set for the first time (not treated as a change).
+		$this->assertSame( 'USD', get_option( 'wcpay_multi_currency_store_currency' ) );
 	}
 
 	public function test_init_returns_early_when_store_currency_not_in_available_wc_currencies() {

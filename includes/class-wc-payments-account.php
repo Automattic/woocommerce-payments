@@ -381,8 +381,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 			// Campaigns are temporary flags that are used to enable/disable features for a limited time.
 			'campaigns'           => [
-				// The flag for the WordPress.org merchant review campaign in 2025. Eligibility is determined per-account on transact-platform-server.
-				'wporgReview2025'    => $account['eligibility_wporg_review_campaign_2025'] ?? false,
 				// The flag for the payments settings review prompt (Phase 0). Eligibility is determined per-account on transact-platform-server.
 				'reviewPromptPhase0' => $account['eligibility_review_prompt_phase_0'] ?? false,
 			],
