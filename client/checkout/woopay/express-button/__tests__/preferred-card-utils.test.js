@@ -30,8 +30,8 @@ describe( 'preferred-card-utils', () => {
 			expect( normalizeBrand( 'diners_club' ) ).toBe( 'diners' );
 		} );
 
-		test( 'maps china_unionpay to unionpay', () => {
-			expect( normalizeBrand( 'china_unionpay' ) ).toBe( 'unionpay' );
+		test( 'maps union_pay to unionpay', () => {
+			expect( normalizeBrand( 'union_pay' ) ).toBe( 'unionpay' );
 		} );
 
 		test( 'passes through brands that have no alias', () => {

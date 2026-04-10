@@ -31,6 +31,17 @@ import { isValidPreferredCard, normalizeBrand } from './preferred-card-utils';
 const BUTTON_WIDTH_THRESHOLD = 140;
 const CARD_DISPLAY_WIDTH_THRESHOLD = 220;
 
+const BRAND_DISPLAY_NAMES = {
+	visa: 'Visa',
+	mastercard: 'Mastercard',
+	amex: 'American Express',
+	discover: 'Discover',
+	jcb: 'JCB',
+	unionpay: 'UnionPay',
+	diners: 'Diners Club',
+	cartes_bancaires: 'Cartes Bancaires',
+};
+
 const ButtonTypeTextMap = {
 	default: __( 'WooPay', 'woocommerce-payments' ),
 	buy: __( 'Buy with WooPay', 'woocommerce-payments' ),
@@ -388,7 +399,10 @@ export const WoopayExpressCheckoutButton = ( {
 					/>
 					<img
 						src={ cardBrandIcon.component }
-						alt={ normalizedBrand }
+						alt={
+							BRAND_DISPLAY_NAMES[ normalizedBrand ] ||
+							normalizedBrand
+						}
 						className="woopay-button-card-brand"
 					/>
 					<span className="woopay-button-last4">
@@ -413,11 +427,14 @@ export const WoopayExpressCheckoutButton = ( {
 		);
 	};
 
+	const brandDisplayName =
+		BRAND_DISPLAY_NAMES[ normalizedBrand ] || normalizedBrand;
+
 	const ariaLabel = cardBrandIcon
 		? sprintf(
-				/* translators: %1$s: card brand name (e.g. "visa"), %2$s: last 4 digits of card */
+				/* translators: %1$s: card brand display name (e.g. "American Express"), %2$s: last 4 digits of card */
 				__( 'WooPay with %1$s ending in %2$s', 'woocommerce-payments' ),
-				normalizedBrand,
+				brandDisplayName,
 				preferredCard.last4
 		  )
 		: buttonText;

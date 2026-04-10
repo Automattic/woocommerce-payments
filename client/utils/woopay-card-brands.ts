@@ -7,31 +7,24 @@ import WoopayAmex from 'assets/images/woopay-icons/amex.svg?asset';
 import WoopayDiscover from 'assets/images/woopay-icons/discover.svg?asset';
 import WoopayJcb from 'assets/images/woopay-icons/jcb.svg?asset';
 import WoopayUnionPay from 'assets/images/woopay-icons/unionpay.svg?asset';
-
-interface CardBrand {
-	name: string;
-	component: string;
-}
+import WoopayDiners from 'assets/images/woopay-icons/diners.svg?asset';
+import type { CardBrand } from './card-brands';
 
 /**
- * Get card brands with higher-fidelity WooPay icons.
+ * Higher-fidelity WooPay card brand icons.
  * Used by the WooPay express button for preferred card display where
  * icons render at a larger size and need more path detail.
  *
- * @return {CardBrand[]} Array of card brand objects with name and component properties
+ * Static array — the brand list does not change at runtime.
  */
-export const getWoopayCardBrands = (): CardBrand[] => {
-	const baseBrands: CardBrand[] = [
-		{ name: 'visa', component: WoopayVisa },
-		{ name: 'mastercard', component: WoopayMastercard },
-		{ name: 'amex', component: WoopayAmex },
-		{ name: 'discover', component: WoopayDiscover },
-	];
+const woopayCardBrands: CardBrand[] = [
+	{ name: 'visa', component: WoopayVisa },
+	{ name: 'mastercard', component: WoopayMastercard },
+	{ name: 'amex', component: WoopayAmex },
+	{ name: 'discover', component: WoopayDiscover },
+	{ name: 'jcb', component: WoopayJcb },
+	{ name: 'unionpay', component: WoopayUnionPay },
+	{ name: 'diners', component: WoopayDiners },
+];
 
-	const additionalBrands: CardBrand[] = [
-		{ name: 'jcb', component: WoopayJcb },
-		{ name: 'unionpay', component: WoopayUnionPay },
-	];
-
-	return [ ...baseBrands, ...additionalBrands ];
-};
+export const getWoopayCardBrands = (): CardBrand[] => woopayCardBrands;

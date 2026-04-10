@@ -355,11 +355,11 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			const cardBrandImg = screen.getByAltText( 'visa' );
+			const cardBrandImg = screen.getByAltText( 'Visa' );
 			expect( cardBrandImg ).toBeInTheDocument();
 			expect( cardBrandImg ).toHaveAttribute( 'src', 'visa-icon.svg' );
 			expect(
-				screen.getByLabelText( 'WooPay with visa ending in 4242' )
+				screen.getByLabelText( 'WooPay with Visa ending in 4242' )
 			).toBeInTheDocument();
 			expect( screen.getByText( '4242' ) ).toBeInTheDocument();
 		} );
@@ -379,7 +379,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			const cardBrandImg = screen.getByAltText( 'amex' );
+			const cardBrandImg = screen.getByAltText( 'American Express' );
 			expect( cardBrandImg ).toBeInTheDocument();
 			expect( cardBrandImg ).toHaveAttribute( 'src', 'amex-icon.svg' );
 			expect( screen.getByText( '1008' ) ).toBeInTheDocument();
@@ -474,7 +474,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				/>
 			);
 
-			// diners_club normalizes to "diners", but the express button falls back because no icon exists in getWoopayCardBrands()
+			// diners_club normalizes to "diners" which is not in the test mock — falls back to default button text
 			expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
 			expect( screen.queryByText( '3600' ) ).not.toBeInTheDocument();
 		} );

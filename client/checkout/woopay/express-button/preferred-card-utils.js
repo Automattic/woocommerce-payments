@@ -14,7 +14,7 @@ const LAST4_PATTERN = /^\d{4}$/;
 const BRAND_ALIASES = {
 	american_express: 'amex',
 	diners_club: 'diners',
-	china_unionpay: 'unionpay',
+	union_pay: 'unionpay',
 };
 
 /**

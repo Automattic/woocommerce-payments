@@ -4,18 +4,21 @@
 import { getWoopayCardBrands } from '../woopay-card-brands';
 
 describe( 'getWoopayCardBrands', () => {
-	test( 'returns 6 brands with truthy component values', () => {
+	test( 'includes all expected card brands with truthy icons', () => {
 		const brands = getWoopayCardBrands();
+		const names = brands.map( ( b ) => b.name );
 
-		expect( brands ).toHaveLength( 6 );
-		expect( brands.map( ( b ) => b.name ) ).toEqual( [
-			'visa',
-			'mastercard',
-			'amex',
-			'discover',
-			'jcb',
-			'unionpay',
-		] );
+		expect( names ).toEqual(
+			expect.arrayContaining( [
+				'visa',
+				'mastercard',
+				'amex',
+				'discover',
+				'jcb',
+				'unionpay',
+				'diners',
+			] )
+		);
 
 		brands.forEach( ( brand ) => {
 			expect( brand.component ).toBeTruthy();

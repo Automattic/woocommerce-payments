@@ -30,7 +30,11 @@ const usePreferredCard = () => {
 		fetchPreferredCard()
 			.then( ( card ) => {
 				setCachedPreferredCard( card );
-				setPreferredCard( card );
+				setPreferredCard( ( prev ) => {
+					const hasChanged =
+						JSON.stringify( card ) !== JSON.stringify( prev );
+					return hasChanged ? card : prev;
+				} );
 			} )
 			.catch( () => {
 				// Connect iframe unavailable — keep cached state.
