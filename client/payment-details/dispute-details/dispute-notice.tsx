@@ -6,6 +6,7 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -57,18 +58,14 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			/* translators: %s is the deadline date, eg "11:59 PM on Aug 5, 2026". */
 			noticeText = sprintf(
 				__(
-					"<strong>The customer has filed an inquiry through Klarna, reporting a return.</strong> This is a standard part of Klarna's returns process. Once you receive the item, issue the refund as usual. If it remains unresolved by %s, the inquiry may escalate to a dispute, which you can challenge with evidence. <a>Learn more about Klarna inquiries and disputes ↗</a>",
+					"<strong>The customer has filed an inquiry through Klarna, reporting a return.</strong> This is a standard part of Klarna's returns process. Once you receive the item, issue the refund as usual. If it remains unresolved by %s, the inquiry may escalate to a dispute, which you can challenge with evidence. <link>Learn more about Klarna inquiries and disputes</link>",
 					'woocommerce-payments'
 				),
 				dueByDate
 			);
-			noticeElements.a = (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content -- content provided by createInterpolateElement
-				<a
-					href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
+			noticeElements.link = (
+				// @ts-expect-error: children is provided when interpolating the component
+				<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns" />
 			);
 		} else {
 			const klarnaReasonClauses: Record< string, string > = {
