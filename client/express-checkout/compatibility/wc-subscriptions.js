@@ -423,6 +423,11 @@ addFilter(
 		// Shallow copy to avoid mutating the original.
 		const modifiedItems = [ ...cartData.items ];
 
+		const recurringTotalLabel = __(
+			'Recurring total',
+			'woocommerce-payments'
+		);
+
 		subscriptions.forEach( ( subscription ) => {
 			const matchingItemsCount = cartData.items.filter(
 				( i ) =>
@@ -447,6 +452,17 @@ addFilter(
 					itemSubscription.billing_period !==
 						subscription.billing_period
 				) {
+					return;
+				}
+
+				// Guard against processing the same item twice — either from
+				// multiple subscription schedules sharing a billing_period
+				// within a single filter call, or from the filter running on
+				// data that was already modified by a previous invocation.
+				const alreadyProcessed = ( item.item_data || [] ).some(
+					( d ) => d.name === recurringTotalLabel
+				);
+				if ( alreadyProcessed ) {
 					return;
 				}
 

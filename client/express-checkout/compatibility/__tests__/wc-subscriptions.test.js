@@ -653,5 +653,88 @@ describe( 'ECE WC Subscriptions compatibility', () => {
 			expect( result.totals.total_items ).toBe( '12800' );
 			expect( result.totals.total_tax ).toBe( '1280' );
 		} );
+
+		it( 'does not duplicate metadata when multiple schedules share the same billing period', () => {
+			// When subscription schedules differ only by interval/trial/length,
+			// they share a billing_period. Each item must be processed only once.
+			const cart = buildTrialCart( {
+				items: [
+					buildTrialSubscriptionItem( {
+						name: 'Monthly Sub',
+						billingPeriod: 'month',
+						signUpFees: '200',
+						lineSubtotal: '200',
+						lineTotal: '200',
+					} ),
+				],
+				totalPrice: '200',
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						billingPeriod: 'month',
+						billingInterval: 1,
+						totalPrice: '700',
+						totalItems: '700',
+					} ),
+					buildSubscriptionSchedule( {
+						billingPeriod: 'month',
+						billingInterval: 2,
+						totalPrice: '1400',
+						totalItems: '1400',
+					} ),
+				],
+			} );
+
+			const result = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				cart
+			);
+
+			const item = result.items[ 0 ];
+			// Name should have (recurring) only once.
+			expect( item.name ).toBe( 'Monthly Sub (recurring)' );
+			// Recurring total metadata should appear exactly once.
+			const recurringEntries = item.item_data.filter(
+				( d ) => d.name === 'Recurring total'
+			);
+			expect( recurringEntries ).toHaveLength( 1 );
+		} );
+
+		it( 'is idempotent when the filter runs on already-modified data', () => {
+			const cart = buildTrialCart( {
+				items: [
+					buildTrialSubscriptionItem( {
+						name: 'Physical subscription',
+						signUpFees: '200',
+						lineSubtotal: '200',
+						lineTotal: '200',
+					} ),
+				],
+				totalPrice: '200',
+				subscriptions: [
+					buildSubscriptionSchedule( {
+						totalPrice: '758',
+						totalItems: '700',
+						totalTax: '58',
+					} ),
+				],
+			} );
+
+			// Run the filter twice — second call receives the first call's output.
+			const firstPass = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				cart
+			);
+			const secondPass = applyFilters(
+				'wcpay.express-checkout.map-line-items',
+				firstPass
+			);
+
+			const item = secondPass.items[ 0 ];
+			expect( item.name ).toBe( 'Physical subscription (recurring)' );
+			const recurringEntries = item.item_data.filter(
+				( d ) => d.name === 'Recurring total'
+			);
+			expect( recurringEntries ).toHaveLength( 1 );
+		} );
 	} );
 } );
