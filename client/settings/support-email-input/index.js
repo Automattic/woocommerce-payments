@@ -8,15 +8,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { useAccountBusinessSupportEmail, useGetSavingError } from 'wcpay/data';
+import { isEmail } from 'wcpay/utils/email-validation';
 import { useEffect, useRef, useState } from 'react';
-
-const isValidEmail = ( email ) => {
-	if ( ! email ) {
-		return true; // Empty is allowed (validated separately)
-	}
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	return emailRegex.test( email );
-};
 
 const SupportEmailInput = ( { setInputVallid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
@@ -33,7 +26,7 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 		);
 	}
 
-	const hasInvalidFormat = ! isValidEmail( supportEmail );
+	const hasInvalidFormat = supportEmail !== '' && ! isEmail( supportEmail );
 
 	const clientValidationError =
 		hasBlurred && hasInvalidFormat

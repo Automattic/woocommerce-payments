@@ -15,21 +15,7 @@ import {
 	useGetSavingError,
 	useSettings,
 } from 'wcpay/data';
-
-/**
- * Validates an email address format.
- *
- * @param email The email address to validate.
- * @return Whether the email is valid.
- */
-const isValidEmail = ( email: string ): boolean => {
-	if ( ! email ) {
-		return false;
-	}
-	// Basic email validation regex
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	return emailRegex.test( email );
-};
+import { isEmail } from 'wcpay/utils/email-validation';
 
 interface NotificationsEmailInputProps {
 	onValidationChange?: ( isValid: boolean ) => void;
@@ -67,7 +53,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 	const showClientValidationError =
 		hasBlurred &&
 		accountCommunicationsEmail !== '' &&
-		! isValidEmail( accountCommunicationsEmail );
+		! isEmail( accountCommunicationsEmail );
 
 	const clientValidationError = showClientValidationError
 		? __( 'Please enter a valid email address.', 'woocommerce-payments' )
@@ -92,7 +78,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 	useEffect( () => {
 		if ( onValidationChange ) {
 			onValidationChange(
-				emailsMatch && isValidEmail( accountCommunicationsEmail )
+				emailsMatch && isEmail( accountCommunicationsEmail )
 			);
 		}
 	}, [ emailsMatch, onValidationChange, accountCommunicationsEmail ] );
