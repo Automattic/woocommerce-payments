@@ -5,7 +5,7 @@ import { addFilter } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
 // This module is imported by both the shortcode entry point (express-checkout/index.js)
-// and the blocks entry point (express-checkout/blocks/index.js). Because addFilter
+// and the blocks entry point (express-checkout/block-buttons/index.js). Because addFilter
 // with the same namespace replaces any previously registered callback, the filters
 // are effectively idempotent and safe to import from both bundles.
 

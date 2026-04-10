@@ -9,7 +9,7 @@ import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
  * Internal dependencies
  */
 import WCPayAPI from '../../checkout/api';
-import '../../checkout/express-checkout-buttons.scss';
+import './express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
 import '../compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
