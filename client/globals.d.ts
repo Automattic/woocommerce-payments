@@ -91,11 +91,6 @@ declare global {
 			 */
 			campaigns: {
 				/**
-				 * The flag for the WordPress.org merchant review campaign in 2025.
-				 * Eligibility is determined per-account on transact-platform-server.
-				 */
-				wporgReview2025: boolean;
-				/**
 				 * The flag for the payments settings review prompt (Phase 0).
 				 * Eligibility is determined per-account on transact-platform-server.
 				 */

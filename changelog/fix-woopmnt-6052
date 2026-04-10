@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix WooPay admin preview footer card logo sizing and layout at narrow widths.

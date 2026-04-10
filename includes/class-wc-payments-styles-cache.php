@@ -32,6 +32,7 @@ class WC_Payments_Styles_Cache {
 		'fonts.gstatic.com',
 		'use.typekit.net',
 		'fonts.bunny.net',
+		'fonts.wp.com',
 	];
 
 	/**
@@ -150,47 +151,62 @@ class WC_Payments_Styles_Cache {
 	 * @return array|null The appearance object, or null if data is insufficient.
 	 */
 	public static function compute_woopay_appearance_from_theme(): ?array {
-		$styles = wp_get_global_styles();
+		$styles = wp_get_global_styles( [], [ 'transforms' => [ 'resolve-variables' ] ] );
 
 		// Template part styles (used by header/footer in block themes).
-		$tp_styles = wp_get_global_styles( [], [ 'block_name' => 'core/template-part' ] );
+		$tp_styles = wp_get_global_styles(
+			[],
+			[
+				'block_name' => 'core/template-part',
+				'transforms' => [ 'resolve-variables' ],
+			]
+		);
 
-		// Extract colors and resolve any CSS custom property references
-		// like var(--wp--preset--color--base) to concrete values.
-		$bg_color   = self::resolve_css_var( $styles['color']['background'] ?? '#ffffff' );
-		$text_color = self::resolve_css_var( $styles['color']['text'] ?? '#000000' );
-		$link_color = self::resolve_css_var(
+		// Extract colors. CSS custom property references are already resolved
+		// by the 'resolve-variables' transform. resolve_style_value() handles
+		// any remaining ref objects from theme.json.
+		$bg_color   = self::resolve_style_value( $styles['color']['background'] ?? '#ffffff', '#ffffff', $styles );
+		$text_color = self::resolve_style_value( $styles['color']['text'] ?? '#000000', '#000000', $styles );
+		$link_color = self::resolve_style_value(
 			$styles['elements']['link']['color']['text']
 				?? $styles['elements']['a']['color']['text']
-				?? $text_color
+				?? $text_color,
+			$text_color,
+			$styles
 		);
 
 		// Extract typography.
-		$font_family = self::resolve_css_var( $styles['typography']['fontFamily'] ?? 'inherit' );
-		$font_size   = self::resolve_css_var( $styles['typography']['fontSize'] ?? '16px' );
+		$font_family = self::resolve_style_value( $styles['typography']['fontFamily'] ?? 'inherit', 'inherit', $styles );
+		$font_size   = self::resolve_style_value( $styles['typography']['fontSize'] ?? '16px', '16px', $styles );
 
 		// Extract heading styles.
-		$heading_color       = self::resolve_css_var( $styles['elements']['heading']['color']['text'] ?? $text_color );
-		$heading_font_family = self::resolve_css_var( $styles['elements']['heading']['typography']['fontFamily'] ?? $font_family );
+		$heading_color       = self::resolve_style_value( $styles['elements']['heading']['color']['text'] ?? $text_color, $text_color, $styles );
+		$heading_font_family = self::resolve_style_value( $styles['elements']['heading']['typography']['fontFamily'] ?? $font_family, $font_family, $styles );
 
 		// Extract button styles.
-		$button_bg_color   = self::resolve_css_var( $styles['elements']['button']['color']['background'] ?? $bg_color );
-		$button_text_color = self::resolve_css_var( $styles['elements']['button']['color']['text'] ?? $text_color );
-		$button_font_size  = self::resolve_css_var( $styles['elements']['button']['typography']['fontSize'] ?? $font_size );
+		$button_bg_color   = self::resolve_style_value( $styles['elements']['button']['color']['background'] ?? $bg_color, $bg_color, $styles );
+		$button_text_color = self::resolve_style_value( $styles['elements']['button']['color']['text'] ?? $text_color, $text_color, $styles );
+		$button_font_size  = self::resolve_style_value( $styles['elements']['button']['typography']['fontSize'] ?? $font_size, $font_size, $styles );
 
-		// Extract input styles if available.
-		$input_border_color  = self::resolve_css_var( $styles['elements']['input']['border']['color'] ?? $text_color );
-		$input_border_radius = self::resolve_css_var( $styles['elements']['input']['border']['radius'] ?? '0px' );
+		// Extract input styles. WordPress theme.json uses 'textInput' as the
+		// element name (maps to textarea + text-like input types).
+		$input_el            = $styles['elements']['textInput'] ?? $styles['elements']['input'] ?? [];
+		$input_bg_color      = self::resolve_style_value( $input_el['color']['background'] ?? $bg_color, $bg_color, $styles );
+		$input_text_color    = self::resolve_style_value( $input_el['color']['text'] ?? $text_color, $text_color, $styles );
+		$input_border_color  = self::resolve_style_value( $input_el['border']['color'] ?? $text_color, $text_color, $styles );
+		$input_border_radius = self::resolve_style_value( $input_el['border']['radius'] ?? '0px', '0px', $styles );
 
 		// Extract button font family.
-		$button_font_family = self::resolve_css_var( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family );
+		$button_font_family = self::resolve_style_value( $styles['elements']['button']['typography']['fontFamily'] ?? $font_family, $font_family, $styles );
 
-		// Extract header/footer colors. First try the actual header template
-		// part block attributes, then fall back to template part default styles.
-		$header_colors     = self::get_template_part_colors( 'header' );
-		$footer_colors     = self::get_template_part_colors( 'footer' );
-		$header_bg_color   = $header_colors['background'] ?? self::resolve_css_var( $tp_styles['color']['background'] ?? $bg_color );
-		$header_text_color = $header_colors['text'] ?? self::resolve_css_var( $tp_styles['color']['text'] ?? $text_color );
+		// Extract header/footer colors from the checkout template. Handles
+		// both core/template-part references and inline blocks with category
+		// metadata (e.g. Assembler inlines footer as a styled core/group).
+		$checkout_colors   = self::get_checkout_section_colors();
+		$header_colors     = $checkout_colors['header'] ?? [];
+		$footer_colors     = $checkout_colors['footer'] ?? [];
+		$header_bg_color   = $header_colors['background'] ?? self::resolve_style_value( $tp_styles['color']['background'] ?? $bg_color, $bg_color, $tp_styles );
+		$header_text_color = $header_colors['text'] ?? self::resolve_style_value( $tp_styles['color']['text'] ?? $text_color, $text_color, $tp_styles );
 
 		// Determine theme (light vs dark) from background color.
 		$theme = self::is_color_light( $bg_color ) ? 'stripe' : 'night';
@@ -209,13 +225,13 @@ class WC_Payments_Styles_Cache {
 			'labels'    => 'floating',
 			'rules'     => [
 				'.Input'          => [
-					'color'             => $text_color,
+					'color'             => $input_text_color,
 					'fontFamily'        => $font_family,
 					'fontSize'          => $font_size,
 					'borderColor'       => $input_border_color,
 					'borderBottomColor' => $input_border_color,
 					'borderRadius'      => $input_border_radius,
-					'backgroundColor'   => $bg_color,
+					'backgroundColor'   => $input_bg_color,
 				],
 				'.Input--invalid' => [
 					'borderBottomColor' => $error_color,
@@ -243,7 +259,7 @@ class WC_Payments_Styles_Cache {
 					'color'           => $footer_colors['text'] ?? $text_color,
 				],
 				'.Footer-link'    => [
-					'color' => self::resolve_css_var( $tp_styles['elements']['link']['color']['text'] ?? $link_color ),
+					'color' => $footer_colors['text'] ?? $link_color,
 				],
 				'.Button'         => [
 					'color'           => $button_text_color,
@@ -495,13 +511,47 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
+	 * Ensures a theme style value is a string. Handles ref objects
+	 * (e.g. {"ref": "styles.typography.fontFamily"}) by resolving them
+	 * against the provided styles context array. Returns the default for
+	 * any non-string value that cannot be resolved.
+	 *
+	 * @param mixed  $value          The style value — string, ref object array, or other.
+	 * @param string $default        Fallback value when resolution fails.
+	 * @param array  $styles_context The already-resolved styles array to look up refs in.
+	 * @return string The resolved string value or the default.
+	 */
+	private static function resolve_style_value( $value, string $default, array $styles_context = [] ): string {
+		// Handle ref objects: {"ref": "styles.typography.fontFamily"}.
+		if ( is_array( $value ) && isset( $value['ref'] ) ) {
+			$path = explode( '.', $value['ref'] );
+			// Strip the leading 'styles' segment since $styles_context
+			// is already scoped to the styles subtree.
+			if ( ! empty( $path ) && 'styles' === $path[0] ) {
+				array_shift( $path );
+			}
+			$value = _wp_array_get( $styles_context, $path );
+		}
+
+		if ( ! is_string( $value ) ) {
+			return $default;
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Attempts to resolve a CSS var() reference to a concrete value using
 	 * the global styles presets. Returns the original string if unresolvable.
 	 *
 	 * @param string $value The CSS value, possibly a var() reference.
 	 * @return string The resolved value or the original.
 	 */
-	private static function resolve_css_var( string $value ): string {
+	private static function resolve_css_var( $value ): string {
+		if ( ! is_string( $value ) ) {
+			return '';
+		}
+
 		if ( 0 !== strpos( $value, 'var(' ) ) {
 			return $value;
 		}
@@ -571,6 +621,105 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
+	 * Extracts header and footer colors from the checkout page template.
+	 *
+	 * Walks the checkout template blocks looking for header/footer sections.
+	 * These can appear as:
+	 * - `core/template-part` blocks with area "header"/"footer" (standard pattern)
+	 * - Inline blocks with `metadata.categories` containing "header"/"footer"
+	 *   (e.g. Assembler inlines the footer as a core/group with is-style-section-1)
+	 * - Blocks with `tagName` "header"/"footer"
+	 *
+	 * @return array<string, array> Map of area ('header'|'footer') to color arrays
+	 *                              with optional 'background' and 'text' keys.
+	 */
+	private static function get_checkout_section_colors(): array {
+		// Theme override takes priority, then WooCommerce's registered template.
+		$template = get_block_template( get_stylesheet() . '//page-checkout' )
+			?? get_block_template( 'woocommerce//page-checkout' );
+
+		if ( ! $template || empty( $template->content ) ) {
+			return [];
+		}
+
+		$blocks   = parse_blocks( $template->content );
+		$blocks   = self::resolve_pattern_blocks( $blocks );
+		$sections = [];
+
+		foreach ( $blocks as $block ) {
+			$block_name = $block['blockName'] ?? '';
+			if ( empty( $block_name ) ) {
+				continue;
+			}
+
+			$area = self::classify_block_area( $block );
+			if ( ! $area || isset( $sections[ $area ] ) ) {
+				continue;
+			}
+
+			if ( 'core/template-part' === $block_name && ! empty( $block['attrs']['slug'] ) ) {
+				$colors = self::get_template_part_colors( $block['attrs']['slug'] );
+			} else {
+				$colors = self::extract_block_colors( $block );
+			}
+
+			if ( ! empty( $colors ) ) {
+				$sections[ $area ] = $colors;
+			}
+		}
+
+		return $sections;
+	}
+
+	/**
+	 * Determines if a block serves as a header or footer section.
+	 *
+	 * Checks (in priority order):
+	 * 1. Template part area attribute or registered entity area
+	 * 2. Block metadata categories containing "header" or "footer"
+	 * 3. Block tagName attribute ("header" or "footer")
+	 *
+	 * @param array $block A parsed block.
+	 * @return string|null 'header', 'footer', or null if not a section block.
+	 */
+	private static function classify_block_area( array $block ): ?string {
+		$block_name = $block['blockName'] ?? '';
+
+		// Template parts: check area from attrs or registered entity.
+		if ( 'core/template-part' === $block_name && ! empty( $block['attrs']['slug'] ) ) {
+			$area = $block['attrs']['area'] ?? null;
+			if ( ! $area ) {
+				$part = get_block_template( get_stylesheet() . '//' . $block['attrs']['slug'], 'wp_template_part' );
+				$area = $part ? $part->area : null;
+			}
+			if ( in_array( $area, [ 'header', 'footer' ], true ) ) {
+				return $area;
+			}
+			return null;
+		}
+
+		// Inline blocks: check metadata categories.
+		$categories = $block['attrs']['metadata']['categories'] ?? [];
+		if ( in_array( 'footer', $categories, true ) ) {
+			return 'footer';
+		}
+		if ( in_array( 'header', $categories, true ) ) {
+			return 'header';
+		}
+
+		// Fallback: check tagName.
+		$tag = $block['attrs']['tagName'] ?? '';
+		if ( 'footer' === $tag ) {
+			return 'footer';
+		}
+		if ( 'header' === $tag ) {
+			return 'header';
+		}
+
+		return null;
+	}
+
+	/**
 	 * Extracts background and text colors from a template part (header/footer)
 	 * by parsing its outermost block attributes.
 	 *
@@ -584,6 +733,11 @@ class WC_Payments_Styles_Cache {
 		}
 
 		$blocks = parse_blocks( $template->content );
+
+		// Resolve core/pattern references — template parts commonly contain
+		// a single pattern reference instead of inline blocks.
+		$blocks = self::resolve_pattern_blocks( $blocks );
+
 		$target = self::find_primary_block( $blocks );
 
 		if ( null === $target ) {
@@ -653,6 +807,44 @@ class WC_Payments_Styles_Cache {
 	}
 
 	/**
+	 * Resolves core/pattern block references to their actual block content.
+	 *
+	 * Template parts commonly contain a single `<!-- wp:pattern {"slug":"theme/footer"} /-->`
+	 * instead of inline blocks. `parse_blocks()` returns the raw pattern reference with no
+	 * inner blocks, so we resolve it via the pattern registry.
+	 *
+	 * @param array $blocks Parsed blocks that may contain core/pattern references.
+	 * @return array Blocks with pattern references replaced by their content.
+	 */
+	private static function resolve_pattern_blocks( array $blocks ): array {
+		$registry = WP_Block_Patterns_Registry::get_instance();
+		$resolved = [];
+
+		foreach ( $blocks as $block ) {
+			if ( 'core/pattern' !== $block['blockName'] || empty( $block['attrs']['slug'] ) ) {
+				$resolved[] = $block;
+				continue;
+			}
+
+			$slug = $block['attrs']['slug'];
+			if ( ! $registry->is_registered( $slug ) ) {
+				$resolved[] = $block;
+				continue;
+			}
+
+			$pattern = $registry->get_registered( $slug );
+			if ( ! empty( $pattern['content'] ) ) {
+				$pattern_blocks = parse_blocks( $pattern['content'] );
+				foreach ( $pattern_blocks as $pattern_block ) {
+					$resolved[] = $pattern_block;
+				}
+			}
+		}
+
+		return $resolved;
+	}
+
+	/**
 	 * Extracts background and text colors from a block's attributes.
 	 *
 	 * @param array $block A parsed block.
@@ -687,7 +879,66 @@ class WC_Payments_Styles_Cache {
 			$colors['text'] = self::resolve_css_var( $block['attrs']['style']['color']['text'] );
 		}
 
+		// Fill in missing colors from block style variations (e.g.
+		// "is-style-section-1"). Inline attributes take precedence per-key,
+		// but the variation provides defaults for keys not set inline.
+		// Example: user overrides text color in Site Editor but background
+		// still comes from the variation.
+		if ( ! empty( $block['attrs']['className'] ) && ! empty( $block['blockName'] ) ) {
+			$variation_colors = self::get_style_variation_colors( $block['blockName'], $block['attrs']['className'] );
+			$colors           = array_merge( $variation_colors, $colors );
+		}
+
 		return $colors;
+	}
+
+	/**
+	 * Extracts colors from a block style variation by looking up the variation
+	 * in the merged theme.json data.
+	 *
+	 * Modern block themes use CSS class-based color schemes (e.g. "is-style-section-1")
+	 * instead of inline color attributes. The variation definitions are stored in
+	 * theme.json partial files (e.g. styles/block/section-1.json).
+	 *
+	 * @param string $block_name Block name (e.g. 'core/group').
+	 * @param string $class_name The block's className attribute.
+	 * @return array Colors array with optional 'background' and 'text' keys.
+	 */
+	private static function get_style_variation_colors( string $block_name, string $class_name ): array {
+		if ( ! function_exists( 'wp_get_block_style_variation_name_from_class' ) ) {
+			return [];
+		}
+
+		$variation_names = wp_get_block_style_variation_name_from_class( $class_name );
+		if ( empty( $variation_names ) ) {
+			return [];
+		}
+
+		// Only the first variation with data is used (same as WP core).
+		foreach ( $variation_names as $variation ) {
+			$variation_color = wp_get_global_styles(
+				[ 'variations', $variation, 'color' ],
+				[ 'block_name' => $block_name ]
+			);
+
+			if ( ! is_array( $variation_color ) ) {
+				continue;
+			}
+
+			$colors = [];
+			if ( ! empty( $variation_color['background'] ) ) {
+				$colors['background'] = self::resolve_css_var( $variation_color['background'] );
+			}
+			if ( ! empty( $variation_color['text'] ) ) {
+				$colors['text'] = self::resolve_css_var( $variation_color['text'] );
+			}
+
+			if ( ! empty( $colors ) ) {
+				return $colors;
+			}
+		}
+
+		return [];
 	}
 
 	/**

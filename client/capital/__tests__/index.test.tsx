@@ -15,13 +15,6 @@ jest.mock( 'wcpay/data', () => ( {
 	useActiveLoanSummary: jest.fn(),
 } ) );
 
-jest.mock( '@woocommerce/data', () => ( {
-	useUserPreferences: jest.fn( () => ( {
-		updateUserPreferences: jest.fn(),
-		wc_payments_wporg_review_2025_prompt_dismissed: false,
-	} ) ),
-} ) );
-
 declare const global: {
 	wcpaySettings: {
 		zeroDecimalCurrencies: string[];
