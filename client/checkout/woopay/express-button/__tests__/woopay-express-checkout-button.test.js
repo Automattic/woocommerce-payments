@@ -436,7 +436,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			// Card info should not render in narrow mode
-			expect( screen.queryByAltText( 'visa' ) ).not.toBeInTheDocument();
+			expect( screen.queryByAltText( 'Visa' ) ).not.toBeInTheDocument();
 			expect( screen.queryByText( '4242' ) ).not.toBeInTheDocument();
 		} );
 
@@ -455,7 +455,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			// Button is wide enough for text but not for card info
-			expect( screen.queryByAltText( 'visa' ) ).not.toBeInTheDocument();
+			expect( screen.queryByAltText( 'Visa' ) ).not.toBeInTheDocument();
 			expect( screen.queryByText( '4242' ) ).not.toBeInTheDocument();
 		} );
 
