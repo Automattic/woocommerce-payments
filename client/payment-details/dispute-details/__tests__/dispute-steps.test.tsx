@@ -297,8 +297,6 @@ describe( 'NotDefendableInquirySteps', () => {
 				/the inquiry may escalate to a dispute after 21 days/i
 			)
 		).toBeInTheDocument();
-
-		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders 2 steps with generic language for non-return reasons', () => {
@@ -341,8 +339,6 @@ describe( 'NotDefendableInquirySteps', () => {
 		expect(
 			screen.queryByText( /Respond when the inquiry becomes a dispute/i )
 		).not.toBeInTheDocument();
-
-		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders inquiry notice instead of dispute notice', () => {

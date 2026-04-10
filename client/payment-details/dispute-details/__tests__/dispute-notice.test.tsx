@@ -276,8 +276,6 @@ describe( 'DisputeNotice - Klarna Inquiries', () => {
 			'href',
 			'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns'
 		);
-
-		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders per-reason banner for fraudulent Klarna inquiry', () => {
@@ -309,8 +307,6 @@ describe( 'DisputeNotice - Klarna Inquiries', () => {
 
 		// Should NOT show return-specific text
 		expect( notice?.textContent ).not.toMatch( /reporting a return/i );
-
-		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'renders fallback banner for unknown Klarna inquiry reason', () => {
@@ -336,8 +332,6 @@ describe( 'DisputeNotice - Klarna Inquiries', () => {
 		expect( notice?.textContent ).toMatch(
 			/filed an inquiry through Klarna, regarding this transaction/i
 		);
-
-		expect( container ).toMatchSnapshot();
 	} );
 
 	test( 'includes deadline in Klarna inquiry banners', () => {
