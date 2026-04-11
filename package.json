@@ -28,7 +28,7 @@
 		"test": "npm run test:js && npm run test:php",
 		"test:js": "wp-scripts test-unit-js --config tests/js/jest.config.js",
 		"test:watch": "npm run test:js -- --watch",
-		"test:debug": "wp-scripts --inspect-brk test-unit-js --runInBand --no-cache --config tests/js/jest.config.js",
+		"test:debug": "wp-scripts --inspect-brk test-unit-js --runInBand --no-cache --config tests/js/jest.config.js --verbose",
 		"test:e2e-setup": "./tests/e2e/env/setup.sh",
 		"test:e2e-down": "./tests/e2e/env/down.sh",
 		"test:e2e-up": "./tests/e2e/env/up.sh",
