@@ -1,29 +1,48 @@
 /**
  * External dependencies
  */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, ComponentProps } from 'react';
+import clsx from 'clsx';
 import { noop } from 'lodash';
+import { Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import TooltipBase, { TooltipBaseProps } from './tooltip-base';
+import TooltipBase from './tooltip-base';
 
-type TooltipProps = TooltipBaseProps & {
+type TooltipProps = ComponentProps< typeof TooltipBase > & {
 	isVisible?: boolean;
 	onHide?: () => void;
+	/**
+	 * An icon that will be used as the tooltip button. Replaces the component children.
+	 */
+	buttonIcon?: ComponentProps< typeof Icon >[ 'icon' ];
+	/**
+	 * A label for the tooltip button, visible to screen readers.
+	 */
+	buttonLabel?: string;
+	/**
+	 * The size of the tooltip button.
+	 *
+	 * @default 16
+	 */
+	buttonSize?: number;
 };
 
 /**
  * Tooltip that shows on both hover and click.
  * To be used when the tooltip content is not interactive.
- *
- * @param {TooltipProps} props Component props.
- * @return {JSX.Element} Tooltip component.
  */
-export const HoverTooltip: React.FC< TooltipProps > = ( {
+export const HoverTooltip: React.FC< React.PropsWithChildren<
+	TooltipProps
+> > = ( {
 	isVisible,
 	onHide = noop,
+	children,
+	buttonIcon,
+	buttonLabel,
+	buttonSize = 16,
 	...props
 } ) => {
 	const [ isHovered, setIsHovered ] = useState( false );
@@ -64,7 +83,17 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 				{ ...props }
 				onHide={ handleHide }
 				isVisible={ isVisible || isHovered || isClicked }
-			/>
+			>
+				{ buttonIcon ? (
+					<Icon
+						icon={ buttonIcon }
+						size={ buttonSize }
+						aria-label={ buttonLabel }
+					/>
+				) : (
+					children
+				) }
+			</TooltipBase>
 		</button>
 	);
 };
@@ -72,13 +101,18 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 /**
  * Tooltip that shows only on click events.
  * To be used when the tooltip content is interactive (e.g. links to documentation).
- *
- * @param {TooltipProps} props Component props.
- * @return {JSX.Element} Tooltip component.
  */
-export const ClickTooltip: React.FC< TooltipProps > = ( {
+export const ClickTooltip: React.FC< React.PropsWithChildren<
+	TooltipProps
+> > = ( {
 	isVisible,
 	onHide = noop,
+	buttonIcon,
+	buttonLabel,
+	buttonSize = 16,
+	children,
+	className,
+	maxWidth,
 	...props
 } ) => {
 	const [ isClicked, setIsClicked ] = useState( false );
@@ -110,8 +144,22 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 				{ ...props }
 				parentElement={ tooltipParentRef.current || undefined }
 				onHide={ handleHide }
+				maxWidth={ maxWidth }
 				isVisible={ isVisible || isClicked }
-			/>
+				className={ clsx( 'wcpay-tooltip--click__tooltip', className ) }
+			>
+				{ buttonIcon ? (
+					<div
+						tabIndex={ 0 }
+						role="button"
+						aria-label={ buttonLabel }
+					>
+						<Icon icon={ buttonIcon } size={ buttonSize } />
+					</div>
+				) : (
+					children
+				) }
+			</TooltipBase>
 		</button>
 	);
 };

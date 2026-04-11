@@ -3,50 +3,56 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import wcpayTracks from 'tracks';
-import { dateI18n } from '@wordpress/date';
+import React from 'react';
+import { recordEvent } from 'tracks';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
+import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
-import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
-import classNames from 'classnames';
-import apiFetch from '@wordpress/api-fetch';
-import { useDispatch } from '@wordpress/data';
+import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies.
  */
 import { useDisputes, useDisputesSummary } from 'data/index';
 import OrderLink from 'components/order-link';
+import Chip from 'components/chip';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import Page from 'components/page';
-import { TestModeNotice, topics } from 'components/test-mode-notice';
+import { TestModeNotice } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
-import { formatExplicitCurrency } from 'utils/currency';
+import {
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'multi-currency/interface/functions';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
-import disputeStatusMapping from 'components/dispute-status-chip/mappings';
-import { DisputesTableHeader } from 'wcpay/types/disputes';
-import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
-import { applyThousandSeparator } from '../utils/index.js';
-
+import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
+import {
+	getDisputesCSVRequestURL,
+	disputesDownloadEndpoint,
+} from 'wcpay/data/disputes/resolvers';
+import { applyThousandSeparator } from 'wcpay/utils';
+import { useSettings } from 'wcpay/data';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
+import { useReportExport } from 'wcpay/hooks/use-report-export';
+import { useDispatch } from '@wordpress/data';
+import ErrorBoundary from 'components/error-boundary';
+import SpotlightPromotion from 'promotions/spotlight';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
 		key: 'details',
 		label: '',
 		required: true,
-		cellClassName: classNames( 'info-button', {
+		cellClassName: clsx( 'info-button', {
 			'is-sorted': sortColumn === 'amount',
 		} ),
 		isLeftAligned: true,
@@ -116,11 +122,11 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		key: 'created',
 		label: __( 'Disputed on', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Disputed on', 'woocommerce-payments' ),
-		required: true,
 		isLeftAligned: true,
 		isSortable: true,
 		defaultSort: true,
 		defaultOrder: 'desc',
+		visible: false,
 	},
 	{
 		key: 'dueBy',
@@ -130,38 +136,113 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		isLeftAligned: true,
 		isSortable: true,
 	},
+	{
+		key: 'action',
+		label: __( 'Action', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Action', 'woocommerce-payments' ),
+		isLeftAligned: false,
+		isNumeric: true,
+		required: true,
+		visible: true,
+	},
 ];
 
+/**
+ * Returns a smart date if dispute's due date is within 72 hours.
+ * Otherwise, returns a date string.
+ *
+ * @param {CachedDispute} dispute The dispute to check.
+ *
+ * @return {JSX.Element | string} If dispute is due within 72 hours, return the element that display smart date. Otherwise, a date string.
+ */
+const smartDueDate = ( dispute: CachedDispute ) => {
+	// if dispute is not awaiting response, return an empty string.
+	if ( dispute.due_by === '' || ! isAwaitingResponse( dispute.status ) ) {
+		return '';
+	}
+	// Get current time in UTC.
+	const now = moment().utc();
+	const dueBy = moment.utc( dispute.due_by );
+	const diffHours = dueBy.diff( now, 'hours', false );
+	const diffDays = dueBy.diff( now, 'days', false );
+
+	// if the dispute is past due, return an empty string.
+	if ( diffHours <= 0 ) {
+		return '';
+	}
+	if ( diffHours <= 72 ) {
+		const message =
+			diffHours <= 24
+				? __( 'Last day today', 'woocommerce-payments' )
+				: sprintf(
+						// Translators: %s is the number of days left to respond to the dispute.
+						_n(
+							'%s day left',
+							'%s days left',
+							diffDays,
+							'woocommerce-payments'
+						),
+						diffDays
+				  );
+		return <Chip message={ message } type="alert" />;
+	}
+	return formatDateTimeFromString( dispute.due_by, {
+		includeTime: true,
+	} );
+};
+
 export const DisputesList = (): JSX.Element => {
-	const [ isDownloading, setIsDownloading ] = useState( false );
-	const { createNotice } = useDispatch( 'core/notices' );
+	// pre-fetching the settings.
+	useSettings();
+
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
 	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
 		getQuery()
 	);
 
+	const { requestReportExport, isExportInProgress } = useReportExport();
+
+	const { createNotice } = useDispatch( 'core/notices' );
+
 	const headers = getHeaders( getQuery().orderby );
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		DisputesTableHeader
+	>( 'wc_payments_disputes_hidden_columns', headers );
+
 	const totalRows = disputesSummary.count || 0;
 
 	const rows = disputes.map( ( dispute ) => {
+		const onClickDisputeRow = (
+			e: React.MouseEvent< HTMLAnchorElement >
+		) => {
+			// Use client-side routing to avoid page refresh.
+			e.preventDefault();
+			recordEvent( 'wcpay_disputes_row_action_click' );
+			const history = getHistory();
+			history.push( getDetailsURL( dispute.charge_id, 'transactions' ) );
+		};
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
-				href={ getDetailsURL( dispute.dispute_id, 'disputes' ) }
+				href={ getDetailsURL( dispute.charge_id, 'transactions' ) }
+				onClick={ onClickDisputeRow }
 			>
 				{ children }
 			</ClickableCell>
 		);
 
 		const detailsLink = (
-			<DetailsLink id={ dispute.dispute_id } parentSegment="disputes" />
+			<DetailsLink
+				id={ dispute.charge_id }
+				parentSegment="transactions"
+			/>
 		);
 
 		const reasonMapping = reasons[ dispute.reason ];
 		const reasonDisplay = reasonMapping
 			? reasonMapping.display
 			: formatStringValue( dispute.reason );
-
+		const needsResponse = isAwaitingResponse( dispute.status );
 		const data: {
 			[ key: string ]: {
 				value: number | string;
@@ -169,7 +250,7 @@ export const DisputesList = (): JSX.Element => {
 			};
 		} = {
 			amount: {
-				value: dispute.amount / 100,
+				value: formatExportAmount( dispute.amount, dispute.currency ),
 				display: clickable(
 					formatExplicitCurrency( dispute.amount, dispute.currency )
 				),
@@ -185,7 +266,7 @@ export const DisputesList = (): JSX.Element => {
 				),
 			},
 			reason: {
-				value: dispute.reason,
+				value: reasonDisplay,
 				display: clickable( reasonDisplay ),
 			},
 			source: {
@@ -201,20 +282,14 @@ export const DisputesList = (): JSX.Element => {
 			created: {
 				value: dispute.created,
 				display: clickable(
-					dateI18n(
-						'M j, Y',
-						moment( dispute.created ).toISOString()
-					)
+					formatDateTimeFromString( dispute.created, {
+						includeTime: true,
+					} )
 				),
 			},
 			dueBy: {
 				value: dispute.due_by,
-				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( dispute.due_by ).local().toISOString()
-					)
-				),
+				display: clickable( smartDueDate( dispute ) ),
 			},
 			order: {
 				value: dispute.order_number ?? '',
@@ -240,6 +315,23 @@ export const DisputesList = (): JSX.Element => {
 				display: clickable( dispute.customer_country ),
 			},
 			details: { value: dispute.dispute_id, display: detailsLink },
+			action: {
+				value: '',
+				display: (
+					<Button
+						variant={ needsResponse ? 'secondary' : 'tertiary' }
+						href={ getDetailsURL(
+							dispute.charge_id,
+							'transactions'
+						) }
+						onClick={ onClickDisputeRow }
+					>
+						{ needsResponse
+							? __( 'Respond', 'woocommerce-payments' )
+							: __( 'See details', 'woocommerce-payments' ) }
+					</Button>
+				),
+			},
 		};
 		return headers.map(
 			( { key } ) => data[ key ] || { value: undefined, display: null }
@@ -249,144 +341,83 @@ export const DisputesList = (): JSX.Element => {
 	const downloadable = !! rows.length;
 
 	const onDownload = async () => {
-		setIsDownloading( true );
-		const title = __( 'Disputes', 'woocommerce-payments' );
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+		// We destructure page and path to get the right params.
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		if ( 'endpoint' === downloadType ) {
-			const {
-				date_before: dateBefore,
-				date_after: dateAfter,
-				date_between: dateBetween,
-				match,
-				status_is: statusIs,
-				status_is_not: statusIsNot,
-			} = getQuery();
+		const locale = wcSettings.locale.userLocale;
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'disputes',
+			source: path,
+			exported_row_count: disputesSummary.count,
+		} );
 
-			const isFiltered =
-				!! dateBefore ||
-				!! dateAfter ||
-				!! dateBetween ||
-				!! statusIs ||
-				!! statusIsNot;
+		const {
+			date_before: dateBefore,
+			date_after: dateAfter,
+			date_between: dateBetween,
+			match,
+			filter,
+			status_is: statusIs,
+			status_is_not: statusIsNot,
+		} = getQuery();
 
-			const confirmThreshold = 1000;
-			const confirmMessage = sprintf(
-				__(
-					"You are about to export %d disputes. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
-					'woocommerce-payments'
-				),
-				totalRows
-			);
+		const exportRequestURL = getDisputesCSVRequestURL( {
+			userEmail,
+			locale,
+			dateAfter,
+			dateBefore,
+			dateBetween,
+			match,
+			filter,
+			statusIs,
+			statusIsNot,
+		} );
 
-			if (
-				isFiltered ||
-				totalRows < confirmThreshold ||
-				window.confirm( confirmMessage )
-			) {
-				try {
-					const {
-						exported_disputes: exportedDisputes,
-					} = await apiFetch( {
-						path: getDisputesCSV( {
-							userEmail,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							statusIs,
-							statusIsNot,
-						} ),
-						method: 'POST',
-					} );
+		const isFiltered =
+			!! dateBefore ||
+			!! dateAfter ||
+			!! dateBetween ||
+			!! statusIs ||
+			!! statusIsNot;
 
-					createNotice(
-						'success',
-						sprintf(
-							__(
-								'Your export will be emailed to %s',
-								'woocommerce-payments'
-							),
-							userEmail
-						)
-					);
+		const confirmThreshold = 1000;
+		const confirmMessage = sprintf(
+			__(
+				"You are about to export %d disputes. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+				'woocommerce-payments'
+			),
+			totalRows
+		);
 
-					wcpayTracks.recordEvent( 'wcpay_disputes_download', {
-						exported_disputes: exportedDisputes,
-						total_disputes: exportedDisputes,
-						download_type: 'endpoint',
-					} );
-				} catch {
-					createNotice(
-						'error',
-						__(
-							'There was a problem generating your export.',
-							'woocommerce-payments'
-						)
-					);
-				}
-			}
-		} else {
-			const csvColumns = [
-				{
-					...headers[ 0 ],
-					label: __( 'Dispute Id', 'woocommerce-payments' ),
-				},
-				...headers.slice( 1 ),
-			];
-
-			const csvRows = rows.map( ( row ) => {
-				return [
-					...row.slice( 0, 3 ),
-					{
-						...row[ 3 ],
-						value:
-							disputeStatusMapping[ row[ 3 ].value ?? '' ]
-								.message,
-					},
-					{
-						...row[ 4 ],
-						value: formatStringValue(
-							( row[ 4 ].value ?? '' ).toString()
-						),
-					},
-					...row.slice( 5, 10 ),
-					{
-						...row[ 10 ],
-						value: dateI18n(
-							'Y-m-d',
-							moment( row[ 10 ].value ).toISOString()
-						),
-					},
-					{
-						...row[ 11 ],
-						value: dateI18n(
-							'Y-m-d / g:iA',
-							moment( row[ 11 ].value ).toISOString()
-						),
-					},
-				];
+		if (
+			isFiltered ||
+			totalRows < confirmThreshold ||
+			window.confirm( confirmMessage )
+		) {
+			requestReportExport( {
+				exportRequestURL,
+				exportFileAvailabilityEndpoint: disputesDownloadEndpoint,
+				userEmail,
 			} );
 
-			downloadCSVFile(
-				generateCSVFileName( title, getQuery() ),
-				generateCSVDataFromTable( csvColumns, csvRows )
+			createNotice(
+				'success',
+				sprintf(
+					__(
+						'We’re processing your export. 🎉 The file will download automatically and be emailed to %s.',
+						'woocommerce-payments'
+					),
+					userEmail
+				)
 			);
-
-			wcpayTracks.recordEvent( 'wcpay_disputes_download', {
-				exported_disputes: csvRows.length,
-				total_disputes: disputesSummary.count,
-				download_type: 'browser',
-			} );
 		}
-
-		setIsDownloading( false );
 	};
 
 	let summary;
 	const isDisputesSummaryDataLoaded =
-		disputesSummary.count !== undefined && false === isSummaryLoading;
+		disputesSummary.count !== undefined && ! isSummaryLoading;
 	if ( isDisputesSummaryDataLoaded ) {
 		summary = [
 			{
@@ -411,7 +442,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<TestModeNotice topic={ topics.disputes } />
+			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-disputes-list"
@@ -419,21 +450,26 @@ export const DisputesList = (): JSX.Element => {
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
-				headers={ headers }
+				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading || isDownloading }
+							isDisabled={ isLoading || isExportInProgress }
+							isBusy={ isExportInProgress }
 							onClick={ onDownload }
 						/>
 					),
 				] }
 			/>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

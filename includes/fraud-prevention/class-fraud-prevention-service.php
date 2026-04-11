@@ -65,12 +65,60 @@ class Fraud_Prevention_Service {
 	}
 
 	/**
+	 * Appends the fraud prevention token to the JS context if the protection is enabled, and a session exists.
+	 * This token will also be used by express checkouts.
+	 *
+	 * @return  void
+	 */
+	public static function maybe_append_fraud_prevention_token() {
+		if ( wp_script_is( self::TOKEN_NAME, 'enqueued' ) ) {
+			return;
+		}
+
+		// Check session first before trying to append the token.
+		if ( ! WC()->session ) {
+			return;
+		}
+
+		$instance = self::get_instance();
+
+		// Don't add the token if the prevention is not enabled.
+		if ( ! $instance->is_enabled() ) {
+			return;
+		}
+
+		// Don't add the token if the user isn't on the cart, checkout, product or pay for order page.
+		// Checking the product and cart page too because the user can pay quickly via the payment buttons on that page.
+		if ( ! is_checkout() && ! has_block( 'woocommerce/checkout' ) && ! is_cart() && ! is_product() && ! $instance->is_pay_for_order_page() ) {
+			return;
+		}
+
+		wp_register_script( self::TOKEN_NAME, '', [], time(), true );
+		wp_enqueue_script( self::TOKEN_NAME );
+		// Add the fraud prevention token to the checkout configuration.
+		wp_add_inline_script(
+			self::TOKEN_NAME,
+			"window.wcpayFraudPreventionToken = '" . esc_js( $instance->get_token() ) . "';",
+			'after'
+		);
+	}
+
+	/**
+	 * Checks if this is the Pay for Order page.
+	 *
+	 * @return bool
+	 */
+	public function is_pay_for_order_page() {
+		return is_checkout() && isset( $_GET['pay_for_order'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	}
+
+	/**
 	 * Sets a instance to be used in request cycle.
 	 * Introduced primarily for supporting unit tests.
 	 *
 	 * @param Fraud_Prevention_Service|null $instance Instance of self.
 	 */
-	public static function set_instance( self $instance = null ) {
+	public static function set_instance( ?self $instance = null ) {
 		self::$instance = $instance;
 	}
 
@@ -89,7 +137,7 @@ class Fraud_Prevention_Service {
 	 * For the first page load generates the token,
 	 * for consecutive loads - takes from session.
 	 *
-	 * @return string|mixed
+	 * @return string
 	 */
 	public function get_token(): string {
 		$fraud_prevention_token = $this->session->get( self::TOKEN_NAME );
@@ -116,7 +164,7 @@ class Fraud_Prevention_Service {
 	 * @param string|null $token Token sent in request.
 	 * @return bool
 	 */
-	public function verify_token( string $token = null ): bool {
+	public function verify_token( ?string $token = null ): bool {
 		$session_token = $this->session->get( self::TOKEN_NAME );
 
 		// Check if the tokens are both strings.

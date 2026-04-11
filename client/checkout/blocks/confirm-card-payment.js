@@ -13,29 +13,25 @@ export default async function confirmCardPayment(
 	emitResponse,
 	shouldSavePayment
 ) {
-	const { redirect, payment_method: paymentMethod } = paymentDetails;
+	const { redirect } = paymentDetails;
 
 	try {
-		const confirmation = api.confirmIntent(
+		const confirmationRequest = api.confirmIntent(
 			redirect,
-			shouldSavePayment ? paymentMethod : null
+			shouldSavePayment
 		);
 
 		// `true` means there is no intent to confirm.
-		if ( true === confirmation ) {
+		if ( confirmationRequest === true ) {
 			return {
 				type: 'success',
 				redirectUrl: redirect,
 			};
 		}
 
-		// `confirmIntent` also returns `isOrderPage`, but that's not supported in blocks yet.
-		const { request } = confirmation;
-
-		const finalRedirect = await request;
 		return {
 			type: 'success',
-			redirectUrl: finalRedirect,
+			redirectUrl: await confirmationRequest,
 		};
 	} catch ( error ) {
 		return {

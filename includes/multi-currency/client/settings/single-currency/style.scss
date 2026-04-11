@@ -1,0 +1,102 @@
+.single-currency-settings {
+	.single-currency-settings-breadcrumb {
+		font-style: normal;
+		font-weight: 600;
+		font-size: 16px;
+		line-height: 24px;
+		color: #000;
+
+		#mainform & {
+			margin-bottom: 30px;
+		}
+
+		button {
+			font-size: 16px;
+			font-weight: 600;
+		}
+	}
+
+	.settings-section__controls {
+		.single-currency-settings-currency-settings {
+			fieldset {
+				margin: 0 0 24px;
+
+				&:last-child {
+					margin: 0;
+				}
+
+				ul {
+					margin: 0;
+					font-size: 13px;
+
+					li {
+						margin: 0 0 16px;
+
+						&:last-child {
+							margin: 0;
+						}
+					}
+				}
+			}
+		}
+	}
+	.single-currency-settings-preview-wrapper {
+		.wcpay-card-body {
+			display: flex;
+
+			& > div {
+				padding: 0 6px 0 0;
+				margin-bottom: 0;
+				flex: 1 0 calc( 50% - 6px );
+				display: flex;
+				flex-direction: column;
+
+				&:nth-child( 2n ) {
+					padding: 0 0 0 6px;
+				}
+
+				& > div {
+					display: flex;
+					align-items: center;
+					justify-content: stretch;
+					flex: 1;
+
+					.components-base-control {
+						flex: 1;
+
+						.components-base-control__field {
+							margin: 0;
+
+							.text-control-with-affixes {
+								&.disabled {
+									input {
+										border: none;
+										color: initial;
+										background: unset;
+										font-weight: bold;
+									}
+								}
+
+								& > span {
+									border-color: #949494;
+									box-sizing: border-box;
+									font-style: normal;
+									font-weight: normal;
+									font-size: 13px;
+									line-height: 16px;
+									display: flex;
+									align-items: center;
+									padding: 7px 12px;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.single-currency-settings-save-settings-section {
+		text-align: right;
+	}
+}

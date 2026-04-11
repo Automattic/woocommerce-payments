@@ -107,4 +107,49 @@ class Create_And_Confirm_Setup_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::SETUP_INTENTS_API, $request->get_api() );
 	}
+
+	public function test_exception_will_throw_if_confirmation_token_is_invalid() {
+		$request = new Create_And_Confirm_Setup_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->set_confirmation_token( 'invalid_token' );
+	}
+
+	public function test_create_intent_request_with_confirmation_token() {
+		$confirmation_token = 'ctoken_1234567890';
+		$customer_id        = 'cus_1';
+
+		$request = new Create_And_Confirm_Setup_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_confirmation_token( $confirmation_token );
+		$request->set_customer( $customer_id );
+
+		$this->assertInstanceOf( Create_And_Confirm_Setup_Intention::class, $request );
+		$params = $request->get_params();
+
+		$this->assertIsArray( $params );
+		$this->assertSame( $confirmation_token, $params['confirmation_token'] );
+		$this->assertSame( $customer_id, $params['customer'] );
+		$this->assertArrayNotHasKey( 'payment_method', $params );
+		$this->assertSame( 'POST', $request->get_method() );
+		$this->assertSame( WC_Payments_API_Client::SETUP_INTENTS_API, $request->get_api() );
+	}
+
+	public function test_create_intent_request_with_confirmation_token_and_metadata() {
+		$confirmation_token = 'ctoken_abcdefghij';
+		$customer_id        = 'cus_2';
+		$order_number       = 12345;
+
+		$request = new Create_And_Confirm_Setup_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_confirmation_token( $confirmation_token );
+		$request->set_customer( $customer_id );
+		$request->set_metadata( [ 'order_number' => $order_number ] );
+
+		$params = $request->get_params();
+
+		$this->assertIsArray( $params );
+		$this->assertSame( $confirmation_token, $params['confirmation_token'] );
+		$this->assertSame( $customer_id, $params['customer'] );
+		$this->assertArrayHasKey( 'metadata', $params );
+		$this->assertSame( $order_number, $params['metadata']['order_number'] );
+		$this->assertArrayHasKey( 'description', $params );
+	}
 }

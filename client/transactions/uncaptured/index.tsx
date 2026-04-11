@@ -7,7 +7,6 @@ import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import { dateI18n } from '@wordpress/date';
 import moment from 'moment';
 
 /**
@@ -17,10 +16,12 @@ import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
 import Page from '../../components/page';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 interface Column extends TableCardColumn {
 	key:
@@ -104,7 +105,11 @@ const getColumns = (): Column[] =>
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
 export const AuthorizationsList = (): JSX.Element => {
-	const columnsToDisplay = getColumns();
+	const columns = getColumns();
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		Column
+	>( 'wc_payments_transactions_uncaptured_hidden_columns', columns );
+
 	const {
 		authorizationsSummary,
 		isLoading: isSummaryLoading,
@@ -130,35 +135,25 @@ export const AuthorizationsList = (): JSX.Element => {
 				display: auth.payment_intent_id,
 			},
 			created: {
-				value: dateI18n(
-					'M j, Y / g:iA',
-					moment.utc( auth.created ).local().toISOString()
-				),
+				value: formatDateTimeFromString( auth.created, {
+					includeTime: true,
+				} ),
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( auth.created ).local().toISOString()
-					)
+					formatDateTimeFromString( auth.created, {
+						includeTime: true,
+					} )
 				),
 			},
 			// Payments are authorized for a maximum of 7 days
 			capture_by: {
-				value: dateI18n(
-					'M j, Y / g:iA',
-					moment
-						.utc( auth.created )
-						.add( 7, 'd' )
-						.local()
-						.toISOString()
+				value: formatDateTimeFromString(
+					moment.utc( auth.created ).add( 7, 'd' ).toISOString(),
+					{ includeTime: true }
 				),
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment
-							.utc( auth.created )
-							.add( 7, 'd' )
-							.local()
-							.toISOString()
+					formatDateTimeFromString(
+						moment.utc( auth.created ).add( 7, 'd' ).toISOString(),
+						{ includeTime: true }
 					)
 				),
 			},
@@ -193,7 +188,7 @@ export const AuthorizationsList = (): JSX.Element => {
 						paymentIntentId={ auth.payment_intent_id }
 						buttonIsSmall={ false }
 						onClick={ () => {
-							wcpayTracks.recordEvent(
+							recordEvent(
 								'payments_transactions_uncaptured_list_capture_charge_button_click',
 								{
 									payment_intent_id: auth.payment_intent_id,
@@ -249,7 +244,7 @@ export const AuthorizationsList = (): JSX.Element => {
 	}
 
 	useEffect( () => {
-		wcpayTracks.recordEvent( 'page_view', {
+		recordEvent( 'page_view', {
 			path: 'payments_transactions_uncaptured',
 		} );
 	}, [] );
@@ -270,6 +265,7 @@ export const AuthorizationsList = (): JSX.Element => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 			/>
 		</Page>
 	);

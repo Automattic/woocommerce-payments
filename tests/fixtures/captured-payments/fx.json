@@ -1,9 +1,10 @@
 {
   "title": "FX Payment with a decimal currency",
-  "capturedEvent": 
+  "capturedEvent":
     {
       "type": "captured",
       "amount": 2296500,
+      "amount_captured": 2296500,
       "fee": 96453,
       "fee_rates": {
         "percentage": 0.039,
@@ -23,31 +24,37 @@
             "fixed_rate": 0,
             "currency": "usd"
           }
-        ]
+        ],
+        "fee_exchange_rate": {
+          "from_currency": "VND",
+          "to_currency": "USD",
+          "from_amount": 96453,
+          "to_amount": 420,
+          "rate": 229.65
+        }
       },
       "currency": "VND",
       "datetime": 1651215552,
-      "deposit": {
-        "id": "wcpay_estimated_daily_usd_1651795200",
-        "arrival_date": "1651795200"
-      },
+      "deposit": null,
       "transaction_id": "txn_3KtnnI2EFxam75ai06EEZYXQ",
       "transaction_details": {
         "customer_currency": "VND",
         "customer_amount": 2296500,
+        "customer_amount_captured": 2296500,
         "customer_fee": 96453,
         "store_currency": "USD",
         "store_amount": 10004,
+        "store_amount_captured": 10004,
         "store_fee": 420
       }
     },
   "expectation": {
     "fxString": "1 VND → 0.000044 USD: $100.04 USD",
-    "feeString": "Fee (3.9% + $0.30): $-4.20",
+    "feeString": "Fee (3.9% + $0.30): -$4.20",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
-      "additional-fx": "Foreign exchange fee: 1%"
+      "additional-fx": "Currency conversion fee: 1%"
     },
-    "netString": "Net deposit: $95.84 USD"
+    "netString": "Net payout: $95.84 USD"
   }
 }

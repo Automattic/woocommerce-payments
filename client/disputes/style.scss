@@ -2,6 +2,9 @@
 	.woocommerce-table__header.is-center-aligned {
 		text-align: center;
 	}
+	.woocommerce-table__item a.components-button {
+		display: inline-flex;
+	}
 
 	.woocommerce-pagination {
 		align-items: flex-end;
@@ -15,12 +18,6 @@
 
 	.components-card__header {
 		font-size: 20px;
-		&.header-dispute-overview {
-			justify-content: left;
-			.chip {
-				margin-left: 10px;
-			}
-		}
 	}
 
 	.components-card {

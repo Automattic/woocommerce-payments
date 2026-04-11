@@ -1,57 +1,101 @@
 /* eslint-disable max-len */
+/* global jQuery */
 /**
  * External dependencies
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
-import { useDispatch } from '@wordpress/data';
-// eslint-disable-next-line import/no-unresolved
-import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
-import { Icon, info } from '@wordpress/icons';
-import interpolateComponents from '@automattic/interpolate-components';
-import LockIconG from 'gridicons/dist/lock';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { ValidationInputError } from '@woocommerce/blocks-checkout'; // eslint-disable-line import/no-unresolved
+import {
+	VALIDATION_STORE_KEY,
+	CHECKOUT_STORE_KEY,
+} from '@woocommerce/block-data'; // eslint-disable-line import/no-unresolved
 
 /**
  * Internal dependencies
  */
 import PhoneNumberInput from 'settings/phone-input';
 import { getConfig } from 'utils/checkout';
+import { buildAjaxURL } from 'utils/express-checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
 import Container from './container';
 import useWooPayUser from '../hooks/use-woopay-user';
+import request from '../../../checkout/utils/request';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
-import { WC_STORE_CART } from '../../../checkout/constants';
-import WooPayIcon from 'assets/images/woopay.svg?asset';
+import { recordUserEvent } from 'tracks';
 import './style.scss';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
-	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState( false );
+	const errorId = 'invalid-woopay-phone-number';
+
+	const { setValidationErrors, clearValidationError } = useDispatch(
+		VALIDATION_STORE_KEY
+	);
+
+	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
+		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
+	);
 	const [ phoneNumber, setPhoneNumber ] = useState( '' );
 	const [ isPhoneValid, onPhoneValidationChange ] = useState( null );
 	const [ userDataSent, setUserDataSent ] = useState( false );
-	const [ isInfoFlyoutVisible, setIsInfoFlyoutVisible ] = useState( false );
-	const setInfoFlyoutVisible = useCallback(
-		() => setIsInfoFlyoutVisible( true ),
-		[]
+	const isPhoneNumberTouched = useRef( false );
+
+	const checkoutIsProcessing = useSelect( ( select ) =>
+		select( CHECKOUT_STORE_KEY ).isProcessing()
 	);
-	const setInfoFlyoutNotVisible = useCallback(
-		() => setIsInfoFlyoutVisible( false ),
-		[]
+
+	const isBillingSameAsShipping = useSelect( ( select ) =>
+		select( CHECKOUT_STORE_KEY ).getUseShippingAsBilling()
 	);
+
 	const isRegisteredUser = useWooPayUser();
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
 	);
-	const cart = useDispatch( WC_STORE_CART );
+
+	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
+	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
+	const isWCPayWithNewTokenChosen = isBlocksCheckout
+		? isWCPayChosen
+		: isWCPayChosen && isNewPaymentTokenChosen;
+
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
 
-	const getPhoneFieldValue = () => {
+	useEffect( () => {
+		if ( ! isBlocksCheckout ) {
+			return;
+		}
+
+		const rememberMe = document.querySelector( '#remember-me' );
+
+		if ( ! rememberMe ) {
+			return;
+		}
+
+		if ( checkoutIsProcessing ) {
+			rememberMe.classList.add(
+				'wc-block-components-checkout-step--disabled'
+			);
+			rememberMe.setAttribute( 'disabled', 'disabled' );
+
+			return;
+		}
+
+		rememberMe.classList.remove(
+			'wc-block-components-checkout-step--disabled'
+		);
+		rememberMe.removeAttribute( 'disabled', 'disabled' );
+	}, [ checkoutIsProcessing, isBlocksCheckout ] );
+
+	const getPhoneFieldValue = useCallback( () => {
 		let phoneFieldValue = '';
 		if ( isBlocksCheckout ) {
 			phoneFieldValue =
 				document.getElementById( 'phone' )?.value ||
+				document.getElementById( 'billing-phone' )?.value ||
 				document.getElementById( 'shipping-phone' )?.value ||
 				'';
 		} else {
@@ -68,119 +112,197 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		}
 
 		return phoneFieldValue;
-	};
+	}, [ isBlocksCheckout ] );
 
 	const sendExtensionData = useCallback(
 		( shouldClearData = false ) => {
-			const shippingPhone = document.getElementById( 'shipping-phone' )
-				?.value;
-			const billingPhone = document.getElementById( 'phone' )?.value;
 			const data = shouldClearData
-				? {}
+				? { empty: 1 }
 				: {
-						save_user_in_woopay: isSaveDetailsChecked,
-						woopay_source_url: window.location.href,
-						woopay_is_blocks: true,
+						save_user_in_woopay: isSaveDetailsChecked ? 1 : 0,
+						woopay_source_url:
+							wcSettings?.storePages?.checkout?.permalink,
+						woopay_is_blocks: 1,
 						woopay_viewport: `${ viewportWidth }x${ viewportHeight }`,
 						woopay_user_phone_field: {
 							full: phoneNumber,
 						},
 				  };
 
-			extensionCartUpdate( {
-				namespace: 'woopay',
-				data: data,
-			} ).then( () => {
+			request(
+				buildAjaxURL(
+					getConfig( 'wcAjaxUrl' ),
+					'set_woopay_phone_number'
+				),
+				{
+					_ajax_nonce: getConfig( 'woopaySessionNonce' ),
+					...data,
+				}
+			).then( () => {
 				setUserDataSent( ! shouldClearData );
-				// Cart returned from `extensionCartUpdate` clears these as these fields are not sent to backend by blocks when added.
-				// Setting them explicitly here to the previous user input.
-				cart.setShippingAddress( {
-					phone: shippingPhone,
-				} );
-				cart.setBillingAddress( {
-					phone: billingPhone,
-				} );
 			} );
 		},
-		[
-			isSaveDetailsChecked,
-			phoneNumber,
-			cart,
-			viewportWidth,
-			viewportHeight,
-		]
+		[ isSaveDetailsChecked, phoneNumber, viewportWidth, viewportHeight ]
 	);
+
+	const handleCountryDropdownClick = useCallback( () => {
+		recordUserEvent( 'checkout_woopay_save_my_info_country_click' );
+	}, [] );
 
 	const handleCheckboxClick = ( e ) => {
 		const isChecked = e.target.checked;
 		if ( isChecked ) {
 			setPhoneNumber( getPhoneFieldValue() );
 		} else {
-			setPhoneNumber( null );
+			setPhoneNumber( '' );
 			if ( isBlocksCheckout ) {
 				sendExtensionData( true );
 			}
 		}
 		setIsSaveDetailsChecked( isChecked );
+
+		recordUserEvent( 'checkout_save_my_info_click', {
+			status: isChecked ? 'checked' : 'unchecked',
+		} );
 	};
 
 	useEffect( () => {
-		const formSubmitButton = isBlocksCheckout
-			? document.querySelector(
-					'button.wc-block-components-checkout-place-order-button'
-			  )
-			: document.querySelector(
-					'form.woocommerce-checkout button[type="submit"]'
-			  );
+		// Record Tracks event when the mobile number is entered.
+		if ( isPhoneValid ) {
+			recordUserEvent( 'checkout_woopay_save_my_info_mobile_enter' );
+		}
+	}, [ isPhoneValid ] );
 
-		if ( ! formSubmitButton ) {
+	useEffect( () => {
+		const checkoutForm = jQuery( 'form.woocommerce-checkout' );
+
+		checkoutForm.on( 'checkout_place_order', function () {
+			jQuery( '#validate-error-invalid-woopay-phone-number' ).show();
+		} );
+	}, [] );
+
+	useEffect( () => {
+		if ( ! isSaveDetailsChecked ) {
+			clearValidationError( errorId );
+			if ( isPhoneValid !== null ) {
+				onPhoneValidationChange( null );
+			}
 			return;
 		}
 
-		const updateFormSubmitButton = () => {
-			if ( isSaveDetailsChecked && isPhoneValid ) {
-				formSubmitButton.removeAttribute( 'disabled' );
+		if ( isSaveDetailsChecked && isPhoneValid ) {
+			clearValidationError( errorId );
 
-				// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
-				if ( isBlocksCheckout ) {
-					sendExtensionData( false );
-				}
+			// Set extension data if checkbox is selected and phone number is valid in blocks checkout.
+			if ( isBlocksCheckout ) {
+				sendExtensionData( false );
 			}
+			return;
+		}
 
-			if ( isSaveDetailsChecked && ! isPhoneValid ) {
-				formSubmitButton.setAttribute( 'disabled', 'disabled' );
-			}
-		};
-
-		updateFormSubmitButton();
-
-		return () => {
-			// Clean up
-			formSubmitButton.removeAttribute( 'disabled' );
-		};
+		if (
+			isSaveDetailsChecked &&
+			! isPhoneValid &&
+			isWCPayWithNewTokenChosen
+		) {
+			setValidationErrors( {
+				[ errorId ]: {
+					message: __(
+						'Please enter a valid mobile phone number.',
+						'woocommerce-payments'
+					),
+					// Hides errors when the number has not been typed yet but shows when trying to place the order.
+					hidden: isPhoneValid === null,
+				},
+			} );
+		}
 	}, [
+		clearValidationError,
 		isBlocksCheckout,
 		isPhoneValid,
 		isSaveDetailsChecked,
 		sendExtensionData,
+		setValidationErrors,
+		isWCPayWithNewTokenChosen,
 	] );
 
-	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
-	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
-	const isWCPayWithNewTokenChosen = isBlocksCheckout
-		? isWCPayChosen
-		: isWCPayChosen && isNewPaymentTokenChosen;
+	const updatePhoneNumber = useCallback( () => {
+		if ( isPhoneNumberTouched.current ) {
+			return;
+		}
+
+		setPhoneNumber( getPhoneFieldValue() );
+	}, [ setPhoneNumber, getPhoneFieldValue, isPhoneNumberTouched ] );
+
+	useEffect( () => {
+		updatePhoneNumber();
+	}, [ updatePhoneNumber ] );
+
+	// Update the WooPay phone number on the phone field blur event.
+	useEffect( () => {
+		if ( ! isBlocksCheckout ) {
+			document
+				.querySelector( '#billing_phone' )
+				?.addEventListener( 'blur', updatePhoneNumber );
+			return;
+		}
+
+		updatePhoneNumber();
+
+		if ( isBillingSameAsShipping ) {
+			document
+				.querySelector( '#billing-phone' )
+				?.removeEventListener( 'blur', updatePhoneNumber );
+
+			document
+				.querySelector( '#shipping-phone' )
+				?.addEventListener( 'blur', updatePhoneNumber );
+			return;
+		}
+
+		document
+			.querySelector( '#shipping-phone' )
+			?.removeEventListener( 'blur', updatePhoneNumber );
+
+		document
+			.querySelector( '#billing-phone' )
+			?.addEventListener( 'blur', updatePhoneNumber );
+	}, [
+		isBillingSameAsShipping,
+		updatePhoneNumber,
+		isPhoneNumberTouched,
+		getPhoneFieldValue,
+		isBlocksCheckout,
+	] );
+
+	useEffect( () => {
+		if (
+			! getConfig( 'forceNetworkSavedCards' ) ||
+			! isWCPayWithNewTokenChosen ||
+			isRegisteredUser
+		) {
+			// Clicking the place order button sets the extension data in backend. If user changes the payment method
+			// due to an error, we need to clear the extension data in backend.
+			if ( isBlocksCheckout && userDataSent ) {
+				sendExtensionData( true );
+			}
+			clearValidationError( errorId );
+		}
+	}, [
+		clearValidationError,
+		errorId,
+		isBlocksCheckout,
+		isRegisteredUser,
+		isWCPayWithNewTokenChosen,
+		sendExtensionData,
+		userDataSent,
+	] );
 
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
 		! isWCPayWithNewTokenChosen ||
 		isRegisteredUser
 	) {
-		// Clicking the place order button sets the extension data in backend. If user changes the payment method
-		// due to an error, we need to clear the extension data in backend.
-		if ( isBlocksCheckout && userDataSent ) {
-			sendExtensionData( true );
-		}
 		return null;
 	}
 
@@ -220,67 +342,13 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 									<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
 								</svg>
 							) }
-							<span>
-								{ isBlocksCheckout
-									? __(
-											'Save my information for a faster and secure checkout',
-											'woocommerce-payments'
-									  )
-									: __(
-											'Save my information for a faster checkout',
-											'woocommerce-payments'
-									  ) }
+							<span className="wc-block-components-checkbox__label">
+								{ __(
+									'Securely save my information for 1-click checkout',
+									'woocommerce-payments'
+								) }
 							</span>
 						</label>
-					</div>
-					<img
-						src={ WooPayIcon }
-						className="woopay-logo"
-						alt="WooPay"
-					/>
-					<Icon
-						icon={ info }
-						size={ 20 }
-						className={ `info-icon ${
-							isInfoFlyoutVisible ? 'focused' : ''
-						}` }
-						onMouseOver={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-					/>
-					<div
-						className="save-details-flyout"
-						onMouseOver={ setInfoFlyoutVisible }
-						onFocus={ setInfoFlyoutVisible }
-						onMouseOut={ setInfoFlyoutNotVisible }
-						onBlur={ setInfoFlyoutNotVisible }
-					>
-						<div>
-							<LockIconG size={ 16 } />
-						</div>
-						<span>
-							{ interpolateComponents( {
-								mixedString: __(
-									'We use {{woopayBold/}} to securely store your information in this WooCommerce store and others. ' +
-										"Next time at checkout, we'll send you a code by SMS to authenticate your purchase. {{learnMore/}}",
-									'woocommerce-payments'
-								),
-								components: {
-									woopayBold: <b>WooPay</b>,
-									learnMore: (
-										<a
-											target="_blank"
-											href="https://woocommerce.com/document/woopay-customer-documentation/"
-											rel="noopener noreferrer"
-										>
-											{ __(
-												'Learn more',
-												'woocommerce-payments'
-											) }
-										</a>
-									),
-								},
-							} ) }
-						</span>
 					</div>
 				</div>
 				{ isSaveDetailsChecked && (
@@ -291,35 +359,51 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 						<input
 							type="hidden"
 							name="woopay_source_url"
-							value={ window.location.href }
+							value={
+								wcSettings?.storePages?.checkout?.permalink
+							}
 						/>
 						<input
 							type="hidden"
 							name="woopay_viewport"
 							value={ `${ viewportWidth }x${ viewportHeight }` }
 						/>
-						<PhoneNumberInput
-							value={
-								null === phoneNumber
-									? getPhoneFieldValue()
-									: phoneNumber
-							}
-							onValueChange={ setPhoneNumber }
-							onValidationChange={ onPhoneValidationChange }
-							inputProps={ {
-								name:
-									'woopay_user_phone_field[no-country-code]',
-							} }
-							isBlocksCheckout={ isBlocksCheckout }
-						/>
-						{ ! isPhoneValid && (
-							<p className="error-text">
-								{ __(
-									'Please enter a valid mobile phone number.',
-									'woocommerce-payments'
-								) }
-							</p>
-						) }
+						<div className={ isPhoneValid ? '' : 'has-error' }>
+							<PhoneNumberInput
+								value={ phoneNumber }
+								onValueChange={ setPhoneNumber }
+								onValidationChange={ onPhoneValidationChange }
+								onCountryDropdownClick={
+									handleCountryDropdownClick
+								}
+								onClick={ () =>
+									( isPhoneNumberTouched.current = true )
+								}
+								inputProps={ {
+									name:
+										'woopay_user_phone_field[no-country-code]',
+								} }
+								isBlocksCheckout={ isBlocksCheckout }
+							/>
+
+							{ isBlocksCheckout && (
+								<ValidationInputError
+									elementId={ errorId }
+									propertyName={ errorId }
+								/>
+							) }
+							{ ! isBlocksCheckout && ! isPhoneValid && (
+								<p
+									id="validate-error-invalid-woopay-phone-number"
+									hidden={ isPhoneValid !== false }
+								>
+									{ __(
+										'Please enter a valid mobile phone number.',
+										'woocommerce-payments'
+									) }
+								</p>
+							) }
+						</div>
 						<AdditionalInformation />
 						<Agreement />
 					</div>

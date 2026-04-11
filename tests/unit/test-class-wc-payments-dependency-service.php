@@ -60,7 +60,6 @@ class WC_Payments_Dependency_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertContains( WC_Payments_Dependency_Service::WOOADMIN_NOT_FOUND, $invalid_deps );
 		$this->assertNotContains( WC_Payments_Dependency_Service::WOOADMIN_INCOMPATIBLE, $invalid_deps );
 		$this->assertContains( WC_Payments_Dependency_Service::WP_INCOMPATIBLE, $invalid_deps );
-
 	}
 
 	public function test_display_admin_notices() {
@@ -83,8 +82,7 @@ class WC_Payments_Dependency_Service_Test extends WCPAY_UnitTestCase {
 
 		// Perform assertions...
 		$this->assertIsString( $result );
-		$this->assertStringContainsStringIgnoringCase( 'WooCommerce Payments requires WooCommerce Admin to be enabled', $result );
-
+		$this->assertStringContainsStringIgnoringCase( 'WooPayments requires WooCommerce Admin to be enabled', $result );
 	}
 
 	public function test_display_admin_notices_assets_not_built() {
@@ -106,7 +104,6 @@ class WC_Payments_Dependency_Service_Test extends WCPAY_UnitTestCase {
 
 		// Perform assertions...
 		$this->assertIsString( $result );
-		$this->assertStringContainsStringIgnoringCase( 'You have installed a development version of WooCommerce Payments which requires files to be built', $result );
+		$this->assertStringContainsStringIgnoringCase( 'You have installed a development version of WooPayments which requires files to be built', $result );
 	}
-
 }

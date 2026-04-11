@@ -29,7 +29,7 @@ export const generateHoverColors = ( backgroundColor, color ) => {
 
 	// Darken if brightness > 50 (Storefront Button 51 ), else lighten
 	const newBackgroundColor =
-		50 < tinyBackgroundColor.getBrightness()
+		tinyBackgroundColor.getBrightness() > 50
 			? tinycolor( tinyBackgroundColor ).darken( 7 )
 			: tinycolor( tinyBackgroundColor ).lighten( 7 );
 
@@ -80,7 +80,6 @@ export const generateHoverRules = ( baseRules ) => {
  * @param {string}  outlineColor Outline width from computed styles.
  * @return {string} Object with generated hover rules.
  */
-
 export const generateOutlineStyle = (
 	outlineWidth,
 	outlineStyle = 'solid',
@@ -89,4 +88,167 @@ export const generateOutlineStyle = (
 	return outlineWidth && outlineColor
 		? [ outlineWidth, outlineStyle, outlineColor ].join( ' ' )
 		: '';
+};
+
+/**
+ * Searches through array of CSS selectors and returns first visible background color.
+ *
+ * @param {Array}  selectors List of CSS selectors to check.
+ * @param {Object} scope     The document scope to search in.
+ * @return {string} CSS color value.
+ */
+export const getBackgroundColor = ( selectors, scope = document ) => {
+	const defaultColor = '#ffffff';
+	let color = null;
+	let i = 0;
+	while ( ! color && i < selectors.length ) {
+		let element;
+		try {
+			element = scope.querySelector( selectors[ i ] );
+		} catch ( e ) {
+			i++;
+			continue;
+		}
+		if ( ! element ) {
+			i++;
+			continue;
+		}
+
+		const windowObject = scope.defaultView || window;
+
+		const bgColor = windowObject.getComputedStyle( element )
+			.backgroundColor;
+		// Accept colors that are mostly opaque (alpha >= 0.5).  Low-alpha
+		// values like rgba(129,110,153,0.14) are decorative overlays, not
+		// real backgrounds — skip them so we fall through to the actual
+		// page background beneath.
+		if ( bgColor && tinycolor( bgColor ).getAlpha() >= 0.5 ) {
+			color = bgColor;
+		}
+		i++;
+	}
+	return color || defaultColor;
+};
+
+/**
+ * Determines whether background color is light or dark.
+ *
+ * When the color has an alpha channel (e.g. rgba), it is composited against
+ * white first, since that is the default page background.  Without this,
+ * a low-opacity dark color like rgba(129,110,153,0.14) would be reported as
+ * "dark" even though it appears nearly white to the user.
+ *
+ * @param {string} color CSS color value.
+ * @return {boolean} True, if background is light; false, if background is dark.
+ */
+export const isColorLight = ( color ) => {
+	const tc = tinycolor( color );
+	const alpha = tc.getAlpha();
+	if ( alpha < 1 ) {
+		// Composite against white (#fff) using "source over" blending.
+		const rgb = tc.toRgb();
+		const blended = tinycolor( {
+			r: Math.round( rgb.r * alpha + 255 * ( 1 - alpha ) ),
+			g: Math.round( rgb.g * alpha + 255 * ( 1 - alpha ) ),
+			b: Math.round( rgb.b * alpha + 255 * ( 1 - alpha ) ),
+		} );
+		return blended.getBrightness() > 125;
+	}
+	return tc.getBrightness() > 125;
+};
+
+/**
+ * Converts rgba to rgb format, since Stripe Appearances API does not accept rgba format for text color.
+ *
+ * @param {string} color CSS color value.
+ * @return {string} Accepted CSS color value.
+ */
+export const maybeConvertRGBAtoRGB = ( color ) => {
+	const colorParts = color.match(
+		/^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(0?(\.\d+)?|1?(\.0+)?)\s*\)$/
+	);
+	if ( colorParts ) {
+		const alpha = colorParts[ 4 ] || 1;
+		const newColorParts = colorParts.slice( 1, 4 ).map( ( part ) => {
+			return Math.round( part * alpha + 255 * ( 1 - alpha ) );
+		} );
+		color = `rgb(${ newColorParts.join( ', ' ) })`;
+	}
+	return color;
+};
+
+/**
+ * Modifies the appearance object to include styles for floating label.
+ *
+ * @param {Object} appearance object to modify.
+ * @param {Object} floatingLabelStyles Floating label styles.
+ * @return {Object} Modified appearance object.
+ */
+export const handleAppearanceForFloatingLabel = (
+	appearance,
+	floatingLabelStyles
+) => {
+	// Add floating label styles.
+	appearance.rules[ '.Label--floating' ] = floatingLabelStyles;
+
+	// Update line-height for floating label to account for scaling.
+	if (
+		appearance.rules[ '.Label--floating' ].transform &&
+		appearance.rules[ '.Label--floating' ].transform !== 'none'
+	) {
+		// Extract the scaling factors from the matrix
+		const transformMatrix =
+			appearance.rules[ '.Label--floating' ].transform;
+		const matrixValues = transformMatrix.match( /matrix\((.+)\)/ );
+		if ( matrixValues && matrixValues[ 1 ] ) {
+			const splitMatrixValues = matrixValues[ 1 ].split( ', ' );
+			const scaleX = parseFloat( splitMatrixValues[ 0 ] );
+			const scaleY = parseFloat( splitMatrixValues[ 3 ] );
+			const scale = ( scaleX + scaleY ) / 2;
+
+			const lineHeight = parseFloat(
+				appearance.rules[ '.Label--floating' ].lineHeight
+			);
+			const newLineHeight = Math.floor( lineHeight * scale );
+			appearance.rules[
+				'.Label--floating'
+			].lineHeight = `${ newLineHeight }px`;
+			appearance.rules[
+				'.Label--floating'
+			].fontSize = `${ newLineHeight }px`;
+		}
+		delete appearance.rules[ '.Label--floating' ].transform;
+	}
+
+	// Subtract the label's lineHeight from padding-top to account for floating label height.
+	// Minus 4px which is a constant value added by stripe to the padding-top.
+	// Minus 1px for each vertical padding to account for the unpredictable input height
+	// (see https://github.com/Automattic/woocommerce-payments/issues/9476#issuecomment-2374766540).
+	// When the result is less than 0, it will automatically use 0.
+	if ( appearance.rules[ '.Input' ].paddingTop ) {
+		appearance.rules[
+			'.Input'
+			// eslint-disable-next-line max-len
+		].paddingTop = `calc(${ appearance.rules[ '.Input' ].paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;
+	}
+	if ( appearance.rules[ '.Input' ].paddingBottom ) {
+		const originalPaddingBottom = parseFloat(
+			appearance.rules[ '.Input' ].paddingBottom
+		);
+		appearance.rules[
+			'.Input'
+			// eslint-disable-next-line max-len
+		].paddingBottom = `${ originalPaddingBottom - 1 }px`;
+
+		const originalLabelMarginTop =
+			appearance.rules[ '.Label' ].marginTop ?? '0';
+		appearance.rules[ '.Label' ].marginTop = `${ Math.floor(
+			( originalPaddingBottom - 1 ) / 3
+		) }px`;
+		appearance.rules[
+			'.Label--floating'
+		].marginTop = originalLabelMarginTop;
+	}
+
+	return appearance;
 };

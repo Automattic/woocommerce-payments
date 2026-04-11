@@ -11,6 +11,7 @@ use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WC_Payments_Utils;
 use WC_Payments_API_Client;
 use WCPay\Constants\Fraud_Meta_Box_Type;
+use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
  * Request class for getting intents.
@@ -37,6 +38,10 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function get_api(): string {
+		$status = $this->status ?? 'null';
+		if ( ! Rule::is_valid_fraud_outcome_status( $status ) ) {
+			throw new Invalid_Request_Parameter_Exception( "Invalid fraud outcome status provided: $status", 'invalid_fraud_outcome_status' );
+		}
 		return WC_Payments_API_Client::FRAUD_OUTCOMES_API . '/status/' . $this->status;
 	}
 
@@ -130,13 +135,18 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 			function ( $result, $current ) use ( $search ) {
 				$outcome = $this->build_fraud_outcome_transactions_order_info( $current );
 
-				// Removes the outcomes that are not pending review.
+				// Removes the outcome that is not a valid order.
+				if ( empty( $outcome ) ) {
+					return $result;
+				}
+
+				// Removes the outcome that is not pending review.
 				$is_review_pending = 'requires_capture' === $outcome['payment_intent']['status'] && empty( $outcome['manual_review'] ) && Fraud_Meta_Box_Type::REVIEW === $outcome['fraud_meta_box_type'];
 				if ( 'review' === $this->status && ! $is_review_pending ) {
 					return $result;
 				}
 
-				// Removes the outcomes that are not blocked.
+				// Removes the outcome that is not blocked.
 				$block_statuses   = [ Fraud_Meta_Box_Type::BLOCK, Fraud_Meta_Box_Type::REVIEW_BLOCKED ];
 				$has_block_status = in_array( $outcome['fraud_meta_box_type'], $block_statuses, true );
 				if ( 'block' === $this->status && ! $has_block_status ) {
@@ -185,10 +195,15 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 	 *
 	 * @param array $outcome Fraud outcome array.
 	 *
-	 * @return array
+	 * @return array|null
 	 */
 	private function build_fraud_outcome_transactions_order_info( $outcome ) {
 		$order = wc_get_order( $outcome['order_id'] );
+
+		// Skip the outcome if it's not a valid order or if it's a refund.
+		if ( empty( $order ) || is_a( $order, 'WC_Order_Refund' ) ) {
+			return null;
+		}
 
 		$outcome['payment_intent']           = [];
 		$outcome['payment_intent']['id']     = $outcome['payment_intent_id'] ?? $order->get_meta( '_intent_id' ) ?? $order->get_transaction_id();
@@ -196,7 +211,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 
 		$outcome['amount']              = WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
 		$outcome['currency']            = $order->get_currency();
-		$outcome['customer_name']       = wc_clean( $order->get_billing_first_name() ) . ' ' . wc_clean( $order->get_billing_last_name() );
+		$outcome['customer_name']       = wc_clean( $order->get_formatted_billing_full_name() );
 		$outcome['manual_review']       = $order->get_meta( '_wcpay_fraud_outcome_manual_entry' );
 		$outcome['fraud_meta_box_type'] = $order->get_meta( '_wcpay_fraud_meta_box_type' );
 
@@ -222,7 +237,7 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 		// Search by order id.
 		if ( preg_match( '/#(\d+)/', $term, $matches ) ) {
 			return $matches[1] === (string) $outcome['order_id'];
-		};
+		}
 
 		// Search by customer name.
 		return (bool) preg_match( "/{$term}/i", $outcome['customer_name'] );
@@ -250,11 +265,11 @@ class List_Fraud_Outcome_Transactions extends Paginated {
 
 		if ( $a === $b ) {
 			return 0;
-		};
+		}
 
 		if ( 'desc' === $direction ) {
 			return $a < $b ? 1 : -1;
-		};
+		}
 
 		return $a < $b ? -1 : 1;
 	}

@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Move WP hooks registration out of the core classes' constructors

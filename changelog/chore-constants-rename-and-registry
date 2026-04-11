@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+chore: rename ECE constants to `shipping-limits.js`

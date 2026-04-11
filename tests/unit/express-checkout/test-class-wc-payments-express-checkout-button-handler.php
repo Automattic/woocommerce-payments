@@ -1,0 +1,239 @@
+<?php
+/**
+ * Class WC_Payments_Express_Checkout_Button_Handler_Test
+ *
+ * @package WooCommerce\Payments\Tests
+ */
+
+use PHPUnit\Framework\MockObject\MockObject;
+
+/**
+ * WC_Payments_Express_Checkout_Button_Handler unit tests.
+ */
+class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCase {
+	/**
+	 * System under test.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Handler
+	 */
+	private $system_under_test;
+
+	/**
+	 * Mock WC_Payments_Account.
+	 *
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_wcpay_account;
+
+	/**
+	 * Mock WC_Payment_Gateway_WCPay.
+	 *
+	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private $mock_wcpay_gateway;
+
+	/**
+	 * Mock Express Checkout Button Helper.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper|MockObject
+	 */
+	private $mock_ece_button_helper;
+
+	/**
+	 * Mock Express Checkout Ajax Handler.
+	 *
+	 * @var WC_Payments_Express_Checkout_Ajax_Handler|MockObject
+	 */
+	private $mock_express_checkout_ajax_handler;
+
+
+
+	/**
+	 * Shipping zone.
+	 *
+	 * @var WC_Shipping_Zone
+	 */
+	private $zone;
+
+	/**
+	 * Flat rate shipping method ID.
+	 *
+	 * @var int
+	 */
+	private $flat_rate_id;
+
+	/**
+	 * Local pickup shipping method ID.
+	 *
+	 * @var int
+	 */
+	private $local_pickup_id;
+
+	/**
+	 * Pre-test setup
+	 */
+	public function set_up() {
+		parent::set_up();
+
+		WC()->shipping()->unregister_shipping_methods();
+
+		$this->mock_wcpay_account                 = $this->createMock( WC_Payments_Account::class );
+		$this->mock_wcpay_gateway                 = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_ece_button_helper             = $this->createMock( WC_Payments_Express_Checkout_Button_Helper::class );
+		$this->mock_express_checkout_ajax_handler = $this->createMock( WC_Payments_Express_Checkout_Ajax_Handler::class );
+
+		$this->system_under_test = new WC_Payments_Express_Checkout_Button_Handler(
+			$this->mock_wcpay_account,
+			$this->mock_wcpay_gateway,
+			$this->mock_ece_button_helper,
+			$this->mock_express_checkout_ajax_handler
+		);
+
+		// Set up shipping zones and methods.
+		$this->zone = new WC_Shipping_Zone();
+		$this->zone->set_zone_name( 'Worldwide' );
+		$this->zone->set_zone_order( 1 );
+		$this->zone->save();
+
+		$flat_rate          = $this->zone->add_shipping_method( 'flat_rate' );
+		$this->flat_rate_id = $flat_rate;
+
+		$local_pickup          = $this->zone->add_shipping_method( 'local_pickup' );
+		$this->local_pickup_id = $local_pickup;
+	}
+
+	public function tear_down() {
+		parent::tear_down();
+
+		// Clean up shipping zones and methods.
+		$this->zone->delete();
+	}
+
+	public function test_filter_cart_needs_shipping_address_regular_products() {
+		$this->assertEquals(
+			true,
+			$this->system_under_test->filter_cart_needs_shipping_address( true ),
+			'Should not modify shipping address requirement for regular products'
+		);
+	}
+
+
+	public function test_filter_cart_needs_shipping_address_subscription_products() {
+		$this->mock_ece_button_helper->method( 'is_checkout' )->willReturn( true );
+		$this->mock_ece_button_helper->method( 'has_subscription_product' )->willReturn( true );
+
+		$this->zone->delete_shipping_method( $this->flat_rate_id );
+		$this->zone->delete_shipping_method( $this->local_pickup_id );
+
+		$this->assertFalse(
+			$this->system_under_test->filter_cart_needs_shipping_address( true ),
+			'Should not require shipping address for subscription without shipping methods'
+		);
+
+		remove_filter( 'woocommerce_shipping_method_count', '__return_zero' );
+	}
+
+	public function test_get_express_checkout_params() {
+		$this->mock_ece_button_helper
+			->method( 'get_common_button_settings' )
+			->willReturn(
+				[
+					'type'   => 'buy',
+					'theme'  => 'white',
+					'height' => '30',
+					'radius' => '10',
+				]
+			);
+		$params = $this->system_under_test->get_express_checkout_params();
+		$this->assertArrayHasKey( 'store_name', $params );
+		$this->assertEquals( get_bloginfo( 'name' ), $params['store_name'] );
+	}
+
+	public function test_payment_fields_js_config_on_cart_page_with_cart_disabled() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'cart' );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_request_enabled' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'payment_request' )
+			->willReturn( false );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( false );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertFalse( $config['isPaymentRequestEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_on_checkout_page_with_checkout_enabled() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'checkout' );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_request_enabled' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'checkout', 'payment_request' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( false );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertTrue( $config['isPaymentRequestEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_with_empty_context_defaults_to_enabled() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( '' );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_request_enabled' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( true );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertTrue( $config['isPaymentRequestEnabled'] );
+		$this->assertTrue( $config['isAmazonPayEnabled'] );
+	}
+
+	public function test_payment_fields_js_config_amazon_pay_on_cart_with_cart_disabled() {
+		$this->mock_ece_button_helper
+			->method( 'get_button_context' )
+			->willReturn( 'cart' );
+
+		$this->mock_wcpay_gateway
+			->method( 'is_payment_request_enabled' )
+			->willReturn( false );
+
+		$this->mock_ece_button_helper
+			->method( 'can_use_amazon_pay' )
+			->willReturn( true );
+
+		$this->mock_ece_button_helper
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'amazon_pay' )
+			->willReturn( false );
+
+		$config = $this->system_under_test->payment_fields_js_config( [] );
+
+		$this->assertFalse( $config['isAmazonPayEnabled'] );
+	}
+}

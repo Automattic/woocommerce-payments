@@ -3,7 +3,7 @@
  */
 import React from 'react';
 
-import { Button, Icon, Modal } from '@wordpress/components';
+import { Button, Icon, Modal, ExternalLink } from '@wordpress/components';
 import {
 	createInterpolateElement,
 	useEffect,
@@ -11,8 +11,8 @@ import {
 } from '@wordpress/element';
 import { registerPlugin } from '@wordpress/plugins';
 import { removeQueryArgs } from '@wordpress/url';
-import { __ } from '@wordpress/i18n';
-import wcpayTracks from '../tracks';
+import { __, sprintf } from '@wordpress/i18n';
+import { recordEvent } from '../tracks';
 
 import './style.scss';
 
@@ -29,14 +29,14 @@ const FinishSetupButton = () => {
 			disabled={ isFinishingSetup }
 			href={ connectUrl }
 			isBusy={ isFinishingSetup }
-			isPrimary
+			variant="primary"
 			onClick={ () => {
-				wcpayTracks.recordEvent(
-					wcpayTracks.events
-						.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_FINISH_SETUP
+				recordEvent(
+					'wcpay_subscriptions_account_not_connected_product_modal_finish_setup'
 				);
 				setIsFinishingSetup( true );
 			} }
+			__next40pxDefaultSize
 		>
 			{ __( 'Finish setup', 'woocommerce-payments' ) }
 		</Button>
@@ -47,9 +47,8 @@ const SubscriptionProductOnboardingModalContent = ( {
 	onRequestClose = () => {},
 } ) => {
 	useEffect( () => {
-		wcpayTracks.recordEvent(
-			wcpayTracks.events
-				.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_VIEW
+		recordEvent(
+			'wcpay_subscriptions_account_not_connected_product_modal_view'
 		);
 	}, [] );
 
@@ -57,9 +56,8 @@ const SubscriptionProductOnboardingModalContent = ( {
 		<Modal
 			className="wcpay-subscription-product-modal"
 			onRequestClose={ () => {
-				wcpayTracks.recordEvent(
-					wcpayTracks.events
-						.SUBSCRIPTIONS_ACCOUNT_NOT_CONNECTED_PRODUCT_MODAL_DISMISS
+				recordEvent(
+					'wcpay_subscriptions_account_not_connected_product_modal_dismiss'
 				);
 				onRequestClose();
 			} }
@@ -72,9 +70,13 @@ const SubscriptionProductOnboardingModalContent = ( {
 				) }
 			</p>
 			<p>
-				{ __(
-					'Verify your business details with WooCommerce Payments to accept recurring payments for this subscription product.',
-					'woocommerce-payments'
+				{ sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Verify your business details with %s to accept recurring payments for this subscription product.',
+						'woocommerce-payments'
+					),
+					'WooPayments'
 				) }
 			</p>
 			<p className="wcpay-subscription-product-modal__tos">
@@ -84,14 +86,8 @@ const SubscriptionProductOnboardingModalContent = ( {
 						'woocommerce-payments'
 					),
 					{
-						a: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href="https://wordpress.com/tos/"
-								target="_blank"
-								rel="noreferrer"
-							/>
-						),
+						// @ts-expect-error: children is provided when interpolating the component
+						a: <ExternalLink href="https://wordpress.com/tos/" />,
 					}
 				) }
 			</p>

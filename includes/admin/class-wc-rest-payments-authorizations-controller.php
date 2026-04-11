@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\List_Authorizations;
 
 defined( 'ABSPATH' ) || exit;
@@ -62,7 +63,7 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 	public function get_authorizations( WP_REST_Request $request ) {
 		$wcpay_request = List_Authorizations::from_rest_request( $request );
 
-		return $wcpay_request->handle_rest_request( 'wcpay_list_authorizations_request' );
+		return $wcpay_request->handle_rest_request();
 	}
 
 	/**
@@ -72,13 +73,17 @@ class WC_REST_Payments_Authorizations_Controller extends WC_Payments_REST_Contro
 	 */
 	public function get_authorization( WP_REST_Request $request ) {
 		$payment_intent_id = $request->get_param( 'payment_intent_id' );
-		return $this->forward_request( 'get_authorization', [ $payment_intent_id ] );
+		$request           = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API, $payment_intent_id );
+		$request->assign_hook( 'wcpay_get_authorization_request' );
+		return $request->handle_rest_request();
 	}
 
 	/**
 	 * Retrieve authorizations summary to respond with via API.
 	 */
 	public function get_authorizations_summary() {
-		return $this->forward_request( 'get_authorizations_summary', [] );
+		$request = Request::get( WC_Payments_API_Client::AUTHORIZATIONS_API . '/summary' );
+		$request->assign_hook( 'wc_pay_get_authorizations_summary' );
+		return $request->handle_rest_request();
 	}
 }

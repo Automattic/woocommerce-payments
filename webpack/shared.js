@@ -4,33 +4,40 @@ const { mapValues } = require( 'lodash' );
 const { ProvidePlugin } = require( 'webpack' );
 const MiniCssExtractPlugin = require( 'mini-css-extract-plugin' );
 const WooCommerceDependencyExtractionWebpackPlugin = require( '@woocommerce/dependency-extraction-webpack-plugin' );
+const WebpackRTLPlugin = require( './webpack-rtl-plugin' );
 
 module.exports = {
+	cache: {
+		type: 'filesystem',
+		cacheDirectory: path.resolve(
+			process.cwd(),
+			'node_modules/.cache/webpack'
+		),
+	},
 	entry: mapValues(
 		{
 			index: './client/index.js',
 			settings: './client/settings/index.js',
 			'blocks-checkout': './client/checkout/blocks/index.js',
-			'upe-blocks-checkout': './client/checkout/blocks/upe.js',
-			'upe-split-blocks-checkout':
-				'./client/checkout/blocks/upe-split.js',
 			woopay: './client/checkout/woopay/index.js',
 			'woopay-express-button':
 				'./client/checkout/woopay/express-button/index.js',
-			checkout: './client/checkout/classic/index.js',
-			upe_checkout: './client/checkout/classic/upe.js',
-			upe_split_checkout: './client/checkout/classic/upe-split.js',
-			upe_with_deferred_intent_creation_checkout:
-				'./client/checkout/classic/upe-deferred-intent-creation/event-handlers.js',
-			'payment-request': './client/payment-request/index.js',
-			'subscription-edit-page': './client/subscription-edit-page.js',
-			tos: './client/tos/index.js',
-			'payment-gateways': './client/payment-gateways/index.js',
-			'multi-currency': './client/multi-currency/index.js',
+			'woopay-direct-checkout':
+				'./client/checkout/woopay/direct-checkout/index.js',
+			cart: './client/cart/index.js',
+			checkout: './client/checkout/classic/event-handlers.js',
+			'express-checkout':
+				'./client/express-checkout/shortcode-buttons-express/index.js',
+			'subscription-edit-page':
+				'./client/subscription-edit-page/index.tsx',
+			tos: './client/tos/index.tsx',
+			'multi-currency': './includes/multi-currency/client/index.js',
 			'multi-currency-switcher-block':
-				'./client/multi-currency/blocks/currency-switcher.js',
+				'./includes/multi-currency/client/blocks/currency-switcher.js',
 			'multi-currency-analytics':
-				'./client/multi-currency-analytics/index.js',
+				'./includes/multi-currency/client/analytics/index.js',
+			'multi-currency-async-renderer':
+				'./includes/multi-currency/client/async-renderer/index.ts',
 			order: './client/order/index.js',
 			'subscriptions-empty-state':
 				'./client/subscriptions-empty-state/index.js',
@@ -39,6 +46,14 @@ module.exports = {
 			'subscription-product-onboarding-toast':
 				'./client/subscription-product-onboarding/toast.js',
 			'product-details': './client/product-details/index.js',
+			'cart-block': './client/cart/blocks/index.js',
+			'plugins-page': './client/plugins-page/index.js',
+			'frontend-tracks': './client/frontend-tracks/index.js',
+			success: './client/success/index.js',
+			'wc-payments-settings-spotlight':
+				'./client/wc-payments-settings-spotlight.js',
+			'wc-payments-review-prompt':
+				'./client/wc-payments-review-prompt.tsx',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -52,7 +67,7 @@ module.exports = {
 		rules: [
 			{
 				test: /\.tsx?$/,
-				use: [ 'babel-loader', 'ts-loader' ],
+				use: [ 'babel-loader' ],
 				exclude: /node_modules/,
 			},
 			{
@@ -74,13 +89,13 @@ module.exports = {
 								],
 							},
 							additionalData:
-								'@import "node_modules/@wordpress/base-styles/_colors.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_colors.native.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_variables.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_mixins.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_breakpoints.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_animations.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_z-index.scss"; ' +
+								'@import "~@wordpress/base-styles/_colors.scss"; ' +
+								'@import "~@wordpress/base-styles/_colors.native.scss"; ' +
+								'@import "~@wordpress/base-styles/_variables.scss"; ' +
+								'@import "~@wordpress/base-styles/_mixins.scss"; ' +
+								'@import "~@wordpress/base-styles/_breakpoints.scss"; ' +
+								'@import "~@wordpress/base-styles/_animations.scss"; ' +
+								'@import "~@wordpress/base-styles/_z-index.scss"; ' +
 								'@import "_colors"; ' +
 								'@import "_breakpoints"; ' +
 								'@import "_mixins"; ' +
@@ -110,9 +125,17 @@ module.exports = {
 	},
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
-		modules: [ path.join( process.cwd(), 'client' ), 'node_modules' ],
+		modules: [
+			path.join( process.cwd(), 'client' ),
+			path.join( process.cwd(), 'includes/multi-currency/client' ),
+			'node_modules',
+		],
 		alias: {
 			assets: path.resolve( process.cwd(), 'assets' ),
+			'multi-currency': path.resolve(
+				process.cwd(),
+				'includes/multi-currency/client'
+			),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
 				process.cwd(),
@@ -130,20 +153,19 @@ module.exports = {
 			process: 'process/browser.js',
 		} ),
 		new MiniCssExtractPlugin( { filename: '[name].css' } ),
+		new WebpackRTLPlugin( {
+			filenameSuffix: '-rtl.css',
+		} ),
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
 				switch ( request ) {
-					case '@wordpress/components':
-						return null;
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
 				switch ( request ) {
-					case '@wordpress/components':
-						return null;
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
 				}

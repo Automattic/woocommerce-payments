@@ -5,7 +5,8 @@
 		margin-bottom: 1em;
 	}
 
-	&__customer-support {
+	&__customer-support,
+	&__customer-statements {
 		max-width: 500px;
 		position: relative;
 
@@ -25,5 +26,18 @@
 				top: 32px;
 			}
 		}
+	}
+}
+
+.manual-capture-confirmation-modal.wcpay-confirmation-modal {
+	max-width: 512px;
+
+	p {
+		font-size: 13px;
+		line-height: 20px;
+	}
+
+	.wcpay-confirmation-modal__separator {
+		display: none;
 	}
 }

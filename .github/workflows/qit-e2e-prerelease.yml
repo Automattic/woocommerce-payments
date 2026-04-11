@@ -1,0 +1,71 @@
+name: QIT E2E Tests - Pre-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      woocommerce-version:
+        description: 'WooCommerce version (e.g., 10.5.0-dev, 9.7.0-beta.1, 9.7.0-rc.1)'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up repository
+        uses: ./.github/actions/setup-repo
+
+      - name: Build the plugin
+        uses: ./.github/actions/build
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: woocommerce-payments-${{ github.run_id }}
+          path: woocommerce-payments.zip
+          retention-days: 1
+
+  generate-matrix:
+    name: Generate test matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - name: Generate matrix
+        id: generate
+        run: |
+          WC_VERSION="${{ inputs.woocommerce-version }}"
+          echo "WC version: $WC_VERSION" >&2
+
+          # Build pre-release matrix: user-specified WC version, PHP 8.3, all projects
+          MATRIX_ENTRIES=()
+          for project in "shopper" "merchant" "subscriptions"; do
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$WC_VERSION\",\"wordpress\":\"latest\",\"php\":\"8.3\",\"project\":\"$project\"}")
+          done
+
+          MATRIX_JSON=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s '{"include": .}' -c)
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+  qit-e2e:
+    name: "${{ matrix.project }} | WC ${{ matrix.woocommerce }} | PHP ${{ matrix.php }}"
+    needs: [build, generate-matrix]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    uses: ./.github/workflows/qit-e2e-run.yml
+    with:
+      woocommerce-version: ${{ matrix.woocommerce }}
+      wordpress-version: ${{ matrix.wordpress }}
+      php-version: ${{ matrix.php }}
+      artifact-name: woocommerce-payments-${{ github.run_id }}
+      playwright-project: ${{ matrix.project }}
+    secrets:
+      QIT_CI_USER: ${{ secrets.QIT_CI_USER }}
+      QIT_CI_SECRET: ${{ secrets.QIT_CI_SECRET }}
+      E2E_QIT_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
+      E2E_QIT_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
+      E2E_QIT_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}

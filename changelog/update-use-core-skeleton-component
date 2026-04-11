@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Simplify core Skeleton component injection using React Context instead of prop threading

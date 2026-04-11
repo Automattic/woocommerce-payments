@@ -7,7 +7,8 @@
 
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Constants\Payment_Intent_Status;
+use WCPay\Constants\Intent_Status;
+use WCPay\Core\Server\Request;
 use WCPay\Exceptions\API_Exception;
 
 defined( 'ABSPATH' ) || exit;
@@ -145,10 +146,9 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
-	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_summary( $request ) {
-
 		$transaction_id = $request->get_param( 'transaction_id' );
 
 		try {
@@ -158,7 +158,10 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			if ( empty( $transaction ) ) {
 				return rest_ensure_response( [] );
 			}
-			$summary = $this->api_client->get_readers_charge_summary( gmdate( 'Y-m-d', $transaction['created'] ) );
+			$summary = $this->api_client->get_readers_charge_summary(
+				gmdate( 'Y-m-d', $transaction['created'] ),
+				$transaction_id
+			);
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( 'wcpay_get_summary', $e->getMessage() ) );
 		}
@@ -196,6 +199,8 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			);
 
 			$reader = wp_array_slice_assoc( $response, [ 'id', 'livemode', 'device_type', 'label', 'location', 'metadata', 'status' ] );
+
+			WC_Payments::get_account_service()->refresh_account_data();
 
 			return rest_ensure_response( $reader );
 		} catch ( API_Exception $e ) {
@@ -237,7 +242,10 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 
 		if ( ! $readers ) {
 			// Retrieve terminal readers.
-			$readers_data = $this->api_client->get_terminal_readers();
+			$request = Request::get( WC_Payments_API_Client::TERMINAL_READERS_API );
+			$request->assign_hook( 'wcpay_get_terminal_readers_request' );
+
+			$readers_data = $request->send();
 
 			// Retrieve the readers by charges.
 			$reader_by_charges = $this->api_client->get_readers_charge_summary( gmdate( 'Y-m-d', time() ) );
@@ -273,15 +281,15 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 		try {
 			/* Collect the data, available on the server side. */
 			$wcpay_request  = Get_Intention::create( $request->get_param( 'payment_intent_id' ) );
-			$payment_intent = $wcpay_request->send( 'wcpay_get_intent_request' );
-			if ( Payment_Intent_Status::SUCCEEDED !== $payment_intent->get_status() ) {
+			$payment_intent = $wcpay_request->send();
+			if ( Intent_Status::SUCCEEDED !== $payment_intent->get_status() ) {
 				throw new \RuntimeException( __( 'Invalid payment intent', 'woocommerce-payments' ) );
 			}
 
 			$charge         = $payment_intent->get_charge();
 			$charge_id      = $charge ? $charge->get_id() : null;
 			$charge_request = Get_Charge::create( $charge_id );
-			$charge_array   = $charge_request->send( 'wcpay_get_charge_request' );
+			$charge_array   = $charge_request->send();
 
 			/* Collect receipt data, stored on the store side. */
 			$order = wc_get_order( $charge_array['order']['number'] );

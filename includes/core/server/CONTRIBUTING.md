@@ -112,7 +112,8 @@ add_filter( 'wcpay_my_request', function ( $request ) {
 
 $request = My_Request::create();
 $request->set_name( 'John' );
-$request->send( 'wcpay_my_request );
+$request->assign_hook( 'wcpay_my_request' );
+$request->send();
 ```
 
 ### Validators
@@ -120,7 +121,7 @@ $request->send( 'wcpay_my_request );
 Validators are stored in the abstract `Request` class, and they are used to validate arguments passed to setter methods. The setter method needs to call one (or many) validation method to use this functionality.
 
 - `validate_stripe_id( $id, $prefixes = null )` is used to validate Stripe IDs. Provide the ID, and optionally either a single prefix, on array of prefixes. This method can be used for all IDs, which generally follow the format `type_HASH`.
-- `validate_is_larger_then( $value_to_validate, $value_to_compare )`
+- `validate_is_larger_than( $value_to_validate, $value_to_compare )`
 - `validate_currency_code( string $currency_code )`
 - `validate_date( string $date, string $format = 'Y-m-d H:i:s' )`
 
@@ -151,8 +152,9 @@ Request classes can be extended as any other PHP class. Let's use the existing `
 
 ```php
 $request = Create_And_Confirm_Intention::create();
+$request->set_hook_args( $payment_information );
 // Call all necessary setters...
-$intent = $request->send( 'wcpay_create_intention_request', $payment_information );
+$intent = $request->send();
 ```
 
 ### 2. Extend the class

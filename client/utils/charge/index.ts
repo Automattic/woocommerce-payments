@@ -173,26 +173,83 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 };
 
 /**
- * Displays the transaction's channel: Online | In-Person.
+ * Displays the transaction's sales channel: Online store | In-Person | In-Person (POS).
+ * This method is called on the list of transactions page.
  *
- * This method is called in two places: The individual transaction page, and the list of transactions page.
- * In the individual transaction page, we are getting the data from Stripe, so we pass the transaction.type
- * which can be card_present or interac_present for In-Person payments.
  * In the list of transactions, the type holds the brand of the payment method, so we aren't passing it.
- * Instead, we pass the transaction.channel directly, which might be in_person|online.
+ * Instead, we pass the transaction.channel directly, which might be in_person|in_person_pos|online.
  *
- * @param {string} type The transaction type.
- * @return {string} Online or In-Person.
- *
+ * @param {string} channel The transaction channel.
+ * @return {string} Online store, In-Person, or In-Person (POS).
  */
-export const getChargeChannel = ( type: string ): string => {
-	if (
-		type === 'card_present' ||
-		type === 'interac_present' ||
-		type === 'in_person'
-	) {
+export const getTransactionChannel = ( channel: string ): string => {
+	switch ( channel ) {
+		case 'in_person':
+			return __( 'In-Person', 'woocommerce-payments' );
+		case 'in_person_pos':
+			return __( 'In-Person (POS)', 'woocommerce-payments' );
+		default:
+			return __( 'Online store', 'woocommerce-payments' );
+	}
+};
+
+/**
+ * Displays the sales channel based on the charge data from Stripe and metadata for a transaction: Online store | In-Person | In-Person (POS).
+ * This method is called in the individual transaction page.
+ *
+ * In the individual transaction page, we are getting the data from Stripe, so we pass the charge.type
+ * which can be card_present or interac_present for In-Person payments. In addition, we pass the transaction metadata
+ * whose ipp_channel value can be mobile_store_management or mobile_pos that indicates whether the channel is from store
+ * management or POS in the mobile apps.
+ *
+ * @param {string} type The transaction charge type, which can be card_present or interac_present for In-Person payments.
+ * @param {Record<string, any>} metadata The transaction metadata, which may include ipp_channel indicating the channel source.
+ * @return {string} Returns 'Online store', 'In-Person', or 'In-Person (POS)' based on the transaction type and metadata.
+ */
+export const getChargeChannel = (
+	type: string,
+	metadata: Record< string, any >
+): string => {
+	if ( type === 'card_present' || type === 'interac_present' ) {
+		if ( metadata?.ipp_channel === 'mobile_pos' ) {
+			return __( 'In-Person (POS)', 'woocommerce-payments' );
+		}
 		return __( 'In-Person', 'woocommerce-payments' );
 	}
 
-	return __( 'Online', 'woocommerce-payments' );
+	return __( 'Online store', 'woocommerce-payments' );
+};
+
+/**
+ * Returns the bank name for a charge.
+ *
+ * @param {Charge} charge - The charge to get the bank name for.
+ *
+ * @return {string | null} The bank name for the charge.
+ */
+export const getBankName = ( charge: Charge ): string | null => {
+	const { payment_method_details: paymentMethodDetails } = charge;
+	const methodType = paymentMethodDetails?.type?.toLowerCase();
+
+	// For card payments, get the issuer from card details
+	if ( methodType === 'card' && paymentMethodDetails?.type === 'card' ) {
+		// Type assertion is safe here because we've checked the type
+		const cardDetails = paymentMethodDetails.card as {
+			issuer?: string;
+		};
+		return cardDetails.issuer || null;
+	}
+
+	// For BNPL (affirm, afterpay_clearpay, klarna) disputes are all handled directly through the BNPL provider.
+	// For example, with an Affirm dispute, the `issuer` is actually Affirm
+	switch ( methodType ) {
+		case 'affirm':
+			return 'Affirm';
+		case 'afterpay_clearpay':
+			return 'Afterpay / Clearpay';
+		case 'klarna':
+			return 'Klarna';
+		default:
+			return null;
+	}
 };

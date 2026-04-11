@@ -1,6 +1,6 @@
 # `List_Fraud_Outcome_Transactions` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
@@ -39,5 +39,5 @@ $request->set_search( $search );
 $request->set_search_term( $search_term );
 $request->set_sort_by( $sort );
 $request->set_sort_direction( $direction );
-$request->send( 'wcpay_list_transactions_request', $request );
+$request->send();
 ```

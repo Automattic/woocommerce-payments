@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix test card copy button using wrong font on themes with button font overrides

@@ -4,13 +4,13 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button, Modal, Notice } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import { Button, Modal, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import wcpayTracks from 'tracks';
+import { recordEvent } from 'tracks';
 import TipBox from 'components/tip-box';
 import strings from './strings';
 import './style.scss';
@@ -27,19 +27,24 @@ const InfoNoticeModal: React.FC = () => {
 
 	return (
 		<>
-			<TipBox color="purple">
-				{ strings.infoNotice.description }{ ' ' }
-				<Button
-					isLink
-					onClick={ () => {
-						wcpayTracks.recordEvent(
-							wcpayTracks.events.CONNECT_ACCOUNT_KYC_MODAL_OPENED
-						);
-						setModalOpen( true );
-					} }
-				>
-					{ strings.infoNotice.button }
-				</Button>
+			<TipBox color="yellow">
+				{ wcpaySettings.isJetpackConnected
+					? strings.infoNotice.description.jetpack_connected
+					: strings.infoNotice.description.jetpack_not_connected }
+				{ wcpaySettings.isJetpackConnected && (
+					<Button
+						variant="link"
+						onClick={ () => {
+							recordEvent(
+								'wcpay_connect_account_kyc_modal_opened'
+							);
+							setModalOpen( true );
+						} }
+						__next40pxDefaultSize
+					>
+						{ strings.infoNotice.button }
+					</Button>
+				) }
 			</TipBox>
 			{ isModalOpen && (
 				<Modal
@@ -88,7 +93,11 @@ const InfoNoticeModal: React.FC = () => {
 					</div>
 					<hr />
 					<div className="connect-account-page__info-modal__footer">
-						<Button isPrimary onClick={ handleModalClose }>
+						<Button
+							variant="primary"
+							onClick={ handleModalClose }
+							__next40pxDefaultSize
+						>
 							{ __( 'Got it', 'woocommerce-payments' ) }
 						</Button>
 					</div>

@@ -3,78 +3,134 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import interpolateComponents from '@automattic/interpolate-components';
 
 export default {
-	button: __( 'Finish setup', 'woocommerce-payments' ),
-	heading: __(
-		'Accept payments and manage your business.',
-		'woocommerce-payments'
-	),
-	description: createInterpolateElement(
-		__(
-			'By using Woo Payments you agree to our <a1>Terms of Service</a1> and acknowledge that you have read our <a2>Privacy Policy</a2>.',
+	button: {
+		// CTA label to use when there isn't a working WPCOM/Jetpack connection.
+		jetpack_not_connected: __(
+			'Connect your store',
 			'woocommerce-payments'
 		),
-		{
-			a1: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://wordpress.com/tos"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-			a2: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://automattic.com/privacy/"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
-			),
-		}
-	),
-	acceptedPaymentMethods: __(
-		'Accepted payment methods include:',
+		// CTA label to use when there is a working WPCOM/Jetpack connection but no Stripe account connected.
+		account_not_connected: __(
+			'Verify business details',
+			'woocommerce-payments'
+		),
+		// CTA label to use when there is a working WPCOM/Jetpack connection and a Stripe account connected,
+		// but only partially onboarded (not valid).
+		account_invalid: __(
+			'Finish business details verifications',
+			'woocommerce-payments'
+		),
+		sandbox: __( 'Create test account', 'woocommerce-payments' ),
+		reset: __( 'Reset account', 'woocommerce-payments' ),
+	},
+	heading: ( firstName?: string ): string =>
+		sprintf(
+			/* translators: %s: first name of the merchant, if it exists, %s: WooPayments. */
+			__( 'Hi%s, Welcome to %s!', 'woocommerce' ),
+			firstName ? ` ${ firstName }` : '',
+			'WooPayments'
+		),
+	paymentMethods: {
+		deposits: {
+			title: __( 'Payouts', 'woocommerce-payments' ),
+			value: __( 'Automatic - Daily', 'woocommerce-payments' ),
+		},
+		capture: {
+			title: __( 'Payments capture', 'woocommerce-payments' ),
+			value: __( 'Capture on order', 'woocommerce-payments' ),
+		},
+		recurring: {
+			title: __( 'Recurring payments', 'woocommerce-payments' ),
+			value: __( 'Supported', 'woocommerce-payments' ),
+		},
+	},
+	usp1: __(
+		'Offer card payments, Apple Pay, iDEAL | Wero, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
 		'woocommerce-payments'
 	),
-	infoNotice: {
-		description: createInterpolateElement(
+	usp2: __(
+		'Sell to international markets and accept over 135 currencies with local payment methods.',
+		'woocommerce-payments'
+	),
+	usp3: __(
+		'Earn recurring revenue and get payouts into your bank account.',
+		'woocommerce-payments'
+	),
+	sandboxMode: {
+		title: __(
+			"I'm setting up a store for someone else.",
+			'woocommerce-payments'
+		),
+		description: sprintf(
+			/* translators: %s: WooPayments */
 			__(
-				"In order to receive deposits with <a>Woo Payments</a>, you'll need to share business details to verify who you are.",
+				'This option will set up a %s test account using test data. When you’re ready to launch your store, switching to live payments is easy.',
 				'woocommerce-payments'
 			),
-			{
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href="https://woocommerce.com/payments/"
-						target="_blank"
-						rel="noopener noreferrer"
-					/>
-				),
-			}
-		),
-		button: __(
-			'Learn more about how to receive deposits.',
-			'woocommerce-payments'
+			'WooPayments'
 		),
 	},
-	infoModal: {
-		title: __(
-			'Verifying your information with Woo Payments',
+	sandboxModeNotice: interpolateComponents( {
+		mixedString: __(
+			'Test mode is enabled, only test accounts will be created. If you want to process live transactions, please {{learnMoreLink}}disable it{{/learnMoreLink}}.',
 			'woocommerce-payments'
+		),
+		components: {
+			learnMoreLink: (
+				// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
+					target="_blank"
+					rel="noreferrer"
+				/>
+			),
+		},
+	} ),
+	setupErrorNotice: sprintf(
+		/* translators: 1: WooPayments. */
+		__(
+			'Please <b>complete your %1$s setup</b> to process payments.',
+			'woocommerce-payments'
+		),
+		'WooPayments'
+	),
+	infoNotice: {
+		description: {
+			jetpack_connected: __(
+				"You'll need to verify your business and payment details to ",
+				'woocommerce-payments'
+			),
+			jetpack_not_connected: __(
+				'To ensure safe and secure transactions, a WordPress.com account is required before you can verify your business details.',
+				'woocommerce-payments'
+			),
+		},
+		button: __( 'enable payouts.', 'woocommerce-payments' ),
+	},
+	infoModal: {
+		title: sprintf(
+			/* translators: %s: WooPayments */
+			__( 'Verifying your information with %s', 'woocommerce-payments' ),
+			'WooPayments'
 		),
 		whyWeAsk: {
 			heading: __(
 				'Why we ask for personal financial information',
 				'woocommerce-payments'
 			),
-			description: __(
-				"As you continue the process of signing up for Woo Payments, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.",
-				'woocommerce-payments'
+			description: sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					"As you continue the process of signing up for %s, we'll ask for information about your business, including the business owner's date of birth and tax ID number. We know you may wonder why we ask for this information, and how it will be used. The “Know Your Customer” process, explained below, helps us provide a safe, ethical environment for all financial transactions.",
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 		},
 		whatIsKyc: {
@@ -106,19 +162,28 @@ export default {
 				'What else should I keep in mind while completing this process?',
 				'woocommerce-payments'
 			),
-			description: __(
-				"If you're setting up Woo Payments for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.",
-				'woocommerce-payments'
+			description: sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					"If you're setting up %s for someone else, it's best to have that person complete the account creation process. As you can see above, we ask for very specific information about the business owner - and you might not have all the details at hand. It's not always possible to change account information once it's been saved, especially if the site accepts live transactions before the correct account information is entered.",
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 		},
 		isMyDataSafe: {
-			heading: __(
-				'Is my data safe with WooCommerce?',
-				'woocommerce-payments'
+			heading: sprintf(
+				/* translators: %s: WooPayments */
+				__( 'Is my data safe with %s?', 'woocommerce-payments' ),
+				'WooPayments'
 			),
-			description: __(
-				'We take every step required to safeguard your personal data. Woo Payments is built in partnership with Stripe to store your data in a safe and secure manner.',
-				'woocommerce-payments'
+			description: sprintf(
+				/* translators: %s: WooPayments */
+				__(
+					'We take every step required to safeguard your personal data. %s is built in partnership with Stripe to store your data in a safe and secure manner.',
+					'woocommerce-payments'
+				),
+				'WooPayments'
 			),
 		},
 		howQuickly: {
@@ -162,7 +227,7 @@ export default {
 					'Country where your business is based',
 					'woocommerce-payments '
 				),
-				__( 'Type of businesss', 'woocommerce-payments ' ),
+				__( 'Type of business', 'woocommerce-payments ' ),
 				__( 'Industry', 'woocommerce-payments ' ),
 				__( 'Company address', 'woocommerce-payments ' ),
 				__( 'Company phone number', 'woocommerce-payments ' ),
@@ -187,18 +252,72 @@ export default {
 	step2: {
 		heading: __( 'Provide a few business details', 'woocommerce-payments' ),
 		description: __(
-			'Next we’ll ask you to verify your business and payment details to enable deposits.',
+			'Next we’ll ask you to verify your business and payment details to enable payouts.',
 			'woocommerce-payments'
 		),
 	},
 	step3: {
 		heading: __( 'Setup complete!', 'woocommerce-payments' ),
-		description: __(
-			'You’re ready to start using the features and benefits of Woo Payments.'
+		description: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'You’re ready to start using the features and benefits of %s.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 	},
 	onboardingDisabled: __(
 		"We've temporarily paused new account creation. We'll notify you when we resume!",
 		'woocommerce-payments'
+	),
+	incentive: {
+		limitedTimeOffer: __( 'Limited time offer', 'woocommerce-payments' ),
+		details: __(
+			'Discount will be applied to payments processed via WooPayments upon completion of installation, setup, and connection.',
+			'woocommerce-payments'
+		),
+		termsAndConditions: ( url: string ): JSX.Element =>
+			createInterpolateElement(
+				__(
+					'*See <a>Terms and Conditions</a> for details.',
+					'woocommerce-payments'
+				),
+				{
+					a: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							href={ url }
+							target="_blank"
+							rel="noopener noreferrer"
+						/>
+					),
+				}
+			),
+		error: __(
+			'There was an error applying the promotion. Please contact support for assistance if the problem persists',
+			'woocommerce-payments'
+		),
+	},
+	nonSupportedCountry: createInterpolateElement(
+		sprintf(
+			/* translators: %1$s: WooPayments */
+			__(
+				'<b>%1$s is not currently available in your location</b>. To be eligible for %1$s, your business address must be in one of the following <a>supported countries</a>.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
+		),
+		{
+			b: <b />,
+			a: (
+				// eslint-disable-next-line jsx-a11y/anchor-has-content
+				<a
+					href="https://woocommerce.com/document/woopayments/compatibility/countries/"
+					target="_blank"
+					rel="noopener noreferrer"
+				/>
+			),
+		}
 	),
 };

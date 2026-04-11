@@ -7,8 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Deposits;
-use WC_Deposits_Product_Manager;
 use WC_Order;
 use WC_Order_Refund;
 use WCPay\MultiCurrency\Compatibility\BaseCompatibility;
@@ -41,7 +39,7 @@ class Compatibility extends BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	protected function init() {
+	public function init() {
 		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
 
 		if ( defined( 'DOING_CRON' ) ) {
@@ -78,7 +76,7 @@ class Compatibility extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks to see if the if the selected currency needs to be overridden.
+	 * Checks to see if the selected currency needs to be overridden.
 	 *
 	 * @return mixed Three letter currency code or false if not.
 	 */
@@ -87,12 +85,41 @@ class Compatibility extends BaseCompatibility {
 	}
 
 	/**
-	 * Checks to see if the widgets should be hidden.
+	 * Deprecated method, please use should_disable_currency_switching.
 	 *
 	 * @return bool False if it shouldn't be hidden, true if it should.
 	 */
 	public function should_hide_widgets(): bool {
-		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', false );
+		wc_deprecated_function( __FUNCTION__, '6.5.0', 'Compatibility::should_disable_currency_switching' );
+		return $this->should_disable_currency_switching();
+	}
+
+	/**
+	 * Checks to see if currency switching should be disabled, such as the widgets and the automatic geolocation switching.
+	 *
+	 * @return bool False if no, true if yes.
+	 */
+	public function should_disable_currency_switching(): bool {
+		$return = false;
+
+		/**
+		 * If the pay_for_order parameter is set, we disable currency switching.
+		 *
+		 * WooCommerce itself handles all the heavy lifting and verification on the Order Pay page, we just need to
+		 * make sure the currency switchers are not displayed. This is due to once the order is created, the currency
+		 * itself should remain static.
+		 */
+		if ( isset( $_GET['pay_for_order'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$return = true;
+		}
+
+		// If someone has hooked into the deprecated filter, throw a notice and then apply the filtering.
+		if ( has_action( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets' ) ) {
+			wc_deprecated_hook( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', '6.5.0', MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching' );
+			$return = apply_filters( MultiCurrency::FILTER_PREFIX . 'should_hide_widgets', $return );
+		}
+
+		return apply_filters( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', $return );
 	}
 
 	/**
@@ -185,7 +212,7 @@ class Compatibility extends BaseCompatibility {
 			}
 
 			$exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
-			$order->set_total( number_format( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
+			$order->set_total( wc_format_decimal( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
 		}
 
 		remove_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );

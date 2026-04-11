@@ -2,25 +2,15 @@
  * External dependencies
  */
 import interpolateComponents from '@automattic/interpolate-components';
+import { Button, Modal, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button, Modal } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
-import { Link, List } from '@woocommerce/components';
+import { __, sprintf } from '@wordpress/i18n';
+import { List } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
 import './style.scss';
-
-const LearnMoreLink = ( props ) => (
-	<Link
-		{ ...props }
-		href="https://woocommerce.com/document/payments/countries/"
-		target="_blank"
-		rel="noopener noreferrer"
-		type="external"
-	/>
-);
 
 const OnboardingLocationCheckModal = ( {
 	countries,
@@ -44,18 +34,25 @@ const OnboardingLocationCheckModal = ( {
 		onDeclined();
 	};
 
-	const title = __( 'WooCommerce Payments', 'woocommerce-payments' );
+	const title = 'WooPayments';
 
 	const message = interpolateComponents( {
-		mixedString: __(
-			"It appears you're attempting to set up WooCommerce Payments from an unsupported country. " +
-				'In order to complete the set up of WooCommerce Payments, your store is required to have a business ' +
-				'entity in one of the following countries: {{list /}} ' +
-				'{{link}}Learn more{{/link}} about setting up business entities in foreign countries.',
-			'woocommerce-payments'
+		mixedString: sprintf(
+			/* translators: %1$s: WooPayments */
+			__(
+				"It appears you're attempting to set up %1$s from an unsupported country. " +
+					'In order to complete the set up of %1$s, your store is required to have a business ' +
+					'entity in one of the following countries: {{list /}} ' +
+					'{{link}}Learn more{{/link}} about setting up business entities in foreign countries.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
 		),
 		components: {
-			link: <LearnMoreLink />,
+			link: (
+				// @ts-expect-error: children is provided when interpolating the component
+				<ExternalLink href="https://woocommerce.com/document/woopayments/compatibility/countries/" />
+			),
 			list: <List items={ countries } />,
 		},
 	} );
@@ -75,17 +72,19 @@ const OnboardingLocationCheckModal = ( {
 				</div>
 				<div className="woocommerce-payments__onboarding_location_check-footer">
 					<Button
-						isSecondary
+						variant="secondary"
 						onClick={ handleConfirmedRequest }
 						isBusy={ isProcessingContinue }
+						__next40pxDefaultSize
 					>
 						{ __( 'Continue', 'woocommerce-payments' ) }
 					</Button>
 
 					<Button
-						isPrimary
+						variant="primary"
 						onClick={ handleDeclinedRequest }
 						disabled={ isProcessingContinue }
+						__next40pxDefaultSize
 					>
 						{ __( 'Cancel', 'woocommerce-payments' ) }
 					</Button>

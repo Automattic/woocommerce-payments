@@ -1,4 +1,5 @@
-/** @format */
+/* eslint-disable valid-jsdoc,jsdoc/require-returns-description */
+// disabled while we work on getting all the hooks typed.
 
 /**
  * External dependencies
@@ -10,555 +11,688 @@ import { useSelect, useDispatch } from '@wordpress/data';
  */
 import { STORE_NAME } from '../constants';
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const useSavedCards = () => {
 	const { updateIsSavedCardsEnabled } = useDispatch( STORE_NAME );
 
-	const isSavedCardsEnabled = useSelect( ( select ) => {
-		return select( STORE_NAME ).getIsSavedCardsEnabled();
-	}, [] );
+	const isSavedCardsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsSavedCardsEnabled()
+	);
 
 	return [ isSavedCardsEnabled, updateIsSavedCardsEnabled ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const useCardPresentEligible = () => {
 	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
 
-	const isCardPresentEligible = useSelect( ( select ) => {
-		return select( STORE_NAME ).getIsCardPresentEligible();
-	}, [] );
+	const isCardPresentEligible = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsCardPresentEligible()
+	);
 
 	return [ isCardPresentEligible, updateIsCardPresentEligible ];
 };
 
-export const useClientSecretEncryption = () => {
-	const { updateIsClientSecretEncryptionEnabled } = useDispatch( STORE_NAME );
-
-	const isClientSecretEncryptionEnabled = useSelect( ( select ) => {
-		return select( STORE_NAME ).getIsClientSecretEncryptionEnabled();
-	}, [] );
-
-	return [
-		isClientSecretEncryptionEnabled,
-		updateIsClientSecretEncryptionEnabled,
-	];
-};
-
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-
-			return [
-				getEnabledPaymentMethodIds(),
-				updateEnabledPaymentMethodIds,
-			];
-		},
-		[ updateEnabledPaymentMethodIds ]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
+
+	return [ enabledPaymentMethodIds, updateEnabledPaymentMethodIds ];
 };
 
+/**
+ * @return {string}
+ */
+export const useAccountDomesticCurrency = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountDomesticCurrency()
+	);
+
+/**
+ * @return {Array<Array<string>, function(string): void>}
+ */
 export const useSelectedPaymentMethod = () => {
 	const { updateSelectedPaymentMethod } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-
-			return [
-				getEnabledPaymentMethodIds(),
-				updateSelectedPaymentMethod,
-			];
-		},
-		[ updateSelectedPaymentMethod ]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
+
+	return [ enabledPaymentMethodIds, updateSelectedPaymentMethod ];
 };
 
+/**
+ * @return {Array<Array<string>, function(string): void>}
+ */
 export const useUnselectedPaymentMethod = () => {
 	const { updateUnselectedPaymentMethod } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getEnabledPaymentMethodIds } = select( STORE_NAME );
-
-			return [
-				getEnabledPaymentMethodIds(),
-				updateUnselectedPaymentMethod,
-			];
-		},
-		[ updateUnselectedPaymentMethod ]
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
 	);
+
+	return [ enabledPaymentMethodIds, updateUnselectedPaymentMethod ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const useDebugLog = () => {
 	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsDebugLogEnabled } = select( STORE_NAME );
-
-			return [ getIsDebugLogEnabled(), updateIsDebugLogEnabled ];
-		},
-		[ updateIsDebugLogEnabled ]
+	const isDebugLogEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsDebugLogEnabled()
 	);
+
+	return [ isDebugLogEnabled, updateIsDebugLogEnabled ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const useTestMode = () => {
 	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsTestModeEnabled } = select( STORE_NAME );
-
-			return [ getIsTestModeEnabled(), updateIsTestModeEnabled ];
-		},
-		[ updateIsTestModeEnabled ]
+	const isTestModeEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsTestModeEnabled()
 	);
+
+	return [ isTestModeEnabled, updateIsTestModeEnabled ];
 };
 
-export const useDevMode = () => {
-	return useSelect( ( select ) => {
-		const { getIsDevModeEnabled } = select( STORE_NAME );
+/**
+ * @return {boolean}
+ */
+export const useTestModeOnboarding = () =>
+	useSelect(
+		( select ) => select( STORE_NAME ).getIsTestModeOnboarding(),
+		[]
+	);
 
-		return getIsDevModeEnabled();
-	}, [] );
-};
+/**
+ * @return {boolean}
+ */
+export const useDevMode = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getIsDevModeEnabled(), [] );
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const useMultiCurrency = () => {
 	const { updateIsMultiCurrencyEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsMultiCurrencyEnabled } = select( STORE_NAME );
-			const isMultiCurrencyEnabled = getIsMultiCurrencyEnabled();
-			return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
-		},
-		[ updateIsMultiCurrencyEnabled ]
+	const isMultiCurrencyEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsMultiCurrencyEnabled()
 	);
+
+	return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
 };
 
 export const useWCPaySubscriptions = () => {
 	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const {
-				getIsWCPaySubscriptionsEnabled,
-				getIsWCPaySubscriptionsEligible,
-				getIsSubscriptionsPluginActive,
-			} = select( STORE_NAME );
-
-			const isWCPaySubscriptionsEnabled = getIsWCPaySubscriptionsEnabled();
-			const isWCPaySubscriptionsEligible = getIsWCPaySubscriptionsEligible();
-			const isSubscriptionsPluginActive = getIsSubscriptionsPluginActive();
-
-			return [
-				isWCPaySubscriptionsEnabled,
-				isWCPaySubscriptionsEligible,
-				isSubscriptionsPluginActive,
-				updateIsWCPaySubscriptionsEnabled,
-			];
-		},
-		[ updateIsWCPaySubscriptionsEnabled ]
+	const isWCPaySubscriptionsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPaySubscriptionsEnabled()
 	);
+	const isWCPaySubscriptionsEligible = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPaySubscriptionsEligible()
+	);
+
+	return [
+		isWCPaySubscriptionsEnabled,
+		isWCPaySubscriptionsEligible,
+		updateIsWCPaySubscriptionsEnabled,
+	];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountStatementDescriptor } = select( STORE_NAME );
-
-			return [
-				getAccountStatementDescriptor(),
-				updateAccountStatementDescriptor,
-			];
-		},
-		[ updateAccountStatementDescriptor ]
+	const accountStatementDescriptor = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountStatementDescriptor()
 	);
+
+	return [ accountStatementDescriptor, updateAccountStatementDescriptor ];
 };
 
-export const useAccountBusinessName = () => {
-	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
+export const useAccountStatementDescriptorKanji = () => {
+	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBusinessName } = select( STORE_NAME );
-
-			return [ getAccountBusinessName(), updateAccountBusinessName ];
-		},
-		[ updateAccountBusinessName ]
+	const accountStatementDescriptorKanji = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountStatementDescriptorKanji()
 	);
+
+	return [
+		accountStatementDescriptorKanji,
+		updateAccountStatementDescriptorKanji,
+	];
 };
 
-export const useAccountBusinessURL = () => {
-	const { updateAccountBusinessURL } = useDispatch( STORE_NAME );
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
+export const useAccountStatementDescriptorKana = () => {
+	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBusinessURL } = select( STORE_NAME );
-
-			return [ getAccountBusinessURL(), updateAccountBusinessURL ];
-		},
-		[ updateAccountBusinessURL ]
+	const accountStatementDescriptorKana = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountStatementDescriptorKana()
 	);
+
+	return [
+		accountStatementDescriptorKana,
+		updateAccountStatementDescriptorKana,
+	];
 };
 
-export const useAccountBusinessSupportAddress = () => {
-	const { updateAccountBusinessSupportAddress } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const {
-				getAccountBusinessSupportAddress,
-				getAccountBusinessSupportAddressCountry,
-				getAccountBusinessSupportAddressLine1,
-				getAccountBusinessSupportAddressLine2,
-				getAccountBusinessSupportAddressCity,
-				getAccountBusinessSupportAddressState,
-				getAccountBusinessSupportAddressPostalCode,
-			} = select( STORE_NAME );
-
-			return [
-				getAccountBusinessSupportAddress(),
-				getAccountBusinessSupportAddressCountry(),
-				getAccountBusinessSupportAddressLine1(),
-				getAccountBusinessSupportAddressLine2(),
-				getAccountBusinessSupportAddressCity(),
-				getAccountBusinessSupportAddressState(),
-				getAccountBusinessSupportAddressPostalCode(),
-				updateAccountBusinessSupportAddress,
-			];
-		},
-		[ updateAccountBusinessSupportAddress ]
-	);
-};
-
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const useAccountBusinessSupportEmail = () => {
 	const { updateAccountBusinessSupportEmail } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBusinessSupportEmail } = select( STORE_NAME );
-
-			return [
-				getAccountBusinessSupportEmail(),
-				updateAccountBusinessSupportEmail,
-			];
-		},
-		[ updateAccountBusinessSupportEmail ]
+	const accountBusinessSupportEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBusinessSupportEmail()
 	);
+
+	return [ accountBusinessSupportEmail, updateAccountBusinessSupportEmail ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const useAccountBusinessSupportPhone = () => {
 	const { updateAccountBusinessSupportPhone } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getAccountBusinessSupportPhone } = select( STORE_NAME );
-
-			return [
-				getAccountBusinessSupportPhone(),
-				updateAccountBusinessSupportPhone,
-			];
-		},
-		[ updateAccountBusinessSupportPhone ]
+	const accountBusinessSupportPhone = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountBusinessSupportPhone()
 	);
-};
 
-export const useAccountBrandingLogo = () => {
-	const { updateAccountBrandingLogo } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const { getAccountBrandingLogo } = select( STORE_NAME );
-
-			return [ getAccountBrandingLogo(), updateAccountBrandingLogo ];
-		},
-		[ updateAccountBrandingLogo ]
-	);
+	return [ accountBusinessSupportPhone, updateAccountBusinessSupportPhone ];
 };
 
 export const useDepositScheduleInterval = () => {
 	const { updateDepositScheduleInterval } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getDepositScheduleInterval } = select( STORE_NAME );
-
-			return [
-				getDepositScheduleInterval(),
-				updateDepositScheduleInterval,
-			];
-		},
-		[ updateDepositScheduleInterval ]
+	const depositScheduleInterval = useSelect( ( select ) =>
+		select( STORE_NAME ).getDepositScheduleInterval()
 	);
+
+	return [ depositScheduleInterval, updateDepositScheduleInterval ];
 };
+
 export const useDepositScheduleWeeklyAnchor = () => {
 	const { updateDepositScheduleWeeklyAnchor } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getDepositScheduleWeeklyAnchor } = select( STORE_NAME );
-
-			return [
-				getDepositScheduleWeeklyAnchor(),
-				updateDepositScheduleWeeklyAnchor,
-			];
-		},
-		[ updateDepositScheduleWeeklyAnchor ]
+	const depositScheduleWeeklyAnchor = useSelect( ( select ) =>
+		select( STORE_NAME ).getDepositScheduleWeeklyAnchor()
 	);
+
+	return [ depositScheduleWeeklyAnchor, updateDepositScheduleWeeklyAnchor ];
 };
+
 export const useDepositScheduleMonthlyAnchor = () => {
 	const { updateDepositScheduleMonthlyAnchor } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getDepositScheduleMonthlyAnchor } = select( STORE_NAME );
-
-			return [
-				getDepositScheduleMonthlyAnchor(),
-				updateDepositScheduleMonthlyAnchor,
-			];
-		},
-		[ updateDepositScheduleMonthlyAnchor ]
+	const depositScheduleMonthlyAnchor = useSelect( ( select ) =>
+		select( STORE_NAME ).getDepositScheduleMonthlyAnchor()
 	);
-};
-export const useDepositDelayDays = () => {
-	return useSelect( ( select ) => {
-		const { getDepositDelayDays } = select( STORE_NAME );
 
-		return getDepositDelayDays();
-	}, [] );
+	return [ depositScheduleMonthlyAnchor, updateDepositScheduleMonthlyAnchor ];
 };
-export const useCompletedWaitingPeriod = () => {
-	return useSelect( ( select ) => {
-		const { getCompletedWaitingPeriod } = select( STORE_NAME );
 
-		return getCompletedWaitingPeriod();
-	}, [] );
-};
-export const useDepositStatus = () => {
-	return useSelect( ( select ) => {
-		const { getDepositStatus } = select( STORE_NAME );
+export const useDepositDelayDays = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getDepositDelayDays(), [] );
 
-		return getDepositStatus();
-	}, [] );
-};
+export const useCompletedWaitingPeriod = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getCompletedWaitingPeriod() );
+
+/**
+ * @return {string}
+ */
+export const useDepositStatus = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getDepositStatus(), [] );
+
+/**
+ * @return {string}
+ */
+export const useDepositRestrictions = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getDepositRestrictions() );
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsManualCaptureEnabled } = select( STORE_NAME );
-
-			return [
-				getIsManualCaptureEnabled(),
-				updateIsManualCaptureEnabled,
-			];
-		},
-		[ updateIsManualCaptureEnabled ]
+	const isManualCaptureEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsManualCaptureEnabled()
 	);
+
+	return [ isManualCaptureEnabled, updateIsManualCaptureEnabled ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const useIsWCPayEnabled = () => {
 	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getIsWCPayEnabled } = select( STORE_NAME );
-
-			return [ getIsWCPayEnabled(), updateIsWCPayEnabled ];
-		},
-		[ updateIsWCPayEnabled ]
+	const IsWCPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWCPayEnabled()
 	);
+
+	return [ IsWCPayEnabled, updateIsWCPayEnabled ];
 };
 
+/**
+ * @return {string[]} Array of available payment method IDs.
+ */
 export const useGetAvailablePaymentMethodIds = () =>
-	useSelect( ( select ) => {
-		const { getAvailablePaymentMethodIds } = select( STORE_NAME );
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getAvailablePaymentMethodIds()
+	);
 
-		return getAvailablePaymentMethodIds();
-	} );
-
+/**
+ * @return {Record<string, {status: string, requirements: string[]}>}
+ */
 export const useGetPaymentMethodStatuses = () =>
-	useSelect( ( select ) => {
-		const { getPaymentMethodStatuses } = select( STORE_NAME );
+	useSelect( ( select ) => select( STORE_NAME ).getPaymentMethodStatuses() );
 
-		return getPaymentMethodStatuses();
-	} );
+/**
+ * @return {string[]}
+ */
+export const useGetDuplicatedPaymentMethodIds = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getDuplicatedPaymentMethodIds()
+	);
 
+/**
+ * @return {Record<string, any>}
+ */
+export const useGetSettings = () =>
+	useSelect( ( select ) => select( STORE_NAME ).getSettings() );
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').SettingsState}
+ */
 export const useSettings = () => {
 	const { saveSettings } = useDispatch( STORE_NAME );
-
-	return useSelect(
-		( select ) => {
-			const {
-				getSettings,
-				hasFinishedResolution,
-				isResolving,
-				isSavingSettings,
-			} = select( STORE_NAME );
-
-			const isLoading =
-				!! isResolving( 'getSettings' ) ||
-				! hasFinishedResolution( 'getSettings' );
-
-			return {
-				settings: getSettings(),
-				isLoading,
-				saveSettings,
-				isSaving: isSavingSettings(),
-			};
-		},
-		[ saveSettings ]
+	const isSaving = useSelect( ( select ) =>
+		select( STORE_NAME ).isSavingSettings()
 	);
+	const isDirty = useSelect( ( select ) => select( STORE_NAME ).isDirty() );
+
+	const isLoading = useSelect( ( select ) => {
+		select( STORE_NAME ).getSettings();
+		const isResolving = select( STORE_NAME ).isResolving( 'getSettings' );
+		const hasFinishedResolving = select( STORE_NAME ).hasFinishedResolution(
+			'getSettings'
+		);
+		return isResolving || ! hasFinishedResolving;
+	} );
+
+	return {
+		isLoading,
+		saveSettings,
+		isSaving,
+		isDirty,
+	};
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const usePaymentRequestEnabledSettings = () => {
 	const { updateIsPaymentRequestEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getIsPaymentRequestEnabled } = select( STORE_NAME );
+	const isPaymentRequestEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsPaymentRequestEnabled()
+	);
 
-		return [ getIsPaymentRequestEnabled(), updateIsPaymentRequestEnabled ];
-	} );
+	return [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ];
 };
 
-export const usePaymentRequestLocations = () => {
-	const { updatePaymentRequestLocations } = useDispatch( STORE_NAME );
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useExpressCheckoutInPaymentMethodsEnabledSettings = () => {
+	const { updateIsExpressCheckoutInPaymentMethodsEnabled } = useDispatch(
+		STORE_NAME
+	);
 
-	return useSelect( ( select ) => {
-		const { getPaymentRequestLocations } = select( STORE_NAME );
+	const isExpressCheckoutInPaymentMethodsEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsExpressCheckoutInPaymentMethodsEnabled()
+	);
 
-		return [ getPaymentRequestLocations(), updatePaymentRequestLocations ];
-	} );
+	return [
+		isExpressCheckoutInPaymentMethodsEnabled,
+		updateIsExpressCheckoutInPaymentMethodsEnabled,
+	];
 };
 
+/**
+ * Factory function to create a hook for managing express checkout method locations.
+ *
+ * @param {string} methodId The method identifier (e.g., 'payment_request', 'woopay').
+ * @return {function(): import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+const makeExpressCheckoutLocationHook = ( methodId ) => () => {
+	const {
+		updateExpressCheckoutProductMethods,
+		updateExpressCheckoutCartMethods,
+		updateExpressCheckoutCheckoutMethods,
+	} = useDispatch( STORE_NAME );
+
+	const productMethods = useSelect( ( select ) =>
+		select( STORE_NAME ).getExpressCheckoutProductMethods()
+	);
+	const cartMethods = useSelect( ( select ) =>
+		select( STORE_NAME ).getExpressCheckoutCartMethods()
+	);
+	const checkoutMethods = useSelect( ( select ) =>
+		select( STORE_NAME ).getExpressCheckoutCheckoutMethods()
+	);
+
+	const methodsListMap = {
+		product: productMethods,
+		cart: cartMethods,
+		checkout: checkoutMethods,
+	};
+	const methodsUpdatersMap = {
+		product: updateExpressCheckoutProductMethods,
+		cart: updateExpressCheckoutCartMethods,
+		checkout: updateExpressCheckoutCheckoutMethods,
+	};
+
+	const enabledLocations = [
+		productMethods.includes( methodId ) && 'product',
+		cartMethods.includes( methodId ) && 'cart',
+		checkoutMethods.includes( methodId ) && 'checkout',
+	].filter( Boolean );
+
+	const locationUpdater = ( location, isChecked ) => {
+		methodsUpdatersMap[ location ](
+			isChecked
+				? [ ...methodsListMap[ location ], methodId ]
+				: methodsListMap[ location ].filter(
+						( method ) => method !== methodId
+				  )
+		);
+	};
+
+	return [ enabledLocations, locationUpdater ];
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+export const usePaymentRequestLocations = makeExpressCheckoutLocationHook(
+	'payment_request'
+);
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const usePaymentRequestButtonType = () => {
 	const { updatePaymentRequestButtonType } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getPaymentRequestButtonType } = select( STORE_NAME );
+	const paymentRequestButtonType = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonType()
+	);
 
-		return [
-			getPaymentRequestButtonType(),
-			updatePaymentRequestButtonType,
-		];
-	} );
+	return [ paymentRequestButtonType, updatePaymentRequestButtonType ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const usePaymentRequestButtonSize = () => {
 	const { updatePaymentRequestButtonSize } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getPaymentRequestButtonSize } = select( STORE_NAME );
+	const paymentRequestButtonSize = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonSize()
+	);
 
-		return [
-			getPaymentRequestButtonSize(),
-			updatePaymentRequestButtonSize,
-		];
-	} );
+	return [ paymentRequestButtonSize, updatePaymentRequestButtonSize ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const usePaymentRequestButtonTheme = () => {
 	const { updatePaymentRequestButtonTheme } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getPaymentRequestButtonTheme } = select( STORE_NAME );
+	const paymentRequestButtonTheme = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonTheme()
+	);
 
-		return [
-			getPaymentRequestButtonTheme(),
-			updatePaymentRequestButtonTheme,
-		];
-	} );
+	return [ paymentRequestButtonTheme, updatePaymentRequestButtonTheme ];
 };
 
+export const usePaymentRequestButtonBorderRadius = () => {
+	const { updatePaymentRequestButtonBorderRadius } = useDispatch(
+		STORE_NAME
+	);
+
+	const paymentRequestButtonBorderRadius = useSelect( ( select ) =>
+		select( STORE_NAME ).getPaymentRequestButtonBorderRadius()
+	);
+
+	return [
+		paymentRequestButtonBorderRadius,
+		updatePaymentRequestButtonBorderRadius,
+	];
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').SavingError | null}
+ */
 export const useGetSavingError = () => {
-	return useSelect( ( select ) => {
-		const { getSavingError } = select( STORE_NAME );
-
-		return getSavingError();
-	}, [] );
+	return useSelect( ( select ) => select( STORE_NAME ).getSavingError(), [] );
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
 export const useWooPayEnabledSettings = () => {
 	const { updateIsWooPayEnabled } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getIsWooPayEnabled } = select( STORE_NAME );
+	const isWooPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWooPayEnabled()
+	);
 
-		return [ getIsWooPayEnabled(), updateIsWooPayEnabled ];
-	} );
+	return [ isWooPayEnabled, updateIsWooPayEnabled ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useWooPayGlobalThemeSupportEnabledSettings = () => {
+	const { updateIsWooPayGlobalThemeSupportEnabled } = useDispatch(
+		STORE_NAME
+	);
+
+	const isWooPayGlobalThemeSupportEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsWooPayGlobalThemeSupportEnabled()
+	);
+
+	return [
+		isWooPayGlobalThemeSupportEnabled,
+		updateIsWooPayGlobalThemeSupportEnabled,
+	];
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const useWooPayCustomMessage = () => {
 	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getWooPayCustomMessage } = select( STORE_NAME );
-
-			return [ getWooPayCustomMessage(), updateWooPayCustomMessage ];
-		},
-		[ updateWooPayCustomMessage ]
+	const wooPayCustomMessage = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayCustomMessage()
 	);
+
+	return [ wooPayCustomMessage, updateWooPayCustomMessage ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const useWooPayStoreLogo = () => {
 	const { updateWooPayStoreLogo } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getWooPayStoreLogo } = select( STORE_NAME );
-
-			return [ getWooPayStoreLogo(), updateWooPayStoreLogo ];
-		},
-		[ updateWooPayStoreLogo ]
+	const wooPayStoreLogo = useSelect( ( select ) =>
+		select( STORE_NAME ).getWooPayStoreLogo()
 	);
+
+	return [ wooPayStoreLogo, updateWooPayStoreLogo ];
 };
 
-export const useWooPayLocations = () => {
-	const { updateWooPayLocations } = useDispatch( STORE_NAME );
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+export const useWooPayLocations = makeExpressCheckoutLocationHook( 'woopay' );
 
-	return useSelect( ( select ) => {
-		const { getWooPayLocations } = select( STORE_NAME );
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useAmazonPayEnabledSettings = () => {
+	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
 
-		return [ getWooPayLocations(), updateWooPayLocations ];
-	} );
+	const enabledPaymentMethodIds = useSelect( ( select ) =>
+		select( STORE_NAME ).getEnabledPaymentMethodIds()
+	);
+
+	const isAmazonPayEnabled = enabledPaymentMethodIds.includes( 'amazon_pay' );
+
+	const updateIsAmazonPayEnabled = ( isEnabled ) => {
+		if ( isEnabled ) {
+			updateEnabledPaymentMethodIds( [
+				...enabledPaymentMethodIds,
+				'amazon_pay',
+			] );
+		} else {
+			updateEnabledPaymentMethodIds(
+				enabledPaymentMethodIds.filter(
+					( method ) => method !== 'amazon_pay'
+				)
+			);
+		}
+	};
+
+	return [ isAmazonPayEnabled, updateIsAmazonPayEnabled ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+export const useAmazonPayLocations = makeExpressCheckoutLocationHook(
+	'amazon_pay'
+);
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
 export const useCurrentProtectionLevel = () => {
 	const { updateProtectionLevel } = useDispatch( STORE_NAME );
 
-	return useSelect(
-		( select ) => {
-			const { getCurrentProtectionLevel } = select( STORE_NAME );
-
-			return [ getCurrentProtectionLevel(), updateProtectionLevel ];
-		},
-		[ updateProtectionLevel ]
+	const currentProtectionLevel = useSelect( ( select ) =>
+		select( STORE_NAME ).getCurrentProtectionLevel()
 	);
+
+	return [ currentProtectionLevel, updateProtectionLevel ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').AdvancedFraudPreventionSettingsState}
+ */
 export const useAdvancedFraudProtectionSettings = () => {
 	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
 
-	return useSelect( ( select ) => {
-		const { getAdvancedFraudProtectionSettings } = select( STORE_NAME );
-		return [
-			getAdvancedFraudProtectionSettings(),
-			updateAdvancedFraudProtectionSettings,
-		];
-	} );
+	const advancedFraudProtectionSettings = useSelect( ( select ) =>
+		select( STORE_NAME ).getAdvancedFraudProtectionSettings()
+	);
+
+	return [
+		advancedFraudProtectionSettings,
+		updateAdvancedFraudProtectionSettings,
+	];
 };
 
-export const useWooPayShowIncompatibilityNotice = () => {
-	return useSelect( ( select ) => {
-		const { getShowWooPayIncompatibilityNotice } = select( STORE_NAME );
+/**
+ * @return {boolean}
+ */
+export const useWooPayShowIncompatibilityNotice = () =>
+	useSelect( ( select ) =>
+		select( STORE_NAME ).getShowWooPayIncompatibilityNotice()
+	);
 
-		return getShowWooPayIncompatibilityNotice();
-	} );
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useStripeBilling = () => {
+	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
+
+	const isStripeBillingEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsStripeBillingEnabled()
+	);
+
+	return [ isStripeBillingEnabled, updateIsStripeBillingEnabled ];
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').StripeBillingMigrationState}
+ */
+export const useStripeBillingMigration = () => {
+	const { submitStripeBillingSubscriptionMigration } = useDispatch(
+		STORE_NAME
+	);
+
+	return useSelect( ( select ) => {
+		const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
+		const { getIsStripeBillingMigrationInProgress } = select( STORE_NAME );
+		const { isResolving } = select( STORE_NAME );
+		const hasResolved = select( STORE_NAME ).hasFinishedResolution(
+			'scheduleStripeBillingMigration'
+		);
+		const { getStripeBillingMigratedCount } = select( STORE_NAME );
+
+		return [
+			getIsStripeBillingMigrationInProgress(),
+			getStripeBillingMigratedCount(),
+			getStripeBillingSubscriptionCount(),
+			submitStripeBillingSubscriptionMigration,
+			isResolving( 'scheduleStripeBillingMigration' ),
+			hasResolved,
+		];
+	}, [] );
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ */
+export const useAccountCommunicationsEmail = () => {
+	const { updateAccountCommunicationsEmail } = useDispatch( STORE_NAME );
+
+	const accountCommunicationsEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountCommunicationsEmail()
+	);
+
+	return [ accountCommunicationsEmail, updateAccountCommunicationsEmail ];
 };

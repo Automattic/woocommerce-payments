@@ -10,30 +10,32 @@ concurrency:
 jobs:
   woocommerce-coverage:
     name:    Code coverage
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       fail-fast:    false
       max-parallel: 10
       matrix:
         woocommerce: [ 'latest' ]
         wordpress:   [ 'latest' ]
-        php:         [ '7.4' ]
+        php:         [ '7.4', '8.1' ]
+        directory:   [ 'includes', 'src' ]
     env:
-      WP_VERSION: ${{ matrix.wordpress }}
-      WC_VERSION: ${{ matrix.woocommerce }}
+      WP_VERSION:   ${{ matrix.wordpress }}
+      WC_VERSION:   ${{ matrix.woocommerce }}
+      COVERAGE_DIR: ${{ matrix.directory }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       # enable dependencies caching
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         with:
           path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           tools:       composer
-          coverage:    xdebug2
+          coverage:    xdebug
       # run CI checks
       - run: bash bin/run-ci-tests-check-coverage.bash

@@ -2,226 +2,711 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { decodeEntities } from '@wordpress/html-entities';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
  */
 import { NAMESPACE } from 'wcpay/data/constants';
+import PreviewProductImage from 'assets/images/woopay-preview-product.svg?asset';
+import VisaIconImage from 'assets/images/woopay-preview-visa.svg?asset';
+import WoopayLogoImage from 'assets/images/woopay-preview-logo.svg?asset';
+import PaymentCardsImage from 'assets/images/woopay-preview-payment-cards.svg?asset';
 
-export default ( { storeName, storeLogo, ...props } ) => {
-	const storeLogoUrl =
-		wcpaySettings.restUrl + NAMESPACE.substring( 1 ) + '/file/' + storeLogo;
+import { getCardBorderColor } from './color-utils';
+
+/**
+ * Derives inline style objects from a WooPay appearance object.
+ * Returns an empty map when appearance is null (unthemed).
+ *
+ * @param {Object|null} appearance The WooPay appearance object.
+ * @return {Object} A map of element keys to inline style objects.
+ */
+const getThemedStyles = ( appearance ) => {
+	if ( ! appearance ) {
+		return {};
+	}
+
+	const vars = appearance.variables || {};
+	const rules = appearance.rules || {};
+
+	const headerBg = rules[ '.Header' ]?.backgroundColor || undefined;
+	const cardBorderColor = getCardBorderColor( vars.colorBackground );
+
+	return {
+		root: {
+			fontFamily: vars.fontFamily || undefined,
+		},
+		// The area above the store header is visible as a strip — use header
+		// background so it blends seamlessly with the header.
+		container: {
+			backgroundColor: headerBg,
+		},
+		body: {
+			backgroundColor: vars.colorBackground || undefined,
+		},
+		storeHeader: {
+			backgroundColor: headerBg,
+		},
+		headerText: {
+			color: rules[ '.Header' ]?.color || undefined,
+			fontFamily: rules[ '.Heading' ]?.fontFamily || undefined,
+		},
+		chevron: {
+			color: rules[ '.Header' ]?.color || undefined,
+		},
+		sectionHeader: {
+			color: rules[ '.Label' ]?.color || undefined,
+			fontFamily: rules[ '.Heading' ]?.fontFamily || undefined,
+		},
+		textBox: {
+			color: vars.colorText || undefined,
+		},
+		card: {
+			borderColor: cardBorderColor,
+		},
+		link: {
+			color: rules[ '.Link' ]?.color || undefined,
+		},
+		footer: {
+			backgroundColor: rules[ '.Footer' ]?.backgroundColor || undefined,
+			color: rules[ '.Footer' ]?.color || undefined,
+		},
+		footerGuestText: {
+			color: rules[ '.Footer-link' ]?.color || undefined,
+		},
+	};
+};
+
+const VerticalSpacer = ( { height } ) => {
+	return <div className="preview-layout__v-spacer" style={ { height } } />;
+};
+
+// TODO: Commented out for now. Will be used in a future iteration.
+// See https://github.com/Automattic/woopay/issues/2559#issuecomment-2064013672
+// const PreviewButton = () => {
+// 	return <div className="preview-layout__preview-button">Preview</div>;
+// };
+
+const PreviewContainer = ( { height, themedStyle, children } ) => {
+	return (
+		<div
+			className="preview-layout__container"
+			style={ { height, ...themedStyle } }
+		>
+			{ children }
+		</div>
+	);
+};
+
+const BackButton = ( { themedStyle } ) => {
+	const strokeColor = themedStyle?.color || '#2C3338';
+	return (
+		<div className="preview-layout__back-button">
+			<svg
+				width="24"
+				height="24"
+				viewBox="0 0 24 24"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<path
+					d="M14 6.50002L9 12L14 17.5"
+					stroke={ strokeColor }
+					strokeWidth="1.5"
+				/>
+			</svg>
+			<span
+				className="preview-layout__back-button-label"
+				style={ themedStyle }
+			>
+				{ __( 'Return to cart', 'woocommerce-payments' ) }
+			</span>
+		</div>
+	);
+};
+
+const StoreHeader = ( { themedStyle, chevronStyle, children } ) => {
+	return (
+		<div className="preview-layout__store-header" style={ themedStyle }>
+			<BackButton themedStyle={ chevronStyle } />
+			<div className="preview-layout__store-branding">{ children }</div>
+			<div className="preview-layout__store-header-spacer" />
+		</div>
+	);
+};
+
+const PreviewBody = ( { themedStyle, children } ) => {
+	return (
+		<div className="preview-layout__body" style={ themedStyle }>
+			{ children }
+		</div>
+	);
+};
+
+const ColumnsContainer = ( { height, children } ) => {
+	return (
+		<div className="preview-layout__columns-container" style={ { height } }>
+			{ children }
+		</div>
+	);
+};
+
+const LeftColumn = ( { height, children } ) => {
+	return (
+		<div className="preview-layout__left-column" style={ { height } }>
+			{ children }
+		</div>
+	);
+};
+
+const ContactSection = ( { children } ) => {
+	return <div className="preview-layout__contact-section">{ children }</div>;
+};
+
+const ContactField = ( { children } ) => {
+	return <div className="preview-layout__contact-field">{ children }</div>;
+};
+
+const RightColumn = ( { height, themedStyle, children } ) => {
+	return (
+		<div
+			className="preview-layout__right-column"
+			style={ { height, ...themedStyle } }
+		>
+			{ children }
+		</div>
+	);
+};
+
+const SectionHeader = ( { children, height, themedStyle } ) => {
+	return (
+		<div
+			className="preview-layout__section-header"
+			style={ { height, ...themedStyle } }
+		>
+			{ children }
+		</div>
+	);
+};
+
+const FieldValue = ( { children, themedStyle } ) => {
+	return (
+		<div className="preview-layout__field-value" style={ themedStyle }>
+			{ children }
+		</div>
+	);
+};
+
+const ChevronDown = () => {
+	return <span className="preview-layout__chevron-down">›</span>;
+};
+
+const OrderItem = ( {
+	name,
+	price,
+	unitPrice,
+	quantity,
+	imageSrc,
+	themedStyle,
+} ) => {
+	return (
+		<div className="preview-layout__order-item" style={ themedStyle }>
+			<div className="preview-layout__order-item-image">
+				<img
+					src={ imageSrc }
+					alt={ name }
+					className="preview-layout__order-item-img"
+				/>
+				<span className="preview-layout__order-item-qty">
+					{ quantity }
+				</span>
+			</div>
+			<div className="preview-layout__order-item-details">
+				<span className="preview-layout__order-item-name">
+					{ name }
+				</span>
+				{ unitPrice && (
+					<span className="preview-layout__order-item-unit-price">
+						{ unitPrice }
+					</span>
+				) }
+			</div>
+			<span className="preview-layout__order-item-price">{ price }</span>
+		</div>
+	);
+};
+
+const OrderRow = ( { label, value, themedStyle } ) => {
+	return (
+		<div className="preview-layout__order-row" style={ themedStyle }>
+			<span>{ label }</span>
+			<span>{ value }</span>
+		</div>
+	);
+};
+
+const PaymentCardIcons = () => {
+	return (
+		<img
+			className="preview-layout__footer-cards"
+			src={ PaymentCardsImage }
+			alt=""
+		/>
+	);
+};
+
+const PreviewFooter = ( { themedStyle, guestTextStyle } ) => {
+	return (
+		<div className="preview-layout__footer" style={ themedStyle }>
+			<div className="preview-layout__footer-inner">
+				<div className="preview-layout__footer-links">
+					<span
+						className="preview-layout__footer-guest-text"
+						style={ guestTextStyle }
+					>
+						Checkout as guest
+					</span>
+					<span className="preview-layout__footer-dot">•</span>
+					<span>Terms of use</span>
+					<span className="preview-layout__footer-dot">•</span>
+					<span>Privacy policy</span>
+					<span className="preview-layout__footer-dot">•</span>
+					<span>Help</span>
+				</div>
+				<PaymentCardIcons />
+			</div>
+		</div>
+	);
+};
+
+const TextBox = ( { children, maxHeight, themedStyle } ) => {
+	return (
+		<div
+			className="preview-layout__text-box"
+			style={ { maxHeight, ...themedStyle } }
+			dangerouslySetInnerHTML={ {
+				__html: children,
+			} }
+		/>
+	);
+};
+
+const WooPayLogo = () => {
+	return (
+		<img
+			className="preview-layout__woopay-logo"
+			src={ WoopayLogoImage }
+			alt="WooPay"
+		/>
+	);
+};
+
+const CheckoutButton = ( { height } ) => {
+	return (
+		<div className="preview-layout__checkout-button" style={ { height } }>
+			{ __( 'Place order', 'woocommerce-payments' ) }
+		</div>
+	);
+};
+
+/**
+ * Sanitizes HTML for the preview.
+ *
+ * @param {string} input The HTML to sanitize.
+ * @return {string} The sanitized HTML.
+ */
+function sanitizeHtmlForPreview( input ) {
+	return input.replace( /<\/?([a-zA-Z]+)[^>]*>/g, function (
+		fullMatch,
+		tagName
+	) {
+		tagName = tagName.toLowerCase();
+		const allowedTags = [ 'a', 'em', 'strong', 'b', 'i' ];
+		// Only allow allowedTags.
+		if ( ! allowedTags.includes( tagName ) ) {
+			return '';
+		}
+
+		// 'a' tags are converted to 'span' tags with a class, in the preview.
+		if ( tagName === 'a' ) {
+			if ( fullMatch.startsWith( '</' ) ) {
+				return `</span>`;
+			}
+
+			return `<span class="preview-layout__shortcode-link">`;
+		}
+
+		// Remaining tags are stripped of attributes, in the preview.
+		if ( fullMatch.startsWith( '</' ) ) {
+			return `</${ tagName }>`;
+		}
+
+		return `<${ tagName }>`;
+	} );
+}
+
+const ALLOWED_FONT_DOMAINS = [
+	'fonts.googleapis.com',
+	'fonts.gstatic.com',
+	'use.typekit.net',
+	'fonts.bunny.net',
+	'fonts.wp.com',
+];
+
+export default ( {
+	storeName,
+	storeLogo,
+	customMessage,
+	appearance,
+	fontRules,
+	...props
+} ) => {
+	const { style, ...restProps } = props;
+
+	const themed = useMemo( () => getThemedStyles( appearance ), [
+		appearance,
+	] );
+
+	// Load merchant font stylesheets from stored font rules.
+	useEffect( () => {
+		const rules = fontRules || [];
+		const links = [];
+
+		rules.forEach( ( rule, index ) => {
+			if ( ! rule.cssSrc ) {
+				return;
+			}
+			let validUrl;
+			try {
+				const url = new URL( rule.cssSrc );
+				if (
+					url.protocol !== 'https:' ||
+					! ALLOWED_FONT_DOMAINS.includes( url.hostname )
+				) {
+					return;
+				}
+				validUrl = url.href;
+			} catch {
+				return;
+			}
+			const link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.href = validUrl;
+			link.id = `woopay-preview-font-${ index }`;
+			document.head.appendChild( link );
+			links.push( link );
+		} );
+
+		return () => links.forEach( ( link ) => link.remove() );
+	}, [ fontRules ] );
+
+	const preparedCustomMessage = useMemo( () => {
+		let rawCustomMessage = ( customMessage || '' ).trim();
+
+		if ( rawCustomMessage ) {
+			rawCustomMessage = sanitizeHtmlForPreview( rawCustomMessage );
+			rawCustomMessage = rawCustomMessage.replace(
+				/\[(terms|terms_of_service_link)\]/g,
+				'<span class="preview-layout__shortcode-link">Terms of Service</span>'
+			);
+			rawCustomMessage = rawCustomMessage.replace(
+				/\[(privacy_policy|privacy_policy_link)\]/g,
+				'<span class="preview-layout__shortcode-link">Privacy Policy</span>'
+			);
+		}
+
+		return rawCustomMessage;
+	}, [ customMessage ] );
+
+	let storeHeader;
+	if ( storeLogo ) {
+		const storeLogoUrl =
+			wcpaySettings.restUrl +
+			NAMESPACE.substring( 1 ) +
+			'/file/' +
+			storeLogo;
+		storeHeader = <img src={ storeLogoUrl } alt="Store logo" />;
+	} else if ( wcpaySettings?.siteLogoUrl ) {
+		storeHeader = (
+			<img src={ wcpaySettings?.siteLogoUrl } alt="Store logo" />
+		);
+	} else {
+		storeHeader = (
+			<span className="header-text" style={ themed.headerText }>
+				{ decodeEntities( storeName ) }
+			</span>
+		);
+	}
 
 	return (
-		<>
-			<svg
-				width="100%"
-				viewBox="0 0 680 33"
-				fill="none"
-				xmlns="http://www.w3.org/2000/svg"
-			>
-				<rect width="680" height="33" fill="#F6F7F7" />
-				<circle cx="16" cy="17" r="3" fill="#DCDCDE" />
-				<circle cx="25" cy="17" r="3" fill="#DCDCDE" />
-				<circle cx="34" cy="17" r="3" fill="#DCDCDE" />
-			</svg>
-			<svg
-				width="100%"
-				viewBox="0 0 680 261"
-				fill="none"
-				xmlns="http://www.w3.org/2000/svg"
-				{ ...props }
-			>
-				<g clipPath="url(#clip0_160_28095)">
-					<rect
-						width="671.404"
-						height="437.872"
-						transform="translate(0.59668 0.362305)"
-						fill="white"
-					/>
-					<g filter="url(#filter0_i_160_28095)">
-						<rect
-							width="680"
-							height="34"
-							transform="translate(0.000366211)"
-							fill="white"
-						/>
-						<rect
-							x="91.8262"
-							y="10.6245"
-							width="52.174"
-							height="12.75"
-							rx="6.375"
-							fill="#F0F0F0"
-						/>
-						<path
-							d="M564.434 12.5517C565.45 12.5517 566.264 12.7936 566.877 13.2772C567.489 13.7608 567.796 14.3976 567.796 15.1876C567.796 16.0178 567.481 16.6707 566.861 17.1383C566.24 17.6058 565.378 17.8476 564.273 17.8476H563.87V21.096H561.541V12.5517H564.434ZM563.878 14.1881V16.2032C564.402 16.1952 564.789 16.1146 565.031 15.9533C565.281 15.7921 565.402 15.5423 565.402 15.2037C565.402 14.8329 565.281 14.575 565.039 14.4299C564.805 14.2767 564.418 14.1961 563.878 14.1881Z"
-							fill="#A7AAAD"
-						/>
-						<path
-							d="M575.026 21.088H572.608L572.213 19.6613H569.755L569.351 21.088H566.982L569.698 12.5437H572.31L575.026 21.088ZM571.77 18.1297C571.423 16.8561 571.157 15.647 570.988 14.5024H570.956C570.77 15.6873 570.512 16.8964 570.182 18.1297H571.77Z"
-							fill="#A7AAAD"
-						/>
-						<path
-							d="M573.632 12.5517H576.243C576.824 13.777 577.243 14.7281 577.501 15.3891H577.533C577.791 14.7039 578.21 13.7608 578.774 12.5517H581.442L578.694 17.2269V21.088H576.34V17.2269L573.632 12.5517Z"
-							fill="#A7AAAD"
-						/>
-						<path
-							d="M547.419 17.1382C547.249 17.9524 546.935 18.565 546.467 18.9841C546.105 19.3146 545.766 19.4436 545.46 19.3872C545.153 19.3307 544.912 19.0567 544.726 18.5811C544.589 18.2184 544.509 17.8395 544.509 17.4446C544.509 17.1382 544.541 16.8319 544.597 16.5337C544.718 16.0017 544.936 15.5019 545.258 15.0505C545.669 14.446 546.105 14.188 546.556 14.2848C546.862 14.3493 547.104 14.6153 547.29 15.0908C547.427 15.4536 547.507 15.8324 547.507 16.2193C547.507 16.5256 547.483 16.8319 547.419 17.1382Z"
-							fill="#A7AAAD"
-						/>
-						<path
-							d="M554.27 18.9841C554.738 18.565 555.052 17.9524 555.221 17.1382C555.286 16.8319 555.31 16.5256 555.31 16.2193C555.31 15.8324 555.229 15.4536 555.092 15.0908C554.907 14.6153 554.665 14.3493 554.359 14.2848C553.907 14.188 553.472 14.446 553.061 15.0505C552.738 15.5019 552.521 16.0017 552.4 16.5337C552.343 16.8319 552.311 17.1382 552.311 17.4446C552.311 17.8395 552.392 18.2184 552.529 18.5811C552.714 19.0567 552.956 19.3307 553.262 19.3872C553.569 19.4436 553.907 19.3146 554.27 18.9841Z"
-							fill="#A7AAAD"
-						/>
-						<path
-							fillRule="evenodd"
-							clipRule="evenodd"
-							d="M556.132 9.15015H531.329C529.758 9.15015 528.484 10.4237 528.484 11.9875V21.4507C528.484 23.0145 529.758 24.2881 531.321 24.2881H543.074L548.45 27.2786L547.233 24.2881H556.132C557.696 24.2881 558.969 23.0145 558.969 21.4507V11.9875C558.969 10.4237 557.696 9.15015 556.132 9.15015ZM530.805 11.3346C530.499 11.3426 530.217 11.4877 530.023 11.7215C529.838 11.9633 529.766 12.2696 529.83 12.5759C530.564 17.2511 531.249 20.4028 531.885 22.0311C532.119 22.6276 532.409 22.9097 532.748 22.8855C533.264 22.8452 533.893 22.1278 534.626 20.7172C534.789 20.391 534.988 19.9946 535.222 19.5293L535.222 19.5284C535.554 18.8672 535.955 18.0667 536.424 17.1302C537.101 19.4758 538.02 21.2411 539.18 22.426C539.511 22.7565 539.833 22.9097 540.164 22.8855C540.446 22.8694 540.704 22.692 540.825 22.4341C540.946 22.1842 541.002 21.9021 540.97 21.62C540.889 20.4834 541.01 18.8955 541.316 16.8723C541.631 14.7765 542.034 13.2772 542.517 12.3744C542.614 12.1971 542.655 11.9875 542.638 11.7779C542.622 11.4958 542.485 11.2298 542.26 11.0605C542.042 10.8751 541.76 10.7865 541.478 10.8106C541.123 10.8268 540.809 11.0363 540.655 11.3588C539.89 12.7694 539.342 15.0586 539.011 18.2184C538.487 16.84 538.092 15.4133 537.834 13.9624C537.697 13.2208 537.359 12.8742 536.811 12.9145C536.432 12.9387 536.125 13.1885 535.876 13.656L533.143 18.8471C532.7 17.0335 532.28 14.8248 531.894 12.2293C531.797 11.5925 531.434 11.2943 530.805 11.3346ZM548.99 13.6802C548.571 12.9306 547.846 12.3986 546.999 12.2374C546.774 12.189 546.548 12.1648 546.322 12.1648C545.129 12.1648 544.154 12.7855 543.396 14.0268C542.751 15.0828 542.413 16.2999 542.429 17.5332C542.429 18.4924 542.63 19.3146 543.025 19.9998C543.445 20.7494 544.17 21.2814 545.016 21.4426C545.242 21.491 545.468 21.5152 545.694 21.5152C546.895 21.5152 547.87 20.8945 548.62 19.6532C549.264 18.5892 549.603 17.372 549.587 16.1226C549.587 15.1634 549.385 14.3493 548.99 13.6802ZM554.802 12.2374C555.648 12.3986 556.374 12.9306 556.793 13.6802C557.188 14.3493 557.389 15.1634 557.389 16.1226C557.406 17.372 557.067 18.5892 556.422 19.6532C555.673 20.8945 554.697 21.5152 553.496 21.5152C553.27 21.5152 553.045 21.491 552.819 21.4426C551.973 21.2814 551.247 20.7494 550.828 19.9998C550.433 19.3146 550.232 18.4924 550.232 17.5332C550.215 16.2999 550.554 15.0828 551.199 14.0268C551.957 12.7855 552.932 12.1648 554.125 12.1648C554.351 12.1648 554.576 12.189 554.802 12.2374Z"
-							fill="#A7AAAD"
-						/>
-					</g>
-					<rect
-						x="92.3412"
-						y="129.639"
-						width="185.575"
-						height="29.1915"
-						rx="14.5958"
-						fill="#F0F0F0"
-					/>
-					<rect
-						x="92.3412"
-						y="217.213"
-						width="112.596"
-						height="12.5107"
-						rx="6.25534"
-						fill="#F0F0F0"
-					/>
-					<rect
-						x="359.235"
-						y="217.213"
-						width="112.596"
-						height="12.5107"
-						rx="6.25534"
-						fill="#F0F0F0"
-					/>
-					<rect
-						x="92.3412"
-						y="240.149"
-						width="223.106"
-						height="29.1915"
-						rx="8"
-						fill="#F0F0F0"
-					/>
-					<rect
-						x="359.235"
-						y="240.149"
-						width="223.106"
-						height="29.1915"
-						rx="8"
-						fill="#F0F0F0"
-					/>
-					<line
-						x1="92.3412"
-						y1="183.351"
-						x2="582.341"
-						y2="183.351"
-						stroke="#F0F0F0"
-					/>
-					<g style={ { mixBlendMode: 'multiply' } }>
-						<rect
-							x="207"
-							y="58"
-							width="258"
-							height="37"
-							fill="url(#pattern0)"
-						/>
-						{ ! storeLogo && (
-							<text
-								x="336"
-								y="76.5"
-								style={ { fill: '#757575', fontSize: '32px' } }
-								dominantBaseline="middle"
-								textAnchor="middle"
+		<div
+			className="preview-layout"
+			style={ { ...style, ...themed.root } }
+			role="img"
+			aria-label={ __(
+				'WooPay checkout preview',
+				'woocommerce-payments'
+			) }
+			{ ...restProps }
+		>
+			{
+				// TODO: Commented out for now. Will be used in a future iteration.
+				// See https://github.com/Automattic/woopay/issues/2559#issuecomment-2064013672
+				// <PreviewButton />
+			 }
+			<PreviewContainer themedStyle={ themed.container }>
+				<StoreHeader
+					themedStyle={ themed.storeHeader }
+					chevronStyle={ themed.chevron }
+				>
+					{ storeHeader }
+				</StoreHeader>
+				<PreviewBody themedStyle={ themed.body }>
+					<VerticalSpacer height="2rem" />
+					<ColumnsContainer>
+						<LeftColumn>
+							<ContactSection>
+								<ContactField>
+									<WooPayLogo />
+									<FieldValue themedStyle={ themed.textBox }>
+										jane@example.com
+									</FieldValue>
+								</ContactField>
+								<ContactField>
+									<SectionHeader
+										height="0.625rem"
+										themedStyle={ themed.sectionHeader }
+									>
+										{ __(
+											'Ship to',
+											'woocommerce-payments'
+										) }
+										<ChevronDown />
+									</SectionHeader>
+									<FieldValue themedStyle={ themed.textBox }>
+										Jane Smith, 123 Main St, San Francisco,
+										CA 94105
+									</FieldValue>
+								</ContactField>
+								<ContactField>
+									<SectionHeader
+										height="0.625rem"
+										themedStyle={ themed.sectionHeader }
+									>
+										{ __(
+											'Shipping method',
+											'woocommerce-payments'
+										) }
+										<ChevronDown />
+									</SectionHeader>
+									<FieldValue themedStyle={ themed.textBox }>
+										{ sprintf(
+											/* translators: %s: shipping method name */
+											__(
+												'%s — Free',
+												'woocommerce-payments'
+											),
+											__(
+												'Free shipping',
+												'woocommerce-payments'
+											)
+										) }
+									</FieldValue>
+								</ContactField>
+								<ContactField>
+									<SectionHeader
+										height="0.625rem"
+										themedStyle={ themed.sectionHeader }
+									>
+										{ __(
+											'Pay with',
+											'woocommerce-payments'
+										) }
+										<ChevronDown />
+									</SectionHeader>
+									<FieldValue themedStyle={ themed.textBox }>
+										<span className="preview-layout__pay-with-value">
+											<img
+												className="preview-layout__visa-icon"
+												src={ VisaIconImage }
+												alt=""
+											/>
+											Visa ···· 4242 Exp. 12/29
+										</span>
+									</FieldValue>
+								</ContactField>
+							</ContactSection>
+
+							<VerticalSpacer height="1.25rem" />
+							<CheckoutButton height="1.5rem" />
+							{ preparedCustomMessage && (
+								<>
+									<VerticalSpacer height="0.25rem" />
+									<TextBox
+										maxHeight="1.5rem"
+										themedStyle={ {
+											...themed.textBox,
+											'--preview-link-color':
+												themed.link?.color,
+										} }
+									>
+										{ preparedCustomMessage }
+									</TextBox>
+								</>
+							) }
+
+							<VerticalSpacer height="0.75rem" />
+						</LeftColumn>
+						<RightColumn themedStyle={ themed.card }>
+							<SectionHeader
+								height="0.625rem"
+								themedStyle={ themed.sectionHeader }
 							>
-								{ decodeEntities( storeName ) }
-							</text>
-						) }
-					</g>
-				</g>
-				<defs>
-					<filter
-						id="filter0_i_160_28095"
-						x="0.000366211"
-						y="0"
-						width="680"
-						height="34"
-						filterUnits="userSpaceOnUse"
-						colorInterpolationFilters="sRGB"
-					>
-						<feFlood floodOpacity="0" result="BackgroundImageFix" />
-						<feBlend
-							mode="normal"
-							in="SourceGraphic"
-							in2="BackgroundImageFix"
-							result="shape"
-						/>
-						<feColorMatrix
-							in="SourceAlpha"
-							type="matrix"
-							values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-							result="hardAlpha"
-						/>
-						<feOffset dy="-0.5" />
-						<feComposite
-							in2="hardAlpha"
-							operator="arithmetic"
-							k2="-1"
-							k3="1"
-						/>
-						<feColorMatrix
-							type="matrix"
-							values="0 0 0 0 0.866667 0 0 0 0 0.866667 0 0 0 0 0.866667 0 0 0 1 0"
-						/>
-						<feBlend
-							mode="normal"
-							in2="shape"
-							result="effect1_innerShadow_160_28095"
-						/>
-					</filter>
-					<pattern
-						id="pattern0"
-						patternContentUnits="objectBoundingBox"
-						width="1"
-						height="1"
-					>
-						<use
-							xlinkHref="#image0_160_28095"
-							transform="translate(0 -0.0913659) scale(0.00150602 0.0103748)"
-						/>
-					</pattern>
-					<clipPath id="clip0_160_28095">
-						<rect
-							width="671.404"
-							height="437.872"
-							fill="white"
-							transform="translate(0.59668 0.362305)"
-						/>
-					</clipPath>
-					{ storeLogo && (
-						<image
-							xmlns="http://www.w3.org/2000/svg"
-							id="image0_160_28095"
-							width="664"
-							height="114"
-							xmlnsXlink="http://www.w3.org/1999/xlink"
-							xlinkHref={ storeLogoUrl }
-						></image>
-					) }
-				</defs>
-			</svg>
-		</>
+								{ __(
+									'Order summary',
+									'woocommerce-payments'
+								) }
+							</SectionHeader>
+							<VerticalSpacer height="0.6rem" />
+							<div
+								className="preview-layout__cart-header"
+								style={ themed.textBox }
+							>
+								<span className="preview-layout__cart-header-text">
+									{ sprintf(
+										/* translators: %d: number of items in cart */
+										__( '%d item', 'woocommerce-payments' ),
+										1
+									) }
+								</span>
+								<span
+									className="preview-layout__cart-header-toggle"
+									style={ themed.link }
+								>
+									{ __( 'Hide', 'woocommerce-payments' ) }
+									<span className="preview-layout__chevron-up">
+										›
+									</span>
+								</span>
+							</div>
+							<VerticalSpacer height="0.5625rem" />
+							<OrderItem
+								name="Beanie"
+								unitPrice="$ 18.00"
+								price="$ 18.00"
+								quantity={ 1 }
+								imageSrc={ PreviewProductImage }
+								themedStyle={ themed.textBox }
+							/>
+							<VerticalSpacer height="0.75rem" />
+							<hr className="preview-layout__hr preview-layout__hr--dotted" />
+							<VerticalSpacer height="0.15rem" />
+							<div
+								className="preview-layout__add-coupon"
+								style={ themed.link }
+							>
+								{ /* Exact coupon-discount icon from WooPay SVG sprite */ }
+								<svg
+									className="preview-layout__add-coupon-icon"
+									viewBox="0 0 24 24"
+									fill="none"
+								>
+									<path
+										d="M4.41387 11.8743L11.442 4.84616L18.8667 4.84616L18.8667 12.2708L11.8385 19.299L4.41387 11.8743Z"
+										stroke="currentColor"
+										strokeWidth="1.5"
+									/>
+									<circle
+										cx="14.667"
+										cy="9.04605"
+										r="1"
+										transform="rotate(45 14.667 9.04605)"
+										fill="currentColor"
+									/>
+								</svg>
+								{ __( 'Add a coupon', 'woocommerce-payments' ) }
+							</div>
+							<VerticalSpacer height="0.108rem" />
+							<div
+								className="preview-layout__add-coupon"
+								style={ themed.link }
+							>
+								{ /* Exact gift-cards-purple icon from WooPay SVG sprite */ }
+								<svg
+									className="preview-layout__add-coupon-icon"
+									viewBox="0 0 24 24"
+									fill="none"
+								>
+									<rect
+										x="-0.75"
+										y="-0.75"
+										width="9.5"
+										height="14.5"
+										transform="matrix(3.97376e-08 -1 -1 -4.80825e-08 18.5 18.5)"
+										stroke="currentColor"
+										strokeWidth="1.5"
+									/>
+									<path
+										fillRule="evenodd"
+										clipRule="evenodd"
+										d="M13 19L13 9L11.5 9L11.5 19L13 19Z"
+										fill="currentColor"
+									/>
+									<path
+										d="M16.5 6.5C16.5 7.4665 15.7165 8.25 14.75 8.25H13V6.5C13 5.5335 13.7835 4.75 14.75 4.75C15.7165 4.75 16.5 5.5335 16.5 6.5Z"
+										stroke="currentColor"
+										strokeWidth="1.5"
+									/>
+									<path
+										d="M8 6.5C8 7.4665 8.7835 8.25 9.75 8.25H11.5V6.5C11.5 5.5335 10.7165 4.75 9.75 4.75C8.7835 4.75 8 5.5335 8 6.5Z"
+										stroke="currentColor"
+										strokeWidth="1.5"
+									/>
+								</svg>
+								{ __(
+									'Add a gift card',
+									'woocommerce-payments'
+								) }
+							</div>
+							<VerticalSpacer height="0.24rem" />
+							<OrderRow
+								label={ __(
+									'Subtotal',
+									'woocommerce-payments'
+								) }
+								value="$ 18.00"
+								themedStyle={ themed.textBox }
+							/>
+							<OrderRow
+								label={ __(
+									'Shipping',
+									'woocommerce-payments'
+								) }
+								value={ __( 'Free', 'woocommerce-payments' ) }
+								themedStyle={ themed.textBox }
+							/>
+							<VerticalSpacer height="0.5rem" />
+							<OrderRow
+								label={ __( 'Total', 'woocommerce-payments' ) }
+								value="$ 18.00"
+								themedStyle={ {
+									...themed.textBox,
+									fontWeight: 600,
+								} }
+							/>
+							<VerticalSpacer height="0.25rem" />
+						</RightColumn>
+					</ColumnsContainer>
+					<VerticalSpacer height="1.15rem" />
+				</PreviewBody>
+			</PreviewContainer>
+			<PreviewFooter
+				themedStyle={ themed.footer }
+				guestTextStyle={ themed.footerGuestText }
+			/>
+		</div>
 	);
 };

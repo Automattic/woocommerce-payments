@@ -9,16 +9,17 @@ use WCPay\Payment_Information;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
-use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * Payment_Information unit tests.
  */
 class Payment_Information_Test extends WCPAY_UnitTestCase {
-	const PAYMENT_METHOD_REQUEST_KEY = 'wcpay-payment-method';
-	const PAYMENT_METHOD             = 'pm_mock';
-	const CARD_TOKEN_REQUEST_KEY     = 'wc-' . CC_Payment_Gateway::GATEWAY_ID . '-payment-token';
-	const TOKEN                      = 'pm_mock_token';
+	const PAYMENT_METHOD_REQUEST_KEY     = 'wcpay-payment-method';
+	const CONFIRMATION_TOKEN_REQUEST_KEY = 'wcpay-confirmation-token';
+	const PAYMENT_METHOD                 = 'pm_mock';
+	const CONFIRMATION_TOKEN             = 'ctoken_mock';
+	const CARD_TOKEN_REQUEST_KEY         = 'wc-' . WC_Payment_Gateway_WCPay::GATEWAY_ID . '-payment-token';
+	const TOKEN                          = 'pm_mock_token';
 
 	/**
 	 * WC token to be used in tests.
@@ -34,7 +35,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 
 	public function test_requires_payment_method_or_token() {
 		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Invalid payment method. Please input a new card number.' );
+		$this->expectExceptionMessage( 'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.' );
 
 		$payment_information = new Payment_Information( '' );
 	}
@@ -79,6 +80,16 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( self::TOKEN, $payment_information->get_payment_method() );
 	}
 
+	public function test_is_using_confirmation_token_returns_true_for_confirmation_token() {
+		$payment_information = new Payment_Information( self::CONFIRMATION_TOKEN );
+		$this->assertTrue( $payment_information->is_using_confirmation_token() );
+	}
+
+	public function test_is_using_confirmation_token_returns_false_for_payment_method() {
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD );
+		$this->assertFalse( $payment_information->is_using_confirmation_token() );
+	}
+
 	public function test_get_payment_token_returns_token() {
 		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, Payment_Type::SINGLE(), $this->card_token );
 		$this->assertEquals( $this->card_token, $payment_information->get_payment_token() );
@@ -98,11 +109,45 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 	}
 
+	public function test_get_customer_id() {
+		$expected_customer_id = 'old_customer_id';
+		$payment_information  = new Payment_Information(
+			self::PAYMENT_METHOD,
+			null,
+			Payment_Type::SINGLE(),
+			$this->card_token,
+			null,
+			null,
+			null,
+			'',
+			null,
+			$expected_customer_id
+		);
+		$this->assertEquals( $expected_customer_id, $payment_information->get_customer_id() );
+	}
+
 	public function test_get_payment_method_from_request() {
 		$payment_method = Payment_Information::get_payment_method_from_request(
 			[ self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD ]
 		);
 		$this->assertEquals( self::PAYMENT_METHOD, $payment_method );
+	}
+
+	public function test_get_payment_method_from_request_with_confirmation_token() {
+		$payment_method = Payment_Information::get_payment_method_from_request(
+			[ self::CONFIRMATION_TOKEN_REQUEST_KEY => self::CONFIRMATION_TOKEN ]
+		);
+		$this->assertEquals( self::CONFIRMATION_TOKEN, $payment_method );
+	}
+
+	public function test_get_payment_method_from_request_prefers_confirmation_token_over_payment_method() {
+		$payment_method = Payment_Information::get_payment_method_from_request(
+			[
+				self::CONFIRMATION_TOKEN_REQUEST_KEY => self::CONFIRMATION_TOKEN,
+				self::PAYMENT_METHOD_REQUEST_KEY     => self::PAYMENT_METHOD,
+			]
+		);
+		$this->assertEquals( self::CONFIRMATION_TOKEN, $payment_method );
 	}
 
 	public function test_get_token_from_request_returns_null_when_not_set() {
@@ -113,7 +158,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_get_token_from_request_returns_null_when_new() {
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => 'new',
 			]
 		);
@@ -123,7 +168,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_get_token_from_request_returns_null_when_invalid() {
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id() + 1,
 			]
 		);
@@ -135,7 +180,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->card_token->save();
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
 			]
 		);
@@ -147,7 +192,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->card_token->save();
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
 			]
 		);
@@ -164,7 +209,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_get_token_from_request_returns_token() {
 		$token = Payment_Information::get_token_from_request(
 			[
-				'payment_method'             => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'             => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::CARD_TOKEN_REQUEST_KEY => $this->card_token->get_id(),
 			]
 		);
@@ -174,7 +219,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 	public function test_from_payment_request_with_token() {
 		$payment_information = Payment_Information::from_payment_request(
 			[
-				'payment_method'                 => CC_Payment_Gateway::GATEWAY_ID,
+				'payment_method'                 => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 				self::PAYMENT_METHOD_REQUEST_KEY => self::PAYMENT_METHOD,
 				self::CARD_TOKEN_REQUEST_KEY     => $this->card_token->get_id(),
 			],
@@ -186,6 +231,7 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $payment_information->is_using_saved_payment_method() );
 		$this->assertEquals( $this->card_token, $payment_information->get_payment_token() );
 		$this->assertTrue( $payment_information->is_merchant_initiated() );
+		$this->assertNull( $payment_information->get_error() );
 	}
 
 	public function test_from_payment_request_without_token() {
@@ -195,6 +241,58 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( self::PAYMENT_METHOD, $payment_information->get_payment_method() );
 		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
 		$this->assertFalse( $payment_information->is_merchant_initiated() );
+		$this->assertNull( $payment_information->get_error() );
+	}
+
+	public function test_from_payment_request_with_error() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                     => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
+				'wcpay-payment-method-error-message' => 'Invalid Card',
+				'wcpay-payment-method-error-code'    => 'invalid_card',
+			]
+		);
+		$this->assertEquals( Payment_Information::PAYMENT_METHOD_ERROR, $payment_information->get_payment_method() );
+		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
+		$this->assertFalse( $payment_information->is_merchant_initiated() );
+
+		$error = $payment_information->get_error();
+		$this->assertInstanceOf( \WP_Error::class, $error );
+		$this->assertEquals( 'Invalid Card', $error->get_error_message() );
+		$this->assertEquals( 'invalid_card', $error->get_error_code() );
+	}
+
+	public function test_from_payment_request_with_error_no_details() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                 => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY => Payment_Information::PAYMENT_METHOD_ERROR,
+			]
+		);
+		$this->assertEquals( Payment_Information::PAYMENT_METHOD_ERROR, $payment_information->get_payment_method() );
+		$this->assertFalse( $payment_information->is_using_saved_payment_method() );
+		$this->assertFalse( $payment_information->is_merchant_initiated() );
+
+		$error = $payment_information->get_error();
+		$this->assertInstanceOf( \WP_Error::class, $error );
+		$this->assertEquals( "We're not able to process this payment. Please try again later.", $error->get_error_message() );
+		$this->assertEquals( 'unknown-error', $error->get_error_code() );
+	}
+
+	public function test_from_payment_request_with_error_empty_message() {
+		$payment_information = Payment_Information::from_payment_request(
+			[
+				'payment_method'                     => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				self::PAYMENT_METHOD_REQUEST_KEY     => Payment_Information::PAYMENT_METHOD_ERROR,
+				'wcpay-payment-method-error-message' => '',
+				'wcpay-payment-method-error-code'    => 'unknown-error',
+			]
+		);
+
+		$error = $payment_information->get_error();
+		$this->assertInstanceOf( \WP_Error::class, $error );
+		$this->assertEquals( "We're not able to process this payment. Please try again later.", $error->get_error_message() );
 	}
 
 	public function test_get_cvc_confirmation_from_request_returns_null_if_payment_method_is_empty() {

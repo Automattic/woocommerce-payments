@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix QIT E2E workflow to use PR build artifact instead of marketplace release.

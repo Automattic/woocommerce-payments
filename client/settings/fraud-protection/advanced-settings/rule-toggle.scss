@@ -1,0 +1,21 @@
+.fraud-protection-rule-toggle {
+	&-children {
+		&-horizontal-form {
+			display: flex;
+			flex-direction: row;
+			gap: $gap-small;
+			max-width: 492px;
+		}
+
+		&-horizontal-form + &-notice {
+			margin-top: 13px;
+		}
+
+		&-vertical-form {
+			display: flex;
+			flex: 1;
+			flex-direction: column;
+			gap: $gap-smaller;
+		}
+	}
+}

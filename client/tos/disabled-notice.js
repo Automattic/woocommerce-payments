@@ -5,12 +5,12 @@
  */
 // import '@wordpress/notices';
 import { dispatch } from '@wordpress/data';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import { enableGatewayAfterTosDecline } from './request.js';
+import { enableGatewayAfterTosDecline } from './request';
 
 const showTosNotice = ( settingsUrl ) => {
 	const { createInfoNotice } = dispatch( 'core/notices' );
@@ -26,7 +26,11 @@ const showTosNotice = ( settingsUrl ) => {
 	};
 
 	createInfoNotice(
-		__( 'Disabled WooCommerce Payments', 'woocommerce-payments' ),
+		sprintf(
+			/* translators: %s: WooPayments */
+			__( 'Disabled %s', 'woocommerce-payments' ),
+			'WooPayments'
+		),
 		{
 			actions: [
 				{

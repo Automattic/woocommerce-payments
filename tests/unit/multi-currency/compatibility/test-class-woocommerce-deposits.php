@@ -50,7 +50,7 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 		$this->mock_multi_currency
 			->method( 'get_price' )
 			->willReturnCallback(
-				function( $input ) {
+				function ( $input ) {
 					return $input * 2;
 				}
 			);
@@ -81,7 +81,7 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 		$this->mock_multi_currency
 			->method( 'get_price' )
 			->willReturnCallback(
-				function( $input ) {
+				function ( $input ) {
 					return $input * 2;
 				}
 			);
@@ -93,7 +93,7 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 
 		$amount  = 10.00;
 		$product = WC_Helper_Product::create_simple_product();
-		$product->add_meta_data( '_wc_deposits_enabled', true );
+		$product->add_meta_data( '_wc_deposit_enabled', 'optional' );
 		$product->add_meta_data( '_wc_deposit_type', 'plan' );
 		$product->save();
 
@@ -112,7 +112,7 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 			->willReturn( true );
 
 		$product = WC_Helper_Product::create_simple_product();
-		$product->add_meta_data( '_wc_deposits_enabled', true );
+		$product->add_meta_data( '_wc_deposit_enabled', 'optional' );
 		$product->add_meta_data( '_wc_deposit_type', 'plan' );
 		$product->save();
 
@@ -144,5 +144,4 @@ class WCPay_Multi_Currency_WooCommerceDeposits_Tests extends WCPAY_UnitTestCase 
 
 		$this->assertEquals( 'JPY', $next_order->get_currency() );
 	}
-
 }

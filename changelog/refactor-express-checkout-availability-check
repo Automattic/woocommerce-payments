@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+refactor: replace React-based express checkout availability check with vanilla TypeScript implementation

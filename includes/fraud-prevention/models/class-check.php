@@ -154,12 +154,14 @@ class Check {
 	 */
 	public static function list( string $operator, array $checks ) {
 		if ( ! in_array( $operator, self::$list_operators, true ) ) {
+			// $operator is a predefined constant, no need to escape.
+			// phpcs:ignore WordPress.Security.EscapeOutput
 			throw new Fraud_Ruleset_Exception( 'Operator for the check is invalid: ' . $operator );
 		}
 		if ( 0 < count(
 			array_filter(
 				$checks,
-				function( $check ) {
+				function ( $check ) {
 					return ! ( $check instanceof Check ); }
 			)
 		) ) {
@@ -183,6 +185,8 @@ class Check {
 	 */
 	public static function check( string $key, string $operator, $value ) {
 		if ( ! in_array( $operator, self::$check_operators, true ) ) {
+			// $operator is a predefined constant, no need to escape.
+			// phpcs:ignore WordPress.Security.EscapeOutput
 			throw new Fraud_Ruleset_Exception( 'Operator for the check is invalid: ' . $operator );
 		}
 
@@ -203,7 +207,7 @@ class Check {
 			return [
 				'operator' => $this->operator,
 				'checks'   => array_map(
-					function( Check $check ) {
+					function ( Check $check ) {
 						return $check->to_array();
 					},
 					$this->checks

@@ -18,59 +18,108 @@ on:
         description: "Branch to be used for running tests"
 
 env:
-  E2E_GH_TOKEN:          ${{ secrets.E2E_GH_TOKEN }}
-  WCP_DEV_TOOLS_REPO:    ${{ secrets.WCP_DEV_TOOLS_REPO }}
-  WCP_DEV_TOOLS_BRANCH:  'trunk'
-  WCP_SERVER_REPO:       ${{ secrets.WCP_SERVER_REPO }}
-  WC_SUBSCRIPTIONS_REPO: ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
-  E2E_BLOG_ID:           ${{ secrets.E2E_BLOG_ID }}
-  E2E_BLOG_TOKEN:        ${{ secrets.E2E_BLOG_TOKEN }}
-  E2E_USER_TOKEN:        ${{ secrets.E2E_USER_TOKEN }}
-  WC_E2E_SCREENSHOTS:    1
-  E2E_SLACK_CHANNEL:     ${{ secrets.E2E_SLACK_CHANNEL }}
-  E2E_SLACK_TOKEN:       ${{ secrets.E2E_SLACK_TOKEN }}
-  E2E_USE_LOCAL_SERVER:  false
-  E2E_RESULT_FILEPATH:   'tests/e2e/results.json'
-  WCPAY_USE_BUILD_ARTIFACT: ${{ inputs.wcpay-use-build-artifact }}
-  WCPAY_ARTIFACT_DIRECTORY: 'zipfile'
-  NODE_ENV: 'test'
+  E2E_GH_TOKEN:                  ${{ secrets.E2E_GH_TOKEN }}
+  WCP_DEV_TOOLS_REPO:            ${{ secrets.WCP_DEV_TOOLS_REPO }}
+  WCP_DEV_TOOLS_BRANCH:          'trunk'
+  TRANSACT_PLATFORM_SERVER_REPO: ${{ secrets.TRANSACT_PLATFORM_SERVER_REPO }}
+  WC_SUBSCRIPTIONS_REPO:         ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
+  E2E_JP_SITE_ID:                ${{ secrets.E2E_JP_SITE_ID }}
+  E2E_JP_BLOG_TOKEN:             ${{ secrets.E2E_JP_BLOG_TOKEN }}
+  E2E_JP_USER_TOKEN:             ${{ secrets.E2E_JP_USER_TOKEN }}
+  WC_E2E_SCREENSHOTS:            1
+  E2E_SLACK_CHANNEL_ID:          ${{ secrets.E2E_SLACK_CHANNEL_ID }}
+  E2E_SLACK_TOKEN:               ${{ secrets.E2E_SLACK_TOKEN }}
+  E2E_USE_LOCAL_SERVER:          false
+  E2E_RESULT_FILEPATH:           'tests/e2e/results.json'
+  WCPAY_USE_BUILD_ARTIFACT:      ${{ inputs.wcpay-use-build-artifact }}
+  WCPAY_ARTIFACT_DIRECTORY:      'zipfile'
+  NODE_ENV:                      'test'
+  FORCE_E2E_DEPS_SETUP:          true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  wcpay-e2e-tests:
-    runs-on: ubuntu-20.04
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: Checkout WCPay repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.repo-branch || github.ref }}
 
+      - name: "Generate matrix"
+        id: generate_matrix
+        run: |
+          # Use dynamic script to get WooCommerce versions (L-1 policy)
+          SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
+
+          # Extract versions and metadata from JSON
+          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+
+          echo "Using L-1 version: $L1_VERSION" >&2
+
+          # Create PR matrix with L-1 and latest versions
+          # For PRs, we test against L-1 and latest with PHP 8.3 (stable)
+          PHP_STABLE="8.3"
+          TEST_GROUPS_WCPAY="wcpay"
+          TEST_GROUPS_SUBSCRIPTIONS="subscriptions"
+          TEST_GROUPS_BLOCKS="blocks"
+          TEST_BRANCHES_MERCHANT="merchant"
+          TEST_BRANCHES_SHOPPER="shopper"
+
+          # Initialize empty matrix array
+          MATRIX_ENTRIES=()
+
+          # Add L-1 version with PHP 8.3
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_BLOCKS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+
+          # Add latest with PHP 8.3
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_BLOCKS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+
+          # Convert array to JSON
+          MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
+
+          echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
+
+  wcpay-e2e-tests:
+    runs-on: ubuntu-latest
+    needs: generate-matrix
     strategy:
       fail-fast:     false
-      matrix:
-        test_groups:   [ 'wcpay', 'subscriptions', 'upe', 'upeSplit' ] # [TODO] Unskip blocks tests after investigating constant failures.
-        test_branches: [ 'merchant', 'shopper' ]
-        exclude:
-          - test_groups: 'upe'
-            test_branches: 'merchant'
-          - test_groups: 'upeSplit'
-            test_branches: 'merchant'
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
-    name: WC - latest | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: 'latest'
-      E2E_WC_VERSION: 'latest'
+      E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_PHP_VERSION: ${{ matrix.php }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
+      SKIP_WC_SUBSCRIPTIONS_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
+      SKIP_WC_ACTION_SCHEDULER_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
 
     steps:
       - name: Checkout WCPay repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ inputs.repo-branch || github.ref }}
 
       - name: "Download WooCommerce Payments build file"
         if: ${{ inputs.wcpay-use-build-artifact }}
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: woocommerce-payments
           path: ${{ env.WCPAY_ARTIFACT_DIRECTORY }}

@@ -6,20 +6,24 @@
 	xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 	autoloader="psalm-loader.php"
     errorBaseline="psalm-baseline.xml"
+	checkForThrowsDocblock="true"
 >
     <projectFiles>
         <file name="woocommerce-payments.php" />
         <directory name="includes" />
+        <directory name="src" />
         <ignoreFiles>
+			<directory name="vendor" />
 			<directory name="client" />
-			<directory name="docker" />
-            <directory name="vendor" />
 			<!-- Not much logic there, but a lot of false-positives -->
             <directory name="includes/in-person-payments/templates" />
 			<!-- There are no stubs yet for Subscriptions, hence analysis is not usable there -->
 			<directory name="includes/subscriptions" />
 			<directory name="includes/compat/subscriptions" />
         </ignoreFiles>
+		<ignoreFiles allowMissingFiles="true">
+			<directory name="docker" />
+		</ignoreFiles>
     </projectFiles>
 
 	<issueHandlers>
@@ -32,7 +36,19 @@
 			<errorLevel type="suppress">
 				<referencedClass name="Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken" />
 				<referencedClass name="Automattic\WooCommerce\StoreApi\SessionHandler" />
+				<referencedClass name="Automattic\WooCommerce\Utilities\PluginUtil" />
+				<referencedClass name="Automattic\WooCommerce\Utilities\FeaturesUtil" />
 			</errorLevel>
 		</UndefinedClass>
+		<UndefinedDocblockClass>
+			<errorLevel type="suppress">
+				<referencedClass name="Automattic\WooCommerce\Utilities\PluginUtil" />
+			</errorLevel>
+		</UndefinedDocblockClass>
+		<MissingThrowsDocblock>
+			<errorLevel type="suppress">
+				<directory name="includes" />
+			</errorLevel>
+		</MissingThrowsDocblock>
 	</issueHandlers>
 </psalm>

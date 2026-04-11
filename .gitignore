@@ -10,6 +10,16 @@ project.properties
 *.sublime-project
 *.sublime-workspace
 .sublimelinterrc
+.cursor/
+CLAUDE.local.md
+**/.claude/**/*.local.*
+.claude/local/
+.claude/docs/analysis/
+.claude/docs/plans/
+.claude/tmp/
+.serena/
+.zed/
+.phpactor.json
 
 # Bundle
 dist
@@ -59,6 +69,7 @@ phpunit.xml
 # Composer
 /vendor/
 /vendor-dist/
+/lib/vendor/
 contributors.md
 
 # Screenshots for e2e tests failures
@@ -67,10 +78,12 @@ contributors.md
 # Volumes mounted by Docker containers
 docker/data
 docker/wordpress
+docker/mu-plugins
 docker/logs
 
 # Local machine docker override
 docker-compose.override.yml
+.env
 
 # Tunneling scripts
 /docker/bin/jt
@@ -83,5 +96,20 @@ local.env
 # Screenshots created locally when running e2e tests
 tests/e2e/screenshots
 
-# E2E Performance test results
+# E2E test results
 tests/e2e/reports
+/playwright-report/
+/blob-report/
+tests/e2e/.auth/
+tests/e2e/test-results/
+tests/e2e/playwright/.cache/
+tests/e2e/tests/e2e/.auth/*
+
+# Slate docs
+docs/rest-api/build/*
+
+# Jurassic Tube files
+bin/jurassictube/
+
+# Git worktrees
+.worktrees/

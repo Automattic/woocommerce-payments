@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_Payments_Utils unit tests.
@@ -138,13 +139,13 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	public function test_esc_interpolated_html_does_not_escape_sprintf_placeholders() {
 		$result = WC_Payments_Utils::esc_interpolated_html(
-			'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).',
+			'A payment of %1$s was <strong>authorized</strong> using WooPayments (<code>%2$s</code>).',
 			[
 				'strong' => '<strong/>',
 				'code'   => '<code>',
 			]
 		);
-		$this->assertEquals( 'A payment of %1$s was <strong>authorized</strong> using WooCommerce Payments (<code>%2$s</code>).', $result );
+		$this->assertEquals( 'A payment of %1$s was <strong>authorized</strong> using WooPayments (<code>%2$s</code>).', $result );
 	}
 
 	public function test_esc_interpolated_html_handles_nested_tags() {
@@ -320,6 +321,492 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, $result );
 	}
 
+	public function test_array_map_recursive_maps_multidimensional() {
+		$array = [
+			'value0',
+			'key1' => 'value1',
+			'value2',
+			'key2' => [
+				'key3' => 'value3',
+				'key4' => [
+					'key5' => 'value5',
+				],
+				[
+					'key6' => 'value6',
+					[
+						'key7' => 'value7',
+					],
+				],
+			],
+			[
+				'key8' => 'value8',
+				[
+					'key9' => 'value9',
+				],
+			],
+		];
+
+		$expected = [
+			'value0_modified',
+			'key1' => 'value1_modified',
+			'value2_modified',
+			'key2' => [
+				'key3' => 'value3_modified',
+				'key4' => [
+					'key5' => 'value5_modified',
+				],
+				[
+					'key6' => 'value6_modified',
+					[
+						'key7' => 'value7_modified',
+					],
+				],
+			],
+			[
+				'key8' => 'value8_modified',
+				[
+					'key9' => 'value9_modified',
+				],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_map_recursive(
+			$array,
+			function ( $value ) {
+				return $value . '_modified';
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_map_recursive_maps_singledimensional() {
+		$array = [
+			'value0',
+			'key1' => 'value1',
+			'value2',
+		];
+
+		$expected = [
+			'value0_modified',
+			'key1' => 'value1_modified',
+			'value2_modified',
+		];
+
+		$result = WC_Payments_Utils::array_map_recursive(
+			$array,
+			function ( $value ) {
+				return $value . '_modified';
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_map_recursive_maps_empty_array() {
+		$array = [];
+
+		$expected = [];
+
+		$result = WC_Payments_Utils::array_map_recursive(
+			$array,
+			function ( $value ) {
+				return $value . '_modified';
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_map_recursive_maps_empty_array_with_keys() {
+		$array = [
+			'key1' => [],
+			'key2' => [],
+			'key3' => [
+				'key4' => [],
+			],
+		];
+
+		$expected = [
+			'key1' => [],
+			'key2' => [],
+			'key3' => [
+				'key4' => [],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_map_recursive(
+			$array,
+			function ( $value ) {
+				return $value . '_modified';
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_multidimensional() {
+		$array = [
+			0      => 'value0',
+			'key1' => 'value1',
+			1      => 'to_be_removed',
+			'key2' => [
+				'key3' => 'to_be_removed',
+				'key4' => [ // This should also be removed.
+					'key5' => 'to_be_removed',
+				],
+				[
+					'key6' => 'value6',
+					[ 'key7' => 'to_be_removed' ], // The entire array should be removed.
+				],
+			],
+			99     => [
+				'key8' => 'value8',
+				[
+					'key9' => 'value9',
+				],
+			],
+		];
+
+		$expected = [
+			0      => 'value0',
+			'key1' => 'value1',
+			'key2' => [
+				[
+					'key6' => 'value6',
+				],
+			],
+			99     => [
+				'key8' => 'value8',
+				[
+					'key9' => 'value9',
+				],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_filter_recursive(
+			$array,
+			function ( $value ) {
+				return 'to_be_removed' !== $value;
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_singledimensional() {
+		$array = [
+			0      => 'value0',
+			'key1' => 'value1',
+			1      => 'to_be_removed',
+			'key2' => 'to_be_removed',
+			99     => 'value3',
+		];
+
+		$expected = [
+			0      => 'value0',
+			'key1' => 'value1',
+			99     => 'value3',
+		];
+
+		$result = WC_Payments_Utils::array_filter_recursive(
+			$array,
+			function ( $value ) {
+				return 'to_be_removed' !== $value;
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_without_callback() {
+		$array = [
+			0      => 'value0',
+			'key1' => true,
+			1      => '',
+			'key2' => null,
+			'key3' => false,
+			99     => 'value3',
+			'0',
+			0,
+			[],
+			'key4' => [],
+			200    => [ true, false, 0, '', null ],
+			201    => [
+				0 => false,
+				3 => [],
+				7 => [
+					'key5' => false,
+					'key6' => [],
+					'key7' => '1',
+				],
+			],
+		];
+
+		// All non-truthy values are removed.
+		$expected = [
+			0      => 'value0',
+			'key1' => true,
+			99     => 'value3',
+			200    => [ true ],
+			201    => [
+				7 => [
+					'key7' => '1',
+				],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_filter_recursive( $array );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_empty_array() {
+		$array = [];
+
+		$expected = [];
+
+		$result = WC_Payments_Utils::array_filter_recursive(
+			$array,
+			function ( $value ) {
+				return 'to_be_removed' !== $value;
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_filter_recursive_filters_empty_array_with_keys() {
+		$array = [
+			'key1' => [],
+			'key2' => [],
+			'key3' => [
+				'key4' => [],
+			],
+		];
+
+		$expected = [];
+
+		$result = WC_Payments_Utils::array_filter_recursive(
+			$array,
+			function ( $value ) {
+				return 'to_be_removed' !== $value;
+			}
+		);
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_merge_recursive_distinct_merges() {
+		$a1 = [
+			88    => 1,
+			'foo' => 2,
+			'bar' => [],
+			'x'   => 5,
+			'z'   => [
+				6,
+				'm' => 'hi',
+			],
+		];
+		$a2 = [
+			99    => 7,
+			'foo' => [],
+			'bar' => 9,
+			'y'   => 10,
+			'z'   => [
+				'm' => 'bye',
+				11,
+			],
+		];
+		$a3 = [
+			'z' => [
+				6,
+				'm' => 'final',
+			],
+		];
+
+		$expected = [
+			88    => 1,
+			'foo' => [ 2 ],
+			'bar' => [ 9 ],
+			'x'   => 5,
+			'z'   => [
+				6,
+				'm' => 'final',
+				11,
+			],
+			7,
+			'y'   => 10,
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2, $a3 );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_merge_recursive_distinct_two_string_keyed_arrays() {
+		$a1 = [
+			'key1' => 'value1',
+			'key2' => [
+				'key2_1' => 'value2',
+				'key2_2' => null,
+				'key2_3' => 'value22',
+			],
+			'key3' => [
+				'key3_1' => 'value3',
+			],
+			'foo'  => [
+				'bar' => [
+					'baz' => 1,
+				],
+			],
+		];
+		$a2 = [
+			'key1' => null,
+			'key2' => [
+				'key2_1' => null,
+				'key2_2' => 'value',
+				'key2_3' => 'value22_modified',
+			],
+			'key3' => [
+				'key3_1' => 'value3_modified',
+			],
+			'foo'  => [
+				'bar' => [
+					'baz' => 2,
+				],
+			],
+		];
+
+		$expected = [
+			'key1' => 'value1',
+			'key2' => [
+				'key2_1' => 'value2',
+				'key2_2' => 'value',
+				'key2_3' => 'value22_modified',
+			],
+			'key3' => [
+				'key3_1' => 'value3_modified',
+			],
+			'foo'  => [
+				'bar' => [
+					'baz' => 2,
+				],
+			],
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_merge_recursive_distinct_with_scalar() {
+		$a1 = [
+			'key1' => 'value1',
+		];
+		$a2 = 'scalar';
+
+		$expected = [
+			'key1' => 'value1',
+			'scalar',
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertEquals( $expected, $result );
+
+		$a1 = 'scalar';
+		$a2 = [
+			'key1' => 'value1',
+			'key3' => [
+				'key3_1' => 'value3',
+			],
+		];
+
+		$expected = [
+			'scalar',
+			'key1' => 'value1',
+			'key3' => [
+				'key3_1' => 'value3',
+			],
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertEquals( $expected, $result );
+
+		$a1 = 'scalar1';
+		$a2 = 2;
+
+		$expected = [
+			'scalar1',
+			2,
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_array_merge_recursive_distinct_null_entries() {
+		$a1 = [
+			'key1' => 'value1',
+			'key2' => [
+				'key2_1' => 'value2',
+				'key2_2' => null,
+			],
+			'foo'  => [
+				'b'   => null,
+				'bar' => [
+					'baz' => 1,
+				],
+			],
+			'value3',
+		];
+		$a2 = [
+			'key1' => null,
+			'key2' => [
+				'key2_1' => null,
+				'key2_2' => 'value',
+			],
+			null,
+			null,
+			'foo'  => [
+				'ba'     => null,
+				'bar'    => [
+					'baz'    => null,
+					'bazzzz' => null,
+				],
+				'barrrr' => null,
+			],
+			'key3' => null,
+			null,
+		];
+
+		$expected = [
+			'key1' => 'value1',
+			'key2' => [
+				'key2_1' => 'value2',
+				'key2_2' => 'value',
+			],
+			'foo'  => [
+				'b'      => null,
+				'bar'    => [
+					'baz'    => 1,
+					'bazzzz' => null,
+				],
+				'ba'     => null,
+				'barrrr' => null,
+			],
+			'value3',
+			'key3' => null,
+		];
+
+		$result = WC_Payments_Utils::array_merge_recursive_distinct( $a1, $a2 );
+
+		$this->assertSame( $expected, $result );
+	}
+
 	public function test_get_order_intent_currency() {
 		$order = WC_Helper_Order::create_order();
 
@@ -334,7 +821,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 10000, WC_Payments_Utils::prepare_amount( 100, 'USD' ) );
 		$this->assertEquals( 100, WC_Payments_Utils::prepare_amount( 100, 'JPY' ) );
 		$this->assertEquals( 500, WC_Payments_Utils::prepare_amount( 500, 'jpy' ) );
-
 	}
 
 	public function test_interpret_stripe_amount() {
@@ -354,7 +840,9 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 	public function test_is_zero_decimal_currency() {
 		$this->assertEquals( false, WC_Payments_Utils::is_zero_decimal_currency( 'usd' ) );
+		$this->assertEquals( false, WC_Payments_Utils::is_zero_decimal_currency( 'USD' ) );
 		$this->assertEquals( true, WC_Payments_Utils::is_zero_decimal_currency( 'jpy' ) );
+		$this->assertEquals( true, WC_Payments_Utils::is_zero_decimal_currency( 'JPY' ) );
 	}
 
 	public function test_it_returns_is_payment_settings_page_for_main_settings_page() {
@@ -516,7 +1004,7 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	public function provider_format_currency(): array {
 		return [
 			'US dollar'                      => [ 123.456, 'USD', '$123.46' ],
-			'US dollar with negative amount' => [ -123.456, 'USD', '$-123.46' ],
+			'US dollar with negative amount' => [ -123.456, 'USD', '-$123.46' ],
 			'Euro'                           => [ 12000, 'EUR', '12.000,00 €' ],
 			'CHF - no currency symbol'       => [ 123, 'CHF', 'CHF 123.00' ],
 			'VND - decimal currency'         => [ 123456, 'VND', '123.456 ₫' ],
@@ -541,5 +1029,404 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 			'VND (decimal currency) - skip symbol'     => [ 123456, 'VND', true, [], '123.456 VND' ],
 			'VND (decimal currency) - not skip symbol' => [ 123456, 'VND', false, [], '123.456 ₫ VND' ],
 		];
+	}
+
+	public function test_get_filtered_error_status_code_with_exception() {
+		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new Exception( 'Just an exception' ) ) );
+	}
+
+	public function test_get_filtered_error_status_code_with_api_exception() {
+		$this->assertSame( 401, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card has insufficient funds.', 'card_declined', 401 ) ) );
+	}
+
+	public function test_get_filtered_error_status_code_with_api_exception_and_402_status() {
+		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card was declined.', 'card_declined', 402 ) ) );
+	}
+
+	public function test_is_store_api_request_with_store_api_request() {
+		$_SERVER['REQUEST_URI'] = '/index.php';
+		$_REQUEST['rest_route'] = '/wc/store/v1/checkout';
+
+		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+
+		unset( $_REQUEST['rest_route'] );
+	}
+
+	public function test_is_store_api_request_with_another_request() {
+		$_SERVER['REQUEST_URI'] = '/index.php';
+
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		unset( $_REQUEST['rest_route'] );
+	}
+
+	public function test_is_store_api_request_with_malformed_url() {
+		$_SERVER['REQUEST_URI'] = '///wp-json/wc/store/v1/checkout';
+
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_store_api_request_with_url_with_no_path() {
+		$_SERVER['REQUEST_URI'] = '?something';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		$_SERVER['REQUEST_URI'] = '';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_store_api_request_with_multisite_subdirectory() {
+		// Test multisite subdirectory setup where the path includes the site subdirectory.
+		$_SERVER['REQUEST_URI'] = '/child-1/wp-json/wc/store/v1/cart/add-item';
+		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+
+		// Test multisite subdirectory with non-store API endpoint.
+		$_SERVER['REQUEST_URI'] = '/child-1/wp-json/wp/v2/posts';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		// Test deeply nested subdirectory.
+		$_SERVER['REQUEST_URI'] = '/network/child-site/wp-json/wc/store/v1/cart';
+		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_any_bnpl_supporting_country() {
+		// Test supported country and currency combination (US with USD).
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[ 'afterpay_clearpay', 'klarna' ],
+				'US',
+				'USD'
+			)
+		);
+
+		// Test unsupported country and currency combination.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[ 'afterpay_clearpay', 'klarna' ],
+				'CN',
+				'CNY'
+			)
+		);
+
+		// Test with empty enabled methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[],
+				'US',
+				'USD'
+			)
+		);
+	}
+
+	public function test_is_any_bnpl_method_available() {
+		// Price within range for Afterpay/Clearpay in the US.
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay' ],
+				'US',
+				'USD',
+				100
+			)
+		);
+
+		// Price within range for Klarna in the US.
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'klarna' ],
+				'US',
+				'USD',
+				500
+			)
+		);
+
+		// Price below minimum for all methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'USD',
+				0.50
+			)
+		);
+
+		// Price above maximum for all methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'USD',
+				4000000
+			)
+		);
+
+		// Unsupported country.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'RU',
+				'RUB',
+				100
+			)
+		);
+
+		// Unsupported currency.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'JPY',
+				100
+			)
+		);
+
+		// Empty enabled methods array.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[],
+				'US',
+				'USD',
+				100
+			)
+		);
+
+		// Different country, same currency (Afterpay/Clearpay in Canada).
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay' ],
+				'CA',
+				'CAD',
+				100
+			)
+		);
+	}
+
+	/**
+	 * @dataProvider provider_get_dispute_reason_description
+	 */
+	public function test_get_dispute_reason_description( string $reason, string $expected ) {
+		$result = WC_Payments_Utils::get_dispute_reason_description( $reason );
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function provider_get_dispute_reason_description(): array {
+		return [
+			'bank_cannot_process'       => [ 'bank_cannot_process', 'Bank cannot process' ],
+			'check_returned'            => [ 'check_returned', 'Check returned' ],
+			'credit_not_processed'      => [ 'credit_not_processed', 'Credit not processed' ],
+			'customer_initiated'        => [ 'customer_initiated', 'Customer initiated' ],
+			'debit_not_authorized'      => [ 'debit_not_authorized', 'Debit not authorized' ],
+			'duplicate'                 => [ 'duplicate', 'Duplicate' ],
+			'fraudulent'                => [ 'fraudulent', 'Transaction unauthorized' ],
+			'incorrect_account_details' => [ 'incorrect_account_details', 'Incorrect account details' ],
+			'insufficient_funds'        => [ 'insufficient_funds', 'Insufficient funds' ],
+			'product_not_received'      => [ 'product_not_received', 'Product not received' ],
+			'product_unacceptable'      => [ 'product_unacceptable', 'Product unacceptable' ],
+			'subscription_canceled'     => [ 'subscription_canceled', 'Subscription canceled' ],
+			'unrecognized'              => [ 'unrecognized', 'Unrecognized' ],
+			'noncompliant'              => [ 'noncompliant', 'Non-compliant' ],
+			'general'                   => [ 'general', 'General' ],
+			'default case'              => [ 'unknown_reason', 'General' ],
+		];
+	}
+
+	/**
+	 * Test that get_localized_messages returns an array of known Stripe error codes.
+	 */
+	public function test_get_localized_messages_returns_expected_keys() {
+		$messages = WC_Payments_Utils::get_localized_messages();
+
+		$this->assertIsArray( $messages );
+
+		// Verify a subset of expected keys exist.
+		$expected_keys = [
+			'expired_card',
+			'card_declined',
+			'incorrect_cvc',
+			'insufficient_funds',
+			'processing_error',
+			'incorrect_number',
+			'invalid_expiry_year',
+		];
+
+		foreach ( $expected_keys as $key ) {
+			$this->assertArrayHasKey( $key, $messages, "Missing expected error code: $key" );
+			$this->assertNotEmpty( $messages[ $key ], "Empty message for error code: $key" );
+		}
+	}
+
+	/**
+	 * Test that get_localized_messages is filterable via wcpay_localized_messages.
+	 */
+	public function test_get_localized_messages_is_filterable() {
+		$filter = function ( $messages ) {
+			$messages['custom_error'] = 'Custom error message';
+			return $messages;
+		};
+
+		add_filter( 'wcpay_localized_messages', $filter );
+		$messages = WC_Payments_Utils::get_localized_messages();
+		remove_filter( 'wcpay_localized_messages', $filter );
+
+		$this->assertArrayHasKey( 'custom_error', $messages );
+		$this->assertEquals( 'Custom error message', $messages['custom_error'] );
+	}
+
+	/**
+	 * Test that a card error with a known error code returns the localized message.
+	 */
+	public function test_get_filtered_error_message_card_error_known_code_returns_localized() {
+		$exception = new API_Exception(
+			'Error: Your card has expired.',
+			'expired_card',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card has expired.', $result );
+	}
+
+	/**
+	 * Test that a card_declined error with a known decline_code returns the localized message.
+	 *
+	 * Stripe returns some decline reasons (e.g. insufficient_funds) as decline_code
+	 * with error.code = "card_declined". The lookup must check decline_code as a fallback.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_known_decline_code_returns_localized() {
+		// API_Exception constructor: message, error_code, http_code, error_type, decline_code.
+		$exception = new API_Exception(
+			'Error: Your card has insufficient funds.',
+			'card_declined',
+			400,
+			'card_error',
+			'insufficient_funds'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card has insufficient funds.', $result );
+	}
+
+	/**
+	 * Test that a card_declined error with authentication_required decline_code returns a specific message.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_authentication_required_returns_localized() {
+		$exception = new API_Exception(
+			'Error: Your card was declined.',
+			'card_declined',
+			400,
+			'card_error',
+			'authentication_required'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card was declined because additional authentication is required. Please contact your card issuer or try a different payment method.', $result );
+	}
+
+	/**
+	 * Test that a card_declined error with an unknown decline_code returns the card_declined localized message.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_unknown_decline_code_returns_card_declined() {
+		$exception = new API_Exception(
+			'Error: Your card was declined.',
+			'card_declined',
+			400,
+			'card_error',
+			'unknown_decline_reason'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card was declined.', $result );
+	}
+
+	/**
+	 * Test that a card error with an unknown error code falls back to the raw message.
+	 */
+	public function test_get_filtered_error_message_card_error_unknown_code_returns_raw() {
+		$exception = new API_Exception(
+			'Error: Some unknown card error.',
+			'unknown_card_code',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Some unknown card error.', $result );
+	}
+
+	/**
+	 * Test that a non-card API error still returns the generic message.
+	 */
+	public function test_get_filtered_error_message_non_card_error_returns_generic() {
+		$exception = new API_Exception(
+			'Error: Some API error.',
+			'some_api_error',
+			400,
+			'api_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( "We're not able to process this request. Please refresh the page and try again.", $result );
+	}
+
+	/**
+	 * Test that the incorrect_zip card error still returns the custom postal code message.
+	 */
+	public function test_get_filtered_error_message_incorrect_zip_returns_custom_message() {
+		$exception = new API_Exception(
+			'Error: Zip code validation failed.',
+			'incorrect_zip',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'We couldn' . "\xE2\x80\x99" . 't verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', $result );
+	}
+
+	/**
+	 * Test that incorrect_zip with blocked_by_fraud_rules preserves raw message.
+	 */
+	public function test_get_filtered_error_message_incorrect_zip_blocked_by_fraud_returns_raw() {
+		$exception = new API_Exception(
+			'Error: Zip code validation failed.',
+			'incorrect_zip',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception, true );
+
+		$this->assertEquals( 'Error: Zip code validation failed.', $result );
+	}
+
+	/**
+	 * Test that the wcpay_localized_messages filter can override messages in get_filtered_error_message.
+	 */
+	public function test_get_filtered_error_message_respects_filter() {
+		$filter = function ( $messages ) {
+			$messages['expired_card'] = 'Custom: card expired';
+			return $messages;
+		};
+
+		add_filter( 'wcpay_localized_messages', $filter );
+
+		$exception = new API_Exception(
+			'Error: Your card has expired.',
+			'expired_card',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		remove_filter( 'wcpay_localized_messages', $filter );
+
+		$this->assertEquals( 'Error: Custom: card expired', $result );
 	}
 }

@@ -36,6 +36,9 @@ class Get_Account_Login_Data_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Reset the mode.
+		WC_Payments::mode()->live();
+
 		$this->mock_api_client              = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_wc_payments_http_client = $this->createMock( WC_Payments_Http_Interface::class );
 	}
@@ -54,7 +57,7 @@ class Get_Account_Login_Data_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertTrue( $request->should_use_user_token() );
 	}
-	public function test_get_account_will_be_requested_as_test_mode_only_in_dev_mode() {
+	public function test_get_account_will_be_requested_as_test_mode_only_in_test_mode_onboarding() {
 		// enable test mode.
 		WC_Payments::mode()->test();
 		$request_test = new Get_Account_Login_Data( $this->mock_api_client, $this->mock_wc_payments_http_client );
@@ -64,6 +67,11 @@ class Get_Account_Login_Data_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 		$request_live = new Get_Account_Login_Data( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$this->assertFalse( $request_live->get_default_params()['test_mode'] );
+
+		// enable test mode onboarding.
+		WC_Payments::mode()->test_mode_onboarding();
+		$request_dev = new Get_Account_Login_Data( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->assertTrue( $request_dev->get_default_params()['test_mode'] );
 
 		// enable dev mode.
 		WC_Payments::mode()->dev();

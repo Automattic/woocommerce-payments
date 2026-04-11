@@ -7,6 +7,7 @@
 
 use WCPay\MultiCurrency\Compatibility;
 use WCPay\MultiCurrency\Currency;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Utils;
 
@@ -36,14 +37,27 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 	private $mock_utils;
 
 	/**
+	 * MultiCurrencyLocalizationInterface.
+	 *
+	 * @var MultiCurrencyLocalizationInterface
+	 */
+	private $mock_localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->mock_utils          = $this->createMock( Utils::class );
-		$this->compatibility       = new Compatibility( $this->mock_multi_currency, $this->mock_utils );
+		$this->mock_multi_currency       = $this->createMock( MultiCurrency::class );
+		$this->mock_utils                = $this->createMock( Utils::class );
+		$this->mock_localization_service = $this->createMock( MultiCurrencyLocalizationInterface::class );
+		$this->mock_localization_service
+			->method( 'get_currency_format' )
+			->with( 'USD' )
+			->willReturn( [ 'num_decimals' => 2 ] );
+
+		$this->compatibility = new Compatibility( $this->mock_multi_currency, $this->mock_utils );
 	}
 
 	public function test_init_compatibility_classes_does_not_add_classes_if_one_enabled_currencies() {
@@ -100,7 +114,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -124,7 +138,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -145,7 +159,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -169,7 +183,7 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 
 		$this->mock_multi_currency->expects( $this->once() )
 			->method( 'get_default_currency' )
-			->willReturn( new Currency( 'USD', 1.0 ) );
+			->willReturn( new Currency( $this->mock_localization_service, 'USD', 1.0 ) );
 
 		$this->mock_utils->expects( $this->once() )
 			->method( 'is_call_in_backtrace' )
@@ -200,5 +214,32 @@ class WCPay_Multi_Currency_Compatibility_Tests extends WCPAY_UnitTestCase {
 		$expected = (object) [ $order ];
 
 		$this->assertEquals( $expected, $this->compatibility->convert_order_prices( $expected, [] ) );
+	}
+
+	// The should_disable_currency_switching should return false by default.
+	public function test_should_disable_currency_switching_return_false_by_default() {
+		// Act/Assert: Confirm false is returned by default.
+		$this->assertFalse( $this->compatibility->should_disable_currency_switching() );
+	}
+
+	// If on the pay_for_order page, then should_disable_currency_switching should return true.
+	public function test_should_disable_currency_switching_return_true_on_pay_for_order() {
+		// Arrange: Blatantly hack mock request params for the test.
+		$_GET['pay_for_order'] = true;
+
+		// Act/Assert: Confirm true is returned if on the pay_for_order page.
+		$this->assertTrue( $this->compatibility->should_disable_currency_switching() );
+	}
+
+	// If filtered to true, then should_disable_currency_switching should return true.
+	public function test_should_disable_currency_switching_return_true_on_filtered_true() {
+		// Arrange: Add filter to return true.
+		add_filter( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', '__return_true' );
+
+		// Act/Assert: Confirm true is returned if filtered to true.
+		$this->assertTrue( $this->compatibility->should_disable_currency_switching() );
+
+		// Arrange: Remove our filter.
+		remove_all_filters( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching' );
 	}
 }

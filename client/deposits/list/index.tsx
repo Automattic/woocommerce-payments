@@ -3,40 +3,40 @@
 /**
  * External dependencies
  */
-import { DepositsTableHeader } from 'wcpay/types/deposits';
-import React, { useState } from 'react';
-import wcpayTracks from 'tracks';
-import { useMemo } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
+import React from 'react';
+import { recordEvent } from 'tracks';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
-import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
+import { parseInt } from 'lodash';
 
 /**
  * Internal dependencies.
  */
+import type { DepositsTableHeader } from 'wcpay/types/deposits';
 import { useDeposits, useDepositsSummary } from 'wcpay/data';
-import { displayType, displayStatus } from '../strings';
-import { formatExplicitCurrency } from 'utils/currency';
+import { displayType, depositStatusLabels } from '../strings';
+import {
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'multi-currency/interface/functions';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import Page from '../../components/page';
 import DepositsFilters from '../filters';
 import DownloadButton from 'components/download-button';
-import { getDepositsCSV } from 'wcpay/data/deposits/resolvers';
+import {
+	getPayoutsCSVRequestURL,
+	payoutsDownloadEndpoint,
+} from 'wcpay/data/deposits/resolvers';
 import { applyThousandSeparator } from '../../utils/index.js';
-import DepositStatusPill from 'components/deposit-status-pill';
+import DepositStatusChip from 'components/deposit-status-chip';
+import { useReportExport } from 'wcpay/hooks/use-report-export';
 
 import './style.scss';
-import { parseInt } from 'lodash';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 	{
@@ -86,51 +86,49 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 		screenReaderLabel: __( 'Bank account', 'woocommerce-payments' ),
 		isLeftAligned: true,
 	},
+	{
+		key: 'bankReferenceId',
+		label: __( 'Bank reference ID', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Bank reference ID', 'woocommerce-payments' ),
+	},
 ];
 
 export const DepositsList = (): JSX.Element => {
-	const [ isDownloading, setIsDownloading ] = useState( false );
-	const { createNotice } = useDispatch( 'core/notices' );
 	const { deposits, isLoading } = useDeposits( getQuery() );
 	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
 		getQuery()
 	);
 
+	const { requestReportExport, isExportInProgress } = useReportExport();
+	const { createNotice } = useDispatch( 'core/notices' );
+
 	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
-	const columns = useMemo( () => getColumns( sortByDate ), [ sortByDate ] );
+	const columns = getColumns( sortByDate );
+	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
+		DepositsTableHeader
+	>( 'wc_payments_payouts_hidden_columns', columns );
+
 	const totalRows = depositsSummary.count || 0;
 
 	const rows = deposits.map( ( deposit ) => {
 		const clickable = ( children: React.ReactNode ): JSX.Element => (
 			<ClickableCell
-				href={ getDetailsURL( deposit.id, 'deposits' ) }
-				onClick={ () =>
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_ROW_CLICK
-					)
-				}
+				href={ getDetailsURL( deposit.id, 'payouts' ) }
+				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
 				{ children }
 			</ClickableCell>
 		);
 		const detailsLink = (
-			<DetailsLink id={ deposit.id } parentSegment="deposits" />
+			<DetailsLink id={ deposit.id } parentSegment="payouts" />
 		);
 
 		const dateDisplay = (
 			<Link
-				href={ getDetailsURL( deposit.id, 'deposits' ) }
-				onClick={ () =>
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_ROW_CLICK
-					)
-				}
+				href={ getDetailsURL( deposit.id, 'payouts' ) }
+				onClick={ () => recordEvent( 'wcpay_deposits_row_click' ) }
 			>
-				{ dateI18n(
-					'M j, Y',
-					moment.utc( deposit.date ).toISOString(),
-					true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
-				) }
+				{ formatDateTimeFromString( deposit.date ) }
 			</Link>
 		);
 
@@ -143,24 +141,28 @@ export const DepositsList = (): JSX.Element => {
 				display: clickable( displayType[ deposit.type ] ),
 			},
 			amount: {
-				value: deposit.amount / 100,
+				value: formatExportAmount( deposit.amount, deposit.currency ),
 				display: clickable(
 					formatExplicitCurrency( deposit.amount, deposit.currency )
 				),
 			},
 			status: {
-				value: displayStatus[ deposit.status ],
-				display: clickable(
-					<DepositStatusPill status={ deposit.status } />
-				),
+				value: depositStatusLabels[ deposit.status ],
+				display: clickable( <DepositStatusChip deposit={ deposit } /> ),
 			},
 			bankAccount: {
 				value: deposit.bankAccount,
 				display: clickable( deposit.bankAccount ),
 			},
+			bankReferenceId: {
+				value: deposit.bank_reference_key,
+				display: clickable( deposit.bank_reference_key ?? 'N/A' ),
+			},
 		};
 
-		return columns.map( ( { key } ) => data[ key ] || { display: null } );
+		return columnsToDisplay.map(
+			( { key } ) => data[ key ] || { display: null }
+		);
 	} );
 
 	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
@@ -179,8 +181,8 @@ export const DepositsList = (): JSX.Element => {
 		summary = [
 			{
 				label: _n(
-					'deposit',
-					'deposits',
+					'payout',
+					'payouts',
 					depositsSummary.count,
 					'woocommerce-payments'
 				),
@@ -205,134 +207,80 @@ export const DepositsList = (): JSX.Element => {
 		depositsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ] : [] );
 
-	const title = __( 'Deposits', 'woocommerce-payments' );
-
 	const downloadable = !! rows.length;
 
-	const onDownload = async () => {
-		setIsDownloading( true );
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
+	const { path } = getQuery();
+	const onExport = async () => {
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'payouts',
+			source: path,
+			exported_row_count: depositsSummary.count,
+		} );
+
 		const userEmail = wcpaySettings.currentUserEmail;
+		const locale = wcSettings.locale.userLocale;
 
-		if ( 'endpoint' === downloadType ) {
-			const {
-				date_before: dateBefore,
-				date_after: dateAfter,
-				date_between: dateBetween,
-				match,
-				status_is: statusIs,
-				status_is_not: statusIsNot,
-				store_currency_is: storeCurrencyIs,
-			} = getQuery();
+		const {
+			date_before: dateBefore,
+			date_after: dateAfter,
+			date_between: dateBetween,
+			match,
+			status_is: statusIs,
+			status_is_not: statusIsNot,
+			store_currency_is: storeCurrencyIs,
+		} = getQuery();
 
-			const isFiltered =
-				!! dateBefore ||
-				!! dateAfter ||
-				!! dateBetween ||
-				!! statusIs ||
-				!! statusIsNot ||
-				!! storeCurrencyIs;
+		const exportRequestURL = getPayoutsCSVRequestURL( {
+			userEmail,
+			locale,
+			dateBefore,
+			dateAfter,
+			dateBetween,
+			match,
+			statusIs,
+			statusIsNot,
+			storeCurrencyIs,
+		} );
 
-			const confirmThreshold = 1000;
-			const confirmMessage = sprintf(
-				__(
-					"You are about to export %d deposits. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
-					'woocommerce-payments'
-				),
-				totalRows
-			);
+		const isFiltered =
+			!! dateBefore ||
+			!! dateAfter ||
+			!! dateBetween ||
+			!! statusIs ||
+			!! statusIsNot ||
+			!! storeCurrencyIs;
 
-			if (
-				isFiltered ||
-				totalRows < confirmThreshold ||
-				window.confirm( confirmMessage )
-			) {
-				try {
-					const {
-						exported_deposits: exportedDeposits,
-					} = await apiFetch( {
-						path: getDepositsCSV( {
-							userEmail,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							statusIs,
-							statusIsNot,
-							storeCurrencyIs,
-						} ),
-						method: 'POST',
-					} );
+		const confirmThreshold = 1000;
+		const confirmMessage = sprintf(
+			__(
+				"You are about to export %d deposits. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+				'woocommerce-payments'
+			),
+			totalRows
+		);
 
-					createNotice(
-						'success',
-						sprintf(
-							__(
-								'Your export will be emailed to %s',
-								'woocommerce-payments'
-							),
-							userEmail
-						)
-					);
+		if (
+			isFiltered ||
+			totalRows < confirmThreshold ||
+			window.confirm( confirmMessage )
+		) {
+			requestReportExport( {
+				exportRequestURL,
+				exportFileAvailabilityEndpoint: payoutsDownloadEndpoint,
+				userEmail,
+			} );
 
-					wcpayTracks.recordEvent(
-						wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
-						{
-							exported_deposits: exportedDeposits,
-							total_deposits: exportedDeposits,
-							download_type: 'endpoint',
-						}
-					);
-				} catch {
-					createNotice(
-						'error',
-						__(
-							'There was a problem generating your export.',
-							'woocommerce-payments'
-						)
-					);
-				}
-			}
-		} else {
-			const params = getQuery();
-
-			const csvColumns = [
-				{
-					...columns[ 0 ],
-					label: __( 'Deposit Id', 'woocommerce-payments' ),
-				},
-				...columns.slice( 1 ),
-			];
-
-			const csvRows = rows.map( ( row ) => [
-				row[ 0 ],
-				{
-					...row[ 1 ],
-					value: dateI18n(
-						'Y-m-d',
-						moment.utc( row[ 1 ].value ).toISOString(),
-						true
+			createNotice(
+				'success',
+				sprintf(
+					__(
+						'We’re processing your export. 🎉 The file will download automatically and be emailed to %s.',
+						'woocommerce-payments'
 					),
-				},
-				...row.slice( 2 ),
-			] );
-
-			downloadCSVFile(
-				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( csvColumns, csvRows )
-			);
-
-			wcpayTracks.recordEvent(
-				wcpayTracks.events.DEPOSITS_DOWNLOAD_CSV_CLICK,
-				{
-					exported_deposits: rows.length,
-					total_deposits: depositsSummary.count,
-					download_type: 'browser',
-				}
+					userEmail
+				)
 			);
 		}
-
-		setIsDownloading( false );
 	};
 
 	return (
@@ -340,21 +288,23 @@ export const DepositsList = (): JSX.Element => {
 			<DepositsFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
 				className="wcpay-deposits-list woocommerce-report-table"
-				title={ __( 'Deposit history', 'woocommerce-payments' ) }
+				title={ __( 'Payout history', 'woocommerce-payments' ) }
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '' ) || 25 }
 				totalRows={ totalRows }
-				headers={ columns }
+				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading || isDownloading }
-							onClick={ onDownload }
+							isDisabled={ isLoading || isExportInProgress }
+							isBusy={ isExportInProgress }
+							onClick={ onExport }
 						/>
 					),
 				] }

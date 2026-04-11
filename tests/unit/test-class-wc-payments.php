@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * WC_Payments unit tests.
@@ -13,7 +13,8 @@ use WCPay\Payment_Methods\UPE_Split_Payment_Gateway;
 class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	const EXPECTED_WOOPAY_HOOKS = [
-		'wc_ajax_wcpay_init_woopay' => [ WC_Payments::class, 'ajax_init_woopay' ],
+		'wc_ajax_wcpay_init_woopay'        => [ WooPay_Session::class, 'ajax_init_woopay' ],
+		'wc_ajax_wcpay_get_woopay_session' => [ WooPay_Session::class, 'ajax_get_woopay_session' ],
 	];
 
 	public function set_up() {
@@ -51,7 +52,7 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 	public function test_it_registers_woopay_hooks_if_feature_flag_is_enabled() {
 		// Enable dev mode so nonce check is disabled.
-		WC_Payments::mode()->is_dev();
+		WC_Payments::mode()->dev();
 
 		$this->set_woopay_enabled( true );
 
@@ -77,18 +78,9 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_it_skips_stripe_link_gateway_registration() {
-		update_option( WC_Payments_Features::UPE_SPLIT_FLAG_NAME, '1' );
+		$all_gateways_before_registration = count( WC_Payments::get_payment_method_map() );
+		$card_gateway_mock                = $this->createMock( WC_Payment_Gateway_WCPay::class );
 
-		$card_gateway_mock = $this->createMock( UPE_Split_Payment_Gateway::class );
-		$card_gateway_mock
-			->expects( $this->once() )
-			->method( 'get_payment_method_ids_enabled_at_checkout' )
-			->willReturn(
-				[
-					'link',
-					'card',
-				]
-			);
 		$card_gateway_mock
 			->expects( $this->once() )
 			->method( 'get_stripe_id' )
@@ -97,8 +89,8 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$registered_gateways = WC_Payments::register_gateway( [] );
 
-		$this->assertCount( 1, $registered_gateways );
-		$this->assertInstanceOf( UPE_Split_Payment_Gateway::class, $registered_gateways[0] );
+		$this->assertCount( $all_gateways_before_registration - 1, $registered_gateways );
+		$this->assertInstanceOf( WC_Payment_Gateway_WCPay::class, $registered_gateways[0] );
 		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
 	}
 
@@ -115,42 +107,6 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 401, $response->get_status() );
 		$this->assertEquals( 'woocommerce_rest_missing_nonce', $response->get_data()['code'] );
-	}
-
-	public function test_ajax_init_woopay_sends_correct_customer_id() {
-		// Necessary in order to prevent die from being called.
-		define( 'DOING_AJAX', true );
-
-		$customer_id = 'cus_123456789';
-
-		$pre_http_request_cb = function ( $preempt, $parsed_args, $url ) use ( $customer_id ) {
-			$body = json_decode( $parsed_args['body'] );
-			$this->assertEquals( $customer_id, $body->customer_id );
-			return [ 'body' => wp_json_encode( [] ) ];
-		};
-
-		$wp_die_ajax_handler_cb = function () {
-			return function ( $message, $title, $args ) {};
-		};
-
-		add_filter( 'pre_http_request', $pre_http_request_cb, 10, 3 );
-		add_filter( 'wp_die_ajax_handler', $wp_die_ajax_handler_cb );
-
-		$mock_customer_service = $this->getMockBuilder( 'WC_Payments_Customer_Service' )
-			->disableOriginalConstructor()
-			->getMock();
-		$mock_customer_service
-			->expects( $this->once() )
-			->method( 'create_customer_for_user' )
-			->with( $this->anything(), $this->anything() )
-			->will( $this->returnValue( $customer_id ) );
-
-		WC_Payments::set_customer_service( $mock_customer_service );
-		$this->set_woopay_feature_flag_enabled( true );
-
-		ob_start();
-		WC_Payments::ajax_init_woopay();
-		ob_get_clean();
 	}
 
 	/**
@@ -186,5 +142,86 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 
 		// Trigger the addition of the disable nonce filter when appropriate.
 		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
+	}
+
+	public function test_set_woopayments_gateways_before_other_gateways_when_not_in_ordering() {
+		$woopayments_gateway_ids = WC_Payments::get_woopayments_gateway_ids();
+		$main_gateway_id         = WC_Payments::get_gateway()->id;
+
+		$initial_ordering = [
+			'other_gateway_1' => 0,
+			'other_gateway_2' => 1,
+		];
+
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
+
+		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
+		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
+		$this->assertLessThan( $result['other_gateway_1'], $result[ $main_gateway_id ] );
+	}
+
+	public function test_set_woopayments_gateways_after_main_gateway() {
+		$woopayments_gateway_ids = WC_Payments::get_woopayments_gateway_ids();
+		$main_gateway_id         = WC_Payments::get_gateway()->id;
+
+		$initial_ordering = [
+			'other_gateway_1' => 0,
+			$main_gateway_id  => 1,
+			'other_gateway_2' => 2,
+		];
+
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
+
+		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
+		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
+		$this->assertLessThan( $result[ $main_gateway_id ], $result['other_gateway_1'] );
+		$this->assertLessThan( $result['other_gateway_2'], $result[ $main_gateway_id ] );
+	}
+
+	public function test_set_woopayments_gateways_at_beginning_when_ordering_is_empty() {
+		$woopayments_gateway_ids = WC_Payments::get_woopayments_gateway_ids();
+		$initial_ordering        = [];
+
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
+
+		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
+		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
+		$this->assertEquals( count( $woopayments_gateway_ids ), count( $result ) );
+	}
+
+	/**
+	 * Assert that all WooPayments gateways are in the result
+	 *
+	 * @param array $gateways Expected gateway IDs
+	 * @param array $result   Result from order_woopayments_gateways
+	 */
+	private function assertContainsAllGateways( $gateways, $result ) {
+		foreach ( $gateways as $gateway_id ) {
+			$this->assertArrayHasKey( $gateway_id, $result );
+		}
+	}
+
+	/**
+	 * Assert that the WooPayments gateways are in sequential order
+	 *
+	 * @param array $gateways Expected gateway IDs
+	 * @param array $result   Result from order_woopayments_gateways
+	 */
+	private function assertSequentialOrdering( $gateways, $result ) {
+		$positions = [];
+		foreach ( $gateways as $gateway_id ) {
+			$positions[ $gateway_id ] = $result[ $gateway_id ];
+		}
+
+		asort( $positions );
+
+		// Check that positions are sequential.
+		$previous_position = null;
+		foreach ( $positions as $position ) {
+			if ( null !== $previous_position ) {
+				$this->assertEquals( $previous_position + 1, $position, 'Gateway positions should be sequential' );
+			}
+			$previous_position = $position;
+		}
 	}
 }

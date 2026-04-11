@@ -4,7 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -20,19 +20,8 @@ const CVCVerificationRuleCard: React.FC = () => {
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'CVC Verification', 'woocommerce-payments' ) }
-			description={ __(
-				'This filter checks the security code submitted by the customer against the data on file with the card issuer.',
-				'woocommerce-payments'
-			) }
 			id="cvc-verification-card"
 		>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'Because the card security code appears only on the card and not on receipts or statements, the card security code ' +
-						'provides some assurance that the physical card is in the possession of the buyer.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
 			<FraudProtectionRuleCardNotice type="warning">
 				{ declineOnCVCFailure
 					? interpolateComponents( {
@@ -43,20 +32,26 @@ const CVCVerificationRuleCard: React.FC = () => {
 							),
 							components: {
 								learnMoreLink: (
-									<Link
-										target="_blank"
-										type="external"
+									// @ts-expect-error: children is provided when interpolating the component
+									<ExternalLink
 										// eslint-disable-next-line max-len
-										href="https://woocommerce.com/document/woocommerce-payments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+										href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
 									/>
 								),
 							},
 					  } )
 					: __(
-							'This filter is disabled, and can not be modified.',
+							'This filter is disabled, and cannot be modified.',
 							'woocommerce-payments'
 					  ) }
 			</FraudProtectionRuleCardNotice>
+			<FraudProtectionRuleDescription>
+				{ __(
+					'Because the card security code appears only on the card and not on receipts or statements, the card security code ' +
+						'provides some assurance that the physical card is in the possession of the buyer.',
+					'woocommerce-payments'
+				) }
+			</FraudProtectionRuleDescription>
 		</FraudProtectionRuleCard>
 	);
 };

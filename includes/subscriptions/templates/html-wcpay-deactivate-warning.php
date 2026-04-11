@@ -1,13 +1,13 @@
 <?php
 /**
- * Admin WC Subscriptions plugin warning template.
+ * Admin WooPayments plugin warning template.
  *
  * @package WooCommerce\Payments
  */
 
 ?>
 <script type="text/template" id="tmpl-wcpay-plugin-deactivate-warning">
-	<div id="wcpay-plugin-deactivate-warning-notice" class="wc-backbone-modal">
+	<div id="wcpay-plugin-deactivate-warning-notice" class="wc-backbone-modal woopayments-plugin-warning-modal">
 		<div class="wc-backbone-modal-content">
 			<section class="wc-backbone-modal-main" role="main">
 				<header class="wc-backbone-modal-header">
@@ -20,32 +20,47 @@
 					<p>
 						<?php
 							printf(
-								// translators: $1 $2 $3 placeholders are opening and closing HTML link tags, linking to documentation. $4 $5 placeholders are opening and closing strong HTML tags.
-								esc_html__( 'Your store has active subscriptions using the built-in WooCommerce Payments functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate WooCommerce Payments%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
-								'<a href="https://woocommerce.com/document/payments/subscriptions/comparison/#billing-engine">',
-								'<a href="https://woocommerce.com/document/woocommerce-payments/built-in-subscriptions/deactivate/#existing-subscriptions">',
+							// translators: $1 $2 $3 placeholders are opening and closing HTML link tags, linking to documentation. $4 $5 placeholders are opening and closing strong HTML tags. $6 is WooPayments.
+								esc_html__( 'Your store has active subscriptions using the built-in %6$s functionality. Due to the %1$soff-site billing engine%3$s these subscriptions use, %4$sthey will continue to renew even after you deactivate %6$s%5$s. %2$sLearn more%3$s.', 'woocommerce-payments' ),
+								'<a href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/" target="_blank">',
+								'<a href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/#deactivate-woopayments-plugin" target="_blank">',
 								'</a>',
 								'<strong>',
-								'</strong>'
+								'</strong>',
+								'WooPayments'
 							);
 							?>
 					<p>
 					</p>
 						<?php
 							printf(
-								// translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation.
-								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel all subscriptions%2$s prior to deactivating WooCommerce Payments. ', 'woocommerce-payments' ),
-								'<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription">',
-								'</a>'
+								// translators: $1 $2 placeholders are opening and closing HTML link tags, linking to documentation. $3 is WooPayments.
+								esc_html__( 'If you do not want these subscriptions to continue to be billed, you should %1$scancel all subscriptions%2$s prior to deactivating %3$s. ', 'woocommerce-payments' ),
+								'<a href="https://woocommerce.com/document/subscriptions/store-manager-guide/#cancel-or-suspend-subscription" target="_blank">',
+								'</a>',
+								'WooPayments'
 							);
 							?>
 					</p>
-					<strong><?php esc_html_e( 'Are you sure you want to deactivate WooCommerce Payments?', 'woocommerce-payments' ); ?></strong>
+					<strong>
+						<?php
+							printf(
+								/* translators: %s: WooPayments. */
+								esc_html__( 'Are you sure you want to deactivate %s?', 'woocommerce-payments' ),
+								'WooPayments'
+							);
+							?>
+					</strong>
 				</article>
 				<footer>
 					<div class="inner">
 						<button class="modal-close button button-secondary button-large"><?php esc_html_e( 'Cancel', 'woocommerce-payments' ); ?></button>
-						<button id="wcpay-plugin-deactivate-modal-submit" class="button button-primary button-large"><?php esc_html_e( 'Yes, deactivate WooCommerce Payments', 'woocommerce-payments' ); ?></button>
+						<button id="wcpay-plugin-deactivate-modal-submit" class="button button-primary button-large">
+							<?php
+							/* translators: %s: WooPayments */
+							printf( esc_html__( 'Yes, deactivate %s', 'woocommerce-payments' ), 'WooPayments' );
+							?>
+						</button>
 					</div>
 				</footer>
 			</section>

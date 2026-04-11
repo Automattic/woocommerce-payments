@@ -3,9 +3,9 @@ function createFormData( obj, subKeyStr = '', formData ) {
 		const value = obj[ key ];
 		const subKeyStrTrans = subKeyStr ? subKeyStr + '[' + key + ']' : key;
 
-		if ( 'string' === typeof value || 'number' === typeof value ) {
+		if ( typeof value === 'string' || typeof value === 'number' ) {
 			formData.append( subKeyStrTrans, value );
-		} else if ( 'object' === typeof value ) {
+		} else if ( typeof value === 'object' ) {
 			createFormData( value, subKeyStrTrans, formData );
 		}
 	}

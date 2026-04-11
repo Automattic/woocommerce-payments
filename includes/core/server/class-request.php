@@ -14,6 +14,7 @@ use WC_Payments_API_Client;
 use WCPay\Core\Exceptions\Server\Request\Extend_Request_Exception;
 use WCPay\Core\Exceptions\Server\Request\Immutable_Parameter_Exception;
 use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
+use WCPay\Core\Server\Request\Get_Request;
 use WCPay\Exceptions\API_Exception;
 use WP_Error;
 
@@ -26,28 +27,28 @@ abstract class Request {
 	 *
 	 * Overwrite this in your class for individual properties.
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const IMMUTABLE_PARAMS = [];
 
 	/**
 	 * Indicates which parameters are required (keys only).
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const REQUIRED_PARAMS = [];
 
 	/**
 	 * Contains default values for parameters, which are not set automatically.
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const DEFAULT_PARAMS = [];
 
 	/**
 	 * Holds the parameters of the request.
 	 *
-	 * @var []
+	 * @var array<array-key, mixed>
 	 */
 	private $params = [];
 
@@ -62,6 +63,14 @@ abstract class Request {
 	 * @var bool
 	 */
 	private $protected_mode = false;
+
+	/**
+	 * Stores the base class when `->apply_filters` is called.
+	 * This class will be checked when `::extend` is called.
+	 *
+	 * @var string
+	 */
+	private $base_class;
 
 	/**
 	 * Holds the API client of WCPay.
@@ -85,6 +94,83 @@ abstract class Request {
 	protected $id;
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * Subclasses should define this property with a non-empty hook name, e.g.:
+	 *     protected $hook = 'wcpay_my_request';
+	 *
+	 * For dynamic hooks, use assign_hook() before sending the request.
+	 *
+	 * @var string
+	 */
+	protected $hook = '';
+
+	/**
+	 * Used to set the arguments for the request class WordPress hook. Make sure to add hook name first.
+	 *
+	 * @var array
+	 */
+	protected $hook_args = [];
+
+	/**
+	 * Creates a new request, loading dependencies in there.
+	 *
+	 * @param mixed $id The identifier for various update/get/delete requests.
+	 *
+	 * @indexof $this->routeList
+	 *
+	 * @return static
+	 */
+
+	/**
+	 * Route list.
+	 *
+	 * @var string[]
+	 */
+	private $route_list = [
+		WC_Payments_API_Client::ACCOUNTS_API               => 'accounts',
+		WC_Payments_API_Client::CAPABILITIES_API           => 'accounts/capabilities',
+		WC_Payments_API_Client::WOOPAY_ACCOUNTS_API        => 'accounts/platform_checkout',
+		WC_Payments_API_Client::WOOPAY_COMPATIBILITY_API   => 'woopay/compatibility',
+		WC_Payments_API_Client::DOMAIN_REGISTRATION_API    => 'payment_method_domains',
+		WC_Payments_API_Client::CHARGES_API                => 'charges',
+		WC_Payments_API_Client::CONN_TOKENS_API            => 'terminal/connection_tokens',
+		WC_Payments_API_Client::TERMINAL_LOCATIONS_API     => 'terminal/locations',
+		WC_Payments_API_Client::CUSTOMERS_API              => 'customers',
+		WC_Payments_API_Client::CURRENCY_API               => 'currency',
+		WC_Payments_API_Client::INTENTIONS_API             => 'intentions',
+		WC_Payments_API_Client::REFUNDS_API                => 'refunds',
+		WC_Payments_API_Client::DEPOSITS_API               => 'deposits',
+		WC_Payments_API_Client::TRANSACTIONS_API           => 'transactions',
+		WC_Payments_API_Client::DISPUTES_API               => 'disputes',
+		WC_Payments_API_Client::FILES_API                  => 'files',
+		WC_Payments_API_Client::ONBOARDING_API             => 'onboarding',
+		WC_Payments_API_Client::TIMELINE_API               => 'timeline',
+		WC_Payments_API_Client::PAYMENT_METHODS_API        => 'payment_methods',
+		WC_Payments_API_Client::SETUP_INTENTS_API          => 'setup_intents',
+		WC_Payments_API_Client::TRACKING_API               => 'tracking',
+		WC_Payments_API_Client::PAYMENT_PROCESS_CONFIG_API => 'payment_process_config',
+		WC_Payments_API_Client::PRODUCTS_API               => 'products',
+		WC_Payments_API_Client::PRICES_API                 => 'products/prices',
+		WC_Payments_API_Client::INVOICES_API               => 'invoices',
+		WC_Payments_API_Client::SUBSCRIPTIONS_API          => 'subscriptions',
+		WC_Payments_API_Client::SUBSCRIPTION_ITEMS_API     => 'subscriptions/items',
+		WC_Payments_API_Client::READERS_CHARGE_SUMMARY     => 'reader-charges/summary',
+		WC_Payments_API_Client::TERMINAL_READERS_API       => 'terminal/readers',
+		WC_Payments_API_Client::MINIMUM_RECURRING_AMOUNT_API => 'subscriptions/minimum_amount',
+		WC_Payments_API_Client::CAPITAL_API                => 'capital',
+		WC_Payments_API_Client::PROMOTIONS_API             => 'payment_method_promotions',
+		WC_Payments_API_Client::WEBHOOK_FETCH_API          => 'webhook/failed_events',
+		WC_Payments_API_Client::DOCUMENTS_API              => 'documents',
+		WC_Payments_API_Client::VAT_API                    => 'vat',
+		WC_Payments_API_Client::LINKS_API                  => 'links',
+		WC_Payments_API_Client::AUTHORIZATIONS_API         => 'authorizations',
+		WC_Payments_API_Client::FRAUD_OUTCOMES_API         => 'fraud_outcomes',
+		WC_Payments_API_Client::FRAUD_RULESET_API          => 'fraud_ruleset',
+		WC_Payments_API_Client::COMPATIBILITY_API          => 'compatibility',
+	];
+
+	/**
 	 * Creates a new request, loading dependencies in there.
 	 *
 	 * @param mixed $id The identifier for various update/get/delete requests.
@@ -93,6 +179,27 @@ abstract class Request {
 	 */
 	public static function create( $id = null ) {
 		return WC_Payments::create_request( static::class, $id );
+	}
+
+	/**
+	 * GET Request wrapped for easier request creation.
+	 *
+	 * @param string $api Api method.
+	 * @param mixed  $id An optional ID for the item that will be updated/retrieved/deleted.
+	 *
+	 * @return Request|Get_Request
+	 *
+	 * @throws Invalid_Request_Parameter_Exception|\Exception
+	 */
+	public static function get( string $api, $id = null ) {
+		/**
+		 * Request variable.
+		 *
+		 * @var Get_Request $request
+		 */
+		$request = WC_Payments::create_request( Get_Request::class, $id );
+		$request->set_api( $api );
+		return $request;
 	}
 
 	/**
@@ -108,13 +215,7 @@ abstract class Request {
 		$this->api_client     = $api_client;
 		$this->http_interface = $http_interface;
 
-		if ( method_exists( $this, 'set_id' ) ) {
-			if ( null !== $id ) {
-				$this->set_id( $id );
-			} else {
-				throw new Invalid_Request_Parameter_Exception( 'This request requires an item ID.', 'wcpay_core_invalid_request_parameter_missing_id' );
-			}
-		}
+		$this->set_request_route_id_parameter( $id );
 	}
 
 	/**
@@ -178,10 +279,12 @@ abstract class Request {
 
 		if ( ! empty( $missing_params ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				sprintf(
-					'Trying to access the parameters of a request which is not (fully) initialized yet. Missing parameter(s) for %s: %s',
-					get_class( $this ),
-					implode( ', ', $missing_params )
+				esc_html(
+					sprintf(
+						'Trying to access the parameters of a request which is not (fully) initialized yet. Missing parameter(s) for %s: %s',
+						get_class( $this ),
+						implode( ', ', $missing_params )
+					)
 				),
 				'wcpay_core_invalid_request_parameter_missing_parameters'
 			);
@@ -210,9 +313,11 @@ abstract class Request {
 			return $this->params[ $key ];
 		}
 		throw new Invalid_Request_Parameter_Exception(
-			sprintf(
-				'The passed key %s does not exist in Request class',
-				$key
+			esc_html(
+				sprintf(
+					'The passed key %s does not exist in Request class',
+					$key
+				)
 			),
 			'wcpay_core_invalid_request_parameter_uninitialized_param'
 		);
@@ -221,35 +326,46 @@ abstract class Request {
 	/**
 	 * Allows the request to be modified, and then sends it.
 	 *
-	 * @param string $hook    The filter to use.
-	 * @param mixed  ...$args      Other parameters for the hook.
 	 * @return mixed               Either the response array, or the correct object.
 	 *
 	 * @throws Extend_Request_Exception
 	 * @throws Immutable_Parameter_Exception
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	final public function send( $hook, ...$args ) {
+	final public function send() {
+		$hook = $this->get_hook();
+
+		// Validate that a hook name is defined. Using an empty hook name can cause
+		// collisions with other plugins that accidentally register filters to empty strings,
+		// leading to unexpected behavior or fatal errors on PHP 8.0+.
+		if ( '' === $hook ) {
+			throw new Invalid_Request_Parameter_Exception(
+				sprintf(
+					'Request class %s must define a non-empty hook name. Set the $hook property or call assign_hook() before sending.',
+					static::class
+				),
+				'wcpay_core_invalid_request_parameter_missing_hook'
+			);
+		}
+
 		return $this->format_response(
-			$this->api_client->send_request( $this->apply_filters( $hook, ...$args ) )
+			$this->api_client->send_request( $this->apply_filters( $hook, ...$this->hook_args ) )
 		);
 	}
 
 	/**
-	 * This is mimic of send method, but where API execption is handled.
+	 * This is mimic of send method, but where API exception is handled.
 	 * The reason behind this is that sometimes API request can fail for valid reasons and instead of handling this exception on every request, you could use this function.
 	 *
-	 * @param string $hook         The filter to use.
-	 * @param mixed  ...$args      Other parameters for the hook.
 	 * @return mixed               Either the response array, or the correct object.
 	 *
 	 * @throws Extend_Request_Exception
 	 * @throws Immutable_Parameter_Exception
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
-	final public function handle_rest_request( $hook, ...$args ) {
+	final public function handle_rest_request() {
 		try {
-			$data = $this->send( $hook, ...$args );
+			$data = $this->send();
 			// Make sure to return array if $data is instance or has parent as a Response class.
 			if ( is_a( $data, Response::class ) ) {
 				return $data->to_array();
@@ -270,6 +386,54 @@ abstract class Request {
 	 */
 	public function format_response( $response ) {
 		return new Response( $response );
+	}
+
+	/**
+	 * Used to validate passed ID from the constructor. You can easily override it if you need custom id handling in your classes.
+	 *
+	 * @param mixed $id ID parameter.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	protected function set_request_route_id_parameter( $id ) {
+		if ( method_exists( $this, 'set_id' ) ) {
+			if ( null !== $id ) {
+				$this->set_id( $id );
+			} else {
+				throw new Invalid_Request_Parameter_Exception( 'This request requires an item ID.', 'wcpay_core_invalid_request_parameter_missing_id' );
+			}
+		}
+	}
+	/**
+	 * Returns the WordPress hook name for this request.
+	 *
+	 * This method is final to ensure consistent behavior with assign_hook().
+	 * To define a hook, set the $hook property in your subclass or use assign_hook().
+	 *
+	 * @return string The hook name.
+	 */
+	final public function get_hook(): string {
+		return $this->hook;
+	}
+
+	/**
+	 * Assign the WordPress hook and the arguments specific to the previously assigned hook.
+	 *
+	 * @param string $hook WordPress hook name.
+	 */
+	public function assign_hook( string $hook ) {
+		$this->hook = $hook;
+	}
+
+	/**
+	 * Set hook arguments. Used when hook is predefined in the request class, but you want to pass hook args.
+	 *
+	 * @param mixed ...$args Arguments for the hook.
+	 * @return void
+	 */
+	public function set_hook_args( ...$args ) {
+		$this->hook_args = $args;
 	}
 
 	/**
@@ -326,16 +490,20 @@ abstract class Request {
 	 */
 	final public static function extend( Request $base_request ) {
 		$current_class = static::class;
-		$base_request->validate_extended_class( $current_class, get_class( $base_request ) );
+		$base_request->validate_extended_class( $current_class, $base_request->base_class ?? get_class( $base_request ) );
 
 		if ( ! $base_request->protected_mode ) {
 			throw new Extend_Request_Exception(
-				get_class( $base_request ) . ' can only be extended within its ->apply_filters() method.',
+				esc_html( get_class( $base_request ) . ' can only be extended within its ->apply_filters() method.' ),
 				'wcpay_core_extend_class_incorrectly'
 			);
 		}
-		$obj = new $current_class( $base_request->api_client, $base_request->http_interface );
-		$obj->set_params( $base_request->params );
+		$obj = new $current_class( $base_request->api_client, $base_request->http_interface, $base_request->id ?? null );
+		$obj->set_params( array_merge( static::DEFAULT_PARAMS, $base_request->params ) );
+
+		// Carry over the base class and protected mode into the child request.
+		$obj->base_class     = $base_request->base_class;
+		$obj->protected_mode = true;
 
 		return $obj;
 	}
@@ -359,6 +527,10 @@ abstract class Request {
 	final public function apply_filters( $hook, ...$args ) {
 		// Lock the class in order to prevent `set_param` for protected props.
 		$this->protected_mode = true;
+		$this->base_class     = get_class( $this );
+
+		// Validate API route.
+		$this->validate_api_route( $this->get_api() );
 
 		/**
 		 * Allows a request to be modified, extended or replaced.
@@ -403,10 +575,12 @@ abstract class Request {
 	 */
 	private function throw_immutable_exception( string $param ) {
 		throw new Immutable_Parameter_Exception(
-			sprintf(
-				'The value of %s::%s is immutable and cannot be changed.',
-				get_class( $this ),
-				$param
+			esc_html(
+				sprintf(
+					'The value of %s::%s is immutable and cannot be changed.',
+					get_class( $this ),
+					$param
+				)
 			),
 			'wcpay_core_immutable_parameter_changed'
 		);
@@ -452,7 +626,7 @@ abstract class Request {
 			$constant = "$class_name::$constant_name";
 
 			if ( defined( $constant ) ) {
-				$keys = array_merge( $keys, constant( $constant ) );
+				$keys = array_merge( constant( $constant ), $keys );
 			}
 
 			$class_name = get_parent_class( $class_name );
@@ -473,7 +647,7 @@ abstract class Request {
 	 * @return array        The difference between the two arrays.
 	 */
 	private function array_diff( $array1, $array2 ) {
-		$arr_to_json = function( $item ) {
+		$arr_to_json = function ( $item ) {
 			return is_array( $item ) ? wp_json_encode( $item ) : $item;
 		};
 
@@ -494,7 +668,7 @@ abstract class Request {
 	protected function validate_stripe_id( $id, $prefixes = null ) {
 		if ( empty( $id ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				__( 'Empty parameter is not allowed', 'woocommerce-payments' ),
+				esc_html__( 'Empty parameter is not allowed', 'woocommerce-payments' ),
 				'wcpay_core_invalid_request_parameter_stripe_id'
 			);
 		}
@@ -522,10 +696,12 @@ abstract class Request {
 		}
 
 		throw new Invalid_Request_Parameter_Exception(
-			sprintf(
+			esc_html(
+				sprintf(
 				// Translators: %s is a Stripe ID.
-				__( '%s is not a valid Stripe identifier', 'woocommerce-payments' ),
-				$id
+					__( '%s is not a valid Stripe identifier', 'woocommerce-payments' ),
+					$id
+				)
 			),
 			'wcpay_core_invalid_request_parameter_stripe_id'
 		);
@@ -539,13 +715,20 @@ abstract class Request {
 	 * @throws Invalid_Request_Parameter_Exception An exception if the format is not matched.
 	 * @return void
 	 */
-	protected function validate_is_larger_then( float $value_to_validate, float $value_to_compare ) {
+	protected function validate_is_larger_than( float $value_to_validate, float $value_to_compare ) {
 		if ( $value_to_validate > $value_to_compare ) {
 			return;
 		}
 
 		throw new Invalid_Request_Parameter_Exception(
-			"Invalid number passed. Number $value_to_compare needs to be larger than $value_to_compare",
+			esc_html(
+				sprintf(
+				/* translators: %1$s and %2$s are both numbers */
+					__( 'Invalid number passed. Number %1$s needs to be larger than %2$s', 'woocommerce-payments' ),
+					$value_to_validate,
+					$value_to_compare
+				)
+			),
 			'wcpay_core_invalid_request_parameter_order'
 		);
 	}
@@ -562,10 +745,12 @@ abstract class Request {
 		$account_data = WC_Payments::get_account_service()->get_cached_account_data();
 		if ( isset( $account_data['customer_currencies']['supported'] ) && ! in_array( $currency_code, $account_data['customer_currencies']['supported'], true ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				sprintf(
-				// Translators: %s is a currency code.
-					__( '%s is not a supported currency for payments.', 'woocommerce-payments' ),
-					$currency_code
+				esc_html(
+					sprintf(
+					// Translators: %s is a currency code.
+						__( '%s is not a supported currency for payments.', 'woocommerce-payments' ),
+						$currency_code
+					)
 				),
 				'wcpay_core_invalid_request_parameter_currency_not_available'
 			);
@@ -585,15 +770,16 @@ abstract class Request {
 
 		if ( ! is_subclass_of( $child_class, $parent_class ) ) {
 			throw new Extend_Request_Exception(
-				sprintf(
-					'Failed to extend request. %s is not a subclass of %s',
-					is_string( $child_class ) ? $child_class : get_class( $child_class ),
-					$parent_class
+				esc_html(
+					sprintf(
+						'Failed to extend request. %s is not a subclass of %s',
+						is_string( $child_class ) ? $child_class : get_class( $child_class ),
+						$parent_class
+					)
 				),
 				'wcpay_core_extend_class_not_subclass'
 			);
 		}
-
 	}
 
 	/**
@@ -609,11 +795,13 @@ abstract class Request {
 		$d = DateTime::createFromFormat( $format, $date );
 		if ( ! ( $d && $d->format( $format ) === $date ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				sprintf(
+				esc_html(
+					sprintf(
 					// Translators: %1$s is a provided date string, %2$s is a date format.
-					__( '%1$s is not a valid date for format %2$s.', 'woocommerce-payments' ),
-					$date,
-					$format
+						__( '%1$s is not a valid date for format %2$s.', 'woocommerce-payments' ),
+						$date,
+						$format
+					)
 				),
 				'wcpay_core_invalid_request_parameter_invalid_date'
 			);
@@ -632,10 +820,12 @@ abstract class Request {
 		$check_fallback_url = wp_generate_password( 12, false );
 		if ( hash_equals( $check_fallback_url, wp_validate_redirect( $redirect_url, $check_fallback_url ) ) ) {
 			throw new Invalid_Request_Parameter_Exception(
-				sprintf(
-				// Translators: %s is a currency code.
-					__( '%1$s is not a valid redirect URL. Use a URL in the allowed_redirect_hosts filter.', 'woocommerce-payments' ),
-					$redirect_url
+				esc_html(
+					sprintf(
+					// Translators: %s is a currency code.
+						__( '%1$s is not a valid redirect URL. Use a URL in the allowed_redirect_hosts filter.', 'woocommerce-payments' ),
+						$redirect_url
+					)
 				),
 				'wcpay_core_invalid_request_parameter_invalid_redirect_url'
 			);
@@ -654,13 +844,34 @@ abstract class Request {
 		$user = get_user_by( 'login', $user_name );
 		if ( false === $user ) {
 			throw new Invalid_Request_Parameter_Exception(
-				sprintf(
+				esc_html(
+					sprintf(
 					// Translators: %s is a provided username.
-					__( '%s is not a valid username.', 'woocommerce-payments' ),
-					$user_name
+						__( '%s is not a valid username.', 'woocommerce-payments' ),
+						$user_name
+					)
 				),
 				'wcpay_core_invalid_request_parameter_invalid_username'
 			);
 		}
+	}
+
+	/**
+	 * Validates API endpoint or route.
+	 *
+	 * @param string $api_route API route to validate.
+	 *
+	 * @throws Invalid_Request_Parameter_Exception
+	 */
+	public function validate_api_route( string $api_route ) {
+
+		$api_route = explode( '/', $api_route ); // In case if you have something after "/" like id or something similar.
+
+		// Some routes have 2 URIs. In case route we want to validate have 2 (or more) URI,s lets validate that first.
+		// There could be micro optimization to validate only array keys with two 'URI's but for now we can skip that part.
+		if ( ( count( $api_route ) > 1 && array_key_exists( "$api_route[0]/$api_route[1]", $this->route_list ) ) || array_key_exists( $api_route[0], $this->route_list ) ) {
+			return;
+		}
+		throw new Invalid_Request_Parameter_Exception( 'Invalid request api route', 'wcpay_core_invalid_request_parameter_api_route_not_defined' );
 	}
 }

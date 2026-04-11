@@ -1,6 +1,6 @@
 # `Capture_Intention` request class
 
-[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../requests.md)
+[ℹ️ This document is a part of __WooCommerce Payments Server Requests__](../README.md)
 
 ## Description
 
@@ -26,5 +26,6 @@ When using this request, provide the following filter and arguments:
 ```php
 $request = Capture_Intention::create( $id );
 $request->set_amount_to_capture( $amount );
-$request->send( 'wcpay_capture_intent_request', $order );
+$request->set_hook_args( $order );
+$request->send();
 ```

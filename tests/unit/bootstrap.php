@@ -5,6 +5,9 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Container;
+use WCPay\Internal\DependencyManagement\ExtendedContainer;
+
 $_tests_dir = getenv( 'WP_TESTS_DIR' );
 
 if ( ! $_tests_dir ) {
@@ -35,7 +38,7 @@ function _manually_load_plugin() {
 	// needs to still make sure that all dependencies exist for it to successfully run.
 	define( 'WCPAY_TEST_ENV', true );
 
-	// Load the WooCommerce plugin so we can use its classes in our WooCommerce Payments plugin.
+	// Load the WooCommerce plugin so we can use its classes in our WooPayments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
 	// Set a default currency to be used for the multi-currency tests because the default
@@ -43,21 +46,27 @@ function _manually_load_plugin() {
 	update_option( 'woocommerce_currency', 'USD' );
 
 	// Enable the WCPay Subscriptions feature flag in tests to ensure we can test
-	// subscriptions funtionality.
+	// subscriptions functionality. Using 'default_option_' filter provides a default
+	// only when the option doesn't exist in the database, allowing tests to override
+	// via update_option().
 	add_filter(
-		'pre_option__wcpay_feature_subscriptions',
-		function() {
+		'default_option__wcpay_feature_subscriptions',
+		function ( $default ) {
 			return '1';
-		}
+		},
+		10,
+		1
 	);
 
-	$_plugin_dir = dirname( __FILE__ ) . '/../../';
+	$_plugin_dir = __DIR__ . '/../../';
 
 	require $_plugin_dir . 'woocommerce-payments.php';
 
 	require_once $_plugin_dir . 'includes/class-wc-payments-db.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-charge.php';
-	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-abstract-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-payment-intention.php';
+	require_once $_plugin_dir . 'includes/wc-payment-api/models/class-wc-payments-api-setup-intention.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-api-client.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http-interface.php';
 	require_once $_plugin_dir . 'includes/wc-payment-api/class-wc-payments-http.php';
@@ -70,7 +79,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-settings.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-sections-overwrite.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-orders-controller.php';
@@ -80,23 +88,39 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-rest-upe-flag-toggle-controller.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
-	require_once $_plugin_dir . 'includes/notes/class-wc-payments-notes-additional-payment-methods.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
+	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
+	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
 	require_once $_plugin_dir . 'includes/class-woopay-tracker.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-customer-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
+
+	// Load currency helper class early to ensure its implementation is used over the one resolved during further test initialization.
+	require_once __DIR__ . '/helpers/class-wc-helper-site-currency.php';
+
+	// Assist testing methods and classes with keyword `final`.
+	// Woo Core uses the similar approach from this package, and implements it as class `CodeHacker`.
+	DG\BypassFinals::enable( false, true );
+	DG\BypassFinals::setWhitelist(
+		[
+			'*/AbstractSessionRateLimiter.php',
+		]
+	);
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
 
 // Need those polyfills to run tests in CI.
-require_once dirname( __FILE__ ) . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
+require_once __DIR__ . '/../../vendor/yoast/phpunit-polyfills/phpunitpolyfills-autoload.php';
 
 // Start up the WP testing environment.
 require $_tests_dir . '/includes/bootstrap.php';
-require dirname( __FILE__ ) . '/../WCPAY_UnitTestCase.php';
+require __DIR__ . '/../WCPAY_UnitTestCase.php';
 
 // We use outdated PHPUnit version, which emits deprecation errors in PHP 7.4 (deprecated reflection APIs).
 if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
@@ -108,6 +132,45 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
  *
  * Init'ing the subscriptions-core loads all subscriptions class and hooks, which breaks existing WCPAY unit tests.
  * WCPAY already mocks the WC Subscriptions classes/functions it needs so there's no need to load them anyway.
+ *
+ * This function should only be used to load any mocked Subscriptions Core classes that need to be loaded before the PHPUnit FileLoader.
  */
 function wcpay_init_subscriptions_core() {
+	require_once __DIR__ . '/helpers/class-wcs-helper-background-repairer.php';
+	require_once __DIR__ . '/helpers/class-wc-helper-subscriptions.php';
+	require_once __DIR__ . '/helpers/class-wc-subscriptions-change-payment-gateway.php';
+}
+
+// Placeholder for the test container.
+$GLOBALS['wcpay_test_container'] = null;
+
+/**
+ * Extracts the internal ExtendedContainer instance of the WCPay container.
+ *
+ * This allows full access to the full ExtendedContainer functionality,
+ * rather than only to the non-test `get` and `has` methods of the container.
+ *
+ * @throws Exception In case the container is not available.
+ * @return ExtendedContainer The extended container.
+ */
+function wcpay_get_test_container() {
+	if ( $GLOBALS['wcpay_test_container'] instanceof ExtendedContainer ) {
+		return $GLOBALS['wcpay_test_container'];
+	}
+
+	$container = $GLOBALS['wcpay_container'] ?? null;
+	if ( ! $container instanceof Container ) {
+		if ( is_null( $container ) ) {
+			$container = wcpay_get_container();
+		} else {
+			throw new Exception( 'Tests require the WCPay dependency container to be set up.' );
+		}
+	}
+
+	// Load the property through reflection.
+	$property = new ReflectionProperty( $container, 'container' );
+	$property->setAccessible( true );
+	$extended_container = $property->getValue( $container );
+
+	return $extended_container;
 }

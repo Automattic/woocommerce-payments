@@ -5,6 +5,7 @@
  */
 import { dispatch, select } from '@wordpress/data';
 import { apiFetch } from '@wordpress/data-controls';
+import directApiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -28,12 +29,6 @@ export function updateIsCardPresentEligible( isEnabled ) {
 	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
 }
 
-export function updateIsClientSecretEncryptionEnabled( isEnabled ) {
-	return updateSettingsValues( {
-		is_client_secret_encryption_enabled: isEnabled,
-	} );
-}
-
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -44,6 +39,12 @@ export function updatePaymentRequestButtonSize( size ) {
 
 export function updatePaymentRequestButtonTheme( theme ) {
 	return updateSettingsValues( { payment_request_button_theme: theme } );
+}
+
+export function updatePaymentRequestButtonBorderRadius( radius ) {
+	return updateSettingsValues( {
+		payment_request_button_border_radius: radius,
+	} );
 }
 
 export function updateSettings( data ) {
@@ -61,15 +62,15 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 	return updateSettingsValues( { is_payment_request_enabled: isEnabled } );
 }
 
-export function updateEnabledPaymentMethodIds( methodIds ) {
+export function updateIsExpressCheckoutInPaymentMethodsEnabled( isEnabled ) {
 	return updateSettingsValues( {
-		enabled_payment_method_ids: [ ...methodIds ],
+		is_express_checkout_in_payment_methods_enabled: isEnabled,
 	} );
 }
 
-export function updateAvailablePaymentMethodIds( methodIds ) {
+export function updateEnabledPaymentMethodIds( methodIds ) {
 	return updateSettingsValues( {
-		available_payment_method_ids: [ ...methodIds ],
+		enabled_payment_method_ids: [ ...methodIds ],
 	} );
 }
 
@@ -123,23 +124,19 @@ export function updateAccountStatementDescriptor( accountStatementDescriptor ) {
 	} );
 }
 
-export function updateAccountBusinessName( accountBusinessName ) {
-	return updateSettingsValues( {
-		account_business_name: accountBusinessName,
-	} );
-}
-
-export function updateAccountBusinessURL( accountBusinessURL ) {
-	return updateSettingsValues( {
-		account_business_url: accountBusinessURL,
-	} );
-}
-
-export function updateAccountBusinessSupportAddress(
-	accountBusinessSupportAddress
+export function updateAccountStatementDescriptorKanji(
+	accountStatementDescriptorKanji
 ) {
 	return updateSettingsValues( {
-		account_business_support_address: accountBusinessSupportAddress,
+		account_statement_descriptor_kanji: accountStatementDescriptorKanji,
+	} );
+}
+
+export function updateAccountStatementDescriptorKana(
+	accountStatementDescriptorKana
+) {
+	return updateSettingsValues( {
+		account_statement_descriptor_kana: accountStatementDescriptorKana,
 	} );
 }
 
@@ -156,12 +153,6 @@ export function updateAccountBusinessSupportPhone(
 ) {
 	return updateSettingsValues( {
 		account_business_support_phone: accountBusinessSupportPhone,
-	} );
-}
-
-export function updateAccountBrandingLogo( accountBrandingLogo ) {
-	return updateSettingsValues( {
-		account_branding_logo: accountBrandingLogo,
 	} );
 }
 
@@ -182,7 +173,7 @@ export function updateDepositScheduleMonthlyAnchor(
 ) {
 	return updateSettingsValues( {
 		deposit_schedule_monthly_anchor:
-			'' === depositScheduleMonthlyAnchor
+			depositScheduleMonthlyAnchor === ''
 				? null
 				: parseInt( depositScheduleMonthlyAnchor, 10 ),
 	} );
@@ -195,10 +186,14 @@ export function* saveSettings() {
 
 		yield updateIsSavingSettings( true, null );
 
-		yield apiFetch( {
+		const response = yield apiFetch( {
 			path: `${ NAMESPACE }/settings`,
 			method: 'post',
 			data: settings,
+		} );
+
+		yield updateSettingsValues( {
+			payment_method_statuses: response.data.payment_method_statuses,
 		} );
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
@@ -209,21 +204,27 @@ export function* saveSettings() {
 		yield dispatch( 'core/notices' ).createErrorNotice(
 			__( 'Error saving settings.', 'woocommerce-payments' )
 		);
+
+		if ( error.server_error ) {
+			yield dispatch( 'core/notices' ).createErrorNotice(
+				error.server_error
+			);
+		}
 	} finally {
 		yield updateIsSavingSettings( false, error );
 	}
 
-	return null === error;
-}
-
-export function updatePaymentRequestLocations( locations ) {
-	return updateSettingsValues( {
-		payment_request_enabled_locations: [ ...locations ],
-	} );
+	return error === null;
 }
 
 export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
+}
+
+export function updateIsWooPayGlobalThemeSupportEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_woopay_global_theme_support_enabled: isEnabled,
+	} );
 }
 
 export function updateWooPayCustomMessage( message ) {
@@ -238,12 +239,6 @@ export function updateWooPayStoreLogo( storeLogo ) {
 	} );
 }
 
-export function updateWooPayLocations( locations ) {
-	return updateSettingsValues( {
-		woopay_enabled_locations: [ ...locations ],
-	} );
-}
-
 export function updateProtectionLevel( level ) {
 	return updateSettingsValues( { current_protection_level: level } );
 }
@@ -251,5 +246,67 @@ export function updateProtectionLevel( level ) {
 export function updateAdvancedFraudProtectionSettings( settings ) {
 	return updateSettingsValues( {
 		advanced_fraud_protection_settings: settings,
+	} );
+}
+
+export function updateIsStripeBillingEnabled( isEnabled ) {
+	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}
+
+export function updateAccountCommunicationsEmail( email ) {
+	return updateSettingsValues( { account_communications_email: email } );
+}
+
+export function updateExpressCheckoutProductMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_product_methods: [ ...methods ],
+	} );
+}
+
+export function updateExpressCheckoutCartMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_cart_methods: [ ...methods ],
+	} );
+}
+
+export function updateExpressCheckoutCheckoutMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_checkout_methods: [ ...methods ],
+	} );
+}
+
+export function* submitStripeBillingSubscriptionMigration() {
+	try {
+		yield dispatch( STORE_NAME ).startResolution(
+			'scheduleStripeBillingMigration'
+		);
+
+		yield apiFetch( {
+			path: `${ NAMESPACE }/settings/schedule-stripe-billing-migration`,
+			method: 'post',
+		} );
+	} catch ( e ) {
+		yield dispatch( 'core/notices' ).createErrorNotice(
+			__(
+				'Error starting the Stripe Billing migration.',
+				'woocommerce-payments'
+			)
+		);
+	}
+
+	yield dispatch( STORE_NAME ).finishResolution(
+		'scheduleStripeBillingMigration'
+	);
+}
+
+export function saveOption( optionName, value ) {
+	return directApiFetch( {
+		path: `${ NAMESPACE }/settings/${ optionName }`,
+		method: 'post',
+		data: { value },
+	} ).catch( () => {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error saving option', 'woocommerce-payments' )
+		);
 	} );
 }

@@ -14,27 +14,46 @@ import {
 
 export const usePaymentCompleteHandler = (
 	api,
-	stripe,
-	elements,
-	onCheckoutAfterProcessingWithSuccess,
+	onCheckoutSuccess,
 	emitResponse,
 	shouldSavePayment
 ) => {
 	// Once the server has completed payment processing, confirm the intent of necessary.
 	useEffect(
 		() =>
-			onCheckoutAfterProcessingWithSuccess(
-				( { processingResponse: { paymentDetails } } ) =>
-					confirmCardPayment(
-						api,
-						paymentDetails,
-						emitResponse,
-						shouldSavePayment
-					)
+			onCheckoutSuccess( ( { processingResponse: { paymentDetails } } ) =>
+				confirmCardPayment(
+					api,
+					paymentDetails,
+					emitResponse,
+					shouldSavePayment
+				)
 			),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ elements, stripe, api, shouldSavePayment ]
+		[ api, shouldSavePayment ]
+	);
+};
+
+/**
+ * Handles onCheckoutFail event emitter which fires after Blocks checkout processor responds with error.
+ *
+ * Displays the error message returned from checkout processor in the noticeContexts.PAYMENTS area.
+ *
+ * @param {Function} onCheckoutFail The onCheckoutFail event emitter.
+ * @param {Object} emitResponse   Various helpers for usage with observer.
+ */
+export const usePaymentFailHandler = ( onCheckoutFail, emitResponse ) => {
+	useEffect(
+		() =>
+			onCheckoutFail( ( { processingResponse: { paymentDetails } } ) => {
+				return {
+					type: 'failure',
+					message: paymentDetails.errorMessage,
+					messageContext: emitResponse.noticeContexts.PAYMENTS,
+				};
+			} ),
+		[ onCheckoutFail, emitResponse?.noticeContexts?.PAYMENTS ]
 	);
 };
 

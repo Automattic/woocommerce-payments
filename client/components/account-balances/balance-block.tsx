@@ -1,32 +1,31 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import Loadable from 'components/loadable';
-import BalanceTooltip from './balance-tooltip';
 
 /**
  * BalanceBlockProps
  *
  * @typedef {Object} BalanceBlockProps
  *
- * @property {string} id											The balance block id. Used to link the title and amount.
- * @property {string} title											The balance title.
- * @property {string} currencyCode									Currency code of the balance block.
- * @property {React.ReactElement< typeof BalanceTooltip >} tooltip	The tooltip element.
- * @property {number} [amount]										Optional. The balance amount.
- * @property {boolean} [isLoading]									Optional. Whether the balance block is loading.
+ * @property {string} id					The balance block id. Used to link the title and amount.
+ * @property {string} title					The balance title.
+ * @property {string} currencyCode			Currency code of the balance block.
+ * @property {React.ReactElement} tooltip	The tooltip element.
+ * @property {number} [amount]				Optional. The balance amount.
+ * @property {boolean} [isLoading]			Optional. Whether the balance block is loading.
  */
 interface BalanceBlockProps {
 	id: string;
 	title: string;
 	currencyCode: string;
-	tooltip?: React.ReactElement< typeof BalanceTooltip >;
+	tooltip?: React.ReactElement;
 	amount?: number;
 	isLoading?: boolean;
 }

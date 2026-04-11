@@ -21,7 +21,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	 *
 	 * @return  void
 	 */
-	protected function init() {
+	public function init() {
 		// Add needed actions and filters if Name Your Price is active.
 		if ( class_exists( 'WC_Name_Your_Price' ) ) {
 			// Convert meta prices.
@@ -33,6 +33,10 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 			add_action( 'woocommerce_add_cart_item_data', [ $this, 'add_initial_currency' ], 20, 3 );
 			add_filter( 'woocommerce_get_cart_item_from_session', [ $this, 'convert_cart_currency' ], 20, 2 );
 			add_filter( MultiCurrency::FILTER_PREFIX . 'should_convert_product_price', [ $this, 'should_convert_product_price' ], 50, 2 );
+
+			// Convert cart editing price.
+			add_filter( 'wc_nyp_edit_in_cart_args', [ $this, 'edit_in_cart_args' ], 10, 2 );
+			add_filter( 'wc_nyp_get_initial_price', [ $this, 'get_initial_price' ], 10, 3 );
 		}
 	}
 
@@ -59,7 +63,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 
 		$nyp_id = $variation_id ? $variation_id : $product_id;
 
-		if ( \WC_Name_Your_Price_Helpers::is_nyp( $nyp_id ) && isset( $cart_item['nyp'] ) ) {
+		if ( class_exists( '\WC_Name_Your_Price_Helpers' ) && \WC_Name_Your_Price_Helpers::is_nyp( $nyp_id ) && isset( $cart_item['nyp'] ) ) {
 			$currency                  = $this->multi_currency->get_selected_currency();
 			$cart_item['nyp_currency'] = $currency->get_code();
 			$cart_item['nyp_original'] = $cart_item['nyp'];
@@ -80,7 +84,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	 */
 	public function convert_cart_currency( $cart_item, $values ) {
 
-		if ( isset( $cart_item['nyp_original'] ) && isset( $cart_item['nyp_currency'] ) ) {
+		if ( function_exists( 'WC_Name_Your_Price' ) && isset( $cart_item['nyp_original'] ) && isset( $cart_item['nyp_currency'] ) ) {
 
 			// Store the original currency in $product meta.
 			$cart_item['data']->update_meta_data( self::NYP_CURRENCY, $cart_item['nyp_currency'] );
@@ -92,24 +96,16 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 				$cart_item['nyp'] = $cart_item['nyp_original'];
 			} else {
 
-				$nyp_currency = $this->multi_currency->get_enabled_currencies()[ $cart_item['nyp_currency'] ] ?? null;
+				$from_currency = $cart_item['nyp_currency'];
+				$raw_price     = $cart_item['nyp_original'];
 
-				// Convert entered price back to default currency.
-				$converted_price = ( (float) $cart_item['nyp_original'] ) / $nyp_currency->get_rate();
-
-				if ( ! $selected_currency->get_is_default() ) {
-					$converted_price = $this->multi_currency->get_price( $converted_price, 'product' );
-				}
-
-				$cart_item['nyp'] = $converted_price;
+				$cart_item['nyp'] = $this->multi_currency->get_raw_conversion( $raw_price, $selected_currency->get_code(), $from_currency );
 			}
 
 			$cart_item = WC_Name_Your_Price()->cart->set_cart_item( $cart_item );
-
 		}
 
 		return $cart_item;
-
 	}
 
 	/**
@@ -134,10 +130,49 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 		}
 
 		// Check to see if the product is a NYP product.
-		if ( \WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
+		if ( class_exists( '\WC_Name_Your_Price_Helpers' ) && \WC_Name_Your_Price_Helpers::is_nyp( $product ) ) {
 			return false;
 		}
 
 		return $return;
+	}
+
+	/**
+	 * Add currency to cart edit link.
+	 *
+	 * @param array $args      The cart args.
+	 * @param array $cart_item The current cart item.
+	 *
+	 * @return array
+	 */
+	public function edit_in_cart_args( $args, $cart_item ) {
+		$args['nyp_currency'] = $this->multi_currency->get_selected_currency()->get_code();
+		return $args;
+	}
+
+	/**
+	 * Maybe convert any prices being edited from the cart
+	 *
+	 * @param string $initial_price The initial price.
+	 * @param mixed  $product       The product being queried.
+	 * @param string $suffix        The suffix needed for composites and bundles.
+	 *
+	 * @return float|string
+	 */
+	public function get_initial_price( $initial_price, $product, $suffix ) {
+
+		if ( isset( $_REQUEST[ 'nyp_raw' . $suffix ] ) && isset( $_REQUEST['nyp_currency'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			$from_currency = wc_clean( wp_unslash( $_REQUEST['nyp_currency'] ) );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$raw_price     = (float) wc_clean( wp_unslash( $_REQUEST[ 'nyp_raw' . $suffix ] ) );  // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			$selected_currency = $this->multi_currency->get_selected_currency();
+
+			if ( $from_currency !== $selected_currency->get_code() ) {
+				$initial_price = $this->multi_currency->get_raw_conversion( $raw_price, $selected_currency->get_code(), $from_currency );
+			}
+		}
+
+		return $initial_price;
 	}
 }

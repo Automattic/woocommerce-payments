@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
+use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
@@ -39,14 +40,6 @@ class WC_Payments_Invoice_Service {
 	private $payments_api_client;
 
 	/**
-	 * Product Service
-	 *
-	 * @var WC_Payments_Product_Service
-	 */
-	private $product_service;
-
-
-	/**
 	 * Order Service
 	 *
 	 * @var WC_Payments_Order_Service
@@ -56,17 +49,14 @@ class WC_Payments_Invoice_Service {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
-	 * @param WC_Payments_Product_Service $product_service      Product Service.
-	 * @param WC_Payments_Order_Service   $order_service              WC payments Order Service.
+	 * @param WC_Payments_API_Client    $payments_api_client  WooCommerce Payments API client.
+	 * @param WC_Payments_Order_Service $order_service         WC payments Order Service.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
-		WC_Payments_Product_Service $product_service,
 		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
-		$this->product_service     = $product_service;
 		$this->order_service       = $order_service;
 
 		/**
@@ -80,8 +70,10 @@ class WC_Payments_Invoice_Service {
 			return;
 		}
 
-		add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
-		add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
+		if ( WC_Payments_Features::should_use_stripe_billing() ) {
+			add_action( 'woocommerce_order_payment_status_changed', [ $this, 'maybe_record_invoice_payment' ], 10, 1 );
+			add_action( 'woocommerce_renewal_order_payment_complete', [ $this, 'maybe_record_invoice_payment' ], 11, 1 );
+		}
 	}
 
 	/**
@@ -91,7 +83,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @return string Invoice ID.
 	 */
-	public static function get_pending_invoice_id( $subscription ) : string {
+	public static function get_pending_invoice_id( $subscription ): string {
 		return $subscription->get_meta( self::PENDING_INVOICE_ID_KEY, true );
 	}
 
@@ -101,7 +93,7 @@ class WC_Payments_Invoice_Service {
 	 * @param WC_Order $order The order.
 	 * @return string Invoice ID.
 	 */
-	public static function get_order_invoice_id( WC_Order $order ) : string {
+	public static function get_order_invoice_id( WC_Order $order ): string {
 		return $order->get_meta( self::ORDER_INVOICE_ID_KEY, true );
 	}
 
@@ -188,8 +180,7 @@ class WC_Payments_Invoice_Service {
 	 * @throws API_Exception If the request to mark the invoice as paid fails.
 	 */
 	public function maybe_record_invoice_payment( int $order_id ) {
-
-		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
 			return;
 		}
 
@@ -202,7 +193,7 @@ class WC_Payments_Invoice_Service {
 		foreach ( wcs_get_subscriptions_for_order( $order, [ 'order_type' => [ 'parent', 'renewal' ] ] ) as $subscription ) {
 			$invoice_id = self::get_subscription_invoice_id( $subscription );
 
-			if ( ! $invoice_id ) {
+			if ( ! $invoice_id || ! WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 				continue;
 			}
 
@@ -292,8 +283,9 @@ class WC_Payments_Invoice_Service {
 	 */
 	public function get_and_attach_intent_info_to_order( $order, $intent_id ) {
 		try {
-			$request       = Get_Intention::create( $intent_id );
-			$intent_object = $request->send( 'wcpay_get_intent_request', $order );
+			$request = Get_Intention::create( $intent_id );
+			$request->set_hook_args( $order );
+			$intent_object = $request->send();
 
 		} catch ( API_Exception $e ) {
 			$order->add_order_note( __( 'The payment info couldn\'t be added to the order.', 'woocommerce-payments' ) );
@@ -302,15 +294,99 @@ class WC_Payments_Invoice_Service {
 
 		$charge = $intent_object->get_charge();
 
-		$this->order_service->attach_intent_info_to_order(
-			$order,
-			$intent_id,
-			$intent_object->get_status(),
-			$intent_object->get_payment_method_id(),
-			$intent_object->get_customer_id(),
-			$charge ? $charge->get_id() : null,
-			$intent_object->get_currency()
+		$this->order_service->attach_intent_info_to_order( $order, $intent_object );
+	}
+
+	/**
+	 * Sends a request to server to record the store's context for an invoice payment.
+	 *
+	 * @param string $invoice_id The subscription invoice ID.
+	 *
+	 * @return array
+	 * @throws API_Exception
+	 */
+	public function record_subscription_payment_context( string $invoice_id ) {
+		return $this->payments_api_client->update_invoice(
+			$invoice_id,
+			[
+				'subscription_context' => class_exists( 'WC_Subscriptions' ) && WC_Payments_Features::is_stripe_billing_enabled() ? 'stripe_billing' : 'legacy_wcpay_subscription',
+			]
 		);
+	}
+
+	/**
+	 * Sends a request to server to update transaction details.
+	 *
+	 * @param array    $invoice Invoice details.
+	 * @param WC_Order $order Order details.
+	 *
+	 * @return void
+	 * @throws API_Exception
+	 */
+	public function update_transaction_details( array $invoice, WC_Order $order ) {
+		if ( ! isset( $invoice['charge'] ) ) {
+			return;
+		}
+
+		$charge = $this->payments_api_client->get_charge( $invoice['charge'] );
+		if ( ! isset( $charge['balance_transaction'] ) || ! isset( $charge['balance_transaction']['id'] ) ) {
+			return;
+		}
+
+		$this->payments_api_client->update_transaction(
+			$charge['balance_transaction']['id'],
+			[
+				'customer_first_name' => $order->get_billing_first_name(),
+				'customer_last_name'  => $order->get_billing_last_name(),
+				'customer_email'      => $order->get_billing_email(),
+				'customer_country'    => $order->get_billing_country(),
+			]
+		);
+	}
+
+	/**
+	 * Update a charge with the order id from invoice.
+	 *
+	 * @param array $invoice Invoice details.
+	 * @param int   $order_id Order ID.
+	 *
+	 * @return void
+	 * @throws API_Exception
+	 */
+	public function update_charge_details( array $invoice, int $order_id ) {
+		if ( ! isset( $invoice['charge'] ) ) {
+			return;
+		}
+		$this->payments_api_client->update_charge(
+			$invoice['charge'],
+			[
+				'metadata' => [ 'order_id' => $order_id ],
+			]
+		);
+	}
+
+	/**
+	 * Get recurring items of passed item (subscription).
+	 *
+	 * @param WC_Subscription $item Subscription to get recurring items for.
+	 *
+	 * @return array
+	 */
+	public function get_recurring_items( $item ) {
+		// Subscription service has this service as a dependency, so we can't inject it via constructor.
+		// With this we can mock this function in tests to return whatever we want.
+		return WC_Payments_Subscriptions::get_subscription_service()->get_recurring_item_data_for_subscription( $item );
+	}
+
+	/**
+	 * Get the WCPay subscription item ID for a WC subscription item.
+	 *
+	 * @param WC_Order_Item $item The WC subscription item.
+	 *
+	 * @return string The WCPay subscription item ID.
+	 */
+	public function get_wcpay_item_id( $item ) {
+		return WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
 	}
 
 	/**
@@ -334,7 +410,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @throws Rest_Request_Exception WCPay invoice items do not match WC subscription items.
 	 */
-	private function get_repair_data_for_wcpay_items( array $wcpay_item_data, WC_Subscription $subscription ) : array {
+	private function get_repair_data_for_wcpay_items( array $wcpay_item_data, WC_Subscription $subscription ): array {
 		$repair_data        = [];
 		$wcpay_items        = [];
 		$subscription_items = $subscription->get_items( [ 'line_item', 'fee', 'shipping', 'tax' ] );
@@ -352,13 +428,14 @@ class WC_Payments_Invoice_Service {
 		}
 
 		// Generate any repair data necessary to update the WCPay Subscription so it matches the WC subscription.
-		foreach ( WC_Payments_Subscriptions::get_subscription_service()->get_recurring_item_data_for_subscription( $subscription ) as $recurring_item_data ) {
+		$recurring_items = $this->get_recurring_items( $subscription );
+		foreach ( $recurring_items  as $recurring_item_data ) {
 			$item_id       = $recurring_item_data['metadata']['wc_item_id'];
 			$item          = $subscription_items[ $item_id ];
-			$wcpay_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
+			$wcpay_item_id = $this->get_wcpay_item_id( $item );
 
 			if ( ! isset( $wcpay_items[ $wcpay_item_id ] ) ) {
-				$message = __( 'The WCPay invoice items do not match WC subscription items.', 'woocommerce-payments' );
+				$message = __( 'The WooPayments invoice items do not match WC subscription items.', 'woocommerce-payments' );
 				Logger::error( $message );
 				throw new Rest_Request_Exception( $message );
 			}

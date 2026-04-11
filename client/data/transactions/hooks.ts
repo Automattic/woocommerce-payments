@@ -10,6 +10,26 @@ import type { Query } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import type { DepositStatus } from 'wcpay/types/deposits';
+import PAYMENT_METHOD_IDS, {
+	PAYMENT_METHOD_BRANDS,
+} from 'wcpay/constants/payment-method';
+
+export type TransactionType =
+	| 'charge'
+	| 'refund'
+	| 'card_reader_fee'
+	| 'financing_payout'
+	| 'financing_paydown'
+	| 'fee_refund';
+
+export type TransactionSource =
+	| 'ach_credit_transfer'
+	| 'ach_debit'
+	| 'acss_debit'
+	| 'stripe_account'
+	| typeof PAYMENT_METHOD_IDS[ keyof typeof PAYMENT_METHOD_IDS ]
+	| typeof PAYMENT_METHOD_BRANDS[ keyof typeof PAYMENT_METHOD_BRANDS ];
 
 // TODO: refine this type with more detailed information.
 export interface Transaction {
@@ -25,50 +45,18 @@ export interface Transaction {
 	customer_country: string;
 	customer_currency: string;
 	deposit_id?: string;
-	deposit_status?:
-		| 'paid'
-		| 'pending'
-		| 'in_transit'
-		| 'canceled'
-		| 'failed'
-		| 'estimated';
+	deposit_status?: DepositStatus;
 	available_on: string;
 	currency: string;
 	transaction_id: string;
 	date: string;
-	type: 'charge' | 'refund' | 'financing_payout' | 'financing_paydown';
-	channel: 'in_person' | 'online';
+	type: TransactionType;
+	channel: 'in_person' | 'in_person_pos' | 'online';
 	// A field to identify the payment's source.
 	// Usually last 4 digits for card payments, bank name for bank transfers...
 	source_identifier: string;
 	source_device?: string;
-	source:
-		| 'ach_credit_transfer'
-		| 'ach_debit'
-		| 'acss_debit'
-		| 'affirm'
-		| 'afterpay_clearpay'
-		| 'alipay'
-		| 'amex'
-		| 'au_becs_debit'
-		| 'bancontact'
-		| 'diners'
-		| 'discover'
-		| 'eps'
-		| 'giropay'
-		| 'ideal'
-		| 'jcb'
-		| 'klarna'
-		| 'link'
-		| 'mastercard'
-		| 'multibanco'
-		| 'p24'
-		| 'sepa_debit'
-		| 'sofort'
-		| 'stripe_account'
-		| 'unionpay'
-		| 'visa'
-		| 'wechat';
+	source: TransactionSource;
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';
@@ -92,6 +80,7 @@ interface TransactionsSummary {
 		currency?: string;
 		store_currencies?: string[];
 		customer_currencies?: string[];
+		sources?: Transaction[ 'source' ][];
 	};
 	isLoading: boolean;
 }
@@ -151,11 +140,20 @@ export const useTransactions = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		type_is_in: typeIsIn,
 		source_device_is: sourceDeviceIs,
 		source_device_is_not: sourceDeviceIsNot,
+		channel_is: channelIs,
+		channel_is_not: channelIsNot,
+		customer_country_is: customerCountryIs,
+		customer_country_is_not: customerCountryIsNot,
+		risk_level_is: riskLevelIs,
+		risk_level_is_not: riskLevelIsNot,
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
+		source_is: sourceIs,
+		source_is_not: sourceIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -188,11 +186,20 @@ export const useTransactions = (
 					),
 				typeIs,
 				typeIsNot,
+				typeIsIn,
 				sourceDeviceIs,
 				sourceDeviceIsNot,
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
+				sourceIs,
+				sourceIsNot,
+				channelIs,
+				channelIsNot,
+				customerCountryIs,
+				customerCountryIsNot,
+				riskLevelIs,
+				riskLevelIsNot,
 				loanIdIs,
 				depositId,
 				search,
@@ -215,11 +222,20 @@ export const useTransactions = (
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			JSON.stringify( typeIsIn ),
 			sourceDeviceIs,
 			sourceDeviceIsNot,
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
+			sourceIs,
+			sourceIsNot,
+			channelIs,
+			channelIsNot,
+			customerCountryIs,
+			customerCountryIsNot,
+			riskLevelIs,
+			riskLevelIsNot,
 			loanIdIs,
 			depositId,
 			JSON.stringify( search ),
@@ -234,11 +250,20 @@ export const useTransactionsSummary = (
 		date_between: dateBetween,
 		type_is: typeIs,
 		type_is_not: typeIsNot,
+		type_is_in: typeIsIn,
 		source_device_is: sourceDeviceIs,
 		source_device_is_not: sourceDeviceIsNot,
 		store_currency_is: storeCurrencyIs,
 		customer_currency_is: customerCurrencyIs,
 		customer_currency_is_not: customerCurrencyIsNot,
+		source_is: sourceIs,
+		source_is_not: sourceIsNot,
+		channel_is: channelIs,
+		channel_is_not: channelIsNot,
+		customer_country_is: customerCountryIs,
+		customer_country_is_not: customerCountryIsNot,
+		risk_level_is: riskLevelIs,
+		risk_level_is_not: riskLevelIsNot,
 		loan_id_is: loanIdIs,
 		search,
 	}: Query,
@@ -257,11 +282,20 @@ export const useTransactionsSummary = (
 				dateBetween,
 				typeIs,
 				typeIsNot,
+				typeIsIn,
 				sourceDeviceIs,
 				sourceDeviceIsNot,
 				storeCurrencyIs,
 				customerCurrencyIs,
 				customerCurrencyIsNot,
+				sourceIs,
+				sourceIsNot,
+				channelIs,
+				channelIsNot,
+				customerCountryIs,
+				customerCountryIsNot,
+				riskLevelIs,
+				riskLevelIsNot,
 				loanIdIs,
 				depositId,
 				search,
@@ -279,11 +313,20 @@ export const useTransactionsSummary = (
 			JSON.stringify( dateBetween ),
 			typeIs,
 			typeIsNot,
+			JSON.stringify( typeIsIn ),
 			sourceDeviceIs,
 			sourceDeviceIsNot,
 			storeCurrencyIs,
 			customerCurrencyIs,
 			customerCurrencyIsNot,
+			sourceIs,
+			sourceIsNot,
+			channelIs,
+			channelIsNot,
+			customerCountryIs,
+			customerCountryIsNot,
+			riskLevelIs,
+			riskLevelIsNot,
 			loanIdIs,
 			depositId,
 			JSON.stringify( search ),

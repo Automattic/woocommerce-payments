@@ -40,15 +40,25 @@ export const formatQueryFilters = ( query ) => ( {
 	],
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
+	type_is_in: query.typeIsIn,
 	source_device_is: query.sourceDeviceIs,
 	source_device_is_not: query.sourceDeviceIsNot,
+	channel_is: query.channelIs,
+	channel_is_not: query.channelIsNot,
+	customer_country_is: query.customerCountryIs,
+	customer_country_is_not: query.customerCountryIsNot,
+	risk_level_is: query.riskLevelIs,
+	risk_level_is_not: query.riskLevelIsNot,
 	store_currency_is: query.storeCurrencyIs,
 	loan_id_is: query.loanIdIs,
 	deposit_id: query.depositId,
 	customer_currency_is: query.customerCurrencyIs,
 	customer_currency_is_not: query.customerCurrencyIsNot,
+	source_is: query.sourceIs,
+	source_is_not: query.sourceIsNot,
 	search: query.search,
 	user_timezone: getUserTimeZone(),
+	locale: query.locale,
 } );
 
 /**
@@ -78,9 +88,10 @@ export function* getTransactions( query ) {
 	}
 }
 
-export function getTransactionsCSV( query ) {
+export const transactionsDownloadEndpoint = `${ NAMESPACE }/transactions/download`;
+export function getTransactionsCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/transactions/download`,
+		transactionsDownloadEndpoint,
 		formatQueryFilters( query )
 	);
 
@@ -131,7 +142,7 @@ export function* getFraudOutcomeTransactions( status, query ) {
 			results.data || []
 		);
 	} catch ( e ) {
-		if ( 'wcpay_fraud_outcome_not_found' === e.code ) {
+		if ( e.code === 'wcpay_fraud_outcome_not_found' ) {
 			yield updateFraudOutcomeTransactions( status, query, [] );
 			return;
 		}
@@ -173,7 +184,7 @@ export function* getFraudOutcomeTransactionsSummary( status, query ) {
 			result || summaryFallback
 		);
 	} catch ( e ) {
-		if ( 'wcpay_fraud_outcome_not_found' === e.code ) {
+		if ( e.code === 'wcpay_fraud_outcome_not_found' ) {
 			yield updateFraudOutcomeTransactionsSummary(
 				status,
 				query,

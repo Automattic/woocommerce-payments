@@ -45,11 +45,18 @@ class Settings extends \WC_Settings_Page {
 		$this->id             = $this->multi_currency->id;
 		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
+		parent::__construct();
+	}
+
+	/**
+	 * Initializes this class' WP hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
 		// TODO: Only register emoji script in settings page. Until WC Admin decide if they will enable it too: https://github.com/woocommerce/woocommerce-admin/issues/6388.
 		add_action( 'admin_print_scripts', [ $this, 'maybe_add_print_emoji_detection_script' ] );
 		add_action( 'woocommerce_admin_field_wcpay_multi_currency_settings_page', [ $this, 'wcpay_multi_currency_settings_page' ] );
-
-		parent::__construct();
 	}
 
 	/**
@@ -81,7 +88,7 @@ class Settings extends \WC_Settings_Page {
 	 * Load inline Emoji detection script on multi-currency settings page
 	 */
 	public function maybe_add_print_emoji_detection_script() {
-		if ( WC_Payments_Multi_Currency()->is_multi_currency_settings_page() ) {
+		if ( $this->multi_currency->is_multi_currency_settings_page() ) {
 			print_emoji_detection_script();
 		}
 	}

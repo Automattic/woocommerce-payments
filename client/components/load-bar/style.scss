@@ -8,7 +8,7 @@
 		display: block;
 		height: 100%;
 		width: 100%;
-		background-color: $blue-50;
+		background-color: var( --wp-admin-theme-color );
 		animation: wcpay-component-load-bar 3s ease-in-out infinite;
 		transform-origin: 0 0;
 	}

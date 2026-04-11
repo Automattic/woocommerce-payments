@@ -1,0 +1,282 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`AccordionBody renders with custom className 1`] = `
+<div>
+  <div
+    class="wcpay-accordion__body custom-class is-opened"
+  >
+    <h2
+      class="wcpay-accordion__body-title"
+    >
+      <button
+        class="components-button wcpay-accordion__body-toggle is-md"
+        type="button"
+      >
+        <span
+          aria-hidden="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="wcpay-accordion__arrow"
+            focusable="false"
+            size="24"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
+            />
+          </svg>
+        </span>
+        <div
+          class="wcpay-accordion__title-content"
+        >
+          Test Title
+        </div>
+      </button>
+    </h2>
+    <div
+      class="wcpay-accordion__row"
+    >
+      Test Content
+    </div>
+  </div>
+</div>
+`;
+
+exports[`AccordionBody renders with default props 1`] = `
+<div>
+  <div
+    class="wcpay-accordion__body is-opened"
+  >
+    <h2
+      class="wcpay-accordion__body-title"
+    >
+      <button
+        class="components-button wcpay-accordion__body-toggle is-md"
+        type="button"
+      >
+        <span
+          aria-hidden="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="wcpay-accordion__arrow"
+            focusable="false"
+            size="24"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
+            />
+          </svg>
+        </span>
+        <div
+          class="wcpay-accordion__title-content"
+        >
+          Test Title
+        </div>
+      </button>
+    </h2>
+    <div
+      class="wcpay-accordion__row"
+    >
+      Test Content
+    </div>
+  </div>
+</div>
+`;
+
+exports[`AccordionBody renders with function children 1`] = `
+<div>
+  <div
+    class="wcpay-accordion__body is-opened"
+  >
+    <h2
+      class="wcpay-accordion__body-title"
+    >
+      <button
+        class="components-button wcpay-accordion__body-toggle is-md"
+        type="button"
+      >
+        <span
+          aria-hidden="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="wcpay-accordion__arrow"
+            focusable="false"
+            size="24"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
+            />
+          </svg>
+        </span>
+        <div
+          class="wcpay-accordion__title-content"
+        >
+          Test Title
+        </div>
+      </button>
+    </h2>
+    <div
+      class="wcpay-accordion__row"
+    >
+      Opened Content
+    </div>
+  </div>
+</div>
+`;
+
+exports[`AccordionBody renders with icon 1`] = `
+<div>
+  <div
+    class="wcpay-accordion__body is-opened"
+  >
+    <h2
+      class="wcpay-accordion__body-title"
+    >
+      <button
+        class="components-button wcpay-accordion__body-toggle is-md"
+        type="button"
+      >
+        <span
+          aria-hidden="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="wcpay-accordion__arrow"
+            focusable="false"
+            size="24"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
+            />
+          </svg>
+        </span>
+        <div
+          class="wcpay-accordion__title-content"
+        >
+          Test Title
+        </div>
+        <svg
+          aria-hidden="true"
+          class="wcpay-accordion__icon"
+          focusable="false"
+          size="20"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M4 9v1.5h16V9H4zm12 5.5h4V13h-4v1.5zm-6 0h4V13h-4v1.5zm-6 0h4V13H4v1.5z"
+          />
+        </svg>
+      </button>
+    </h2>
+    <div
+      class="wcpay-accordion__row"
+    >
+      Test Content
+    </div>
+  </div>
+</div>
+`;
+
+exports[`AccordionBody renders with large title 1`] = `
+<div>
+  <div
+    class="wcpay-accordion__body is-opened"
+  >
+    <h2
+      class="wcpay-accordion__body-title"
+    >
+      <button
+        class="components-button wcpay-accordion__body-toggle is-md is-lg"
+        type="button"
+      >
+        <span
+          aria-hidden="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="wcpay-accordion__arrow"
+            focusable="false"
+            size="24"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
+            />
+          </svg>
+        </span>
+        <div
+          class="wcpay-accordion__title-content"
+        >
+          Test Title
+        </div>
+      </button>
+    </h2>
+    <div
+      class="wcpay-accordion__row"
+    >
+      Test Content
+    </div>
+  </div>
+</div>
+`;
+
+exports[`AccordionBody renders with subtitle 1`] = `
+<div>
+  <div
+    class="wcpay-accordion__body is-opened"
+  >
+    <h2
+      class="wcpay-accordion__body-title"
+    >
+      <button
+        class="components-button wcpay-accordion__body-toggle is-md"
+        type="button"
+      >
+        <span
+          aria-hidden="true"
+        >
+          <svg
+            aria-hidden="true"
+            class="wcpay-accordion__arrow"
+            focusable="false"
+            size="24"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6.5 12.4L12 8l5.5 4.4-.9 1.2L12 10l-4.5 3.6-1-1.2z"
+            />
+          </svg>
+        </span>
+        <div
+          class="wcpay-accordion__title-content"
+        >
+          Test Title
+          <div
+            class="wcpay-accordion__subtitle"
+          >
+            Test Subtitle
+          </div>
+        </div>
+      </button>
+    </h2>
+    <div
+      class="wcpay-accordion__row"
+    >
+      Test Content
+    </div>
+  </div>
+</div>
+`;

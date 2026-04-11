@@ -5,14 +5,27 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
+use WCPay\Constants\Payment_Method;
+use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
  */
 class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
+	/**
+	 * Original WCPay gateway.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $wcpay_gateway;
+
 	/**
 	 * System under test.
 	 *
@@ -23,35 +36,42 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_Customer_Service.
 	 *
-	 * @var WC_Payments_Customer_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Customer_Service|MockObject
 	 */
 	private $mock_customer_service;
 
 	/**
 	 * Mock WC_Payments_Token_Service.
 	 *
-	 * @var WC_Payments_Token_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Token_Service|MockObject
 	 */
 	private $mock_token_service;
 
 	/**
+	 * Mock WC_Payments_Order_Service.
+	 *
+	 * @var WC_Payments_Order_Service|MockObject
+	 */
+	private $mock_order_service;
+
+	/**
 	 * Mock WC_Payments_API_Client.
 	 *
-	 * @var WC_Payments_API_Client|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_API_Client|MockObject
 	 */
 	private $mock_api_client;
 
 	/**
 	 * Mock WC_Payments_Action_Scheduler_Service.
 	 *
-	 * @var WC_Payments_Action_Scheduler_Service|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Action_Scheduler_Service|MockObject
 	 */
 	private $mock_action_scheduler_service;
 
 	/**
 	 * Mock Session_Rate_Limiter.
 	 *
-	 * @var Session_Rate_Limiter|PHPUnit_Framework_MockObject_MockObject
+	 * @var Session_Rate_Limiter|MockObject
 	 */
 	private $mock_rate_limiter;
 
@@ -59,7 +79,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_Account.
 	 *
-	 * @var WC_Payments_Account|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Account|MockObject
 	 */
 	private $mock_wcpay_account;
 
@@ -84,7 +104,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'request_with_level3_data', 'is_server_connected' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'is_server_connected' ] )
 			->getMock();
 
 		// Arrange: Mock WC_Payments_Account instance to use later.
@@ -115,6 +135,9 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
+		$mock_dpps           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method = $this->createMock( UPE_Payment_Method::class );
+
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
 		$this->mock_wcpay_gateway = $this->getMockBuilder( 'WC_Payment_Gateway_WCPay' )
@@ -125,8 +148,14 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
-					$this->mock_rate_limiter,
+					$mock_payment_method,
+					[ 'card' => $mock_payment_method ],
 					$this->mock_order_service,
+					$mock_dpps,
+					$this->createMock( WC_Payments_Localization_Service::class ),
+					$this->createMock( WC_Payments_Fraud_Service::class ),
+					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -134,15 +163,38 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					'get_return_url',
 					'mark_payment_complete_for_order',
 					'get_level3_data_from_order', // To avoid needing to mock the order items.
+					'get_payment_method_ids_enabled_at_checkout',
+					'get_metadata_from_order',
 				]
 			)
 			->getMock();
 
+		$this->mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ Payment_Method::CARD ] );
+
+		$this->wcpay_gateway = WC_Payments::get_gateway();
+		WC_Payments::set_gateway( $this->mock_wcpay_gateway );
 		// Arrange: Define a $_POST array which includes the payment method,
 		// so that get_payment_method_from_request() does not throw error.
 		$_POST = [
 			'wcpay-payment-method' => 'pm_mock',
+			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 		];
+
+		// Intent metadata is generated elsewhere, use empty arrays here.
+		$this->mock_wcpay_gateway->expects( $this->any() )
+			->method( 'get_metadata_from_order' )
+			->willReturn( [] );
+	}
+
+	/**
+	 * Cleanup after each test.
+	 */
+	public function tear_down() {
+		parent::tear_down();
+		WC_Payments::set_gateway( $this->wcpay_gateway );
 	}
 
 	/**
@@ -151,7 +203,6 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 	public static function tear_down_after_class() {
 		WC_Subscriptions::set_wcs_order_contains_subscription( null );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
-
 		parent::tear_down_after_class();
 	}
 
@@ -189,15 +240,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) use ( $order ) {
-						$this->assertEquals( $metadata['payment_type'], 'single' );
-						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -225,15 +268,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) use ( $order ) {
-						$this->assertEquals( $metadata['payment_type'], 'recurring' );
-						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -258,15 +293,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 
 		$request->expects( $this->once() )
 			->method( 'set_metadata' )
-			->with(
-				$this->callback(
-					function( $metadata ) use ( $order ) {
-						$this->assertEquals( $metadata['payment_type'], 'recurring' );
-						$this->assertEquals( $metadata['order_key'], $order->get_order_key() );
-						return is_array( $metadata );
-					}
-				)
-			);
+			->with( [] );
 
 		$request->expects( $this->once() )
 			->method( 'format_response' )
@@ -282,7 +309,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$this->mock_wcs_order_contains_subscription( true );
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function( $parent_order ) use ( $order ) {
+			function ( $parent_order ) use ( $order ) {
 				return $order;
 			}
 		);
@@ -293,6 +320,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$mock_subscription->payment_method = 'woocommerce_payments';
 
 		$mock_subscription->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
+		$order->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
 			function ( $id ) use ( $mock_subscription ) {
@@ -306,6 +334,5 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 			->method( 'create_and_confirm_intention' );
 
 		$this->mock_wcpay_gateway->scheduled_subscription_payment( 100, $order );
-
 	}
 }

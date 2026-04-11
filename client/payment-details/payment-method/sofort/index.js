@@ -50,17 +50,17 @@ const formatPaymentMethodDetails = ( charge ) => {
  * Placeholders to display while loading.
  */
 const paymentMethodPlaceholders = {
-	bankCode: 'bank code placeholder',
-	bankName: 'bank name placeholder',
-	bic: 'bic placeholder',
+	bankCode: __( 'bank code placeholder', 'woocommerce-payments' ),
+	bankName: __( 'bank name placeholder', 'woocommerce-payments' ),
+	bic: __( 'bic placeholder', 'woocommerce-payments' ),
 	last4: '0000',
-	verifiedName: 'verified name placeholder',
-	fingerprint: 'fingerprint placeholder',
-	id: 'id placeholder',
-	name: 'name placeholder',
-	email: 'email placeholder',
-	formattedAddress: 'address placeholder',
-	country: 'country placeholder',
+	verifiedName: __( 'verified name placeholder', 'woocommerce-payments' ),
+	fingerprint: __( 'fingerprint placeholder', 'woocommerce-payments' ),
+	id: __( 'id placeholder', 'woocommerce-payments' ),
+	name: __( 'name placeholder', 'woocommerce-payments' ),
+	email: __( 'email placeholder', 'woocommerce-payments' ),
+	formattedAddress: __( 'address placeholder', 'woocommerce-payments' ),
+	country: __( 'country placeholder', 'woocommerce-payments' ),
 };
 
 const SofortDetails = ( { charge = {}, isLoading } ) => {

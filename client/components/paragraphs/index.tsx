@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 
 interface ParagraphsProps {
 	children?: any[];
@@ -16,7 +16,7 @@ interface ParagraphsProps {
  *
  * @return	{Array} Paragraph elements.
  */
-const Paragraphs: React.FC< ParagraphsProps > = ( {
+const Paragraphs: React.FC< React.PropsWithChildren< ParagraphsProps > > = ( {
 	children = [],
 } ): JSX.Element => {
 	return (

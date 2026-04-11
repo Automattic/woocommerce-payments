@@ -5,6 +5,10 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Duplicates_Detection_Service;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -48,10 +52,23 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	private $mock_woopay_utilities;
 
 	/**
+	 * Express Checkout Helper instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Helper
+	 */
+	private $mock_express_checkout_helper;
+
+	/**
 	 * Sets up things all tests need.
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		// Clean up orphaned product meta lookup entries from previous tests.
+		// WooCommerce's product deletion doesn't always clean up the lookup table properly in test environments,
+		// which can cause duplicate primary key errors when product IDs get reused.
+		global $wpdb;
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')" );
 
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
@@ -63,7 +80,6 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 					'cancel_intention',
 					'get_intent',
 					'create_and_confirm_setup_intent',
-					'get_setup_intent',
 					'get_payment_method',
 				]
 			)
@@ -78,21 +94,35 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->setMethods( [ 'is_country_available' ] )
 			->getMock();
 
+		$this->mock_express_checkout_helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_gateway,
+					$this->mock_wcpay_account,
+				]
+			)
+			->setMethods(
+				[
+					'is_cart',
+					'is_checkout',
+					'is_product',
+					'is_express_checkout_method_enabled_at',
+				]
+			)
+			->getMock();
+
 		$this->mock_pr = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
 			->setConstructorArgs(
 				[
 					$this->mock_wcpay_account,
 					$this->mock_wcpay_gateway,
 					$this->mock_woopay_utilities,
+					$this->mock_express_checkout_helper,
 				]
 			)
 			->setMethods(
 				[
 					'is_woopay_enabled',
-					'is_cart',
-					'is_checkout',
-					'is_product',
-					'is_available_at',
 				]
 			)
 			->getMock();
@@ -105,16 +135,19 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		add_filter(
 			'woocommerce_available_payment_gateways',
-			function() {
+			function () {
 				return [ 'woocommerce_payments' => $this->mock_wcpay_gateway ];
 			}
 		);
 	}
 
 	public function tear_down() {
-		parent::tear_down();
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
+
+		remove_all_filters( 'woocommerce_available_payment_gateways' );
+
+		parent::tear_down();
 	}
 
 	/**
@@ -126,6 +159,9 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		$mock_action_scheduler_service = $this->createMock( WC_Payments_Action_Scheduler_Service::class );
 		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
+		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$mock_payment_method           = $this->createMock( UPE_Payment_Method::class );
+		$mock_payment_method->method( 'get_id' )->willReturn( CardDefinition::get_id() );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -133,8 +169,14 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			$mock_customer_service,
 			$mock_token_service,
 			$mock_action_scheduler_service,
-			$mock_rate_limiter,
-			$mock_order_service
+			$mock_payment_method,
+			[ 'card' => $mock_payment_method ],
+			$mock_order_service,
+			$mock_dpps,
+			$this->createMock( WC_Payments_Localization_Service::class ),
+			$this->createMock( WC_Payments_Fraud_Service::class ),
+			$this->createMock( Duplicates_Detection_Service::class ),
+			$mock_rate_limiter
 		);
 	}
 
@@ -148,14 +190,14 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_woopay_enabled' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'cart' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'woopay' )
 			->willReturn( true );
 
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
@@ -171,14 +213,14 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'cart' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'woopay' )
 			->willReturn( false );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
@@ -196,17 +238,90 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'checkout' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'checkout', 'woopay' )
 			->willReturn( true );
 
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_true' );
+	}
+
+	public function test_should_only_load_common_config_script() {
+		// Ensure we are on the cart page.
+		$this->mock_express_checkout_helper
+			->method( 'is_cart' )
+			->willReturn( true );
+		// Ensure the express button is not available in the cart page.
+		$this->mock_express_checkout_helper
+			->expects( $this->any() )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'woopay' )
+			->willReturn( false );
+
+		WC_Payments::set_express_checkout_helper( $this->mock_express_checkout_helper );
+
+		// Since the express button is not available in the cart page, the
+		// WCPAY_WOOPAY_EXPRESS_BUTTON handle should not be enqueued.
+		$this->mock_pr->scripts();
+
+		// Since the express button is not available in the cart page, the
+		// WCPAY_WOOPAY_COMMON_CONFIG handle should be enqueued.
+		$is_direct_checkout_enabled = true;
+		WC_Payments::maybe_enqueue_woopay_common_config_script( $is_direct_checkout_enabled );
+		wp_enqueue_scripts();
+
+		$this->assertFalse( wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'enqueued' ) );
+		$this->assertTrue( wp_script_is( 'WCPAY_WOOPAY_COMMON_CONFIG', 'enqueued' ) );
+
+		// Cleanup.
+		wp_dequeue_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
+		wp_deregister_script( 'WCPAY_WOOPAY_COMMON_CONFIG' );
+	}
+
+	public function test_should_not_load_common_config_script() {
+		// Ensure WooPay is enabled.
+		$this->mock_pr
+			->expects( $this->any() )
+			->method( 'is_woopay_enabled' )
+			->willReturn( true );
+		// Ensure WooPay is available in the given country.
+		$this->mock_woopay_utilities
+			->expects( $this->once() )
+			->method( 'is_country_available' )
+			->willReturn( true );
+		// Ensure we are on the cart page.
+		$this->mock_express_checkout_helper
+			->expects( $this->any() )
+			->method( 'is_cart' )
+			->willReturn( true );
+		// Ensure the express button is available in the cart page.
+		$this->mock_express_checkout_helper
+			->expects( $this->any() )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'woopay' )
+			->willReturn( true );
+
+		WC_Payments::set_express_checkout_helper( $this->mock_express_checkout_helper );
+
+		// Since the express button is available in the cart page, the
+		// WCPAY_WOOPAY_EXPRESS_BUTTON handle should be enqueued.
+		$this->mock_pr->scripts();
+
+		// Since the express button is available in the cart page, the
+		// WCPAY_WOOPAY_COMMON_CONFIG handle should not be enqueued.
+		$is_direct_checkout_enabled = true;
+		WC_Payments::maybe_enqueue_woopay_common_config_script( $is_direct_checkout_enabled );
+		wp_enqueue_scripts();
+
+		$this->assertTrue( wp_script_is( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'enqueued' ) );
+		$this->assertFalse( wp_script_is( 'WCPAY_WOOPAY_COMMON_CONFIG', 'enqueued' ) );
 	}
 
 	public function test_should_show_woopay_button_unsupported_product_at_checkout() {
@@ -221,17 +336,19 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'checkout' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'checkout', 'woopay' )
 			->willReturn( true );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_platform_checkout_button_are_cart_items_supported', '__return_false' );
 	}
 
 	public function test_should_show_woopay_button_all_good_at_product() {
@@ -246,17 +363,19 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'product' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'product', 'woopay' )
 			->willReturn( true );
 
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
 	}
 
 	public function test_should_show_woopay_button_unsupported_product_at_product() {
@@ -271,17 +390,19 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'product' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'product', 'woopay' )
 			->willReturn( true );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_woopay_button_is_product_supported', '__return_false' );
 	}
 
 	public function test_should_show_woopay_button_not_available_at_product() {
@@ -296,17 +417,19 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'product' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'product', 'woopay' )
 			->willReturn( false );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'wcpay_woopay_button_is_product_supported', '__return_true' );
 	}
 
 	public function test_should_show_woopay_button_page_not_supported() {
@@ -314,21 +437,21 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'is_country_available' );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( false );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
 			->willReturn( false );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( false );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
-			->method( 'is_available_at' );
+			->method( 'is_express_checkout_method_enabled_at' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
 	}
@@ -343,21 +466,21 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->method( 'is_country_available' )
 			->willReturn( false );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_product' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_cart' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->method( 'is_checkout' )
 			->willReturn( true );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
-			->method( 'is_available_at' );
+			->method( 'is_express_checkout_method_enabled_at' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
 	}
@@ -369,11 +492,13 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'is_country_available' );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
 			->method( 'is_product' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+
+		remove_filter( 'woocommerce_available_payment_gateways', '__return_empty_array' );
 	}
 
 	public function test_should_show_woopay_button_woopay_not_enabled() {
@@ -385,15 +510,65 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'is_country_available' );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
 			->method( 'is_cart' );
 
-		$this->mock_pr
+		$this->mock_express_checkout_helper
 			->expects( $this->never() )
-			->method( 'is_available_at' )
+			->method( 'is_express_checkout_method_enabled_at' )
 			->with( 'cart' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
+	}
+
+	public function test_get_button_settings() {
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		$this->assertEquals(
+			[
+				'type'    => 'default',
+				'theme'   => 'dark',
+				'height'  => '48',
+				'size'    => 'medium',
+				'context' => 'product',
+				'radius'  => '',
+			],
+			$this->mock_pr->get_button_settings()
+		);
+	}
+
+	public function test_display_woopay_button_html_renders_div_placeholder() {
+		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+					$this->mock_woopay_utilities,
+					$this->mock_express_checkout_helper,
+				]
+			)
+			->setMethods( [ 'should_show_woopay_button' ] )
+			->getMock();
+
+		$mock_handler->method( 'should_show_woopay_button' )->willReturn( true );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		ob_start();
+		$mock_handler->display_woopay_button_html();
+		$output = ob_get_clean();
+
+		// The placeholder must be a <div> — never a <button> — to avoid triggering
+		// has_form_elements() in the Add to Cart + Options block, which would force
+		// legacy form mode and break the mini-cart drawer.
+		$this->assertStringNotContainsString( '<button', $output );
+		$this->assertStringNotContainsString( 'disabled', $output );
+		$this->assertStringContainsString( 'woopay-express-button', $output );
+		$this->assertStringContainsString( '<div id="wcpay-woopay-button"', $output );
 	}
 }

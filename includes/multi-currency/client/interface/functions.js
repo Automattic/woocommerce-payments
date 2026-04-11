@@ -1,0 +1,22 @@
+/**
+ * Dependencies from WooPayments to MCCY.
+ */
+// wcpay/tracks
+export { recordEvent } from 'wcpay/tracks';
+// wcpay/settings
+export { default as WCPaySettingsContext } from 'wcpay/settings/wcpay-settings-context';
+// wcpay/components/*
+export { default as WizardTaskContext } from 'wcpay/components/wizard/task/context';
+/**
+ * Dependencies from MCCY to WooPayments.
+ */
+export { getMissingCurrenciesTooltipMessage } from 'multi-currency/utils/missing-currencies-message';
+export {
+	formatCurrency,
+	formatCurrencyName,
+	formatFX,
+	formatExplicitCurrency,
+	formatExportAmount,
+	getCurrency,
+	isZeroDecimalCurrency,
+} from 'multi-currency/utils/currency';

@@ -137,7 +137,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price * 2 );
 		$addon = [
 			'name'       => 'checkboxes',
-			'value'      => 'flat fee',
+			'value'      => 'flat fee (+ $84.00)',
 			'price'      => (float) $price,
 			'field_type' => 'checkbox',
 			'price_type' => 'flat_fee',
@@ -149,10 +149,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$item->save();
 
 		$expected = [
-			'key'   => 'checkboxes ($84.00)',
-			'value' => 'flat fee',
+			'key'   => 'checkboxes',
+			'value' => 'flat fee (+ $84.00)',
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] ) );
 	}
 
 	public function test_order_line_item_meta_returns_percentage_data_correctly() {
@@ -171,10 +171,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$item->save();
 
 		$expected = [
-			'key'   => 'checkboxes ($5.00)',
+			'key'   => 'checkboxes',
 			'value' => 'percentage based',
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] ) );
 	}
 
 	public function test_order_line_item_meta_returns_input_multiplier_data_correctly() {
@@ -195,18 +195,18 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$item->save();
 
 		$expected = [
-			'key'   => 'quantity ($42.00)',
+			'key'   => 'quantity',
 			'value' => 2,
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'quantity' ], $addon, $item, [ 'data' => '' ] ) );
 	}
 
 	public function test_order_line_item_meta_returns_custom_price_data_correctly() {
 		$price = 42;
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price * 2 );
 		$addon = [
-			'name'       => 'checkboxes',
-			'value'      => 'custom price',
+			'name'       => 'custom price',
+			'value'      => (float) $price,
 			'price'      => (float) $price,
 			'field_type' => 'custom_price',
 			'price_type' => '',
@@ -218,10 +218,11 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		$item->save();
 
 		$expected = [
-			'key'   => 'checkboxes ($42.00)',
+			'key'   => 'checkboxes',
 			'value' => 42.0,
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [], $addon, $item, [ 'data' => '' ] ) );
+		$actual   = $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] );
+		$this->assertSame( $expected, $actual );
 	}
 
 	public function test_update_product_price_returns_flat_fee_data_correctly() {
@@ -243,9 +244,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'sale_price'    => 0,
 		];
 		$expected  = [
-			'price'         => 78.0, // (10 * 1.5) + (42 * 1.5)
-			'regular_price' => 78.0,
-			'sale_price'    => 63.0, // (0 * 1.5) + (42 * 1.5)
+			'price'                => 78.0, // (10 * 1.5) + (42 * 1.5)
+			'regular_price'        => 78.0,
+			'sale_price'           => 63.0, // (0 * 1.5) + (42 * 1.5)
+			'addons_flat_fees_sum' => 63.0,
 		];
 
 		$this->mock_multi_currency
@@ -282,9 +284,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'sale_price'    => 0,
 		];
 		$expected  = [
-			'price'         => 22.5, // 10 * 1.5 * 1.5
-			'regular_price' => 22.5,
-			'sale_price'    => 0.0,
+			'price'                => 22.5, // 10 * 1.5 * 1.5
+			'regular_price'        => 22.5,
+			'sale_price'           => 0.0,
+			'addons_flat_fees_sum' => 0,
 		];
 
 		// Product is created with a price of 10, and update_product_price calls get_price, which is already converted.
@@ -322,9 +325,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'sale_price'    => 0,
 		];
 		$expected  = [
-			'price'         => 57.0, // (10 * 1.5) + 42
-			'regular_price' => 57.0,
-			'sale_price'    => 42.0,
+			'price'                => 57.0, // (10 * 1.5) + 42
+			'regular_price'        => 57.0,
+			'sale_price'           => 42.0,
+			'addons_flat_fees_sum' => 0,
 		];
 
 		$this->mock_multi_currency
@@ -359,9 +363,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'sale_price'    => 0,
 		];
 		$expected  = [
-			'price'         => 141.0, // (10 * 1.5) + ((42 * 1.5) * 2)
-			'regular_price' => 141.0,
-			'sale_price'    => 126.0, // (0 * 1.5) + ((42 * 1.5) * 2)
+			'price'                => 141.0, // (10 * 1.5) + ((42 * 1.5) * 2)
+			'regular_price'        => 141.0,
+			'sale_price'           => 126.0, // (0 * 1.5) + ((42 * 1.5) * 2)
+			'addons_flat_fees_sum' => 126.0,
 		];
 
 		$this->mock_multi_currency
@@ -399,7 +404,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'display' => 'display',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_zero_percentage_price_data_correctly() {
@@ -422,7 +428,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'display' => '',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_custom_price_data_correctly() {
@@ -440,12 +447,13 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'addons_price_before_calc' => 10,
 		];
 		$expected  = [
-			'name'    => 'Customer defined price (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'value'   => '',
-			'display' => '',
+			'name'    => 'Customer defined price',
+			'value'   => ' (&#36;42.00)',
+			'display' => ' (&#36;42.00)',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_multiplier_price_data_correctly() {
@@ -464,8 +472,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'quantity' => 1,
 		];
 		$expected  = [
-			'name'    => 'Multiplier (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'value'   => 2,
+			'name'    => 'Multiplier',
+			'value'   => '2 (+ &#36;42.00)',
 			'display' => '',
 		];
 
@@ -481,7 +489,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 				(float) $price / $value
 			);
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	// Handles flat_fee and quantity_based.
@@ -500,13 +509,14 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'quantity' => 1,
 		];
 		$expected  = [
-			'name'    => 'Checkbox (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'value'   => 'Flat fee',
+			'name'    => 'Checkbox',
+			'value'   => 'Flat fee (+ &#36;42.00)',
 			'display' => '',
 		];
 
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price );
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_percentage_price_data_correctly() {
@@ -526,12 +536,33 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'addons_price_before_calc' => 10,
 		];
 		$expected  = [
-			'name'    => 'Checkbox (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>5.00</bdi></span>)',
+			'name'    => 'Checkbox',
 			'value'   => 'Percentage',
 			'display' => '',
 		];
 
 		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 10.00 );
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
+	}
+
+	/**
+	 * Strip HTML tags from all values in an array while preserving keys.
+	 *
+	 * @param array $array The array to process.
+	 * @return array The array with HTML tags stripped from all values.
+	 */
+	private function array_strip_tags( array $array ): array {
+		$result = [];
+		foreach ( $array as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$result[ $key ] = $this->array_strip_tags( $value );
+			} elseif ( is_string( $value ) ) {
+				$result[ $key ] = strip_tags( $value );
+			} else {
+				$result[ $key ] = $value;
+			}
+		}
+		return $result;
 	}
 }

@@ -68,6 +68,7 @@ Capture the funds of an in-person payment intent. Given an intent ID and an orde
 -   `wcpay_refunded_order_uncapturable` - Payment cannot be captured for partially or fully refunded orders
 -   `wcpay_payment_uncapturable` - The payment cannot be captured if intent status is not one of 'processing', 'requires_capture', or 'succeeded'
 -   `wcpay_capture_error` - Unknown error
+-   `wcpay_capture_error_amount_too_small` - The payment cannot be captured because the amount is too small. It includes the minimum amount and the currency as JSON in the message.
 
 ### HTTP request
 
@@ -106,6 +107,16 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_termin
 }
 ```
 
+```json
+{
+  "code": "wcpay_capture_error_amount_too_small",
+  "message": "{&quot;minimum_amount&quot;:50,&quot;minimum_amount_currency&quot;:&quot;USD&quot;}",
+  "data": {
+    "status": 400
+  }
+}
+```
+
 ## Capture an authorization
 
 _@since v5.1.0_
@@ -124,6 +135,7 @@ Capture the funds of an existing uncaptured payment intent that was marked to be
 -   `wcpay_payment_uncapturable` - The payment cannot be captured if intent status is not one of 'processing', 'requires_capture', or 'succeeded'
 -   `wcpay_intent_order_mismatch` - Payment cannot be captured because the order id does not match
 -   `wcpay_capture_error` - Unknown error
+
 
 ### HTTP request
 
@@ -156,6 +168,60 @@ curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/capture_author
 {
 	"code": "wcpay_payment_uncapturable",
 	"message": "The payment cannot be captured",
+	"data": {
+		"status": 409
+	}
+}
+```
+## Cancel an authorization
+
+_@since v5.7.0_
+
+Cancel the authorization of an existing uncaptured payment intent.
+
+### POST params
+
+-   payment_intent_id: string
+
+### Error codes
+
+-   `wcpay_missing_order` - Order not found
+-   `wcpay_refunded_order_uncapturable` - Payment cannot be canceled
+-   `wcpay_payment_uncapturable` - The payment cannot be canceled if intent status is not one of 'processing', 'requires_capture', or 'succeeded'
+-   `wcpay_intent_order_mismatch` - Payment cannot be canceled because the order id does not match with payment intent id
+-   `wcpay_cancel_error` - Unknown error
+
+### HTTP request
+
+<div class="api-endpoint">
+  <div class="endpoint-data">
+    <i class="label label-get">POST</i>
+    <h6>/wp-json/wc/v3/payments/orders/&lt;order_id&gt;/cancel_authorization</h6>
+  </div>
+</div>
+
+```shell
+curl -X POST https://example.com/wp-json/wc/v3/payments/orders/42/cancel_authorization \
+  -u consumer_key:consumer_secret \
+  -H "Content-Type: application/json" \
+  -d '{
+    "payment_intent_id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}'
+```
+
+> JSON response example:
+
+```json
+{
+	"status": "canceled",
+	"id": "pi_ZZZZZZZZZZZZZZZZAAAAAAAA"
+}
+```
+
+```json
+{
+	"code": "wcpay_missing_order",
+	"message": "Order not found",
 	"data": {
 		"status": 409
 	}

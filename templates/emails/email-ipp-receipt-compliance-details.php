@@ -1,7 +1,8 @@
 <?php
 /**
+ * IPP Receipt Compliance Details
  *
- * This template can be overridden by copying it to yourtheme/woocommerce/emails/email-ipp-receipt-compliance-details.php
+ * This template can be overridden by copying it to yourtheme/woocommerce/emails/email-ipp-receipt-compliance-details.php.
  *
  * HOWEVER, on occasion WooCommerce will need to update template files and you
  * (the theme developer) will need to copy the new files to your theme to
@@ -9,7 +10,7 @@
  * happen. When this occurs the version of the template file will be bumped and
  * the readme will list any important changes.
  *
- * @see https://docs.woocommerce.com/document/template-structure/
+ * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Payments\Templates\Emails
  * @version 1.0.0
  */

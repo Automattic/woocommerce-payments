@@ -1,0 +1,17 @@
+.multi-currency-settings {
+	&__wrapper {
+		& .components-card__body {
+			padding: 24px;
+
+			.components-base-control {
+				.components-base-control__field {
+					margin-bottom: 0;
+				}
+			}
+		}
+	}
+
+	.multi-currency-settings-save-settings-section {
+		text-align: right;
+	}
+}

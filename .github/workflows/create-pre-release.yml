@@ -16,13 +16,13 @@ defaults:
 jobs:
   create-release:
     name: "Create the pre-release"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     env:
       RELEASE_VERSION: ${{ inputs.releaseVersion }}
 
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo

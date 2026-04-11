@@ -17,4 +17,6 @@ export interface TaskItemProps extends React.ComponentProps< typeof TaskItem > {
 	 * Whether the task is dismissable.
 	 */
 	isDismissable?: boolean;
+
+	content: string | React.ReactElement;
 }

@@ -26,6 +26,13 @@ class Capture_Intention extends Request {
 	];
 
 	/**
+	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * @var string
+	 */
+	protected $hook = 'wcpay_capture_intent_request';
+
+	/**
 	 * Sets the intent ID, which will be used in the request URL.
 	 *
 	 * @param string $id Sets the intent ID, which will be used in the request URL.
@@ -77,12 +84,21 @@ class Capture_Intention extends Request {
 	}
 
 	/**
+	 * Setter for intent metadata.
+	 *
+	 * @param array $metadata Intent metadata that includes stuff like order details, card reader specifics, etc..
+	 */
+	public function set_metadata( array $metadata ): void {
+		$this->set_param( 'metadata', $metadata );
+	}
+
+	/**
 	 * Formats the response from the server.
 	 *
 	 * @param  mixed $response The response from `WC_Payments_API_Client::request`.
 	 * @return mixed           Either the same response, or the correct object.
 	 */
 	public function format_response( $response ) {
-		return WC_Payments::get_payments_api_client()->deserialize_intention_object_from_array( $response );
+		return $this->api_client->deserialize_payment_intention_object_from_array( $response );
 	}
 }

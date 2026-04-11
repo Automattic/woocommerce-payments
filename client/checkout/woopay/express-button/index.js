@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -11,8 +11,11 @@ import { getConfig } from 'utils/checkout';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
+import { maybePersistAdminWoopayAppearance } from '../appearance/persist-admin';
 
-const renderWooPayExpressCheckoutButton = () => {
+const oldWoopayRoots = [];
+
+const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 	// Create an API object, which will be used throughout the checkout.
 	const api = new WCPayAPI(
 		{
@@ -27,24 +30,57 @@ const renderWooPayExpressCheckoutButton = () => {
 	const woopayContainer = document.getElementById( 'wcpay-woopay-button' );
 
 	if ( woopayContainer ) {
-		ReactDOM.render(
+		while ( oldWoopayRoots.length > 0 ) {
+			// Ensure previous buttons are unmounted and cleaned up.
+			const oldWoopayRoot = oldWoopayRoots.pop();
+			oldWoopayRoot.unmount();
+		}
+
+		const root = createRoot( woopayContainer );
+		oldWoopayRoots.push( root );
+
+		root.render(
 			<WoopayExpressCheckoutButton
+				listenForCartChanges={ listenForCartChanges }
 				buttonSettings={ getConfig( 'woopayButton' ) }
 				api={ api }
 				isProductPage={
 					!! woopayContainer.getAttribute( 'data-product_page' )
 				}
 				emailSelector="#billing_email"
-			/>,
-			woopayContainer
+			/>
 		);
 	}
 };
 
-window.addEventListener( 'load', renderWooPayExpressCheckoutButton );
+let listenForCartChanges = null;
+const renderWooPayExpressCheckoutButtonWithCallbacks = () => {
+	renderWooPayExpressCheckoutButton( listenForCartChanges );
+};
 
 jQuery( ( $ ) => {
-	$( document.body ).on( 'updated_cart_totals', () => {
-		renderWooPayExpressCheckoutButton();
-	} );
+	listenForCartChanges = {
+		start: () => {
+			$( document.body ).on(
+				'updated_cart_totals updated_checkout',
+				renderWooPayExpressCheckoutButtonWithCallbacks
+			);
+		},
+		stop: () => {
+			$( document.body ).off(
+				'updated_cart_totals updated_checkout',
+				renderWooPayExpressCheckoutButtonWithCallbacks
+			);
+		},
+	};
+
+	listenForCartChanges.start();
+} );
+
+window.addEventListener( 'load', () => {
+	renderWooPayExpressCheckoutButtonWithCallbacks();
+
+	// When the checkout is loaded inside the Customizer preview, capture
+	// the live DOM appearance and persist it via the admin endpoint.
+	maybePersistAdminWoopayAppearance();
 } );

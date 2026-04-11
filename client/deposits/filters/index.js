@@ -8,12 +8,12 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters } from './config';
-import { formatCurrencyName } from '../../utils/currency';
+import { formatCurrencyName } from 'multi-currency/interface/functions';
 
 export const DepositsFilters = ( props ) => {
 	const populateDepositCurrencies = ( filtersConfiguration ) => {
 		filtersConfiguration.forEach( ( filter ) => {
-			if ( 'store_currency_is' === filter.param ) {
+			if ( filter.param === 'store_currency_is' ) {
 				const currencies = props.storeCurrencies || [];
 				// Generate select options: pick the first one (default) and add provided currencies
 				filter.filters = [
@@ -24,7 +24,7 @@ export const DepositsFilters = ( props ) => {
 					} ) ),
 				];
 				// Show the select when several currencies are available.
-				if ( 2 < filter.filters.length ) {
+				if ( filter.filters.length > 2 ) {
 					filter.showFilters = () => true;
 				}
 			}
@@ -33,13 +33,15 @@ export const DepositsFilters = ( props ) => {
 	};
 
 	return (
-		<ReportFilters
-			filters={ populateDepositCurrencies( filters ) }
-			advancedFilters={ advancedFilters }
-			showDatePicker={ false }
-			path="/payments/deposits"
-			query={ getQuery() }
-		/>
+		<div className="woocommerce-filters-deposits">
+			<ReportFilters
+				filters={ populateDepositCurrencies( filters ) }
+				advancedFilters={ advancedFilters }
+				showDatePicker={ false }
+				path="/payments/payouts"
+				query={ getQuery() }
+			/>
+		</div>
 	);
 };
 
