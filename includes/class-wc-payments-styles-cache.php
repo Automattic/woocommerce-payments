@@ -644,6 +644,7 @@ class WC_Payments_Styles_Cache {
 
 		$blocks   = parse_blocks( $template->content );
 		$blocks   = self::resolve_pattern_blocks( $blocks );
+		$blocks   = self::flatten_blocks( $blocks );
 		$sections = [];
 
 		foreach ( $blocks as $block ) {
@@ -822,6 +823,9 @@ class WC_Payments_Styles_Cache {
 
 		foreach ( $blocks as $block ) {
 			if ( 'core/pattern' !== $block['blockName'] || empty( $block['attrs']['slug'] ) ) {
+				if ( ! empty( $block['innerBlocks'] ) ) {
+					$block['innerBlocks'] = self::resolve_pattern_blocks( $block['innerBlocks'] );
+				}
 				$resolved[] = $block;
 				continue;
 			}
@@ -842,6 +846,26 @@ class WC_Payments_Styles_Cache {
 		}
 
 		return $resolved;
+	}
+
+	/**
+	 * Recursively flattens a block tree into a single-level array.
+	 *
+	 * Parent blocks appear before their children, so the first classified
+	 * block for a given area is always the outermost one.
+	 *
+	 * @param array $blocks Parsed blocks (possibly nested via innerBlocks).
+	 * @return array Flat array of all blocks at every depth.
+	 */
+	private static function flatten_blocks( array $blocks ): array {
+		$flat = [];
+		foreach ( $blocks as $block ) {
+			$flat[] = $block;
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$flat = array_merge( $flat, self::flatten_blocks( $block['innerBlocks'] ) );
+			}
+		}
+		return $flat;
 	}
 
 	/**

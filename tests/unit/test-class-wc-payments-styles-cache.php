@@ -786,6 +786,97 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $method->invoke( null, $block ) );
 	}
 
+	public function test_flatten_blocks_finds_nested_blocks() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'flatten_blocks' );
+		$method->setAccessible( true );
+
+		$blocks = [
+			[
+				'blockName'    => 'core/group',
+				'attrs'        => [],
+				'innerBlocks'  => [
+					[
+						'blockName'    => 'core/template-part',
+						'attrs'        => [
+							'slug' => 'header',
+							'area' => 'header',
+						],
+						'innerBlocks'  => [],
+						'innerHTML'    => '',
+						'innerContent' => [],
+					],
+				],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+			[
+				'blockName'    => 'core/template-part',
+				'attrs'        => [
+					'slug' => 'footer',
+					'area' => 'footer',
+				],
+				'innerBlocks'  => [],
+				'innerHTML'    => '',
+				'innerContent' => [],
+			],
+		];
+
+		$flat = $method->invoke( null, $blocks );
+
+		$this->assertCount( 3, $flat );
+		// Parent appears before child.
+		$this->assertSame( 'core/group', $flat[0]['blockName'] );
+		$this->assertSame( 'core/template-part', $flat[1]['blockName'] );
+		$this->assertSame( 'header', $flat[1]['attrs']['slug'] );
+		$this->assertSame( 'core/template-part', $flat[2]['blockName'] );
+		$this->assertSame( 'footer', $flat[2]['attrs']['slug'] );
+	}
+
+	public function test_resolve_pattern_blocks_recurses_into_inner_blocks() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_pattern_blocks' );
+		$method->setAccessible( true );
+
+		$pattern_slug    = 'test-theme/nested-pattern';
+		$pattern_content = '<!-- wp:template-part {"slug":"header","area":"header"} /-->';
+
+		register_block_pattern(
+			$pattern_slug,
+			[
+				'title'   => 'Test nested pattern',
+				'content' => $pattern_content,
+			]
+		);
+
+		try {
+			$blocks = [
+				[
+					'blockName'    => 'core/group',
+					'attrs'        => [],
+					'innerBlocks'  => [
+						[
+							'blockName'    => 'core/pattern',
+							'attrs'        => [ 'slug' => $pattern_slug ],
+							'innerBlocks'  => [],
+							'innerHTML'    => '',
+							'innerContent' => [],
+						],
+					],
+					'innerHTML'    => '',
+					'innerContent' => [],
+				],
+			];
+
+			$resolved = $method->invoke( null, $blocks );
+
+			$this->assertCount( 1, $resolved );
+			$inner = $resolved[0]['innerBlocks'];
+			$this->assertSame( 'core/template-part', $inner[0]['blockName'] );
+			$this->assertSame( 'header', $inner[0]['attrs']['slug'] );
+		} finally {
+			unregister_block_pattern( $pattern_slug );
+		}
+	}
+
 	public function test_compute_woopay_appearance_maps_input_element_styles() {
 		// WooPay requires WP 6.5+. The textInput element key and proper
 		// elements.link resolution require WP 6.1+. Skip on older versions
