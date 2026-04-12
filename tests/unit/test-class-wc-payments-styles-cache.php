@@ -877,6 +877,64 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_classify_block_area_falls_back_to_theme_attr() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
+		$method->setAccessible( true );
+
+		// Template part with no area attr, slug not in active theme,
+		// but theme attr points to a theme that has it registered.
+		// Since we can't easily register a cross-theme template part in
+		// unit tests, we test the branch by providing a theme attr with
+		// a non-existent theme — the lookup returns null, so area stays null.
+		// The important thing is the code doesn't fatal and returns null.
+		$block = [
+			'blockName'    => 'core/template-part',
+			'attrs'        => [
+				'slug'  => 'nonexistent-part',
+				'theme' => 'fake-theme/fake-theme',
+			],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
+		];
+
+		$this->assertNull( $method->invoke( null, $block ) );
+	}
+
+	public function test_classify_block_area_uses_area_attr_before_theme_lookup() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'classify_block_area' );
+		$method->setAccessible( true );
+
+		// When area attr is present, the theme lookup is skipped entirely.
+		$block = [
+			'blockName'    => 'core/template-part',
+			'attrs'        => [
+				'slug'  => 'checkout-header',
+				'area'  => 'header',
+				'theme' => 'woocommerce/woocommerce',
+			],
+			'innerBlocks'  => [],
+			'innerHTML'    => '',
+			'innerContent' => [],
+		];
+
+		$this->assertSame( 'header', $method->invoke( null, $block ) );
+	}
+
+	public function test_get_template_part_colors_falls_back_to_theme_attr() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'get_template_part_colors' );
+		$method->setAccessible( true );
+
+		// With a slug not in the active theme and no valid theme fallback,
+		// the method should return an empty array without errors.
+		$result = $method->invoke( null, 'nonexistent-checkout-header', 'fake-theme/fake-theme' );
+		$this->assertSame( [], $result );
+
+		// With no theme arg, same behavior.
+		$result = $method->invoke( null, 'nonexistent-checkout-header' );
+		$this->assertSame( [], $result );
+	}
+
 	public function test_compute_woopay_appearance_maps_input_element_styles() {
 		// WooPay requires WP 6.5+. The textInput element key and proper
 		// elements.link resolution require WP 6.1+. Skip on older versions
