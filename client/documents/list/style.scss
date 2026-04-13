@@ -40,7 +40,7 @@ $gap-small: 12px;
 
 	&.has-compare,
 	&.has-search {
-		.woocommerce-card__action {
+		.woocommerce-table__actions {
 			align-items: center;
 			text-align: left;
 			display: grid;
@@ -49,7 +49,7 @@ $gap-small: 12px;
 		}
 
 		@include breakpoint( '<960px' ) {
-			.woocommerce-card__action {
+			.woocommerce-table__actions {
 				grid-gap: $gap-small;
 				grid-template-columns: auto 1fr;
 				grid-row-start: 2;
@@ -70,7 +70,7 @@ $gap-small: 12px;
 		}
 
 		&.has-search:not( .has-compare ) {
-			.woocommerce-card__action {
+			.woocommerce-table__actions {
 				grid-template-columns: 1fr auto;
 
 				.woocommerce-search {
@@ -81,7 +81,7 @@ $gap-small: 12px;
 			}
 
 			@include breakpoint( '<960px' ) {
-				.woocommerce-card__action {
+				.woocommerce-table__actions {
 					grid-template-columns: auto;
 
 					.woocommerce-search {
