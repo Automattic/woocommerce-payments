@@ -51,9 +51,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 
 	// Only show client-side validation error if user has interacted with the field
 	const showClientValidationError =
-		hasBlurred &&
-		accountCommunicationsEmail !== '' &&
-		! isEmail( accountCommunicationsEmail );
+		hasBlurred && ! isEmail( accountCommunicationsEmail );
 
 	const clientValidationError = showClientValidationError
 		? __( 'Please enter a valid email address.', 'woocommerce-payments' )

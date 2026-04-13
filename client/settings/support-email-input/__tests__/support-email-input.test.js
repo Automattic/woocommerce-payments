@@ -84,7 +84,7 @@ describe( 'SupportEmailInput', () => {
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 				?.textContent
-		).toMatch( /Please enter a valid email address./ );
+		).toContain( 'Please enter a valid email address.' );
 	} );
 
 	it( 'does not display client-side validation error for valid email after blur', () => {
