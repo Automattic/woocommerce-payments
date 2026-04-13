@@ -60,10 +60,8 @@ const useAccountStatus = () => {
 
 const NextDepositNotice: React.FC = () => {
 	const { account, hasErroredExternalAccount } = useAccountStatus();
-	const {
-		isNextDepositNoticeDismissed,
-		handleDismissNextDepositNotice,
-	} = useNextDepositNoticeState();
+	const { isNextDepositNoticeDismissed, handleDismissNextDepositNotice } =
+		useNextDepositNoticeState();
 
 	const isDepositsUnrestricted =
 		wcpaySettings.accountStatus.deposits?.restrictions ===

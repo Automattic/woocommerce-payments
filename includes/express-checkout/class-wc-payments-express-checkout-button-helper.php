@@ -279,14 +279,13 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if Amazon Pay can be used in Express Checkout.
+	 * Checks if Amazon Pay can be used as an express checkout button.
 	 *
 	 * This validates:
-	 * - Feature flag is enabled
-	 * - Gateway exists and is enabled
-	 * - Account has Amazon Pay fees configured (indicates availability)
-	 * - Tax settings are compatible
-	 * - Currency is supported for the account country
+	 * - Express checkout is not displayed in the payment methods list
+	 * - Amazon Pay feature flag is enabled
+	 * - Gateway exists and is available for express checkout
+	 * - Tax settings are compatible (Amazon Pay doesn't support taxes based on billing address)
 	 *
 	 * @return boolean
 	 */

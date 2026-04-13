@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable react-hooks/exhaustive-deps -- useSelect dep arrays intentionally use JSON.stringify for object comparison */
 
 /**
  * External dependencies
@@ -31,9 +32,8 @@ export const useDispute = (
 } => {
 	const { dispute, error, isLoading } = useSelect(
 		( select ) => {
-			const { getDispute, getDisputeError, isResolving } = select(
-				STORE_NAME
-			);
+			const { getDispute, getDisputeError, isResolving } =
+				select( STORE_NAME );
 
 			return {
 				dispute: <Dispute | undefined>getDispute( id ),

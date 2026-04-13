@@ -24,30 +24,30 @@ export const getChargeOutcomeType = ( charge: Charge = <Charge>{} ): string =>
 	charge.outcome ? charge.outcome.type : '';
 
 export const isChargeSuccessful = ( charge: Charge = <Charge>{} ): boolean =>
-	'succeeded' === charge.status && true === charge.paid;
+	charge.status === 'succeeded' && charge.paid === true;
 
 export const isChargeFailed = ( charge: Charge = <Charge>{} ): boolean =>
-	'failed' === charge.status &&
+	charge.status === 'failed' &&
 	failedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
 export const isChargeBlocked = ( charge: Charge = <Charge>{} ): boolean =>
-	'failed' === charge.status &&
+	charge.status === 'failed' &&
 	blockedOutcomeTypes.includes( getChargeOutcomeType( charge ) );
 
 export const isChargeCaptured = ( charge: Charge = <Charge>{} ): boolean =>
-	true === charge.captured;
+	charge.captured === true;
 
 export const isChargeDisputed = ( charge: Charge = <Charge>{} ): boolean =>
-	true === charge.disputed;
+	charge.disputed === true;
 
 export const isChargeRefunded = ( charge: Charge = <Charge>{} ): boolean =>
-	0 < charge.amount_refunded;
+	charge.amount_refunded > 0;
 
 export const isChargeRefundFailed = ( charge: Charge = <Charge>{} ): boolean =>
-	false === charge.refunded && get( charge, 'refunds.data', [] ).length > 0;
+	charge.refunded === false && get( charge, 'refunds.data', [] ).length > 0;
 
 export const isChargeFullyRefunded = ( charge: Charge = <Charge>{} ): boolean =>
-	true === charge.refunded;
+	charge.refunded === true;
 
 export const isChargePartiallyRefunded = (
 	charge: Charge = <Charge>{}
@@ -73,7 +73,7 @@ export const isOnHoldByFraudTools = (
 
 	return (
 		paymentIntent?.status === 'requires_capture' &&
-		'review' === fraudMetaBoxType
+		fraudMetaBoxType === 'review'
 	);
 };
 
@@ -202,7 +202,7 @@ export const getTransactionChannel = ( channel: string ): string => {
  * whose ipp_channel value can be mobile_store_management or mobile_pos that indicates whether the channel is from store
  * management or POS in the mobile apps.
  *
- * @param {string} type The transaction charge type, which can be card_present or interac_present for In-Person payments.
+ * @param {string}              type     The transaction charge type, which can be card_present or interac_present for In-Person payments.
  * @param {Record<string, any>} metadata The transaction metadata, which may include ipp_channel indicating the channel source.
  * @return {string} Returns 'Online store', 'In-Person', or 'In-Person (POS)' based on the transaction type and metadata.
  */

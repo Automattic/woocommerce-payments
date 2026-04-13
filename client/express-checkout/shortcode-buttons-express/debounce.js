@@ -4,15 +4,16 @@
  * the wait time has expired.  Even if the wrapper is called multiple times, the wrapped
  * function only excecutes once and then blocks until the wait time expires.
  *
- * @param {int} wait       Milliseconds wait for the next time a function can be executed.
- * @param {Function} func       The function to be wrapped.
- * @param {bool} immediate Overriding the wait time, will force the function to fire everytime.
+ * @param {int}      wait      Milliseconds wait for the next time a function can be executed.
+ * @param {Function} func      The function to be wrapped.
+ * @param {bool}     immediate Overriding the wait time, will force the function to fire everytime.
  *
  * @return {Function} A wrapped function with execution limited by the wait time.
  */
 const debounce = ( wait, func, immediate = false ) => {
 	let timeout;
 	return function () {
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const context = this,
 			args = arguments;
 		const later = () => {

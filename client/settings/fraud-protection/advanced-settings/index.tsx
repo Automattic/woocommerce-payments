@@ -130,10 +130,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	const cardObserver = useRef< IntersectionObserver >();
 
-	const [
-		currentProtectionLevel,
-		updateProtectionLevel,
-	] = useCurrentProtectionLevel();
+	const [ currentProtectionLevel, updateProtectionLevel ] =
+		useCurrentProtectionLevel();
 	const [
 		advancedFraudProtectionSettings,
 		updateAdvancedFraudProtectionSettings,
@@ -141,9 +139,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [ validationError, setValidationError ] = useState< string | null >(
 		null
 	);
-	const [ protectionSettingsUI, setProtectionSettingsUI ] = useState<
-		ProtectionSettingsUI
-	>( {} );
+	const [ protectionSettingsUI, setProtectionSettingsUI ] =
+		useState< ProtectionSettingsUI >( {} );
 
 	useEffect( () => {
 		setProtectionSettingsUI(
@@ -207,9 +204,10 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		if (
 			wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure
 		) {
-			wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure = settings.some(
-				( setting ) => setting.key === 'avs_verification'
-			);
+			wcpaySettings.accountStatus.fraudProtection.declineOnAVSFailure =
+				settings.some(
+					( setting ) => setting.key === 'avs_verification'
+				);
 		}
 
 		updateAdvancedFraudProtectionSettings( settings );
@@ -228,7 +226,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		entries.forEach( ( entry: IntersectionObserverEntry ) => {
 			const { target, intersectionRatio } = entry;
 
-			if ( 0 < intersectionRatio ) {
+			if ( intersectionRatio > 0 ) {
 				// Element is at least partially visible.
 				const { id } = target;
 				const event = observerEventMapping[ id ] || null;
@@ -340,7 +338,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 								) }
 							</InlineNotice>
 						) }
-						{ 'error' === advancedFraudProtectionSettings && (
+						{ advancedFraudProtectionSettings === 'error' && (
 							<InlineNotice
 								className="fraud-protection-advanced-settings-error-notice"
 								status="error"
@@ -383,8 +381,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 								disabled={
 									isSaving ||
 									isLoading ||
-									'error' ===
-										advancedFraudProtectionSettings ||
+									advancedFraudProtectionSettings ===
+										'error' ||
 									! isDirty
 								}
 							>

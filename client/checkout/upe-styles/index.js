@@ -314,7 +314,7 @@ export const appearanceSelectors = {
 	 * Returns selectors based on checkout type.
 	 *
 	 * @param {boolean} elementsLocation The location of the elements.
-	 * @param {Object}  scope           The document scope to search in.
+	 * @param {Object}  scope            The document scope to search in.
 	 *
 	 * @return {Object} Selectors for checkout type specified.
 	 */
@@ -357,7 +357,7 @@ const hiddenElementsForUPE = {
 	 * Create hidden container for generating UPE styles.
 	 *
 	 * @param {string} elementID ID of element to create.
-	 * @param {Object} scope The document scope to search in.
+	 * @param {Object} scope     The document scope to search in.
 	 *
 	 * @return {Object} Object of the created hidden container element.
 	 */
@@ -398,7 +398,7 @@ const hiddenElementsForUPE = {
 	 * @param {Object} appendTarget   Element object where clone should be appended.
 	 * @param {string} elementToClone Selector of the element to be cloned.
 	 * @param {string} newElementID   Selector for the cloned element.
-	 * @param {Object} scope         The document scope to search in.
+	 * @param {Object} scope          The document scope to search in.
 	 */
 	appendClone: function (
 		appendTarget,
@@ -434,7 +434,7 @@ const hiddenElementsForUPE = {
 	 * Initialize hidden fields to generate UPE styles.
 	 *
 	 * @param {boolean} elementsLocation The location of the elements.
-	 * @param {Object} scope The scope of the elements.
+	 * @param {Object}  scope            The scope of the elements.
 	 */
 	init: function ( elementsLocation, scope ) {
 		const selectors = appearanceSelectors.getSelectors( elementsLocation ),
@@ -571,9 +571,8 @@ export const getFieldStyles = (
 		}
 
 		if ( camelCase === 'color' ) {
-			filteredStyles[ camelCase ] = maybeConvertRGBAtoRGB(
-				propertyValue
-			);
+			filteredStyles[ camelCase ] =
+				maybeConvertRGBAtoRGB( propertyValue );
 			return;
 		}
 
@@ -658,10 +657,10 @@ export const getFontRulesFromPage = ( scope = document ) => {
 /**
  * Ensure the font size of the element is smaller than the font size of target element.
  *
- * @param {string} selector Selector of the element to be checked.
- * @param {string} fontSize Pre-computed font size.
+ * @param {string} selector   Selector of the element to be checked.
+ * @param {string} fontSize   Pre-computed font size.
  * @param {number} percentage Percentage (0-1) to be used relative to the font size of the target element.
- * @param {Object} scope The scope of the elements.
+ * @param {Object} scope      The scope of the elements.
  *
  * @return {string} Font size of the element.
  */

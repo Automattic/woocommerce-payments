@@ -498,3 +498,127 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		).toBeInTheDocument();
 	} );
 } );
+
+describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
+	// eslint-disable-next-line
+	const originalWarn = console.warn;
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+		};
+
+		// Suppress the List component deprecation warning
+		// eslint-disable-next-line
+		console.warn = ( ...args ) => {
+			const warningMessage = args[ 0 ];
+			if (
+				typeof warningMessage === 'string' &&
+				warningMessage.includes( 'List with items prop is deprecated' )
+			) {
+				return;
+			}
+			originalWarn( ...args );
+		};
+	} );
+
+	afterEach( () => {
+		// eslint-disable-next-line
+		console.warn = originalWarn;
+	} );
+
+	test( 'renders disabled Challenge dispute button with tooltip for Klarna inquiry', () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed' as const,
+			status: 'warning_needs_response' as const,
+			enhanced_eligibility_types: [],
+		};
+		const customer = getBaseBillingDetails();
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl="https://example.com/order/123"
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		// Challenge dispute button should be present but disabled
+		const disabledButton = screen.getByTestId(
+			'challenge-dispute-button-disabled'
+		);
+		expect( disabledButton ).toBeInTheDocument();
+		expect( disabledButton ).toBeDisabled();
+
+		// Issue refund button should be primary and enabled
+		const refundButton = screen.getByRole( 'button', {
+			name: /Issue refund/i,
+		} );
+		expect( refundButton ).toBeInTheDocument();
+		expect( refundButton ).not.toBeDisabled();
+	} );
+
+	test( 'renders Issue refund button before disabled Challenge button for Klarna inquiry', () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed' as const,
+			status: 'warning_needs_response' as const,
+			enhanced_eligibility_types: [],
+		};
+		const customer = getBaseBillingDetails();
+
+		const { container } = renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl="https://example.com/order/123"
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		// Check button order: Issue refund should come before Challenge dispute
+		const actionsContainer = container.querySelector(
+			'.transaction-details-dispute-details-body__actions'
+		);
+		const buttons = actionsContainer?.querySelectorAll( 'button' );
+		expect( buttons ).toBeDefined();
+		expect( buttons!.length ).toBeGreaterThanOrEqual( 2 );
+
+		// First button should be "Issue refund"
+		expect( buttons![ 0 ].textContent ).toMatch( /Issue refund/i );
+	} );
+
+	test( 'does not show Visa compliance checkbox for Klarna inquiries', () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed' as const,
+			status: 'warning_needs_response' as const,
+			enhanced_eligibility_types: [],
+		};
+		const customer = getBaseBillingDetails();
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl="https://example.com/order/123"
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
+	} );
+} );

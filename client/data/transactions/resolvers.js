@@ -121,7 +121,7 @@ export function* getTransactionsSummary( query ) {
  * Retrieves the blocked transactions.
  *
  * @param { string } status Fraud outcome status to be filtered.
- * @param { string } query Data on which to parameterize the selection.
+ * @param { string } query  Data on which to parameterize the selection.
  */
 export function* getFraudOutcomeTransactions( status, query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/transactions/fraud-outcomes`, {
@@ -160,7 +160,7 @@ export function* getFraudOutcomeTransactions( status, query ) {
  * Retrieves the on review transactions.
  *
  * @param { string } status Fraud outcome status to be filtered.
- * @param { string } query Data on which to parameterize the selection.
+ * @param { string } query  Data on which to parameterize the selection.
  */
 export function* getFraudOutcomeTransactionsSummary( status, query ) {
 	const path = addQueryArgs(

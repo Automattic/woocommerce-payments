@@ -341,9 +341,8 @@ export const useSettings = () => {
 	const isLoading = useSelect( ( select ) => {
 		select( STORE_NAME ).getSettings();
 		const isResolving = select( STORE_NAME ).isResolving( 'getSettings' );
-		const hasFinishedResolving = select( STORE_NAME ).hasFinishedResolution(
-			'getSettings'
-		);
+		const hasFinishedResolving =
+			select( STORE_NAME ).hasFinishedResolution( 'getSettings' );
 		return isResolving || ! hasFinishedResolving;
 	} );
 
@@ -372,9 +371,8 @@ export const usePaymentRequestEnabledSettings = () => {
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useExpressCheckoutInPaymentMethodsEnabledSettings = () => {
-	const { updateIsExpressCheckoutInPaymentMethodsEnabled } = useDispatch(
-		STORE_NAME
-	);
+	const { updateIsExpressCheckoutInPaymentMethodsEnabled } =
+		useDispatch( STORE_NAME );
 
 	const isExpressCheckoutInPaymentMethodsEnabled = useSelect( ( select ) =>
 		select( STORE_NAME ).getIsExpressCheckoutInPaymentMethodsEnabled()
@@ -442,9 +440,8 @@ const makeExpressCheckoutLocationHook = ( methodId ) => () => {
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
  */
-export const usePaymentRequestLocations = makeExpressCheckoutLocationHook(
-	'payment_request'
-);
+export const usePaymentRequestLocations =
+	makeExpressCheckoutLocationHook( 'payment_request' );
 
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
@@ -486,9 +483,8 @@ export const usePaymentRequestButtonTheme = () => {
 };
 
 export const usePaymentRequestButtonBorderRadius = () => {
-	const { updatePaymentRequestButtonBorderRadius } = useDispatch(
-		STORE_NAME
-	);
+	const { updatePaymentRequestButtonBorderRadius } =
+		useDispatch( STORE_NAME );
 
 	const paymentRequestButtonBorderRadius = useSelect( ( select ) =>
 		select( STORE_NAME ).getPaymentRequestButtonBorderRadius()
@@ -524,9 +520,8 @@ export const useWooPayEnabledSettings = () => {
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useWooPayGlobalThemeSupportEnabledSettings = () => {
-	const { updateIsWooPayGlobalThemeSupportEnabled } = useDispatch(
-		STORE_NAME
-	);
+	const { updateIsWooPayGlobalThemeSupportEnabled } =
+		useDispatch( STORE_NAME );
 
 	const isWooPayGlobalThemeSupportEnabled = useSelect( ( select ) =>
 		select( STORE_NAME ).getIsWooPayGlobalThemeSupportEnabled()
@@ -602,9 +597,8 @@ export const useAmazonPayEnabledSettings = () => {
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
  */
-export const useAmazonPayLocations = makeExpressCheckoutLocationHook(
-	'amazon_pay'
-);
+export const useAmazonPayLocations =
+	makeExpressCheckoutLocationHook( 'amazon_pay' );
 
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
@@ -660,9 +654,8 @@ export const useStripeBilling = () => {
  * @return {import('wcpay/types/wcpay-data-settings-hooks').StripeBillingMigrationState}
  */
 export const useStripeBillingMigration = () => {
-	const { submitStripeBillingSubscriptionMigration } = useDispatch(
-		STORE_NAME
-	);
+	const { submitStripeBillingSubscriptionMigration } =
+		useDispatch( STORE_NAME );
 
 	return useSelect( ( select ) => {
 		const { getStripeBillingSubscriptionCount } = select( STORE_NAME );
@@ -681,6 +674,7 @@ export const useStripeBillingMigration = () => {
 			isResolving( 'scheduleStripeBillingMigration' ),
 			hasResolved,
 		];
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- submitStripeBillingSubscriptionMigration is stable
 	}, [] );
 };
 
