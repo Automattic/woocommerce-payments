@@ -22,6 +22,7 @@ import {
 	HorizontalRule,
 	Icon,
 	Modal,
+	Tooltip,
 } from '@wordpress/components';
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
@@ -427,6 +428,40 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						>
 							{ disputeAcceptAction.acceptButtonLabel }
 						</Button>
+
+						{ ! isDefendable && (
+							<Tooltip
+								text={ __(
+									'Challenge available if the inquiry escalates to a dispute',
+									'woocommerce-payments'
+								) }
+							>
+								<span
+									className="transaction-details-dispute-details-body__challenge-disabled"
+									tabIndex={ 0 }
+									role="button"
+									aria-disabled="true"
+									aria-label={ __(
+										'Challenge dispute — available if the inquiry escalates to a dispute',
+										'woocommerce-payments'
+									) }
+								>
+									<Button
+										variant="primary"
+										disabled
+										tabIndex={ -1 }
+										aria-hidden="true"
+										data-testid="challenge-dispute-button-disabled"
+										__next40pxDefaultSize
+									>
+										{ __(
+											'Challenge dispute',
+											'woocommerce-payments'
+										) }
+									</Button>
+								</span>
+							</Tooltip>
+						) }
 
 						{ /** Accept dispute modal */ }
 						{ isModalOpen && (

@@ -59,6 +59,7 @@ use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
  * Gateway class for WooPayments
@@ -2277,19 +2278,48 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_method_types( $payment_information ): array {
-		// For Express Checkout payments, use the payment method types sent by the client.
-		// These must match the types used to initialize Stripe Elements on the frontend.
+		// For Express Checkout payments, validate the payment method types sent by the client
+		// against the server-authoritative list of enabled express payment methods.
 		// phpcs:ignore WordPress.Security.NonceVerification
 		if ( ! empty( $_POST['wcpay-express-payment-method-types'] ) ) {
-			// phpcs:ignore WordPress.Security.NonceVerification
-			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $_POST['wcpay-express-payment-method-types'] ) ), true );
-			if ( is_array( $express_payment_method_types ) && ! empty( $express_payment_method_types ) ) {
-				return $express_payment_method_types;
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$raw_types = $_POST['wcpay-express-payment-method-types'];
+			// Guard against the field being sent as an array (e.g. wcpay-express-payment-method-types[]=...)
+			// which would cause sanitize_text_field/json_decode to emit warnings.
+			if ( ! is_string( $raw_types ) ) {
+				$raw_types = '';
+			}
+			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $raw_types ) ), true );
+			// Normalize to a flat list of strings — guard against nested arrays/objects in the JSON payload.
+			$express_payment_method_types = is_array( $express_payment_method_types )
+				? array_values( array_filter( $express_payment_method_types, 'is_string' ) )
+				: [];
+			if ( ! empty( $express_payment_method_types ) ) {
+				$allowed   = $this->get_allowed_express_payment_method_types();
+				$validated = array_values( array_intersect( $express_payment_method_types, $allowed ) );
+
+				$rejected = array_diff( $express_payment_method_types, $allowed );
+				if ( ! empty( $rejected ) ) {
+					// Cap the logged list to avoid log spam from unbounded client input.
+					// Use wp_json_encode to safely escape special characters (e.g. newlines from JSON decode).
+					$rejected_log = wp_json_encode( array_slice( array_values( $rejected ), 0, 5 ) );
+					Logger::warning(
+						sprintf(
+							'Express checkout payment method types rejected during validation: %s.',
+							$rejected_log
+						)
+					);
+				}
+
+				if ( ! empty( $validated ) ) {
+					return $validated;
+				}
 			}
 		}
 
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
+		$payment_methods          = [];
 
 		if ( ! empty( $requested_payment_method ) ) {
 			// All checkout requests should contain $_POST context, so we check this first.
@@ -4701,6 +4731,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		// Original logic: single non-card payment method.
 		return 1 === count( $payment_methods ) && 'card' !== $payment_methods[0];
+	}
+
+	/**
+	 * Get the Stripe PaymentMethod types allowed for express checkout payments.
+	 *
+	 * Dynamically built from the payment method definitions registry by filtering
+	 * for EXPRESS_CHECKOUT capability and checking gateway availability.
+	 *
+	 * @return string[] Allowed Stripe PaymentMethod type strings (e.g., ['card', 'amazon_pay']).
+	 */
+	private function get_allowed_express_payment_method_types(): array {
+		$allowed = [];
+
+		// Google Pay and Apple Pay use 'card' as their Stripe payment method type.
+		// Check via is_payment_request_enabled() on the main gateway rather than
+		// looking up split gateways, which may fail availability checks designed
+		// for regular checkout gateways (e.g., is_available_for_express_checkout()).
+		if ( $this->is_payment_request_enabled() ) {
+			$allowed[] = 'card';
+		}
+
+		// Check other express checkout methods (e.g., Amazon Pay) via their split gateways.
+		$registry    = PaymentMethodDefinitionRegistry::instance();
+		$definitions = $registry->get_all_payment_method_definitions();
+
+		foreach ( $definitions as $definition_class ) {
+			if ( ! PaymentMethodUtils::is_express_checkout( $definition_class ) ) {
+				continue;
+			}
+
+			// Skip methods that use 'card' — already handled above.
+			if ( 'card' === $definition_class::get_stripe_payment_method_type() ) {
+				continue;
+			}
+
+			$gateway = $this->wc_payments_get_payment_gateway_by_id( $definition_class::get_id() );
+			if ( ! $gateway || ! $gateway->is_enabled() || ! $gateway->is_available_for_express_checkout() ) {
+				continue;
+			}
+
+			$allowed[] = $definition_class::get_stripe_payment_method_type();
+		}
+
+		return array_values( array_unique( $allowed ) );
 	}
 
 	/**
