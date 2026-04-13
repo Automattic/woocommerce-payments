@@ -181,7 +181,7 @@ const getSummary = ( loans: CapitalLoan[] ) => {
 	const currencies = Array.from(
 		new Set( loans.map( ( l ) => l.currency ) )
 	);
-	if ( 1 === currencies.length ) {
+	if ( currencies.length === 1 ) {
 		summary.push( {
 			label: __( 'total', 'woocommerce-payments' ),
 			value: formatExplicitCurrency(

@@ -27,10 +27,10 @@ export const chargeMock: Charge = {
 	id: chargeId,
 	amount: 8903,
 	created: 1656701170,
-	payment_method_details: ( {
+	payment_method_details: {
 		card: {},
 		type: 'card',
-	} as unknown ) as PaymentMethodDetails,
+	} as unknown as PaymentMethodDetails,
 	payment_method: 'pm_mock',
 	amount_captured: 8903,
 	amount_refunded: 8903,
@@ -167,9 +167,8 @@ describe( 'Payment Intent hooks', () => {
 				hasFinishedResolution: jest.fn().mockReturnValue( true ),
 			};
 
-			const result = usePaymentIntentWithChargeFallback(
-				paymentIntentId
-			);
+			const result =
+				usePaymentIntentWithChargeFallback( paymentIntentId );
 
 			expect( selectors.getPaymentIntent ).toHaveBeenCalledWith(
 				paymentIntentId
@@ -191,9 +190,8 @@ describe( 'Payment Intent hooks', () => {
 				hasFinishedResolution: jest.fn().mockReturnValue( false ),
 			};
 
-			const result = usePaymentIntentWithChargeFallback(
-				paymentIntentId
-			);
+			const result =
+				usePaymentIntentWithChargeFallback( paymentIntentId );
 
 			expect( selectors.getPaymentIntent ).toHaveBeenCalledWith(
 				paymentIntentId

@@ -20,10 +20,8 @@ export async function createPaymentCredential(
 	useConfirmationTokens: boolean
 ): Promise< PaymentCredentialResult > {
 	if ( useConfirmationTokens ) {
-		const {
-			confirmationToken,
-			error,
-		} = await stripe.createConfirmationToken( { elements } );
+		const { confirmationToken, error } =
+			await stripe.createConfirmationToken( { elements } );
 		if ( error ) {
 			throw error;
 		}

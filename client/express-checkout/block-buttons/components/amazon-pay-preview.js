@@ -123,9 +123,8 @@ const AmazonPayPreview = ( { buttonAttributes } ) => {
 	);
 
 	const borderRadius = useMemo( () => {
-		const appearance = getExpressCheckoutButtonAppearance(
-			buttonAttributes
-		);
+		const appearance =
+			getExpressCheckoutButtonAppearance( buttonAttributes );
 		return appearance.variables.borderRadius;
 	}, [ buttonAttributes ] );
 

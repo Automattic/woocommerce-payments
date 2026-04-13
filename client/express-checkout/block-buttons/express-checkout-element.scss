@@ -15,19 +15,39 @@
 	height: 20px;
 }
 
-.wc-block-components-express-payment
-	.wc-block-components-express-payment__event-buttons
-	> li {
-	margin-left: 1px !important;
-	width: 99% !important;
+// WC Blocks sets overflow:hidden on the express payment block, its content
+// wrapper, the <ul>, and each <li>. This clips Stripe's iframe bleed
+// (margin: -4px; width: calc(100% + 8px)) and focus outlines/borders.
+// Override the entire chain and add padding for breathing room.
+.wp-block-woocommerce-cart-express-payment-block,
+.wp-block-woocommerce-checkout-express-payment-block {
+	overflow: visible !important;
+}
+
+.wc-block-components-express-payment {
+	.wc-block-components-express-payment__content {
+		overflow: visible !important;
+	}
+
+	.wc-block-components-express-payment__event-buttons {
+		overflow: visible !important;
+		padding: 0 4px;
+
+		> li {
+			overflow: visible !important;
+		}
+	}
 }
 
 // Preview button
 @supports not ( -webkit-appearance: -apple-pay-button ) {
-	/* stylelint-disable-next-line selector-id-pattern */
-	#express-payment-method-woocommerce_payments_express_checkout_applePay:has( #express-checkout-button-preview-applePay ) {
+	/* stylelint-disable selector-id-pattern, selector-pseudo-class-parentheses-space-inside */
+	#express-payment-method-woocommerce_payments_express_checkout_applePay:has(
+			#express-checkout-button-preview-applePay
+		) {
 		display: none;
 	}
+	/* stylelint-enable selector-id-pattern, selector-pseudo-class-parentheses-space-inside */
 }
 
 // Google Pay preview button - fix internal sizing

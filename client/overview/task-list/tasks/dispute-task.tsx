@@ -20,7 +20,7 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
  * Returns an array of disputes that are due within the specified number of days.
  *
  * @param {CachedDispute[]} activeDisputes - The active disputes to filter.
- * @param {number} days - The number of days to check.
+ * @param {number}          days           - The number of days to check.
  *
  * @return {CachedDispute[]} The disputes that are due within the specified number of days.
  */

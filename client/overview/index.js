@@ -68,9 +68,8 @@ const OverviewPage = () => {
 	} = wcpaySettings;
 
 	// Don't show the update details and verify business tasks by default due to embedded component.
-	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
-		false
-	);
+	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] =
+		useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -80,13 +79,10 @@ const OverviewPage = () => {
 		stripeNotificationsBannerErrorType,
 		setStripeNotificationsBannerErrorType,
 	] = useState( '' );
-	const [
-		notificationsBannerMessage,
-		setNotificationsBannerMessage,
-	] = React.useState( '' );
-	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
-		true
-	);
+	const [ notificationsBannerMessage, setNotificationsBannerMessage ] =
+		React.useState( '' );
+	const [ stripeComponentLoading, setStripeComponentLoading ] =
+		useState( true );
 	// Variable to memoize the count of Stripe notifications.
 	const [
 		stripeNotificationsCountToAddressMemo,
@@ -95,10 +91,8 @@ const OverviewPage = () => {
 
 	const isTestModeOnboarding = isInTestModeOnboarding();
 	const { isLoading: settingsIsLoading } = useSettings();
-	const [
-		isTestDriveSuccessDisplayed,
-		setTestDriveSuccessDisplayed,
-	] = useState( false );
+	const [ isTestDriveSuccessDisplayed, setTestDriveSuccessDisplayed ] =
+		useState( false );
 	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {

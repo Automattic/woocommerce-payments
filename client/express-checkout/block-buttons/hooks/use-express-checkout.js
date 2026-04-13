@@ -129,8 +129,9 @@ export const useExpressCheckout = ( {
 					getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
 					false,
 				shippingRates,
-				allowedShippingCountries: getExpressCheckoutData( 'checkout' )
-					.allowed_shipping_countries,
+				allowedShippingCountries:
+					getExpressCheckoutData( 'checkout' )
+						.allowed_shipping_countries,
 			};
 
 			// Click event from WC Blocks.

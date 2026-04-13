@@ -38,10 +38,8 @@ interface NotificationsEmailInputProps {
 const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 	onValidationChange,
 } ) => {
-	const [
-		accountCommunicationsEmail,
-		setAccountCommunicationsEmail,
-	] = useAccountCommunicationsEmail();
+	const [ accountCommunicationsEmail, setAccountCommunicationsEmail ] =
+		useAccountCommunicationsEmail();
 	const { isLoading } = useSettings();
 
 	const [ hasBlurred, setHasBlurred ] = useState( false );

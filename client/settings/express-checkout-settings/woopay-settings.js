@@ -37,15 +37,11 @@ import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibilit
 const WooPaySettings = ( { section } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
-	const [
-		isWooPayEnabled,
-		updateIsWooPayEnabled,
-	] = useWooPayEnabledSettings();
+	const [ isWooPayEnabled, updateIsWooPayEnabled ] =
+		useWooPayEnabledSettings();
 
-	const [
-		woopayCustomMessage,
-		setWooPayCustomMessage,
-	] = useWooPayCustomMessage();
+	const [ woopayCustomMessage, setWooPayCustomMessage ] =
+		useWooPayCustomMessage();
 
 	const [
 		isWooPayGlobalThemeSupportEnabled,
@@ -309,7 +305,7 @@ const WooPaySettings = ( { section } ) => {
 										// eslint-disable-next-line max-len
 										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
 									),
-								}
+								},
 						} ) }
 						value={ woopayCustomMessage }
 						onChange={ setWooPayCustomMessage }

@@ -98,7 +98,7 @@ export const TransactionsPage: React.FC = () => {
 			className: 'blocked-list',
 		},
 	].filter( ( item ) => {
-		if ( 'uncaptured-page' !== item.name ) return true;
+		if ( item.name !== 'uncaptured-page' ) return true;
 
 		return shouldShowUncapturedTab;
 	} );

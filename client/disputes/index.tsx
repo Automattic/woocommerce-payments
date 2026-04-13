@@ -206,9 +206,11 @@ export const DisputesList = (): JSX.Element => {
 	const { createNotice } = useDispatch( 'core/notices' );
 
 	const headers = getHeaders( getQuery().orderby );
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		DisputesTableHeader
-	>( 'wc_payments_disputes_hidden_columns', headers );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< DisputesTableHeader >(
+			'wc_payments_disputes_hidden_columns',
+			headers
+		);
 
 	const totalRows = disputesSummary.count || 0;
 
@@ -434,7 +436,7 @@ export const DisputesList = (): JSX.Element => {
 		];
 	}
 
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	const isCurrencyFiltered = typeof getQuery().store_currency_is === 'string';
 
 	const storeCurrencies =
 		disputesSummary.currencies ||

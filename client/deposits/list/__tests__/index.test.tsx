@@ -291,8 +291,7 @@ describe( 'Deposits list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
-					path:
-						'/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en_US',
+					path: '/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en_US',
 				} );
 			} );
 		} );

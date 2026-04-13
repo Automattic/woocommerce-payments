@@ -138,27 +138,26 @@ type TooltipPortalProps = {
 	parentElement: HTMLElement;
 };
 
-const TooltipPortal: React.FC< React.PropsWithChildren<
-	TooltipPortalProps
-> > = memo( ( { children, parentElement } ) => {
-	const node = useRef< HTMLElement | null >( null );
-	if ( ! node.current ) {
-		node.current = document.createElement( 'div' );
-		parentElement.appendChild( node.current );
-	}
+const TooltipPortal: React.FC< React.PropsWithChildren< TooltipPortalProps > > =
+	memo( ( { children, parentElement } ) => {
+		const node = useRef< HTMLElement | null >( null );
+		if ( ! node.current ) {
+			node.current = document.createElement( 'div' );
+			parentElement.appendChild( node.current );
+		}
 
-	// on component unmount, clear any reference to the created node
-	useEffect( () => {
-		return () => {
-			if ( node.current ) {
-				parentElement.removeChild( node.current );
-				node.current = null;
-			}
-		};
-	}, [ parentElement ] );
+		// on component unmount, clear any reference to the created node
+		useEffect( () => {
+			return () => {
+				if ( node.current ) {
+					parentElement.removeChild( node.current );
+					node.current = null;
+				}
+			};
+		}, [ parentElement ] );
 
-	return createPortal( children, node.current );
-} );
+		return createPortal( children, node.current );
+	} );
 
 type TooltipBaseProps = {
 	className?: string;

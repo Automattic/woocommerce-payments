@@ -23,10 +23,10 @@ export const getUpdateBusinessDetailsTask = (
 	pastDue: boolean,
 	detailsSubmitted: boolean
 ): TaskItemProps | null => {
-	const accountRestrictedSoon = 'restricted_soon' === status;
-	const accountDetailsPastDue = 'restricted' === status && pastDue;
-	const hasMultipleErrors = 1 < errorMessages.length;
-	const hasSingleError = 1 === errorMessages.length;
+	const accountRestrictedSoon = status === 'restricted_soon';
+	const accountDetailsPastDue = status === 'restricted' && pastDue;
+	const hasMultipleErrors = errorMessages.length > 1;
+	const hasSingleError = errorMessages.length === 1;
 	const accountLinkWithSource = accountLink
 		? addQueryArgs( accountLink, {
 				from: 'WCPAY_OVERVIEW',
@@ -105,7 +105,7 @@ export const getUpdateBusinessDetailsTask = (
 	};
 
 	const handleClick = () => {
-		if ( 'complete' === status || 'enabled' === status ) {
+		if ( status === 'complete' || status === 'enabled' ) {
 			return;
 		}
 
@@ -160,7 +160,7 @@ export const getUpdateBusinessDetailsTask = (
 					'WooPayments'
 			  ),
 		content: accountDetailsTaskDescription,
-		completed: 'complete' === status || 'enabled' === status,
+		completed: status === 'complete' || status === 'enabled',
 		onClick: handleClick,
 		action: handleClick,
 		actionLabel: actionLabel,
