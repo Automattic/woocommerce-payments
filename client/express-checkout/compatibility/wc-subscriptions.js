@@ -196,7 +196,7 @@ const getRecurringCartTotal = ( cartData ) => {
 /**
  * Returns a localized billing period string, e.g. "month" or "2 months".
  *
- * @param {string} period Billing period from Store API ('day','week','month','year').
+ * @param {string} period   Billing period from Store API ('day','week','month','year').
  * @param {number} interval Billing interval (number of periods between renewals).
  * @return {string} Localized period string.
  */
