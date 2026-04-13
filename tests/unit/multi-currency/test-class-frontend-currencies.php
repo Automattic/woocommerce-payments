@@ -149,7 +149,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	public function test_get_price_decimals_uses_order_currency_on_single_order_page_without_backtrace() {
 		// Simulate being on the order-received page (block-based checkout).
 		global $wp;
-		$original_query_vars          = $wp->query_vars;
+		$original_query_vars              = $wp->query_vars;
 		$wp->query_vars['order-received'] = $this->mock_order->get_id();
 
 		$this->mock_utils
