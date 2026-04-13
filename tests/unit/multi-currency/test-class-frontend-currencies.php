@@ -146,6 +146,32 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$this->assertEquals( 3, $this->frontend_currencies->get_price_decimals( 2 ) );
 	}
 
+	public function test_get_price_decimals_uses_order_currency_on_single_order_page_without_backtrace() {
+		// Simulate being on the order-received page (block-based checkout).
+		global $wp;
+		$original_query_vars          = $wp->query_vars;
+		$wp->query_vars['order-received'] = $this->mock_order->get_id();
+
+		$this->mock_utils
+			->expects( $this->once() )
+			->method( 'is_page_with_vars' )
+			->willReturn( true );
+		// The backtrace check should NOT be called on single-order pages.
+		$this->mock_utils
+			->expects( $this->never() )
+			->method( 'is_call_in_backtrace' );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'ISK' ) );
+
+		$this->mock_order->set_currency( 'USD' );
+		$this->frontend_currencies->init_order_currency( $this->mock_order );
+
+		// USD uses 2 decimals. Even though ISK (0 decimals) is the selected currency,
+		// the order currency should be used on single-order pages.
+		$this->assertEquals( 2, $this->frontend_currencies->get_price_decimals( 2 ) );
+
+		$wp->query_vars = $original_query_vars;
+	}
+
 	public function test_get_price_decimals_returns_original_when_the_currency_is_same() {
 		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'USD' ) );
 
