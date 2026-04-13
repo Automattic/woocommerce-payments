@@ -7,12 +7,8 @@ import WizardContext from '../wrapper/context';
 import WizardTaskContext from './context';
 
 const WizardTask = ( { children, id = '' } ) => {
-	const {
-		activeTask,
-		completedTasks,
-		setActiveTask,
-		setCompletedTasks,
-	} = useContext( WizardContext );
+	const { activeTask, completedTasks, setActiveTask, setCompletedTasks } =
+		useContext( WizardContext );
 
 	const contextValue = useMemo(
 		() => ( {

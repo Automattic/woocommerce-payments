@@ -27,7 +27,7 @@ import { goToMyAccount } from '../../../utils/shopper-navigation';
 type CardType = [
 	string,
 	typeof config.cards.basic,
-	typeof config.products.simple[]
+	( typeof config.products.simple )[]
 ];
 
 const cards: Array< CardType > = [
@@ -45,91 +45,88 @@ const cards: Array< CardType > = [
 
 test.describe( 'Saved cards', { tag: '@critical' }, () => {
 	cards.forEach( ( [ cardType, card, products ] ) => {
-		test.describe(
-			`When using a ${ cardType } card added on checkout`,
-			() => {
-				let shopperPage: Page;
+		test.describe( `When using a ${ cardType } card added on checkout`, () => {
+			let shopperPage: Page;
 
-				test.beforeAll( async ( { browser }, { project } ) => {
-					shopperPage = (
-						await getShopper( browser, true, project.use.baseURL )
-					 ).shopperPage;
+			test.beforeAll( async ( { browser }, { project } ) => {
+				shopperPage = (
+					await getShopper( browser, true, project.use.baseURL )
+				 ).shopperPage;
 
-					await ensureCustomerIsLoggedIn( shopperPage, project );
-				} );
+				await ensureCustomerIsLoggedIn( shopperPage, project );
+			} );
 
-				test.afterAll( async () => {
-					await emptyCart( shopperPage );
-				} );
+			test.afterAll( async () => {
+				await emptyCart( shopperPage );
+			} );
 
-				// Reload after each test to prevent state leaking between tests.
-				test.afterEach( async () => {
-					await shopperPage.reload();
-				} );
+			// Reload after each test to prevent state leaking between tests.
+			test.afterEach( async () => {
+				await shopperPage.reload();
+			} );
 
-				test( 'should save the card', async ( {} ) => {
-					await setupProductCheckout( shopperPage, [
-						[ products[ 0 ], 1 ],
-					] );
-					await fillCardDetails( shopperPage, card );
-					await setSavePaymentMethod( shopperPage, true );
-					await placeOrder( shopperPage );
-					if ( cardType === '3ds' ) {
-						await confirmCardAuthentication( shopperPage );
-					}
-					await expect(
-						shopperPage.getByText( 'Order received' ).first()
-					).toBeVisible();
+			test( 'should save the card', async ( {} ) => {
+				await setupProductCheckout( shopperPage, [
+					[ products[ 0 ], 1 ],
+				] );
+				await fillCardDetails( shopperPage, card );
+				await setSavePaymentMethod( shopperPage, true );
+				await placeOrder( shopperPage );
+				if ( cardType === '3ds' ) {
+					await confirmCardAuthentication( shopperPage );
+				}
+				await expect(
+					shopperPage.getByText( 'Order received' ).first()
+				).toBeVisible();
 
-					await goToMyAccount( shopperPage, 'payment-methods' );
-					await expect(
-						shopperPage.getByText( card.label )
-					).toBeVisible();
-					await expect(
-						shopperPage.getByText(
-							`${ card.expires.month }/${ card.expires.year }`
-						)
-					).toBeVisible();
-				} );
+				await goToMyAccount( shopperPage, 'payment-methods' );
+				await expect(
+					shopperPage.getByText( card.label )
+				).toBeVisible();
+				await expect(
+					shopperPage.getByText(
+						`${ card.expires.month }/${ card.expires.year }`
+					)
+				).toBeVisible();
+			} );
 
-				test( 'should process a payment with the saved card', async ( {} ) => {
-					await setupProductCheckout( shopperPage, [
-						[ products[ 1 ], 1 ],
-					] );
-					await selectSavedCardOnCheckout( shopperPage, card );
-					await placeOrder( shopperPage );
-					if ( cardType === '3ds' ) {
-						await confirmCardAuthentication( shopperPage );
-					}
-					// Wait for the order confirmation page to load.
-					await shopperPage.waitForLoadState( 'load' );
-					await expect(
-						shopperPage.getByText( 'Order received' ).first()
-					).toBeVisible();
-				} );
+			test( 'should process a payment with the saved card', async ( {} ) => {
+				await setupProductCheckout( shopperPage, [
+					[ products[ 1 ], 1 ],
+				] );
+				await selectSavedCardOnCheckout( shopperPage, card );
+				await placeOrder( shopperPage );
+				if ( cardType === '3ds' ) {
+					await confirmCardAuthentication( shopperPage );
+				}
+				// Wait for the order confirmation page to load.
+				await shopperPage.waitForLoadState( 'load' );
+				await expect(
+					shopperPage.getByText( 'Order received' ).first()
+				).toBeVisible();
+			} );
 
-				test( 'should delete the card', async ( {} ) => {
-					await goToMyAccount( shopperPage, 'payment-methods' );
-					await deleteSavedCard( shopperPage, card );
-					await expect(
-						shopperPage.getByText( 'Payment method deleted' )
-					).toBeVisible();
-				} );
+			test( 'should delete the card', async ( {} ) => {
+				await goToMyAccount( shopperPage, 'payment-methods' );
+				await deleteSavedCard( shopperPage, card );
+				await expect(
+					shopperPage.getByText( 'Payment method deleted' )
+				).toBeVisible();
+			} );
 
-				test( 'should not allow guest user to save the card', async ( {
-					browser,
-				} ) => {
-					const page: Page = ( await getAnonymousShopper( browser ) )
-						.shopperPage;
-					await setupProductCheckout( page );
-					await expect(
-						page.getByLabel(
-							'Save payment information to my account for future purchases.'
-						)
-					).not.toBeVisible();
-					await emptyCart( page );
-				} );
-			}
-		);
+			test( 'should not allow guest user to save the card', async ( {
+				browser,
+			} ) => {
+				const page: Page = ( await getAnonymousShopper( browser ) )
+					.shopperPage;
+				await setupProductCheckout( page );
+				await expect(
+					page.getByLabel(
+						'Save payment information to my account for future purchases.'
+					)
+				).not.toBeVisible();
+				await emptyCart( page );
+			} );
+		} );
 	} );
 } );

@@ -404,6 +404,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												content={
 													<>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Transaction fee',
@@ -423,6 +424,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															</span>
 														</Flex>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Dispute fee',
@@ -439,6 +441,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															</span>
 														</Flex>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Total fees',
@@ -528,7 +531,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											);
 										} }
 									>
-										{ __( 'Block transaction' ) }
+										{ __(
+											'Block transaction',
+											'woocommerce-payments'
+										) }
 									</CancelAuthorizationButton>
 
 									<CaptureAuthorizationButton

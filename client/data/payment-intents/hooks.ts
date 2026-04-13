@@ -10,7 +10,7 @@ import { STORE_NAME } from '../constants';
 import { Charge } from 'wcpay/types/charges';
 
 export const getIsChargeId = ( id: string ): boolean =>
-	-1 !== id.indexOf( 'ch_' ) || -1 !== id.indexOf( 'py_' );
+	id.indexOf( 'ch_' ) !== -1 || id.indexOf( 'py_' ) !== -1;
 
 export const usePaymentIntentWithChargeFallback = (
 	id: string

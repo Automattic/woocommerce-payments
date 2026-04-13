@@ -26,9 +26,10 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 	typeof useSettings
 >;
 
-const mockUseAccountCommunicationsEmail = useAccountCommunicationsEmail as jest.MockedFunction<
-	typeof useAccountCommunicationsEmail
->;
+const mockUseAccountCommunicationsEmail =
+	useAccountCommunicationsEmail as jest.MockedFunction<
+		typeof useAccountCommunicationsEmail
+	>;
 const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 	typeof useGetSavingError
 >;

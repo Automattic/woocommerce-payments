@@ -84,21 +84,17 @@ const getDocumentDescription = ( document: Document ) => {
 
 export const DocumentsList = (): JSX.Element => {
 	const { documents, isLoading } = useDocuments( getQuery() );
-	const {
-		documentsSummary,
-		isLoading: isSummaryLoading,
-	} = useDocumentsSummary( getQuery() );
+	const { documentsSummary, isLoading: isSummaryLoading } =
+		useDocumentsSummary( getQuery() );
 
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
 
-	const [
-		interruptedDownloadDocument,
-		setInterruptedDownloadDocument,
-	] = useState< {
-		documentId: Document[ 'document_id' ];
-		type: Document[ 'type' ];
-		newTab: boolean;
-	} | null >( null );
+	const [ interruptedDownloadDocument, setInterruptedDownloadDocument ] =
+		useState< {
+			documentId: Document[ 'document_id' ];
+			type: Document[ 'type' ];
+			newTab: boolean;
+		} | null >( null );
 
 	const handleDocumentDownload = (
 		documentId: Document[ 'document_id' ],
@@ -107,7 +103,7 @@ export const DocumentsList = (): JSX.Element => {
 	): boolean => {
 		setInterruptedDownloadDocument( { documentId, type, newTab } );
 
-		if ( 'vat_invoice' === type ) {
+		if ( type === 'vat_invoice' ) {
 			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
 				setVatFormModalOpen( true );
 				return false;
@@ -163,9 +159,11 @@ export const DocumentsList = (): JSX.Element => {
 
 	const columns = getColumns();
 
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		Column
-	>( 'wc_payments_documents_hidden_columns', columns );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_documents_hidden_columns',
+			columns
+		);
 
 	const totalRows = documentsSummary.count || 0;
 	const rows = documents.map( ( document: Document ) => {
@@ -216,7 +214,7 @@ export const DocumentsList = (): JSX.Element => {
 	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isDocumentsSummaryDataLoaded =
-		documentsSummary.count !== undefined && false === isSummaryLoading;
+		documentsSummary.count !== undefined && isSummaryLoading === false;
 
 	// Generate summary only if the data has been loaded
 	if ( isDocumentsSummaryDataLoaded ) {

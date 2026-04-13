@@ -15,8 +15,9 @@ const SupportEmailInput = ( { setInputValid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
 	const [ isTouched, setIsTouched ] = useState( false );
 
-	let supportEmailError = useGetSavingError()?.data?.details
-		?.account_business_support_email?.message;
+	let supportEmailError =
+		useGetSavingError()?.data?.details?.account_business_support_email
+			?.message;
 
 	const currentEmail = useRef( supportEmail ).current;
 	if ( supportEmail === '' && currentEmail !== '' ) {

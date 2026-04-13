@@ -25,10 +25,8 @@ import PaymentMethodItem from 'wcpay/components/payment-method-item';
 const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
-	const [
-		isWooPayEnabled,
-		updateIsWooPayEnabled,
-	] = useWooPayEnabledSettings();
+	const [ isWooPayEnabled, updateIsWooPayEnabled ] =
+		useWooPayEnabledSettings();
 
 	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
 

@@ -95,18 +95,14 @@ export const getMccsFlatList = (): ListItem[] => {
 
 	return normalizedData.reduce( ( acc, group ): ListItem[] => {
 		const groupItems =
-			group.items?.map(
-				( item ): ListItem => {
-					return {
-						key: item.id,
-						name: item.title,
-						group: group.id,
-						context: item?.keywords
-							? item.keywords.join( ' ' )
-							: '',
-					};
-				}
-			) || [];
+			group.items?.map( ( item ): ListItem => {
+				return {
+					key: item.id,
+					name: item.title,
+					group: group.id,
+					context: item?.keywords ? item.keywords.join( ' ' ) : '',
+				};
+			} ) || [];
 
 		return [
 			...acc,

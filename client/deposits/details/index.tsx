@@ -202,7 +202,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 								deposit.currency
 							) }
 							valueClass={
-								0 < deposit.fee && 'wcpay-deposit-fee'
+								deposit.fee > 0 && 'wcpay-deposit-fee'
 							}
 						/>,
 						<SummaryItem

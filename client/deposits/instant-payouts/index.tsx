@@ -19,7 +19,7 @@ import type * as AccountOverview from 'wcpay/types/account-overview';
 
 const isButtonDisabled = ( instantBalance: AccountOverview.InstantBalance ) => {
 	let buttonDisabled = false;
-	if ( 0 === instantBalance.amount ) {
+	if ( instantBalance.amount === 0 ) {
 		buttonDisabled = true;
 	}
 

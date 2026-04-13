@@ -54,7 +54,7 @@ const getTimeOfDayString = ( date: Date = new Date() ): TimeOfDay => {
  * Returns a greeting string based on the time of day and a given name, if provided.
  *
  * @param {string} name A name to include in the greeting, optional.
- * @param {Date} date A date object to calculate the time of day for. Defaults to the current time.
+ * @param {Date}   date A date object to calculate the time of day for. Defaults to the current time.
  * @return {string} A greeting string.
  */
 const getGreeting = ( name?: string, date: Date = new Date() ): string => {

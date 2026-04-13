@@ -77,7 +77,7 @@ export default class WCPayAPI {
 	/**
 	 * Generates a new instance of Stripe.
 	 *
-	 * @param {boolean}  forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
+	 * @param {boolean} forceAccountRequest True to instantiate the Stripe object with the merchant's account key.
 	 * @return {Object} The Stripe Object.
 	 */
 	__getStripe( forceAccountRequest = false ) {
@@ -136,7 +136,7 @@ export default class WCPayAPI {
 	 * Extracts the details about a payment intent from the redirect URL,
 	 * and displays the intent confirmation modal (if needed).
 	 *
-	 * @param {string} redirectUrl The redirect URL, returned from the server.
+	 * @param {string}  redirectUrl             The redirect URL, returned from the server.
 	 * @param {boolean} shouldSavePaymentMethod Whether the payment method should be saved.
 	 * @return {Promise<string>|boolean} A redirect URL on success, or `true` if no confirmation is needed.
 	 */

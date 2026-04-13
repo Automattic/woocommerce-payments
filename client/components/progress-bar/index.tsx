@@ -20,7 +20,7 @@ const ProgressBar: React.FunctionComponent< ProgressBarProps > = ( {
 	totalLabel,
 	progress,
 } ) => {
-	const useInnerLabel = 0.5 < progress;
+	const useInnerLabel = progress > 0.5;
 	return (
 		<div className="progressbar">
 			<div className="progressbar__container">
