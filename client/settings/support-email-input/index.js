@@ -11,7 +11,7 @@ import { useAccountBusinessSupportEmail, useGetSavingError } from 'wcpay/data';
 import { isEmail } from 'wcpay/utils/email-validation';
 import { useEffect, useRef, useState } from 'react';
 
-const SupportEmailInput = ( { setInputVallid } ) => {
+const SupportEmailInput = ( { setInputValid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
 	const [ isTouched, setIsTouched ] = useState( false );
 
@@ -40,10 +40,10 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 	const errorMessage = supportEmailError || clientValidationError;
 
 	useEffect( () => {
-		if ( setInputVallid ) {
-			setInputVallid( ! supportEmailError && ! hasInvalidFormat );
+		if ( setInputValid ) {
+			setInputValid( ! supportEmailError && ! hasInvalidFormat );
 		}
-	}, [ supportEmailError, setInputVallid, hasInvalidFormat ] );
+	}, [ supportEmailError, setInputValid, hasInvalidFormat ] );
 
 	return (
 		<>

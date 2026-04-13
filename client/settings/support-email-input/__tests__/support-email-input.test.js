@@ -52,16 +52,16 @@ describe( 'SupportEmailInput', () => {
 		).toBeNull();
 	} );
 
-	it( 'calls setInputVallid with false when email format is invalid', () => {
-		const setInputVallid = jest.fn();
+	it( 'calls setInputValid with false when email format is invalid', () => {
+		const setInputValid = jest.fn();
 		useAccountBusinessSupportEmail.mockReturnValue( [
 			'test@test',
 			jest.fn(),
 		] );
 
-		render( <SupportEmailInput setInputVallid={ setInputVallid } /> );
+		render( <SupportEmailInput setInputValid={ setInputValid } /> );
 
-		expect( setInputVallid ).toHaveBeenLastCalledWith( false );
+		expect( setInputValid ).toHaveBeenLastCalledWith( false );
 	} );
 
 	it( 'displays client-side validation error for invalid email after blur', () => {
@@ -102,16 +102,16 @@ describe( 'SupportEmailInput', () => {
 		).toBeNull();
 	} );
 
-	it( 'calls setInputVallid with true when email format is valid', () => {
-		const setInputVallid = jest.fn();
+	it( 'calls setInputValid with true when email format is valid', () => {
+		const setInputValid = jest.fn();
 		useAccountBusinessSupportEmail.mockReturnValue( [
 			'test@test.com',
 			jest.fn(),
 		] );
 
-		render( <SupportEmailInput setInputVallid={ setInputVallid } /> );
+		render( <SupportEmailInput setInputValid={ setInputValid } /> );
 
-		expect( setInputVallid ).toHaveBeenLastCalledWith( true );
+		expect( setInputValid ).toHaveBeenLastCalledWith( true );
 	} );
 
 	it( 'displays the error message for invalid email', async () => {
