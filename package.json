@@ -107,6 +107,7 @@
 	},
 	"devDependencies": {
 		"@automattic/color-studio": "4.0.0",
+		"@babel/eslint-parser": "7.28.6",
 		"@emotion/jest": "11.13.0",
 		"@jest/test-sequencer": "29.5.0",
 		"@playwright/test": "1.51.1",
@@ -166,7 +167,6 @@
 		"@wordpress/scripts": "30.18.0",
 		"@wordpress/url": "3.7.1",
 		"archiver": "5.2.0",
-		"@babel/eslint-parser": "7.28.6",
 		"babel-loader": "8.2.2",
 		"chalk": "4.1.2",
 		"clsx": "2.1.1",

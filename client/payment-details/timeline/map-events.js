@@ -485,16 +485,16 @@ const getRefundFailureReason = ( event ) => {
  *
  * @param {Object} event Event object
  *
- * @return {{ labelType: label, discount: {label, variable, fixed} }} Object containing formatted fee strings.
+ * @return {{ labelType: label, discount: {label, variable, fixed} }|undefined} Object containing formatted fee strings.
  */
 export const feeBreakdown = ( event ) => {
 	if ( ! event?.fee_rates?.history ) {
-		return;
+		return undefined;
 	}
 
 	// hide breakdown when there's only a base fee
 	if ( isBaseFeeOnly( event ) ) {
-		return;
+		return undefined;
 	}
 
 	const {
