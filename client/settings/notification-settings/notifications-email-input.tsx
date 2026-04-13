@@ -30,9 +30,9 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 	] = useAccountCommunicationsEmail();
 	const { isLoading } = useSettings();
 
-	const [ hasBlurred, setHasBlurred ] = useState( false );
+	const [ isTouched, setIsTouched ] = useState( false );
 	const [ confirmEmail, setConfirmEmail ] = useState( '' );
-	const [ hasConfirmBlurred, setHasConfirmBlurred ] = useState( false );
+	const [ isConfirmTouched, setIsConfirmTouched ] = useState( false );
 	const [ initialEmail, setInitialEmail ] = useState< string | null >( null );
 
 	// Capture the initial email value once settings have loaded from the server.
@@ -51,7 +51,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 
 	// Only show client-side validation error if user has interacted with the field
 	const showClientValidationError =
-		hasBlurred && ! isEmail( accountCommunicationsEmail );
+		isTouched && ! isEmail( accountCommunicationsEmail );
 
 	const clientValidationError = showClientValidationError
 		? __( 'Please enter a valid email address.', 'woocommerce-payments' )
@@ -63,7 +63,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 	const emailsMatch =
 		! emailHasChanged || accountCommunicationsEmail === confirmEmail;
 	const showMismatchError =
-		emailHasChanged && hasConfirmBlurred && ! emailsMatch;
+		emailHasChanged && isConfirmTouched && ! emailsMatch;
 
 	const mismatchError = showMismatchError
 		? __(
@@ -115,7 +115,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 				label={ __( 'Email address', 'woocommerce-payments' ) }
 				value={ accountCommunicationsEmail }
 				onChange={ setAccountCommunicationsEmail }
-				onBlur={ () => setHasBlurred( true ) }
+				onBlur={ () => setIsTouched( true ) }
 				data-testid={ 'notifications-email-input' }
 				type="email"
 				required
@@ -139,7 +139,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 						) }
 						value={ confirmEmail }
 						onChange={ setConfirmEmail }
-						onBlur={ () => setHasConfirmBlurred( true ) }
+						onBlur={ () => setIsConfirmTouched( true ) }
 						data-testid={ 'notifications-email-confirm-input' }
 						type="email"
 						required
