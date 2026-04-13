@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { addFilter } from '@wordpress/hooks';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 
 // This module is imported by both the shortcode entry point (express-checkout/index.js)
 // and the blocks entry point (express-checkout/blocks/index.js). Because addFilter
@@ -82,22 +82,34 @@ const hasTrialSubscriptionWithDeferredShipping = ( cartData ) => {
 };
 
 /**
- * Checks if the cart contains any trial subscriptions with zero total.
+ * Checks if the cart contains any trial subscription items.
  *
  * @param {Object} cartData Cart data from Store API.
- * @return {boolean} True if cart has trial subscriptions with zero total.
+ * @return {boolean} True if cart has trial subscription items.
  */
-const hasTrialSubscriptionInCart = ( cartData ) => {
+const hasTrialSubscriptionItems = ( cartData ) => {
 	if ( ! cartData?.items || ! cartData?.extensions?.subscriptions ) {
 		return false;
 	}
 
-	const cartTotal = parseInt( cartData.totals?.total_price || '0', 10 );
-	if ( cartTotal > 0 ) {
+	return cartData.items.some( isTrialSubscriptionItem );
+};
+
+/**
+ * Checks if the cart contains trial subscriptions with zero total.
+ * Used for filters that should only activate when there are no upfront charges
+ * (e.g. overriding the $0 total for Stripe ECE eligibility).
+ *
+ * @param {Object} cartData Cart data from Store API.
+ * @return {boolean} True if cart has trial subscriptions with zero total.
+ */
+const isZeroTotalTrialCart = ( cartData ) => {
+	if ( ! hasTrialSubscriptionItems( cartData ) ) {
 		return false;
 	}
 
-	return cartData.items.some( isTrialSubscriptionItem );
+	const cartTotal = parseInt( cartData.totals?.total_price || '0', 10 );
+	return cartTotal === 0;
 };
 
 /**
@@ -181,6 +193,84 @@ const getRecurringCartTotal = ( cartData ) => {
 };
 
 /**
+ * Returns a localized billing period string, e.g. "month" or "2 months".
+ *
+ * @param {string} period Billing period from Store API ('day','week','month','year').
+ * @param {number} interval Billing interval (number of periods between renewals).
+ * @return {string} Localized period string.
+ */
+const getLocalizedBillingPeriod = ( period, interval ) => {
+	if ( interval > 1 ) {
+		const plurals = {
+			day: sprintf(
+				_n( '%d day', '%d days', interval, 'woocommerce-payments' ),
+				interval
+			),
+			week: sprintf(
+				_n( '%d week', '%d weeks', interval, 'woocommerce-payments' ),
+				interval
+			),
+			month: sprintf(
+				_n( '%d month', '%d months', interval, 'woocommerce-payments' ),
+				interval
+			),
+			year: sprintf(
+				_n( '%d year', '%d years', interval, 'woocommerce-payments' ),
+				interval
+			),
+		};
+		return plurals[ period ] || `${ interval } ${ period }s`;
+	}
+
+	const singulars = {
+		day: __( 'day', 'woocommerce-payments' ),
+		week: __( 'week', 'woocommerce-payments' ),
+		month: __( 'month', 'woocommerce-payments' ),
+		year: __( 'year', 'woocommerce-payments' ),
+	};
+	return singulars[ period ] || period;
+};
+
+/**
+ * Formats a subscription's recurring total as a human-readable price with
+ * billing period, e.g. "$18.41 / month" or "$100.00 / 3 months".
+ * Uses the currency formatting fields from the Store API subscription data.
+ *
+ * @param {Object} subscription Subscription schedule from cart extensions.
+ * @return {string} Formatted recurring price string.
+ */
+const formatRecurringTotal = ( subscription ) => {
+	const totals = subscription.totals;
+	const amount = parseInt( totals.total_price, 10 );
+	const minorUnit = totals.currency_minor_unit ?? 2;
+	const prefix = totals.currency_prefix ?? '';
+	const suffix = totals.currency_suffix ?? '';
+	const decimalSep = totals.currency_decimal_separator ?? '.';
+	const thousandSep = totals.currency_thousand_separator ?? ',';
+
+	const value = ( amount / Math.pow( 10, minorUnit ) ).toFixed( minorUnit );
+	const parts = value.split( '.' );
+	const whole = parts[ 0 ].replace( /\B(?=(\d{3})+(?!\d))/g, thousandSep );
+	const formatted = parts[ 1 ]
+		? `${ whole }${ decimalSep }${ parts[ 1 ] }`
+		: whole;
+
+	const formattedPrice = `${ prefix }${ formatted }${ suffix }`;
+
+	const periodLabel = getLocalizedBillingPeriod(
+		subscription.billing_period,
+		subscription.billing_interval ?? 1
+	);
+
+	/* translators: %1$s: formatted price (e.g. "$7.58"), %2$s: billing period (e.g. "month", "2 months") */
+	return sprintf(
+		__( '%1$s / %2$s', 'woocommerce-payments' ),
+		formattedPrice,
+		periodLabel
+	);
+};
+
+/**
  * Filter: wcpay.express-checkout.total-amount
  *
  * For trial subscriptions with $0 cart total, returns the recurring
@@ -194,7 +284,7 @@ addFilter(
 	'wcpay.express-checkout.total-amount',
 	'automattic/wcpay/express-checkout/wc-subscriptions',
 	( total, cartData ) => {
-		if ( ! hasTrialSubscriptionInCart( cartData ) ) {
+		if ( ! isZeroTotalTrialCart( cartData ) ) {
 			return total;
 		}
 
@@ -225,7 +315,7 @@ addFilter(
 			return true;
 		}
 
-		if ( hasTrialSubscriptionInCart( cartData ) ) {
+		if ( isZeroTotalTrialCart( cartData ) ) {
 			const recurringTotal = getRecurringCartTotal( cartData );
 
 			return recurringTotal !== null && recurringTotal.amount > 0;
@@ -318,7 +408,7 @@ addFilter(
 	'wcpay.express-checkout.map-line-items',
 	'automattic/wcpay/express-checkout/wc-subscriptions',
 	( cartData ) => {
-		if ( ! hasTrialSubscriptionInCart( cartData ) ) {
+		if ( ! hasTrialSubscriptionItems( cartData ) ) {
 			return cartData;
 		}
 
@@ -327,8 +417,16 @@ addFilter(
 			return cartData;
 		}
 
+		const cartTotal = parseInt( cartData.totals?.total_price || '0', 10 );
+		const isZeroTotalCart = cartTotal === 0;
+
 		// Shallow copy to avoid mutating the original.
 		const modifiedItems = [ ...cartData.items ];
+
+		const recurringTotalLabel = __(
+			'Recurring total',
+			'woocommerce-payments'
+		);
 
 		subscriptions.forEach( ( subscription ) => {
 			const matchingItemsCount = cartData.items.filter(
@@ -357,27 +455,59 @@ addFilter(
 					return;
 				}
 
+				// Guard against processing the same item twice — either from
+				// multiple subscription schedules sharing a billing_period
+				// within a single filter call, or from the filter running on
+				// data that was already modified by a previous invocation.
+				const alreadyProcessed = ( item.item_data || [] ).some(
+					( d ) => d.name === recurringTotalLabel
+				);
+				if ( alreadyProcessed ) {
+					return;
+				}
+
 				modifiedItems[ index ] = {
 					...item,
 					name: `${ item.name } (${ __(
 						'recurring',
 						'woocommerce-payments'
 					) })`,
-					totals: {
-						...item.totals,
-						line_subtotal: String( itemRecurringPrice ),
-						line_total: String( itemRecurringPrice ),
-					},
+					// Only replace prices with recurring amounts for $0 carts
+					// (pure free trials). When a sign-up fee is present, keep
+					// the original prices so the customer sees what they pay today.
+					...( isZeroTotalCart && {
+						totals: {
+							...item.totals,
+							line_subtotal: String( itemRecurringPrice ),
+							line_total: String( itemRecurringPrice ),
+						},
+					} ),
 					item_data: [
 						...( item.item_data || [] ),
 						{
-							name: __( 'First payment', 'woocommerce-payments' ),
-							value: subscription.next_payment_date,
+							name: __(
+								'Recurring total',
+								'woocommerce-payments'
+							),
+							/* translators: %1$s: recurring price with period (e.g. "$7.58 / month"), %2$s: date (e.g. "May 9, 2026") */
+							value: sprintf(
+								__( '%1$s on %2$s', 'woocommerce-payments' ),
+								formatRecurringTotal( subscription ),
+								subscription.next_payment_date
+							),
 						},
 					],
 				};
 			} );
 		} );
+
+		// Only replace cart totals with recurring amounts for $0 carts.
+		if ( ! isZeroTotalCart ) {
+			return {
+				...cartData,
+				items: modifiedItems,
+			};
+		}
 
 		const recurringTotal = getRecurringCartTotal( cartData );
 		if ( ! recurringTotal ) {
