@@ -34,9 +34,10 @@ export default class ExpressCheckoutCartApi {
 			path: addQueryArgs( options.path, {
 				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
-				currency: getExpressCheckoutData(
-					'checkout'
-				).currency_code.toUpperCase(),
+				currency:
+					getExpressCheckoutData(
+						'checkout'
+					).currency_code.toUpperCase(),
 			} ),
 			headers: {
 				// the Store API nonce, which could later be overwritten in subsequent requests.
@@ -76,7 +77,7 @@ export default class ExpressCheckoutCartApi {
 	 * @param {{
 	 *          billing_address: Object,
 	 *          shipping_address: Object,
-	 *          customer_note: string?,
+	 *          customer_note: string|null,
 	 *          payment_method: string,
 	 *          payment_data: Array,
 	 *        }} paymentData Additional payment data to place the order.
@@ -131,8 +132,8 @@ export default class ExpressCheckoutCartApi {
 	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/cart.md#update-customer
 	 *
 	 * @param {{
-	 *          billing_address: Object?,
-	 *          shipping_address: Object?,
+	 *          billing_address: Object|null,
+	 *          shipping_address: Object|null,
 	 *        }} customerData Customer data to update.
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */

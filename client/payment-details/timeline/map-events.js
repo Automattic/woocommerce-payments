@@ -36,7 +36,7 @@ import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
 /**
  * Creates a timeline item about a payment status change
  *
- * @param {Object} event An event triggering the status change
+ * @param {Object} event  An event triggering the status change
  * @param {string} status Localized status description
  *
  * @return {Object} Formatted status change timeline item
@@ -65,10 +65,10 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 /**
  * Creates a timeline item about a payout
  *
- * @param {Object} event An event affecting the payout
- * @param {string} formattedAmount Formatted amount string
- * @param {boolean} isPositive Whether the amount will be added or deducted
- * @param {Array} body Any extra subitems that should be included as item body
+ * @param {Object}  event           An event affecting the payout
+ * @param {string}  formattedAmount Formatted amount string
+ * @param {boolean} isPositive      Whether the amount will be added or deducted
+ * @param {Array}   body            Any extra subitems that should be included as item body
  *
  * @return {Object} Payout timeline item
  */
@@ -133,9 +133,9 @@ const getDepositTimelineItem = (
 /**
  * Creates a timeline item about a financing paydown
  *
- * @param {Object} event An event affecting the payout
+ * @param {Object} event           An event affecting the payout
  * @param {string} formattedAmount Formatted amount string
- * @param {Array} body Any extra subitems that should be included as item body
+ * @param {Array}  body            Any extra subitems that should be included as item body
  *
  * @return {Object} Payout timeline item
  */
@@ -183,10 +183,10 @@ const getFinancingPaydownTimelineItem = ( event, formattedAmount, body ) => {
 /**
  * Formats the main item for the event
  *
- * @param {Object} event Event object
+ * @param {Object}          event    Event object
  * @param {string | Object} headline Headline describing the event
- * @param {JSX.Element} icon Icon component to render for this event
- * @param {Array} body Body to include in this item, defaults to empty
+ * @param {JSX.Element}     icon     Icon component to render for this event
+ * @param {Array}           body     Body to include in this item, defaults to empty
  *
  * @return {Object} Formatted main item
  */
@@ -211,14 +211,15 @@ const isFXEvent = ( event = {} ) => {
 /**
  * Given the fee amount and currency, converts it to the store currency if necessary and formats using formatCurrency.
  *
- * @param {number} feeAmount Fee amount to convert and format.
+ * @param {number} feeAmount   Fee amount to convert and format.
  * @param {string} feeCurrency Fee currency to convert from.
- * @param {Object} event Event object containing fee rates and transaction details.
+ * @param {Object} event       Event object containing fee rates and transaction details.
  *
  * @return {string} Formatted fee amount in the store currency.
  */
 const convertAndFormatFeeAmount = ( feeAmount, feeCurrency, event ) => {
-	const storeCurrency = event.transaction_details?.store_currency?.toUpperCase();
+	const storeCurrency =
+		event.transaction_details?.store_currency?.toUpperCase();
 	if (
 		( storeCurrency && storeCurrency === feeCurrency.toUpperCase() ) ||
 		! isFXEvent( event ) ||
@@ -736,7 +737,7 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
 /**
  * Formats an event into one or more payment timeline items
  *
- * @param {Object} event An event data
+ * @param {Object}        event    An event data
  * @param {string | null} bankName The name of the bank
  *
  * @return {Array} Payment timeline items
@@ -1201,8 +1202,8 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 /**
  * Maps the timeline events coming from the server to items that can be used in Timeline component
  *
- * @param {Array} timelineEvents array of events
- * @param {string | null} bankName The name of the bank
+ * @param {Array}         timelineEvents array of events
+ * @param {string | null} bankName       The name of the bank
  *
  * @return {Array} Array of view items
  */

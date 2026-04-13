@@ -105,15 +105,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ isAccordionOpen, setIsAccordionOpen ] = useState( true );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
-	const [
-		isCoverLetterManuallyEdited,
-		setIsCoverLetterManuallyEdited,
-	] = useState( false );
+	const [ isCoverLetterManuallyEdited, setIsCoverLetterManuallyEdited ] =
+		useState( false );
 	const [ shippingCarrier, setShippingCarrier ] = useState( '' );
 	const [ shippingDate, setShippingDate ] = useState( '' );
-	const [ shippingTrackingNumber, setShippingTrackingNumber ] = useState(
-		''
-	);
+	const [ shippingTrackingNumber, setShippingTrackingNumber ] =
+		useState( '' );
 	const [ shippingAddress, setShippingAddress ] = useState( '' );
 	const [ isUploading, setIsUploading ] = useState<
 		Record< string, boolean >
@@ -125,11 +122,8 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ uploadedFiles, setUploadedFiles ] = useState<
 		Record< string, string >
 	>( {} );
-	const {
-		createSuccessNotice,
-		createErrorNotice,
-		createInfoNotice,
-	} = useDispatch( 'core/notices' );
+	const { createSuccessNotice, createErrorNotice, createInfoNotice } =
+		useDispatch( 'core/notices' );
 	const storeDispatch = useDispatch( WCPAY_STORE_NAME ) as {
 		invalidateResolutionForStoreSelector: ( selector: string ) => void;
 	};
@@ -158,9 +152,8 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
-				const isFetchedDisputeVisaCompliance = isVisaComplianceDispute(
-					d
-				);
+				const isFetchedDisputeVisaCompliance =
+					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
 				const suggestedProductType =
@@ -974,10 +967,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute?.enhanced_eligibility_types
 	);
 
-	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields(
-		disputeReason,
-		productType
-	);
+	const recommendedShippingDocumentFields =
+		getRecommendedShippingDocumentFields( disputeReason, productType );
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
 		( field: RecommendedDocument ) => ( {
 			key: field.key,
@@ -1000,27 +991,29 @@ export default ( { query }: { query: { id: string } } ) => {
 		} )
 	);
 
-	const recommendedShippingDocumentsFields = recommendedShippingDocumentFields.map(
-		( field: RecommendedDocument ) => ( {
-			key: field.key,
-			label: field.label,
-			description: field.description,
-			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
-			fileSize: fileSizes[ field.key ] || 0,
-			uploaded: !! evidence[ field.key ],
-			isLoading: isUploading[ field.key ] || false,
-			onFileChange: ( key: string, file: File ) =>
-				readOnly
-					? Promise.resolve()
-					: Promise.resolve( doUploadFile( field.key, file ) ),
-			onFileRemove: () =>
-				readOnly
-					? Promise.resolve()
-					: Promise.resolve( doRemoveFile( field.key ) ),
-			isBusy: isUploading[ field.key ] || false,
-			readOnly: readOnly,
-		} )
-	);
+	const recommendedShippingDocumentsFields =
+		recommendedShippingDocumentFields.map(
+			( field: RecommendedDocument ) => ( {
+				key: field.key,
+				label: field.label,
+				description: field.description,
+				fileName:
+					uploadedFiles[ field.key ] || evidence[ field.key ] || '',
+				fileSize: fileSizes[ field.key ] || 0,
+				uploaded: !! evidence[ field.key ],
+				isLoading: isUploading[ field.key ] || false,
+				onFileChange: ( key: string, file: File ) =>
+					readOnly
+						? Promise.resolve()
+						: Promise.resolve( doUploadFile( field.key, file ) ),
+				onFileRemove: () =>
+					readOnly
+						? Promise.resolve()
+						: Promise.resolve( doRemoveFile( field.key ) ),
+				isBusy: isUploading[ field.key ] || false,
+				readOnly: readOnly,
+			} )
+		);
 
 	const inlineNotice = ( bankNameValue: string | null ) => (
 		<InlineNotice
@@ -1286,7 +1279,8 @@ export default ( { query }: { query: { id: string } } ) => {
 										evidence.uncategorized_file,
 									shipping_carrier: shippingCarrier,
 									shipping_date: shippingDate,
-									shipping_tracking_number: shippingTrackingNumber,
+									shipping_tracking_number:
+										shippingTrackingNumber,
 									shipping_address: shippingAddress,
 								},
 							};

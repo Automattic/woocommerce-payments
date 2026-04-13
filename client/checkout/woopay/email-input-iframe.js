@@ -516,7 +516,8 @@ export const handleWooPayEmailInput = async (
 
 						iframe.style.height = e.data.height + 'px';
 
-						const inputRect = woopayEmailInput.getBoundingClientRect();
+						const inputRect =
+							woopayEmailInput.getBoundingClientRect();
 
 						// iframe top is the input top minus the iframe height.
 						iframe.style.top =

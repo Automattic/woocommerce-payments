@@ -188,9 +188,10 @@ export const onConfirmHandler = async (
 		// Extract redirect URL from payment_details if redirect_url is empty
 		let redirectUrl = orderResponse.payment_result.redirect_url;
 		if ( ! redirectUrl ) {
-			const redirectDetail = orderResponse.payment_result.payment_details?.find(
-				( detail ) => detail.key === 'redirect'
-			);
+			const redirectDetail =
+				orderResponse.payment_result.payment_details?.find(
+					( detail ) => detail.key === 'redirect'
+				);
 			redirectUrl = redirectDetail?.value || '';
 		}
 

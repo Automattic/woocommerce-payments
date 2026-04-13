@@ -125,7 +125,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			  );
 	}
 	// Handle specific dispute reasons
-	else if ( 'noncompliant' === dispute.reason ) {
+	else if ( dispute.reason === 'noncompliant' ) {
 		/* translators: %1$s is the bank name, eg "Chase Bank". %2$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
 		noticeText = bankName
 			? sprintf(

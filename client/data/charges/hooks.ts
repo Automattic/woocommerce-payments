@@ -10,12 +10,8 @@ export const getChargeData = (
 	chargeId: string,
 	selectors: SelectorMap
 ): ChargeResponse => {
-	const {
-		getCharge,
-		isResolving,
-		getChargeError,
-		hasFinishedResolution,
-	} = selectors;
+	const { getCharge, isResolving, getChargeError, hasFinishedResolution } =
+		selectors;
 
 	return {
 		data: getCharge( chargeId ),

@@ -21,9 +21,8 @@ const GooglePayPreview = ( { buttonAttributes } ) => {
 	);
 
 	const borderRadius = useMemo( () => {
-		const appearance = getExpressCheckoutButtonAppearance(
-			buttonAttributes
-		);
+		const appearance =
+			getExpressCheckoutButtonAppearance( buttonAttributes );
 		return appearance.variables.borderRadius;
 	}, [ buttonAttributes ] );
 
@@ -72,11 +71,10 @@ const GooglePayPreview = ( { buttonAttributes } ) => {
 				isScriptLoaded.current = true;
 			}
 
-			const googlePayClient = new targetWindow.google.payments.api.PaymentsClient(
-				{
+			const googlePayClient =
+				new targetWindow.google.payments.api.PaymentsClient( {
 					environment: 'TEST',
-				}
-			);
+				} );
 
 			const buttonColor = theme === 'black' ? 'black' : 'white'; // There is no 'outline' theme in Google Pay.
 

@@ -106,7 +106,7 @@ describe( 'getDeposit resolver', () => {
 			const next = generator.next();
 			expect( next.value ).toStrictEqual( undefined );
 			expect( next.done ).toStrictEqual( true );
-			expect( apiFetch ).not.toBeCalled();
+			expect( apiFetch ).not.toHaveBeenCalled();
 		} );
 	} );
 } );

@@ -37,7 +37,7 @@ const transactionTypesOptions = Object.entries( displayType )
 	} );
 
 const loanDefinitions =
-	'undefined' !== typeof wcpaySettings
+	typeof wcpaySettings !== 'undefined'
 		? wcpaySettings.accountLoans.loans
 		: [];
 
@@ -46,7 +46,7 @@ const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
 	const loanDisplayValue = sprintf(
 		'ID: %s | %s',
 		loanDefinitionSplitted[ 0 ],
-		'active' === loanDefinitionSplitted[ 1 ]
+		loanDefinitionSplitted[ 1 ] === 'active'
 			? __( 'In Progress', 'woocommerce-payments' )
 			: __( 'Paid in Full', 'woocommerce-payments' )
 	);
