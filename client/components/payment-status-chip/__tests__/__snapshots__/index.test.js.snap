@@ -1,5 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`PaymentStatusChip renders authorization_expired status 1`] = `
+<div>
+  <span
+    class="chip chip-alert"
+  >
+    Authorization expired
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders authorization_failed status 1`] = `
+<div>
+  <span
+    class="chip chip-alert"
+  >
+    Authorization failed
+  </span>
+</div>
+`;
+
 exports[`PaymentStatusChip renders authorized status 1`] = `
 <div>
   <span
@@ -16,6 +36,16 @@ exports[`PaymentStatusChip renders blocked status 1`] = `
     class="chip chip-alert"
   >
     Payment blocked
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders canceled status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Canceled
   </span>
 </div>
 `;
@@ -120,6 +150,16 @@ exports[`PaymentStatusChip renders paid status 1`] = `
 </div>
 `;
 
+exports[`PaymentStatusChip renders processing status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Processing
+  </span>
+</div>
+`;
+
 exports[`PaymentStatusChip renders refunded_full status 1`] = `
 <div>
   <span
@@ -136,6 +176,26 @@ exports[`PaymentStatusChip renders refunded_partial status 1`] = `
     class="chip chip-light"
   >
     Partial refund
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders requires_action status 1`] = `
+<div>
+  <span
+    class="chip chip-warning"
+  >
+    Authentication required
+  </span>
+</div>
+`;
+
+exports[`PaymentStatusChip renders requires_confirmation status 1`] = `
+<div>
+  <span
+    class="chip chip-light"
+  >
+    Awaiting confirmation
   </span>
 </div>
 `;

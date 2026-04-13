@@ -90,7 +90,36 @@ export const isBlockedByFraudTools = (
 	return [ 'block', 'review_blocked' ].includes( fraudMetaBoxType );
 };
 
-/* TODO: implement authorization and SCA charge statuses */
+const getPaymentIntentDerivedStatus = (
+	charge: Charge = <Charge>{},
+	paymentIntent?: PaymentIntent
+): string | undefined => {
+	if ( ! paymentIntent?.status ) {
+		return undefined;
+	}
+
+	switch ( paymentIntent.status ) {
+		case 'requires_capture':
+			return 'authorized';
+		case 'requires_action':
+			return 'requires_action';
+		case 'requires_confirmation':
+			return 'requires_confirmation';
+		case 'requires_payment_method':
+			return 'authorization_failed';
+		case 'processing':
+			return 'processing';
+		case 'canceled':
+			return charge.paid && ! charge.captured
+				? 'authorization_expired'
+				: 'canceled';
+		case 'succeeded':
+			return 'paid';
+		default:
+			return paymentIntent.status;
+	}
+};
+
 export const getChargeStatus = (
 	charge: Charge = <Charge>{},
 	paymentIntent?: PaymentIntent
@@ -103,9 +132,6 @@ export const getChargeStatus = (
 		return 'fraud_outcome_block';
 	}
 
-	if ( isChargeFailed( charge ) ) {
-		return 'failed';
-	}
 	if ( isChargeBlocked( charge ) ) {
 		return 'blocked';
 	}
@@ -120,6 +146,16 @@ export const getChargeStatus = (
 	}
 	if ( isChargeRefundFailed( charge ) ) {
 		return 'refund_failed';
+	}
+	const paymentIntentStatus = getPaymentIntentDerivedStatus(
+		charge,
+		paymentIntent
+	);
+	if ( paymentIntentStatus ) {
+		return paymentIntentStatus;
+	}
+	if ( isChargeFailed( charge ) ) {
+		return 'failed';
 	}
 	if ( isChargeSuccessful( charge ) ) {
 		return isChargeCaptured( charge ) ? 'paid' : 'authorized';
