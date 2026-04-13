@@ -22,22 +22,21 @@ import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import AmazonPayAsset from 'assets/images/payment-methods/amazon-pay.svg?asset';
 import './style.scss';
 
-const iconComponent = (
-	src: string,
-	alt: string,
-	border = true
-): ReactImgFuncComponent => ( { className, ...props } ) => (
-	<img
-		className={ clsx(
-			'payment-method__icon',
-			border ? '' : 'no-border',
-			className
-		) }
-		src={ src }
-		alt={ alt }
-		{ ...props }
-	/>
-);
+const iconComponent =
+	( src: string, alt: string, border = true ): ReactImgFuncComponent =>
+	( { className, ...props } ) =>
+		(
+			<img
+				className={ clsx(
+					'payment-method__icon',
+					border ? '' : 'no-border',
+					className
+				) }
+				src={ src }
+				alt={ alt }
+				{ ...props }
+			/>
+		);
 
 export const AmericanExpressIcon = iconComponent(
 	AmexAsset,

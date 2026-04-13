@@ -92,12 +92,8 @@ const ProductDetail = ( { cart, context } ) => {
 		return null;
 	}
 
-	const {
-		country,
-		paymentMethods,
-		currencyCode,
-		shouldInitializePMME,
-	} = window.wcpayStripeSiteMessaging;
+	const { country, paymentMethods, currencyCode, shouldInitializePMME } =
+		window.wcpayStripeSiteMessaging;
 
 	if ( ! shouldInitializePMME ) {
 		return null;

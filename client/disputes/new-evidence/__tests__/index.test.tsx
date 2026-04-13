@@ -815,7 +815,8 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 			( storeName: string ) => {
 				if ( storeName === WCPAY_STORE_NAME ) {
 					return {
-						invalidateResolutionForStoreSelector: mockInvalidateResolutionForStoreSelector,
+						invalidateResolutionForStoreSelector:
+							mockInvalidateResolutionForStoreSelector,
 					};
 				}
 				if ( storeName === 'core/notices' ) {
@@ -860,9 +861,8 @@ describe( 'NewEvidence - Payment Intent Cache Invalidation', () => {
 	} );
 
 	it( 'does not invalidate payment intent cache when dispute has no payment_intent', async () => {
-		const disputeWithoutPaymentIntent = createDisputeWithPaymentIntent(
-			false
-		);
+		const disputeWithoutPaymentIntent =
+			createDisputeWithPaymentIntent( false );
 		mockApiFetch.mockResolvedValue( disputeWithoutPaymentIntent );
 
 		render( <NewEvidence query={ { id: 'dp_test_cache' } } /> );

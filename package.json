@@ -135,7 +135,7 @@
 		"@woocommerce/currency": "4.3.0",
 		"@woocommerce/data": "4.1.0",
 		"@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
-		"@woocommerce/eslint-plugin": "1.1.0",
+		"@woocommerce/eslint-plugin": "2.3.0",
 		"@woocommerce/experimental": "3.3.0",
 		"@woocommerce/navigation": "8.1.0",
 		"@woocommerce/settings": "1.0.0",
@@ -166,7 +166,7 @@
 		"@wordpress/scripts": "30.18.0",
 		"@wordpress/url": "3.7.1",
 		"archiver": "5.2.0",
-		"babel-eslint": "10.1.0",
+		"@babel/eslint-parser": "7.28.6",
 		"babel-loader": "8.2.2",
 		"chalk": "4.1.2",
 		"clsx": "2.1.1",
@@ -176,16 +176,15 @@
 		"dompurify": "2.5.6",
 		"dotenv": "8.2.0",
 		"downshift": "6.1.12",
-		"eslint": "7.30.0",
+		"eslint": "8.57.1",
 		"eslint-config-prettier": "7.2.0",
-		"eslint-config-wpcalypso": "4.0.1",
 		"eslint-import-resolver-typescript": "2.4.0",
-		"eslint-plugin-jest": "24.3.6",
+		"eslint-plugin-jest": "27.9.0",
 		"eslint-plugin-jsdoc-alignment": "0.0.5",
-		"eslint-plugin-jsx-a11y": "6.4.1",
+		"eslint-plugin-jsx-a11y": "6.10.2",
 		"eslint-plugin-prettier": "3.4.1",
-		"eslint-plugin-react": "7.22.0",
-		"eslint-plugin-react-hooks": "4.2.0",
+		"eslint-plugin-react": "7.37.5",
+		"eslint-plugin-react-hooks": "4.6.2",
 		"eslint-plugin-wpcalypso": "5.0.0",
 		"gridicons": "3.4.2",
 		"history": "5.3.0",
@@ -203,7 +202,7 @@
 		"node-wp-i18n": "1.2.5",
 		"playwright": "1.51.1",
 		"postcss": "8.3.5",
-		"prettier": "npm:wp-prettier@2.0.5",
+		"prettier": "npm:wp-prettier@2.8.5",
 		"process": "0.11.10",
 		"qrcode.react": "3.1.0",
 		"react": "18.3.1",
@@ -239,7 +238,10 @@
 			"@woocommerce/currency": "4.3.0"
 		},
 		"@wordpress/scripts": {
-			"@wordpress/eslint-plugin": "8.0.2"
+			"@wordpress/eslint-plugin": "15.1.0"
+		},
+		"@woocommerce/eslint-plugin": {
+			"@wordpress/eslint-plugin": "15.1.0"
 		}
 	}
 }

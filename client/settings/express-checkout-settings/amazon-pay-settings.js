@@ -80,14 +80,10 @@ const GeneralSettings = () => {
 };
 
 const AmazonPaySettings = ( { section } ) => {
-	const [
-		isAmazonPayEnabled,
-		updateIsAmazonPayEnabled,
-	] = useAmazonPayEnabledSettings();
-	const [
-		amazonPayLocations,
-		updateAmazonPayLocations,
-	] = useAmazonPayLocations();
+	const [ isAmazonPayEnabled, updateIsAmazonPayEnabled ] =
+		useAmazonPayEnabledSettings();
+	const [ amazonPayLocations, updateAmazonPayLocations ] =
+		useAmazonPayLocations();
 	const [
 		isExpressCheckoutInPaymentMethodsEnabled,
 		updateIsExpressCheckoutInPaymentMethodsEnabled,

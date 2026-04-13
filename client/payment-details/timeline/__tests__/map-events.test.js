@@ -995,8 +995,7 @@ describe( 'mapTimelineEvents', () => {
 								{
 									type: 'discount',
 									additional_type: '',
-									fee_id:
-										'wcpay-promo-2023-incentive-10off3m-se',
+									fee_id: 'wcpay-promo-2023-incentive-10off3m-se',
 									percentage_rate: -0.0015,
 									fixed_rate: -2,
 									currency: 'sek',
@@ -1071,8 +1070,7 @@ describe( 'mapTimelineEvents', () => {
 								{
 									type: 'discount',
 									additional_type: '',
-									fee_id:
-										'wcpay-promo-2023-incentive-10off3m-se',
+									fee_id: 'wcpay-promo-2023-incentive-10off3m-se',
 									percentage_rate: -0.0015,
 									fixed_rate: -2,
 									currency: 'sek',
@@ -1147,8 +1145,7 @@ describe( 'mapTimelineEvents', () => {
 								{
 									type: 'discount',
 									additional_type: '',
-									fee_id:
-										'wcpay-promo-2023-incentive-10off3m-se',
+									fee_id: 'wcpay-promo-2023-incentive-10off3m-se',
 									percentage_rate: -0.0015,
 									fixed_rate: -2,
 									currency: 'sek',

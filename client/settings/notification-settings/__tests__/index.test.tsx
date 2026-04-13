@@ -24,9 +24,10 @@ jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn(),
 } ) );
 
-const mockUseAccountCommunicationsEmail = useAccountCommunicationsEmail as jest.MockedFunction<
-	typeof useAccountCommunicationsEmail
->;
+const mockUseAccountCommunicationsEmail =
+	useAccountCommunicationsEmail as jest.MockedFunction<
+		typeof useAccountCommunicationsEmail
+	>;
 const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 	typeof useGetSavingError
 >;

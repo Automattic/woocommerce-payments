@@ -50,9 +50,10 @@ export const receiveSettings = (
 				isDirty: true,
 				data: {
 					...state.data,
-					enabled_payment_method_ids: state.data.enabled_payment_method_ids.concat(
-						action.id
-					),
+					enabled_payment_method_ids:
+						state.data.enabled_payment_method_ids.concat(
+							action.id
+						),
 				},
 			};
 
@@ -62,9 +63,10 @@ export const receiveSettings = (
 				isDirty: true,
 				data: {
 					...state.data,
-					enabled_payment_method_ids: state.data.enabled_payment_method_ids.filter(
-						( id ) => id !== action.id
-					),
+					enabled_payment_method_ids:
+						state.data.enabled_payment_method_ids.filter(
+							( id ) => id !== action.id
+						),
 				},
 			};
 	}

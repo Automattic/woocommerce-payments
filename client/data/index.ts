@@ -29,9 +29,7 @@ export * from './pm-promotions/hooks';
 import { TimelineItem } from './timeline/types';
 import { ApiError } from '../types/errors';
 
-export declare function useTimeline(
-	transactionId: string
-): {
+export declare function useTimeline( transactionId: string ): {
 	timeline: Array< TimelineItem >;
 	timelineError: ApiError | undefined;
 	isLoading: boolean;

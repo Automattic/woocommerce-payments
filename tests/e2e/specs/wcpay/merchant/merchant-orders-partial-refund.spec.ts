@@ -43,13 +43,15 @@ test.describe( 'Order > Partial refund', () => {
 	 * - test title
 	 * - object containing the items to be ordered, and the quantities and amounts to be refunded
 	 */
-	const dataTable: Array< [
-		string,
-		{
-			lineItems: Array< [ string, number ] >;
-			refundInputs: { refundQty: number; refundAmount: number }[];
-		}
-	] > = [
+	const dataTable: Array<
+		[
+			string,
+			{
+				lineItems: Array< [ string, number ] >;
+				refundInputs: { refundQty: number; refundAmount: number }[];
+			}
+		]
+	> = [
 		[
 			'Partially refund one product of two product order',
 			{

@@ -109,10 +109,10 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		const [
-			woopayCheckbox,
-			paymentRequestCheckbox,
-		] = screen.getAllByRole( 'link', { name: 'Customize' } );
+		const [ woopayCheckbox, paymentRequestCheckbox ] = screen.getAllByRole(
+			'link',
+			{ name: 'Customize' }
+		);
 
 		expect( woopayCheckbox ).toHaveAttribute(
 			'href',
