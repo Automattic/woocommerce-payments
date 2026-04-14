@@ -742,12 +742,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_wcpay_express_checkout_payment_method', 'google_pay' );
 		$order->save();
 
-		add_filter(
-			'wcpay_payment_request_payment_method_title_suffix',
-			function () {
-				return 'Custom Suffix';
-			}
-		);
+		$callback = function () {
+			return 'Custom Suffix';
+		};
+		add_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
 
 		$payment_details = [
 			'type' => 'card',
@@ -761,8 +759,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'Google Pay (Custom Suffix)', $order->get_payment_method_title() );
 
-		// Clean up.
-		remove_all_filters( 'wcpay_payment_request_payment_method_title_suffix' );
+		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
 	}
 
 	/**
@@ -787,8 +784,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'Apple Pay', $order->get_payment_method_title() );
 
-		// Clean up.
-		remove_all_filters( 'wcpay_payment_request_payment_method_title_suffix' );
+		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', '__return_empty_string' );
 	}
 
 	/**
