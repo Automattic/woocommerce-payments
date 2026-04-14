@@ -282,7 +282,9 @@ const formatNetString = ( event ) => {
 		},
 	} = event;
 
-	if ( ! isFXEvent( event ) ) {
+	const isFeeRefunded = event.fee_rates?.fee_refunded;
+
+	if ( ! isFXEvent( event ) && ! isFeeRefunded ) {
 		return formatExplicitCurrency(
 			amountCaptured - fee,
 			currency,
@@ -291,7 +293,9 @@ const formatNetString = ( event ) => {
 		);
 	}
 
-	// We need to use the store amount and currency for the net amount calculation in the case of a FX event.
+	// For FX events and refunded-fee events, use store amounts.
+	// When the fee was refunded, store_fee holds only Stripe's processing
+	// fee while the event fee was zeroed out, so store values are correct.
 	return formatExplicitCurrency(
 		storeAmountCaptured - storeFee,
 		storeCurrency,
@@ -824,14 +828,40 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 			];
 		case 'captured':
 			const formattedNet = formatNetString( event );
+			const isFeeRefunded = !! event.fee_rates?.fee_refunded;
+			const stripeProcessingFee =
+				event.fee_rates?.stripe_processing_fee || 0;
+			const stripeProcessingFeeCurrency =
+				event.fee_rates?.stripe_processing_fee_currency ||
+				event.transaction_details?.store_currency;
 			const body = [
 				composeFXString( event ),
-				composeFeeString( event ),
-				composeFeeBreakdown( event ),
-				event?.fee_rates?.tax?.amount !== 0
+				isFeeRefunded ? null : composeFeeString( event ),
+				isFeeRefunded ? null : composeFeeBreakdown( event ),
+				isFeeRefunded
+					? null
+					: event?.fee_rates?.tax?.amount !== 0
 					? composeTaxString( event )
 					: null,
-				composeNetString( event ),
+				// When our fee was refunded but Stripe still charges a processing
+				// fee (balance transaction has settled), display it and show net.
+				// When store_fee is 0 the BT hasn't settled yet — skip both.
+				isFeeRefunded && stripeProcessingFee > 0
+					? sprintf(
+							/* translators: %s is a monetary amount */
+							__(
+								'Stripe processing fee: -%s',
+								'woocommerce-payments'
+							),
+							formatExplicitCurrency(
+								stripeProcessingFee,
+								stripeProcessingFeeCurrency
+							)
+					  )
+					: null,
+				isFeeRefunded && stripeProcessingFee <= 0
+					? null
+					: composeNetString( event ),
 			].filter( Boolean );
 			return [
 				getStatusChangeTimelineItem(
@@ -1195,6 +1225,26 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 			return getAutomaticFraudOutcomeTimelineItem( event, 'review' );
 		case 'fraud_outcome_block':
 			return getAutomaticFraudOutcomeTimelineItem( event, 'block' );
+		case 'application_fee_refunded': {
+			const formattedRefundedFee = formatExplicitCurrency(
+				event.amount_refunded,
+				event.currency
+			);
+			return [
+				getMainTimelineItem(
+					event,
+					sprintf(
+						/* translators: %s is a monetary amount */
+						__(
+							'Application fee refunded: +%s',
+							'woocommerce-payments'
+						),
+						formattedRefundedFee
+					),
+					<CheckmarkIcon className="is-success" />
+				),
+			];
+		}
 		default:
 			return [];
 	}

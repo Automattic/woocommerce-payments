@@ -2329,8 +2329,11 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function enqueue_add_fee_breakdown_to_order_notes( WC_Order $order, string $intent_id ) {
+		// Delay by 15 seconds to allow the server to process webhooks and
+		// adjust fee data (e.g., Amazon Pay non-card fee refunds) before the
+		// timeline is fetched for the order note.
 		WC_Payments::get_action_scheduler_service()->schedule_job(
-			time(),
+			time() + 15,
 			self::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES,
 			[
 				'order_id'     => $order->get_id(),

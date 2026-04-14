@@ -55,18 +55,42 @@ class WC_Payments_Captured_Event_Note {
 			$lines[] = $fx_string;
 		}
 
-		$lines[] = $this->compose_fee_string();
+		$fee_rates    = $this->captured_event['fee_rates'] ?? [];
+		$fee_refunded = ! empty( $fee_rates['fee_refunded'] );
 
-		$fee_breakdown_lines = $this->compose_fee_break_down();
-		if ( null !== $fee_breakdown_lines ) {
-			$lines = array_merge( $lines, $fee_breakdown_lines );
+		if ( $fee_refunded ) {
+			$lines[] = __( 'Application fee refunded', 'woocommerce-payments' );
+
+			// When the balance transaction has settled, Stripe's processing fee
+			// is available as store_fee. Show it and include the net payout.
+			// When store_fee is 0 the BT hasn't settled — skip both lines.
+			$store_fee      = $this->captured_event['transaction_details']['store_fee'] ?? 0;
+			$store_currency = $this->captured_event['transaction_details']['store_currency'] ?? '';
+			if ( $store_fee > 0 ) {
+				$lines[] = sprintf(
+					/* translators: %s is a monetary amount */
+					__( 'Stripe processing fee: -%s', 'woocommerce-payments' ),
+					WC_Payments_Utils::format_explicit_currency(
+						WC_Payments_Utils::interpret_stripe_amount( (int) $store_fee, $store_currency ),
+						$store_currency
+					)
+				);
+				$lines[] = $this->compose_net_string();
+			}
+		} else {
+			$lines[] = $this->compose_fee_string();
+
+			$fee_breakdown_lines = $this->compose_fee_break_down();
+			if ( null !== $fee_breakdown_lines ) {
+				$lines = array_merge( $lines, $fee_breakdown_lines );
+			}
+
+			if ( $this->has_tax() ) {
+				$lines[] = $this->compose_tax_string();
+			}
+
+			$lines[] = $this->compose_net_string();
 		}
-
-		if ( $this->has_tax() ) {
-			$lines[] = $this->compose_tax_string();
-		}
-
-		$lines[] = $this->compose_net_string();
 
 		$html = '';
 		foreach ( $lines as $line ) {
@@ -186,12 +210,15 @@ class WC_Payments_Captured_Event_Note {
 	 * @return string
 	 */
 	public function compose_net_string(): string {
-		$data = $this->captured_event['transaction_details'];
+		$data         = $this->captured_event['transaction_details'];
+		$fee_rates    = $this->captured_event['fee_rates'] ?? [];
+		$fee_refunded = ! empty( $fee_rates['fee_refunded'] );
 
 		// Determine the type of payment and select the appropriate amounts and currencies.
-		if ( $this->is_fx_event() ) {
-			// For fx events, we need the store amount and currency to display the net amount
-			// in the store currency.
+		if ( $this->is_fx_event() || $fee_refunded ) {
+			// For fx events and refunded-fee events, use store amounts.
+			// When the fee was refunded, store_fee holds only Stripe's processing
+			// fee while customer_fee was zeroed out, so store values are correct.
 			$amount          = $data['store_amount'];
 			$captured_amount = $data['store_amount_captured'];
 			$fee             = $data['store_fee'];

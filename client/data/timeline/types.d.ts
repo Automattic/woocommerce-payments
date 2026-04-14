@@ -34,6 +34,7 @@ export interface TimelineFeeRates {
 	fee_exchange_rate?: TimelineFeeExchangeRate;
 	tax?: TimelineFeeTax;
 	before_tax?: TimelineFeeTax;
+	fee_refunded?: boolean;
 }
 
 export interface TimelineTransactionDetails {

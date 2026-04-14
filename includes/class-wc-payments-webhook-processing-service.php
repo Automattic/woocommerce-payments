@@ -503,12 +503,13 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
 
-		if ( $application_fee_amount ) {
-			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
-			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
-
-			$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
-			$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
+		if ( null !== $application_fee_amount ) {
+			$fee = WC_Payments_Utils::interpret_stripe_amount( (int) $application_fee_amount, $currency );
+			$charge_amount = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
+			// Update fee and net directly — these can be 0 (e.g., refunded
+			// Amazon Pay fees) and must not be skipped by the falsy check below.
+			$order->update_meta_data( '_wcpay_transaction_fee', $fee );
+			$order->update_meta_data( '_wcpay_net', $charge_amount - $fee );
 		}
 
 		foreach ( $meta_data_to_update as $key => $value ) {
