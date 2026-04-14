@@ -45,6 +45,11 @@ on:
         required: false
         default: false
         description: "Skip running smoke tests"
+      dry-run:
+        type: boolean
+        required: false
+        default: false
+        description: "Dry-run: create branch, bump, and validate, but do not push, open a PR, or run smoke tests"
 
 defaults:
   run:
@@ -74,6 +79,7 @@ jobs:
         with:
           version: ${{ env.RELEASE_VERSION }}
           is-pre-release: 'false'
+          push: ${{ inputs.dry-run && 'false' || 'true' }}
 
       - name: "Define the release date"
         id: define_var
@@ -94,6 +100,7 @@ jobs:
         run: ./bin/bump-version.sh "$RELEASE_VERSION"
 
       - name: "Commit and push changes"
+        if: ${{ ! inputs.dry-run }}
         env:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
           BRANCH_NAME: ${{ steps.create_branch.outputs.branch-name }}
@@ -106,6 +113,7 @@ jobs:
         run: ./bin/validate-release-branch.sh
 
       - name: "Create a PR to trunk"
+        if: ${{ ! inputs.dry-run }}
         id: create-pr-to-trunk
         env:
           GITHUB_TOKEN: ${{ secrets.BOTWOO_TOKEN }}
@@ -121,6 +129,7 @@ jobs:
           fi
 
       - name: Add comment to PR
+        if: ${{ ! inputs.dry-run }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_PR_ID: ${{ steps.create-pr-to-trunk.outputs.RELEASE_PR_ID }}
@@ -129,10 +138,29 @@ jobs:
 
           Check status of zip file build & smoke tests at https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}"
 
+      - name: "Dry-run summary"
+        if: ${{ inputs.dry-run }}
+        run: |
+          {
+            echo "## Dry run"
+            echo ''
+            echo "No push, no PR, no smoke tests. The following diff would have been committed to the release branch:"
+            echo ''
+            echo '```diff'
+            git --no-pager diff
+            echo '```'
+            echo ''
+            echo '### Untracked files'
+            echo ''
+            echo '```'
+            git status --short
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   build-zip-and-run-smoke-tests:
     name: "Build zip & Run smoke tests"
     needs: prepare-release
-    if: ${{ ! inputs.skip-build-zip }}
+    if: ${{ ! inputs.skip-build-zip && ! inputs.dry-run }}
     uses: ./.github/workflows/build-zip-and-run-smoke-tests.yml
     with:
       skip-smoke-tests: ${{ inputs.skip-smoke-tests }}
