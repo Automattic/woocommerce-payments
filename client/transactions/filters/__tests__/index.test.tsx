@@ -471,9 +471,8 @@ describe( 'Transactions filters', () => {
 			g.wcpaySettings.accountLoans.loans = [];
 
 			jest.resetModules();
-			const {
-				getAdvancedFilters,
-			} = require( '../config' );
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			const { getAdvancedFilters } = require( '../config' );
 			const filters = getAdvancedFilters();
 
 			expect( filters.filters.loan_id_is ).toBeUndefined();
@@ -484,14 +483,11 @@ describe( 'Transactions filters', () => {
 		test( 'should show Loan filter when loans are available', () => {
 			const g = global as any;
 			const originalLoans = g.wcpaySettings.accountLoans.loans;
-			g.wcpaySettings.accountLoans.loans = [
-				'flxln_123456|active',
-			];
+			g.wcpaySettings.accountLoans.loans = [ 'flxln_123456|active' ];
 
 			jest.resetModules();
-			const {
-				getAdvancedFilters,
-			} = require( '../config' );
+			// eslint-disable-next-line @typescript-eslint/no-var-requires
+			const { getAdvancedFilters } = require( '../config' );
 			const filters = getAdvancedFilters();
 
 			expect( filters.filters.loan_id_is ).toBeDefined();
