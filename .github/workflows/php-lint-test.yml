@@ -37,11 +37,17 @@ jobs:
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
+      - uses: actions/checkout@v4
+      - name: "Load version constants"
+        id: vc
+        uses: ./.github/actions/load-version-constants
       - name: "Generate matrix"
         id: generate_matrix
+        env:
+          GUTENBERG_FOR_PHP_MIN: ${{ steps.vc.outputs.gutenberg_for_php_min }}
         run: |
           # PHP 7.4+ can use latest Gutenberg
-          echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"22.3.0\"}]}" >> $GITHUB_OUTPUT
+          echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"$GUTENBERG_FOR_PHP_MIN\"}]}" >> $GITHUB_OUTPUT
 
   test:
     name: PHP testing
