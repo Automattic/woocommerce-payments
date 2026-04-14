@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-wait-for-multiple-assertions */
 /**
  * External dependencies
  */
@@ -528,7 +529,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 
 			await userEvent.click( expressButton );
 
-			expect( window.alert ).toBeCalledWith(
+			expect( window.alert ).toHaveBeenCalledWith(
 				'Please select your product options before proceeding.'
 			);
 

@@ -167,9 +167,8 @@ describe( 'Settings actions tests', () => {
 
 	describe( 'updateIsExpressCheckoutInPaymentMethodsEnabled()', () => {
 		test( 'returns action with correct payload for enabled state', () => {
-			const action = updateIsExpressCheckoutInPaymentMethodsEnabled(
-				true
-			);
+			const action =
+				updateIsExpressCheckoutInPaymentMethodsEnabled( true );
 
 			expect( action ).toEqual( {
 				type: 'SET_SETTINGS_VALUES',
@@ -180,9 +179,8 @@ describe( 'Settings actions tests', () => {
 		} );
 
 		test( 'returns action with correct payload for disabled state', () => {
-			const action = updateIsExpressCheckoutInPaymentMethodsEnabled(
-				false
-			);
+			const action =
+				updateIsExpressCheckoutInPaymentMethodsEnabled( false );
 
 			expect( action ).toEqual( {
 				type: 'SET_SETTINGS_VALUES',

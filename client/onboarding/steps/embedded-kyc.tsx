@@ -139,8 +139,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 									'woocommerce-payments'
 								),
 								variant: 'primary',
-								url:
-									'https://woocommerce.com/document/woopayments/startup-guide/#requirements',
+								url: 'https://woocommerce.com/document/woopayments/startup-guide/#requirements',
 								urlTarget: '_blank',
 							},
 							{

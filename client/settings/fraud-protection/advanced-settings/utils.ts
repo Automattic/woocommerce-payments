@@ -91,7 +91,7 @@ const buildRuleset = (
 				operator:
 					// Need to use a reversed operator because we'll be matching the failure here.
 					// Example; if a country is in a ban list, block, or if a country isn't in a allow list, block.
-					'specific' === getSupportedCountriesType()
+					getSupportedCountriesType() === 'specific'
 						? CheckOperators.OPERATOR_NOT_IN
 						: CheckOperators.OPERATOR_IN,
 				value: getSettingCountries().join( '|' ).toLowerCase(),
@@ -209,7 +209,7 @@ const findCheck = (
 			const check = current.checks[ i ];
 			const result = findCheck( check, checkKey, operator );
 
-			if ( false !== result ) {
+			if ( result !== false ) {
 				return result;
 			}
 		}
@@ -277,7 +277,7 @@ export const readRuleset = (
 	};
 	const parsedUIConfig = {} as ProtectionSettingsUI;
 
-	if ( 'string' !== typeof rulesetConfig ) {
+	if ( typeof rulesetConfig !== 'string' ) {
 		for ( const id in rulesetConfig ) {
 			const rule = rulesetConfig[ id ];
 

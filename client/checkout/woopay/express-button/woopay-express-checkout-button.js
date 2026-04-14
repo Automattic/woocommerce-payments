@@ -98,9 +98,8 @@ export const WoopayExpressCheckoutButton = ( {
 	const isFirstPartyAuth = getConfig( 'isWoopayFirstPartyAuthEnabled' );
 	const woopayUrl = getConfig( 'woopayHost' ) + '/woopay/';
 
-	const { addToCart, getProductData } = useExpressCheckoutProductHandler(
-		api
-	);
+	const { addToCart, getProductData } =
+		useExpressCheckoutProductHandler( api );
 	const getProductDataRef = useRef( getProductData );
 	const addToCartRef = useRef( addToCart );
 
@@ -261,9 +260,10 @@ export const WoopayExpressCheckoutButton = ( {
 								response?.blog_id &&
 								response?.data?.session
 							) {
-								const sessionResponse = await WooPayFirstPartyAuth.sendPreemptiveSessionDataToWooPay(
-									response
-								);
+								const sessionResponse =
+									await WooPayFirstPartyAuth.sendPreemptiveSessionDataToWooPay(
+										response
+									);
 
 								if ( sessionResponse?.is_error ) {
 									onClickOtpFlow( null );
@@ -302,9 +302,10 @@ export const WoopayExpressCheckoutButton = ( {
 				} )
 					.then( async ( response ) => {
 						if ( response?.blog_id && response?.data?.session ) {
-							const sessionResponse = await WooPayFirstPartyAuth.sendPreemptiveSessionDataToWooPay(
-								response
-							);
+							const sessionResponse =
+								await WooPayFirstPartyAuth.sendPreemptiveSessionDataToWooPay(
+									response
+								);
 
 							if ( sessionResponse?.is_error ) {
 								onClickOtpFlow( null );

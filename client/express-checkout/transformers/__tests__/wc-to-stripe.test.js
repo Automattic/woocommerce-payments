@@ -174,8 +174,7 @@ describe( 'wc-to-stripe transformers', () => {
 								},
 								{
 									name: 'Booking Type',
-									value:
-										'Black folding chairs (Sample resource)',
+									value: 'Black folding chairs (Sample resource)',
 									display: '',
 								},
 							],
@@ -242,8 +241,7 @@ describe( 'wc-to-stripe transformers', () => {
 			).toStrictEqual( [
 				{
 					amount: 1350,
-					name:
-						'Deposit (x2) - Payment Plan: Deposit 30, Payable In Total: $45.00 payable over 20 days',
+					name: 'Deposit (x2) - Payment Plan: Deposit 30, Payable In Total: $45.00 payable over 20 days',
 				},
 				{ amount: 4500, name: 'Physical subscription' },
 				{
@@ -1203,8 +1201,7 @@ describe( 'wc-to-stripe transformers', () => {
 							shipping_rates: [
 								{
 									rate_id: 'pickup_location:1',
-									name:
-										'Local pickup &#8211; options coming from WooCommerce Blocks (Australian warehouse)',
+									name: 'Local pickup &#8211; options coming from WooCommerce Blocks (Australian warehouse)',
 									description: '',
 									delivery_time: '',
 									price: '0',
@@ -1218,8 +1215,7 @@ describe( 'wc-to-stripe transformers', () => {
 										},
 										{
 											key: 'pickup_address',
-											value:
-												'42 Wallaby Way, Sydney New South Wales 200, Australia',
+											value: '42 Wallaby Way, Sydney New South Wales 200, Australia',
 										},
 										{
 											key: 'pickup_details',
