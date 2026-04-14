@@ -29,6 +29,9 @@ VERSION=""
 if [[ "$BRANCH" =~ ^release/([0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?)$ ]]; then
 	VERSION="${BASH_REMATCH[1]}"
 fi
+# Escape regex metacharacters (just `.` in practice for semver) so that
+# e.g. 10.6.0 doesn't accidentally match 10x6x0.
+VERSION_RE="${VERSION//./\\.}"
 
 # Parallel indexed arrays (bash 3.2 compatible — no associative arrays).
 NAMES=(
@@ -93,7 +96,7 @@ else
 fi
 
 # 6. changelog.txt has entry for this version
-if [ -n "$VERSION" ] && grep -qE "^= $VERSION - [0-9]{4}-[0-9]{2}-[0-9]{2} =" changelog.txt 2> /dev/null; then
+if [ -n "$VERSION" ] && grep -qE "^= $VERSION_RE - [0-9]{4}-[0-9]{2}-[0-9]{2} =" changelog.txt 2> /dev/null; then
 	push_check true ""
 else
 	push_check false "no '= $VERSION - YYYY-MM-DD =' entry in changelog.txt"

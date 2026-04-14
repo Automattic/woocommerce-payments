@@ -42,6 +42,9 @@ if [ -z "$BRANCH" ]; then
 fi
 
 VERSION="${BRANCH#release/}"
+# Escape regex metacharacters (just `.` in practice for semver) so that
+# e.g. 10.6.0 doesn't accidentally match 10x6x0.
+VERSION_RE="${VERSION//./\\.}"
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 VERSION_JSON=$("$SCRIPT_DIR/bump-version.sh" --check --json 2> /dev/null || true)
@@ -53,9 +56,9 @@ if [ -d changelog ]; then
 	ENTRIES_PENDING=$(find changelog -maxdepth 1 -type f ! -name '.gitkeep' ! -name 'README*' 2> /dev/null | wc -l | tr -d ' ')
 fi
 CHANGELOG_HAS_RELEASE=false
-if grep -qE "^= $VERSION - [0-9]{4}-[0-9]{2}-[0-9]{2} =" changelog.txt 2> /dev/null; then CHANGELOG_HAS_RELEASE=true; fi
+if grep -qE "^= $VERSION_RE - [0-9]{4}-[0-9]{2}-[0-9]{2} =" changelog.txt 2> /dev/null; then CHANGELOG_HAS_RELEASE=true; fi
 README_HAS_RELEASE=false
-if grep -qE "^Stable tag: $VERSION\$" readme.txt 2> /dev/null; then README_HAS_RELEASE=true; fi
+if grep -qE "^Stable tag: $VERSION_RE\$" readme.txt 2> /dev/null; then README_HAS_RELEASE=true; fi
 CHANGELOG_VALID=true
 if [ -x ./vendor/bin/changelogger ]; then
 	./vendor/bin/changelogger validate > /dev/null 2>&1 || CHANGELOG_VALID=false
