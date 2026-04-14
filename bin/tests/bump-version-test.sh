@@ -110,5 +110,19 @@ set -e
 assert_eq "$BAD_EXIT" "3" "invalid version returns 3"
 rm -rf "$DIR"
 
+# Test: --dry-run leaves files untouched
+DIR=$(make_fixture)
+BEFORE_PHP=$(shasum "$DIR/woocommerce-payments.php" | awk '{print $1}')
+BEFORE_PKG=$(shasum "$DIR/package.json" | awk '{print $1}')
+BEFORE_LOCK=$(shasum "$DIR/package-lock.json" | awk '{print $1}')
+BEFORE_README=$(shasum "$DIR/readme.txt" | awk '{print $1}')
+DRY_OUT=$( cd "$DIR" && "$BUMP" 10.7.0 --dry-run 2>&1 )
+assert_eq "$(shasum "$DIR/woocommerce-payments.php" | awk '{print $1}')" "$BEFORE_PHP" "dry-run leaves php header untouched"
+assert_eq "$(shasum "$DIR/package.json" | awk '{print $1}')" "$BEFORE_PKG" "dry-run leaves package.json untouched"
+assert_eq "$(shasum "$DIR/package-lock.json" | awk '{print $1}')" "$BEFORE_LOCK" "dry-run leaves package-lock.json untouched"
+assert_eq "$(shasum "$DIR/readme.txt" | awk '{print $1}')" "$BEFORE_README" "dry-run leaves readme.txt untouched"
+assert_contains "$DRY_OUT" "10.6.0 -> 10.7.0" "dry-run reports current vs target"
+rm -rf "$DIR"
+
 echo "# passed $PASS/$((PASS + FAIL))"
 [ "$FAIL" -eq 0 ]
