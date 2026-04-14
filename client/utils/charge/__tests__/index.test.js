@@ -23,9 +23,6 @@ const blockedCharge = {
 };
 const authorizedCharge = { status: 'succeeded', paid: true, captured: false };
 const authorizedPaymentIntent = { status: 'requires_capture' };
-const actionRequiredPaymentIntent = { status: 'requires_action' };
-const failedPaymentIntent = { status: 'requires_payment_method' };
-const processingPaymentIntent = { status: 'processing' };
 const canceledPaymentIntent = { status: 'canceled' };
 const getDisputedChargeWithStatus = ( status ) => ( {
 	disputed: true,
@@ -152,45 +149,24 @@ describe( 'Charge utilities', () => {
 			).toEqual( 'authorized' );
 		} );
 
-		test( 'returns processing when payment intent is processing', () => {
-			expect(
-				utils.getChargeStatus( paidCharge, processingPaymentIntent )
-			).toEqual( 'processing' );
-		} );
-
-		test( 'returns requires_action when payment intent needs authentication', () => {
-			expect(
-				utils.getChargeStatus(
-					{ status: 'pending' },
-					actionRequiredPaymentIntent
-				)
-			).toEqual( 'requires_action' );
-		} );
-
-		test( 'returns authorization_failed when payment intent requires a payment method', () => {
-			expect(
-				utils.getChargeStatus( failedCharge, failedPaymentIntent )
-			).toEqual( 'authorization_failed' );
-		} );
-
 		test( 'returns authorization_expired when an uncaptured authorization is canceled', () => {
 			expect(
 				utils.getChargeStatus( authorizedCharge, canceledPaymentIntent )
 			).toEqual( 'authorization_expired' );
 		} );
 
-		test( 'returns canceled when a non-authorized payment intent is canceled', () => {
+		test( 'falls back to charge status when a non-authorized payment intent is canceled', () => {
 			expect(
 				utils.getChargeStatus(
 					{ status: 'pending', paid: false, captured: false },
 					canceledPaymentIntent
 				)
-			).toEqual( 'canceled' );
+			).toEqual( 'pending' );
 		} );
 
-		test( 'blocked status takes precedence over payment intent failure', () => {
+		test( 'blocked status takes precedence over expired authorization handling', () => {
 			expect(
-				utils.getChargeStatus( blockedCharge, failedPaymentIntent )
+				utils.getChargeStatus( blockedCharge, canceledPaymentIntent )
 			).toEqual( 'blocked' );
 		} );
 

@@ -50,10 +50,6 @@ const paymentStatusMappings: Record< string, StatusMapping > = {
 		type: 'primary',
 		message: __( 'Payment authorized', 'woocommerce-payments' ),
 	},
-	authorization_failed: {
-		type: 'alert',
-		message: __( 'Authorization failed', 'woocommerce-payments' ),
-	},
 	authorization_expired: {
 		type: 'alert',
 		message: __( 'Authorization expired', 'woocommerce-payments' ),
@@ -70,10 +66,6 @@ const paymentStatusMappings: Record< string, StatusMapping > = {
 		type: 'alert',
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
 	},
-	canceled: {
-		type: 'light',
-		message: __( 'Canceled', 'woocommerce-payments' ),
-	},
 	fraud_outcome_review: {
 		type: 'warning',
 		message: __( 'Needs review', 'woocommerce-payments' ),
@@ -81,18 +73,6 @@ const paymentStatusMappings: Record< string, StatusMapping > = {
 	fraud_outcome_block: {
 		type: 'alert',
 		message: __( 'Payment blocked', 'woocommerce-payments' ),
-	},
-	processing: {
-		type: 'light',
-		message: __( 'Processing', 'woocommerce-payments' ),
-	},
-	requires_action: {
-		type: 'warning',
-		message: __( 'Authentication required', 'woocommerce-payments' ),
-	},
-	requires_confirmation: {
-		type: 'light',
-		message: __( 'Awaiting confirmation', 'woocommerce-payments' ),
 	},
 	...formattedDisputeStatuses,
 };

@@ -101,22 +101,12 @@ const getPaymentIntentDerivedStatus = (
 	switch ( paymentIntent.status ) {
 		case 'requires_capture':
 			return 'authorized';
-		case 'requires_action':
-			return 'requires_action';
-		case 'requires_confirmation':
-			return 'requires_confirmation';
-		case 'requires_payment_method':
-			return 'authorization_failed';
-		case 'processing':
-			return 'processing';
 		case 'canceled':
 			return charge.paid && ! charge.captured
 				? 'authorization_expired'
-				: 'canceled';
-		case 'succeeded':
-			return 'paid';
+				: undefined;
 		default:
-			return paymentIntent.status;
+			return undefined;
 	}
 };
 
