@@ -88,7 +88,11 @@
 		"xdebug:toggle": "docker compose exec -u root wordpress /var/www/html/wp-content/plugins/woocommerce-payments/bin/xdebug-toggle.sh",
 		"changelog": "./vendor/bin/changelogger add",
 		"changelog:add": "./bin/changelog-add.sh",
-		"cli": "./bin/cli.sh"
+		"cli": "./bin/cli.sh",
+		"release:status": "./bin/release-status.sh",
+		"release:validate": "./bin/validate-release-branch.sh",
+		"version:bump": "./bin/bump-version.sh",
+		"version:check": "./bin/bump-version.sh --check"
 	},
 	"dependencies": {
 		"@automattic/interpolate-components": "1.2.1",
