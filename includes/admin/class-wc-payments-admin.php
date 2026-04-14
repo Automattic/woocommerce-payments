@@ -426,7 +426,7 @@ class WC_Payments_Admin {
 				[
 					'id'     => 'wc-payments-disputes-challenge',
 					'title'  => __( 'Challenge dispute', 'woocommerce-payments' ),
-					'parent' => 'wc-payments-disputes-details',
+					'parent' => 'wc-payments-disputes-details-legacy-redirect',
 					'path'   => '/payments/disputes/challenge',
 				]
 			);
