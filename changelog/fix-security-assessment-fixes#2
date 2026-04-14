@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix active plugin list being empty on older WooCommerce versions

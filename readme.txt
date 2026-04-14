@@ -87,6 +87,12 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 10.7.0-test-2 - unreleased =
+* Fix - fix: express checkout to show recurring subscription info for free trial subscriptions with sign-up fees, not just pure $0 free trials
+* Fix - Fix active plugin list being empty on older WooCommerce versions
+* Fix - Fix WooPay themed checkout header color not applied when template part is nested inside a wrapper block
+* Fix - Handle duplicate KYC session initialization gracefully
+
 = 10.7.0 - 2026-04-15 =
 * Add - Add client-side async price renderer for cache-optimized multi-currency mode
 * Add - Add digital product/service evidence matrix entries for all dispute reasons
