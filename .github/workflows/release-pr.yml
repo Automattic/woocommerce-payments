@@ -102,6 +102,9 @@ jobs:
           release-version: ${{ env.RELEASE_VERSION }}
           branch: ${{ env.BRANCH_NAME }}
 
+      - name: "Validate release branch"
+        run: ./bin/validate-release-branch.sh
+
       - name: "Create a PR to trunk"
         id: create-pr-to-trunk
         env:
