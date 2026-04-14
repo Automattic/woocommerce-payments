@@ -464,6 +464,42 @@ describe( 'Transactions filters', () => {
 		} );
 	} );
 
+	describe( 'loan filter visibility', () => {
+		test( 'should not show Loan filter when no loans are available', () => {
+			const g = global as any;
+			const originalLoans = g.wcpaySettings.accountLoans.loans;
+			g.wcpaySettings.accountLoans.loans = [];
+
+			jest.resetModules();
+			const {
+				getAdvancedFilters,
+			} = require( '../config' );
+			const filters = getAdvancedFilters();
+
+			expect( filters.filters.loan_id_is ).toBeUndefined();
+
+			g.wcpaySettings.accountLoans.loans = originalLoans;
+		} );
+
+		test( 'should show Loan filter when loans are available', () => {
+			const g = global as any;
+			const originalLoans = g.wcpaySettings.accountLoans.loans;
+			g.wcpaySettings.accountLoans.loans = [
+				'flxln_123456|active',
+			];
+
+			jest.resetModules();
+			const {
+				getAdvancedFilters,
+			} = require( '../config' );
+			const filters = getAdvancedFilters();
+
+			expect( filters.filters.loan_id_is ).toBeDefined();
+
+			g.wcpaySettings.accountLoans.loans = originalLoans;
+		} );
+	} );
+
 	describe( 'when filtering by risk level', () => {
 		let ruleSelector: HTMLElement;
 
