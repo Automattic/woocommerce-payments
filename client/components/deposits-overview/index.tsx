@@ -45,9 +45,8 @@ const DepositsOverview: React.FC = () => {
 		'deposits_unrestricted';
 	const selectedCurrency =
 		overview?.currency || wcpaySettings.accountDefaultCurrency;
-	const { isLoading: isLoadingDeposits, deposits } = useRecentDeposits(
-		selectedCurrency
-	);
+	const { isLoading: isLoadingDeposits, deposits } =
+		useRecentDeposits( selectedCurrency );
 
 	const isLoading = isLoadingOverview || isLoadingDeposits;
 

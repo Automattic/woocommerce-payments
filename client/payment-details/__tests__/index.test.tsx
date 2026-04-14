@@ -254,7 +254,8 @@ describe( 'DisputeNotice bank name logic', () => {
 			id: 'dp_mock',
 			charge: {
 				id: 'ch_mock',
-				payment_method_details: paymentMethodDetails as PaymentMethodDetails,
+				payment_method_details:
+					paymentMethodDetails as PaymentMethodDetails,
 			} as Charge,
 			reason: 'fraudulent',
 			status: 'needs_response',

@@ -53,9 +53,10 @@ const mockUseAuthorizations = useAuthorizations as jest.MockedFunction<
 	typeof useAuthorizations
 >;
 
-const mockUseAuthorizationsSummary = useAuthorizationsSummary as jest.MockedFunction<
-	typeof useAuthorizationsSummary
->;
+const mockUseAuthorizationsSummary =
+	useAuthorizationsSummary as jest.MockedFunction<
+		typeof useAuthorizationsSummary
+	>;
 
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences

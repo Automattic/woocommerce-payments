@@ -644,6 +644,7 @@ class WC_Payments_Styles_Cache {
 
 		$blocks   = parse_blocks( $template->content );
 		$blocks   = self::resolve_pattern_blocks( $blocks );
+		$blocks   = self::flatten_blocks( $blocks );
 		$sections = [];
 
 		foreach ( $blocks as $block ) {
@@ -658,7 +659,7 @@ class WC_Payments_Styles_Cache {
 			}
 
 			if ( 'core/template-part' === $block_name && ! empty( $block['attrs']['slug'] ) ) {
-				$colors = self::get_template_part_colors( $block['attrs']['slug'] );
+				$colors = self::get_template_part_colors( $block['attrs']['slug'], $block['attrs']['theme'] ?? '' );
 			} else {
 				$colors = self::extract_block_colors( $block );
 			}
@@ -690,6 +691,9 @@ class WC_Payments_Styles_Cache {
 			$area = $block['attrs']['area'] ?? null;
 			if ( ! $area ) {
 				$part = get_block_template( get_stylesheet() . '//' . $block['attrs']['slug'], 'wp_template_part' );
+				if ( ! $part && ! empty( $block['attrs']['theme'] ) ) {
+					$part = get_block_template( $block['attrs']['theme'] . '//' . $block['attrs']['slug'], 'wp_template_part' );
+				}
 				$area = $part ? $part->area : null;
 			}
 			if ( in_array( $area, [ 'header', 'footer' ], true ) ) {
@@ -723,11 +727,17 @@ class WC_Payments_Styles_Cache {
 	 * Extracts background and text colors from a template part (header/footer)
 	 * by parsing its outermost block attributes.
 	 *
-	 * @param string $slug The template part slug (e.g. 'header', 'footer').
+	 * @param string $slug  The template part slug (e.g. 'header', 'checkout-header').
+	 * @param string $theme The theme attribute from the template-part block (e.g. 'woocommerce/woocommerce').
 	 * @return array Associative array with 'background' and/or 'text' keys, or empty.
 	 */
-	private static function get_template_part_colors( string $slug ): array {
+	private static function get_template_part_colors( string $slug, string $theme = '' ): array {
 		$template = get_block_template( get_stylesheet() . '//' . $slug, 'wp_template_part' );
+
+		if ( ( ! $template || empty( $template->content ) ) && '' !== $theme ) {
+			$template = get_block_template( $theme . '//' . $slug, 'wp_template_part' );
+		}
+
 		if ( ! $template || empty( $template->content ) ) {
 			return [];
 		}
@@ -822,6 +832,9 @@ class WC_Payments_Styles_Cache {
 
 		foreach ( $blocks as $block ) {
 			if ( 'core/pattern' !== $block['blockName'] || empty( $block['attrs']['slug'] ) ) {
+				if ( ! empty( $block['innerBlocks'] ) ) {
+					$block['innerBlocks'] = self::resolve_pattern_blocks( $block['innerBlocks'] );
+				}
 				$resolved[] = $block;
 				continue;
 			}
@@ -842,6 +855,26 @@ class WC_Payments_Styles_Cache {
 		}
 
 		return $resolved;
+	}
+
+	/**
+	 * Recursively flattens a block tree into a single-level array.
+	 *
+	 * Parent blocks appear before their children, so the first classified
+	 * block for a given area is always the outermost one.
+	 *
+	 * @param array $blocks Parsed blocks (possibly nested via innerBlocks).
+	 * @return array Flat array of all blocks at every depth.
+	 */
+	private static function flatten_blocks( array $blocks ): array {
+		$flat = [];
+		foreach ( $blocks as $block ) {
+			$flat[] = $block;
+			if ( ! empty( $block['innerBlocks'] ) ) {
+				$flat = array_merge( $flat, self::flatten_blocks( $block['innerBlocks'] ) );
+			}
+		}
+		return $flat;
 	}
 
 	/**

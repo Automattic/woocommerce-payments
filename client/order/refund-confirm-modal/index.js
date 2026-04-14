@@ -20,10 +20,8 @@ const RefundConfirmationModal = ( {
 	formattedRefundAmount,
 	refundedAmount,
 } ) => {
-	const [
-		isRefundConfirmationModalOpen,
-		setIsRefundConfirmationModalOpen,
-	] = useState( true );
+	const [ isRefundConfirmationModalOpen, setIsRefundConfirmationModalOpen ] =
+		useState( true );
 
 	const blockUI = () => {
 		jQuery( '.refund-confirmation-modal' ).block( {

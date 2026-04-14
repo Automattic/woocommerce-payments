@@ -208,7 +208,7 @@ export const VatNumberTask = ( {
 		setVatValidationError( '' );
 
 		try {
-			if ( null !== normalizedVatNumber ) {
+			if ( normalizedVatNumber !== null ) {
 				setLoading( true );
 
 				const validationResult = await apiFetch< VatValidationResult >(

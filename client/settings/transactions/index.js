@@ -34,10 +34,8 @@ const ACCOUNT_STATEMENT_MAX_LENGTH_KANA = 22;
 
 const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
-	const [
-		accountStatementDescriptor,
-		setAccountStatementDescriptor,
-	] = useAccountStatementDescriptor();
+	const [ accountStatementDescriptor, setAccountStatementDescriptor ] =
+		useAccountStatementDescriptor();
 	const [
 		accountStatementDescriptorKanji,
 		setAccountStatementDescriptorKanji,
@@ -46,8 +44,9 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 		accountStatementDescriptorKana,
 		setAccountStatementDescriptorKana,
 	] = useAccountStatementDescriptorKana();
-	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
-		?.account_statement_descriptor?.message;
+	const customerBankStatementErrorMessage =
+		useGetSavingError()?.data?.details?.account_statement_descriptor
+			?.message;
 
 	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
 	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );

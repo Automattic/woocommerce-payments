@@ -591,12 +591,18 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 		const actionsContainer = container.querySelector(
 			'.transaction-details-dispute-details-body__actions'
 		);
-		const buttons = actionsContainer?.querySelectorAll( 'button' );
-		expect( buttons ).toBeDefined();
-		expect( buttons!.length ).toBeGreaterThanOrEqual( 2 );
+		expect( actionsContainer ).not.toBeNull();
+		if ( ! actionsContainer ) {
+			throw new Error(
+				'Expected dispute actions container to be present.'
+			);
+		}
+
+		const buttons = actionsContainer.querySelectorAll( 'button' );
+		expect( buttons.length ).toBeGreaterThanOrEqual( 2 );
 
 		// First button should be "Issue refund"
-		expect( buttons![ 0 ].textContent ).toMatch( /Issue refund/i );
+		expect( buttons[ 0 ].textContent ).toMatch( /Issue refund/i );
 	} );
 
 	test( 'does not show Visa compliance checkbox for Klarna inquiries', () => {

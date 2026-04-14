@@ -42,18 +42,18 @@ describe( 'ECE product bundles compatibility', () => {
 								],
 								bundle_data: {
 									configuration: {
-										'1': {
+										1: {
 											product_id: 13,
 											quantity: 1,
 											discount: 20,
 											optional_selected: 'yes',
 										},
-										'2': {
+										2: {
 											product_id: 30,
 											quantity: 2,
 											discount: '',
 										},
-										'3': {
+										3: {
 											product_id: 10,
 											quantity: 1,
 											discount: '',
@@ -62,7 +62,7 @@ describe( 'ECE product bundles compatibility', () => {
 											},
 											variation_id: '25',
 										},
-										'4': {
+										4: {
 											product_id: 10,
 											quantity: 0,
 											discount: '',
@@ -176,18 +176,18 @@ describe( 'ECE product bundles compatibility', () => {
 						bundles: {
 							bundle_data: {
 								configuration: {
-									'1': {
+									1: {
 										discount: 20,
 										optional_selected: 'yes',
 										product_id: 13,
 										quantity: 1,
 									},
-									'2': {
+									2: {
 										discount: '',
 										product_id: 30,
 										quantity: 2,
 									},
-									'3': {
+									3: {
 										attributes: {
 											attribute_size: 'Medium',
 										},
@@ -196,7 +196,7 @@ describe( 'ECE product bundles compatibility', () => {
 										quantity: 1,
 										variation_id: '25',
 									},
-									'4': {
+									4: {
 										attributes: [],
 										discount: '',
 										optional_selected: 'no',

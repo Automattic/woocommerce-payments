@@ -73,7 +73,7 @@ test.describe( 'Payment Methods', () => {
 
 				await addSavedCard( shopperPage, card, 'US' );
 
-				if ( 'declined-3ds' === cardType ) {
+				if ( cardType === 'declined-3ds' ) {
 					await confirmCardAuthentication( shopperPage, false );
 					await isUIUnblocked( shopperPage );
 				}
@@ -81,7 +81,7 @@ test.describe( 'Payment Methods', () => {
 				// For declined-incorrect, Stripe validates client-side and shows
 				// the error only in the iframe - the form is never submitted to
 				// WooCommerce so no page-level alert is shown.
-				if ( 'declined-incorrect' === cardType ) {
+				if ( cardType === 'declined-incorrect' ) {
 					await expect(
 						shopperPage
 							.frameLocator(

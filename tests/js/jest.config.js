@@ -1,5 +1,3 @@
-const { jsWithBabel: tsjPreset } = require( 'ts-jest/presets' );
-
 module.exports = {
 	rootDir: '../../',
 	moduleDirectories: [
@@ -64,12 +62,12 @@ module.exports = {
 		'<rootDir>/tests/qit',
 	],
 	transform: {
-		...tsjPreset.transform,
+		'^.+\\.jsx?$': 'babel-jest',
+		'^.+\\.tsx?$': [ 'ts-jest', { isolatedModules: true } ],
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
 	transformIgnorePatterns: [
 		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/|@automattic/material-design-icons/)',
 	],
 	snapshotSerializers: [ '@emotion/jest/serializer' ],
-	verbose: true,
 };
