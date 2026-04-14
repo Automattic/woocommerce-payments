@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+REPO_ROOT="$( cd "$SCRIPT_DIR/../.." && pwd )"
+BUMP="$REPO_ROOT/bin/bump-version.sh"
+
+PASS=0
+FAIL=0
+
+assert_eq() {
+	if [ "$1" = "$2" ]; then
+		echo "ok - $3"
+		PASS=$((PASS + 1))
+	else
+		echo "not ok - $3"
+		echo "  expected: $2"
+		echo "  got:      $1"
+		FAIL=$((FAIL + 1))
+	fi
+}
+
+assert_contains() {
+	if echo "$1" | grep -Fq "$2"; then
+		echo "ok - $3"
+		PASS=$((PASS + 1))
+	else
+		echo "not ok - $3"
+		echo "  haystack: $1"
+		echo "  needle:   $2"
+		FAIL=$((FAIL + 1))
+	fi
+}
+
+make_fixture() {
+	local dir
+	dir="$(mktemp -d "${TMPDIR:-/tmp}/bump-version-test.XXXXXX")"
+	cat > "$dir/woocommerce-payments.php" <<'PHP'
+<?php
+/**
+ * Plugin Name: WooPayments
+ * Version: 10.6.0
+ */
+PHP
+	cat > "$dir/package.json" <<'JSON'
+{
+  "name": "test-fixture",
+  "version": "10.6.0"
+}
+JSON
+	cat > "$dir/package-lock.json" <<'JSON'
+{
+  "name": "test-fixture",
+  "version": "10.6.0",
+  "lockfileVersion": 3,
+  "packages": {
+    "": { "name": "test-fixture", "version": "10.6.0" }
+  }
+}
+JSON
+	cat > "$dir/readme.txt" <<'TXT'
+=== WooPayments ===
+Stable tag: 10.6.0
+TXT
+	echo "$dir"
+}
+
+# Test: write mode rewrites all three files
+DIR=$(make_fixture)
+( cd "$DIR" && "$BUMP" 10.7.0 > /dev/null )
+assert_contains "$(cat "$DIR/woocommerce-payments.php")" "* Version: 10.7.0" "php header bumped"
+assert_eq "$(jq -r .version "$DIR/package.json")" "10.7.0" "package.json bumped"
+assert_eq "$(jq -r .version "$DIR/package-lock.json")" "10.7.0" "package-lock.json bumped"
+assert_contains "$(cat "$DIR/readme.txt")" "Stable tag: 10.7.0" "readme stable tag bumped"
+rm -rf "$DIR"
+
+# Test: --check consistent
+DIR=$(make_fixture)
+set +e
+( cd "$DIR" && "$BUMP" --check > /dev/null )
+CHECK_EXIT=$?
+set -e
+assert_eq "$CHECK_EXIT" "0" "check passes on consistent fixture"
+rm -rf "$DIR"
+
+# Test: --check --json consistent
+DIR=$(make_fixture)
+JSON_OUT=$( cd "$DIR" && "$BUMP" --check --json )
+assert_eq "$(echo "$JSON_OUT" | jq -r .consistent)" "true" "check --json reports consistent"
+assert_eq "$(echo "$JSON_OUT" | jq -r .php_header)" "10.6.0" "check --json emits php version"
+rm -rf "$DIR"
+
+# Test: --check detects inconsistency (exit 2)
+DIR=$(make_fixture)
+sed -i.bak 's/10.6.0/10.5.0/' "$DIR/readme.txt" && rm -f "$DIR/readme.txt.bak"
+set +e
+( cd "$DIR" && "$BUMP" --check --json > "$DIR/out.json" 2>/dev/null )
+CHECK_EXIT=$?
+set -e
+assert_eq "$CHECK_EXIT" "2" "check returns 2 on inconsistency"
+assert_eq "$(jq -r .consistent "$DIR/out.json")" "false" "check --json reports inconsistent"
+rm -rf "$DIR"
+
+# Test: invalid version format
+DIR=$(make_fixture)
+set +e
+( cd "$DIR" && "$BUMP" not-a-version 2>/dev/null )
+BAD_EXIT=$?
+set -e
+assert_eq "$BAD_EXIT" "3" "invalid version returns 3"
+rm -rf "$DIR"
+
+echo "# passed $PASS/$((PASS + FAIL))"
+[ "$FAIL" -eq 0 ]
