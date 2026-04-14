@@ -23,7 +23,6 @@ const blockedCharge = {
 };
 const authorizedCharge = { status: 'succeeded', paid: true, captured: false };
 const authorizedPaymentIntent = { status: 'requires_capture' };
-const canceledPaymentIntent = { status: 'canceled' };
 const getDisputedChargeWithStatus = ( status ) => ( {
 	disputed: true,
 	dispute: { status: status },
@@ -147,27 +146,6 @@ describe( 'Charge utilities', () => {
 					authorizedPaymentIntent
 				)
 			).toEqual( 'authorized' );
-		} );
-
-		test( 'returns authorization_expired when an uncaptured authorization is canceled', () => {
-			expect(
-				utils.getChargeStatus( authorizedCharge, canceledPaymentIntent )
-			).toEqual( 'authorization_expired' );
-		} );
-
-		test( 'falls back to charge status when a non-authorized payment intent is canceled', () => {
-			expect(
-				utils.getChargeStatus(
-					{ status: 'pending', paid: false, captured: false },
-					canceledPaymentIntent
-				)
-			).toEqual( 'pending' );
-		} );
-
-		test( 'blocked status takes precedence over expired authorization handling', () => {
-			expect(
-				utils.getChargeStatus( blockedCharge, canceledPaymentIntent )
-			).toEqual( 'blocked' );
 		} );
 
 		const disputeStatuses = [

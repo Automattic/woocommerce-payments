@@ -222,28 +222,6 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( renderCharge( baseCharge ) ).toMatchSnapshot();
 	} );
 
-	test( 'shows authorization expired for canceled uncaptured authorizations', () => {
-		const charge = getBaseCharge();
-		charge.captured = false;
-		charge.order = { ...charge.order, id: 123 };
-
-		renderCharge( charge, {}, false, {
-			paymentIntent: {
-				...paymentIntentMock,
-				status: 'canceled',
-			},
-		} );
-
-		expect(
-			screen.getByText( 'Authorization expired' )
-		).toBeInTheDocument();
-		expect( mockUseAuthorization ).toHaveBeenCalledWith(
-			charge.payment_intent,
-			charge.order.id,
-			false
-		);
-	} );
-
 	test( 'renders partially refunded information for a charge', () => {
 		const charge = getBaseCharge();
 		charge.refunded = false;

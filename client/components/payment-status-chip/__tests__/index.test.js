@@ -22,7 +22,6 @@ describe( 'PaymentStatusChip', () => {
 		'refunded_full',
 		'paid',
 		'authorized',
-		'authorization_expired',
 		'failed',
 		'blocked',
 		'disputed_needs_response',

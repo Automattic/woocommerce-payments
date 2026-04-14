@@ -50,10 +50,6 @@ const paymentStatusMappings: Record< string, StatusMapping > = {
 		type: 'primary',
 		message: __( 'Payment authorized', 'woocommerce-payments' ),
 	},
-	authorization_expired: {
-		type: 'alert',
-		message: __( 'Authorization expired', 'woocommerce-payments' ),
-	},
 	refund_failed: {
 		type: 'alert',
 		message: __( 'Refund failure', 'woocommerce-payments' ),

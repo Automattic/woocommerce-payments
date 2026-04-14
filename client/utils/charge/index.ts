@@ -91,7 +91,6 @@ export const isBlockedByFraudTools = (
 };
 
 const getPaymentIntentDerivedStatus = (
-	charge: Charge = <Charge>{},
 	paymentIntent?: PaymentIntent
 ): string | undefined => {
 	if ( ! paymentIntent?.status ) {
@@ -101,10 +100,6 @@ const getPaymentIntentDerivedStatus = (
 	switch ( paymentIntent.status ) {
 		case 'requires_capture':
 			return 'authorized';
-		case 'canceled':
-			return charge.paid && ! charge.captured
-				? 'authorization_expired'
-				: undefined;
 		default:
 			return undefined;
 	}
@@ -137,10 +132,7 @@ export const getChargeStatus = (
 	if ( isChargeRefundFailed( charge ) ) {
 		return 'refund_failed';
 	}
-	const paymentIntentStatus = getPaymentIntentDerivedStatus(
-		charge,
-		paymentIntent
-	);
+	const paymentIntentStatus = getPaymentIntentDerivedStatus( paymentIntent );
 	if ( paymentIntentStatus ) {
 		return paymentIntentStatus;
 	}

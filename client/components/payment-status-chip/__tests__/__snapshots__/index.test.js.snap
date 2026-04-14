@@ -1,15 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PaymentStatusChip renders authorization_expired status 1`] = `
-<div>
-  <span
-    class="chip chip-alert"
-  >
-    Authorization expired
-  </span>
-</div>
-`;
-
 exports[`PaymentStatusChip renders authorized status 1`] = `
 <div>
   <span
