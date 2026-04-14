@@ -1,11 +1,11 @@
 /**
  * External dependencies
  */
-import { sanitize } from 'dompurify';
+import DOMPurify from 'dompurify';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const sanitizeHTML = ( html: string ): { __html: string } => ( {
-	__html: sanitize( html, {
+	__html: DOMPurify.sanitize( html, {
 		ALLOWED_TAGS: [ 'a', 'b', 'em', 'i', 'strong', 'p', 'br' ],
 		ALLOWED_ATTR: [ 'target', 'href', 'rel', 'name', 'download' ],
 	} ),
