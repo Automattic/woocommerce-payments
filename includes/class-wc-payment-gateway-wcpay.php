@@ -2415,8 +2415,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Detect express checkout type: first from metadata that may have been set earlier in the flow,
 		// then fall back to Stripe's wallet info (authoritative for Apple Pay, Google Pay, Link).
 		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
-		if ( ! $express_checkout_type && ! empty( $payment_method_details['card']['wallet']['type'] ) ) {
-			$express_checkout_type = sanitize_text_field( $payment_method_details['card']['wallet']['type'] );
+		$wallet_type           = is_array( $payment_method_details ) ? $payment_method_details['card']['wallet']['type'] ?? null : null;
+		if ( ! $express_checkout_type && $wallet_type ) {
+			$express_checkout_type = sanitize_text_field( $wallet_type );
 			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_checkout_type );
 		}
 
@@ -2434,14 +2435,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( $express_checkout_type ) {
 			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
-			$title          = $express_method ? $express_method->get_title() : null;
-			if ( $title ) {
-				$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-				if ( ! empty( $suffix ) ) {
-					$suffix = " ($suffix)";
-				}
-				$order->set_payment_method_title( $title . $suffix );
+			$title          = $express_method ? $express_method->get_title() : 'Payment Request';
+			$suffix         = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+			if ( ! empty( $suffix ) ) {
+				$suffix = " ($suffix)";
 			}
+			$order->set_payment_method_title( $title . $suffix );
 		} else {
 			$order->set_payment_method_title( $payment_method->get_title( $this->get_account_country(), $payment_method_details ) );
 		}
