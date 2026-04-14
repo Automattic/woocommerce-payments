@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const SupportEmailInput = ( { setInputValid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
-	const [ isTouched, setIsTouched ] = useState( false );
+	const [ hasBlurred, setHasBlurred ] = useState( false );
 
 	let supportEmailError =
 		useGetSavingError()?.data?.details?.account_business_support_email
@@ -30,7 +30,7 @@ const SupportEmailInput = ( { setInputValid } ) => {
 	const hasInvalidFormat = supportEmail !== '' && ! isEmail( supportEmail );
 
 	const clientValidationError =
-		isTouched && hasInvalidFormat
+		hasBlurred && hasInvalidFormat
 			? __(
 					'Please enter a valid email address.',
 					'woocommerce-payments'
@@ -63,7 +63,7 @@ const SupportEmailInput = ( { setInputValid } ) => {
 				label={ __( 'Support email', 'woocommerce-payments' ) }
 				value={ supportEmail }
 				onChange={ setSupportEmail }
-				onBlur={ () => setIsTouched( true ) }
+				onBlur={ () => setHasBlurred( true ) }
 				data-testid={ 'account-business-support-email-input' }
 				type="email"
 				__nextHasNoMarginBottom
