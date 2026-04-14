@@ -107,6 +107,9 @@ export const getChargeStatus = (
 		return 'fraud_outcome_block';
 	}
 
+	if ( isChargeFailed( charge ) ) {
+		return 'failed';
+	}
 	if ( isChargeBlocked( charge ) ) {
 		return 'blocked';
 	}
@@ -125,9 +128,6 @@ export const getChargeStatus = (
 	const paymentIntentStatus = getPaymentIntentDerivedStatus( paymentIntent );
 	if ( paymentIntentStatus ) {
 		return paymentIntentStatus;
-	}
-	if ( isChargeFailed( charge ) ) {
-		return 'failed';
 	}
 	if ( isChargeSuccessful( charge ) ) {
 		return isChargeCaptured( charge ) ? 'paid' : 'authorized';
