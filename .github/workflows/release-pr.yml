@@ -91,19 +91,7 @@ jobs:
       - name: "Bump version"
         env:
           RELEASE_VERSION: ${{ steps.create_branch.outputs.trimmed-version }}
-          RELEASE_DATE: ${{ steps.define_var.outputs.RELEASE_DATE }}
-          CHANGELOG: ${{ steps.generate_changelog.outputs.changelog }}
-        run: |
-          CURRENT_VERSION=$(jq '.version' package.json -r)
-
-          # 'Version' header in woocommerce-payments.php
-          sed -i "s/^ \* Version: .*$/ * Version: $RELEASE_VERSION/" woocommerce-payments.php
-
-          # 'version' field in package.json and package-lock.json
-          npm version $RELEASE_VERSION --no-git-tag-version
-
-          # 'Stable tag' header in readme.txt;
-          sed -i "s/^Stable tag: .*$/Stable tag: $RELEASE_VERSION/" readme.txt
+        run: ./bin/bump-version.sh "$RELEASE_VERSION"
 
       - name: "Commit and push changes"
         env:
