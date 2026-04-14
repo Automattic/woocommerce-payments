@@ -91,9 +91,9 @@ export const isBlockedByFraudTools = (
 };
 
 const getPaymentIntentDerivedStatus = (
-      paymentIntent?: PaymentIntent
+	paymentIntent?: PaymentIntent
 ): string | undefined =>
-      paymentIntent?.status === 'requires_capture' ? 'authorized' : undefined;
+	paymentIntent?.status === 'requires_capture' ? 'authorized' : undefined;
 
 export const getChargeStatus = (
 	charge: Charge = <Charge>{},
