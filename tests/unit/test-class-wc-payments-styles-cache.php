@@ -1129,4 +1129,120 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 		// Non-hex base color.
 		$this->assertNull( $method->invoke( null, 'oklch(from hsl(0,100%,50%) l c h)' ) );
 	}
+
+	public function test_evaluate_channel_expr_handles_all_expression_types() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'evaluate_channel_expr' );
+		$method->setAccessible( true );
+
+		$l = 0.63;
+		$c = 0.26;
+		$h = 29.2;
+
+		// Bare channel references.
+		$this->assertSame( $l, $method->invoke( null, 'l', $l, $c, $h ) );
+		$this->assertSame( $c, $method->invoke( null, 'c', $l, $c, $h ) );
+		$this->assertSame( $h, $method->invoke( null, 'h', $l, $c, $h ) );
+
+		// Numeric literal.
+		$this->assertEqualsWithDelta( 0.5, $method->invoke( null, '0.5', $l, $c, $h ), 0.0001 );
+
+		// calc(channel * number).
+		$this->assertEqualsWithDelta( $l * 1.05, $method->invoke( null, 'calc(l * 1.05)', $l, $c, $h ), 0.0001 );
+
+		// calc(number * channel) — commutative order.
+		$this->assertEqualsWithDelta( $c * 1.075, $method->invoke( null, 'calc(1.075 * c)', $l, $c, $h ), 0.0001 );
+
+		// Unsupported: addition.
+		$this->assertNull( $method->invoke( null, 'calc(l + 0.1)', $l, $c, $h ) );
+
+		// Unsupported: unknown channel.
+		$this->assertNull( $method->invoke( null, 'calc(x * 1.0)', $l, $c, $h ) );
+	}
+
+	public function test_custom_input_background_oklch_resolves_through_compute() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// Simulate Assembler-like theme: no textInput element, but a custom
+		// input-background using oklch with a resolved hex base color.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version'  => 3,
+					'settings' => [
+						'custom' => [
+							'input-background' => 'oklch(from #808080 l c h)',
+						],
+					],
+					'styles'   => [
+						'color' => [
+							'background' => '#f0f0f0',
+							'text'       => '#1e1e1e',
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			// oklch(from #808080 l c h) is an identity transform on grey.
+			// Grey has C≈0 so the round-trip is lossless.
+			$this->assertSame( '#808080', $result['rules']['.Input']['backgroundColor'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_custom_input_background_unresolvable_falls_back_to_default() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// oklch with non-hex base: resolve_oklch returns null, should fall
+		// back to white for a light theme.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version'  => 3,
+					'settings' => [
+						'custom' => [
+							'input-background' => 'oklch(from hsl(0,50%,50%) l c h)',
+						],
+					],
+					'styles'   => [
+						'color' => [
+							'background' => '#f0f0f0',
+							'text'       => '#1e1e1e',
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			// Unresolvable oklch falls back to white on a light theme.
+			$this->assertSame( '#ffffff', $result['rules']['.Input']['backgroundColor'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
 }
