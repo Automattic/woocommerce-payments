@@ -673,7 +673,9 @@ class WC_Payments_Styles_Cache {
 	 */
 	private static function resolve_oklch( string $value ): ?string {
 		// Match: oklch(from <color> <L-expr> <C-expr> <H-expr>).
-		if ( ! preg_match( '/^oklch\(\s*from\s+(\S+)\s+(.+?)\s+(.+?)\s+(.+?)\s*\)$/', $value, $m ) ) {
+		// Each channel expression is either a bare token (\S+) or a calc(...) block.
+		$expr = '(calc\([^)]+\)|\S+)';
+		if ( ! preg_match( '/^oklch\(\s*from\s+(\S+)\s+' . $expr . '\s+' . $expr . '\s+' . $expr . '\s*\)$/', $value, $m ) ) {
 			return null;
 		}
 
@@ -702,9 +704,15 @@ class WC_Payments_Styles_Cache {
 		$m_ = 0.2119034982 * $lin[0] + 0.6806995451 * $lin[1] + 0.1073969566 * $lin[2];
 		$s_ = 0.0883024619 * $lin[0] + 0.2817188376 * $lin[1] + 0.6299787005 * $lin[2];
 
-		$l_ = pow( $l_, 1.0 / 3.0 );
-		$m_ = pow( $m_, 1.0 / 3.0 );
-		$s_ = pow( $s_, 1.0 / 3.0 );
+		// cbrt() requires PHP 8.0; pow() returns NAN for negative bases
+		// with fractional exponents. Use sign-preserving cube root.
+		$cbrt = function ( $v ) {
+			return ( $v < 0 ) ? -pow( -$v, 1.0 / 3.0 ) : pow( $v, 1.0 / 3.0 );
+		};
+
+		$l_ = $cbrt( $l_ );
+		$m_ = $cbrt( $m_ );
+		$s_ = $cbrt( $s_ );
 
 		$ok_l = 0.2104542553 * $l_ + 0.7936177850 * $m_ - 0.0040720468 * $s_;
 		$ok_a = 1.9779984951 * $l_ - 2.4285922050 * $m_ + 0.4505937099 * $s_;
