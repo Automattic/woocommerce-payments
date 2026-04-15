@@ -2018,6 +2018,10 @@ describe( 'Evidence Matrix Specification Validation', () => {
 					reason: 'credit_not_processed',
 					productType: 'other',
 				},
+				{
+					reason: 'duplicate',
+					productType: 'other',
+				},
 			];
 
 			it.each( statusDependentLookups )(
