@@ -33,7 +33,7 @@ The dropdown in `product-details.tsx` renders a different set of options dependi
 
 - `physical_product`, `digital_product_or_service`, `offline_service`, plus `multiple` ("Multiple product types") for mixed-product orders.
 
-`multiple` is not a dropdown option when the flag is ON, but the backend can still return `suggested_product_type = 'multiple'` for mixed-product orders. `index.tsx` assigns `order.suggested_product_type` directly to the `productType` state on first load — there is no automatic `multiple → other` remapping. Merchants opening such a draft with the flag ON will see the dropdown unselected and must pick a type manually. The matrix has no `multiple` entries, so the form falls through to the legacy path for any dispute still carrying that value.
+`multiple` is not a dropdown option when the flag is ON, but the backend can still return `suggested_product_type = 'multiple'` for mixed-product orders, and saved drafts can carry that value in `__product_type` metadata. On first load, `index.tsx` normalizes `'multiple'` to `'other'` when the flag is enabled so the dropdown selects "Other" rather than rendering in an invalid-selected state. The legacy path (flag OFF) still honors `'multiple'` — there is a `subscription_canceled × multiple` matrix entry that remains reachable only from the legacy form.
 
 ## Document Field Keys
 
