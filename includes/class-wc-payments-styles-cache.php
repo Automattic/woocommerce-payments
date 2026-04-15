@@ -194,7 +194,7 @@ class WC_Payments_Styles_Cache {
 
 		// Input background resolution:
 		// 1. elements.textInput.color.background (standard theme.json path).
-		// 2. styles.custom.input-background (Woo/WP themes like Assembler).
+		// 2. settings.custom.input-background (Woo/WP themes like Assembler).
 		// 3. White for light themes, page bg for dark (safe fallback).
 		//
 		// Most block themes leave input backgrounds undefined (transparent).
@@ -202,9 +202,10 @@ class WC_Payments_Styles_Cache {
 		// resolves transparent to the page background, making inputs invisible
 		// on WooPay. oklch() expressions from step 2 are evaluated via
 		// resolve_oklch(); other unresolvable values fall through to default.
+		$custom_settings   = wp_get_global_settings( [ 'custom' ] );
 		$input_bg_default  = self::is_color_light( $bg_color ) ? '#ffffff' : $bg_color;
 		$input_bg_raw      = $input_el['color']['background']
-			?? $styles['custom']['input-background']
+			?? $custom_settings['input-background']
 			?? $input_bg_default;
 		$input_bg_resolved = self::resolve_style_value( $input_bg_raw, $input_bg_default, $styles );
 		$input_bg_resolved = self::resolve_css_var( $input_bg_resolved );
@@ -701,9 +702,9 @@ class WC_Payments_Styles_Cache {
 		$m_ = 0.2119034982 * $lin[0] + 0.6806995451 * $lin[1] + 0.1073969566 * $lin[2];
 		$s_ = 0.0883024619 * $lin[0] + 0.2817188376 * $lin[1] + 0.6299787005 * $lin[2];
 
-		$l_ = cbrt( $l_ );
-		$m_ = cbrt( $m_ );
-		$s_ = cbrt( $s_ );
+		$l_ = pow( $l_, 1.0 / 3.0 );
+		$m_ = pow( $m_, 1.0 / 3.0 );
+		$s_ = pow( $s_, 1.0 / 3.0 );
 
 		$ok_l = 0.2104542553 * $l_ + 0.7936177850 * $m_ - 0.0040720468 * $s_;
 		$ok_a = 1.9779984951 * $l_ - 2.4285922050 * $m_ + 0.4505937099 * $s_;
