@@ -316,12 +316,3 @@ Use the **WCPay Dev Tools** plugin to override the dispute reason for testing di
 5. **Test save/reload** — ensure evidence persists correctly after page reload.
 6. **Test status switching** — for `duplicate` and `credit_not_processed`, switch between status options and verify fields update.
 7. **Verify base field merge** — check that "Customer communication" appears when expected and doesn't when repurposed.
-
-## Known Gotchas
-
-### Cover Letter Print Preview — Blob URL Loading
-
-The cover letter "Preview" button opens a popup using `URL.createObjectURL()` with a blob. The text content is set via DOM manipulation (`pre.textContent = value`) after load to prevent XSS (instead of embedding user input in a template literal).
-
-- **Never use `readyState === 'complete'` to detect blob URL load.** When `window.open(blobUrl)` is called, the new window initially has an `about:blank` document whose `readyState` is `'complete'`. Checking `readyState` synchronously matches the about:blank document, not the blob content, and any DOM operations (like `getElementById`) silently fail against the wrong document. Always use `addEventListener('load', ...)` instead.
-- **Revoke the blob URL only after load.** Calling `URL.revokeObjectURL(url)` before the blob content finishes loading can cause a blank page in some browsers. Revoke inside the `load` callback, not before.
