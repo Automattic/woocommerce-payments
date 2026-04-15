@@ -99,6 +99,15 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
 	}
 
+	public function test_is_dispute_additional_evidence_types_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
+	}
+
+	public function test_is_dispute_additional_evidence_types_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+		$this->assertFalse( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
+	}
+
 	public function test_is_woopay_eligible_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->assertTrue( WC_Payments_Features::is_woopay_eligible() );

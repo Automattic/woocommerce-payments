@@ -2,13 +2,13 @@
  * Spec-Driven Evidence Matrix Validation Tests
  *
  * Validates the implementation against the "Reason Code x Product Type Logic"
- * specification. For each Reason × Product Type combination in the matrix,
+ * specification. For each entry in the `implementedCombinations` array below,
  * asserts that:
  * 1. UI shows the correct document fields (getRecommendedDocumentFields)
  * 2. Cover letter includes the correct attachments (generateAttachments)
  *
- * The matrix in evidence-matrix.ts is the source of truth for which
- * combinations are covered.
+ * `implementedCombinations` is hand-maintained and must be kept in sync with
+ * `evidence-matrix.ts` when new reason × product type entries are added.
  */
 
 /**
