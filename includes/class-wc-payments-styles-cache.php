@@ -194,7 +194,7 @@ class WC_Payments_Styles_Cache {
 
 		// Input background resolution:
 		// 1. elements.textInput.color.background (standard theme.json path).
-		// 2. settings.custom.input-background (Woo/WP themes like Assembler).
+		// 2. styles.custom.input-background (Woo/WP themes like Assembler).
 		// 3. White for light themes, page bg for dark (safe fallback).
 		//
 		// Most block themes leave input backgrounds undefined (transparent).
@@ -517,20 +517,36 @@ class WC_Payments_Styles_Cache {
 	 * @return bool True if light, false if dark.
 	 */
 	private static function is_color_light( string $color ): bool {
+		$rgb = self::parse_color( $color );
+		if ( null === $rgb ) {
+			return true; // Default to light for unparseable colors.
+		}
+
+		// Same formula as tinycolor: (r * 299 + g * 587 + b * 114) / 1000.
+		$brightness = ( $rgb[0] * 299 + $rgb[1] * 587 + $rgb[2] * 114 ) / 1000;
+		return $brightness > 125;
+	}
+
+	/**
+	 * Parses a hex color string into an [r, g, b] array of 0-255 integers.
+	 * Supports #rgb and #rrggbb formats. Returns null for unparseable values.
+	 *
+	 * @param string $color The hex color string.
+	 * @return array|null [r, g, b] array or null.
+	 */
+	private static function parse_color( string $color ): ?array {
 		$color = ltrim( $color, '#' );
 		if ( 3 === strlen( $color ) ) {
 			$color = $color[0] . $color[0] . $color[1] . $color[1] . $color[2] . $color[2];
 		}
-		if ( 6 !== strlen( $color ) ) {
-			return true; // Default to light for unparseable colors.
+		if ( 6 !== strlen( $color ) || ! ctype_xdigit( $color ) ) {
+			return null;
 		}
-		$r = hexdec( substr( $color, 0, 2 ) );
-		$g = hexdec( substr( $color, 2, 2 ) );
-		$b = hexdec( substr( $color, 4, 2 ) );
-
-		// Same formula as tinycolor: (r * 299 + g * 587 + b * 114) / 1000.
-		$brightness = ( $r * 299 + $g * 587 + $b * 114 ) / 1000;
-		return $brightness > 125;
+		return [
+			hexdec( substr( $color, 0, 2 ) ),
+			hexdec( substr( $color, 2, 2 ) ),
+			hexdec( substr( $color, 4, 2 ) ),
+		];
 	}
 
 	/**
