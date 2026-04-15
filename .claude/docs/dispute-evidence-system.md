@@ -18,12 +18,22 @@ Reference for the dispute challenge UI in `client/disputes/new-evidence/`. Cover
 
 ## Product Types
 
+The dropdown in `product-details.tsx` renders a different set of options depending on the additional evidence types feature flag:
+
+**When the flag is ON** (matrix-driven form):
+
 - `physical_product` — physical products (may require shipping)
 - `digital_product_or_service` — digital products
 - `offline_service` — offline services
 - `booking_reservation` — bookings and reservations
 - `event` — events
-- `other` — catch-all (also covers mixed-product orders; the backend returns `suggested_product_type = 'multiple'` for those, which is mapped to `other`)
+- `other` — generic catch-all
+
+**When the flag is OFF** (legacy form):
+
+- `physical_product`, `digital_product_or_service`, `offline_service`, plus `multiple` ("Multiple product types") for mixed-product orders.
+
+`multiple` is not a dropdown option when the flag is ON, but the backend can still return `suggested_product_type = 'multiple'` for mixed-product orders. `index.tsx` assigns `order.suggested_product_type` directly to the `productType` state on first load — there is no automatic `multiple → other` remapping. Merchants opening such a draft with the flag ON will see the dropdown unselected and must pick a type manually. The matrix has no `multiple` entries, so the form falls through to the legacy path for any dispute still carrying that value.
 
 ## Document Field Keys
 
@@ -37,20 +47,39 @@ Defined in `document-field-keys.ts`. These map to Stripe API evidence fields:
 
 ## Two-Tier Field Resolution
 
-`getRecommendedDocumentFields()` in `recommended-document-fields.ts` orchestrates field resolution:
+`getRecommendedDocumentFields()` in `recommended-document-fields.ts` orchestrates field resolution. Signature:
+
+```typescript
+getRecommendedDocumentFields(
+    reason,
+    refundStatus?,
+    duplicateStatus?,
+    productType?,
+    enhancedEligibilityTypes?   // e.g. ['visa_compliance']
+)
+```
+
+Flow:
 
 ```
-getRecommendedDocumentFields(reason, refundStatus, duplicateStatus, productType)
-  │
-  ├─ Feature flag ON + matrix entry exists
-  │   └─ getMatrixFields(reason, productType, status)
-  │       └─ Returns matrix fields + auto-merged base field
-  │
-  └─ Feature flag OFF or no matrix entry
-      └─ Legacy: orderedFields + reasonSpecificFields[reason]
+  Feature flag ON?
+    ├─ No  → Legacy: orderedFields + reasonSpecificFields[reason]
+    │
+    └─ Yes
+        ├─ Visa Compliance dispute?
+        │     (reason is 'noncompliant' OR enhancedEligibilityTypes includes 'visa_compliance')
+        │   └─ Short-circuit: return a fixed two-field set
+        │      (CUSTOMER_COMMUNICATION "Upload evidence" + UNCATEGORIZED_FILE "Other documents")
+        │
+        ├─ Derive status from refundStatus / duplicateStatus
+        │   (credit_not_processed → refundStatus, duplicate → duplicateStatus)
+        │
+        └─ getMatrixFields(reason, effectiveProductType, status)
+            ├─ Match        → matrix fields + auto-merged base "Customer communication" field
+            └─ No match     → fall back to legacy fields
 ```
 
-The feature flag is `_wcpay_feature_dispute_additional_evidence_types` (frontend key `isDisputeAdditionalEvidenceTypesEnabled`). It is enabled by default and is retained as a rollback escape hatch; the legacy fallback path stays until the flag is removed.
+The feature flag is `_wcpay_feature_dispute_additional_evidence_types` (frontend key `isDisputeAdditionalEvidenceTypesEnabled`). It gates the matrix path and acts as a rollback escape hatch — when disabled, the legacy fallback path runs unconditionally. The legacy path stays in the codebase until the flag is removed.
 
 ### Base Field Auto-Merge
 
@@ -157,22 +186,31 @@ Not every new matrix entry requires cover letter changes. The generator uses `on
 | `label` | Default label in cover letter |
 | `onlyForReasons` | Only include for these dispute reasons |
 | `onlyForProductTypes` | Only include for these product types |
-| `excludeWhen` | Function to conditionally exclude |
-| `labelForReasons` | Override label for specific reason + product type + status combos |
-| `orderForReasons` | Override sort order for specific combos |
+| `excludeWhen` | Function to conditionally exclude (receives `reason`, optional `status`) |
+| `labelForReasons` | Override label for specific reason + product type + refund status combos |
+| `labelForStatus` | Override label when `duplicateStatus` matches a given value — `{ status, label }` |
+| `orderForReasons` | Override sort order for specific reason + product type + refund status combos |
 
-`labelForReasons` and `orderForReasons` entries support these filters:
+`labelForReasons` and `orderForReasons` share the same filter shape:
 
 ```typescript
 labelForReasons: [
     {
-        reasons: ['credit_not_processed'],
-        label: __('Refund receipt'),
-        productTypes: ['booking_reservation'],
-        refundStatuses: ['refund_has_been_issued'],
-        duplicateStatuses: ['is_duplicate'],
+        reasons: ['credit_not_processed'],           // required
+        label: __('Refund receipt'),                  // (or `order: N` for orderForReasons)
+        productTypes: ['booking_reservation'],       // optional
+        refundStatuses: ['refund_has_been_issued'],  // optional
     },
 ],
+```
+
+Supported filter keys: `reasons`, `productTypes`, `refundStatuses`. Duplicate-status-dependent labels are handled separately by the top-level `labelForStatus` property, not by `labelForReasons`:
+
+```typescript
+labelForStatus: {
+    status: 'is_duplicate',
+    label: __('Refund receipt'),
+},
 ```
 
 ### 3. Shipping Logic (`shipping-utils.ts`)
