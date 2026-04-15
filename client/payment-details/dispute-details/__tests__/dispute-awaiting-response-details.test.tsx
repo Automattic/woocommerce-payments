@@ -14,6 +14,7 @@ import { useDisputeAccept } from 'wcpay/data';
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
+import { recordEvent } from 'tracks';
 
 const mockDisputeDoAccept = jest.fn();
 
@@ -386,6 +387,33 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		expect(
 			screen.getByRole( 'heading', { name: /Accept the dispute\?/i } )
 		).toBeInTheDocument();
+
+		// Opening the modal should fire a tracks event identifying the dispute.
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_accept_modal_view',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
+
+		// Confirm acceptance from within the modal.
+		const confirmButton = screen.getByTestId( 'accept-dispute-button' );
+		await userEvent.click( confirmButton );
+
+		// Confirming should fire a separate tracks event with matching properties,
+		// so drop-off between open and confirm can be measured.
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_accept_click',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
 	} );
 
 	test( 'does not render checkbox for non-Visa compliance disputes', () => {
@@ -626,5 +654,40 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 		);
 
 		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
+	} );
+
+	test( 'fires inquiry refund modal tracks event with dispute identifiers', async () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed' as const,
+			status: 'warning_needs_response' as const,
+			enhanced_eligibility_types: [],
+		};
+		const customer = getBaseBillingDetails();
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl="https://example.com/order/123"
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Issue refund/i } )
+		);
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_inquiry_refund_modal_view',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
 	} );
 } );

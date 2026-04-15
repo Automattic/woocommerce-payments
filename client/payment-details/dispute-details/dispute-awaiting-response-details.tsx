@@ -415,7 +415,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								recordEvent(
 									disputeAcceptAction.acceptButtonTracksEvent,
 									{
+										dispute_id: dispute.id,
 										dispute_status: dispute.status,
+										dispute_reason: dispute.reason,
 										on_page: 'transaction_details',
 									}
 								);
@@ -517,8 +519,11 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											recordEvent(
 												disputeAcceptAction.modalButtonTracksEvent,
 												{
+													dispute_id: dispute.id,
 													dispute_status:
 														dispute.status,
+													dispute_reason:
+														dispute.reason,
 													on_page:
 														'transaction_details',
 												}
