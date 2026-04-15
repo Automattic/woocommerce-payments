@@ -1029,4 +1029,104 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			WP_Theme_JSON_Resolver::clean_cached_data();
 		}
 	}
+
+	public function test_input_background_falls_back_to_white_when_undefined_on_light_theme() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// Theme with a light, non-white background and no textInput element.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color' => [
+							'background' => '#f7f3ec',
+							'text'       => '#1e1e1e',
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			$this->assertSame( '#ffffff', $result['rules']['.Input']['backgroundColor'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_input_background_uses_page_bg_on_dark_theme_when_undefined() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version' => 3,
+					'styles'  => [
+						'color' => [
+							'background' => '#1a1a2e',
+							'text'       => '#e0e0e0',
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			$this->assertSame( '#1a1a2e', $result['rules']['.Input']['backgroundColor'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_resolve_oklch_evaluates_relative_color() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_oklch' );
+		$method->setAccessible( true );
+
+		// White input: oklch(from #ffffff calc(l * 1.05) calc(c * 1.075) h).
+		// L is clamped to 1, C stays near 0 → result should be white.
+		$result = $method->invoke( null, 'oklch(from #ffffff calc(l * 1.05) calc(c * 1.075) h)' );
+		$this->assertSame( '#ffffff', $result );
+
+		// Bare channel references: oklch(from #ff0000 l c h) → identity.
+		$result = $method->invoke( null, 'oklch(from #ff0000 l c h)' );
+		$this->assertSame( '#ff0000', $result );
+
+		// Invalid input returns null.
+		$this->assertNull( $method->invoke( null, 'not-oklch' ) );
+		$this->assertNull( $method->invoke( null, 'oklch(0.5 0.1 200)' ) );
+	}
+
+	public function test_resolve_oklch_returns_null_for_unsupported_expressions() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_oklch' );
+		$method->setAccessible( true );
+
+		// Unsupported calc expressions.
+		$this->assertNull( $method->invoke( null, 'oklch(from #fff calc(l + 0.1) c h)' ) );
+
+		// Non-hex base color.
+		$this->assertNull( $method->invoke( null, 'oklch(from hsl(0,100%,50%) l c h)' ) );
+	}
 }
