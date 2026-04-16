@@ -26,8 +26,7 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_customer_multi_currency'           => 'multiCurrency',
-		'_wcpay_feature_dispute_additional_evidence_types' => 'isDisputeAdditionalEvidenceTypesEnabled',
+		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
 	];
 
 	public function set_up() {
@@ -73,6 +72,10 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_it_returns_expected_to_array_result( array $enabled_flags ) {
 		$this->setup_enabled_flags( $enabled_flags );
+
+		// Explicitly disable flags that default to ON so they don't appear
+		// in to_array() output unless included in $enabled_flags above.
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
 
 		$expected = [];
 		foreach ( $enabled_flags as $flag ) {
