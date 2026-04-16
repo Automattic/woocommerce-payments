@@ -2177,8 +2177,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 								'fee_refunded' => true,
 							],
 							'transaction_details' => [
-								'store_fee'      => 68,
-								'store_currency' => 'usd',
+								'store_amount'          => 1299,
+								'store_amount_captured' => 1299,
+								'store_fee'             => 68,
+								'store_currency'        => 'usd',
 							],
 						],
 					],
@@ -2188,6 +2190,9 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$order_service = new WC_Payments_Order_Service( $mock_api_client );
 		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), 'pi_test_123' );
 
-		$this->assertEquals( 0.68, $this->order->get_meta( '_wcpay_transaction_fee', true ) );
+		// Reload the order — the service operates on its own instance loaded
+		// via wc_get_order(), so $this->order's cached meta is stale.
+		$order = wc_get_order( $this->order->get_id() );
+		$this->assertEquals( 0.68, $order->get_meta( '_wcpay_transaction_fee', true ) );
 	}
 }
