@@ -71,6 +71,7 @@ Checkout Form (JS) → WC_Payment_Gateway_WCPay::process_payment()
 - `mode-system.md` — Mode hierarchy (dev/test/live), frontend data flow
 - `pm-promotions.md` — PM Promotions data flow, components, REST API, analytics
 - `capital-flow.md` — Stripe Capital offer acceptance flow, `wcpay-loan-offer` redirect, account cache gating
+- `dispute-evidence-system.md` — Dispute challenge UI: evidence matrix, two-tier field resolution, cover letter ordering, field repurposing pattern
 
 **External:**
 - [WordPress Components Storybook](https://wordpress.github.io/gutenberg/?path=/docs/) — Check first for UI components
