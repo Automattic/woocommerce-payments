@@ -504,7 +504,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
 
 		if ( null !== $application_fee_amount ) {
-			$fee = WC_Payments_Utils::interpret_stripe_amount( (int) $application_fee_amount, $currency );
+			$fee           = WC_Payments_Utils::interpret_stripe_amount( (int) $application_fee_amount, $currency );
 			$charge_amount = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
 			// Update fee and net directly — these can be 0 (e.g., refunded
 			// Amazon Pay fees) and must not be skipped by the falsy check below.
