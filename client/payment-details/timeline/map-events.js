@@ -838,13 +838,12 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				composeFXString( event ),
 				isFeeRefunded ? null : composeFeeString( event ),
 				isFeeRefunded ? null : composeFeeBreakdown( event ),
-				! isFeeRefunded && event?.fee_rates?.tax?.amount !== 0
+				event?.fee_rates?.tax?.amount !== 0
 					? composeTaxString( event )
 					: null,
-				// When our fee was refunded but Stripe still charges a processing
-				// fee (balance transaction has settled), display it and show net.
-				// When store_fee is 0 the BT hasn't settled yet — skip both.
-				isFeeRefunded && stripeProcessingFee > 0
+				// Server only populates stripe_processing_fee once the balance
+				// transaction has settled on a refunded-fee event.
+				stripeProcessingFee > 0
 					? sprintf(
 							/* translators: %s is a monetary amount */
 							__(
@@ -857,6 +856,8 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 							)
 					  )
 					: null,
+				// For refunded events, skip the net line until Stripe's fee is
+				// known — otherwise it would use stale (pre-settlement) values.
 				isFeeRefunded && stripeProcessingFee <= 0
 					? null
 					: composeNetString( event ),
