@@ -346,8 +346,8 @@ AI-generated docs live in `.claude/`. Permanent developer docs live in `docs/`.
 | Directory | Purpose | Naming | Git |
 |-----------|---------|--------|-----|
 | `.claude/docs/` | Living reference guides | No date prefix; `**Last updated:** YYYY-MM-DD` after title | Tracked |
-| `.claude/docs/analysis/` | Research, investigations | `YYYY-MM-DD-description.md` | Tracked |
-| `.claude/docs/plans/` | Implementation plans | `YYYY-MM-DD-description.md` | Tracked |
+| `.claude/docs/analysis/` | Research, investigations | `YYYY-MM-DD-description.md` | Gitignored |
+| `.claude/docs/plans/` | Implementation plans | `YYYY-MM-DD-description.md` | Gitignored |
 | `.claude/tmp/` | Transitory files | Any | Gitignored |
 | `.claude/tmp/reviews/` | Code review outputs | `YYYY-MM-DD-description.md` | Gitignored |
 | `.claude/tmp/screenshots/` | UI screenshots | `YYYY-MM-DD-description.png` | Gitignored |
