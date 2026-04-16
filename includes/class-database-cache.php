@@ -408,8 +408,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				if ( is_admin() ) {
 					// Fetches triggered from the admin panel should be more frequent.
 					if ( $cache_contents['errored'] ) {
-						// Attempt to refresh the data quickly if the last fetch was an error.
-						$ttl = 2 * MINUTE_IN_SECONDS;
+						// Progressive backoff on repeated errors (2/5/10/15 min).
+						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
 						// If the data was fetched successfully, cache it for 2h.
 						$ttl = 2 * HOUR_IN_SECONDS;
@@ -423,8 +423,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
 					// Fetches triggered from the admin panel should be more frequent.
 					if ( $cache_contents['errored'] ) {
-						// Attempt to refresh the data quickly if the last fetch was an error.
-						$ttl = 2 * MINUTE_IN_SECONDS;
+						// Progressive backoff on repeated errors (2/5/10/15 min).
+						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
 						// If the data was fetched successfully, cache it for 3h.
 						$ttl = 3 * HOUR_IN_SECONDS;
@@ -448,7 +448,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
 			case self::TRACKING_INFO_KEY:
-				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;
+				$ttl = $cache_contents['errored']
+					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
+					: MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
 				$ttl = 12 * HOUR_IN_SECONDS;

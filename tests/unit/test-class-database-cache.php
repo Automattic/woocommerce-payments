@@ -705,6 +705,148 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 1, $cache['consecutive_errors'] );
 	}
 
+	/**
+	 * @dataProvider provider_account_key_ladder
+	 */
+	public function test_account_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
+		// Force admin context for the account-key branch that uses the ladder.
+		set_current_screen( 'edit-page' );
+		$this->assertTrue( is_admin() );
+
+		// Seed a cache entry at the requested counter value.
+		update_option(
+			Database_Cache::ACCOUNT_KEY,
+			[
+				'data'               => [],
+				'fetched'            => time(),
+				'errored'            => true,
+				'consecutive_errors' => $consecutive_errors,
+			],
+			'no'
+		);
+
+		$reflection = new ReflectionMethod( Database_Cache::class, 'get_ttl' );
+		$reflection->setAccessible( true );
+
+		$contents = get_option( Database_Cache::ACCOUNT_KEY );
+		$ttl      = $reflection->invoke( $this->database_cache, Database_Cache::ACCOUNT_KEY, $contents );
+
+		$this->assertSame( $expected_ttl_seconds, $ttl );
+
+		// Cleanup.
+		delete_option( Database_Cache::ACCOUNT_KEY );
+		set_current_screen( 'front' );
+	}
+
+	public function provider_account_key_ladder(): array {
+		return [
+			'step 1 (first error)'  => [ 1, 2 * MINUTE_IN_SECONDS ],
+			'step 2 (second error)' => [ 2, 5 * MINUTE_IN_SECONDS ],
+			'step 3 (third error)'  => [ 3, 10 * MINUTE_IN_SECONDS ],
+			'step 4 (fourth error)' => [ 4, 15 * MINUTE_IN_SECONDS ],
+			'step cap (10 errors)'  => [ 10, 15 * MINUTE_IN_SECONDS ],
+			'legacy (0 counter)'    => [ 0, 2 * MINUTE_IN_SECONDS ],
+		];
+	}
+
+	public function test_account_key_successful_ttl_is_two_hours_in_admin() {
+		set_current_screen( 'edit-page' );
+
+		update_option(
+			Database_Cache::ACCOUNT_KEY,
+			[
+				'data'               => [ 'id' => 'acct_test' ],
+				'fetched'            => time(),
+				'errored'            => false,
+				'consecutive_errors' => 0,
+			],
+			'no'
+		);
+
+		$reflection = new ReflectionMethod( Database_Cache::class, 'get_ttl' );
+		$reflection->setAccessible( true );
+		$contents = get_option( Database_Cache::ACCOUNT_KEY );
+		$ttl      = $reflection->invoke( $this->database_cache, Database_Cache::ACCOUNT_KEY, $contents );
+
+		$this->assertSame( 2 * HOUR_IN_SECONDS, $ttl );
+
+		delete_option( Database_Cache::ACCOUNT_KEY );
+		set_current_screen( 'front' );
+	}
+
+	/**
+	 * @dataProvider provider_currencies_key_ladder
+	 */
+	public function test_currencies_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
+		set_current_screen( 'edit-page' );
+
+		update_option(
+			Database_Cache::CURRENCIES_KEY,
+			[
+				'data'               => [],
+				'fetched'            => time(),
+				'errored'            => true,
+				'consecutive_errors' => $consecutive_errors,
+			],
+			'no'
+		);
+
+		$reflection = new ReflectionMethod( Database_Cache::class, 'get_ttl' );
+		$reflection->setAccessible( true );
+		$contents = get_option( Database_Cache::CURRENCIES_KEY );
+		$ttl      = $reflection->invoke( $this->database_cache, Database_Cache::CURRENCIES_KEY, $contents );
+
+		$this->assertSame( $expected_ttl_seconds, $ttl );
+
+		delete_option( Database_Cache::CURRENCIES_KEY );
+		set_current_screen( 'front' );
+	}
+
+	public function provider_currencies_key_ladder(): array {
+		return [
+			'step 1' => [ 1, 2 * MINUTE_IN_SECONDS ],
+			'step 2' => [ 2, 5 * MINUTE_IN_SECONDS ],
+			'step 3' => [ 3, 10 * MINUTE_IN_SECONDS ],
+			'step 4' => [ 4, 15 * MINUTE_IN_SECONDS ],
+			'cap'    => [ 10, 15 * MINUTE_IN_SECONDS ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_tracking_info_key_ladder
+	 */
+	public function test_tracking_info_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
+		update_option(
+			Database_Cache::TRACKING_INFO_KEY,
+			[
+				'data'               => [],
+				'fetched'            => time(),
+				'errored'            => true,
+				'consecutive_errors' => $consecutive_errors,
+			],
+			'no'
+		);
+
+		$reflection = new ReflectionMethod( Database_Cache::class, 'get_ttl' );
+		$reflection->setAccessible( true );
+		$contents = get_option( Database_Cache::TRACKING_INFO_KEY );
+		$ttl      = $reflection->invoke( $this->database_cache, Database_Cache::TRACKING_INFO_KEY, $contents );
+
+		$this->assertSame( $expected_ttl_seconds, $ttl );
+
+		delete_option( Database_Cache::TRACKING_INFO_KEY );
+	}
+
+	public function provider_tracking_info_key_ladder(): array {
+		return [
+			'step 1' => [ 1, 2 * MINUTE_IN_SECONDS ],
+			'step 2' => [ 2, 5 * MINUTE_IN_SECONDS ],
+			'step 3' => [ 3, 10 * MINUTE_IN_SECONDS ],
+			'step 4' => [ 4, 15 * MINUTE_IN_SECONDS ],
+			'cap'    => [ 10, 15 * MINUTE_IN_SECONDS ],
+		];
+	}
+
 	public function test_errored_write_over_legacy_entry_without_counter_starts_at_one() {
 		// Legacy entry: has errored field but no consecutive_errors.
 		update_option(
