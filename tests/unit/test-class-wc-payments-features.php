@@ -425,4 +425,14 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 		$this->assertTrue( $result );
 	}
+
+	public function test_is_dispute_defender_enabled_returns_false_by_default() {
+		delete_option( '_wcpay_feature_dispute_defender_ai' );
+		$this->assertFalse( WC_Payments_Features::is_dispute_defender_enabled() );
+	}
+
+	public function test_is_dispute_defender_enabled_reads_option() {
+		update_option( '_wcpay_feature_dispute_defender_ai', '1' );
+		$this->assertTrue( WC_Payments_Features::is_dispute_defender_enabled() );
+	}
 }
