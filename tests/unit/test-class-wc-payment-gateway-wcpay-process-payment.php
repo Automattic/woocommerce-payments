@@ -93,6 +93,13 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	/**
+	 * Mock payment method definition for the gateway under test.
+	 *
+	 * @var UPE_Payment_Method|MockObject
+	 */
+	private $mock_payment_method;
+
+	/**
 	 * Mock Duplicate_Payment_Prevention_Service
 	 *
 	 * @var Duplicate_Payment_Prevention_Service|MockObject
@@ -147,8 +154,9 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
-		$this->mock_dpps     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method = $this->createMock( UPE_Payment_Method::class );
+		$this->mock_dpps           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
+		$this->mock_payment_method = $this->createMock( UPE_Payment_Method::class );
+		$this->mock_payment_method->method( 'is_reusable' )->willReturn( true );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -160,8 +168,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 					$this->mock_customer_service,
 					$this->mock_token_service,
 					$this->mock_action_scheduler_service,
-					$mock_payment_method,
-					[ 'card' => $mock_payment_method ],
+					$this->mock_payment_method,
+					[ 'card' => $this->mock_payment_method ],
 					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->createMock( WC_Payments_Localization_Service::class ),
@@ -220,6 +228,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		WC_Payments::set_gateway( $this->wcpay_gateway );
 		WC()->session->set( 'wc_notices', [] );
+		remove_all_filters( 'wcpay_checkout_has_recurring_items' );
 
 		parent::tear_down();
 	}
@@ -1255,6 +1264,94 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'add_payment_method_to_user' );
 
 		$result = $this->mock_wcpay_gateway->process_payment( $order->get_id() );
+	}
+
+	public function test_recurring_items_filter_sets_up_future_usage_and_saves_payment_method() {
+		$order  = WC_Helper_Order::create_order();
+		$intent = WC_Helper_Intention::create_intention();
+
+		add_filter(
+			'wcpay_checkout_has_recurring_items',
+			function ( $has_recurring_items, $context, $subject ) use ( $order ) {
+				if ( 'order' === $context && $subject instanceof WC_Order && $subject->get_id() === $order->get_id() ) {
+					return true;
+				}
+
+				return $has_recurring_items;
+			},
+			10,
+			3
+		);
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'setup_future_usage' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( $intent->get_payment_method_id(), $order->get_user() )
+			->willReturn( new WC_Payment_Token_CC() );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		remove_all_filters( 'wcpay_checkout_has_recurring_items' );
+	}
+
+	public function test_recurring_items_filter_does_not_set_up_future_usage_for_non_reusable_payment_methods() {
+		$order = WC_Helper_Order::create_order();
+
+		$this->mock_payment_method->method( 'is_reusable' )->willReturn( false );
+
+		add_filter(
+			'wcpay_checkout_has_recurring_items',
+			function ( $has_recurring_items, $context, $subject ) use ( $order ) {
+				if ( 'order' === $context && $subject instanceof WC_Order && $subject->get_id() === $order->get_id() ) {
+					return true;
+				}
+
+				return $has_recurring_items;
+			},
+			10,
+			3
+		);
+
+		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information->must_save_payment_method_to_store();
+
+		$non_reusable_payment_method = $this->createMock( UPE_Payment_Method::class );
+		$non_reusable_payment_method->method( 'is_reusable' )->willReturn( false );
+
+		$gateway = new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			$non_reusable_payment_method,
+			[ 'card' => $non_reusable_payment_method ],
+			$this->mock_order_service,
+			$this->mock_dpps,
+			$this->createMock( WC_Payments_Localization_Service::class ),
+			$this->createMock( WC_Payments_Fraud_Service::class ),
+			$this->createMock( Duplicates_Detection_Service::class ),
+			$this->mock_rate_limiter
+		);
+
+		$method = new ReflectionMethod( WC_Payment_Gateway_WCPay::class, 'should_setup_future_usage' );
+		$method->setAccessible( true );
+
+		$this->assertFalse( $method->invoke( $gateway, $payment_information ) );
+
+		remove_all_filters( 'wcpay_checkout_has_recurring_items' );
 	}
 
 	public function test_does_not_update_new_payment_method() {

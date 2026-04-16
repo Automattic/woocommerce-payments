@@ -29,8 +29,10 @@ const ExpressCheckoutContainer = ( props ) => {
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 	const isManualCaptureEnabled =
 		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-	const hasSubscription =
-		getExpressCheckoutData( 'has_subscription' ) ?? false;
+	const hasRecurringItems =
+		getExpressCheckoutData( 'has_recurring_items' ) ??
+		getExpressCheckoutData( 'has_subscription' ) ??
+		false;
 
 	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
@@ -52,7 +54,7 @@ const ExpressCheckoutContainer = ( props ) => {
 		...( useConfirmationToken && isManualCaptureEnabled
 			? { captureMethod: 'manual' }
 			: {} ),
-		...( useConfirmationToken && hasSubscription
+		...( useConfirmationToken && hasRecurringItems
 			? { setupFutureUsage: 'off_session' }
 			: {} ),
 		// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)

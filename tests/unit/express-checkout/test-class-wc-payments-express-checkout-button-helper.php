@@ -171,6 +171,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$helper->method( 'is_checkout' )->willReturn( false );
 
 		$this->assertTrue( $helper->has_subscription_product() );
+		$this->assertTrue( $helper->has_recurring_items() );
 
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 	}
@@ -181,14 +182,16 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'get_product' ] )
 			->getMock();
 
 		$helper->method( 'is_product' )->willReturn( true );
 		$helper->method( 'is_cart' )->willReturn( false );
 		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'get_product' )->willReturn( $this->simple_product );
 
 		$this->assertFalse( $helper->has_subscription_product() );
+		$this->assertFalse( $helper->has_recurring_items() );
 
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 	}
@@ -199,16 +202,52 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
 			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
-			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout' ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'get_product' ] )
 			->getMock();
 
 		$helper->method( 'is_product' )->willReturn( true );
 		$helper->method( 'is_cart' )->willReturn( false );
 		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'get_product' )->willReturn( $this->simple_product );
 
 		$this->assertTrue( $helper->has_subscription_product() );
+		$this->assertTrue( $helper->has_recurring_items() );
 
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+	}
+
+	public function test_has_recurring_items_can_be_extended_with_filter() {
+		$product = WC_Helper_Product::create_simple_product();
+
+		add_filter(
+			'wcpay_checkout_has_recurring_items',
+			function ( $has_recurring_items, $context, $subject ) use ( $product ) {
+				if ( 'product' === $context && $subject instanceof WC_Product && $subject->get_id() === $product->get_id() ) {
+					return true;
+				}
+
+				return $has_recurring_items;
+			},
+			10,
+			3
+		);
+
+		$helper = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
+			->setConstructorArgs( [ $this->mock_wcpay_gateway, $this->mock_wcpay_account ] )
+			->onlyMethods( [ 'is_product', 'is_cart', 'is_checkout', 'get_product' ] )
+			->getMock();
+
+		$helper->method( 'is_product' )->willReturn( true );
+		$helper->method( 'is_cart' )->willReturn( false );
+		$helper->method( 'is_checkout' )->willReturn( false );
+		$helper->method( 'get_product' )->willReturn( $product );
+
+		WC_Subscriptions_Product::$is_subscription = false;
+
+		$this->assertTrue( $helper->has_recurring_items() );
+		$this->assertTrue( $helper->has_subscription_product() );
+
+		remove_all_filters( 'wcpay_checkout_has_recurring_items' );
 	}
 
 	public function test_common_get_button_settings() {

@@ -220,8 +220,10 @@ jQuery( ( $ ) => {
 					?.isEceUsingConfirmationTokens ?? true;
 			const isManualCaptureEnabled =
 				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-			const hasSubscription =
-				getExpressCheckoutData( 'has_subscription' ) ?? false;
+			const hasRecurringItems =
+				getExpressCheckoutData( 'has_recurring_items' ) ??
+				getExpressCheckoutData( 'has_subscription' ) ??
+				false;
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -243,7 +245,7 @@ jQuery( ( $ ) => {
 				...( useConfirmationToken && isManualCaptureEnabled
 					? { captureMethod: 'manual' }
 					: {} ),
-				...( useConfirmationToken && hasSubscription
+				...( useConfirmationToken && hasRecurringItems
 					? { setupFutureUsage: 'off_session' }
 					: {} ),
 				appearance: getExpressCheckoutButtonAppearance(),

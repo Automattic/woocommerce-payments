@@ -375,9 +375,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $payment_information;
 		}
 
-		// Subs-specific behavior starts here.
+		// Recurring-payment behavior starts here.
 		$payment_information->set_payment_type( Payment_Type::RECURRING() );
-		// The payment method is always saved for subscriptions.
+		// Recurring payments must store the token for future charges or payment-method updates.
 		$payment_information->must_save_payment_method_to_store();
 		$payment_information->set_is_changing_payment_method_for_subscription( $this->is_changing_payment_method_for_subscription() );
 

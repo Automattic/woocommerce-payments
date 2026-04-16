@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add extensible recurring-item detection for setup future usage

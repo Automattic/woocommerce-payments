@@ -1473,6 +1473,26 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Determines whether setup_future_usage should be sent for the current checkout.
+	 *
+	 * Only new reusable payment methods should opt into setup_future_usage.
+	 *
+	 * @param Payment_Information $payment_information Payment information for the checkout.
+	 * @return bool
+	 */
+	protected function should_setup_future_usage( Payment_Information $payment_information ) {
+		if ( ! $this->payment_method->is_reusable() || $payment_information->is_using_saved_payment_method() ) {
+			return false;
+		}
+
+		if ( $payment_information->should_save_payment_method_to_store() ) {
+			return true;
+		}
+
+		return $this->is_payment_recurring( $payment_information->get_order()->get_id() );
+	}
+
+	/**
 	 * Update the saved payment method information with checkout values, in a CRON job.
 	 *
 	 * @param string $payment_method The payment method to update.
@@ -1518,6 +1538,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false ) {
 		$order                                       = $payment_information->get_order();
 		$save_payment_method_to_store                = $payment_information->should_save_payment_method_to_store();
+		$should_setup_future_usage                   = $this->should_setup_future_usage( $payment_information );
 		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
 
 		$order_id = $order->get_id();
@@ -1560,7 +1581,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
 		// In case amount is 0 and we're not saving the payment method, we won't be using intents and can confirm the order payment.
-		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $save_payment_method_to_store ) ) {
+		if ( apply_filters( 'wcpay_confirm_without_payment_intent', ! $payment_needed && ! $should_setup_future_usage ) ) {
 			$order->payment_complete();
 
 			if ( $payment_information->is_using_saved_payment_method() ) {
@@ -1719,12 +1740,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
 				$request->set_fingerprint( $payment_information->get_fingerprint() );
-				if ( $save_payment_method_to_store ) {
-					// Only set setup_future_usage for reusable payment methods.
-					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
-					if ( $this->payment_method->is_reusable() ) {
-						$request->setup_future_usage();
-					}
+				if ( $should_setup_future_usage ) {
+					$request->setup_future_usage();
 				}
 				if ( $scheduled_subscription_payment ) {
 					$mandate = $this->get_mandate_param_for_renewal_order( $order );

@@ -34,6 +34,7 @@ export interface WCPayExpressCheckoutParams {
 		currency_decimals: number;
 	};
 
+	has_recurring_items?: boolean;
 	has_subscription?: boolean;
 	is_manual_capture?: boolean;
 

@@ -432,6 +432,7 @@ class WC_Payments {
 
 		self::$api_client = self::create_api_client();
 
+		include_once __DIR__ . '/class-wc-payments-recurring-item-helper.php';
 		include_once __DIR__ . '/compat/subscriptions/trait-wc-payments-subscriptions-utilities.php';
 		include_once __DIR__ . '/compat/subscriptions/trait-wc-payment-gateway-wcpay-subscriptions.php';
 		include_once __DIR__ . '/class-wc-payments-session-service.php';

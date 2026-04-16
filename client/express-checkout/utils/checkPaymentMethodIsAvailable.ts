@@ -79,8 +79,10 @@ function checkAvailablePaymentMethods(
 		getExpressCheckoutData( 'flags' )?.isEceUsingConfirmationTokens ?? true;
 	const isManualCaptureEnabled =
 		getExpressCheckoutData( 'is_manual_capture' ) ?? false;
-	const hasSubscription =
-		getExpressCheckoutData( 'has_subscription' ) ?? false;
+	const hasRecurringItems =
+		getExpressCheckoutData( 'has_recurring_items' ) ??
+		getExpressCheckoutData( 'has_subscription' ) ??
+		false;
 
 	let container: HTMLDivElement | null = null;
 
@@ -102,7 +104,7 @@ function checkAvailablePaymentMethods(
 				...( useConfirmationToken && isManualCaptureEnabled
 					? { captureMethod: 'manual' }
 					: {} ),
-				...( useConfirmationToken && hasSubscription
+				...( useConfirmationToken && hasRecurringItems
 					? { setupFutureUsage: 'off_session' }
 					: {} ),
 			} );

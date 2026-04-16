@@ -581,7 +581,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 	it( 'should use setupFutureUsage for subscription products', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
-		global.wcpayExpressCheckoutParams.has_subscription = true;
+		global.wcpayExpressCheckoutParams.has_recurring_items = true;
 		global.wcpayExpressCheckoutParams.product.product_type = 'subscription';
 
 		await jest.isolateModulesAsync( async () => {
@@ -602,7 +602,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 	it( 'should use setupFutureUsage for variable-subscription products', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
-		global.wcpayExpressCheckoutParams.has_subscription = true;
+		global.wcpayExpressCheckoutParams.has_recurring_items = true;
 		global.wcpayExpressCheckoutParams.product.product_type =
 			'variable-subscription';
 
@@ -619,7 +619,25 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		);
 	} );
 
-	it( 'should use setupFutureUsage when has_subscription is true', async () => {
+	it( 'should use setupFutureUsage when has_recurring_items is true', async () => {
+		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
+		global.wcpayExpressCheckoutParams.has_recurring_items = true;
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		expect( global.Stripe ).toHaveBeenCalled();
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				mode: 'payment',
+				setupFutureUsage: 'off_session',
+			} )
+		);
+	} );
+
+	it( 'should keep using setupFutureUsage when only has_subscription is true', async () => {
 		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
 		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
 		global.wcpayExpressCheckoutParams.has_subscription = true;

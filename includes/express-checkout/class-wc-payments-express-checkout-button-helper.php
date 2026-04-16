@@ -253,29 +253,29 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
+	 * Checks whether cart or product context contains recurring items.
+	 *
+	 * @return boolean
+	 */
+	public function has_recurring_items() {
+		if ( $this->is_product() ) {
+			return WC_Payments_Recurring_Item_Helper::has_recurring_items( 'product', $this->get_product() );
+		}
+
+		if ( $this->is_checkout() || $this->is_cart() ) {
+			return WC_Payments_Recurring_Item_Helper::has_recurring_items( 'cart', WC()->cart );
+		}
+
+		return false;
+	}
+
+	/**
 	 * Checks whether cart contains a subscription product or this is a subscription product page.
 	 *
 	 * @return boolean
 	 */
 	public function has_subscription_product() {
-		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
-			return false;
-		}
-
-		if ( $this->is_product() ) {
-			$product = $this->get_product();
-			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
-				return true;
-			}
-		}
-
-		if ( $this->is_checkout() || $this->is_cart() ) {
-			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
-				return true;
-			}
-		}
-
-		return false;
+		return $this->has_recurring_items();
 	}
 
 	/**
