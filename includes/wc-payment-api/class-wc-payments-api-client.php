@@ -56,6 +56,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const DEPOSITS_API                 = 'deposits';
 	const TRANSACTIONS_API             = 'transactions';
 	const DISPUTES_API                 = 'disputes';
+	const DISPUTE_DEFENSE_API          = 'dispute_defense/draft';
 	const FILES_API                    = 'files';
 	const ONBOARDING_API               = 'onboarding';
 	const TIMELINE_API                 = 'timeline';
