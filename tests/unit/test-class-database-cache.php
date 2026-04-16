@@ -29,6 +29,9 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		delete_option( self::MOCK_KEY );
+		delete_option( Database_Cache::ACCOUNT_KEY );
+		delete_option( Database_Cache::CURRENCIES_KEY );
+		delete_option( Database_Cache::TRACKING_INFO_KEY );
 
 		parent::tear_down();
 	}
@@ -584,18 +587,19 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider provider_get_errored_ttl_ladder
+	 * @dataProvider provider_errored_ttl_ladder
 	 */
-	public function test_get_errored_ttl_returns_correct_ladder_step( int $consecutive_errors, int $expected_ttl ) {
-		$reflection = new ReflectionMethod( Database_Cache::class, 'get_errored_ttl' );
-		$reflection->setAccessible( true );
-
-		$actual = $reflection->invoke( $this->database_cache, $consecutive_errors );
-
-		$this->assertSame( $expected_ttl, $actual );
+	public function test_tracking_info_errored_entries_use_progressive_backoff( int $consecutive_errors, int $expected_ttl ) {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::TRACKING_INFO_KEY,
+			[ 'tracking' => true ],
+			true,
+			$expected_ttl,
+			$consecutive_errors
+		);
 	}
 
-	public function provider_get_errored_ttl_ladder(): array {
+	public function provider_errored_ttl_ladder(): array {
 		return [
 			'zero (legacy payload)'          => [ 0, 2 * MINUTE_IN_SECONDS ],
 			'first error'                    => [ 1, 2 * MINUTE_IN_SECONDS ],
@@ -607,6 +611,15 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 			'hundredth error stays at cap'   => [ 100, 15 * MINUTE_IN_SECONDS ],
 			'negative (defensive) clamps up' => [ -1, 2 * MINUTE_IN_SECONDS ],
 		];
+	}
+
+	public function test_tracking_info_errored_entries_without_counter_use_first_backoff_step() {
+		$this->assert_cache_get_respects_ttl(
+			Database_Cache::TRACKING_INFO_KEY,
+			[ 'tracking' => true ],
+			true,
+			2 * MINUTE_IN_SECONDS
+		);
 	}
 
 	public function test_errored_write_sets_consecutive_errors_to_one_on_first_failure() {
@@ -709,32 +722,16 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider provider_account_key_ladder
 	 */
 	public function test_account_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
-		// Force admin context for the account-key branch that uses the ladder.
 		set_current_screen( 'edit-page' );
-		$this->assertTrue( is_admin() );
 
-		// Seed a cache entry at the requested counter value.
-		update_option(
+		$this->assert_cache_get_respects_ttl(
 			Database_Cache::ACCOUNT_KEY,
-			[
-				'data'               => [],
-				'fetched'            => time(),
-				'errored'            => true,
-				'consecutive_errors' => $consecutive_errors,
-			],
-			'no'
+			[ 'id' => 'acct_test' ],
+			true,
+			$expected_ttl_seconds,
+			$consecutive_errors
 		);
 
-		$reflection = new ReflectionMethod( Database_Cache::class, 'get_ttl' );
-		$reflection->setAccessible( true );
-
-		$contents = get_option( Database_Cache::ACCOUNT_KEY );
-		$ttl      = $reflection->invoke( $this->database_cache, Database_Cache::ACCOUNT_KEY, $contents );
-
-		$this->assertSame( $expected_ttl_seconds, $ttl );
-
-		// Cleanup.
-		delete_option( Database_Cache::ACCOUNT_KEY );
 		set_current_screen( 'front' );
 	}
 
@@ -752,25 +749,13 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	public function test_account_key_successful_ttl_is_two_hours_in_admin() {
 		set_current_screen( 'edit-page' );
 
-		update_option(
+		$this->assert_cache_get_respects_ttl(
 			Database_Cache::ACCOUNT_KEY,
-			[
-				'data'               => [ 'id' => 'acct_test' ],
-				'fetched'            => time(),
-				'errored'            => false,
-				'consecutive_errors' => 0,
-			],
-			'no'
+			[ 'id' => 'acct_test' ],
+			false,
+			2 * HOUR_IN_SECONDS,
+			0
 		);
-
-		$reflection = new ReflectionMethod( Database_Cache::class, 'get_ttl' );
-		$reflection->setAccessible( true );
-		$contents = get_option( Database_Cache::ACCOUNT_KEY );
-		$ttl      = $reflection->invoke( $this->database_cache, Database_Cache::ACCOUNT_KEY, $contents );
-
-		$this->assertSame( 2 * HOUR_IN_SECONDS, $ttl );
-
-		delete_option( Database_Cache::ACCOUNT_KEY );
 		set_current_screen( 'front' );
 	}
 
@@ -780,64 +765,20 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	public function test_currencies_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
 		set_current_screen( 'edit-page' );
 
-		update_option(
+		$this->assert_cache_get_respects_ttl(
 			Database_Cache::CURRENCIES_KEY,
 			[
-				'data'               => [],
-				'fetched'            => time(),
-				'errored'            => true,
-				'consecutive_errors' => $consecutive_errors,
+				'currencies' => [],
+				'updated'    => time(),
 			],
-			'no'
+			true,
+			$expected_ttl_seconds,
+			$consecutive_errors
 		);
-
-		$reflection = new ReflectionMethod( Database_Cache::class, 'get_ttl' );
-		$reflection->setAccessible( true );
-		$contents = get_option( Database_Cache::CURRENCIES_KEY );
-		$ttl      = $reflection->invoke( $this->database_cache, Database_Cache::CURRENCIES_KEY, $contents );
-
-		$this->assertSame( $expected_ttl_seconds, $ttl );
-
-		delete_option( Database_Cache::CURRENCIES_KEY );
 		set_current_screen( 'front' );
 	}
 
 	public function provider_currencies_key_ladder(): array {
-		return [
-			'step 1' => [ 1, 2 * MINUTE_IN_SECONDS ],
-			'step 2' => [ 2, 5 * MINUTE_IN_SECONDS ],
-			'step 3' => [ 3, 10 * MINUTE_IN_SECONDS ],
-			'step 4' => [ 4, 15 * MINUTE_IN_SECONDS ],
-			'cap'    => [ 10, 15 * MINUTE_IN_SECONDS ],
-		];
-	}
-
-	/**
-	 * @dataProvider provider_tracking_info_key_ladder
-	 */
-	public function test_tracking_info_key_errored_ttl_follows_ladder( int $consecutive_errors, int $expected_ttl_seconds ) {
-		update_option(
-			Database_Cache::TRACKING_INFO_KEY,
-			[
-				'data'               => [],
-				'fetched'            => time(),
-				'errored'            => true,
-				'consecutive_errors' => $consecutive_errors,
-			],
-			'no'
-		);
-
-		$reflection = new ReflectionMethod( Database_Cache::class, 'get_ttl' );
-		$reflection->setAccessible( true );
-		$contents = get_option( Database_Cache::TRACKING_INFO_KEY );
-		$ttl      = $reflection->invoke( $this->database_cache, Database_Cache::TRACKING_INFO_KEY, $contents );
-
-		$this->assertSame( $expected_ttl_seconds, $ttl );
-
-		delete_option( Database_Cache::TRACKING_INFO_KEY );
-	}
-
-	public function provider_tracking_info_key_ladder(): array {
 		return [
 			'step 1' => [ 1, 2 * MINUTE_IN_SECONDS ],
 			'step 2' => [ 2, 5 * MINUTE_IN_SECONDS ],
@@ -875,20 +816,12 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	private function write_mock_cache( $data, ?int $fetch_time = null, bool $errored = false, ?int $consecutive_errors = null ) {
-		$contents = [
-			'data'    => $data,
-			'fetched' => $fetch_time ?? time(),
-			'errored' => $errored,
-		];
-
-		if ( null !== $consecutive_errors ) {
-			$contents['consecutive_errors'] = $consecutive_errors;
-		}
-
-		update_option(
+		$this->write_cache(
 			self::MOCK_KEY,
-			$contents,
-			'no' // Match production: Database_Cache stores options as non-autoloaded.
+			$data,
+			$fetch_time,
+			$errored,
+			$consecutive_errors
 		);
 	}
 
@@ -901,5 +834,36 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		if ( null !== $consecutive_errors ) {
 			$this->assertEquals( $consecutive_errors, $cache_contents['consecutive_errors'] ?? null );
 		}
+	}
+
+	private function assert_cache_get_respects_ttl( string $key, $data, bool $errored, int $ttl, ?int $consecutive_errors = null ) {
+		$buffer_seconds = 5;
+
+		$this->write_cache( $key, $data, time() - $ttl + $buffer_seconds, $errored, $consecutive_errors );
+		$this->database_cache = new Database_Cache();
+		$this->assertSame( $data, $this->database_cache->get( $key ) );
+
+		$this->write_cache( $key, $data, time() - $ttl - $buffer_seconds, $errored, $consecutive_errors );
+		$this->database_cache = new Database_Cache();
+		$this->assertNull( $this->database_cache->get( $key ) );
+	}
+
+	private function write_cache( string $key, $data, ?int $fetch_time = null, bool $errored = false, ?int $consecutive_errors = null ) {
+		$contents = [
+			'data'    => $data,
+			'fetched' => $fetch_time ?? time(),
+			'errored' => $errored,
+		];
+
+		if ( null !== $consecutive_errors ) {
+			$contents['consecutive_errors'] = $consecutive_errors;
+		}
+
+		update_option(
+			$key,
+			$contents,
+			'no' // Match production: Database_Cache stores options as non-autoloaded.
+		);
+		wp_cache_delete( $key, 'options' );
 	}
 }
