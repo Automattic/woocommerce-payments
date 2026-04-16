@@ -22,6 +22,7 @@ const blockedCharge = {
 	outcome: { type: 'blocked' },
 };
 const authorizedCharge = { status: 'succeeded', paid: true, captured: false };
+const authorizedPaymentIntent = { status: 'requires_capture' };
 const getDisputedChargeWithStatus = ( status ) => ( {
 	disputed: true,
 	dispute: { status: status },
@@ -137,6 +138,15 @@ describe( 'Charge utilities', () => {
 				expect( utils.getChargeStatus( charge ) ).toEqual( status );
 			}
 		);
+
+		test( 'returns authorized when payment intent requires capture', () => {
+			expect(
+				utils.getChargeStatus(
+					authorizedCharge,
+					authorizedPaymentIntent
+				)
+			).toEqual( 'authorized' );
+		} );
 
 		const disputeStatuses = [
 			'needs_response',
