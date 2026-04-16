@@ -448,4 +448,28 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 
 		return apply_filters( 'wcpay_database_cache_ttl', $ttl, $key, $cache_contents );
 	}
+
+	/**
+	 * Maps a consecutive-errors count to a TTL using a fixed backoff ladder.
+	 *
+	 * Ladder: 1 → 2 min, 2 → 5 min, 3 → 10 min, 4+ → 15 min. Values ≤ 0 are
+	 * clamped to the first step, matching the behaviour of legacy cache entries
+	 * that were written before the counter existed.
+	 *
+	 * @param int $consecutive_errors Number of consecutive errored writes (including the current one).
+	 *
+	 * @return int TTL in seconds.
+	 */
+	private function get_errored_ttl( int $consecutive_errors ): int {
+		$ladder = [
+			2 * MINUTE_IN_SECONDS,
+			5 * MINUTE_IN_SECONDS,
+			10 * MINUTE_IN_SECONDS,
+			15 * MINUTE_IN_SECONDS,
+		];
+
+		$index = max( 0, min( count( $ladder ) - 1, $consecutive_errors - 1 ) );
+
+		return $ladder[ $index ];
+	}
 }

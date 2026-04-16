@@ -583,6 +583,32 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		$this->assert_cache_contains( $old );
 	}
 
+	/**
+	 * @dataProvider provider_get_errored_ttl_ladder
+	 */
+	public function test_get_errored_ttl_returns_correct_ladder_step( int $consecutive_errors, int $expected_ttl ) {
+		$reflection = new ReflectionMethod( Database_Cache::class, 'get_errored_ttl' );
+		$reflection->setAccessible( true );
+
+		$actual = $reflection->invoke( $this->database_cache, $consecutive_errors );
+
+		$this->assertSame( $expected_ttl, $actual );
+	}
+
+	public function provider_get_errored_ttl_ladder(): array {
+		return [
+			'zero (legacy payload)'          => [ 0, 2 * MINUTE_IN_SECONDS ],
+			'first error'                    => [ 1, 2 * MINUTE_IN_SECONDS ],
+			'second error'                   => [ 2, 5 * MINUTE_IN_SECONDS ],
+			'third error'                    => [ 3, 10 * MINUTE_IN_SECONDS ],
+			'fourth error'                   => [ 4, 15 * MINUTE_IN_SECONDS ],
+			'fifth error stays at cap'       => [ 5, 15 * MINUTE_IN_SECONDS ],
+			'tenth error stays at cap'       => [ 10, 15 * MINUTE_IN_SECONDS ],
+			'hundredth error stays at cap'   => [ 100, 15 * MINUTE_IN_SECONDS ],
+			'negative (defensive) clamps up' => [ -1, 2 * MINUTE_IN_SECONDS ],
+		];
+	}
+
 	private function write_mock_cache( $data, ?int $fetch_time = null, bool $errored = false ) {
 		update_option(
 			self::MOCK_KEY,
