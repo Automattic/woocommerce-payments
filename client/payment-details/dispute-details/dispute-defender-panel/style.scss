@@ -1,0 +1,21 @@
+.dispute-defender-panel {
+	margin: 16px 0;
+	padding: 16px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+
+	h3 {
+		margin: 0 0 8px 0;
+	}
+
+	p {
+		margin: 0 0 12px 0;
+	}
+
+	&__draft-preview {
+		margin-top: 1em;
+		padding: 1em;
+		white-space: pre-wrap;
+		background: #f0f0f0;
+	}
+}

@@ -31,6 +31,7 @@ import { useDisputeAccept } from 'wcpay/data';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
+import DisputeDefenderPanel from './dispute-defender-panel';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
 import {
@@ -327,6 +328,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 				<DisputeSummaryRow dispute={ dispute } />
 
 				{ steps }
+
+				<DisputeDefenderPanel dispute={ dispute } />
 
 				{ isDisputeIssuerEvidenceEnabled && (
 					<IssuerEvidenceList

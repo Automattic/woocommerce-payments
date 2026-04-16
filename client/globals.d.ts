@@ -32,6 +32,7 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isDisputeAdditionalEvidenceTypesEnabled: boolean;
+			isDisputeDefenderEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
