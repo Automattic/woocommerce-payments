@@ -21,7 +21,7 @@ const DisputeDefenderToggle = () => {
 		<CheckboxControl
 			label={ __( 'Enable Dispute Defender AI', 'woocommerce-payments' ) }
 			help={ __(
-				'Draft fraudulent dispute evidence with AI. You always review before submitting.',
+				'Use AI to draft evidence for fraudulent disputes. You always review before submitting.',
 				'woocommerce-payments'
 			) }
 			checked={ isDisputeDefenderEnabled }
