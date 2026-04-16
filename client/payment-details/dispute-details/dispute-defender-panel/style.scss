@@ -18,4 +18,38 @@
 		white-space: pre-wrap;
 		background: #f0f0f0;
 	}
+
+	&__editor {
+		margin-top: 1em;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	&__narrative .components-base-control__field textarea {
+		font-family: inherit;
+		min-height: 200px;
+	}
+
+	&__gaps {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__gap {
+		padding: 8px 12px;
+		border: 1px solid #dcdcde;
+		border-radius: 2px;
+		background: #f6f7f7;
+	}
+
+	&__actions {
+		display: flex;
+		gap: 8px;
+		margin-top: 4px;
+	}
 }
