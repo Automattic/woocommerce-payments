@@ -7,9 +7,9 @@
 
 namespace WCPay\Disputes;
 
+use RuntimeException;
 use WC_Order;
 use WC_Payments_API_Client;
-use WC_Payments_Order_Service;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -18,10 +18,12 @@ defined( 'ABSPATH' ) || exit;
  * payload sent to Transact-Platform in the `evidence_context` parameter when
  * drafting an AI-generated dispute defense.
  *
- * PII minimization is load-bearing: the DTO never includes card PAN, CVC,
- * expiry, fingerprint, or any other card-auth data. Only the fields explicitly
- * shaped by the private `shape_*` helpers are returned — the raw dispute blob
- * from the API client is never passed through.
+ * PII minimization is load-bearing. The DTO is an allowlist produced by the
+ * private `shape_*` helpers — the raw dispute blob from the API client is
+ * never passed through. Fields intentionally included per the design doc:
+ * customer name, email, billing/shipping address, customer IP, card brand +
+ * last4 + funding. Fields intentionally excluded: card PAN, CVC, expiry,
+ * fingerprint, iin, user agent, and any other card-auth data.
  */
 class Dispute_Evidence_Collector {
 
@@ -38,21 +40,12 @@ class Dispute_Evidence_Collector {
 	private $api_client;
 
 	/**
-	 * Order service, held for future order-meta reads.
-	 *
-	 * @var WC_Payments_Order_Service
-	 */
-	private $order_service;
-
-	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_API_Client    $api_client    API client used to fetch the enriched dispute.
-	 * @param WC_Payments_Order_Service $order_service Order service (kept for future order-meta reads).
+	 * @param WC_Payments_API_Client $api_client API client used to fetch the enriched dispute.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payments_Order_Service $order_service ) {
-		$this->api_client    = $api_client;
-		$this->order_service = $order_service;
+	public function __construct( WC_Payments_API_Client $api_client ) {
+		$this->api_client = $api_client;
 	}
 
 	/**
@@ -66,9 +59,19 @@ class Dispute_Evidence_Collector {
 	 *     radar: array<string, mixed>,
 	 *     customer_history: array<int, array<string, mixed>>,
 	 * }
+	 * @throws RuntimeException When the upstream dispute fetch fails. Callers must not
+	 *                          swallow this — an empty DTO would silently produce an
+	 *                          unreliable AI draft.
 	 */
 	public function collect( string $dispute_id ): array {
 		$dispute = $this->api_client->get_dispute( $dispute_id );
+
+		if ( is_wp_error( $dispute ) ) {
+			throw new RuntimeException(
+				sprintf( 'Failed to fetch dispute %s: %s', $dispute_id, $dispute->get_error_message() )
+			);
+		}
+
 		if ( ! is_array( $dispute ) ) {
 			$dispute = [];
 		}
@@ -188,16 +191,15 @@ class Dispute_Evidence_Collector {
 		$created = $order->get_date_created();
 
 		return [
-			'id'                  => $order->get_id(),
-			'order_number'        => $order->get_order_number(),
-			'status'              => $order->get_status(),
-			'total'               => (float) $order->get_total(),
-			'currency'            => $order->get_currency(),
-			'created'             => $created ? $created->format( 'c' ) : null,
-			'customer_email'      => $order->get_billing_email(),
-			'customer_ip'         => $order->get_customer_ip_address(),
-			'customer_user_agent' => $order->get_customer_user_agent(),
-			'items'               => $items,
+			'id'             => $order->get_id(),
+			'order_number'   => $order->get_order_number(),
+			'status'         => $order->get_status(),
+			'total'          => (float) $order->get_total(),
+			'currency'       => $order->get_currency(),
+			'created'        => $created ? $created->format( 'c' ) : null,
+			'customer_email' => $order->get_billing_email(),
+			'customer_ip'    => $order->get_customer_ip_address(),
+			'items'          => $items,
 		];
 	}
 
@@ -243,7 +245,6 @@ class Dispute_Evidence_Collector {
 				'limit'         => self::PRIOR_ORDERS_LIMIT,
 				'exclude'       => [ $order->get_id() ],
 				'status'        => [ 'wc-completed', 'wc-processing', 'wc-refunded' ],
-				'return'        => 'objects',
 			]
 		);
 

@@ -19,11 +19,6 @@ class Dispute_Evidence_Collector_Test extends WCPAY_UnitTestCase {
 	private $mock_api_client;
 
 	/**
-	 * @var WC_Payments_Order_Service&MockObject
-	 */
-	private $mock_order_service;
-
-	/**
 	 * @var Dispute_Evidence_Collector
 	 */
 	private $collector;
@@ -31,13 +26,8 @@ class Dispute_Evidence_Collector_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client    = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
-
-		$this->collector = new Dispute_Evidence_Collector(
-			$this->mock_api_client,
-			$this->mock_order_service
-		);
+		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$this->collector       = new Dispute_Evidence_Collector( $this->mock_api_client );
 	}
 
 	public function test_collect_returns_expected_shape() {
@@ -92,6 +82,17 @@ class Dispute_Evidence_Collector_Test extends WCPAY_UnitTestCase {
 		$this->assertStringNotContainsString( '"exp_year"', $flat );
 		$this->assertStringNotContainsString( '"fingerprint"', $flat );
 		$this->assertStringNotContainsString( 'fp_secret', $flat );
+		$this->assertStringNotContainsString( '"customer_user_agent"', $flat );
+	}
+
+	public function test_collect_throws_on_upstream_wp_error() {
+		$this->mock_api_client
+			->method( 'get_dispute' )
+			->willReturn( new WP_Error( 'api_down', 'Upstream unavailable' ) );
+
+		$this->expectException( RuntimeException::class );
+		$this->expectExceptionMessageMatches( '/dp_test_123/' );
+		$this->collector->collect( 'dp_test_123' );
 	}
 
 	public function test_collect_returns_null_order_when_dispute_has_no_order() {
