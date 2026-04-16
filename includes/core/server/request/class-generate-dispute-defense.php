@@ -16,6 +16,8 @@ use WC_Payments_API_Client;
  */
 class Generate_Dispute_Defense extends Request {
 
+	const IMMUTABLE_PARAMS = [ 'reason' ];
+
 	const REQUIRED_PARAMS = [ 'dispute_id', 'reason', 'evidence_context' ];
 
 	const SUPPORTED_REASON = 'fraudulent';
