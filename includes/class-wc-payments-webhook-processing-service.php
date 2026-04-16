@@ -501,23 +501,23 @@ class WC_Payments_Webhook_Processing_Service {
 			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
 		}
 
-		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
-
-		if ( null !== $application_fee_amount ) {
-			$fee           = WC_Payments_Utils::interpret_stripe_amount( (int) $application_fee_amount, $currency );
-			$charge_amount = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
-			// Update fee and net directly — these can be 0 (e.g., refunded
-			// Amazon Pay fees) and must not be skipped by the falsy check below.
-			$order->update_meta_data( '_wcpay_transaction_fee', $fee );
-			$order->update_meta_data( '_wcpay_net', $charge_amount - $fee );
-		}
-
 		foreach ( $meta_data_to_update as $key => $value ) {
 			// Override existing meta data with incoming values, if present.
 			if ( $value ) {
 				$order->update_meta_data( $key, $value );
 			}
 		}
+
+		// Fee/net are written directly (not via the loop above) because they
+		// can legitimately be 0 — the loop's truthy check would drop those.
+		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+		if ( null !== $application_fee_amount ) {
+			$fee           = WC_Payments_Utils::interpret_stripe_amount( (int) $application_fee_amount, $currency );
+			$charge_amount = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
+			$order->update_meta_data( '_wcpay_transaction_fee', $fee );
+			$order->update_meta_data( '_wcpay_net', $charge_amount - $fee );
+		}
+
 		// Save the order after updating the meta data values.
 		$order->save();
 
