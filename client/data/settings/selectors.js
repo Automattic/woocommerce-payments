@@ -136,6 +136,10 @@ export const getIsMultiCurrencyEnabled = ( state ) => {
 	return getSettings( state ).is_multi_currency_enabled || false;
 };
 
+export const getIsDisputeDefenderEnabled = ( state ) => {
+	return getSettings( state ).is_dispute_defender_enabled || false;
+};
+
 export const getPaymentRequestButtonType = ( state ) => {
 	return getSettings( state ).payment_request_button_type || '';
 };

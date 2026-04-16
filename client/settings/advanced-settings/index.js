@@ -8,6 +8,7 @@ import { Card } from '@wordpress/components';
  * Internal dependencies
  */
 import DebugMode from './debug-mode';
+import DisputeDefenderToggle from './dispute-defender-toggle';
 import MultiCurrencyToggle from './multi-currency-toggle';
 import WCPaySubscriptionsToggle from './wcpay-subscriptions-toggle';
 import './style.scss';
@@ -20,6 +21,7 @@ const AdvancedSettings = () => {
 			<Card>
 				<CardBody className="wcpay-card-body">
 					<MultiCurrencyToggle />
+					<DisputeDefenderToggle />
 					{ wcpaySettings.isSubscriptionsActive &&
 					wcpaySettings.isStripeBillingEligible ? (
 						<StripeBillingSection />

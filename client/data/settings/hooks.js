@@ -138,6 +138,19 @@ export const useMultiCurrency = () => {
 	return [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ];
 };
 
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useDisputeDefender = () => {
+	const { updateIsDisputeDefenderEnabled } = useDispatch( STORE_NAME );
+
+	const isDisputeDefenderEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsDisputeDefenderEnabled()
+	);
+
+	return [ isDisputeDefenderEnabled, updateIsDisputeDefenderEnabled ];
+};
+
 export const useWCPaySubscriptions = () => {
 	const { updateIsWCPaySubscriptionsEnabled } = useDispatch( STORE_NAME );
 
