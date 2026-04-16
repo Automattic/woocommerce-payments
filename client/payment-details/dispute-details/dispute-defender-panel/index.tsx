@@ -22,16 +22,96 @@ interface Props {
 	onUseDraft?: ( narrative: string ) => void;
 }
 
+interface PanelError {
+	message: string;
+	retryable: boolean;
+}
+
 interface PanelState {
 	isLoading: boolean;
 	draft: DefenseDraft | null;
-	error: string | null;
+	error: PanelError | null;
 }
 
 const initialState: PanelState = {
 	isLoading: false,
 	draft: null,
 	error: null,
+};
+
+// Map known REST error codes to short, merchant-friendly strings. Anything
+// outside this map falls through to `err.message` so upstream changes remain
+// visible rather than being silently swallowed.
+const friendlyErrorMessages: Record< string, string > = {
+	wcpay_dispute_defender_disabled: __(
+		'Dispute Defender AI is not enabled. Turn it on in WooPayments → Settings → Advanced.',
+		'woocommerce-payments'
+	),
+	wcpay_dispute_defender_unsupported_reason: __(
+		'This dispute is not supported by Dispute Defender AI.',
+		'woocommerce-payments'
+	),
+	wcpay_dispute_defender_failure: __(
+		"We couldn't generate a draft right now. Try again in a moment.",
+		'woocommerce-payments'
+	),
+	wcpay_dispute_defender_unparseable: __(
+		'The AI returned an unexpected response. Try generating again.',
+		'woocommerce-payments'
+	),
+	wcpay_dispute_defender_config_error: __(
+		'Dispute Defender AI is temporarily unavailable.',
+		'woocommerce-payments'
+	),
+	rest_too_many_requests: __(
+		'Too many requests. Please wait a moment and try again.',
+		'woocommerce-payments'
+	),
+};
+
+// Codes we consider safe to retry. Transient upstream failures, parsing
+// hiccups, config errors, and rate limits all fall into this bucket. Errors
+// that reflect a stable state of the world (feature flag off, dispute reason
+// not supported) are NOT retryable — retrying won't change the answer.
+const retryableErrorCodes = new Set( [
+	'wcpay_dispute_defender_failure',
+	'wcpay_dispute_defender_unparseable',
+	'wcpay_dispute_defender_config_error',
+	'rest_too_many_requests',
+] );
+
+// Transient HTTP statuses: upstream failures, config errors, rate limits.
+const retryableStatuses = new Set( [ 429, 502, 503 ] );
+
+const resolvePanelError = ( err: unknown ): PanelError => {
+	// apiFetch rejects with a plain object shaped like { code, message, data:
+	// { status } }, but raw Error instances (e.g. network abort) can also
+	// surface here. Handle both shapes before falling back.
+	if ( err && typeof err === 'object' ) {
+		const maybe = err as {
+			code?: string;
+			message?: string;
+			data?: { status?: number };
+		};
+		const code = maybe.code;
+		const status = maybe.data?.status;
+		const friendly = code ? friendlyErrorMessages[ code ] : undefined;
+		const retryable =
+			( !! code && retryableErrorCodes.has( code ) ) ||
+			( typeof status === 'number' && retryableStatuses.has( status ) );
+
+		if ( friendly ) {
+			return { message: friendly, retryable };
+		}
+		if ( maybe.message ) {
+			return { message: maybe.message, retryable };
+		}
+	}
+
+	return {
+		message: __( 'Failed to generate a draft.', 'woocommerce-payments' ),
+		retryable: false,
+	};
 };
 
 /**
@@ -105,6 +185,23 @@ export const DisputeDefenderPanel: React.FC< Props > = ( {
 		setClipboardNotice( false );
 	}, [ draft ] );
 
+	// Fire the panel-view event exactly once per mount, AFTER the gate check
+	// so we don't count renders where the panel is suppressed. `dispute.id`
+	// is the stable key — if the merchant switches disputes without
+	// unmounting the route we'd want a fresh view event for the new ID.
+	// NOTE: this hook must be declared before the `isEnabled` early return
+	// would run in a conditional render path, so we guard inside the effect
+	// itself instead of gating the hook (React requires stable hook order).
+	useEffect( () => {
+		if ( ! isEnabled ) {
+			return;
+		}
+		recordEvent( 'wcpay_dispute_defender_button_viewed', {
+			dispute_id: dispute.id,
+		} );
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ dispute.id, isEnabled ] );
+
 	if ( ! isEnabled ) {
 		return null;
 	}
@@ -122,14 +219,11 @@ export const DisputeDefenderPanel: React.FC< Props > = ( {
 			} );
 			setState( { isLoading: false, draft: response, error: null } );
 		} catch ( err ) {
-			const message =
-				err instanceof Error
-					? err.message
-					: __(
-							'Failed to generate a draft.',
-							'woocommerce-payments'
-					  );
-			setState( { isLoading: false, draft: null, error: message } );
+			setState( {
+				isLoading: false,
+				draft: null,
+				error: resolvePanelError( err ),
+			} );
 		}
 	};
 
@@ -229,7 +323,19 @@ export const DisputeDefenderPanel: React.FC< Props > = ( {
 			</Button>
 			{ error && (
 				<Notice status="error" isDismissible={ false }>
-					{ error }
+					{ error.message }
+					{ error.retryable && (
+						<>
+							{ ' ' }
+							<Button
+								variant="link"
+								onClick={ handleGenerate }
+								disabled={ isLoading }
+							>
+								{ __( 'Retry', 'woocommerce-payments' ) }
+							</Button>
+						</>
+					) }
 				</Notice>
 			) }
 			{ draft && (

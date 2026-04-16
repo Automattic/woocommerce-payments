@@ -390,4 +390,125 @@ describe( 'DisputeDefenderPanel', () => {
 		// Sanity touch to avoid unused-var lint on onUseDraft.
 		expect( onUseDraft ).not.toHaveBeenCalled();
 	} );
+
+	it( 'does not fire button_viewed when the panel is gated off', () => {
+		( window as any ).wcpaySettings = {
+			featureFlags: { isDisputeDefenderEnabled: false },
+		};
+		render( <DisputeDefenderPanel dispute={ baseFraudulentDispute } /> );
+
+		const viewedCalls = ( recordEvent as jest.Mock ).mock.calls.filter(
+			( [ name ] ) => name === 'wcpay_dispute_defender_button_viewed'
+		);
+		expect( viewedCalls ).toHaveLength( 0 );
+	} );
+
+	it( 'fires wcpay_dispute_defender_button_viewed once on mount', () => {
+		render( <DisputeDefenderPanel dispute={ baseFraudulentDispute } /> );
+
+		const viewedCalls = ( recordEvent as jest.Mock ).mock.calls.filter(
+			( [ name ] ) => name === 'wcpay_dispute_defender_button_viewed'
+		);
+		expect( viewedCalls ).toHaveLength( 1 );
+		expect( viewedCalls[ 0 ][ 1 ] ).toEqual(
+			expect.objectContaining( { dispute_id: 'dp_test_123' } )
+		);
+	} );
+
+	it( 'renders the friendly message for a known error code', async () => {
+		( apiFetch as unknown as jest.Mock ).mockRejectedValue( {
+			code: 'wcpay_dispute_defender_failure',
+			message: 'Upstream error',
+			data: { status: 502 },
+		} );
+
+		render( <DisputeDefenderPanel dispute={ baseFraudulentDispute } /> );
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /generate with ai/i } )
+			);
+		} );
+
+		await waitFor( () => {
+			expect(
+				screen.getAllByText( /couldn[’']t generate a draft right now/i )
+					.length
+			).toBeGreaterThan( 0 );
+		} );
+	} );
+
+	it( 'renders a Retry button for transient errors', async () => {
+		( apiFetch as unknown as jest.Mock ).mockRejectedValue( {
+			code: 'wcpay_dispute_defender_failure',
+			message: 'Upstream error',
+			data: { status: 502 },
+		} );
+
+		render( <DisputeDefenderPanel dispute={ baseFraudulentDispute } /> );
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /generate with ai/i } )
+			);
+		} );
+
+		const retryButton = await screen.findByRole( 'button', {
+			name: /retry/i,
+		} );
+		expect( retryButton ).toBeInTheDocument();
+
+		( apiFetch as unknown as jest.Mock ).mockClear();
+		await act( async () => {
+			await userEvent.click( retryButton );
+		} );
+
+		expect( apiFetch ).toHaveBeenCalledWith( {
+			path: '/wc/v3/payments/disputes/dp_test_123/defense/draft',
+			method: 'POST',
+		} );
+	} );
+
+	it( 'does not render a Retry button for non-retryable errors', async () => {
+		( apiFetch as unknown as jest.Mock ).mockRejectedValue( {
+			code: 'wcpay_dispute_defender_unsupported_reason',
+			message: 'Unsupported',
+			data: { status: 400 },
+		} );
+
+		render( <DisputeDefenderPanel dispute={ baseFraudulentDispute } /> );
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /generate with ai/i } )
+			);
+		} );
+
+		await waitFor( () => {
+			expect(
+				screen.getAllByText( /not supported by dispute defender ai/i )
+					.length
+			).toBeGreaterThan( 0 );
+		} );
+
+		expect(
+			screen.queryByRole( 'button', { name: /retry/i } )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'falls back to err.message when the code is unknown', async () => {
+		( apiFetch as unknown as jest.Mock ).mockRejectedValue(
+			new Error( 'oops' )
+		);
+
+		render( <DisputeDefenderPanel dispute={ baseFraudulentDispute } /> );
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /generate with ai/i } )
+			);
+		} );
+
+		await waitFor( () => {
+			expect( screen.getAllByText( /oops/i ).length ).toBeGreaterThan(
+				0
+			);
+		} );
+	} );
 } );
