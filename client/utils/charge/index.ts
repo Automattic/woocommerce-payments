@@ -90,7 +90,11 @@ export const isBlockedByFraudTools = (
 	return [ 'block', 'review_blocked' ].includes( fraudMetaBoxType );
 };
 
-/* TODO: implement authorization and SCA charge statuses */
+const getPaymentIntentDerivedStatus = (
+	paymentIntent?: PaymentIntent
+): string | undefined =>
+	paymentIntent?.status === 'requires_capture' ? 'authorized' : undefined;
+
 export const getChargeStatus = (
 	charge: Charge = <Charge>{},
 	paymentIntent?: PaymentIntent
@@ -120,6 +124,10 @@ export const getChargeStatus = (
 	}
 	if ( isChargeRefundFailed( charge ) ) {
 		return 'refund_failed';
+	}
+	const paymentIntentStatus = getPaymentIntentDerivedStatus( paymentIntent );
+	if ( paymentIntentStatus ) {
+		return paymentIntentStatus;
 	}
 	if ( isChargeSuccessful( charge ) ) {
 		return isChargeCaptured( charge ) ? 'paid' : 'authorized';

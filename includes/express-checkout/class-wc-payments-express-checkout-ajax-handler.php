@@ -49,15 +49,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			);
 		}
 
-		add_action(
-			'woocommerce_store_api_checkout_update_order_from_request',
-			[
-				$this,
-				'tokenized_cart_set_payment_method_type',
-			],
-			10,
-			2
-		);
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
@@ -153,63 +144,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		wp_send_json( $data );
-	}
-
-	/**
-	 * Updates the checkout order based on the request, to set the Apple Pay/Google Pay payment method title.
-	 *
-	 * @param \WC_Order        $order The order to be updated.
-	 * @param \WP_REST_Request $request Store API request to update the order.
-	 */
-	public function tokenized_cart_set_payment_method_type( \WC_Order $order, \WP_REST_Request $request ) {
-		if ( ! isset( $request['payment_method'] ) || 'woocommerce_payments' !== $request['payment_method'] ) {
-			return;
-		}
-
-		if ( empty( $request['payment_data'] ) ) {
-			return;
-		}
-
-		$payment_data = [];
-		foreach ( $request['payment_data'] as $data ) {
-			$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
-		}
-
-		if ( empty( $payment_data['express_payment_type'] ) ) {
-			return;
-		}
-
-		$express_payment_type = wc_clean( wp_unslash( $payment_data['express_payment_type'] ) );
-
-		$payment_method_title = $this->get_payment_method_title_from_definition( $express_payment_type );
-		// fallback, just in case.
-		if ( ! $payment_method_title ) {
-			$payment_method_title = 'Payment Request';
-		}
-
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-		if ( ! empty( $suffix ) ) {
-			$suffix = " ($suffix)";
-		}
-
-		$order->set_payment_method_title( $payment_method_title . $suffix );
-		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_payment_type );
-	}
-
-	/**
-	 * Get the payment method title from the definition.
-	 *
-	 * @param string $payment_method_id The payment method ID (e.g., 'apple_pay', 'google_pay').
-	 * @return string|null The payment method title or null if not found.
-	 */
-	private function get_payment_method_title_from_definition( $payment_method_id ) {
-		$payment_method = WC_Payments::get_payment_method_by_id( $payment_method_id );
-
-		if ( $payment_method && method_exists( $payment_method, 'get_title' ) ) {
-			return $payment_method->get_title();
-		}
-
-		return null;
 	}
 
 	/**

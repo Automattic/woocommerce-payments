@@ -73,6 +73,10 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_it_returns_expected_to_array_result( array $enabled_flags ) {
 		$this->setup_enabled_flags( $enabled_flags );
 
+		// Explicitly disable flags that default to ON so they don't appear
+		// in to_array() output unless included in $enabled_flags above.
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+
 		$expected = [];
 		foreach ( $enabled_flags as $flag ) {
 			$frontend_key              = self::FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING[ $flag ];
@@ -96,6 +100,15 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	public function test_customer_multi_currency_can_be_disabled() {
 		$this->set_feature_flag_option( '_wcpay_feature_customer_multi_currency', '0' );
 		$this->assertFalse( WC_Payments_Features::is_customer_multi_currency_enabled() );
+	}
+
+	public function test_is_dispute_additional_evidence_types_enabled_by_default() {
+		$this->assertTrue( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
+	}
+
+	public function test_is_dispute_additional_evidence_types_can_be_disabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+		$this->assertFalse( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
 	}
 
 	public function test_is_woopay_eligible_returns_true() {

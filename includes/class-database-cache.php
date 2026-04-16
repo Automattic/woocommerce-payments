@@ -342,11 +342,24 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	private function write_to_cache( string $key, $data, bool $errored ) {
-		// Add the  data and expiry time to the array we're caching.
-		$cache_contents            = [];
-		$cache_contents['data']    = $data;
-		$cache_contents['fetched'] = time();
-		$cache_contents['errored'] = $errored;
+		// Compute the new consecutive_errors value before rebuilding the payload.
+		// Each errored write increments the counter; a successful write resets it.
+		// Legacy entries without the field are treated as zero.
+		$consecutive_errors = 0;
+		if ( $errored ) {
+			$previous           = $this->get_from_cache( $key );
+			$previous_count     = ( is_array( $previous ) && isset( $previous['consecutive_errors'] ) )
+				? (int) $previous['consecutive_errors']
+				: 0;
+			$consecutive_errors = $previous_count + 1;
+		}
+
+		// Add the data and expiry time to the array we're caching.
+		$cache_contents                       = [];
+		$cache_contents['data']               = $data;
+		$cache_contents['fetched']            = time();
+		$cache_contents['errored']            = $errored;
+		$cache_contents['consecutive_errors'] = $consecutive_errors;
 
 		// Write the in-memory cache.
 		$this->in_memory_cache[ $key ] = $cache_contents;
@@ -395,8 +408,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				if ( is_admin() ) {
 					// Fetches triggered from the admin panel should be more frequent.
 					if ( $cache_contents['errored'] ) {
-						// Attempt to refresh the data quickly if the last fetch was an error.
-						$ttl = 2 * MINUTE_IN_SECONDS;
+						// Progressive backoff on repeated errors (2/5/10/15 min).
+						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
 						// If the data was fetched successfully, cache it for 2h.
 						$ttl = 2 * HOUR_IN_SECONDS;
@@ -410,8 +423,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
 					// Fetches triggered from the admin panel should be more frequent.
 					if ( $cache_contents['errored'] ) {
-						// Attempt to refresh the data quickly if the last fetch was an error.
-						$ttl = 2 * MINUTE_IN_SECONDS;
+						// Progressive backoff on repeated errors (2/5/10/15 min).
+						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
 						// If the data was fetched successfully, cache it for 3h.
 						$ttl = 3 * HOUR_IN_SECONDS;
@@ -435,7 +448,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
 			case self::TRACKING_INFO_KEY:
-				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;
+				$ttl = $cache_contents['errored']
+					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
+					: MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
 				$ttl = 12 * HOUR_IN_SECONDS;
@@ -447,5 +462,29 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		}
 
 		return apply_filters( 'wcpay_database_cache_ttl', $ttl, $key, $cache_contents );
+	}
+
+	/**
+	 * Maps a consecutive-errors count to a TTL using a fixed backoff ladder.
+	 *
+	 * Ladder: 1 → 2 min, 2 → 5 min, 3 → 10 min, 4+ → 15 min. Values ≤ 0 are
+	 * clamped to the first step, matching the behaviour of legacy cache entries
+	 * that were written before the counter existed.
+	 *
+	 * @param int $consecutive_errors Number of consecutive errored writes (including the current one).
+	 *
+	 * @return int TTL in seconds.
+	 */
+	private function get_errored_ttl( int $consecutive_errors ): int {
+		$ladder = [
+			2 * MINUTE_IN_SECONDS,
+			5 * MINUTE_IN_SECONDS,
+			10 * MINUTE_IN_SECONDS,
+			15 * MINUTE_IN_SECONDS,
+		];
+
+		$index = max( 0, min( count( $ladder ) - 1, $consecutive_errors - 1 ) );
+
+		return $ladder[ $index ];
 	}
 }

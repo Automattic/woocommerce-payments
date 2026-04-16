@@ -193,7 +193,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				).toBeVisible();
 
 				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 					.fill( 'my product description' );
 			} );
 
@@ -520,16 +520,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			// so we retry the fill+verify cycle until the value sticks.
 			await expect( async () => {
 				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 					.fill( 'my product description' );
 
 				// Blur the field to ensure value is committed to state
 				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 					.press( 'Tab' );
 
 				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 				).toHaveValue( 'my product description', {
 					timeout: 2000,
 				} );
@@ -601,7 +601,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				).toBeVisible();
 
 				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+					merchantPage.getByLabel( 'PRODUCT OR SERVICE DESCRIPTION' )
 				).toHaveValue( 'my product description', {
 					timeout: 5000,
 				} );
