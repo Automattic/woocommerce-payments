@@ -342,11 +342,24 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	private function write_to_cache( string $key, $data, bool $errored ) {
-		// Add the  data and expiry time to the array we're caching.
-		$cache_contents            = [];
-		$cache_contents['data']    = $data;
-		$cache_contents['fetched'] = time();
-		$cache_contents['errored'] = $errored;
+		// Compute the new consecutive_errors value before rebuilding the payload.
+		// Each errored write increments the counter; a successful write resets it.
+		// Legacy entries without the field are treated as zero.
+		$consecutive_errors = 0;
+		if ( $errored ) {
+			$previous           = $this->get_from_cache( $key );
+			$previous_count     = ( is_array( $previous ) && isset( $previous['consecutive_errors'] ) )
+				? (int) $previous['consecutive_errors']
+				: 0;
+			$consecutive_errors = $previous_count + 1;
+		}
+
+		// Add the data and expiry time to the array we're caching.
+		$cache_contents                       = [];
+		$cache_contents['data']               = $data;
+		$cache_contents['fetched']            = time();
+		$cache_contents['errored']            = $errored;
+		$cache_contents['consecutive_errors'] = $consecutive_errors;
 
 		// Write the in-memory cache.
 		$this->in_memory_cache[ $key ] = $cache_contents;

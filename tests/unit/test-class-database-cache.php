@@ -609,22 +609,155 @@ class Database_Cache_Test extends WCPAY_UnitTestCase {
 		];
 	}
 
-	private function write_mock_cache( $data, ?int $fetch_time = null, bool $errored = false ) {
+	public function test_errored_write_sets_consecutive_errors_to_one_on_first_failure() {
+		$refreshed = false;
+
+		$this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				return false; // Errored generator.
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$this->assertFalse( $refreshed );
+		$cache = get_option( self::MOCK_KEY );
+		$this->assertSame( 1, $cache['consecutive_errors'] );
+		$this->assertTrue( $cache['errored'] );
+	}
+
+	public function test_errored_write_increments_consecutive_errors_from_previous_entry() {
+		$this->write_mock_cache( null, time() - HOUR_IN_SECONDS, true, 2 );
+		$refreshed = false;
+
+		$this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				return false;
+			},
+			'__return_true',
+			true, // Force refresh to bypass freshness check.
+			$refreshed
+		);
+
+		$cache = get_option( self::MOCK_KEY );
+		$this->assertSame( 3, $cache['consecutive_errors'] );
+	}
+
+	public function test_errored_write_grows_counter_without_cap() {
+		// Seed a very large previous counter to prove write_to_cache does not clamp.
+		$this->write_mock_cache( null, time() - HOUR_IN_SECONDS, true, 50 );
+		$refreshed = false;
+
+		$this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				return false;
+			},
+			'__return_true',
+			true,
+			$refreshed
+		);
+
+		$cache = get_option( self::MOCK_KEY );
+		$this->assertSame( 51, $cache['consecutive_errors'] );
+	}
+
+	public function test_successful_write_resets_consecutive_errors_to_zero() {
+		$this->write_mock_cache( null, time() - HOUR_IN_SECONDS, true, 4 );
+		$refreshed = false;
+
+		$value = [ 'mock' => true ];
+		$this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () use ( $value ) {
+				return $value;
+			},
+			'__return_true',
+			true,
+			$refreshed
+		);
+
+		$this->assertTrue( $refreshed );
+		$cache = get_option( self::MOCK_KEY );
+		$this->assertSame( 0, $cache['consecutive_errors'] );
+		$this->assertFalse( $cache['errored'] );
+	}
+
+	public function test_errored_write_without_previous_entry_starts_at_one() {
+		// No previous cache entry.
+		delete_option( self::MOCK_KEY );
+		$refreshed = false;
+
+		$this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				return false;
+			},
+			'__return_true',
+			false,
+			$refreshed
+		);
+
+		$cache = get_option( self::MOCK_KEY );
+		$this->assertSame( 1, $cache['consecutive_errors'] );
+	}
+
+	public function test_errored_write_over_legacy_entry_without_counter_starts_at_one() {
+		// Legacy entry: has errored field but no consecutive_errors.
 		update_option(
 			self::MOCK_KEY,
 			[
-				'data'    => $data,
-				'fetched' => $fetch_time ?? time(),
-				'errored' => $errored,
+				'data'    => null,
+				'fetched' => time() - HOUR_IN_SECONDS,
+				'errored' => true,
 			],
+			'no'
+		);
+		$refreshed = false;
+
+		$this->database_cache->get_or_add(
+			self::MOCK_KEY,
+			function () {
+				return false;
+			},
+			'__return_true',
+			true,
+			$refreshed
+		);
+
+		$cache = get_option( self::MOCK_KEY );
+		$this->assertSame( 1, $cache['consecutive_errors'] );
+	}
+
+	private function write_mock_cache( $data, ?int $fetch_time = null, bool $errored = false, ?int $consecutive_errors = null ) {
+		$contents = [
+			'data'    => $data,
+			'fetched' => $fetch_time ?? time(),
+			'errored' => $errored,
+		];
+
+		if ( null !== $consecutive_errors ) {
+			$contents['consecutive_errors'] = $consecutive_errors;
+		}
+
+		update_option(
+			self::MOCK_KEY,
+			$contents,
 			'no' // Match production: Database_Cache stores options as non-autoloaded.
 		);
 	}
 
-	private function assert_cache_contains( $data, $errored = false ) {
+	private function assert_cache_contains( $data, $errored = false, ?int $consecutive_errors = null ) {
 		$cache_contents = get_option( self::MOCK_KEY );
 		$this->assertIsArray( $cache_contents );
 		$this->assertEquals( $data, $cache_contents['data'] );
 		$this->assertEquals( $errored, $cache_contents['errored'] );
+
+		if ( null !== $consecutive_errors ) {
+			$this->assertEquals( $consecutive_errors, $cache_contents['consecutive_errors'] ?? null );
+		}
 	}
 }
