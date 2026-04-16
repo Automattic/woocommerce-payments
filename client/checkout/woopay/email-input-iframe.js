@@ -458,7 +458,7 @@ export const handleWooPayEmailInput = async (
 	} );
 
 	window.addEventListener( 'message', ( e ) => {
-		if ( ! getConfig( 'woopayHost' ).startsWith( e.origin ) ) {
+		if ( e.origin !== new URL( getConfig( 'woopayHost' ) ).origin ) {
 			return;
 		}
 		switch ( e.data.action ) {
