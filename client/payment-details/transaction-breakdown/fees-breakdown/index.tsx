@@ -19,11 +19,7 @@ const FeesBreakdown: React.FC< {
 	}
 
 	if ( event.fee_rates.fee_refunded ) {
-		return (
-			<div className="wcpay-transaction-breakdown__fees-container">
-				<p>{ __( 'Fee refunded', 'woocommerce-payments' ) }</p>
-			</div>
-		);
+		return null;
 	}
 
 	const storeCurrency = event.transaction_details.store_currency;

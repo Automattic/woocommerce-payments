@@ -838,9 +838,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				composeFXString( event ),
 				isFeeRefunded ? null : composeFeeString( event ),
 				isFeeRefunded ? null : composeFeeBreakdown( event ),
-				isFeeRefunded
-					? null
-					: event?.fee_rates?.tax?.amount !== 0
+				! isFeeRefunded && event?.fee_rates?.tax?.amount !== 0
 					? composeTaxString( event )
 					: null,
 				// When our fee was refunded but Stripe still charges a processing
@@ -1225,26 +1223,6 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 			return getAutomaticFraudOutcomeTimelineItem( event, 'review' );
 		case 'fraud_outcome_block':
 			return getAutomaticFraudOutcomeTimelineItem( event, 'block' );
-		case 'application_fee_refunded': {
-			const formattedRefundedFee = formatExplicitCurrency(
-				event.amount_refunded,
-				event.currency
-			);
-			return [
-				getMainTimelineItem(
-					event,
-					sprintf(
-						/* translators: %s is a monetary amount */
-						__(
-							'Application fee refunded: +%s',
-							'woocommerce-payments'
-						),
-						formattedRefundedFee
-					),
-					<CheckmarkIcon className="is-success" />
-				),
-			];
-		}
 		default:
 			return [];
 	}

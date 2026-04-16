@@ -59,8 +59,6 @@ class WC_Payments_Captured_Event_Note {
 		$fee_refunded = ! empty( $fee_rates['fee_refunded'] );
 
 		if ( $fee_refunded ) {
-			$lines[] = __( 'Application fee refunded', 'woocommerce-payments' );
-
 			// When the balance transaction has settled, Stripe's processing fee
 			// is available as store_fee. Show it and include the net payout.
 			// When store_fee is 0 the BT hasn't settled — skip both lines.

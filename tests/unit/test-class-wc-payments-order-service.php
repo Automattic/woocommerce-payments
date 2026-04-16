@@ -1494,6 +1494,60 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->attach_transaction_fee_to_order( $mock_order, $charge );
 	}
 
+	public function test_attach_transaction_fee_to_order_amazon_pay_non_card() {
+		$order  = WC_Helper_Order::create_order();
+		$charge = new WC_Payments_API_Charge(
+			'ch_mock',
+			1500,
+			new DateTime(),
+			[
+				'type'       => 'amazon_pay',
+				'amazon_pay' => [
+					'funding' => [ 'type' => null ],
+				],
+			],
+			null,
+			null,
+			null,
+			102,
+			[],
+			[],
+			'usd'
+		);
+		$charge->set_captured( true );
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
+
+		// Fee should be recorded as 0 up front; the server refunds it async.
+		$this->assertEquals( 0, $order->get_meta( '_wcpay_transaction_fee', true ) );
+	}
+
+	public function test_attach_transaction_fee_to_order_amazon_pay_card_passthrough() {
+		$order  = WC_Helper_Order::create_order();
+		$charge = new WC_Payments_API_Charge(
+			'ch_mock',
+			1500,
+			new DateTime(),
+			[
+				'type'       => 'amazon_pay',
+				'amazon_pay' => [
+					'funding' => [ 'type' => 'card' ],
+				],
+			],
+			null,
+			null,
+			null,
+			102,
+			[],
+			[],
+			'usd'
+		);
+		$charge->set_captured( true );
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
+
+		// Card-funded Amazon Pay keeps the application fee as normal.
+		$this->assertEquals( 1.02, $order->get_meta( '_wcpay_transaction_fee', true ) );
+	}
+
 	public function test_add_note_and_metadata_for_created_refund_successful_fully_refunded(): void {
 		$order = WC_Helper_Order::create_order();
 		$order->save();
@@ -2100,5 +2154,40 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$this->assertCount( count( $notes_before ), $notes_after );
+	}
+
+	/**
+	 * Test that add_fee_breakdown_to_order_notes backfills the transaction-fee
+	 * meta with the Stripe processing fee once the application fee has been
+	 * refunded (Amazon Pay non-card) and the balance transaction has settled.
+	 */
+	public function test_add_fee_breakdown_backfills_stripe_fee_when_application_fee_refunded() {
+		$this->order->update_meta_data( '_wcpay_transaction_fee', 0 );
+		$this->order->save();
+
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client->expects( $this->once() )
+			->method( 'get_timeline' )
+			->willReturn(
+				[
+					'data' => [
+						[
+							'type'                => 'captured',
+							'fee_rates'           => [
+								'fee_refunded' => true,
+							],
+							'transaction_details' => [
+								'store_fee'      => 68,
+								'store_currency' => 'usd',
+							],
+						],
+					],
+				]
+			);
+
+		$order_service = new WC_Payments_Order_Service( $mock_api_client );
+		$order_service->add_fee_breakdown_to_order_notes( $this->order->get_id(), 'pi_test_123' );
+
+		$this->assertEquals( 0.68, $this->order->get_meta( '_wcpay_transaction_fee', true ) );
 	}
 }

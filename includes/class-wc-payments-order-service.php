@@ -593,6 +593,20 @@ class WC_Payments_Order_Service {
 				return;
 			}
 
+			// For refunded Amazon Pay application fees, the captured event's
+			// store_fee carries the Stripe processing fee that the merchant
+			// actually pays. Use it to backfill the transaction-fee meta so
+			// the order page shows the real fee instead of hiding the row.
+			$fee_refunded    = ! empty( $captured_event['fee_rates']['fee_refunded'] );
+			$store_fee_cents = $captured_event['transaction_details']['store_fee'] ?? 0;
+			$store_currency  = $captured_event['transaction_details']['store_currency'] ?? $order->get_currency();
+			if ( $fee_refunded && $store_fee_cents > 0 ) {
+				$order->update_meta_data(
+					self::WCPAY_TRANSACTION_FEE_META_KEY,
+					WC_Payments_Utils::interpret_stripe_amount( (int) $store_fee_cents, $store_currency )
+				);
+			}
+
 			$details = ( new WC_Payments_Captured_Event_Note( $captured_event ) )->generate_html_note();
 
 			// Add fee breakdown details to the note.
@@ -1409,9 +1423,21 @@ class WC_Payments_Order_Service {
 			// Only set transaction fee if the charge was actually captured.
 			// Canceled authorizations should not have fees since no payment was processed.
 			if ( $charge && null !== $charge->get_application_fee_amount() && $charge->is_captured() ) {
+				// Non-card Amazon Pay transactions have the application fee refunded
+				// server-side; record 0 up front so the order page never displays a
+				// pre-refund fee while waiting for the forwarded webhook to arrive.
+				$pm_details  = $charge->get_payment_method_details() ?? [];
+				$pm_type     = $pm_details['type'] ?? null;
+				$funding     = $pm_details['amazon_pay']['funding']['type'] ?? null;
+				$is_refunded = 'amazon_pay' === $pm_type && 'card' !== $funding;
+
+				$fee_amount = $is_refunded
+					? 0
+					: WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() );
+
 				$order->update_meta_data(
 					self::WCPAY_TRANSACTION_FEE_META_KEY,
-					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() )
+					$fee_amount
 				);
 				$order->save_meta_data();
 			}
