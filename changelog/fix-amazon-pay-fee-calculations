@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: Amazon Pay fee display on order details page and timeline view when the payment was processed with non-card instrument
