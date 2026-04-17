@@ -316,14 +316,14 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Dispute Additional Evidence Types feature should be enabled. Disabled by default.
+	 * Checks whether Dispute Additional Evidence Types feature should be enabled. Enabled by default.
 	 *
 	 * This gates the new evidence form types (event, booking_reservation, other) for dispute challenges.
 	 *
 	 * @return bool
 	 */
 	public static function is_dispute_additional_evidence_types_enabled(): bool {
-		return '1' === get_option( self::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+		return '1' === get_option( self::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '1' );
 	}
 
 	/**
