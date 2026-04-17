@@ -2000,6 +2000,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 				$order->save_meta_data();
 			}
+			if ( 'amazon_pay' === $payment_method_type
+				&& isset( $payment_method_details['amazon_pay']['funding']['card']['last4'] ) ) {
+				$funding_card = $payment_method_details['amazon_pay']['funding']['card'];
+				$order->add_meta_data( 'last4', $funding_card['last4'], true );
+				if ( isset( $funding_card['brand'] ) ) {
+					$order->add_meta_data( '_card_brand', strtolower( $funding_card['brand'] ), true );
+				}
+				$order->save_meta_data();
+			}
 		} else {
 			$payment_method_details = false;
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
@@ -2416,6 +2425,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// then fall back to Stripe's wallet info (authoritative for Apple Pay, Google Pay, Link).
 		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
 		$wallet_type           = is_array( $payment_method_details ) ? $payment_method_details['card']['wallet']['type'] ?? null : null;
+		// Amazon Pay reports its type at the top level rather than under card.wallet.
+		if ( ! $wallet_type && is_array( $payment_method_details )
+			&& 'amazon_pay' === ( $payment_method_details['type'] ?? null ) ) {
+			$wallet_type = 'amazon_pay';
+		}
 		if ( ! $express_checkout_type && $wallet_type ) {
 			$express_checkout_type = sanitize_text_field( $wallet_type );
 			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_checkout_type );
