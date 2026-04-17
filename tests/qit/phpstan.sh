@@ -39,8 +39,14 @@ else
 	set -e
 fi
 
-# Preserve the raw QIT output on stdout so existing CI log consumers keep working.
-echo "$RAW"
+# Preserve the raw QIT output on stdout when `--json` is not requested so
+# existing CI log consumers keep working. In `--json` mode, route the raw
+# output to stderr so stdout is a single parseable JSON document.
+if [ "$JSON" -eq 1 ]; then
+	echo "$RAW" >&2
+else
+	echo "$RAW"
+fi
 
 if [ "$EXIT_CODE" -eq 0 ]; then
 	STATUS="pass"
