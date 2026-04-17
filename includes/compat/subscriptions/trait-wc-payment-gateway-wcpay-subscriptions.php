@@ -379,7 +379,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$payment_information->set_payment_type( Payment_Type::RECURRING() );
 
 		// Only require token persistence when the selected payment method supports future reuse.
-		if ( $this->should_setup_future_usage() ) {
+		if ( $this->should_setup_future_usage( $payment_information ) ) {
 			$payment_information->must_save_payment_method_to_store();
 		}
 		$payment_information->set_is_changing_payment_method_for_subscription( $this->is_changing_payment_method_for_subscription() );
