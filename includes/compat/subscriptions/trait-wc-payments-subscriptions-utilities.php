@@ -48,11 +48,12 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool
 	 */
 	public function is_payment_recurring( $order_id ) {
-		if ( ! $this->is_subscriptions_enabled() ) {
-			return false;
+		// `is_changing_payment_method_for_subscription()` calls `wcs_is_subscription()`, which only exists when Subscriptions is active.
+		if ( $this->is_subscriptions_enabled() && $this->is_changing_payment_method_for_subscription() ) {
+			return true;
 		}
 
-		return $this->is_changing_payment_method_for_subscription() || RecurringItemHelper::has_recurring_items( 'order', $order_id );
+		return RecurringItemHelper::has_recurring_items( 'order', $order_id );
 	}
 
 	/**

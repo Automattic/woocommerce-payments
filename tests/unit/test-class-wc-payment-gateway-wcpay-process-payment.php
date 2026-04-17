@@ -1306,6 +1306,54 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
+	public function test_recurring_items_filter_applies_without_subscriptions_plugin() {
+		$order  = WC_Helper_Order::create_order();
+		$intent = WC_Helper_Intention::create_intention();
+
+		// Simulate the WC Subscriptions plugin being absent by forcing the version below the supported threshold.
+		$previous_version          = WC_Subscriptions::$version;
+		WC_Subscriptions::$version = '2.1.0';
+		\WCPay\Subscriptions\RecurringItemHelper::reset_cache();
+
+		try {
+			add_filter(
+				'wcpay_checkout_has_recurring_items',
+				function ( $has_recurring_items, $context, $subject ) use ( $order ) {
+					if ( 'order' === $context && $subject instanceof WC_Order && $subject->get_id() === $order->get_id() ) {
+						return true;
+					}
+
+					return $has_recurring_items;
+				},
+				10,
+				3
+			);
+
+			$this->mock_customer_service
+				->expects( $this->once() )
+				->method( 'get_customer_id_by_user_id' )
+				->willReturn( 'cus_mock' );
+
+			$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+			$request->expects( $this->once() )
+				->method( 'setup_future_usage' );
+			$request->expects( $this->once() )
+				->method( 'format_response' )
+				->willReturn( $intent );
+
+			$this->mock_token_service
+				->expects( $this->once() )
+				->method( 'add_payment_method_to_user' )
+				->with( $intent->get_payment_method_id(), $order->get_user() )
+				->willReturn( new WC_Payment_Token_CC() );
+
+			$this->mock_wcpay_gateway->process_payment( $order->get_id() );
+		} finally {
+			WC_Subscriptions::$version = $previous_version;
+			\WCPay\Subscriptions\RecurringItemHelper::reset_cache();
+		}
+	}
+
 	public function test_non_reusable_payment_method_short_circuits_setup_future_usage() {
 		$order  = WC_Helper_Order::create_order();
 		$cart   = $this->createMock( WC_Cart::class );

@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Add extensible recurring-item detection for setup future usage via the new `wcpay_checkout_has_recurring_items` filter. The default input of the `wcpay_confirm_without_payment_intent` filter changes from `! $save_payment_method_to_store` to `! $should_setup_future_usage` (strictly more conservative: fewer $0 orders skip intent creation).
+Ensure the `wcpay_checkout_has_recurring_items` filter is consulted when deciding whether a payment is recurring even if the WooCommerce Subscriptions plugin is not active, so extensions can opt an order into saving the payment method without requiring Subscriptions.
