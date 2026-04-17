@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Payment_Method;
-
 /**
  * Unit tests for non-reusable payment method handling in WCPay subscriptions trait.
  */
@@ -185,49 +183,22 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Non_Reusable_Methods_Test extends W
 	}
 
 	/**
-	 * Test that Amazon Pay ECE subscriptions get switched to the correct gateway.
+	 * Amazon Pay subscriptions that reach `maybe_force_subscription_to_manual`
+	 * still on the base card gateway (because Stripe hasn't confirmed the
+	 * payment method yet) must remain automatic — the base gateway is reusable,
+	 * and the gateway will later switch them to the Amazon Pay split gateway
+	 * via `sync_payment_method_to_subscriptions()`.
 	 */
-	public function test_maybe_switch_subscription_to_amazon_pay_gateway() {
-		// Arrange: Create a parent order with Amazon Pay ECE meta.
-		$parent_order = WC_Helper_Order::create_order();
-		$parent_order->update_meta_data( '_wcpay_express_checkout_payment_method', Payment_Method::AMAZON_PAY );
-		$parent_order->save();
-
-		// Create a subscription with the base gateway (as it would be initially set by ECE).
+	public function test_amazon_pay_ece_subscription_remains_automatic_on_base_gateway() {
 		$subscription = new WC_Subscription();
 		$subscription->set_payment_method( 'woocommerce_payments' );
-		$subscription->set_parent( $parent_order );
+		$subscription->set_requires_manual_renewal( false );
 		$subscription->save();
 
-		// Act: Call the gateway switch method (runs at priority 9).
-		$this->mock_gateway->maybe_switch_subscription_to_amazon_pay_gateway( $subscription );
-
-		// Assert: Subscription should be updated to Amazon Pay split gateway.
-		$expected_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id();
-		$this->assertEquals( $expected_gateway_id, $subscription->get_payment_method(), 'Payment method should be updated to Amazon Pay split gateway' );
-	}
-
-	public function test_amazon_pay_ece_subscription_flow() {
-		// Arrange: Create a parent order with Amazon Pay ECE meta.
-		$parent_order = WC_Helper_Order::create_order();
-		$parent_order->update_meta_data( '_wcpay_express_checkout_payment_method', Payment_Method::AMAZON_PAY );
-		$parent_order->save();
-
-		// Create a subscription with the base gateway (as it would be initially set by ECE).
-		$subscription = new WC_Subscription();
-		$subscription->set_payment_method( 'woocommerce_payments' );
-		$subscription->set_requires_manual_renewal( false ); // Start as automatic.
-		$subscription->set_parent( $parent_order );
-		$subscription->save();
-
-		// Act: Call both methods in the order they would be called by hooks.
-		$this->mock_gateway->maybe_switch_subscription_to_amazon_pay_gateway( $subscription );
 		$this->mock_gateway->maybe_force_subscription_to_manual( $subscription );
 
-		// Assert: Subscription should be on Amazon Pay gateway and remain automatic.
-		$this->assertEquals( 'woocommerce_payments_amazon_pay', $subscription->get_payment_method(), 'Payment method should be Amazon Pay split gateway' );
-		$this->assertFalse( $subscription->is_manual(), 'Subscription should remain automatic for Amazon Pay (reusable payment method)' );
-		$this->assertEmpty( $subscription->get_meta( '_wcpay_original_payment_method_id', true ), 'No original payment method ID should be stored for Amazon Pay' );
+		$this->assertFalse( $subscription->is_manual(), 'Subscription on the reusable base gateway should remain automatic.' );
+		$this->assertEmpty( $subscription->get_meta( '_wcpay_original_payment_method_id', true ), 'No original payment method ID should be stored for reusable gateways.' );
 	}
 
 	/**

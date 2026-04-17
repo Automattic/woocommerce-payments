@@ -98,6 +98,20 @@ class WC_Payments_Token_Service {
 				if ( ! empty( $payment_method['billing_details']['email'] ) ) {
 					$token->set_email( $payment_method['billing_details']['email'] );
 				}
+				// Amazon Pay may share the underlying funding card (brand + last4 + expiry).
+				$funding_card = $payment_method['amazon_pay']['funding']['card'] ?? null;
+				if ( is_array( $funding_card ) && ! empty( $funding_card['last4'] ) ) {
+					$token->set_last4( $funding_card['last4'] );
+					if ( ! empty( $funding_card['brand'] ) ) {
+						$token->set_card_type( strtolower( $funding_card['brand'] ) );
+					}
+					if ( ! empty( $funding_card['exp_month'] ) ) {
+						$token->set_expiry_month( str_pad( (string) $funding_card['exp_month'], 2, '0', STR_PAD_LEFT ) );
+					}
+					if ( ! empty( $funding_card['exp_year'] ) ) {
+						$token->set_expiry_year( (string) $funding_card['exp_year'] );
+					}
+				}
 				break;
 			case Payment_Method::CARD_PRESENT:
 				$token = new WC_Payment_Token_CC();
@@ -135,6 +149,51 @@ class WC_Payments_Token_Service {
 	public function add_payment_method_to_user( $payment_method_id, $user ) {
 		$payment_method_object = $this->payments_api_client->get_payment_method( $payment_method_id );
 		return $this->add_token_to_user( $payment_method_object, $user );
+	}
+
+	/**
+	 * Back-fills the Amazon Pay token's funding card fields (brand, last4, expiry)
+	 * from a charge's payment_method_details. Stripe's bare PaymentMethod API response
+	 * does not include funding.card for Amazon Pay, but the charge does — so we heal
+	 * the token at payment time. Safe for both newly-saved tokens and pre-existing
+	 * ones; no-op when the token already has a last4 or when funding data is absent.
+	 *
+	 * @param WC_Payment_Token|null $token                  The token to update.
+	 * @param array|false|null      $payment_method_details The charge's payment_method_details.
+	 */
+	public function maybe_update_amazon_pay_token_funding_card( $token, $payment_method_details ) {
+		if ( ! $token instanceof WC_Payment_Token_WCPay_Amazon_Pay ) {
+			return;
+		}
+		if ( ! is_array( $payment_method_details ) ) {
+			return;
+		}
+		$funding_card = $payment_method_details['amazon_pay']['funding']['card'] ?? null;
+		if ( ! is_array( $funding_card ) || empty( $funding_card['last4'] ) ) {
+			return;
+		}
+
+		$changed = false;
+		if ( '' === $token->get_last4() ) {
+			$token->set_last4( $funding_card['last4'] );
+			$changed = true;
+		}
+		if ( '' === $token->get_card_type() && ! empty( $funding_card['brand'] ) ) {
+			$token->set_card_type( strtolower( $funding_card['brand'] ) );
+			$changed = true;
+		}
+		if ( '' === $token->get_expiry_month() && ! empty( $funding_card['exp_month'] ) ) {
+			$token->set_expiry_month( str_pad( (string) $funding_card['exp_month'], 2, '0', STR_PAD_LEFT ) );
+			$changed = true;
+		}
+		if ( '' === $token->get_expiry_year() && ! empty( $funding_card['exp_year'] ) ) {
+			$token->set_expiry_year( (string) $funding_card['exp_year'] );
+			$changed = true;
+		}
+
+		if ( $changed ) {
+			$token->save();
+		}
 	}
 
 	/**
@@ -508,15 +567,40 @@ class WC_Payments_Token_Service {
 	/**
 	 * Controls the output for Amazon Pay tokens on the My Account page.
 	 *
+	 * When the funding card is known (last4 is set on the token), the item is
+	 * populated with card brand, last4, and expiry to mirror the Apple Pay /
+	 * Google Pay treatment. When no funding card is available, the redacted
+	 * customer email is used as the last4 placeholder (today's behaviour).
+	 *
 	 * @param  array                                              $item          Individual list item from woocommerce_saved_payment_methods_list.
 	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Amazon_Pay $payment_token The payment token associated with this method entry.
 	 * @return array                                            Filtered item.
 	 */
 	public function get_account_saved_payment_methods_list_item_amazon_pay( $item, $payment_token ) {
-		if ( WC_Payment_Token_WCPay_Amazon_Pay::TYPE === strtolower( $payment_token->get_type() ) ) {
-			$item['method']['last4'] = $payment_token->get_email();
-			$item['method']['brand'] = esc_html__( 'Amazon Pay', 'woocommerce-payments' );
+		if ( WC_Payment_Token_WCPay_Amazon_Pay::TYPE !== strtolower( $payment_token->get_type() ) ) {
+			return $item;
 		}
+
+		$last4 = $payment_token->get_last4();
+		if ( '' !== $last4 ) {
+			$item['method']['last4'] = $last4;
+			$item['method']['brand'] = sprintf(
+				/* translators: 1: wallet name (Amazon Pay), 2: card brand label (e.g. Visa) */
+				_x( '%1$s %2$s', 'Payment token with wallet', 'woocommerce-payments' ),
+				esc_html__( 'Amazon Pay', 'woocommerce-payments' ),
+				wc_get_credit_card_type_label( $payment_token->get_card_type() )
+			);
+			$expiry_month = $payment_token->get_expiry_month();
+			$expiry_year  = $payment_token->get_expiry_year();
+			if ( '' !== $expiry_month && '' !== $expiry_year ) {
+				$item['expires'] = $expiry_month . '/' . substr( (string) $expiry_year, -2 );
+			}
+			return $item;
+		}
+
+		// No funding card shared — keep today's email-based treatment.
+		$item['method']['last4'] = $payment_token->get_email();
+		$item['method']['brand'] = esc_html__( 'Amazon Pay', 'woocommerce-payments' );
 		return $item;
 	}
 

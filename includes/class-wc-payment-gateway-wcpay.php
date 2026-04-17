@@ -2000,6 +2000,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 				$order->save_meta_data();
 			}
+			// Amazon Pay tokens: the charge's payment_method_details is richer than the bare
+			// PaymentMethod API response, so use it to back-fill the funding card (brand, last4,
+			// expiry) on both newly-saved and pre-existing tokens.
+			$amazon_pay_token = $payment_information->get_payment_token();
+			if ( $amazon_pay_token ) {
+				$this->token_service->maybe_update_amazon_pay_token_funding_card( $amazon_pay_token, $payment_method_details );
+			}
 		} else {
 			$payment_method_details = false;
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
@@ -2446,6 +2453,42 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$order->save();
+
+		$this->sync_payment_method_to_subscriptions( $order );
+	}
+
+	/**
+	 * Propagate the order's payment method and title to any subscriptions created from it.
+	 *
+	 * When an order flows through Express Checkout (Amazon Pay in particular), the subscription
+	 * is created before Stripe has confirmed the payment method, so the subscription inherits
+	 * the default card gateway/title. Once the real payment method is known (here), we sync it
+	 * to the subscription so the "My Subscriptions" view and future renewals use the right one.
+	 *
+	 * @param \WC_Order $order The parent order whose payment method has just been finalised.
+	 */
+	private function sync_payment_method_to_subscriptions( $order ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			return;
+		}
+
+		$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'parent' ] );
+		if ( empty( $subscriptions ) ) {
+			return;
+		}
+
+		$payment_method       = $order->get_payment_method();
+		$payment_method_title = $order->get_payment_method_title();
+
+		foreach ( $subscriptions as $subscription ) {
+			if ( $subscription->get_payment_method() === $payment_method
+				&& $subscription->get_payment_method_title() === $payment_method_title ) {
+				continue;
+			}
+			$subscription->set_payment_method( $payment_method );
+			$subscription->set_payment_method_title( $payment_method_title );
+			$subscription->save();
+		}
 	}
 
 	/**

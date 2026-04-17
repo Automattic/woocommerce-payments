@@ -329,6 +329,212 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_Amazon_Pay::class, $token );
 	}
 
+	/**
+	 * Test add Amazon Pay token to user when Stripe shares the funding card.
+	 */
+	public function test_add_token_to_user_for_amazon_pay_with_funding_card() {
+		$mock_payment_method = [
+			'id'              => 'pm_mock',
+			'amazon_pay'      => [
+				'funding' => [
+					'type' => 'card',
+					'card' => [
+						'brand'     => 'Visa',
+						'last4'     => '4242',
+						'exp_month' => 6,
+						'exp_year'  => 2030,
+					],
+				],
+			],
+			'billing_details' => [
+				'email' => 'test@amazon.com',
+			],
+			'type'            => \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id(),
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertInstanceOf( WC_Payment_Token_WCPay_Amazon_Pay::class, $token );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( 'visa', $token->get_card_type() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( '2030', $token->get_expiry_year() );
+		$this->assertEquals( '***test@amazon.com', $token->get_email() );
+	}
+
+	/**
+	 * Test Amazon Pay token display name when the funding card is present.
+	 */
+	public function test_amazon_pay_token_display_name_with_funding_card() {
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_email( 'test@amazon.com' );
+		$token->set_last4( '4242' );
+		$token->set_card_type( 'visa' );
+		$token->set_expiry_month( '06' );
+		$token->set_expiry_year( '2030' );
+
+		$display = $token->get_display_name();
+
+		$this->assertStringContainsString( 'Amazon Pay', $display );
+		$this->assertStringContainsString( '4242', $display );
+		$this->assertStringContainsString( '06/30', $display );
+		$this->assertStringContainsString( 'Visa', $display );
+		$this->assertStringNotContainsString( 'test@amazon.com', $display );
+	}
+
+	/**
+	 * Test Amazon Pay token display name falls back to email when no funding card is available.
+	 */
+	public function test_amazon_pay_token_display_name_without_funding_card() {
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_email( 'test@amazon.com' );
+
+		$this->assertEquals( 'Amazon Pay (***test@amazon.com)', $token->get_display_name() );
+	}
+
+	/**
+	 * Test My Account list item for Amazon Pay with funding card.
+	 */
+	public function test_get_account_saved_payment_methods_list_item_amazon_pay_with_funding_card() {
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_email( 'test@amazon.com' );
+		$token->set_last4( '4242' );
+		$token->set_card_type( 'visa' );
+		$token->set_expiry_month( '06' );
+		$token->set_expiry_year( '2030' );
+
+		$item = $this->token_service->get_account_saved_payment_methods_list_item_amazon_pay(
+			[
+				'method' => [
+					'brand' => 'Amazon Pay',
+					'last4' => '',
+				],
+			],
+			$token
+		);
+
+		$this->assertEquals( '4242', $item['method']['last4'] );
+		$this->assertStringContainsString( 'Amazon Pay', $item['method']['brand'] );
+		$this->assertStringContainsString( 'Visa', $item['method']['brand'] );
+		$this->assertEquals( '06/30', $item['expires'] );
+	}
+
+	/**
+	 * Test My Account list item for Amazon Pay without funding card (fallback to email).
+	 */
+	public function test_get_account_saved_payment_methods_list_item_amazon_pay_without_funding_card() {
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_email( 'test@amazon.com' );
+
+		$item = $this->token_service->get_account_saved_payment_methods_list_item_amazon_pay(
+			[
+				'method' => [
+					'brand' => 'Amazon Pay',
+					'last4' => '',
+				],
+			],
+			$token
+		);
+
+		$this->assertEquals( '***test@amazon.com', $item['method']['last4'] );
+		$this->assertEquals( 'Amazon Pay', $item['method']['brand'] );
+		$this->assertArrayNotHasKey( 'expires', $item );
+	}
+
+	/**
+	 * Back-fill heals a token that has no funding card data yet (e.g. saved before
+	 * funding-card extraction existed, or created from a PM API response that didn't
+	 * include funding.card).
+	 */
+	public function test_maybe_update_amazon_pay_token_funding_card_heals_empty_token() {
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_email( 'test@amazon.com' );
+		$token->set_user_id( 1 );
+		$token->set_token( 'pm_mock_heal' );
+		$token->save();
+
+		$payment_method_details = [
+			'type'       => 'amazon_pay',
+			'amazon_pay' => [
+				'funding' => [
+					'type' => 'card',
+					'card' => [
+						'brand'     => 'Visa',
+						'last4'     => '4242',
+						'exp_month' => 6,
+						'exp_year'  => 2030,
+					],
+				],
+			],
+		];
+
+		$this->token_service->maybe_update_amazon_pay_token_funding_card( $token, $payment_method_details );
+
+		$reloaded = WC_Payment_Tokens::get( $token->get_id() );
+		$this->assertInstanceOf( WC_Payment_Token_WCPay_Amazon_Pay::class, $reloaded );
+		$this->assertEquals( '4242', $reloaded->get_last4() );
+		$this->assertEquals( 'visa', $reloaded->get_card_type() );
+		$this->assertEquals( '06', $reloaded->get_expiry_month() );
+		$this->assertEquals( '2030', $reloaded->get_expiry_year() );
+	}
+
+	/**
+	 * Back-fill does nothing when the charge has no funding card (non-card funding).
+	 */
+	public function test_maybe_update_amazon_pay_token_funding_card_noop_without_funding() {
+		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
+		$token->set_email( 'test@amazon.com' );
+		$token->set_user_id( 1 );
+		$token->set_token( 'pm_mock_no_funding' );
+		$token->save();
+
+		$this->token_service->maybe_update_amazon_pay_token_funding_card(
+			$token,
+			[
+				'type'       => 'amazon_pay',
+				'amazon_pay' => [ 'funding' => [ 'type' => 'bank_account' ] ],
+			]
+		);
+
+		$reloaded = WC_Payment_Tokens::get( $token->get_id() );
+		$this->assertEquals( '', $reloaded->get_last4() );
+		$this->assertEquals( '', $reloaded->get_card_type() );
+	}
+
+	/**
+	 * Back-fill is a no-op for non-Amazon-Pay tokens.
+	 */
+	public function test_maybe_update_amazon_pay_token_funding_card_ignores_non_amazon_tokens() {
+		$token = new WC_Payment_Token_CC();
+		$token->set_last4( '1111' );
+		$token->set_card_type( 'visa' );
+		$token->set_expiry_month( '01' );
+		$token->set_expiry_year( '2030' );
+		$token->set_user_id( 1 );
+		$token->set_token( 'pm_mock_cc' );
+		$token->save();
+
+		$this->token_service->maybe_update_amazon_pay_token_funding_card(
+			$token,
+			[
+				'type'       => 'amazon_pay',
+				'amazon_pay' => [
+					'funding' => [
+						'card' => [
+							'brand'     => 'Visa',
+							'last4'     => '4242',
+							'exp_month' => 6,
+							'exp_year'  => 2030,
+						],
+					],
+				],
+			]
+		);
+
+		$reloaded = WC_Payment_Tokens::get( $token->get_id() );
+		$this->assertEquals( '1111', $reloaded->get_last4() );
+	}
+
 	public function test_add_payment_method_to_user() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [

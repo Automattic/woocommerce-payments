@@ -38,16 +38,47 @@ class WC_Payment_Token_WCPay_Amazon_Pay extends WC_Payment_Token {
 	 * @var array
 	 */
 	protected $extra_data = [
-		'email' => '',
+		'email'        => '',
+		'last4'        => '',
+		'card_type'    => '',
+		'expiry_month' => '',
+		'expiry_year'  => '',
 	];
 
 	/**
 	 * Get payment method type to display to user.
 	 *
+	 * When the funding card is known (last4 is set), returns a label like
+	 * "Amazon Pay Visa ending in 4242 (expires 06/30)". Falls back to the
+	 * email-based label or plain "Amazon Pay" when the funding card is absent.
+	 *
 	 * @param  string $deprecated Deprecated since WooCommerce 3.0.
 	 * @return string
 	 */
 	public function get_display_name( $deprecated = '' ) {
+		$last4 = $this->get_last4();
+		if ( '' !== $last4 ) {
+			$brand_label  = wc_get_credit_card_type_label( $this->get_card_type() );
+			$expiry_month = $this->get_expiry_month();
+			$expiry_year  = $this->get_expiry_year();
+			if ( '' !== $expiry_month && '' !== $expiry_year ) {
+				return sprintf(
+					/* translators: 1: card brand label (e.g. Visa), 2: last 4 digits, 3: 2-digit expiry month, 4: 2-digit expiry year */
+					__( 'Amazon Pay %1$s ending in %2$s (expires %3$s/%4$s)', 'woocommerce-payments' ),
+					$brand_label,
+					$last4,
+					str_pad( (string) $expiry_month, 2, '0', STR_PAD_LEFT ),
+					substr( (string) $expiry_year, -2 )
+				);
+			}
+			return sprintf(
+				/* translators: 1: card brand label, 2: last 4 digits */
+				__( 'Amazon Pay %1$s ending in %2$s', 'woocommerce-payments' ),
+				$brand_label,
+				$last4
+			);
+		}
+
 		$email = $this->get_email();
 		if ( ! empty( $email ) ) {
 			return sprintf(
@@ -61,10 +92,79 @@ class WC_Payment_Token_WCPay_Amazon_Pay extends WC_Payment_Token {
 	}
 
 	/**
-	 * Hook prefix.
+	 * Returns the last 4 digits of the Amazon Pay funding card, if shared.
+	 *
+	 * @param string $context What the value is for. Valid values are view and edit.
+	 * @return string Last 4 digits, or empty string if not available.
 	 */
-	protected function get_hook_prefix() {
-		return 'woocommerce_payments_token_wcpay_amazon_pay_get_';
+	public function get_last4( $context = 'view' ) {
+		return (string) ( $this->get_prop( 'last4', $context ) ?? '' );
+	}
+
+	/**
+	 * Set the last 4 digits of the Amazon Pay funding card.
+	 *
+	 * @param string $last4 Last 4 digits.
+	 */
+	public function set_last4( $last4 ) {
+		$this->set_prop( 'last4', $last4 );
+	}
+
+	/**
+	 * Returns the card brand of the Amazon Pay funding card, if shared.
+	 *
+	 * @param string $context What the value is for. Valid values are view and edit.
+	 * @return string Card brand (lowercased), or empty string if not available.
+	 */
+	public function get_card_type( $context = 'view' ) {
+		return (string) ( $this->get_prop( 'card_type', $context ) ?? '' );
+	}
+
+	/**
+	 * Set the card brand of the Amazon Pay funding card.
+	 *
+	 * @param string $card_type Card brand (e.g. 'visa', 'mastercard').
+	 */
+	public function set_card_type( $card_type ) {
+		$this->set_prop( 'card_type', $card_type );
+	}
+
+	/**
+	 * Returns the expiry month of the Amazon Pay funding card, if shared.
+	 *
+	 * @param string $context What the value is for. Valid values are view and edit.
+	 * @return string Two-digit expiry month (zero-padded), or empty string if not available.
+	 */
+	public function get_expiry_month( $context = 'view' ) {
+		return (string) ( $this->get_prop( 'expiry_month', $context ) ?? '' );
+	}
+
+	/**
+	 * Set the expiry month of the Amazon Pay funding card.
+	 *
+	 * @param string $expiry_month Two-digit expiry month (zero-padded, e.g. '06').
+	 */
+	public function set_expiry_month( $expiry_month ) {
+		$this->set_prop( 'expiry_month', $expiry_month );
+	}
+
+	/**
+	 * Returns the expiry year of the Amazon Pay funding card, if shared.
+	 *
+	 * @param string $context What the value is for. Valid values are view and edit.
+	 * @return string Four-digit expiry year, or empty string if not available.
+	 */
+	public function get_expiry_year( $context = 'view' ) {
+		return (string) ( $this->get_prop( 'expiry_year', $context ) ?? '' );
+	}
+
+	/**
+	 * Set the expiry year of the Amazon Pay funding card.
+	 *
+	 * @param string $expiry_year Four-digit expiry year (e.g. '2030').
+	 */
+	public function set_expiry_year( $expiry_year ) {
+		$this->set_prop( 'expiry_year', $expiry_year );
 	}
 
 	/**
@@ -98,6 +198,13 @@ class WC_Payment_Token_WCPay_Amazon_Pay extends WC_Payment_Token {
 	 */
 	public function get_type( $deprecated = '' ) {
 		return self::TYPE;
+	}
+
+	/**
+	 * Hook prefix.
+	 */
+	protected function get_hook_prefix() {
+		return 'woocommerce_payments_token_wcpay_amazon_pay_get_';
 	}
 
 	/**
