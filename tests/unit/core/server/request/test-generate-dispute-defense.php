@@ -26,6 +26,22 @@ class Generate_Dispute_Defense_Test extends WCPAY_UnitTestCase {
 		$request->set_dispute_id( 'ch_not_a_dispute' );
 	}
 
+	public function test_set_dispute_id_accepts_du_prefix() {
+		$request = Generate_Dispute_Defense::create();
+		$request->set_dispute_id( 'du_1TN0D8FyLcjBhX8JLKgFTHiC' );
+		$request->set_reason( 'fraudulent' );
+		$request->set_evidence_context( [] );
+		$this->assertSame( 'du_1TN0D8FyLcjBhX8JLKgFTHiC', $request->get_params()['dispute_id'] );
+	}
+
+	public function test_set_dispute_id_accepts_dp_prefix() {
+		$request = Generate_Dispute_Defense::create();
+		$request->set_dispute_id( 'dp_test_123' );
+		$request->set_reason( 'fraudulent' );
+		$request->set_evidence_context( [] );
+		$this->assertSame( 'dp_test_123', $request->get_params()['dispute_id'] );
+	}
+
 	public function test_set_dispute_id_rejects_empty_string() {
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 		$request = Generate_Dispute_Defense::create();

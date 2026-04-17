@@ -56,7 +56,7 @@ class Generate_Dispute_Defense extends Request {
 	 * @throws Invalid_Request_Parameter_Exception If the ID does not match the Stripe dispute format.
 	 */
 	public function set_dispute_id( string $dispute_id ) {
-		$this->validate_stripe_id( $dispute_id, 'dp' );
+		$this->validate_stripe_id( $dispute_id, [ 'dp', 'du' ] );
 		$this->set_param( 'dispute_id', $dispute_id );
 	}
 
