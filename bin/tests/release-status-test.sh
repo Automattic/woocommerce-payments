@@ -125,5 +125,43 @@ assert_eq "$(echo "$OUT" | jq -r '.blockers | length > 0')" "true" "blockers pop
 assert_eq "$RC" "1" "non-zero exit when not ready"
 rm -rf "$DIR"
 
+# Stale version: branch is release/10.7.0 but all files still at 10.6.0, and
+# changelog.txt / readme.txt are missing entries for 10.7.0. bump-version.sh
+# --check still reports files as internally consistent, so ready must be gated
+# by the changelog/readme checks.
+DIR=$(make_fixture)
+(
+	cd "$DIR"
+	# Roll every version file back to 10.6.0 — consistent among themselves, but
+	# mismatched with the branch name.
+	sed -i.bak 's/Version: 10.7.0/Version: 10.6.0/' woocommerce-payments.php && rm -f woocommerce-payments.php.bak
+	echo '{"name":"f","version":"10.6.0"}' > package.json
+	echo '{"name":"f","version":"10.6.0","lockfileVersion":3,"packages":{"":{"name":"f","version":"10.6.0"}}}' > package-lock.json
+	echo 'Stable tag: 10.6.0' > readme.txt
+	: > changelog.txt
+)
+write_gh_shim "$DIR/.shim"
+cat > "$DIR/.run-list.json" <<'JSON'
+[{"status":"completed","conclusion":"success","url":"https://example/run/ok"}]
+JSON
+cat > "$DIR/.pr-list.json" <<'JSON'
+[{"number":10998,"url":"https://example/pr/10998","state":"OPEN","mergeable":"MERGEABLE"}]
+JSON
+
+export GH_RUN_LIST_FIXTURE="$DIR/.run-list.json"
+export GH_PR_LIST_FIXTURE="$DIR/.pr-list.json"
+export PATH="$DIR/.shim:$PATH"
+
+set +e
+OUT=$( cd "$DIR" && ./bin/release-status.sh --json --branch release/10.7.0 )
+RC=$?
+set -e
+assert_eq "$(echo "$OUT" | jq -r .ready)" "false" "ready=false when files are stale"
+assert_eq "$(echo "$OUT" | jq -r '[.blockers[] | select(contains("changelog.txt"))] | length > 0')" "true" "blockers include changelog.txt entry missing"
+assert_eq "$(echo "$OUT" | jq -r '[.blockers[] | select(contains("readme.txt"))]  | length > 0')" "true" "blockers include readme.txt stable tag stale"
+assert_eq "$RC" "1" "non-zero exit when stale"
+rm -rf "$DIR"
+unset GH_RUN_LIST_FIXTURE GH_PR_LIST_FIXTURE GH_E2E_FIXTURE GH_BUILD_FIXTURE
+
 echo "# passed $PASS/$((PASS + FAIL))"
 [ "$FAIL" -eq 0 ]

@@ -87,6 +87,8 @@ fi
 
 BLOCKERS=()
 [ "$(echo "$VERSION_JSON" | jq -r .consistent)" = "true" ] || BLOCKERS+=("version files inconsistent")
+[ "$CHANGELOG_HAS_RELEASE" = "true" ] || BLOCKERS+=("changelog.txt missing entry for $VERSION")
+[ "$README_HAS_RELEASE" = "true" ] || BLOCKERS+=("readme.txt stable tag not updated to $VERSION")
 [ "$CHANGELOG_VALID" = "true" ] || BLOCKERS+=("changelogger validate failed")
 [ "$(echo "$RELEASE_PR_RUN" | jq -r .conclusion)" = "success" ] || BLOCKERS+=("release-pr.yml not success")
 [ "$(echo "$BUILD_ZIP_RUN" | jq -r .conclusion)" = "success" ] || BLOCKERS+=("build-zip-and-run-smoke-tests not success")
