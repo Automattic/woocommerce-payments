@@ -79,7 +79,7 @@ jobs:
         with:
           version: ${{ env.RELEASE_VERSION }}
           is-pre-release: 'false'
-          push: ${{ inputs.dry-run && 'false' || 'true' }}
+          push: ${{ inputs.dry-run == true && 'false' || 'true' }}
 
       - name: "Define the release date"
         id: define_var
@@ -110,6 +110,7 @@ jobs:
           branch: ${{ env.BRANCH_NAME }}
 
       - name: "Validate release branch"
+        if: ${{ ! inputs.dry-run }}
         run: ./bin/validate-release-branch.sh
 
       - name: "Create a PR to trunk"
@@ -139,7 +140,9 @@ jobs:
           Check status of zip file build & smoke tests at https://github.com/Automattic/woocommerce-payments/actions/runs/${GITHUB_RUN_ID}"
 
       - name: "Dry-run summary"
-        if: ${{ inputs.dry-run }}
+        # Run even if an earlier step failed, so the diff is always reported
+        # in dry-run mode — otherwise a failure upstream produces no feedback.
+        if: ${{ !cancelled() && inputs.dry-run }}
         run: |
           {
             echo "## Dry run"
@@ -147,7 +150,13 @@ jobs:
             echo "No push, no PR, no smoke tests. The following diff would have been committed to the release branch:"
             echo ''
             echo '```diff'
-            git --no-pager diff
+            git --no-pager diff -- woocommerce-payments.php package.json readme.txt
+            echo '```'
+            echo ''
+            echo '### package-lock.json'
+            echo ''
+            echo '```'
+            git --no-pager diff --stat -- package-lock.json
             echo '```'
             echo ''
             echo '### Untracked files'
