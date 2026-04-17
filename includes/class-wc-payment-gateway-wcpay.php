@@ -1536,9 +1536,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception When you send incorrect request value via setters.
 	 */
 	public function process_payment_for_order( $cart, $payment_information, $scheduled_subscription_payment = false ) {
-		$order                                       = $payment_information->get_order();
-		$save_payment_method_to_store                = $payment_information->should_save_payment_method_to_store();
-		$should_setup_future_usage                   = $this->should_setup_future_usage( $payment_information );
+		$order                     = $payment_information->get_order();
+		$should_setup_future_usage = $this->should_setup_future_usage( $payment_information );
+		$save_payment_method_to_store = $should_setup_future_usage
+			&& $payment_information->should_save_payment_method_to_store();
 		$is_changing_payment_method_for_subscription = $payment_information->is_changing_payment_method_for_subscription();
 
 		$order_id = $order->get_id();

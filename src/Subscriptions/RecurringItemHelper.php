@@ -67,7 +67,7 @@ class RecurringItemHelper {
 			return false;
 		}
 
-		$has_listener     = has_filter( 'wcpay_checkout_has_recurring_items' );
+		$has_listener     = false !== has_filter( 'wcpay_checkout_has_recurring_items' );
 		$resolved_subject = $subject;
 		$has_recurring    = false;
 
