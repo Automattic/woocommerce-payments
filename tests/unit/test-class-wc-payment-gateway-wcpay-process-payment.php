@@ -1255,6 +1255,8 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
+		$request->expects( $this->never() )
+			->method( 'setup_future_usage' );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );
@@ -1302,12 +1304,14 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->willReturn( new WC_Payment_Token_CC() );
 
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
-
-		remove_all_filters( 'wcpay_checkout_has_recurring_items' );
 	}
 
 	public function test_recurring_items_filter_does_not_set_up_future_usage_for_non_reusable_payment_methods() {
-		$order = WC_Helper_Order::create_order();
+		$order  = WC_Helper_Order::create_order();
+		$cart   = $this->createMock( WC_Cart::class );
+		$intent = WC_Helper_Intention::create_intention();
+		$order->set_total( 10 );
+		$order->save();
 
 		$this->mock_payment_method->method( 'is_reusable' )->willReturn( false );
 
@@ -1323,6 +1327,24 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			10,
 			3
 		);
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->never() )
+			->method( 'setup_future_usage' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		$this->mock_token_service
+			->expects( $this->once() )
+			->method( 'add_payment_method_to_user' )
+			->with( $intent->get_payment_method_id(), $order->get_user() )
+			->willReturn( new WC_Payment_Token_CC() );
 
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information->must_save_payment_method_to_store();
@@ -1346,12 +1368,7 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			$this->mock_rate_limiter
 		);
 
-		$method = new ReflectionMethod( WC_Payment_Gateway_WCPay::class, 'should_setup_future_usage' );
-		$method->setAccessible( true );
-
-		$this->assertFalse( $method->invoke( $gateway, $payment_information ) );
-
-		remove_all_filters( 'wcpay_checkout_has_recurring_items' );
+		$gateway->process_payment_for_order( $cart, $payment_information );
 	}
 
 	public function test_does_not_update_new_payment_method() {
@@ -1386,8 +1403,23 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 
 		$intent = WC_Helper_Intention::create_intention();
 
+		add_filter(
+			'wcpay_checkout_has_recurring_items',
+			function ( $has_recurring_items, $context, $subject ) use ( $order ) {
+				if ( 'order' === $context && $subject instanceof WC_Order && $subject->get_id() === $order->get_id() ) {
+					return true;
+				}
+
+				return $has_recurring_items;
+			},
+			10,
+			3
+		);
+
 		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
 
+		$request->expects( $this->never() )
+			->method( 'setup_future_usage' );
 		$request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $intent );

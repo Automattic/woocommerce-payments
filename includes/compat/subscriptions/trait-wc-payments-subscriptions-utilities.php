@@ -9,6 +9,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Subscriptions\RecurringItemHelper;
+
 /**
  * Utility functions related to WC Subscriptions.
  */
@@ -22,12 +24,7 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool Whether subscriptions is enabled or not.
 	 */
 	public function is_subscriptions_enabled() {
-		if ( $this->is_subscriptions_plugin_active() ) {
-			return version_compare( $this->get_subscriptions_plugin_version(), '2.2.0', '>=' );
-		}
-
-		// TODO update this once we know how the base library feature will be enabled.
-		return class_exists( 'WC_Subscriptions_Core_Plugin' );
+		return RecurringItemHelper::is_subscriptions_enabled();
 	}
 
 	/**
@@ -51,7 +48,11 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool
 	 */
 	public function is_payment_recurring( $order_id ) {
-		return $this->is_changing_payment_method_for_subscription() || WC_Payments_Recurring_Item_Helper::has_recurring_items( 'order', $order_id );
+		if ( ! $this->is_subscriptions_enabled() ) {
+			return false;
+		}
+
+		return $this->is_changing_payment_method_for_subscription() || RecurringItemHelper::has_recurring_items( 'order', $order_id );
 	}
 
 	/**
@@ -66,7 +67,7 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool Indicates whether the save payment method checkbox should be displayed or not.
 	 */
 	public function display_save_payment_method_checkbox( $display ) {
-		if ( WC_Payments_Recurring_Item_Helper::has_recurring_items( 'cart' ) || $this->is_changing_payment_method_for_subscription() ) {
+		if ( RecurringItemHelper::has_recurring_items( 'cart' ) || $this->is_changing_payment_method_for_subscription() ) {
 			return false;
 		}
 		// Only render the "Save payment method" checkbox if there are no recurring items in the cart.
@@ -80,7 +81,7 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool
 	 */
 	public function is_subscription_item_in_cart() {
-		return WC_Payments_Recurring_Item_Helper::has_recurring_items( 'cart' );
+		return RecurringItemHelper::has_recurring_items( 'cart' );
 	}
 
 	/**

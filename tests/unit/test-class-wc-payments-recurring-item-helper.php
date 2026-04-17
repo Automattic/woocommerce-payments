@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Subscriptions\RecurringItemHelper;
+
 /**
  * Unit tests for recurring-item detection helper.
  */
@@ -20,14 +22,23 @@ class WC_Payments_Recurring_Item_Helper_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_order_has_recurring_items_uses_subscriptions_by_default() {
+		$order       = WC_Helper_Order::create_order();
+		$other_order = WC_Helper_Order::create_order();
+
 		WC_Subscriptions::set_wcs_order_contains_subscription(
-			function ( $order ) {
-				return 123 === $order;
+			function ( $checked_order ) use ( $order ) {
+				return $checked_order instanceof WC_Order && $checked_order->get_id() === $order->get_id();
 			}
 		);
 
-		$this->assertTrue( WC_Payments_Recurring_Item_Helper::has_recurring_items( 'order', 123 ) );
-		$this->assertFalse( WC_Payments_Recurring_Item_Helper::has_recurring_items( 'order', 456 ) );
+		$this->assertTrue( RecurringItemHelper::has_recurring_items( 'order', $order->get_id() ) );
+		$this->assertFalse( RecurringItemHelper::has_recurring_items( 'order', $other_order->get_id() ) );
+	}
+
+	public function test_cart_has_recurring_items_detects_subscription_products() {
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$this->assertTrue( RecurringItemHelper::has_recurring_items( 'cart' ) );
 	}
 
 	public function test_cart_has_recurring_items_detects_subscription_renewals() {
@@ -38,7 +49,7 @@ class WC_Payments_Recurring_Item_Helper_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
-		$this->assertTrue( WC_Payments_Recurring_Item_Helper::has_recurring_items( 'cart' ) );
+		$this->assertTrue( RecurringItemHelper::has_recurring_items( 'cart' ) );
 	}
 
 	public function test_product_has_recurring_items_can_be_extended_by_filter() {
@@ -59,6 +70,6 @@ class WC_Payments_Recurring_Item_Helper_Test extends WCPAY_UnitTestCase {
 			3
 		);
 
-		$this->assertTrue( WC_Payments_Recurring_Item_Helper::has_recurring_items( 'product', $product ) );
+		$this->assertTrue( RecurringItemHelper::has_recurring_items( 'product', $product ) );
 	}
 }

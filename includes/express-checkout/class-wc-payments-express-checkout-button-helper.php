@@ -10,6 +10,7 @@ defined( 'ABSPATH' ) || exit;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
+use WCPay\Subscriptions\RecurringItemHelper;
 
 /**
  * Express Checkout Button Helper class.
@@ -259,11 +260,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function has_recurring_items() {
 		if ( $this->is_product() ) {
-			return WC_Payments_Recurring_Item_Helper::has_recurring_items( 'product', $this->get_product() );
+			return RecurringItemHelper::has_recurring_items( 'product', $this->get_product() );
 		}
 
 		if ( $this->is_checkout() || $this->is_cart() ) {
-			return WC_Payments_Recurring_Item_Helper::has_recurring_items( 'cart', WC()->cart );
+			return RecurringItemHelper::has_recurring_items( 'cart', WC()->cart );
 		}
 
 		return false;
@@ -271,6 +272,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 	/**
 	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @deprecated 10.7.1 Use has_recurring_items() instead.
 	 *
 	 * @return boolean
 	 */

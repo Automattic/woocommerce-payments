@@ -6,17 +6,18 @@ import {
 	_resetForTesting,
 } from '../checkPaymentMethodIsAvailable';
 
+const mockGetExpressCheckoutData = jest.fn( ( key ) => {
+	const data = {
+		checkout: { currency_decimals: 2 },
+		enabled_methods: [ 'payment_request', 'amazon_pay' ],
+	};
+
+	return data[ key ] ?? null;
+} );
+
 // Mock the utils index module.
 jest.mock( '..', () => ( {
-	getExpressCheckoutData: jest.fn( ( key ) => {
-		if ( key === 'checkout' ) {
-			return { currency_decimals: 2 };
-		}
-		if ( key === 'enabled_methods' ) {
-			return [ 'payment_request', 'amazon_pay' ];
-		}
-		return null;
-	} ),
+	getExpressCheckoutData: ( key ) => mockGetExpressCheckoutData( key ),
 } ) );
 
 jest.mock( '../../transformers/wc-to-stripe', () => ( {
@@ -44,6 +45,14 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 
 	beforeEach( () => {
 		_resetForTesting();
+		mockGetExpressCheckoutData.mockImplementation( ( key ) => {
+			const data = {
+				checkout: { currency_decimals: 2 },
+				enabled_methods: [ 'payment_request', 'amazon_pay' ],
+			};
+
+			return data[ key ] ?? null;
+		} );
 		eventHandlers = {};
 
 		mockEceButton = {
@@ -217,6 +226,54 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 
 		expect( mockStripe.elements ).toHaveBeenCalledWith(
 			expect.objectContaining( { amount: 1 } )
+		);
+	} );
+
+	it( 'uses setupFutureUsage when has_recurring_items is true', async () => {
+		mockGetExpressCheckoutData.mockImplementation( ( key ) => {
+			const data = {
+				checkout: { currency_decimals: 2 },
+				enabled_methods: [ 'payment_request', 'amazon_pay' ],
+				has_recurring_items: true,
+			};
+
+			return data[ key ] ?? null;
+		} );
+
+		await checkPaymentMethodIsAvailable(
+			'applePay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
+
+		expect( mockStripe.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				setupFutureUsage: 'off_session',
+			} )
+		);
+	} );
+
+	it( 'falls back to has_subscription when has_recurring_items is absent', async () => {
+		mockGetExpressCheckoutData.mockImplementation( ( key ) => {
+			const data = {
+				checkout: { currency_decimals: 2 },
+				enabled_methods: [ 'payment_request', 'amazon_pay' ],
+				has_subscription: true,
+			};
+
+			return data[ key ] ?? null;
+		} );
+
+		await checkPaymentMethodIsAvailable(
+			'amazonPay',
+			createCart( '1000', 'USD' ),
+			mockApi
+		);
+
+		expect( mockStripe.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				setupFutureUsage: 'off_session',
+			} )
 		);
 	} );
 } );

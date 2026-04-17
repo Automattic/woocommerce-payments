@@ -103,6 +103,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
+		remove_all_filters( 'wcpay_checkout_has_recurring_items' );
 		WC()->cart->empty_cart();
 		WC()->session->cleanup_sessions();
 		$this->zone->delete();
@@ -246,8 +247,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		$this->assertTrue( $helper->has_recurring_items() );
 		$this->assertTrue( $helper->has_subscription_product() );
-
-		remove_all_filters( 'wcpay_checkout_has_recurring_items' );
 	}
 
 	public function test_common_get_button_settings() {

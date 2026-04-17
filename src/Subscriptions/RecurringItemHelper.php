@@ -1,30 +1,38 @@
 <?php
 /**
- * Class WC_Payments_Recurring_Item_Helper
+ * Class RecurringItemHelper
  *
  * @package WooCommerce\Payments
  */
 
-defined( 'ABSPATH' ) || exit;
+namespace WCPay\Subscriptions;
+
+use WC_Order;
+use WC_Product;
 
 /**
  * Helper class for recurring-item detection across checkout contexts.
  */
-class WC_Payments_Recurring_Item_Helper {
+class RecurringItemHelper {
 	/**
 	 * Determine whether the checkout context contains recurring items.
 	 *
 	 * Supported contexts:
-	 * - order
-	 * - cart
-	 * - product
+	 * - `order`: `$subject` may be a `WC_Order`, order ID, or `null`.
+	 * - `cart`: `$subject` may be a `WC_Cart` or `null`.
+	 * - `product`: `$subject` may be a `WC_Product`, product ID, or `null`.
+	 *
+	 * The `wcpay_checkout_has_recurring_items` filter receives the resolved subject
+	 * for the current context. Returning `true` for the `order` context affects
+	 * checkout flows that treat the order as recurring, including requesting
+	 * `setup_future_usage=off_session` and persisting a `WC_Payment_Token`.
 	 *
 	 * @param string $context Context in which the check is being performed.
 	 * @param mixed  $subject Context-specific subject (order/cart/product).
 	 *
 	 * @return bool
 	 */
-	public static function has_recurring_items( $context, $subject = null ) {
+	public static function has_recurring_items( string $context, $subject = null ): bool {
 		$resolved_subject = $subject;
 		$has_recurring    = false;
 
@@ -53,7 +61,7 @@ class WC_Payments_Recurring_Item_Helper {
 	 *
 	 * @return bool
 	 */
-	public static function order_has_recurring_items( $order ) {
+	public static function order_has_recurring_items( $order ): bool {
 		if ( ! self::is_subscriptions_enabled() || ! function_exists( 'wcs_order_contains_subscription' ) ) {
 			return false;
 		}
@@ -66,7 +74,7 @@ class WC_Payments_Recurring_Item_Helper {
 	 *
 	 * @return bool
 	 */
-	public static function cart_has_recurring_items() {
+	public static function cart_has_recurring_items(): bool {
 		if ( ! self::is_subscriptions_enabled() ) {
 			return false;
 		}
@@ -74,7 +82,7 @@ class WC_Payments_Recurring_Item_Helper {
 		$has_recurring_items = false;
 
 		if ( class_exists( 'WC_Subscriptions_Cart' ) ) {
-			$has_recurring_items = (bool) WC_Subscriptions_Cart::cart_contains_subscription();
+			$has_recurring_items = (bool) \WC_Subscriptions_Cart::cart_contains_subscription();
 		}
 
 		if ( ! $has_recurring_items && function_exists( 'wcs_cart_contains_renewal' ) ) {
@@ -91,12 +99,25 @@ class WC_Payments_Recurring_Item_Helper {
 	 *
 	 * @return bool
 	 */
-	public static function product_has_recurring_items( $product ) {
+	public static function product_has_recurring_items( $product ): bool {
 		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! $product ) {
 			return false;
 		}
 
-		return (bool) WC_Subscriptions_Product::is_subscription( $product );
+		return (bool) \WC_Subscriptions_Product::is_subscription( $product );
+	}
+
+	/**
+	 * Determine whether Woo Subscriptions support is available.
+	 *
+	 * @return bool
+	 */
+	public static function is_subscriptions_enabled(): bool {
+		if ( class_exists( 'WC_Subscriptions' ) ) {
+			return version_compare( \WC_Subscriptions::$version, '2.2.0', '>=' );
+		}
+
+		return class_exists( 'WC_Subscriptions_Core_Plugin' );
 	}
 
 	/**
@@ -131,8 +152,8 @@ class WC_Payments_Recurring_Item_Helper {
 			return $subject;
 		}
 
-		if ( function_exists( 'WC' ) && WC()->cart ) {
-			return WC()->cart;
+		if ( function_exists( 'WC' ) && \WC()->cart ) {
+			return \WC()->cart;
 		}
 
 		return null;
@@ -156,18 +177,5 @@ class WC_Payments_Recurring_Item_Helper {
 		}
 
 		return $subject;
-	}
-
-	/**
-	 * Determine whether Woo Subscriptions support is available.
-	 *
-	 * @return bool
-	 */
-	private static function is_subscriptions_enabled() {
-		if ( class_exists( 'WC_Subscriptions' ) ) {
-			return version_compare( WC_Subscriptions::$version, '2.2.0', '>=' );
-		}
-
-		return class_exists( 'WC_Subscriptions_Core_Plugin' );
 	}
 }
