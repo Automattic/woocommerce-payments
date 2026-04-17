@@ -23,10 +23,8 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 
-	const [
-		enabledMethodIds,
-		updateEnabledMethodIds,
-	] = useEnabledPaymentMethodIds();
+	const [ enabledMethodIds, updateEnabledMethodIds ] =
+		useEnabledPaymentMethodIds();
 
 	const updateStripeLinkCheckout = ( isEnabled: boolean ) => {
 		if ( isEnabled ) {

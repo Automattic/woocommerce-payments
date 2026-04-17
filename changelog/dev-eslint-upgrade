@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Client functionality is not touched, only the JS linter and its settings.
+
+

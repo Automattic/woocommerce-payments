@@ -239,13 +239,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		: placeholderValues;
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
+	const displayStatus = getChargeStatus( charge, paymentIntent );
 
-	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
-	// We also need to exclude failed payments and payments that have been refunded, because capture === false in those cases, even
-	// if the capture is automatic.
+	// Authorization details are only relevant when the payment reached a capturable state.
 	const shouldFetchAuthorization =
 		! charge.captured &&
-		charge.status !== 'failed' &&
+		[ 'authorized', 'fraud_outcome_review' ].includes( displayStatus ) &&
 		charge.amount_refunded === 0;
 
 	const { authorization } = useAuthorization(
@@ -338,10 +337,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								) : (
 									<PaymentStatusChip
 										className="payment-details-summary__status"
-										status={ getChargeStatus(
-											charge,
-											paymentIntent
-										) }
+										status={ displayStatus }
 									/>
 								) }
 							</div>
@@ -404,6 +400,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												content={
 													<>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Transaction fee',
@@ -423,6 +420,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															</span>
 														</Flex>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Dispute fee',
@@ -439,6 +437,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															</span>
 														</Flex>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Total fees',
@@ -528,7 +527,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											);
 										} }
 									>
-										{ __( 'Block transaction' ) }
+										{ __(
+											'Block transaction',
+											'woocommerce-payments'
+										) }
 									</CancelAuthorizationButton>
 
 									<CaptureAuthorizationButton

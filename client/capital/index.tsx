@@ -25,7 +25,6 @@ import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 const columns = [
 	{
@@ -182,7 +181,7 @@ const getSummary = ( loans: CapitalLoan[] ) => {
 	const currencies = Array.from(
 		new Set( loans.map( ( l ) => l.currency ) )
 	);
-	if ( 1 === currencies.length ) {
+	if ( currencies.length === 1 ) {
 		summary.push( {
 			label: __( 'total', 'woocommerce-payments' ),
 			value: formatExplicitCurrency(
@@ -212,7 +211,6 @@ const CapitalPage = (): JSX.Element => {
 
 	return (
 		<Page>
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="loans" />
 
 			{ wcpaySettings.accountLoans.has_active_loan && (

@@ -21,17 +21,15 @@ export const displayType = {
  *
  * 'deducted' represents a deposit of the type 'withdrawal' and status 'paid'.
  */
-export const depositStatusLabels: Record<
-	DepositStatus | 'deducted',
-	string
-> = {
-	paid: __( 'Completed (paid)', 'woocommerce-payments' ),
-	deducted: __( 'Completed (deducted)', 'woocommerce-payments' ),
-	pending: __( 'Pending', 'woocommerce-payments' ),
-	in_transit: __( 'In transit', 'woocommerce-payments' ),
-	canceled: __( 'Canceled', 'woocommerce-payments' ),
-	failed: __( 'Failed', 'woocommerce-payments' ),
-};
+export const depositStatusLabels: Record< DepositStatus | 'deducted', string > =
+	{
+		paid: __( 'Completed (paid)', 'woocommerce-payments' ),
+		deducted: __( 'Completed (deducted)', 'woocommerce-payments' ),
+		pending: __( 'Pending', 'woocommerce-payments' ),
+		in_transit: __( 'In transit', 'woocommerce-payments' ),
+		canceled: __( 'Canceled', 'woocommerce-payments' ),
+		failed: __( 'Failed', 'woocommerce-payments' ),
+	};
 
 /**
  * Mapping of payout failure code to display string.

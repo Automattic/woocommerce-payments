@@ -328,6 +328,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'payment_method',
 			'wc-woocommerce_payments-payment-token',
 			'wc-woocommerce_payments-new-payment-method',
+			'wcpay-express-payment-method-types',
 		];
 		foreach ( $payment_method_keys as $key ) {
 			// phpcs:disable WordPress.Security.NonceVerification.Missing
@@ -579,7 +580,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 						],
 					],
 				],
-				'expected_title'   => 'Link',
+				'expected_title'   => 'Link (WooPayments)',
 				'expected_gateway' => 'woocommerce_payments',
 			],
 		];
@@ -658,26 +659,179 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that Express Checkout payments set the correct gateway ID and preserve title.
+	 * Test that Express Checkout payments set the correct gateway ID and title
+	 * when the express checkout type is already stored in order meta (e.g. set by JS earlier in the flow).
 	 *
 	 * @dataProvider express_checkout_payment_method_provider
 	 *
 	 * @param string $express_type     The express checkout type stored in order meta.
 	 * @param string $stripe_type      The Stripe payment method type.
-	 * @param string $expected_title   The expected payment method title to be preserved.
+	 * @param string $expected_title   The expected payment method title.
 	 * @param string $expected_gateway The expected gateway ID.
 	 * @param array  $payment_details  The payment method details from Stripe.
 	 */
 	public function test_express_checkout_payment_method_for_order( $express_type, $stripe_type, $expected_title, $expected_gateway, $payment_details ) {
 		$order = WC_Helper_Order::create_order();
-		$order->set_payment_method_title( $expected_title );
 		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_type );
 		$order->save();
 
 		$this->card_gateway->set_payment_method_title_for_order( $order, $stripe_type, $payment_details );
 
 		$this->assertEquals( $expected_gateway, $order->get_payment_method(), "$express_type should use correct gateway" );
-		$this->assertEquals( $expected_title, $order->get_payment_method_title(), "$express_type title should be preserved" );
+		$this->assertEquals( $expected_title, $order->get_payment_method_title(), "$express_type title should be set by the gateway" );
+	}
+
+	/**
+	 * Data provider for wallet-based express checkout detection tests.
+	 *
+	 * These test the scenario where no `_wcpay_express_checkout_payment_method` meta
+	 * exists on the order, and the gateway detects the express type from Stripe's
+	 * `card.wallet.type` field.
+	 *
+	 * @return array[]
+	 */
+	public function wallet_detection_provider() {
+		return [
+			'Google Pay detected from wallet' => [
+				'wallet_type'      => 'google_pay',
+				'expected_title'   => 'Google Pay (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+			'Apple Pay detected from wallet'  => [
+				'wallet_type'      => 'apple_pay',
+				'expected_title'   => 'Apple Pay (WooPayments)',
+				'expected_gateway' => 'woocommerce_payments',
+			],
+		];
+	}
+
+	/**
+	 * Test that express checkout type is detected from Stripe's card.wallet.type
+	 * when no meta is pre-set on the order, and the title and meta are set correctly.
+	 *
+	 * @dataProvider wallet_detection_provider
+	 *
+	 * @param string $wallet_type      The Stripe wallet type.
+	 * @param string $expected_title   The expected payment method title.
+	 * @param string $expected_gateway The expected gateway ID.
+	 */
+	public function test_wallet_detection_sets_title_and_meta( $wallet_type, $expected_title, $expected_gateway ) {
+		$order           = WC_Helper_Order::create_order();
+		$payment_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'wallet'  => [
+					'type' => $wallet_type,
+				],
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'card', $payment_details );
+
+		$this->assertEquals( $expected_title, $order->get_payment_method_title(), "$wallet_type title should be set from wallet detection" );
+		$this->assertEquals( $expected_gateway, $order->get_payment_method(), "$wallet_type should use correct gateway" );
+		$this->assertEquals( $wallet_type, $order->get_meta( '_wcpay_express_checkout_payment_method' ), "$wallet_type meta should be persisted" );
+	}
+
+	/**
+	 * Test that the express checkout title suffix can be customized via filter.
+	 */
+	public function test_express_checkout_title_suffix_filter() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', 'google_pay' );
+		$order->save();
+
+		$callback = function () {
+			return 'Custom Suffix';
+		};
+		add_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
+
+		$payment_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'credit',
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'card', $payment_details );
+
+		$this->assertEquals( 'Google Pay (Custom Suffix)', $order->get_payment_method_title() );
+
+		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', $callback );
+	}
+
+	/**
+	 * Test that an empty suffix filter produces a title without parentheses.
+	 */
+	public function test_express_checkout_title_empty_suffix() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', 'apple_pay' );
+		$order->save();
+
+		add_filter( 'wcpay_payment_request_payment_method_title_suffix', '__return_empty_string' );
+
+		$payment_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'credit',
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'card', $payment_details );
+
+		$this->assertEquals( 'Apple Pay', $order->get_payment_method_title() );
+
+		remove_filter( 'wcpay_payment_request_payment_method_title_suffix', '__return_empty_string' );
+	}
+
+	/**
+	 * Test that pre-existing meta takes precedence over wallet detection.
+	 * If JS already set the meta earlier in the flow, the gateway should use that
+	 * rather than detecting from Stripe's wallet info.
+	 */
+	public function test_existing_meta_takes_precedence_over_wallet_detection() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', 'google_pay' );
+		$order->save();
+
+		// Stripe wallet says apple_pay, but meta says google_pay — meta wins.
+		$payment_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'wallet'  => [
+					'type' => 'apple_pay',
+				],
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'card', $payment_details );
+
+		$this->assertEquals( 'Google Pay (WooPayments)', $order->get_payment_method_title() );
+		$this->assertEquals( 'google_pay', $order->get_meta( '_wcpay_express_checkout_payment_method' ), 'Meta should remain unchanged' );
+	}
+
+	/**
+	 * Test that a regular card payment (no wallet, no meta) sets the standard card title,
+	 * not an express checkout title.
+	 */
+	public function test_regular_card_payment_not_detected_as_express() {
+		$order           = WC_Helper_Order::create_order();
+		$payment_details = [
+			'type' => 'card',
+			'card' => [
+				'network' => 'visa',
+				'funding' => 'credit',
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'card', $payment_details );
+
+		$this->assertEmpty( $order->get_meta( '_wcpay_express_checkout_payment_method' ), 'Regular card should not have express meta' );
+		$this->assertEquals( 'woocommerce_payments', $order->get_payment_method() );
 	}
 
 	public function test_payment_methods_show_correct_default_outputs() {
@@ -4615,5 +4769,200 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( isset( $gateway->has_custom_place_order_button ) && $gateway->has_custom_place_order_button );
 
 		delete_option( WC_Payments_Features::WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME );
+	}
+
+	public function test_get_payment_method_types_validates_express_types_strips_unavailable() {
+		$order               = WC_Helper_Order::create_order();
+		$payment_information = new Payment_Information( 'pm_mock', $order );
+
+		$this->reset_registry_with_definitions(
+			[
+				\WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class,
+				\WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::class,
+			]
+		);
+
+		$mock_google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_google_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
+
+		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_amazon_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( false );
+
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $mock_google_pay_gateway,
+				'amazon_pay' => $mock_amazon_pay_gateway,
+			]
+		);
+
+		$_POST['payment_method']                     = 'woocommerce_payments';
+		$_POST['wcpay-express-payment-method-types'] = wp_json_encode( [ 'card', 'amazon_pay' ] );
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		$this->assertSame( [ 'card' ], $payment_methods );
+
+		unset( $_POST['payment_method'], $_POST['wcpay-express-payment-method-types'] );
+	}
+
+	public function test_get_payment_method_types_falls_through_when_all_express_types_invalid() {
+		$order               = WC_Helper_Order::create_order();
+		$payment_information = new Payment_Information( 'pm_mock', $order );
+
+		$this->reset_registry_with_definitions( [] );
+		$this->set_payment_gateway_map( [] );
+
+		$_POST['payment_method']                     = 'woocommerce_payments';
+		$_POST['wcpay-express-payment-method-types'] = wp_json_encode( [ 'affirm', 'klarna' ] );
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+
+		unset( $_POST['payment_method'], $_POST['wcpay-express-payment-method-types'] );
+	}
+
+	public function test_get_payment_method_types_passes_all_valid_express_types() {
+		$order               = WC_Helper_Order::create_order();
+		$payment_information = new Payment_Information( 'pm_mock', $order );
+
+		$this->reset_registry_with_definitions(
+			[
+				\WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class,
+				\WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::class,
+			]
+		);
+
+		$mock_google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_google_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
+
+		$mock_amazon_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_amazon_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_amazon_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
+
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $mock_google_pay_gateway,
+				'amazon_pay' => $mock_amazon_pay_gateway,
+			]
+		);
+
+		$_POST['payment_method']                     = 'woocommerce_payments';
+		$_POST['wcpay-express-payment-method-types'] = wp_json_encode( [ 'card', 'amazon_pay' ] );
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		$this->assertSame( [ 'card', 'amazon_pay' ], $payment_methods );
+
+		unset( $_POST['payment_method'], $_POST['wcpay-express-payment-method-types'] );
+	}
+
+	public function test_get_payment_method_types_strips_injected_non_express_type() {
+		$order               = WC_Helper_Order::create_order();
+		$payment_information = new Payment_Information( 'pm_mock', $order );
+
+		$this->reset_registry_with_definitions(
+			[
+				\WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class,
+				\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
+			]
+		);
+
+		$mock_google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_google_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
+
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $mock_google_pay_gateway,
+			]
+		);
+
+		$_POST['payment_method']                     = 'woocommerce_payments';
+		$_POST['wcpay-express-payment-method-types'] = wp_json_encode( [ 'card', 'affirm' ] );
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		$this->assertSame( [ 'card' ], $payment_methods );
+
+		unset( $_POST['payment_method'], $_POST['wcpay-express-payment-method-types'] );
+	}
+
+	public function test_get_payment_method_types_falls_through_when_express_types_sent_as_array() {
+		$order               = WC_Helper_Order::create_order();
+		$payment_information = new Payment_Information( 'pm_mock', $order );
+
+		$this->reset_registry_with_definitions( [] );
+		$this->set_payment_gateway_map( [] );
+
+		// Simulate wcpay-express-payment-method-types[]=card (PHP array in $_POST).
+		$_POST['payment_method']                     = 'woocommerce_payments';
+		$_POST['wcpay-express-payment-method-types'] = [ 'card' ];
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		// Non-string field treated as empty; falls through to standard resolution.
+		$this->assertSame( [ Payment_Method::CARD ], $payment_methods );
+
+		unset( $_POST['payment_method'], $_POST['wcpay-express-payment-method-types'] );
+	}
+
+	public function test_get_payment_method_types_ignores_nested_arrays_in_express_types_json() {
+		$order               = WC_Helper_Order::create_order();
+		$payment_information = new Payment_Information( 'pm_mock', $order );
+
+		$this->reset_registry_with_definitions(
+			[ \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::class ]
+		);
+
+		$mock_google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_google_pay_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_google_pay_gateway->method( 'is_available_for_express_checkout' )->willReturn( true );
+
+		$this->set_payment_gateway_map( [ 'google_pay' => $mock_google_pay_gateway ] );
+
+		// JSON payload with a mix of a valid string type and nested array/object entries.
+		$_POST['payment_method']                     = 'woocommerce_payments';
+		$_POST['wcpay-express-payment-method-types'] = wp_json_encode( [ 'card', [ 'nested' => 'array' ], 42, null ] );
+
+		$payment_methods = $this->card_gateway->get_payment_method_types( $payment_information );
+
+		// Only the valid string 'card' passes through; non-strings are stripped.
+		$this->assertSame( [ 'card' ], $payment_methods );
+
+		unset( $_POST['payment_method'], $_POST['wcpay-express-payment-method-types'] );
+	}
+
+	/**
+	 * Reset the PaymentMethodDefinitionRegistry singleton and register specific definitions.
+	 *
+	 * @param array $definition_classes Array of definition class names to register.
+	 */
+	private function reset_registry_with_definitions( array $definition_classes ) {
+		$reflection = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
+
+		$registry = PaymentMethodDefinitionRegistry::instance();
+
+		$available_definitions = $reflection->getProperty( 'available_definitions' );
+		$available_definitions->setAccessible( true );
+		$available_definitions->setValue( $registry, [] );
+		$available_definitions->setAccessible( false );
+
+		$payment_methods = $reflection->getProperty( 'payment_methods' );
+		$payment_methods->setAccessible( true );
+		$payment_methods->setValue( $registry, [] );
+		$payment_methods->setAccessible( false );
+
+		foreach ( $definition_classes as $definition_class ) {
+			$registry->register_payment_method( $definition_class );
+		}
 	}
 }
