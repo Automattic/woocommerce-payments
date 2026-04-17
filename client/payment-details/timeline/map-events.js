@@ -846,10 +846,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				stripeProcessingFee > 0
 					? sprintf(
 							/* translators: %s is a monetary amount */
-							__(
-								'Stripe processing fee: -%s',
-								'woocommerce-payments'
-							),
+							__( 'Processing fee: -%s', 'woocommerce-payments' ),
 							formatExplicitCurrency(
 								stripeProcessingFee,
 								stripeProcessingFeeCurrency

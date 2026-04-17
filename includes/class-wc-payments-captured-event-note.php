@@ -67,7 +67,7 @@ class WC_Payments_Captured_Event_Note {
 			if ( $store_fee > 0 ) {
 				$lines[] = sprintf(
 					/* translators: %s is a monetary amount */
-					__( 'Stripe processing fee: -%s', 'woocommerce-payments' ),
+					__( 'Processing fee: -%s', 'woocommerce-payments' ),
 					WC_Payments_Utils::format_explicit_currency(
 						WC_Payments_Utils::interpret_stripe_amount( (int) $store_fee, $store_currency ),
 						$store_currency
