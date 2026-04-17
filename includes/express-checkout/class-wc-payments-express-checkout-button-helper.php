@@ -273,7 +273,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	/**
 	 * Checks whether cart contains a subscription product or this is a subscription product page.
 	 *
-	 * @deprecated 10.7.1 Use has_recurring_items() instead.
+	 * @deprecated 10.8.0 Use has_recurring_items() instead.
 	 *
 	 * @return boolean
 	 */

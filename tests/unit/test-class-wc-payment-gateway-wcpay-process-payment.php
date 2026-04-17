@@ -1306,14 +1306,12 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
-	public function test_recurring_items_filter_does_not_set_up_future_usage_for_non_reusable_payment_methods() {
+	public function test_non_reusable_payment_method_short_circuits_setup_future_usage() {
 		$order  = WC_Helper_Order::create_order();
 		$cart   = $this->createMock( WC_Cart::class );
 		$intent = WC_Helper_Intention::create_intention();
 		$order->set_total( 10 );
 		$order->save();
-
-		$this->mock_payment_method->method( 'is_reusable' )->willReturn( false );
 
 		add_filter(
 			'wcpay_checkout_has_recurring_items',
@@ -1349,26 +1347,47 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information->must_save_payment_method_to_store();
 
-		$non_reusable_payment_method = $this->createMock( UPE_Payment_Method::class );
-		$non_reusable_payment_method->method( 'is_reusable' )->willReturn( false );
-
-		$gateway = new WC_Payment_Gateway_WCPay(
-			$this->mock_api_client,
-			$this->mock_wcpay_account,
-			$this->mock_customer_service,
-			$this->mock_token_service,
-			$this->mock_action_scheduler_service,
-			$non_reusable_payment_method,
-			[ 'card' => $non_reusable_payment_method ],
-			$this->mock_order_service,
-			$this->mock_dpps,
-			$this->createMock( WC_Payments_Localization_Service::class ),
-			$this->createMock( WC_Payments_Fraud_Service::class ),
-			$this->createMock( Duplicates_Detection_Service::class ),
-			$this->mock_rate_limiter
-		);
+		$gateway = $this->build_gateway_with_non_reusable_payment_method();
 
 		$gateway->process_payment_for_order( $cart, $payment_information );
+	}
+
+	public function test_saved_payment_method_short_circuits_setup_future_usage() {
+		$_POST = $this->setup_saved_payment_method();
+
+		$order = WC_Helper_Order::create_order();
+
+		add_filter(
+			'wcpay_checkout_has_recurring_items',
+			function ( $has_recurring_items, $context, $subject ) use ( $order ) {
+				if ( 'order' === $context && $subject instanceof WC_Order && $subject->get_id() === $order->get_id() ) {
+					return true;
+				}
+
+				return $has_recurring_items;
+			},
+			10,
+			3
+		);
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'get_customer_id_by_user_id' )
+			->willReturn( 'cus_mock' );
+
+		$intent  = WC_Helper_Intention::create_intention();
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->never() )
+			->method( 'setup_future_usage' );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $intent );
+
+		$this->mock_token_service
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
+
+		$this->mock_wcpay_gateway->process_payment( $order->get_id() );
 	}
 
 	public function test_does_not_update_new_payment_method() {
@@ -2026,6 +2045,27 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			function ( $order ) use ( $value ) {
 				return $value;
 			}
+		);
+	}
+
+	private function build_gateway_with_non_reusable_payment_method() {
+		$non_reusable_payment_method = $this->createMock( UPE_Payment_Method::class );
+		$non_reusable_payment_method->method( 'is_reusable' )->willReturn( false );
+
+		return new WC_Payment_Gateway_WCPay(
+			$this->mock_api_client,
+			$this->mock_wcpay_account,
+			$this->mock_customer_service,
+			$this->mock_token_service,
+			$this->mock_action_scheduler_service,
+			$non_reusable_payment_method,
+			[ 'card' => $non_reusable_payment_method ],
+			$this->mock_order_service,
+			$this->mock_dpps,
+			$this->createMock( WC_Payments_Localization_Service::class ),
+			$this->createMock( WC_Payments_Fraud_Service::class ),
+			$this->createMock( Duplicates_Detection_Service::class ),
+			$this->mock_rate_limiter
 		);
 	}
 

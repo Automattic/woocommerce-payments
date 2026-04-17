@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react';
+import { applyFilters } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -122,6 +123,64 @@ describe( 'ExpressCheckoutContainer', () => {
 					setupFutureUsage: 'off_session',
 				} ),
 			} )
+		);
+	} );
+
+	it( 'omits setupFutureUsage when neither has_recurring_items nor has_subscription is true', () => {
+		mockGetExpressCheckoutData.mockImplementation( ( key ) => {
+			const data = {
+				flags: { isEceUsingConfirmationTokens: true },
+				is_manual_capture: false,
+				has_recurring_items: false,
+				has_subscription: false,
+				enabled_methods: [ 'payment_request' ],
+				stripe: { locale: 'en' },
+			};
+
+			return data[ key ];
+		} );
+
+		render(
+			<ExpressCheckoutContainer
+				api={ api }
+				billing={ billing }
+				buttonAttributes={ {} }
+			/>
+		);
+
+		expect( mockElements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				options: expect.not.objectContaining( {
+					setupFutureUsage: expect.anything(),
+				} ),
+			} )
+		);
+	} );
+
+	it( 'invokes wcpay.express-checkout.total-amount filter with amount and cart data', () => {
+		mockGetExpressCheckoutData.mockImplementation( ( key ) => {
+			const data = {
+				flags: { isEceUsingConfirmationTokens: true },
+				is_manual_capture: false,
+				enabled_methods: [ 'payment_request' ],
+				stripe: { locale: 'en' },
+			};
+
+			return data[ key ];
+		} );
+
+		render(
+			<ExpressCheckoutContainer
+				api={ api }
+				billing={ billing }
+				buttonAttributes={ {} }
+			/>
+		);
+
+		expect( applyFilters ).toHaveBeenCalledWith(
+			'wcpay.express-checkout.total-amount',
+			1000,
+			undefined
 		);
 	} );
 } );

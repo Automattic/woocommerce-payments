@@ -164,6 +164,21 @@ class WC_Payments_Express_Checkout_Button_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertTrue( $params['has_subscription'] );
 	}
 
+	public function test_get_express_checkout_params_recurring_flags_false_when_no_recurring_items() {
+		$this->mock_ece_button_helper
+			->method( 'get_common_button_settings' )
+			->willReturn( [] );
+
+		$this->mock_ece_button_helper
+			->method( 'has_recurring_items' )
+			->willReturn( false );
+
+		$params = $this->system_under_test->get_express_checkout_params();
+
+		$this->assertFalse( $params['has_recurring_items'] );
+		$this->assertFalse( $params['has_subscription'] );
+	}
+
 	public function test_payment_fields_js_config_on_cart_page_with_cart_disabled() {
 		$this->mock_ece_button_helper
 			->method( 'get_button_context' )

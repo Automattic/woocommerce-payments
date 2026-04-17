@@ -654,4 +654,22 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			} )
 		);
 	} );
+
+	it( 'should prefer has_recurring_items=false over has_subscription=true', async () => {
+		global.wcpayExpressCheckoutParams.flags.isEceUsingConfirmationTokens = true;
+		global.wcpayExpressCheckoutParams.product.product_type = 'simple';
+		global.wcpayExpressCheckoutParams.has_recurring_items = false;
+		global.wcpayExpressCheckoutParams.has_subscription = true;
+
+		await jest.isolateModulesAsync( async () => {
+			await import( '..' );
+		} );
+
+		expect( global.Stripe ).toHaveBeenCalled();
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.not.objectContaining( {
+				setupFutureUsage: expect.anything(),
+			} )
+		);
+	} );
 } );
