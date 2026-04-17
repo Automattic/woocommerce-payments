@@ -49,7 +49,8 @@
         "slevomat/coding-standard": "^8.15",
         "dg/bypass-finals": "1.5.1",
         "sirbrillig/phpcs-variable-analysis": "^2.11",
-        "phpcompatibility/php-compatibility": "9.3.5"
+        "phpcompatibility/php-compatibility": "9.3.5",
+        "wp-coding-standards/wpcs": "^3.0"
     },
     "scripts": {
         "test": [
