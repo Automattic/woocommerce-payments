@@ -1386,11 +1386,11 @@ class WC_Payment_Gateway_WCPay_Process_Payment_Test extends WCPAY_UnitTestCase {
 			->method( 'format_response' )
 			->willReturn( $intent );
 
+		// Non-reusable PMs can never produce a reusable token, so no token should be persisted
+		// even though the recurring-items filter and `must_save_payment_method_to_store()` both ask for one.
 		$this->mock_token_service
-			->expects( $this->once() )
-			->method( 'add_payment_method_to_user' )
-			->with( $intent->get_payment_method_id(), $order->get_user() )
-			->willReturn( new WC_Payment_Token_CC() );
+			->expects( $this->never() )
+			->method( 'add_payment_method_to_user' );
 
 		$payment_information = WCPay\Payment_Information::from_payment_request( $_POST, $order, null, null, null, 'card' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$payment_information->must_save_payment_method_to_store();
