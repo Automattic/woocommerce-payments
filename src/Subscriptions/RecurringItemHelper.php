@@ -219,7 +219,9 @@ class RecurringItemHelper {
 		if ( class_exists( 'WC_Subscriptions' ) ) {
 			self::$is_subscriptions_enabled_cache = version_compare( \WC_Subscriptions::$version, '2.2.0', '>=' );
 		} else {
+			// @codeCoverageIgnoreStart
 			self::$is_subscriptions_enabled_cache = class_exists( 'WC_Subscriptions_Core_Plugin' );
+			// @codeCoverageIgnoreEnd
 		}
 
 		return self::$is_subscriptions_enabled_cache;
