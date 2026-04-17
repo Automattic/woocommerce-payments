@@ -83,6 +83,13 @@ read_package_json() {
 	jq -r .version package.json
 }
 
+read_package_lock_version() {
+	# Lockfile stores the version in two places — both are written by `npm version`.
+	# Read the top-level one; if missing, fall back to `.packages[""].version`.
+	[ -f package-lock.json ] || { echo ""; return; }
+	jq -r '.version // .packages[""].version // ""' package-lock.json
+}
+
 read_readme_stable_tag() {
 	grep -E '^Stable tag:' readme.txt | head -n1 | sed -E 's/^Stable tag:[[:space:]]*//'
 }
@@ -111,9 +118,9 @@ write_all() {
 
 emit_json_check() {
 	jq -n \
-		--arg php "$1" --arg pkg "$2" --arg readme "$3" \
-		--argjson consistent "$4" \
-		'{php_header:$php, package_json:$pkg, readme_txt:$readme, consistent:$consistent}'
+		--arg php "$1" --arg pkg "$2" --arg lock "$3" --arg readme "$4" \
+		--argjson consistent "$5" \
+		'{php_header:$php, package_json:$pkg, package_lock:$lock, readme_txt:$readme, consistent:$consistent}'
 }
 
 case "$MODE" in
@@ -123,32 +130,41 @@ case "$MODE" in
 			emit_json_check \
 				"$(read_php_header)" \
 				"$(read_package_json)" \
+				"$(read_package_lock_version)" \
 				"$(read_readme_stable_tag)" \
 				true
 		fi
 		;;
 	dry-run)
 		echo "would set version to: $VERSION" >&2
-		printf 'php_header:   %s -> %s\n' "$(read_php_header)" "$VERSION"
-		printf 'package_json: %s -> %s\n' "$(read_package_json)" "$VERSION"
-		printf 'readme_txt:   %s -> %s\n' "$(read_readme_stable_tag)" "$VERSION"
+		printf 'php_header:     %s -> %s\n' "$(read_php_header)" "$VERSION"
+		printf 'package_json:   %s -> %s\n' "$(read_package_json)" "$VERSION"
+		printf 'package_lock:   %s -> %s\n' "$(read_package_lock_version)" "$VERSION"
+		printf 'readme_txt:     %s -> %s\n' "$(read_readme_stable_tag)" "$VERSION"
 		;;
 	check)
 		php=$(read_php_header)
 		pkg=$(read_package_json)
+		lock=$(read_package_lock_version)
 		readme=$(read_readme_stable_tag)
-		if [ "$php" = "$pkg" ] && [ "$pkg" = "$readme" ]; then
+		# Lockfile is optional: when absent, exclude it from the equality check.
+		if [ -z "$lock" ]; then
+			consistent=$([ "$php" = "$pkg" ] && [ "$pkg" = "$readme" ] && echo true || echo false)
+		else
+			consistent=$([ "$php" = "$pkg" ] && [ "$pkg" = "$lock" ] && [ "$lock" = "$readme" ] && echo true || echo false)
+		fi
+		if [ "$consistent" = "true" ]; then
 			if [ "$JSON" -eq 1 ]; then
-				emit_json_check "$php" "$pkg" "$readme" true
+				emit_json_check "$php" "$pkg" "$lock" "$readme" true
 			else
 				echo "consistent: $php"
 			fi
 			exit 0
 		else
 			if [ "$JSON" -eq 1 ]; then
-				emit_json_check "$php" "$pkg" "$readme" false
+				emit_json_check "$php" "$pkg" "$lock" "$readme" false
 			else
-				echo "inconsistent: php=$php package=$pkg readme=$readme" >&2
+				echo "inconsistent: php=$php package=$pkg lock=$lock readme=$readme" >&2
 			fi
 			exit 2
 		fi

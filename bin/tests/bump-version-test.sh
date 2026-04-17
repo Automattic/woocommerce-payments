@@ -101,6 +101,20 @@ assert_eq "$CHECK_EXIT" "2" "check returns 2 on inconsistency"
 assert_eq "$(jq -r .consistent "$DIR/out.json")" "false" "check --json reports inconsistent"
 rm -rf "$DIR"
 
+# Test: --check detects package-lock.json version mismatch
+DIR=$(make_fixture)
+tmp="$(mktemp)"
+jq '.version = "10.5.0" | .packages[""].version = "10.5.0"' \
+	"$DIR/package-lock.json" > "$tmp" && mv "$tmp" "$DIR/package-lock.json"
+set +e
+( cd "$DIR" && "$BUMP" --check --json > "$DIR/out.json" 2>/dev/null )
+CHECK_EXIT=$?
+set -e
+assert_eq "$CHECK_EXIT" "2" "check returns 2 on lockfile mismatch"
+assert_eq "$(jq -r .consistent "$DIR/out.json")" "false" "check --json reports inconsistent on lockfile mismatch"
+assert_eq "$(jq -r .package_lock "$DIR/out.json")" "10.5.0" "check --json reports package-lock version"
+rm -rf "$DIR"
+
 # Test: invalid version format
 DIR=$(make_fixture)
 set +e
