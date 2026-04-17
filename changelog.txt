@@ -1,5 +1,102 @@
 *** WooPayments Changelog ***
 
+= 10.7.1 - 2026-04-16 =
+* Fix - Fix changelog entries for 10.7.0 release.
+
+= 10.7.0 - 2026-04-15 =
+* Add - Add client-side async price renderer for cache-optimized multi-currency mode
+* Add - Add digital product/service evidence matrix entries for all dispute reasons
+* Add - Added dispute evidence document suggestions for the Other product type across all dispute reasons.
+* Add - Add event product type evidence matrix entries for all dispute reasons
+* Add - Add evidence matrix entries for physical_product disputes and fix cover letter attachment ordering
+* Add - Add fonts.wp.com to the WooPay font domain allow list so merchants using Automattic's GDPR-compliant font proxy see their theme fonts in WooPay checkout.
+* Add - Add offline service evidence matrix entries for all dispute reasons
+* Add - Enable WooPay themed checkout from all entry points, including merchant font rendering.
+* Add - feat: add tool to manually clear computed styles cache
+* Add - Re-introduce asynchronous customer updates as an optimization of the checkout process.
+* Add - Send WooCommerce store ID to the server with onboarding and account requests for Tracks event attribution
+* Fix - Accept account_data parameter in test-drive account init endpoint
+* Fix - Add defensive checks before initializing WC_Payments_Captured_Event_Note to prevent fatal errors when timeline data is missing or malformed.
+* Fix - Add fallback skeleton styles for WooCommerce versions before 10.2
+* Fix - Add Link payment method token support in subscription payment method change order notes
+* Fix - Add visible focus indicator to WooPay express checkout button for WCAG 2.4.7 compliance
+* Fix - Change WooPay express button to an anchor element when first-party auth is enabled for correct screen reader semantics.
+* Fix - Convert screen-reader text to target currency in cache-optimized multi-currency mode
+* Fix - Disable auto-complete hooks for inactive accounts.
+* Fix - Enable first-party auth for stores running adapted extensions (Points & Rewards, Gift Cards)
+* Fix - feat: allow translation of Stripe card error messages at checkout
+* Fix - fix: amazon pay manual capture compatibility
+* Fix - fix: avoid fatal error on invalid currency option in DB
+* Fix - fix: ensure that page doesn't crash if wallet icon is missing
+* Fix - fix: express checkout to show recurring subscription info for free trial subscriptions with sign-up fees, not just pure $0 free trials
+* Fix - fix: MCCY tooltip messaging for payment methods supporting multiple currencies now uses "or" instead of "and"
+* Fix - fix: prevent payment error string being written in the order meta
+* Fix - fix: trim whitespace for postcode at checkout
+* Fix - fix: unit tests after new WC version
+* Fix - Fix active plugin list being empty on older WooCommerce versions
+* Fix - Fix additional wc pay tracking call on order creation
+* Fix - Fix Apple Pay manual capture error when using confirmation tokens
+* Fix - Fix Docker preflight skipping infrastructure startup when database container is missing
+* Fix - Fix Docker setup: regenerate .htaccess rewrite rules and skip WooCommerce onboarding wizard to prevent blank screens
+* Fix - Fix email confirmation field not appearing on first-time email setup
+* Fix - Fix express checkout incompatibility with the Add to Cart with Options block by using a div placeholder instead of button and updating product page DOM selectors
+* Fix - Fix fatal error when themes use ref objects in theme.json for style values like fontFamily
+* Fix - Fix multi-currency cache mode: retain geolocation currency across session creation and Store API requests
+* Fix - Fix NOX in-context onboarding flow detection from referer URL
+* Fix - Fix reset account modal always hiding pre-reset guidance steps
+* Fix - Fix Stripe Payment Element losing styling on shortcode checkout with non-standard themes like Avada
+* Fix - Fix test card copy button using wrong font on themes with button font overrides
+* Fix - Fix undefined index warning when store country is empty in terminal locations controller
+* Fix - Fix WooPay admin preview footer card logo sizing and layout at narrow widths.
+* Fix - Fix WooPay Direct Checkout not working in iAPI mini-cart (WooCommerce 10.4+)
+* Fix - Fix WooPay themed checkout header color not applied when template part is nested inside a wrapper block
+* Fix - Handle duplicate KYC session initialization gracefully
+* Fix - Harden public multi-currency config REST endpoint with permission callback
+* Fix - Improve cover letter print preview to safely render content.
+* Fix - Intermittent empty cart after switching from guest to an existing customer
+* Fix - Invalidate multi-currency exchange rate cache when the store base currency changes.
+* Fix - Prevent caching empty disputes list on API failure, which could hide active disputes from admin task list
+* Fix - Prevent unnecessary Stripe JS and express checkout scripts from loading when no express checkout methods are actually available
+* Fix - Refresh account cache after card reader registration.
+* Fix - Remove unnecessary confirmation modal when disabling payment methods on the settings page
+* Fix - Remove validator npm dependency and replace with inline email validation
+* Fix - Resolve block pattern references and style variations when extracting WooPay header/footer appearance colors from block theme template parts.
+* Fix - Skeleton loader styling issue when step numbers are enabled on checkout blocks
+* Update - Align payment method notice copy with Figma designs
+* Update - chore: add key validation to failed order received message
+* Update - feat: update e2e tests coverage
+* Update - Moved multi-currency store settings state to Redux store
+* Update - Prevent Stripe card element from temporarily rendering country and zip fields
+* Update - refactor: payment methods settings UI reuse
+* Update - update: add better on-session error message for `authentication_required` decline
+* Update - Update the manual capture settings UI with improved modal copy, Learn more link, and a warning banner on the payment methods list when manual capture is enabled
+* Dev - Add @critical E2E smoke job for fast PR feedback and cache Playwright browsers in CI
+* Dev - Add E2E tests for async multi-currency price renderer
+* Dev - Avoid redundant Playwright install in QIT setup and skip an incompatible WC 9.9.7 analytics assertion
+* Dev - Build WCPay Dev Tools plugin after pulling updates in post-merge hook
+* Dev - Bump WC tested up to version to 10.7.0
+* Dev - chore: rename ECE constants to `shipping-limits.js`
+* Dev - chore: update browserslist / caniuse-lite database from 1.0.30001718 to 1.0.30001780
+* Dev - chore: update `validator` dependency
+* Dev - Comment: Add git worktree safety rules to AGENTS.md
+* Dev - Comment: Update AI knowledge docs from appearance cache compound analysis
+* Dev - Convert async price renderer to TypeScript and add sessionStorage caching
+* Dev - dev: Clarify terminal payment failure notification logic and add tests
+* Dev - E2E tests for the repeated checkout attempt after the card decline.
+* Dev - Extract styles cache methods from WC_Payments_Utils into dedicated WC_Payments_Styles_Cache class
+* Dev - fix: failures in e2e PW tests for blocks
+* Dev - Fix QIT E2E workflow to use PR build artifact instead of marketplace release.
+* Dev - Improve E2E setup with preflight checks, auto-build, better output, and .env.example
+* Dev - Improve E2E test reliability: guard placeOrder loop, replace waitForTimeout/networkidle, enable retries, add afterEach reloads, increase CI workers
+* Dev - Optimize webpack build process
+* Dev - refactor: move express checkout standalone button files to shortcode-buttons-express/ subdirectory
+* Dev - refactor: remove `CC_Payment_Method` in favor of `CardDefinition`
+* Dev - refactor: replace React-based express checkout availability check with vanilla TypeScript implementation
+* Dev - Refactor the update subscriptions token flow and improve test coverage.
+* Dev - Resolve WC version number instead of passing 'latest' to QIT CLI to work around invalid download URL construction.
+* Dev - Simplify core Skeleton component injection using React Context instead of prop threading
+* Dev - Skip async renderer QIT E2E tests pending environment investigation (WOOPMNT-5992).
+
 = 10.6.0 - 2026-03-11 =
 * Add - Add credit_not_processed evidence for booking/reservation (refund has been issued)
 * Add - Add E2E testing skill and automated local setup script for running Playwright E2E tests against a local Transact Platform Server

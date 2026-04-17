@@ -2412,10 +2412,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
+		// Detect express checkout type: first from metadata that may have been set earlier in the flow,
+		// then fall back to Stripe's wallet info (authoritative for Apple Pay, Google Pay, Link).
+		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
+		$wallet_type           = is_array( $payment_method_details ) ? $payment_method_details['card']['wallet']['type'] ?? null : null;
+		if ( ! $express_checkout_type && $wallet_type ) {
+			$express_checkout_type = sanitize_text_field( $wallet_type );
+			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_checkout_type );
+		}
+
 		// express checkout can be Amazon Pay/Google Pay/Apple Pay/Link,
 		// but Google Pay/Apple Pay/Link use the `card` gateway; Amazon Pay has its own gateway.
-		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
-		$effective_type        = $express_checkout_type ? $express_checkout_type : $payment_method_type;
+		$effective_type = $express_checkout_type ? $express_checkout_type : $payment_method_type;
 
 		$payment_methods_using_card = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::GOOGLE_PAY, Payment_Method::APPLE_PAY ];
 		$payment_gateway            = in_array( $effective_type, $payment_methods_using_card, true )
@@ -2425,8 +2433,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// this will ensure that the refunds are handled by the correct split gateway class.
 		$order->set_payment_method( $payment_gateway );
 
-		// the Express Checkout handler already set the method's title in `tokenized_cart_set_payment_method_type`, earlier in the flow.
-		if ( ! $express_checkout_type ) {
+		if ( $express_checkout_type ) {
+			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
+			$title          = $express_method ? $express_method->get_title() : 'Payment Request';
+			$suffix         = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+			if ( ! empty( $suffix ) ) {
+				$suffix = " ($suffix)";
+			}
+			$order->set_payment_method_title( $title . $suffix );
+		} else {
 			$order->set_payment_method_title( $payment_method->get_title( $this->get_account_country(), $payment_method_details ) );
 		}
 
