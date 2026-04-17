@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add visible focus indicator to WooPay express checkout button for WCAG 2.4.7 compliance
