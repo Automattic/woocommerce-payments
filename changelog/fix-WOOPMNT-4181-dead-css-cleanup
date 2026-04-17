@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent download button from overlapping search input on mobile in the Transactions table
