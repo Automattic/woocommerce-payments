@@ -196,7 +196,7 @@ const getRecurringCartTotal = ( cartData ) => {
 /**
  * Returns a localized billing period string, e.g. "month" or "2 months".
  *
- * @param {string} period Billing period from Store API ('day','week','month','year').
+ * @param {string} period   Billing period from Store API ('day','week','month','year').
  * @param {number} interval Billing interval (number of periods between renewals).
  * @return {string} Localized period string.
  */
@@ -277,7 +277,7 @@ const formatRecurringTotal = ( subscription ) => {
  * For trial subscriptions with $0 cart total, returns the recurring
  * subscription total so Stripe ECE can display a meaningful amount.
  *
- * @param {number} total The original total amount (already transformed for Stripe).
+ * @param {number} total    The original total amount (already transformed for Stripe).
  * @param {Object} cartData Cart data from Store API.
  * @return {number} The total to use for Stripe ECE.
  */
@@ -305,7 +305,7 @@ addFilter(
  * because the customer still needs to authorize the recurring payment.
  *
  * @param {boolean} isEligible Whether the cart is eligible for ECE.
- * @param {Object} cartData Cart data from Store API.
+ * @param {Object}  cartData   Cart data from Store API.
  * @return {boolean} Whether ECE buttons should be shown.
  */
 addFilter(
@@ -333,7 +333,7 @@ addFilter(
  * extensions when the main cart has none (shipping is deferred for trials).
  *
  * @param {Array|null} shippingRates Original shipping rates from cart.
- * @param {Object} cartData Cart data from Store API.
+ * @param {Object}     cartData      Cart data from Store API.
  * @return {Array|null} Shipping rates to use.
  */
 addFilter(
@@ -359,8 +359,8 @@ addFilter(
  * correct shipping package is updated when a rate is selected.
  *
  * @param {number|string} packageId The original package ID (usually 0).
- * @param {Object} cartData Cart data from Store API.
- * @param {string} rateId The shipping rate ID being selected.
+ * @param {Object}        cartData  Cart data from Store API.
+ * @param {string}        rateId    The shipping rate ID being selected.
  * @return {number|string} The package ID to use.
  */
 addFilter(
