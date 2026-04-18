@@ -70,6 +70,8 @@ Checkout Form (JS) → WC_Payment_Gateway_WCPay::process_payment()
 - `test-patterns.md` — Testing conventions, base classes, mocking patterns
 - `mode-system.md` — Mode hierarchy (dev/test/live), frontend data flow
 - `pm-promotions.md` — PM Promotions data flow, components, REST API, analytics
+- `capital-flow.md` — Stripe Capital offer acceptance flow, `wcpay-loan-offer` redirect, account cache gating
+- `dispute-evidence-system.md` — Dispute challenge UI: evidence matrix, two-tier field resolution, cover letter ordering, field repurposing pattern
 
 **External:**
 - [WordPress Components Storybook](https://wordpress.github.io/gutenberg/?path=/docs/) — Check first for UI components
@@ -344,8 +346,8 @@ AI-generated docs live in `.claude/`. Permanent developer docs live in `docs/`.
 | Directory | Purpose | Naming | Git |
 |-----------|---------|--------|-----|
 | `.claude/docs/` | Living reference guides | No date prefix; `**Last updated:** YYYY-MM-DD` after title | Tracked |
-| `.claude/docs/analysis/` | Research, investigations | `YYYY-MM-DD-description.md` | Tracked |
-| `.claude/docs/plans/` | Implementation plans | `YYYY-MM-DD-description.md` | Tracked |
+| `.claude/docs/analysis/` | Research, investigations | `YYYY-MM-DD-description.md` | Gitignored |
+| `.claude/docs/plans/` | Implementation plans | `YYYY-MM-DD-description.md` | Gitignored |
 | `.claude/tmp/` | Transitory files | Any | Gitignored |
 | `.claude/tmp/reviews/` | Code review outputs | `YYYY-MM-DD-description.md` | Gitignored |
 | `.claude/tmp/screenshots/` | UI screenshots | `YYYY-MM-DD-description.png` | Gitignored |
