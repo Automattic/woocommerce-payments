@@ -36,6 +36,20 @@ class WooPay_Session {
 	const WOOPAY_SESSION_KEY = 'woopay-user-data';
 
 	/**
+	 * Order ID used for error handling.
+	 *
+	 * @var int|null
+	 */
+	private static $checkout_error_order_id = null;
+
+	/**
+	 * Whether the error handler has been registered.
+	 *
+	 * @var bool
+	 */
+	private static $is_error_handler_registered = false;
+
+	/**
 	 * Init the hooks.
 	 *
 	 * @return void
@@ -46,6 +60,7 @@ class WooPay_Session {
 		add_action( 'woocommerce_order_payment_status_changed', [ __CLASS__, 'woopay_order_payment_status_changed' ] );
 		add_action( 'woopay_restore_order_customer_id', [ __CLASS__, 'restore_order_customer_id_from_requests_with_verified_email' ] );
 		add_filter( 'woocommerce_order_needs_payment', [ __CLASS__, 'woopay_trial_subscriptions_handler' ], 20, 3 );
+		add_action( 'woocommerce_store_api_checkout_order_processed', [ __CLASS__, 'catch_woopay_checkout_errors' ], 1, 1 );
 
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
@@ -463,10 +478,23 @@ class WooPay_Session {
 	 * @param string|null          $key Pay-for-order key.
 	 * @param string|null          $billing_email Pay-for-order billing email.
 	 * @param WP_REST_Request|null $woopay_request The WooPay request object.
-	 * @param array                $appearance Merchant appearance.
+	 * @param array|null           $appearance Merchant appearance, or null to use server-stored fallback.
+	 * @param array                $font_rules Font CDN stylesheet URLs.
 	 * @return array The initial session request data without email and user_session.
 	 */
-	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null ) {
+	public static function get_init_session_request( $order_id = null, $key = null, $billing_email = null, $woopay_request = null, $appearance = null, $font_rules = [] ) {
+		// Fall back to server-stored appearance when no appearance was provided,
+		// but only if global theme support is enabled.
+		if ( null === $appearance && WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
+			$appearance = \WC_Payments_Styles_Cache::get_woopay_appearance();
+			$font_rules = \WC_Payments_Styles_Cache::get_woopay_font_rules();
+		}
+
+		// Fall back to server-extracted font rules when none were provided by the client.
+		if ( empty( $font_rules ) && WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
+			$font_rules = \WC_Payments_Styles_Cache::get_woopay_font_rules();
+		}
+
 		$user             = wp_get_current_user();
 		$is_pay_for_order = null !== $order_id;
 		$order            = wc_get_order( $order_id );
@@ -550,6 +578,7 @@ class WooPay_Session {
 			],
 			'tracks_user_identity' => WC_Payments::woopay_tracker()->tracks_get_identity(),
 			'appearance'           => $appearance,
+			'font_rules'           => $font_rules,
 		];
 
 		$woopay_adapted_extensions = new WooPay_Adapted_Extensions();
@@ -604,6 +633,42 @@ class WooPay_Session {
 	}
 
 	/**
+	 * Sanitize font rules from the client.
+	 *
+	 * Font rules are an array of external font CDN stylesheet references sent alongside
+	 * the WooPay appearance. Each rule is an associative array with a single key:
+	 *
+	 *   [ 'cssSrc' => 'https://fonts.googleapis.com/css2?family=...' ]
+	 *
+	 * Validation:
+	 * - Each entry must have a string `cssSrc` key.
+	 * - The URL must use HTTPS (enforced via esc_url_raw).
+	 * - The host must be in WC_Payments_Styles_Cache::ALLOWED_FONT_DOMAINS.
+	 * - Capped at 10 entries to prevent payload abuse.
+	 *
+	 * @param array $raw_rules Raw font rules array from the client.
+	 * @return array Sanitized font rules, each as [ 'cssSrc' => string ].
+	 */
+	private static function sanitize_font_rules( $raw_rules ): array {
+		if ( ! is_array( $raw_rules ) ) {
+			return [];
+		}
+
+		$sanitized = [];
+		foreach ( array_slice( $raw_rules, 0, 10 ) as $rule ) {
+			if ( ! isset( $rule['cssSrc'] ) || ! is_string( $rule['cssSrc'] ) ) {
+				continue;
+			}
+			$url  = esc_url_raw( $rule['cssSrc'], [ 'https' ] );
+			$host = wp_parse_url( $url, PHP_URL_HOST );
+			if ( $host && in_array( $host, \WC_Payments_Styles_Cache::ALLOWED_FONT_DOMAINS, true ) ) {
+				$sanitized[] = [ 'cssSrc' => $url ];
+			}
+		}
+		return $sanitized;
+	}
+
+	/**
 	 * Used to initialize woopay session.
 	 *
 	 * @return void
@@ -622,8 +687,9 @@ class WooPay_Session {
 		$key           = ! empty( $_POST['key'] ) ? sanitize_text_field( wp_unslash( $_POST['key'] ) ) : null;
 		$billing_email = ! empty( $_POST['billing_email'] ) ? sanitize_text_field( wp_unslash( $_POST['billing_email'] ) ) : null;
 		$appearance    = ! empty( $_POST['appearance'] ) ? self::array_map_recursive( array( __CLASS__, 'sanitize_string' ), $_POST['appearance'] ) : null; // phpcs:disable WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, Generic.Arrays.DisallowLongArraySyntax.Found
+		$font_rules    = ! empty( $_POST['font_rules'] ) ? self::sanitize_font_rules( wp_unslash( $_POST['font_rules'] ) ) : []; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- sanitized by sanitize_font_rules.
 
-		$body                 = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance );
+		$body                 = self::get_init_session_request( $order_id, $key, $billing_email, null, $appearance, $font_rules );
 		$body['user_session'] = isset( $_REQUEST['user_session'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['user_session'] ) ) : null;
 
 		$args = [
@@ -636,11 +702,6 @@ class WooPay_Session {
 			],
 		];
 
-		/**
-		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
-		 *
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
 		$response = \Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
 
 		if ( is_wp_error( $response ) || ! is_array( $response ) ) {
@@ -712,7 +773,7 @@ class WooPay_Session {
 			'save_user_in_woopay'     => filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ),
 			'woopay_source_url'       =>
 			wc_clean( wp_unslash( $_POST['woopay_source_url'] ) ),
-			'woopay_is_blocks'        => filter_var( wp_unslash( $_POST['save_user_in_woopay'] ), FILTER_VALIDATE_BOOLEAN ),
+			'woopay_is_blocks'        => filter_var( wp_unslash( $_POST['woopay_is_blocks'] ), FILTER_VALIDATE_BOOLEAN ),
 			'woopay_viewport'         => wc_clean( wp_unslash( $_POST['woopay_viewport'] ) ),
 			'woopay_user_phone_field' => [
 				'full' => wc_clean( wp_unslash( $_POST['woopay_user_phone_field']['full'] ) ),
@@ -1062,5 +1123,181 @@ class WooPay_Session {
 		}
 
 		return $current_block['innerBlocks'][ $inner_block_index ];
+	}
+
+	/**
+	 * Catches and logs errors that occur during WooPay checkout processing.
+	 * This is particularly important for third-party plugin compatibility issues
+	 * (e.g., calling methods that don't exist on the WooPay SessionHandler).
+	 *
+	 * This method sets up an error handler that will catch PHP errors and add
+	 * them as order notes for debugging purposes.
+	 *
+	 * @param \WC_Order $order The order being processed.
+	 * @return void
+	 */
+	public static function catch_woopay_checkout_errors( $order ) {
+		if ( ! self::is_request_from_woopay() || ! ( $order instanceof \WC_Order ) ) {
+			return;
+		}
+
+		// Store the order ID so the error handler can access it.
+		self::$checkout_error_order_id = $order->get_id();
+
+		if ( self::$is_error_handler_registered ) {
+			return;
+		}
+
+		// Register shutdown function to catch fatal errors and restore previous handler.
+		register_shutdown_function(
+			function () {
+				$error = error_get_last();
+				if ( ! $error || ! self::is_request_from_woopay() ) {
+					return;
+				}
+
+				// Only handle fatal errors.
+				if ( ! in_array( $error['type'], [ E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR ], true ) ) {
+					return;
+				}
+
+				// Log the fatal error.
+				Logger::error(
+					sprintf(
+						'WooPay checkout fatal error: %s in %s on line %d',
+						$error['message'],
+						$error['file'],
+						$error['line']
+					)
+				);
+
+				// Add order note with the error details.
+				if ( self::$checkout_error_order_id ) {
+					$woopay_order = wc_get_order( self::$checkout_error_order_id );
+					if ( $woopay_order ) {
+						// Extract only the first line of the error message.
+						$error_first_line = strtok( $error['message'], "\n" );
+						$note             = sprintf(
+							/* translators: %s: error message */
+							__( 'WooPay checkout encountered a fatal error: %s', 'woocommerce-payments' ),
+							esc_html( $error_first_line )
+						);
+						$woopay_order->add_order_note( $note );
+					}
+				}
+			}
+		);
+
+		self::$is_error_handler_registered = true;
+	}
+
+	/**
+	 * AJAX handler: admin stores the WooPay checkout appearance.
+	 *
+	 * Requires manage_woocommerce capability. Always accepts the write,
+	 * overwriting any existing value. Used from the checkout customizer.
+	 *
+	 * @return void
+	 */
+	public static function ajax_admin_set_woopay_appearance() {
+		check_ajax_referer( 'wcpay_admin_woopay_appearance_nonce' );
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			wp_send_json_error(
+				__( 'You aren\'t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( ! \WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
+			wp_send_json_error(
+				__( 'This action is not available.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( empty( $_POST['appearance'] ) || ! is_array( $_POST['appearance'] ) ) {
+			wp_send_json_error(
+				__( 'Missing or invalid appearance data.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		$appearance = self::array_map_recursive( [ __CLASS__, 'sanitize_string' ], $_POST['appearance'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( ! \WC_Payments_Styles_Cache::validate_appearance_schema( $appearance ) ) {
+			wp_send_json_error(
+				__( 'Invalid appearance schema.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		$font_rules = [];
+		if ( ! empty( $_POST['font_rules'] ) ) {
+			$raw_font_rules = json_decode( wp_unslash( $_POST['font_rules'] ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- decoded values are sanitized by sanitize_font_rules().
+			$font_rules     = is_array( $raw_font_rules ) ? self::sanitize_font_rules( $raw_font_rules ) : [];
+		}
+
+		\WC_Payments_Styles_Cache::set_woopay_appearance( $appearance, $font_rules );
+
+		wp_send_json_success();
+	}
+
+	/**
+	 * AJAX handler: shopper conditionally stores the WooPay checkout appearance.
+	 *
+	 * Only accepts the write if no valid appearance exists for the current
+	 * styles cache version. Once the slot is filled (by admin or first shopper),
+	 * subsequent writes are rejected until the next theme change.
+	 *
+	 * @return void
+	 */
+	public static function ajax_shopper_set_woopay_appearance() {
+		$is_nonce_valid = check_ajax_referer( 'woopay_session_nonce', false, false );
+
+		if ( ! $is_nonce_valid ) {
+			wp_send_json_error(
+				__( 'You aren\'t authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( ! \WC_Payments::get_gateway()->is_woopay_global_theme_support_enabled() ) {
+			wp_send_json_error(
+				__( 'This action is not available.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( empty( $_POST['appearance'] ) || ! is_array( $_POST['appearance'] ) ) {
+			wp_send_json_error(
+				__( 'Missing or invalid appearance data.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		$appearance = self::array_map_recursive( [ __CLASS__, 'sanitize_string' ], $_POST['appearance'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+
+		if ( ! \WC_Payments_Styles_Cache::validate_appearance_schema( $appearance ) ) {
+			wp_send_json_error(
+				__( 'Invalid appearance schema.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		$font_rules = [];
+		if ( ! empty( $_POST['font_rules'] ) ) {
+			$raw_font_rules = json_decode( wp_unslash( $_POST['font_rules'] ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- decoded values are sanitized by sanitize_font_rules().
+			$font_rules     = is_array( $raw_font_rules ) ? self::sanitize_font_rules( $raw_font_rules ) : [];
+		}
+
+		$stored = \WC_Payments_Styles_Cache::maybe_set_woopay_appearance( $appearance, $font_rules );
+
+		if ( ! $stored ) {
+			wp_send_json_success( [ 'stored' => false ] );
+			return;
+		}
+
+		wp_send_json_success( [ 'stored' => true ] );
 	}
 }

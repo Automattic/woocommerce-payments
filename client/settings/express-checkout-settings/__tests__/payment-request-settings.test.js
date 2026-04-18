@@ -18,7 +18,7 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	useWooPayEnabledSettings,
-	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
+	useExpressCheckoutInPaymentMethodsEnabledSettings,
 } from '../../../data';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
@@ -31,8 +31,12 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonSize: jest.fn().mockReturnValue( [ 'small' ] ),
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayEnabledSettings: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
-	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings: jest.fn(),
+	useExpressCheckoutInPaymentMethodsEnabledSettings: jest.fn(),
+	useAmazonPayEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
@@ -53,10 +57,10 @@ const getMockPaymentRequestEnabledSettings = (
 
 const getMockWooPayEnabledSettings = ( isEnabled ) => [ isEnabled ];
 
-const getMockAppleGooglePayInPaymentMethodsOptionsEnabledSettings = (
+const getMockExpressCheckoutInPaymentMethodsEnabledSettings = (
 	isEnabled,
-	updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler
-) => [ isEnabled, updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler ];
+	updateIsExpressCheckoutInPaymentMethodsEnabledHandler
+) => [ isEnabled, updateIsExpressCheckoutInPaymentMethodsEnabledHandler ];
 
 const getMockPaymentRequestLocations = (
 	isCheckoutEnabled,
@@ -130,8 +134,8 @@ describe( 'PaymentRequestSettings', () => {
 			getMockWooPayEnabledSettings( true )
 		);
 
-		useAppleGooglePayInPaymentMethodsOptionsEnabledSettings.mockReturnValue(
-			getMockAppleGooglePayInPaymentMethodsOptionsEnabledSettings(
+		useExpressCheckoutInPaymentMethodsEnabledSettings.mockReturnValue(
+			getMockExpressCheckoutInPaymentMethodsEnabledSettings(
 				false,
 				jest.fn()
 			)
@@ -149,19 +153,19 @@ describe( 'PaymentRequestSettings', () => {
 		expect( checkboxes ).toHaveLength( 5 ); // Apple/Google Pay in payment methods, express buttons, and 3 location checkboxes
 	} );
 
-	it( 'renders Apple Pay / Google Pay in payment methods checkbox when feature flag is enabled', () => {
+	it( 'renders express checkout in payment methods checkbox when feature flag is enabled', () => {
 		renderWithSettingsProvider(
 			<PaymentRequestSettings section="enable" />
 		);
 
 		expect(
 			screen.getByLabelText(
-				'Enable Apple Pay / Google Pay as options in the payment methods list'
+				'Enable express checkout methods as options in the payment methods list'
 			)
 		).toBeInTheDocument();
 	} );
 
-	it( 'does not render Apple Pay / Google Pay in payment methods checkbox when feature flag is disabled', () => {
+	it( 'does not render express checkout in payment methods checkbox when feature flag is disabled', () => {
 		// Mock the feature flag as disabled
 		global.wcpaySettings.featureFlags.isDynamicCheckoutPlaceOrderButtonEnabled = false;
 
@@ -171,7 +175,7 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect(
 			screen.queryByLabelText(
-				'Enable Apple Pay / Google Pay as options in the payment methods list'
+				'Enable express checkout methods as options in the payment methods list'
 			)
 		).not.toBeInTheDocument();
 	} );
@@ -206,13 +210,13 @@ describe( 'PaymentRequestSettings', () => {
 		);
 	} );
 
-	it( 'triggers the Apple Pay / Google Pay in payment methods hook when the checkbox is interacted with', async () => {
-		const updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler = jest.fn();
+	it( 'triggers the express checkout in payment methods hook when the checkbox is interacted with', async () => {
+		const updateIsExpressCheckoutInPaymentMethodsEnabledHandler = jest.fn();
 
-		useAppleGooglePayInPaymentMethodsOptionsEnabledSettings.mockReturnValue(
-			getMockAppleGooglePayInPaymentMethodsOptionsEnabledSettings(
+		useExpressCheckoutInPaymentMethodsEnabledSettings.mockReturnValue(
+			getMockExpressCheckoutInPaymentMethodsEnabledSettings(
 				true,
-				updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler
+				updateIsExpressCheckoutInPaymentMethodsEnabledHandler
 			)
 		);
 
@@ -220,37 +224,19 @@ describe( 'PaymentRequestSettings', () => {
 			<PaymentRequestSettings section="enable" />
 		);
 
+		const checkbox = screen.getByLabelText(
+			'Enable express checkout methods as options in the payment methods list'
+		);
+
+		expect( checkbox ).toBeChecked();
 		expect(
-			updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler
+			updateIsExpressCheckoutInPaymentMethodsEnabledHandler
 		).not.toHaveBeenCalled();
 
-		await userEvent.click(
-			screen.getByLabelText(
-				'Enable Apple Pay / Google Pay as options in the payment methods list'
-			)
-		);
+		await userEvent.click( checkbox );
 		expect(
-			updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler
+			updateIsExpressCheckoutInPaymentMethodsEnabledHandler
 		).toHaveBeenCalledWith( false );
-	} );
-
-	it( 'displays the correct checked state for Apple Pay / Google Pay in payment methods checkbox', () => {
-		useAppleGooglePayInPaymentMethodsOptionsEnabledSettings.mockReturnValue(
-			getMockAppleGooglePayInPaymentMethodsOptionsEnabledSettings(
-				true,
-				jest.fn()
-			)
-		);
-
-		renderWithSettingsProvider(
-			<PaymentRequestSettings section="enable" />
-		);
-
-		expect(
-			screen.getByLabelText(
-				'Enable Apple Pay / Google Pay as options in the payment methods list'
-			)
-		).toBeChecked();
 	} );
 
 	it( 'renders general settings with defaults', () => {
@@ -282,7 +268,7 @@ describe( 'PaymentRequestSettings', () => {
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
 
-	it( 'triggers the hooks when the enabled settings are being interacted with', async () => {
+	it( 'triggers the location update handler when checking location checkboxes', async () => {
 		const updatePaymentRequestLocationsHandler = jest.fn();
 		usePaymentRequestLocations.mockReturnValue(
 			getMockPaymentRequestLocations(
@@ -301,21 +287,24 @@ describe( 'PaymentRequestSettings', () => {
 		await userEvent.click(
 			screen.getByLabelText( /Show on checkout page/ )
 		);
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'checkout',
+			true
+		);
 
 		await userEvent.click(
 			screen.getByLabelText( /Show on product page/ )
 		);
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'product' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'product',
+			true
+		);
 
 		await userEvent.click( screen.getByLabelText( /Show on cart page/ ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'cart' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'cart',
+			true
+		);
 	} );
 
 	it( 'triggers the hooks when the general settings are being interacted with', async () => {
@@ -362,6 +351,74 @@ describe( 'PaymentRequestSettings', () => {
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
 	} );
 
+	it( 'disables and overrides location checkboxes when express checkout in payment methods is enabled', () => {
+		useExpressCheckoutInPaymentMethodsEnabledSettings.mockReturnValue(
+			getMockExpressCheckoutInPaymentMethodsEnabledSettings(
+				true,
+				jest.fn()
+			)
+		);
+
+		usePaymentRequestLocations.mockReturnValue(
+			getMockPaymentRequestLocations( true, true, true, jest.fn() )
+		);
+
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
+
+		expect(
+			screen.getByLabelText( 'Show on product page' )
+		).toBeDisabled();
+		expect( screen.getByLabelText( 'Show on cart page' ) ).toBeDisabled();
+		expect(
+			screen.getByLabelText( 'Show on checkout page' )
+		).toBeDisabled();
+
+		expect(
+			screen.getByLabelText( 'Show on product page' )
+		).not.toBeChecked();
+		expect(
+			screen.getByLabelText( 'Show on cart page' )
+		).not.toBeChecked();
+		expect(
+			screen.getByLabelText( 'Show on checkout page' )
+		).toBeChecked();
+	} );
+
+	it( 'keeps location checkboxes interactive when express checkout in payment methods is disabled', async () => {
+		const updatePaymentRequestLocationsHandler = jest.fn();
+
+		useExpressCheckoutInPaymentMethodsEnabledSettings.mockReturnValue(
+			getMockExpressCheckoutInPaymentMethodsEnabledSettings(
+				false,
+				jest.fn()
+			)
+		);
+
+		usePaymentRequestLocations.mockReturnValue(
+			getMockPaymentRequestLocations(
+				true,
+				true,
+				true,
+				updatePaymentRequestLocationsHandler
+			)
+		);
+
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
+
+		// Location checkboxes should still be interactive when express checkout in payment methods is disabled
+		await userEvent.click(
+			screen.getByLabelText( 'Show on product page' )
+		);
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'product',
+			false
+		);
+	} );
+
 	it( 'should trigger an action to save the checked locations when un-checking the location checkboxes', async () => {
 		const updatePaymentRequestLocationsHandler = jest.fn();
 
@@ -380,18 +437,21 @@ describe( 'PaymentRequestSettings', () => {
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
 		await userEvent.click( screen.getByText( 'Show on product page' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'product',
+			false
+		);
 
 		await userEvent.click( screen.getByText( 'Show on checkout page' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'checkout',
+			false
+		);
 
 		await userEvent.click( screen.getByText( 'Show on cart page' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'cart',
+			false
+		);
 	} );
 } );

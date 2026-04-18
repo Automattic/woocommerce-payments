@@ -104,8 +104,6 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 
 		/**
 		 * Check if the user has points to show the verify email alert.
-		 *
-		 * @psalm-suppress UndefinedClass
 		 */
 		$available_points_for_user = \WC_Points_Rewards_Manager::get_users_points( $user->ID );
 
@@ -172,11 +170,6 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 		}
 
 		if ( $this->is_affiliate_for_woocommerce_enabled() && function_exists( 'afwc_get_referrer_id' ) ) {
-			/**
-			 * Suppress psalm warning.
-			 *
-			 * @psalm-suppress UndefinedFunction
-			 */
 			$extension_data['affiliate-for-woocommerce'] = [
 				'affiliate-user' => afwc_get_referrer_id(),
 			];
@@ -208,10 +201,6 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 			$affiliate_id = (int) wc_clean( wp_unslash( $_GET['affiliate'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 			if ( class_exists( '\AFWC_API' ) ) {
-				// phpcs:ignore
-				/**
-				 * @psalm-suppress UndefinedClass
-				 */
 				$affiliate_api = \AFWC_API::get_instance();
 				$affiliate_api->track_conversion( $order_id, $affiliate_id, '', [ 'is_affiliate_eligible' => true ] );
 			}
@@ -253,9 +242,6 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 	 * Check if Automate Woo Referrals is enabled and
 	 * its functions used on WCPay are available.
 	 *
-	 * @psalm-suppress UndefinedClass
-	 * @psalm-suppress UndefinedFunction
-	 *
 	 * @return boolean
 	 */
 	private function is_automate_woo_referrals_enabled() {
@@ -268,8 +254,6 @@ class WooPay_Adapted_Extensions extends IntegrationRegistry {
 
 	/**
 	 * Get AutomateWoo advocate id from cookie.
-	 *
-	 * @psalm-suppress UndefinedClass
 	 *
 	 * @return string|null
 	 */

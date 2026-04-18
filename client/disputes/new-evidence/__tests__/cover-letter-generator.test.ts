@@ -154,14 +154,32 @@ describe( 'Cover Letter Generator', () => {
 	};
 
 	describe( 'formatMerchantAddress', () => {
-		it( 'should format merchant address correctly', () => {
+		const originalWcpaySettings = ( window as any ).wcpaySettings;
+
+		afterEach( () => {
+			( window as any ).wcpaySettings = originalWcpaySettings;
+		} );
+
+		it( 'should use server-formatted address when available', () => {
+			( window as any ).wcpaySettings = {
+				...originalWcpaySettings,
+				formattedStoreAddress:
+					'123 Main St, Suite 100, Test City, TS 12345, United States (US)',
+			};
 			const result = formatMerchantAddress( mockAccountDetails );
 			expect( result ).toBe(
-				'123 Main St, Suite 100, Test City, TS 12345 US'
+				'123 Main St, Suite 100, Test City, TS 12345, United States (US)'
 			);
 		} );
 
-		it( 'should handle empty address fields', () => {
+		it( 'should fall back to client-side formatting', () => {
+			const result = formatMerchantAddress( mockAccountDetails );
+			expect( result ).toBe(
+				'123 Main St, Suite 100, Test City, TS, 12345, US'
+			);
+		} );
+
+		it( 'should handle empty address fields in fallback', () => {
 			const emptyAddressDetails = {
 				...mockAccountDetails,
 				support_address_line2: '',
@@ -170,7 +188,7 @@ describe( 'Cover Letter Generator', () => {
 				support_address_postal_code: '',
 			};
 			const result = formatMerchantAddress( emptyAddressDetails );
-			expect( result ).toBe( '123 Main St, , ,   US' );
+			expect( result ).toBe( '123 Main St, US' );
 		} );
 	} );
 
@@ -230,6 +248,1344 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain(
 				'<Attachment description> (Attachment B)'
 			);
+		} );
+
+		it( 'should include "Any additional receipts" for duplicate disputes when duplicate_charge_documentation is provided', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					duplicate_charge_documentation:
+						'duplicate_charge_documentation_url',
+				},
+			};
+			const result = generateAttachments( duplicateDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+		} );
+
+		it( 'should not include "Any additional receipts" for non-duplicate disputes', () => {
+			const nonDuplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					duplicate_charge_documentation:
+						'duplicate_charge_documentation_url',
+				},
+			};
+			const result = generateAttachments( nonDuplicateDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).not.toContain( 'Any additional receipts' );
+		} );
+
+		it( 'should maintain correct attachment ordering for duplicate disputes', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					duplicate_charge_documentation:
+						'duplicate_charge_documentation_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+				},
+			};
+			const result = generateAttachments( duplicateDispute );
+			// Verify the order: Order receipt, Any additional receipts, Customer communication, Refund policy
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+		} );
+
+		it( 'should include "Cancellation logs" for subscription_canceled disputes when cancellation_rebuttal is provided', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					cancellation_rebuttal: 'cancellation_rebuttal_url',
+				},
+			};
+			const result = generateAttachments( subscriptionCanceledDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+		} );
+
+		it( 'should not include cancellation_rebuttal for disputes other than subscription_canceled or product_not_received', () => {
+			const generalDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'general' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					cancellation_rebuttal: 'cancellation_rebuttal_url',
+				},
+			};
+			const result = generateAttachments( generalDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).not.toContain( 'Cancellation logs' );
+			expect( result ).not.toContain( 'Cancellation confirmation' );
+		} );
+
+		it( 'should include "Cancellation confirmation" for product_not_received disputes when cancellation_rebuttal is provided', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					cancellation_rebuttal: 'cancellation_rebuttal_url',
+				},
+			};
+			const result = generateAttachments( productNotReceivedDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Cancellation confirmation (Attachment B)'
+			);
+			expect( result ).not.toContain( 'Cancellation logs' );
+		} );
+
+		it( 'should use "Item condition" label for service_documentation in general disputes', () => {
+			const generalDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'general' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+				},
+			};
+			const result = generateAttachments( generalDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Item condition (Attachment B)' );
+			expect( result ).not.toContain(
+				'Reservation or booking confirmation'
+			);
+			expect( result ).not.toContain( 'Event or booking documentation' );
+		} );
+
+		it( 'should use "Reservation or booking confirmation" label for service_documentation in product_not_received disputes with booking_reservation product type', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'booking_reservation'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Reservation or booking confirmation (Attachment B)'
+			);
+			expect( result ).not.toContain( 'Item condition' );
+		} );
+
+		it( 'should use "Item condition" label for service_documentation in product_not_received disputes without booking_reservation product type', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Item condition (Attachment B)' );
+			expect( result ).not.toContain(
+				'Reservation or booking confirmation'
+			);
+		} );
+
+		it( 'should use "Event or booking documentation" as first attachment for product_unacceptable disputes with booking_reservation product type', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'booking_reservation'
+			);
+			expect( result ).toContain(
+				'Event or booking documentation (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).not.toContain( 'Item condition' );
+		} );
+
+		it( 'should use "Item\'s condition" label for service_documentation in product_unacceptable disputes with physical_product', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( "Item's condition (Attachment B)" );
+			expect( result ).not.toContain( 'Event or booking documentation' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly with full evidence and booking_reservation product type', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'service_documentation_url',
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'booking_reservation'
+			);
+			expect( result ).toContain(
+				'Event or booking documentation (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all product_unacceptable attachments with standard order when physical_product', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'service_documentation_url',
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			// With physical_product, order should be standard (receipt first)
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment C)' );
+			expect( result ).toContain( "Item's condition (Attachment D)" );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should use "Subscription logs" label for access_activity_log in product_unacceptable disputes (no product-specific override)', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					access_activity_log: 'access_activity_log_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Subscription logs (Attachment B)' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly with full evidence and physical_product', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					service_documentation: 'service_documentation_url',
+					customer_communication: 'customer_communication_url',
+					customer_signature: 'customer_signature_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( "Customer's signature (Attachment B)" );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( "Item's condition (Attachment E)" );
+			expect( result ).toContain( 'Other documents (Attachment F)' );
+		} );
+
+		it( 'should use "Terms of service" label for cancellation_policy in subscription_canceled disputes', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					cancellation_policy: 'cancellation_policy_url',
+				},
+			};
+			const result = generateAttachments( subscriptionCanceledDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Terms of service (Attachment B)' );
+			expect( result ).not.toContain( 'Cancellation policy' );
+		} );
+
+		it( 'should use "Cancellation policy" label for cancellation_policy in non-subscription_canceled disputes', () => {
+			const generalDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'general' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					cancellation_policy: 'cancellation_policy_url',
+				},
+			};
+			const result = generateAttachments( generalDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation policy (Attachment B)' );
+			expect( result ).not.toContain( 'Terms of service' );
+		} );
+
+		it( 'should generate correct attachments for subscription_canceled + booking_reservation scenario', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					cancellation_rebuttal: 'cancellation_rebuttal_url',
+					cancellation_policy: 'cancellation_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments( subscriptionCanceledDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Cancellation logs (Attachment C)' );
+			expect( result ).toContain( 'Terms of service (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all product_not_received attachments correctly with full evidence and physical_product product type', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					customer_communication: 'customer_communication_url',
+					customer_signature: 'customer_signature_url',
+					refund_policy: 'refund_policy_url',
+					shipping_documentation: 'shipping_documentation_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( "Customer's signature (Attachment C)" );
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Proof of shipping (Attachment E)' );
+			expect( result ).toContain( 'Other documents (Attachment F)' );
+		} );
+
+		it( 'should order all fraudulent attachments correctly with full evidence and physical_product product type', () => {
+			const fraudulentDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'fraudulent' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					access_activity_log: 'access_activity_log_url',
+					customer_communication: 'customer_communication_url',
+					customer_signature: 'customer_signature_url',
+					refund_policy: 'refund_policy_url',
+					shipping_documentation: 'shipping_documentation_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				fraudulentDispute,
+				undefined,
+				'physical_product'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( "Customer's signature (Attachment D)" );
+			expect( result ).toContain( 'Refund policy (Attachment E)' );
+			expect( result ).toContain( 'Proof of shipping (Attachment F)' );
+			expect( result ).toContain( 'Other documents (Attachment G)' );
+		} );
+
+		it( 'should include "Customer\'s signature" only for physical_product product type', () => {
+			const disputeWithSignature: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					customer_signature: 'customer_signature_url',
+				},
+			};
+
+			// Physical product should include Customer's signature
+			const physicalResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'physical_product'
+			);
+			expect( physicalResult ).toContain( "Customer's signature" );
+
+			// Booking/Reservation should NOT include Customer's signature
+			const bookingResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'booking_reservation'
+			);
+			expect( bookingResult ).not.toContain( "Customer's signature" );
+
+			// Other product types should NOT include Customer's signature
+			const otherResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				'other'
+			);
+			expect( otherResult ).not.toContain( "Customer's signature" );
+
+			// No product type specified should NOT include Customer's signature
+			const noProductTypeResult = generateAttachments(
+				disputeWithSignature,
+				undefined,
+				undefined
+			);
+			expect( noProductTypeResult ).not.toContain(
+				"Customer's signature"
+			);
+		} );
+
+		it( 'should label uncategorized_file as "Proof of acceptance" and customer_communication as "Other documents" for credit_not_processed + booking_reservation + refund_was_not_owed', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'proof_of_acceptance_url',
+					refund_policy: 'refund_policy_url',
+					customer_communication: 'other_docs_url',
+				},
+			};
+
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'booking_reservation',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Proof of acceptance' );
+			expect( result ).toContain( 'Other documents' );
+			expect( result ).not.toContain( 'Customer communication' );
+
+			// Verify exact ordering: Proof of acceptance (A), Refund policy (B), Other documents (C)
+			const proofIndex = result.indexOf( 'Proof of acceptance' );
+			const refundPolicyIndex = result.indexOf( 'Refund policy' );
+			const otherDocsIndex = result.indexOf( 'Other documents' );
+			expect( proofIndex ).toBeLessThan( refundPolicyIndex );
+			expect( refundPolicyIndex ).toBeLessThan( otherDocsIndex );
+			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
+			expect( result ).toContain( 'Refund policy (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+		} );
+
+		it( 'should label uncategorized_file as "Other documents" for credit_not_processed + booking_reservation + refund_has_been_issued', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'some_file_url',
+				},
+			};
+
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'booking_reservation',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Other documents' );
+			expect( result ).not.toContain( 'Proof of acceptance' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario A attachments correctly with booking_reservation product type', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					receipt: 'refund_receipt_url',
+					cancellation_rebuttal: 'cancellation_logs_url',
+					customer_communication: 'other_docs_url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'booking_reservation',
+				'refund_has_been_issued'
+			);
+			// Verify exact ordering: Refund receipt (A), Cancellation logs (B), Other documents (C)
+			expect( result ).toContain( 'Refund receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Order receipt' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		// Digital Product/Service cover letter ordering tests
+
+		it( 'should order all fraudulent attachments correctly for digital_product_or_service', () => {
+			const fraudulentDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'fraudulent' as DisputeReason,
+				evidence: {
+					access_activity_log: 'access_activity_log_url',
+					service_documentation: 'service_documentation_url',
+					customer_communication: 'customer_communication_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				fraudulentDispute,
+				undefined,
+				'digital_product_or_service'
+			);
+			expect( result ).toContain(
+				'Login or usage records (Attachment A)'
+			);
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment D)' );
+			expect( result ).not.toContain( "Customer's signature" );
+			expect( result ).not.toContain( 'Order receipt' );
+			expect( result ).not.toContain( 'Refund policy' );
+		} );
+
+		it( 'should order all product_not_received attachments correctly for digital_product_or_service', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					access_activity_log: 'access_activity_log_url',
+					customer_communication: 'customer_communication_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'digital_product_or_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Login or usage records (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment D)' );
+			expect( result ).not.toContain( 'Refund policy' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly for digital_product_or_service', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'service_documentation_url',
+					receipt: 'receipt_url',
+					access_activity_log: 'access_activity_log_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'digital_product_or_service'
+			);
+			expect( result ).toContain(
+				'Proof of delivered service (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Login or usage records (Attachment C)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment D)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment E)' );
+			expect( result ).toContain( 'Other documents (Attachment F)' );
+		} );
+
+		it( 'should order all subscription_canceled attachments correctly for digital_product_or_service', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					cancellation_rebuttal: 'cancellation_rebuttal_url',
+					customer_communication: 'customer_communication_url',
+					access_activity_log: 'access_activity_log_url',
+					cancellation_policy: 'cancellation_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				subscriptionCanceledDispute,
+				undefined,
+				'digital_product_or_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain(
+				'Login or usage records (Attachment D)'
+			);
+			expect( result ).toContain( 'Terms of service (Attachment E)' );
+			expect( result ).toContain( 'Other documents (Attachment F)' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario A attachments correctly for digital_product_or_service', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					receipt: 'refund_receipt_url',
+					cancellation_rebuttal: 'cancellation_logs_url',
+					customer_communication: 'other_docs_url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'digital_product_or_service',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Refund receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Order receipt' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario B attachments correctly for digital_product_or_service', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'proof_of_acceptance_url',
+					refund_policy: 'refund_policy_url',
+					customer_communication: 'other_docs_url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'digital_product_or_service',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
+			expect( result ).toContain( 'Refund policy (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		it( 'should order all duplicate is_duplicate attachments correctly for digital_product_or_service', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					duplicate_charge_documentation:
+						'duplicate_charge_documentation_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_duplicate',
+				'digital_product_or_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Refund receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all duplicate is_not_duplicate attachments correctly for digital_product_or_service', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					duplicate_charge_documentation:
+						'duplicate_charge_documentation_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+					uncategorized_file: 'uncategorized_file_url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_not_duplicate',
+				'digital_product_or_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		// Offline Service cover letter ordering tests
+
+		it( 'should order all fraudulent attachments correctly for offline_service', () => {
+			const fraudulentDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'fraudulent' as DisputeReason,
+				evidence: {
+					access_activity_log: 'url',
+					customer_communication: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				fraudulentDispute,
+				undefined,
+				'offline_service'
+			);
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment A)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+		} );
+
+		it( 'should order all product_not_received attachments correctly for offline_service', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					service_documentation: 'url',
+					customer_communication: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'offline_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Proof of service completion (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment D)' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly for offline_service', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'url',
+					receipt: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'offline_service'
+			);
+			expect( result ).toContain(
+				'Proof of delivered service (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all subscription_canceled attachments correctly for offline_service', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					customer_communication: 'url',
+					cancellation_rebuttal: 'url',
+					cancellation_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				subscriptionCanceledDispute,
+				undefined,
+				'offline_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Cancellation logs (Attachment C)' );
+			expect( result ).toContain( 'Terms of service (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario A attachments correctly for offline_service', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					cancellation_rebuttal: 'url',
+					customer_communication: 'url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'offline_service',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Refund receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Order receipt' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario B attachments correctly for offline_service', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'url',
+					refund_policy: 'url',
+					customer_communication: 'url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'offline_service',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
+			expect( result ).toContain( 'Refund policy (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		it( 'should order all duplicate is_duplicate attachments correctly for offline_service', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					duplicate_charge_documentation: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_duplicate',
+				'offline_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Refund receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all duplicate is_not_duplicate attachments correctly for offline_service', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					duplicate_charge_documentation: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_not_duplicate',
+				'offline_service'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		// Event cover letter ordering tests
+
+		it( 'should order all fraudulent attachments correctly for event', () => {
+			const fraudulentDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'fraudulent' as DisputeReason,
+				evidence: {
+					access_activity_log: 'url',
+					customer_communication: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				fraudulentDispute,
+				undefined,
+				'event'
+			);
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment A)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+		} );
+
+		it( 'should order all product_not_received attachments correctly for event', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					service_documentation: 'url',
+					customer_communication: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'event'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Attendance confirmation (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment D)' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly for event', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					service_documentation: 'url',
+					receipt: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'event'
+			);
+			expect( result ).toContain(
+				'Event or booking documentation (Attachment A)'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all subscription_canceled attachments correctly for event', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					customer_communication: 'url',
+					cancellation_rebuttal: 'url',
+					cancellation_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				subscriptionCanceledDispute,
+				undefined,
+				'event'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Cancellation logs (Attachment C)' );
+			expect( result ).toContain( 'Terms of service (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario A attachments correctly for event', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					cancellation_rebuttal: 'url',
+					customer_communication: 'url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'event',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Refund receipt (Attachment A)' );
+			expect( result ).toContain( 'Cancellation logs (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Order receipt' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		it( 'should order all credit_not_processed Scenario B attachments correctly for event', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'url',
+					refund_policy: 'url',
+					customer_communication: 'url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'event',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
+			expect( result ).toContain( 'Refund policy (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+			expect( result ).not.toContain( 'Customer communication' );
+		} );
+
+		it( 'should order all duplicate is_duplicate attachments correctly for event', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					duplicate_charge_documentation: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_duplicate',
+				'event'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Refund receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all duplicate is_not_duplicate attachments correctly for event', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					duplicate_charge_documentation: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_not_duplicate',
+				'event'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all fraudulent attachments correctly for other', () => {
+			const fraudulentDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'fraudulent' as DisputeReason,
+				evidence: {
+					access_activity_log: 'url',
+					customer_communication: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				fraudulentDispute,
+				undefined,
+				'other'
+			);
+			expect( result ).toContain(
+				'Prior undisputed transaction history (Attachment A)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+		} );
+
+		it( 'should order all product_not_received attachments correctly for other', () => {
+			const productNotReceivedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					service_documentation: 'url',
+					customer_communication: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				productNotReceivedDispute,
+				undefined,
+				'other'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Service completion records (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Other documents (Attachment D)' );
+		} );
+
+		it( 'should order all product_unacceptable attachments correctly for other', () => {
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					customer_communication: 'url',
+					cancellation_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				productUnacceptableDispute,
+				undefined,
+				'other'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment B)'
+			);
+			expect( result ).toContain( 'Terms of service (Attachment C)' );
+			expect( result ).toContain( 'Other documents (Attachment D)' );
+		} );
+
+		it( 'should order all credit_not_processed refund_has_been_issued attachments correctly for other', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					shipping_documentation: 'url',
+					customer_communication: 'url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'other',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Refund receipt (Attachment A)' );
+			expect( result ).toContain( 'Return tracking (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+		} );
+
+		it( 'should order all credit_not_processed refund_was_not_owed attachments correctly for other', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+				evidence: {
+					uncategorized_file: 'url',
+					refund_policy: 'url',
+					customer_communication: 'url',
+				},
+			};
+			const result = generateAttachments(
+				creditNotProcessedDispute,
+				undefined,
+				'other',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Proof of acceptance (Attachment A)' );
+			expect( result ).toContain( 'Refund policy (Attachment B)' );
+			expect( result ).toContain( 'Other documents (Attachment C)' );
+		} );
+
+		it( 'should order all duplicate is_duplicate attachments correctly for other', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					duplicate_charge_documentation: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_duplicate',
+				'other'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Refund receipt (Attachment B)' );
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
+		} );
+
+		it( 'should order all duplicate is_not_duplicate attachments correctly for other', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'url',
+					duplicate_charge_documentation: 'url',
+					customer_communication: 'url',
+					refund_policy: 'url',
+					uncategorized_file: 'url',
+				},
+			};
+			const result = generateAttachments(
+				duplicateDispute,
+				'is_not_duplicate',
+				'other'
+			);
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Refund policy (Attachment D)' );
+			expect( result ).toContain( 'Other documents (Attachment E)' );
 		} );
 	} );
 
@@ -389,7 +1745,7 @@ describe( 'Cover Letter Generator', () => {
 			);
 			expect( result ).toContain( 'Test Store' );
 			expect( result ).toContain(
-				'123 Main St, Suite 100, Test City, TS 12345 US'
+				'123 Main St, Suite 100, Test City, TS, 12345, US'
 			);
 			expect( result ).toContain( 'test@example.com' );
 			expect( result ).toContain( 'Test Bank' );

@@ -31,7 +31,7 @@ export default {
 	heading: ( firstName?: string ): string =>
 		sprintf(
 			/* translators: %s: first name of the merchant, if it exists, %s: WooPayments. */
-			__( 'Hi%s, Welcome to %s!', 'woocommerce' ),
+			__( 'Hi%s, Welcome to %s!', 'woocommerce-payments' ),
 			firstName ? ` ${ firstName }` : '',
 			'WooPayments'
 		),
@@ -50,7 +50,7 @@ export default {
 		},
 	},
 	usp1: __(
-		'Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
+		'Offer card payments, Apple Pay, iDEAL | Wero, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
 		'woocommerce-payments'
 	),
 	usp2: __(
@@ -202,7 +202,8 @@ export default {
 				'woocommerce-payments'
 			),
 			description: __(
-				"Here's a brief list of the information you'll need to finish payment signup:"
+				"Here's a brief list of the information you'll need to finish payment signup:",
+				'woocommerce-payments'
 			),
 		},
 		businessOwnerInfo: {
@@ -225,13 +226,13 @@ export default {
 			fields: [
 				__(
 					'Country where your business is based',
-					'woocommerce-payments '
+					'woocommerce-payments'
 				),
-				__( 'Type of business', 'woocommerce-payments ' ),
-				__( 'Industry', 'woocommerce-payments ' ),
-				__( 'Company address', 'woocommerce-payments ' ),
-				__( 'Company phone number', 'woocommerce-payments ' ),
-				__( 'Company URL', 'woocommerce-payments ' ),
+				__( 'Type of business', 'woocommerce-payments' ),
+				__( 'Industry', 'woocommerce-payments' ),
+				__( 'Company address', 'woocommerce-payments' ),
+				__( 'Company phone number', 'woocommerce-payments' ),
+				__( 'Company URL', 'woocommerce-payments' ),
 			],
 		},
 	},

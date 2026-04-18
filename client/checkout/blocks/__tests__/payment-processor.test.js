@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-unnecessary-act */
 /**
  * External dependencies
  */
@@ -10,11 +11,12 @@ import PaymentProcessor from '../payment-processor';
 import { PaymentElement } from '@stripe/react-stripe-js';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
-jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
+jest.mock( 'wcpay/checkout/utils/validate-elements', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
 } ) );
-jest.mock( 'wcpay/checkout/blocks/utils', () => ( {
-	useCustomerData: jest.fn().mockReturnValue( { billingAddress: {} } ),
+jest.mock( '../utils', () => ( {
+	useCustomerData: jest.fn().mockReturnValue( {} ),
+	getStripeElementOptions: jest.fn().mockReturnValue( {} ),
 } ) );
 jest.mock( '../hooks', () => ( {
 	usePaymentCompleteHandler: () => null,
@@ -206,6 +208,61 @@ describe( 'PaymentProcessor', () => {
 			},
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
+	} );
+
+	it( 'should trim whitespace from postal code', async () => {
+		const { useCustomerData } = require( '../utils' );
+		useCustomerData.mockReturnValue( {
+			first_name: 'John',
+			last_name: 'Doe',
+			email: 'john@example.com',
+			phone: '555-1234',
+			city: 'Nottingham',
+			country: 'GB',
+			address_1: '1 High St',
+			address_2: '',
+			postcode: ' NG8 4GP ',
+			state: '',
+		} );
+
+		let onPaymentSetupCallback;
+		mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
+			paymentMethod: { id: 'paymentMethodId' },
+		} );
+
+		act( () => {
+			render(
+				<PaymentProcessor
+					activePaymentMethod="woocommerce_payments"
+					api={ mockApi }
+					paymentMethodId="card"
+					emitResponse={ {} }
+					eventRegistration={ {
+						onPaymentSetup: ( callback ) =>
+							( onPaymentSetupCallback = callback ),
+					} }
+					fingerprint=""
+					shouldSavePayment={ false }
+					upeMethods={ {
+						card: { gatewayId: 'woocommerce_payments' },
+					} }
+				/>
+			);
+		} );
+
+		await onPaymentSetupCallback();
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				params: expect.objectContaining( {
+					billing_details: expect.objectContaining( {
+						address: expect.objectContaining( {
+							postal_code: 'NG8 4GP',
+						} ),
+					} ),
+				} ),
+			} )
+		);
 	} );
 
 	it( 'should return success when there are no failures', async () => {

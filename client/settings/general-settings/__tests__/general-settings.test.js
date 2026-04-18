@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { fireEvent, render, screen, act } from '@testing-library/react';
 
 /**
@@ -13,16 +14,28 @@ import {
 	useTestMode,
 	useTestModeOnboarding,
 } from 'wcpay/data';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDevMode: jest.fn(),
 	useIsWCPayEnabled: jest.fn(),
 	useTestMode: jest.fn(),
 	useTestModeOnboarding: jest.fn(),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
 	useEnabledPaymentMethodIds: jest.fn().mockReturnValue( [ [ 'card' ] ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
 	usePaymentRequestEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
+	useAmazonPayEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
 } ) );
+
+const renderWithSettingsProvider = ( ui ) =>
+	render(
+		<WCPaySettingsContext.Provider
+			value={ { featureFlags: { amazonPay: false } } }
+		>
+			{ ui }
+		</WCPaySettingsContext.Provider>
+	);
 
 describe( 'GeneralSettings', () => {
 	beforeEach( () => {
@@ -33,7 +46,7 @@ describe( 'GeneralSettings', () => {
 	} );
 
 	it( 'renders', () => {
-		render( <GeneralSettings /> );
+		renderWithSettingsProvider( <GeneralSettings /> );
 
 		expect(
 			screen.queryByText( 'Enable WooPayments' )
@@ -46,12 +59,12 @@ describe( 'GeneralSettings', () => {
 		( isEnabled ) => {
 			useIsWCPayEnabled.mockReturnValue( [ isEnabled ] );
 
-			render( <GeneralSettings /> );
+			renderWithSettingsProvider( <GeneralSettings /> );
 
-			const enableWCPayCheckbox = screen.getByLabelText(
-				'Enable WooPayments'
-			);
+			const enableWCPayCheckbox =
+				screen.getByLabelText( 'Enable WooPayments' );
 
+			// eslint-disable-next-line jest/valid-expect
 			let expectation = expect( enableWCPayCheckbox );
 			if ( ! isEnabled ) {
 				expectation = expectation.not;
@@ -67,7 +80,7 @@ describe( 'GeneralSettings', () => {
 			updateIsWCPayEnabledMock,
 		] );
 
-		render( <GeneralSettings /> );
+		renderWithSettingsProvider( <GeneralSettings /> );
 
 		fireEvent.click( screen.getByLabelText( 'Enable WooPayments' ) );
 
@@ -83,7 +96,7 @@ describe( 'GeneralSettings', () => {
 		const updateIsWCPayEnabledMock = jest.fn();
 		useIsWCPayEnabled.mockReturnValue( [ true, updateIsWCPayEnabledMock ] );
 
-		render( <GeneralSettings /> );
+		renderWithSettingsProvider( <GeneralSettings /> );
 
 		fireEvent.click( screen.getByLabelText( 'Enable WooPayments' ) );
 
@@ -108,11 +121,11 @@ describe( 'GeneralSettings', () => {
 		'display of CheckBox when initial Test Mode = %s',
 		( isEnabled ) => {
 			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
-			render( <GeneralSettings /> );
-			const enableTestModeCheckbox = screen.getByLabelText(
-				'Enable test mode'
-			);
+			renderWithSettingsProvider( <GeneralSettings /> );
+			const enableTestModeCheckbox =
+				screen.getByLabelText( 'Enable test mode' );
 
+			// eslint-disable-next-line jest/valid-expect
 			let expectation = expect( enableTestModeCheckbox );
 			if ( ! isEnabled ) {
 				expectation = expectation.not;
@@ -125,12 +138,12 @@ describe( 'GeneralSettings', () => {
 		'Checks Confirmation Modal display when initial Test Mode = %s',
 		( isEnabled ) => {
 			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
-			render( <GeneralSettings /> );
-			const enableTestModeCheckbox = screen.getByLabelText(
-				'Enable test mode'
-			);
+			renderWithSettingsProvider( <GeneralSettings /> );
+			const enableTestModeCheckbox =
+				screen.getByLabelText( 'Enable test mode' );
 			fireEvent.click( enableTestModeCheckbox );
 
+			// eslint-disable-next-line jest/valid-expect
 			let expectation = expect(
 				screen.queryByText(
 					'Are you sure you want to enable test mode?'
@@ -144,7 +157,7 @@ describe( 'GeneralSettings', () => {
 	);
 
 	it( 'show the modal when the appropriate event is dispatched', () => {
-		render( <GeneralSettings /> );
+		renderWithSettingsProvider( <GeneralSettings /> );
 
 		act( () => {
 			document.dispatchEvent(
@@ -157,5 +170,40 @@ describe( 'GeneralSettings', () => {
 				"Before continuing, please make sure that you're aware of the following:"
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'disables test mode checkbox when dev mode is enabled', () => {
+		useDevMode.mockReturnValue( true );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		const enableTestModeCheckbox = screen.getByLabelText(
+			'Enable test mode (enabled by development mode)'
+		);
+
+		expect( enableTestModeCheckbox ).toBeDisabled();
+		expect( enableTestModeCheckbox ).toBeChecked();
+	} );
+
+	it( 'shows dev mode help text when dev mode is enabled', () => {
+		useDevMode.mockReturnValue( true );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		expect(
+			screen.queryByText( /development or staging environment/i )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not disable test mode checkbox when dev mode is not enabled', () => {
+		useDevMode.mockReturnValue( false );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		const enableTestModeCheckbox =
+			screen.getByLabelText( 'Enable test mode' );
+
+		expect( enableTestModeCheckbox ).not.toBeDisabled();
+		expect( enableTestModeCheckbox ).not.toBeChecked();
 	} );
 } );

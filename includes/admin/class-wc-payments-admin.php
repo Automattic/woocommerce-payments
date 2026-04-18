@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use Automattic\Jetpack\Constants;
 use Automattic\WooCommerce\Admin\Features\Features;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request;
@@ -87,6 +88,13 @@ class WC_Payments_Admin {
 	private $incentives_service;
 
 	/**
+	 * WC_Payments_PM_Promotions_Service instance to get information for payment method promotions.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service
+	 */
+	private $pm_promotions_service;
+
+	/**
 	 * WC_Payments_Fraud_Service instance to get information about fraud services.
 	 *
 	 * @var WC_Payments_Fraud_Service
@@ -121,14 +129,15 @@ class WC_Payments_Admin {
 	/**
 	 * Hook in admin menu items.
 	 *
-	 * @param WC_Payments_API_Client         $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay       $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
-	 * @param WC_Payments_Account            $account             Account instance.
-	 * @param WC_Payments_Onboarding_Service $onboarding_service  Onboarding service instance.
-	 * @param WC_Payments_Order_Service      $order_service       Order service instance.
-	 * @param WC_Payments_Incentives_Service $incentives_service  Incentives service instance.
-	 * @param WC_Payments_Fraud_Service      $fraud_service       Fraud service instance.
-	 * @param Database_Cache                 $database_cache      Database Cache instance.
+	 * @param WC_Payments_API_Client            $payments_api_client   WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay          $gateway               WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account               $account               Account instance.
+	 * @param WC_Payments_Onboarding_Service    $onboarding_service    Onboarding service instance.
+	 * @param WC_Payments_Order_Service         $order_service         Order service instance.
+	 * @param WC_Payments_Incentives_Service    $incentives_service    Incentives service instance.
+	 * @param WC_Payments_PM_Promotions_Service $pm_promotions_service PM Promotions service instance.
+	 * @param WC_Payments_Fraud_Service         $fraud_service         Fraud service instance.
+	 * @param Database_Cache                    $database_cache        Database Cache instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -137,17 +146,19 @@ class WC_Payments_Admin {
 		WC_Payments_Onboarding_Service $onboarding_service,
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_Incentives_Service $incentives_service,
+		WC_Payments_PM_Promotions_Service $pm_promotions_service,
 		WC_Payments_Fraud_Service $fraud_service,
 		Database_Cache $database_cache
 	) {
-		$this->payments_api_client = $payments_api_client;
-		$this->wcpay_gateway       = $gateway;
-		$this->account             = $account;
-		$this->onboarding_service  = $onboarding_service;
-		$this->order_service       = $order_service;
-		$this->incentives_service  = $incentives_service;
-		$this->fraud_service       = $fraud_service;
-		$this->database_cache      = $database_cache;
+		$this->payments_api_client   = $payments_api_client;
+		$this->wcpay_gateway         = $gateway;
+		$this->account               = $account;
+		$this->onboarding_service    = $onboarding_service;
+		$this->order_service         = $order_service;
+		$this->incentives_service    = $incentives_service;
+		$this->pm_promotions_service = $pm_promotions_service;
+		$this->fraud_service         = $fraud_service;
+		$this->database_cache        = $database_cache;
 	}
 
 	/**
@@ -172,6 +183,9 @@ class WC_Payments_Admin {
 		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
 		add_action( 'woocommerce_update_options_site-visibility', [ $this, 'inform_stripe_when_store_goes_live' ] );
 		add_action( 'admin_init', [ $this, 'add_css_classes' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payment_settings_spotlight' ] );
+		add_action( 'admin_footer', [ $this, 'inject_payment_settings_spotlight_container' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payments_review_prompt' ] );
 	}
 
 	/**
@@ -664,6 +678,28 @@ class WC_Payments_Admin {
 			WC_Payments::get_file_version( 'dist/plugins-page.css' ),
 			'all'
 		);
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'dist/wc-payments-settings-spotlight' );
+		wp_set_script_translations( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT',
+			plugins_url( 'dist/wc-payments-settings-spotlight.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/wc-payments-settings-spotlight.css' ),
+			'all'
+		);
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_REVIEW_PROMPT', 'dist/wc-payments-review-prompt' );
+		wp_set_script_translations( 'WCPAY_REVIEW_PROMPT', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_REVIEW_PROMPT',
+			plugins_url( 'dist/wc-payments-review-prompt.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/wc-payments-review-prompt.css' ),
+			'all'
+		);
 	}
 
 	/**
@@ -957,7 +993,7 @@ class WC_Payments_Admin {
 			'showUpdateDetailsTask'              => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'                  => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'multiCurrencySetup'                 => [
-				'isSetupCompleted' => filter_var( get_option( 'wcpay_multi_currency_setup_completed' ), FILTER_VALIDATE_BOOLEAN ) ? 'yes' : 'no,',
+				'isSetupCompleted' => filter_var( get_option( 'wcpay_multi_currency_setup_completed' ), FILTER_VALIDATE_BOOLEAN ) ? 'yes' : 'no',
 			],
 			'isMultiCurrencyEnabled'             => WC_Payments_Features::is_customer_multi_currency_enabled(),
 			'shouldUseExplicitPrice'             => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
@@ -982,6 +1018,7 @@ class WC_Payments_Admin {
 			'storeName'                          => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
+			'instantDepositsPreviouslyEligible'  => get_option( 'wcpay_instant_deposits_previously_eligible', false ),
 			'dismissedDuplicateNotices'          => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
 			'isConnectionSuccessModalDismissed'  => get_option( WC_Payments_Onboarding_Service::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION, false ),
 			'isOverviewSurveySubmitted'          => get_option( 'wcpay_survey_payment_overview_submitted', false ),
@@ -989,8 +1026,21 @@ class WC_Payments_Admin {
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
+			'woopayAppearance'                   => WC_Payments_Styles_Cache::get_woopay_appearance(),
+			'woopayFontRules'                    => WC_Payments_Styles_Cache::get_woopay_font_rules(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
+			'formattedStoreAddress'              => WC()->countries->get_formatted_address(
+				[
+					'address_1' => get_option( 'woocommerce_store_address', '' ),
+					'address_2' => get_option( 'woocommerce_store_address_2', '' ),
+					'city'      => get_option( 'woocommerce_store_city', '' ),
+					'state'     => WC()->countries->get_base_state(),
+					'postcode'  => get_option( 'woocommerce_store_postcode', '' ),
+					'country'   => WC()->countries->get_base_country(),
+				],
+				', '
+			),
 		];
 
 		/**
@@ -1237,9 +1287,16 @@ class WC_Payments_Admin {
 	 */
 	public function display_wcpay_transaction_fee( $order_id ) {
 		$order = wc_get_order( $order_id );
-		if ( ! $order || ! $order->get_meta( '_wcpay_transaction_fee' ) || Intent_Status::REQUIRES_CAPTURE === $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ) ) {
+		if ( ! $order || Intent_Status::REQUIRES_CAPTURE === $order->get_meta( WC_Payments_Order_Service::INTENTION_STATUS_META_KEY ) ) {
 			return;
 		}
+
+		$transaction_fee = $order->get_meta( '_wcpay_transaction_fee' );
+
+		if ( ! $transaction_fee ) {
+			return;
+		}
+
 		?>
 		<tr>
 			<td class="label wcpay-transaction-fee">
@@ -1257,7 +1314,7 @@ class WC_Payments_Admin {
 			</td>
 			<td width="1%"></td>
 			<td class="total">
-				-<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+				-<?php echo wp_kses( wc_price( $transaction_fee, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
 			</td>
 		</tr>
 		<?php
@@ -1393,5 +1450,142 @@ class WC_Payments_Admin {
 		}
 
 		return $authorization_summary['count'];
+	}
+
+	/**
+	 * Enqueue the spotlight promotion script on WooCommerce Payments Settings page.
+	 * Only runs on WooCommerce 9.9.2+ (when the new WooCommerce Payments Settings UI was enabled for all stores).
+	 */
+	public function enqueue_wc_payment_settings_spotlight() {
+		// Check for minimum WooCommerce version 9.9.2.
+		if ( ! Constants::is_defined( 'WC_VERSION' ) || version_compare( Constants::get_constant( 'WC_VERSION' ), '9.9.2', '<' ) ) {
+			return;
+		}
+
+		// Only enqueue on the WooCommerce Payments Settings page.
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
+			return;
+		}
+
+		// Only enqueue if there are visible spotlight promotions.
+		$promotions = $this->pm_promotions_service->get_visible_promotions();
+		if ( empty( $promotions ) ) {
+			return;
+		}
+
+		$has_spotlight = false;
+		foreach ( $promotions as $promotion ) {
+			if ( isset( $promotion['type'] ) && 'spotlight' === $promotion['type'] ) {
+				$has_spotlight = true;
+				break;
+			}
+		}
+
+		if ( ! $has_spotlight ) {
+			return;
+		}
+
+		wp_enqueue_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_enqueue_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+	}
+
+	/**
+	 * Inject the container div for the spotlight promotion on WooCommerce payment settings page.
+	 * Only runs on WooCommerce 9.9.2+ (when the new WooCommerce Payments Settings UI was enabled for all stores).
+	 */
+	public function inject_payment_settings_spotlight_container() {
+		// Check for minimum WooCommerce version 9.9.2.
+		if ( ! Constants::is_defined( 'WC_VERSION' ) || version_compare( Constants::get_constant( 'WC_VERSION' ), '9.9.2', '<' ) ) {
+			return;
+		}
+
+		// Only inject on the WooCommerce Payments settings page.
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
+			return;
+		}
+
+		echo '<div id="wcpay-payments-settings-spotlight"></div>';
+	}
+
+	/**
+	 * Check if we're on the WooCommerce Payments Settings page (general payments tab, no specific section).
+	 *
+	 * @return bool True if on the WC payment settings page.
+	 */
+	private function is_wc_admin_payments_settings_page(): bool {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return isset( $_REQUEST['page'] ) && 'wc-settings' === wp_unslash( $_REQUEST['page'] ) &&
+			isset( $_REQUEST['tab'] ) && 'checkout' === wp_unslash( $_REQUEST['tab'] ) &&
+			! isset( $_REQUEST['section'] )
+			&& is_admin();
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+	}
+
+	/**
+	 * Check if the review prompt should be shown based on eligibility and user state.
+	 *
+	 * @return bool True if the prompt should be shown, false otherwise.
+	 */
+	public function should_show_review_prompt() {
+		// Only show on top-level Payments Settings page.
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
+			return false;
+		}
+
+		// Check account eligibility.
+		if ( ! $this->account->is_review_prompt_eligible() ) {
+			return false;
+		}
+
+		// Check user dismissal/cooldown state.
+		$user_id     = get_current_user_id();
+		$dismissed   = (int) get_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed', true );
+		$maybe_later = (int) get_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later', true );
+
+		// If dismissed permanently, don't show.
+		if ( $dismissed > 0 ) {
+			return false;
+		}
+
+		// If cooldown is active (within 10 days), don't show.
+		if ( $maybe_later > 0 ) {
+			$cooldown_seconds = 10 * DAY_IN_SECONDS;
+			$now              = time();
+			if ( $now < ( $maybe_later + $cooldown_seconds ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Enqueue the review prompt script on top-level Payments Settings page.
+	 */
+	public function enqueue_wc_payments_review_prompt() {
+		if ( ! $this->should_show_review_prompt() ) {
+			return;
+		}
+
+		add_action( 'admin_footer', [ $this, 'inject_review_prompt_container' ] );
+
+		wp_localize_script(
+			'WCPAY_REVIEW_PROMPT',
+			'wcpayReviewPromptSettings',
+			[
+				'isLive'  => WC_Payments::mode()->is_live(),
+				'version' => WCPAY_VERSION_NUMBER,
+			]
+		);
+
+		wp_enqueue_script( 'WCPAY_REVIEW_PROMPT' );
+		wp_enqueue_style( 'WCPAY_REVIEW_PROMPT' );
+	}
+
+	/**
+	 * Inject the container div for the review prompt on top-level Payments settings page.
+	 */
+	public function inject_review_prompt_container() {
+		echo '<div id="wcpay-review-prompt"></div>';
 	}
 }

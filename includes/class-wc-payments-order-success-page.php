@@ -188,6 +188,12 @@ class WC_Payments_Order_Success_Page {
 			return $this->show_woopay_payment_method_name( $order );
 		}
 
+		// Check if this is an Express Checkout payment (Google Pay, Apple Pay, etc.).
+		$express_checkout_payment_method = $order->get_meta( '_wcpay_express_checkout_payment_method' );
+		if ( ! empty( $express_checkout_payment_method ) ) {
+			return $this->show_express_checkout_payment_method_name( $order, $express_checkout_payment_method );
+		}
+
 		$gateway = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
 
 		if ( ! is_object( $gateway ) || ! method_exists( $gateway, 'get_payment_method' ) ) {
@@ -195,8 +201,24 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		$payment_method = $gateway->get_payment_method( $order );
-		// GooglePay/ApplePay/Link/Card to be supported later.
-		if ( $payment_method->get_id() === Payment_Method::CARD ) {
+
+		// Link payments go through the card gateway (woocommerce_payments), so the gateway's
+		// payment method is 'card'. Detect Link by checking the order's payment tokens.
+		if ( Payment_Method::CARD === $payment_method->get_id() ) {
+			$token_ids = $order->get_payment_tokens();
+			if ( ! empty( $token_ids ) ) {
+				$last_token = \WC_Payment_Tokens::get( end( $token_ids ) );
+				if ( $last_token instanceof \WC_Payment_Token_WCPay_Link ) {
+					$link_pm = WC_Payments::get_payment_method_by_id( Payment_Method::LINK );
+					if ( $link_pm ) {
+						$payment_method = $link_pm;
+					}
+				}
+			}
+		}
+
+		// Handle card payments.
+		if ( Payment_Method::CARD === $payment_method->get_id() ) {
 			return $this->show_card_payment_method_name( $order, $payment_method );
 		}
 
@@ -208,6 +230,41 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return $payment_method_title;
+	}
+
+	/**
+	 * Returns the HTML to add the Express Checkout payment method logo and last 4 digits
+	 * of the card used to the payment method name on the order received page.
+	 *
+	 * @param WC_Order $order the order being shown.
+	 * @param string   $express_checkout_payment_method the express checkout payment method (e.g., 'google_pay', 'apple_pay').
+	 *
+	 * @return string
+	 */
+	public function show_express_checkout_payment_method_name( $order, $express_checkout_payment_method ) {
+		$payment_method = WC_Payments::get_payment_method_by_id( $express_checkout_payment_method );
+
+		if ( ! $payment_method ) {
+			return 'Payment Request';
+		}
+
+		$icon_url      = $payment_method->get_icon();
+		$dark_icon_url = $payment_method->get_dark_icon();
+		$dark_attr     = $dark_icon_url !== $icon_url ? ' data-dark-src="' . esc_url_raw( $dark_icon_url ) . '"' : '';
+
+		ob_start();
+		?>
+		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
+			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $icon_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<?php
+			if ( $order->get_meta( 'last4' ) ) {
+				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
+				echo esc_html( $order->get_meta( 'last4' ) );
+			}
+			?>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**
@@ -274,10 +331,11 @@ class WC_Payments_Order_Success_Page {
 	 * @return string|false
 	 */
 	public function show_lpm_payment_method_name( $gateway, $payment_method ) {
+		$account_country = $gateway->get_account_country();
 		$method_logo_url = apply_filters_deprecated(
 			'wc_payments_thank_you_page_bnpl_payment_method_logo_url',
 			[
-				$payment_method->get_payment_method_icon_for_location( 'checkout', false, $gateway->get_account_country() ),
+				$payment_method->get_icon( $account_country ),
 				$payment_method->get_id(),
 			],
 			'8.5.0',
@@ -294,10 +352,13 @@ class WC_Payments_Order_Success_Page {
 			return false;
 		}
 
+		$dark_icon_url = $payment_method->get_dark_icon( $account_country );
+		$dark_attr     = $dark_icon_url !== $method_logo_url ? ' data-dark-src="' . esc_url_raw( $dark_icon_url ) . '"' : '';
+
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-lpm-logo wc-payment-lpm-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" title="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
+			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" title="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>"<?php echo $dark_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 		</div>
 		<?php
 		return ob_get_clean();
@@ -338,40 +399,6 @@ class WC_Payments_Order_Success_Page {
 	}
 
 	/**
-	 * Formats the additional text to be displayed on the thank you page, with the side effect
-	 * as a workaround for an issue in Woo core 8.1.x and 8.2.x.
-	 *
-	 * @param string $additional_text The additional text to be displayed.
-	 *
-	 * @return string Formatted text.
-	 */
-	private function format_addtional_thankyou_order_received_text( string $additional_text ): string {
-		/**
-		 * This condition is a workaround for Woo core 8.1.x and 8.2.x as it formatted the filtered text,
-		 * while it should format the original text only.
-		 *
-		 * It's safe to remove this conditional when WooPayments requires Woo core 8.3.x or higher.
-		 *
-		 * @see https://github.com/woocommerce/woocommerce/pull/39758 Introduce the issue since 8.1.0.
-		 * @see https://github.com/woocommerce/woocommerce/pull/40353 Fix the issue since 8.3.0.
-		 */
-		if (
-			version_compare( WC_VERSION, '8.0', '>' )
-			&& version_compare( WC_VERSION, '8.3', '<' )
-		) {
-			echo "
-				<script type='text/javascript'>
-					document.querySelector('.woocommerce-thankyou-order-received')?.classList?.add('woocommerce-info');
-				</script>
-			";
-
-			return ' ' . $additional_text;
-		}
-
-		return sprintf( '<div class="woocommerce-info">%s</div>', $additional_text );
-	}
-
-	/**
 	 * Replace the order received text with a failure message when the order status is 'failed'.
 	 *
 	 * @param string $text The original thank you text.
@@ -380,8 +407,16 @@ class WC_Payments_Order_Success_Page {
 	public function replace_order_received_text_for_failed_orders( $text ) {
 		global $wp;
 
-		$order_id = absint( $wp->query_vars['order-received'] );
-		$order    = wc_get_order( $order_id );
+		$order_id  = apply_filters( 'woocommerce_thankyou_order_id', absint( $wp->query_vars['order-received'] ?? 0 ) );
+		$order_key = apply_filters( 'woocommerce_thankyou_order_key', empty( $_GET['key'] ) ? '' : wc_clean( wp_unslash( $_GET['key'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$order = false;
+		if ( $order_id > 0 ) {
+			$order = wc_get_order( $order_id );
+			if ( ! $order instanceof WC_Order || ! hash_equals( $order->get_order_key(), $order_key ) ) {
+				$order = false;
+			}
+		}
 
 		if ( ! $order ||
 			! $order->needs_payment() ||
@@ -443,6 +478,10 @@ class WC_Payments_Order_Success_Page {
 					}
 				</script>
 			";
+		}
+
+		if ( is_order_received_page() || is_view_order_page() ) {
+			$this->output_dark_icon_swap_script();
 		}
 	}
 
@@ -603,5 +642,87 @@ class WC_Payments_Order_Success_Page {
 			<p></p>
 			<?php
 		}
+	}
+
+	/**
+	 * Outputs an inline script that detects dark backgrounds and swaps
+	 * payment method icons to their dark variants on the order success page.
+	 */
+	private function output_dark_icon_swap_script() {
+		?>
+		<script type="text/javascript">
+		(function() {
+			var imgs = document.querySelectorAll( 'img[data-dark-src]' );
+			if ( ! imgs.length ) return;
+
+			var selectors = [
+				'.wc-payment-gateway-method-logo-wrapper',
+				'.woocommerce-order',
+				'.woocommerce',
+				'body'
+			];
+			var bgColor = null;
+			for ( var i = 0; i < selectors.length; i++ ) {
+				var el = document.querySelector( selectors[ i ] );
+				if ( ! el ) continue;
+				var bg = window.getComputedStyle( el ).backgroundColor;
+				if ( bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent' ) {
+					bgColor = bg;
+					break;
+				}
+			}
+			if ( ! bgColor ) return;
+
+			var match = bgColor.match( /\d+/g );
+			if ( ! match || match.length < 3 ) return;
+
+			var r = parseInt( match[0], 10 );
+			var g = parseInt( match[1], 10 );
+			var b = parseInt( match[2], 10 );
+			// sRGB relative luminance.
+			var luminance = ( 0.299 * r + 0.587 * g + 0.114 * b ) / 255;
+
+			if ( luminance < 0.5 ) {
+				imgs.forEach( function( img ) {
+					img.src = img.getAttribute( 'data-dark-src' );
+				});
+			}
+		})();
+		</script>
+		<?php
+	}
+
+	/**
+	 * Formats the additional text to be displayed on the thank you page, with the side effect
+	 * as a workaround for an issue in Woo core 8.1.x and 8.2.x.
+	 *
+	 * @param string $additional_text The additional text to be displayed.
+	 *
+	 * @return string Formatted text.
+	 */
+	private function format_addtional_thankyou_order_received_text( string $additional_text ): string {
+		/**
+		 * This condition is a workaround for Woo core 8.1.x and 8.2.x as it formatted the filtered text,
+		 * while it should format the original text only.
+		 *
+		 * It's safe to remove this conditional when WooPayments requires Woo core 8.3.x or higher.
+		 *
+		 * @see https://github.com/woocommerce/woocommerce/pull/39758 Introduce the issue since 8.1.0.
+		 * @see https://github.com/woocommerce/woocommerce/pull/40353 Fix the issue since 8.3.0.
+		 */
+		if (
+			version_compare( WC_VERSION, '8.0', '>' )
+			&& version_compare( WC_VERSION, '8.3', '<' )
+		) {
+			echo "
+				<script type='text/javascript'>
+					document.querySelector('.woocommerce-thankyou-order-received')?.classList?.add('woocommerce-info');
+				</script>
+			";
+
+			return ' ' . $additional_text;
+		}
+
+		return sprintf( '<div class="woocommerce-info">%s</div>', $additional_text );
 	}
 }

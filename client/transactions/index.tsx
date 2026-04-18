@@ -23,7 +23,8 @@ import {
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import BlockedList from './blocked';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
+import ErrorBoundary from 'components/error-boundary';
+import SpotlightPromotion from 'promotions/spotlight';
 
 declare const window: any;
 
@@ -97,14 +98,13 @@ export const TransactionsPage: React.FC = () => {
 			className: 'blocked-list',
 		},
 	].filter( ( item ) => {
-		if ( 'uncaptured-page' !== item.name ) return true;
+		if ( item.name !== 'uncaptured-page' ) return true;
 
 		return shouldShowUncapturedTab;
 	} );
 
 	return (
 		<Page className="wcpay-transactions-page">
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="transactions" />
 			<TabPanel
 				activeClass="active-tab"
@@ -120,6 +120,9 @@ export const TransactionsPage: React.FC = () => {
 					);
 				} }
 			</TabPanel>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

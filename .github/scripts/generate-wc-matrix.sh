@@ -83,16 +83,18 @@ echo "Latest beta version: $LATEST_BETA_VERSION" >&2
 # Build the version array
 VERSIONS=("7.7.0")  # Keep for business reasons (significant TPV)
 
-# Add major versions latest stable (excluding current major since we'll use 'latest')
+# Add major versions latest stable (excluding current major since it's added below)
 for version in "${MAJOR_VERSIONS[@]}"; do
-    # Skip the current major version since we'll use 'latest' instead
+    # Skip the current major version since it's added as LATEST_WC_VERSION below
     if [[ "$version" != "$LATEST_WC_VERSION" ]]; then
         VERSIONS+=("$version")
     fi
 done
 
-# Add latest, beta, rc (with actual versions)
-VERSIONS+=("latest")
+# Add latest stable, beta, rc (with actual versions)
+# Use the resolved version number instead of "latest" to avoid QIT CLI
+# constructing invalid wporg download URLs (woocommerce.latest.zip → 404).
+VERSIONS+=("$LATEST_WC_VERSION")
 if [[ -n "$LATEST_BETA_VERSION" && "$LATEST_BETA_VERSION" != "null" ]]; then
     VERSIONS+=("$LATEST_BETA_VERSION")
     echo "Including beta version: $LATEST_BETA_VERSION" >&2
@@ -142,12 +144,14 @@ fi
 # Output a single JSON object with both versions and metadata
 RESULT=$(jq -n \
     --argjson versions "$(printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s .)" \
+    --arg latest_wc_version "$LATEST_WC_VERSION" \
     --arg l1_version "$L1_VERSION" \
     --arg rc_version "${INCLUDED_RC_VERSION}" \
     --arg beta_version "${LATEST_BETA_VERSION}" \
     '{
         versions: $versions,
         metadata: {
+            latest_wc_version: $latest_wc_version,
             l1_version: $l1_version,
             rc_version: (if ($rc_version // "") == "" or ($rc_version == "null") then null else $rc_version end),
             beta_version: (if ($beta_version // "") == "" or ($beta_version == "null") then null else $beta_version end)

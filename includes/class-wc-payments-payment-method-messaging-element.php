@@ -54,8 +54,8 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		global $product;
 		$currency_code      = get_woocommerce_currency();
 		$store_country      = WC()->countries->get_base_country();
-		$billing_country    = WC()->customer->get_billing_country();
-		$cart_total         = WC()->cart->total;
+		$billing_country    = WC()->customer ? WC()->customer->get_billing_country() : '';
+		$cart_total         = WC()->cart ? WC()->cart->total : 0;
 		$product_variations = [];
 
 		if ( $product ) {
@@ -67,7 +67,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 					wc_prices_include_tax() &&
 					(
 						get_option( 'woocommerce_tax_display_shop' ) !== 'incl' ||
-						WC()->customer->get_is_vat_exempt()
+						( WC()->customer && WC()->customer->get_is_vat_exempt() )
 					)
 				) {
 					$get_price_fn = function ( $product ) {
@@ -75,7 +75,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 					};
 				} elseif (
 					get_option( 'woocommerce_tax_display_shop' ) === 'incl'
-					&& ! WC()->customer->get_is_vat_exempt()
+					&& ! ( WC()->customer && WC()->customer->get_is_vat_exempt() )
 				) {
 					$get_price_fn = function ( $product ) {
 						return wc_get_price_including_tax( $product );
@@ -161,6 +161,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			],
 			'wcAjaxUrl'            => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'shouldInitializePMME' => WC_Payments_Utils::is_any_bnpl_supporting_country( array_values( $bnpl_payment_methods ), $country, $currency_code ),
+			'stylesCacheVersion'   => WC_Payments_Styles_Cache::get_styles_cache_version(),
 		];
 
 		if ( $product ) {
@@ -172,16 +173,6 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
 			$script_data
-		);
-
-		// Ensure wcpayConfig is available in the page.
-		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
-		wp_add_inline_script(
-			'WCPAY_PRODUCT_DETAILS',
-			"
-			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
-			",
-			'before'
 		);
 
 		if ( ! $is_cart_block ) {

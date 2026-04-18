@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Database_Cache;
+use Automattic\Jetpack\Constants;
 
 /**
  * WC_Payments_Admin unit tests.
@@ -59,11 +60,25 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_fraud_service;
 
 	/**
+	 * Mock PM Promotions Service.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service|MockObject;
+	 */
+	private $mock_pm_promotions_service;
+
+	/**
 	 * Mock database cache.
 	 *
 	 * @var Database_Cache|MockObject;
 	 */
 	private $mock_database_cache;
+
+	/**
+	 * Backup object of $GLOBALS['current_screen'].
+	 *
+	 * @var object
+	 */
+	private $current_screen_backup;
 
 	/**
 	 * @var WC_Payments_Admin
@@ -75,6 +90,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		$menu    = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
 		$submenu = null; // phpcs:ignore: WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		// Mock screen.
+		$this->current_screen_backup = $GLOBALS['current_screen'] ?? null;
+		$GLOBALS['current_screen']   = $this->get_screen_mock(); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		if ( ! did_action( 'current_screen' ) ) {
+			do_action( 'current_screen', $GLOBALS['current_screen'] ); // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
+		}
 
 		$this->mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
 			->disableOriginalConstructor()
@@ -104,6 +126,10 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
+		$this->mock_pm_promotions_service = $this->getMockBuilder( WC_Payments_PM_Promotions_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
 		$this->mock_database_cache = $this->getMockBuilder( Database_Cache::class )
 			->disableOriginalConstructor()
 			->getMock();
@@ -123,14 +149,18 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			$this->mock_onboarding_service,
 			$this->mock_order_service,
 			$this->mock_incentives_service,
+			$this->mock_pm_promotions_service,
 			$this->mock_fraud_service,
 			$this->mock_database_cache
 		);
 	}
 
 	public function tear_down() {
-		unset( $_GET );
-		set_current_screen( 'front' );
+		// Restore screen backup.
+		if ( $this->current_screen_backup ) {
+			$GLOBALS['current_screen'] = $this->current_screen_backup; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		}
+
 		parent::tear_down();
 	}
 
@@ -455,5 +485,196 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$transactions_menu_item = $item_names_by_urls['wc-admin&path=/payments/transactions'];
 
 		$this->assertSame( 'Transactions', $transactions_menu_item );
+	}
+
+	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_wrong_page() {
+		global $wp_scripts, $wp_styles;
+
+		// Arrange.
+		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$_GET['page'] = 'wc-payments';
+		$_GET['tab']  = 'products'; // Wrong WC settings tab.
+
+		// Mock the current screen.
+		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+
+		// Mock the WooCommerce version to be at the minimum required version.
+		Constants::set_constant( 'WC_VERSION', '9.9.2' );
+
+		// Act.
+		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
+
+		// Assert.
+		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+
+		// Clean up.
+		unset( $_GET['page'], $_GET['tab'] );
+		Constants::clear_constants();
+	}
+
+	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_old_wc_version() {
+		global $wp_scripts, $wp_styles;
+
+		// Arrange.
+		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$_GET['page'] = 'wc-payments';
+		$_GET['tab']  = 'checkout';
+
+		// Mock the current screen.
+		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+
+		// Mock the WooCommerce version to NOT be at the minimum required version.
+		Constants::set_constant( 'WC_VERSION', '9.9.1' );
+
+		// Act.
+		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
+
+		// Assert.
+		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+
+		// Clean up.
+		unset( $_GET['page'], $_GET['tab'] );
+		Constants::clear_constants();
+	}
+
+	/**
+	 * Data provider for test_should_show_review_prompt.
+	 *
+	 * @return array
+	 */
+	public function provider_should_show_review_prompt() {
+		return [
+			'should not show on section page'            => [
+				'page_setup'  => [
+					'page'    => 'wc-settings',
+					'tab'     => 'checkout',
+					'section' => 'woocommerce_payments',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when account not eligible'  => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => false,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when permanently dismissed' => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => time(),
+				'maybe_later' => 0,
+				'expected'    => false,
+			],
+			'should not show when in cooldown'           => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => time() - ( 5 * DAY_IN_SECONDS ), // 5 days ago.
+				'expected'    => false,
+			],
+			'should show when cooldown expired'          => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => time() - ( 11 * DAY_IN_SECONDS ), // 11 days ago.
+				'expected'    => true,
+			],
+			'should show when all conditions pass'       => [
+				'page_setup'  => [
+					'page' => 'wc-settings',
+					'tab'  => 'checkout',
+				],
+				'is_eligible' => true,
+				'dismissed'   => 0,
+				'maybe_later' => 0,
+				'expected'    => true,
+			],
+		];
+	}
+
+	/**
+	 * Test should_show_review_prompt method with various scenarios.
+	 *
+	 * @dataProvider provider_should_show_review_prompt
+	 *
+	 * @param array $page_setup   Page setup parameters.
+	 * @param bool  $is_eligible  Whether account is eligible.
+	 * @param int   $dismissed    Timestamp when dismissed (0 if not dismissed).
+	 * @param int   $maybe_later  Timestamp when maybe later clicked (0 if not).
+	 * @param bool  $expected     Expected return value.
+	 */
+	public function test_should_show_review_prompt( $page_setup, $is_eligible, $dismissed, $maybe_later, $expected ) {
+		// Arrange: Set up page.
+		foreach ( $page_setup as $key => $value ) {
+			$_REQUEST[ $key ] = $value;
+		}
+
+		// Mock the current screen.
+		$GLOBALS['current_screen']->id = 'woocommerce_page_wc-settings';
+
+		// Mock account eligibility.
+		$this->mock_account->method( 'is_review_prompt_eligible' )->willReturn( $is_eligible );
+
+		// Mock current user and set user meta.
+		$user_id = 1;
+		wp_set_current_user( $user_id );
+
+		if ( $dismissed > 0 ) {
+			update_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed', $dismissed );
+		}
+
+		if ( $maybe_later > 0 ) {
+			update_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later', $maybe_later );
+		}
+
+		// Act.
+		$result = $this->payments_admin->should_show_review_prompt();
+
+		// Assert.
+		$this->assertSame( $expected, $result );
+
+		// Clean up.
+		foreach ( array_keys( $page_setup ) as $key ) {
+			unset( $_REQUEST[ $key ] );
+		}
+		delete_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_dismissed' );
+		delete_user_meta( $user_id, 'woocommerce_admin_wc_payments_review_prompt_maybe_later' );
+	}
+
+	/**
+	 * Returns an object mocking what we need from \WP_Screen.
+	 *
+	 * @return object
+	 */
+	private function get_screen_mock(): object {
+		$screen_mock = $this->getMockBuilder( \stdClass::class )->setMethods( [ 'in_admin', 'add_option' ] )->getMock();
+		$screen_mock->method( 'in_admin' )->willReturn( true );
+		foreach ( [ 'id', 'base', 'action', 'post_type' ] as $key ) {
+			$screen_mock->{$key} = '';
+		}
+
+		return $screen_mock;
 	}
 }

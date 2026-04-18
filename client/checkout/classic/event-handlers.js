@@ -5,21 +5,21 @@
  */
 import './style.scss';
 import { getUPEConfig } from 'wcpay/utils/checkout';
+import { isLinkEnabled } from '../utils/upe';
+import { getIconTheme } from 'wcpay/checkout/utils/icon-theme';
 import {
 	generateCheckoutEventNames,
 	getSelectedUPEGatewayPaymentMethod,
-	isLinkEnabled,
 	hasPaymentMethodCountryRestrictions,
 	isUsingSavedPaymentMethod,
 	togglePaymentMethodForCountry,
 	isBillingInformationMissing,
-} from '../utils/upe';
+} from './upe-utils';
 import {
 	processPayment,
 	mountStripePaymentElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
-	maybeEnableStripeLink,
 	blockUI,
 	unblockUI,
 } from './payment-processing';
@@ -29,13 +29,11 @@ import WCPayAPI from 'wcpay/checkout/api';
 import apiRequest from '../utils/request';
 import { handleWooPayEmailInput } from 'wcpay/checkout/woopay/email-input-iframe';
 import { isPreviewing } from 'wcpay/checkout/preview';
+import { maybePersistAdminWoopayAppearance } from 'wcpay/checkout/woopay/appearance/persist-admin';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
-import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
-import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
-import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
-import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
-import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
+import { getCardBrands } from 'wcpay/utils/card-brands';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -74,9 +72,19 @@ jQuery( function ( $ ) {
 	} );
 
 	$( document.body ).on( 'updated_checkout', () => {
+		swapDarkIcons();
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
 		injectPaymentMethodLogos();
 	} );
+
+	$( `[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]` ).on(
+		'change',
+		function () {
+			this.closest( 'form.checkout' )
+				?.querySelectorAll( '.wcpay-upe-element' )
+				.forEach( restrictPaymentMethodToLocation );
+		}
+	);
 
 	$checkoutForm.on( generateCheckoutEventNames(), function () {
 		if ( isBillingInformationMissing() ) {
@@ -117,10 +125,12 @@ jQuery( function ( $ ) {
 
 	if ( $addPaymentMethodForm.length ) {
 		maybeMountStripePaymentElement( 'add_payment_method' );
+		swapDarkIcons();
 	}
 
 	if ( $payForOrderForm.length ) {
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
+		swapDarkIcons();
 	}
 
 	$addPaymentMethodForm.on( 'submit', function () {
@@ -160,6 +170,14 @@ jQuery( function ( $ ) {
 		handleWooPayEmailInput( '#billing_email', api );
 	}
 
+	// In the Customizer preview, capture the live appearance and persist it.
+	// Stylesheets are already loaded in the Customizer preview iframe, so
+	// window.load isn't strictly needed here — but we use it to stay
+	// consistent with blocks/index.js and express-button/index.js.
+	window.addEventListener( 'load', () => {
+		maybePersistAdminWoopayAppearance();
+	} );
+
 	async function injectPaymentMethodLogos() {
 		const cardLabel = document.querySelector(
 			'label[for="payment_method_woocommerce_payments"]'
@@ -181,27 +199,18 @@ jQuery( function ( $ ) {
 		innerContainer.setAttribute( 'tabindex', '0' );
 		innerContainer.setAttribute( 'data-testid', 'payment-methods-logos' );
 
-		const paymentMethods = [
-			{ name: 'visa', component: Visa },
-			{ name: 'mastercard', component: Mastercard },
-			{ name: 'amex', component: Amex },
-			{ name: 'discover', component: Discover },
-		];
+		const paymentMethods = getCardBrands();
 
 		function getMaxElements() {
-			const paymentMethodElement = document.querySelector(
-				'.payment_method_woocommerce_payments'
-			);
-			if ( ! paymentMethodElement ) {
-				return 4; // Default fallback
-			}
+			// Use viewport width as primary indicator (similar to blocks checkout)
+			const viewportWidth = window.innerWidth;
 
-			const elementWidth = paymentMethodElement.offsetWidth;
-			if ( elementWidth <= 300 ) {
+			// Specific tablet viewport range (768-781px) - needs room for Test Mode badge
+			if ( viewportWidth >= 768 && viewportWidth <= 900 ) {
 				return 1;
-			} else if ( elementWidth <= 330 ) {
-				return 2;
 			}
+			// Default - show 3 logos + counter badge = 4 visual elements total
+			return 3;
 		}
 
 		function shouldHavePopover() {
@@ -376,6 +385,26 @@ jQuery( function ( $ ) {
 		window.addEventListener( 'resize', updateLogos );
 	}
 
+	function swapDarkIcons() {
+		const useDark = getIconTheme( 'classic' ) === 'night';
+
+		document.querySelectorAll( '.wcpay-upe-element' ).forEach( ( el ) => {
+			const type = el.dataset.paymentMethodType;
+			if ( type === 'card' ) {
+				return;
+			}
+			const config = getUPEConfig( 'paymentMethodsConfig' )?.[ type ];
+			const targetIcon = useDark ? config?.darkIcon : config?.icon;
+			if ( targetIcon ) {
+				el.closest( '.wc_payment_method' )
+					?.querySelectorAll( 'label img' )
+					.forEach( ( img ) => {
+						img.src = targetIcon;
+					} );
+			}
+		} );
+	}
+
 	function processPaymentIfNotUsingSavedMethod( $form ) {
 		const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
 		if ( ! isUsingSavedPaymentMethod( paymentMethodType ) ) {
@@ -396,25 +425,12 @@ jQuery( function ( $ ) {
 				);
 				restrictPaymentMethodToLocation( upeElement );
 			}
-			maybeEnableStripeLink( api );
 		}
 	}
 
 	function restrictPaymentMethodToLocation( upeElement ) {
 		if ( hasPaymentMethodCountryRestrictions( upeElement ) ) {
 			togglePaymentMethodForCountry( upeElement );
-
-			const billingInput = upeElement
-				?.closest( 'form.checkout' )
-				?.querySelector(
-					`[name="${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }"]`
-				);
-			if ( billingInput ) {
-				// this event only applies to the checkout form, but not "place order" or "add payment method" pages.
-				$( billingInput ).on( 'change', function () {
-					togglePaymentMethodForCountry( upeElement );
-				} );
-			}
 		}
 	}
 } );

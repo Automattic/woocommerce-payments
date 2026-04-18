@@ -75,13 +75,6 @@ class WC_Payments_Webhook_Processing_Service {
 	private $wcpay_gateway;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payments_Customer_Service
-	 */
-	private $customer_service;
-
-	/**
 	 * Database_Cache instance.
 	 *
 	 * @var Database_Cache
@@ -96,6 +89,13 @@ class WC_Payments_Webhook_Processing_Service {
 	private $onboarding_service;
 
 	/**
+	 * WC_Payments_Token_Service instance.
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private $token_service;
+
+	/**
 	 * WC_Payments_Webhook_Processing_Service constructor.
 	 *
 	 * @param WC_Payments_API_Client                          $api_client          WooCommerce Payments API client.
@@ -105,9 +105,9 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
 	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
 	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Customer_Service                    $customer_service    WC_Payments_Customer_Service instance.
 	 * @param Database_Cache                                  $database_cache      Database_Cache instance.
 	 * @param WC_Payments_Onboarding_Service                  $onboarding_service  WC_Payments_Onboarding_Service instance.
+	 * @param WC_Payments_Token_Service                       $token_service       WC_Payments_Token_Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
@@ -117,9 +117,9 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Customer_Service $customer_service,
 		Database_Cache $database_cache,
-		WC_Payments_Onboarding_Service $onboarding_service
+		WC_Payments_Onboarding_Service $onboarding_service,
+		WC_Payments_Token_Service $token_service
 	) {
 		$this->wcpay_db            = $wcpay_db;
 		$this->account             = $account;
@@ -128,9 +128,9 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->api_client          = $api_client;
 		$this->receipt_service     = $receipt_service;
 		$this->wcpay_gateway       = $wcpay_gateway;
-		$this->customer_service    = $customer_service;
 		$this->database_cache      = $database_cache;
 		$this->onboarding_service  = $onboarding_service;
+		$this->token_service       = $token_service;
 	}
 
 	/**
@@ -192,7 +192,7 @@ class WC_Payments_Webhook_Processing_Service {
 				break;
 			case 'account.updated':
 				$this->account->refresh_account_data();
-				$this->customer_service->delete_cached_payment_methods();
+				$this->token_service->clear_all_cached_payment_methods();
 				break;
 			case 'account.deleted':
 				$this->onboarding_service->cleanup_on_account_reset();
@@ -204,6 +204,9 @@ class WC_Payments_Webhook_Processing_Service {
 
 				// Refetch the account data to allow the platform to drive the available next steps.
 				$this->account->refresh_account_data();
+
+				// Use the opportunity to clear cached payment methods.
+				$this->token_service->clear_all_cached_payment_methods();
 				break;
 			case 'wcpay.notification':
 				$this->process_wcpay_notification( $event_body );
@@ -520,6 +523,12 @@ class WC_Payments_Webhook_Processing_Service {
 		// This is an incoming request from WCPay server rather than an outgoing request to WCPay server.
 		// However, the shape of the payment intent object are the same.
 		// Using this extraction method will reduce the code duplication.
+		$ipp_channel      = $event_object['metadata']['ipp_channel'] ?? '';
+		$allowed_channels = [ 'mobile_pos', 'mobile_store_management' ];
+		if ( in_array( $ipp_channel, $allowed_channels, true ) ) {
+			$this->order_service->set_ipp_channel_for_order( $order, $ipp_channel );
+		}
+
 		$payment_intent = $this->api_client->deserialize_payment_intention_object_from_array( $event_object );
 		$this->order_service->update_order_status_from_intent( $order, $payment_intent );
 
@@ -598,6 +607,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$charge_id    = $this->read_webhook_property( $event_object, 'charge' );
 		$status       = $this->read_webhook_property( $event_object, 'status' );
+		$dispute_id   = $this->read_webhook_property( $event_object, 'id' );
 		$order        = $this->wcpay_db->order_from_charge_id( $charge_id );
 
 		if ( ! $order ) {
@@ -610,7 +620,22 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
+		// Fetch dispute summary data.
+		$dispute_summary = [];
+		try {
+			$dispute_summary = $this->api_client->get_dispute_summary( $dispute_id );
+		} catch ( Exception $e ) {
+			Logger::error(
+				sprintf(
+					'Failed to fetch dispute summary for dispute %1$s (charge %2$s): %3$s',
+					$dispute_id,
+					$charge_id,
+					$e->getMessage()
+				)
+			);
+		}
+
+		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status, $dispute_summary );
 
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete_dispute_caches();
@@ -854,6 +879,14 @@ class WC_Payments_Webhook_Processing_Service {
 		$is_refunded_event = isset( $event_body['type'] ) && 'charge.refunded' === $event_body['type'];
 		$status            = $this->read_webhook_property( $event_object, 'status' );
 		if ( 'succeeded' !== $status || ! $is_refunded_event ) {
+			return;
+		}
+
+		// Check if the charge was actually captured before processing the refund.
+		// Stripe sends charge.refunded webhooks for cancelled authorizations even though no payment was captured.
+		// We should not create WooCommerce refund objects for these cases as they cause negative values in analytics.
+		$captured = $event_object['captured'] ?? false;
+		if ( ! $captured ) {
 			return;
 		}
 

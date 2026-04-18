@@ -7,9 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 
 /**
  * Express Checkout Button Helper class.
@@ -229,19 +229,131 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if button is available at a given location.
+	 * Checks if a specific express checkout method is enabled at a given location.
 	 *
-	 * @param string $location Location.
-	 * @param string $option_name Option name.
+	 * Uses the new location-centric settings (express_checkout_{location}_methods).
+	 *
+	 * @param string $location Location (product, cart, checkout).
+	 * @param string $method_id Method identifier (payment_request, woopay, amazon_pay, link).
 	 * @return boolean
 	 */
-	public function is_available_at( $location, $option_name ) {
-		$available_locations = $this->gateway->get_option( $option_name );
-		if ( $available_locations && is_array( $available_locations ) ) {
-			return in_array( $location, $available_locations, true );
+	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
+		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
+		if ( 'pay_for_order' === $location ) {
+			$location = 'checkout';
+		}
+
+		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
+
+		if ( $enabled_methods && is_array( $enabled_methods ) ) {
+			return in_array( $method_id, $enabled_methods, true );
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( $this->is_product() ) {
+			$product = $this->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		}
+
+		if ( $this->is_checkout() || $this->is_cart() ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if Amazon Pay can be used as an express checkout button.
+	 *
+	 * This validates:
+	 * - Express checkout is not displayed in the payment methods list
+	 * - Amazon Pay feature flag is enabled
+	 * - Gateway exists and is available for express checkout
+	 * - Tax settings are compatible (Amazon Pay doesn't support taxes based on billing address)
+	 *
+	 * @return boolean
+	 */
+	public function can_use_amazon_pay() {
+		// When express checkout methods are displayed in the payment methods list,
+		// Amazon Pay should not appear as a separate express button.
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return false;
+		}
+
+		if ( ! WC_Payments_Features::is_amazon_pay_enabled() ) {
+			return false;
+		}
+
+		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
+		if ( ! $amazon_pay_gateway ) {
+			return false;
+		}
+
+		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
+			return false;
+		}
+
+		// Amazon Pay doesn't support taxes based on billing address.
+		if ( wc_tax_enabled() && 'billing' === get_option( 'woocommerce_tax_based_on' ) && ! $this->is_pay_for_order_page() ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Gets the list of enabled express checkout methods for the current page context.
+	 *
+	 * This method checks:
+	 * 1. The current page context (product, cart, checkout)
+	 * 2. The location settings (express_checkout_{location}_methods)
+	 * 3. The feature flags (is_payment_request_enabled, is_amazon_pay_enabled)
+	 * 4. Currency availability (e.g., Amazon Pay checks currency restrictions)
+	 *
+	 * @return array Array of enabled method IDs (e.g., ['payment_request', 'amazon_pay']).
+	 */
+	public function get_enabled_express_checkout_methods_for_context() {
+		$enabled_methods = [];
+		$context         = $this->get_button_context();
+
+		// If no valid context, return an empty array.
+		if ( empty( $context ) ) {
+			return $enabled_methods;
+		}
+
+		// Check Google Pay / Apple Pay (payment_request).
+		if (
+			$this->gateway->is_payment_request_enabled() &&
+			$this->is_express_checkout_method_enabled_at( $context, 'payment_request' )
+		) {
+			$enabled_methods[] = 'payment_request';
+		}
+
+		// Check Amazon Pay.
+		if (
+			$this->can_use_amazon_pay() &&
+			$this->is_express_checkout_method_enabled_at( $context, 'amazon_pay' )
+		) {
+			$enabled_methods[] = 'amazon_pay';
+		}
+
+		return $enabled_methods;
 	}
 
 	/**
@@ -366,6 +478,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return bool
 	 */
 	public function should_show_express_checkout_button() {
+		// When express checkout methods are displayed in the payment methods list,
+		// don't show them as separate express buttons.
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return false;
+		}
+
 		// If account is not connected, then bail.
 		if ( ! $this->account->is_stripe_connected( false ) ) {
 			return false;
@@ -383,18 +501,9 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Product page, but not available in settings.
-		if ( $this->is_product() && ! $this->is_available_at( 'product', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
-			return false;
-		}
-
-		// Checkout page, but not available in settings.
-		if ( $this->is_checkout() && ! $this->is_available_at( 'checkout', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
-			return false;
-		}
-
-		// Cart page, but not available in settings.
-		if ( $this->is_cart() && ! $this->is_available_at( 'cart', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
+		// No express checkout methods are actually enabled for the current page context
+		// (checks both location settings and feature flags/availability).
+		if ( empty( $this->get_enabled_express_checkout_methods_for_context() ) ) {
 			return false;
 		}
 
@@ -437,9 +546,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Cart total is 0 or is on product page and product price is 0.
 		// Exclude pay-for-order pages from this check.
 		if (
-			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
-			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
-
+			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) )
+			|| ( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 		) {
 			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
 			return false;
@@ -490,14 +598,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return boolean
-	 *
-	 * @psalm-suppress UndefinedClass
 	 */
 	public function has_allowed_items_in_cart() {
 		/**
 		 * Pre Orders compatbility where we don't support charge upon release.
-		 *
-		 * @psalm-suppress UndefinedClass
 		 */
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
 			return false;
@@ -519,15 +623,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			 * @param object  $_product     Product object.
 			 */
 			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
-				return false;
-			}
-
-			/**
-			 * Trial subscriptions with shipping are not supported.
-			 *
-			 * @psalm-suppress UndefinedClass
-			 */
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
 			}
 		}
@@ -669,34 +764,26 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$product      = $this->get_product();
 		$is_supported = true;
 
-		/**
-		 * Ignore undefined classes from 3rd party plugins.
-		 *
-		 * @psalm-suppress UndefinedClass
-		 */
-
 		if ( is_null( $product ) || ! is_object( $product ) ) {
 			$is_supported = false;
-		} else {
-			// Simple subscription that needs shipping with free trials is not supported.
-			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
-
-			if (
+		} elseif (
 			! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| $is_free_trial_simple_subs
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
-			) {
-				$is_supported = false;
-			} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
-				// File upload addon not supported.
-				$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
-				foreach ( $product_addons as $addon ) {
-					if ( 'file_upload' === $addon['type'] ) {
-						$is_supported = false;
-						break;
-					}
+			// Subscriptions with a free trial and no sign-up fee are not supported
+			// because ECE and ConfirmationToken do not deal well with Setup Intent.
+			// When a sign-up fee exists, the initial charge is non-zero, so ECE can display it correctly.
+			|| ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && WC_Subscriptions_Product::get_trial_length( $product ) > 0 && 0.0 >= (float) WC_Subscriptions_Product::get_sign_up_fee( $product ) )
+		) {
+			$is_supported = false;
+		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+			// File upload addon not supported.
+			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
+			foreach ( $product_addons as $addon ) {
+				if ( 'file_upload' === $addon['type'] ) {
+					$is_supported = false;
+					break;
 				}
 			}
 		}
@@ -713,8 +800,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return mixed Total price.
 	 *
 	 * @throws Invalid_Price_Exception Whenever a product has no price.
-	 *
-	 * @psalm-suppress UndefinedClass
 	 */
 	public function get_product_price( $product, ?bool $is_deposit = null, int $deposit_plan_id = 0 ) {
 		// If prices should include tax, using tax inclusive price.
@@ -802,38 +887,5 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function sanitize_string( $string ) {
 		return trim( wc_strtolower( remove_accents( $string ) ) );
-	}
-
-	/**
-	 * Add express checkout payment method title to the order.
-	 *
-	 * @param integer $order_id The order ID.
-	 *
-	 * @return  void
-	 */
-	public function add_order_payment_method_title( $order_id ) {
-		if ( empty( $_POST['express_payment_type'] ) || ! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method'] ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		$express_payment_type   = wc_clean( wp_unslash( $_POST['express_payment_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		$express_payment_titles = [
-			'apple_pay'  => 'Apple Pay',
-			'google_pay' => 'Google Pay',
-		];
-		$payment_method_title   = $express_payment_titles[ $express_payment_type ] ?? false;
-
-		if ( ! $payment_method_title ) {
-			return;
-		}
-
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-		if ( ! empty( $suffix ) ) {
-			$suffix = " ($suffix)";
-		}
-
-		$order = wc_get_order( $order_id );
-		$order->set_payment_method_title( $payment_method_title . $suffix );
-		$order->save();
 	}
 }

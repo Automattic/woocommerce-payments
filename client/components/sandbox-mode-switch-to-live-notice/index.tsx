@@ -28,9 +28,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 	from,
 	source,
 } ) => {
-	const [ livePaymentsModalVisible, setLivePaymentsModalVisible ] = useState(
-		false
-	);
+	const [ livePaymentsModalVisible, setLivePaymentsModalVisible ] =
+		useState( false );
 
 	const handleCtaClick = () => {
 		recordEvent( 'wcpay_setup_live_payments_modal_open', {
@@ -100,7 +99,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 																	{
 																		account_type:
 																			'test',
-																		is_dev_mode: false,
+																		is_dev_mode:
+																			false,
 																	}
 																)
 															}
@@ -184,7 +184,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 																	{
 																		account_type:
 																			'test',
-																		is_dev_mode: true,
+																		is_dev_mode:
+																			true,
 																	}
 																)
 															}
@@ -261,7 +262,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 																	{
 																		account_type:
 																			'sandbox',
-																		is_dev_mode: false,
+																		is_dev_mode:
+																			false,
 																	}
 																)
 															}
@@ -338,7 +340,8 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 																	{
 																		account_type:
 																			'sandbox',
-																		is_dev_mode: true,
+																		is_dev_mode:
+																			true,
 																	}
 																)
 															}

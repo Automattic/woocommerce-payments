@@ -46,6 +46,13 @@ jest.mock( 'data/index', () => ( {
 	useManualCapture: jest.fn(),
 	useSettings: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
+	usePmPromotionActions: jest.fn().mockReturnValue( {
+		activatePmPromotion: jest.fn(),
+		dismissPmPromotion: jest.fn(),
+	} ),
 } ) );
 
 jest.mock( '@woocommerce/data', () => {
@@ -61,9 +68,10 @@ const mockUseTransactions = useTransactions as jest.MockedFunction<
 	typeof useTransactions
 >;
 
-const mockUseTransactionsSummary = useTransactionsSummary as jest.MockedFunction<
-	typeof useTransactionsSummary
->;
+const mockUseTransactionsSummary =
+	useTransactionsSummary as jest.MockedFunction<
+		typeof useTransactionsSummary
+	>;
 
 const mockUseSettings = useSettings as jest.MockedFunction<
 	typeof useSettings
@@ -73,13 +81,15 @@ const mockUseManualCapture = useManualCapture as jest.MockedFunction<
 	typeof useManualCapture
 >;
 
-const mockUseAuthorizationsSummary = useAuthorizationsSummary as jest.MockedFunction<
-	typeof useAuthorizationsSummary
->;
+const mockUseAuthorizationsSummary =
+	useAuthorizationsSummary as jest.MockedFunction<
+		typeof useAuthorizationsSummary
+	>;
 
-const mockUseFraudOutcomeTransactionsSummary = useFraudOutcomeTransactionsSummary as jest.MockedFunction<
-	typeof useFraudOutcomeTransactionsSummary
->;
+const mockUseFraudOutcomeTransactionsSummary =
+	useFraudOutcomeTransactionsSummary as jest.MockedFunction<
+		typeof useFraudOutcomeTransactionsSummary
+	>;
 
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences

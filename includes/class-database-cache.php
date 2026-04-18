@@ -19,25 +19,9 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const ACCOUNT_KEY                  = 'wcpay_account_data';
 	const ONBOARDING_FIELDS_DATA_KEY   = 'wcpay_onboarding_fields_data';
 	const BUSINESS_TYPES_KEY           = 'wcpay_business_types_data';
-	const PAYMENT_PROCESS_FACTORS_KEY  = 'wcpay_payment_process_factors';
 	const FRAUD_SERVICES_KEY           = 'wcpay_fraud_services_data';
 	const RECOMMENDED_PAYMENT_METHODS  = 'wcpay_recommended_payment_methods';
 	const ADDRESS_AUTOCOMPLETE_JWT_KEY = 'wcpay_address_autocomplete_jwt';
-
-	/**
-	 * Refresh during AJAX calls is avoided, but white-listing
-	 * a key here will allow the refresh to happen.
-	 *
-	 * @var string[]
-	 */
-	const AJAX_ALLOWED_KEYS = [
-		self::PAYMENT_PROCESS_FACTORS_KEY,
-	];
-
-	/**
-	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
-	 */
-	const PAYMENT_METHODS_KEY_PREFIX = 'wcpay_pm_';
 
 	/**
 	 * Dispute status counts cache key.
@@ -85,6 +69,27 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @var string
 	 */
 	const TRACKING_INFO_KEY = 'wcpay_tracking_info_cache';
+
+	/**
+	 * All cache keys.
+	 *
+	 * @var string[]
+	 */
+	const ALL_KEYS = [
+		self::ACCOUNT_KEY,
+		self::ADDRESS_AUTOCOMPLETE_JWT_KEY,
+		self::ONBOARDING_FIELDS_DATA_KEY,
+		self::BUSINESS_TYPES_KEY,
+		self::FRAUD_SERVICES_KEY,
+		self::RECOMMENDED_PAYMENT_METHODS,
+		self::DISPUTE_STATUS_COUNTS_KEY,
+		self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE,
+		self::ACTIVE_DISPUTES_KEY,
+		self::AUTHORIZATION_SUMMARY_KEY,
+		self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
+		self::CONNECT_INCENTIVE_KEY,
+		self::TRACKING_INFO_KEY,
+	];
 
 	/**
 	 * Refresh disabled flag, controlling the behaviour of the get_or_add function.
@@ -208,78 +213,23 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		unset( $this->in_memory_cache[ $key ] );
 
 		// Remove from the DB cache.
-		if ( delete_option( $key ) ) {
-			// Clear the WP object cache to ensure the new data is fetched by other processes.
-			wp_cache_delete( $key, 'options' );
-		}
-	}
+		delete_option( $key );
 
-	/**
-	 * Deletes all cache entries that are keyed with a certain prefix.
-	 *
-	 * This is useful when you use dynamic cache keys.
-	 *
-	 * Note: Only key prefixes with known, static prefixes are allowed, for protection purposes.
-	 *
-	 * @param string $key_prefix The cache key prefix.
-	 *
-	 * @return void
-	 */
-	public function delete_by_prefix( string $key_prefix ) {
-		// Protection against accidentally deleting all options or options that are not related to WCPay caching.
-		// Feel free to update this statement as more prefix cache keys are used.
-		$allowed_base_prefixes = [
-			self::PAYMENT_METHODS_KEY_PREFIX,
-			self::ONBOARDING_FIELDS_DATA_KEY,
-			self::RECOMMENDED_PAYMENT_METHODS,
-		];
-		$is_allowed            = false;
-		foreach ( $allowed_base_prefixes as $allowed_base_prefix ) {
-			if ( strncmp( $key_prefix, $allowed_base_prefix, strlen( $allowed_base_prefix ) ) === 0 ) {
-				$is_allowed = true;
-				break;
-			}
-		}
-		if ( ! $is_allowed ) {
-			return; // Maybe throw exception here...
-		}
-
-		global $wpdb;
-
-		$options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key_prefix . '%' ) );
-		foreach ( $options as $option ) {
-			$this->delete( $option->option_name );
-		}
+		// Always clear the WP object cache, even if the DB row didn't exist.
+		// wp_cache_delete on a missing key is a no-op, but skipping it when the
+		// DB row is gone while Memcached still has a stale entry causes persistent
+		// stale data across requests (see #8601 for the original fix, #9639 for
+		// the regression).
+		wp_cache_delete( $key, 'options' );
 	}
 
 	/**
 	 * Delete all known cache entries.
 	 */
 	public function delete_all() {
-		$keys = [
-			self::ACCOUNT_KEY,
-			self::ONBOARDING_FIELDS_DATA_KEY,
-			self::BUSINESS_TYPES_KEY,
-			self::PAYMENT_PROCESS_FACTORS_KEY,
-			self::FRAUD_SERVICES_KEY,
-			self::RECOMMENDED_PAYMENT_METHODS,
-			self::DISPUTE_STATUS_COUNTS_KEY,
-			self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE,
-			self::ACTIVE_DISPUTES_KEY,
-			self::AUTHORIZATION_SUMMARY_KEY,
-			self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
-			self::CONNECT_INCENTIVE_KEY,
-			self::TRACKING_INFO_KEY,
-		];
-
-		foreach ( $keys as $key ) {
+		foreach ( self::ALL_KEYS as $key ) {
 			$this->delete( $key );
 		}
-
-		// Delete prefix-based keys.
-		$this->delete_by_prefix( self::PAYMENT_METHODS_KEY_PREFIX );
-		$this->delete_by_prefix( self::ONBOARDING_FIELDS_DATA_KEY ); // It can be prefixed with the locale.
-		$this->delete_by_prefix( self::RECOMMENDED_PAYMENT_METHODS ); // It can be prefixed with the locale.
 	}
 
 	/**
@@ -325,7 +275,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		// Do not refresh if doing ajax or the refresh has been disabled (running an AS job).
 		if (
 			defined( 'DOING_CRON' )
-			|| ( wp_doing_ajax() && ! in_array( $key, self::AJAX_ALLOWED_KEYS, true ) )
+			|| ( wp_doing_ajax() )
 			|| $this->refresh_disabled ) {
 			return false;
 		}
@@ -392,11 +342,24 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 * @return void
 	 */
 	private function write_to_cache( string $key, $data, bool $errored ) {
-		// Add the  data and expiry time to the array we're caching.
-		$cache_contents            = [];
-		$cache_contents['data']    = $data;
-		$cache_contents['fetched'] = time();
-		$cache_contents['errored'] = $errored;
+		// Compute the new consecutive_errors value before rebuilding the payload.
+		// Each errored write increments the counter; a successful write resets it.
+		// Legacy entries without the field are treated as zero.
+		$consecutive_errors = 0;
+		if ( $errored ) {
+			$previous           = $this->get_from_cache( $key );
+			$previous_count     = ( is_array( $previous ) && isset( $previous['consecutive_errors'] ) )
+				? (int) $previous['consecutive_errors']
+				: 0;
+			$consecutive_errors = $previous_count + 1;
+		}
+
+		// Add the data and expiry time to the array we're caching.
+		$cache_contents                       = [];
+		$cache_contents['data']               = $data;
+		$cache_contents['fetched']            = time();
+		$cache_contents['errored']            = $errored;
+		$cache_contents['consecutive_errors'] = $consecutive_errors;
 
 		// Write the in-memory cache.
 		$this->in_memory_cache[ $key ] = $cache_contents;
@@ -445,8 +408,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				if ( is_admin() ) {
 					// Fetches triggered from the admin panel should be more frequent.
 					if ( $cache_contents['errored'] ) {
-						// Attempt to refresh the data quickly if the last fetch was an error.
-						$ttl = 2 * MINUTE_IN_SECONDS;
+						// Progressive backoff on repeated errors (2/5/10/15 min).
+						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
 						// If the data was fetched successfully, cache it for 2h.
 						$ttl = 2 * HOUR_IN_SECONDS;
@@ -460,8 +423,8 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
 					// Fetches triggered from the admin panel should be more frequent.
 					if ( $cache_contents['errored'] ) {
-						// Attempt to refresh the data quickly if the last fetch was an error.
-						$ttl = 2 * MINUTE_IN_SECONDS;
+						// Progressive backoff on repeated errors (2/5/10/15 min).
+						$ttl = $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 );
 					} else {
 						// If the data was fetched successfully, cache it for 3h.
 						$ttl = 3 * HOUR_IN_SECONDS;
@@ -484,11 +447,10 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				// If no orders, cache for an hour to check again soon.
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
-			case self::PAYMENT_PROCESS_FACTORS_KEY:
-				$ttl = 2 * HOUR_IN_SECONDS;
-				break;
 			case self::TRACKING_INFO_KEY:
-				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : MONTH_IN_SECONDS;
+				$ttl = $cache_contents['errored']
+					? $this->get_errored_ttl( $cache_contents['consecutive_errors'] ?? 0 )
+					: MONTH_IN_SECONDS;
 				break;
 			case self::ADDRESS_AUTOCOMPLETE_JWT_KEY:
 				$ttl = 12 * HOUR_IN_SECONDS;
@@ -500,5 +462,29 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 		}
 
 		return apply_filters( 'wcpay_database_cache_ttl', $ttl, $key, $cache_contents );
+	}
+
+	/**
+	 * Maps a consecutive-errors count to a TTL using a fixed backoff ladder.
+	 *
+	 * Ladder: 1 → 2 min, 2 → 5 min, 3 → 10 min, 4+ → 15 min. Values ≤ 0 are
+	 * clamped to the first step, matching the behaviour of legacy cache entries
+	 * that were written before the counter existed.
+	 *
+	 * @param int $consecutive_errors Number of consecutive errored writes (including the current one).
+	 *
+	 * @return int TTL in seconds.
+	 */
+	private function get_errored_ttl( int $consecutive_errors ): int {
+		$ladder = [
+			2 * MINUTE_IN_SECONDS,
+			5 * MINUTE_IN_SECONDS,
+			10 * MINUTE_IN_SECONDS,
+			15 * MINUTE_IN_SECONDS,
+		];
+
+		$index = max( 0, min( count( $ladder ) - 1, $consecutive_errors - 1 ) );
+
+		return $ladder[ $index ];
 	}
 }

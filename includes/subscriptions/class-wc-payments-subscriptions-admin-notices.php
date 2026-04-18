@@ -35,8 +35,8 @@ class WC_Payments_Subscriptions_Admin_Notices {
 		}
 
 		$wcpay_version = $this->get_wcpay_version();
-		// if wcpay version is >= 10.0, bail to not show the notice indefinitely.
-		if ( version_compare( $wcpay_version, '10.0.0', '>=' ) ) {
+		// if wcpay version is > 10.2.99, bail to not show the notice indefinitely.
+		if ( version_compare( $wcpay_version, '10.2.99', '>' ) ) {
 			return;
 		}
 
@@ -118,9 +118,15 @@ class WC_Payments_Subscriptions_Admin_Notices {
 	/**
 	 * Check if bundled subscriptions are enabled.
 	 *
+	 * This checks for either WCPay Subscriptions or Stripe Billing being enabled,
+	 * as both represent the bundled subscription functionality.
+	 *
 	 * @return bool
 	 */
 	protected function is_bundled_subscriptions_enabled() {
-		return WC_Payments_Features::is_stripe_billing_enabled() && ! class_exists( 'WC_Subscriptions' );
+		$has_bundled_subs = WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled();
+		$has_wc_subs      = class_exists( 'WC_Subscriptions' );
+
+		return $has_bundled_subs && ! $has_wc_subs;
 	}
 }

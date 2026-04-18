@@ -20,8 +20,9 @@ import './styles.scss';
 const SupportPhoneInput = ( { setInputVallid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();
 
-	let supportPhoneError = useGetSavingError()?.data?.details
-		?.account_business_support_phone?.message;
+	let supportPhoneError =
+		useGetSavingError()?.data?.details?.account_business_support_phone
+			?.message;
 
 	const currentPhone = useRef( supportPhone ).current;
 	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';

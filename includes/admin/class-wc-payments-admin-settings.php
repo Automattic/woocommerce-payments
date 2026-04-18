@@ -56,6 +56,7 @@ class WC_Payments_Admin_Settings {
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'maybe_show_test_account_notice' ] );
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'maybe_show_sandbox_account_notice' ] );
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ $this, 'add_plugin_links' ] );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_payment_method_settings' ], 16 );
 	}
 
 	/**
@@ -96,12 +97,23 @@ class WC_Payments_Admin_Settings {
 					?>
 				</b>
 				<?php
+				if ( WC_Payments::mode()->is_dev() ) {
+					printf(
+						/* translators: 1: Anchor opening tag; 2: Anchor closing tag; 3: Anchor opening tag; 4: Anchor closing tag */
+						esc_html__( 'Test mode is active because your store is running in a development or staging environment. To disable it, switch to a production %1$sWordPress environment%2$s or remove the WCPAY_DEV_MODE constant. %3$sLearn more%4$s', 'woocommerce-payments' ),
+						'<a href="' . esc_url( 'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/' ) . '" target="_blank" rel="noreferrer noopener">',
+						'</a>',
+						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/' ) . '" target="_blank" rel="noreferrer noopener">',
+						'</a>'
+					);
+				} else {
 					printf(
 						/* translators: 1: Anchor opening tag; 2: Anchor closing tag */
 						esc_html__( 'You can use %1$stest card numbers%2$s to simulate various types of transactions.', 'woocommerce-payments' ),
 						'<a href="' . esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards' ) . '" target="_blank" rel="noreferrer noopener">',
 						'</a>'
 					);
+				}
 				?>
 			</p>
 		</div>
@@ -243,6 +255,51 @@ class WC_Payments_Admin_Settings {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Redirect payment-method-specific settings URLs to the main WooPayments settings page.
+	 * WooCommerce Core generates emails when a new payment method is enabled, with links to the payment method's name.
+	 * Since all WooPayments payment methods are managed in the main WooPayments settings page, we need to redirect the merchant to the main settings page.
+	 *
+	 * Handles URLs like:
+	 * - /wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_klarna
+	 * - /wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments_wechat_pay
+	 * And redirects them to:
+	 * - /wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments
+	 *
+	 * @return void
+	 */
+	public function maybe_redirect_payment_method_settings(): void {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
+
+		if ( empty( $url_params['page'] ) || 'wc-settings' !== $url_params['page'] ) {
+			return;
+		}
+
+		if ( empty( $url_params['tab'] ) || 'checkout' !== $url_params['tab'] ) {
+			return;
+		}
+
+		if ( empty( $url_params['section'] ) ) {
+			return;
+		}
+
+		// is this a payment-method-specific URL? (e.g.: woocommerce_payments_klarna, woocommerce_payments_wechat_pay).
+		$section = $url_params['section'];
+		if ( 0 !== strpos( $section, 'woocommerce_payments_' ) ) {
+			return;
+		}
+
+		$redirect_result = wp_safe_redirect( self::get_settings_url() );
+		// in unit tests, we're not redirecting and `wp_safe_redirect` returns `false`. We can't just `exit` in unit tests.
+		if ( true === $redirect_result ) {
+			exit;
+		}
 	}
 
 	/**

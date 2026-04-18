@@ -41,6 +41,13 @@ jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
 	useSettings: jest.fn(),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
+	usePmPromotionActions: jest.fn().mockReturnValue( {
+		activatePmPromotion: jest.fn(),
+		dismissPmPromotion: jest.fn(),
+	} ),
 } ) );
 
 jest.mock( '@woocommerce/data', () => {
@@ -317,8 +324,7 @@ describe( 'Disputes list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
-					path:
-						'/wc/v3/payments/disputes/download?user_email=mock%40example.com&locale=en_US',
+					path: '/wc/v3/payments/disputes/download?user_email=mock%40example.com&locale=en_US',
 				} );
 			} );
 		} );

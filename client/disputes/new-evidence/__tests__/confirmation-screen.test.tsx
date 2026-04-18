@@ -25,6 +25,7 @@ describe( 'ConfirmationScreen', () => {
 	const baseProps = {
 		disputeId: 'dp_test_123',
 		bankName: 'Test Bank',
+		isVisaComplianceDispute: false,
 	};
 
 	beforeEach( () => {
@@ -46,9 +47,10 @@ describe( 'ConfirmationScreen', () => {
 				)
 			).toBeInTheDocument();
 
-			// What's next section
+			// Section headings
+			expect( screen.getByText( 'What’s next?' ) ).toBeInTheDocument();
 			expect(
-				screen.getByRole( 'heading', { level: 3 } )
+				screen.getByText( 'Useful resources' )
 			).toBeInTheDocument();
 
 			// Action buttons
@@ -141,9 +143,6 @@ describe( 'ConfirmationScreen', () => {
 					/You'll be informed of any updates via email/
 				)
 			).toBeInTheDocument();
-			expect(
-				screen.getByText( /Want to know more about how disputes work/ )
-			).toBeInTheDocument();
 		} );
 
 		it( 'renders internal link to disputes page', () => {
@@ -159,11 +158,35 @@ describe( 'ConfirmationScreen', () => {
 			);
 		} );
 
-		it( 'renders external link to documentation', () => {
+		it( 'renders useful resources section with external links', () => {
 			render( <ConfirmationScreen { ...baseProps } /> );
 
+			// Check for resources heading
+			expect(
+				screen.getByText( 'Useful resources' )
+			).toBeInTheDocument();
+
+			// Check for preventing disputes link
+			const preventingDisputesLink = screen.getByRole( 'link', {
+				name: 'following the advice in our guide (opens in a new tab)',
+			} );
+			expect( preventingDisputesLink ).toBeInTheDocument();
+			expect( preventingDisputesLink ).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/'
+			);
+			expect( preventingDisputesLink ).toHaveAttribute(
+				'target',
+				'_blank'
+			);
+			expect( preventingDisputesLink ).toHaveAttribute(
+				'rel',
+				'external noreferrer noopener'
+			);
+
+			// Check for learning about disputes link
 			const learnMoreLink = screen.getByRole( 'link', {
-				name: 'Check out our resources (opens in a new tab)',
+				name: 'our resources (opens in a new tab)',
 			} );
 			expect( learnMoreLink ).toBeInTheDocument();
 			expect( learnMoreLink ).toHaveAttribute(
@@ -221,6 +244,121 @@ describe( 'ConfirmationScreen', () => {
 			expect( ( window as any ).location.href ).toBe(
 				'admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=dp_different_id'
 			);
+		} );
+	} );
+
+	describe( 'Visa Compliance disputes', () => {
+		it( 'shows Visa-specific subtitle for Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					isVisaComplianceDispute={ true }
+				/>
+			);
+
+			expect(
+				screen.getByText(
+					'Your response has been submitted under Visa’s compliance process.'
+				)
+			).toBeInTheDocument();
+
+			expect(
+				screen.queryByText(
+					"Your evidence has been sent to the cardholder's bank for review."
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'shows Visa-specific next steps for Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					isVisaComplianceDispute={ true }
+				/>
+			);
+
+			expect(
+				screen.getByText(
+					'Visa will review your submission under its network rules and determine the outcome of the dispute.'
+				)
+			).toBeInTheDocument();
+
+			expect(
+				screen.getByText(
+					'This review typically takes several weeks, but in some cases may take up to 3 months.'
+				)
+			).toBeInTheDocument();
+
+			expect(
+				screen.queryByText(
+					/The cardholder's bank will review your response/i
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'shows Visa-specific notice for Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					isVisaComplianceDispute={ true }
+				/>
+			);
+
+			const notice = document.querySelector(
+				'.wcpay-dispute-evidence-confirmation__notice'
+			);
+			expect( notice ).toHaveTextContent(
+				'The outcome of this dispute will be determined by Visa'
+			);
+
+			expect( notice ).not.toHaveTextContent(
+				"The outcome of this dispute will be determined by the cardholder's bank"
+			);
+		} );
+
+		it( 'ignores bank name for Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					bankName="Chase Bank"
+					isVisaComplianceDispute={ true }
+				/>
+			);
+
+			const notice = document.querySelector(
+				'.wcpay-dispute-evidence-confirmation__notice'
+			);
+
+			// Should show Visa text, not bank name
+			expect( notice ).toHaveTextContent(
+				'The outcome of this dispute will be determined by Visa'
+			);
+			expect( notice ).not.toHaveTextContent( 'Chase Bank' );
+		} );
+
+		it( 'shows regular text for non-Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					bankName="Chase Bank"
+					isVisaComplianceDispute={ false }
+				/>
+			);
+
+			expect(
+				screen.getByText(
+					"Your evidence has been sent to the cardholder's bank for review."
+				)
+			).toBeInTheDocument();
+
+			expect(
+				screen.getByText( /cardholder.*will review your response/i )
+			).toBeInTheDocument();
+
+			const notice = document.querySelector(
+				'.wcpay-dispute-evidence-confirmation__notice'
+			);
+			expect( notice ).toHaveTextContent( 'Chase Bank' );
 		} );
 	} );
 } );

@@ -163,15 +163,18 @@ const createMockNewAccountOverview = (
 	};
 };
 
-const mockUseDepositIncludesLoan = useDepositIncludesLoan as jest.MockedFunction<
-	typeof useDepositIncludesLoan
->;
-const mockUseSelectedCurrencyOverview = useSelectedCurrencyOverview as jest.MockedFunction<
-	typeof useSelectedCurrencyOverview
->;
-const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
-	typeof useAllDepositsOverviews
->;
+const mockUseDepositIncludesLoan =
+	useDepositIncludesLoan as jest.MockedFunction<
+		typeof useDepositIncludesLoan
+	>;
+const mockUseSelectedCurrencyOverview =
+	useSelectedCurrencyOverview as jest.MockedFunction<
+		typeof useSelectedCurrencyOverview
+	>;
+const mockUseAllDepositsOverviews =
+	useAllDepositsOverviews as jest.MockedFunction<
+		typeof useAllDepositsOverviews
+	>;
 const mockUseDeposits = useDeposits as jest.MockedFunction<
 	typeof useDeposits
 >;
@@ -184,7 +187,7 @@ const mockOverviews = ( currencies: AccountOverview.Overview[] ) => {
 	mockUseSelectedCurrencyOverview.mockReturnValue( {
 		account: mockAccount,
 		overview: currencies[ 0 ],
-		isLoading: null === currencies || ! currencies.length,
+		isLoading: currencies === null || ! currencies.length,
 	} );
 };
 // Mocks the useSelectedCurrency hook to return no previously selected currency.
@@ -201,7 +204,7 @@ const mockDepositOverviews = ( currencies: AccountOverview.Overview[] ) => {
 			currencies: currencies,
 			account: mockAccount,
 		},
-		isLoading: null === currencies || ! currencies.length,
+		isLoading: currencies === null || ! currencies.length,
 	} );
 };
 
@@ -274,7 +277,8 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( `Component doesn't render for new accounts with no pending funds`, () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
+			false;
 		mockOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockDepositOverviews( [ createMockNewAccountOverview( 'eur' ) ] );
 		mockUseDeposits.mockReturnValue( {
@@ -291,7 +295,8 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( `Component renders for new accounts with pending funds but no available funds`, () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
+			false;
 		mockOverviews( [ createMockNewAccountOverview( 'eur', 5000, 0 ) ] );
 		mockDepositOverviews( [
 			createMockNewAccountOverview( 'eur', 5000, 0 ),
@@ -306,9 +311,12 @@ describe( 'Deposits Overview information', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 		const { getByText, queryByText } = render( <DepositsOverview /> );
-		getByText( /Your first payout is held for/, {
-			ignore: '.a11y-speak-region',
-		} );
+		getByText(
+			/Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete/,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
 		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
 		expect( queryByText( 'View full deposits history' ) ).toBeFalsy();
 	} );
@@ -412,7 +420,8 @@ describe( 'Deposits Overview information', () => {
 	} );
 
 	test( 'Confirm new account waiting period notice does not show if outside waiting period', () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = true;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
+			true;
 		const accountOverview = createMockNewAccountOverview(
 			'eur',
 			12300,
@@ -426,11 +435,16 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect( queryByText( /Your first payout is held for/ ) ).toBeFalsy();
+		expect(
+			queryByText(
+				/Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete/
+			)
+		).toBeFalsy();
 	} );
 
 	test( 'Confirm new account waiting period notice shows if within waiting period', () => {
-		global.wcpaySettings.accountStatus.deposits.completed_waiting_period = false;
+		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
+			false;
 		const accountOverview = createMockNewAccountOverview(
 			'eur',
 			12300,
@@ -444,10 +458,13 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { getByText, getByRole } = render( <DepositsOverview /> );
-		getByText( /Your first payout is held for/, {
-			ignore: '.a11y-speak-region',
-		} );
-		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
+		getByText(
+			/Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete/,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect( getByRole( 'link', { name: /Learn more/ } ) ).toHaveAttribute(
 			'href',
 			'https://woocommerce.com/document/woopayments/payouts/payout-schedule/#new-accounts'
 		);

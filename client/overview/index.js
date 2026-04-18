@@ -14,7 +14,6 @@ import { Card, Notice, ExternalLink } from '@wordpress/components';
  * Internal dependencies.
  */
 import AccountBalances from 'components/account-balances';
-import AccountStatus from 'components/account-status';
 import AccountDetails from 'components/account-details';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
@@ -31,11 +30,11 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
 import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
+import SpotlightPromotion from 'promotions/spotlight';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -65,14 +64,12 @@ const OverviewPage = () => {
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
-		featureFlags: { isAccountDetailsEnabled },
 		accountDetails,
 	} = wcpaySettings;
 
 	// Don't show the update details and verify business tasks by default due to embedded component.
-	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
-		false
-	);
+	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] =
+		useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -82,13 +79,10 @@ const OverviewPage = () => {
 		stripeNotificationsBannerErrorType,
 		setStripeNotificationsBannerErrorType,
 	] = useState( '' );
-	const [
-		notificationsBannerMessage,
-		setNotificationsBannerMessage,
-	] = React.useState( '' );
-	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
-		true
-	);
+	const [ notificationsBannerMessage, setNotificationsBannerMessage ] =
+		React.useState( '' );
+	const [ stripeComponentLoading, setStripeComponentLoading ] =
+		useState( true );
 	// Variable to memoize the count of Stripe notifications.
 	const [
 		stripeNotificationsCountToAddressMemo,
@@ -97,10 +91,8 @@ const OverviewPage = () => {
 
 	const isTestModeOnboarding = isInTestModeOnboarding();
 	const { isLoading: settingsIsLoading } = useSettings();
-	const [
-		isTestDriveSuccessDisplayed,
-		setTestDriveSuccessDisplayed,
-	] = useState( false );
+	const [ isTestDriveSuccessDisplayed, setTestDriveSuccessDisplayed ] =
+		useState( false );
 	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
@@ -246,7 +238,6 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			<MaybeShowMerchantFeedbackPrompt />
 			<OverviewPageError />
 			<JetpackIdcNotice />
 			{ showLoanOfferError && (
@@ -376,18 +367,11 @@ const OverviewPage = () => {
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>
-				{ isAccountDetailsEnabled && accountDetails ? (
-					<AccountDetails
-						accountDetails={ accountDetails }
-						accountFees={ activeAccountFees }
-						accountLink={ accountStatus.accountLink }
-					/>
-				) : (
-					<AccountStatus
-						accountStatus={ accountStatus }
-						accountFees={ activeAccountFees }
-					/>
-				) }
+				<AccountDetails
+					accountDetails={ accountDetails }
+					accountFees={ activeAccountFees }
+					accountLink={ accountStatus.accountLink }
+				/>
 			</ErrorBoundary>
 			{ hasActiveLoan && (
 				<ErrorBoundary>
@@ -404,6 +388,9 @@ const OverviewPage = () => {
 					<ConnectionSuccessModal />
 				</ErrorBoundary>
 			) }
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

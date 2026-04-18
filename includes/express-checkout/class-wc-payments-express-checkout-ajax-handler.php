@@ -49,15 +49,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			);
 		}
 
-		add_action(
-			'woocommerce_store_api_checkout_update_order_from_request',
-			[
-				$this,
-				'tokenized_cart_set_payment_method_type',
-			],
-			10,
-			2
-		);
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
@@ -153,46 +144,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		wp_send_json( $data );
-	}
-
-	/**
-	 * Updates the checkout order based on the request, to set the Apple Pay/Google Pay payment method title.
-	 *
-	 * @param \WC_Order        $order The order to be updated.
-	 * @param \WP_REST_Request $request Store API request to update the order.
-	 */
-	public function tokenized_cart_set_payment_method_type( \WC_Order $order, \WP_REST_Request $request ) {
-		if ( ! isset( $request['payment_method'] ) || 'woocommerce_payments' !== $request['payment_method'] ) {
-			return;
-		}
-
-		if ( empty( $request['payment_data'] ) ) {
-			return;
-		}
-
-		$payment_data = [];
-		foreach ( $request['payment_data'] as $data ) {
-			$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
-		}
-
-		if ( empty( $payment_data['payment_request_type'] ) ) {
-			return;
-		}
-
-		$payment_request_type = wc_clean( wp_unslash( $payment_data['payment_request_type'] ) );
-
-		$payment_method_titles = [
-			'apple_pay'  => 'Apple Pay',
-			'google_pay' => 'Google Pay',
-		];
-
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-		if ( ! empty( $suffix ) ) {
-			$suffix = " ($suffix)";
-		}
-
-		$payment_method_title = isset( $payment_method_titles[ $payment_request_type ] ) ? $payment_method_titles[ $payment_request_type ] : 'Payment Request';
-		$order->set_payment_method_title( $payment_method_title . $suffix );
 	}
 
 	/**

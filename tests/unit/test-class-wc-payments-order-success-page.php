@@ -26,6 +26,13 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->payments_order_success_page = new WC_Payments_Order_Success_Page();
 	}
 
+	public function tear_down() {
+		global $wp;
+		unset( $_GET['key'] );
+		unset( $wp->query_vars['order-received'] );
+		parent::tear_down();
+	}
+
 	public function test_show_card_payment_method_name_without_card_brand() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_payment_method( 'woocommerce_payments' );
@@ -104,7 +111,8 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$payment_method = $this->createMock( UPE_Payment_Method::class );
 		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
 		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
-		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '/grabpay.svg' );
+		$payment_method->method( 'get_icon' )->willReturn( '/grabpay.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( '/grabpay.svg' );
 
 		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method );
 
@@ -114,6 +122,22 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'src="/grabpay.svg"', $result );
 	}
 
+	public function test_show_lpm_payment_method_name_with_dark_icon() {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_account_country' )->willReturn( 'NL' );
+
+		$payment_method = $this->createMock( UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'iDEAL' );
+		$payment_method->method( 'get_id' )->willReturn( 'ideal' );
+		$payment_method->method( 'get_icon' )->willReturn( '/ideal.svg' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( '/ideal-dark.svg' );
+
+		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method );
+
+		$this->assertStringContainsString( 'src="/ideal.svg"', $result );
+		$this->assertStringContainsString( 'data-dark-src="/ideal-dark.svg"', $result );
+	}
+
 	public function test_show_lpm_payment_method_name_icon_not_found() {
 		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
@@ -121,7 +145,8 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$payment_method = $this->createMock( UPE_Payment_Method::class );
 		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
 		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
-		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '' );
+		$payment_method->method( 'get_icon' )->willReturn( '' );
+		$payment_method->method( 'get_dark_icon' )->willReturn( '' );
 
 		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method, true );
 
@@ -135,9 +160,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->set_total( 50 ); // Ensure order needs payment.
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		$original_text = 'Thank you. Your order has been received.';
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
@@ -153,9 +179,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->add_meta_data( '_intent_id', 'pi_123' );
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		// Mock the Get_Intention request.
 		$mock_intent = WC_Helper_Intention::create_intention(
@@ -183,9 +210,10 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$order->set_status( 'processing' );
 		$order->save();
 
-		// Set up global wp query vars.
+		// Set up global wp query vars and valid order key.
 		global $wp;
 		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = $order->get_order_key();
 
 		$original_text = 'Thank you. Your order has been received.';
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
@@ -197,6 +225,42 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		// Set up global wp query vars with invalid order ID.
 		global $wp;
 		$wp->query_vars['order-received'] = 999999;
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_replace_order_received_text_for_failed_orders_with_invalid_order_key() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'failed' );
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_total( 50 );
+		$order->save();
+
+		// Set up global wp query vars with invalid order key.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		$_GET['key']                      = 'wc_order_INVALID';
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_replace_order_received_text_for_failed_orders_with_missing_order_key() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'failed' );
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_total( 50 );
+		$order->save();
+
+		// Set up global wp query vars without order key.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+		unset( $_GET['key'] );
 
 		$original_text = 'Thank you. Your order has been received.';
 		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );

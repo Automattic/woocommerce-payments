@@ -13,11 +13,11 @@ import AccountDetails from '../index';
 import type { AccountDetailsType } from 'wcpay/types/account/account-details';
 
 // Mock the components that have external dependencies
-jest.mock( 'wcpay/components/account-status/account-tools', () => ( {
+jest.mock( '../account-tools', () => ( {
 	AccountTools: () => <div data-testid="account-tools">Account Tools</div>,
 } ) );
 
-jest.mock( 'wcpay/components/account-status/account-fees', () => ( {
+jest.mock( '../account-fees', () => ( {
 	__esModule: true,
 	default: () => <div data-testid="account-fees">Account Fees</div>,
 } ) );
@@ -47,7 +47,6 @@ describe( 'AccountDetails', () => {
 			payout_status: {
 				text: 'Available',
 				background_color: 'green',
-				icon: 'published',
 			},
 			banner: null,
 		};
@@ -70,7 +69,6 @@ describe( 'AccountDetails', () => {
 			payout_status: {
 				text: 'Disabled',
 				background_color: 'red',
-				icon: 'error',
 			},
 			banner: {
 				text: 'Your account has been restricted by Stripe.',
@@ -98,7 +96,6 @@ describe( 'AccountDetails', () => {
 			payout_status: {
 				text: 'Disabled',
 				background_color: 'red',
-				icon: 'error',
 			},
 			banner: {
 				text: 'Your account has been rejected.',
@@ -127,7 +124,6 @@ describe( 'AccountDetails', () => {
 			payout_status: {
 				text: 'Available in 2 days',
 				background_color: 'yellow',
-				icon: 'caution',
 				popover: {
 					text: 'Payouts are processed within 2 business days.',
 					cta_text: 'Learn more',
@@ -154,7 +150,6 @@ describe( 'AccountDetails', () => {
 			payout_status: {
 				text: 'Available',
 				background_color: 'green',
-				icon: 'published',
 			},
 			banner: null,
 		};
@@ -180,7 +175,6 @@ describe( 'AccountDetails', () => {
 			payout_status: {
 				text: 'Available',
 				background_color: 'green',
-				icon: 'published',
 			},
 			banner: null,
 		};
@@ -206,7 +200,6 @@ describe( 'AccountDetails', () => {
 			payout_status: {
 				text: 'Available',
 				background_color: 'green',
-				icon: 'published',
 			},
 			banner: null,
 		};

@@ -26,12 +26,23 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return 'mock_method_payments';
 	}
 
+	public static function get_stripe_payment_method_type(): string {
+		return self::get_id();
+	}
+
 	public static function get_payment_method_class(): string {
 		return 'MockPaymentMethod';
 	}
 
 	public static function get_title( ?string $account_country = null ): string {
 		return 'Mock Method';
+	}
+
+	public static function get_title_from_charge_details( string $account_country, array $payment_details ): ?string {
+		if ( ! empty( $payment_details['dynamic_title'] ) ) {
+			return $payment_details['dynamic_title'];
+		}
+		return null;
 	}
 
 	public static function get_settings_label( ?string $account_country = null ): string {
@@ -42,27 +53,11 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 		return 'Mock payment method for testing';
 	}
 
-	public static function is_bnpl(): bool {
-		return false;
-	}
-
-	public static function is_reusable(): bool {
-		return true;
-	}
-
-	public static function accepts_only_domestic_payments(): bool {
-		return false;
-	}
-
-	public static function allows_manual_capture(): bool {
-		return true;
-	}
-
 	public static function get_supported_currencies(): array {
 		return [ 'USD', 'CAD' ];
 	}
 
-	public static function get_supported_countries(): array {
+	public static function get_supported_countries( ?string $account_country = null ): array {
 		return [ 'US', 'CA' ];
 	}
 
@@ -88,11 +83,7 @@ class MockPaymentMethodDefinition implements PaymentMethodDefinitionInterface {
 
 	public static function is_available_for( string $currency, string $account_country ): bool {
 		return in_array( $currency, self::get_supported_currencies(), true ) &&
-			in_array( $account_country, self::get_supported_countries(), true );
-	}
-
-	public static function is_enabled_by_default(): bool {
-		return true;
+			in_array( $account_country, self::get_supported_countries( $account_country ), true );
 	}
 
 	public static function get_limits_per_currency(): array {

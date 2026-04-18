@@ -22,6 +22,7 @@ import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
 import WooPayPreview from './woopay-preview';
 import {
+	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
@@ -29,19 +30,18 @@ import {
 	useWooPayShowIncompatibilityNotice,
 	useWooPayGlobalThemeSupportEnabledSettings,
 } from 'wcpay/data';
+import InlineNotice from 'wcpay/components/inline-notice';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 
 const WooPaySettings = ( { section } ) => {
-	const [
-		isWooPayEnabled,
-		updateIsWooPayEnabled,
-	] = useWooPayEnabledSettings();
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
-	const [
-		woopayCustomMessage,
-		setWooPayCustomMessage,
-	] = useWooPayCustomMessage();
+	const [ isWooPayEnabled, updateIsWooPayEnabled ] =
+		useWooPayEnabledSettings();
+
+	const [ woopayCustomMessage, setWooPayCustomMessage ] =
+		useWooPayCustomMessage();
 
 	const [
 		isWooPayGlobalThemeSupportEnabled,
@@ -53,16 +53,13 @@ const WooPaySettings = ( { section } ) => {
 	const [ woopayLocations, updateWooPayLocations ] = useWooPayLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
-		if ( isChecked ) {
-			updateWooPayLocations( [ ...woopayLocations, location ] );
-		} else {
-			updateWooPayLocations(
-				woopayLocations.filter( ( name ) => name !== location )
-			);
-		}
+		updateWooPayLocations( location, isChecked );
 	};
 
-	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
+	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
+
+	const showIncompatibilityNotice =
+		useWooPayShowIncompatibilityNotice() && ! isStripeLinkEnabled;
 
 	return (
 		<Card
@@ -76,9 +73,18 @@ const WooPaySettings = ( { section } ) => {
 					{ showIncompatibilityNotice && (
 						<WooPayIncompatibilityNotice />
 					) }
+					{ isStripeLinkEnabled && (
+						<InlineNotice status="warning" isDismissible={ false }>
+							{ __(
+								'To enable WooPay, you must first disable Link by Stripe.',
+								'woocommerce-payments'
+							) }
+						</InlineNotice>
+					) }
 					<div className="wcpay-woopay-settings__enable">
 						<CheckboxControl
 							checked={ isWooPayEnabled }
+							disabled={ isStripeLinkEnabled }
 							onChange={ updateIsWooPayEnabled }
 							label={ __(
 								'Enable WooPay',
@@ -299,7 +305,7 @@ const WooPaySettings = ( { section } ) => {
 										// eslint-disable-next-line max-len
 										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
 									),
-								}
+								},
 						} ) }
 						value={ woopayCustomMessage }
 						onChange={ setWooPayCustomMessage }
@@ -318,6 +324,16 @@ const WooPaySettings = ( { section } ) => {
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ woopayStoreLogo }
 							customMessage={ woopayCustomMessage }
+							appearance={
+								isWooPayGlobalThemeSupportEnabled
+									? wcpaySettings.woopayAppearance
+									: null
+							}
+							fontRules={
+								isWooPayGlobalThemeSupportEnabled
+									? wcpaySettings.woopayFontRules
+									: null
+							}
 						/>
 					</BaseControl>
 				</CardBody>

@@ -12,6 +12,9 @@ import { describeif, getShopper } from '../../../utils/helpers';
 import * as shopper from '../../../utils/shopper';
 import * as navigation from '../../../utils/shopper-navigation';
 
+const changePaymentMethodButtonSelector =
+	'button[name="woocommerce_change_payment"], #place_order';
+
 const navigateToSubscriptionDetails = async (
 	page: Page,
 	subscriptionId: string
@@ -21,7 +24,7 @@ const navigateToSubscriptionDetails = async (
 		.getByLabel( `View subscription number ${ subscriptionId }` )
 		.click();
 
-	await page.getByRole( 'link', { name: 'Change payment' } ).click();
+	await page.getByRole( 'button', { name: 'Change payment' } ).click();
 
 	await expect(
 		page.getByRole( 'heading', {
@@ -65,7 +68,10 @@ describeif( shouldRunSubscriptionsTests )(
 			await page.getByLabel( 'Use a new payment method' ).check();
 			await shopper.fillCardDetails( page, config.cards.basic2 );
 			await shopper.focusPlaceOrderButton( page );
-			await shopper.placeOrder( page );
+			await page
+				.locator( changePaymentMethodButtonSelector )
+				.first()
+				.click( { noWaitAfter: true } );
 
 			await expect(
 				page.getByText( 'Payment method updated.' )
@@ -78,7 +84,10 @@ describeif( shouldRunSubscriptionsTests )(
 
 		test( 'should set a payment method to an already saved card', async () => {
 			await shopper.focusPlaceOrderButton( page );
-			await page.locator( '#place_order' ).click();
+			await page
+				.locator( changePaymentMethodButtonSelector )
+				.first()
+				.click( { noWaitAfter: true } );
 
 			await expect(
 				page.getByText( 'Payment method updated.' )

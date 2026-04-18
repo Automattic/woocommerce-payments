@@ -12,13 +12,23 @@ runs:
         npm run test:e2e-ci
         RESULTS_JSON="$E2E_RESULT_FILEPATH"
         if [[ -f "$RESULTS_JSON" ]]; then
-          # Build unique list of spec files with any failed/unexpected/timedOut/interrupted result and count them.
+          # Count spec files with tests that truly failed (status "unexpected").
+          # Exclude "flaky" tests — those failed on the first attempt but passed
+          # on Playwright's built-in retry, so they don't need a full spec re-run.
           FAILED_SPECS_COUNT=$( jq -r '[ .. | objects | select(has("specs")) | .specs[]
-              | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
-                        or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
+              | select( any(.tests[]?; .status == "unexpected") )
               | .file ] | unique | length' "$RESULTS_JSON" )
           echo "FIRST_RUN_FAILED_TEST_SUITES=$FAILED_SPECS_COUNT" >> $GITHUB_OUTPUT
           echo "RESULTS_JSON=$RESULTS_JSON" >> $GITHUB_OUTPUT
+
+          # Report flaky tests for visibility, but don't re-run them.
+          FLAKY_COUNT=$( jq -r '[ .. | objects | select(has("specs")) | .specs[]
+              | select( any(.tests[]?; .status == "flaky") )
+              | .file ] | unique | length' "$RESULTS_JSON" )
+          if [[ ${FLAKY_COUNT} -gt 0 ]]; then
+            echo "::warning::${FLAKY_COUNT} spec file(s) had flaky tests (passed on Playwright retry)."
+          fi
+
           if [[ ${FAILED_SPECS_COUNT} -gt 0 ]]; then
             echo "::notice::${FAILED_SPECS_COUNT} spec file(s) failed in the first run. We will re-run only the failed specs."
             exit 0
@@ -37,12 +47,10 @@ runs:
         RESULTS_JSON="${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}"
         echo "Using results file: $RESULTS_JSON"
 
-        # Build a unique list of spec files that had unexpected/failed outcomes.
-        # This uses a recursive jq search to find any node with a 'specs' array, then selects specs
-        # where any test result is marked unexpected/failed.
+        # Build a unique list of spec files with truly failed tests (status "unexpected").
+        # Flaky tests (passed on Playwright retry) are excluded — no need to re-run them.
         mapfile -t FAILED_SPECS < <( jq -r '[ .. | objects | select(has("specs")) | .specs[]
-          | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
-            or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
+          | select( any(.tests[]?; .status == "unexpected") )
           | .file ] | unique | .[]' "$RESULTS_JSON" )
 
         if [[ ${#FAILED_SPECS[@]} -eq 0 ]]; then
@@ -56,8 +64,13 @@ runs:
           echo " - $f"
         done
 
-        # Re-run only the failed spec files.
-        npm run test:e2e-ci "${FAILED_SPECS[@]}"
+        # Include the setup file so Playwright runs auth setup before retrying.
+        # Without this, passing spec files as positional args bypasses project
+        # dependency resolution and auth state files may not exist.
+        SETUP_FILE="tests/e2e/specs/auth.setup.ts"
+
+        # Re-run only the failed spec files (plus setup).
+        npm run test:e2e-ci "$SETUP_FILE" "${FAILED_SPECS[@]}"
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs

@@ -10,11 +10,13 @@
 namespace WCPay\Payment_Methods;
 
 use WC_Payments_Utils;
+use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
 use WP_User;
 use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
  * Extendable class for payment methods.
@@ -125,13 +127,26 @@ class UPE_Payment_Method {
 		if ( null !== $this->definition ) {
 			// Cache values that don't require context.
 			$this->stripe_id                    = $this->definition::get_id();
-			$this->is_reusable                  = $this->definition::is_reusable();
+			$this->is_reusable                  = PaymentMethodUtils::is_reusable( $this->definition );
 			$this->currencies                   = $this->definition::get_supported_currencies();
-			$this->accept_only_domestic_payment = $this->definition::accepts_only_domestic_payments();
+			$this->accept_only_domestic_payment = PaymentMethodUtils::accepts_only_domestic_payments( $this->definition );
 			$this->limits_per_currency          = $this->definition::get_limits_per_currency();
-			$this->is_bnpl                      = $this->definition::is_bnpl();
+			$this->is_bnpl                      = PaymentMethodUtils::is_bnpl( $this->definition );
 			$this->countries                    = $this->definition::get_supported_countries();
 		}
+	}
+
+	/**
+	 * Returns payment method ID
+	 *
+	 * @return string
+	 */
+	public function is_express_checkout() {
+		if ( null !== $this->definition ) {
+			return in_array( PaymentMethodCapability::EXPRESS_CHECKOUT, $this->definition::get_capabilities(), true );
+		}
+
+		return false;
 	}
 
 	/**
@@ -158,6 +173,12 @@ class UPE_Payment_Method {
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
 		if ( null !== $this->definition ) {
+			if ( is_array( $payment_details ) && ! empty( $payment_details ) ) {
+				$dynamic_title = $this->definition::get_title_from_charge_details( $account_country ?? '', $payment_details );
+				if ( null !== $dynamic_title ) {
+					return $dynamic_title;
+				}
+			}
 			return $this->definition::get_title( $account_country );
 		}
 		return $this->title;
@@ -183,8 +204,11 @@ class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns boolean dependent on whether payment method
-	 * can be used at checkout
+	 * Returns boolean dependent on whether payment method can be used at checkout.
+	 *
+	 * Payment method can be used at checkout if:
+	 *  - If there are payment amount limits, order total is within limits.
+	 *  - If it is a subscription order, payment method is either reusable, or subscription is manual.
 	 *
 	 * @param string $account_country Country of merchants account.
 	 * @param bool   $skip_limits_per_currency_check Whether to skip limits per currency check.
@@ -192,10 +216,22 @@ class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout( string $account_country, bool $skip_limits_per_currency_check = false ) {
-		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
-			return $this->is_reusable();
+		// Check if we're in a subscription context (cart checkout, changing payment method, or renewal).
+		$is_subscription_context = $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription();
+
+		// Also check if we're on the order-pay page for a renewal order.
+		if ( ! $is_subscription_context && is_wc_endpoint_url( 'order-pay' ) && function_exists( 'wcs_order_contains_renewal' ) ) {
+			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+			if ( $order && wcs_order_contains_renewal( $order ) ) {
+				$is_subscription_context = true;
+			}
 		}
 
+		// Reusable methods are always available for subscriptions. Other methods are available if manual renewal is allowed.
+		$are_manual_renewals_accepted  = function_exists( 'wcs_is_manual_renewal_enabled' ) && wcs_is_manual_renewal_enabled();
+		$is_available_for_subscription = $are_manual_renewals_accepted || $this->is_reusable();
+
+		$order_is_within_currency_limits = true;
 		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
 		if ( [] !== $this->limits_per_currency && ! $skip_limits_per_currency_check ) {
 			$order = null;
@@ -229,16 +265,18 @@ class UPE_Payment_Method {
 					}
 					// If there is no range specified for the currency-country pair we don't support it and return false.
 					if ( null === $range ) {
-						return false;
+						$order_is_within_currency_limits = false;
+					} else {
+						$is_valid_minimum                = null === $range['min'] || $amount >= $range['min'];
+						$is_valid_maximum                = null === $range['max'] || $amount <= $range['max'];
+						$order_is_within_currency_limits = $is_valid_minimum && $is_valid_maximum;
 					}
-					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
-					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
-					return $is_valid_minimum && $is_valid_maximum;
 				}
 			}
 		}
 
-		return true;
+		return $order_is_within_currency_limits
+			&& ( ( ! $is_subscription_context ) || $is_available_for_subscription );
 	}
 
 	/**
@@ -341,24 +379,6 @@ class UPE_Payment_Method {
 	}
 
 	/**
-	 * Gets the theme appropriate icon for the payment method for a given location and context.
-	 *
-	 * @param string  $location The location to get the icon for.
-	 * @param boolean $is_blocks Whether the icon is for blocks.
-	 * @param string  $account_country Optional account country.
-	 * @return string
-	 */
-	public function get_payment_method_icon_for_location( string $location = 'checkout', bool $is_blocks = true, ?string $account_country = null ) {
-		$appearance_theme = WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $is_blocks ? 'blocks' : 'classic' );
-
-		if ( 'night' === $appearance_theme ) {
-			return $this->get_dark_icon( $account_country );
-		}
-
-		return $this->get_icon( $account_country );
-	}
-
-	/**
 	 * Returns payment method supported countries
 	 *
 	 * @return array
@@ -366,6 +386,12 @@ class UPE_Payment_Method {
 	public function get_countries() {
 		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
 		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
+
+		// For definition-based payment methods, call get_supported_countries with account_country.
+		// The definition handles any domestic/regional restrictions (e.g., Klarna's EEA cross-border logic).
+		if ( ! empty( $this->definition ) ) {
+			return $this->definition::get_supported_countries( $account_country );
+		}
 
 		return $this->has_domestic_transactions_restrictions() ? [ $account_country ] : $this->countries;
 	}
@@ -417,7 +443,7 @@ class UPE_Payment_Method {
 	 */
 	public function allows_manual_capture() {
 		if ( null !== $this->definition ) {
-			return $this->definition::allows_manual_capture();
+			return PaymentMethodUtils::allows_manual_capture( $this->definition );
 		}
 
 		return false;

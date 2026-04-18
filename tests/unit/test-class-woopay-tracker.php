@@ -51,6 +51,7 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		WC_Payments::get_gateway()->enable();
 
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
+		update_option( 'woocommerce_allow_tracking', 'yes' );
 	}
 
 	public function tearDown(): void {

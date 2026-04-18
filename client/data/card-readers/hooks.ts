@@ -40,11 +40,8 @@ export const useCardReaderStats = (
 } =>
 	useSelect(
 		( select ) => {
-			const {
-				getCardReaderStats,
-				getCardReaderStatsError,
-				isResolving,
-			} = select( STORE_NAME );
+			const { getCardReaderStats, getCardReaderStatsError, isResolving } =
+				select( STORE_NAME );
 
 			return {
 				readers: getCardReaderStats( chargeId, transactionId ),

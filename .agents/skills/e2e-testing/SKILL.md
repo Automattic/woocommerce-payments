@@ -1,0 +1,1 @@
+../../../.claude/skills/e2e-testing/SKILL.md
