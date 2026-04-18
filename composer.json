@@ -33,7 +33,7 @@
     "require-dev": {
         "composer/installers": "1.10.0",
         "phpunit/phpunit": "9.6.34",
-        "woocommerce/woocommerce-sniffs": "1.0.0",
+        "woocommerce/woocommerce-sniffs": "1.0.1",
         "woocommerce/action-scheduler": "3.8.2",
         "kalessil/production-dependencies-guard": "dev-master",
         "phpstan/phpstan": "^1.10",
