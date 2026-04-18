@@ -236,7 +236,7 @@
 	"overrides": {
 		"@woocommerce/components": {
 			"@woocommerce/csv-export": "1.10.0",
-			"@woocommerce/currency": "4.3.0"
+			"@woocommerce/currency": "5.0.0"
 		},
 		"@wordpress/scripts": {
 			"@wordpress/eslint-plugin": "15.1.0"
