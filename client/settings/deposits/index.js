@@ -49,18 +49,12 @@ const monthlyAnchors = [
 } ) );
 
 const CustomizeDepositSchedule = () => {
-	const [
-		depositScheduleInterval,
-		setDepositScheduleInterval,
-	] = useDepositScheduleInterval();
-	const [
-		depositScheduleWeeklyAnchor,
-		setDepositScheduleWeeklyAnchor,
-	] = useDepositScheduleWeeklyAnchor();
-	const [
-		depositScheduleMonthlyAnchor,
-		setDepositScheduleMonthlyAnchor,
-	] = useDepositScheduleMonthlyAnchor();
+	const [ depositScheduleInterval, setDepositScheduleInterval ] =
+		useDepositScheduleInterval();
+	const [ depositScheduleWeeklyAnchor, setDepositScheduleWeeklyAnchor ] =
+		useDepositScheduleWeeklyAnchor();
+	const [ depositScheduleMonthlyAnchor, setDepositScheduleMonthlyAnchor ] =
+		useDepositScheduleMonthlyAnchor();
 
 	const settings = select( STORE_NAME ).getSettings();
 

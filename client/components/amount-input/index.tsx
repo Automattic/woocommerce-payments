@@ -33,9 +33,8 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 
 	const validatedValue = validateInput( value ) ? value : '';
 
-	const [ internalValue, setInternalValue ] = React.useState(
-		validatedValue
-	);
+	const [ internalValue, setInternalValue ] =
+		React.useState( validatedValue );
 
 	useEffect( () => {
 		if ( ! validateInput( internalValue ) ) {

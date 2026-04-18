@@ -61,10 +61,10 @@ describe( 'GeneralSettings', () => {
 
 			renderWithSettingsProvider( <GeneralSettings /> );
 
-			const enableWCPayCheckbox = screen.getByLabelText(
-				'Enable WooPayments'
-			);
+			const enableWCPayCheckbox =
+				screen.getByLabelText( 'Enable WooPayments' );
 
+			// eslint-disable-next-line jest/valid-expect
 			let expectation = expect( enableWCPayCheckbox );
 			if ( ! isEnabled ) {
 				expectation = expectation.not;
@@ -122,10 +122,10 @@ describe( 'GeneralSettings', () => {
 		( isEnabled ) => {
 			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
 			renderWithSettingsProvider( <GeneralSettings /> );
-			const enableTestModeCheckbox = screen.getByLabelText(
-				'Enable test mode'
-			);
+			const enableTestModeCheckbox =
+				screen.getByLabelText( 'Enable test mode' );
 
+			// eslint-disable-next-line jest/valid-expect
 			let expectation = expect( enableTestModeCheckbox );
 			if ( ! isEnabled ) {
 				expectation = expectation.not;
@@ -139,11 +139,11 @@ describe( 'GeneralSettings', () => {
 		( isEnabled ) => {
 			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
 			renderWithSettingsProvider( <GeneralSettings /> );
-			const enableTestModeCheckbox = screen.getByLabelText(
-				'Enable test mode'
-			);
+			const enableTestModeCheckbox =
+				screen.getByLabelText( 'Enable test mode' );
 			fireEvent.click( enableTestModeCheckbox );
 
+			// eslint-disable-next-line jest/valid-expect
 			let expectation = expect(
 				screen.queryByText(
 					'Are you sure you want to enable test mode?'
@@ -170,5 +170,40 @@ describe( 'GeneralSettings', () => {
 				"Before continuing, please make sure that you're aware of the following:"
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'disables test mode checkbox when dev mode is enabled', () => {
+		useDevMode.mockReturnValue( true );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		const enableTestModeCheckbox = screen.getByLabelText(
+			'Enable test mode (enabled by development mode)'
+		);
+
+		expect( enableTestModeCheckbox ).toBeDisabled();
+		expect( enableTestModeCheckbox ).toBeChecked();
+	} );
+
+	it( 'shows dev mode help text when dev mode is enabled', () => {
+		useDevMode.mockReturnValue( true );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		expect(
+			screen.queryByText( /development or staging environment/i )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not disable test mode checkbox when dev mode is not enabled', () => {
+		useDevMode.mockReturnValue( false );
+		useTestMode.mockReturnValue( [ false, jest.fn() ] );
+		renderWithSettingsProvider( <GeneralSettings /> );
+
+		const enableTestModeCheckbox =
+			screen.getByLabelText( 'Enable test mode' );
+
+		expect( enableTestModeCheckbox ).not.toBeDisabled();
+		expect( enableTestModeCheckbox ).not.toBeChecked();
 	} );
 } );

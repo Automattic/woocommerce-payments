@@ -20,6 +20,12 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider provider
 	 */
 	public function test_strings_for_captured_event( array $captured_event, array $expectation ) {
+		// Skip SEK tests for WooCommerce < 7.8.0 due to decimal formatting changes.
+		$dataset_name = $this->dataName();
+		if ( version_compare( WC_VERSION, '7.8.0', '<' ) && strpos( $dataset_name, '3-currencies' ) !== false ) {
+			$this->markTestSkipped( 'SEK currency formatting changed in WooCommerce 7.8.0' );
+		}
+
 		$this->captured_event_note = new WC_Payments_Captured_Event_Note( $captured_event );
 
 		$this->assertSame( $expectation['fxString'] ?? null, $this->captured_event_note->compose_fx_string() );

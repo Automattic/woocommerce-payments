@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Constants\Payment_Method;
+
 /**
  * Unit tests for non-reusable payment method handling in WCPay subscriptions trait.
  */
@@ -180,5 +182,76 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Non_Reusable_Methods_Test extends W
 
 		// Assert: "Change payment" button should remain for automatic subscriptions.
 		$this->assertArrayHasKey( 'change_payment_method', $result, '"Change payment" action should remain for automatic subscriptions' );
+	}
+
+	/**
+	 * Test that Amazon Pay ECE subscriptions get switched to the correct gateway.
+	 */
+	public function test_maybe_switch_subscription_to_amazon_pay_gateway() {
+		// Arrange: Create a parent order with Amazon Pay ECE meta.
+		$parent_order = WC_Helper_Order::create_order();
+		$parent_order->update_meta_data( '_wcpay_express_checkout_payment_method', Payment_Method::AMAZON_PAY );
+		$parent_order->save();
+
+		// Create a subscription with the base gateway (as it would be initially set by ECE).
+		$subscription = new WC_Subscription();
+		$subscription->set_payment_method( 'woocommerce_payments' );
+		$subscription->set_parent( $parent_order );
+		$subscription->save();
+
+		// Act: Call the gateway switch method (runs at priority 9).
+		$this->mock_gateway->maybe_switch_subscription_to_amazon_pay_gateway( $subscription );
+
+		// Assert: Subscription should be updated to Amazon Pay split gateway.
+		$expected_gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id();
+		$this->assertEquals( $expected_gateway_id, $subscription->get_payment_method(), 'Payment method should be updated to Amazon Pay split gateway' );
+	}
+
+	public function test_amazon_pay_ece_subscription_flow() {
+		// Arrange: Create a parent order with Amazon Pay ECE meta.
+		$parent_order = WC_Helper_Order::create_order();
+		$parent_order->update_meta_data( '_wcpay_express_checkout_payment_method', Payment_Method::AMAZON_PAY );
+		$parent_order->save();
+
+		// Create a subscription with the base gateway (as it would be initially set by ECE).
+		$subscription = new WC_Subscription();
+		$subscription->set_payment_method( 'woocommerce_payments' );
+		$subscription->set_requires_manual_renewal( false ); // Start as automatic.
+		$subscription->set_parent( $parent_order );
+		$subscription->save();
+
+		// Act: Call both methods in the order they would be called by hooks.
+		$this->mock_gateway->maybe_switch_subscription_to_amazon_pay_gateway( $subscription );
+		$this->mock_gateway->maybe_force_subscription_to_manual( $subscription );
+
+		// Assert: Subscription should be on Amazon Pay gateway and remain automatic.
+		$this->assertEquals( 'woocommerce_payments_amazon_pay', $subscription->get_payment_method(), 'Payment method should be Amazon Pay split gateway' );
+		$this->assertFalse( $subscription->is_manual(), 'Subscription should remain automatic for Amazon Pay (reusable payment method)' );
+		$this->assertEmpty( $subscription->get_meta( '_wcpay_original_payment_method_id', true ), 'No original payment method ID should be stored for Amazon Pay' );
+	}
+
+	/**
+	 * Test that subscriptions created via Express Checkout with Google Pay
+	 * remain on the base gateway and are NOT forced to manual.
+	 */
+	public function test_maybe_force_subscription_to_manual_with_google_pay_ece() {
+		// Arrange: Create a parent order with Google Pay ECE meta.
+		$parent_order = WC_Helper_Order::create_order();
+		$parent_order->update_meta_data( '_wcpay_express_checkout_payment_method', 'google_pay' );
+		$parent_order->save();
+
+		// Create a subscription with the base gateway.
+		$subscription = new WC_Subscription();
+		$subscription->set_payment_method( 'woocommerce_payments' );
+		$subscription->set_requires_manual_renewal( false ); // Automatic.
+		$subscription->set_parent( $parent_order );
+		$subscription->save();
+
+		// Act: Call the method.
+		$this->mock_gateway->maybe_force_subscription_to_manual( $subscription );
+
+		// Assert: Subscription should remain on base gateway (Google Pay uses card) and NOT forced to manual.
+		$this->assertEquals( 'woocommerce_payments', $subscription->get_payment_method(), 'Payment method should remain as base gateway for Google Pay' );
+		$this->assertFalse( $subscription->is_manual(), 'Subscription should remain automatic for Google Pay' );
 	}
 }

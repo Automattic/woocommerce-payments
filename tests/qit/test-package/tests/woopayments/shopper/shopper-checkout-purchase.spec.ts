@@ -11,6 +11,7 @@ import { test, expect, getAuthState } from '../../../fixtures/auth';
 import { config } from '../../../config/default';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
+import { goToOrder } from '../../../utils/merchant';
 
 test.describe( 'Successful purchase', { tag: '@shopper' }, () => {
 	let merchantPage: Page;
@@ -65,6 +66,20 @@ test.describe( 'Successful purchase', { tag: '@shopper' }, () => {
 						name: 'Order received',
 					} )
 				).toBeVisible();
+
+				// When CTP is disabled, verify the order in WC admin.
+				if ( ! ctpEnabled ) {
+					const orderId = await shopperPage
+						.locator(
+							'.woocommerce-order-overview__order.order > strong'
+						)
+						.innerText();
+
+					await goToOrder( merchantPage, orderId );
+					await expect(
+						merchantPage.locator( '#order_status' )
+					).toHaveValue( /wc-(processing|completed)/ );
+				}
 			} );
 
 			test( 'using a 3DS card', { tag: '@critical' }, async () => {

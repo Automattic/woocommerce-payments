@@ -1,5 +1,11 @@
 ## WooPayments QIT Tests
 
+## Local Development
+
+For a faster workflow when writing or debugging E2E tests locally, see [LOCAL_DEVELOPMENT.md](./LOCAL_DEVELOPMENT.md).
+
+This allows you to start the test environment once and run Playwright directly, avoiding the overhead of full orchestration on each run.
+
 We use the [QIT toolkit](https://qit.woo.com/docs/) for automated testing including security, PHPStan, and E2E tests.
 
 ### Setup

@@ -141,11 +141,14 @@ function InlineLabelSelect< ItemType extends SelectItem >( {
 		}
 
 		if ( ! itemString ) {
-			return __( 'No selection' );
+			return __( 'No selection', 'woocommerce-payments' );
 		}
 
 		// translators: %s: The selected option.
-		return sprintf( __( 'Currently selected: %s' ), itemString );
+		return sprintf(
+			__( 'Currently selected: %s', 'woocommerce-payments' ),
+			itemString
+		);
 	}
 
 	const menuProps = getMenuProps( {

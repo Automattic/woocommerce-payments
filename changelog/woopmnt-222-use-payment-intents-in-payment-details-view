@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add missing display components to show payment information based on the payment intent data.

@@ -20,7 +20,6 @@ import PaymentMethod from './payment-method';
 import methodsConfiguration from '../../payment-methods-map';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
-import ConfirmPaymentMethodDeleteModal from './delete-modal';
 
 const PaymentMethodsList = ( { methodIds } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -31,11 +30,8 @@ const PaymentMethodsList = ( { methodIds } ) => {
 		( methodId ) => methodsConfiguration[ methodId ]
 	);
 
-	const [ activationModalParams, handleActivationModalOpen ] = useState(
-		null
-	);
-
-	const [ deleteModalParams, handleDeleteModalOpen ] = useState( null );
+	const [ activationModalParams, handleActivationModalOpen ] =
+		useState( null );
 
 	const [ , updateSelectedPaymentMethod ] = useSelectedPaymentMethod();
 
@@ -48,7 +44,6 @@ const PaymentMethodsList = ( { methodIds } ) => {
 
 	const completeDeleteAction = ( itemId ) => {
 		updateUnselectedPaymentMethod( itemId );
-		handleDeleteModalOpen( null );
 	};
 
 	const getStatusAndRequirements = ( itemId ) => {
@@ -82,17 +77,7 @@ const PaymentMethodsList = ( { methodIds } ) => {
 	};
 
 	const handleUncheckClick = ( itemId ) => {
-		const methodConfig = methodsConfiguration[ itemId ];
-		const statusAndRequirements = getStatusAndRequirements( itemId );
-		if ( methodConfig && statusAndRequirements.status === 'active' ) {
-			handleDeleteModalOpen( {
-				id: itemId,
-				label: methodConfig.label,
-				Icon: methodConfig.icon,
-			} );
-		} else {
-			completeDeleteAction( itemId );
-		}
+		completeDeleteAction( itemId );
 	};
 
 	return (
@@ -134,19 +119,6 @@ const PaymentMethodsList = ( { methodIds } ) => {
 					} }
 					requirements={ activationModalParams.requirements }
 					paymentMethod={ activationModalParams.id }
-				/>
-			) }
-			{ deleteModalParams && (
-				<ConfirmPaymentMethodDeleteModal
-					id={ deleteModalParams.id }
-					label={ deleteModalParams.label }
-					icon={ deleteModalParams.Icon }
-					onConfirm={ () => {
-						completeDeleteAction( deleteModalParams.id );
-					} }
-					onCancel={ () => {
-						handleDeleteModalOpen( null );
-					} }
 				/>
 			) }
 		</>

@@ -91,11 +91,6 @@ declare global {
 			 */
 			campaigns: {
 				/**
-				 * The flag for the WordPress.org merchant review campaign in 2025.
-				 * Eligibility is determined per-account on transact-platform-server.
-				 */
-				wporgReview2025: boolean;
-				/**
 				 * The flag for the payments settings review prompt (Phase 0).
 				 * Eligibility is determined per-account on transact-platform-server.
 				 */
@@ -156,6 +151,7 @@ declare global {
 		defaultExpressCheckoutBorderRadius: string;
 		dateFormat: string;
 		timeFormat: string;
+		formattedStoreAddress: string;
 	};
 
 	const wooPaymentsPaymentMethodDefinitions: Record<
@@ -171,6 +167,7 @@ declare global {
 			title: string;
 			icon: string;
 			darkIcon: string;
+			isExpressCheckout: boolean;
 			showSaveOption: boolean;
 			countries: string[];
 			testingInstructions: string;
@@ -271,6 +268,57 @@ declare global {
 		) => WcSettings[ K ] | T;
 	};
 
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	const wcpay_upe_config: {
+		publishableKey: string;
+		testMode: boolean;
+		accountId: string;
+		ajaxUrl: string;
+		wcAjaxUrl: string;
+		createSetupIntentNonce: string;
+		initWooPayNonce: string;
+		genericErrorMessage: string;
+		fraudServices: unknown[];
+		features: string[];
+		forceNetworkSavedCards: boolean;
+		locale: string;
+		isPreview: boolean;
+		isSavedCardsEnabled: boolean;
+		isWooPayEnabled: boolean;
+		isWoopayExpressCheckoutEnabled: boolean;
+		isWoopayFirstPartyAuthEnabled: boolean;
+		isWooPayEmailInputEnabled: boolean;
+		isWooPayDirectCheckoutEnabled: boolean;
+		isWooPayGlobalThemeSupportEnabled: boolean;
+		woopayHost: string;
+		platformTrackerNonce: string;
+		accountIdForIntentConfirmation: string;
+		wcpayVersionNumber: string;
+		woopaySignatureNonce: string;
+		woopaySessionNonce: string;
+		woopayMerchantId: string;
+		icon: string;
+		woopayMinimumSessionData: Record< string, unknown >;
+		gatewayId: string;
+		isCheckout: boolean;
+		paymentMethodsConfig: typeof wooPaymentsPaymentMethodsConfig;
+		cartContainsSubscription: boolean;
+		currency: string;
+		cartTotal: number;
+		enabledBillingFields: Record<
+			string,
+			{
+				required: boolean;
+			}
+		>;
+		storeCountry: string;
+		isExpressCheckoutInPaymentMethodsEnabled: boolean;
+		stylesCacheVersion: string;
+		isOrderPay?: boolean;
+		orderId?: number;
+		isChangingPayment?: boolean;
+	};
+
 	interface Window {
 		wcpaySettings: typeof wcpaySettings;
 		wc: typeof wc;
@@ -279,5 +327,7 @@ declare global {
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		wcpay_upe_config?: typeof wcpay_upe_config;
 	}
 }

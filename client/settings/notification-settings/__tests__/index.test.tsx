@@ -12,16 +12,22 @@ import { render, screen } from '@testing-library/react';
 import NotificationSettings, {
 	NotificationSettingsDescription,
 } from '../index';
-import { useAccountCommunicationsEmail, useGetSavingError } from 'wcpay/data';
+import {
+	useAccountCommunicationsEmail,
+	useGetSavingError,
+	useSettings,
+} from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useAccountCommunicationsEmail: jest.fn(),
 	useGetSavingError: jest.fn(),
+	useSettings: jest.fn(),
 } ) );
 
-const mockUseAccountCommunicationsEmail = useAccountCommunicationsEmail as jest.MockedFunction<
-	typeof useAccountCommunicationsEmail
->;
+const mockUseAccountCommunicationsEmail =
+	useAccountCommunicationsEmail as jest.MockedFunction<
+		typeof useAccountCommunicationsEmail
+	>;
 const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 	typeof useGetSavingError
 >;
@@ -33,6 +39,12 @@ describe( 'NotificationSettings', () => {
 			jest.fn(),
 		] );
 		mockUseGetSavingError.mockReturnValue( null );
+		( useSettings as jest.Mock ).mockReturnValue( {
+			isLoading: false,
+			saveSettings: jest.fn(),
+			isSaving: false,
+			isDirty: false,
+		} );
 	} );
 
 	it( 'renders the notification settings section', () => {
@@ -50,7 +62,9 @@ describe( 'NotificationSettings', () => {
 
 		render( <NotificationSettings /> );
 
-		expect( screen.getByDisplayValue( testEmail ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Email address' ) ).toHaveValue(
+			testEmail
+		);
 	} );
 } );
 

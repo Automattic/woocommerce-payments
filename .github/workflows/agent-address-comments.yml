@@ -1,0 +1,110 @@
+name: "Agent Pipeline — Address Comments Stage"
+
+on:
+  workflow_call:
+    inputs:
+      linear_issue_id:
+        type: string
+        required: true
+        description: "Linear issue ID (e.g. GAMMA-123) or issue description"
+      target_branch:
+        type: string
+        required: false
+        default: "develop"
+        description: "Base branch to work from"
+      branch_name:
+        type: string
+        required: true
+        description: "Feature branch with the PR (created by dev stage)"
+      pr_number:
+        type: string
+        required: true
+        description: "Pull request number to address comments on"
+      model:
+        type: string
+        required: false
+        default: "claude-sonnet-4-5-20250929"
+        description: "Claude model to use"
+
+jobs:
+  address-comments:
+    name: "Address Comments: ${{ inputs.linear_issue_id }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout WooPayments
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch_name }}
+          fetch-depth: 0
+          token: ${{ secrets.BOTWOO_TOKEN }}
+
+      - name: Checkout WooCommerce (context)
+        uses: actions/checkout@v4
+        with:
+          repository: woocommerce/woocommerce
+          path: woocommerce
+          sparse-checkout: |
+            plugins/woocommerce/includes
+            plugins/woocommerce/src
+            plugins/woocommerce-blocks
+
+      - name: Checkout gamma-ai-tools (prompt templates)
+        uses: actions/checkout@v4
+        with:
+          repository: Automattic/gamma-ai-tools
+          github-server-url: https://github.a8c.com
+          token: ${{ secrets.GHE_TOKEN }}
+          path: .gamma-ai-tools
+          sparse-checkout: prompts/pipeline
+
+      - name: Prepare prompt from template
+        id: prompt
+        run: |
+          TEMPLATE=".gamma-ai-tools/prompts/pipeline/address-comments.md"
+          if [ ! -f "$TEMPLATE" ]; then
+            echo "::error::Prompt template not found: $TEMPLATE"
+            exit 1
+          fi
+
+          # Substitute variables
+          sed \
+            -e 's|{{PR_NUMBER}}|${{ inputs.pr_number }}|g' \
+            -e 's|{{TARGET_BRANCH}}|${{ inputs.target_branch }}|g' \
+            -e 's|{{BRANCH_NAME}}|${{ inputs.branch_name }}|g' \
+            "$TEMPLATE" > /tmp/address-comments-prompt.md
+
+          # Write multiline output
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "content<<$EOF" >> "$GITHUB_OUTPUT"
+          cat /tmp/address-comments-prompt.md >> "$GITHUB_OUTPUT"
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Clean up gamma-ai-tools checkout
+        run: rm -rf .gamma-ai-tools
+
+      - name: Configure git for commits
+        run: |
+          git config user.name "botwoo"
+          git config user.email "botwoo@users.noreply.github.com"
+
+      - name: Run Address Comments Agent
+        id: address-comments
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          model: ${{ inputs.model }}
+          prompt: ${{ steps.prompt.outputs.content }}
+          max_turns: "30"
+          allowed_tools: "Read,Glob,Grep,Edit,Write,Bash(git diff*),Bash(git log*),Bash(git blame*),Bash(git show*),Bash(git add *),Bash(git commit *),Bash(git push *),Bash(gh api *),Bash(gh pr *),Bash(npm run lint:*),Bash(npm run test:*),Bash(vendor/bin/phpcs *),Bash(npx eslint *)"
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## Address Comments Agent Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Issue:** ${{ inputs.linear_issue_id }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**PR:** #${{ inputs.pr_number }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Branch:** ${{ inputs.branch_name }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Model:** ${{ inputs.model }}" >> "$GITHUB_STEP_SUMMARY"

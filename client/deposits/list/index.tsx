@@ -102,11 +102,13 @@ export const DepositsList = (): JSX.Element => {
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );
 
-	const sortByDate = ! getQuery().orderby || 'date' === getQuery().orderby;
+	const sortByDate = ! getQuery().orderby || getQuery().orderby === 'date';
 	const columns = getColumns( sortByDate );
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		DepositsTableHeader
-	>( 'wc_payments_payouts_hidden_columns', columns );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< DepositsTableHeader >(
+			'wc_payments_payouts_hidden_columns',
+			columns
+		);
 
 	const totalRows = depositsSummary.count || 0;
 
@@ -165,16 +167,16 @@ export const DepositsList = (): JSX.Element => {
 		);
 	} );
 
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	const isCurrencyFiltered = typeof getQuery().store_currency_is === 'string';
 	const isSingleCurrency =
-		2 > ( depositsSummary.store_currencies || [] ).length;
+		( depositsSummary.store_currencies || [] ).length < 2;
 
 	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isDespositsSummaryDataLoaded =
 		depositsSummary.count !== undefined &&
 		depositsSummary.total !== undefined &&
-		false === isSummaryLoading;
+		isSummaryLoading === false;
 
 	// Generate summary only if the data has been loaded
 	if ( isDespositsSummaryDataLoaded ) {

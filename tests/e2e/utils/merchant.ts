@@ -63,12 +63,13 @@ const expectSnackbarWithText = async (
 	expectedText: string,
 	timeout = 10000
 ) => {
-	const snackbar = page.locator( '.components-snackbar__content', {
-		hasText: expectedText,
-	} );
+	const snackbar = page
+		.locator( '.components-snackbar__content', {
+			hasText: expectedText,
+		} )
+		.first();
 
 	await expect( snackbar ).toBeVisible( { timeout } );
-	await page.waitForTimeout( 2000 );
 };
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
@@ -151,6 +152,17 @@ export const addMulticurrencyWidget = async (
 			.locator( 'button.components-button[role="option"]' )
 			.first()
 			.click();
+		// Wait for the newly inserted widget/block to render before clicking Update.
+		if ( blocksVersion ) {
+			await page
+				.locator( `[data-title="${ widgetName }"]` )
+				.waitFor( { timeout: 5000 } );
+		} else {
+			await page
+				.getByRole( 'heading', { name: widgetName } )
+				.waitFor( { timeout: 5000 } );
+		}
+		// Give the widgets editor a moment to register the inserted block before saving.
 		await page.waitForTimeout( 2000 );
 		await expect(
 			page.getByRole( 'button', { name: 'Update' } )
@@ -210,18 +222,18 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 	}
 
 	for ( let i = 0; i < deleteButtons.length; i++ ) {
-		await page
-			.locator( '.enabled-currency .enabled-currency__action.delete' )
-			.first()
-			.click();
-
-		const snackbar = page.locator( '.components-snackbar__content', {
-			hasText: 'Enabled currencies updated.',
-		} );
-
-		await expect( snackbar ).toBeVisible( { timeout: 10000 } );
-		await snackbar.click();
-		await expect( snackbar ).toBeHidden( { timeout: 10000 } );
+		await Promise.all( [
+			page.waitForResponse(
+				( resp ) =>
+					resp.url().includes( 'update-enabled-currencies' ) &&
+					resp.request().method() === 'POST' &&
+					resp.status() === 200
+			),
+			page
+				.locator( '.enabled-currency .enabled-currency__action.delete' )
+				.first()
+				.click(),
+		] );
 	}
 };
 
@@ -369,7 +381,6 @@ export const disablePaymentMethods = async (
 		if ( await checkbox.isChecked() ) {
 			await checkbox.click();
 			atLeastOnePaymentMethodDisabled = true;
-			await page.getByRole( 'button', { name: 'Remove' } ).click();
 		}
 	}
 

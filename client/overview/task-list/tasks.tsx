@@ -71,7 +71,7 @@ export const getTasks = ( {
 	const isDisputeTaskVisible =
 		!! activeDisputes &&
 		// Only show the dispute task if there are disputes due within 7 days.
-		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
+		getDisputesDueWithinDays( activeDisputes, 7 ).length > 0;
 
 	const isGoLiveTaskVisible =
 		wcpaySettings.isAccountConnected &&

@@ -15,7 +15,7 @@ import {
 	useTestMode,
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
-	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
+	useExpressCheckoutInPaymentMethodsEnabledSettings,
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
@@ -54,10 +54,8 @@ describe( 'Settings hooks tests', () => {
 				getEnabledPaymentMethodIds: jest.fn( () => [ 'foo', 'bar' ] ),
 			};
 
-			const [
-				enabledPaymentMethodIds,
-				updateEnabledPaymentMethodIds,
-			] = useEnabledPaymentMethodIds();
+			const [ enabledPaymentMethodIds, updateEnabledPaymentMethodIds ] =
+				useEnabledPaymentMethodIds();
 			updateEnabledPaymentMethodIds( [ 'baz', 'quux' ] );
 
 			expect( enabledPaymentMethodIds ).toEqual( [ 'foo', 'bar' ] );
@@ -125,10 +123,8 @@ describe( 'Settings hooks tests', () => {
 					.mockReturnValue( 'statement value' ),
 			};
 
-			const [
-				statementDescriptor,
-				setStatementDescriptor,
-			] = useAccountStatementDescriptor();
+			const [ statementDescriptor, setStatementDescriptor ] =
+				useAccountStatementDescriptor();
 
 			expect( statementDescriptor ).toEqual( 'statement value' );
 			expect( setStatementDescriptor ).toHaveBeenCalledTimes( 0 );
@@ -151,10 +147,8 @@ describe( 'Settings hooks tests', () => {
 				getIsManualCaptureEnabled: jest.fn().mockReturnValue( true ),
 			};
 
-			const [
-				isManualCaptureEnabled,
-				setManualCaptureValue,
-			] = useManualCapture();
+			const [ isManualCaptureEnabled, setManualCaptureValue ] =
+				useManualCapture();
 
 			expect( isManualCaptureEnabled ).toEqual( true );
 			expect( setManualCaptureValue ).toHaveBeenCalledTimes( 0 );
@@ -220,10 +214,8 @@ describe( 'Settings hooks tests', () => {
 				getIsPaymentRequestEnabled: jest.fn( () => true ),
 			};
 
-			const [
-				isPaymentRequestEnabled,
-				updateIsPaymentRequestEnabled,
-			] = usePaymentRequestEnabledSettings();
+			const [ isPaymentRequestEnabled, updateIsPaymentRequestEnabled ] =
+				usePaymentRequestEnabledSettings();
 
 			updateIsPaymentRequestEnabled( false );
 
@@ -234,30 +226,28 @@ describe( 'Settings hooks tests', () => {
 		} );
 	} );
 
-	describe( 'useAppleGooglePayInPaymentMethodsOptionsEnabledSettings()', () => {
-		test( 'returns Apple Google Pay in payment methods options settings from selector', () => {
+	describe( 'useExpressCheckoutInPaymentMethodsEnabledSettings()', () => {
+		test( 'returns express checkout in payment methods settings from selector', () => {
 			actions = {
-				updateIsAppleGooglePayInPaymentMethodsOptionsEnabled: jest.fn(),
+				updateIsExpressCheckoutInPaymentMethodsEnabled: jest.fn(),
 			};
 
 			selectors = {
-				getIsAppleGooglePayInPaymentMethodsOptionsEnabled: jest.fn(
+				getIsExpressCheckoutInPaymentMethodsEnabled: jest.fn(
 					() => true
 				),
 			};
 
 			const [
-				isAppleGooglePayInPaymentMethodsOptionsEnabled,
-				updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
-			] = useAppleGooglePayInPaymentMethodsOptionsEnabledSettings();
+				isExpressCheckoutInPaymentMethodsEnabled,
+				updateIsExpressCheckoutInPaymentMethodsEnabled,
+			] = useExpressCheckoutInPaymentMethodsEnabledSettings();
 
-			updateIsAppleGooglePayInPaymentMethodsOptionsEnabled( false );
+			updateIsExpressCheckoutInPaymentMethodsEnabled( false );
 
-			expect( isAppleGooglePayInPaymentMethodsOptionsEnabled ).toEqual(
-				true
-			);
+			expect( isExpressCheckoutInPaymentMethodsEnabled ).toEqual( true );
 			expect(
-				actions.updateIsAppleGooglePayInPaymentMethodsOptionsEnabled
+				actions.updateIsExpressCheckoutInPaymentMethodsEnabled
 			).toHaveBeenCalledWith( false );
 		} );
 	} );
@@ -346,10 +336,8 @@ describe( 'Settings hooks tests', () => {
 				getIsWooPayEnabled: jest.fn( () => true ),
 			};
 
-			const [
-				isWooPayEnabled,
-				updateIsWooPayEnabled,
-			] = useWooPayEnabledSettings();
+			const [ isWooPayEnabled, updateIsWooPayEnabled ] =
+				useWooPayEnabledSettings();
 
 			updateIsWooPayEnabled( false );
 
@@ -373,10 +361,8 @@ describe( 'Settings hooks tests', () => {
 				getWooPayCustomMessage: jest.fn( () => messageBeforeUpdate ),
 			};
 
-			const [
-				woopayCustomMessage,
-				updateWooPayCustomMessage,
-			] = useWooPayCustomMessage();
+			const [ woopayCustomMessage, updateWooPayCustomMessage ] =
+				useWooPayCustomMessage();
 
 			updateWooPayCustomMessage( messageAfterUpdate );
 
@@ -400,10 +386,8 @@ describe( 'Settings hooks tests', () => {
 				getWooPayStoreLogo: jest.fn( () => messageBeforeUpdate ),
 			};
 
-			const [
-				woopayStoreLogo,
-				updateWooPayStoreLogo,
-			] = useWooPayStoreLogo();
+			const [ woopayStoreLogo, updateWooPayStoreLogo ] =
+				useWooPayStoreLogo();
 
 			updateWooPayStoreLogo( messageAfterUpdate );
 
@@ -432,7 +416,8 @@ describe( 'Settings hooks tests', () => {
 		} );
 
 		test( 'returns duplicated payment method IDs from selector', () => {
-			const duplicatedPaymentMethodIds = useGetDuplicatedPaymentMethodIds();
+			const duplicatedPaymentMethodIds =
+				useGetDuplicatedPaymentMethodIds();
 			expect( duplicatedPaymentMethodIds ).toEqual( [
 				'card',
 				'bancontact',

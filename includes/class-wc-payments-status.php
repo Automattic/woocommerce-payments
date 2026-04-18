@@ -114,6 +114,12 @@ class WC_Payments_Status {
 					),
 					'callback' => [ $this, 'delete_test_orders' ],
 				],
+				'clear_wcpay_styles_cache'             => [
+					'name'     => __( 'Clear WooPayments calculated styles', 'woocommerce-payments' ),
+					'button'   => __( 'Clear', 'woocommerce-payments' ),
+					'desc'     => __( 'This tool will clear the styles cached for the WooPayments gateway UI elements at checkout', 'woocommerce-payments' ),
+					'callback' => [ $this, 'clear_styles_cache' ],
+				],
 				'remediate_canceled_auth_fees_dry_run' => [
 					'name'     => __( 'Preview canceled authorization fix (Dry Run)', 'woocommerce-payments' ),
 					'button'   => $this->get_dry_run_button_text(),
@@ -188,6 +194,20 @@ class WC_Payments_Status {
 				$e->getMessage()
 			);
 		}
+	}
+
+	/**
+	 * Clears the cached styles for WooPayments gateway UI elements.
+	 *
+	 * @return string Success message.
+	 */
+	public function clear_styles_cache() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return __( 'You do not have permission to run this tool.', 'woocommerce-payments' );
+		}
+
+		WC_Payments_Styles_Cache::invalidate_styles_cache_version();
+		return __( 'WooPayments styles cleared', 'woocommerce-payments' );
 	}
 
 	/**
@@ -568,6 +588,20 @@ class WC_Payments_Status {
 						<?php
 							$manual_capture_enabled = 'yes' === $this->gateway->get_option( 'manual_capture' );
 							echo $manual_capture_enabled ? esc_html__( 'Enabled', 'woocommerce-payments' ) : esc_html__( 'Disabled', 'woocommerce-payments' );
+						?>
+						</td>
+					</tr>
+					<tr>
+						<td data-export-label="Support Phone"><?php esc_html_e( 'Support Phone', 'woocommerce-payments' ); ?>:</td>
+						<td class="help"><?php echo wc_help_tip( esc_html__( 'The support phone number set in WooPayments settings. If not set, the settings Save button will be disabled.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
+						<td>
+						<?php
+						$support_phone = $this->gateway->get_option( 'account_business_support_phone' );
+						if ( ! empty( $support_phone ) ) {
+							echo esc_html( $support_phone );
+						} else {
+							echo '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . esc_html__( 'Not set', 'woocommerce-payments' ) . '</mark>';
+						}
 						?>
 						</td>
 					</tr>

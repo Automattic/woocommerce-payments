@@ -37,8 +37,19 @@ If you are extending WooPayments, or building on top of it, please refer to the 
 
 ## Setup
 
-If you're using the Docker environment see setup instructions here:
-https://github.com/Automattic/woocommerce-payments/blob/trunk/docker/README.md
+### Docker environment (recommended)
+
+For detailed Docker setup instructions, see [docker/README.md](docker/README.md).
+
+Quick start:
+```bash
+npm install                  # Install dependencies
+npm run up:recreate          # Start WordPress and run setup (auto-starts infrastructure if needed)
+```
+
+Your site will be available at `http://localhost:<PORT>/wp-admin/` (check `.env` for your port; default is 8082).
+
+### Manual setup
 
 Install the following plugins:
 
@@ -52,20 +63,20 @@ If you are using a custom local development setup (as opposed to the Docker-base
 
 We currently support the following variables:
 
--   `LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH`: The path to your local WCPay Dev Tools plugin directory for auto-updates; it defaults to `docker/wordpress/wp-content/plugins/woocommerce-payments-dev-tools`.
+-   `LOCAL_WCPAY_DEV_TOOLS_PLUGIN_REPO_PATH`: The path to your local WCPay Dev Tools plugin directory for auto-updates. This is primarily useful for non-Docker setups. With the Docker setup, the dev tools plugin is stored in a shared Docker volume and is installed automatically by the setup script.
 
 ## Test account setup
 
 For setting up a test account follow [these instructions](https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/).
 
-You will need a externally accessible URL to set up the plugin. You can use ngrok for this.
+You will need an externally accessible URL to set up the plugin. You can use ngrok for this.
 
-`ngrok http 8082`
+`ngrok http <PORT>` (check `.env` for your port; default is 8082)
 
-See: https://github.com/Automattic/woocommerce-payments/blob/trunk/CONTRIBUTING.md (possibly move contents here for visibility sake)
+See: [CONTRIBUTING.md](CONTRIBUTING.md) for more development details.
 
 ## Debugging
 
-If you are following the Docker setup [here](https://github.com/Automattic/woocommerce-payments/blob/trunk/docker/README.md), Xdebug is ready to use for debugging.
+If you are following the [Docker setup](docker/README.md), Xdebug is ready to use for debugging.
 
 Install [Xdebug Helper browser extension mentioned here](https://xdebug.org/docs/remote) to enable Xdebug on demand.

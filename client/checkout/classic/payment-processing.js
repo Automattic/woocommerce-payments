@@ -8,6 +8,12 @@ import { __ } from '@wordpress/i18n';
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
+import {
+	getCachedAppearance,
+	setCachedAppearance,
+	dispatchAppearanceEvent,
+	isAppearanceValid,
+} from 'wcpay/utils/appearance-cache';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -43,30 +49,29 @@ for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
 }
 
 /**
- * Initializes the appearance of the payment element by retrieving the UPE configuration
- * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
- * it is simply returned.
+ * Initializes the appearance of the payment element by computing it from the DOM.
  *
- * @param {Object} api The API object used to save the UPE configuration.
  * @param {string} elementsLocation The location of the UPE elements.
- * @return {Promise<Object>} The appearance object for the UPE.
+ * @return {Object} The appearance object for the UPE.
  */
-async function initializeAppearance( api, elementsLocation ) {
-	const upeConfigMap = {
-		shortcode_checkout: 'upeAppearance',
-		add_payment_method: 'upeAddPaymentMethodAppearance',
-	};
-	const upeConfigProperty =
-		upeConfigMap[ elementsLocation ] ?? 'upeAppearance';
-	const appearance = getUPEConfig( upeConfigProperty );
-	if ( appearance ) {
-		return Promise.resolve( appearance );
+function initializeAppearance( elementsLocation ) {
+	const version = getUPEConfig( 'stylesCacheVersion' );
+	const cached = getCachedAppearance( elementsLocation, version );
+	if ( cached ) {
+		return cached;
 	}
 
-	return await api.saveUPEAppearance(
-		getAppearance( elementsLocation ),
-		elementsLocation
-	);
+	const appearance = getAppearance( elementsLocation );
+	dispatchAppearanceEvent( appearance, elementsLocation );
+
+	// Only cache if extraction produced meaningful rules.
+	// Empty results (e.g. non-standard theme markup) should not be cached
+	// so the next page load can retry extraction.
+	if ( isAppearanceValid( appearance ) ) {
+		setCachedAppearance( elementsLocation, version, appearance );
+	}
+
+	return appearance;
 }
 
 /**
@@ -108,7 +113,7 @@ function submitForm( jQueryForm ) {
  * FLAG: PAYMENT_METHODS_LIST
  * This is specifically looking for Afterpay and Affirm payment methods - not all BNPL methods.
  *
- * @param {Object} params The parameters to be sent to `createPaymentMethod`.
+ * @param {Object} params            The parameters to be sent to `createPaymentMethod`.
  * @param {string} paymentMethodType The type of Stripe payment method to create.
  * @return {boolean} True, if there are missing address fields. False, if the validation passes or is not applicable.
  */
@@ -154,9 +159,9 @@ function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
  * Creates a Stripe payment method by calling the Stripe API's createPaymentMethod with the provided elements
  * and billing details. The billing details are obtained from various form elements on the page.
  *
- * @param {Object} api The API object used to call the Stripe API's createPaymentMethod method.
- * @param {Object} elements The Stripe elements object used to create a Stripe payment method.
- * @param {Object} jQueryForm The jQuery object for the form being submitted.
+ * @param {Object} api               The API object used to call the Stripe API's createPaymentMethod method.
+ * @param {Object} elements          The Stripe elements object used to create a Stripe payment method.
+ * @param {Object} jQueryForm        The jQuery object for the form being submitted.
  * @param {string} paymentMethodType The type of Stripe payment method to create.
  * @return {Promise<Object>} A promise that resolves with the created Stripe payment method.
  */
@@ -210,9 +215,12 @@ async function createStripePaymentMethod(
 					line2: document.querySelector(
 						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.address_2 }`
 					)?.value,
-					postal_code: document.querySelector(
-						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.postcode }`
-					)?.value,
+					// Trim to avoid Stripe AVS mismatches on leading/trailing whitespace.
+					postal_code: document
+						.querySelector(
+							`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.postcode }`
+						)
+						?.value?.trim(),
 					state: document.querySelector(
 						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.state }`
 					)?.value,
@@ -239,9 +247,9 @@ async function createStripePaymentMethod(
  * retrieves the necessary data from the UPE configuration and initializes the appearance. It then creates the
  * Stripe elements and the Stripe payment element, which is attached to the gatewayUPEComponents object afterward.
  *
- * @param {Object} api The API object used to create the Stripe payment element.
+ * @param {Object} api               The API object used to create the Stripe payment element.
  * @param {string} paymentMethodType The type of Stripe payment method to create.
- * @param {string} elementsLocation The location of the UPE elements.
+ * @param {string} elementsLocation  The location of the UPE elements.
  * @return {Object} A promise that resolves with the created Stripe payment element.
  */
 async function createStripePaymentElement(
@@ -251,7 +259,7 @@ async function createStripePaymentElement(
 ) {
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
 	const paymentMethodTypes = getPaymentMethodTypes( paymentMethodType );
-	const appearance = await initializeAppearance( api, elementsLocation );
+	const appearance = initializeAppearance( elementsLocation );
 	document
 		.querySelector(
 			`.wcpay-upe-element[data-payment-method-type="${ paymentMethodType }"]`
@@ -283,17 +291,16 @@ async function createStripePaymentElement(
 	} );
 
 	gatewayUPEComponents[ paymentMethodType ].elements = elements;
-	gatewayUPEComponents[
-		paymentMethodType
-	].upeElement = createdStripePaymentElement;
+	gatewayUPEComponents[ paymentMethodType ].upeElement =
+		createdStripePaymentElement;
 	return createdStripePaymentElement;
 }
 
 /**
  * Appends a hidden input field with the confirmed setup intent ID to the provided form.
  *
- * @param {HTMLElement} $form The HTML form element to which the input field will be appended.
- * @param {Object} confirmedIntent The confirmed setup intent object containing the ID to be stored in the input field.
+ * @param {HTMLElement} $form           The HTML form element to which the input field will be appended.
+ * @param {Object}      confirmedIntent The confirmed setup intent object containing the ID to be stored in the input field.
  */
 function appendSetupIntentToForm( $form, confirmedIntent ) {
 	const input = document.createElement( 'input' );
@@ -309,10 +316,10 @@ function appendSetupIntentToForm( $form, confirmedIntent ) {
  * Mounts the existing Stripe Payment Element to the DOM element.
  * Creates the Stipe Payment Element instance if it doesn't exist and mounts it to the DOM element.
  *
- * @param {Object} api The API object.
- * @param {string} domElement The selector of the DOM element of particular payment method to mount the UPE element to.
+ * @param {Object} api              The API object.
+ * @param {string} domElement       The selector of the DOM element of particular payment method to mount the UPE element to.
  * @param {string} elementsLocation Thhe location of the UPE element.
- **/
+ */
 export async function mountStripePaymentElement(
 	api,
 	domElement,
@@ -377,9 +384,9 @@ export async function mountStripePaymentElement(
 /**
  * Creates and confirms a setup intent using the provided ID, then appends the confirmed setup intent to the given jQuery form.
  *
- * @param {Object} id Payment method object ID.
+ * @param {Object} id    Payment method object ID.
  * @param {Object} $form The jQuery object for the form to which the confirmed setup intent will be appended.
- * @param {Object} api The API object with the setupIntent method to create and confirm the setup intent.
+ * @param {Object} api   The API object with the setupIntent method to create and confirm the setup intent.
  *
  * @return {Promise} A promise that resolves when the setup intent is confirmed and appended to the form.
  */
@@ -415,8 +422,8 @@ export function renderTerms( event ) {
  * object and appends the necessary data to the form for checkout completion. Finally, it submits the form and prevents
  * the default form submission from WC Core.
  *
- * @param {Object} api The API object used to create the Stripe payment method.
- * @param {Object} jQueryForm The jQuery object for the form being submitted.
+ * @param {Object} api               The API object used to create the Stripe payment method.
+ * @param {Object} jQueryForm        The jQuery object for the form being submitted.
  * @param {string} paymentMethodType The type of Stripe payment method being used.
  * @return {boolean} return false to prevent the default form submission from WC Core.
  */
@@ -436,9 +443,8 @@ export const processPayment = (
 		try {
 			await blockUI( $form );
 
-			const { elements, hasLoadError } = gatewayUPEComponents[
-				paymentMethodType
-			];
+			const { elements, hasLoadError } =
+				gatewayUPEComponents[ paymentMethodType ];
 
 			if ( hasLoadError ) {
 				throw new Error(

@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.3
-Stable tag: 10.4.0
+Stable tag: 10.7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,223 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 10.7.1 - 2026-04-16 =
+* Fix - Fix changelog entries for 10.7.0 release.
+
+= 10.7.0 - 2026-04-15 =
+* Add - Add client-side async price renderer for cache-optimized multi-currency mode
+* Add - Add digital product/service evidence matrix entries for all dispute reasons
+* Add - Added dispute evidence document suggestions for the Other product type across all dispute reasons.
+* Add - Add event product type evidence matrix entries for all dispute reasons
+* Add - Add evidence matrix entries for physical_product disputes and fix cover letter attachment ordering
+* Add - Add fonts.wp.com to the WooPay font domain allow list so merchants using Automattic's GDPR-compliant font proxy see their theme fonts in WooPay checkout.
+* Add - Add offline service evidence matrix entries for all dispute reasons
+* Add - Enable WooPay themed checkout from all entry points, including merchant font rendering.
+* Add - feat: add tool to manually clear computed styles cache
+* Add - Re-introduce asynchronous customer updates as an optimization of the checkout process.
+* Add - Send WooCommerce store ID to the server with onboarding and account requests for Tracks event attribution
+* Fix - Accept account_data parameter in test-drive account init endpoint
+* Fix - Add defensive checks before initializing WC_Payments_Captured_Event_Note to prevent fatal errors when timeline data is missing or malformed.
+* Fix - Add fallback skeleton styles for WooCommerce versions before 10.2
+* Fix - Add Link payment method token support in subscription payment method change order notes
+* Fix - Add visible focus indicator to WooPay express checkout button for WCAG 2.4.7 compliance
+* Fix - Change WooPay express button to an anchor element when first-party auth is enabled for correct screen reader semantics.
+* Fix - Convert screen-reader text to target currency in cache-optimized multi-currency mode
+* Fix - Disable auto-complete hooks for inactive accounts.
+* Fix - Enable first-party auth for stores running adapted extensions (Points & Rewards, Gift Cards)
+* Fix - feat: allow translation of Stripe card error messages at checkout
+* Fix - fix: amazon pay manual capture compatibility
+* Fix - fix: avoid fatal error on invalid currency option in DB
+* Fix - fix: ensure that page doesn't crash if wallet icon is missing
+* Fix - fix: express checkout to show recurring subscription info for free trial subscriptions with sign-up fees, not just pure $0 free trials
+* Fix - fix: MCCY tooltip messaging for payment methods supporting multiple currencies now uses "or" instead of "and"
+* Fix - fix: prevent payment error string being written in the order meta
+* Fix - fix: trim whitespace for postcode at checkout
+* Fix - fix: unit tests after new WC version
+* Fix - Fix active plugin list being empty on older WooCommerce versions
+* Fix - Fix additional wc pay tracking call on order creation
+* Fix - Fix Apple Pay manual capture error when using confirmation tokens
+* Fix - Fix Docker preflight skipping infrastructure startup when database container is missing
+* Fix - Fix Docker setup: regenerate .htaccess rewrite rules and skip WooCommerce onboarding wizard to prevent blank screens
+* Fix - Fix email confirmation field not appearing on first-time email setup
+* Fix - Fix express checkout incompatibility with the Add to Cart with Options block by using a div placeholder instead of button and updating product page DOM selectors
+* Fix - Fix fatal error when themes use ref objects in theme.json for style values like fontFamily
+* Fix - Fix multi-currency cache mode: retain geolocation currency across session creation and Store API requests
+* Fix - Fix NOX in-context onboarding flow detection from referer URL
+* Fix - Fix reset account modal always hiding pre-reset guidance steps
+* Fix - Fix Stripe Payment Element losing styling on shortcode checkout with non-standard themes like Avada
+* Fix - Fix test card copy button using wrong font on themes with button font overrides
+* Fix - Fix undefined index warning when store country is empty in terminal locations controller
+* Fix - Fix WooPay admin preview footer card logo sizing and layout at narrow widths.
+* Fix - Fix WooPay Direct Checkout not working in iAPI mini-cart (WooCommerce 10.4+)
+* Fix - Fix WooPay themed checkout header color not applied when template part is nested inside a wrapper block
+* Fix - Handle duplicate KYC session initialization gracefully
+* Fix - Harden public multi-currency config REST endpoint with permission callback
+* Fix - Improve cover letter print preview to safely render content.
+* Fix - Intermittent empty cart after switching from guest to an existing customer
+* Fix - Invalidate multi-currency exchange rate cache when the store base currency changes.
+* Fix - Prevent caching empty disputes list on API failure, which could hide active disputes from admin task list
+* Fix - Prevent unnecessary Stripe JS and express checkout scripts from loading when no express checkout methods are actually available
+* Fix - Refresh account cache after card reader registration.
+* Fix - Remove unnecessary confirmation modal when disabling payment methods on the settings page
+* Fix - Remove validator npm dependency and replace with inline email validation
+* Fix - Resolve block pattern references and style variations when extracting WooPay header/footer appearance colors from block theme template parts.
+* Fix - Skeleton loader styling issue when step numbers are enabled on checkout blocks
+* Update - Align payment method notice copy with Figma designs
+* Update - chore: add key validation to failed order received message
+* Update - feat: update e2e tests coverage
+* Update - Moved multi-currency store settings state to Redux store
+* Update - Prevent Stripe card element from temporarily rendering country and zip fields
+* Update - refactor: payment methods settings UI reuse
+* Update - update: add better on-session error message for `authentication_required` decline
+* Update - Update the manual capture settings UI with improved modal copy, Learn more link, and a warning banner on the payment methods list when manual capture is enabled
+* Dev - Add @critical E2E smoke job for fast PR feedback and cache Playwright browsers in CI
+* Dev - Add E2E tests for async multi-currency price renderer
+* Dev - Avoid redundant Playwright install in QIT setup and skip an incompatible WC 9.9.7 analytics assertion
+* Dev - Build WCPay Dev Tools plugin after pulling updates in post-merge hook
+* Dev - Bump WC tested up to version to 10.7.0
+* Dev - chore: rename ECE constants to `shipping-limits.js`
+* Dev - chore: update browserslist / caniuse-lite database from 1.0.30001718 to 1.0.30001780
+* Dev - chore: update `validator` dependency
+* Dev - Comment: Add git worktree safety rules to AGENTS.md
+* Dev - Comment: Update AI knowledge docs from appearance cache compound analysis
+* Dev - Convert async price renderer to TypeScript and add sessionStorage caching
+* Dev - dev: Clarify terminal payment failure notification logic and add tests
+* Dev - E2E tests for the repeated checkout attempt after the card decline.
+* Dev - Extract styles cache methods from WC_Payments_Utils into dedicated WC_Payments_Styles_Cache class
+* Dev - fix: failures in e2e PW tests for blocks
+* Dev - Fix QIT E2E workflow to use PR build artifact instead of marketplace release.
+* Dev - Improve E2E setup with preflight checks, auto-build, better output, and .env.example
+* Dev - Improve E2E test reliability: guard placeOrder loop, replace waitForTimeout/networkidle, enable retries, add afterEach reloads, increase CI workers
+* Dev - Optimize webpack build process
+* Dev - refactor: move express checkout standalone button files to shortcode-buttons-express/ subdirectory
+* Dev - refactor: remove `CC_Payment_Method` in favor of `CardDefinition`
+* Dev - refactor: replace React-based express checkout availability check with vanilla TypeScript implementation
+* Dev - Refactor the update subscriptions token flow and improve test coverage.
+* Dev - Resolve WC version number instead of passing 'latest' to QIT CLI to work around invalid download URL construction.
+* Dev - Simplify core Skeleton component injection using React Context instead of prop threading
+* Dev - Skip async renderer QIT E2E tests pending environment investigation (WOOPMNT-5992).
+
+= 10.6.0 - 2026-03-11 =
+* Add - Add credit_not_processed evidence for booking/reservation (refund has been issued)
+* Add - Add E2E testing skill and automated local setup script for running Playwright E2E tests against a local Transact Platform Server
+* Add - Added local development workflow for QIT E2E tests with npm run test:qit-e2e-up, test:qit-e2e-down, and test:qit-e2e-reset commands
+* Add - Add evidence matrix entry for fraudulent × physical product dispute combination
+* Add - Add evidence matrix entry for product not received × physical product dispute combination
+* Add - Add evidence matrix entry for Product Unacceptable + Booking/Reservation disputes
+* Add - Add evidence matrix support for credit_not_processed × booking_reservation (refund was not owed) dispute combination
+* Add - Add feature flag and admin UI setting for cache-optimized multi-currency rendering mode
+* Add - Add infrastructure for displaying express checkout methods (Apple Pay, Google Pay, Amazon Pay) in the payment methods list. Requires WooCommerce 10.6.0+ or dev mode.
+* Add - Add proof of delivery evidence upload to shipping details page for product not received disputes
+* Add - Add REST API endpoint and skeleton markup for cache-optimized multi-currency rendering
+* Add - Add WooPayments review prompt on Payments Settings page
+* Add - feat: add Amazon Pay subscriptions support
+* Add - feat: add mccy merchant orders e2e tests
+* Add - feat: enable amazon pay by default
+* Add - Store ipp_channel from Stripe intent metadata on WooCommerce orders and suppress IPP receipt email for POS orders
+* Add - Surface WooPayments support phone number status in the System Status Report.
+* Fix - Add email confirmation field and warning notice to account notification email settings to prevent typos and improve security awareness
+* Fix - Auto-focus the search input in the Add/remove currencies modal for improved usability
+* Fix - fix: address formatting in disputes
+* Fix - fix: checkout errors with plugins that dynamically change currency
+* Fix - fix: display ECE buttons on pay-for-order pages
+* Fix - fix: ensure that subscriptions with free trials are consistently handled by the ECE
+* Fix - fix: notice on cart block
+* Fix - fix: shipping rates on ECE for subscriptions with free trial
+* Fix - fix: WooPay & Stripe Link mutual compatibility in settings
+* Fix - fix: WooPay typo when saving customer
+* Fix - Fixed duplicate payment method dismissed notices option type from bool to array, allowing notice dismissals to persist across page refreshes.
+* Fix - Fixed iDEAL / Wero logo: removed baked-in stroke causing double border in admin, fixed missing rounded corners on checkout, consolidated into a single SVG file, and added dark mode icon for night theme checkout
+* Fix - Fixed stale WP object cache entries persisting after cache invalidation on sites with Memcached/Redis.
+* Fix - Fixed WooPayments incorrectly shown as incompatible with block-based checkout in the editor
+* Fix - Fix express checkout buttons appearing on block-based cart when the cart location is unchecked in display settings.
+* Fix - Fix fatal error when WC_Payments_Explicit_Price_Formatter class is loaded before loan approved note
+* Fix - Fix flaky disputes E2E test by polling for saved evidence instead of asserting stale state
+* Fix - Fix memory exhaustion and null customer fatal errors in BNPL site messaging on product and cart pages
+* Fix - Fix Stripe IntegrationError for invalid currency when canMakePayment is called during WC Blocks store hydration
+* Fix - Fix the case of double exchange rate applied to the displayed fee amount in some scenarios.
+* Fix - Fix the logic of the WooPay button on single product pages.
+* Fix - Fix themed checkout extracting incorrect accent/link colors by using more specific CSS selectors for links, headers, and footers
+* Fix - Fix translation pattern in admin authentication email templates to use esc_html_x for proper i18n support
+* Fix - Fix WCPay account defaulting to Test mode when user selects Live during onboarding
+* Update - chore: remove subscriptions SCA dead code
+* Update - fix: ECE previews on block editor; Add amazon pay preview in block editor.
+* Update - fix: WC Beta unit tests compatibility
+* Update - Improve messaging when WooPayments is forced into test-only mode by environment configuration
+* Update - refactor: change UI of dynamic place order button settings
+* Update - refactor: deprecate is_amazon_pay_enabled setting in favor of enabled_payment_method_ids
+* Update - Replace old external icon with new arrow symbol on Preview cover letter button in disputes
+* Update - Updated iDEAL branding to 'iDEAL / Wero' for Wero brand transition compliance.
+* Update - Update evidence matrix for Product Not Received + Booking/Reservation disputes
+* Update - Use disputed amount to create a refund for lost disputes instead of an order total. Provide dispute fees and costs in the order view.
+* Dev - Add agent-address-comments workflow for automated PR comment resolution
+* Dev - Add architecture documentation and reference guides to CLAUDE.md
+* Dev - Add internal documentation for WooPayments Mode system (dev/test/live mode hierarchy)
+* Dev - Add PR reviewer and label requirements to CLAUDE.md
+* Dev - Add root AGENTS.md symlink for cross-agent discoverability
+* Dev - Align .claude/ documentation structure with CIAB Admin conventions.
+* Dev - Bump WC tested up to version to 10.6.0
+* Dev - chore: move ECE utilities into separate files
+* Dev - chore: rename option for dynamic place order button
+* Dev - Comment: Add agent pipeline review stage with compound reviewer and WCPay-specific review rules
+* Dev - Comment: Make AGENTS.md the primary agent guidelines file, CLAUDE.md references it via @AGENTS.md per fieldguide
+* Dev - Fix flaky disputes e2e test by retrying field fill against async overwrite
+* Dev - Fix lint-staged to only lint staged CSS/SCSS files instead of all files.
+* Dev - Remove server-side appearance caching in favor of client-side caching
+* Dev - Respect custom dev-tools path in Docker setup script via local.env.
+* Dev - Show QIT report URL in CI workflow logs
+
+= 10.5.1 - 2026-02-11 =
+* Fix - Cache the affected orders check for the canceled auth fee remediation note to avoid an expensive query on every admin page load
+
+
+= 10.5.0 - 2026-02-05 =
+* Add - Add "Other" and "Booking/Reservation" product type support for dispute evidence (feature flag gated)
+* Add - Add ability to specify preferred communications email.
+* Add - Add evidence matrix entry for subscription_canceled + booking_reservation dispute combination
+* Add - Add remediation tool to fix incorrect analytics data from canceled authorizations
+* Add - feat: add Amazon Pay settings storage
+* Add - feat: add confirmation tokens feature flag
+* Add - feat: Amazon Pay ECE button front-end implementation
+* Add - Show an informative notice when a previously eligible merchant loses instant payout eligibility, instead of silently hiding the button.
+* Fix - Allow subscription renewals with saved Link payment tokens even when Link is disabled at checkout
+* Fix - fix: payment method title displayed on page editor for block-based checkout page
+* Fix - fix: subscription behavior with confirmation tokens
+* Fix - fix: text wrap of google pay/apple pay descriptions
+* Fix - Fix E2E test for non-admin WP-Admin access to expect 'Connected' instead of 'Complete' account status.
+* Fix - Fixed fatal error in email preview when viewing third-party plugin emails
+* Fix - Fixed iDEAL logo sizing in checkout to match other payment method logos.
+* Fix - Fix exit survey option not being preserved due to string type validation failure.
+* Fix - Fix migration log file cleanup compatibility with WooCommerce 8.6+.
+* Fix - Fix REST schema type for stripe_billing_subscription_count and stripe_billing_migrated_count from 'int' to 'integer'
+* Fix - Fix the case of double exchange rate applied to the displayed fee amount in some scenarios.
+* Fix - Fix the logic of the WooPay button on single product pages.
+* Fix - Improved subscription migration log file merging to use stream-based operations for memory efficiency and preserve chronological order.
+* Fix - Make sure that nonces are loaded correctly for the Add Payment Method page.
+* Fix - Prevent fatal error on sites running WooCommerce Subscriptions < 5.0.0 by not instantiating the Stripe Billing migrator when required functions are unavailable.
+* Fix - Update AVS Mismatch fraud filter copy to remove street check
+* Fix - Update dispute evidence fields to match specification document
+* Update - Bump the minimum required PHP version to 7.4
+* Update - chore: update Alipay/WeChat Pay settings descriptions to state restrictions with regional versions
+* Update - Improved and simplified Visa Compliance dispute screen.
+* Update - refactor: ECE to use confirmation tokens instead of payment methods
+* Update - Tested up to WooCommerce 10.5.0
+* Update - update: allow server-side control of confirmation token logic
+* Update - Use badge component in 'Respond by' column of the Disputes table for consistency with the 'Response needed' status badge
+* Dev - Add error logging for embedded KYC session failures to improve debugging.
+* Dev - Add non-interactive changelog command for automation
+* Dev - Add QIT E2E workflows for PR, scheduled, and pre-release testing with L-1 WooCommerce version support.
+* Dev - Add WooCommerce core reference instructions to Claude Code configuration
+* Dev - Bump the version of WP in tested up to readme
+* Dev - chore: removed unused entries from the `wcpay_payment_fields_js_config` filter; ensured single call of the `wcpay_payment_fields_js_config` filter;
+* Dev - chore: remove unused ECE utilities
+* Dev - Clean up after rolling out the new Account Details in the Overview page.
+* Dev - Migrate subscription E2E tests to QIT test-package infrastructure.
+* Dev - refactor: scoping of UPE utilities at checkout
+* Dev - Remove flaky E2E admin analytics test in favor of QIT coverage
+* Dev - Stop using dynamic keys for the database cache and move cached payment methods to user meta.
+* Dev - [E2E][QIT] Migrate shopper subscription E2E test specs to QIT test-package
 
 = 10.4.0 - 2026-01-07 =
 * Add - Add duplicate charge documentation field for "Not Duplicate" dispute scenario.
