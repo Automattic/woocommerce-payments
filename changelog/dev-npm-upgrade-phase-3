@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Bump @woocommerce/currency, @woocommerce/explat, and @woocommerce/number to latest minor versions
