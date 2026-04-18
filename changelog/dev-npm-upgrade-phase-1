@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Phase 1 npm upgrades: bump dev-tooling packages (ts-jest, ts-loader, playwright, @wordpress/jest-*, @wordpress/babel-*, @wordpress/browserslist-config)
