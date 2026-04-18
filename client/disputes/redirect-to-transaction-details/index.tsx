@@ -26,7 +26,7 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 			const transactionDetailsUrl = getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
-				id: dispute.charge.payment_intent,
+				id: dispute.payment_intent,
 				transaction_id: dispute.charge.balance_transaction,
 				type: 'dispute',
 			} );
