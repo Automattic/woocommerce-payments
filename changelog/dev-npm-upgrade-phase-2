@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Phase 2 npm upgrades: bump @testing-library/{react,jest-dom,dom}; @testing-library/user-event deferred to follow-up
