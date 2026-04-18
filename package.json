@@ -110,7 +110,7 @@
 		"@babel/eslint-parser": "7.28.6",
 		"@emotion/jest": "11.13.0",
 		"@jest/test-sequencer": "29.5.0",
-		"@playwright/test": "1.51.1",
+		"@playwright/test": "1.59.1",
 		"@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
 		"@slack/web-api": "7.9.2",
 		"@testing-library/jest-dom": "5.17.0",
