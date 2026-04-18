@@ -36,24 +36,6 @@ const transactionTypesOptions = Object.entries( displayType )
 		return el != null;
 	} );
 
-const loanDefinitions =
-	typeof wcpaySettings !== 'undefined'
-		? wcpaySettings.accountLoans.loans
-		: [];
-
-const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
-	const loanDefinitionSplitted = loanDefinition.split( '|' );
-	const loanDisplayValue = sprintf(
-		'ID: %s | %s',
-		loanDefinitionSplitted[ 0 ],
-		loanDefinitionSplitted[ 1 ] === 'active'
-			? __( 'In Progress', 'woocommerce-payments' )
-			: __( 'Paid in Full', 'woocommerce-payments' )
-	);
-
-	return { label: loanDisplayValue, value: loanDefinitionSplitted[ 0 ] };
-}, [] );
-
 const transactionSourceDeviceOptions = Object.entries( sourceDevice ).map(
 	( [ type, label ] ) => {
 		return { label, value: type };
@@ -157,7 +139,7 @@ export const getAdvancedFilters = (
 	const wooCommerceVersionString = getSetting( 'wcVersion' );
 	const wooCommerceVersion = parseFloat( wooCommerceVersionString ); // This will parse 7.7.1 to 7.7, but it's fine for this purpose
 
-	return {
+	const advancedFilters: any = {
 		/** translators: A sentence describing filters for Transactions. */
 		title:
 			wooCommerceVersion < 7.8
@@ -362,30 +344,6 @@ export const getAdvancedFilters = (
 				input: {
 					component: 'SelectControl',
 					options: transactionTypesOptions,
-				},
-			},
-			loan_id_is: {
-				labels: {
-					add: __( 'Loan', 'woocommerce-payments' ),
-					remove: __( 'Remove loan filter', 'woocommerce-payments' ),
-					rule: __( 'Select a loan', 'woocommerce-payments' ),
-					/* translators: A sentence describing a Loan ID filter. */
-					title:
-						wooCommerceVersion < 7.8
-							? __(
-									'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
-									'woocommerce-payments'
-							  )
-							: __(
-									'<title>Loan</title> <rule /> <filter />',
-									'woocommerce-payments'
-							  ),
-					filter: __( 'Select a loan', 'woocommerce-payments' ),
-				},
-				input: {
-					component: 'SelectControl',
-					type: 'loans',
-					options: loanSelectionOptions,
 				},
 			},
 			source_device: {
@@ -593,5 +551,52 @@ export const getAdvancedFilters = (
 			},
 		},
 	};
+
+	const loanDefinitions = wcpaySettings?.accountLoans?.loans ?? [];
+
+	const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
+		const loanDefinitionSplitted = loanDefinition.split( '|' );
+		const loanDisplayValue = sprintf(
+			'ID: %s | %s',
+			loanDefinitionSplitted[ 0 ],
+			loanDefinitionSplitted[ 1 ] === 'active'
+				? __( 'In Progress', 'woocommerce-payments' )
+				: __( 'Paid in Full', 'woocommerce-payments' )
+		);
+
+		return {
+			label: loanDisplayValue,
+			value: loanDefinitionSplitted[ 0 ],
+		};
+	}, [] );
+
+	if ( loanSelectionOptions.length > 0 ) {
+		advancedFilters.filters.loan_id_is = {
+			labels: {
+				add: __( 'Loan', 'woocommerce-payments' ),
+				remove: __( 'Remove loan filter', 'woocommerce-payments' ),
+				rule: __( 'Select a loan', 'woocommerce-payments' ),
+				/* translators: A sentence describing a Loan ID filter. */
+				title:
+					wooCommerceVersion < 7.8
+						? __(
+								'{{title}}Loan{{/title}} {{rule /}} {{filter /}}',
+								'woocommerce-payments'
+						  )
+						: __(
+								'<title>Loan</title> <rule /> <filter />',
+								'woocommerce-payments'
+						  ),
+				filter: __( 'Select a loan', 'woocommerce-payments' ),
+			},
+			input: {
+				component: 'SelectControl',
+				type: 'loans',
+				options: loanSelectionOptions,
+			},
+		};
+	}
+
+	return advancedFilters;
 };
 /*eslint-enable max-len*/
