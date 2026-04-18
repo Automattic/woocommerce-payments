@@ -552,10 +552,7 @@ export const getAdvancedFilters = (
 		},
 	};
 
-	const loanDefinitions =
-		typeof wcpaySettings !== 'undefined'
-			? wcpaySettings.accountLoans.loans
-			: [];
+	const loanDefinitions = wcpaySettings?.accountLoans?.loans ?? [];
 
 	const loanSelectionOptions = loanDefinitions.map( ( loanDefinition ) => {
 		const loanDefinitionSplitted = loanDefinition.split( '|' );
