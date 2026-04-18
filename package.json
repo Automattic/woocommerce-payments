@@ -243,6 +243,7 @@
 		},
 		"@woocommerce/eslint-plugin": {
 			"@wordpress/eslint-plugin": "15.1.0"
-		}
+		},
+		"nwsapi": "2.2.12"
 	}
 }
