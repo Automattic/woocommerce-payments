@@ -12,6 +12,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { TransactionsFilters } from '../';
+import { getAdvancedFilters } from '../config';
 import { Transaction } from 'wcpay/data';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,
@@ -469,30 +470,24 @@ describe( 'Transactions filters', () => {
 			const g = global as any;
 			const originalLoans = g.wcpaySettings.accountLoans.loans;
 			g.wcpaySettings.accountLoans.loans = [];
-
-			jest.resetModules();
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			const { getAdvancedFilters } = require( '../config' );
-			const filters = getAdvancedFilters();
-
-			expect( filters.filters.loan_id_is ).toBeUndefined();
-
-			g.wcpaySettings.accountLoans.loans = originalLoans;
+			try {
+				const filters = getAdvancedFilters();
+				expect( filters.filters.loan_id_is ).toBeUndefined();
+			} finally {
+				g.wcpaySettings.accountLoans.loans = originalLoans;
+			}
 		} );
 
 		test( 'should show Loan filter when loans are available', () => {
 			const g = global as any;
 			const originalLoans = g.wcpaySettings.accountLoans.loans;
 			g.wcpaySettings.accountLoans.loans = [ 'flxln_123456|active' ];
-
-			jest.resetModules();
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			const { getAdvancedFilters } = require( '../config' );
-			const filters = getAdvancedFilters();
-
-			expect( filters.filters.loan_id_is ).toBeDefined();
-
-			g.wcpaySettings.accountLoans.loans = originalLoans;
+			try {
+				const filters = getAdvancedFilters();
+				expect( filters.filters.loan_id_is ).toBeDefined();
+			} finally {
+				g.wcpaySettings.accountLoans.loans = originalLoans;
+			}
 		} );
 	} );
 
