@@ -311,4 +311,17 @@ class Abilities_Registrar_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'woopayments_missing_dispute_id', $result->get_error_code() );
 	}
+
+	/**
+	 * Regression test: executing any read ability must not fatal. If a required
+	 * controller constructor argument is missing, the Phase 6 harness catches it,
+	 * but this unit test shortens the feedback loop.
+	 */
+	public function test_execute_get_payout_overview_does_not_fatal(): void {
+		$result = Abilities_Registrar::execute_get_payout_overview( [] );
+		// On a bootstrapped test env the call either returns data (array) or a
+		// deliberate WP_Error. A PHP fatal would abort the test process, so the
+		// mere fact that we reach this assertion is the regression check.
+		$this->assertTrue( is_array( $result ) || $result instanceof \WP_Error );
+	}
 }

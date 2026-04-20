@@ -338,7 +338,18 @@ class Abilities_Registrar {
 			);
 		}
 
-		$controller = new \WC_REST_Payments_Deposits_Controller();
+		$api_client = null;
+		if ( class_exists( '\WC_Payments' ) && method_exists( '\WC_Payments', 'get_payments_api_client' ) ) {
+			$api_client = \WC_Payments::get_payments_api_client();
+		}
+		if ( null === $api_client ) {
+			return new \WP_Error(
+				'woopayments_not_initialized',
+				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
+			);
+		}
+
+		$controller = new \WC_REST_Payments_Deposits_Controller( $api_client );
 		$response   = $controller->get_all_deposits_overviews();
 
 		if ( is_wp_error( $response ) ) {
@@ -383,6 +394,17 @@ class Abilities_Registrar {
 			);
 		}
 
+		$api_client = null;
+		if ( class_exists( '\WC_Payments' ) && method_exists( '\WC_Payments', 'get_payments_api_client' ) ) {
+			$api_client = \WC_Payments::get_payments_api_client();
+		}
+		if ( null === $api_client ) {
+			return new \WP_Error(
+				'woopayments_not_initialized',
+				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
+			);
+		}
+
 		$request = new \WP_REST_Request( $http_method, $route );
 		if ( null !== $input ) {
 			foreach ( $input as $param => $value ) {
@@ -390,7 +412,7 @@ class Abilities_Registrar {
 			}
 		}
 
-		$controller = new $fqcn();
+		$controller = new $fqcn( $api_client );
 		$response   = $controller->{$method}( $request );
 
 		if ( is_wp_error( $response ) ) {
