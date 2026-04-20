@@ -253,4 +253,15 @@ class Abilities_Registrar_Test extends WCPAY_UnitTestCase {
 			'Administrators must be able to execute get-account-status.'
 		);
 	}
+
+	/**
+	 * Executes the dispute-detail ability with no dispute_id and asserts it returns
+	 * a WP_Error with code woopayments_missing_dispute_id. Establishes the
+	 * execute-path assertion pattern that Phase 5's write ability will extend.
+	 */
+	public function test_get_dispute_detail_returns_wp_error_when_dispute_id_missing(): void {
+		$result = Abilities_Registrar::execute_get_dispute_detail( [] );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'woopayments_missing_dispute_id', $result->get_error_code() );
+	}
 }

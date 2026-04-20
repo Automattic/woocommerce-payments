@@ -157,6 +157,11 @@ class Abilities_Registrar {
 	 *                         request fails.
 	 */
 	public static function execute_get_transactions( $input = null ) {
+		$date_error = self::validate_iso8601_dates( $input, [ 'date_before', 'date_after' ] );
+		if ( null !== $date_error ) {
+			return $date_error;
+		}
+
 		return self::delegate_to_rest_controller(
 			'WC_REST_Payments_Reports_Transactions_Controller',
 			'get_transactions',
@@ -179,11 +184,18 @@ class Abilities_Registrar {
 	 *                         request fails.
 	 */
 	public static function execute_get_disputes( $input = null ) {
+		$date_error = self::validate_iso8601_dates( $input, [ 'date_before', 'date_after' ] );
+		if ( null !== $date_error ) {
+			return $date_error;
+		}
+
+		$input = self::translate_pagination_keys( is_array( $input ) ? $input : null );
+
 		return self::delegate_to_rest_controller(
 			'WC_REST_Payments_Disputes_Controller',
 			'get_disputes',
 			'/wc/v3/payments/disputes',
-			is_array( $input ) ? $input : null
+			$input
 		);
 	}
 
@@ -201,7 +213,7 @@ class Abilities_Registrar {
 	 *                         is missing, or the remote request fails.
 	 */
 	public static function execute_get_dispute_detail( $input = null ) {
-		if ( ! is_array( $input ) || empty( $input['dispute_id'] ) ) {
+		if ( ! is_array( $input ) || ! isset( $input['dispute_id'] ) || ! is_string( $input['dispute_id'] ) || '' === $input['dispute_id'] ) {
 			return new \WP_Error(
 				'woopayments_missing_dispute_id',
 				__( 'A dispute_id is required to fetch dispute detail.', 'woocommerce-payments' )
@@ -230,11 +242,18 @@ class Abilities_Registrar {
 	 *                         request fails.
 	 */
 	public static function execute_get_payouts( $input = null ) {
+		$date_error = self::validate_iso8601_dates( $input, [ 'date_before', 'date_after' ] );
+		if ( null !== $date_error ) {
+			return $date_error;
+		}
+
+		$input = self::translate_pagination_keys( is_array( $input ) ? $input : null );
+
 		return self::delegate_to_rest_controller(
 			'WC_REST_Payments_Deposits_Controller',
 			'get_deposits',
 			'/wc/v3/payments/deposits',
-			is_array( $input ) ? $input : null
+			$input
 		);
 	}
 
@@ -286,13 +305,15 @@ class Abilities_Registrar {
 	 * @param string     $method           Controller method to invoke on the built request.
 	 * @param string     $route            REST route string used when constructing WP_REST_Request.
 	 * @param array|null $input            Ability input; each key/value becomes a request param.
+	 * @param string     $http_method      HTTP method for the WP_REST_Request. Defaults to 'GET'; Phase 5's write ability will pass 'POST'.
 	 * @return array|\WP_Error             Response payload as an array, or WP_Error on failure.
 	 */
 	private static function delegate_to_rest_controller(
 		string $controller_class,
 		string $method,
 		string $route,
-		?array $input
+		?array $input,
+		string $http_method = 'GET'
 	) {
 		$fqcn = '\\' . $controller_class;
 		if ( ! class_exists( $fqcn ) ) {
@@ -302,7 +323,7 @@ class Abilities_Registrar {
 			);
 		}
 
-		$request = new \WP_REST_Request( 'GET', $route );
+		$request = new \WP_REST_Request( $http_method, $route );
 		if ( null !== $input ) {
 			foreach ( $input as $param => $value ) {
 				$request->set_param( $param, $value );
@@ -325,6 +346,69 @@ class Abilities_Registrar {
 	}
 
 	/**
+	 * Translate pagination keys for abilities that back Paginated::from_rest_request —
+	 * the shared WooPayments paginated request class reads `pagesize`, not `per_page`.
+	 * Abilities expose `per_page` for consistency; this helper bridges the two.
+	 *
+	 * @param array|null $input Ability input (or null).
+	 * @return array|null       Input with `per_page` rewritten to `pagesize` when present.
+	 */
+	private static function translate_pagination_keys( $input ) {
+		if ( ! is_array( $input ) ) {
+			return $input;
+		}
+		if ( isset( $input['per_page'] ) ) {
+			$input['pagesize'] = $input['per_page'];
+			unset( $input['per_page'] );
+		}
+		return $input;
+	}
+
+	/**
+	 * Validate optional ISO 8601 date-time strings in ability input.
+	 *
+	 * Returns a WP_Error on malformed input, or null if all dates are valid / absent.
+	 *
+	 * @param mixed    $input Ability input; non-array input is treated as having no dates to validate.
+	 * @param string[] $keys  Input keys to check for ISO 8601 date-time values.
+	 * @return \WP_Error|null WP_Error when any listed key holds a malformed value, null otherwise.
+	 */
+	private static function validate_iso8601_dates( $input, array $keys ) {
+		if ( ! is_array( $input ) ) {
+			return null;
+		}
+		foreach ( $keys as $key ) {
+			if ( ! isset( $input[ $key ] ) || '' === $input[ $key ] ) {
+				continue;
+			}
+			$value = $input[ $key ];
+			if ( ! is_string( $value ) ) {
+				return new \WP_Error(
+					'woopayments_invalid_date',
+					sprintf(
+						/* translators: %s: input parameter name. */
+						__( 'The "%s" parameter must be an ISO 8601 date-time string.', 'woocommerce-payments' ),
+						$key
+					)
+				);
+			}
+			// Accept either a full date-time or a bare date — both are common agent inputs
+			// and the backing endpoints will accept either. Reject anything else.
+			if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2}))?$/', $value ) ) {
+				return new \WP_Error(
+					'woopayments_invalid_date',
+					sprintf(
+						/* translators: %s: input parameter name. */
+						__( 'The "%s" parameter must be an ISO 8601 date-time string.', 'woocommerce-payments' ),
+						$key
+					)
+				);
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Register the woopayments/get-transactions ability.
 	 *
 	 * Lists WooPayments transactions using the report-shaped schema so agents
@@ -339,51 +423,72 @@ class Abilities_Registrar {
 			'woopayments/get-transactions',
 			[
 				'label'               => __( 'List WooPayments transactions', 'woocommerce-payments' ),
-				'description'         => __( 'Lists WooPayments transactions using the stable, report-shaped schema (transaction_id, date, payment_id, channel, payment_method, type, currency, amount, fees, customer, deposit status). Supports date, pagination, and basic filter parameters.', 'woocommerce-payments' ),
+				'description'         => __( 'Lists WooPayments transactions using the stable, report-shaped schema (transaction_id, date, payment_id, channel, payment_method, type, currency, amount, fees, customer, deposit status). Supports date, pagination, and basic filter parameters. Returns a single page (default 25, max 100). Iterate by incrementing `page`, or narrow with `date_after`/`date_before` for large result sets.', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => [
 					'type'                 => 'object',
 					'default'              => [],
 					'properties'           => [
-						'page'        => [
+						'page'                => [
 							'type'        => 'integer',
 							'minimum'     => 1,
 							'default'     => 1,
 							'description' => __( 'Page number.', 'woocommerce-payments' ),
 						],
-						'per_page'    => [
+						'per_page'            => [
 							'type'        => 'integer',
 							'minimum'     => 1,
 							'maximum'     => 100,
 							'default'     => 25,
 							'description' => __( 'Number of transactions per page.', 'woocommerce-payments' ),
 						],
-						'date_before' => [
+						'date_before'         => [
 							'type'        => 'string',
 							'format'      => 'date-time',
 							'description' => __( 'Filter transactions before this date.', 'woocommerce-payments' ),
 						],
-						'date_after'  => [
+						'date_after'          => [
 							'type'        => 'string',
 							'format'      => 'date-time',
 							'description' => __( 'Filter transactions after this date.', 'woocommerce-payments' ),
 						],
-						'match'       => [
+						'match'               => [
 							'type'        => 'string',
 							'enum'        => [ 'and', 'or' ],
 							'default'     => 'and',
 							'description' => __( 'Logical operator applied when combining filters.', 'woocommerce-payments' ),
 						],
-						'sort'        => [
+						'sort'                => [
 							'type'        => 'string',
 							'default'     => 'date',
 							'description' => __( 'Field on which to sort.', 'woocommerce-payments' ),
 						],
-						'direction'   => [
+						'direction'           => [
 							'type'        => 'string',
 							'enum'        => [ 'asc', 'desc' ],
 							'default'     => 'desc',
 							'description' => __( 'Sort direction.', 'woocommerce-payments' ),
+						],
+						// Canonical agent lookups — the broader List_Transactions filter surface
+						// (type_is_in, source_device_is, channel_is, store_currency_is, deposit_id, etc.)
+						// is deliberately out of scope for the initial shipment and can be added in a follow-up.
+						'type'                => [
+							'type'        => 'string',
+							'description' => __( 'Filter to transactions of a specific type (e.g. "charge", "refund", "payment"). Validation is delegated to the backing controller.', 'woocommerce-payments' ),
+						],
+						'order_id'            => [
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'description' => __( 'Filter to transactions linked to a specific WooCommerce order ID.', 'woocommerce-payments' ),
+						],
+						'customer_email'      => [
+							'type'        => 'string',
+							'format'      => 'email',
+							'description' => __( 'Filter to transactions for a specific customer email address.', 'woocommerce-payments' ),
+						],
+						'payment_method_type' => [
+							'type'        => 'string',
+							'description' => __( 'Filter to transactions paid with a specific payment method type (e.g. "card", "link").', 'woocommerce-payments' ),
 						],
 					],
 					'additionalProperties' => false,
@@ -428,7 +533,7 @@ class Abilities_Registrar {
 			'woopayments/get-disputes',
 			[
 				'label'               => __( 'List WooPayments disputes', 'woocommerce-payments' ),
-				'description'         => __( 'Lists WooPayments disputes. Supports filtering by status (e.g. status_is=needs_response to answer "which disputes need a response?"), date range, store currency, and free-text search.', 'woocommerce-payments' ),
+				'description'         => __( 'Lists WooPayments disputes. Supports filtering by status (e.g. status_is=needs_response to answer "which disputes need a response?"), date range, store currency, and free-text search. Returns a single page (default 25, max 100). Iterate by incrementing `page`, or narrow with `date_after`/`date_before` for large result sets.', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => [
 					'type'                 => 'object',
@@ -560,7 +665,7 @@ class Abilities_Registrar {
 			'woopayments/get-payouts',
 			[
 				'label'               => __( 'List WooPayments payouts', 'woocommerce-payments' ),
-				'description'         => __( 'Lists WooPayments payouts (funds transfers from the WooPayments balance to the merchant\'s bank account). Supports filtering by status, store currency, and date range.', 'woocommerce-payments' ),
+				'description'         => __( 'Lists WooPayments payouts (funds transfers from the WooPayments balance to the merchant\'s bank account). Supports filtering by status, store currency, and date range. Returns a single page (default 25, max 100). Iterate by incrementing `page`, or narrow with `date_after`/`date_before` for large result sets.', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => [
 					'type'                 => 'object',
