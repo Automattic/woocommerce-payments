@@ -508,40 +508,15 @@ class WC_Payments_Token_Service {
 	/**
 	 * Controls the output for Amazon Pay tokens on the My Account page.
 	 *
-	 * When the funding card is known (last4 is set on the token), the item is
-	 * populated with card brand, last4, and expiry to mirror the Apple Pay /
-	 * Google Pay treatment. When no funding card is available, the redacted
-	 * customer email is used as the last4 placeholder (today's behaviour).
-	 *
 	 * @param  array                                              $item          Individual list item from woocommerce_saved_payment_methods_list.
 	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Amazon_Pay $payment_token The payment token associated with this method entry.
 	 * @return array                                            Filtered item.
 	 */
 	public function get_account_saved_payment_methods_list_item_amazon_pay( $item, $payment_token ) {
-		if ( WC_Payment_Token_WCPay_Amazon_Pay::TYPE !== strtolower( $payment_token->get_type() ) ) {
-			return $item;
+		if ( WC_Payment_Token_WCPay_Amazon_Pay::TYPE === strtolower( $payment_token->get_type() ) ) {
+			$item['method']['last4'] = $payment_token->get_email();
+			$item['method']['brand'] = esc_html__( 'Amazon Pay', 'woocommerce-payments' );
 		}
-
-		$last4 = $payment_token->get_last4();
-		if ( '' !== $last4 ) {
-			$item['method']['last4'] = $last4;
-			$item['method']['brand'] = sprintf(
-				/* translators: 1: wallet name (Amazon Pay), 2: card brand label (e.g. Visa) */
-				_x( '%1$s %2$s', 'Payment token with wallet', 'woocommerce-payments' ),
-				esc_html__( 'Amazon Pay', 'woocommerce-payments' ),
-				wc_get_credit_card_type_label( $payment_token->get_card_type() )
-			);
-			$expiry_month = $payment_token->get_expiry_month();
-			$expiry_year  = $payment_token->get_expiry_year();
-			if ( '' !== $expiry_month && '' !== $expiry_year ) {
-				$item['expires'] = $expiry_month . '/' . substr( (string) $expiry_year, -2 );
-			}
-			return $item;
-		}
-
-		// No funding card shared — keep today's email-based treatment.
-		$item['method']['last4'] = $payment_token->get_email();
-		$item['method']['brand'] = esc_html__( 'Amazon Pay', 'woocommerce-payments' );
 		return $item;
 	}
 
