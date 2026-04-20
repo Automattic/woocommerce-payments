@@ -1280,15 +1280,18 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Propagate the order's payment method and title to any subscriptions created from it.
+	 * Propagate the order's finalised payment state (gateway, title, Stripe customer/PM IDs)
+	 * to any subscriptions created from it.
 	 *
 	 * When an order flows through Express Checkout (Amazon Pay in particular), the subscription
 	 * is created before Stripe has confirmed the payment method, so the subscription inherits
-	 * the default card gateway/title. Once the real payment method is known (in
-	 * `set_payment_method_title_for_order()`), we sync it to the subscription so the
-	 * "My Subscriptions" view and future renewals use the right one.
+	 * the default card gateway/title and has no `_stripe_customer_id` / `_payment_method_id`
+	 * meta. `set_payment_method_title_for_order()` is the single chokepoint where the real
+	 * payment state is known (inline success, redirect return, webhook, setup-intent) — we
+	 * propagate all of it so the "My Subscriptions" view and future renewals run against
+	 * consistent state.
 	 *
-	 * @param \WC_Order $order The parent order whose payment method has just been finalised.
+	 * @param \WC_Order $order The parent order whose payment state has just been finalised.
 	 */
 	private function sync_payment_method_to_subscriptions( $order ) {
 		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -1302,15 +1305,32 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$payment_method       = $order->get_payment_method();
 		$payment_method_title = $order->get_payment_method_title();
+		$customer_id          = $order->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true );
+		$payment_method_id    = $order->get_meta( '_payment_method_id', true );
 
 		foreach ( $subscriptions as $subscription ) {
-			if ( $subscription->get_payment_method() === $payment_method
-				&& $subscription->get_payment_method_title() === $payment_method_title ) {
-				continue;
+			$dirty = false;
+
+			if ( $subscription->get_payment_method() !== $payment_method ) {
+				$subscription->set_payment_method( $payment_method );
+				$dirty = true;
 			}
-			$subscription->set_payment_method( $payment_method );
-			$subscription->set_payment_method_title( $payment_method_title );
-			$subscription->save();
+			if ( $subscription->get_payment_method_title() !== $payment_method_title ) {
+				$subscription->set_payment_method_title( $payment_method_title );
+				$dirty = true;
+			}
+			if ( ! empty( $customer_id ) && $subscription->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true ) !== $customer_id ) {
+				$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, $customer_id );
+				$dirty = true;
+			}
+			if ( ! empty( $payment_method_id ) && $subscription->get_meta( '_payment_method_id', true ) !== $payment_method_id ) {
+				$subscription->update_meta_data( '_payment_method_id', $payment_method_id );
+				$dirty = true;
+			}
+
+			if ( $dirty ) {
+				$subscription->save();
+			}
 		}
 	}
 

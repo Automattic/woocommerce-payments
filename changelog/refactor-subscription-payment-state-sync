@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Propagate the Stripe customer ID and payment method ID from the parent order to its subscriptions alongside the gateway and title, so subscription renewals run against consistent state.
