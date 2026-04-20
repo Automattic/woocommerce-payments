@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Register WooPayments with the WordPress Abilities API so agents can query accounts, transactions, disputes, payouts, and submit dispute evidence.
