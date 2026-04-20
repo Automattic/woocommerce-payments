@@ -1308,6 +1308,10 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$customer_id          = $order->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true );
 		$payment_method_id    = $order->get_meta( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, true );
 
+		// Gateway/title: `set_payment_method_title_for_order()` always populates these before calling
+		// sync, so we propagate unconditionally. Customer / PM ids: only set on the order on some code
+		// paths — if the order has an empty value we skip, to avoid clearing a valid value already on
+		// the subscription.
 		foreach ( $subscriptions as $subscription ) {
 			$dirty = false;
 

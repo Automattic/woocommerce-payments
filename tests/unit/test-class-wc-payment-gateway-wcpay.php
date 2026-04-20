@@ -951,7 +951,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, 'cus_same' );
 		$subscription->update_meta_data( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, 'pm_same' );
 		$subscription->save();
-		$initial_modified = $subscription->get_date_modified() ? $subscription->get_date_modified()->getTimestamp() : null;
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
 			function () use ( $subscription ) {
@@ -959,25 +958,36 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			}
 		);
 
-		// Sleep 1s so any save() would bump date_modified to a different timestamp.
-		sleep( 1 );
+		// Count `woocommerce_update_order` invocations for this subscription; the sync helper
+		// should short-circuit and fire zero when nothing changes.
+		$subscription_id = $subscription->get_id();
+		$save_count      = 0;
+		$save_count_hook = function ( $order_id ) use ( &$save_count, $subscription_id ) {
+			if ( (int) $order_id === (int) $subscription_id ) {
+				++$save_count;
+			}
+		};
+		add_action( 'woocommerce_update_order', $save_count_hook );
 
-		$this->card_gateway->set_payment_method_title_for_order(
-			$order,
-			'card',
-			[
-				'type' => 'card',
-				'card' => [
-					'brand' => 'visa',
-					'last4' => '4242',
-				],
-			]
-		);
+		try {
+			$this->card_gateway->set_payment_method_title_for_order(
+				$order,
+				'card',
+				[
+					'type' => 'card',
+					'card' => [
+						'brand' => 'visa',
+						'last4' => '4242',
+					],
+				]
+			);
+		} finally {
+			remove_action( 'woocommerce_update_order', $save_count_hook );
+		}
 
-		$after_modified = $subscription->get_date_modified() ? $subscription->get_date_modified()->getTimestamp() : null;
 		$this->assertSame(
-			$initial_modified,
-			$after_modified,
+			0,
+			$save_count,
 			'Subscription should not be re-saved when payment state already matches the parent order.'
 		);
 	}
