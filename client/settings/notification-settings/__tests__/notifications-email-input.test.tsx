@@ -180,6 +180,32 @@ describe( 'NotificationsEmailInput', () => {
 		).toMatch( /Please enter a valid email address./ );
 	} );
 
+	it( 'does not display client-side validation error for empty email after blur', () => {
+		mockUseAccountCommunicationsEmail.mockReturnValue( [ '', jest.fn() ] );
+		mockUseGetSavingError.mockReturnValue( null );
+
+		const { container } = render( <NotificationsEmailInput /> );
+
+		fireEvent.blur( screen.getByLabelText( 'Email address' ) );
+
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+	} );
+
+	it( 'calls onValidationChange with true for empty email on mount', () => {
+		const onValidationChange = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [ '', jest.fn() ] );
+
+		render(
+			<NotificationsEmailInput
+				onValidationChange={ onValidationChange }
+			/>
+		);
+
+		expect( onValidationChange ).toHaveBeenLastCalledWith( true );
+	} );
+
 	it( 'does not display client-side validation error for valid email after blur', () => {
 		mockUseAccountCommunicationsEmail.mockReturnValue( [
 			'valid@test.com',

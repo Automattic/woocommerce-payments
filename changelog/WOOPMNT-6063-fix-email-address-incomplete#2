@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Align empty-state behavior between notifications and support email inputs; link error notices to inputs via aria-invalid/aria-describedby

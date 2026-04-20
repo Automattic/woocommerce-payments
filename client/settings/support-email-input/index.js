@@ -39,6 +39,7 @@ const SupportEmailInput = ( { setInputValid } ) => {
 
 	// Server error takes precedence over client validation error
 	const errorMessage = supportEmailError || clientValidationError;
+	const errorId = 'support-email-error';
 
 	useEffect( () => {
 		if ( setInputValid ) {
@@ -49,9 +50,11 @@ const SupportEmailInput = ( { setInputValid } ) => {
 	return (
 		<>
 			{ errorMessage && (
-				<Notice status="error" isDismissible={ false }>
-					<span>{ errorMessage }</span>
-				</Notice>
+				<div id={ errorId }>
+					<Notice status="error" isDismissible={ false }>
+						<span>{ errorMessage }</span>
+					</Notice>
+				</div>
 			) }
 
 			<TextControl
@@ -66,6 +69,8 @@ const SupportEmailInput = ( { setInputValid } ) => {
 				onBlur={ () => setHasBlurred( true ) }
 				data-testid={ 'account-business-support-email-input' }
 				type="email"
+				aria-invalid={ errorMessage ? true : undefined }
+				aria-describedby={ errorMessage ? errorId : undefined }
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 			/>

@@ -48,8 +48,11 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 		savingError?.data?.details?.account_communications_email?.message;
 
 	// Only show client-side validation error if user has interacted with the field
+	// and the value is non-empty. An empty value is handled by server-side validation.
 	const showClientValidationError =
-		hasBlurred && ! isEmail( accountCommunicationsEmail );
+		hasBlurred &&
+		accountCommunicationsEmail !== '' &&
+		! isEmail( accountCommunicationsEmail );
 
 	const clientValidationError = showClientValidationError
 		? __( 'Please enter a valid email address.', 'woocommerce-payments' )
@@ -57,6 +60,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 
 	// Server error takes precedence over client validation error
 	const errorMessage = serverError || clientValidationError;
+	const errorId = 'notifications-email-error';
 
 	const emailsMatch =
 		! emailHasChanged || accountCommunicationsEmail === confirmEmail;
@@ -70,14 +74,18 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 		  )
 		: null;
 
+	// Treat empty as valid client-side; the server enforces the required rule
+	// so merchants who have never set a notifications email don't get Save
+	// disabled on mount without any interaction.
+	const isValid =
+		emailsMatch &&
+		( accountCommunicationsEmail === '' ||
+			isEmail( accountCommunicationsEmail ) );
+
 	// Notify parent of validation state changes.
 	useEffect( () => {
-		if ( onValidationChange ) {
-			onValidationChange(
-				emailsMatch && isEmail( accountCommunicationsEmail )
-			);
-		}
-	}, [ emailsMatch, onValidationChange, accountCommunicationsEmail ] );
+		onValidationChange?.( isValid );
+	}, [ isValid, onValidationChange ] );
 
 	return (
 		<>
@@ -103,9 +111,11 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 			</Notice>
 
 			{ errorMessage && (
-				<Notice status="error" isDismissible={ false }>
-					<span>{ errorMessage }</span>
-				</Notice>
+				<div id={ errorId }>
+					<Notice status="error" isDismissible={ false }>
+						<span>{ errorMessage }</span>
+					</Notice>
+				</div>
 			) }
 
 			<TextControl
@@ -117,6 +127,8 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 				data-testid={ 'notifications-email-input' }
 				type="email"
 				required
+				aria-invalid={ errorMessage ? true : undefined }
+				aria-describedby={ errorMessage ? errorId : undefined }
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 			/>
@@ -124,9 +136,11 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 			{ emailHasChanged && (
 				<>
 					{ mismatchError && (
-						<Notice status="error" isDismissible={ false }>
-							<span>{ mismatchError }</span>
-						</Notice>
+						<div id="notifications-email-mismatch-error">
+							<Notice status="error" isDismissible={ false }>
+								<span>{ mismatchError }</span>
+							</Notice>
+						</div>
 					) }
 
 					<TextControl
@@ -141,6 +155,12 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 						data-testid={ 'notifications-email-confirm-input' }
 						type="email"
 						required
+						aria-invalid={ mismatchError ? true : undefined }
+						aria-describedby={
+							mismatchError
+								? 'notifications-email-mismatch-error'
+								: undefined
+						}
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 					/>
