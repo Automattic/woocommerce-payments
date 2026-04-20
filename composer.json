@@ -38,7 +38,7 @@
         "kalessil/production-dependencies-guard": "dev-master",
         "phpstan/phpstan": "^1.10",
         "phpstan/extension-installer": "^1.3",
-        "php-stubs/wordpress-stubs": "5.9.6",
+        "php-stubs/wordpress-stubs": "6.9.1",
         "php-stubs/woocommerce-stubs": "10.7.0",
         "rregeer/phpunit-coverage-check": "0.3.1",
         "yoast/phpunit-polyfills": "2.0.5",
