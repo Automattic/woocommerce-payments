@@ -4,11 +4,11 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Card, CardBody, CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Card, CardBody, CardDivider } from '@wordpress/components';
 import SettingsSection from 'wcpay/settings/settings-section';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';
@@ -26,7 +26,7 @@ const ReadersListDescription = () => (
 						'To connect or disconnect card readers, use the %s mobile application.',
 					'woocommerce-payments'
 				),
-				'WooPayments'
+				'WooCommerce'
 			) }
 		</p>
 	</>
@@ -55,14 +55,14 @@ const ReadersList = (): JSX.Element => {
 						<CardBody className="card-readers-list__body">
 							<ul>
 								{ ! isLoading &&
-									Object.entries(
-										readers
-									).map( ( [ index, reader ] ) => (
-										<CardReaderListItem
-											key={ index }
-											reader={ reader }
-										/>
-									) ) }
+									Object.entries( readers ).map(
+										( [ index, reader ] ) => (
+											<CardReaderListItem
+												key={ index }
+												reader={ reader }
+											/>
+										)
+									) }
 							</ul>
 						</CardBody>
 					</Card>

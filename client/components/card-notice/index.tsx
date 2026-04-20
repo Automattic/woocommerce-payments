@@ -2,12 +2,12 @@
  * External dependencies
  */
 import React from 'react';
+import { CardFooter } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import './styles.scss';
-import { CardFooter } from '@wordpress/components';
 
 interface CardNoticeProps {
 	children: React.ReactNode;

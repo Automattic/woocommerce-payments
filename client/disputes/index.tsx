@@ -11,13 +11,13 @@ import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
 import clsx from 'clsx';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
  * Internal dependencies.
  */
 import { useDisputes, useDisputesSummary } from 'data/index';
 import OrderLink from 'components/order-link';
+import Chip from 'components/chip';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
@@ -44,7 +44,8 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
 import { useDispatch } from '@wordpress/data';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
+import ErrorBoundary from 'components/error-boundary';
+import SpotlightPromotion from 'promotions/spotlight';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -170,23 +171,20 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 		return '';
 	}
 	if ( diffHours <= 72 ) {
-		return (
-			<span className="due-soon">
-				{ diffHours <= 24
-					? __( 'Last day today', 'woocommerce-payments' )
-					: sprintf(
-							// Translators: %s is the number of days left to respond to the dispute.
-							_n(
-								'%s day left',
-								'%s days left',
-								diffDays,
-								'woocommerce-payments'
-							),
-							diffDays
-					  ) }
-				<NoticeOutlineIcon className="due-soon-icon" />
-			</span>
-		);
+		const message =
+			diffHours <= 24
+				? __( 'Last day today', 'woocommerce-payments' )
+				: sprintf(
+						// Translators: %s is the number of days left to respond to the dispute.
+						_n(
+							'%s day left',
+							'%s days left',
+							diffDays,
+							'woocommerce-payments'
+						),
+						diffDays
+				  );
+		return <Chip message={ message } type="alert" />;
 	}
 	return formatDateTimeFromString( dispute.due_by, {
 		includeTime: true,
@@ -208,9 +206,11 @@ export const DisputesList = (): JSX.Element => {
 	const { createNotice } = useDispatch( 'core/notices' );
 
 	const headers = getHeaders( getQuery().orderby );
-	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
-		DisputesTableHeader
-	>( 'wc_payments_disputes_hidden_columns', headers );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< DisputesTableHeader >(
+			'wc_payments_disputes_hidden_columns',
+			headers
+		);
 
 	const totalRows = disputesSummary.count || 0;
 
@@ -348,13 +348,13 @@ export const DisputesList = (): JSX.Element => {
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
+		const locale = wcSettings.locale.userLocale;
 		recordEvent( 'wcpay_csv_export_click', {
 			row_type: 'disputes',
 			source: path,
 			exported_row_count: disputesSummary.count,
 		} );
 
-		const userLocale = wcpaySettings.userLocale.code;
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
@@ -367,7 +367,7 @@ export const DisputesList = (): JSX.Element => {
 
 		const exportRequestURL = getDisputesCSVRequestURL( {
 			userEmail,
-			userLocale,
+			locale,
 			dateAfter,
 			dateBefore,
 			dateBetween,
@@ -436,7 +436,7 @@ export const DisputesList = (): JSX.Element => {
 		];
 	}
 
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	const isCurrencyFiltered = typeof getQuery().store_currency_is === 'string';
 
 	const storeCurrencies =
 		disputesSummary.currencies ||
@@ -444,7 +444,6 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard
@@ -470,6 +469,9 @@ export const DisputesList = (): JSX.Element => {
 					),
 				] }
 			/>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

@@ -1,14 +1,21 @@
 /**
  * External dependencies
  */
-import React, { useContext, useState, useEffect } from 'react';
-import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
+import React, { useContext, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import {
+	Button,
+	Card,
+	CardBody,
+	CheckboxControl,
+	Flex,
+	FlexItem,
+} from '@wordpress/components';
 import {
 	CollapsibleBody,
 	WizardTaskItem,
@@ -17,75 +24,32 @@ import { WizardTaskContext } from 'multi-currency/interface/functions';
 import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
 import PreviewModal from 'multi-currency/components/preview-modal';
 import './index.scss';
-
 import { useStoreSettings } from 'multi-currency/data';
 
 const StoreSettingsTask = () => {
-	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
+	const {
+		storeSettings,
+		isSaving: isSavingStoreSettings,
+		updateStoreSettingValues,
+		saveStoreSettings,
+	} = useStoreSettings();
 	const { saveSettings, isSaving } = useSettings();
 	const [
 		isMultiCurrencyEnabled,
 		updateIsMultiCurrencyEnabled,
 	] = useMultiCurrency();
 
-	const [ isPending, setPending ] = useState( false );
-
-	const [
-		isAutomaticSwitchEnabledValue,
-		setIsAutomaticSwitchEnabledValue,
-	] = useState( false );
-
-	const [
-		isStorefrontSwitcherEnabledValue,
-		setIsStorefrontSwitcherEnabledValue,
-	] = useState( false );
-
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
-
-	useEffect( () => {
-		if ( Object.keys( storeSettings ).length ) {
-			setIsStorefrontSwitcherEnabledValue(
-				storeSettings.enable_storefront_switcher
-			);
-			setIsAutomaticSwitchEnabledValue(
-				storeSettings.enable_auto_currency
-			);
-		}
-	}, [
-		setIsAutomaticSwitchEnabledValue,
-		setIsStorefrontSwitcherEnabledValue,
-		storeSettings,
-	] );
 
 	const { setCompleted } = useContext( WizardTaskContext );
 
-	const handlePreviewModalOpenClick = () => {
-		setPreviewModalOpen( true );
-	};
-
-	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
-		setIsAutomaticSwitchEnabledValue( value );
-	};
-
-	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
-		setIsStorefrontSwitcherEnabledValue( value );
-	};
-
 	const handleContinueClick = () => {
-		setPending( true );
-
 		if ( ! isMultiCurrencyEnabled ) {
 			updateIsMultiCurrencyEnabled( true );
 			saveSettings();
 		}
 
-		submitStoreSettingsUpdate(
-			isAutomaticSwitchEnabledValue,
-			isStorefrontSwitcherEnabledValue,
-			! isMultiCurrencyEnabled
-		);
-
-		setPending( false );
+		saveStoreSettings( ! isMultiCurrencyEnabled );
 		setCompleted( true, 'setup-complete' );
 	};
 
@@ -115,58 +79,75 @@ const StoreSettingsTask = () => {
 				</p>
 				<Card className="multi-currency-settings-task__wrapper">
 					<CardBody>
-						<CheckboxControl
-							checked={ isAutomaticSwitchEnabledValue }
-							onChange={ handleIsAutomaticSwitchEnabledClick }
-							data-testid={ 'enable_auto_currency' }
-							label={ __(
-								'Automatically switch customers to their local currency if it has been enabled',
-								'woocommerce-payments'
-							) }
-						/>
-						<div className="multi-currency-settings-task__description">
-							{ __(
-								'Customers will be notified via store alert banner.',
-								'woocommerce-payments'
-							) }
-						</div>
-						{ storeSettings.site_theme === 'Storefront' ? (
-							<>
+						{ /* gap 4 = 16px */ }
+						<Flex direction="column" gap={ 4 }>
+							<FlexItem>
 								<CheckboxControl
-									checked={ isStorefrontSwitcherEnabledValue }
-									onChange={
-										handleIsStorefrontSwitcherEnabledClick
+									checked={
+										!! storeSettings.enable_auto_currency
 									}
-									data-testid={ 'enable_storefront_switcher' }
+									onChange={ ( value ) =>
+										updateStoreSettingValues( {
+											enable_auto_currency: value,
+										} )
+									}
+									data-testid={ 'enable_auto_currency' }
 									label={ __(
-										'Add a currency switcher to the Storefront theme on breadcrumb section.',
+										'Automatically switch customers to their local currency if it has been enabled',
 										'woocommerce-payments'
 									) }
+									help={ __(
+										'Customers will be notified via store alert banner.',
+										'woocommerce-payments'
+									) }
+									__nextHasNoMarginBottom
 								/>
-								<div className="multi-currency-settings-task__description">
-									{ __(
-										'A currency switcher is also available in your widgets.',
-										'woocommerce-payments'
-									) }
-								</div>
-							</>
-						) : null }
+							</FlexItem>
+							{ storeSettings.site_theme === 'Storefront' ? (
+								<FlexItem>
+									<CheckboxControl
+										checked={
+											!! storeSettings.enable_storefront_switcher
+										}
+										onChange={ ( value ) =>
+											updateStoreSettingValues( {
+												enable_storefront_switcher: value,
+											} )
+										}
+										data-testid={
+											'enable_storefront_switcher'
+										}
+										label={ __(
+											'Add a currency switcher to the Storefront theme on breadcrumb section.',
+											'woocommerce-payments'
+										) }
+										help={ __(
+											'A currency switcher is also available in your widgets.',
+											'woocommerce-payments'
+										) }
+										__nextHasNoMarginBottom
+									/>
+								</FlexItem>
+							) : null }
+						</Flex>
 					</CardBody>
 				</Card>
 				<Button
-					isBusy={ isPending || isSaving }
-					disabled={ isPending || isSaving }
+					isBusy={ isSavingStoreSettings || isSaving }
+					disabled={ isSavingStoreSettings || isSaving }
 					onClick={ handleContinueClick }
 					variant="primary"
+					__next40pxDefaultSize
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
 				<Button
-					isBusy={ isPending || isSaving }
-					disabled={ isPending || isSaving }
-					onClick={ handlePreviewModalOpenClick }
-					className={ 'multi-currency-setup-preview-button' }
+					isBusy={ isSavingStoreSettings || isSaving }
+					disabled={ isSavingStoreSettings || isSaving }
+					onClick={ () => setPreviewModalOpen( true ) }
+					className="multi-currency-setup-preview-button"
 					variant="tertiary"
+					__next40pxDefaultSize
 				>
 					{ __( 'Preview', 'woocommerce-payments' ) }
 				</Button>
@@ -174,10 +155,10 @@ const StoreSettingsTask = () => {
 					isPreviewModalOpen={ isPreviewModalOpen }
 					setPreviewModalOpen={ setPreviewModalOpen }
 					isStorefrontSwitcherEnabledValue={
-						isStorefrontSwitcherEnabledValue
+						!! storeSettings.enable_storefront_switcher
 					}
 					isAutomaticSwitchEnabledValue={
-						isAutomaticSwitchEnabledValue
+						!! storeSettings.enable_auto_currency
 					}
 				/>
 			</CollapsibleBody>

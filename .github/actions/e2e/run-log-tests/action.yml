@@ -1,4 +1,4 @@
-name: 'Run Tests'
+name: 'Run E2E Tests with Retry & Upload Logs'
 description: 'Runs E2E tests with retry & upload logs and screenshots'
 
 runs:
@@ -10,12 +10,27 @@ runs:
       shell: /bin/bash +e {0}
       run: |
         npm run test:e2e-ci
-        
-        if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
-          E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.stats["unexpected"]')
-          echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
-          if [[ ${E2E_NUM_FAILED_TEST_SUITES} -gt 0 ]]; then
-            echo "::notice::${E2E_NUM_FAILED_TEST_SUITES} test suite(s) failed in the first run but we will try (it) them again in the second run."
+        RESULTS_JSON="$E2E_RESULT_FILEPATH"
+        if [[ -f "$RESULTS_JSON" ]]; then
+          # Count spec files with tests that truly failed (status "unexpected").
+          # Exclude "flaky" tests — those failed on the first attempt but passed
+          # on Playwright's built-in retry, so they don't need a full spec re-run.
+          FAILED_SPECS_COUNT=$( jq -r '[ .. | objects | select(has("specs")) | .specs[]
+              | select( any(.tests[]?; .status == "unexpected") )
+              | .file ] | unique | length' "$RESULTS_JSON" )
+          echo "FIRST_RUN_FAILED_TEST_SUITES=$FAILED_SPECS_COUNT" >> $GITHUB_OUTPUT
+          echo "RESULTS_JSON=$RESULTS_JSON" >> $GITHUB_OUTPUT
+
+          # Report flaky tests for visibility, but don't re-run them.
+          FLAKY_COUNT=$( jq -r '[ .. | objects | select(has("specs")) | .specs[]
+              | select( any(.tests[]?; .status == "flaky") )
+              | .file ] | unique | length' "$RESULTS_JSON" )
+          if [[ ${FLAKY_COUNT} -gt 0 ]]; then
+            echo "::warning::${FLAKY_COUNT} spec file(s) had flaky tests (passed on Playwright retry)."
+          fi
+
+          if [[ ${FAILED_SPECS_COUNT} -gt 0 ]]; then
+            echo "::notice::${FAILED_SPECS_COUNT} spec file(s) failed in the first run. We will re-run only the failed specs."
             exit 0
           fi
         else
@@ -27,19 +42,46 @@ runs:
     - name: Re-try Failed E2E Files
       if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
       shell: bash
-      # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
-        npm run test:e2e-ci $(cat $E2E_RESULT_FILEPATH | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]')
+        set -e
+        RESULTS_JSON="${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}"
+        echo "Using results file: $RESULTS_JSON"
+
+        # Build a unique list of spec files with truly failed tests (status "unexpected").
+        # Flaky tests (passed on Playwright retry) are excluded — no need to re-run them.
+        mapfile -t FAILED_SPECS < <( jq -r '[ .. | objects | select(has("specs")) | .specs[]
+          | select( any(.tests[]?; .status == "unexpected") )
+          | .file ] | unique | .[]' "$RESULTS_JSON" )
+
+        if [[ ${#FAILED_SPECS[@]} -eq 0 ]]; then
+          echo "::notice::No failed specs found in results file. Re-running full suite instead."
+          npm run test:e2e-ci
+          exit 0
+        fi
+
+        echo "Retrying failed specs (${#FAILED_SPECS[@]}):"
+        for f in "${FAILED_SPECS[@]}"; do
+          echo " - $f"
+        done
+
+        # Include the setup file so Playwright runs auth setup before retrying.
+        # Without this, passing spec files as positional args bypasses project
+        # dependency resolution and auth state files may not exist.
+        SETUP_FILE="tests/e2e/specs/auth.setup.ts"
+
+        # Re-run only the failed spec files (plus setup).
+        npm run test:e2e-ci "$SETUP_FILE" "${FAILED_SPECS[@]}"
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
       if: ${{ always() }}
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
           name: wp(${{ env.E2E_WP_VERSION }})-wc(${{ env.E2E_WC_VERSION }})-${{ env.E2E_GROUP }}-${{ env.E2E_BRANCH }}
           path: |
             playwright-report/
             tests/e2e/test-results
             ${{ env.E2E_RESULT_FILEPATH }}
+            ${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}
           if-no-files-found: ignore
           retention-days: 14

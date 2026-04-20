@@ -1,5 +1,3 @@
-/* global jQuery */
-
 /**
  * External dependencies
  */
@@ -11,6 +9,10 @@ import { addQueryArgs } from '@wordpress/url';
  * Internal dependencies
  */
 import { getExpressCheckoutData } from './utils';
+import {
+	getProductId,
+	getQuantity,
+} from 'wcpay/utils/wc-product-page-selectors';
 
 export default class ExpressCheckoutCartApi {
 	// Used on product pages to interact with an anonymous cart.
@@ -32,9 +34,10 @@ export default class ExpressCheckoutCartApi {
 			path: addQueryArgs( options.path, {
 				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
-				currency: getExpressCheckoutData(
-					'checkout'
-				).currency_code.toUpperCase(),
+				currency:
+					getExpressCheckoutData(
+						'checkout'
+					).currency_code.toUpperCase(),
 			} ),
 			headers: {
 				// the Store API nonce, which could later be overwritten in subsequent requests.
@@ -68,12 +71,13 @@ export default class ExpressCheckoutCartApi {
 
 	/**
 	 * Creates an order from the cart object.
-	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/checkout.md#process-order-and-payment
+	 * See https://github.com/woocommerce/woocommerce/blob/trunk/docs/apis/store-api/
+	 * resources-endpoints/checkout.md#process-order-and-payment
 	 *
 	 * @param {{
 	 *          billing_address: Object,
 	 *          shipping_address: Object,
-	 *          customer_note: string?,
+	 *          customer_note: string|null,
 	 *          payment_method: string,
 	 *          payment_data: Array,
 	 *        }} paymentData Additional payment data to place the order.
@@ -128,8 +132,8 @@ export default class ExpressCheckoutCartApi {
 	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/cart.md#update-customer
 	 *
 	 * @param {{
-	 *          billing_address: Object?,
-	 *          shipping_address: Object?,
+	 *          billing_address: Object|null,
+	 *          shipping_address: Object|null,
 	 *        }} customerData Customer data to update.
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */
@@ -169,8 +173,8 @@ export default class ExpressCheckoutCartApi {
 	async addProductToCart() {
 		const productData = {
 			// can be modified in case of variable products, WC bookings plugin, etc.
-			id: jQuery( '.single_add_to_cart_button' ).val(),
-			quantity: parseInt( jQuery( '.quantity .qty' ).val(), 10 ) || 1,
+			id: getProductId(),
+			quantity: getQuantity(),
 			// can be modified in case of variable products, WC bookings plugin, etc.
 			variation: [],
 		};

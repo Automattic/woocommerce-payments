@@ -7,7 +7,8 @@
 
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -63,6 +64,12 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Clean up orphaned product meta lookup entries from previous tests.
+		// WooCommerce's product deletion doesn't always clean up the lookup table properly in test environments,
+		// which can cause duplicate primary key errors when product IDs get reused.
+		global $wpdb;
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')" );
+
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
 			->setMethods(
@@ -99,7 +106,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 					'is_cart',
 					'is_checkout',
 					'is_product',
-					'is_available_at',
+					'is_express_checkout_method_enabled_at',
 				]
 			)
 			->getMock();
@@ -153,7 +160,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		$mock_rate_limiter             = $this->createMock( Session_Rate_Limiter::class );
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method           = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method           = $this->createMock( UPE_Payment_Method::class );
+		$mock_payment_method->method( 'get_id' )->willReturn( CardDefinition::get_id() );
 
 		return new WC_Payment_Gateway_WCPay(
 			$this->mock_api_client,
@@ -188,8 +196,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'cart' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'woopay' )
 			->willReturn( true );
 
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
@@ -211,8 +219,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'cart' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'woopay' )
 			->willReturn( false );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
@@ -236,8 +244,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'checkout' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'checkout', 'woopay' )
 			->willReturn( true );
 
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
@@ -253,8 +261,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		// Ensure the express button is not available in the cart page.
 		$this->mock_express_checkout_helper
 			->expects( $this->any() )
-			->method( 'is_available_at' )
-			->with( 'cart' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'woopay' )
 			->willReturn( false );
 
 		WC_Payments::set_express_checkout_helper( $this->mock_express_checkout_helper );
@@ -296,8 +304,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 		// Ensure the express button is available in the cart page.
 		$this->mock_express_checkout_helper
 			->expects( $this->any() )
-			->method( 'is_available_at' )
-			->with( 'cart', WC_Payments_WooPay_Button_Handler::BUTTON_LOCATIONS )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'cart', 'woopay' )
 			->willReturn( true );
 
 		WC_Payments::set_express_checkout_helper( $this->mock_express_checkout_helper );
@@ -334,8 +342,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'checkout' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'checkout', 'woopay' )
 			->willReturn( true );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
@@ -361,8 +369,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'product' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'product', 'woopay' )
 			->willReturn( true );
 
 		$this->assertTrue( $this->mock_pr->should_show_woopay_button() );
@@ -388,8 +396,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'product' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'product', 'woopay' )
 			->willReturn( true );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
@@ -415,8 +423,8 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->once() )
-			->method( 'is_available_at' )
-			->with( 'product' )
+			->method( 'is_express_checkout_method_enabled_at' )
+			->with( 'product', 'woopay' )
 			->willReturn( false );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
@@ -443,7 +451,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->never() )
-			->method( 'is_available_at' );
+			->method( 'is_express_checkout_method_enabled_at' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
 	}
@@ -472,7 +480,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->never() )
-			->method( 'is_available_at' );
+			->method( 'is_express_checkout_method_enabled_at' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
 	}
@@ -508,7 +516,7 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_express_checkout_helper
 			->expects( $this->never() )
-			->method( 'is_available_at' )
+			->method( 'is_express_checkout_method_enabled_at' )
 			->with( 'cart' );
 
 		$this->assertFalse( $this->mock_pr->should_show_woopay_button() );
@@ -530,5 +538,37 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 			],
 			$this->mock_pr->get_button_settings()
 		);
+	}
+
+	public function test_display_woopay_button_html_renders_div_placeholder() {
+		$mock_handler = $this->getMockBuilder( WC_Payments_WooPay_Button_Handler::class )
+			->setConstructorArgs(
+				[
+					$this->mock_wcpay_account,
+					$this->mock_wcpay_gateway,
+					$this->mock_woopay_utilities,
+					$this->mock_express_checkout_helper,
+				]
+			)
+			->setMethods( [ 'should_show_woopay_button' ] )
+			->getMock();
+
+		$mock_handler->method( 'should_show_woopay_button' )->willReturn( true );
+
+		$this->mock_express_checkout_helper
+			->method( 'is_product' )
+			->willReturn( true );
+
+		ob_start();
+		$mock_handler->display_woopay_button_html();
+		$output = ob_get_clean();
+
+		// The placeholder must be a <div> — never a <button> — to avoid triggering
+		// has_form_elements() in the Add to Cart + Options block, which would force
+		// legacy form mode and break the mini-cart drawer.
+		$this->assertStringNotContainsString( '<button', $output );
+		$this->assertStringNotContainsString( 'disabled', $output );
+		$this->assertStringContainsString( 'woopay-express-button', $output );
+		$this->assertStringContainsString( '<div id="wcpay-woopay-button"', $output );
 	}
 }

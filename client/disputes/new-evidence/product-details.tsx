@@ -7,10 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import {
-	SelectControl,
-	TextareaControl,
-} from 'wcpay/components/wp-components-wrapped';
+import { SelectControl, TextareaControl } from '@wordpress/components';
 
 interface ProductDetailsProps {
 	productType: string;
@@ -27,63 +24,103 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 	onProductDescriptionChange,
 	readOnly = false,
 } ) => {
+	const isAdditionalEvidenceTypesEnabled =
+		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
+		false;
+
+	const productTypeOptions = [
+		{
+			label: __( 'Physical products', 'woocommerce-payments' ),
+			value: 'physical_product',
+		},
+		{
+			label: __( 'Digital products', 'woocommerce-payments' ),
+			value: 'digital_product_or_service',
+		},
+		{
+			label: __( 'Offline service', 'woocommerce-payments' ),
+			value: 'offline_service',
+		},
+		...( isAdditionalEvidenceTypesEnabled
+			? [
+					{
+						label: __(
+							'Booking/Reservation',
+							'woocommerce-payments'
+						),
+						value: 'booking_reservation',
+					},
+					{
+						label: __( 'Event', 'woocommerce-payments' ),
+						value: 'event',
+					},
+					{
+						label: __( 'Other', 'woocommerce-payments' ),
+						value: 'other',
+					},
+			  ]
+			: [
+					{
+						label: __(
+							'Multiple product types',
+							'woocommerce-payments'
+						),
+						value: 'multiple',
+					},
+			  ] ),
+	];
+
 	return (
 		<section className="wcpay-dispute-evidence-product-details">
 			<h3 className="wcpay-dispute-evidence-product-details__heading">
-				{ __( 'Product details', 'woocommerce-payments' ) }
+				{ isAdditionalEvidenceTypesEnabled
+					? __( 'Product or service details', 'woocommerce-payments' )
+					: __( 'Product details', 'woocommerce-payments' ) }
 			</h3>
+			<div className="wcpay-dispute-evidence-product-details__subheading">
+				{ isAdditionalEvidenceTypesEnabled
+					? __(
+							'Please ensure the product or service type and description have been entered accurately.',
+							'woocommerce-payments'
+					  )
+					: __(
+							'Please ensure the product type and description have been entered accurately.',
+							'woocommerce-payments'
+					  ) }
+			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<SelectControl
-					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
-					help={ __(
-						'First select the kind of product you fulfilled.',
-						'woocommerce-payments'
-					) }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
+					label={
+						isAdditionalEvidenceTypesEnabled
+							? __(
+									'PRODUCT OR SERVICE TYPE',
+									'woocommerce-payments'
+							  )
+							: __( 'PRODUCT TYPE', 'woocommerce-payments' )
+					}
 					value={ productType }
 					onChange={ onProductTypeChange }
-					options={ [
-						{
-							label: __(
-								'Physical products',
-								'woocommerce-payments'
-							),
-							value: 'physical_product',
-						},
-						{
-							label: __(
-								'Digital products',
-								'woocommerce-payments'
-							),
-							value: 'digital_product_or_service',
-						},
-						{
-							label: __(
-								'Offline service',
-								'woocommerce-payments'
-							),
-							value: 'offline_service',
-						},
-						{
-							label: __(
-								'Multiple product types',
-								'woocommerce-payments'
-							),
-							value: 'multiple',
-						},
-					] }
+					data-testid={ 'dispute-challenge-product-type-selector' }
+					options={ productTypeOptions }
 					disabled={ readOnly }
 				/>
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<TextareaControl
-					label={ __(
-						'PRODUCT DESCRIPTION',
-						'woocommerce-payments'
-					) }
-					help={ __(
-						'Please make sure this is an accurate description of the product.',
-						'woocommerce-payments'
-					) }
+					__nextHasNoMarginBottom
+					label={
+						isAdditionalEvidenceTypesEnabled
+							? __(
+									'PRODUCT OR SERVICE DESCRIPTION',
+									'woocommerce-payments'
+							  )
+							: __(
+									'PRODUCT DESCRIPTION',
+									'woocommerce-payments'
+							  )
+					}
 					value={ productDescription }
 					onChange={ onProductDescriptionChange }
 					disabled={ readOnly }

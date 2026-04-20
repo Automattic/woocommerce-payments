@@ -108,3 +108,46 @@
 	font-size: 11px;
 	line-height: 16px;
 }
+
+@mixin heading-xl {
+	/* Heading XL */
+	font-size: var( --xl, 20px );
+	font-style: normal;
+	font-weight: var( --Medium, 500 );
+	line-height: var( --m, 24px ); /* 120% */
+}
+@mixin heading-lg {
+	/* Heading LG */
+	font-size: var( --l, 15px );
+	font-style: normal;
+	font-weight: var( --Medium, 500 );
+	line-height: var( --s, 20px ); /* 133.333% */
+}
+@mixin heading-md {
+	/* Heading MD */
+	font-size: var( --m, 13px );
+	font-style: normal;
+	font-weight: var( --Medium, 500 );
+	line-height: var( --s, 20px ); /* 153.846% */
+}
+@mixin heading-sm {
+	/* Heading S */
+	font-size: var( --xs, 11px );
+	font-style: normal;
+	font-weight: var( --Medium, 500 );
+	line-height: var( --xs, 16px ); /* 145.455% */
+}
+@mixin body-md {
+	/* Body MD */
+	font-size: var( --m, 13px );
+	font-style: normal;
+	font-weight: var( --Regular, 400 );
+	line-height: var( --s, 20px ); /* 153.846% */
+}
+@mixin body-sm {
+	/* Body SM */
+	font-size: var( --s, 12px );
+	font-style: normal;
+	font-weight: var( --Regular, 400 );
+	line-height: var( --xs, 16px ); /* 133.333% */
+}

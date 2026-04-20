@@ -71,14 +71,41 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 	/**
 	 * Extends the life of all Stripe billing -> tokenized migration log files to prevent WC Core deleting them.
 	 *
-	 * WC uses the file's last modified timestamp to determine whether to delete it. This function simply
-	 * touches all migration log files to update their last modified timestamp and to bypass WC core's process.
+	 * WC determines file age by parsing the date from the filename. This function renames files
+	 * to include today's date, preventing WC Core from deleting them during log cleanup.
 	 */
 	public function extend_life_of_migration_file_logs() {
+		$log_dir = trailingslashit( WC_LOG_DIR );
+
 		foreach ( WC_Log_Handler_File::get_log_files() as $log_file_name ) {
-			// If the log file name starts with our handle, "touch" it to update the last modified timestamp.
+			// If the log file name starts with our handle, process it.
 			if ( strpos( $log_file_name, self::HANDLE ) === 0 ) {
-				touch( trailingslashit( WC_LOG_DIR ) . $log_file_name ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_touch
+				$old_file_path = $log_dir . $log_file_name;
+				$new_file_name = $this->get_updated_log_filename( $log_file_name );
+				$new_file_path = $log_dir . $new_file_name;
+
+				// Only rename if the filename would actually change.
+				if ( $new_file_name !== $log_file_name && file_exists( $old_file_path ) ) {
+					// If target file already exists, merge files maintaining chronological order.
+					// Uses stream-based operations for memory efficiency with large log files.
+					if ( file_exists( $new_file_path ) ) {
+						// Append new file content to old file (preserves: old logs first, then new logs).
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+						$source_handle = fopen( $new_file_path, 'r' );
+						if ( false !== $source_handle ) {
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+							file_put_contents( $old_file_path, $source_handle, FILE_APPEND );
+							// phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
+							fclose( $source_handle );
+						}
+						// Delete the new file since its content is now merged into old file.
+						// phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+						unlink( $new_file_path );
+					}
+					// Rename old file to new filename (with today's date).
+					// phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
+					rename( $old_file_path, $new_file_path );
+				}
 			}
 		}
 	}
@@ -128,6 +155,40 @@ class WC_Payments_Subscription_Migration_Log_Handler {
 				self::EXTENDED_DB_ENTRY_FLAG
 			)
 		);
+	}
+
+	/**
+	 * Generates an updated log filename with today's date.
+	 *
+	 * Parses the old filename and replaces the date with today's date while
+	 * preserving the hash suffix for uniqueness.
+	 *
+	 * @param string $old_filename The original log filename.
+	 * @return string The updated filename with today's date.
+	 */
+	private function get_updated_log_filename( $old_filename ) {
+		// Expected format: woopayments-subscription-migration-YYYY-MM-DD-hash.log
+		// Parse the filename to extract the hash suffix.
+		$pattern = '/^(' . preg_quote( self::HANDLE, '/' ) . ')-(\d{4}-\d{2}-\d{2})-(.+)\.log$/';
+
+		if ( preg_match( $pattern, $old_filename, $matches ) ) {
+			$handle      = $matches[1]; // e.g., "woopayments-subscription-migration".
+			$old_date    = $matches[2]; // e.g., "2024-02-05".
+			$hash_suffix = $matches[3]; // e.g., "abc123" or "1" (rotation number).
+
+			$today = gmdate( 'Y-m-d' );
+
+			// If the date is already today, no need to change.
+			if ( $old_date === $today ) {
+				return $old_filename;
+			}
+
+			// Generate new filename with today's date.
+			return "{$handle}-{$today}-{$hash_suffix}.log";
+		}
+
+		// If pattern doesn't match (shouldn't happen), return original filename.
+		return $old_filename;
 	}
 
 	/**

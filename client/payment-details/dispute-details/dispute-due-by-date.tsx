@@ -15,8 +15,7 @@ const DisputeDueByDate: React.FC< {
 		moment.unix( dueBy ).utc().diff( moment().utc(), 'days', true )
 	);
 	const respondByDate = formatDateTimeFromTimestamp( dueBy, {
-		separator: ', ',
-		includeTime: true,
+		customFormat: 'F j, Y g:i A',
 	} );
 	return (
 		<span className="dispute-steps__steps__response-date">
@@ -32,8 +31,8 @@ const DisputeDueByDate: React.FC< {
 						sprintf(
 							// Translators: %d is the number of days left to respond to the dispute.
 							_n(
-								'(%d day left to respond)',
-								'(%d days left to respond)',
+								' (%d day left to respond)',
+								' (%d days left to respond)',
 								daysRemaining,
 								'woocommerce-payments'
 							),
@@ -41,9 +40,9 @@ const DisputeDueByDate: React.FC< {
 						) }
 
 					{ daysRemaining === 0 &&
-						__( '(Last day today)', 'woocommerce-payments' ) }
+						__( ' (Last day today)', 'woocommerce-payments' ) }
 					{ daysRemaining < 0 &&
-						__( '(Past due)', 'woocommerce-payments' ) }
+						__( ' (Past due)', 'woocommerce-payments' ) }
 				</span>
 			) }
 		</span>

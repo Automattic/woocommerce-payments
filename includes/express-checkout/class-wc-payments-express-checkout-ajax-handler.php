@@ -49,15 +49,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			);
 		}
 
-		add_action(
-			'woocommerce_store_api_checkout_update_order_from_request',
-			[
-				$this,
-				'tokenized_cart_set_payment_method_type',
-			],
-			10,
-			2
-		);
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
@@ -156,46 +147,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Updates the checkout order based on the request, to set the Apple Pay/Google Pay payment method title.
-	 *
-	 * @param \WC_Order        $order The order to be updated.
-	 * @param \WP_REST_Request $request Store API request to update the order.
-	 */
-	public function tokenized_cart_set_payment_method_type( \WC_Order $order, \WP_REST_Request $request ) {
-		if ( ! isset( $request['payment_method'] ) || 'woocommerce_payments' !== $request['payment_method'] ) {
-			return;
-		}
-
-		if ( empty( $request['payment_data'] ) ) {
-			return;
-		}
-
-		$payment_data = [];
-		foreach ( $request['payment_data'] as $data ) {
-			$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
-		}
-
-		if ( empty( $payment_data['payment_request_type'] ) ) {
-			return;
-		}
-
-		$payment_request_type = wc_clean( wp_unslash( $payment_data['payment_request_type'] ) );
-
-		$payment_method_titles = [
-			'apple_pay'  => 'Apple Pay',
-			'google_pay' => 'Google Pay',
-		];
-
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-		if ( ! empty( $suffix ) ) {
-			$suffix = " ($suffix)";
-		}
-
-		$payment_method_title = isset( $payment_method_titles[ $payment_request_type ] ) ? $payment_method_titles[ $payment_request_type ] : 'Payment Request';
-		$order->set_payment_method_title( $payment_method_title . $suffix );
-	}
-
-	/**
 	 * Google Pay/Apple Pay parameters for address data might need some massaging for some of the countries.
 	 * Ensuring that the Store API doesn't throw a `rest_invalid_param` error message for some of those scenarios.
 	 *
@@ -227,6 +178,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( isset( $request['shipping_address'] ) && is_array( $request['shipping_address'] ) ) {
 			$shipping_address = $request['shipping_address'];
 			$shipping_address = $this->transform_ece_address_state_data( $shipping_address );
+			$shipping_address = $this->transform_ece_address_lines_data( $shipping_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
@@ -237,6 +189,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( isset( $request['billing_address'] ) && is_array( $request['billing_address'] ) ) {
 			$billing_address = $request['billing_address'];
 			$billing_address = $this->transform_ece_address_state_data( $billing_address );
+			$billing_address = $this->transform_ece_address_lines_data( $billing_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
@@ -323,6 +276,41 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( ! empty( $state ) ) {
 			$address['state'] = $this->get_normalized_state( $state, $country );
 		}
+
+		return $address;
+	}
+
+	/**
+	 * Consolidates the address lines so `address_1` is always populated when any line is.
+	 *
+	 * Specifically fixes Amazon Pay on EU Stripe accounts, which can return an empty `line1` with
+	 * the street value in `line2` (e.g. `{ line1: "", line2: "Meininger Strasse 58" }`). WC
+	 * requires `address_1`, so without this the Store API rejects the order. Safe to run on all
+	 * addresses: if `address_1` is already set, this is a no-op.
+	 *
+	 * @param array $address The address to normalize.
+	 *
+	 * @return array
+	 */
+	private function transform_ece_address_lines_data( $address ) {
+		$lines = array_values(
+			array_filter(
+				[
+					trim( (string) ( $address['address_1'] ?? '' ) ),
+					trim( (string) ( $address['address_2'] ?? '' ) ),
+				],
+				function ( $line ) {
+					return '' !== $line;
+				}
+			)
+		);
+
+		if ( empty( $lines ) ) {
+			return $address;
+		}
+
+		$address['address_1'] = $lines[0];
+		$address['address_2'] = $lines[1] ?? '';
 
 		return $address;
 	}
@@ -454,14 +442,31 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 */
 	private function get_normalized_postal_code( $postcode, $country ) {
 		/**
-		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
+		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first few characters respectively
 		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
 		 * the postal code and not calculate shipping zones correctly.
 		 */
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
-			// Replaces a redacted string with something like N1C0000.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
+			$cleaned_postcode = substr( preg_replace( '/[^A-Za-z0-9]/', '', $postcode ), 0, 7 );
+			// the minimum length for a GB postcode is 5 (2 characters for the outward code, 3 for the inward code)
+			// if the postcode is not redacted, avoid padding it.
+			if ( strlen( $cleaned_postcode ) >= 5 ) {
+				return $cleaned_postcode;
+			}
+
+			// now, the juicy part: GB postcode units have a variable length, 5 to 7 characters (excluding the space).
+			// they consist of two main parts: the "outward code" and the "inward code".
+			// the "outward code" has a variable length, between two and four characters.
+			// the "inward code" always has 3 characters.
+			// Google Pay/Apple Pay might redact GB postcode units to just the "outward code".
+			// but WC Core expects a full postcode unit to return shipping rates.
+			// since we can't interfere with the rate calculation,
+			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
+			// to be used for shipping rates calculations.
+			// Replaces a redacted `N1C` string with something like `N1C000`.
+			return $cleaned_postcode . '000';
 		}
+
 		if ( Country_Code::CANADA === $country ) {
 			// Replaces a redacted string with something like H3B000.
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );

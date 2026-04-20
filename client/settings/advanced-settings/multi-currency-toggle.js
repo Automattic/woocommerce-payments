@@ -1,20 +1,18 @@
 /**
  * External dependencies
  */
-import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import { useMultiCurrency } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
 const MultiCurrencyToggle = () => {
-	const [
-		isMultiCurrencyEnabled,
-		updateIsMultiCurrencyEnabled,
-	] = useMultiCurrency();
+	const [ isMultiCurrencyEnabled, updateIsMultiCurrencyEnabled ] =
+		useMultiCurrency();
 
 	const handleMultiCurrencyStatusChange = ( value ) => {
 		updateIsMultiCurrencyEnabled( value );
@@ -31,6 +29,7 @@ const MultiCurrencyToggle = () => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/" />
 					),
 				},
@@ -38,6 +37,7 @@ const MultiCurrencyToggle = () => {
 			checked={ isMultiCurrencyEnabled }
 			onChange={ handleMultiCurrencyStatusChange }
 			data-testid="multi-currency-toggle"
+			__nextHasNoMarginBottom
 		/>
 	);
 };

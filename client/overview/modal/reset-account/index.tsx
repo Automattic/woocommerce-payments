@@ -37,7 +37,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 			<div className="wcpay-reset-account-modal__content">
 				{
 					// Only show the steps involved info if the account has been onboarded in live mode.
-					! isInTestModeOnboarding && (
+					! isInTestModeOnboarding() && (
 						<>
 							<b>{ strings.beforeContinue }</b>
 							<ol>
@@ -58,6 +58,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 						setSubmitted( false );
 						onDismiss();
 					} }
+					__next40pxDefaultSize
 				>
 					{ strings.cancel }
 				</Button>
@@ -70,6 +71,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 						setSubmitted( true );
 						onSubmit();
 					} }
+					__next40pxDefaultSize
 				>
 					{ strings.reset }
 				</Button>

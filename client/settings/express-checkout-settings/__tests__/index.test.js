@@ -11,17 +11,25 @@ import { render, screen } from '@testing-library/react';
 import ExpressCheckoutSettings from '..';
 import PaymentRequestButtonPreview from '../payment-request-button-preview';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
+import { useGetPaymentMethodStatuses } from 'wcpay/data';
 
-jest.mock( '../../../data', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useTestMode: jest.fn().mockReturnValue( [] ),
 	useGetSettings: jest.fn().mockReturnValue( {} ),
 	useSettings: jest.fn().mockReturnValue( {} ),
+	useGetAvailablePaymentMethodIds: jest.fn().mockReturnValue( [] ),
+	useGetPaymentMethodStatuses: jest.fn(),
+	useEnabledPaymentMethodIds: jest.fn().mockReturnValue( [ [], jest.fn() ] ),
 	usePaymentRequestEnabledSettings: jest
 		.fn()
 		.mockReturnValue( [ true, jest.fn() ] ),
 	usePaymentRequestLocations: jest
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
+	useExpressCheckoutInPaymentMethodsEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ true, jest.fn() ] ),
 	useWooPayCustomMessage: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
 	useWooPayStoreLogo: jest.fn().mockReturnValue( [ 'test', jest.fn() ] ),
@@ -36,6 +44,10 @@ jest.mock( '../../../data', () => ( {
 		.fn()
 		.mockReturnValue( [ [ true, true, true ], jest.fn() ] ),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
+	useAmazonPayEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
+	useAmazonPayLocations: jest.fn().mockReturnValue( [ [], jest.fn() ] ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -68,6 +80,32 @@ jest.mock( '@woocommerce/components', () => ( {
 		) ),
 } ) );
 
+// Mock CSS imports to prevent CSS parsing errors due to RangeControl.
+jest.mock( '../index.scss', () => ( {} ) );
+
+// Suppress CSS parsing errors from components
+// eslint-disable-next-line no-console
+const originalError = console.error;
+beforeAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = ( ...args ) => {
+		// Suppress CSS parsing errors
+		if (
+			args[ 0 ] &&
+			args[ 0 ].message &&
+			args[ 0 ].message.includes( 'Could not parse CSS stylesheet' )
+		) {
+			return;
+		}
+		originalError.call( console, ...args );
+	};
+} );
+
+afterAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = originalError;
+} );
+
 const renderWithSettingsProvider = ( ui ) =>
 	render(
 		<WCPaySettingsContext.Provider value={ global.wcpaySettings }>
@@ -82,8 +120,13 @@ describe( 'ExpressCheckoutSettings', () => {
 			restUrl: 'http://example.com/wp-json/',
 			featureFlags: {
 				woopayExpressCheckout: true,
+				isDynamicCheckoutPlaceOrderButtonEnabled: true,
 			},
 		};
+
+		useGetPaymentMethodStatuses.mockReturnValue( {
+			amazon_pay_payments: upeCapabilityStatuses.ACTIVE,
+		} );
 	} );
 
 	test( 'renders error message for invalid method IDs', () => {
@@ -114,21 +157,9 @@ describe( 'ExpressCheckoutSettings', () => {
 		);
 
 		const label = screen.getByRole( 'checkbox', {
-			name: 'Enable Apple Pay / Google Pay',
+			name: 'Enable Apple Pay / Google Pay as express payment buttons',
 		} );
 		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders payment request general setting and confirm its first heading', () => {
-		renderWithSettingsProvider(
-			<ExpressCheckoutSettings methodId="payment_request" />
-		);
-
-		expect(
-			screen.queryByRole( 'heading', {
-				name: 'Enable Apple Pay and Google Pay on selected pages',
-			} )
-		).toBeInTheDocument();
 	} );
 
 	test( 'renders woopay settings and confirm its checkbox label', () => {
@@ -142,13 +173,13 @@ describe( 'ExpressCheckoutSettings', () => {
 		expect( label ).toBeInTheDocument();
 	} );
 
-	test( 'renders WooPay express button appearance settings if feature flag is enabled and confirm its first heading', () => {
+	test( 'renders WooPay express button appearance settings if feature flag is enabled and confirm its first input', () => {
 		renderWithSettingsProvider(
 			<ExpressCheckoutSettings methodId="woopay" />
 		);
 
 		expect(
-			screen.queryByRole( 'heading', {
+			screen.queryByRole( 'combobox', {
 				name: 'Call to action',
 			} )
 		).toBeInTheDocument();

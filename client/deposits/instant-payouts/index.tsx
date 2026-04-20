@@ -4,9 +4,9 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -19,7 +19,7 @@ import type * as AccountOverview from 'wcpay/types/account-overview';
 
 const isButtonDisabled = ( instantBalance: AccountOverview.InstantBalance ) => {
 	let buttonDisabled = false;
-	if ( 0 === instantBalance.amount ) {
+	if ( instantBalance.amount === 0 ) {
 		buttonDisabled = true;
 	}
 
@@ -46,9 +46,10 @@ const InstantPayoutButton: React.FC< InstantPayoutButtonProps > = ( {
 	return (
 		<>
 			<Button
-				isPrimary
+				variant="primary"
 				disabled={ buttonDisabled }
 				onClick={ () => setModalOpen( true ) }
+				__next40pxDefaultSize
 			>
 				{ sprintf(
 					__(

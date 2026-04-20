@@ -13,8 +13,9 @@ import { useEffect, useRef } from 'react';
 const SupportEmailInput = ( { setInputVallid } ) => {
 	const [ supportEmail, setSupportEmail ] = useAccountBusinessSupportEmail();
 
-	let supportEmailError = useGetSavingError()?.data?.details
-		?.account_business_support_email?.message;
+	let supportEmailError =
+		useGetSavingError()?.data?.details?.account_business_support_email
+			?.message;
 
 	const currentEmail = useRef( supportEmail ).current;
 	if ( supportEmail === '' && currentEmail !== '' ) {
@@ -48,6 +49,8 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 				value={ supportEmail }
 				onChange={ setSupportEmail }
 				data-testid={ 'account-business-support-email-input' }
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
 			/>
 		</>
 	);

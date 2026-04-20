@@ -2,7 +2,7 @@
  * Transform shipping address information from Stripe's address object to
  * the cart shipping address object shape.
  *
- * @param {string} name Stripe's shipping address item
+ * @param {string} name            Stripe's shipping address item
  * @param {Object} shippingAddress Stripe's shipping address item
  *
  * @return {Object} The shipping address in the shape expected by the cart.
@@ -25,14 +25,18 @@ export const transformStripeShippingAddressForStoreApi = (
 /**
  * Transform order data from Stripe's object to the expected format for WC.
  *
- * @param {Object} paymentData Stripe's order object.
- * @param {string} paymentMethodId Stripe's payment method id.
+ * @param {Object}   paymentData          Stripe's order object.
+ * @param {string}   paymentCredentialId  Stripe's confirmation token id or payment method id.
+ * @param {boolean}  useConfirmationToken Whether the payment credential is a confirmation token.
+ * @param {string[]} paymentMethodTypes   Array of Stripe payment method types used for Elements initialization.
  *
  * @return {Object} Order object in the format WooCommerce expects.
  */
 export const transformStripePaymentMethodForStoreApi = (
 	paymentData,
-	paymentMethodId
+	paymentCredentialId,
+	useConfirmationToken = true,
+	paymentMethodTypes = []
 ) => {
 	const name = paymentData.billingDetails?.name || '';
 	const billing = paymentData.billingDetails?.address ?? {};
@@ -78,20 +82,22 @@ export const transformStripePaymentMethodForStoreApi = (
 				value: 'card',
 			},
 			{
-				key: 'payment_request_type',
-				value: paymentData.expressPaymentType,
-			},
-			{
 				key: 'wcpay-fraud-prevention-token',
 				value: window.wcpayFraudPreventionToken ?? '',
 			},
 			{
-				key: 'wcpay-payment-method',
-				value: paymentMethodId,
+				key: useConfirmationToken
+					? 'wcpay-confirmation-token'
+					: 'wcpay-payment-method',
+				value: paymentCredentialId,
 			},
 			{
 				key: 'express_payment_type',
 				value: paymentData.expressPaymentType,
+			},
+			{
+				key: 'wcpay-express-payment-method-types',
+				value: JSON.stringify( paymentMethodTypes ),
 			},
 		],
 	};

@@ -9,7 +9,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  */
 import { getExpressCheckoutData } from '../utils';
 import { applyFilters } from '@wordpress/hooks';
-import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/shipping-limits';
 
 /**
  * GooglePay/ApplePay expect the prices to be formatted in cents.
@@ -17,8 +17,8 @@ import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constan
  * Using this function to ensure the prices provided to GooglePay/ApplePay
  * are always provided accurately, regardless of the number of decimals.
  *
- * @param {number} price the price to format.
- * @param {{currency_minor_unit: {number}}} priceObject the price object returned by the Store API
+ * @param {number}                        price       the price to format.
+ * @param {{currency_minor_unit: number}} priceObject the price object returned by the Store API
  *
  * @return {number} the price amount for GooglePay/ApplePay, always expressed in cents.
  */
@@ -40,8 +40,8 @@ export const transformPrice = ( price, priceObject ) => {
  * @return {{pending: boolean, name: string, amount: integer}} `displayItems` for Stripe.
  */
 export const transformCartDataForDisplayItems = ( rawCartData ) => {
-	const displayPriceIncludingTax = getExpressCheckoutData( 'checkout' )
-		.display_prices_with_tax;
+	const displayPriceIncludingTax =
+		getExpressCheckoutData( 'checkout' ).display_prices_with_tax;
 	// allowing extensions to manipulate the individual items returned by the backend.
 	const cartData = applyFilters(
 		'wcpay.express-checkout.map-line-items',
@@ -187,10 +187,25 @@ export const transformCartDataForDisplayItems = ( rawCartData ) => {
  * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingRates` for Stripe.
  */
 export const transformCartDataForShippingRates = ( cartData ) => {
-	const displayPriceIncludingTax = getExpressCheckoutData( 'checkout' )
-		.display_prices_with_tax;
+	const displayPriceIncludingTax =
+		getExpressCheckoutData( 'checkout' ).display_prices_with_tax;
 
-	return cartData.shipping_rates?.[ 0 ]?.shipping_rates
+	const baseShippingRates =
+		cartData.shipping_rates?.[ 0 ]?.shipping_rates || [];
+
+	// Apply filter to allow modifications (e.g., for trial subscriptions
+	// where shipping rates are in subscription extensions)
+	const effectiveShippingRates = applyFilters(
+		'wcpay.express-checkout.shipping-rates',
+		baseShippingRates,
+		cartData
+	);
+
+	if ( ! effectiveShippingRates || effectiveShippingRates.length === 0 ) {
+		return [];
+	}
+
+	return effectiveShippingRates
 		.sort( ( rateA, rateB ) => {
 			if ( rateA.selected === rateB.selected ) {
 				return 0; // Keep relative order if both have the same value for 'selected'

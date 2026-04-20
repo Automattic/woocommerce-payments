@@ -1,5 +1,3 @@
-const { jsWithBabel: tsjPreset } = require( 'ts-jest/presets' );
-
 module.exports = {
 	rootDir: '../../',
 	moduleDirectories: [
@@ -46,6 +44,13 @@ module.exports = {
 		'<rootDir>/.*/build-module/',
 		'<rootDir>/docker/',
 		'<rootDir>/tests/e2e',
+		'<rootDir>/tests/qit',
+	],
+	modulePathIgnorePatterns: [
+		'<rootDir>/docker/',
+		'<rootDir>/vendor/',
+		'<rootDir>/.*/build/',
+		'<rootDir>/.*/build-module/',
 	],
 	watchPathIgnorePatterns: [
 		'/node_modules/',
@@ -54,14 +59,15 @@ module.exports = {
 		'<rootDir>/.*/build-module/',
 		'<rootDir>/docker/',
 		'<rootDir>/tests/e2e',
+		'<rootDir>/tests/qit',
 	],
 	transform: {
-		...tsjPreset.transform,
+		'^.+\\.jsx?$': 'babel-jest',
+		'^.+\\.tsx?$': [ 'ts-jest', { isolatedModules: true } ],
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
 	transformIgnorePatterns: [
 		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/|@automattic/material-design-icons/)',
 	],
 	snapshotSerializers: [ '@emotion/jest/serializer' ],
-	verbose: true,
 };

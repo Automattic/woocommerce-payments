@@ -35,6 +35,7 @@ env:
     WCPAY_ARTIFACT_DIRECTORY: 'zipfile'
     NODE_ENV: 'test'
     FORCE_E2E_DEPS_SETUP: true
+    E2E_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -52,23 +53,19 @@ jobs:
 
         steps:
             - name: Checkout WCPay repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
               with:
                   ref: ${{ inputs.repo-branch || github.ref }}
 
             - name: 'Download WooCommerce Payments build file'
               if: ${{ inputs.wcpay-use-build-artifact }}
-              uses: actions/download-artifact@v4
+              uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
               with:
                   name: woocommerce-payments
                   path: ${{ env.WCPAY_ARTIFACT_DIRECTORY }}
 
             - name: Setup E2E environment
               uses: ./.github/actions/e2e/env-setup
-
-            - name: Install Playwright
-              shell: bash
-              run: npx playwright install chromium
 
             - name: Run tests, upload screenshots & logs
               uses: ./.github/actions/e2e/run-log-tests

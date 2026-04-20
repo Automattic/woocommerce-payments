@@ -50,39 +50,32 @@ test.describe( 'Multi-currency checkout', () => {
 		Object.keys( currenciesOrders ).forEach( ( currency: string ) => {
 			test( `checkout with ${ currency }`, async () => {
 				await test.step( `pay with ${ currency }`, async () => {
-					currenciesOrders[
-						currency
-					] = await shopper.placeOrderWithCurrency(
-						shopperPage,
-						currency
-					);
+					currenciesOrders[ currency ] =
+						await shopper.placeOrderWithCurrency(
+							shopperPage,
+							currency
+						);
 				} );
 
-				await test.step(
-					`should display ${ currency } in the order received page`,
-					async () => {
-						await expect(
-							shopperPage.locator(
-								'.woocommerce-order-overview__total'
-							)
-						).toHaveText( new RegExp( currency ) );
-					}
-				);
+				await test.step( `should display ${ currency } in the order received page`, async () => {
+					await expect(
+						shopperPage.locator(
+							'.woocommerce-order-overview__total'
+						)
+					).toHaveText( new RegExp( currency ) );
+				} );
 
-				await test.step(
-					`should display ${ currency } in the customer order page`,
-					async () => {
-						await navigation.goToOrder(
-							shopperPage,
-							currenciesOrders[ currency ]
-						);
-						await expect(
-							shopperPage.getByRole( 'cell', {
-								name: /\$?\d\d[\.,]\d\d\s€?\s?[A-Z]{3}/,
-							} )
-						).toHaveText( new RegExp( currency ) );
-					}
-				);
+				await test.step( `should display ${ currency } in the customer order page`, async () => {
+					await navigation.goToOrder(
+						shopperPage,
+						currenciesOrders[ currency ]
+					);
+					await expect(
+						shopperPage.getByRole( 'cell', {
+							name: /\$?\d\d[\.,]\d\d\s€?\s?[A-Z]{3}/,
+						} )
+					).toHaveText( new RegExp( currency ) );
+				} );
 			} );
 		} );
 	} );
@@ -141,7 +134,7 @@ test.describe( 'Multi-currency checkout', () => {
 				config.addresses[ 'upe-customer' ].billing.be
 			);
 			await expect(
-				shopperPage.getByText( 'Bancontact' )
+				shopperPage.getByText( 'Bancontact', { exact: true } )
 			).not.toBeVisible();
 
 			// Shopper switch to EUR.
@@ -152,10 +145,8 @@ test.describe( 'Multi-currency checkout', () => {
 				shopperPage,
 				config.addresses[ 'upe-customer' ].billing.be
 			);
-			await expect( shopperPage.getByText( 'Bancontact' ) ).toBeVisible();
+			await shopper.selectPaymentMethod( shopperPage, 'Bancontact' );
 
-			// Shopper checkout with Bancontact.
-			await shopperPage.getByText( 'Bancontact' ).click();
 			await shopper.focusPlaceOrderButton( shopperPage );
 			await shopper.placeOrder( shopperPage );
 			await shopperPage
@@ -182,7 +173,9 @@ test.describe( 'Multi-currency checkout', () => {
 				shopperPage,
 				config.addresses[ 'upe-customer' ].billing.be
 			);
-			await expect( shopperPage.getByText( 'Bancontact' ) ).toBeVisible();
+			await expect(
+				shopperPage.getByText( 'Bancontact', { exact: true } )
+			).toBeVisible();
 
 			// Shopper switch to USD.
 			await navigation.goToCheckout( shopperPage, {
@@ -193,7 +186,7 @@ test.describe( 'Multi-currency checkout', () => {
 				config.addresses[ 'upe-customer' ].billing.be
 			);
 			await expect(
-				shopperPage.getByText( 'Bancontact' )
+				shopperPage.getByText( 'Bancontact', { exact: true } )
 			).not.toBeVisible();
 
 			// Shopper checkout with CC.

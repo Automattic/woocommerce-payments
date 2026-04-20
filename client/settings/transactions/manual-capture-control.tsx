@@ -4,11 +4,11 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import {
 	useManualCapture,
 	useCardPresentEligible,
@@ -20,10 +20,8 @@ import interpolateComponents from '@automattic/interpolate-components';
 import InlineNotice from 'components/inline-notice';
 
 const ManualCaptureControl = (): JSX.Element => {
-	const [
-		isManualCaptureEnabled,
-		setIsManualCaptureEnabled,
-	] = useManualCapture();
+	const [ isManualCaptureEnabled, setIsManualCaptureEnabled ] =
+		useManualCapture();
 	const [ isStripeBillingEnabled ] = useStripeBilling();
 	const [ isCardPresentEligible ] = useCardPresentEligible();
 
@@ -60,11 +58,21 @@ const ManualCaptureControl = (): JSX.Element => {
 				label={ __( 'Enable manual capture', 'woocommerce-payments' ) }
 				help={
 					<span>
-						{ __(
-							'Charge must be captured on the order details screen within 7 days of authorization, ' +
-								'otherwise the authorization and order will be canceled.',
-							'woocommerce-payments'
-						) }
+						{ interpolateComponents( {
+							mixedString: __(
+								'Issue an authorization on checkout and capture later. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
+								'woocommerce-payments'
+							),
+							components: {
+								learnMoreLink: (
+									<a
+										href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/"
+										target="_blank"
+										rel="noreferrer"
+									/>
+								),
+							},
+						} ) }
 						{ isCardPresentEligible
 							? interpolateComponents( {
 									mixedString: __(
@@ -74,6 +82,7 @@ const ManualCaptureControl = (): JSX.Element => {
 									),
 									components: {
 										a: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
 										),
 									},
@@ -81,9 +90,10 @@ const ManualCaptureControl = (): JSX.Element => {
 							: '' }
 					</span>
 				}
+				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (
-				<InlineNotice status="warning" isDismissible={ false } icon>
+				<InlineNotice status="warning" isDismissible={ false }>
 					{ __(
 						'Manual capture is not available when Stripe Billing is active.',
 						'woocommerce-payments'
@@ -96,9 +106,10 @@ const ManualCaptureControl = (): JSX.Element => {
 						'Enable manual capture',
 						'woocommerce-payments'
 					) }
+					className="manual-capture-confirmation-modal"
 					actions={
 						<>
-							<Button onClick={ handleModalCancel } isSecondary>
+							<Button onClick={ handleModalCancel } isTertiary>
 								{ __( 'Cancel', 'woocommerce-payments' ) }
 							</Button>
 							<Button
@@ -114,24 +125,40 @@ const ManualCaptureControl = (): JSX.Element => {
 					}
 					onRequestClose={ handleModalCancel }
 				>
-					<strong>
-						{ __(
-							'Payments must be captured within 7 days or the authorization will expire and money will be returned to the shopper.',
-							'woocommerce-payments'
-						) }
-					</strong>
 					<p>
+						{ interpolateComponents( {
+							mixedString: __(
+								'Payments {{strong}}must be captured on the order details screen within 7 days ' +
+									'of authorization{{/strong}}, otherwise the authorization and order will be canceled.',
+								'woocommerce-payments'
+							),
+							components: {
+								strong: <strong />,
+							},
+						} ) }
+						<br />
+						{ interpolateComponents( {
+							mixedString: __(
+								'{{learnMoreLink}}Learn more about manual capture{{/learnMoreLink}}.',
+								'woocommerce-payments'
+							),
+							components: {
+								learnMoreLink: (
+									<a
+										href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/"
+										target="_blank"
+										rel="noreferrer"
+									/>
+								),
+							},
+						} ) }
+					</p>
+					<InlineNotice status="info" isDismissible={ false }>
 						{ __(
-							'Additionally, only card payments support manual capture. Non-card payments will be hidden from checkout.',
+							"Manual capture is available for card payments only. Payment methods that don't support it will be disabled.",
 							'woocommerce-payments'
 						) }
-					</p>
-					<p>
-						{ __(
-							'Do you want to continue?',
-							'woocommerce-payments'
-						) }
-					</p>
+					</InlineNotice>
 				</ConfirmationModal>
 			) }
 		</>

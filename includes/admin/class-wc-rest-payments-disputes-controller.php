@@ -36,7 +36,7 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/download/(?P<export_id>.*)',
+			'/' . $this->rest_base . '/download/(?P<export_id>[^/\\\\%]+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_export_url' ],

@@ -4,12 +4,12 @@
  * External dependencies
  */
 import React from 'react';
-import { Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { Modal } from '@wordpress/components';
 import VatForm from '../form';
 import { VatFormOnCompleted } from '../types';
 

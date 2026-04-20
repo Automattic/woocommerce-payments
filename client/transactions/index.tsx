@@ -3,14 +3,14 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
-import { TabPanel } from '@wordpress/components';
+import React from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { TabPanel } from '@wordpress/components';
 import Page from 'components/page';
 import TransactionsList from './list';
 import { TestModeNotice } from 'components/test-mode-notice';
@@ -23,7 +23,8 @@ import {
 } from 'wcpay/data';
 import WCPaySettingsContext from '../settings/wcpay-settings-context';
 import BlockedList from './blocked';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
+import ErrorBoundary from 'components/error-boundary';
+import SpotlightPromotion from 'promotions/spotlight';
 
 declare const window: any;
 
@@ -63,9 +64,6 @@ export const TransactionsPage: React.FC = () => {
 		),
 	};
 
-	const {
-		featureFlags: { isAuthAndCaptureEnabled },
-	} = useContext( WCPaySettingsContext );
 	const [ getIsManualCaptureEnabled ] = useManualCapture();
 	const { isLoading: isLoadingSettings } = useSettings();
 	const { authorizationsSummary } = useAuthorizationsSummary( {} );
@@ -100,14 +98,13 @@ export const TransactionsPage: React.FC = () => {
 			className: 'blocked-list',
 		},
 	].filter( ( item ) => {
-		if ( 'uncaptured-page' !== item.name ) return true;
+		if ( item.name !== 'uncaptured-page' ) return true;
 
-		return isAuthAndCaptureEnabled && shouldShowUncapturedTab;
+		return shouldShowUncapturedTab;
 	} );
 
 	return (
 		<Page className="wcpay-transactions-page">
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="transactions" />
 			<TabPanel
 				activeClass="active-tab"
@@ -123,6 +120,9 @@ export const TransactionsPage: React.FC = () => {
 					);
 				} }
 			</TabPanel>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

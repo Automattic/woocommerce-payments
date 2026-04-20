@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * External dependencies
@@ -18,23 +18,20 @@ const renderSaveUserSection = () => {
 		return;
 	}
 
-	const blocksCheckout = document.getElementsByClassName(
-		'wc-block-checkout'
-	);
+	const blocksCheckout =
+		document.getElementsByClassName( 'wc-block-checkout' );
 
 	if ( blocksCheckout.length ) {
-		let checkoutPageSaveUserContainer = document.querySelector(
-			'#remember-me'
-		);
+		let checkoutPageSaveUserContainer =
+			document.querySelector( '#remember-me' );
 
 		if ( ! checkoutPageSaveUserContainer ) {
 			const paymentOptions = document.getElementsByClassName(
 				'wp-block-woocommerce-checkout-payment-block'
 			)?.[ 0 ];
 
-			checkoutPageSaveUserContainer = document.createElement(
-				'fieldset'
-			);
+			checkoutPageSaveUserContainer =
+				document.createElement( 'fieldset' );
 
 			checkoutPageSaveUserContainer.className =
 				'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block wc-block-components-checkout-step ';
@@ -49,10 +46,8 @@ const renderSaveUserSection = () => {
 			}
 		}
 
-		ReactDOM.render(
-			<CheckoutPageSaveUser isBlocksCheckout={ true } />,
-			checkoutPageSaveUserContainer
-		);
+		const root = createRoot( checkoutPageSaveUserContainer );
+		root.render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =
@@ -69,10 +64,8 @@ const renderSaveUserSection = () => {
 				placeOrderButton
 			);
 
-			ReactDOM.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ false } />,
-				checkoutPageSaveUserContainer
-			);
+			const root = createRoot( checkoutPageSaveUserContainer );
+			root.render( <CheckoutPageSaveUser isBlocksCheckout={ false } /> );
 		}
 	}
 };

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -11,8 +11,9 @@ import { getConfig } from 'utils/checkout';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';
+import { maybePersistAdminWoopayAppearance } from '../appearance/persist-admin';
 
-const oldWoopayContainers = [];
+const oldWoopayRoots = [];
 
 const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 	// Create an API object, which will be used throughout the checkout.
@@ -29,15 +30,16 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 	const woopayContainer = document.getElementById( 'wcpay-woopay-button' );
 
 	if ( woopayContainer ) {
-		while ( oldWoopayContainers.length > 0 ) {
+		while ( oldWoopayRoots.length > 0 ) {
 			// Ensure previous buttons are unmounted and cleaned up.
-			const oldWoopayContainer = oldWoopayContainers.pop();
-			ReactDOM.unmountComponentAtNode( oldWoopayContainer );
+			const oldWoopayRoot = oldWoopayRoots.pop();
+			oldWoopayRoot.unmount();
 		}
 
-		oldWoopayContainers.push( woopayContainer );
+		const root = createRoot( woopayContainer );
+		oldWoopayRoots.push( root );
 
-		ReactDOM.render(
+		root.render(
 			<WoopayExpressCheckoutButton
 				listenForCartChanges={ listenForCartChanges }
 				buttonSettings={ getConfig( 'woopayButton' ) }
@@ -46,8 +48,7 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 					!! woopayContainer.getAttribute( 'data-product_page' )
 				}
 				emailSelector="#billing_email"
-			/>,
-			woopayContainer
+			/>
 		);
 	}
 };
@@ -76,7 +77,10 @@ jQuery( ( $ ) => {
 	listenForCartChanges.start();
 } );
 
-window.addEventListener(
-	'load',
-	renderWooPayExpressCheckoutButtonWithCallbacks
-);
+window.addEventListener( 'load', () => {
+	renderWooPayExpressCheckoutButtonWithCallbacks();
+
+	// When the checkout is loaded inside the Customizer preview, capture
+	// the live DOM appearance and persist it via the admin endpoint.
+	maybePersistAdminWoopayAppearance();
+} );

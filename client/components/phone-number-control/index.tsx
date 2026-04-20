@@ -74,7 +74,7 @@ const PhoneNumberControl: React.FC< Props > = ( {
 	};
 
 	return (
-		<BaseControl id={ id } { ...rest }>
+		<BaseControl id={ id } { ...rest } __nextHasNoMarginBottom>
 			<div
 				className={ clsx(
 					'wcpay-component-phone-number-control',

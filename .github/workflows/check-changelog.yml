@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       # enable dependencies caching
       - name: Add composer to cache
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/composer/
           key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
@@ -27,7 +27,7 @@ jobs:
       - name: "Set up PHP"
         uses: ./.github/actions/setup-php
       # Install composer packages.
-      - run: composer self-update && composer install --no-progress
+      - run: composer self-update && composer install --no-progress --ignore-platform-req=php
       # Fetch the target branch before running the check.
       - name: Fetch the target origin branch
         run: git fetch origin $GITHUB_BASE_REF

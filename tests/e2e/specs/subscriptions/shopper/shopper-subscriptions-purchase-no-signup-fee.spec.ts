@@ -45,9 +45,9 @@ describeif( shouldRunSubscriptionsTests )(
 				);
 				await goToProductPageBySlug( shopperPage, productSlug );
 				await shopperPage
-					.getByRole( 'button', { name: 'Sign up now' } )
+					.getByRole( 'button', { name: 'Add to cart', exact: true } )
 					.click();
-				await shopperPage.waitForLoadState( 'networkidle' );
+				// Wait for the "added to cart" confirmation message.
 				await expect(
 					shopperPage.getByText( /has been added to your cart\./ )
 				).toBeVisible();
@@ -94,7 +94,7 @@ describeif( shouldRunSubscriptionsTests )(
 				.replace( '#', '' );
 
 			const transactionPageLink = await merchantPage
-				.getByText( 'Payment via Cards', { exact: false } )
+				.getByText( 'Payment via Card', { exact: false } )
 				.getByRole( 'link', { name: /pi_.+/ } )
 				.getAttribute( 'href' );
 

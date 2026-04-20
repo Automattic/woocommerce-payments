@@ -2,15 +2,15 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
-import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
+import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
 import Page from 'components/page';
 import { useDispute } from 'data/index';
-import { Charge } from 'wcpay/types/charges';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
@@ -23,14 +23,11 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 
 	useEffect( () => {
 		if ( ! isLoading && dispute?.charge ) {
-			// Dispute type allows charge as nested object or string ID,
-			// so we have to hint we expect a Charge object here.
-			const chargeObject = dispute.charge as Charge;
 			const transactionDetailsUrl = getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
-				id: chargeObject.payment_intent,
-				transaction_id: chargeObject.balance_transaction,
+				id: dispute.payment_intent,
+				transaction_id: dispute.charge.balance_transaction,
 				type: 'dispute',
 			} );
 			getHistory().replace( transactionDetailsUrl );
@@ -50,9 +47,19 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 						</FlexItem>
 						<FlexItem>
 							<div>
-								<b>Error retrieving dispute</b>
+								<b>
+									{ __(
+										'Error retrieving dispute',
+										'woocommerce-payments'
+									) }
+								</b>
 							</div>
-							<div>Please check your network and try again.</div>
+							<div>
+								{ __(
+									'Please check your network and try again.',
+									'woocommerce-payments'
+								) }
+							</div>
 						</FlexItem>
 					</>
 				) : (
@@ -62,9 +69,19 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 						</FlexItem>
 						<FlexItem>
 							<div>
-								<b>One moment please</b>
+								<b>
+									{ __(
+										'One moment please',
+										'woocommerce-payments'
+									) }
+								</b>
 							</div>
-							<div>Redirecting to payment details…</div>
+							<div>
+								{ __(
+									'Redirecting to payment details…',
+									'woocommerce-payments'
+								) }
+							</div>
 						</FlexItem>
 					</>
 				) }

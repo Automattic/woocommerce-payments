@@ -14,39 +14,31 @@ import MasterCardAsset from 'assets/images/cards/mastercard.svg?asset';
 import AmexAsset from 'assets/images/cards/amex.svg?asset';
 import WooAsset from 'assets/images/payment-methods/woo.svg?asset';
 import WooAssetShort from 'assets/images/payment-methods/woo-short.svg?asset';
-import ApplePayAsset from 'assets/images/cards/apple-pay.svg?asset';
-import GooglePayAsset from 'assets/images/cards/google-pay.svg?asset';
 import DinersClubAsset from 'assets/images/cards/diners.svg?asset';
 import DiscoverAsset from 'assets/images/cards/discover.svg?asset';
 import CBAsset from 'assets/images/cards/cb.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
-import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
 import './style.scss';
 
-const iconComponent = (
-	src: string,
-	alt: string,
-	border = true
-): ReactImgFuncComponent => ( { className, ...props } ) => (
-	<img
-		className={ clsx(
-			'payment-method__icon',
-			border ? '' : 'no-border',
-			className
-		) }
-		src={ src }
-		alt={ alt }
-		{ ...props }
-	/>
-);
+const iconComponent =
+	( src: string, alt: string, border = true ): ReactImgFuncComponent =>
+	( { className, ...props } ) =>
+		(
+			<img
+				className={ clsx(
+					'payment-method__icon',
+					border ? '' : 'no-border',
+					className
+				) }
+				src={ src }
+				alt={ alt }
+				{ ...props }
+			/>
+		);
 
 export const AmericanExpressIcon = iconComponent(
 	AmexAsset,
 	__( 'American Express', 'woocommerce-payments' )
-);
-export const ApplePayIcon = iconComponent(
-	ApplePayAsset,
-	__( 'Apple Pay', 'woocommerce-payments' )
 );
 export const CBIcon = iconComponent(
 	CBAsset,
@@ -60,17 +52,9 @@ export const DiscoverIcon = iconComponent(
 	DiscoverAsset,
 	__( 'Discover', 'woocommerce-payments' )
 );
-export const GooglePayIcon = iconComponent(
-	GooglePayAsset,
-	__( 'Google Pay', 'woocommerce-payments' )
-);
 export const JCBIcon = iconComponent(
 	JCBAsset,
 	__( 'JCB', 'woocommerce-payments' )
-);
-export const LinkIcon = iconComponent(
-	LinkAsset,
-	__( 'Link', 'woocommerce-payments' )
 );
 export const MastercardIcon = iconComponent(
 	MasterCardAsset,

@@ -4,8 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
+import { userEvent as user } from 'jest-utils/user-event-timers';
 import { select } from '@wordpress/data';
 
 /**
@@ -41,6 +41,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useUnselectedPaymentMethod: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
 } ) );
 
 jest.mock( 'multi-currency/interface/data', () => ( {
@@ -175,7 +178,7 @@ describe( 'PaymentMethodsSection', () => {
 		).toEqual( 6 );
 	} );
 
-	it( 'renders the activation modal when requirements exist for the payment method', () => {
+	it( 'renders the activation modal when requirements exist for the payment method', async () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
@@ -199,11 +202,9 @@ describe( 'PaymentMethodsSection', () => {
 
 		jest.useFakeTimers();
 
-		act( () => {
-			// Enabling a PM with requirements should show the activation modal
-			user.click( bancontactCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
+		// Enabling a PM with requirements should show the activation modal
+		await user.click( bancontactCheckbox );
+		jest.runOnlyPendingTimers();
 
 		expect(
 			screen.queryByText(
@@ -214,7 +215,9 @@ describe( 'PaymentMethodsSection', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'renders the delete modal on an already active payment method', () => {
+	it( 'disables an already active payment method without confirmation modal', async () => {
+		const mockUnselect = jest.fn();
+		useUnselectedPaymentMethod.mockReturnValue( [ null, mockUnselect ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'bancontact' ],
 			jest.fn(),
@@ -229,27 +232,17 @@ describe( 'PaymentMethodsSection', () => {
 
 		render( <PaymentMethodsSection /> );
 
-		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
-
 		const bancontactCheckbox = screen.getByLabelText( 'Bancontact' );
-
 		expect( bancontactCheckbox ).toBeChecked();
 
-		jest.useFakeTimers();
+		await user.click( bancontactCheckbox );
 
-		act( () => {
-			// Disabling an already active PM should show the delete modal
-			user.click( bancontactCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
-
+		expect( mockUnselect ).toHaveBeenCalledWith( 'bancontact' );
 		expect(
 			screen.queryByText(
 				/Your customers will no longer be able to pay using Bancontact\./
 			)
-		).toBeInTheDocument();
-
-		jest.useRealTimers();
+		).not.toBeInTheDocument();
 	} );
 
 	it( "renders the setup tooltip correctly when multi currency is disabled and store currency doesn't support the LPM", () => {
@@ -324,5 +317,35 @@ describe( 'PaymentMethodsSection', () => {
 				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'should show manual capture banner when manual capture is enabled', () => {
+		useManualCapture.mockReturnValue( [ true, jest.fn() ] );
+
+		render( <PaymentMethodsSection /> );
+
+		expect(
+			screen.queryByText(
+				/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'should not show manual capture banner when manual capture is disabled', () => {
+		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
+
+		render( <PaymentMethodsSection /> );
+
+		expect(
+			screen.queryByText(
+				/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).not.toBeInTheDocument();
 	} );
 } );

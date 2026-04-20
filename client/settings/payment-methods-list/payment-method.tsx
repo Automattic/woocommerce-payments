@@ -4,7 +4,6 @@
  */
 import clsx from 'clsx';
 import React, { useContext } from 'react';
-import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -15,9 +14,13 @@ import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
+	getDiscountBadgeText,
+	getDiscountTooltipText,
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import { PmPromotion } from 'wcpay/data/pm-promotions/types';
 import Chip from 'wcpay/components/chip';
+import PromotionalBadge from 'wcpay/components/promotional-badge';
 import Pill from 'wcpay/components/pill';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
@@ -34,7 +37,8 @@ import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import usePaymentMethodAvailability from './use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
-import { useEnabledPaymentMethodIds } from 'wcpay/data';
+import { useEnabledPaymentMethodIds, usePmPromotions } from 'wcpay/data';
+import PaymentMethodItem from 'wcpay/components/payment-method-item';
 
 interface PaymentMethodProps {
 	id: string;
@@ -51,11 +55,45 @@ interface PaymentMethodProps {
 const PaymentMethodLabel = ( {
 	id,
 	label,
+	accountFees,
+	badgePromotion,
 }: {
 	id: string;
 	label: string;
+	accountFees?: Record< string, FeeStructure >;
+	badgePromotion?: PmPromotion;
 } ): React.ReactElement => {
 	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
+
+	const discountFee = accountFees?.[ id ]?.discount?.[ 0 ];
+	const hasDiscount = discountFee?.discount;
+
+	// Show badge for either: active discount fee OR badge-type promotion.
+	const showPromotionalBadge = hasDiscount || badgePromotion;
+
+	// Determine badge content based on source.
+	const getBadgeContent = () => {
+		if ( hasDiscount ) {
+			return {
+				message: getDiscountBadgeText( discountFee ),
+				tooltip: getDiscountTooltipText( discountFee ),
+				tooltipLabel: __( 'Discount details', 'woocommerce-payments' ),
+			};
+		}
+		if ( badgePromotion ) {
+			return {
+				message: badgePromotion.title,
+				tooltip: badgePromotion.description,
+				tooltipLabel: __( 'Promotion details', 'woocommerce-payments' ),
+				tcUrl: badgePromotion.tc_url,
+				tcLabel: badgePromotion.tc_label,
+				type: badgePromotion.badge_type,
+			};
+		}
+		return null;
+	};
+
+	const badgeContent = getBadgeContent();
 
 	return (
 		<>
@@ -66,6 +104,16 @@ const PaymentMethodLabel = ( {
 				</span>
 			) }
 			{ chip && <Chip message={ chip } type={ chipType } /> }
+			{ showPromotionalBadge && badgeContent && (
+				<PromotionalBadge
+					message={ badgeContent.message }
+					tooltip={ badgeContent.tooltip }
+					tooltipLabel={ badgeContent.tooltipLabel }
+					tcUrl={ badgeContent.tcUrl }
+					tcLabel={ badgeContent.tcLabel }
+					type={ badgeContent.type }
+				/>
+			) }
 		</>
 	);
 };
@@ -96,14 +144,17 @@ const PaymentMethod = ( {
 	const {
 		isActionable,
 		notice,
-		noticeType = 'warning',
+		noticeType = 'warning' as const,
 	} = usePaymentMethodAvailability( id );
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
-	const {
-		accountFees,
-	}: { accountFees?: Record< string, FeeStructure > } = useContext(
-		WCPaySettingsContext
+	const { accountFees }: { accountFees?: Record< string, FeeStructure > } =
+		useContext( WCPaySettingsContext );
+
+	// Get badge-type promotion for this payment method.
+	const { pmPromotions = [] } = usePmPromotions();
+	const badgePromotion = pmPromotions?.find(
+		( promo ) => promo.payment_method === id && promo.type === 'badge'
 	);
 
 	const {
@@ -126,75 +177,70 @@ const PaymentMethod = ( {
 	};
 
 	return (
-		<li className={ clsx( 'payment-method__list-item', className ) }>
-			<div className="payment-method">
-				<div className="payment-method__checkbox">
-					<CheckboxControl
-						label={ label }
-						checked={ enabledMethodIds.includes( id ) }
-						disabled={ ! isActionable || locked }
-						onChange={ handleChange }
-					/>
-				</div>
-				<div className="payment-method__text-container">
-					<div className="payment-method__icon">
-						<Icon />
-					</div>
-					<div className="payment-method__label payment-method__label-mobile">
-						<PaymentMethodLabel label={ label } id={ id } />
-					</div>
-					<div className="payment-method__text">
-						<div className="payment-method__label-container">
-							<div className="payment-method__label payment-method__label-desktop">
-								<PaymentMethodLabel label={ label } id={ id } />
-							</div>
-							<div className="payment-method__description">
-								{ description }
-							</div>
-							{ id === PAYMENT_METHOD_IDS.CARD && (
-								<div className="payment-method__supported-cards">
-									<PaymentMethodsLogos
-										paymentMethods={ cardBrands }
-										maxElements={ 8 }
-										breakpointConfigs={ [
-											{ breakpoint: 480, maxElements: 8 },
-											{ breakpoint: 768, maxElements: 8 },
-										] }
-									/>
-								</div>
-							) }
+		<PaymentMethodItem
+			className={ clsx( 'payment-method__list-item', className ) }
+		>
+			<PaymentMethodItem.Checkbox
+				label={ label }
+				checked={ enabledMethodIds.includes( id ) }
+				disabled={ ! isActionable || locked }
+				onChange={ handleChange }
+			/>
+			<PaymentMethodItem.Body>
+				<PaymentMethodItem.Subgroup
+					Icon={ Icon }
+					label={
+						<PaymentMethodLabel
+							label={ label }
+							id={ id }
+							accountFees={ accountFees }
+							badgePromotion={ badgePromotion }
+						/>
+					}
+				>
+					{ description }
+					{ id === PAYMENT_METHOD_IDS.CARD && (
+						<div className="payment-method__supported-cards">
+							<PaymentMethodsLogos
+								paymentMethods={ cardBrands }
+								maxElements={ 8 }
+								breakpointConfigs={ [
+									{ breakpoint: 480, maxElements: 8 },
+									{ breakpoint: 768, maxElements: 8 },
+								] }
+							/>
 						</div>
-						{ accountFees && accountFees[ id ] && (
-							<div className="payment-method__fees">
-								<HoverTooltip
-									maxWidth={ '300px' }
-									content={ formatMethodFeesTooltip(
+					) }
+				</PaymentMethodItem.Subgroup>
+				{ accountFees && accountFees[ id ] && (
+					<PaymentMethodItem.Action className="payment-method__fees">
+						<HoverTooltip
+							maxWidth={ '300px' }
+							content={ formatMethodFeesTooltip(
+								accountFees[ id ]
+							) }
+						>
+							<Pill
+								aria-label={ sprintf(
+									__(
+										'Base transaction fees: %s',
+										'woocommerce-payments'
+									),
+									formatMethodFeesDescription(
+										accountFees[ id ]
+									)
+								) }
+							>
+								<span>
+									{ formatMethodFeesDescription(
 										accountFees[ id ]
 									) }
-								>
-									<Pill
-										aria-label={ sprintf(
-											__(
-												'Base transaction fees: %s',
-												'woocommerce-payments'
-											),
-											formatMethodFeesDescription(
-												accountFees[ id ]
-											)
-										) }
-									>
-										<span>
-											{ formatMethodFeesDescription(
-												accountFees[ id ]
-											) }
-										</span>
-									</Pill>
-								</HoverTooltip>
-							</div>
-						) }
-					</div>
-				</div>
-			</div>
+								</span>
+							</Pill>
+						</HoverTooltip>
+					</PaymentMethodItem.Action>
+				) }
+			</PaymentMethodItem.Body>
 			{ notice && (
 				<InlineNotice status={ noticeType } isDismissible={ false }>
 					{ notice }
@@ -210,7 +256,7 @@ const PaymentMethod = ( {
 					}
 				/>
 			) }
-		</li>
+		</PaymentMethodItem>
 	);
 };
 

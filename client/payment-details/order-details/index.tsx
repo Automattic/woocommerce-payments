@@ -17,9 +17,8 @@ interface PaymentOrderDetailsProps {
 const PaymentOrderDetails: React.FC< PaymentOrderDetailsProps > = ( {
 	id: orderId,
 } ) => {
-	const { data: charge, isLoading: isLoadingCharge } = useChargeFromOrder(
-		orderId
-	);
+	const { data: charge, isLoading: isLoadingCharge } =
+		useChargeFromOrder( orderId );
 
 	const shouldRedirect = !! charge.payment_intent;
 	const isLoading = isLoadingCharge || shouldRedirect;

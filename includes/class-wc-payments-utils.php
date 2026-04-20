@@ -691,9 +691,67 @@ class WC_Payments_Utils {
 			$error_message = __( 'We\'re not able to process this request. Please refresh the page and try again.', 'woocommerce-payments' );
 		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() && 'incorrect_zip' === $e->get_error_code() && ! $blocked_by_fraud_rules ) {
 			$error_message = __( 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', 'woocommerce-payments' );
+		} elseif ( $e instanceof API_Exception && 'card_error' === $e->get_error_type() ) {
+			$localized_messages = self::get_localized_messages();
+			$error_code         = $e->get_error_code();
+			$decline_code       = $e->get_decline_code();
+
+			if ( ! empty( $decline_code ) && isset( $localized_messages[ $decline_code ] ) ) {
+				$error_message = sprintf(
+					// translators: This is an error API response.
+					_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+					$localized_messages[ $decline_code ]
+				);
+			} elseif ( isset( $localized_messages[ $error_code ] ) ) {
+				$error_message = sprintf(
+					// translators: This is an error API response.
+					_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+					$localized_messages[ $error_code ]
+				);
+			}
 		}
 
 		return $error_message;
+	}
+
+	/**
+	 * Returns an array of Stripe error codes mapped to translatable customer-facing messages.
+	 *
+	 * Error codes come from Stripe's API: https://docs.stripe.com/error-codes
+	 * Messages use the woocommerce-payments text domain so they are translatable
+	 * via standard WordPress translation tools.
+	 *
+	 * @return array<string, string> Map of error code/type to translated message.
+	 */
+	public static function get_localized_messages() {
+		return apply_filters(
+			'wcpay_localized_messages',
+			[
+				'invalid_number'                        => __( 'The card number is not a valid credit card number.', 'woocommerce-payments' ),
+				'invalid_expiry_month'                  => __( 'Your card\'s expiration month is invalid.', 'woocommerce-payments' ),
+				'invalid_expiry_year'                   => __( 'Your card\'s expiration year is invalid.', 'woocommerce-payments' ),
+				'invalid_cvc'                           => __( 'Your card\'s security code is invalid.', 'woocommerce-payments' ),
+				'incorrect_number'                      => __( 'Your card number is incorrect.', 'woocommerce-payments' ),
+				'incomplete_number'                     => __( 'Your card number is incomplete.', 'woocommerce-payments' ),
+				'incomplete_cvc'                        => __( 'Your card\'s security code is incomplete.', 'woocommerce-payments' ),
+				'incomplete_expiry'                     => __( 'Your card\'s expiration date is incomplete.', 'woocommerce-payments' ),
+				'expired_card'                          => __( 'Your card has expired.', 'woocommerce-payments' ),
+				'incorrect_cvc'                         => __( "Your card's security code is incorrect.", 'woocommerce-payments' ),
+				'postal_code_invalid'                   => __( 'Invalid zip code, please correct and try again.', 'woocommerce-payments' ),
+				'invalid_expiry_year_past'              => __( 'Your card\'s expiration year is in the past.', 'woocommerce-payments' ),
+				'card_declined'                         => __( 'Your card was declined.', 'woocommerce-payments' ),
+				'missing'                               => __( 'There is no card on a customer that is being charged.', 'woocommerce-payments' ),
+				'processing_error'                      => __( 'An error occurred while processing your card. Try again in a little bit.', 'woocommerce-payments' ),
+				'invalid_sofort_country'                => __( 'The billing country is not accepted by Sofort. Please try another country.', 'woocommerce-payments' ),
+				'email_invalid'                         => __( 'Invalid email address, please correct and try again.', 'woocommerce-payments' ),
+				'country_code_invalid'                  => __( 'Invalid country code, please try again with a valid country code.', 'woocommerce-payments' ),
+				'tax_id_invalid'                        => __( 'Invalid Tax ID, please try again with a valid tax ID.', 'woocommerce-payments' ),
+				'invalid_wallet_type'                   => __( 'Invalid wallet payment type, please try again or use an alternative method.', 'woocommerce-payments' ),
+				'payment_intent_authentication_failure' => __( 'We are unable to authenticate your payment method. Please choose a different payment method and try again.', 'woocommerce-payments' ),
+				'authentication_required'               => __( 'Your card was declined because additional authentication is required. Please contact your card issuer or try a different payment method.', 'woocommerce-payments' ),
+				'insufficient_funds'                    => __( 'Your card has insufficient funds.', 'woocommerce-payments' ),
+			]
+		);
 	}
 
 	/**
@@ -1035,6 +1093,8 @@ class WC_Payments_Utils {
 	/**
 	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
+	 * @deprecated 9.8.0 There is no longer an optional "new" onboarding flow, so this method is no longer needed.
+	 *
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
@@ -1232,6 +1292,8 @@ class WC_Payments_Utils {
 				return __( 'Subscription canceled', 'woocommerce-payments' );
 			case 'unrecognized':
 				return __( 'Unrecognized', 'woocommerce-payments' );
+			case 'noncompliant':
+				return __( 'Non-compliant', 'woocommerce-payments' );
 			default:
 			case 'general':
 				return __( 'General', 'woocommerce-payments' );
@@ -1277,77 +1339,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Returns language data: english name and native name
-	 *
-	 * @param string $language Language code.
-	 *
-	 * @return array
-	 */
-	public static function get_language_data( $language ) {
-		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
-
-		$translations = wp_get_available_translations();
-
-		if ( isset( $translations[ $language ] ) ) {
-			return [
-				'code'         => self::convert_to_server_locale( $language ),
-				'english_name' => $translations[ $language ]['english_name'] ?? $language,
-				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
-			];
-		}
-
-		return [
-			'code'         => 'en_US',
-			'english_name' => 'English (United States)',
-			'native_name'  => 'English (United States)',
-		];
-	}
-
-	/**
-	 * Converts a locale to the server supported languages.
-	 *
-	 * @param string $locale The locale to convert.
-	 *
-	 * @return string Closest locale supported ('en' if NONE)
-	 */
-	public static function convert_to_server_locale( string $locale ): string {
-		$supported = [
-			'ar',     // Arabic.
-			'de',     // German (Germany).
-			'es',     // Spanish (Spain).
-			'fr',     // French (France).
-			'he',     // Hebrew (Israel).
-			'id',     // Indonesian (Indonesia).
-			'it',     // Italian (Italy).
-			'ja',     // Japanese.
-			'ko',     // Korean.
-			'nl',     // Dutch (Netherlands).
-			'pt-br',  // Portuguese (Brazil).
-			'ru',     // Russian (Russia).
-			'sv',     // Swedish (Sweden).
-			'tr',     // Turkish (Turkey).
-			'zh-cn',  // Simplified, Singapore).
-			'zh-tw',  // Chinese Traditional (Taiwan).
-		];
-
-		// Replace '-' with '_' (used in WordPress).
-		$locale = str_replace( '_', '-', $locale );
-
-		if ( in_array( $locale, $supported, true ) ) {
-			return $locale;
-		}
-
-		// Remove the country code and try with that.
-		$base_locale = substr( $locale, 0, 2 );
-		if ( in_array( $base_locale, $supported, true ) ) {
-			return $base_locale;
-		}
-
-		// Return 'en_US' to match the default site language.
-		return 'en_US';
-	}
-
-	/**
 	 * Check if the current page is the cart page.
 	 *
 	 * @return bool True if the current page is the cart page, false otherwise.
@@ -1360,8 +1351,6 @@ class WC_Payments_Utils {
 	 * Determine if the current page is a cart block.
 	 *
 	 * @return bool True if the current page is a cart block, false otherwise.
-	 *
-	 * @psalm-suppress UndefinedFunction
 	 */
 	public static function is_cart_block(): bool {
 		return has_block( 'woocommerce/cart' );
@@ -1394,90 +1383,6 @@ class WC_Payments_Utils {
 
 		// If no match was found, this is not a Store API request.
 		return false;
-	}
-
-	/**
-	 * Extract the REST route from the current request URL.
-	 *
-	 * @return string The REST route, or empty string if not found.
-	 */
-	private static function extract_rest_route_from_url(): string {
-		// Extract the request path from the request URL.
-		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-		if ( empty( $url_parts['path'] ) ) {
-			return '';
-		}
-
-		$request_path = rtrim( $url_parts['path'], '/' );
-		if ( empty( $request_path ) ) {
-			return '';
-		}
-
-		// Remove the REST API prefix from the request path to end up with the route.
-		$rest_prefix = trailingslashit( rest_get_url_prefix() );
-
-		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
-		// Look for the wp-json prefix in the path and extract everything after it.
-		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
-		if ( false !== $wp_json_pos ) {
-			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
-		}
-
-		// Fallback: simple prefix replacement for non-multisite cases.
-		return str_replace( $rest_prefix, '', $request_path );
-	}
-
-	/**
-	 * Gets the current active theme transient for a given location
-	 * Falls back to 'stripe' if no transients are set.
-	 *
-	 * @param string $location The theme location.
-	 * @param string $context The theme location to fall back to if both transients are set.
-	 * @return string
-	 */
-	public static function get_active_upe_theme_transient_for_location( string $location = 'checkout', string $context = 'blocks' ) {
-		$themes       = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
-		$active_theme = false;
-
-		// If an invalid location is sent, we fallback to trying $themes[ 'checkout' ][ 'block' ].
-		if ( ! isset( $themes[ $location ] ) ) {
-			$active_theme = get_transient( $themes['checkout']['blocks'] );
-		} elseif ( ! isset( $themes[ $location ][ $context ] ) ) {
-			// If the location is valid but the context is invalid, we fallback to trying $themes[ $location ][ 'block' ].
-			$active_theme = get_transient( $themes[ $location ]['blocks'] );
-		} else {
-			$active_theme = get_transient( $themes[ $location ][ $context ] );
-		}
-
-		// If $active_theme is still false here, that means that $themes[ $location ][ $context ] is not set, so we try $themes[ $location ][ 'classic' ].
-		if ( ! $active_theme ) {
-			$active_theme = get_transient( $themes[ $location ][ 'blocks' === $context ? 'classic' : 'blocks' ] );
-		}
-
-		// If $active_theme is still false here, nothing at the location is set so we'll try all locations.
-		if ( ! $active_theme ) {
-			foreach ( $themes as $location_const => $contexts ) {
-				// We don't need to check the same location again.
-				if ( $location_const === $location ) {
-					continue;
-				}
-
-				foreach ( $contexts as $context => $transient ) {
-					$active_theme = get_transient( $transient );
-					if ( $active_theme ) {
-						break 2; // This will break both loops.
-					}
-				}
-			}
-		}
-
-		// If $active_theme is still false, we don't have any theme set in the transients, so we fallback to 'stripe'.
-		if ( $active_theme ) {
-			return $active_theme;
-		}
-
-		// Fallback to 'stripe' if no transients are set.
-		return 'stripe';
 	}
 
 	/**
@@ -1520,5 +1425,55 @@ class WC_Payments_Utils {
 			Country_Code::SPAIN,
 			Country_Code::SWEDEN,
 		];
+	}
+
+	/**
+	 * Log directly to WC logger, bypassing WCPay's logging settings.
+	 *
+	 * Use for critical errors that should always be captured, or errors that can occur
+	 * before WCPay settings are initialized (e.g., onboarding errors).
+	 *
+	 * @param string $message Log message.
+	 * @param string $level   Log level: 'emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug'.
+	 */
+	public static function log_to_wc( string $message, string $level = 'error' ): void {
+		if ( function_exists( 'wc_get_logger' ) ) {
+			$valid_levels = [ 'emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug' ];
+			$level        = in_array( $level, $valid_levels, true ) ? $level : 'error';
+
+			$logger = wc_get_logger();
+			$logger->$level( $message, [ 'source' => 'woopayments' ] );
+		}
+	}
+
+	/**
+	 * Extract the REST route from the current request URL.
+	 *
+	 * @return string The REST route, or empty string if not found.
+	 */
+	private static function extract_rest_route_from_url(): string {
+		// Extract the request path from the request URL.
+		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		if ( empty( $url_parts['path'] ) ) {
+			return '';
+		}
+
+		$request_path = rtrim( $url_parts['path'], '/' );
+		if ( empty( $request_path ) ) {
+			return '';
+		}
+
+		// Remove the REST API prefix from the request path to end up with the route.
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+
+		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
+		// Look for the wp-json prefix in the path and extract everything after it.
+		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
+		if ( false !== $wp_json_pos ) {
+			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
+		}
+
+		// Fallback: simple prefix replacement for non-multisite cases.
+		return str_replace( $rest_prefix, '', $request_path );
 	}
 }

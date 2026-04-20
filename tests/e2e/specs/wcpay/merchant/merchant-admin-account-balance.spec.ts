@@ -21,46 +21,34 @@ test.describe( 'Merchant account balance overview', () => {
 			tag: '@critical',
 		},
 		async ( { page } ) => {
-			await test.step(
-				'Navigate to the Payments Overview screen',
-				async () => {
-					await page.goto(
-						'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
-					);
-				}
-			);
+			await test.step( 'Navigate to the Payments Overview screen', async () => {
+				await page.goto(
+					'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
+				);
+			} );
 
-			await test.step(
-				'Observe the total account balance, ensuring it has a formatted currency value',
-				async () => {
-					const totalBalanceValue = page.getByLabel(
-						'Total balance',
-						{
-							exact: true,
-						}
-					);
+			await test.step( 'Observe the total account balance, ensuring it has a formatted currency value', async () => {
+				const totalBalanceValue = page.getByLabel( 'Total balance', {
+					exact: true,
+				} );
 
-					await expect( totalBalanceValue ).toHaveText(
-						formattedCurrencyRegex
-					);
-				}
-			);
+				await expect( totalBalanceValue ).toHaveText(
+					formattedCurrencyRegex
+				);
+			} );
 
-			await test.step(
-				'Observe the available account balance, ensuring it has a formatted currency value',
-				async () => {
-					const availableFundsValue = page.getByLabel(
-						'Available funds',
-						{
-							exact: true,
-						}
-					);
+			await test.step( 'Observe the available account balance, ensuring it has a formatted currency value', async () => {
+				const availableFundsValue = page.getByLabel(
+					'Available funds',
+					{
+						exact: true,
+					}
+				);
 
-					await expect( availableFundsValue ).toHaveText(
-						formattedCurrencyRegex
-					);
-				}
-			);
+				await expect( availableFundsValue ).toHaveText(
+					formattedCurrencyRegex
+				);
+			} );
 		}
 	);
 
@@ -86,47 +74,29 @@ test.describe( 'Merchant account balance overview', () => {
 				// @todo
 			} );
 
-			await test.step(
-				'Select a deposit currency using the currency select input',
-				async () => {
-					// @todo
-				}
-			);
+			await test.step( 'Select a deposit currency using the currency select input', async () => {
+				// @todo
+			} );
 
-			await test.step(
-				'Observe the total account balance for the selected currency, ensuring it is correctly formatted with the currency symbol',
-				async () => {
-					// @todo
-				}
-			);
+			await test.step( 'Observe the total account balance for the selected currency, ensuring it is correctly formatted with the currency symbol', async () => {
+				// @todo
+			} );
 
-			await test.step(
-				'Observe the available account balance the selected currency, ensuring it is correctly formatted with the currency symbol',
-				async () => {
-					// @todo
-				}
-			);
+			await test.step( 'Observe the available account balance the selected currency, ensuring it is correctly formatted with the currency symbol', async () => {
+				// @todo
+			} );
 
-			await test.step(
-				'Select a second deposit currency using the currency select input',
-				async () => {
-					// @todo
-				}
-			);
+			await test.step( 'Select a second deposit currency using the currency select input', async () => {
+				// @todo
+			} );
 
-			await test.step(
-				'Observe the total account balance for the selected currency, ensuring it is correctly formatted with the currency symbol',
-				async () => {
-					// @todo
-				}
-			);
+			await test.step( 'Observe the total account balance for the selected currency, ensuring it is correctly formatted with the currency symbol', async () => {
+				// @todo
+			} );
 
-			await test.step(
-				'Observe the available account balance the selected currency, ensuring it is correctly formatted with the currency symbol',
-				async () => {
-					// @todo
-				}
-			);
+			await test.step( 'Observe the available account balance the selected currency, ensuring it is correctly formatted with the currency symbol', async () => {
+				// @todo
+			} );
 		}
 	);
 } );

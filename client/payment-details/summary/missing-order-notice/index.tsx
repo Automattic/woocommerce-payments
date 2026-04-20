@@ -38,6 +38,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 								variant="primary"
 								isSmall={ false }
 								onClick={ onButtonClick }
+								__next40pxDefaultSize
 							>
 								{ __( 'Refund', 'woocommerce-payments' ) }
 							</Button>

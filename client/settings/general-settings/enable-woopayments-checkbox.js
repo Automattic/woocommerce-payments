@@ -15,9 +15,8 @@ import useToggle from 'wcpay/utils/use-toggle';
 
 const EnableWooPaymentsCheckbox = () => {
 	const [ isWCPayEnabled, setIsWCPayEnabled ] = useIsWCPayEnabled();
-	const [ isConfirmationModalVisible, toggleModalVisibility ] = useToggle(
-		false
-	);
+	const [ isConfirmationModalVisible, toggleModalVisibility ] =
+		useToggle( false );
 
 	const handleCheckboxClick = ( enableWCPay ) => {
 		if ( ! enableWCPay ) {
@@ -60,6 +59,7 @@ const EnableWooPaymentsCheckbox = () => {
 					),
 					'WooPayments'
 				) }
+				__nextHasNoMarginBottom
 			/>
 			{ isConfirmationModalVisible && (
 				<DisableConfirmationModal

@@ -20,6 +20,17 @@ interface ChargeBillingDetails {
 	formatted_address?: string;
 }
 
+interface Level3LineItem {
+	product_description: string;
+	product_name: string;
+	quantity: number;
+	unit_cost: number;
+}
+
+interface Level3Data {
+	line_items: Level3LineItem[];
+}
+
 interface ChargeRefund {
 	balance_transaction: BalanceTransaction;
 }
@@ -41,6 +52,10 @@ export type OutcomeRiskLevel =
 	| 'not_assessed'
 	| 'unknown';
 
+export interface ChargeDispute extends Omit< Dispute, 'charge' > {
+	charge: string;
+}
+
 export interface Charge {
 	id: string;
 	amount: number;
@@ -52,7 +67,7 @@ export interface Charge {
 	captured?: boolean;
 	created: number;
 	currency: string;
-	dispute?: null | Dispute;
+	dispute?: null | ChargeDispute;
 	disputed: boolean;
 	order: null | OrderDetails;
 	outcome: null | {
@@ -76,6 +91,7 @@ export interface Charge {
 	status: string;
 	reader_model?: string;
 	platform?: string;
+	level3?: Level3Data;
 }
 
 export interface ChargeAmounts {

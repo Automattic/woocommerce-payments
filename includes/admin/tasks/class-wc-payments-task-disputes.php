@@ -157,7 +157,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 */
 	public function get_parent_id() {
 		// WC 6.4.0 compatibility.
-		if ( is_callable( 'parent::get_parent_id' ) ) {
+		if ( is_callable( [ parent::class, 'get_parent_id' ] ) ) {
 			return parent::get_parent_id();
 		}
 
@@ -349,8 +349,9 @@ class WC_Payments_Task_Disputes extends Task {
 						]
 					);
 				} catch ( \Exception $e ) {
-					// Ensure an array is always returned, even if the API call fails.
-					return [];
+					// Return null so Database_Cache::get_or_add treats this as an error
+					// and does not cache the empty result (which would hide active disputes).
+					return null;
 				}
 
 				$active_disputes = $response['data'] ?? [];

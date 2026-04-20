@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Modal } from '@wordpress/components';
 
@@ -9,7 +9,7 @@ import { Modal } from '@wordpress/components';
  * Internal dependencies
  */
 import './style.scss';
-import Loadable from 'wcpay/components/loadable';
+import StripeSpinner from 'wcpay/components/stripe-spinner';
 import WooPaymentsIcon from 'assets/images/woopayments.svg?asset';
 
 interface PluginDisableSurveyProps {
@@ -22,6 +22,29 @@ const PluginDisableSurvey = ( {
 	onRequestClose,
 }: PluginDisableSurveyProps ) => {
 	const [ isLoading, setIsLoading ] = useState( true );
+	const [ iframeHeight, setIframeHeight ] = useState( 600 ); // Default height.
+
+	// Listen for messages from the iframe to set height on load/reload.
+	useEffect( () => {
+		const handleMessage = ( event: MessageEvent ) => {
+			// Verify the origin for security.
+			if ( event.origin !== 'https://automattic.survey.fm' ) {
+				return;
+			}
+
+			// Set height whenever iframe sends embed-size message (load/reload).
+			if ( event.data.type === 'embed-size' && event.data.height ) {
+				const newHeight = Math.max( event.data.height, 600 ); // Minimum height is 600px.
+				setIframeHeight( newHeight );
+			}
+		};
+
+		window.addEventListener( 'message', handleMessage );
+
+		return () => {
+			window.removeEventListener( 'message', handleMessage );
+		};
+	}, [] );
 
 	return (
 		<Modal
@@ -39,19 +62,26 @@ const PluginDisableSurvey = ( {
 			onRequestClose={ onRequestClose }
 			className="woopayments-disable-survey"
 		>
-			<Loadable isLoading={ isLoading }>
-				<iframe
-					title={ __(
-						'WooPayments Disable Survey',
-						'woocommerce-payments'
-					) }
-					src="https://automattic.survey.fm/woopayments-exit-feedback"
-					className="woopayments-disable-survey-iframe"
-					onLoad={ () => {
-						setIsLoading( false );
-					} }
-				/>
-			</Loadable>
+			{ isLoading && (
+				<div className="woopayments-disable-survey-loader">
+					<StripeSpinner />
+				</div>
+			) }
+			<iframe
+				title={ __(
+					'WooPayments Disable Survey',
+					'woocommerce-payments'
+				) }
+				src="https://automattic.survey.fm/woopayments-exit-feedback"
+				className="woopayments-disable-survey-iframe"
+				style={ {
+					height: `${ iframeHeight }px`,
+					opacity: isLoading ? 0 : 1,
+				} }
+				onLoad={ () => {
+					setIsLoading( false );
+				} }
+			/>
 		</Modal>
 	);
 };

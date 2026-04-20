@@ -7,7 +7,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
-import { Button, PanelBody } from 'wcpay/components/wp-components-wrapped';
+import { Button, PanelBody } from '@wordpress/components';
 import { Icon, page } from '@wordpress/icons';
 
 /**
@@ -119,7 +119,7 @@ const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 	return (
 		<PanelBody
 			className="dispute-evidence"
-			title={ __( 'Issuer evidence', 'woocommerce' ) }
+			title={ __( 'Issuer evidence', 'woocommerce-payments' ) }
 			initialOpen={ false }
 		>
 			<ul className="dispute-evidence__list">

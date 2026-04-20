@@ -8,6 +8,7 @@ import React, {
 	useState,
 	useCallback,
 } from 'react';
+import { __ } from '@wordpress/i18n';
 
 interface LogoPopoverProps {
 	id: string;
@@ -19,9 +20,9 @@ interface LogoPopoverProps {
 	dataTestId?: string;
 }
 
-export const LogoPopover: React.FC< React.PropsWithChildren<
-	LogoPopoverProps
-> > = ( { id, className, children, anchor, open, onClose, dataTestId } ) => {
+export const LogoPopover: React.FC<
+	React.PropsWithChildren< LogoPopoverProps >
+> = ( { id, className, children, anchor, open, onClose, dataTestId } ) => {
 	const popoverRef = useRef< HTMLDivElement >( null );
 	const [ isPositioned, setIsPositioned ] = useState( false );
 
@@ -118,7 +119,10 @@ export const LogoPopover: React.FC< React.PropsWithChildren<
 				left: 'auto',
 			} }
 			role="dialog"
-			aria-label="Supported Credit Card Brands"
+			aria-label={ __(
+				'Supported Credit Card Brands',
+				'woocommerce-payments'
+			) }
 			data-testid={ dataTestId }
 		>
 			{ children }

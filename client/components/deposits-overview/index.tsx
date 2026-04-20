@@ -2,6 +2,8 @@
  * External dependencies
  */
 import React from 'react';
+import { __ } from '@wordpress/i18n';
+import { getHistory } from '@woocommerce/navigation';
 import {
 	Button,
 	Card,
@@ -9,8 +11,6 @@ import {
 	CardFooter,
 	CardHeader,
 } from '@wordpress/components';
-import { __ } from '@wordpress/i18n';
-import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
@@ -45,9 +45,8 @@ const DepositsOverview: React.FC = () => {
 		'deposits_unrestricted';
 	const selectedCurrency =
 		overview?.currency || wcpaySettings.accountDefaultCurrency;
-	const { isLoading: isLoadingDeposits, deposits } = useRecentDeposits(
-		selectedCurrency
-	);
+	const { isLoading: isLoadingDeposits, deposits } =
+		useRecentDeposits( selectedCurrency );
 
 	const isLoading = isLoadingOverview || isLoadingDeposits;
 
@@ -195,6 +194,7 @@ const DepositsOverview: React.FC = () => {
 						<Button
 							variant="secondary"
 							onClick={ navigateToDepositsHistory }
+							__next40pxDefaultSize
 						>
 							{ __(
 								'View full payout history',
@@ -218,6 +218,7 @@ const DepositsOverview: React.FC = () => {
 									'wcpay_overview_deposits_change_schedule_click'
 								)
 							}
+							__next40pxDefaultSize
 						>
 							{ __(
 								'Change payout schedule',

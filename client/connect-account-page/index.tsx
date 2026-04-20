@@ -4,7 +4,10 @@
  * External dependencies
  */
 import React, { useEffect, useState, useRef } from 'react';
-import { render } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
+import { Loader } from '@woocommerce/onboarding';
+import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -12,10 +15,6 @@ import {
 	Panel,
 	PanelBody,
 } from '@wordpress/components';
-import apiFetch from '@wordpress/api-fetch';
-import { addQueryArgs } from '@wordpress/url';
-import { Loader } from '@woocommerce/onboarding';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -38,6 +37,7 @@ import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import { decodeEntities } from '@wordpress/html-entities';
+import { createRoot } from 'react-dom/client';
 
 interface AccountData {
 	status: string;
@@ -69,7 +69,8 @@ const TestDriveLoader: React.FunctionComponent< {
 			<Loader.ProgressBar progress={ progress ?? 0 } />
 			<Loader.Sequence interval={ 0 }>
 				{ __(
-					"In just a few moments, you'll be ready to test payments on your store."
+					"In just a few moments, you'll be ready to test payments on your store.",
+					'woocommerce-payments'
 				) }
 			</Loader.Sequence>
 		</Loader.Layout>
@@ -85,15 +86,12 @@ const ConnectAccountPage: React.FC = () => {
 		wcpaySettings.errorMessage
 	);
 	const [ isSubmitted, setSubmitted ] = useState( false );
-	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] = useState(
-		false
-	);
-	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] = useState(
-		false
-	);
-	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] = useState(
-		5
-	);
+	const [ isTestDriveModeSubmitted, setTestDriveModeSubmitted ] =
+		useState( false );
+	const [ isTestDriveModeModalShown, setTestDriveModeModalShown ] =
+		useState( false );
+	const [ testDriveLoaderProgress, setTestDriveLoaderProgress ] =
+		useState( 5 );
 
 	// Create a reference object.
 	const loaderProgressRef = useRef( testDriveLoaderProgress );
@@ -125,7 +123,7 @@ const ConnectAccountPage: React.FC = () => {
 	const determineTrackingSource = () => {
 		// If we have a source query param in the current request, use that.
 		const urlSource = urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' );
-		if ( !! urlSource && 'unknown' !== urlSource ) {
+		if ( !! urlSource && urlSource !== 'unknown' ) {
 			return urlSource;
 		}
 
@@ -133,7 +131,7 @@ const ConnectAccountPage: React.FC = () => {
 		if ( connectUrl.includes( 'source=' ) ) {
 			const url = new URL( connectUrl );
 			const source = url.searchParams.get( 'source' );
-			if ( !! source && 'unknown' !== source ) {
+			if ( !! source && source !== 'unknown' ) {
 				return source;
 			}
 		}
@@ -370,13 +368,14 @@ const ConnectAccountPage: React.FC = () => {
 
 		const container = document.createElement( 'div' );
 		container.id = 'wcpay-onboarding-location-check-container';
-		render(
+
+		const root = createRoot( container );
+		root.render(
 			<OnboardingLocationCheckModal
 				countries={ countries }
 				onDeclined={ handleModalDeclined }
 				onConfirmed={ handleModalConfirmed }
-			/>,
-			container
+			/>
 		);
 		document.body.appendChild( container );
 	};
@@ -428,7 +427,7 @@ const ConnectAccountPage: React.FC = () => {
 	}
 
 	const isAccountTestDriveError =
-		'true' === urlParams.get( 'test_drive_error' );
+		urlParams.get( 'test_drive_error' ) === 'true';
 	if ( ! errorMessage && isAccountTestDriveError ) {
 		// If there isn't an error message from elsewhere, but we have a test drive error,
 		// show the test drive error message.
@@ -579,6 +578,7 @@ const ConnectAccountPage: React.FC = () => {
 									isSubmitted || isAccountSetupSessionError
 								}
 								onClick={ handleSetup }
+								__next40pxDefaultSize
 							>
 								{ ctaLabel }
 							</Button>
@@ -589,10 +589,11 @@ const ConnectAccountPage: React.FC = () => {
 										.detailsSubmitted ||
 										isInTestModeOnboarding() ) && (
 										<Button
-											variant={ 'tertiary' }
+											variant="tertiary"
 											onClick={ () =>
 												setModalVisible( true )
 											}
+											__next40pxDefaultSize
 										>
 											{ strings.button.reset }
 										</Button>
@@ -626,6 +627,7 @@ const ConnectAccountPage: React.FC = () => {
 										isBusy={ isTestDriveModeSubmitted }
 										disabled={ isTestDriveModeSubmitted }
 										onClick={ handleSetupTestDriveMode }
+										__next40pxDefaultSize
 									>
 										{ strings.button.sandbox }
 									</Button>

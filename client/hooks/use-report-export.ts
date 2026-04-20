@@ -89,7 +89,7 @@ export const useReportExport = () => {
 			}
 
 			if (
-				'success' === exportedFileURLResponse.status &&
+				exportedFileURLResponse.status === 'success' &&
 				exportedFileURLResponse.download_url
 			) {
 				// The file is available, so we can download it.

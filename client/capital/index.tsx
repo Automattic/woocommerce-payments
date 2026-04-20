@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __, _n } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard } from '@woocommerce/components';
 
 /**
@@ -25,7 +25,6 @@ import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 const columns = [
 	{
@@ -79,9 +78,11 @@ const columns = [
 
 const getLoanStatusText = ( loan: CapitalLoan ) => {
 	return loan.fully_paid_at
-		? __( 'Paid off', 'woocommerce-payments' ) +
-				': ' +
+		? sprintf(
+				/* translators: %s: date when the loan was paid off */
+				__( 'Paid off: %s', 'woocommerce-payments' ),
 				formatDateTimeFromString( loan.fully_paid_at )
+		  )
 		: __( 'Active', 'woocommerce-payments' );
 };
 
@@ -180,7 +181,7 @@ const getSummary = ( loans: CapitalLoan[] ) => {
 	const currencies = Array.from(
 		new Set( loans.map( ( l ) => l.currency ) )
 	);
-	if ( 1 === currencies.length ) {
+	if ( currencies.length === 1 ) {
 		summary.push( {
 			label: __( 'total', 'woocommerce-payments' ),
 			value: formatExplicitCurrency(
@@ -210,7 +211,6 @@ const CapitalPage = (): JSX.Element => {
 
 	return (
 		<Page>
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="loans" />
 
 			{ wcpaySettings.accountLoans.has_active_loan && (

@@ -190,6 +190,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
 			$this->order_service->attach_intent_info_to_order( $order, $intent );
+
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			// Certain payments (eg. Interac) are captured on the client-side (mobile app).

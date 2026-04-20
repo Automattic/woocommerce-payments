@@ -34,7 +34,6 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 	 * @class       WC_Payments_Email_IPP_Receipt
 	 * @version     2.0.0
 	 * @package     WooCommerce\Classes\Emails
-	 * @extends     WC_Email
 	 */
 	class WC_Payments_Email_IPP_Receipt extends WC_Email {
 
@@ -95,11 +94,15 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		/**
 		 * Get preview order data for email preview.
 		 *
-		 * @param WC_Order $order The dummy order instance.
-		 * @return WC_Order
+		 * @param mixed $order The dummy order instance or false/null for non-WCPay emails.
+		 * @return mixed
 		 * @see WC_Email_Preview::get_dummy_order()
 		 */
 		public function get_preview_order( $order ) {
+			if ( ! $order instanceof WC_Order ) {
+				return $order;
+			}
+
 			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
 			return $order;
 		}
@@ -164,6 +167,10 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 * @param array    $charge The charge data.
 		 */
 		public function trigger( WC_Order $order, array $merchant_settings, array $charge ) {
+			if ( 'mobile_pos' === WC_Payments::get_order_service()->get_ipp_channel_for_order( $order ) ) {
+				return;
+			}
+
 			$this->setup_locale();
 			$email_already_sent = false;
 

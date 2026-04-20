@@ -9,21 +9,23 @@ import { backup, edit, lock, arrowRight } from '@wordpress/icons';
 import { useDispatch } from '@wordpress/data';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
-import {
-	Button,
-	ExternalLink,
-	Flex,
-	FlexItem,
-	Icon,
-	Modal,
-	HorizontalRule,
-} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
-import type { Dispute } from 'wcpay/types/disputes';
+import {
+	Button,
+	CheckboxControl,
+	ExternalLink,
+	Flex,
+	FlexItem,
+	HorizontalRule,
+	Icon,
+	Modal,
+	Tooltip,
+} from '@wordpress/components';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { Dispute } from 'wcpay/types/disputes';
 import { recordEvent } from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
@@ -35,13 +37,28 @@ import {
 	DisputeSteps,
 	InquirySteps,
 	NotDefendableInquirySteps,
+	NonCompliantDisputeSteps,
 } from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import './style.scss';
 
 interface Props {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'id'
+		| 'amount'
+		| 'balance_transactions'
+		| 'created'
+		| 'currency'
+		| 'evidence_details'
+		| 'enhanced_eligibility_types'
+		| 'issuer_evidence'
+		| 'metadata'
+		| 'payment_intent'
+		| 'reason'
+		| 'status'
+	>;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 	orderUrl: string | undefined;
@@ -92,7 +109,16 @@ function getAcceptDisputeProps( {
 	dispute,
 	isDisputeAcceptRequestPending,
 }: {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'amount'
+		| 'balance_transactions'
+		| 'evidence_details'
+		| 'enhanced_eligibility_types'
+		| 'issuer_evidence'
+		| 'reason'
+		| 'status'
+	>;
 	isDisputeAcceptRequestPending: boolean;
 } ): AcceptDisputeProps {
 	if ( isInquiry( dispute.status ) ) {
@@ -168,18 +194,25 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	paymentMethod,
 	bankName,
 } ) => {
-	const {
-		doAccept,
-		isLoading: isDisputeAcceptRequestPending,
-	} = useDisputeAccept( dispute );
+	const { doAccept, isLoading: isDisputeAcceptRequestPending } =
+		useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
-
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
+	const [
+		isVisaComplianceConditionAccepted,
+		setVisaComplianceConditionAccepted,
+	] = useState( hasStagedEvidence );
 	const { createErrorNotice } = useDispatch( 'core/notices' );
 
 	const {
 		featureFlags: { isDisputeIssuerEvidenceEnabled },
 	} = useContext( WCPaySettingsContext );
+
+	const isVisaComplianceDispute =
+		dispute.reason === 'noncompliant' ||
+		( dispute?.enhanced_eligibility_types || [] ).includes(
+			'visa_compliance'
+		);
 
 	// Get the appropriate documentation URL based on dispute type
 	const getLearnMoreDocsUrl = () => {
@@ -188,6 +221,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 				return 'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns';
 			}
 			return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
+		}
+		if ( isVisaComplianceDispute ) {
+			return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes';
 		}
 		return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
 	};
@@ -203,6 +239,12 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 			}
 			return __(
 				'Learn more about payment inquiries',
+				'woocommerce-payments'
+			);
+		}
+		if ( isVisaComplianceDispute ) {
+			return __(
+				'Learn more about Visa compliance disputes',
 				'woocommerce-payments'
 			);
 		}
@@ -239,9 +281,14 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		isDisputeAcceptRequestPending,
 	} );
 
+	/**
+	 * The following cases cannot be defended:
+	 * - Klarna inquiries
+	 * - Visa Compliance disputes (require confirmation of a specific fee)
+	 */
 	const isDefendable = ! (
 		paymentMethod === 'klarna' && isInquiry( dispute.status )
-	); // Only Klarna inquires are not defendable
+	);
 
 	const challengeButtonDefaultText = isInquiry( dispute.status )
 		? __( 'Submit evidence', 'woocommerce-payments' )
@@ -263,9 +310,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		/>
 	);
 
-	// we cannot nest ternary operators, so let's build the steps in a variable
-	const steps = isInquiry( dispute.status ) ? (
-		inquirySteps
+	const disputeSteps = isVisaComplianceDispute ? (
+		<NonCompliantDisputeSteps />
 	) : (
 		<DisputeSteps
 			dispute={ dispute }
@@ -274,6 +320,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 			bankName={ bankName }
 		/>
 	);
+
+	// we cannot nest ternary operators, so let's build the steps in a variable
+	const steps = isInquiry( dispute.status ) ? inquirySteps : disputeSteps;
 
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
@@ -322,7 +371,20 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						{ getHelpLinkText() }
 					</ExternalLink>
 				</div>
-
+				{ /* Checkbox for the Visa Compliance dispute */ }
+				{ isVisaComplianceDispute && (
+					<div className="transaction-details-dispute-details-body__visa-compliance-checkbox">
+						<CheckboxControl
+							onChange={ setVisaComplianceConditionAccepted }
+							checked={ isVisaComplianceConditionAccepted }
+							label={ __(
+								'By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a $500 USD network fee, which will be refunded if you win the dispute.',
+								'woocommerce-payments'
+							) }
+							__nextHasNoMarginBottom
+						/>
+					</div>
+				) }
 				{ /* Dispute Actions */ }
 				{
 					<div className="transaction-details-dispute-details-body__actions">
@@ -334,8 +396,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										? ''
 										: getAdminUrl( {
 												page: 'wc-admin',
-												path:
-													'/payments/disputes/challenge',
+												path: '/payments/disputes/challenge',
 												id: dispute.id,
 										  } )
 								}
@@ -343,7 +404,11 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								<Button
 									variant="primary"
 									data-testid="challenge-dispute-button"
-									disabled={ isDisputeAcceptRequestPending }
+									disabled={
+										isDisputeAcceptRequestPending ||
+										( isVisaComplianceDispute &&
+											! isVisaComplianceConditionAccepted )
+									}
 									onClick={ () => {
 										recordEvent(
 											'wcpay_dispute_challenge_clicked',
@@ -353,6 +418,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											}
 										);
 									} }
+									__next40pxDefaultSize
 								>
 									{ hasStagedEvidence
 										? __(
@@ -378,9 +444,44 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								);
 								setModalOpen( true );
 							} }
+							__next40pxDefaultSize
 						>
 							{ disputeAcceptAction.acceptButtonLabel }
 						</Button>
+
+						{ ! isDefendable && (
+							<Tooltip
+								text={ __(
+									'Challenge available if the inquiry escalates to a dispute',
+									'woocommerce-payments'
+								) }
+							>
+								<span
+									className="transaction-details-dispute-details-body__challenge-disabled"
+									tabIndex={ 0 }
+									role="button"
+									aria-disabled="true"
+									aria-label={ __(
+										'Challenge dispute — available if the inquiry escalates to a dispute',
+										'woocommerce-payments'
+									) }
+								>
+									<Button
+										variant="primary"
+										disabled
+										tabIndex={ -1 }
+										aria-hidden="true"
+										data-testid="challenge-dispute-button-disabled"
+										__next40pxDefaultSize
+									>
+										{ __(
+											'Challenge dispute',
+											'woocommerce-payments'
+										) }
+									</Button>
+								</span>
+							</Tooltip>
+						) }
 
 						{ /** Accept dispute modal */ }
 						{ isModalOpen && (
@@ -421,6 +522,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											isDisputeAcceptRequestPending
 										}
 										onClick={ handleModalClose }
+										__next40pxDefaultSize
 									>
 										{ __(
 											'Cancel',
@@ -455,6 +557,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 												doAccept();
 											}
 										} }
+										__next40pxDefaultSize
 									>
 										{ disputeAcceptAction.modalButtonLabel }
 									</Button>

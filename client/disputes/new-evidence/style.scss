@@ -1,41 +1,4 @@
-// Define mixins here
-@mixin heading-xl {
-	/* Heading XL */
-	font-size: var( --xl, 20px );
-	font-style: normal;
-	font-weight: var( --Medium, 500 );
-	line-height: var( --m, 24px ); /* 120% */
-}
-@mixin heading-md {
-	/* Heading MD */
-	font-size: var( --m, 13px );
-	font-style: normal;
-	font-weight: var( --Medium, 500 );
-	line-height: var( --s, 20px ); /* 153.846% */
-}
-@mixin heading-s {
-	/* Heading S */
-	font-size: var( --xs, 11px );
-	font-style: normal;
-	font-weight: var( --Medium, 500 );
-	line-height: var( --xs, 16px ); /* 145.455% */
-}
-@mixin body-md {
-	/* Body MD */
-	font-size: var( --m, 13px );
-	font-style: normal;
-	font-weight: var( --Regular, 400 );
-	line-height: var( --s, 20px ); /* 153.846% */
-}
-@mixin body-sm {
-	/* Body SM */
-	font-size: var( --s, 12px );
-	font-style: normal;
-	font-weight: var( --Regular, 400 );
-	line-height: var( --xs, 16px ); /* 133.333% */
-}
-
-// Container for the new-evidence page
+// Stepper section background to match accordion
 .wcpay-dispute-evidence-new {
 	display: flex;
 	flex-direction: column;
@@ -44,69 +7,69 @@
 	&__stepper-divider {
 		margin: 0;
 	}
-}
 
-// Stepper section background to match accordion
-.wcpay-dispute-evidence-new__stepper-section {
-	background: $white; // Same as .wcpay-accordion
-	border: $border-width solid $gray-200;
-	padding: 0 24px 128px 24px;
-}
+	&__stepper-section {
+		background: $white; // Same as .wcpay-accordion
+		border: $border-width solid $gray-200;
+		padding: 0 24px 128px 24px;
+	}
 
-// Optional: Card spacing and button spacing, copied from disputes style
-.wcpay-dispute-evidence-new .components-card {
-	margin-bottom: 24px;
-}
+	// Limit the width of the stepper content and center it
+	&__stepper-content {
+		max-width: 500px;
+		margin-left: auto;
+		margin-right: auto;
+	}
 
-.wcpay-dispute-evidence-new .components-button + .components-button {
-	margin-left: 10px;
-}
+	&__stepper-title {
+		@include heading-xl;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin-top: 24px;
+		margin-bottom: 12px;
+	}
 
-// Limit the width of the stepper content and center it
-.wcpay-dispute-evidence-new__stepper-content {
-	max-width: 500px;
-	margin-left: auto;
-	margin-right: auto;
-}
+	&__stepper-subheading {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-md;
+	}
 
-.wcpay-dispute-evidence-new__stepper-title {
-	@include heading-xl;
-	color: var( --Scales-Grays-gray-900, $gray-900 );
-	margin-top: 24px;
-	margin-bottom: 12px;
-}
+	&__cover-letter-warning {
+		margin-bottom: 16px;
+		border-left: 4px solid var( --wp-components-color-warning, #f0b849 );
+	}
 
-.wcpay-dispute-evidence-new__stepper-subheading {
-	color: var( --Scales-Grays-gray-700, $gray-700 );
-	@include body-md;
-}
+	&__button-row {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 40px;
+	}
 
-.wcpay-dispute-evidence-new__cover-letter-warning {
-	margin-bottom: 16px;
-	border-left: 4px solid var( --wp-components-color-warning, #f0b849 );
-}
+	&__button-group-right {
+		display: flex;
+		align-items: center;
+	}
 
-.wcpay-dispute-evidence-new__button-row {
-	display: flex;
-	justify-content: space-between;
-	margin-top: 32px;
-}
+	.components-card {
+		margin-bottom: 24px;
+	}
 
-.wcpay-dispute-evidence-new__button-group-right {
-	display: flex;
-	align-items: center;
-}
+	.components-button + .components-button {
+		margin-left: 10px;
+	}
 
-// Add spacing between right-aligned buttons
-.wcpay-dispute-evidence-new__button-group-right
-	.components-button
-	+ .components-button {
-	margin-left: 8px;
+	// Add spacing between right-aligned buttons
+	&__button-group-right .components-button + .components-button {
+		margin-left: 8px;
+	}
+
+	.dispute-steps__notice-content {
+		font-size: 14px;
+	}
 }
 
 // Customer details section
 .wcpay-dispute-evidence-customer-details {
-	margin-top: 24px;
+	margin-top: 40px;
 	margin-bottom: 40px;
 
 	&__heading {
@@ -118,8 +81,9 @@
 	&__row {
 		display: flex;
 		align-items: flex-start;
-		gap: 32px;
+		gap: 24px 32px;
 		margin-bottom: 24px;
+		flex-wrap: wrap;
 	}
 
 	&__row > div {
@@ -134,7 +98,7 @@
 
 		& > span {
 			color: var( --Scales-Grays-gray-700, $gray-700 );
-			@include body-md;
+			@include body-sm;
 		}
 	}
 
@@ -142,12 +106,16 @@
 	&__billing-label {
 		color: var( --Scales-Grays-gray-900, $gray-900 );
 		text-transform: uppercase;
-		@include heading-s;
+		@include heading-sm;
+	}
+
+	&__link,
+	&__ip-address {
+		@include body-sm;
 	}
 
 	&__link {
 		color: var( --wp-admin-theme-color );
-		@include body-sm;
 		text-decoration: underline;
 		word-break: break-all;
 	}
@@ -172,6 +140,7 @@
 		&__row {
 			flex-direction: column;
 			gap: 8px;
+			margin-bottom: 8px;
 		}
 		&__row > div {
 			min-width: 0;
@@ -186,30 +155,46 @@
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
-		margin-bottom: 16px;
+		margin-bottom: 8px;
 	}
 
 	&__field-group {
 		margin-bottom: 24px;
 	}
+
+	&__subheading {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
+		margin-bottom: 16px;
+	}
 }
 
+// Shipping details section
 .wcpay-dispute-evidence-shipping-details {
+	margin-top: 40px;
 	margin-bottom: 40px;
 
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
-		margin-bottom: 16px;
+		margin-bottom: 8px;
 	}
 
 	&__field-group {
 		margin-bottom: 24px;
 	}
+
+	&__subheading {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
+		margin-bottom: 24px;
+	}
 }
 
-.wcpay-dispute-evidence-recommended-documents {
-	margin-bottom: 45px;
+// Visa Compliance section
+.wcpay-dispute-evidence-visa-compliance {
+	margin-bottom: 40px;
+	margin-top: 40px;
 
 	&__heading {
 		@include heading-md;
@@ -219,88 +204,202 @@
 
 	&__subheading {
 		color: var( --Scales-Grays-gray-700, $gray-700 );
-		@include body-md;
+		@include body-sm;
+		margin-bottom: 24px;
+	}
+
+	&__textarea {
+		margin-bottom: 16px;
+	}
+}
+
+// Recommended documents section
+.wcpay-dispute-evidence-recommended-documents {
+	margin-bottom: 40px;
+
+	&__heading {
+		@include heading-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin-bottom: 8px;
+	}
+
+	&__subheading {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
 	}
 
 	&__item {
-		margin-left: 15px;
-		margin-bottom: 10px;
+		padding-bottom: 16px;
+		padding-top: 10px;
+		margin-bottom: 0;
+		border-bottom: 1px solid var( --Scales-Grays-gray-100, $gray-100 );
+
+		&:last-child {
+			border-bottom: none;
+			margin-bottom: 0;
+			padding-bottom: 10px;
+		}
 	}
 
 	&__list {
 		margin-top: 16px;
 		margin-bottom: 0;
 	}
+
+	&__helper-link {
+		margin-top: 8px;
+	}
+}
+
+// Recommended documents section
+.wcpay-dispute-evidence-refund-status {
+	margin-bottom: 40px;
+
+	&__heading {
+		@include heading-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin-bottom: 8px;
+	}
+}
+
+.wcpay-dispute-evidence-duplicate-status {
+	margin-bottom: 40px;
+
+	&__heading {
+		@include heading-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin-bottom: 8px;
+	}
 }
 
 .wcpay-dispute-evidence-file-upload-control {
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
-	gap: 12px;
-	margin-bottom: 8px;
+	gap: 10px;
+	justify-content: space-between;
 
-	&__label {
-		flex: 1 0 220px;
-		color: var( --Scales-Grays-gray-900, $gray-900 );
-		@include body-md;
-		margin-right: 16px;
-		text-align: left;
-	}
-
-	&__actions {
+	&__chip {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-	}
-
-	&__filename {
-		max-width: 320px;
-		min-width: 120px;
-		background: color-mix(
-			in srgb,
-			var( --wp-admin-theme-color ) 10%,
-			transparent
+		height: 32px;
+		max-height: 32px;
+		border-radius: var( --radius-full, 999px );
+		background: var(
+			--Scales-Theme-theme-alpha-04,
+			rgba( 56, 88, 233, 0.04 )
 		);
-		border-radius: 24px;
-		padding: 0 12px 0 12px;
-		font-size: 14px;
-		line-height: 32px;
+		flex-shrink: 1;
+		min-width: 0;
+	}
+
+	&__chip-filename {
+		color: var( --wp-admin-theme-color );
+		padding-left: 8px;
+		white-space: nowrap;
 		display: flex;
 		align-items: center;
-		gap: 8px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		position: relative;
-	}
-
-	&__filename-text {
-		flex: 1 1 auto;
+		gap: 0;
 		min-width: 0;
+	}
+
+	&__chip-filename-name {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		color: var( --wp-admin-theme-color );
+		flex-shrink: 1;
+		min-width: 0;
 	}
 
-	&__check {
-		width: 48px;
+	&__chip-filename-extension {
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+
+	&__info {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	&__info-header {
+		min-height: 32px;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 8px;
+
+		.wcpay-dispute-evidence-file-upload-control__label {
+			flex-shrink: 0;
+		}
+	}
+	&__info-description {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
+		margin: 0;
+	}
+
+	// Very small mobile screens (width < 385px) - restructure layout
+	@media ( max-width: 385px ) {
+		&__info {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 4px;
+		}
+
+		&__chip-filename {
+			max-width: 160px;
+		}
+	}
+
+	// Responsive breakpoints for file chip
+	@media ( min-width: 386px ) and ( max-width: 480px ) {
+		// Small screens: hide extension and size, show only filename with ellipsis
+		&__chip-filename {
+			max-width: 120px;
+		}
+		&__chip-filename-extension {
+			display: none;
+		}
+	}
+
+	@media ( min-width: 481px ) and ( max-width: 768px ) {
+		// Medium screens: show filename with ellipsis and extension+size
+		&__chip-filename {
+			max-width: 160px;
+		}
+	}
+
+	@media ( min-width: 769px ) {
+		// Large screens: show full filename with extension+size
+		&__chip-filename {
+			max-width: 250px;
+		}
 	}
 }
 
-.wcpay-dispute-evidence-cover-letter__printonly {
-	display: none;
+// Cover letter section
+.wcpay-dispute-evidence-cover-letter {
+	margin-top: 40px;
+	margin-bottom: 40px;
+
+	&__textarea {
+		margin-bottom: 16px;
+	}
+
+	&__printonly {
+		display: none;
+	}
+}
+
+.wcpay-accordion {
+	.wcpay-inline-notice.components-notice {
+		.components-notice__content {
+			font-size: 14px;
+		}
+	}
 }
 
 @media print {
-	body * {
-		visibility: hidden !important;
-	}
-	.wcpay-dispute-evidence-cover-letter,
-	.wcpay-dispute-evidence-cover-letter * {
-		visibility: visible !important;
-	}
 	.wcpay-dispute-evidence-cover-letter {
 		max-width: 700px;
 		margin: 0 auto !important;
@@ -326,5 +425,153 @@
 		padding: 0;
 		text-align: left;
 		width: 100%;
+	}
+}
+
+// Disable React Transition Group animations for HorizontalList in evidence summary
+// Higher specificity selector to target only the specific HorizontalList instance
+.evidence-summary__body .woocommerce-list--horizontal {
+	.woocommerce-list__item-enter,
+	.woocommerce-list__item-enter-active,
+	.woocommerce-list__item-enter-done,
+	.woocommerce-list__item-exit,
+	.woocommerce-list__item-exit-active,
+	.woocommerce-list__item-exit-done,
+	.woocommerce-list__item {
+		transition: none;
+		animation: none;
+		transform: none;
+		opacity: 1;
+		max-height: none;
+	}
+}
+
+// Confirmation screen section
+.wcpay-dispute-evidence-confirmation {
+	padding: 40px 0;
+	display: flex;
+	justify-content: center;
+	background: #fff;
+
+	&__wrapper {
+		width: 984px;
+		max-width: calc( 100vw - 48px );
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 24px;
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		max-width: 600px;
+		width: 100%;
+	}
+
+	&__illustration {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 40px;
+	}
+
+	&__illustration-image {
+		width: 180px;
+		height: auto;
+		max-width: 100%;
+	}
+
+	&__title {
+		@include heading-xl;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin: 0 0 12px 0;
+		text-align: left;
+	}
+
+	&__subtitle {
+		@include body-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin: 0 0 40px 0;
+		text-align: left;
+	}
+
+	&__next-steps,
+	&__resources {
+		text-align: left;
+		width: 100%;
+		margin-bottom: 24px;
+
+		h3 {
+			@include heading-xl;
+			color: var( --Scales-Grays-gray-900, $gray-900 );
+			margin: 0 0 12px 0;
+		}
+
+		ul {
+			list-style: none;
+			padding: 0 0 0 8px;
+			margin: 0;
+
+			li {
+				padding-left: 12px;
+				position: relative;
+				@include body-md;
+				color: var( --Scales-Grays-gray-900, $gray-900 );
+
+				&::before {
+					content: '•';
+					font-weight: bold;
+					position: absolute;
+					left: 0;
+				}
+
+				a {
+					color: #3858e9;
+					text-decoration: none;
+
+					&:hover {
+						text-decoration: underline;
+					}
+				}
+			}
+		}
+	}
+
+	&__notice {
+		&.wcpay-inline-notice.components-notice {
+			margin-bottom: 48px;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 16px;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	}
+
+	// Responsive adjustments
+	@media ( max-width: 768px ) {
+		padding: 24px 16px;
+
+		&__title {
+			font-size: 24px;
+		}
+
+		&__actions {
+			flex-direction: column-reverse;
+			gap: 12px;
+			width: 100%;
+
+			.components-button {
+				width: 100%;
+				justify-content: center;
+			}
+
+			.components-button + .components-button {
+				margin-left: 0;
+			}
+		}
 	}
 }

@@ -73,26 +73,28 @@ test.describe( 'Payment Methods', () => {
 
 				await addSavedCard( shopperPage, card, 'US' );
 
-				if ( 'declined-3ds' === cardType ) {
+				if ( cardType === 'declined-3ds' ) {
 					await confirmCardAuthentication( shopperPage, false );
 					await isUIUnblocked( shopperPage );
 				}
 
-				// Verify that we get the expected error message.
-				await expect( shopperPage.getByRole( 'alert' ) ).toHaveText(
-					errorText
-				);
-
-				// Declined incorrect card also puts the errorText under the card number field.
-				if ( 'declined-incorrect' === cardType ) {
+				// For declined-incorrect, Stripe validates client-side and shows
+				// the error only in the iframe - the form is never submitted to
+				// WooCommerce so no page-level alert is shown.
+				if ( cardType === 'declined-incorrect' ) {
 					await expect(
 						shopperPage
 							.frameLocator(
-								'iframe[name^="__privateStripeFrame"]'
+								'iframe[title="Secure payment input frame"]'
 							)
-							.first()
 							.getByRole( 'alert' )
 					).toContainText( errorText );
+				} else {
+					// For all other decline types, the error comes from the
+					// server and displays as a WooCommerce notice on the page.
+					await expect( shopperPage.getByRole( 'alert' ) ).toHaveText(
+						errorText
+					);
 				}
 
 				// Verify that the card is not added to the list of payment methods.
@@ -111,7 +113,12 @@ test.describe( 'Payment Methods', () => {
 				.getByRole( 'link', { name: 'Add payment method' } )
 				.click();
 
-			await shopperPage.waitForLoadState( 'networkidle' );
+			// Wait for the form to render instead of using networkidle
+			await shopperPage.waitForLoadState( 'domcontentloaded' );
+			await isUIUnblocked( shopperPage );
+			await expect(
+				shopperPage.locator( 'input[name="payment_method"]' ).first()
+			).toBeVisible( { timeout: 5000 } );
 
 			//This will simulate selecting another payment gateway
 			await shopperPage.$eval(
@@ -124,7 +131,8 @@ test.describe( 'Payment Methods', () => {
 			await shopperPage
 				.getByRole( 'button', { name: 'Add payment method' } )
 				.click();
-
+			// Verify no error alert appears after submitting without a selected gateway.
+			// Playwright's auto-retry on `not.toBeVisible()` handles the timing.
 			await expect( shopperPage.getByRole( 'alert' ) ).not.toBeVisible();
 		}
 	);

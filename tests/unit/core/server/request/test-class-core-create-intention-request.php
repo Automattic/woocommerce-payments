@@ -116,4 +116,26 @@ class Create_Intention_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'POST', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::INTENTIONS_API, $request->get_api() );
 	}
+
+	public function test_set_confirmation_token() {
+		$amount             = 1;
+		$currency           = 'usd';
+		$confirmation_token = 'ctoken_123';
+		$request            = new Create_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$request->set_amount( $amount );
+		$request->set_currency_code( $currency );
+		$request->set_confirmation_token( $confirmation_token );
+
+		$params = $request->get_params();
+
+		$this->assertIsArray( $params );
+		$this->assertArrayHasKey( 'confirmation_token', $params );
+		$this->assertSame( $confirmation_token, $params['confirmation_token'] );
+	}
+
+	public function test_exception_will_throw_if_confirmation_token_is_invalid() {
+		$request = new Create_Intention( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->set_confirmation_token( 'pm_invalid' );
+	}
 }

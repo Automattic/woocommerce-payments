@@ -2,15 +2,20 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
-
+import {
+	Button,
+	Card,
+	CardBody,
+	CheckboxControl,
+	ExternalLink,
+	RadioControl,
+} from '@wordpress/components';
 import { useStoreSettings } from 'multi-currency/data';
 import {
 	LoadableBlock,
@@ -18,116 +23,70 @@ import {
 } from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
 
-const StoreSettingsDescription = () => {
-	const LEARN_MORE_URL =
-		'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#store-settings';
-
-	return (
-		<>
-			<h2>{ __( 'Store settings', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ createInterpolateElement(
-					sprintf(
-						__(
-							'Store settings allow your customers to choose which currency they ' +
-								'would like to use when shopping at your store. <learnMoreLink>' +
-								'Learn more</learnMoreLink>',
-							'woocommerce-payments'
-						),
-						LEARN_MORE_URL
+const StoreSettingsDescription = () => (
+	<>
+		<h2>{ __( 'Store settings', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ createInterpolateElement(
+				__(
+					'Store settings allow your customers to choose which currency they ' +
+						'would like to use when shopping at your store. <learnMoreLink>' +
+						'Learn more</learnMoreLink>',
+					'woocommerce-payments'
+				),
+				{
+					learnMoreLink: (
+						// @ts-expect-error: children is provided when interpolating the component
+						<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#store-settings" />
 					),
-					{
-						learnMoreLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href={ LEARN_MORE_URL }
-								target={ '_blank' }
-								rel={ 'noreferrer' }
-							/>
-						),
-					}
-				) }
-			</p>
-		</>
-	);
-};
+				}
+			) }
+		</p>
+	</>
+);
 
 const StoreSettings = () => {
 	const {
 		storeSettings,
 		isLoading,
-		submitStoreSettingsUpdate,
+		isDirty,
+		isSaving,
+		updateStoreSettingValues,
+		saveStoreSettings,
 	} = useStoreSettings();
-	const [ isSavingSettings, setIsSavingSettings ] = useState( false );
-	const [
-		isAutomaticSwitchEnabledValue,
-		setIsAutomaticSwitchEnabledValue,
-	] = useState( false );
-
-	const [
-		isStorefrontSwitcherEnabledValue,
-		setIsStorefrontSwitcherEnabledValue,
-	] = useState( false );
-
-	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
-
-	const [ isDirty, setIsDirty ] = useState( false );
 
 	useEffect( () => {
-		if ( Object.keys( storeSettings ).length ) {
-			setIsStorefrontSwitcherEnabledValue(
-				storeSettings.enable_storefront_switcher
-			);
-			setIsAutomaticSwitchEnabledValue(
-				storeSettings.enable_auto_currency
-			);
+		if ( ! isDirty ) {
+			window.onbeforeunload = null;
 		}
-	}, [
-		setIsAutomaticSwitchEnabledValue,
-		setIsStorefrontSwitcherEnabledValue,
-		storeSettings,
-	] );
+	}, [ isDirty ] );
 
-	const handleIsAutomaticSwitchEnabledClick = ( value ) => {
-		setIsAutomaticSwitchEnabledValue( value );
-		setIsDirty( true );
-	};
-
-	const handleIsStorefrontSwitcherEnabledClick = ( value ) => {
-		setIsStorefrontSwitcherEnabledValue( value );
-		setIsDirty( true );
-	};
-
-	const saveSettings = () => {
-		setIsSavingSettings( true );
-		submitStoreSettingsUpdate(
-			isAutomaticSwitchEnabledValue,
-			isStorefrontSwitcherEnabledValue
-		);
-		setIsSavingSettings( false );
-		setIsDirty( false );
-	};
+	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
 	return (
 		<>
 			<SettingsSection
 				description={ StoreSettingsDescription }
-				className={ 'multi-currency-settings-store-settings-section' }
+				className="multi-currency-settings-store-settings-section"
 			>
 				<LoadableBlock isLoading={ isLoading } numLines={ 10 }>
 					<Card className="multi-currency-settings__wrapper">
-						<CardBody>
+						<CardBody className="wcpay-card-body">
 							<CheckboxControl
-								checked={ isAutomaticSwitchEnabledValue }
-								onChange={ handleIsAutomaticSwitchEnabledClick }
+								checked={
+									!! storeSettings.enable_auto_currency
+								}
+								onChange={ ( value ) =>
+									updateStoreSettingValues( {
+										enable_auto_currency: value,
+									} )
+								}
 								data-testid={ 'enable_auto_currency' }
 								label={ __(
 									'Automatically switch customers to their local currency if it has been enabled',
 									'woocommerce-payments'
 								) }
-							/>
-							<div className="multi-currency-settings__description">
-								{ createInterpolateElement(
+								help={ createInterpolateElement(
 									__(
 										'Customers will be notified via store alert banner. ' +
 											'<previewLink>Preview</previewLink>',
@@ -140,48 +99,83 @@ const StoreSettings = () => {
 												onClick={ () => {
 													setPreviewModalOpen( true );
 												} }
+												__next40pxDefaultSize
 											/>
 										),
 									}
 								) }
-							</div>
-							{ storeSettings.site_theme === 'Storefront' ? (
-								<>
-									<CheckboxControl
-										checked={
-											isStorefrontSwitcherEnabledValue
-										}
-										onChange={
-											handleIsStorefrontSwitcherEnabledClick
-										}
-										data-testid={
-											'enable_storefront_switcher'
-										}
-										label={ __(
-											'Add a currency switcher to the Storefront theme on breadcrumb section.',
-											'woocommerce-payments'
-										) }
-									/>
-									<div className="multi-currency-settings__description">
-										{ createInterpolateElement(
-											sprintf(
-												/* translators: %s: url to the widgets page */
-												__(
-													'A currency switcher is also available in your widgets. ' +
-														'<linkToWidgets>Configure now</linkToWidgets>',
-													'woocommerce-payments'
-												),
-												'widgets.php'
+								__nextHasNoMarginBottom
+							/>
+							{ storeSettings.is_cache_optimized_feature_enabled ? (
+								<RadioControl
+									label={ __(
+										'Price rendering mode',
+										'woocommerce-payments'
+									) }
+									help={ __(
+										'Choose how multi-currency prices are rendered. "Optimized for caching" outputs identical HTML for all visitors and converts prices client-side, allowing hosting providers to cache pages effectively.',
+										'woocommerce-payments'
+									) }
+									selected={
+										storeSettings.rendering_mode || 'speed'
+									}
+									options={ [
+										{
+											label: __(
+												'Optimized for speed (default)',
+												'woocommerce-payments'
 											),
-											{
-												linkToWidgets: (
-													// eslint-disable-next-line jsx-a11y/anchor-has-content
-													<a href="widgets.php" />
-												),
-											}
-										) }
-									</div>
-								</>
+											value: 'speed',
+										},
+										{
+											label: __(
+												'Optimized for caching',
+												'woocommerce-payments'
+											),
+											value: 'cache',
+										},
+									] }
+									onChange={ ( value ) =>
+										updateStoreSettingValues( {
+											rendering_mode: value,
+										} )
+									}
+								/>
+							) : null }
+							{ storeSettings.site_theme === 'Storefront' ? (
+								<CheckboxControl
+									checked={
+										!! storeSettings.enable_storefront_switcher
+									}
+									onChange={ ( value ) =>
+										updateStoreSettingValues( {
+											enable_storefront_switcher: value,
+										} )
+									}
+									data-testid={ 'enable_storefront_switcher' }
+									label={ __(
+										'Add a currency switcher to the Storefront theme on breadcrumb section.',
+										'woocommerce-payments'
+									) }
+									help={ createInterpolateElement(
+										sprintf(
+											/* translators: %s: url to the widgets page */
+											__(
+												'A currency switcher is also available in your widgets. ' +
+													'<linkToWidgets>Configure now</linkToWidgets>',
+												'woocommerce-payments'
+											),
+											'widgets.php'
+										),
+										{
+											linkToWidgets: (
+												// eslint-disable-next-line jsx-a11y/anchor-has-content
+												<a href="widgets.php" />
+											),
+										}
+									) }
+									__nextHasNoMarginBottom
+								/>
 							) : null }
 						</CardBody>
 						<PreviewModal
@@ -196,9 +190,10 @@ const StoreSettings = () => {
 			<SettingsSection className="multi-currency-settings-save-settings-section">
 				<Button
 					isPrimary
-					isBusy={ isSavingSettings }
-					disabled={ isSavingSettings || ! isDirty }
-					onClick={ saveSettings }
+					isBusy={ isSaving }
+					disabled={ isSaving || ! isDirty }
+					onClick={ saveStoreSettings }
+					__next40pxDefaultSize
 				>
 					{ __( 'Save changes', 'woocommerce-payments' ) }
 				</Button>

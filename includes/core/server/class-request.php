@@ -27,28 +27,28 @@ abstract class Request {
 	 *
 	 * Overwrite this in your class for individual properties.
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const IMMUTABLE_PARAMS = [];
 
 	/**
 	 * Indicates which parameters are required (keys only).
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const REQUIRED_PARAMS = [];
 
 	/**
 	 * Contains default values for parameters, which are not set automatically.
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const DEFAULT_PARAMS = [];
 
 	/**
 	 * Holds the parameters of the request.
 	 *
-	 * @var []
+	 * @var array<array-key, mixed>
 	 */
 	private $params = [];
 
@@ -95,6 +95,11 @@ abstract class Request {
 
 	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 *
+	 * Subclasses should define this property with a non-empty hook name, e.g.:
+	 *     protected $hook = 'wcpay_my_request';
+	 *
+	 * For dynamic hooks, use assign_hook() before sending the request.
 	 *
 	 * @var string
 	 */
@@ -154,6 +159,7 @@ abstract class Request {
 		WC_Payments_API_Client::TERMINAL_READERS_API       => 'terminal/readers',
 		WC_Payments_API_Client::MINIMUM_RECURRING_AMOUNT_API => 'subscriptions/minimum_amount',
 		WC_Payments_API_Client::CAPITAL_API                => 'capital',
+		WC_Payments_API_Client::PROMOTIONS_API             => 'payment_method_promotions',
 		WC_Payments_API_Client::WEBHOOK_FETCH_API          => 'webhook/failed_events',
 		WC_Payments_API_Client::DOCUMENTS_API              => 'documents',
 		WC_Payments_API_Client::VAT_API                    => 'vat',
@@ -327,8 +333,23 @@ abstract class Request {
 	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	final public function send() {
+		$hook = $this->get_hook();
+
+		// Validate that a hook name is defined. Using an empty hook name can cause
+		// collisions with other plugins that accidentally register filters to empty strings,
+		// leading to unexpected behavior or fatal errors on PHP 8.0+.
+		if ( '' === $hook ) {
+			throw new Invalid_Request_Parameter_Exception(
+				sprintf(
+					'Request class %s must define a non-empty hook name. Set the $hook property or call assign_hook() before sending.',
+					static::class
+				),
+				'wcpay_core_invalid_request_parameter_missing_hook'
+			);
+		}
+
 		return $this->format_response(
-			$this->api_client->send_request( $this->apply_filters( $this->hook, ...$this->hook_args ) )
+			$this->api_client->send_request( $this->apply_filters( $hook, ...$this->hook_args ) )
 		);
 	}
 
@@ -384,6 +405,18 @@ abstract class Request {
 			}
 		}
 	}
+	/**
+	 * Returns the WordPress hook name for this request.
+	 *
+	 * This method is final to ensure consistent behavior with assign_hook().
+	 * To define a hook, set the $hook property in your subclass or use assign_hook().
+	 *
+	 * @return string The hook name.
+	 */
+	final public function get_hook(): string {
+		return $this->hook;
+	}
+
 	/**
 	 * Assign the WordPress hook and the arguments specific to the previously assigned hook.
 	 *

@@ -5,9 +5,9 @@
  * @package WooCommerce\Payments\Admin
  */
 
-use WCPay\Logger;
-
 defined( 'ABSPATH' ) || exit;
+
+use WCPay\Logger;
 
 /**
  * REST controller for account details and status.
@@ -56,13 +56,6 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'callback'            => [ $this, 'create_embedded_kyc_session' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'progressive'     => [
-						'required'    => false,
-						'description' => 'Whether the session is for progressive onboarding.',
-						// phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-						// We expect a boolean (true, false, 0, 1, '0', '1', 'true', or 'false'), but will also accept `yes`/`no`.
-						'type'        => [ 'boolean', 'string' ],
-					],
 					'self_assessment' => [
 						'required'    => false,
 						'description' => 'The self-assessment data.',
@@ -96,6 +89,12 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 								'type' => 'boolean',
 							],
 						],
+					],
+					'mode'            => [
+						'description' => 'The account mode the user selected: live or test. Overrides environment-based auto-detection (except dev mode).',
+						'type'        => 'string',
+						'required'    => false,
+						'enum'        => [ 'live', 'test' ],
 					],
 				],
 			]
@@ -189,6 +188,16 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 							],
 						],
 					],
+					'account_data' => [
+						'description'          => 'Additional account data to pass to the platform during account creation.',
+						'type'                 => 'object',
+						'default'              => [],
+						'required'             => false,
+						'properties'           => [
+							'extra_bootstrapping' => [ 'type' => 'boolean' ],
+						],
+						'additionalProperties' => false,
+					],
 				],
 			]
 		);
@@ -225,14 +234,28 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 */
 	public function create_embedded_kyc_session( WP_REST_Request $request ) {
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
-		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && filter_var( $request->get_param( 'progressive' ), FILTER_VALIDATE_BOOLEAN );
 		$capabilities         = ! empty( $request->get_param( 'capabilities' ) ) ? wc_clean( wp_unslash( $request->get_param( 'capabilities' ) ) ) : [];
+		$mode                 = ! empty( $request->get_param( 'mode' ) ) ? sanitize_text_field( $request->get_param( 'mode' ) ) : null;
 
-		$account_session = $this->onboarding_service->create_embedded_kyc_session(
-			$self_assessment_data,
-			$progressive,
-			$capabilities
-		);
+		try {
+			$account_session = $this->onboarding_service->create_embedded_kyc_session(
+				$self_assessment_data,
+				$capabilities,
+				$mode
+			);
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to create embedded KYC session: ' . $e->getMessage() );
+			return new WP_Error( 'wcpay_onboarding_duplicate_session', $e->getMessage(), [ 'status' => 409 ] );
+		}
+
+		if ( empty( $account_session ) ) {
+			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: Empty response from onboarding service.' );
+		} elseif ( empty( $account_session['publishableKey'] ) ) {
+			WC_Payments_Utils::log_to_wc(
+				sprintf( 'Embedded KYC session missing publishableKey. Session keys: %s.', implode( ', ', array_keys( $account_session ) ) ),
+				'warning'
+			);
+		}
 
 		if ( $account_session ) {
 			$account_session['locale'] = get_user_locale();
@@ -308,11 +331,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	/**
 	 * Get fields data via API.
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_fields( WP_REST_Request $request ) {
+	public function get_fields() {
 		$fields = $this->onboarding_service->get_fields_data( get_user_locale() );
 		if ( is_null( $fields ) ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, 'Failed to retrieve the onboarding fields.', [ 'status' => 400 ] );
@@ -324,11 +345,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	/**
 	 * Get business types via API.
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_business_types( WP_REST_Request $request ) {
+	public function get_business_types() {
 		$business_types = $this->onboarding_service->get_cached_business_types();
 		return rest_ensure_response( [ 'data' => $business_types ] );
 	}
@@ -348,7 +367,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		}
 
 		try {
-			$success = $this->onboarding_service->init_test_drive_account( $country, $request->get_param( 'capabilities' ) );
+			$success = $this->onboarding_service->init_test_drive_account( $country, $request->get_param( 'capabilities' ) ?? [], $request->get_param( 'account_data' ) ?? [] );
 		} catch ( Exception $e ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
 		}

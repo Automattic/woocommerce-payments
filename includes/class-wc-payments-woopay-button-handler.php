@@ -23,8 +23,6 @@ use WCPay\WooPay\WooPay_Utilities;
  * WC_Payments_WooPay_Button_Handler class.
  */
 class WC_Payments_WooPay_Button_Handler {
-	const BUTTON_LOCATIONS = 'platform_checkout_button_locations';
-
 	/**
 	 * WC_Payments_Account instance to get information about the account
 	 *
@@ -128,16 +126,6 @@ class WC_Payments_WooPay_Button_Handler {
 			return;
 		}
 
-		// Create WooPay button location option if it doesn't exist and enable all locations by default.
-		if ( ! array_key_exists( self::BUTTON_LOCATIONS, get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
-			if ( isset( $this->gateway->get_form_fields()[ self::BUTTON_LOCATIONS ]['options'] ) ) {
-				$all_locations = $this->gateway->get_form_fields()[ self::BUTTON_LOCATIONS ]['options'];
-
-				$this->gateway->update_option( self::BUTTON_LOCATIONS, array_keys( $all_locations ) );
-				WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, array_keys( $all_locations ) );
-			}
-		}
-
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_woopay_config' ] );
@@ -156,11 +144,18 @@ class WC_Payments_WooPay_Button_Handler {
 	public function add_woopay_config( $config ) {
 		$user = wp_get_current_user();
 
-		$config['woopayButton']           = $this->get_button_settings();
-		$config['woopayButtonNonce']      = wp_create_nonce( 'woopay_button_nonce' );
-		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
-		$config['shouldShowWooPayButton'] = $this->should_show_woopay_button();
-		$config['woopaySessionEmail']     = WooPay_Session::get_user_email( $user );
+		$config['woopayButton']             = $this->get_button_settings();
+		$config['woopayButtonNonce']        = wp_create_nonce( 'woopay_button_nonce' );
+		$config['addToCartNonce']           = wp_create_nonce( 'wcpay-add-to-cart' );
+		$config['shouldShowWooPayButton']   = $this->should_show_woopay_button();
+		$config['woopaySessionEmail']       = WooPay_Session::get_user_email( $user );
+		$config['woopayIsCountryAvailable'] = $this->woopay_utilities->is_country_available( $this->gateway );
+		$config['woopayAppearance']         = $this->gateway->is_woopay_global_theme_support_enabled()
+			? WC_Payments_Styles_Cache::get_woopay_appearance()
+			: null;
+		$config['woopayFontRules']          = $this->gateway->is_woopay_global_theme_support_enabled()
+			? WC_Payments_Styles_Cache::get_woopay_font_rules()
+			: [];
 
 		return $config;
 	}
@@ -270,17 +265,17 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Product page, but not available in settings.
-		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_available_at( 'product', self::BUTTON_LOCATIONS ) ) {
+		if ( $this->express_checkout_helper->is_product() && ! $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'product', 'woopay' ) ) {
 			return false;
 		}
 
 		// Checkout page, but not available in settings.
-		if ( $this->express_checkout_helper->is_checkout() && ! $this->express_checkout_helper->is_available_at( 'checkout', self::BUTTON_LOCATIONS ) ) {
+		if ( $this->express_checkout_helper->is_checkout() && ! $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'checkout', 'woopay' ) ) {
 			return false;
 		}
 
 		// Cart page, but not available in settings.
-		if ( $this->express_checkout_helper->is_cart() && ! $this->express_checkout_helper->is_available_at( 'cart', self::BUTTON_LOCATIONS ) ) {
+		if ( $this->express_checkout_helper->is_cart() && ! $this->express_checkout_helper->is_express_checkout_method_enabled_at( 'cart', 'woopay' ) ) {
 			return false;
 		}
 
@@ -337,18 +332,23 @@ class WC_Payments_WooPay_Button_Handler {
 
 		$settings = $this->get_button_settings();
 
+		// Use a <div> placeholder instead of <button>. The Add to Cart + Options block
+		// scans hooked content for form elements (BUTTON, INPUT, etc.) to decide between
+		// Interactivity API mode and legacy form-submit mode. A <button> here forces
+		// legacy mode, which breaks the mini-cart drawer. The React component hydrates
+		// the #wcpay-woopay-button container regardless of the placeholder element type,
+		// and .woopay-express-button CSS fully styles the element, so <div> is visually
+		// identical.
 		?>
 		<div id="wcpay-woopay-button" data-product_page=<?php echo esc_attr( $this->express_checkout_helper->is_product() ); ?>>
-			<?php // The WooPay express checkout button React component will go here. This is rendered as disabled for now, until the page is initialized. ?>
-			<button
-				class="woopay-express-button"
+			<div
+				class="woopay-express-button is-placeholder"
 				aria-label="<?php esc_attr_e( 'WooPay', 'woocommerce-payments' ); ?>"
 				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
 				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
 				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
 				style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $settings['radius'] ); ?>px"
-				disabled
-			></button>
+			></div>
 		</div>
 		<?php
 	}
@@ -402,11 +402,6 @@ class WC_Payments_WooPay_Button_Handler {
 	private function has_allowed_items_in_cart() {
 		$is_supported = true;
 
-		/**
-		 * Psalm throws an error here even though we check the class existence.
-		 *
-		 * @psalm-suppress UndefinedClass
-		 */
 		// We don't support pre-order products to be paid upon release.
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && class_exists( 'WC_Pre_Orders_Product' ) ) {
 			if (

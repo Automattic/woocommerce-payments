@@ -4,8 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
+import { userEvent as user } from 'jest-utils/user-event-timers';
 import { select } from '@wordpress/data';
 
 /**
@@ -42,6 +42,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useUnselectedPaymentMethod: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -125,7 +128,7 @@ describe( 'BuyNowPayLaterSection', () => {
 		).toBeChecked();
 	} );
 
-	it( 'should render the activation modal when requirements exist for the payment method', () => {
+	it( 'should render the activation modal when requirements exist for the payment method', async () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'affirm' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
@@ -146,11 +149,9 @@ describe( 'BuyNowPayLaterSection', () => {
 
 		jest.useFakeTimers();
 
-		act( () => {
-			// Enabling a PM with requirements should show the activation modal
-			user.click( affirmCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
+		// Enabling a PM with requirements should show the activation modal
+		await user.click( affirmCheckbox );
+		jest.runOnlyPendingTimers();
 
 		expect(
 			screen.queryByText(
@@ -161,7 +162,9 @@ describe( 'BuyNowPayLaterSection', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'should render the delete modal on an already active payment method', () => {
+	it( 'should disable an already active payment method without confirmation modal', async () => {
+		const mockUnselect = jest.fn();
+		useUnselectedPaymentMethod.mockReturnValue( [ null, mockUnselect ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'affirm' ],
 			jest.fn(),
@@ -183,20 +186,13 @@ describe( 'BuyNowPayLaterSection', () => {
 		expect( affirmCheckbox ).toBeInTheDocument();
 		expect( affirmCheckbox ).toBeChecked();
 
-		jest.useFakeTimers();
+		await user.click( affirmCheckbox );
 
-		act( () => {
-			// Disabling an already active PM should show the delete modal
-			user.click( affirmCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
-
+		expect( mockUnselect ).toHaveBeenCalledWith( 'affirm' );
 		expect(
 			screen.queryByText(
 				/Your customers will no longer be able to pay using Affirm\./
 			)
-		).toBeInTheDocument();
-
-		jest.useRealTimers();
+		).not.toBeInTheDocument();
 	} );
 } );

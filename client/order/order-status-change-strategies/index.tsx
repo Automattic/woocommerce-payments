@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
@@ -53,7 +53,8 @@ function renderModal( modalToRender: JSX.Element ) {
 	const container = document.createElement( 'div' );
 	container.id = 'wcpay-orderstatus-confirm-container';
 	document.body.appendChild( container );
-	ReactDOM.render( modalToRender, container );
+	const root = createRoot( container );
+	root.render( modalToRender );
 }
 
 function triggerCancelAuthorizationModal(
@@ -113,9 +114,8 @@ function triggerCancelAuthorizationModal(
 				}
 			} }
 			onCancel={ () => {
-				const orderStatusElement: HTMLInputElement | null = document.querySelector(
-					'#order_status'
-				);
+				const orderStatusElement: HTMLInputElement | null =
+					document.querySelector( '#order_status' );
 				if ( orderStatusElement !== null ) {
 					orderStatusElement.value = orderStatus;
 					orderStatusElement.dispatchEvent( new Event( 'change' ) );
@@ -184,9 +184,8 @@ function triggerCaptureAuthorizationModal(
 				}
 			} }
 			onCancel={ () => {
-				const orderStatusElement: HTMLInputElement | null = document.querySelector(
-					'#order_status'
-				);
+				const orderStatusElement: HTMLInputElement | null =
+					document.querySelector( '#order_status' );
 				if ( orderStatusElement !== null ) {
 					orderStatusElement.value = orderStatus;
 					orderStatusElement.dispatchEvent( new Event( 'change' ) );
@@ -299,9 +298,8 @@ function handleCancelledStatus(
 					}
 				} }
 				onCancel={ () => {
-					const orderStatusElement: HTMLInputElement | null = document.querySelector(
-						'#order_status'
-					);
+					const orderStatusElement: HTMLInputElement | null =
+						document.querySelector( '#order_status' );
 					if ( orderStatusElement !== null ) {
 						orderStatusElement.value = orderStatus;
 						orderStatusElement.dispatchEvent(

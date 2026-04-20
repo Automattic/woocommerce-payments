@@ -6,16 +6,14 @@ import { getConfig } from 'wcpay/utils/checkout';
 import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
 import { buildAjaxURL } from 'utils/express-checkout';
-import { getAppearance } from 'checkout/upe-styles';
 import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
 	shouldSkipWooPay,
 	deleteSkipWooPayCookie,
-	isSupportedThemeEntrypoint,
 } from './utils';
-import { getAppearanceType } from '../utils';
+import { resolveWoopayAppearance } from 'wcpay/checkout/woopay/appearance/resolve';
 
 export const handleWooPayEmailInput = async (
 	field,
@@ -186,12 +184,7 @@ export const handleWooPayEmailInput = async (
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
-		const appearanceType = getAppearanceType();
-		const appearance =
-			isSupportedThemeEntrypoint( appearanceType ) &&
-			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
-				? getAppearance( appearanceType, true )
-				: null;
+		const appearance = resolveWoopayAppearance();
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(
@@ -231,11 +224,11 @@ export const handleWooPayEmailInput = async (
 
 	// Error message to display when there's an error contacting WooPay.
 	const errorMessage = document.createElement( 'div' );
-	errorMessage.style[ 'white-space' ] = 'normal';
 	errorMessage.textContent = __(
 		'WooPay is unavailable at this time. Please complete your checkout below. Sorry for the inconvenience.',
 		'woocommerce-payments'
 	);
+	errorMessage.classList.add( 'wc-block-checkout__guest-checkout-notice' );
 
 	const closeIframe = ( focus = true ) => {
 		window.removeEventListener( 'resize', getWindowSize );
@@ -273,7 +266,7 @@ export const handleWooPayEmailInput = async (
 		urlParams.append( 'is_blocks', isBlocksCheckout ? 'true' : 'false' );
 		urlParams.append(
 			'source_url',
-			wcSettings?.storePages?.checkout?.permalink
+			window.wcSettings?.storePages?.checkout?.permalink
 		);
 		urlParams.append(
 			'viewport',
@@ -298,7 +291,9 @@ export const handleWooPayEmailInput = async (
 	};
 
 	const showErrorMessage = () => {
-		parentDiv.insertBefore( errorMessage, woopayEmailInput.nextSibling );
+		const node = isBlocksCheckout ? parentDiv.parentNode : parentDiv;
+
+		node.insertBefore( errorMessage, null );
 	};
 
 	document.addEventListener( 'keyup', ( event ) => {
@@ -344,8 +339,10 @@ export const handleWooPayEmailInput = async (
 	const woopayLocateUser = async ( email, shouldOpenIframe = true ) => {
 		parentDiv.insertBefore( spinner, woopayEmailInput );
 
-		if ( parentDiv.contains( errorMessage ) ) {
-			parentDiv.removeChild( errorMessage );
+		const node = isBlocksCheckout ? parentDiv.parentNode : parentDiv;
+
+		if ( node.contains( errorMessage ) ) {
+			node.removeChild( errorMessage );
 		}
 
 		recordUserEvent( 'checkout_email_address_woopay_check' );
@@ -429,12 +426,16 @@ export const handleWooPayEmailInput = async (
 				}
 			} )
 			.catch( ( err ) => {
-				// Only show the error if it's not an AbortError,
-				// it occur when the fetch request is aborted because user
-				// clicked the Place Order button while loading.
-				if ( err.name !== 'AbortError' ) {
-					showErrorMessage();
+				// Only show the error if it's a connection related error
+				// connecting to WooPay.
+				if (
+					! window.wcpayConfig.woopayIsCountryAvailable ||
+					err.name !== 'TypeError'
+				) {
+					return;
 				}
+
+				showErrorMessage();
 			} )
 			.finally( () => {
 				spinner.remove();
@@ -515,7 +516,8 @@ export const handleWooPayEmailInput = async (
 
 						iframe.style.height = e.data.height + 'px';
 
-						const inputRect = woopayEmailInput.getBoundingClientRect();
+						const inputRect =
+							woopayEmailInput.getBoundingClientRect();
 
 						// iframe top is the input top minus the iframe height.
 						iframe.style.top =

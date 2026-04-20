@@ -99,7 +99,7 @@ export interface Dispute {
 	issuer_evidence: IssuerEvidence[] | null;
 	fileSize?: Record< string, number >;
 	reason: DisputeReason;
-	charge: Charge | string;
+	charge: Charge;
 	amount: number;
 	currency: string;
 	created: number;
@@ -110,6 +110,7 @@ export interface Dispute {
 	 */
 	balance_transactions: BalanceTransaction[];
 	payment_intent: string;
+	enhanced_eligibility_types?: string[];
 }
 
 export interface CachedDispute {
@@ -129,27 +130,6 @@ export interface CachedDispute {
 	status: DisputeStatus;
 	created: string;
 	due_by: string;
-}
-
-interface UploadFieldObject {
-	key: string;
-	label: string;
-}
-
-export interface FileUploadControlProps {
-	field: UploadFieldObject;
-	fileName: string;
-	disabled?: boolean;
-	isDone: boolean;
-	isLoading: boolean;
-	accept: string;
-	error?: string;
-	onFileChange( key: string, file: File ): Promise< void >;
-	onFileRemove( key: string ): void;
-	help?: string;
-	showPreview?: boolean;
-	uploadButtonLabel?: string;
-	type?: string;
 }
 
 export interface DisputesSummary {

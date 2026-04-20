@@ -14,18 +14,12 @@ use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WC_Payments_Token_Service;
 use WC_Payments;
+use WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition;
 
 /**
  * Klarna_Payment_Method unit tests
  */
 class Klarna_Payment_Method_Test extends WCPAY_UnitTestCase {
-
-	/**
-	 * Mock site currency string
-	 *
-	 * @var string
-	 */
-	public static $mock_site_currency = '';
 
 	/**
 	 * Mock WC_Payments_Token_Service.
@@ -56,6 +50,13 @@ class Klarna_Payment_Method_Test extends WCPAY_UnitTestCase {
 	private $original_account_service;
 
 	/**
+	 * Currency filter callback for removal in teardown.
+	 *
+	 * @var callable|null
+	 */
+	private $currency_filter_callback = null;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -71,8 +72,8 @@ class Klarna_Payment_Method_Test extends WCPAY_UnitTestCase {
 			->onlyMethods( [ 'add_payment_method_to_user' ] )
 			->getMock();
 
-		$this->mock_payment_method = $this->getMockBuilder( Klarna_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
+		$this->mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, KlarnaDefinition::class ] )
 			->onlyMethods( [] )
 			->getMock();
 	}
@@ -86,7 +87,10 @@ class Klarna_Payment_Method_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		wcpay_get_test_container()->reset_all_replacements();
 		WC_Payments::set_account_service( $this->original_account_service );
-		WC_Helper_Site_Currency::$mock_site_currency = '';
+		if ( null !== $this->currency_filter_callback ) {
+			remove_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
+			$this->currency_filter_callback = null;
+		}
 	}
 
 	/**
@@ -104,7 +108,10 @@ class Klarna_Payment_Method_Test extends WCPAY_UnitTestCase {
 		);
 
 		if ( $site_currency ) {
-			WC_Helper_Site_Currency::$mock_site_currency = $site_currency;
+			$this->currency_filter_callback = function () use ( $site_currency ) {
+				return $site_currency;
+			};
+			add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
 		}
 
 		$this->assertEqualsCanonicalizing( $expected_result, $this->mock_payment_method->get_countries() );

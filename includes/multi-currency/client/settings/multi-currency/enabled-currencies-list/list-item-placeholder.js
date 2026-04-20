@@ -20,29 +20,17 @@ const EnabledCurrenciesListItemPlaceholder = ( { isLoading } ) => {
 					</LoadableBlock>
 				</div>
 				<div className="enabled-currency__label">
-					<LoadableBlock
-						isLoading={ isLoading }
-						numLines={ 1 }
-					></LoadableBlock>
+					<LoadableBlock isLoading={ isLoading } numLines={ 1 } />
 				</div>
 				<div className="enabled-currency__code">
-					<LoadableBlock
-						isLoading={ isLoading }
-						numLines={ 1 }
-					></LoadableBlock>
+					<LoadableBlock isLoading={ isLoading } numLines={ 1 } />
 				</div>
 			</div>
 			<div className="enabled-currency__rate">
-				<LoadableBlock
-					isLoading={ isLoading }
-					numLines={ 1 }
-				></LoadableBlock>
+				<LoadableBlock isLoading={ isLoading } numLines={ 1 } />
 			</div>
 			<div className="enabled-currency__actions">
-				<LoadableBlock
-					isLoading={ isLoading }
-					numLines={ 1 }
-				></LoadableBlock>
+				<LoadableBlock isLoading={ isLoading } numLines={ 1 } />
 			</div>
 		</li>
 	);

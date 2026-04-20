@@ -45,7 +45,6 @@ class WC_Payments_Payment_Method_Messaging_Element {
 	 * @return string|void The HTML markup for the payment method message container.
 	 */
 	public function init() {
-
 		$is_cart_block = WC_Payments_Utils::is_cart_block();
 
 		if ( ! is_product() && ! is_cart() && ! $is_cart_block ) {
@@ -55,8 +54,8 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		global $product;
 		$currency_code      = get_woocommerce_currency();
 		$store_country      = WC()->countries->get_base_country();
-		$billing_country    = WC()->customer->get_billing_country();
-		$cart_total         = WC()->cart->total;
+		$billing_country    = WC()->customer ? WC()->customer->get_billing_country() : '';
+		$cart_total         = WC()->cart ? WC()->cart->total : 0;
 		$product_variations = [];
 
 		if ( $product ) {
@@ -68,7 +67,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 					wc_prices_include_tax() &&
 					(
 						get_option( 'woocommerce_tax_display_shop' ) !== 'incl' ||
-						WC()->customer->get_is_vat_exempt()
+						( WC()->customer && WC()->customer->get_is_vat_exempt() )
 					)
 				) {
 					$get_price_fn = function ( $product ) {
@@ -76,7 +75,7 @@ class WC_Payments_Payment_Method_Messaging_Element {
 					};
 				} elseif (
 					get_option( 'woocommerce_tax_display_shop' ) === 'incl'
-					&& ! WC()->customer->get_is_vat_exempt()
+					&& ! ( WC()->customer && WC()->customer->get_is_vat_exempt() )
 				) {
 					$get_price_fn = function ( $product ) {
 						return wc_get_price_including_tax( $product );
@@ -111,6 +110,25 @@ class WC_Payments_Payment_Method_Messaging_Element {
 		// Filter non BNPL out of the list of payment methods.
 		$bnpl_payment_methods = array_intersect( $enabled_upe_payment_methods, Payment_Method::BNPL_PAYMENT_METHODS );
 
+		// Filter out inactive payment methods to ensure only active BNPL methods are provided to the front-end.
+		$payment_method_statuses = $this->gateway->get_upe_enabled_payment_method_statuses();
+		$capability_key_map      = $this->gateway->get_payment_method_capability_key_map();
+		$bnpl_payment_methods    = array_filter(
+			$bnpl_payment_methods,
+			function ( $payment_method_id ) use ( $payment_method_statuses, $capability_key_map ) {
+				$capability_key = $capability_key_map[ $payment_method_id ] ?? null;
+				if ( ! $capability_key ) {
+					return false;
+				}
+
+				if ( ! array_key_exists( $capability_key, $payment_method_statuses ) ) {
+					return false;
+				}
+
+				return 'active' === $payment_method_statuses[ $capability_key ]['status'];
+			}
+		);
+
 		// register the script.
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PRODUCT_DETAILS', 'dist/product-details', [ 'stripe' ] );
 		wp_enqueue_script( 'WCPAY_PRODUCT_DETAILS' );
@@ -143,27 +161,18 @@ class WC_Payments_Payment_Method_Messaging_Element {
 			],
 			'wcAjaxUrl'            => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'shouldInitializePMME' => WC_Payments_Utils::is_any_bnpl_supporting_country( array_values( $bnpl_payment_methods ), $country, $currency_code ),
+			'stylesCacheVersion'   => WC_Payments_Styles_Cache::get_styles_cache_version(),
 		];
 
 		if ( $product ) {
 			$script_data['shouldShowPMME'] = WC_Payments_Utils::is_any_bnpl_method_available( array_values( $bnpl_payment_methods ), $country, $currency_code, $product_price );
 		}
 
-		// Create script tag with config.
+		// Create a script tag with config.
 		wp_localize_script(
 			'WCPAY_PRODUCT_DETAILS',
 			'wcpayStripeSiteMessaging',
 			$script_data
-		);
-
-		// Ensure wcpayConfig is available in the page.
-		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
-		wp_add_inline_script(
-			'WCPAY_PRODUCT_DETAILS',
-			"
-			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
-			",
-			'before'
 		);
 
 		if ( ! $is_cart_block ) {

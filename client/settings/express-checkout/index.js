@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { Card } from '@wordpress/components';
+import { useContext } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,8 +14,16 @@ import './style.scss';
 import WooPayExpressCheckoutItem from './woopay-item';
 import AppleGooglePayExpressCheckoutItem from './apple-google-pay-item';
 import LinkExpressCheckoutItem from './link-item';
+import AmazonPayExpressCheckoutItem from './amazon-pay-item';
+import WCPaySettingsContext from '../wcpay-settings-context';
+import { useGetAvailablePaymentMethodIds } from 'wcpay/data';
 
 const ExpressCheckout = () => {
+	const {
+		featureFlags: { amazonPay: isAmazonPayEligible },
+	} = useContext( WCPaySettingsContext );
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
+
 	return (
 		<Card className="express-checkouts">
 			<CardBody size={ 0 }>
@@ -22,6 +31,10 @@ const ExpressCheckout = () => {
 					<WooPayExpressCheckoutItem />
 					<AppleGooglePayExpressCheckoutItem />
 					<LinkExpressCheckoutItem />
+					{ isAmazonPayEligible &&
+						availablePaymentMethodIds.includes( 'amazon_pay' ) && (
+							<AmazonPayExpressCheckoutItem />
+						) }
 				</ul>
 			</CardBody>
 		</Card>

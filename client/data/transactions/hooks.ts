@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable react-hooks/exhaustive-deps -- useSelect dep arrays intentionally use JSON.stringify for object comparison */
 /**
  * External dependencies
  */
@@ -20,15 +21,16 @@ export type TransactionType =
 	| 'refund'
 	| 'card_reader_fee'
 	| 'financing_payout'
-	| 'financing_paydown';
+	| 'financing_paydown'
+	| 'fee_refund';
 
 export type TransactionSource =
 	| 'ach_credit_transfer'
 	| 'ach_debit'
 	| 'acss_debit'
 	| 'stripe_account'
-	| typeof PAYMENT_METHOD_IDS[ keyof typeof PAYMENT_METHOD_IDS ]
-	| typeof PAYMENT_METHOD_BRANDS[ keyof typeof PAYMENT_METHOD_BRANDS ];
+	| ( typeof PAYMENT_METHOD_IDS )[ keyof typeof PAYMENT_METHOD_IDS ]
+	| ( typeof PAYMENT_METHOD_BRANDS )[ keyof typeof PAYMENT_METHOD_BRANDS ];
 
 // TODO: refine this type with more detailed information.
 export interface Transaction {
@@ -160,11 +162,8 @@ export const useTransactions = (
 ): Transactions =>
 	useSelect(
 		( select ) => {
-			const {
-				getTransactions,
-				getTransactionsError,
-				isResolving,
-			} = select( STORE_NAME );
+			const { getTransactions, getTransactionsError, isResolving } =
+				select( STORE_NAME );
 
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
@@ -270,9 +269,8 @@ export const useTransactionsSummary = (
 ): TransactionsSummary =>
 	useSelect(
 		( select ) => {
-			const { getTransactionsSummary, isResolving } = select(
-				STORE_NAME
-			);
+			const { getTransactionsSummary, isResolving } =
+				select( STORE_NAME );
 
 			const query = {
 				match,
@@ -393,10 +391,8 @@ export const useFraudOutcomeTransactionsSummary = (
 					status,
 					query
 				),
-				transactionsSummaryError: getFraudOutcomeTransactionsSummaryError(
-					status,
-					query
-				),
+				transactionsSummaryError:
+					getFraudOutcomeTransactionsSummaryError( status, query ),
 				isLoading: isResolving( 'getFraudOutcomeTransactionsSummary', [
 					status,
 					query,

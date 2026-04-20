@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { BaseControl, Notice } from '@wordpress/components';
+import { BaseControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useRef } from 'react';
 
@@ -14,12 +14,15 @@ import {
 	useTestModeOnboarding,
 } from 'wcpay/data';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
+import InlineNotice from 'wcpay/components/inline-notice';
+import './styles.scss';
 
 const SupportPhoneInput = ( { setInputVallid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();
 
-	let supportPhoneError = useGetSavingError()?.data?.details
-		?.account_business_support_phone?.message;
+	let supportPhoneError =
+		useGetSavingError()?.data?.details?.account_business_support_phone
+			?.message;
 
 	const currentPhone = useRef( supportPhone ).current;
 	const isEmptyPhoneValid = supportPhone === '' && currentPhone === '';
@@ -54,30 +57,39 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 		}
 	}, [ supportPhoneError, setInputVallid ] );
 
-	let labelText = __( 'Support phone number', 'woocommerce-payments' );
-	if ( isTestModeOnboarding ) {
-		labelText += __(
-			' (+1 0000000000 can be used in sandbox mode)',
-			'woocommerce-payments'
-		);
-	}
+	const labelText = __( 'Support phone number', 'woocommerce-payments' );
 	return (
 		<>
 			{ supportPhoneError && (
-				<Notice status="error" isDismissible={ false }>
+				<InlineNotice status="error" isDismissible={ false }>
 					<span>{ supportPhoneError }</span>
-				</Notice>
+				</InlineNotice>
 			) }
 			<BaseControl
 				className="settings__account-business-support-phone-input no-top-margin"
-				help={ __(
-					'This may be visible on receipts, invoices, and automated emails from your store.',
-					'woocommerce-payments'
-				) }
+				help={
+					<>
+						{ __(
+							'This may be visible on receipts, invoices, and automated emails from your store.',
+							'woocommerce-payments'
+						) }
+						{ isTestModeOnboarding && (
+							<>
+								<br />
+								{ __(
+									'(+1 0000000000 can be used for test accounts)',
+									'woocommerce-payments'
+								) }
+							</>
+						) }
+					</>
+				}
 				label={ labelText }
 				id="account-business-support-phone-input"
+				__nextHasNoMarginBottom
 			>
 				<PhoneNumberInput
+					id="account-business-support-phone-input"
 					onValueChange={ setSupportPhone }
 					value={ supportPhone }
 					onValidationChange={ setPhoneValidity }

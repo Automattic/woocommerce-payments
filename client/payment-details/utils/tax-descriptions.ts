@@ -34,6 +34,7 @@ const taxDescriptions: Record< string, string > = {
 	'LU VAT': __( 'LU VAT', 'woocommerce-payments' ), // Luxembourg
 	'LV VAT': __( 'LV VAT', 'woocommerce-payments' ), // Latvia
 	'MT VAT': __( 'MT VAT', 'woocommerce-payments' ), // Malta
+	'NO VAT': __( 'NO VAT', 'woocommerce-payments' ), // Norway
 	'NL VAT': __( 'NL VAT', 'woocommerce-payments' ), // Netherlands
 	'PL VAT': __( 'PL VAT', 'woocommerce-payments' ), // Poland
 	'PT VAT': __( 'PT VAT', 'woocommerce-payments' ), // Portugal

@@ -4,18 +4,17 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
+import { Card, Notice, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
 import AccountBalances from 'components/account-balances';
-import AccountStatus from 'components/account-status';
+import AccountDetails from 'components/account-details';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
@@ -25,18 +24,17 @@ import Page from 'components/page';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
-import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
-import { getAdminUrl } from 'wcpay/utils';
+import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
 import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
+import SpotlightPromotion from 'promotions/spotlight';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -63,20 +61,15 @@ const OverviewPageError = () => {
 const OverviewPage = () => {
 	const {
 		accountStatus,
-		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
+		accountDetails,
 	} = wcpaySettings;
 
 	// Don't show the update details and verify business tasks by default due to embedded component.
-	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
-		false
-	);
-	const [
-		showGetVerifyBankAccountTask,
-		setShowGetVerifyBankAccountTask,
-	] = useState( false );
+	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] =
+		useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -86,25 +79,20 @@ const OverviewPage = () => {
 		stripeNotificationsBannerErrorType,
 		setStripeNotificationsBannerErrorType,
 	] = useState( '' );
-	const [
-		notificationsBannerMessage,
-		setNotificationsBannerMessage,
-	] = React.useState( '' );
-	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
-		true
-	);
+	const [ notificationsBannerMessage, setNotificationsBannerMessage ] =
+		React.useState( '' );
+	const [ stripeComponentLoading, setStripeComponentLoading ] =
+		useState( true );
 	// Variable to memoize the count of Stripe notifications.
 	const [
 		stripeNotificationsCountToAddressMemo,
 		setStripeNotificationsCountToAddressMemo,
 	] = useState( 0 );
 
-	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
+	const isTestModeOnboarding = isInTestModeOnboarding();
 	const { isLoading: settingsIsLoading } = useSettings();
-	const [
-		isTestDriveSuccessDisplayed,
-		setTestDriveSuccessDisplayed,
-	] = useState( false );
+	const [ isTestDriveSuccessDisplayed, setTestDriveSuccessDisplayed ] =
+		useState( false );
 	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
@@ -116,7 +104,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -142,20 +129,13 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-server-link-error' ] === '1';
 	const showResetAccountError =
 		queryParams[ 'wcpay-reset-account-error' ] === '1';
-	const showProgressiveOnboardingEligibilityModal =
-		showConnectionSuccess &&
-		progressiveOnboarding.isEnabled &&
-		! progressiveOnboarding.isComplete;
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
-	const isPoDisabledOrCompleted =
-		! progressiveOnboarding.isEnabled || progressiveOnboarding.isComplete;
 	const showConnectionSuccessModal =
 		showConnectionSuccess &&
 		! isTestModeOnboarding &&
 		paymentsEnabled &&
-		depositsEnabled &&
-		isPoDisabledOrCompleted;
+		depositsEnabled;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -180,7 +160,7 @@ const OverviewPage = () => {
 	if ( ! isTestDriveSuccessDisplayed && isSandboxOnboardedSuccessful ) {
 		dispatch( 'core/notices' ).createSuccessNotice(
 			__(
-				'Success! You can start using WooPayments in sandbox mode.',
+				'Success! You can start using WooPayments in test mode.',
 				'woocommerce-payments'
 			)
 		);
@@ -193,7 +173,6 @@ const OverviewPage = () => {
 	useEffect( () => {
 		if ( stripeNotificationsBannerErrorMessage ) {
 			setShowUpdateDetailsTask( true );
-			setShowGetVerifyBankAccountTask( true );
 			setStripeComponentLoading( false );
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
@@ -259,7 +238,6 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			<MaybeShowMerchantFeedbackPrompt />
 			<OverviewPageError />
 			<JetpackIdcNotice />
 			{ showLoanOfferError && (
@@ -317,14 +295,10 @@ const OverviewPage = () => {
 							components: {
 								seeDetailsLink: (
 									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<Link
+									<ExternalLink
 										href={
-											// eslint-disable-next-line max-len
 											'https://woocommerce.com/document/woopayments/startup-guide/#requirements'
 										}
-										target="_blank"
-										rel="noreferrer"
-										type="external"
 									/>
 								),
 							},
@@ -393,9 +367,10 @@ const OverviewPage = () => {
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>
-				<AccountStatus
-					accountStatus={ accountStatus }
+				<AccountDetails
+					accountDetails={ accountDetails }
 					accountFees={ activeAccountFees }
+					accountLink={ accountStatus.accountLink }
 				/>
 			</ErrorBoundary>
 			{ hasActiveLoan && (
@@ -408,16 +383,14 @@ const OverviewPage = () => {
 					<InboxNotifications />
 				</ErrorBoundary>
 			) }
-			{ showProgressiveOnboardingEligibilityModal && (
-				<ErrorBoundary>
-					<ProgressiveOnboardingEligibilityModal />
-				</ErrorBoundary>
-			) }
 			{ showConnectionSuccessModal && (
 				<ErrorBoundary>
 					<ConnectionSuccessModal />
 				</ErrorBoundary>
 			) }
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

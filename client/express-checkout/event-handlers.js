@@ -12,6 +12,8 @@ import {
 	getErrorMessageFromNotice,
 	getExpressCheckoutData,
 	updateShippingAddressUI,
+	createPaymentCredential,
+	shouldUseConfirmationTokens,
 } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
@@ -29,6 +31,7 @@ import {
 } from './transformers/wc-to-stripe';
 
 let lastSelectedAddress = null;
+let lastCartData = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
@@ -57,12 +60,19 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 		}
 
 		elements.update( {
-			amount: transformPrice(
-				parseInt( cartData.totals.total_price, 10 ) -
-					parseInt( cartData.totals.total_refund || 0, 10 ),
-				cartData.totals
+			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+			amount: applyFilters(
+				'wcpay.express-checkout.total-amount',
+				transformPrice(
+					parseInt( cartData.totals.total_price, 10 ) -
+						parseInt( cartData.totals.total_refund || 0, 10 ),
+					cartData.totals
+				),
+				cartData
 			),
 		} );
+
+		lastCartData = cartData;
 
 		event.resolve( {
 			shippingRates,
@@ -73,18 +83,42 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 	}
 };
 
-export const shippingRateChangeHandler = async ( event, elements ) => {
+export const shippingRateChangeHandler = async (
+	event,
+	elements,
+	currentCartData = null
+) => {
+	// Use the most recent cart data from a previous address/rate change,
+	// falling back to the caller-provided data. This ensures we have
+	// up-to-date subscription extension data (e.g., shipping rates for
+	// the current address) when resolving the shipping package ID.
+	const effectiveCartData = lastCartData || currentCartData;
+
 	try {
 		const cartData = await cartApi.selectShippingRate( {
-			package_id: 0,
+			// Apply filter to get the correct package ID (e.g., for trial subscriptions
+			// where shipping is in subscription extensions, not main cart)
+			package_id: applyFilters(
+				'wcpay.express-checkout.shipping-package-id',
+				0,
+				effectiveCartData,
+				event.shippingRate.id
+			),
 			rate_id: event.shippingRate.id,
 		} );
 
+		lastCartData = cartData;
+
 		elements.update( {
-			amount: transformPrice(
-				parseInt( cartData.totals.total_price, 10 ) -
-					parseInt( cartData.totals.total_refund || 0, 10 ),
-				cartData.totals
+			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+			amount: applyFilters(
+				'wcpay.express-checkout.total-amount',
+				transformPrice(
+					parseInt( cartData.totals.total_price, 10 ) -
+						parseInt( cartData.totals.total_refund || 0, 10 ),
+					cartData.totals
+				),
+				cartData
 			),
 		} );
 		event.resolve( {
@@ -101,19 +135,25 @@ export const onConfirmHandler = async (
 	elements,
 	completePayment,
 	abortPayment,
-	event
+	event,
+	paymentMethodTypes = []
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
 		return abortPayment( submitError.message );
 	}
 
-	const { paymentMethod, error } = await stripe.createPaymentMethod( {
-		elements,
-	} );
+	const useConfirmationTokens = shouldUseConfirmationTokens();
 
-	if ( error ) {
-		return abortPayment( error.message );
+	let credentialId;
+	try {
+		credentialId = await createPaymentCredential(
+			stripe,
+			elements,
+			useConfirmationTokens
+		);
+	} catch ( credentialError ) {
+		return abortPayment( credentialError.message );
 	}
 
 	try {
@@ -123,7 +163,9 @@ export const onConfirmHandler = async (
 			// so that we make it harder for external plugins to modify or intercept checkout data.
 			...transformStripePaymentMethodForStoreApi(
 				event,
-				paymentMethod.id
+				credentialId,
+				useConfirmationTokens,
+				paymentMethodTypes
 			),
 			extensions: applyFilters(
 				'wcpay.express-checkout.cart-place-order-extension-data',
@@ -143,17 +185,25 @@ export const onConfirmHandler = async (
 			);
 		}
 
-		const confirmationRequest = api.confirmIntent(
-			orderResponse.payment_result.redirect_url
-		);
+		// Extract redirect URL from payment_details if redirect_url is empty
+		let redirectUrl = orderResponse.payment_result.redirect_url;
+		if ( ! redirectUrl ) {
+			const redirectDetail =
+				orderResponse.payment_result.payment_details?.find(
+					( detail ) => detail.key === 'redirect'
+				);
+			redirectUrl = redirectDetail?.value || '';
+		}
+
+		const confirmationRequest = api.confirmIntent( redirectUrl );
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
-			completePayment( orderResponse.payment_result.redirect_url );
-		} else {
-			const redirectUrl = await confirmationRequest;
-
 			completePayment( redirectUrl );
+		} else {
+			const authenticatedRedirectUrl = await confirmationRequest;
+
+			completePayment( authenticatedRedirectUrl );
 		}
 	} catch ( e ) {
 		// API errors are not parsed, so we need to do it ourselves.

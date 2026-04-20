@@ -10,7 +10,7 @@ runs:
     # Cache node dependencies
     - name: "Cache node modules"
       id: node-cache
-      uses: actions/cache@v4
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       with:
         path: ./node_modules
         key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
@@ -25,7 +25,20 @@ runs:
       run: |
         mkdir screenshots
 
-    - name: Install Playwright
+    - name: Get Playwright version
+      id: playwright-version
+      shell: bash
+      run: echo "version=$(node -e "console.log(require('./package.json').devDependencies['@playwright/test'])")" >> $GITHUB_OUTPUT
+
+    - name: Cache Playwright browsers
+      id: playwright-cache
+      uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ steps.playwright-version.outputs.version }}
+
+    - name: Install Playwright browsers
+      if: ${{ steps.playwright-cache.outputs.cache-hit != 'true' }}
       shell: bash
       run: npx playwright install chromium
 
