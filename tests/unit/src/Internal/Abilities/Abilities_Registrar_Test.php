@@ -116,10 +116,10 @@ class Abilities_Registrar_Test extends WCPAY_UnitTestCase {
 		$meta = $ability->get_meta();
 		$this->assertIsArray( $meta, 'Ability meta must be an array.' );
 		$this->assertArrayHasKey( 'annotations', $meta );
-		$this->assertTrue(
-			$meta['annotations']['readonly'] ?? false,
-			'get-account-status must advertise itself as readonly.'
-		);
+		$annotations = $meta['annotations'];
+		$this->assertTrue( $annotations['readonly'], 'get-account-status should be readonly.' );
+		$this->assertFalse( $annotations['destructive'], 'get-account-status should not be destructive.' );
+		$this->assertTrue( $annotations['idempotent'], 'get-account-status should be idempotent.' );
 		$this->assertTrue(
 			$meta['show_in_rest'] ?? false,
 			'get-account-status must be exposed via show_in_rest for the REST bridge.'

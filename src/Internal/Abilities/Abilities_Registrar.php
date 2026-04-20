@@ -100,14 +100,17 @@ class Abilities_Registrar {
 	/**
 	 * Execute callback for woopayments/get-account-status.
 	 *
-	 * Delegates to WC_Payments::get_account_service()->get_cached_account_data()
-	 * so we reuse the exact same cached-account data the REST controller serves,
-	 * with no network calls of our own.
+	 * Delegates to WC_Payments_Account::get_cached_account_data(). Usually
+	 * served from cache; on cache miss this may issue a remote request to
+	 * the WooPayments server, so agents should not assume this ability is
+	 * free to call repeatedly.
 	 *
+	 * @param mixed $input Optional; ability input. Unused for this ability (empty input_schema) but accepted to match the Abilities API execute_callback signature.
 	 * @return array|\WP_Error Array of account data, or WP_Error when WooPayments
-	 *                         has not finished initializing.
+	 *                         has not finished initializing or the cached data
+	 *                         is unavailable due to a remote error.
 	 */
-	public static function execute_get_account_status() {
+	public static function execute_get_account_status( $input = null ) {
 		if ( ! class_exists( '\WC_Payments' ) ) {
 			return new \WP_Error(
 				'woopayments_not_initialized',
@@ -124,6 +127,14 @@ class Abilities_Registrar {
 		}
 
 		$data = $account->get_cached_account_data();
+
+		if ( false === $data ) {
+			return new \WP_Error(
+				'woopayments_account_data_unavailable',
+				__( 'Unable to retrieve WooPayments account data. The cache may be stale or the remote service returned an error.', 'woocommerce-payments' )
+			);
+		}
+
 		return is_array( $data ) ? $data : [];
 	}
 
@@ -152,6 +163,7 @@ class Abilities_Registrar {
 				],
 				'execute_callback'    => [ __CLASS__, 'execute_get_account_status' ],
 				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
+				// output_schema deliberately omitted — the account payload shape drifts with Stripe's API and we don't want to couple to a specific structure here.
 				'meta'                => [
 					'annotations'  => [
 						'readonly'    => true,
