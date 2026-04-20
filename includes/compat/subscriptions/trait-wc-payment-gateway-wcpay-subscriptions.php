@@ -467,7 +467,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$renewal_customer_id = $renewal_order->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true );
 		if ( ! empty( $renewal_customer_id ) ) {
 			$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, $renewal_customer_id );
-			$subscription->save();
+			// Meta-only change — avoid firing `woocommerce_update_order` via full save().
+			$subscription->save_meta_data();
 		}
 	}
 
