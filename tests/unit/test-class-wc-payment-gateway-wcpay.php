@@ -735,6 +735,31 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that Amazon Pay is detected as an express checkout wallet from the top-level
+	 * payment_method_details.type when no meta is pre-set on the order. Amazon Pay does
+	 * not nest its wallet info under card.wallet, so we need a separate detection path.
+	 */
+	public function test_amazon_pay_detection_sets_express_checkout_meta() {
+		$order           = WC_Helper_Order::create_order();
+		$payment_details = [
+			'type'       => 'amazon_pay',
+			'amazon_pay' => [
+				'funding' => [
+					'card' => [
+						'brand' => 'Visa',
+						'last4' => '4242',
+					],
+					'type' => 'card',
+				],
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'amazon_pay', $payment_details );
+
+		$this->assertEquals( 'amazon_pay', $order->get_meta( '_wcpay_express_checkout_payment_method' ), 'amazon_pay meta should be persisted' );
+	}
+
+	/**
 	 * Test that the express checkout title suffix can be customized via filter.
 	 */
 	public function test_express_checkout_title_suffix_filter() {
