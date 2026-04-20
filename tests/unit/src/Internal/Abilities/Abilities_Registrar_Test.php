@@ -88,32 +88,18 @@ class Abilities_Registrar_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Ensure the woopayments category and abilities are registered so the
-	 * assertions below can query them. The plugin bootstrap wires
-	 * Abilities_Registrar::init() at plugin load; when the Abilities API init
-	 * hooks have already fired by that point, init() registers inline, so in
-	 * nearly all test runs this is a no-op. If the hooks haven't fired yet
-	 * (e.g. early-boot test scenarios), we invoke the registrar's callbacks
-	 * directly instead of using do_action() — do_action() would re-run every
-	 * listener on the hook, including unrelated ones from other plugins
-	 * registered before us, and trip _doing_it_wrong() on already-registered
-	 * categories/abilities.
-	 */
-	private function fire_abilities_api_hooks(): void {
-		Abilities_Registrar::init();
-	}
-
-	/**
 	 * Ensures the woopayments/get-account-status ability is registered with
 	 * the shape the Abilities Everywhere initiative expects: correct category,
 	 * readonly annotation, and show_in_rest exposed.
+	 *
+	 * End-to-end check: relies on plugin bootstrap (WC_Payments::init() →
+	 * Abilities_Registrar::init()) having registered the ability by the time
+	 * tests run. Not an isolated unit test of register_abilities().
 	 */
 	public function test_get_account_status_ability_is_registered_with_expected_shape() {
 		if ( ! function_exists( 'wp_get_ability' ) ) {
 			$this->markTestSkipped( 'Abilities API query functions not available in this WP version.' );
 		}
-
-		$this->fire_abilities_api_hooks();
 
 		$ability = wp_get_ability( 'woopayments/get-account-status' );
 		$this->assertNotNull(
@@ -149,8 +135,6 @@ class Abilities_Registrar_Test extends WCPAY_UnitTestCase {
 		if ( ! function_exists( 'wp_get_ability' ) ) {
 			$this->markTestSkipped( 'Abilities API query functions not available in this WP version.' );
 		}
-
-		$this->fire_abilities_api_hooks();
 
 		$ability = wp_get_ability( 'woopayments/get-account-status' );
 		$this->assertNotNull( $ability, 'Ability must be registered before checking permissions.' );
