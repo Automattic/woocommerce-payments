@@ -398,6 +398,18 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$token = $this->get_payment_token( $renewal_order );
+		if ( is_null( $token ) && function_exists( 'wcs_get_subscriptions_for_renewal_order' ) ) {
+			// Fall back to the token stored on the subscription. This covers renewals created
+			// before the token was copied to the renewal order (e.g. renewals created manually
+			// via admin) or where the token was removed from the renewal order.
+			foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
+				$token = $this->get_payment_token( $subscription );
+				if ( ! is_null( $token ) ) {
+					$this->add_token_to_order( $renewal_order, $token );
+					break;
+				}
+			}
+		}
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
 			$renewal_order->add_order_note( 'Subscription renewal failed: No saved payment method found.' );
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
