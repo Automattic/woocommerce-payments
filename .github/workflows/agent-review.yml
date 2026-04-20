@@ -30,13 +30,13 @@ jobs:
 
     steps:
       - name: Checkout WooPayments
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ inputs.branch_name }}
           fetch-depth: 0
 
       - name: Checkout WooCommerce (context)
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: woocommerce/woocommerce
           path: woocommerce
@@ -46,7 +46,7 @@ jobs:
             plugins/woocommerce-blocks
 
       - name: Checkout gamma-ai-tools (prompt templates)
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: Automattic/gamma-ai-tools
           github-server-url: https://github.a8c.com
@@ -91,7 +91,7 @@ jobs:
 
       - name: Upload review-report.md as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: review-${{ inputs.linear_issue_id }}
           path: review-report.md
