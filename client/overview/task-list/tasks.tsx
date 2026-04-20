@@ -8,7 +8,6 @@
  * Internal dependencies.
  */
 import strings from './strings';
-import { getVerifyBankAccountTask } from './tasks/po-task';
 import {
 	getDisputeResolutionTask,
 	getDisputesDueWithinDays,
@@ -17,7 +16,6 @@ import { getReconnectWpcomTask } from './tasks/reconnect-task';
 import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-task';
 import { CachedDispute } from 'wcpay/types/disputes';
 import { TaskItemProps } from './types';
-import { getAddApmsTask } from './tasks/add-apms-task';
 import { getGoLiveTask } from './tasks/go-live-task';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 
@@ -28,7 +26,6 @@ interface TaskListProps {
 	showUpdateDetailsTask: boolean;
 	wpcomReconnectUrl: string;
 	activeDisputes?: CachedDispute[];
-	enabledPaymentMethods?: string[];
 	showGoLiveTask: boolean;
 }
 
@@ -36,7 +33,6 @@ export const getTasks = ( {
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
 	activeDisputes = [],
-	enabledPaymentMethods = [],
 	showGoLiveTask = false,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
@@ -45,7 +41,6 @@ export const getTasks = ( {
 		pastDue,
 		accountLink,
 		requirements,
-		progressiveOnboarding,
 		detailsSubmitted,
 	} = wcpaySettings.accountStatus;
 
@@ -69,24 +64,14 @@ export const getTasks = ( {
 		return Array.from( new Set( errorMessages || [] ) );
 	};
 
-	const isPoEnabled = progressiveOnboarding?.isEnabled;
-	const isPoComplete = progressiveOnboarding?.isComplete;
-	const isPoInProgress = isPoEnabled && ! isPoComplete;
 	const errorMessages = getErrorMessagesFromRequirements();
 
-	const isUpdateDetailsTaskVisible =
-		showUpdateDetailsTask &&
-		( ! isPoEnabled || ( isPoEnabled && ! detailsSubmitted ) );
+	const isUpdateDetailsTaskVisible = showUpdateDetailsTask;
 
 	const isDisputeTaskVisible =
 		!! activeDisputes &&
 		// Only show the dispute task if there are disputes due within 7 days.
-		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
-
-	const isAddApmsTaskVisible =
-		enabledPaymentMethods?.length === 1 &&
-		detailsSubmitted &&
-		! isPoInProgress;
+		getDisputesDueWithinDays( activeDisputes, 7 ).length > 0;
 
 	const isGoLiveTaskVisible =
 		wcpaySettings.isAccountConnected &&
@@ -98,17 +83,17 @@ export const getTasks = ( {
 			getUpdateBusinessDetailsTask(
 				errorMessages,
 				status ?? '',
-				accountLink,
+				accountLink ?? '',
 				Number( currentDeadline ) ?? null,
 				pastDue ?? false,
 				detailsSubmitted ?? true
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
-		isPoEnabled && detailsSubmitted && getVerifyBankAccountTask(),
-		isAddApmsTaskVisible && getAddApmsTask(),
 		isGoLiveTaskVisible && getGoLiveTask(),
-	].filter( Boolean );
+	]
+		.filter( Boolean )
+		.filter( ( task ) => task !== null ) as TaskItemProps[];
 };
 
 export const taskSort = ( a: TaskItemProps, b: TaskItemProps ): number => {

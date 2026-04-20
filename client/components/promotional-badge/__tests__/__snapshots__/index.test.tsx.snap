@@ -1,0 +1,77 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PromotionalBadge renders correctly with all props 1`] = `
+<div>
+  <span
+    class="chip chip-primary wcpay-promotional-badge"
+  >
+    30% off fees through Dec 31, 2026
+    <button
+      class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+      type="button"
+    >
+      <div
+        class="wcpay-tooltip__content-wrapper"
+      >
+        <div
+          aria-label="View promotion details"
+          role="button"
+          tabindex="0"
+        >
+          <svg
+            class="gridicon gridicons-info-outline"
+            height="16"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+              />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </button>
+  </span>
+</div>
+`;
+
+exports[`PromotionalBadge renders correctly with all props including T&C 1`] = `
+<div>
+  <span
+    class="chip chip-primary wcpay-promotional-badge"
+  >
+    30% off fees through Dec 31, 2026
+    <button
+      class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+      type="button"
+    >
+      <div
+        class="wcpay-tooltip__content-wrapper"
+      >
+        <div
+          aria-label="View promotion details"
+          role="button"
+          tabindex="0"
+        >
+          <svg
+            class="gridicon gridicons-info-outline"
+            height="16"
+            viewBox="0 0 24 24"
+            width="16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M13 9h-2V7h2v2zm0 2h-2v6h2v-6zm-1-7c-4.411 0-8 3.589-8 8s3.589 8 8 8 8-3.589 8-8-3.589-8-8-8m0-2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2z"
+              />
+            </g>
+          </svg>
+        </div>
+      </div>
+    </button>
+  </span>
+</div>
+`;

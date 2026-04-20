@@ -58,7 +58,7 @@ final class Generic extends Request {
 	 * @param  array  $parameters                          The parameters for the request.
 	 * @throws Invalid_Request_Parameter_Exception         An exception if there are invalid properties.
 	 */
-	public function __construct( string $api, string $method, array $parameters = null ) {
+	public function __construct( string $api, string $method, ?array $parameters = null ) {
 		if ( ! defined( \WC_Payments_Utils::get_wpcore_request_class() . "::$method" ) ) {
 			throw new Invalid_Request_Parameter_Exception( 'Invalid generic request method', 'wcpay_core_invalid_request_parameter_method_not_defined' );
 		}

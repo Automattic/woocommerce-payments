@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -14,15 +14,13 @@ interface Props {
 	color: 'purple' | 'blue' | 'gray' | 'yellow';
 	className?: string;
 }
-const TipBox: React.FC< Props > = ( { color, className, children } ) => {
+const TipBox: React.FC< React.PropsWithChildren< Props > > = ( {
+	color,
+	className,
+	children,
+} ) => {
 	return (
-		<div
-			className={ classNames(
-				'wcpay-component-tip-box',
-				color,
-				className
-			) }
-		>
+		<div className={ clsx( 'wcpay-component-tip-box', color, className ) }>
 			<LightbulbIcon />
 			<div className="wcpay-component-tip-box__content">{ children }</div>
 		</div>

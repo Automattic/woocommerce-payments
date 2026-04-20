@@ -52,13 +52,12 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 	 * @return string[] A list of script handles.
 	 */
 	public function get_payment_method_script_handles() {
-
 		if ( ( is_cart() || is_checkout() || is_product() || has_block( 'woocommerce/checkout' ) || has_block( 'woocommerce/cart' ) || is_admin() ) ) {
 			WC_Payments_Utils::enqueue_style(
 				'wc-blocks-checkout-style',
 				plugins_url( 'dist/blocks-checkout.css', WCPAY_PLUGIN_FILE ),
 				[],
-				'1.0',
+				WC_Payments::get_file_version( 'dist/checkout.css' ),
 				'all'
 			);
 		}
@@ -71,28 +70,9 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 			true
 		);
 
-		$script_dependencies = [ 'stripe' ];
-
-		if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() && ( is_cart() || is_checkout() || is_product() || has_block( 'woocommerce/checkout' ) || has_block( 'woocommerce/cart' ) ) ) {
-			$script_dependencies[] = 'WCPAY_PAYMENT_REQUEST';
-		}
-
-		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', $script_dependencies );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_BLOCKS_CHECKOUT', 'dist/blocks-checkout', [ 'stripe' ] );
 
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
-
-		wp_add_inline_script(
-			'WCPAY_BLOCKS_CHECKOUT',
-			'var wcBlocksCheckoutData = ' . wp_json_encode(
-				[
-					'amount'         => WC()->cart ? WC()->cart->get_total( '' ) : 0,
-					'currency'       => get_woocommerce_currency(),
-					'storeCountry'   => WC()->countries->get_base_country(),
-					'billingCountry' => WC()->customer ? WC()->customer->get_billing_country() : 'US',
-				]
-			) . ';',
-			'before'
-		);
 
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 

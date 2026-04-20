@@ -18,7 +18,10 @@ import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
 } from 'wcpay/disputes/filters/config';
-import { formatCurrency, formatExplicitCurrency } from 'wcpay/utils/currency';
+import {
+	formatCurrency,
+	formatExplicitCurrency,
+} from 'multi-currency/interface/functions';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
@@ -29,9 +32,9 @@ interface IsDueWithinProps {
  * Returns false if the dispute due_by date is not within the specified number of days
  * or if the due_by value is not a valid date.
  *
- * @param {IsDueWithinProps} props - An object containing function arguments.
- * @param {number} props.dueBy - The dispute due_by date. Accepts a unix timestamp {@link EvidenceDetails} or a date string {@link CachedDispute}.
- * @param {number} props.days - The number of days to check.
+ * @param {IsDueWithinProps} props       - An object containing function arguments.
+ * @param {number}           props.dueBy - The dispute due_by date. Accepts a unix timestamp {@link EvidenceDetails} or a date string {@link CachedDispute}.
+ * @param {number}           props.days  - The number of days to check.
  *
  * @return {boolean} True if the dispute is due within the specified number of days.
  */
@@ -74,7 +77,31 @@ export const isInquiry = ( status: DisputeStatus ): boolean => {
 
 export const isRefundable = ( status: DisputeStatus ): boolean => {
 	// Refundable dispute statuses are one of `warning_needs_response`, `warning_under_review`, `warning_closed` or `won`.
-	return isInquiry( status ) || 'won' === status;
+	return isInquiry( status ) || status === 'won';
+};
+
+/**
+ * Returns true if a dispute is a Visa compliance dispute.
+ * A dispute is considered a Visa compliance dispute if:
+ * - The reason is 'noncompliant', OR
+ * - The enhanced_eligibility_types includes 'visa_compliance'
+ *
+ * @param {Pick<Dispute, 'reason' | 'enhanced_eligibility_types'>} dispute - The dispute object.
+ * @return {boolean} True if the dispute is a Visa compliance dispute.
+ */
+export const isVisaComplianceDispute = (
+	dispute: Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >
+): boolean => {
+	if ( ! dispute ) {
+		return false;
+	}
+
+	return (
+		dispute.reason === 'noncompliant' ||
+		( dispute.enhanced_eligibility_types || [] ).includes(
+			'visa_compliance'
+		)
+	);
 };
 
 /**

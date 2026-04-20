@@ -13,15 +13,18 @@
     "esModuleInterop": true,
     "noImplicitAny": true,
     "paths": {
+      "jest-utils/*": [ "../tests/js/utilities/*" ],
       "assets/*": [ "../assets/*" ],
       "wcpay/*": [ "./*" ],
+      "multi-currency/*": [ "../includes/multi-currency/client/*" ],
       "iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ],
-      "react": ["../node_modules/@types/react"]
+      "react": [ "../node_modules/@types/react" ]
     },
     "types": [
       "node",
       "jest",
-      "@testing-library/jest-dom"
+      "@testing-library/jest-dom",
+      "@wordpress/jest-console"
     ],
     "resolveJsonModule": true,
     "skipLibCheck": true // To be removed when the lint errors related to types and multiple resolutions are gone

@@ -17,10 +17,6 @@
 
 		<exclude-pattern>*/includes/class-wc-payments-order-success-page.php</exclude-pattern>
 
-		<!-- https://github.com/Automattic/woocommerce-payments/issues/7264 -->
-		<exclude-pattern>*/includes/class-wc-payments-customer-service.php</exclude-pattern>
-		<exclude-pattern>*/includes/class-wc-payments-token-service.php</exclude-pattern>
-
 		<!-- https://github.com/Automattic/woocommerce-payments/issues/7265 -->
 		<exclude-pattern>*/includes/class-wc-payments-webhook-reliability-service.php</exclude-pattern>
 	</rule>

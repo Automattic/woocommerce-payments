@@ -2,16 +2,16 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
+
+/**
+ * Internal dependencies
+ */
 import {
 	Card,
 	CheckboxControl,
 	Notice,
 	TextControl,
 } from '@wordpress/components';
-
-/**
- * Internal dependencies
- */
 import CardBody from '../card-body';
 import {
 	useAccountStatementDescriptor,
@@ -34,10 +34,8 @@ const ACCOUNT_STATEMENT_MAX_LENGTH_KANA = 22;
 
 const Transactions = ( { setTransactionInputsValid } ) => {
 	const [ isSavedCardsEnabled, setIsSavedCardsEnabled ] = useSavedCards();
-	const [
-		accountStatementDescriptor,
-		setAccountStatementDescriptor,
-	] = useAccountStatementDescriptor();
+	const [ accountStatementDescriptor, setAccountStatementDescriptor ] =
+		useAccountStatementDescriptor();
 	const [
 		accountStatementDescriptorKanji,
 		setAccountStatementDescriptorKanji,
@@ -46,8 +44,9 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 		accountStatementDescriptorKana,
 		setAccountStatementDescriptorKana,
 	] = useAccountStatementDescriptorKana();
-	const customerBankStatementErrorMessage = useGetSavingError()?.data?.details
-		?.account_statement_descriptor?.message;
+	const customerBankStatementErrorMessage =
+		useGetSavingError()?.data?.details?.account_statement_descriptor
+			?.message;
 
 	const [ isEmailInputValid, setEmailInputValid ] = useState( true );
 	const [ isPhoneInputValid, setPhoneInputValid ] = useState( true );
@@ -61,7 +60,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 
 	return (
 		<Card className="transactions">
-			<CardBody>
+			<CardBody className="wcpay-card-body">
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
 				</h4>
@@ -77,10 +76,11 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 							'Card details are stored in our platform, not on your store.',
 						'woocommerce-payments'
 					) }
+					__nextHasNoMarginBottom
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
 				<h4>{ __( 'Customer statements', 'woocommerce-payments' ) }</h4>
-				<p className="transactions-customer-details">
+				<p>
 					{ __(
 						"Edit the way your store name appears on your customers' bank statements.",
 						'woocommerce-payments'
@@ -114,6 +114,8 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						data-testid={ 'store-name-bank-statement' }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
@@ -141,6 +143,8 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									data-testid={
 										'store-name-bank-statement-kanji'
 									}
+									__nextHasNoMarginBottom
+									__next40pxDefaultSize
 								/>
 								<span
 									className="input-help-text"
@@ -170,6 +174,8 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									data-testid={
 										'store-name-bank-statement-kana'
 									}
+									__nextHasNoMarginBottom
+									__next40pxDefaultSize
 								/>
 								<span
 									className="input-help-text"
@@ -183,8 +189,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 				</div>
 
 				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
-
-				<p className="transactions-customer-details">
+				<p>
 					{ __(
 						'Provide contact information where customers can reach you for support.',
 						'woocommerce-payments'

@@ -1,12 +1,11 @@
 <?php
 /**
- * Class WC_Payments_Payment_Request_Button_Handler
+ * Class WC_Payments_WooPay_Direct_Checkout
  * Adds support for WooPay direct checkout feature.
  *
  * @package WooCommerce\Payments
  */
 
-use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,6 +16,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class WC_Payments_WooPay_Direct_Checkout.
  */
 class WC_Payments_WooPay_Direct_Checkout {
+	/**
+	 * WooPay_Utilities instance.
+	 *
+	 * @var WooPay_Utilities
+	 */
+	private $woopay_utilities;
+
+	/**
+	 * Initialize class actions.
+	 *
+	 * @param WooPay_Utilities $woopay_utilities WooPay utilities.
+	 */
+	public function __construct( WooPay_Utilities $woopay_utilities ) {
+		$this->woopay_utilities = $woopay_utilities;
+	}
+
 	/**
 	 * Initialize the hooks.
 	 *
@@ -74,10 +89,14 @@ class WC_Payments_WooPay_Direct_Checkout {
 			return;
 		}
 
+		if ( ! $this->woopay_utilities->should_enable_woopay_on_guest_checkout() ) {
+			return;
+		}
+
 		// Enqueue the WCPay common config script only if it hasn't been enqueued yet.
 		// This may happen when Direct Checkout is being enqueued on pages that are not the cart page,
 		// such as the home and shop pages.
-		if ( function_exists( 'did_filter' ) && did_filter( 'wcpay_payment_fields_js_config' ) === 0 ) {
+		if ( ! $this->is_cart_page() && ! $this->is_checkout_page() && WC_Payments_Features::is_woopay_direct_checkout_enabled() ) {
 			WC_Payments::enqueue_woopay_common_config_script();
 		}
 

@@ -37,7 +37,6 @@ class WC_Payments_Payment_Request_Session {
 	public function init() {
 		// adding this filter with a higher priority than the session handler of the Store API.
 		add_filter( 'woocommerce_session_handler', [ $this, 'add_payment_request_store_api_session_handler' ], 20 );
-		add_filter( 'rest_post_dispatch', [ $this, 'store_api_headers' ], 10, 3 );
 
 		// checking to ensure we're not erasing the cart on the "order received" page.
 		if ( $this->is_custom_session_order_received_page() ) {
@@ -127,23 +126,35 @@ class WC_Payments_Payment_Request_Session {
 	/**
 	 * Adding the session key to the Store API response, to ensure the session can be retrieved later.
 	 *
+	 * @param mixed $response Response to replace the requested version with.
+	 *
+	 * @return mixed
+	 */
+	public function store_api_headers( $response ) {
+		$response->header( 'X-WooPayments-Tokenized-Cart-Session', $this->get_session_token() );
+
+		return $response;
+	}
+
+	/**
+	 * Adding the session key to the Store API response, to ensure the session can be retrieved later.
+	 *
 	 * @param mixed            $response Response to replace the requested version with.
 	 * @param \WP_REST_Server  $server Server instance.
 	 * @param \WP_REST_Request $request Request used to generate the response.
 	 *
 	 * @return mixed
 	 */
-	public function store_api_headers( $response, $server, $request ) {
-		if ( ! \WC_Payments_Utils::is_store_api_request() ) {
-			return $response;
+	public function maybe_clear_cart_data( $response, $server, $request ) {
+		if ( $request->get_header( 'X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart' ) === '1' ) {
+			// the customer id value doesn't matter.
+			// in this case, we'll be using the `WC_Payments_Payment_Request_Session_Handler` session handler,
+			// which will use the correct customer ID to delete.
+			// I am specifically calling `delete_session` instead of `forget_session` or `destroy_session`,
+			// because those methods might delete the customer's cookies (which we want to keep).
+			WC()->session->delete_session( 0 );
+			WC()->cart->empty_cart();
 		}
-
-		$nonce = $request->get_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce' );
-		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_session_nonce' ) ) {
-			return $response;
-		}
-
-		$response->header( 'X-WooPayments-Tokenized-Cart-Session', $this->get_session_token() );
 
 		return $response;
 	}
@@ -183,6 +194,10 @@ class WC_Payments_Payment_Request_Session {
 		add_filter( 'woocommerce_persistent_cart_enabled', '__return_false' );
 		// when an order is placed via the Store API on product pages, we need to slightly modify the "order received" URL.
 		add_filter( 'woocommerce_get_return_url', [ $this, 'store_api_order_received_return_url' ] );
+		// ensuring that the `X-WooPayments-Tokenized-Cart-Session` response header is added to the response.
+		add_filter( 'rest_post_dispatch', [ $this, 'store_api_headers' ] );
+		// clearing the cart contents if the request is made just to fetch product attributes and prices.
+		add_filter( 'rest_post_dispatch', [ $this, 'maybe_clear_cart_data' ], 10, 3 );
 
 		require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session-handler.php';
 

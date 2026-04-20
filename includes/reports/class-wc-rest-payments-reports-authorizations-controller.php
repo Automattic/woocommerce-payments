@@ -127,7 +127,7 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 	 * @param array|mixed     $item Item to prepare.
 	 * @param WP_REST_Request $request Request instance.
 	 *
-	 * @return WP_REST_Response|WP_Error|WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function prepare_item_for_response( $item, $request ) {
 
@@ -288,12 +288,12 @@ class WC_REST_Payments_Reports_Authorizations_Controller extends WC_Payments_RES
 					'context'     => [ 'view' ],
 				],
 				'payment_method'       => [
-					'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
+					'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL | Wero, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
 					'type'        => 'object',
 					'context'     => [ 'view' ],
 					'properties'  => [
 						'type' => [
-							'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
+							'description' => __( 'Specifies whether the payment method used was a card (Visa, Mastercard, etc.) or an Alternative Payment Method (APM) or Local Payment Method (LPM) (iDEAL | Wero, Apple Pay, Google Pay, etc.).', 'woocommerce-payments' ),
 							'type'        => 'string',
 							'context'     => [ 'view' ],
 						],

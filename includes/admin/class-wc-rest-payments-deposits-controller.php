@@ -55,6 +55,15 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		);
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/download/(?P<export_id>.*)',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_export_url' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/(?P<deposit_id>\w+)',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -137,6 +146,16 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 		$filters    = $this->get_deposits_filters( $request );
 
 		return $this->forward_request( 'get_deposits_export', [ $filters, $user_email, $locale ] );
+	}
+
+	/**
+	 * Get the payouts export URL for a given export ID, if available.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 */
+	public function get_export_url( $request ) {
+		$export_id = $request->get_param( 'export_id' );
+		return $this->forward_request( 'get_payouts_export_url', [ $export_id ] );
 	}
 
 	/**

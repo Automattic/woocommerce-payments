@@ -13,12 +13,12 @@ export default async function confirmCardPayment(
 	emitResponse,
 	shouldSavePayment
 ) {
-	const { redirect, payment_method: paymentMethod } = paymentDetails;
+	const { redirect } = paymentDetails;
 
 	try {
 		const confirmationRequest = api.confirmIntent(
 			redirect,
-			shouldSavePayment ? paymentMethod : null
+			shouldSavePayment
 		);
 
 		// `true` means there is no intent to confirm.

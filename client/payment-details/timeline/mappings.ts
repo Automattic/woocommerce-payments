@@ -65,3 +65,46 @@ export const fraudOutcomeRulesetMapping = {
 		),
 	},
 };
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const paymentFailureMapping = {
+	card_declined: __(
+		'The card was declined by the bank',
+		'woocommerce-payments'
+	),
+	expired_card: __( 'The card has expired', 'woocommerce-payments' ),
+	incorrect_cvc: __(
+		'The security code is incorrect',
+		'woocommerce-payments'
+	),
+	incorrect_number: __(
+		'The card number is incorrect',
+		'woocommerce-payments'
+	),
+	incorrect_zip: __( 'The postal code is incorrect', 'woocommerce-payments' ),
+	invalid_cvc: __( 'The security code is invalid', 'woocommerce-payments' ),
+	invalid_expiry_month: __(
+		'The expiration month is invalid',
+		'woocommerce-payments'
+	),
+	invalid_expiry_year: __(
+		'The expiration year is invalid',
+		'woocommerce-payments'
+	),
+	invalid_number: __( 'The card number is invalid', 'woocommerce-payments' ),
+	processing_error: __(
+		'An error occurred while processing the card',
+		'woocommerce-payments'
+	),
+	authentication_required: __(
+		'The payment requires authentication',
+		'woocommerce-payments'
+	),
+	insufficient_funds: __(
+		'The card has insufficient funds to complete the purchase',
+		'woocommerce-payments'
+	),
+
+	// Default fallback
+	default: __( 'The payment was declined', 'woocommerce-payments' ),
+};

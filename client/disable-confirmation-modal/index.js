@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -11,7 +11,9 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import './styles.scss';
 import {
+	useAmazonPayEnabledSettings,
 	useEnabledPaymentMethodIds,
+	useGetAvailablePaymentMethodIds,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from '../data';
@@ -20,20 +22,21 @@ import PaymentDeleteIllustration from '../components/payment-delete-illustration
 import WooCardIcon from 'assets/images/cards/woo-card.svg?asset';
 import ConfirmationModal from '../components/confirmation-modal';
 import paymentMethodsMap from 'wcpay/payment-methods-map';
-import {
-	ApplePayIcon,
-	GooglePayIcon,
-	LinkIcon,
-	WooIcon,
-} from 'wcpay/payment-methods-icons';
+import { WooIconShort } from 'wcpay/payment-methods-icons';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
+	const [ isAmazonPayEnabled ] = useAmazonPayEnabledSettings();
 	const isStripeLinkEnabled = Boolean(
 		enabledMethodIds.find( ( id ) => id === 'link' )
 	);
+	const {
+		featureFlags: { amazonPay: isAmazonPayFeatureFlagEnabled },
+	} = useContext( WCPaySettingsContext );
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	return (
 		<ConfirmationModal
@@ -45,10 +48,19 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			onRequestClose={ onClose }
 			actions={
 				<>
-					<Button onClick={ onConfirm } isPrimary isDestructive>
+					<Button
+						onClick={ onConfirm }
+						variant="primary"
+						isDestructive
+						__next40pxDefaultSize
+					>
 						Disable
 					</Button>
-					<Button onClick={ onClose } isSecondary>
+					<Button
+						onClick={ onClose }
+						variant="secondary"
+						__next40pxDefaultSize
+					>
 						Cancel
 					</Button>
 				</>
@@ -64,9 +76,8 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 					mixedString: sprintf(
 						/* translators: %s: WooPayments */
 						__(
-							'%s is currently powering multiple popular payment methods on your store. ' +
-								'Without it, they will no longer be available to your customers ' +
-								'which may {{strong}}influence conversions and sales on your store.{{/strong}}',
+							'%s is currently powering multiple popular payment methods on your store.' +
+								' Without it, they will no longer be available to your customers, which may influence sales.',
 							'woocommerce-payments'
 						),
 						'WooPayments'
@@ -77,34 +88,14 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				} ) }
 			</p>
 			<p>
-				{ interpolateComponents( {
-					mixedString: sprintf(
-						/* translators: %s: WooPayments */
-						__(
-							'You can enable %s again at any time in {{settingsLink}}settings{{/settingsLink}}.',
-							'woocommerce-payments'
-						),
-						'WooPayments'
+				{ sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Payment methods that need %s:',
+						'woocommerce-payments'
 					),
-					components: {
-						settingsLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a href="admin.php?page=wc-settings&tab=checkout&section" />
-						),
-					},
-				} ) }
-			</p>
-			<p>
-				<strong>
-					{ sprintf(
-						/* translators: %s: WooPayments */
-						__(
-							'Payment methods that need %s:',
-							'woocommerce-payments'
-						),
-						'WooPayments'
-					) }
-				</strong>
+					'WooPayments'
+				) }
 			</p>
 			<ul className="disable-confirmation-modal__payment-methods-list">
 				{ enabledMethodIds
@@ -121,45 +112,46 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 					<>
 						<li>
 							<PaymentMethodIcon
-								Icon={ GooglePayIcon }
-								label={ __(
-									'Google Pay',
-									'woocommerce-payments'
-								) }
+								Icon={ paymentMethodsMap.google_pay.icon }
+								label={ paymentMethodsMap.google_pay.label }
 							/>
 						</li>
 						<li>
 							<PaymentMethodIcon
-								Icon={ ApplePayIcon }
-								label={ __(
-									'Apple Pay',
-									'woocommerce-payments'
-								) }
+								Icon={ paymentMethodsMap.apple_pay.icon }
+								label={ paymentMethodsMap.apple_pay.label }
 							/>
 						</li>
 					</>
 				) }
+				{ isAmazonPayEnabled &&
+					isAmazonPayFeatureFlagEnabled &&
+					availablePaymentMethodIds.includes( 'amazon_pay' ) && (
+						<li>
+							<PaymentMethodIcon
+								Icon={ paymentMethodsMap.amazon_pay.icon }
+								label={ paymentMethodsMap.amazon_pay.label }
+							/>
+						</li>
+					) }
 				{ isStripeLinkEnabled && (
 					<li>
 						<PaymentMethodIcon
-							Icon={ LinkIcon }
-							label={ __(
-								'Link by Stripe',
-								'woocommerce-payments'
-							) }
+							Icon={ paymentMethodsMap.link.icon }
+							label={ paymentMethodsMap.link.label }
 						/>
 					</li>
 				) }
 				{ isWooPayEnabled && (
 					<li>
 						<PaymentMethodIcon
-							Icon={ WooIcon }
+							Icon={ WooIconShort }
 							label={ __( 'WooPay', 'woocommerce-payments' ) }
 						/>
 					</li>
 				) }
 			</ul>
-			<p>
+			<p className="no-padding">
 				{ interpolateComponents( {
 					mixedString: sprintf(
 						/* translators: %s: WooPayments */

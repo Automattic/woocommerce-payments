@@ -45,7 +45,7 @@ export function* getDeposit( id ) {
 		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
-			__( 'Error retrieving deposit.', 'woocommerce-payments' )
+			__( 'Error retrieving payout.', 'woocommerce-payments' )
 		);
 	}
 }
@@ -64,7 +64,7 @@ export function* getAllDepositsOverviews() {
 			'core/notices',
 			'createErrorNotice',
 			__(
-				"Error retrieving all deposits' overviews.",
+				"Error retrieving all payouts' overviews.",
 				'woocommerce-payments'
 			)
 		);
@@ -87,9 +87,10 @@ const formatQueryFilters = ( query ) => ( {
 	locale: query.locale,
 } );
 
-export function getDepositsCSV( query ) {
+export const payoutsDownloadEndpoint = `${ NAMESPACE }/deposits/download`;
+export function getPayoutsCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/deposits/download`,
+		payoutsDownloadEndpoint,
 		formatQueryFilters( query )
 	);
 
@@ -129,7 +130,7 @@ export function* getDeposits( query ) {
 		yield controls.dispatch(
 			'core/notices',
 			'createErrorNotice',
-			__( 'Error retrieving deposits.', 'woocommerce-payments' )
+			__( 'Error retrieving payouts.', 'woocommerce-payments' )
 		);
 		yield updateErrorForDepositQuery( query, null, e );
 	}

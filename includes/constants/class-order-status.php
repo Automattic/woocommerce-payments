@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * This class gives a list of all the possible order status constants.
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Order_Status extends Base_Constant {
 	const CANCELLED  = 'cancelled';

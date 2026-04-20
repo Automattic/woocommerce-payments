@@ -14,7 +14,7 @@ const status: {
 } = {
 	warning_needs_response: {
 		type: 'warning',
-		message: __( 'Inquiry: Needs response', 'woocommerce-payments' ),
+		message: __( 'Inquiry: Response needed', 'woocommerce-payments' ),
 	},
 	warning_under_review: {
 		type: 'primary',
@@ -26,7 +26,7 @@ const status: {
 	},
 	needs_response: {
 		type: 'warning',
-		message: __( 'Needs response', 'woocommerce-payments' ),
+		message: __( 'Response needed', 'woocommerce-payments' ),
 	},
 	under_review: {
 		type: 'primary',

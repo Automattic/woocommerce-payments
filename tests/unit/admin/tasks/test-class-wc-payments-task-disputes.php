@@ -8,6 +8,7 @@
 use WCPay\Constants\Country_Code;
 use WooCommerce\Payments\Tasks\WC_Payments_Task_Disputes;
 
+require_once WCPAY_ABSPATH . 'includes/admin/tasks/class-wc-payments-task-disputes.php';
 /**
  * WC_Payments_Task_Disputes unit tests.
  */
@@ -230,6 +231,14 @@ class WC_Payments_Task_Disputes_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'Respond to 3 active disputes', $disputes_task->get_title() );
 		$this->assertEquals( 'Final day to respond to 2 of the disputes', $disputes_task->get_additional_info() );
 		$this->assertEquals( true, $disputes_task->can_view() );
+	}
+
+	public function test_disputes_task_not_visible_when_cache_returns_null() {
+		$this->mock_cache->method( 'get_or_add' )->willReturn( null );
+		$disputes_task = new WC_Payments_Task_Disputes();
+
+		$this->assertFalse( $disputes_task->can_view() );
+		$this->assertSame( '', $disputes_task->get_title() );
 	}
 
 	public function test_disputes_task_with_multiple_disputes_within_7days_multicurrency() {

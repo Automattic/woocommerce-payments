@@ -14,134 +14,87 @@
 	}
 }
 
-.wcpay-checkout-email-field {
-	position: relative;
-}
-
-.wcpay-checkout-email-field button.wcpay-stripelink-modal-trigger {
-	display: none;
-	position: absolute;
-	right: 5px;
-	width: 64px;
-	height: 40px;
-	background: no-repeat url( 'assets/images/payment-methods/link.svg?asset' );
-	background-color: none;
-	cursor: pointer;
-	border: none;
-}
-
+// Logo styles.
 #payment .payment_methods {
-	li[class*='payment_method_woocommerce_payments'] > label > img {
-		float: right;
-		border: 0;
-		padding: 0;
-		height: 24px !important;
-		max-height: 24px !important;
-	}
+	li[class*='payment_method_woocommerce_payments'] label {
+		display: inline;
+		.payment-methods--logos {
+			float: right;
 
-	&.wc_payment_methods,
-	&.woocommerce-PaymentMethods {
-		li.payment_method_woocommerce_payments {
+			img:last-of-type {
+				margin-right: 0;
+			}
+
+			&-count {
+				margin-left: 4px;
+
+				// Tighter spacing on tablet viewports (768-900px) to conserve space for Test Mode badge
+				@media ( min-width: 768px ) and ( max-width: 900px ) {
+					margin-left: 0;
+				}
+			}
+		}
+		img {
+			float: right;
+			border: 0;
+			padding: 0;
+			height: 24px !important;
+			max-height: 24px !important;
+		}
+		.logo-popover {
+			background-color: #fff;
+			border: 1px solid $gray-300;
+			border-radius: 3px;
+			padding: 8px;
+			box-sizing: border-box;
+			box-shadow: 0 0 10px 0 rgba( 0, 0, 0, 0.1 );
 			display: grid;
-			grid-template-columns: 0fr 0fr 1fr;
-			grid-template-rows: max-content;
+			gap: 8px;
+			justify-content: center;
+			cursor: pointer;
 
-			> input[name='payment_method'] {
-				align-self: center;
-			}
-			> label {
-				grid-column: 3;
-				display: grid;
-				grid-template-columns: 0fr auto;
-				grid-template-rows: max-content;
-				grid-gap: 0;
-				margin-bottom: 0;
-
-				> .label-title-container {
-					grid-area: 1 / 2 / 2 / 3;
-				}
-
-				.payment-method-title {
-					margin-right: 8px;
-				}
-
-				.test-mode.badge {
-					display: inline-block;
-					background-color: #fff2d7;
-					border-radius: 4px;
-					padding: 4px 6px;
-					font-size: 12px;
-					font-weight: 400;
-					line-height: 16px;
-					color: #4d3716;
-					vertical-align: middle;
-				}
-
-				img {
-					float: none;
-					grid-area: 1 / 4 / 2 / 5;
-					align-self: baseline;
-					justify-self: end;
-					margin-left: 1em;
-				}
-			}
-			> div.payment_box {
-				grid-area: 2 / 1 / 3 / 4;
+			> img {
+				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
+				width: 38px;
+				height: 24px;
 			}
 		}
 	}
 }
 
-li.wc_payment_method:has( .input-radio:not( :checked )
-		+ label
-		.stripe-pmme-container ) {
-	display: grid;
-	grid-template-columns: min-content 1fr;
-	grid-template-rows: auto auto;
-	align-items: baseline;
+// Pseudo-element radio button compatibility.
+// Unfortunately, there is no direct way to detect the existence of pseudo-elements like ::before using CSS selectors,
+// so we use the theme class to add the necessary styles.
+.theme-storefront,
+.theme-twentytwenty,
+.theme-twentytwentyone,
+.theme-twentytwentytwo,
+.theme-twentytwentythree {
+	#payment {
+		.payment_methods {
+			> li.wc_payment_method {
+				// Storefront does not render the input radio button.
+				grid-template-areas: 'li-label'; // List Item grid for Storefront.
+				grid-template-columns: 1fr;
 
-	.input-radio {
-		grid-row: 1;
-		grid-column: 1;
-	}
+				> input + label {
+					// Storefront uses a label::before for the radio button so we need to adjust the grid.
+					grid-template-areas: 'label-before label-spacer label-inner'; // Label grid for Storefront.
+					grid-template-columns: max-content max-content 1fr;
+				}
 
-	label {
-		grid-column: 2;
-		grid-row: 1;
-	}
-
-	img {
-		grid-row: 1 / span 2;
-		align-self: center;
-	}
-
-	.stripe-pmme-container {
-		width: 100%;
-		grid-column: 1;
-		grid-row-start: 2;
-		pointer-events: none;
-	}
-
-	.payment_box {
-		flex: 0 0 100%;
-		grid-row: 2;
-		grid-column: 1 / span 2;
-	}
-}
-
-li.wc_payment_method:has( .input-radio:checked
-		+ label
-		.stripe-pmme-container ) {
-	display: block;
-
-	.input-radio:checked {
-		+ label {
-			.stripe-pmme-container {
-				display: none;
+				> input + label {
+					&::before {
+						grid-area: label-before;
+					}
+				}
 			}
 
-			img {
-				grid-column: 2;
+			// This makes sure labels that don't have the pmme container are displayed correctly.
+			li[class*='payment_method_woocommerce_payments'] {
+				> input + label {
+					display: block;
+				}
 			}
 		}
 	}

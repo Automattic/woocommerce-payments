@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -36,7 +36,8 @@ export const getGoLiveTask = (): TaskItemProps | null => {
 		const container = document.createElement( 'div' );
 		container.id = 'wcpay-golivemodal-container';
 		document.body.appendChild( container );
-		ReactDOM.render( <SetupLivePaymentsModalWrapper />, container );
+		const root = createRoot( container );
+		root.render( <SetupLivePaymentsModalWrapper /> );
 	};
 
 	return {

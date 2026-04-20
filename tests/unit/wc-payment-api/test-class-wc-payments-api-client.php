@@ -7,11 +7,14 @@
 
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Intent_Status;
+use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Internal\Logger;
 use WCPay\Exceptions\Connection_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Buyer_Fingerprinting_Service;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * WC_Payments_API_Client unit tests.
@@ -28,14 +31,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock HTTP client.
 	 *
-	 * @var WC_Payments_Http|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_Http&MockObject
 	 */
 	private $mock_http_client;
 
 	/**
 	 * Mock DB wrapper.
 	 *
-	 * @var WC_Payments_DB|PHPUnit_Framework_MockObject_MockObject
+	 * @var WC_Payments_DB&MockObject
 	 */
 	private $mock_db_wrapper;
 
@@ -153,7 +156,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				$this->callback(
 					function ( $data ): bool {
 						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
 						return true;
 					}
 				),
@@ -252,6 +254,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @throws API_Exception
 	 */
 	public function test_get_onboarding_data() {
+		update_option( 'woocommerce_store_id', 'test-store-id-12345' );
+
 		$site_data = [
 			'site_username' => 'admin',
 			'site_locale'   => 'en_US',
@@ -299,9 +303,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'account_data'                => $account_data,
 						'actioned_notes'              => $actioned_notes,
 						'create_live_account'         => true,
-						'progressive'                 => false,
 						'collect_payout_requirements' => false,
+						'woocommerce_store_id'        => 'test-store-id-12345',
 						'compatibility_data'          => $this->get_mock_compatibility_data(),
+						'referral_code'               => null,
 					]
 				),
 				true,
@@ -361,7 +366,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				$this->callback(
 					function ( $data ): bool {
 						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/links', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
 						return true;
 					}
 				),
@@ -402,7 +406,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD' ),
+				// Please note the use of the V2 API endpoint - `/transact/` instead of `/wcpay/`.
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/transact/currency/rates?test_mode=0&currency_from=USD' ),
 				null,
 				true,
 				false
@@ -432,42 +437,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-
-	/**
-	 * @dataProvider data_request_with_level3_data
-	 */
-	public function test_request_with_level3_data( $input_args, $expected_level3_args ) {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->anything(),
-				$this->callback(
-					function ( $request_args_json ) use ( $expected_level3_args ) {
-						$request_args = json_decode( $request_args_json, true );
-
-						$this->assertSame( $expected_level3_args, $request_args['level3'] );
-
-						return true;
-					}
-				)
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		PHPUnit_Utils::call_method(
-			$this->payments_api_client,
-			'request_with_level3_data',
-			[ $input_args, 'intentions', 'POST' ]
-		);
-	}
 
 	public function test_create_terminal_location_validation_array() {
 		$this->expectException( API_Exception::class );
@@ -563,70 +532,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->payments_api_client->delete_terminal_location( 'tml_XXXXXXX' ),
 			$delete_location_response
 		);
-	}
-
-	/**
-	 * Data provider for test_request_with_level3_data
-	 */
-	public function data_request_with_level3_data() {
-		return [
-			'australian_merchant'               => [
-				[
-					'level3' => [],
-				],
-				[],
-			],
-			'american_merchant_no_line_items'   => [
-				[
-					'level3' => [
-						'merchant_reference' => 'abc123',
-					],
-				],
-				[
-					'merchant_reference' => 'abc123',
-					'line_items'         => [
-						[
-							'discount_amount'     => 0,
-							'product_code'        => 'empty-order',
-							'product_description' => 'The order is empty',
-							'quantity'            => 1,
-							'tax_amount'          => 0,
-							'unit_cost'           => 0,
-						],
-					],
-				],
-			],
-			'american_merchant_with_line_items' => [
-				[
-					'level3' => [
-						'merchant_reference' => 'abc123',
-						'line_items'         => [
-							[
-								'discount_amount'     => 0,
-								'product_code'        => 'free-hug',
-								'product_description' => 'Free hug',
-								'quantity'            => 1,
-								'tax_amount'          => 0,
-								'unit_cost'           => 0,
-							],
-						],
-					],
-				],
-				[
-					'merchant_reference' => 'abc123',
-					'line_items'         => [
-						[
-							'discount_amount'     => 0,
-							'product_code'        => 'free-hug',
-							'product_description' => 'Free hug',
-							'quantity'            => 1,
-							'tax_amount'          => 0,
-							'unit_cost'           => 0,
-						],
-					],
-				],
-			],
-		];
 	}
 
 	/**
@@ -736,7 +641,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * @dataProvider redacting_params_data
 	 * @throws Exception - In the event of test failure.
 	 */
-	public function test_redacting_params( $request_arguments, $logger_num_calls, ...$logger_expected_arguments ) {
+	public function test_redacting_params( $request_arguments, $logger_num_calls ) {
 		$mock_logger          = $this->getMockBuilder( 'WC_Logger' )
 			->setMethods( [ 'log' ] )
 			->getMock();
@@ -748,7 +653,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$mock_logger
 			->expects( $this->exactly( $logger_num_calls ) )
 			->method( 'log' )
-			->withConsecutive( ...$logger_expected_arguments );
+			->with(
+				$this->anything(),
+				$this->callback(
+					function ( $message ) {
+						return false === strpos( $message, 'some-secret' );
+					}
+				)
+			);
 
 		$this->mock_http_client
 			->expects( $this->once() )
@@ -784,50 +696,22 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function ( $string ) {
-			return false === strpos( $string, 'some-secret' );
+		$string_should_not_include_secret = function ( $input ) {
+			return false === strpos( $input, 'some-secret' );
 		};
 
 		return [
 			'delete' => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'DELETE' ],
-				4,
-				[
-					$this->anything(),
-					$this->callback( $string_should_not_include_secret ),
-				],
-				[
-					$this->anything(),
-					$this->anything(),
-				],
+				2,
 			],
 			'get'    => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'GET' ],
-				4,
-				[
-					$this->anything(),
-					$this->callback( $string_should_not_include_secret ),
-				],
-				[
-					$this->anything(),
-					$this->anything(),
-				],
+				2,
 			],
 			'post'   => [
 				[ [ 'client_secret' => 'some-secret' ], 'abc', 'POST' ],
-				5,
-				[
-					$this->anything(),
-					$this->callback( $string_should_not_include_secret ),
-				],
-				[
-					$this->anything(),
-					$this->callback( $string_should_not_include_secret ),
-				],
-				[
-					$this->anything(),
-					$this->anything(),
-				],
+				2,
 			],
 		];
 	}
@@ -850,30 +734,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$disputes_summary = $this->payments_api_client->get_disputes_summary();
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
-
-	public function test_get_onboarding_po_eligible() {
-		$this->set_http_mock_response(
-			200,
-			[
-				'result' => 'eligible',
-				'data'   => [],
-			]
-		);
-
-		$po_eligible = $this->payments_api_client->get_onboarding_po_eligible(
-			[
-				'country' => Country_Code::UNITED_STATES,
-				'type'    => 'company',
-				'mcc'     => 'most_popular__software_services',
-			],
-			[
-				'annual_revenue'    => 'less_than_250k',
-				'go_live_timeframe' => 'within_1month',
-			]
-		);
-		$this->assertSame( 'eligible', $po_eligible['result'] );
-	}
-
 
 	public function test_get_woopay_eligibility_success() {
 		$this->set_http_mock_response(
@@ -1174,6 +1034,42 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'success', $result['result'] );
 	}
 
+	public function test_get_readers_charge_summary() {
+		$transaction_id = uniqid( 'trx_' );
+		$charge_date    = gmdate( 'Y-m-d', 1634291278 );
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode(
+						[
+							'result' => 'success',
+							'data'   => [
+								(object) [
+									'reader_id' => 'reader_1',
+									'count'     => 1,
+									'status'    => 'active',
+									'fee'       => [
+										'amount'   => 100,
+										'currency' => 'USD',
+									],
+								],
+							],
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_readers_charge_summary( '2024-01-01', $transaction_id );
+		$this->assertSame( 1, $result['data'][0]['count'] );
+	}
+
+
 	public function test_get_tracking_info() {
 		$expect = [ 'hosting-provider' => 'test' ];
 
@@ -1193,6 +1089,76 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$result = $this->payments_api_client->get_tracking_info();
 
 		$this->assertEquals( $expect, $result );
+	}
+
+	public function test_throws_api_merchant_exception() {
+		$mock_response                  = [];
+		$mock_response['error']['code'] = 'card_declined';
+		$mock_response['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] = 'Bank declined';
+		$this->set_http_mock_response(
+			401,
+			$mock_response
+		);
+
+		try {
+			// This is a dummy call to trigger the response so that our test can validate the exception.
+			$this->payments_api_client->create_subscription();
+		} catch ( API_Merchant_Exception $e ) {
+			$this->assertSame( 'card_declined', $e->get_error_code() );
+			$this->assertSame( 'Bank declined', $e->get_merchant_message() );
+		}
+	}
+
+	/**
+	 * Test sending store setup data.
+	 */
+	public function test_send_store_setup() {
+		$store_setup_data = [
+			'store_name'    => 'Test Store',
+			'store_url'     => 'https://example.com',
+			'store_country' => 'US',
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/store_setup', 'POST', false );
+						return true;
+					}
+				),
+				wp_json_encode(
+					[
+						'test_mode' => false,
+						'snapshot'  => [
+							'store_name'    => 'Test Store',
+							'store_url'     => 'https://example.com',
+							'store_country' => 'US',
+						],
+					]
+				),
+				true,
+				false
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode(
+						[
+							'result' => 'success',
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->send_store_setup( $store_setup_data );
+
+		$this->assertSame( 'success', $result['result'] );
 	}
 
 	/**
@@ -1226,14 +1192,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock/validate default remote HTTP Params
 	 *
-	 * @param array $data
-	 * @param string $url
-	 * @param string $method
-	 *
+	 * @param array $data The request args.
+	 * @param string $url The expected URL.
+	 * @param string $method The expected HTTP method.
+	 * @param bool $blocking Whether the request is blocking. Default true.
 	 */
-	private function validate_default_remote_request_params( $data, $url, $method ) {
+	private function validate_default_remote_request_params( $data, $url, $method, $blocking = true ) {
 		$this->assertIsArray( $data );
-		$this->assertCount( 5, $data );
+		$this->assertCount( 6, $data );
 		$this->assertArrayHasKey( 'url', $data );
 		$this->assertSame( $url, $data['url'] );
 		$this->assertNotFalse( filter_var( $data['url'], FILTER_VALIDATE_URL ) );
@@ -1251,6 +1217,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 70, $data['timeout'] );
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
+		$this->assertArrayHasKey( 'blocking', $data );
+		$this->assertSame( $blocking, $data['blocking'] );
 	}
 
 	/**
@@ -1335,6 +1303,315 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test the determine_suggested_product_type method with various scenarios.
+	 *
+	 * @dataProvider data_determine_suggested_product_type
+	 */
+	public function test_determine_suggested_product_type( $order_items, $expected_product_type, $evidence_types_flag_enabled = true ) {
+		// Set the feature flag option.
+		update_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, $evidence_types_flag_enabled ? '1' : '0' );
+
+		// Create a mock order.
+		$mock_order = $this->getMockBuilder( 'WC_Order' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_items' ] )
+			->getMock();
+
+		$mock_order->method( 'get_items' )->willReturn( $order_items );
+
+		// Use reflection to call the private method.
+		$reflection = new ReflectionClass( $this->payments_api_client );
+		$method     = $reflection->getMethod( 'determine_suggested_product_type' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $this->payments_api_client, $mock_order );
+
+		$this->assertEquals( $expected_product_type, $result );
+	}
+
+	/**
+	 * Test updating a dispute with or without Visa compliance flag based on dispute reason.
+	 *
+	 * @dataProvider data_update_dispute_visa_compliance
+	 * @throws API_Exception
+	 */
+	public function test_update_dispute_visa_compliance_flag( $dispute_reason, $should_have_flag ) {
+		$dispute_id = 'dp_test123';
+		$evidence   = [
+			'product_description'    => 'Product description',
+			'customer_name'          => 'Customer Name',
+			'uncategorized_text'     => 'Additional details',
+			'customer_email_address' => 'customer@example.com',
+			'customer_purchase_ip'   => '1.2.3.4',
+			'billing_address'        => '123 Main St',
+			'receipt'                => 'file_123',
+			'customer_signature'     => 'file_456',
+			'shipping_documentation' => 'file_789',
+		];
+		$submit     = true;
+		$metadata   = [ 'order_id' => '123' ];
+
+		// Mock the dispute cache to avoid errors.
+		$mock_cache = $this->createMock( \WCPay\Database_Cache::class );
+		$mock_cache->method( 'delete_dispute_caches' )
+			->willReturn( null );
+
+		// Replace the database cache in the container.
+		wcpay_get_test_container()->replace( \WCPay\Database_Cache::class, $mock_cache );
+
+		// Mock the HTTP client to first return dispute details, then accept the update.
+		$this->mock_http_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'remote_request' )
+			->willReturnCallback(
+				function ( $data, $body ) use ( $dispute_id, $evidence, $metadata, $dispute_reason, $should_have_flag ) {
+					// First call: GET dispute to check the reason.
+					if ( strpos( $data['url'], '/disputes/' . $dispute_id ) !== false && 'GET' === $data['method'] ) {
+						return [
+							'body'     => wp_json_encode(
+								[
+									'id'     => $dispute_id,
+									'charge' => 'ch_test123',
+									'reason' => $dispute_reason,
+									'status' => 'needs_response',
+								]
+							),
+							'response' => [
+								'code'    => 200,
+								'message' => 'OK',
+							],
+						];
+					}
+
+					// Second call: POST to update the dispute.
+					if ( strpos( $data['url'], '/disputes/' . $dispute_id ) !== false && 'POST' === $data['method'] ) {
+						// Validate the request parameters.
+						$this->validate_default_remote_request_params(
+							$data,
+							'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/disputes/' . $dispute_id,
+							'POST'
+						);
+
+						// Validate the body contains or doesn't contain the Visa compliance flag.
+						$decoded = json_decode( $body, true );
+
+						// Verify the standard evidence is present.
+						$this->assertArrayHasKey( 'evidence', $decoded );
+						// Verify the Visa compliance flag presence based on dispute reason.
+						if ( $should_have_flag ) {
+							$this->assertArrayHasKey( 'enhanced_evidence', $decoded['evidence'] );
+							$this->assertArrayHasKey( 'visa_compliance', $decoded['evidence']['enhanced_evidence'] );
+							$this->assertArrayHasKey( 'fee_acknowledged', $decoded['evidence']['enhanced_evidence']['visa_compliance'] );
+							$this->assertEquals( 'true', $decoded['evidence']['enhanced_evidence']['visa_compliance']['fee_acknowledged'] );
+							$evidence_without_flag = $decoded['evidence'];
+							unset( $evidence_without_flag['enhanced_evidence'] );
+							$this->assertEquals( $evidence, $evidence_without_flag );
+						} else {
+							// Evidence shouldn't be modified.
+							$this->assertEquals( $evidence, $decoded['evidence'] );
+						}
+
+						// Verify the submit flag is set.
+						$this->assertArrayHasKey( 'submit', $decoded );
+						$this->assertTrue( $decoded['submit'] );
+
+						// Verify the metadata is present.
+						$this->assertArrayHasKey( 'metadata', $decoded );
+						$this->assertEquals( $metadata, $decoded['metadata'] );
+
+						return [
+							'body'     => wp_json_encode(
+								[
+									'id'       => $dispute_id,
+									'charge'   => 'ch_test123',
+									'reason'   => $dispute_reason,
+									'status'   => 'needs_response',
+									'evidence' => $evidence,
+								]
+							),
+							'response' => [
+								'code'    => 200,
+								'message' => 'OK',
+							],
+						];
+					}
+
+					return [
+						'body'     => wp_json_encode( [] ),
+						'response' => [
+							'code'    => 404,
+							'message' => 'Not Found',
+						],
+					];
+				}
+			);
+
+		// Call the method under test.
+		$result = $this->payments_api_client->update_dispute( $dispute_id, $evidence, $submit, $metadata );
+
+		// Assert the response is correct.
+		$this->assertEquals( $dispute_id, $result['id'] );
+
+		// Clean up.
+		wcpay_get_test_container()->reset_all_replacements();
+	}
+
+	/**
+	 * Data provider for test_update_dispute_visa_compliance_flag.
+	 */
+	public function data_update_dispute_visa_compliance() {
+		return [
+			'noncompliant_dispute_should_have_flag'   => [
+				'dispute_reason'   => 'noncompliant',
+				'should_have_flag' => true,
+			],
+			'fraudulent_dispute_should_not_have_flag' => [
+				'dispute_reason'   => 'fraudulent',
+				'should_have_flag' => false,
+			],
+			'product_unacceptable_dispute_should_not_have_flag' => [
+				'dispute_reason'   => 'product_unacceptable',
+				'should_have_flag' => false,
+			],
+		];
+	}
+
+	/**
+	 * Data provider for test_determine_suggested_product_type.
+	 */
+	public function data_determine_suggested_product_type() {
+		return [
+			'empty_order'                              => [
+				'order_items'           => [],
+				'expected_product_type' => 'physical_product',
+			],
+			'single_physical_product'                  => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( false ), // not virtual.
+				],
+				'expected_product_type' => 'physical_product',
+			],
+			'single_virtual_product'                   => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true ), // virtual.
+				],
+				'expected_product_type' => 'digital_product_or_service',
+			],
+			'multiple_products_mixed'                  => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( false ), // physical.
+					$this->create_mock_order_item_product( true ),  // virtual.
+				],
+				'expected_product_type' => 'multiple',
+			],
+			'multiple_physical_products'               => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( false ), // physical.
+					$this->create_mock_order_item_product( false ), // physical.
+				],
+				'expected_product_type' => 'multiple',
+			],
+			'multiple_virtual_products'                => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true ), // virtual.
+					$this->create_mock_order_item_product( true ), // virtual.
+				],
+				'expected_product_type' => 'multiple',
+			],
+			'order_with_non_product_items'             => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true ), // virtual product.
+					$this->create_mock_order_item_shipping(), // shipping item (not a product).
+				],
+				'expected_product_type' => 'digital_product_or_service',
+			],
+			'order_with_invalid_product'               => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true, false ), // virtual but invalid product.
+				],
+				'expected_product_type' => 'physical_product',
+			],
+			'single_booking_product'                   => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking product.
+				],
+				'expected_product_type'       => 'booking_reservation',
+				'evidence_types_flag_enabled' => true,
+			],
+			'single_booking_product_flag_off'          => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking product (virtual).
+				],
+				'expected_product_type'       => 'digital_product_or_service', // Falls back to virtual detection.
+				'evidence_types_flag_enabled' => false,
+			],
+			'single_booking_product_physical_flag_off' => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( false, true, 'booking' ), // booking product (not virtual).
+				],
+				'expected_product_type'       => 'physical_product', // Falls back to physical detection.
+				'evidence_types_flag_enabled' => false,
+			],
+			'multiple_booking_products'                => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+				],
+				'expected_product_type'       => 'multiple',
+				'evidence_types_flag_enabled' => true,
+			],
+			'booking_physical_mixed'                   => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+					$this->create_mock_order_item_product( false, true, 'simple' ), // physical.
+				],
+				'expected_product_type'       => 'multiple',
+				'evidence_types_flag_enabled' => true,
+			],
+		];
+	}
+
+	/**
+	 * Create a mock order item product for testing.
+	 *
+	 * @param bool   $is_virtual Whether the product is virtual.
+	 * @param bool   $is_valid Whether the product is valid (can be retrieved).
+	 * @param string $product_type The product type (e.g., 'simple', 'booking', 'variable').
+	 * @return MockObject
+	 */
+	private function create_mock_order_item_product( $is_virtual = false, $is_valid = true, $product_type = 'simple' ) {
+		$mock_product = $this->getMockBuilder( 'WC_Product' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'is_virtual', 'get_type' ] )
+			->getMock();
+
+		$mock_product->method( 'is_virtual' )->willReturn( $is_virtual );
+		$mock_product->method( 'get_type' )->willReturn( $product_type );
+
+		$mock_order_item = $this->getMockBuilder( 'WC_Order_Item_Product' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_product' ] )
+			->getMock();
+
+		$mock_order_item->method( 'get_product' )->willReturn( $is_valid ? $mock_product : false );
+
+		return $mock_order_item;
+	}
+
+	/**
+	 * Create a mock order item that is not a product (e.g., shipping).
+	 *
+	 * @return MockObject
+	 */
+	private function create_mock_order_item_shipping() {
+		$mock_order_item = $this->getMockBuilder( 'WC_Order_Item_Shipping' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		return $mock_order_item;
+	}
+
+	/**
 	 * Delete test posts that were created during a unit test.
 	 *
 	 * @param array $post_ids Array of post IDs to delete.
@@ -1343,5 +1620,67 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		foreach ( $post_ids as $post_id ) {
 			wp_delete_post( (int) $post_id, true );
 		}
+	}
+
+	/**
+	 * Tests that get_dispute_summary returns correct data for a valid dispute ID.
+	 */
+	public function test_get_dispute_summary_success(): void {
+		$dispute_id = 'dp_123456789';
+
+		// Mock the expected response from the API.
+		$expected_response = [
+			'id'              => $dispute_id,
+			'fee'             => 1500,
+			'network_cost'    => 500,
+			'currency'        => 'usd',
+			'disputed_amount' => 5000,
+			'exchange_rate'   => 1,
+		];
+
+		$this->set_http_mock_response( 200, $expected_response );
+
+		// Act: Call the method.
+		$result = $this->payments_api_client->get_dispute_summary( $dispute_id );
+
+		// Assert: Check that the response matches the expected data.
+		$this->assertEquals( $expected_response, $result );
+	}
+
+	/**
+	 * Tests that get_dispute_summary throws exception for invalid dispute ID.
+	 */
+	public function test_get_dispute_summary_invalid_id(): void {
+		$dispute_id = 'invalid_id_with_special_chars!';
+
+		// Expect an API exception to be thrown.
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Route param validation failed.' );
+
+		// Act: Call the method with invalid ID.
+		$this->payments_api_client->get_dispute_summary( $dispute_id );
+	}
+
+	/**
+	 * Tests that get_dispute_summary handles API errors correctly.
+	 */
+	public function test_get_dispute_summary_api_error(): void {
+		$dispute_id = 'dp_123456789';
+
+		// Mock an API error response.
+		$error_response = [
+			'error' => [
+				'code'    => 'resource_missing',
+				'message' => 'No such dispute',
+			],
+		];
+
+		$this->set_http_mock_response( 404, $error_response );
+
+		// Expect an API exception to be thrown.
+		$this->expectException( API_Exception::class );
+
+		// Act: Call the method.
+		$this->payments_api_client->get_dispute_summary( $dispute_id );
 	}
 }

@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable react-hooks/exhaustive-deps -- useSelect dep arrays intentionally use JSON.stringify for object comparison */
 
 /**
  * External dependencies
@@ -15,9 +16,9 @@ import type {
 	CachedDisputes,
 	DisputesSummary,
 } from 'wcpay/types/disputes';
+import type { ChargeDispute } from 'wcpay/types/charges';
 import type { ApiError } from 'wcpay/types/errors';
 import { STORE_NAME } from '../constants';
-import { disputeAwaitingResponseStatuses } from 'wcpay/disputes/filters/config';
 
 /**
  * Returns the dispute object, error object, and loading state.
@@ -32,9 +33,8 @@ export const useDispute = (
 } => {
 	const { dispute, error, isLoading } = useSelect(
 		( select ) => {
-			const { getDispute, getDisputeError, isResolving } = select(
-				STORE_NAME
-			);
+			const { getDispute, getDisputeError, isResolving } =
+				select( STORE_NAME );
 
 			return {
 				dispute: <Dispute | undefined>getDispute( id ),
@@ -53,7 +53,7 @@ export const useDispute = (
  * Does not return or fetch the dispute object.
  */
 export const useDisputeAccept = (
-	dispute: Dispute
+	dispute: Pick< ChargeDispute, 'id' | 'payment_intent' >
 ): {
 	doAccept: () => void;
 	isLoading: boolean;
@@ -98,11 +98,6 @@ export const useDisputes = ( {
 		( select ) => {
 			const { getDisputes, isResolving } = select( STORE_NAME );
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
-
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
 					? '1'
@@ -119,7 +114,7 @@ export const useDisputes = ( {
 					dateBetween.sort( ( a, b ) =>
 						moment( a ).diff( moment( b ) )
 					),
-				search,
+				filter,
 				statusIs,
 				statusIsNot,
 				orderBy: orderBy || 'created',
@@ -163,11 +158,6 @@ export const useDisputesSummary = ( {
 		( select ) => {
 			const { getDisputesSummary, isResolving } = select( STORE_NAME );
 
-			const search =
-				filter === 'awaiting_response'
-					? disputeAwaitingResponseStatuses
-					: undefined;
-
 			const query = {
 				paged: Number.isNaN( parseInt( paged ?? '', 10 ) )
 					? '1'
@@ -180,7 +170,7 @@ export const useDisputesSummary = ( {
 				dateBefore,
 				dateAfter,
 				dateBetween,
-				search,
+				filter,
 				statusIs,
 				statusIsNot,
 			};

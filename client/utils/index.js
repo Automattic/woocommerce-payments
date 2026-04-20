@@ -7,7 +7,6 @@ import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { numberFormat } from '@woocommerce/number';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Returns whether a value is an object.
@@ -22,6 +21,38 @@ export const isObject = ( value ) => {
 		return false;
 	}
 	return typeof value === 'function' || typeof value === 'object';
+};
+
+/**
+ * Returns true if WooPayments uses a test [drive] account, false otherwise.
+ *
+ * @return {boolean} True if a test [drive] account is connected, false otherwise.
+ */
+export const hasTestAccount = () => {
+	const accountStatus = wcpaySettings?.accountStatus;
+
+	if ( ! wcpaySettings?.isAccountConnected || ! isObject( accountStatus ) ) {
+		return false;
+	}
+
+	// A test [drive] account is one that is not live and is marked as such.
+	return ! accountStatus?.isLive && !! accountStatus?.testDrive;
+};
+
+/**
+ * Returns true if WooPayments uses a sandbox [test] account, false otherwise.
+ *
+ * @return {boolean} True if a sandbox [test] account is connected, false otherwise.
+ */
+export const hasSandboxAccount = () => {
+	const accountStatus = wcpaySettings?.accountStatus;
+
+	if ( ! wcpaySettings?.isAccountConnected || ! isObject( accountStatus ) ) {
+		return false;
+	}
+
+	// A sandbox [test] account is one that is not live and is not a test [drive] account.
+	return ! accountStatus?.isLive && ! accountStatus?.testDrive;
 };
 
 /**
@@ -43,13 +74,13 @@ export const isInTestMode = ( fallback = false ) => {
 };
 
 /**
- * Returns true if WooPayments is in test/sandbox mode onboarding, false otherwise.
+ * Returns true if WooPayments is in test mode onboarding, false otherwise.
  *
- * @param {boolean} fallback Fallback in case test/sandbox mode onboarding value can't be found
- * 							 (for example if the wcpaySettings are undefined).
+ * @param {boolean} fallback Fallback in case test mode onboarding value can't be found
+ *                           (for example if the wcpaySettings are undefined).
  *
- * @return {boolean} True if in test/sandbox mode onboarding, false otherwise.
- * 					 Fallback value if test/sandbox mode onboarding value can't be found.
+ * @return {boolean} True if in test mode onboarding, false otherwise.
+ * 					 Fallback value if test mode onboarding value can't be found.
  */
 export const isInTestModeOnboarding = ( fallback = false ) => {
 	if (
@@ -63,11 +94,11 @@ export const isInTestModeOnboarding = ( fallback = false ) => {
 };
 
 /**
- * Returns true if WooPayments is in dev/sandbox mode, false otherwise.
+ * Returns true if WooPayments is in dev mode, false otherwise.
  *
- * @param {boolean} fallback Fallback in case dev/sandbox mode value can't be found (for example if the wcpaySettings are undefined).
+ * @param {boolean} fallback Fallback in case dev mode value can't be found (for example if the wcpaySettings are undefined).
  *
- * @return {boolean} True if in dev/sandbox mode, false otherwise. Fallback value if dev/sandbox mode value can't be found.
+ * @return {boolean} True if in dev mode, false otherwise. Fallback value if dev mode value can't be found.
  */
 export const isInDevMode = ( fallback = false ) => {
 	if (
@@ -238,80 +269,6 @@ export const applyThousandSeparator = ( trxCount ) => {
 };
 
 /**
- * Returns true if Export Modal is dismissed, false otherwise.
- *
- * @return {boolean} True if dismissed, false otherwise.
- */
-export const isExportModalDismissed = () => {
-	if ( typeof wcpaySettings === 'undefined' ) {
-		return true;
-	}
-
-	return wcpaySettings?.reporting?.exportModalDismissed ?? false;
-};
-
-/**
- * Returns true if Export Modal is dismissed, false otherwise.
- *
- * @return {boolean} True if dismissed, false otherwise.
- */
-
-export const isDefaultSiteLanguage = () => {
-	if ( typeof wcpaySettings === 'undefined' ) {
-		return true;
-	}
-
-	return wcpaySettings.locale?.code === 'en_US';
-};
-
-/**
- * Returns the language code for CSV exports.
- *
- * @param {string} language Selected language code.
- * @param {string} storedLanguage Stored language code.
- *
- * @return {string} Language code.
- */
-export const getExportLanguage = ( language, storedLanguage ) => {
-	let siteLanguage = 'en_US';
-
-	// If the default site language is en_US, skip
-	if ( isDefaultSiteLanguage() ) {
-		return siteLanguage;
-	}
-
-	if ( typeof wcpaySettings !== 'undefined' ) {
-		siteLanguage = wcpaySettings?.locale?.code ?? siteLanguage;
-	}
-
-	// In case the default export setting is not present, use the site locale.
-	const defaultLanguage = storedLanguage ?? siteLanguage;
-
-	// When modal is dismissed use the default language locale.
-	return language !== '' ? language : defaultLanguage;
-};
-
-/**
- * Returns the language options for CSV exports language selector.
- *
- * @return {Array} Language options.
- */
-export const getExportLanguageOptions = () => {
-	return [
-		{
-			label: __( 'English (United States)', 'woocommerce-payments' ),
-			value: 'en_US',
-		},
-		{
-			label:
-				__( 'Site Language - ', 'woocommerce-payments' ) +
-				wcpaySettings.locale.native_name,
-			value: wcpaySettings.locale.code,
-		},
-	];
-};
-
-/**
  * Given an object, remove all properties with null or undefined values.
  *
  * @param {Object} obj The object to remove empty properties from.
@@ -321,4 +278,24 @@ export const objectRemoveEmptyProperties = ( obj ) => {
 	return Object.keys( obj )
 		.filter( ( k ) => obj[ k ] !== null && obj[ k ] !== undefined )
 		.reduce( ( a, k ) => ( { ...a, [ k ]: obj[ k ] } ), {} );
+};
+
+/**
+ * Checks if the passed version is greater than or equal to the base version.
+ *
+ * Supports semantic version strings like "1.2.3-beta" by ignoring pre-release tags.
+ *
+ * @param {string} version Version that is compared.
+ * @param {string} base    Version to compare with.
+ * @return {boolean} Whether version is greater than or equal to base.
+ */
+export const isVersionGreaterOrEqual = ( version, base ) => {
+	const parse = ( v ) => v.split( '-' )[ 0 ].split( '.' ).map( Number );
+	const [ v1 = 0, v2 = 0, v3 = 0 ] = parse( version );
+	const [ b1 = 0, b2 = 0, b3 = 0 ] = parse( base );
+	return (
+		v1 > b1 ||
+		( v1 === b1 && v2 > b2 ) ||
+		( v1 === b1 && v2 === b2 && v3 >= b3 )
+	);
 };

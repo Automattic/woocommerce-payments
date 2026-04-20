@@ -3,8 +3,22 @@
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
+import { WCPayExpressCheckoutParams } from './express-checkout/utils';
+import { AccountDetailsType } from 'wcpay/types/account/account-details';
 
 declare global {
+	interface TosSettingsStripeConnected {
+		is_existing_stripe_account: boolean;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	const wcpay_tos_settings: {
+		settingsUrl: string;
+		tosAgreementDeclined: '' | '1';
+		tosAgreementRequired: '' | '1';
+		trackStripeConnected: TosSettingsStripeConnected | '';
+	};
+
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;
@@ -12,11 +26,18 @@ declare global {
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
-			isAuthAndCaptureEnabled: boolean;
+			woopay: boolean;
+			documents: boolean;
+			woopayExpressCheckout: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isPaymentOverviewWidgetEnabled?: boolean;
+			isDisputeAdditionalEvidenceTypesEnabled: boolean;
+			multiCurrency?: boolean;
+			isFRTReviewFeatureActive: boolean;
+			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
+			amazonPay: boolean;
 		};
+		accountFees: Record< string, any >;
 		fraudServices: unknown[];
 		testMode: boolean;
 		testModeOnboarding: boolean;
@@ -25,9 +46,11 @@ declare global {
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;
-		accountStatus: {
+		accountStatus: Partial< {
 			email?: string;
 			created: string;
+			isLive?: boolean;
+			testDrive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -51,6 +74,7 @@ declare global {
 			pastDue?: boolean;
 			accountLink: string;
 			hasSubmittedVatData?: boolean;
+			isDocumentsEnabled?: boolean;
 			requirements?: {
 				errors?: {
 					code: string;
@@ -58,22 +82,27 @@ declare global {
 					requirement: string;
 				}[];
 			};
-			progressiveOnboarding: {
-				isEnabled: boolean;
-				isComplete: boolean;
-				tpv: number;
-				firstTransactionDate?: string;
-			};
 			fraudProtection: {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
-		};
+			/**
+			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			 */
+			campaigns: {
+				/**
+				 * The flag for the payments settings review prompt (Phase 0).
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				reviewPromptPhase0: boolean;
+			};
+		} >;
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;
 			loans: Array< string >;
 		};
+		accountDetails: AccountDetailsType;
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
@@ -88,16 +117,8 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
-		progressiveOnboarding?: {
-			isEnabled: boolean;
-			isComplete: boolean;
-			isEligibilityModalDismissed: boolean;
-		};
-		enabledPaymentMethods: string[];
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
-		isFRTReviewFeatureActive: boolean;
-		frtDiscoverBannerSettings: string;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -117,27 +138,45 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
-		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
-		reporting: {
-			exportModalDismissed?: boolean;
-		};
-		locale: {
-			code: string;
-			english_name: string;
-			native_name: string;
-		};
+		instantDepositsPreviouslyEligible: boolean;
+		isConnectionSuccessModalDismissed: boolean;
 		trackingInfo?: {
 			hosting_provider: string;
 		};
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 		defaultExpressCheckoutBorderRadius: string;
+		dateFormat: string;
+		timeFormat: string;
+		formattedStoreAddress: string;
 	};
 
+	const wooPaymentsPaymentMethodDefinitions: Record<
+		string,
+		PaymentMethodServerDefinition
+	>;
+
+	const wooPaymentsPaymentMethodsConfig: Record<
+		string,
+		{
+			isReusable: boolean;
+			isBnpl: boolean;
+			title: string;
+			icon: string;
+			darkIcon: string;
+			isExpressCheckout: boolean;
+			showSaveOption: boolean;
+			countries: string[];
+			testingInstructions: string;
+			forceNetworkSavedCards: boolean;
+		}
+	>;
+
 	const wc: {
+		wcSettings: typeof wcSettingsModule;
 		tracks: {
 			recordEvent: (
 				eventName: string,
@@ -171,6 +210,10 @@ declare global {
 					woocommerce_all_except_countries: string[];
 					woocommerce_specific_allowed_countries: string[];
 					woocommerce_default_country: string;
+					woocommerce_store_address: string;
+					woocommerce_store_address_2: string;
+					woocommerce_store_city: string;
+					woocommerce_store_postcode: string;
 				};
 			};
 			siteVisibilitySettings: {
@@ -183,7 +226,97 @@ declare global {
 		adminUrl: string;
 		countries: Record< string, string >;
 		homeUrl: string;
+		locale: {
+			/**
+			 * The locale of the current site, as set in WP Admin → Settings → General.
+			 *
+			 * @example 'en_AU' // English (Australia)
+			 */
+			siteLocale: string;
+			/**
+			 * The locale of the current user profile, as set in WP Admin → Users → Profile → Language.
+			 *
+			 * @example 'en_UK' // English (United Kingdom)
+			 */
+			userLocale: string;
+		};
 		siteTitle: string;
+		wcVersion: string;
+	};
+
+	const wcpayPluginSettings: {
+		exitSurveyLastShown: string | null;
+	};
+
+	const wcpayReviewPromptSettings: {
+		isLive: boolean;
+		version: string;
+	};
+
+	interface WcSettings {
+		ece_data?: WCPayExpressCheckoutParams;
+		woocommerce_payments_data: typeof wcpaySettings;
+	}
+
+	const wcSettingsModule: {
+		getSetting: <
+			K extends keyof WcSettings,
+			T extends WcSettings[ K ] | undefined
+		>(
+			setting: K,
+			fallback?: T
+		) => WcSettings[ K ] | T;
+	};
+
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	const wcpay_upe_config: {
+		publishableKey: string;
+		testMode: boolean;
+		accountId: string;
+		ajaxUrl: string;
+		wcAjaxUrl: string;
+		createSetupIntentNonce: string;
+		initWooPayNonce: string;
+		genericErrorMessage: string;
+		fraudServices: unknown[];
+		features: string[];
+		forceNetworkSavedCards: boolean;
+		locale: string;
+		isPreview: boolean;
+		isSavedCardsEnabled: boolean;
+		isWooPayEnabled: boolean;
+		isWoopayExpressCheckoutEnabled: boolean;
+		isWoopayFirstPartyAuthEnabled: boolean;
+		isWooPayEmailInputEnabled: boolean;
+		isWooPayDirectCheckoutEnabled: boolean;
+		isWooPayGlobalThemeSupportEnabled: boolean;
+		woopayHost: string;
+		platformTrackerNonce: string;
+		accountIdForIntentConfirmation: string;
+		wcpayVersionNumber: string;
+		woopaySignatureNonce: string;
+		woopaySessionNonce: string;
+		woopayMerchantId: string;
+		icon: string;
+		woopayMinimumSessionData: Record< string, unknown >;
+		gatewayId: string;
+		isCheckout: boolean;
+		paymentMethodsConfig: typeof wooPaymentsPaymentMethodsConfig;
+		cartContainsSubscription: boolean;
+		currency: string;
+		cartTotal: number;
+		enabledBillingFields: Record<
+			string,
+			{
+				required: boolean;
+			}
+		>;
+		storeCountry: string;
+		isExpressCheckoutInPaymentMethodsEnabled: boolean;
+		stylesCacheVersion: string;
+		isOrderPay?: boolean;
+		orderId?: number;
+		isChangingPayment?: boolean;
 	};
 
 	interface Window {
@@ -191,5 +324,10 @@ declare global {
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
+		wcpayPluginSettings?: typeof wcpayPluginSettings;
+		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
+		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		wcpay_upe_config?: typeof wcpay_upe_config;
 	}
 }

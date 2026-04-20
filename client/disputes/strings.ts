@@ -216,7 +216,7 @@ export const reasons: Record<
 			),
 		],
 		claim: __(
-			'The cardholder claims the product was not received.',
+			'The cardholder claims they did not receive the product.',
 			'woocommerce-payments'
 		),
 	},
@@ -349,17 +349,30 @@ export const reasons: Record<
 			),
 		],
 	},
+	noncompliant: {
+		display: __( 'Non-compliant', 'woocommerce-payments' ),
+		claim: __(
+			'Your customer’s bank claims this payment violates Visa’s rules.',
+			'woocommerce-payments'
+		),
+		summary: [
+			__(
+				'This transaction is being reviewed under Visa’s network compliance rules.',
+				'woocommerce-payments'
+			),
+		],
+	},
 };
 
 // Mapping of disputes status to display string.
 export const displayStatus = {
 	warning_needs_response: __(
-		'Inquiry: Needs response',
+		'Inquiry: Response needed',
 		'woocommerce-payments'
 	),
 	warning_under_review: __( 'Inquiry: Under review', 'woocommerce-payments' ),
 	warning_closed: __( 'Inquiry: Closed', 'woocommerce-payments' ),
-	needs_response: __( 'Needs response', 'woocommerce-payments' ),
+	needs_response: __( 'Response needed', 'woocommerce-payments' ),
 	under_review: __( 'Under review', 'woocommerce-payments' ),
 	charge_refunded: __( 'Charge refunded', 'woocommerce-payments' ),
 	won: __( 'Won', 'woocommerce-payments' ),

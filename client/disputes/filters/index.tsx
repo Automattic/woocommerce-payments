@@ -9,7 +9,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters, DisputesFilterType } from './config';
-import { formatCurrencyName } from '../../utils/currency';
+import { formatCurrencyName } from 'multi-currency/interface/functions';
 
 interface DisputesFiltersProps {
 	storeCurrencies?: string[];
@@ -22,7 +22,7 @@ export const DisputesFilters = ( {
 		filtersConfiguration: DisputesFilterType[]
 	) => {
 		filtersConfiguration.forEach( ( filter ) => {
-			if ( 'store_currency_is' === filter.param ) {
+			if ( filter.param === 'store_currency_is' ) {
 				const currencies = storeCurrencies || [];
 				// Generate select options: pick the first one (default) and add provided currencies
 				filter.filters = [
@@ -33,7 +33,7 @@ export const DisputesFilters = ( {
 					} ) ),
 				];
 				// Show the select when several currencies are available.
-				if ( 2 < filter.filters.length ) {
+				if ( filter.filters.length > 2 ) {
 					filter.showFilters = () => true;
 				}
 			}

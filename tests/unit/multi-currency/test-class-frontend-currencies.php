@@ -410,6 +410,7 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$_SERVER['REQUEST_URI'] = $request_uri;
 
 		$mccy = new WCPay\MultiCurrency\MultiCurrency(
+			WC_Payments::get_settings_service(),
 			WC_Payments::get_payments_api_client(),
 			WC_Payments::get_account_service(),
 			WC_Payments::get_localization_service(),

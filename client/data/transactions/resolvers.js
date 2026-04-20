@@ -40,6 +40,7 @@ export const formatQueryFilters = ( query ) => ( {
 	],
 	type_is: query.typeIs,
 	type_is_not: query.typeIsNot,
+	type_is_in: query.typeIsIn,
 	source_device_is: query.sourceDeviceIs,
 	source_device_is_not: query.sourceDeviceIsNot,
 	channel_is: query.channelIs,
@@ -53,6 +54,8 @@ export const formatQueryFilters = ( query ) => ( {
 	deposit_id: query.depositId,
 	customer_currency_is: query.customerCurrencyIs,
 	customer_currency_is_not: query.customerCurrencyIsNot,
+	source_is: query.sourceIs,
+	source_is_not: query.sourceIsNot,
 	search: query.search,
 	user_timezone: getUserTimeZone(),
 	locale: query.locale,
@@ -85,9 +88,10 @@ export function* getTransactions( query ) {
 	}
 }
 
-export function getTransactionsCSV( query ) {
+export const transactionsDownloadEndpoint = `${ NAMESPACE }/transactions/download`;
+export function getTransactionsCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/transactions/download`,
+		transactionsDownloadEndpoint,
 		formatQueryFilters( query )
 	);
 
@@ -117,7 +121,7 @@ export function* getTransactionsSummary( query ) {
  * Retrieves the blocked transactions.
  *
  * @param { string } status Fraud outcome status to be filtered.
- * @param { string } query Data on which to parameterize the selection.
+ * @param { string } query  Data on which to parameterize the selection.
  */
 export function* getFraudOutcomeTransactions( status, query ) {
 	const path = addQueryArgs( `${ NAMESPACE }/transactions/fraud-outcomes`, {
@@ -156,7 +160,7 @@ export function* getFraudOutcomeTransactions( status, query ) {
  * Retrieves the on review transactions.
  *
  * @param { string } status Fraud outcome status to be filtered.
- * @param { string } query Data on which to parameterize the selection.
+ * @param { string } query  Data on which to parameterize the selection.
  */
 export function* getFraudOutcomeTransactionsSummary( status, query ) {
 	const path = addQueryArgs(

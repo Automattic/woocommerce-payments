@@ -29,7 +29,7 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 		parent::setUp();
 
 		$this->mode = $this->getMockBuilder( Mode::class )
-			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type' ] )
+			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'wp_get_development_mode' ] )
 			->getMock();
 	}
 
@@ -55,6 +55,27 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->mode->is_test_mode_onboarding() );
 		$this->assertTrue( $this->mode->is_test() );
 		$this->assertFalse( $this->mode->is_live() );
+	}
+
+	public function provider_init_enters_dev_mode_for_WP_DEVELOPMENT_MODE(): array {
+		return [
+			'core'         => [ 'core', true ],
+			'plugin'       => [ 'plugin', true ],
+			'theme'        => [ 'theme', true ],
+			'all'          => [ 'all', true ],
+			'empty string' => [ '', false ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_init_enters_dev_mode_for_WP_DEVELOPMENT_MODE
+	 */
+	public function test_init_enters_dev_mode_for_WP_DEVELOPMENT_MODE( ?string $constant_value, bool $should_init_in_dev_mode ) {
+		$this->mode->expects( $this->once() )
+			->method( 'wp_get_development_mode' )
+			->willReturn( $constant_value );
+
+		$this->assertSame( $should_init_in_dev_mode, $this->mode->is_dev() );
 	}
 
 	public function test_init_enters_dev_mode_through_filter() {

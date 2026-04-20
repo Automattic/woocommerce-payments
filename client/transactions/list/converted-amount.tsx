@@ -5,16 +5,13 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Tooltip as FallbackTooltip } from '@wordpress/components';
+import { Tooltip } from '@wordpress/components';
 import SyncIcon from 'gridicons/dist/sync';
-import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
-import { formatExplicitCurrency } from 'utils/currency';
-
-declare const window: any;
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 
 interface ConversionIndicatorProps {
 	amount: number;
@@ -26,14 +23,8 @@ interface ConversionIndicatorProps {
 const ConversionIndicator = ( {
 	amount,
 	currency,
-	fallback,
 	baseCurrency,
 }: ConversionIndicatorProps ): React.ReactElement => {
-	// If it's available, use the component from WP, not the one within WCPay, as WP's uses an updated component.
-	const Tooltip = ! fallback
-		? window?.wp?.components?.Tooltip
-		: FallbackTooltip;
-
 	return (
 		<Tooltip
 			text={ sprintf(
@@ -41,7 +32,7 @@ const ConversionIndicator = ( {
 				__( 'Converted from %s', 'woocommerce-payments' ),
 				formatExplicitCurrency( amount, currency, false, baseCurrency )
 			) }
-			position="bottom center"
+			placement="bottom"
 		>
 			<span
 				className="conversion-indicator"
@@ -74,19 +65,11 @@ const ConvertedAmount = ( {
 		return <>{ formattedCurrency }</>;
 	}
 
-	const isUpdatedTooltipAvailable = !! window?.wp?.components?.Tooltip;
-
 	return (
-		<div
-			className={ classNames(
-				'converted-amount',
-				! isUpdatedTooltipAvailable && 'converted-amount--fallback'
-			) }
-		>
+		<div className="converted-amount">
 			<ConversionIndicator
 				amount={ fromAmount }
 				currency={ fromCurrency }
-				fallback={ ! isUpdatedTooltipAvailable }
 				baseCurrency={ currency }
 			/>
 			{ formattedCurrency }

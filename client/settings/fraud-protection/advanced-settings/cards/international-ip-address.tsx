@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
+import { ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -18,40 +18,15 @@ import { getAdminUrl } from 'wcpay/utils';
 import { getSupportedCountriesType } from '../utils';
 
 const InternationalIPAddressRuleCard: React.FC = () => {
-	const supportsAllCountries = 'all' === getSupportedCountriesType();
+	const supportsAllCountries = getSupportedCountriesType() === 'all';
 
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'International IP Address', 'woocommerce-payments' ) }
-			description={ interpolateComponents( {
-				mixedString: __(
-					'This filter screens for {{ipAddressLink}}IP addresses{{/ipAddressLink}} outside of your ' +
-						'{{supportedCountriesLink}}supported countries{{/supportedCountriesLink}}.',
-					'woocommerce-payments'
-				),
-				components: {
-					ipAddressLink: (
-						<Link
-							target="_blank"
-							type="external"
-							href="https://simple.wikipedia.org/wiki/IP_address"
-						/>
-					),
-					supportedCountriesLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							href={ getAdminUrl( {
-								page: 'wc-settings',
-								tab: 'general',
-							} ) }
-						/>
-					),
-				},
-			} ) }
 			id="international-ip-address-card"
 		>
 			{ supportsAllCountries && (
-				<FraudProtectionRuleCardNotice type={ 'warning' }>
+				<FraudProtectionRuleCardNotice type="warning">
 					{ __(
 						"This filter is disabled because you're currently selling to all countries.",
 						'woocommerce-payments'
@@ -60,12 +35,34 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 			) }
 			{ ! supportsAllCountries && (
 				<FraudProtectionRuleToggle
-					setting={ 'international_ip_address' }
+					setting="international_ip_address"
 					label={ __(
-						'Block transactions for international IP addresses',
+						'Enable International IP Address filter',
 						'woocommerce-payments'
 					) }
-				></FraudProtectionRuleToggle>
+					description={ interpolateComponents( {
+						mixedString: __(
+							'This filter screens for {{ipAddressLink}}IP addresses{{/ipAddressLink}} outside of your ' +
+								'{{supportedCountriesLink}}supported countries{{/supportedCountriesLink}}. When enabled the payment will be blocked.',
+							'woocommerce-payments'
+						),
+						components: {
+							ipAddressLink: (
+								// @ts-expect-error: children is provided when interpolating the component
+								<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
+							),
+							supportedCountriesLink: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									href={ getAdminUrl( {
+										page: 'wc-settings',
+										tab: 'general',
+									} ) }
+								/>
+							),
+						},
+					} ) }
+				/>
 			) }
 			<FraudProtectionRuleDescription>
 				{ __(
@@ -75,9 +72,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 				) }
 			</FraudProtectionRuleDescription>
 			{ ! supportsAllCountries && (
-				<AllowedCountriesNotice
-					setting={ 'international_ip_address' }
-				/>
+				<AllowedCountriesNotice setting="international_ip_address" />
 			) }
 		</FraudProtectionRuleCard>
 	);

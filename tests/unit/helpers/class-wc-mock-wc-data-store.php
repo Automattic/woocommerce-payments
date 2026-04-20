@@ -57,25 +57,25 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 		$this->object_id_field_for_meta = $object_id_field;
 	}
 
-	public function create( &$object ) {
+	public function create( &$entity ) {
 		if ( 'user' === $this->meta_type ) {
-			$content_id = wc_create_new_customer( $object->get_content(), 'username-' . time(), 'hunter2' );
+			$content_id = wc_create_new_customer( $entity->get_content(), 'username-' . time(), 'hunter2' );
 		} else {
-			$content_id = wp_insert_post( [ 'post_title' => $object->get_content() ] );
+			$content_id = wp_insert_post( [ 'post_title' => $entity->get_content() ] );
 		}
 		if ( $content_id ) {
-			$object->set_id( $content_id );
+			$entity->set_id( $content_id );
 		}
 
-		$object->apply_changes();
+		$entity->apply_changes();
 	}
 
 	/**
 	 * Simple read.
 	 */
-	public function read( &$object ) {
-		$object->set_defaults();
-		$id = $object->get_id();
+	public function read( &$entity ) {
+		$entity->set_defaults();
+		$id = $entity->get_id();
 
 		if ( empty( $id ) ) {
 			return;
@@ -86,38 +86,38 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 			if ( ! $user_object ) {
 				return;
 			}
-			$object->set_content( $user_object->user_email );
+			$entity->set_content( $user_object->user_email );
 		} else {
 			$post_object = get_post( $id );
 			if ( ! $post_object ) {
 				return;
 			}
-			$object->set_content( $post_object->post_title );
+			$entity->set_content( $post_object->post_title );
 		}
 
-		$object->read_meta_data();
-		$object->set_object_read( true );
+		$entity->read_meta_data();
+		$entity->set_object_read( true );
 	}
 
 	/**
 	 * Simple update.
 	 */
-	public function update( &$object ) {
+	public function update( &$entity ) {
 		global $wpdb;
-		$content_id = $object->get_id();
+		$content_id = $entity->get_id();
 
 		if ( 'user' === $this->meta_type ) {
 			wp_update_user(
 				[
 					'ID'         => $content_id,
-					'user_email' => $object->get_content(),
+					'user_email' => $entity->get_content(),
 				]
 			);
 		} else {
 			wp_update_post(
 				[
 					'ID'         => $content_id,
-					'post_title' => $object->get_content(),
+					'post_title' => $entity->get_content(),
 				]
 			);
 		}
@@ -126,13 +126,13 @@ class WC_Mock_WC_Data_Store extends WC_Data_Store_WP implements WC_Object_Data_S
 	/**
 	 * Simple delete.
 	 */
-	public function delete( &$object, $args = [] ) {
+	public function delete( &$entity, $args = [] ) {
 		if ( 'user' === $this->meta_type ) {
-			wp_delete_user( $object->get_id() );
+			wp_delete_user( $entity->get_id() );
 		} else {
-			wp_delete_post( $object->get_id() );
+			wp_delete_post( $entity->get_id() );
 		}
 
-		$object->set_id( 0 );
+		$entity->set_id( 0 );
 	}
 }

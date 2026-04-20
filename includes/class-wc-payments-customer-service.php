@@ -5,7 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-use WCPay\Database_Cache;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
@@ -58,13 +57,6 @@ class WC_Payments_Customer_Service {
 	private $account;
 
 	/**
-	 * Database_Cache instance to get information about the account
-	 *
-	 * @var Database_Cache
-	 */
-	private $database_cache;
-
-	/**
 	 * WC_Payments_Session_Service instance for working with session information
 	 *
 	 * @var WC_Payments_Session_Service
@@ -83,23 +75,25 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
 	 * @param WC_Payments_Account         $account WC_Payments_Account instance.
-	 * @param Database_Cache              $database_cache Database_Cache instance.
 	 * @param WC_Payments_Session_Service $session_service Session Service class instance.
 	 * @param WC_Payments_Order_Service   $order_service Order Service class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
-		Database_Cache $database_cache,
 		WC_Payments_Session_Service $session_service,
 		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
-		$this->database_cache      = $database_cache;
 		$this->session_service     = $session_service;
 		$this->order_service       = $order_service;
+	}
 
+	/**
+	 * Initialize hooks
+	 */
+	public function init_hooks() {
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
 		 * to the WordPress user as metadata.
@@ -249,6 +243,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @param string $customer_id The customer ID.
 	 * @param string $type        Type of payment methods to fetch.
+	 * @return array
 	 *
 	 * @throws API_Exception We only handle 'resource_missing' code types and rethrow anything else.
 	 */
@@ -257,26 +252,11 @@ class WC_Payments_Customer_Service {
 			return [];
 		}
 
-		$cache_payment_methods = ! WC_Payments::is_network_saved_cards_enabled();
-		$cache_key             = Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type;
-
-		if ( $cache_payment_methods ) {
-			$payment_methods = $this->database_cache->get( $cache_key );
-			if ( is_array( $payment_methods ) ) {
-				return $payment_methods;
-			}
-		}
-
 		try {
-			$payment_methods = $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
-			if ( $cache_payment_methods ) {
-				$this->database_cache->add( $cache_key, $payment_methods );
-			}
-			return $payment_methods;
-
+			return $this->payments_api_client->get_payment_methods( $customer_id, $type )['data'];
 		} catch ( API_Exception $e ) {
-			// If we failed to find the we can simply return empty payment methods as this customer will
-			// be recreated when the user succesfuly adds a payment method.
+			// If we failed to find the payment methods, we can simply return empty payment methods as this customer
+			// will be recreated when the user successfully adds a payment method.
 			if ( $e->get_error_code() === 'resource_missing' ) {
 				return [];
 			}
@@ -306,23 +286,6 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Clear payment methods cache for a user.
-	 *
-	 * @param int $user_id WC user ID.
-	 */
-	public function clear_cached_payment_methods_for_user( $user_id ) {
-		if ( WC_Payments::is_network_saved_cards_enabled() ) {
-			return; // No need to do anything, payment methods will never be cached in this case.
-		}
-
-		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::SEPA ];
-		$customer_id                      = $this->get_customer_id_by_user_id( $user_id );
-		foreach ( $retrievable_payment_method_types as $type ) {
-			$this->database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
-		}
-	}
-
-	/**
 	 * Given a WC_Order or WC_Customer, returns an array representing a Stripe customer object.
 	 * At least one parameter has to not be null.
 	 *
@@ -331,7 +294,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return array Customer data.
 	 */
-	public static function map_customer_data( WC_Order $wc_order = null, WC_Customer $wc_customer = null ): array {
+	public static function map_customer_data( ?WC_Order $wc_order = null, ?WC_Customer $wc_customer = null ): array {
 		if ( null === $wc_customer && null === $wc_order ) {
 			return [];
 		}
@@ -383,12 +346,20 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Delete all saved payment methods that are stored inside database cache driver.
+	 * Recreates the customer for this user - public version for error recovery.
 	 *
-	 * @return void
+	 * This method is used when a customer ID is found to be invalid (e.g., after site migration)
+	 * and needs to be recreated synchronously during payment processing.
+	 *
+	 * @param WP_User|null $user          User to recreate a customer for.
+	 * @param array        $customer_data Customer data.
+	 *
+	 * @return string The newly created customer's ID
+	 *
+	 * @throws API_Exception Error creating customer.
 	 */
-	public function delete_cached_payment_methods() {
-		$this->database_cache->delete_by_prefix( Database_Cache::PAYMENT_METHODS_KEY_PREFIX );
+	public function recreate_customer_for_user( ?WP_User $user, array $customer_data ): string {
+		return $this->recreate_customer( $user, $customer_data );
 	}
 
 	/**
@@ -531,16 +502,25 @@ class WC_Payments_Customer_Service {
 		$firstname       = '';
 		$lastname        = '';
 		$billing_country = '';
+		$address         = null;
 
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order_id = absint( $wp->query_vars['order-pay'] );
 			$order    = wc_get_order( $order_id );
 
-			if ( is_a( $order, 'WC_Order' ) ) {
+			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
 				$firstname       = $order->get_billing_first_name();
 				$lastname        = $order->get_billing_last_name();
 				$user_email      = $order->get_billing_email();
 				$billing_country = $order->get_billing_country();
+				$address         = [
+					'city'        => $order->get_billing_city(),
+					'country'     => $order->get_billing_country(),
+					'line1'       => $order->get_billing_address_1(),
+					'line2'       => $order->get_billing_address_2(),
+					'postal_code' => $order->get_billing_postcode(),
+					'state'       => $order->get_billing_state(),
+				];
 			}
 		}
 
@@ -560,6 +540,7 @@ class WC_Payments_Customer_Service {
 			'name'            => $firstname . ' ' . $lastname,
 			'email'           => $user_email,
 			'billing_country' => $billing_country,
+			'address'         => $address,
 		];
 	}
 }

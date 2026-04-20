@@ -7,8 +7,6 @@
 
 namespace WCPay\MultiCurrency;
 
-use WC_Deposits;
-use WC_Deposits_Product_Manager;
 use WC_Order;
 use WC_Order_Refund;
 use WCPay\MultiCurrency\Compatibility\BaseCompatibility;
@@ -41,7 +39,7 @@ class Compatibility extends BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	protected function init() {
+	public function init() {
 		add_action( 'init', [ $this, 'init_compatibility_classes' ], 11 );
 
 		if ( defined( 'DOING_CRON' ) ) {
@@ -214,7 +212,7 @@ class Compatibility extends BaseCompatibility {
 			}
 
 			$exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
-			$order->set_total( number_format( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
+			$order->set_total( wc_format_decimal( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
 		}
 
 		remove_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );

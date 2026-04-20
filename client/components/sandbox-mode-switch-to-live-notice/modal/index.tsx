@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
+import { __, sprintf } from '@wordpress/i18n';
+import { getAdminUrl } from 'utils';
 import { Button, Modal } from '@wordpress/components';
 import { Icon, currencyDollar } from '@wordpress/icons';
 
@@ -35,10 +35,12 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 			source,
 		} );
 
-		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-			'wcpay-disable-onboarding-test-mode': 'true',
-			from,
-			source: 'wcpay-setup-live-payments', // Overwrite any existing source because we are starting over.
+		window.location.href = getAdminUrl( {
+			page: 'wc-settings',
+			tab: 'checkout',
+			path: '/woopayments/onboarding',
+			source,
+			from: 'wcpay-setup-live-payments',
 		} );
 	};
 
@@ -56,47 +58,69 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 	return (
 		<Modal
 			title={ __(
-				'Set up live payments on your store',
+				'Activate payments on your store',
 				'woocommerce-payments'
 			) }
 			className="wcpay-setup-real-payments-modal"
 			isDismissible={ true }
 			onRequestClose={ trackAndClose }
 		>
-			<p className="wcpay-setup-real-payments-modal__headline">
-				{ __(
-					'Before proceeding, please take note of the following information:',
-					'woocommerce-payments'
-				) }
-			</p>
 			<div className="wcpay-setup-real-payments-modal__content">
-				<Icon icon={ BlockEmbedIcon } />
-				{ __(
-					'Your test account will be deactivated and your transaction records will be preserved for future reference.',
-					'woocommerce-payments'
-				) }
-				<Icon icon={ BlockPostAuthorIcon } />
-				{ __(
-					'The owner, business and contact information will be required.',
-					'woocommerce-payments'
-				) }
-				<Icon icon={ currencyDollar } />
-				{ __(
-					'We will need your banking details in order to process any deposits to you.',
-					'woocommerce-payments'
-				) }
+				<div className="wcpay-setup-real-payments-modal__content__item">
+					<p>
+						{ __(
+							"Before continuing, please make sure that you're aware of the following:",
+							'woocommerce-payments'
+						) }
+					</p>
+				</div>
+				<div className="wcpay-setup-real-payments-modal__content__item-flex">
+					<div>
+						<Icon icon={ BlockEmbedIcon } />
+					</div>
+					<p className="wcpay-setup-real-payments-modal__content__item-flex__description">
+						{ __(
+							'Your test account will be deactivated, but your transactions can be found in your order history.',
+							'woocommerce-payments'
+						) }
+					</p>
+				</div>
+				<div className="wcpay-setup-real-payments-modal__content__item-flex">
+					<div>
+						<Icon icon={ BlockPostAuthorIcon } />
+					</div>
+					<p className="wcpay-setup-real-payments-modal__content__item-flex__description">
+						{ sprintf(
+							/* translators: %s: WooPayments */
+							__(
+								'To use %s, you will need to verify your business details.',
+								'woocommerce-payments'
+							),
+							'WooPayments'
+						) }
+					</p>
+				</div>
+				<div className="wcpay-setup-real-payments-modal__content__item-flex">
+					<div>
+						<Icon icon={ currencyDollar } />
+					</div>
+					<p className="wcpay-setup-real-payments-modal__content__item-flex__description">
+						{ __(
+							'In order to receive payouts, you will need to provide your bank details.',
+							'woocommerce-payments'
+						) }
+					</p>
+				</div>
 			</div>
 			<div className="wcpay-setup-real-payments-modal__footer">
-				<Button variant="tertiary" onClick={ trackAndClose }>
-					{ __( 'Cancel', 'woocommerce-payments' ) }
-				</Button>
 				<Button
 					variant="primary"
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
+					__next40pxDefaultSize
 				>
-					{ __( 'Continue setup', 'woocommerce-payments' ) }
+					{ __( 'Activate payments', 'woocommerce-payments' ) }
 				</Button>
 			</div>
 		</Modal>

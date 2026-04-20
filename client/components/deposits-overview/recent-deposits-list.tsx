@@ -1,7 +1,10 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
+import { calendar } from '@wordpress/icons';
+import { Link } from '@woocommerce/components';
+import { __ } from '@wordpress/i18n';
 import {
 	CardBody,
 	CardDivider,
@@ -9,10 +12,6 @@ import {
 	FlexItem,
 	Icon,
 } from '@wordpress/components';
-import { calendar } from '@wordpress/icons';
-import { Link } from '@woocommerce/components';
-import { Fragment } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.
@@ -21,7 +20,7 @@ import './style.scss';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { getDetailsURL } from 'wcpay/components/details-link';
 
 interface RecentDepositsProps {
@@ -46,12 +45,12 @@ const RecentDepositsList: React.FC< RecentDepositsProps > = ( {
 		<Flex className={ `${ tableClass }__row` } key={ deposit.id }>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				<Icon icon={ calendar } size={ 17 } />
-				<Link href={ getDetailsURL( deposit.id, 'deposits' ) }>
+				<Link href={ getDetailsURL( deposit.id, 'payouts' ) }>
 					{ getDepositDate( deposit ) }
 				</Link>
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
-				<DepositStatusChip status={ deposit.status } />
+				<DepositStatusChip deposit={ deposit } />
 			</FlexItem>
 			<FlexItem className={ `${ tableClass }__cell` }>
 				{ formatCurrency( deposit.amount, deposit.currency ) }

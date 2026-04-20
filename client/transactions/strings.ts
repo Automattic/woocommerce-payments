@@ -21,6 +21,7 @@ export const displayType = {
 	card_reader_fee: __( 'Reader fee', 'woocommerce-payments' ),
 	financing_payout: __( 'Loan disbursement', 'woocommerce-payments' ),
 	financing_paydown: __( 'Loan repayment', 'woocommerce-payments' ),
+	fee_refund: __( 'Fee refund', 'woocommerce-payments' ),
 };
 
 // Mapping of transaction device type string.
@@ -31,8 +32,9 @@ export const sourceDevice = {
 
 // Mapping of transaction channel type string.
 export const channel = {
-	online: __( 'Online', 'woocommerce-payments' ),
+	online: __( 'Online store', 'woocommerce-payments' ),
 	in_person: __( 'In-Person', 'woocommerce-payments' ),
+	in_person_pos: __( 'In-Person (POS)', 'woocommerce-payments' ),
 };
 
 // Mapping of transaction risk level string.

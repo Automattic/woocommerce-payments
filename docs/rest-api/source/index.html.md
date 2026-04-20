@@ -17,7 +17,7 @@ includes:
     - wp-api-v3/customer
     - wp-api-v3/intent
     - wp-api-v3/reports
-    - wp-api-v3/deposits
+    - wp-api-v3/payouts
 
 search: false
 ---

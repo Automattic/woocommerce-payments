@@ -2,13 +2,14 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { __ } from '@wordpress/i18n';
 import { decodeEntities } from '@wordpress/html-entities';
 
 /**
  * Internal dependencies
  */
 import { useSelectedCurrency } from 'overview/hooks';
-import { getCurrency } from 'utils/currency';
+import { getCurrency } from 'multi-currency/interface/functions';
 import InlineLabelSelect from '../inline-label-select';
 import { recordEvent } from 'tracks';
 
@@ -80,14 +81,12 @@ export const CurrencySelect: React.FC< {
 	depositCurrencies: string[];
 } > = ( { depositCurrencies } ) => {
 	const currencyOptions = depositCurrencies.map( getCurrencyOption );
-	const {
-		selectedCurrency,
-		setSelectedCurrency,
-	} = useSelectedCurrencyWithDefault( depositCurrencies );
+	const { selectedCurrency, setSelectedCurrency } =
+		useSelectedCurrencyWithDefault( depositCurrencies );
 
 	return (
 		<InlineLabelSelect
-			label="Currency"
+			label={ __( 'Currency', 'woocommerce-payments' ) }
 			value={ currencyOptions.find(
 				( option ) => option.key === selectedCurrency
 			) }

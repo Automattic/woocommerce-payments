@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { Timeline } from '@woocommerce/components';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
-
 /**
  * Internal dependencies
  */
@@ -16,12 +15,11 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 
 import './style.scss';
 
-const PaymentDetailsTimeline = ( { paymentIntentId } ) => {
-	const { timeline, timelineError, isLoading } = useTimeline(
-		paymentIntentId
-	);
+const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
+	const { timeline, timelineError, isLoading } =
+		useTimeline( paymentIntentId );
 
-	const items = mapTimelineEvents( timeline );
+	const items = mapTimelineEvents( timeline, bankName );
 
 	return (
 		<Card size="large">

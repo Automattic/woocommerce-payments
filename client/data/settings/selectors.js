@@ -21,10 +21,6 @@ export const getSettings = ( state ) => {
 	return getSettingsState( state ).data || EMPTY_OBJ;
 };
 
-const getSupportAddressState = ( state ) => {
-	return getSettings( state ).account_business_support_address || EMPTY_OBJ;
-};
-
 export const getDuplicatedPaymentMethodIds = ( state ) => {
 	return getSettings( state ).duplicated_payment_method_ids || EMPTY_OBJ;
 };
@@ -42,7 +38,7 @@ export const getAvailablePaymentMethodIds = ( state ) => {
 };
 
 export const getPaymentMethodStatuses = ( state ) => {
-	return getSettings( state ).payment_method_statuses || EMPTY_ARR;
+	return getSettings( state ).payment_method_statuses || EMPTY_OBJ;
 };
 
 export const isSavingSettings = ( state ) => {
@@ -65,42 +61,6 @@ export const getAccountStatementDescriptorKana = ( state ) => {
 	return getSettings( state ).account_statement_descriptor_kana || '';
 };
 
-export const getAccountBusinessName = ( state ) => {
-	return getSettings( state ).account_business_name || '';
-};
-
-export const getAccountBusinessURL = ( state ) => {
-	return getSettings( state ).account_business_url || '';
-};
-
-export const getAccountBusinessSupportAddress = ( state ) => {
-	return getSettings( state ).account_business_support_address || '';
-};
-
-export const getAccountBusinessSupportAddressCountry = ( state ) => {
-	return getSupportAddressState( state ).country || '';
-};
-
-export const getAccountBusinessSupportAddressLine1 = ( state ) => {
-	return getSupportAddressState( state ).line1 || '';
-};
-
-export const getAccountBusinessSupportAddressLine2 = ( state ) => {
-	return getSupportAddressState( state ).line2 || '';
-};
-
-export const getAccountBusinessSupportAddressCity = ( state ) => {
-	return getSupportAddressState( state ).city || '';
-};
-
-export const getAccountBusinessSupportAddressState = ( state ) => {
-	return getSupportAddressState( state ).state || '';
-};
-
-export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
-	return getSupportAddressState( state ).postal_code || '';
-};
-
 export const getAccountBusinessSupportEmail = ( state ) => {
 	return getSettings( state ).account_business_support_email || '';
 };
@@ -109,20 +69,12 @@ export const getAccountBusinessSupportPhone = ( state ) => {
 	return getSettings( state ).account_business_support_phone || '';
 };
 
-export const getAccountBrandingLogo = ( state ) => {
-	return getSettings( state ).account_branding_logo || '';
-};
-
 export const getAccountDomesticCurrency = ( state ) => {
 	return getSettings( state ).account_domestic_currency || '';
 };
 
 export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
-};
-
-export const getExportLanguage = ( state ) => {
-	return getSettings( state ).reporting_export_language || '';
 };
 
 export const getDepositScheduleWeeklyAnchor = ( state ) => {
@@ -169,16 +121,19 @@ export const getIsPaymentRequestEnabled = ( state ) => {
 	return getSettings( state ).is_payment_request_enabled || false;
 };
 
+export const getIsExpressCheckoutInPaymentMethodsEnabled = ( state ) => {
+	return (
+		getSettings( state ).is_express_checkout_in_payment_methods_enabled ||
+		false
+	);
+};
+
 export const getIsDebugLogEnabled = ( state ) => {
 	return getSettings( state ).is_debug_log_enabled || false;
 };
 
 export const getIsMultiCurrencyEnabled = ( state ) => {
 	return getSettings( state ).is_multi_currency_enabled || false;
-};
-
-export const getPaymentRequestLocations = ( state ) => {
-	return getSettings( state ).payment_request_enabled_locations || EMPTY_ARR;
 };
 
 export const getPaymentRequestButtonType = ( state ) => {
@@ -243,10 +198,6 @@ export const getWooPayStoreLogo = ( state ) => {
 	return getSettings( state ).woopay_store_logo || '';
 };
 
-export const getWooPayLocations = ( state ) => {
-	return getSettings( state ).woopay_enabled_locations || EMPTY_ARR;
-};
-
 export const getCurrentProtectionLevel = ( state ) => {
 	return (
 		getSettings( state ).current_protection_level || ProtectionLevel.BASIC
@@ -275,4 +226,20 @@ export const getStripeBillingSubscriptionCount = ( state ) => {
 
 export const getStripeBillingMigratedCount = ( state ) => {
 	return getSettings( state ).stripe_billing_migrated_count || 0;
+};
+
+export const getAccountCommunicationsEmail = ( state ) => {
+	return getSettings( state ).account_communications_email || '';
+};
+
+export const getExpressCheckoutProductMethods = ( state ) => {
+	return getSettings( state ).express_checkout_product_methods || EMPTY_ARR;
+};
+
+export const getExpressCheckoutCartMethods = ( state ) => {
+	return getSettings( state ).express_checkout_cart_methods || EMPTY_ARR;
+};
+
+export const getExpressCheckoutCheckoutMethods = ( state ) => {
+	return getSettings( state ).express_checkout_checkout_methods || EMPTY_ARR;
 };

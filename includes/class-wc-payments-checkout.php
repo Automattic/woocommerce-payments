@@ -15,6 +15,7 @@ use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_Customer_Service;
 use WC_Payments_Fraud_Service;
+use WC_Payments_Styles_Cache;
 use WC_Payments_Utils;
 use WC_Payments_Features;
 use WCPay\Constants\Payment_Method;
@@ -96,13 +97,11 @@ class WC_Payments_Checkout {
 		add_action( 'wc_payments_set_gateway', [ $this, 'set_gateway' ] );
 		add_action( 'wc_payments_add_upe_payment_fields', [ $this, 'payment_fields' ] );
 		add_action( 'wp', [ $this->gateway, 'maybe_process_upe_redirect' ] );
-		add_action( 'wp_ajax_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
-		add_action( 'wp_ajax_nopriv_save_upe_appearance', [ $this->gateway, 'save_upe_appearance_ajax' ] );
-		add_action( 'switch_theme', [ $this->gateway, 'clear_upe_appearance_transient' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ $this->gateway, 'clear_upe_appearance_transient' ] );
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts' ] );
 		add_action( 'wp_enqueue_scripts', [ $this, 'register_scripts_for_zero_order_total' ], 11 );
+		add_action( 'woocommerce_after_checkout_form', [ $this, 'maybe_load_checkout_scripts' ] );
+		add_filter( 'woocommerce_update_order_review_fragments', [ $this, 'add_payment_methods_config_to_update_order_review_fragments' ] );
 	}
 
 	/**
@@ -134,9 +133,7 @@ class WC_Payments_Checkout {
 
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
-		$script = 'dist/checkout';
-
-		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', $script, $script_dependencies );
+		WC_Payments::register_script_with_dependencies( 'wcpay-upe-checkout', 'dist/checkout', $script_dependencies );
 	}
 
 	/**
@@ -153,11 +150,18 @@ class WC_Payments_Checkout {
 			! has_block( 'woocommerce/checkout' ) &&
 			! wp_script_is( 'wcpay-upe-checkout', 'enqueued' )
 		) {
-			WC_Payments::get_gateway()->tokenization_script();
-			$script_handle = 'wcpay-upe-checkout';
-			$js_object     = 'wcpay_upe_config';
-			wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
-			wp_enqueue_script( $script_handle );
+			$this->load_checkout_scripts();
+		}
+	}
+
+	/**
+	 * Sometimes the filters can remove the payment gateway from the checkout page which results in the payment fields not being displayed.
+	 * This could prevent loading of the payment fields (checkout) scripts.
+	 * This function ensures that these scripts are loaded.
+	 */
+	public function maybe_load_checkout_scripts() {
+		if ( is_checkout() && ! wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
+			$this->load_checkout_scripts();
 		}
 	}
 
@@ -184,7 +188,6 @@ class WC_Payments_Checkout {
 			'wcAjaxUrl'                         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
 			'createSetupIntentNonce'            => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
 			'initWooPayNonce'                   => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
-			'saveUPEAppearanceNonce'            => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
 			'genericErrorMessage'               => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
 			'fraudServices'                     => $this->fraud_service->get_fraud_services_config(),
 			'features'                          => $this->gateway->supports,
@@ -192,14 +195,13 @@ class WC_Payments_Checkout {
 			'locale'                            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
 			'isPreview'                         => is_preview(),
 			'isSavedCardsEnabled'               => $this->gateway->is_saved_cards_enabled(),
-			'isExpressCheckoutElementEnabled'   => WC_Payments_Features::is_stripe_ece_enabled(),
-			'isTokenizedCartPrbEnabled'         => WC_Payments_Features::is_tokenized_cart_prb_enabled(),
-			'isWooPayEnabled'                   => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_cart_or_checkout(),
+			'isWooPayEnabled'                   => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_guest_checkout(),
 			'isWoopayExpressCheckoutEnabled'    => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'     => $this->woopay_util->is_woopay_first_party_auth_enabled(),
 			'isWooPayEmailInputEnabled'         => $this->woopay_util->is_woopay_email_input_enabled(),
 			'isWooPayDirectCheckoutEnabled'     => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
 			'isWooPayGlobalThemeSupportEnabled' => $this->gateway->is_woopay_global_theme_support_enabled(),
+			'isShortcodeCheckout'               => is_checkout() && ! has_block( 'woocommerce/checkout' ),
 			'woopayHost'                        => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'              => wp_create_nonce( 'platform_tracks_nonce' ),
 			'accountIdForIntentConfirmation'    => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
@@ -211,85 +213,63 @@ class WC_Payments_Checkout {
 			'woopayMinimumSessionData'          => WooPay_Session::get_woopay_minimum_session_data(),
 		];
 
-		/**
-		 * Allows filtering of the JS config for the payment fields.
-		 *
-		 * @param array $js_config The JS config for the payment fields.
-		 */
-		$payment_fields = apply_filters( 'wcpay_payment_fields_js_config', $js_config );
+		// Provide the admin nonce when previewing in the Customizer so the
+		// frontend can POST the live appearance to the admin endpoint.
+		if ( is_customize_preview() && current_user_can( 'manage_woocommerce' ) ) {
+			$js_config['adminAppearanceNonce'] = wp_create_nonce( 'wcpay_admin_woopay_appearance_nonce' );
+		}
 
-		$payment_fields['accountDescriptor']             = $this->gateway->get_account_statement_descriptor();
-		$payment_fields['addPaymentReturnURL']           = wc_get_account_endpoint_url( 'payment-methods' );
-		$payment_fields['gatewayId']                     = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$payment_fields['isCheckout']                    = is_checkout();
-		$payment_fields['paymentMethodsConfig']          = $this->get_enabled_payment_method_config();
-		$payment_fields['testMode']                      = WC_Payments::mode()->is_test();
-		$payment_fields['upeAppearance']                 = get_transient( WC_Payment_Gateway_WCPay::UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['upeAddPaymentMethodAppearance'] = get_transient( WC_Payment_Gateway_WCPay::UPE_ADD_PAYMENT_METHOD_APPEARANCE_TRANSIENT );
-		$payment_fields['upeBnplProductPageAppearance']  = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_PRODUCT_PAGE_APPEARANCE_TRANSIENT );
-		$payment_fields['upeBnplClassicCartAppearance']  = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CLASSIC_CART_APPEARANCE_TRANSIENT );
-		$payment_fields['upeBnplCartBlockAppearance']    = get_transient( WC_Payment_Gateway_WCPay::UPE_BNPL_CART_BLOCK_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearance']         = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_TRANSIENT );
-		$payment_fields['wcBlocksUPEAppearanceTheme']    = get_transient( WC_Payment_Gateway_WCPay::WC_BLOCKS_UPE_APPEARANCE_THEME_TRANSIENT );
-		$payment_fields['cartContainsSubscription']      = $this->gateway->is_subscription_item_in_cart();
-		$payment_fields['currency']                      = get_woocommerce_currency();
-		$cart_total                                      = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
-		$payment_fields['cartTotal']                     = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
+		$payment_fields = $js_config;
+
+		$payment_fields['gatewayId']                = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$payment_fields['isCheckout']               = is_checkout();
+		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
+		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
+		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
+		$payment_fields['currency']                 = get_woocommerce_currency();
+		$payment_fields['stylesCacheVersion']       = WC_Payments_Styles_Cache::get_styles_cache_version();
+		$cart_total                                 = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+		$payment_fields['cartTotal']                = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
 			if ( ! isset( $billing_field_options['enabled'] ) || $billing_field_options['enabled'] ) {
-				$enabled_billing_fields[] = $billing_field;
+				$enabled_billing_fields[ $billing_field ] = [
+					'required' => $billing_field_options['required'] ?? false,
+				];
 			}
 		}
 		$payment_fields['enabledBillingFields'] = $enabled_billing_fields;
 
 		if ( is_wc_endpoint_url( 'order-pay' ) ) {
 			if ( $this->gateway->is_subscriptions_enabled() && $this->gateway->is_changing_payment_method_for_subscription() ) {
-				$payment_fields['isChangingPayment']   = true;
-				$payment_fields['addPaymentReturnURL'] = esc_url_raw( home_url( add_query_arg( [] ) ) );
-
-				if ( $this->gateway->is_setup_intent_success_creation_redirection() && isset( $_GET['_wpnonce'] ) && wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wpnonce'] ) ) ) ) {
-					$setup_intent_id = isset( $_GET['setup_intent'] ) ? wc_clean( wp_unslash( $_GET['setup_intent'] ) ) : '';
-					$token           = $this->gateway->create_token_from_setup_intent( $setup_intent_id, wp_get_current_user() );
-					if ( null !== $token ) {
-						$payment_fields['newTokenFormId'] = '#wc-' . $token->get_gateway_id() . '-payment-token-' . $token->get_id();
-					}
-				}
+				$payment_fields['isChangingPayment'] = true;
 				return $payment_fields; // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 			}
 
-			$payment_fields['isOrderPay'] = true;
-			$order_id                     = absint( get_query_var( 'order-pay' ) );
-			$payment_fields['orderId']    = $order_id;
-			$order                        = wc_get_order( $order_id );
+			$order_id = absint( get_query_var( 'order-pay' ) );
+			$order    = wc_get_order( $order_id );
 
-			if ( is_a( $order, 'WC_Order' ) ) {
-				$order_currency                   = $order->get_currency();
-				$payment_fields['currency']       = $order_currency;
-				$payment_fields['cartTotal']      = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );
-				$payment_fields['orderReturnURL'] = esc_url_raw(
-					add_query_arg(
-						[
-							'wc_payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-							'_wpnonce'          => wp_create_nonce( 'wcpay_process_redirect_order_nonce' ),
-						],
-						$this->gateway->get_return_url( $order )
-					)
-				);
+			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
+				$payment_fields['isOrderPay'] = true;
+				$payment_fields['orderId']    = $order_id;
+				$order_currency               = $order->get_currency();
+				$payment_fields['currency']   = $order_currency;
+				$payment_fields['cartTotal']  = WC_Payments_Utils::prepare_amount( $order->get_total(), $order_currency );
 			}
 		}
 
 		// Get the store base country.
 		$payment_fields['storeCountry'] = WC()->countries->get_base_country();
 
-		// Get the WooCommerce Store API endpoint.
-		$payment_fields['storeApiURL'] = get_rest_url( null, 'wc/store' );
+		// Whether express checkout methods (Apple Pay, Google Pay, Amazon Pay) should be displayed
+		// in the payment methods list instead of as separate express buttons.
+		$payment_fields['isExpressCheckoutInPaymentMethodsEnabled'] = \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled();
 
 		/**
-		 * Allows filtering for the payment fields.
+		 * Allows filtering of the JS config for the payment fields.
 		 *
-		 * @param array $payment_fields The payment fields.
+		 * @param array $js_config The JS config for the payment fields.
 		 */
 		return apply_filters( 'wcpay_payment_fields_js_config', $payment_fields ); // nosemgrep: audit.php.wp.security.xss.query-arg -- server generated url is passed in.
 	}
@@ -303,6 +283,30 @@ class WC_Payments_Checkout {
 		$settings                = [];
 		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
 
+		// When "express checkout in payment methods" setting is enabled, add express checkout
+		// methods to the list. They're not in upe_enabled_payment_method_ids by default since
+		// they're normally registered separately via registerExpressPaymentMethod() in JS.
+		// Use the card gateway (main gateway) for this check, because $this->gateway
+		// can be mutated by set_gateway() during shortcode checkout rendering.
+		$card_gateway                           = \WC_Payments::get_gateway();
+		$is_express_checkout_in_payment_methods = $card_gateway->is_express_checkout_in_payment_methods_enabled();
+
+		if ( $is_express_checkout_in_payment_methods ) {
+			// Add Apple Pay and Google Pay if payment request is enabled.
+			if ( $card_gateway->is_payment_request_enabled() ) {
+				$enabled_payment_methods[] = 'apple_pay';
+				$enabled_payment_methods[] = 'google_pay';
+			}
+
+			// Add Amazon Pay if the feature flag is enabled and the gateway is enabled.
+			if ( WC_Payments_Features::is_amazon_pay_enabled() ) {
+				$amazon_pay_gateway = \WC_Payments::get_payment_gateway_by_id( 'amazon_pay' );
+				if ( $amazon_pay_gateway && $amazon_pay_gateway->is_enabled() ) {
+					$enabled_payment_methods[] = 'amazon_pay';
+				}
+			}
+		}
+
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			// Link by Stripe should be validated with available fees.
 			if ( Payment_Method::LINK === $payment_method_id ) {
@@ -311,51 +315,71 @@ class WC_Payments_Checkout {
 				}
 			}
 
-			$payment_method                 = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
-			$account_country                = $this->account->get_account_country();
-			$settings[ $payment_method_id ] = [
-				'isReusable'     => $payment_method->is_reusable(),
-				'title'          => $payment_method->get_title( $account_country ),
-				'icon'           => $payment_method->get_icon( $account_country ),
-				'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
-				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
-				'countries'      => $payment_method->get_countries(),
-			];
+			// Skip express checkout methods if they somehow got into the list, but the setting
+			// is not enabled (it shouldn't happen with normal code flow - adding just in case).
+			$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+			if ( $payment_method && $payment_method->is_express_checkout() ) {
+				if ( ! $is_express_checkout_in_payment_methods ) {
+					continue;
+				}
+			}
 
-			$gateway_for_payment_method                            = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
-			$settings[ $payment_method_id ]['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
-				/* translators: link to Stripe testing page */
-				$payment_method->get_testing_instructions(),
-				[
-					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-					'strong' => '<strong>',
-					'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
-				]
-			);
-
-			$should_enable_network_saved_cards                        = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
-			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
+			$settings[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
 		}
 
 		return $settings;
 	}
 
 	/**
-	 * Checks if the save option for a payment method should be displayed or not.
+	 * Adds dynamic payment fields config to the update_order_review AJAX response fragments.
 	 *
-	 * @param UPE_Payment_Method $payment_method UPE Payment Method instance.
-	 * @return bool - True if the payment method is reusable and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
+	 * This allows the frontend to refresh the available payment methods and currency
+	 * when the billing country changes during checkout. This is particularly important
+	 * for stores using plugins that change currency based on customer location, ensuring
+	 * that payment methods restricted by country/currency are properly updated.
+	 *
+	 * @param array $fragments The fragments to be updated.
+	 * @return array The updated fragments.
 	 */
-	private function should_upe_payment_method_show_save_option( $payment_method ) {
-		if ( $payment_method->get_id() === Payment_Method::CARD && is_user_logged_in() && WC_Payments_Features::is_woopay_enabled() ) {
-			return false;
+	public function add_payment_methods_config_to_update_order_review_fragments( $fragments ) {
+		if ( ! isset( $fragments['.woocommerce-checkout-payment'] ) ) {
+			return $fragments;
 		}
 
-		if ( $payment_method->is_reusable() ) {
-			return $this->gateway->is_saved_cards_enabled() && ! $this->gateway->is_subscription_item_in_cart();
+		// I'm calling the base method (rather than reconstructing the pieces individually), so that we can also take advantage of the hooks/filters.
+		// It's a little heavier in computation, but it gives a more accurate result.
+		$js_config = $this->get_payment_fields_js_config();
+
+		$fragments['.woocommerce-checkout-payment'] .= sprintf(
+			'<script>window.wcpay_upe_config && Object.assign( window.wcpay_upe_config, %s );</script>',
+			wp_json_encode(
+				[
+					'paymentMethodsConfig' => $js_config['paymentMethodsConfig'],
+					'currency'             => $js_config['currency'],
+					'cartTotal'            => $js_config['cartTotal'],
+				]
+			)
+		);
+
+		return $fragments;
+	}
+
+	/**
+	 * Gets the config for all payment methods.
+	 *
+	 * @return array
+	 */
+	public function get_all_payment_method_config() {
+		$payment_method_configs = [];
+
+		// Get all the registered payment methods.
+		$registered_payment_methods = array_keys( $this->gateway->get_payment_methods() );
+
+		foreach ( $registered_payment_methods as $payment_method_id ) {
+			$payment_method_configs[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
 		}
 
-		return false;
+		return $payment_method_configs;
 	}
 
 	/**
@@ -375,16 +399,35 @@ class WC_Payments_Checkout {
 			if ( ! wp_script_is( 'wcpay-upe-checkout', 'enqueued' ) ) {
 				$payment_fields = $this->get_payment_fields_js_config();
 				wp_enqueue_script( 'wcpay-upe-checkout' );
+				/**
+				 * We can't localize the script right away since at this point is not registered yet.
+				 * We also need to make sure it that it only runs once (using a dummy action), even if
+				 * there are multiple payment methods available; otherwise the data will be overwritten
+				 * which is pointless.
+				 *
+				 * The same applies for `wcpayCustomerData` a few lines below.
+				 */
 				add_action(
 					'wp_footer',
 					function () use ( $payment_fields ) {
-						wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
+						if ( ! did_action( '__wcpay_upe_config_localized' ) ) {
+							wp_localize_script( 'wcpay-upe-checkout', 'wcpay_upe_config', $payment_fields );
+						}
+						do_action( '__wcpay_upe_config_localized' );
 					}
 				);
 
 				$prepared_customer_data = $this->customer_service->get_prepared_customer_data();
 				if ( ! empty( $prepared_customer_data ) ) {
-					wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
+					add_action(
+						'wp_footer',
+						function () use ( $prepared_customer_data ) {
+							if ( ! did_action( '__wcpay_customer_data_localized' ) ) {
+								wp_localize_script( 'wcpay-upe-checkout', 'wcpayCustomerData', $prepared_customer_data );
+							}
+							do_action( '__wcpay_customer_data_localized' );
+						}
+					);
 				}
 
 				WC_Payments_Utils::enqueue_style(
@@ -396,44 +439,48 @@ class WC_Payments_Checkout {
 				);
 			}
 
-			// Output the form HTML.
 			?>
-			<?php if ( ! empty( $this->gateway->get_description() ) ) : ?>
-				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
-			<?php endif; ?>
+			<div class="wcpay-upe-form"
+				data-payment-method-type="<?php echo esc_attr( $this->gateway->get_stripe_id() ); ?>"
+				>
+				<?php
 
-			<?php if ( WC_Payments::mode()->is_test() ) : ?>
+				// Output the form HTML.
+				if ( ! empty( $this->gateway->get_description() ) ) :
+					?>
+				<p><?php echo wp_kses_post( $this->gateway->get_description() ); ?></p>
+					<?php
+			endif;
+
+				if ( WC_Payments::mode()->is_test() && false !== $this->gateway->get_payment_method()->get_testing_instructions( $this->account->get_account_country() ) ) :
+					?>
 				<p class="testmode-info">
 					<?php
-						$testing_instructions = $this->gateway->get_payment_method()->get_testing_instructions();
-					if ( false !== $testing_instructions ) {
 						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						echo WC_Payments_Utils::esc_interpolated_html(
+							echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
-							$testing_instructions,
-							[
-								'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-								'strong' => '<strong>',
-								'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
-							]
-						);
-					}
+								$this->gateway->get_payment_method()->get_testing_instructions( $this->account->get_account_country() ),
+								[
+									'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+									'strong' => '<strong>',
+									'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
+								]
+							);
 					?>
 				</p>
-			<?php endif; ?>
+					<?php
+			endif;
 
-			<?php
-
-			if ( $display_tokenization ) {
-				$this->gateway->tokenization_script();
-				// avoid showing saved payment methods on my-accounts add payment method page.
-				if ( ! is_add_payment_method_page() ) {
-					$this->gateway->saved_payment_methods();
+				if ( $display_tokenization ) {
+					$this->gateway->tokenization_script();
+					// avoid showing saved payment methods on my-accounts add payment method page.
+					if ( ! is_add_payment_method_page() ) {
+						$this->gateway->saved_payment_methods();
+					}
 				}
-			}
-			?>
+				?>
 
-			<fieldset style="padding: 7px" id="wc-<?php echo esc_attr( $this->gateway->id ); ?>-upe-form" class="wc-upe-form wc-payment-form">
+			<fieldset style="padding: 7px" class="wc-payment-form">
 				<?php
 					$this->gateway->display_gateway_html();
 				if ( $this->gateway->is_saved_cards_enabled() && $this->gateway->should_support_saved_payments() ) {
@@ -445,7 +492,7 @@ class WC_Payments_Checkout {
 				?>
 
 			</fieldset>
-
+			</div>
 			<?php
 
 			do_action( 'wcpay_payment_fields_upe', $this->gateway->id );
@@ -473,5 +520,80 @@ class WC_Payments_Checkout {
 		if ( null !== $payment_method_id ) {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
+	}
+
+	/**
+	 * Gets the config for a payment method.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 * @param string $account_country The account country.
+	 * @return array
+	 */
+	private function get_config_for_payment_method( $payment_method_id, $account_country ) {
+		$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+
+		if ( ! $payment_method ) {
+			return [];
+		}
+
+		$config = [
+			'isReusable'        => $payment_method->is_reusable(),
+			'isBnpl'            => $payment_method->is_bnpl(),
+			'isExpressCheckout' => $payment_method->is_express_checkout(),
+			'title'             => $payment_method->get_title( $account_country ),
+			'icon'              => $payment_method->get_icon( $account_country ),
+			'darkIcon'          => $payment_method->get_dark_icon( $account_country ),
+			'showSaveOption'    => $this->should_upe_payment_method_show_save_option( $payment_method ),
+			'countries'         => $payment_method->get_countries(),
+		];
+
+		$gateway_for_payment_method = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		if ( ! $gateway_for_payment_method ) {
+			return [];
+		}
+		$config['gatewayId']           = $gateway_for_payment_method->id;
+		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
+			/* translators: link to Stripe testing page */
+			$payment_method->get_testing_instructions( $account_country ),
+			[
+				'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+				'strong' => '<strong>',
+				'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
+			]
+		);
+
+		$should_enable_network_saved_cards = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
+		$config['forceNetworkSavedCards']  = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
+
+		return $config;
+	}
+
+	/**
+	 * Checks if the save option for a payment method should be displayed or not.
+	 *
+	 * @param UPE_Payment_Method $payment_method UPE Payment Method instance.
+	 * @return bool - True if the payment method is reusable and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
+	 */
+	private function should_upe_payment_method_show_save_option( $payment_method ) {
+		if ( $payment_method->get_id() === Payment_Method::CARD && is_user_logged_in() && WC_Payments_Features::is_woopay_enabled() ) {
+			return false;
+		}
+
+		if ( $payment_method->is_reusable() ) {
+			return $this->gateway->is_saved_cards_enabled() && ! $this->gateway->is_subscription_item_in_cart();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Load the checkout scripts.
+	 */
+	private function load_checkout_scripts() {
+		WC_Payments::get_gateway()->tokenization_script();
+		$script_handle = 'wcpay-upe-checkout';
+		$js_object     = 'wcpay_upe_config';
+		wp_localize_script( $script_handle, $js_object, WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() );
+		wp_enqueue_script( $script_handle );
 	}
 }

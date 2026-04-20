@@ -7,8 +7,7 @@ on:
 env:
   WP_VERSION:        latest
   WC_MIN_SUPPORTED_VERSION: '7.6.0'
-  GUTENBERG_VERSION: latest
-  PHP_MIN_SUPPORTED_VERSION: '7.3'
+  PHP_MIN_SUPPORTED_VERSION: '7.4'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,17 +19,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/composer/
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
       - name: "Set up PHP"
         uses: ./.github/actions/setup-php
       # install dependencies and run linter
-      - run: composer self-update && composer install --no-progress && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && ./vendor/bin/psalm
+      - run: composer self-update && composer install --no-progress --ignore-platform-req=php && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && composer run phpstan
 
   generate-test-matrix:
     name: "Generate the matrix for php tests dynamically"
@@ -41,8 +40,8 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          PHP_VERSIONS=$( echo "[\"$PHP_MIN_SUPPORTED_VERSION\", \"7.3\", \"7.4\"]" )
-          echo "matrix={\"php\":$PHP_VERSIONS}" >> $GITHUB_OUTPUT
+          # PHP 7.4+ can use latest Gutenberg
+          echo "matrix={\"php\":[\"7.4\"],\"gutenberg\":[\"latest\"],\"include\":[{\"php\":\"$PHP_MIN_SUPPORTED_VERSION\",\"gutenberg\":\"22.3.0\"}]}" >> $GITHUB_OUTPUT
 
   test:
     name: PHP testing
@@ -54,12 +53,12 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-test-matrix.outputs.matrix) }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -69,3 +68,4 @@ jobs:
       - run: bash bin/run-ci-tests.bash
         env:
           WC_VERSION: ${{ env.WC_MIN_SUPPORTED_VERSION }}
+          GUTENBERG_VERSION: ${{ matrix.gutenberg }}

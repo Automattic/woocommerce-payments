@@ -65,6 +65,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	private $mock_redirect_service;
 
 	/**
+	 * Backup of the original card gateway instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $card_gateway_backup;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -75,6 +82,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
 		];
+
+		$this->card_gateway_backup = WC_Payments::get_gateway();
 
 		// Always start off with live mode. If you want another mode, you should set it in the test.
 		WC_Payments::mode()->live();
@@ -94,6 +103,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 		unset( $_GET );
 		unset( $_REQUEST );
+
+		// Restore the card gateway instance.
+		WC_Payments::set_gateway( $this->card_gateway_backup );
+
 		parent::tear_down();
 	}
 
@@ -111,8 +124,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'wcpay_instant_deposit_reminder', [ $this->wcpay_account, 'handle_instant_deposits_inbox_reminder' ] ), 'handle_instant_deposits_inbox_reminder action does not exist.' );
 		$this->assertNotFalse( has_filter( 'allowed_redirect_hosts', [ $this->wcpay_account, 'allowed_redirect_hosts' ] ), 'allowed_redirect_hooks filter does not exist.' );
 		$this->assertNotFalse( has_action( 'jetpack_site_registered', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_registered action does not exist.' );
+		$this->assertNotFalse( has_action( 'jetpack_site_disconnected', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_disconnected action does not exist.' );
 		$this->assertNotFalse( has_action( 'updated_option', [ $this->wcpay_account, 'possibly_update_wcpay_account_locale' ] ), 'updated_option action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'clear_cache' ] ), 'woocommerce_woocommerce_payments_updated action does not exist.' );
+		$this->assertNotFalse( has_action( WC_Payments_Account::STORE_SETUP_SYNC_ACTION, [ $this->wcpay_account, 'store_setup_sync' ] ), 'store_setup_sync action does not exist.' );
 	}
 
 	public function test_maybe_handle_onboarding_unauthorized_user() {
@@ -257,6 +272,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$has_working_jetpack_connection,
 		$is_stripe_connected,
 		$create_test_drive_account,
+		$redirect_to_settings_page,
 		$expected_next_step
 	) {
 
@@ -278,9 +294,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['page'] = 'wc-admin';
 		$_GET['path'] = '/payments/some-bogus-page';
 
-		$_GET['from']       = $onboarding_from;
-		$_GET['source']     = $onboarding_source;
-		$_GET['test_drive'] = $create_test_drive_account ? 'true' : null;
+		$_GET['from']                      = $onboarding_from;
+		$_GET['source']                    = $onboarding_source;
+		$_GET['test_drive']                = $create_test_drive_account ? 'true' : null;
+		$_GET['redirect_to_settings_page'] = $redirect_to_settings_page ? 'true' : null;
 
 		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
@@ -398,6 +415,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 						)
 					);
 				break;
+			case 'settings_page':
+				$this->mock_api_client
+					->expects( $this->never() )
+					->method( 'start_server_connection' );
+				$mock_redirect_service
+					->expects( $this->once() )
+					->method( 'redirect_to' )
+					->with(
+						// It should redirect to settings page URL.
+						$this->stringContains( 'page=wc-settings&tab=checkout' ),
+					);
+				break;
 			default:
 				$this->fail( 'Unexpected redirect type: ' . $expected_next_step );
 				break;
@@ -414,7 +443,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Act.
+		// Some code paths in the onboarding output JSON, so we use output buffering to suppress it while testing.
+		ob_start();
 		$wcpay_account->maybe_handle_onboarding();
+		ob_end_clean();
 
 		remove_all_filters( 'wp_doing_ajax' );
 		remove_all_filters( 'wp_die_ajax_handler' );
@@ -431,12 +463,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Woo Payments task - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_PAYMENT_TASK,
 				true,
+				false,
 				false,
 				false,
 				'onboarding_wizard',
@@ -447,6 +481,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			'From Connect page - no Jetpack connection, Stripe connected' => [
@@ -455,12 +490,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Connect page - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE, // Some other original source.
 				true,
+				false,
 				false,
 				false,
 				'onboarding_wizard',
@@ -471,6 +508,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			'From Connect page - no Jetpack connection, Stripe connected - test-drive' => [
@@ -479,6 +517,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				true,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Connect page - Jetpack connection, Stripe not connected - test-drive' => [
@@ -487,6 +526,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				true,
+				false,
 				'init_stripe_onboarding',
 			],
 			'From Connect page - Jetpack connection, Stripe connected - test-drive' => [
@@ -495,7 +535,17 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				true,
+				false,
 				'overview_page',
+			],
+			'From Connect page - Jetpack connection, Stripe connected - test-drive, redirect to settings' => [
+				WC_Payments_Onboarding_Service::FROM_CONNECT_PAGE,
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE, // Some other original source.
+				true,
+				true,
+				true,
+				true,
+				'settings_page',
 			],
 			'From Woo Payments Settings - no Jetpack connection, Stripe connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
@@ -503,12 +553,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'connect_page',
 			],
 			'From Woo Payments Settings - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE,
 				true,
+				false,
 				false,
 				false,
 				'connect_page',
@@ -519,6 +571,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			'From Incentive page - no Jetpack connection, Stripe connected' => [
@@ -527,12 +580,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				false,
 				true,
 				false,
+				false,
 				'start_jetpack_connection',
 			],
 			'From Incentive page - Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_INCENTIVE,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				true,
+				false,
 				false,
 				false,
 				'onboarding_wizard',
@@ -543,12 +598,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				true,
 				false,
+				false,
 				'overview_page',
 			],
 			// This is a weird scenario that should not happen under normal circumstances.
 			'From Onboarding wizard - no Jetpack connection, Stripe not connected' => [
 				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				false,
 				false,
 				false,
 				false,
@@ -560,6 +617,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				true,
 				false,
 				false,
+				false,
 				'init_stripe_onboarding',
 			],
 			'From Onboarding wizard - Jetpack connection, Stripe connected' => [
@@ -567,6 +625,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
 				true,
 				true,
+				false,
 				false,
 				'overview_page',
 			],
@@ -594,29 +653,39 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
-		$this->cache_account_details(
-			[
-				'account_id'        => 'acc_test',
-				'is_live'           => false,
-				'details_submitted' => true, // Has finished initial KYC.
-				'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
-			]
-		);
+		// We have a test account.
+		$account = [
+			'account_id'        => 'acc_test',
+			'is_live'           => false,
+			'details_submitted' => true, // Has finished initial KYC.
+			'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
+		];
+		$this->mock_database_cache
+			->method( 'get_or_add' )
+			->willReturnCallback(
+				// Use a reference so we can empty the account array once delete_account is called.
+				function ( $key, $generator, $validator ) use ( &$account ) {
+					return $validator( $account ) ? $account : $generator();
+				}
+			);
+
 		// This should be in sync with the current account mode.
 		WC_Payments_Onboarding_Service::set_test_mode( true );
-
-		// We will use this so we can proceed after the account deletion step and
-		// avoid ending up in the "everything OK" scenario.
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( false );
 
 		// Assert.
 		// Test mode accounts get deleted.
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'delete_account' )
-			->with( true );
+			->with( true )
+			->willReturnCallback(
+				function () use ( &$account ) {
+					$account = [];
+				}
+			);
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'cleanup_on_account_reset' );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_onboarding_wizard' )
@@ -629,10 +698,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();
-
-		// Assert more.
-		// We should be in live mode now.
-		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
 	}
 
 	public function test_maybe_handle_onboarding_reset_account() {
@@ -662,6 +727,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// This should be in sync with the current account mode.
 		WC_Payments_Onboarding_Service::set_test_mode( false );
 
+		// The server needs to be connected.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
 		// Assert.
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -669,8 +739,54 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->with( false );
 		$this->mock_redirect_service
 			->expects( $this->once() )
-			->method( 'redirect_to_connect_page' )
-			->with( null, WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT, [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT ] );
+			->method( 'redirect_to_nox_flow' )
+			->with(
+				WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+				WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT,
+			);
+		// We should be in live mode now.
+		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_reset_account_with_no_cache_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page'] = 'wc-admin';
+		$_GET['path'] = '/payments/some-bogus-page';
+
+		// This is the flag indicating the account should be reset.
+		$_GET['wcpay-reset-account'] = 'true';
+
+		$this->cache_account_details( [] );
+		// This should be in sync with the current account mode.
+		WC_Payments_Onboarding_Service::set_test_mode( false );
+
+		// The server needs to be connected.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		// Assert.
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'delete_account' );
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_nox_flow' )
+			->with(
+				WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+				WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT
+			);
 		// We should be in live mode now.
 		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
 
@@ -692,10 +808,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['path']   = '/payments/some-bogus-page';
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter but be carried over.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
-		$_GET['test_drive']  = 'true';
-		$_GET['test_mode']   = '1'; // Some truthy value that will be carried over as `true`.
+		$_GET['promo']      = 'incentive_id';
+		$_GET['test_drive'] = 'true';
+		$_GET['test_mode']  = '1'; // Some truthy value that will be carried over as `true`.
 
 		// Even if we have connected account data, the Jetpack connection takes precedence.
 		$this->cache_account_details(
@@ -720,7 +835,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'wcpay-connect=connect-from' ),
 					$this->stringContains( 'wcpay-connect-jetpack-success=1' ),
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' ),
 					$this->stringContains( 'test_drive=true' ),
 					$this->stringContains( 'test_mode=true' ),
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION ),
@@ -748,8 +862,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
@@ -769,6 +882,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->method( 'redirect_to_connect_page' );
 		$this->mock_redirect_service
 			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
 
 		$this->mock_api_client
@@ -783,13 +899,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' )
 				),
 				$this->isType( 'array' ), // Site data.
 				$this->isType( 'array' ), // User data.
 				$this->isType( 'array' ), // Account data.
 				$this->isType( 'array' ), // Actioned notes.
-				true, // Progressive onboarding.
 				false // Collect payout requirements.
 			)
 			->willReturn( [ 'url' => 'https://connect.stripe.com/something' ] );
@@ -819,8 +933,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
@@ -838,6 +951,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
@@ -866,6 +982,79 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->maybe_handle_onboarding();
 	}
 
+	public function test_ensure_woopay_enabled_by_default_value_set_in_sandbox_mode_kyc() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Configure the request to be in sandbox mode.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		$_GET['test_mode']     = 'true';
+		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturn(
+				[
+					'url'                       => false,
+					'woopay_enabled_by_default' => true,
+				]
+			);
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'should_enable_woopay' )
+			->willReturn( true );
+
+		$original_value = get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		$this->assertFalse( $original_value );
+		$this->assertTrue( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
+	public function test_ensure_woopay_not_enabled_by_default_for_existing_live_accounts() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		// Configure the request to be in sandbox mode.
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
+
+		// The Jetpack connection is in working order.
+		$this->mock_jetpack_connection();
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturn(
+				[
+					'url'                       => false,
+					'woopay_enabled_by_default' => true,
+				]
+			);
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+
+		// Assert.
+		$this->assertFalse( get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT ) );
+	}
+
 	public function test_maybe_handle_onboarding_init_stripe_onboarding_existing_account() {
 		// Arrange.
 		// We need to be in the WP admin dashboard.
@@ -882,8 +1071,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set.
 		// It should end up as a live mode onboarding.
 
@@ -904,6 +1092,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->method( 'redirect_to_connect_page' );
 		$this->mock_redirect_service
 			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
 
 		$this->mock_api_client
@@ -918,13 +1109,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' )
 				),
 				$this->isType( 'array' ), // Site data.
 				$this->isType( 'array' ), // User data.
 				$this->isType( 'array' ), // Account data.
 				$this->isType( 'array' ), // Actioned notes.
-				true, // Progressive onboarding.
 				false // Collect payout requirements.
 			)
 			->willReturn( [ 'url' => false ] ); // This means that an account already exits on the platform.
@@ -940,7 +1129,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' ),
 					// It should have the connection success flag.
 					$this->stringContains( 'wcpay-connection-success=1' )
 				)
@@ -966,11 +1154,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 
-		// There isn't another onboarding started.
-		set_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT, true, 10 );
+		// There is another onboarding started.
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'is_onboarding_init_in_progress' )
+			->willReturn( true );
 
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
@@ -1024,6 +1214,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_overview_page' )
@@ -1082,6 +1275,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_overview_page' )
@@ -1142,6 +1338,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_overview_page' )
@@ -1599,14 +1798,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'no_get_params'                             => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[],
 			],
 			'missing_param'                             => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1615,7 +1814,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_param'                           => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1625,7 +1824,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'empty_path_param'                          => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1634,7 +1833,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_path_param'                      => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1644,7 +1843,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'server_not_connected'                      => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				false,
 				[
@@ -1654,7 +1853,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe not connected'                      => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1664,7 +1863,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe connected, but partially onboarded' => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1721,14 +1920,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'no_get_params'                            => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[],
 			],
 			'missing_param'                            => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1738,7 +1937,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_param'                          => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1749,7 +1948,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'server_not_connected'                     => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				false,
 				[
@@ -1760,7 +1959,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe_not_connected'                     => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1771,7 +1970,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe_connected_but_partially_onboarded' => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1783,7 +1982,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'happy_path'                               => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1952,14 +2151,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'no_get_params'                            => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[],
 			],
 			'missing_param'                            => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1968,7 +2167,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_param'                          => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1978,7 +2177,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'empty_path_param'                         => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1987,7 +2186,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_path_param'                     => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1997,7 +2196,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'server_not_connected'                     => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				false,
 				[
@@ -2007,7 +2206,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe_not_connected'                     => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -2017,7 +2216,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe_connected_but_partially_onboarded' => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2028,7 +2227,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'happy_path'                               => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2058,7 +2257,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Assert.
 		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_overview_page' );
-		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
 
 		// Act.
 		$_GET = [
@@ -2099,7 +2298,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
 		// Assert.
-		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_overview_page' );
 
 		// Act.
@@ -2893,6 +3092,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'instant_deposits_eligible' => true,
 		];
 
+		// Ensure option is not set before.
+		delete_option( 'wcpay_instant_deposits_previously_eligible' );
+
 		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
@@ -2900,6 +3102,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Test to see if scheduled action was created.
 		$this->assertTrue( $this->mock_action_scheduler_service->pending_action_exists( $action_hook ) );
+
+		// Test that the previously eligible option is set.
+		$this->assertTrue( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_note_not_eligible() {
@@ -2913,10 +3118,16 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'instant_deposits_eligible' => false,
 		];
 
+		// Ensure option is not set before.
+		delete_option( 'wcpay_instant_deposits_previously_eligible' );
+
 		$this->wcpay_account->handle_instant_deposits_inbox_note( $account );
 
 		$note_id = WC_Payments_Notes_Instant_Deposits_Eligible::NOTE_NAME;
 		$this->assertSame( [], ( WC_Data_Store::load( 'admin-note' ) )->get_notes_with_name( $note_id ) );
+
+		// Test that the previously eligible option is NOT set when ineligible.
+		$this->assertFalse( get_option( 'wcpay_instant_deposits_previously_eligible', false ) );
 	}
 
 	public function test_handle_instant_deposits_inbox_reminder_will_not_schedule_job_if_pending_action_exist() {
@@ -3133,6 +3344,91 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, $this->wcpay_account->get_tracking_info() );
 	}
 
+	public function test_get_recommended_payment_methods_unsupported_country() {
+		$this->assertSame( [], $this->wcpay_account->get_recommended_payment_methods( 'XZ' ) );
+	}
+
+	public function get_recommended_payment_methods_provider() {
+		return [
+			'No PMs suggested'                  => [ 'US', [], [] ],
+			'Invalid PMs array'                 => [
+				'US',
+				[
+					'type'    => 'available',
+					'enabled' => false,
+				],
+				[],
+			],
+			'Enabled flag and priority not set' => [
+				'US',
+				[
+					[
+						'id'    => 1,
+						'title' => 'test PM',
+						'type'  => 'available',
+					],
+					[
+						'id'    => 2,
+						'title' => 'test PM 2',
+						'type'  => 'available',
+					],
+				],
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 0,
+					],
+					[
+						'id'       => 2,
+						'title'    => 'test PM 2',
+						'type'     => 'available',
+						'enabled'  => false,
+						'priority' => 1,
+					],
+				],
+			],
+			'Enabled flag and priority set'     => [
+				'US',
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => true,
+						'priority' => 1,
+					],
+				],
+				[
+					[
+						'id'       => 1,
+						'title'    => 'test PM',
+						'type'     => 'available',
+						'enabled'  => true,
+						'priority' => 1,
+					],
+				],
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider get_recommended_payment_methods_provider
+	 */
+	public function test_get_recommended_payment_methods( $country_code, $recommended_pms, $expected ) {
+
+		$this->mock_empty_cache();
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'get_recommended_payment_methods' )
+			->with( $country_code )
+			->willReturn( $recommended_pms );
+
+		$this->assertSame( $expected, $this->wcpay_account->get_recommended_payment_methods( $country_code ) );
+	}
+
 	/**
 	 * Sets up the mocked cache to simulate that its empty and call the generator.
 	 */
@@ -3207,5 +3503,486 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
+	}
+
+	public function test_get_account_details_returns_null_when_empty() {
+		$this->cache_account_details( [] );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_null_when_missing_key() {
+		$cached_account_data = [
+			'is_live'        => true,
+			'some_other_key' => 'some_value',
+		];
+
+		$this->cache_account_details( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_null_when_invalid_structure() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$cached_account_data = [
+			'is_live'         => true,
+			'account_details' => [
+				'account_status' => [
+					'text'             => 'Active',
+					'background_color' => 'green',
+				],
+				// Missing payout_status - invalid structure.
+			],
+		];
+
+		$this->cache_account_details( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_valid_data_minimal() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$account_details = [
+			'account_status' => [
+				'text'             => 'Active',
+				'background_color' => 'green',
+			],
+			'payout_status'  => [
+				'text'             => 'Available',
+				'background_color' => 'green',
+				'icon'             => 'published',
+			],
+			'banner'         => null,
+		];
+
+		$cached_account_data = [
+			'is_live'         => true,
+			'account_details' => $account_details,
+		];
+
+		$this->cache_account_details( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertEquals( $account_details, $result );
+	}
+
+	public function test_get_account_details_returns_valid_data_with_banner() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$account_details = [
+			'account_status' => [
+				'text'             => 'Restricted',
+				'background_color' => 'red',
+			],
+			'payout_status'  => [
+				'text'             => 'Suspended',
+				'background_color' => 'red',
+				'icon'             => 'error',
+				'popover'          => [
+					'text'     => 'Account suspended',
+					'cta_text' => 'Learn more',
+					'cta_link' => 'https://example.com',
+				],
+			],
+			'banner'         => [
+				'text'             => 'Account needs attention',
+				'background_color' => 'yellow',
+				'cta_text'         => 'Fix now',
+				'cta_link'         => 'https://example.com/fix',
+				'icon'             => 'caution',
+			],
+		];
+
+		$cached_account_data = [
+			'is_live'         => true,
+			'account_details' => $account_details,
+		];
+
+		$this->cache_account_details( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertEquals( $account_details, $result );
+	}
+
+	public function test_store_setup_sync_returns_early_when_server_not_connected() {
+		// Arrange: Server is not connected.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( false );
+
+		// Assert: send_store_setup should not be called.
+		$this->mock_api_client->expects( $this->never() )
+			->method( 'send_store_setup' );
+
+		// Act: Call store_setup_sync.
+		$this->wcpay_account->store_setup_sync();
+	}
+
+	public function test_store_setup_sync_sends_store_setup_when_server_connected() {
+		// Arrange: Server is connected and gateway is available.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+
+		// Mock the gateway and its methods.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_gateway->method( 'get_form_fields' )->willReturn(
+			[
+				'payment_request_button_locations' => [
+					'options' => [
+						'product' => 'Product page',
+						'cart'    => 'Cart page',
+					],
+				],
+			]
+		);
+		$mock_gateway->method( 'get_upe_available_payment_methods' )->willReturn( [ 'card', 'bancontact', 'eps', 'ideal', 'p24', 'klarna', 'multibanco', 'alipay', 'wechat_pay' ] );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'klarna' ] );
+
+		$payment_method_capability_map = [
+			'card'       => 'card_payments',
+			'bancontact' => 'bancontact_payments',
+			'eps'        => 'eps_payments',
+			'ideal'      => 'ideal_payments',
+			'p24'        => 'p24_payments',
+			'klarna'     => 'klarna_payments',
+			'multibanco' => 'multibanco_payments',
+			'alipay'     => 'alipay_payments',
+			'wechat_pay' => 'wechat_payments',
+		];
+		$mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn( $payment_method_capability_map );
+		$mock_gateway->method( 'find_duplicates' )->willReturn( [ 'card' => [ 'woocommerce_payments', 'some_other_gateway' ] ] );
+		$mock_gateway->method( 'get_option' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				$options = [
+					'express_checkout_in_payment_methods'  => 'yes',
+					'manual_capture'                       => 'no',
+					'enable_logging'                       => 'no',
+					'payment_request_button_type'          => 'default',
+					'payment_request_button_size'          => 'default',
+					'payment_request_button_theme'         => 'dark',
+					'payment_request_button_border_radius' => '4',
+					'platform_checkout_store_logo'         => '',
+					'platform_checkout_custom_message'     => '',
+					'express_checkout_product_methods'     => [ 'payment_request', 'woopay' ],
+					'express_checkout_cart_methods'        => [ 'payment_request', 'woopay' ],
+					'express_checkout_checkout_methods'    => [],
+				];
+				return $options[ $key ] ?? $default;
+			}
+		);
+		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );
+		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( true );
+
+		// Replace the real gateway with the mock.
+		WC_Payments::set_gateway( $mock_gateway );
+
+		// Set the account mode to test mode.
+		WC_Payments::mode()->test();
+		// Set the onboarding to test mode.
+		WC_Payments::mode()->test_mode_onboarding();
+
+		// Capture the argument passed to send_store_setup.
+		$captured_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'send_store_setup' )
+			->with(
+				$this->callback(
+					function ( $data ) use ( &$captured_data ) {
+						$captured_data = $data;
+
+						return is_array( $data );
+					}
+				)
+			);
+
+		// Act: Call store_setup_sync.
+		$this->wcpay_account->store_setup_sync();
+
+		$this->assertIsArray( $captured_data, 'Expected send_store_setup to be called with an array argument.' );
+		// Assert: Verify that the data structure contains expected top-level keys.
+		$this->assertArrayHasKey( 'gateway', $captured_data );
+		$this->assertArrayHasKey( 'payment_methods', $captured_data );
+		$this->assertArrayHasKey( 'provider_capabilities', $captured_data );
+		$this->assertArrayHasKey( 'express_checkout_in_payment_methods_enabled', $captured_data );
+		$this->assertArrayHasKey( 'saved_cards_enabled', $captured_data );
+		$this->assertArrayHasKey( 'manual_capture_enabled', $captured_data );
+		$this->assertArrayHasKey( 'debug_log_enabled', $captured_data );
+		$this->assertArrayHasKey( 'woopay', $captured_data );
+		$this->assertArrayHasKey( 'multi_currency_enabled', $captured_data );
+		$this->assertArrayHasKey( 'stripe_billing_enabled', $captured_data );
+		$this->assertArrayHasKey( 'plugin', $captured_data );
+		$this->assertArrayHasKey( 'wp_setup', $captured_data );
+		$this->assertArrayHasKey( 'wc_setup', $captured_data );
+
+		// Assert: Verify gateway sub-entries and values.
+		$this->assertArrayHasKey( 'enabled', $captured_data['gateway'] );
+		$this->assertArrayHasKey( 'test_mode', $captured_data['gateway'] );
+		$this->assertArrayHasKey( 'test_mode_onboarding', $captured_data['gateway'] );
+		$this->assertTrue( $captured_data['gateway']['enabled'] );
+		$this->assertTrue( $captured_data['gateway']['test_mode'] );
+		$this->assertTrue( $captured_data['gateway']['test_mode_onboarding'] );
+
+		// Assert: Verify payment_methods sub-entries and values.
+		$this->assertArrayHasKey( 'available', $captured_data['payment_methods'] );
+		$this->assertArrayHasKey( 'enabled', $captured_data['payment_methods'] );
+		$this->assertArrayHasKey( 'disabled', $captured_data['payment_methods'] );
+		$this->assertArrayHasKey( 'duplicates', $captured_data['payment_methods'] );
+		$this->assertEquals( [ 'card', 'bancontact', 'eps', 'ideal', 'p24', 'klarna', 'multibanco', 'alipay', 'wechat_pay' ], $captured_data['payment_methods']['available'] );
+		$this->assertEquals( [ 'card', 'klarna' ], $captured_data['payment_methods']['enabled'] );
+		$this->assertEquals( [ 'bancontact', 'eps', 'ideal', 'p24', 'multibanco', 'alipay', 'wechat_pay' ], $captured_data['payment_methods']['disabled'] );
+		$this->assertEquals( [ 'card' => [ 'woocommerce_payments', 'some_other_gateway' ] ], $captured_data['payment_methods']['duplicates'] );
+
+		// Assert: Verify provider_capabilities sub-entries and values.
+		$this->assertArrayHasKey( 'available', $captured_data['provider_capabilities'] );
+		$this->assertArrayHasKey( 'enabled', $captured_data['provider_capabilities'] );
+		$this->assertArrayHasKey( 'disabled', $captured_data['provider_capabilities'] );
+		$this->assertContains( $payment_method_capability_map['card'], $captured_data['provider_capabilities']['available'] );
+		$this->assertContains( $payment_method_capability_map['klarna'], $captured_data['provider_capabilities']['available'] );
+		$this->assertEquals( [ $payment_method_capability_map['card'], $payment_method_capability_map['klarna'] ], $captured_data['provider_capabilities']['enabled'] );
+		$this->assertEquals(
+			array_values(
+				array_diff(
+					$payment_method_capability_map,
+					[ $payment_method_capability_map['card'], $payment_method_capability_map['klarna'] ]
+				)
+			),
+			$captured_data['provider_capabilities']['disabled']
+		);
+
+		// Assert: Verify simple boolean/string values match mocked data.
+		$this->assertEquals( 'yes', $captured_data['express_checkout_in_payment_methods_enabled'] );
+		$this->assertTrue( $captured_data['saved_cards_enabled'] );
+		$this->assertFalse( $captured_data['manual_capture_enabled'] );
+		$this->assertFalse( $captured_data['debug_log_enabled'] );
+
+		// Assert: Verify payment_request sub-entries and values.
+		$this->assertArrayHasKey( 'enabled', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'enabled_locations', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'button_type', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'button_size', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'button_theme', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'button_border_radius', $captured_data['payment_request'] );
+		$this->assertTrue( $captured_data['payment_request']['enabled'] );
+		$this->assertEquals( [ 'product', 'cart' ], $captured_data['payment_request']['enabled_locations'] ); // payment_request is in product and cart, not checkout.
+		$this->assertEquals( 'default', $captured_data['payment_request']['button_type'] );
+		$this->assertEquals( 'default', $captured_data['payment_request']['button_size'] );
+		$this->assertEquals( 'dark', $captured_data['payment_request']['button_theme'] );
+		$this->assertEquals( '4', $captured_data['payment_request']['button_border_radius'] );
+
+		// Assert: Verify woopay sub-entries and values.
+		$this->assertArrayHasKey( 'enabled', $captured_data['woopay'] );
+		$this->assertArrayHasKey( 'enabled_locations', $captured_data['woopay'] );
+		$this->assertArrayHasKey( 'store_logo', $captured_data['woopay'] );
+		$this->assertArrayHasKey( 'custom_message', $captured_data['woopay'] );
+		$this->assertArrayHasKey( 'invalid_extension_found', $captured_data['woopay'] );
+		$this->assertEquals( [ 'product', 'cart' ], $captured_data['woopay']['enabled_locations'] );
+		$this->assertEquals( '', $captured_data['woopay']['store_logo'] );
+		$this->assertEquals( '', $captured_data['woopay']['custom_message'] );
+
+		// Assert: Verify plugin sub-entries.
+		$this->assertArrayHasKey( 'version', $captured_data['plugin'] );
+		$this->assertArrayHasKey( 'activation_timestamp', $captured_data['plugin'] );
+
+		// Assert: Verify wp_setup sub-entries.
+		$this->assertArrayHasKey( 'name', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'url', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'active_theme', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'active_plugins', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'version', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'locale', $captured_data['wp_setup'] );
+		$this->assertSame( get_bloginfo( 'name' ), $captured_data['wp_setup']['name'] );
+		$this->assertSame( get_bloginfo( 'url' ), $captured_data['wp_setup']['url'] );
+		$this->assertSame( get_bloginfo( 'version' ), $captured_data['wp_setup']['version'] );
+		$this->assertSame( get_locale(), $captured_data['wp_setup']['locale'] );
+
+		// Assert: Verify wc_setup sub-entries.
+		$this->assertArrayHasKey( 'version', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'store_id', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'currency', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'tracking_enabled', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'registered_payment_gateways', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'enabled_payment_gateways', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'wc_subscriptions_active', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'wc_subscriptions_version', $captured_data['wc_setup'] );
+	}
+
+	public function test_store_setup_sync_handles_exception_gracefully() {
+		// Arrange: Server is connected but send_store_setup throws an exception.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+
+		// Mock the gateway.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_gateway->method( 'get_form_fields' )->willReturn(
+			[
+				'payment_request_button_locations' => [
+					'options' => [
+						'product' => 'Product page',
+					],
+				],
+			]
+		);
+		$mock_gateway->method( 'get_upe_available_payment_methods' )->willReturn( [ 'card' ] );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+		$mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn( [ 'card' => 'card_payments' ] );
+		$mock_gateway->method( 'find_duplicates' )->willReturn( [] );
+		$mock_gateway->method( 'get_option' )->willReturn( 'yes' );
+		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );
+
+		// Replace the real gateway with the mock.
+		WC_Payments::set_gateway( $mock_gateway );
+
+		// Mock send_store_setup to throw an exception.
+		$exception = new Exception( 'API Error' );
+		$this->mock_api_client->method( 'send_store_setup' )
+			->willThrowException( $exception );
+
+		// Act: Call store_setup_sync - it should not throw the exception.
+		// The exception should be caught and logged internally.
+		$this->wcpay_account->store_setup_sync();
+
+		// Assert: If we reach here without an exception being thrown, the test passes.
+		// The method should handle the exception gracefully.
+		$this->assertTrue( true );
+	}
+
+	public function test_store_setup_sync_handles_gateway_not_available() {
+		// Arrange: Server is connected but gateway is not available.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+
+		// Mock WC_Payments to return null gateway.
+		WC_Payments::set_gateway( null );
+
+		// Assert: send_store_setup should be called with empty array when gateway is not available.
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'send_store_setup' )
+			->with( [] );
+
+		// Act: Call store_setup_sync.
+		$this->wcpay_account->store_setup_sync();
+	}
+
+	/**
+	 * Data provider for test_is_review_prompt_eligible.
+	 *
+	 * @return array
+	 */
+	public function provider_is_review_prompt_eligible() {
+		return [
+			'eligible when flag is true'        => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => true,
+				],
+				true,
+			],
+			'not eligible when flag is false'   => [
+				[
+					'account_id'                        => 'acc_test',
+					'is_live'                           => true,
+					'eligibility_review_prompt_phase_0' => false,
+				],
+				false,
+			],
+			'not eligible when flag not set'    => [
+				[
+					'account_id' => 'acc_test',
+					'is_live'    => true,
+				],
+				false,
+			],
+			'not eligible when no account data' => [
+				[],
+				false,
+			],
+		];
+	}
+
+	/**
+	 * Test is_review_prompt_eligible method with various account data scenarios.
+	 *
+	 * @dataProvider provider_is_review_prompt_eligible
+	 *
+	 * @param array $account_data The account data to cache.
+	 * @param bool  $expected     The expected eligibility result.
+	 */
+	public function test_is_review_prompt_eligible( $account_data, $expected ) {
+		// Arrange: Mock server connection and cache account data.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$this->cache_account_details( $account_data );
+
+		// Act.
+		$result = $this->wcpay_account->is_review_prompt_eligible();
+
+		// Assert.
+		$this->assertSame( $expected, $result );
+	}
+
+	public function test_get_cached_account_data_sends_woocommerce_store_id() {
+		$store_id = 'test-store-uuid-5678';
+		update_option( 'woocommerce_store_id', $store_id );
+
+		$this->mock_jetpack_connection();
+		$this->mock_empty_cache();
+
+		$request_mock = $this->mock_wcpay_request( Get_Account::class );
+		$request_mock
+			->expects( $this->once() )
+			->method( 'set_woocommerce_store_id' )
+			->with( $store_id );
+		$request_mock
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_test_',
+						'test_publishable_key'     => 'pk_live_',
+						'has_pending_requirements' => false,
+						'current_deadline'         => 0,
+						'is_live'                  => true,
+					]
+				)
+			);
+
+		$this->wcpay_account->get_cached_account_data();
+	}
+
+	public function test_get_cached_account_data_sends_empty_store_id_when_option_missing() {
+		delete_option( 'woocommerce_store_id' );
+
+		$this->mock_jetpack_connection();
+		$this->mock_empty_cache();
+
+		$request_mock = $this->mock_wcpay_request( Get_Account::class );
+		$request_mock
+			->expects( $this->once() )
+			->method( 'set_woocommerce_store_id' )
+			->with( '' );
+		$request_mock
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				new Response(
+					[
+						'account_id'               => 'acc_test',
+						'live_publishable_key'     => 'pk_test_',
+						'test_publishable_key'     => 'pk_live_',
+						'has_pending_requirements' => false,
+						'current_deadline'         => 0,
+						'is_live'                  => true,
+					]
+				)
+			);
+
+		$this->wcpay_account->get_cached_account_data();
 	}
 }

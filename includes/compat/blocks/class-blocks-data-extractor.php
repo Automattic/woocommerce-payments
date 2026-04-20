@@ -42,21 +42,15 @@ class Blocks_Data_Extractor {
 	private function get_available_blocks() {
 		$blocks = [];
 		if ( class_exists( '\AutomateWoo\Blocks\Marketing_Optin_Block' ) ) {
-			// phpcs:ignore
-			/**
-			 * @psalm-suppress UndefinedClass
-			 * @phpstan-ignore-next-line
-			 */
 			$blocks[] = new \Automatewoo\Blocks\Marketing_Optin_Block();
 		}
 
 		if ( class_exists( '\Mailchimp_Woocommerce_Newsletter_Blocks_Integration' ) ) {
-			// phpcs:ignore
-			/**
-			 * @psalm-suppress UndefinedClass
-			 * @phpstan-ignore-next-line
-			 */
 			$blocks[] = new \Mailchimp_Woocommerce_Newsletter_Blocks_Integration();
+		}
+
+		if ( class_exists( '\WCK\Blocks\CheckoutIntegration' ) ) {
+			$blocks[] = new \WCK\Blocks\CheckoutIntegration();
 		}
 
 		return $blocks;
@@ -93,21 +87,9 @@ class Blocks_Data_Extractor {
 	 * @return array
 	 */
 	private function get_mailpoet_data() {
-		// phpcs:ignore
-		/**
-		 * We check whether relevant MailPoet classes exists before invoking this method.
-		 *
-		 * @psalm-suppress UndefinedClass
-		 * @phpstan-ignore-next-line
-		 */
 		$mailpoet_wc_subscription = \MailPoet\DI\ContainerWrapper::getInstance()->get( \MailPoet\WooCommerce\Subscription::class );
-		// phpcs:ignore
-		/**
-		 * @psalm-suppress UndefinedClass
-		 * @phpstan-ignore-next-line
-		 */
-		$settings_instance = \MailPoet\Settings\SettingsController::getInstance();
-		$settings          = [
+		$settings_instance        = \MailPoet\Settings\SettingsController::getInstance();
+		$settings                 = [
 			'defaultText'   => $settings_instance->get( 'woocommerce.optin_on_checkout.message', '' ),
 			'optinEnabled'  => $settings_instance->get( 'woocommerce.optin_on_checkout.enabled', false ),
 			'defaultStatus' => false,

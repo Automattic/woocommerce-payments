@@ -20,10 +20,8 @@ const RefundConfirmationModal = ( {
 	formattedRefundAmount,
 	refundedAmount,
 } ) => {
-	const [
-		isRefundConfirmationModalOpen,
-		setIsRefundConfirmationModalOpen,
-	] = useState( true );
+	const [ isRefundConfirmationModalOpen, setIsRefundConfirmationModalOpen ] =
+		useState( true );
 
 	const blockUI = () => {
 		jQuery( '.refund-confirmation-modal' ).block( {
@@ -99,10 +97,18 @@ const RefundConfirmationModal = ( {
 					className="refund-confirmation-modal"
 					actions={
 						<>
-							<Button isSecondary onClick={ handleRefundCancel }>
+							<Button
+								variant="secondary"
+								onClick={ handleRefundCancel }
+								__next40pxDefaultSize
+							>
 								{ __( 'Cancel', 'woocommerce-payments' ) }
 							</Button>
-							<Button isPrimary onClick={ handleRefundConfirm }>
+							<Button
+								variant="primary"
+								onClick={ handleRefundConfirm }
+								__next40pxDefaultSize
+							>
 								{ sprintf(
 									__( 'Refund %s', 'woocommerce-payments' ),
 									formattedRefundAmount
@@ -115,7 +121,7 @@ const RefundConfirmationModal = ( {
 						{ sprintf(
 							/* translators: %s: WooPayments */
 							__(
-								"Issue a full refund back to your customer's credit card using %s. " +
+								"Issue a full refund back to your customer's payment method using %s. " +
 									'This action can not be undone. To issue a partial refund, click "Cancel", and use ' +
 									'the "Refund" button in the order details below.',
 								'woocommerce-payments'

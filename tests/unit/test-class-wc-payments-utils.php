@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
+use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_Payments_Utils unit tests.
@@ -931,12 +932,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $result );
 	}
 
-	public function test_get_cached_minimum_amount_returns_amount_fallbacking_from_stripe_list() {
-		delete_transient( 'wcpay_minimum_amount_usd' );
-		$result = WC_Payments_Utils::get_cached_minimum_amount( 'usd', true );
-		$this->assertSame( 50, $result );
-	}
-
 	public function test_get_last_refund_from_order_id_returns_correct_refund() {
 		$order    = WC_Helper_Order::create_order();
 		$refund_1 = wc_create_refund( [ 'order_id' => $order->get_id() ] );
@@ -1048,55 +1043,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 400, WC_Payments_Utils::get_filtered_error_status_code( new \WCPay\Exceptions\API_Exception( 'Error: Your card was declined.', 'card_declined', 402 ) ) );
 	}
 
-	private function delete_appearance_theme_transients( $transients ) {
-		foreach ( $transients as $location => $contexts ) {
-			foreach ( $contexts as $context => $transient ) {
-				delete_transient( $transient );
-			}
-		}
-	}
-
-	private function set_appearance_theme_transients( $transients ) {
-		foreach ( $transients as $location => $contexts ) {
-			foreach ( $contexts as $context => $transient ) {
-				set_transient( $transient, $location . '_' . $context . '_value', DAY_IN_SECONDS );
-			}
-		}
-	}
-
-	public function test_get_active_upe_theme_transient_for_location() {
-		$theme_transients = \WC_Payment_Gateway_WCPay::APPEARANCE_THEME_TRANSIENTS;
-
-		// Test with no transients set.
-		$this->assertSame( 'stripe', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'checkout', 'blocks' ) );
-
-		// Set the transients.
-		$this->set_appearance_theme_transients( $theme_transients );
-
-		// Test with transients set.
-		// Test with invalid location.
-		$this->assertSame( 'checkout_blocks_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'invalid_location', 'blocks' ) );
-
-		// Test with valid location and invalid context.
-		$this->assertSame( 'checkout_blocks_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( 'checkout', 'invalid_context' ) );
-
-		// Test with valid location and context.
-		foreach ( $theme_transients as $location => $contexts ) {
-			foreach ( $contexts as $context => $transient ) {
-				// Our transient for the product page is the same transient for both block and classic.
-				if ( 'product_page' === $location ) {
-					$this->assertSame( 'product_page_classic_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, 'blocks' ) );
-					$this->assertSame( 'product_page_classic_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, 'classic' ) );
-				} else {
-					$this->assertSame( $location . '_' . $context . '_value', WC_Payments_Utils::get_active_upe_theme_transient_for_location( $location, $context ) );
-				}
-			}
-		}
-
-		// Remove the transients.
-		$this->delete_appearance_theme_transients( $theme_transients );
-	}
-
 	public function test_is_store_api_request_with_store_api_request() {
 		$_SERVER['REQUEST_URI'] = '/index.php';
 		$_REQUEST['rest_route'] = '/wc/store/v1/checkout';
@@ -1115,8 +1061,372 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_is_store_api_request_with_malformed_url() {
-		$_SERVER['REQUEST_URI'] = '///wp-json/wp/v2/users';
+		$_SERVER['REQUEST_URI'] = '///wp-json/wc/store/v1/checkout';
 
 		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_store_api_request_with_url_with_no_path() {
+		$_SERVER['REQUEST_URI'] = '?something';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		$_SERVER['REQUEST_URI'] = '';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_store_api_request_with_multisite_subdirectory() {
+		// Test multisite subdirectory setup where the path includes the site subdirectory.
+		$_SERVER['REQUEST_URI'] = '/child-1/wp-json/wc/store/v1/cart/add-item';
+		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+
+		// Test multisite subdirectory with non-store API endpoint.
+		$_SERVER['REQUEST_URI'] = '/child-1/wp-json/wp/v2/posts';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		// Test deeply nested subdirectory.
+		$_SERVER['REQUEST_URI'] = '/network/child-site/wp-json/wc/store/v1/cart';
+		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+	}
+
+	public function test_is_any_bnpl_supporting_country() {
+		// Test supported country and currency combination (US with USD).
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[ 'afterpay_clearpay', 'klarna' ],
+				'US',
+				'USD'
+			)
+		);
+
+		// Test unsupported country and currency combination.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[ 'afterpay_clearpay', 'klarna' ],
+				'CN',
+				'CNY'
+			)
+		);
+
+		// Test with empty enabled methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_supporting_country(
+				[],
+				'US',
+				'USD'
+			)
+		);
+	}
+
+	public function test_is_any_bnpl_method_available() {
+		// Price within range for Afterpay/Clearpay in the US.
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay' ],
+				'US',
+				'USD',
+				100
+			)
+		);
+
+		// Price within range for Klarna in the US.
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'klarna' ],
+				'US',
+				'USD',
+				500
+			)
+		);
+
+		// Price below minimum for all methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'USD',
+				0.50
+			)
+		);
+
+		// Price above maximum for all methods.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'USD',
+				4000000
+			)
+		);
+
+		// Unsupported country.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'RU',
+				'RUB',
+				100
+			)
+		);
+
+		// Unsupported currency.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay', 'klarna', 'affirm' ],
+				'US',
+				'JPY',
+				100
+			)
+		);
+
+		// Empty enabled methods array.
+		$this->assertFalse(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[],
+				'US',
+				'USD',
+				100
+			)
+		);
+
+		// Different country, same currency (Afterpay/Clearpay in Canada).
+		$this->assertTrue(
+			WC_Payments_Utils::is_any_bnpl_method_available(
+				[ 'afterpay_clearpay' ],
+				'CA',
+				'CAD',
+				100
+			)
+		);
+	}
+
+	/**
+	 * @dataProvider provider_get_dispute_reason_description
+	 */
+	public function test_get_dispute_reason_description( string $reason, string $expected ) {
+		$result = WC_Payments_Utils::get_dispute_reason_description( $reason );
+		$this->assertEquals( $expected, $result );
+	}
+
+	public function provider_get_dispute_reason_description(): array {
+		return [
+			'bank_cannot_process'       => [ 'bank_cannot_process', 'Bank cannot process' ],
+			'check_returned'            => [ 'check_returned', 'Check returned' ],
+			'credit_not_processed'      => [ 'credit_not_processed', 'Credit not processed' ],
+			'customer_initiated'        => [ 'customer_initiated', 'Customer initiated' ],
+			'debit_not_authorized'      => [ 'debit_not_authorized', 'Debit not authorized' ],
+			'duplicate'                 => [ 'duplicate', 'Duplicate' ],
+			'fraudulent'                => [ 'fraudulent', 'Transaction unauthorized' ],
+			'incorrect_account_details' => [ 'incorrect_account_details', 'Incorrect account details' ],
+			'insufficient_funds'        => [ 'insufficient_funds', 'Insufficient funds' ],
+			'product_not_received'      => [ 'product_not_received', 'Product not received' ],
+			'product_unacceptable'      => [ 'product_unacceptable', 'Product unacceptable' ],
+			'subscription_canceled'     => [ 'subscription_canceled', 'Subscription canceled' ],
+			'unrecognized'              => [ 'unrecognized', 'Unrecognized' ],
+			'noncompliant'              => [ 'noncompliant', 'Non-compliant' ],
+			'general'                   => [ 'general', 'General' ],
+			'default case'              => [ 'unknown_reason', 'General' ],
+		];
+	}
+
+	/**
+	 * Test that get_localized_messages returns an array of known Stripe error codes.
+	 */
+	public function test_get_localized_messages_returns_expected_keys() {
+		$messages = WC_Payments_Utils::get_localized_messages();
+
+		$this->assertIsArray( $messages );
+
+		// Verify a subset of expected keys exist.
+		$expected_keys = [
+			'expired_card',
+			'card_declined',
+			'incorrect_cvc',
+			'insufficient_funds',
+			'processing_error',
+			'incorrect_number',
+			'invalid_expiry_year',
+		];
+
+		foreach ( $expected_keys as $key ) {
+			$this->assertArrayHasKey( $key, $messages, "Missing expected error code: $key" );
+			$this->assertNotEmpty( $messages[ $key ], "Empty message for error code: $key" );
+		}
+	}
+
+	/**
+	 * Test that get_localized_messages is filterable via wcpay_localized_messages.
+	 */
+	public function test_get_localized_messages_is_filterable() {
+		$filter = function ( $messages ) {
+			$messages['custom_error'] = 'Custom error message';
+			return $messages;
+		};
+
+		add_filter( 'wcpay_localized_messages', $filter );
+		$messages = WC_Payments_Utils::get_localized_messages();
+		remove_filter( 'wcpay_localized_messages', $filter );
+
+		$this->assertArrayHasKey( 'custom_error', $messages );
+		$this->assertEquals( 'Custom error message', $messages['custom_error'] );
+	}
+
+	/**
+	 * Test that a card error with a known error code returns the localized message.
+	 */
+	public function test_get_filtered_error_message_card_error_known_code_returns_localized() {
+		$exception = new API_Exception(
+			'Error: Your card has expired.',
+			'expired_card',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card has expired.', $result );
+	}
+
+	/**
+	 * Test that a card_declined error with a known decline_code returns the localized message.
+	 *
+	 * Stripe returns some decline reasons (e.g. insufficient_funds) as decline_code
+	 * with error.code = "card_declined". The lookup must check decline_code as a fallback.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_known_decline_code_returns_localized() {
+		// API_Exception constructor: message, error_code, http_code, error_type, decline_code.
+		$exception = new API_Exception(
+			'Error: Your card has insufficient funds.',
+			'card_declined',
+			400,
+			'card_error',
+			'insufficient_funds'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card has insufficient funds.', $result );
+	}
+
+	/**
+	 * Test that a card_declined error with authentication_required decline_code returns a specific message.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_authentication_required_returns_localized() {
+		$exception = new API_Exception(
+			'Error: Your card was declined.',
+			'card_declined',
+			400,
+			'card_error',
+			'authentication_required'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card was declined because additional authentication is required. Please contact your card issuer or try a different payment method.', $result );
+	}
+
+	/**
+	 * Test that a card_declined error with an unknown decline_code returns the card_declined localized message.
+	 */
+	public function test_get_filtered_error_message_card_declined_with_unknown_decline_code_returns_card_declined() {
+		$exception = new API_Exception(
+			'Error: Your card was declined.',
+			'card_declined',
+			400,
+			'card_error',
+			'unknown_decline_reason'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Your card was declined.', $result );
+	}
+
+	/**
+	 * Test that a card error with an unknown error code falls back to the raw message.
+	 */
+	public function test_get_filtered_error_message_card_error_unknown_code_returns_raw() {
+		$exception = new API_Exception(
+			'Error: Some unknown card error.',
+			'unknown_card_code',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'Error: Some unknown card error.', $result );
+	}
+
+	/**
+	 * Test that a non-card API error still returns the generic message.
+	 */
+	public function test_get_filtered_error_message_non_card_error_returns_generic() {
+		$exception = new API_Exception(
+			'Error: Some API error.',
+			'some_api_error',
+			400,
+			'api_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( "We're not able to process this request. Please refresh the page and try again.", $result );
+	}
+
+	/**
+	 * Test that the incorrect_zip card error still returns the custom postal code message.
+	 */
+	public function test_get_filtered_error_message_incorrect_zip_returns_custom_message() {
+		$exception = new API_Exception(
+			'Error: Zip code validation failed.',
+			'incorrect_zip',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		$this->assertEquals( 'We couldn' . "\xE2\x80\x99" . 't verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.', $result );
+	}
+
+	/**
+	 * Test that incorrect_zip with blocked_by_fraud_rules preserves raw message.
+	 */
+	public function test_get_filtered_error_message_incorrect_zip_blocked_by_fraud_returns_raw() {
+		$exception = new API_Exception(
+			'Error: Zip code validation failed.',
+			'incorrect_zip',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception, true );
+
+		$this->assertEquals( 'Error: Zip code validation failed.', $result );
+	}
+
+	/**
+	 * Test that the wcpay_localized_messages filter can override messages in get_filtered_error_message.
+	 */
+	public function test_get_filtered_error_message_respects_filter() {
+		$filter = function ( $messages ) {
+			$messages['expired_card'] = 'Custom: card expired';
+			return $messages;
+		};
+
+		add_filter( 'wcpay_localized_messages', $filter );
+
+		$exception = new API_Exception(
+			'Error: Your card has expired.',
+			'expired_card',
+			400,
+			'card_error'
+		);
+
+		$result = WC_Payments_Utils::get_filtered_error_message( $exception );
+
+		remove_filter( 'wcpay_localized_messages', $filter );
+
+		$this->assertEquals( 'Error: Custom: card expired', $result );
 	}
 }

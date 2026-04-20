@@ -11,9 +11,16 @@ import { select } from '@wordpress/data';
  * Internal dependencies
  */
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import {
+	getCachedAppearance,
+	setCachedAppearance,
+	dispatchAppearanceEvent,
+} from 'wcpay/utils/appearance-cache';
+import { useStripeAsync } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'utils/checkout';
 import WCPayAPI from '../../checkout/api';
 import request from '../../checkout/utils/request';
+
 import { useEffect, useState } from 'react';
 
 // Create an API object, which will be used throughout the checkout.
@@ -41,27 +48,32 @@ const normalizeAmount = ( amount, decimalPlaces = 2 ) => {
 const { ExperimentalOrderMeta } = window.wc.blocksCheckout;
 
 const ProductDetail = ( { cart, context } ) => {
-	const [ appearance, setAppearance ] = useState(
-		getUPEConfig( 'upeBnplCartBlockAppearance' ) || {}
+	const [ appearance, setAppearance ] = useState( () =>
+		getCachedAppearance(
+			'bnpl_cart_block',
+			getUPEConfig( 'stylesCacheVersion' )
+		)
 	);
-
 	const [ fontRules ] = useState( getFontRulesFromPage() );
 
 	useEffect( () => {
-		async function generateUPEAppearance() {
-			// Generate UPE input styles.
-			let upeAppearance = getAppearance( 'bnpl_cart_block' );
-			upeAppearance = await api.saveUPEAppearance(
-				upeAppearance,
-				'bnpl_cart_block'
+		if ( ! appearance ) {
+			const computed = getAppearance( 'bnpl_cart_block' );
+			dispatchAppearanceEvent( computed, 'bnpl_cart_block' );
+			setCachedAppearance(
+				'bnpl_cart_block',
+				getUPEConfig( 'stylesCacheVersion' ),
+				computed
 			);
-			setAppearance( upeAppearance );
-		}
-
-		if ( Object.keys( appearance ).length === 0 ) {
-			generateUPEAppearance();
+			setAppearance( computed );
 		}
 	}, [ appearance ] );
+
+	const stripe = useStripeAsync( api );
+
+	if ( ! stripe ) {
+		return null;
+	}
 
 	if ( Object.keys( appearance ).length === 0 ) {
 		return null;
@@ -76,11 +88,16 @@ const ProductDetail = ( { cart, context } ) => {
 		wcSettings.currency.precision
 	);
 
-	const {
-		country,
-		paymentMethods,
-		currencyCode,
-	} = window.wcpayStripeSiteMessaging;
+	if ( ! window.wcpayStripeSiteMessaging ) {
+		return null;
+	}
+
+	const { country, paymentMethods, currencyCode, shouldInitializePMME } =
+		window.wcpayStripeSiteMessaging;
+
+	if ( ! shouldInitializePMME ) {
+		return null;
+	}
 
 	const amount = parseInt( cartTotal, 10 ) || 0;
 
@@ -90,8 +107,6 @@ const ProductDetail = ( { cart, context } ) => {
 		paymentMethodTypes: paymentMethods || [],
 		countryCode: country, // Customer's country or base country of the store.
 	};
-
-	const stripe = api.getStripe();
 
 	return (
 		<div className="wc-block-components-bnpl-wrapper">

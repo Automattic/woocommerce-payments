@@ -23,14 +23,11 @@ interface OrderItemsThresholdCustomFormProps {
 	setting: string;
 }
 
-const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProps > = ( {
-	setting,
-} ) => {
-	const {
-		protectionSettingsUI,
-		setProtectionSettingsUI,
-		setIsDirty,
-	} = useContext( FraudPreventionSettingsContext );
+const OrderItemsThresholdCustomForm: React.FC<
+	OrderItemsThresholdCustomFormProps
+> = ( { setting } ) => {
+	const { protectionSettingsUI, setProtectionSettingsUI, setIsDirty } =
+		useContext( FraudPreventionSettingsContext );
 
 	const settingUI = useMemo(
 		() =>
@@ -65,18 +62,16 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
-			<strong>Limits</strong>
+			<strong>{ __( 'Limits', 'woocommerce-payments' ) }</strong>
 			<div className="fraud-protection-rule-toggle-children-horizontal-form">
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
-					<label htmlFor="fraud-protection-order-items-minimum">
-						{ __(
+					<TextControl
+						label={ __(
 							'Minimum items per order',
 							'woocommerce-payments'
 						) }
-					</label>
-					<TextControl
-						id={ 'fraud-protection-order-items-minimum' }
-						placeholder={ '0' }
+						id="fraud-protection-order-items-minimum"
+						placeholder="0"
 						value={ minItemsCount }
 						type="number"
 						onChange={ handleInputChange( 'min_items' ) }
@@ -89,18 +84,18 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 						min="1"
 						step="1"
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
-					<label htmlFor="fraud-protection-order-items-maximum">
-						{ __(
+					<TextControl
+						label={ __(
 							'Maximum items per order',
 							'woocommerce-payments'
 						) }
-					</label>
-					<TextControl
-						id={ 'fraud-protection-order-items-maximum' }
-						placeholder={ '0' }
+						id="fraud-protection-order-items-maximum"
+						placeholder="0"
 						type="number"
 						value={ maxItemsCount }
 						onChange={ handleInputChange( 'max_items' ) }
@@ -113,13 +108,14 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 						min="1"
 						step="1"
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				</div>
 			</div>
 			{ isItemRangeEmpty && (
-				<div>
-					<br />
-					<FraudProtectionRuleCardNotice type={ 'warning' }>
+				<div className="fraud-protection-rule-toggle-children-notice">
+					<FraudProtectionRuleCardNotice type="warning">
 						{ __(
 							'An item range must be set for this filter to take effect.',
 							'woocommerce-payments'
@@ -128,9 +124,8 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 				</div>
 			) }
 			{ isMinGreaterThanMax ? (
-				<div>
-					<br />
-					<FraudProtectionRuleCardNotice type={ 'error' }>
+				<div className="fraud-protection-rule-toggle-children-notice">
+					<FraudProtectionRuleCardNotice type="error">
 						{ __(
 							'Maximum item count must be greater than the minimum item count.',
 							'woocommerce-payments'
@@ -144,23 +139,23 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 const OrderItemsThresholdRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'Order Items Threshold', 'woocommerce-payments' ) }
-		description={ __(
-			'This filter compares the amount of items in an order to the minimum and maximum counts that you specify.',
-			'woocommerce-payments'
-		) }
 		id="order-items-threshold-card"
 	>
 		<FraudProtectionRuleToggle
-			setting={ 'order_items_threshold' }
+			setting="order_items_threshold"
 			label={ __(
-				'Block transactions for abnormal item counts',
+				'Enable Order Items Threshold filter',
+				'woocommerce-payments'
+			) }
+			description={ __(
+				'This filter compares the amount of items in an order to the minimum and maximum counts that you specify. ' +
+					'When enabled the payment will be blocked.',
 				'woocommerce-payments'
 			) }
 		>
-			<OrderItemsThresholdCustomForm
-				setting={ 'order_items_threshold' }
-			/>
+			<OrderItemsThresholdCustomForm setting="order_items_threshold" />
 		</FraudProtectionRuleToggle>
+
 		<FraudProtectionRuleDescription>
 			{ __(
 				'An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.',

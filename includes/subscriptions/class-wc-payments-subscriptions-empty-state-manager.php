@@ -43,7 +43,11 @@ class WC_Payments_Subscriptions_Empty_State_Manager {
 		$screen = get_current_screen();
 
 		// Only enqueue the scripts on the admin subscriptions screen.
-		if ( ! $screen || 'edit-shop_subscription' !== $screen->id || wcs_do_subscriptions_exist() ) {
+		if ( ! $screen || 'edit-shop_subscription' !== $screen->id ) {
+			return;
+		}
+
+		if ( ! function_exists( 'wcs_do_subscriptions_exist' ) || wcs_do_subscriptions_exist() ) {
 			return;
 		}
 

@@ -1,0 +1,95 @@
+/** @format */
+
+.wcpay-transaction-breakdown,
+.wcpay-transaction-breakdown__footer,
+.wcpay-transaction-breakdown div,
+.wcpay-transaction-breakdown__footer div {
+	font-size: 16px;
+}
+
+.wcpay-transaction-breakdown__authorized_payment_amount {
+	text-align: right;
+	font-weight: 600;
+
+	@media screen and ( max-width: $break-medium ) {
+		width: 100%;
+	}
+}
+
+.wcpay-transaction-breakdown__conversion_rate {
+	margin-top: 0 !important;
+	font-size: 12px !important;
+	color: $wp-gray-40;
+	text-align: right;
+	line-height: 16px;
+	font-weight: normal;
+}
+
+.wcpay-transaction-breakdown__fees {
+	padding-left: 24px;
+	margin-top: 0 !important;
+	padding-top: 0 !important;
+	color: $wp-gray-40;
+	width: 100%;
+
+	@media screen and ( max-width: $break-medium ) {
+		padding-left: 0;
+	}
+}
+
+.wcpay-transaction-breakdown__fee_info {
+	padding-top: 0.5rem;
+	@media screen and ( max-width: $break-medium ) {
+		margin-left: 0;
+		padding-top: 1.5rem;
+	}
+}
+
+.wcpay-transaction-breakdown__fees-container {
+	margin-left: 0;
+	padding-left: 0;
+	width: 100%;
+}
+
+.wcpay-transaction-breakdown__fees .wcpay-transaction-breakdown__fee_name {
+	width: 45%;
+
+	@media screen and ( max-width: $break-medium ) {
+		width: 100%;
+		text-align: left;
+	}
+}
+
+.wcpay-transaction-breakdown__fees .wcpay-transaction-breakdown__fee_rate {
+	width: 45%;
+	text-align: right;
+	margin-right: 0;
+}
+
+.wcpay-transaction-breakdown__fees .wcpay-transaction-breakdown__fee_rate {
+	@media screen and ( max-width: $break-medium ) {
+		width: 100%;
+		text-align: left;
+	}
+}
+
+.wcpay-transaction-breakdown__total_transaction_fee {
+	padding-top: 1rem;
+}
+.wcpay-transaction-breakdown__total_transaction_fee_amount {
+	@media screen and ( max-width: $break-medium ) {
+		width: 100%;
+		text-align: right;
+	}
+}
+
+.wcpay-transaction-breakdown__footer {
+	font-weight: 600;
+}
+.wcpay-transaction-breakdown__footer_amount {
+	text-align: right;
+
+	@media screen and ( max-width: $break-medium ) {
+		width: fit-content;
+	}
+}

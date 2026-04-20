@@ -13,16 +13,13 @@ import { useCallback, useEffect, useState } from '@wordpress/element';
  * Internal dependencies
  */
 import { TIME } from 'wcpay/constants/time';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 	const { createNotice } = useDispatch( 'core/notices' );
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ visibleTasks, setVisibleTasks ] = useState( tasks );
-	const {
-		deletedTodoTasks,
-		dismissedTodoTasks,
-		remindMeLaterTodoTasks,
-	} = overviewTasksVisibility;
+	const { deletedTodoTasks, dismissedTodoTasks, remindMeLaterTodoTasks } =
+		overviewTasksVisibility;
 
 	const getVisibleTasks = useCallback( () => {
 		const nowTimestamp = Date.now();
@@ -52,9 +49,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissedTasks.splice( dismissedTodoTasks.indexOf( key ), 1 );
 		setVisibleTasks( getVisibleTasks() );
 
-		await updateOptions( {
-			[ optionName ]: updatedDismissedTasks,
-		} );
+		saveOption( optionName, updatedDismissedTasks );
 	};
 
 	const dismissSelectedTask = async ( {
@@ -68,9 +63,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissedTasks.push( key );
 		setVisibleTasks( getVisibleTasks() );
 
-		await updateOptions( {
-			[ optionName ]: [ ...dismissedTasks ],
-		} );
+		saveOption( optionName, [ ...dismissedTasks ] );
 
 		createNotice( 'success', noticeMessage, {
 			actions: [
@@ -120,9 +113,10 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		delete remindMeLaterTodoTasks[ key ];
 		setVisibleTasks( getVisibleTasks() );
 
-		await updateOptions( {
-			woocommerce_remind_me_later_todo_tasks: updatedRemindMeLaterTasks,
-		} );
+		saveOption(
+			'woocommerce_remind_me_later_todo_tasks',
+			updatedRemindMeLaterTasks
+		);
 	};
 
 	const remindTaskLater = async ( { key, onDismiss } ) => {
@@ -130,11 +124,9 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		remindMeLaterTodoTasks[ key ] = dismissTime;
 		setVisibleTasks( getVisibleTasks() );
 
-		await updateOptions( {
-			woocommerce_remind_me_later_todo_tasks: {
-				...remindMeLaterTodoTasks,
-				[ key ]: dismissTime,
-			},
+		saveOption( 'woocommerce_remind_me_later_todo_tasks', {
+			...remindMeLaterTodoTasks,
+			[ key ]: dismissTime,
 		} );
 
 		createNotice(

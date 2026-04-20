@@ -1,27 +1,26 @@
 /** @format */
 
 /**
- * External depencencies
+ * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from '@wordpress/components';
 import './account-fees.scss';
 
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { formatFee } from 'utils/fees';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import React from 'react';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
-import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
-import { ExternalLink } from '@wordpress/components';
+import PAYMENT_METHOD_IDS from 'constants/payment-method';
 
 const countryFeeStripeDocsBaseLink =
-	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/#';
-const countryFeeStripeDocsBaseLinkNoCountry =
-	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/';
+	'https://woocommerce.com/document/woopayments/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	AE: 'united-arab-emirates',
 	AU: 'australia',
@@ -63,16 +62,8 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	RO: 'romania',
 };
 
-const stripeFeeSectionExistsForCountry = ( country: string ): boolean => {
-	return countryFeeStripeDocsSectionNumbers.hasOwnProperty( country );
-};
-
 const getStripeFeeSectionUrl = ( country: string ): string => {
-	return sprintf(
-		'%s%s',
-		countryFeeStripeDocsBaseLink,
-		countryFeeStripeDocsSectionNumbers[ country ]
-	);
+	return `${ countryFeeStripeDocsBaseLink }#${ countryFeeStripeDocsSectionNumbers[ country ] }`;
 };
 
 const getFeeDescriptionString = (
@@ -114,7 +105,7 @@ export const getCurrentBaseFee = (
 };
 
 export const formatMethodFeesTooltip = (
-	accountFees: FeeStructure
+	accountFees?: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
 
@@ -143,7 +134,7 @@ export const formatMethodFeesTooltip = (
 	return (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
-				<div>Base fee</div>
+				<div>{ __( 'Base fee', 'woocommerce-payments' ) }</div>
 				<div>
 					{ getFeeDescriptionString(
 						accountFees.base,
@@ -153,7 +144,12 @@ export const formatMethodFeesTooltip = (
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
-					<div>International payment method fee</div>
+					<div>
+						{ __(
+							'International payment method fee',
+							'woocommerce-payments'
+						) }
+					</div>
 					<div>
 						{ getFeeDescriptionString(
 							accountFees.additional,
@@ -166,14 +162,21 @@ export const formatMethodFeesTooltip = (
 			) }
 			{ hasFees( accountFees.fx ) ? (
 				<div>
-					<div>Foreign exchange fee</div>
+					<div>
+						{ __(
+							'Currency conversion fee',
+							'woocommerce-payments'
+						) }
+					</div>
 					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
 				</div>
 			) : (
 				''
 			) }
 			<div>
-				<div>Total per transaction</div>
+				<div>
+					{ __( 'Total per transaction', 'woocommerce-payments' ) }
+				</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
 					{ getFeeDescriptionString( total ) }
 				</div>
@@ -183,31 +186,27 @@ export const formatMethodFeesTooltip = (
 			wcpaySettings.connect.country ? (
 				<div className="wcpay-fees-tooltip__hint-text">
 					<span>
-						{ stripeFeeSectionExistsForCountry(
+						{ countryFeeStripeDocsSectionNumbers.hasOwnProperty(
 							wcpaySettings.connect.country
 						)
 							? interpolateComponents( {
 									mixedString: sprintf(
 										/* translators: %s: WooPayments */
 										__(
-											'{{linkToStripePage /}} about %s Fees in your country',
+											'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees in your country',
 											'woocommerce-payments'
 										),
 										'WooPayments'
 									),
 									components: {
 										linkToStripePage: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink
 												href={ getStripeFeeSectionUrl(
 													wcpaySettings.connect
 														.country
 												) }
-											>
-												{ __(
-													'Learn more',
-													'woocommerce-payments'
-												) }
-											</ExternalLink>
+											/>
 										),
 									},
 							  } )
@@ -224,7 +223,7 @@ export const formatMethodFeesTooltip = (
 										linkToStripePage: (
 											<ExternalLink
 												href={
-													countryFeeStripeDocsBaseLinkNoCountry
+													countryFeeStripeDocsBaseLink
 												}
 											>
 												{ __(
@@ -301,7 +300,7 @@ export const formatAccountFeesDescription = (
 			);
 		}
 
-		if ( discountFee.discount && 0 < formats.discount.length ) {
+		if ( discountFee.discount && formats.discount.length > 0 ) {
 			currentBaseFeeDescription +=
 				' ' +
 				sprintf( formats.discount, formatFee( discountFee.discount ) );
@@ -338,45 +337,98 @@ export const formatMethodFeesDescription = (
 };
 
 export const getTransactionsPaymentMethodName = (
-	paymentMethod: PaymentMethod
+	paymentMethod: PAYMENT_METHOD_IDS
 ): string => {
+	// Special cases that won't be in wooPaymentsPaymentMethodsConfig
+	// `card` WILL be in that config, but it's title is "Cards" and we want to show "Card transactions."
 	switch ( paymentMethod ) {
-		case 'au_becs_debit':
-			return __(
-				'BECS Direct Debit transactions',
-				'woocommerce-payments'
-			);
-		case 'bancontact':
-			return __( 'Bancontact transactions', 'woocommerce-payments' );
 		case 'card':
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':
 			return __( 'In-person transactions', 'woocommerce-payments' );
-		case 'eps':
-			return __( 'EPS transactions', 'woocommerce-payments' );
-		case 'giropay':
-			return __( 'giropay transactions', 'woocommerce-payments' );
-		case 'ideal':
-			return __( 'iDEAL transactions', 'woocommerce-payments' );
-		case 'p24':
-			return __(
-				'Przelewy24 (P24) transactions',
-				'woocommerce-payments'
-			);
-		case 'sepa_debit':
-			return __(
-				'SEPA Direct Debit transactions',
-				'woocommerce-payments'
-			);
-		case 'sofort':
-			return __( 'Sofort transactions', 'woocommerce-payments' );
-		case 'affirm':
-			return __( 'Affirm transactions', 'woocommerce-payments' );
-		case 'afterpay_clearpay':
-			return __( 'Afterpay transactions', 'woocommerce-payments' );
-		case 'klarna':
-			return __( 'Klarna transactions', 'woocommerce-payments' );
-		default:
-			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}
+
+	// Try to get the title from wooPaymentsPaymentMethodsConfig
+	const methodConfig = wooPaymentsPaymentMethodsConfig[ paymentMethod ];
+	if ( methodConfig?.title ) {
+		return sprintf(
+			/* translators: %s: Payment method title */
+			__( '%s transactions', 'woocommerce-payments' ),
+			methodConfig.title
+		);
+	}
+
+	// Fallback for unknown payment methods
+	return __( 'Unknown transactions', 'woocommerce-payments' );
+};
+
+export const getDiscountBadgeText = ( discountFee: DiscountFee ): string => {
+	if ( ! discountFee.discount ) {
+		return '';
+	}
+
+	const discountPercentage = formatFee( discountFee.discount );
+
+	if ( discountFee.end_time ) {
+		return sprintf(
+			/* translators: %1$s: discount percentage, %2$s: expiration date */
+			__( '%1$s%% off fees through %2$s', 'woocommerce-payments' ),
+			discountPercentage,
+			formatDateTimeFromString( discountFee.end_time )
+		);
+	}
+
+	return sprintf(
+		/* translators: %s: discount percentage */
+		__( '%s%% off fees', 'woocommerce-payments' ),
+		discountPercentage
+	);
+};
+
+export const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
+	if ( ! discountFee.discount ) {
+		return '';
+	}
+
+	const discountPercentage = formatFee( discountFee.discount );
+	const currencyCode = discountFee.volume_currency ?? discountFee.currency;
+
+	if ( discountFee.volume_allowance && discountFee.end_time ) {
+		return sprintf(
+			/* translators: %1$s: discount percentage, %2$s: total payment volume until this promotion expires, %3$s: End date of the promotion */
+			__(
+				'You are saving %1$s%% on processing fees for the first %2$s of total payment volume or through %3$s.',
+				'woocommerce-payments'
+			),
+			discountPercentage,
+			formatCurrency( discountFee.volume_allowance, currencyCode ),
+			formatDateTimeFromString( discountFee.end_time )
+		);
+	} else if ( discountFee.volume_allowance ) {
+		return sprintf(
+			/* translators: %1$s: discount percentage, %2$s: total payment volume until this promotion expires */
+			__(
+				'You are saving %1$s%% on processing fees for the first %2$s of total payment volume.',
+				'woocommerce-payments'
+			),
+			discountPercentage,
+			formatCurrency( discountFee.volume_allowance, currencyCode )
+		);
+	} else if ( discountFee.end_time ) {
+		return sprintf(
+			/* translators: %1$s: discount percentage, %2$s: End date of the promotion */
+			__(
+				'You are saving %1$s%% on processing fees through %2$s.',
+				'woocommerce-payments'
+			),
+			discountPercentage,
+			formatDateTimeFromString( discountFee.end_time )
+		);
+	}
+
+	return sprintf(
+		/* translators: %s: discount percentage */
+		__( 'You are saving %s%% on processing fees.', 'woocommerce-payments' ),
+		discountPercentage
+	);
 };

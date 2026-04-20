@@ -147,6 +147,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_filters_registered_properly() {
 		$this->assertNotFalse( has_filter( 'admin_body_class', [ $this->onboarding_service, 'add_admin_body_classes' ] ) );
+		$this->assertNotFalse( has_filter( 'wc_payments_get_onboarding_data_args', [ $this->onboarding_service, 'add_woocommerce_store_id_to_request' ] ) );
 	}
 
 	public function test_create_embedded_kyc_session() {
@@ -174,7 +175,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 
 		// Act.
-		$result = $this->onboarding_service->create_embedded_kyc_session( [], false );
+		$result = $this->onboarding_service->create_embedded_kyc_session( [] );
 
 		// Assert.
 		$this->assertEquals( $expected_account_session['client_secret'], $result['clientSecret'] );
@@ -195,7 +196,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( false );
 
 		// Act.
-		$result = $this->onboarding_service->create_embedded_kyc_session( [], false );
+		$result = $this->onboarding_service->create_embedded_kyc_session( [] );
 
 		// Assert.
 		$this->assertEmpty( $result );
@@ -472,6 +473,11 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 				'/wp-admin/admin.php?page=wc-settings&tab=checkout',
 				[ 'wcpay-connect' => '1' ],
 			],
+			'Via the referer URL - NOX in-context'         => [
+				'WCADMIN_NOX_IN_CONTEXT',
+				'/wp-admin/admin.php?page=wc-settings&tab=checkout&path=/woopayments/onboarding',
+				[ 'wcpay-connect' => '1' ],
+			],
 			'Via the referer URL - incentive page'         => [
 				'WCADMIN_PAYMENT_INCENTIVE',
 				'/wp-admin/admin.php?page=wc-admin&path=%2Fwc-pay-welcome-page',
@@ -641,5 +647,194 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Test that explicit 'live' mode overrides environment-based auto-detection.
+	 */
+	public function test_create_embedded_kyc_session_explicit_live_mode_overrides_auto_detection() {
+		// Arrange: Force test mode via the onboarding test mode option (simulates leftover from test drive).
+		WC_Payments_Onboarding_Service::set_test_mode( true );
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( true ) // First arg is $live_account = true.
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => true,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_live_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: Pass explicit 'live' mode.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], [], 'live' );
+
+		// Assert: The session was created and the test mode flag was cleared.
+		$this->assertNotEmpty( $result );
+		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+	}
+
+	/**
+	 * Test that dev mode forces test even when explicit 'live' is passed.
+	 */
+	public function test_create_embedded_kyc_session_dev_mode_forces_test_despite_explicit_live() {
+		// Arrange: Force dev mode.
+		WC_Payments::mode()->dev();
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( false ) // First arg is $live_account = false (forced by dev mode).
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => false,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_test_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: Pass explicit 'live' mode, but dev mode should override.
+		$result = $this->onboarding_service->create_embedded_kyc_session( [], [], 'live' );
+
+		// Assert.
+		$this->assertNotEmpty( $result );
+		$this->assertTrue( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+
+		// Clean up: Reset mode to avoid affecting other tests.
+		WC_Payments::mode()->live();
+	}
+
+	/**
+	 * Test backwards compatibility: no explicit mode falls back to auto-detection.
+	 */
+	public function test_create_embedded_kyc_session_no_explicit_mode_uses_auto_detection() {
+		// Arrange: Ensure live mode (no test mode flag, no dev mode).
+		WC_Payments_Onboarding_Service::set_test_mode( false );
+		WC_Payments::mode()->live();
+
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->with( true ) // First arg is $live_account = true (auto-detected as live).
+			->willReturn(
+				[
+					'client_secret'             => 'secret',
+					'expires_at'                => time() + 3600,
+					'account_id'                => 'acc_123',
+					'is_live'                   => true,
+					'account_created'           => true,
+					'publishable_key'           => 'pk_live_123',
+					'woopay_enabled_by_default' => false,
+				]
+			);
+
+		$this->onboarding_service->clear_embedded_kyc_in_progress();
+
+		// Act: No explicit mode (backwards compat).
+		$result = $this->onboarding_service->create_embedded_kyc_session( [] );
+
+		// Assert.
+		$this->assertNotEmpty( $result );
+	}
+
+	public function test_init_test_drive_account_merges_additional_account_data() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$captured_account_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturnCallback(
+				function ( $collect_payout_requirements, $return_url, $site_data, $user_data, $account_data ) use ( &$captured_account_data ) {
+					$captured_account_data = $account_data;
+					return [
+						'url' => false,
+					];
+				}
+			);
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( 'US', [], [ 'extra_bootstrapping' => false ] );
+
+		// Assert: The `extra_bootstrapping => false` key should survive into the API call.
+		$this->assertArrayHasKey( 'extra_bootstrapping', $captured_account_data );
+		$this->assertFalse( $captured_account_data['extra_bootstrapping'] );
+	}
+
+	public function test_init_test_drive_account_without_additional_data_leaves_account_data_unchanged() {
+		// Arrange.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		$captured_account_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_onboarding_data' )
+			->willReturnCallback(
+				function ( $collect_payout_requirements, $return_url, $site_data, $user_data, $account_data ) use ( &$captured_account_data ) {
+					$captured_account_data = $account_data;
+					return [
+						'url' => false,
+					];
+				}
+			);
+
+		// Act.
+		$this->onboarding_service->init_test_drive_account( 'US', [] );
+
+		// Assert: No extra_bootstrapping key should be present.
+		$this->assertArrayNotHasKey( 'extra_bootstrapping', $captured_account_data );
+		// The base account data should still contain the expected keys.
+		$this->assertArrayHasKey( 'setup_mode', $captured_account_data );
+		$this->assertSame( 'test_drive', $captured_account_data['setup_mode'] );
+	}
+
+	public function test_add_woocommerce_store_id_to_request_adds_store_id() {
+		$store_id = 'test-store-uuid-1234';
+		update_option( 'woocommerce_store_id', $store_id );
+
+		$args   = [ 'existing_key' => 'value' ];
+		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( $args );
+
+		$this->assertSame( $store_id, $result['woocommerce_store_id'] );
+		$this->assertSame( 'value', $result['existing_key'] );
+	}
+
+	public function test_add_woocommerce_store_id_to_request_returns_empty_string_when_option_missing() {
+		delete_option( 'woocommerce_store_id' );
+
+		$result = $this->onboarding_service->add_woocommerce_store_id_to_request( [] );
+
+		$this->assertSame( '', $result['woocommerce_store_id'] );
 	}
 }

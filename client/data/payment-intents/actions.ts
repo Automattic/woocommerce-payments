@@ -55,7 +55,7 @@ export function* refundCharge(
 				charge_id: charge.id,
 				amount: charge.amount,
 				reason: reason,
-				order_id: charge?.order?.number,
+				order_id: charge?.order?.id,
 			},
 		} );
 

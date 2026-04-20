@@ -70,8 +70,8 @@ class Container implements ContainerInterface {
 	 * @param WooContainer    $woo_container    Delegate container for WooCommerce (Optional).
 	 */
 	public function __construct(
-		LegacyContainer $legacy_container = null,
-		WooContainer $woo_container = null
+		?LegacyContainer $legacy_container = null,
+		?WooContainer $woo_container = null
 	) {
 		$this->container = new ExtendedContainer();
 
@@ -95,13 +95,6 @@ class Container implements ContainerInterface {
 	 * @param class-string<ID> $id The ID of the class to retrieve.
 	 * @return ID
 	 * @throws ContainerException In case the ID could not be resolved or instantiated.
-	 *
-	 * Psalm expects $id to be a string, based on ContainerInterface.
-	 * @psalm-suppress MoreSpecificImplementedParamType
-	 *
-	 * PSR-11 containers declares to throw an un-throwable interface
-	 * (it does not extend Throwable), and Psalm does not accept it.
-	 * @psalm-suppress MissingThrowsDocblock
 	 */
 	public function get( $id ) {
 		try {

@@ -5,6 +5,7 @@
  */
 import { dispatch, select } from '@wordpress/data';
 import { apiFetch } from '@wordpress/data-controls';
+import directApiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -61,15 +62,15 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 	return updateSettingsValues( { is_payment_request_enabled: isEnabled } );
 }
 
-export function updateEnabledPaymentMethodIds( methodIds ) {
+export function updateIsExpressCheckoutInPaymentMethodsEnabled( isEnabled ) {
 	return updateSettingsValues( {
-		enabled_payment_method_ids: [ ...methodIds ],
+		is_express_checkout_in_payment_methods_enabled: isEnabled,
 	} );
 }
 
-export function updateAvailablePaymentMethodIds( methodIds ) {
+export function updateEnabledPaymentMethodIds( methodIds ) {
 	return updateSettingsValues( {
-		available_payment_method_ids: [ ...methodIds ],
+		enabled_payment_method_ids: [ ...methodIds ],
 	} );
 }
 
@@ -139,26 +140,6 @@ export function updateAccountStatementDescriptorKana(
 	} );
 }
 
-export function updateAccountBusinessName( accountBusinessName ) {
-	return updateSettingsValues( {
-		account_business_name: accountBusinessName,
-	} );
-}
-
-export function updateAccountBusinessURL( accountBusinessURL ) {
-	return updateSettingsValues( {
-		account_business_url: accountBusinessURL,
-	} );
-}
-
-export function updateAccountBusinessSupportAddress(
-	accountBusinessSupportAddress
-) {
-	return updateSettingsValues( {
-		account_business_support_address: accountBusinessSupportAddress,
-	} );
-}
-
 export function updateAccountBusinessSupportEmail(
 	accountBusinessSupportEmail
 ) {
@@ -172,12 +153,6 @@ export function updateAccountBusinessSupportPhone(
 ) {
 	return updateSettingsValues( {
 		account_business_support_phone: accountBusinessSupportPhone,
-	} );
-}
-
-export function updateAccountBrandingLogo( accountBrandingLogo ) {
-	return updateSettingsValues( {
-		account_branding_logo: accountBrandingLogo,
 	} );
 }
 
@@ -201,12 +176,6 @@ export function updateDepositScheduleMonthlyAnchor(
 			depositScheduleMonthlyAnchor === ''
 				? null
 				: parseInt( depositScheduleMonthlyAnchor, 10 ),
-	} );
-}
-
-export function updateExportLanguage( language ) {
-	return updateSettingsValues( {
-		reporting_export_language: language,
 	} );
 }
 
@@ -248,12 +217,6 @@ export function* saveSettings() {
 	return error === null;
 }
 
-export function updatePaymentRequestLocations( locations ) {
-	return updateSettingsValues( {
-		payment_request_enabled_locations: [ ...locations ],
-	} );
-}
-
 export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
 }
@@ -276,12 +239,6 @@ export function updateWooPayStoreLogo( storeLogo ) {
 	} );
 }
 
-export function updateWooPayLocations( locations ) {
-	return updateSettingsValues( {
-		woopay_enabled_locations: [ ...locations ],
-	} );
-}
-
 export function updateProtectionLevel( level ) {
 	return updateSettingsValues( { current_protection_level: level } );
 }
@@ -294,6 +251,28 @@ export function updateAdvancedFraudProtectionSettings( settings ) {
 
 export function updateIsStripeBillingEnabled( isEnabled ) {
 	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
+}
+
+export function updateAccountCommunicationsEmail( email ) {
+	return updateSettingsValues( { account_communications_email: email } );
+}
+
+export function updateExpressCheckoutProductMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_product_methods: [ ...methods ],
+	} );
+}
+
+export function updateExpressCheckoutCartMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_cart_methods: [ ...methods ],
+	} );
+}
+
+export function updateExpressCheckoutCheckoutMethods( methods ) {
+	return updateSettingsValues( {
+		express_checkout_checkout_methods: [ ...methods ],
+	} );
 }
 
 export function* submitStripeBillingSubscriptionMigration() {
@@ -318,4 +297,16 @@ export function* submitStripeBillingSubscriptionMigration() {
 	yield dispatch( STORE_NAME ).finishResolution(
 		'scheduleStripeBillingMigration'
 	);
+}
+
+export function saveOption( optionName, value ) {
+	return directApiFetch( {
+		path: `${ NAMESPACE }/settings/${ optionName }`,
+		method: 'post',
+		data: { value },
+	} ).catch( () => {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error saving option', 'woocommerce-payments' )
+		);
+	} );
 }

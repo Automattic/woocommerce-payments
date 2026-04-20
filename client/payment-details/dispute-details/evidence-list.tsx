@@ -119,7 +119,7 @@ const IssuerEvidenceList: React.FC< Props > = ( { issuerEvidence } ) => {
 	return (
 		<PanelBody
 			className="dispute-evidence"
-			title={ __( 'Issuer evidence', 'woocommerce' ) }
+			title={ __( 'Issuer evidence', 'woocommerce-payments' ) }
 			initialOpen={ false }
 		>
 			<ul className="dispute-evidence__list">

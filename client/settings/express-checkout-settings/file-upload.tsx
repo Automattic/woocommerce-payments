@@ -8,14 +8,14 @@ import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
-import { BaseControl, Button } from '@wordpress/components';
 import TrashIcon from 'gridicons/dist/trash';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
  */
-import { FileUploadControl } from 'components/file-upload';
+import { BaseControl, Button } from '@wordpress/components';
+import { FileUploadControl } from 'wcpay/components/file-upload';
 
 interface WooPayFileUploadProps {
 	fieldKey: string;
@@ -28,20 +28,16 @@ interface WooPayFileUploadProps {
 	updateFileID: ( id: string ) => void;
 }
 
-const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
-	props
-) => {
-	const {
-		fieldKey,
-		label,
-		accept,
-		disabled,
-		help,
-		purpose,
-		fileID,
-		updateFileID,
-	} = props;
-
+const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
+	fieldKey,
+	label,
+	accept,
+	disabled,
+	help,
+	purpose,
+	fileID,
+	updateFileID,
+} ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const [ uploadError, setUploadError ] = useState< boolean | string >(
 		false
@@ -124,32 +120,33 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 	};
 
 	const openFileDialog = ( event: React.MouseEvent< HTMLButtonElement > ) => {
-		const fileInput:
-			| HTMLInputElement
-			| null
-			| undefined = ( event.target as HTMLButtonElement )
+		const fileInput: HTMLInputElement | null | undefined = (
+			event.target as HTMLButtonElement
+		 )
 			.closest( '.woopay-settings__update-store-logo' )
 			?.querySelector( 'input[type="file"]' );
 
 		fileInput?.click();
 	};
 
-	const isDone = ( ! isLoading && fileID && 0 < fileID.length ) as boolean;
+	const isDone = ( ! isLoading && fileID && fileID.length > 0 ) as boolean;
 	const error = ( uploadError || '' ) as string;
 
 	return (
-		<div className="wcpay-branding-upload-field__wrapper">
+		<BaseControl
+			id={ `form-file-upload-${ fieldKey }` }
+			help={ help }
+			label={ label }
+			__nextHasNoMarginBottom
+		>
 			<div
-				className={ classNames(
+				className={ clsx(
 					'woopay-settings__update-store-logo',
 					fileID && 'has-file'
 				) }
 			>
 				<FileUploadControl
-					field={ {
-						key: fieldKey,
-						label: label,
-					} }
+					fieldKey={ fieldKey }
 					fileName={ fileID }
 					isLoading={ isLoading }
 					accept={ accept }
@@ -190,11 +187,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 					) }
 				</div>
 			</div>
-
-			<BaseControl id={ 'test' } help={ help }>
-				{ ' ' }
-			</BaseControl>
-		</div>
+		</BaseControl>
 	);
 };
 

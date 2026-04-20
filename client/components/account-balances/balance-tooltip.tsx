@@ -5,6 +5,7 @@ import React from 'react';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -36,7 +37,7 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 					<>
 						{ interpolateComponents( {
 							mixedString: __(
-								'{{bold}}Total balance{{/bold}} combines both pending funds (transactions under processing) and available funds (ready for deposit). {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'{{bold}}Total balance{{/bold}} combines both pending funds (transactions under processing) and available funds (ready for payout). {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							components: {
@@ -90,9 +91,9 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 	);
 };
 
-export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > = ( {
-	balance,
-} ) => {
+export const AvailableBalanceTooltip: React.FC<
+	AvailableBalanceTooltipProps
+> = ( { balance } ) => {
 	const isBalanceNegative = balance < 0;
 	return (
 		<ClickTooltip
@@ -105,7 +106,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 					<p>
 						{ interpolateComponents( {
 							mixedString: __(
-								'{{bold}}Available funds{{/bold}} have completed processing and are ready to be deposited into your bank account. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'{{bold}}Available funds{{/bold}} have completed processing and are ready to be dispatched to your bank account. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							components: {
@@ -132,10 +133,8 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 								),
 								components: {
 									discoverWhyLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											rel="external noopener noreferrer"
-											target="_blank"
+										// @ts-expect-error: children is provided when interpolating the component
+										<ExternalLink
 											href={
 												documentationUrls.negativeBalance
 											}

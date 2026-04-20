@@ -4,12 +4,12 @@
 import React, { useContext } from 'react';
 import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { Card, SelectControl, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import { Card, SelectControl, ExternalLink } from '@wordpress/components';
 import { STORE_NAME } from 'wcpay/data/constants';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
@@ -49,18 +49,12 @@ const monthlyAnchors = [
 } ) );
 
 const CustomizeDepositSchedule = () => {
-	const [
-		depositScheduleInterval,
-		setDepositScheduleInterval,
-	] = useDepositScheduleInterval();
-	const [
-		depositScheduleWeeklyAnchor,
-		setDepositScheduleWeeklyAnchor,
-	] = useDepositScheduleWeeklyAnchor();
-	const [
-		depositScheduleMonthlyAnchor,
-		setDepositScheduleMonthlyAnchor,
-	] = useDepositScheduleMonthlyAnchor();
+	const [ depositScheduleInterval, setDepositScheduleInterval ] =
+		useDepositScheduleInterval();
+	const [ depositScheduleWeeklyAnchor, setDepositScheduleWeeklyAnchor ] =
+		useDepositScheduleWeeklyAnchor();
+	const [ depositScheduleMonthlyAnchor, setDepositScheduleMonthlyAnchor ] =
+		useDepositScheduleMonthlyAnchor();
 
 	const settings = select( STORE_NAME ).getSettings();
 
@@ -110,6 +104,8 @@ const CustomizeDepositSchedule = () => {
 					value={ depositScheduleInterval }
 					onChange={ handleIntervalChange }
 					options={ depositIntervalsOptions }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 				{ depositScheduleInterval === 'monthly' && (
 					<SelectControl
@@ -117,6 +113,8 @@ const CustomizeDepositSchedule = () => {
 						value={ depositScheduleMonthlyAnchor }
 						onChange={ setDepositScheduleMonthlyAnchor }
 						options={ monthlyAnchors }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 				{ depositScheduleInterval === 'weekly' && (
@@ -125,23 +123,25 @@ const CustomizeDepositSchedule = () => {
 						value={ depositScheduleWeeklyAnchor }
 						onChange={ setDepositScheduleWeeklyAnchor }
 						options={ daysOfWeek }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 			</div>
 			<p className="help-text">
 				{ depositScheduleInterval === 'monthly' &&
 					__(
-						'Deposits scheduled on a weekend will be sent on the next business day.',
+						'Payouts scheduled on a weekend will be sent on the next business day.',
 						'woocommerce-payments'
 					) }
 				{ depositScheduleInterval === 'weekly' &&
 					__(
-						'Deposits that fall on a holiday will initiate on the next business day.',
+						'Payouts that fall on a holiday will initiate on the next business day.',
 						'woocommerce-payments'
 					) }
 				{ depositScheduleInterval === 'daily' &&
 					__(
-						'Deposits will occur every business day.',
+						'Payouts will occur every business day.',
 						'woocommerce-payments'
 					) }
 			</p>
@@ -161,14 +161,14 @@ const DepositsSchedule = () => {
 			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
-						'Deposit scheduling is currently unavailable for your store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'Payout scheduling is currently unavailable for your store. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					components: {
 						learnMoreLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
 							<a
-								href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/"
+								href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/"
 								target="_blank"
 								rel="noreferrer noopener"
 							/>
@@ -183,15 +183,16 @@ const DepositsSchedule = () => {
 			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
-						'Your first deposit will be held for 7-14 days. ' +
-							'Deposit scheduling will be available after this period. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete.' +
+							' ' +
+							'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					components: {
 						learnMoreLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
 							<a
-								href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/"
+								href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/"
 								target="_blank"
 								rel="noreferrer noopener"
 							/>
@@ -219,47 +220,41 @@ const Deposits = () => {
 
 	return (
 		<Card className="deposits">
-			<CardBody>
-				<h4>{ __( 'Deposit schedule', 'woocommerce-payments' ) }</h4>
+			<CardBody className="wcpay-card-body">
+				<h4>{ __( 'Payout schedule', 'woocommerce-payments' ) }</h4>
 
 				<DepositsSchedule />
 
-				<div className="deposits__bank-information">
-					<h4>
-						{ __( 'Deposit bank account', 'woocommerce-payments' ) }
-					</h4>
-					{ hasErroredExternalAccount ? (
-						<DepositFailureNotice
-							updateAccountLink={ accountLink }
-						/>
-					) : (
-						<p className="deposits__bank-information-help">
-							{ __(
-								'Manage and update your deposit account information to receive payments and deposits.',
-								'woocommerce-payments'
-							) }{ ' ' }
-							{ accountLink && (
-								<ExternalLink
-									href={ accountLink }
-									onClick={ () => {
-										recordEvent(
-											'wcpay_settings_deposits_manage_in_stripe_click'
-										);
-										recordEvent(
-											'wcpay_account_details_link_clicked',
-											{ source: 'settings-deposits' }
-										);
-									} }
-								>
-									{ __(
-										'Manage in Stripe',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
-							) }
-						</p>
-					) }
-				</div>
+				<h4>{ __( 'Payout bank account', 'woocommerce-payments' ) }</h4>
+				{ hasErroredExternalAccount ? (
+					<DepositFailureNotice updateAccountLink={ accountLink } />
+				) : (
+					<p>
+						{ __(
+							'Manage and update your bank account information to receive payouts.',
+							'woocommerce-payments'
+						) }{ ' ' }
+						{ accountLink && (
+							<ExternalLink
+								href={ accountLink }
+								onClick={ () => {
+									recordEvent(
+										'wcpay_settings_deposits_manage_in_stripe_click'
+									);
+									recordEvent(
+										'wcpay_account_details_link_clicked',
+										{ source: 'settings-deposits' }
+									);
+								} }
+							>
+								{ __(
+									'Manage in Stripe',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						) }
+					</p>
+				) }
 			</CardBody>
 		</Card>
 	);

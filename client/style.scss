@@ -10,13 +10,15 @@
 	}
 }
 
-.components-card__body {
-	> *:first-child {
-		margin-top: 0;
-	}
+.woocommerce-payments-page {
+	.components-card__body {
+		> *:first-child {
+			margin-top: 0;
+		}
 
-	> *:last-child {
-		margin-bottom: 0;
+		> *:last-child {
+			margin-bottom: 0;
+		}
 	}
 }
 
@@ -104,6 +106,10 @@
 		font-weight: normal;
 		line-height: 20px;
 		padding: 4px 0;
+
+		@media screen and ( max-width: 470px ) {
+			flex: 0 0 40%;
+		}
 	}
 
 	&__value {
@@ -131,13 +137,12 @@
 
 img {
 	&.payment-method__icon {
-		outline: 1px solid rgba( 0, 0, 0, 0.25 );
-		outline-offset: -1px;
-		border-radius: 3px;
+		border: 1px solid rgba( 0, 0, 0, 0.25 );
+		border-radius: 4px;
 		display: block;
 
-		&.no-outline {
-			outline: none;
+		&.no-border {
+			border: none;
 			border-radius: 0;
 		}
 	}

@@ -34,15 +34,15 @@ class SessionService {
 	 * Getter.
 	 *
 	 * @param string     $key     Session key.
-	 * @param mixed|null $default Default value to return if key is not set.
+	 * @param mixed|null $initial Default value to return if key is not set.
 	 *
 	 * @return mixed
 	 */
-	public function get( string $key, $default = null ) {
+	public function get( string $key, $initial = null ) {
 		if ( $this->has_wc_session() ) {
-			return $this->get_wc_session()->get( $key, $default );
+			return $this->get_wc_session()->get( $key, $initial );
 		} else {
-			return $default;
+			return $initial;
 		}
 	}
 

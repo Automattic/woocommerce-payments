@@ -64,7 +64,7 @@ class Checkout_Service {
 	 */
 	public function is_platform_payment_method( Payment_Information $payment_information ) {
 		// Return false for express checkout method.
-		if ( isset( $_POST['payment_request_type'] ) || isset( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( isset( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			return false;
 		}
 

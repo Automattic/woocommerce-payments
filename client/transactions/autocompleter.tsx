@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import apiFetch from '@wordpress/api-fetch';
@@ -43,9 +43,7 @@ export default {
 	getOptionKeywords( option: CompletionOption ): string[] {
 		return [ option.label ];
 	},
-	getFreeTextOptions(
-		query: string
-	): {
+	getFreeTextOptions( query: string ): {
 		key: string;
 		label: JSX.Element;
 		value: { label: string };

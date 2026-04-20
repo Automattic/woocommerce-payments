@@ -1,23 +1,23 @@
 /**
  * External dependencies
  */
-import React, { useState, useRef } from 'react';
-import classNames from 'classnames';
+import React, { useState, useRef, ComponentProps } from 'react';
+import clsx from 'clsx';
 import { noop } from 'lodash';
 import { Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import TooltipBase, { TooltipBaseProps } from './tooltip-base';
+import TooltipBase from './tooltip-base';
 
-type TooltipProps = TooltipBaseProps & {
+type TooltipProps = ComponentProps< typeof TooltipBase > & {
 	isVisible?: boolean;
 	onHide?: () => void;
 	/**
 	 * An icon that will be used as the tooltip button. Replaces the component children.
 	 */
-	buttonIcon?: Icon.IconType< unknown >;
+	buttonIcon?: ComponentProps< typeof Icon >[ 'icon' ];
 	/**
 	 * A label for the tooltip button, visible to screen readers.
 	 */
@@ -33,11 +33,10 @@ type TooltipProps = TooltipBaseProps & {
 /**
  * Tooltip that shows on both hover and click.
  * To be used when the tooltip content is not interactive.
- *
- * @param {TooltipProps} props Component props.
- * @return {JSX.Element} Tooltip component.
  */
-export const HoverTooltip: React.FC< TooltipProps > = ( {
+export const HoverTooltip: React.FC<
+	React.PropsWithChildren< TooltipProps >
+> = ( {
 	isVisible,
 	onHide = noop,
 	children,
@@ -102,11 +101,10 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
 /**
  * Tooltip that shows only on click events.
  * To be used when the tooltip content is interactive (e.g. links to documentation).
- *
- * @param {TooltipProps} props Component props.
- * @return {JSX.Element} Tooltip component.
  */
-export const ClickTooltip: React.FC< TooltipProps > = ( {
+export const ClickTooltip: React.FC<
+	React.PropsWithChildren< TooltipProps >
+> = ( {
 	isVisible,
 	onHide = noop,
 	buttonIcon,
@@ -148,10 +146,7 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 				onHide={ handleHide }
 				maxWidth={ maxWidth }
 				isVisible={ isVisible || isClicked }
-				className={ classNames(
-					'wcpay-tooltip--click__tooltip',
-					className
-				) }
+				className={ clsx( 'wcpay-tooltip--click__tooltip', className ) }
 			>
 				{ buttonIcon ? (
 					<div

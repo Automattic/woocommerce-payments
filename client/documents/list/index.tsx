@@ -4,9 +4,7 @@
  * External dependencies
  */
 import React, { useCallback, useEffect, useState } from 'react';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
 import { Button } from '@wordpress/components';
@@ -21,6 +19,8 @@ import DocumentsFilters from '../filters';
 import Page from '../../components/page';
 import { getDocumentUrl } from 'wcpay/utils';
 import VatFormModal from 'wcpay/vat/form-modal';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 
 interface Column extends TableCardColumn {
 	key: 'date' | 'type' | 'description' | 'download';
@@ -55,7 +55,7 @@ const getColumns = (): Column[] =>
 		},
 		{
 			key: 'download',
-			label: '',
+			label: __( 'Download', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Download', 'woocommerce-payments' ),
 			isLeftAligned: false,
 			isNumeric: true,
@@ -67,21 +67,13 @@ const getDocumentDescription = ( document: Document ) => {
 		case 'vat_invoice':
 			if ( document.period_from && document.period_to ) {
 				return sprintf(
-					__( 'VAT invoice for %s to %s', 'woocommerce-payments' ),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_from ).toISOString(),
-						'utc'
-					),
-					dateI18n(
-						'M j, Y',
-						moment.utc( document.period_to ).toISOString(),
-						'utc'
-					)
+					__( 'Tax invoice for %s to %s', 'woocommerce-payments' ),
+					formatDateTimeFromString( document.period_from ),
+					formatDateTimeFromString( document.period_to )
 				);
 			}
 			return __(
-				'VAT invoice without proper period dates',
+				'Tax invoice without proper period dates',
 				'woocommerce-payments'
 			);
 
@@ -92,21 +84,17 @@ const getDocumentDescription = ( document: Document ) => {
 
 export const DocumentsList = (): JSX.Element => {
 	const { documents, isLoading } = useDocuments( getQuery() );
-	const {
-		documentsSummary,
-		isLoading: isSummaryLoading,
-	} = useDocumentsSummary( getQuery() );
+	const { documentsSummary, isLoading: isSummaryLoading } =
+		useDocumentsSummary( getQuery() );
 
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
 
-	const [
-		interruptedDownloadDocument,
-		setInterruptedDownloadDocument,
-	] = useState< {
-		documentId: Document[ 'document_id' ];
-		type: Document[ 'type' ];
-		newTab: boolean;
-	} | null >( null );
+	const [ interruptedDownloadDocument, setInterruptedDownloadDocument ] =
+		useState< {
+			documentId: Document[ 'document_id' ];
+			type: Document[ 'type' ];
+			newTab: boolean;
+		} | null >( null );
 
 	const handleDocumentDownload = (
 		documentId: Document[ 'document_id' ],
@@ -115,7 +103,7 @@ export const DocumentsList = (): JSX.Element => {
 	): boolean => {
 		setInterruptedDownloadDocument( { documentId, type, newTab } );
 
-		if ( 'vat_invoice' === type ) {
+		if ( type === 'vat_invoice' ) {
 			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
 				setVatFormModalOpen( true );
 				return false;
@@ -169,7 +157,13 @@ export const DocumentsList = (): JSX.Element => {
 		}
 	}, [ requestedDocumentID, requestedDocumentType, downloadDocument ] );
 
-	const columnsToDisplay = getColumns();
+	const columns = getColumns();
+
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< Column >(
+			'wc_payments_documents_hidden_columns',
+			columns
+		);
 
 	const totalRows = documentsSummary.count || 0;
 	const rows = documents.map( ( document: Document ) => {
@@ -180,10 +174,7 @@ export const DocumentsList = (): JSX.Element => {
 		const data = {
 			date: {
 				value: document.date,
-				display: dateI18n(
-					'M j, Y',
-					moment.utc( document.date ).local().toISOString()
-				),
+				display: formatDateTimeFromString( document.date ),
 			},
 			type: {
 				value: documentType,
@@ -197,13 +188,15 @@ export const DocumentsList = (): JSX.Element => {
 				value: getDocumentUrl( document.document_id ),
 				display: (
 					<Button
-						isLink
+						className="documents-list__download-button"
+						variant="link"
 						onClick={ () =>
 							downloadDocument(
 								document.document_id,
 								document.type
 							)
 						}
+						__next40pxDefaultSize
 					>
 						{ __( 'Download', 'woocommerce-payments' ) }
 					</Button>
@@ -221,7 +214,7 @@ export const DocumentsList = (): JSX.Element => {
 	// initializing summary with undefined as we don't want to render the TableSummary component unless we have the data
 	let summary;
 	const isDocumentsSummaryDataLoaded =
-		documentsSummary.count !== undefined && false === isSummaryLoading;
+		documentsSummary.count !== undefined && isSummaryLoading === false;
 
 	// Generate summary only if the data has been loaded
 	if ( isDocumentsSummaryDataLoaded ) {
@@ -254,6 +247,7 @@ export const DocumentsList = (): JSX.Element => {
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [] }
 			/>
 			<VatFormModal

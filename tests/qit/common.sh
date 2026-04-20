@@ -26,7 +26,7 @@ QIT_BINARY=${QIT_BINARY:-./vendor/bin/qit}
 # Add the partner by validating credentials.
 if ! $QIT_BINARY list | grep -q 'partner:remove'; then
 	echo "Adding partner with QIT credentials..."
-	$QIT_BINARY partner:add --user=$QIT_USER --application_password=$QIT_PASSWORD
+	$QIT_BINARY partner:add --user=$QIT_USER --application_password="$QIT_PASSWORD"
 	if [ $? -ne 0 ]; then
 		echo "Failed to add partner. Exiting with status 1."
 		exit 1

@@ -134,7 +134,8 @@ const MigrateOptionNotice: React.FC< Props > = ( {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/comparison/#migrating-subscribers" />
+						// @ts-expect-error: children is provided when interpolating the component
+						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/#migrating-subscribers" />
 					),
 				},
 			} ) }

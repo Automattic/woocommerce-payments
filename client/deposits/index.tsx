@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { useDispatch } from '@wordpress/data';
 import { ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -22,9 +21,11 @@ import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';
+import { saveOption } from 'wcpay/data/settings/actions';
+import ErrorBoundary from 'components/error-boundary';
+import SpotlightPromotion from 'promotions/spotlight';
 
 const useNextDepositNoticeState = () => {
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ isDismissed, setIsDismissed ] = useState(
 		wcpaySettings.isNextDepositNoticeDismissed
 	);
@@ -32,9 +33,7 @@ const useNextDepositNoticeState = () => {
 	const setNextDepositNoticeDismissed = () => {
 		setIsDismissed( true );
 		wcpaySettings.isNextDepositNoticeDismissed = true;
-		updateOptions( {
-			wcpay_next_deposit_notice_dismissed: true,
-		} );
+		saveOption( 'wcpay_next_deposit_notice_dismissed', true );
 	};
 
 	return {
@@ -61,10 +60,8 @@ const useAccountStatus = () => {
 
 const NextDepositNotice: React.FC = () => {
 	const { account, hasErroredExternalAccount } = useAccountStatus();
-	const {
-		isNextDepositNoticeDismissed,
-		handleDismissNextDepositNotice,
-	} = useNextDepositNoticeState();
+	const { isNextDepositNoticeDismissed, handleDismissNextDepositNotice } =
+		useNextDepositNoticeState();
 
 	const isDepositsUnrestricted =
 		wcpaySettings.accountStatus.deposits?.restrictions ===
@@ -118,7 +115,7 @@ const DepositFailureNotice: React.FC = () => {
 		>
 			{ interpolateComponents( {
 				mixedString: __(
-					'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'Payouts are currently paused because a recent payout failed. Please {{updateLink/}}.',
 					'woocommerce-payments'
 				),
 				components: {
@@ -134,7 +131,12 @@ const DepositFailureNotice: React.FC = () => {
 								)
 							}
 							href={ accountLink }
-						/>
+						>
+							{ __(
+								'update your bank account details',
+								'woocommerce-payments'
+							) }
+						</ExternalLink>
 					),
 				},
 			} ) }
@@ -152,6 +154,9 @@ const DepositsPage: React.FC = () => {
 			<NextDepositNotice />
 			<DepositFailureNotice />
 			<DepositsList />
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

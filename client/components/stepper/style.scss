@@ -1,0 +1,128 @@
+.stepper-panel {
+	display: flex;
+	gap: 24px;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	padding: 24px;
+	box-sizing: border-box;
+	min-width: 0;
+}
+
+.stepper-step {
+	display: flex;
+	justify-content: space-around;
+	gap: 16px;
+	align-items: center;
+	position: relative;
+}
+
+.stepper-circle {
+	width: 24px;
+	height: 24px;
+	min-width: 24px;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	border: 1px solid $gray-200;
+	z-index: 1;
+	transition: background 0.2s, border 0.2s, color 0.2s;
+
+	text-align: center;
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 600;
+	color: $gray-700;
+	line-height: 16px; /* 123.077% */
+
+	padding: 4px 8px;
+	border-radius: $radius-round;
+	background: none;
+	cursor: default;
+
+	&:disabled {
+		cursor: default;
+	}
+}
+
+.stepper-step.clickable {
+	.stepper-circle,
+	.stepper-label {
+		cursor: pointer;
+		&:disabled {
+			cursor: default;
+		}
+	}
+}
+
+.stepper-step.active .stepper-circle {
+	border-color: var( --wp-admin-theme-color );
+	color: var( --wp-admin-theme-color );
+}
+
+.stepper-step.complete {
+	.stepper-label {
+		color: var( --wp-admin-theme-color );
+		font-weight: 600;
+	}
+
+	.stepper-circle {
+		background: var( --wp-admin-theme-color );
+		color: $white;
+		border-color: var( --wp-admin-theme-color );
+		padding: 0;
+		svg {
+			fill: $white;
+		}
+	}
+}
+
+.stepper-label {
+	color: $gray-700;
+	background: none;
+	border: none;
+	padding: 0;
+	text-align: left;
+
+	// regular state
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 400;
+	line-height: 16px; /* 123.077% */
+	cursor: default;
+
+	&:disabled {
+		cursor: default;
+	}
+}
+
+.stepper-step.active .stepper-label {
+	font-weight: 600;
+}
+
+.stepper-line {
+	left: 100%;
+	width: 48px;
+	height: 1px;
+	background: $gray-200;
+	z-index: 0;
+}
+
+@media ( max-width: 782px ) {
+	.stepper-panel {
+		margin-top: 24px;
+		margin-bottom: 24px;
+		justify-content: space-around;
+		padding: 0 0.5rem;
+	}
+
+	.stepper-line {
+		display: none;
+	}
+
+	.stepper-label {
+		display: none;
+	}
+}

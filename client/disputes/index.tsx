@@ -3,33 +3,21 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { recordEvent } from 'tracks';
-import { dateI18n } from '@wordpress/date';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
-import classNames from 'classnames';
-import apiFetch from '@wordpress/api-fetch';
-import { useDispatch } from '@wordpress/data';
-import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies.
  */
-import {
-	useDisputes,
-	useDisputesSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useDisputes, useDisputesSummary } from 'data/index';
 import OrderLink from 'components/order-link';
+import Chip from 'components/chip';
 import DisputeStatusChip from 'components/dispute-status-chip';
 import ClickableCell from 'components/clickable-cell';
 import DetailsLink, { getDetailsURL } from 'components/details-link';
@@ -37,31 +25,34 @@ import Page from 'components/page';
 import { TestModeNotice } from 'components/test-mode-notice';
 import { reasons } from './strings';
 import { formatStringValue } from 'utils';
-import { formatExplicitCurrency, formatExportAmount } from 'utils/currency';
+import {
+	formatExplicitCurrency,
+	formatExportAmount,
+} from 'multi-currency/interface/functions';
 import DisputesFilters from './filters';
 import DownloadButton from 'components/download-button';
-import disputeStatusMapping from 'components/dispute-status-chip/mappings';
 import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
-import { getDisputesCSV } from 'wcpay/data/disputes/resolvers';
 import {
-	applyThousandSeparator,
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-} from 'wcpay/utils';
+	getDisputesCSVRequestURL,
+	disputesDownloadEndpoint,
+} from 'wcpay/data/disputes/resolvers';
+import { applyThousandSeparator } from 'wcpay/utils';
 import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
-import CSVExportModal from 'components/csv-export-modal';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
-
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
+import { useReportExport } from 'wcpay/hooks/use-report-export';
+import { useDispatch } from '@wordpress/data';
+import ErrorBoundary from 'components/error-boundary';
+import SpotlightPromotion from 'promotions/spotlight';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
 		key: 'details',
 		label: '',
 		required: true,
-		cellClassName: classNames( 'info-button', {
+		cellClassName: clsx( 'info-button', {
 			'is-sorted': sortColumn === 'amount',
 		} ),
 		isLeftAligned: true,
@@ -180,49 +171,47 @@ const smartDueDate = ( dispute: CachedDispute ) => {
 		return '';
 	}
 	if ( diffHours <= 72 ) {
-		return (
-			<span className="due-soon">
-				{ diffHours <= 24
-					? __( 'Last day today', 'woocommerce-payments' )
-					: sprintf(
-							// Translators: %s is the number of days left to respond to the dispute.
-							_n(
-								'%s day left',
-								'%s days left',
-								diffDays,
-								'woocommerce-payments'
-							),
-							diffDays
-					  ) }
-				<NoticeOutlineIcon className="due-soon-icon" />
-			</span>
-		);
+		const message =
+			diffHours <= 24
+				? __( 'Last day today', 'woocommerce-payments' )
+				: sprintf(
+						// Translators: %s is the number of days left to respond to the dispute.
+						_n(
+							'%s day left',
+							'%s days left',
+							diffDays,
+							'woocommerce-payments'
+						),
+						diffDays
+				  );
+		return <Chip message={ message } type="alert" />;
 	}
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( dispute.due_by ).local().toISOString()
-	);
+	return formatDateTimeFromString( dispute.due_by, {
+		includeTime: true,
+	} );
 };
 
 export const DisputesList = (): JSX.Element => {
 	// pre-fetching the settings.
 	useSettings();
 
-	const [ isDownloading, setIsDownloading ] = useState( false );
-	const { createNotice } = useDispatch( 'core/notices' );
 	const { disputes, isLoading } = useDisputes( getQuery() );
 
 	const { disputesSummary, isLoading: isSummaryLoading } = useDisputesSummary(
 		getQuery()
 	);
 
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
+	const { requestReportExport, isExportInProgress } = useReportExport();
 
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
+	const { createNotice } = useDispatch( 'core/notices' );
 
 	const headers = getHeaders( getQuery().orderby );
+	const { columnsToDisplay, onColumnsChange } =
+		usePersistedColumnVisibility< DisputesTableHeader >(
+			'wc_payments_disputes_hidden_columns',
+			headers
+		);
+
 	const totalRows = disputesSummary.count || 0;
 
 	const rows = disputes.map( ( dispute ) => {
@@ -275,10 +264,7 @@ export const DisputesList = (): JSX.Element => {
 			status: {
 				value: dispute.status,
 				display: clickable(
-					<DisputeStatusChip
-						status={ dispute.status }
-						dueBy={ dispute.due_by }
-					/>
+					<DisputeStatusChip status={ dispute.status } />
 				),
 			},
 			reason: {
@@ -298,10 +284,9 @@ export const DisputesList = (): JSX.Element => {
 			created: {
 				value: dispute.created,
 				display: clickable(
-					dateI18n(
-						'M j, Y',
-						moment( dispute.created ).toISOString()
-					)
+					formatDateTimeFromString( dispute.created, {
+						includeTime: true,
+					} )
 				),
 			},
 			dueBy: {
@@ -357,21 +342,40 @@ export const DisputesList = (): JSX.Element => {
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
+	const onDownload = async () => {
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
-		const locale = getExportLanguage( language, exportLanguage );
+		const locale = wcSettings.locale.userLocale;
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'disputes',
+			source: path,
+			exported_row_count: disputesSummary.count,
+		} );
+
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
 			date_between: dateBetween,
 			match,
+			filter,
 			status_is: statusIs,
 			status_is_not: statusIsNot,
 		} = getQuery();
+
+		const exportRequestURL = getDisputesCSVRequestURL( {
+			userEmail,
+			locale,
+			dateAfter,
+			dateBefore,
+			dateBetween,
+			match,
+			filter,
+			statusIs,
+			statusIsNot,
+		} );
 
 		const isFiltered =
 			!! dateBefore ||
@@ -394,121 +398,23 @@ export const DisputesList = (): JSX.Element => {
 			totalRows < confirmThreshold ||
 			window.confirm( confirmMessage )
 		) {
-			try {
-				const { exported_disputes: exportedDisputes } = await apiFetch(
-					{
-						path: getDisputesCSV( {
-							userEmail,
-							locale,
-							dateAfter,
-							dateBefore,
-							dateBetween,
-							match,
-							statusIs,
-							statusIsNot,
-						} ),
-						method: 'POST',
-					}
-				);
+			requestReportExport( {
+				exportRequestURL,
+				exportFileAvailabilityEndpoint: disputesDownloadEndpoint,
+				userEmail,
+			} );
 
-				createNotice(
-					'success',
-					sprintf(
-						__(
-							'Your export will be emailed to %s',
-							'woocommerce-payments'
-						),
-						userEmail
-					)
-				);
-
-				recordEvent( 'wcpay_disputes_download', {
-					exported_disputes: exportedDisputes,
-					total_disputes: exportedDisputes,
-					download_type: 'endpoint',
-				} );
-			} catch {
-				createNotice(
-					'error',
+			createNotice(
+				'success',
+				sprintf(
 					__(
-						'There was a problem generating your export.',
+						'We’re processing your export. 🎉 The file will download automatically and be emailed to %s.',
 						'woocommerce-payments'
-					)
-				);
-			}
-		}
-	};
-
-	const onDownload = async () => {
-		setIsDownloading( true );
-		const title = __( 'Disputes', 'woocommerce-payments' );
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
-
-		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
-		} else {
-			const csvColumns = [
-				{
-					...headers[ 0 ],
-					label: __( 'Dispute Id', 'woocommerce-payments' ),
-				},
-				...headers.slice( 1, -1 ), // Remove details (position 0)  and action (last position) column headers.
-			];
-
-			const csvRows = rows.map( ( row ) => {
-				return [
-					...row.slice( 0, 3 ), // Amount, Currency, Status.
-					{
-						// Reason.
-						...row[ 3 ],
-						value:
-							disputeStatusMapping[ row[ 3 ].value ?? '' ]
-								.message,
-					},
-					{
-						// Source.
-						...row[ 4 ],
-						value: formatStringValue(
-							( row[ 4 ].value ?? '' ).toString()
-						),
-					},
-					...row.slice( 5, 10 ), // Order #, Customer, Email, Country.
-					{
-						// Disputed On.
-						...row[ 10 ],
-						value: dateI18n(
-							'Y-m-d',
-							moment( row[ 10 ].value ).toISOString()
-						),
-					},
-					{
-						// Respond by.
-						...row[ 11 ],
-						value: dateI18n(
-							'Y-m-d / g:iA',
-							moment( row[ 11 ].value ).toISOString()
-						),
-					},
-				];
-			} );
-
-			downloadCSVFile(
-				generateCSVFileName( title, getQuery() ),
-				generateCSVDataFromTable( csvColumns, csvRows )
+					),
+					userEmail
+				)
 			);
-
-			recordEvent( 'wcpay_disputes_download', {
-				exported_disputes: csvRows.length,
-				total_disputes: disputesSummary.count,
-				download_type: 'browser',
-			} );
 		}
-
-		setIsDownloading( false );
 	};
 
 	let summary;
@@ -530,21 +436,11 @@ export const DisputesList = (): JSX.Element => {
 		];
 	}
 
-	const isCurrencyFiltered = 'string' === typeof getQuery().store_currency_is;
+	const isCurrencyFiltered = typeof getQuery().store_currency_is === 'string';
 
 	const storeCurrencies =
 		disputesSummary.currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
-
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportDisputes = ( language: string ) => {
-		endpointExport( language );
-
-		closeModal();
-	};
 
 	return (
 		<Page>
@@ -556,31 +452,26 @@ export const DisputesList = (): JSX.Element => {
 				isLoading={ isLoading }
 				rowsPerPage={ parseInt( getQuery().per_page ?? '', 10 ) || 25 }
 				totalRows={ totalRows }
-				headers={ headers }
+				headers={ columnsToDisplay }
 				rows={ rows }
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading || isDownloading }
+							isDisabled={ isLoading || isExportInProgress }
+							isBusy={ isExportInProgress }
 							onClick={ onDownload }
 						/>
 					),
 				] }
 			/>
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportDisputes }
-						totalItems={ totalRows }
-						exportType={ 'disputes' }
-					/>
-				) }
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

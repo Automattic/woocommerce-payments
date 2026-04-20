@@ -12,7 +12,8 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 
 /**
  * WC_Payment_Gateway_WCPay unit tests.
@@ -103,7 +104,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		// Note that we cannot use createStub here since it's not defined in PHPUnit 6.5.
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'request_with_level3_data', 'is_server_connected' ] )
+			->setMethods( [ 'create_and_confirm_intention', 'get_payment_method', 'is_server_connected' ] )
 			->getMock();
 
 		// Arrange: Mock WC_Payments_Account instance to use later.
@@ -135,7 +136,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 
 		$mock_dpps           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
-		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method = $this->createMock( UPE_Payment_Method::class );
 
 		// Arrange: Mock WC_Payment_Gateway_WCPay so that some of its methods can be
 		// mocked, and their return values can be used for testing.
@@ -149,12 +150,12 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$mock_payment_method,
 					[ 'card' => $mock_payment_method ],
-					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$mock_dpps,
 					$this->createMock( WC_Payments_Localization_Service::class ),
 					$this->createMock( WC_Payments_Fraud_Service::class ),
 					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -319,6 +320,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$mock_subscription->payment_method = 'woocommerce_payments';
 
 		$mock_subscription->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
+		$order->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
 			function ( $id ) use ( $mock_subscription ) {

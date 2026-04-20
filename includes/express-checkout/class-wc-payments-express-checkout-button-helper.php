@@ -7,9 +7,9 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 
 /**
  * Express Checkout Button Helper class.
@@ -59,7 +59,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Builds the line items to pass to Payment Request
+	 * Builds the line items to pass to Express Checkout
 	 *
 	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
 	 */
@@ -182,7 +182,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return int
 	 */
 	public function get_quantity() {
-		// Payment Request Button sends the quantity as qty. WooPay sends it as quantity.
+		// Express Checkout Element sends the quantity as qty. WooPay sends it as quantity.
 		if ( isset( $_POST['quantity'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return absint( $_POST['quantity'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		} elseif ( isset( $_POST['qty'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -229,39 +229,147 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if button is available at a given location.
+	 * Checks if a specific express checkout method is enabled at a given location.
 	 *
-	 * @param string $location Location.
-	 * @param string $option_name Option name.
+	 * Uses the new location-centric settings (express_checkout_{location}_methods).
+	 *
+	 * @param string $location Location (product, cart, checkout).
+	 * @param string $method_id Method identifier (payment_request, woopay, amazon_pay, link).
 	 * @return boolean
 	 */
-	public function is_available_at( $location, $option_name ) {
-		$available_locations = $this->gateway->get_option( $option_name );
-		if ( $available_locations && is_array( $available_locations ) ) {
-			return in_array( $location, $available_locations, true );
+	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
+		// The "pay for order" page is a checkout page, but we want to use the "checkout" location for settings.
+		if ( 'pay_for_order' === $location ) {
+			$location = 'checkout';
+		}
+
+		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
+
+		if ( $enabled_methods && is_array( $enabled_methods ) ) {
+			return in_array( $method_id, $enabled_methods, true );
 		}
 
 		return false;
 	}
 
 	/**
-	 * Gets settings that are shared between the Payment Request button and the WooPay button.
+	 * Checks whether cart contains a subscription product or this is a subscription product page.
+	 *
+	 * @return boolean
+	 */
+	public function has_subscription_product() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( $this->is_product() ) {
+			$product = $this->get_product();
+			if ( WC_Subscriptions_Product::is_subscription( $product ) ) {
+				return true;
+			}
+		}
+
+		if ( $this->is_checkout() || $this->is_cart() ) {
+			if ( WC_Subscriptions_Cart::cart_contains_subscription() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if Amazon Pay can be used as an express checkout button.
+	 *
+	 * This validates:
+	 * - Express checkout is not displayed in the payment methods list
+	 * - Amazon Pay feature flag is enabled
+	 * - Gateway exists and is available for express checkout
+	 * - Tax settings are compatible (Amazon Pay doesn't support taxes based on billing address)
+	 *
+	 * @return boolean
+	 */
+	public function can_use_amazon_pay() {
+		// When express checkout methods are displayed in the payment methods list,
+		// Amazon Pay should not appear as a separate express button.
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return false;
+		}
+
+		if ( ! WC_Payments_Features::is_amazon_pay_enabled() ) {
+			return false;
+		}
+
+		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( AmazonPayDefinition::get_id() );
+		if ( ! $amazon_pay_gateway ) {
+			return false;
+		}
+
+		if ( ! $amazon_pay_gateway->is_available_for_express_checkout() ) {
+			return false;
+		}
+
+		// Amazon Pay doesn't support taxes based on billing address.
+		if ( wc_tax_enabled() && 'billing' === get_option( 'woocommerce_tax_based_on' ) && ! $this->is_pay_for_order_page() ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Gets the list of enabled express checkout methods for the current page context.
+	 *
+	 * This method checks:
+	 * 1. The current page context (product, cart, checkout)
+	 * 2. The location settings (express_checkout_{location}_methods)
+	 * 3. The feature flags (is_payment_request_enabled, is_amazon_pay_enabled)
+	 * 4. Currency availability (e.g., Amazon Pay checks currency restrictions)
+	 *
+	 * @return array Array of enabled method IDs (e.g., ['payment_request', 'amazon_pay']).
+	 */
+	public function get_enabled_express_checkout_methods_for_context() {
+		$enabled_methods = [];
+		$context         = $this->get_button_context();
+
+		// If no valid context, return an empty array.
+		if ( empty( $context ) ) {
+			return $enabled_methods;
+		}
+
+		// Check Google Pay / Apple Pay (payment_request).
+		if (
+			$this->gateway->is_payment_request_enabled() &&
+			$this->is_express_checkout_method_enabled_at( $context, 'payment_request' )
+		) {
+			$enabled_methods[] = 'payment_request';
+		}
+
+		// Check Amazon Pay.
+		if (
+			$this->can_use_amazon_pay() &&
+			$this->is_express_checkout_method_enabled_at( $context, 'amazon_pay' )
+		) {
+			$enabled_methods[] = 'amazon_pay';
+		}
+
+		return $enabled_methods;
+	}
+
+	/**
+	 * Gets settings that are shared between the Express Checkout button and the WooPay button.
 	 *
 	 * @return array
 	 */
 	public function get_common_button_settings() {
 		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
-		$settings    = [
+
+		return [
 			'type'   => $button_type,
 			'theme'  => $this->gateway->get_option( 'payment_request_button_theme' ),
 			'height' => $this->get_button_height(),
+			'radius' => $this->gateway->get_option( 'payment_request_button_border_radius' ),
 		];
-
-		if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
-			$settings['radius'] = $this->gateway->get_option( 'payment_request_button_border_radius' );
-		}
-
-		return $settings;
 	}
 
 	/**
@@ -365,11 +473,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks whether Payment Request Button should be available on this page.
+	 * Checks whether Express Checkout Element Button should be available on this page.
 	 *
 	 * @return bool
 	 */
 	public function should_show_express_checkout_button() {
+		// When express checkout methods are displayed in the payment methods list,
+		// don't show them as separate express buttons.
+		if ( \WC_Payments::get_gateway()->is_express_checkout_in_payment_methods_enabled() ) {
+			return false;
+		}
+
 		// If account is not connected, then bail.
 		if ( ! $this->account->is_stripe_connected( false ) ) {
 			return false;
@@ -377,7 +491,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// If no SSL, bail.
 		if ( ! WC_Payments::mode()->is_test() && ! is_ssl() ) {
-			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
+			Logger::log( 'Stripe Express Checkout live mode requires SSL.' );
 
 			return false;
 		}
@@ -387,39 +501,30 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Product page, but not available in settings.
-		if ( $this->is_product() && ! $this->is_available_at( 'product', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
-			return false;
-		}
-
-		// Checkout page, but not available in settings.
-		if ( $this->is_checkout() && ! $this->is_available_at( 'checkout', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
-			return false;
-		}
-
-		// Cart page, but not available in settings.
-		if ( $this->is_cart() && ! $this->is_available_at( 'cart', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
+		// No express checkout methods are actually enabled for the current page context
+		// (checks both location settings and feature flags/availability).
+		if ( empty( $this->get_enabled_express_checkout_methods_for_context() ) ) {
 			return false;
 		}
 
 		// Product page, but has unsupported product type.
 		if ( $this->is_product() && ! $this->is_product_supported() ) {
-			Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
+			Logger::log( 'Product page has unsupported product type ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
-			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
+			Logger::log( 'Items in the cart have unsupported product type ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
-			return true;
+			return $this->is_pay_for_order_supported();
 		}
 
-		// Non-shipping product and billing is calculated based on shopper billing addres. Excludes Pay for Order page.
+		// Non-shipping product and tax is calculated based on shopper billing address. Excludes Pay for Order page.
 		if (
 			// If the product doesn't needs shipping.
 			(
@@ -430,8 +535,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
 			)
 
-			// ...and billing is calculated based on billing address.
+			// ...and tax is calculated based on billing address.
+			&& wc_tax_enabled()
 			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
+			&& 'yes' !== get_option( 'woocommerce_prices_include_tax' )
 		) {
 			return false;
 		}
@@ -439,11 +546,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// Cart total is 0 or is on product page and product price is 0.
 		// Exclude pay-for-order pages from this check.
 		if (
-			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
-			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
-
+			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) )
+			|| ( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 		) {
-			Logger::log( 'Order price is 0 ( Payment Request button disabled )' );
+			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
@@ -492,14 +598,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return boolean
-	 *
-	 * @psalm-suppress UndefinedClass
 	 */
 	public function has_allowed_items_in_cart() {
 		/**
 		 * Pre Orders compatbility where we don't support charge upon release.
-		 *
-		 * @psalm-suppress UndefinedClass
 		 */
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
 			return false;
@@ -513,151 +615,25 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 
 			/**
-			 * Filter whether product supports Payment Request Button on cart page.
+			 * Filter whether product supports Express Checkout Element Button on cart page.
 			 *
 			 * @since 6.9.0
 			 *
-			 * @param boolean $is_supported Whether product supports Payment Request Button on cart page.
+			 * @param boolean $is_supported Whether product supports Express Checkout Element Button on cart page.
 			 * @param object  $_product     Product object.
 			 */
 			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
 				return false;
 			}
-
-			/**
-			 * Trial subscriptions with shipping are not supported.
-			 *
-			 * @psalm-suppress UndefinedClass
-			 */
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
-				return false;
-			}
 		}
 
-		// We don't support multiple packages with Payment Request Buttons because we can't offer a good UX.
+		// We don't support multiple packages with Express Checkout Element Buttons because we can't offer a good UX.
 		$packages = WC()->cart->get_shipping_packages();
 		if ( 1 < ( is_countable( $packages ) ? count( $packages ) : 0 ) ) {
 			return false;
 		}
 
 		return true;
-	}
-
-	/**
-	 * Gets shipping options available for specified shipping address
-	 *
-	 * @param array   $shipping_address Shipping address.
-	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
-	 *
-	 * @return array Shipping options data.
-	 *
-	 * phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag
-	 */
-	public function get_shipping_options( $shipping_address, $itemized_display_items = false ) {
-		try {
-			// Set the shipping options.
-			$data = [];
-
-			// Remember current shipping method before resetting.
-			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
-
-			$packages = WC()->shipping->get_packages();
-
-			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
-				foreach ( $packages as $package ) {
-					if ( empty( $package['rates'] ) ) {
-						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
-					}
-
-					foreach ( $package['rates'] as $rate ) {
-						$data['shipping_options'][] = [
-							'id'          => $rate->id,
-							'displayName' => $rate->label,
-							'amount'      => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
-						];
-					}
-				}
-			} else {
-				throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
-			}
-
-			// The first shipping option is automatically applied on the client.
-			// Keep chosen shipping method by sorting shipping options if the method still available for new address.
-			// Fallback to the first available shipping method.
-			if ( isset( $data['shipping_options'][0] ) ) {
-				if ( isset( $chosen_shipping_methods[0] ) ) {
-					$chosen_method_id         = $chosen_shipping_methods[0];
-					$compare_shipping_options = function ( $a, $b ) use ( $chosen_method_id ) {
-						if ( $a['id'] === $chosen_method_id ) {
-							return -1;
-						}
-
-						if ( $b['id'] === $chosen_method_id ) {
-							return 1;
-						}
-
-						return 0;
-					};
-					usort( $data['shipping_options'], $compare_shipping_options );
-				}
-
-				$first_shipping_method_id = $data['shipping_options'][0]['id'];
-				$this->update_shipping_method( [ $first_shipping_method_id ] );
-			}
-
-			WC()->cart->calculate_totals();
-
-			$this->maybe_restore_recurring_chosen_shipping_methods( $chosen_shipping_methods );
-
-			$data          += $this->build_display_items( $itemized_display_items );
-			$data['result'] = 'success';
-		} catch ( Exception $e ) {
-			$data          += $this->build_display_items( $itemized_display_items );
-			$data['result'] = 'invalid_shipping_address';
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
-	 * during the Payment Request get_shipping_options flow.
-	 *
-	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
-	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
-	 * only concerned about handling the initial purchase.
-	 *
-	 * In order to avoid Woo Subscriptions's `WC_Subscriptions_Cart::validate_recurring_shipping_methods` throwing an error, we need to restore
-	 * the previously chosen shipping methods for each recurring cart.
-	 *
-	 * This function needs to be called after `WC()->cart->calculate_totals()` is run, otherwise `WC()->cart->recurring_carts` won't exist yet.
-	 *
-	 * @param array $previous_chosen_methods The previously chosen shipping methods.
-	 */
-	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods = [] ) {
-		if ( empty( WC()->cart->recurring_carts ) || ! method_exists( 'WC_Subscriptions_Cart', 'get_recurring_shipping_package_key' ) ) {
-			return;
-		}
-
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-
-		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
-				// phpcs:ignore
-				/**
-				 * @psalm-suppress UndefinedClass
-				 */
-				$package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $recurring_cart_package_index );
-
-				// If the recurring cart package key is found in the previous chosen methods, but not in the current chosen methods, restore it.
-				if ( isset( $previous_chosen_methods[ $package_key ] ) && ! isset( $chosen_shipping_methods[ $package_key ] ) ) {
-					$chosen_shipping_methods[ $package_key ] = $previous_chosen_methods[ $package_key ];
-				}
-			}
-		}
-
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
 	}
 
 	/**
@@ -746,8 +722,37 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+		$data['product_type']   = $product->get_type();
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * The Store API doesn't allow checkout without the billing email address present on the order data.
+	 * https://github.com/woocommerce/woocommerce/issues/48540
+	 *
+	 * @return bool
+	 */
+	private function is_pay_for_order_supported() {
+		$order_id = absint( get_query_var( 'order-pay' ) );
+		if ( 0 === $order_id ) {
+			return false;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return false;
+		}
+
+		// we don't need to check its validity or value, we just need to ensure a billing email is present.
+		$billing_email = $order->get_billing_email();
+		if ( ! empty( $billing_email ) ) {
+			return true;
+		}
+
+		Logger::log( 'Billing email not present ( Express Checkout Element button disabled )' );
+
+		return false;
 	}
 
 	/**
@@ -759,18 +764,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$product      = $this->get_product();
 		$is_supported = true;
 
-		/**
-		 * Ignore undefined classes from 3rd party plugins.
-		 *
-		 * @psalm-suppress UndefinedClass
-		 */
-		if ( is_null( $product )
-			|| ! is_object( $product )
-			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) // Trial subscriptions with shipping are not supported.
+		if ( is_null( $product ) || ! is_object( $product ) ) {
+			$is_supported = false;
+		} elseif (
+			! in_array( $product->get_type(), $this->supported_product_types(), true )
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
+			// Subscriptions with a free trial and no sign-up fee are not supported
+			// because ECE and ConfirmationToken do not deal well with Setup Intent.
+			// When a sign-up fee exists, the initial charge is non-zero, so ECE can display it correctly.
+			|| ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $product ) && WC_Subscriptions_Product::get_trial_length( $product ) > 0 && 0.0 >= (float) WC_Subscriptions_Product::get_sign_up_fee( $product ) )
 		) {
 			$is_supported = false;
 		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
@@ -796,8 +800,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return mixed Total price.
 	 *
 	 * @throws Invalid_Price_Exception Whenever a product has no price.
-	 *
-	 * @psalm-suppress UndefinedClass
 	 */
 	public function get_product_price( $product, ?bool $is_deposit = null, int $deposit_plan_id = 0 ) {
 		// If prices should include tax, using tax inclusive price.
@@ -875,180 +877,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		return WC_Tax::calc_tax( $price, $rates, false );
 	}
 
-	/**
-	 * Gets the normalized state/county field because in some
-	 * cases, the state/county field is formatted differently from
-	 * what WC is expecting and throws an error. An example
-	 * for Ireland, the county dropdown in Chrome shows "Co. Clare" format.
-	 *
-	 * @param string $state Full state name or an already normalized abbreviation.
-	 * @param string $country Two-letter country code.
-	 *
-	 * @return string Normalized state abbreviation.
-	 */
-	public function get_normalized_state( $state, $country ) {
-		// If it's empty or already normalized, skip.
-		if ( ! $state || $this->is_normalized_state( $state, $country ) ) {
-			return $state;
-		}
-
-		// Try to match state from the Payment Request API list of states.
-		$state = $this->get_normalized_state_from_pr_states( $state, $country );
-
-		// If it's normalized, return.
-		if ( $this->is_normalized_state( $state, $country ) ) {
-			return $state;
-		}
-
-		// If the above doesn't work, fallback to matching against the list of translated
-		// states from WooCommerce.
-		return $this->get_normalized_state_from_wc_states( $state, $country );
-	}
-
-	/**
-	 * The Payment Request API provides its own validation for the address form.
-	 * For some countries, it might not provide a state field, so we need to return a more descriptive
-	 * error message, indicating that the Payment Request button is not supported for that country.
-	 */
-	public static function validate_state() {
-		$wc_checkout     = WC_Checkout::instance();
-		$posted_data     = $wc_checkout->get_posted_data();
-		$checkout_fields = $wc_checkout->get_checkout_fields();
-		$countries       = WC()->countries->get_countries();
-
-		$is_supported = true;
-		// Checks if billing state is missing and is required.
-		if ( ! empty( $checkout_fields['billing']['billing_state']['required'] ) && '' === $posted_data['billing_state'] ) {
-			$is_supported = false;
-		}
-
-		// Checks if shipping state is missing and is required.
-		if ( WC()->cart->needs_shipping_address() && ! empty( $checkout_fields['shipping']['shipping_state']['required'] ) && '' === $posted_data['shipping_state'] ) {
-			$is_supported = false;
-		}
-
-		if ( ! $is_supported ) {
-			wc_add_notice(
-				sprintf(
-					/* translators: %s: country. */
-					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
-					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
-				),
-				'error'
-			);
-		}
-	}
-
-	/**
-	 * Normalizes billing and shipping state fields.
-	 */
-	public function normalize_state() {
-		check_ajax_referer( 'woocommerce-process_checkout', '_wpnonce' );
-
-		$billing_country  = ! empty( $_POST['billing_country'] ) ? wc_clean( wp_unslash( $_POST['billing_country'] ) ) : '';
-		$shipping_country = ! empty( $_POST['shipping_country'] ) ? wc_clean( wp_unslash( $_POST['shipping_country'] ) ) : '';
-		$billing_state    = ! empty( $_POST['billing_state'] ) ? wc_clean( wp_unslash( $_POST['billing_state'] ) ) : '';
-		$shipping_state   = ! empty( $_POST['shipping_state'] ) ? wc_clean( wp_unslash( $_POST['shipping_state'] ) ) : '';
-
-		if ( $billing_state && $billing_country ) {
-			$_POST['billing_state'] = $this->get_normalized_state( $billing_state, $billing_country );
-		}
-
-		if ( $shipping_state && $shipping_country ) {
-			$_POST['shipping_state'] = $this->get_normalized_state( $shipping_state, $shipping_country );
-		}
-	}
-
-	/**
-	 * Checks if given state is normalized.
-	 *
-	 * @param string $state State.
-	 * @param string $country Two-letter country code.
-	 *
-	 * @return bool Whether state is normalized or not.
-	 */
-	public function is_normalized_state( $state, $country ) {
-		$wc_states = WC()->countries->get_states( $country );
-		return is_array( $wc_states ) && array_key_exists( $state, $wc_states );
-	}
-
-	/**
-	 * Get normalized state from Payment Request API dropdown list of states.
-	 *
-	 * @param string $state Full state name or state code.
-	 * @param string $country Two-letter country code.
-	 *
-	 * @return string Normalized state or original state input value.
-	 */
-	public function get_normalized_state_from_pr_states( $state, $country ) {
-		// Include Payment Request API State list for compatibility with WC countries/states.
-		include_once WCPAY_ABSPATH . 'includes/constants/class-payment-request-button-states.php';
-		$pr_states = \WCPay\Constants\Payment_Request_Button_States::STATES;
-
-		if ( ! isset( $pr_states[ $country ] ) ) {
-			return $state;
-		}
-
-		foreach ( $pr_states[ $country ] as $wc_state_abbr => $pr_state ) {
-			$sanitized_state_string = $this->sanitize_string( $state );
-			// Checks if input state matches with Payment Request state code (0), name (1) or localName (2).
-			if (
-				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[0] ) ) ||
-				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[1] ) ) ||
-				( ! empty( $pr_state[2] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[2] ) )
-			) {
-				return $wc_state_abbr;
-			}
-		}
-
-		return $state;
-	}
-
-	/**
-	 * Get normalized state from WooCommerce list of translated states.
-	 *
-	 * @param string $state Full state name or state code.
-	 * @param string $country Two-letter country code.
-	 *
-	 * @return string Normalized state or original state input value.
-	 */
-	public function get_normalized_state_from_wc_states( $state, $country ) {
-		$wc_states = WC()->countries->get_states( $country );
-
-		if ( is_array( $wc_states ) ) {
-			foreach ( $wc_states as $wc_state_abbr => $wc_state_value ) {
-				if ( preg_match( '/' . preg_quote( $wc_state_value, '/' ) . '/i', $state ) ) {
-					return $wc_state_abbr;
-				}
-			}
-		}
-
-		return $state;
-	}
-
-	/**
-	 * Normalizes postal code in case of redacted data from Apple Pay.
-	 *
-	 * @param string $postcode Postal code.
-	 * @param string $country Country.
-	 */
-	public function get_normalized_postal_code( $postcode, $country ) {
-		/**
-		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
-		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
-		 * the postal code and not calculate shipping zones correctly.
-		 */
-		if ( Country_Code::UNITED_KINGDOM === $country ) {
-			// Replaces a redacted string with something like N1C0000.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
-		}
-		if ( Country_Code::CANADA === $country ) {
-			// Replaces a redacted string with something like H3B000.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
-		}
-
-		return $postcode;
-	}
 
 	/**
 	 * Sanitize string for comparison.
@@ -1059,117 +887,5 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function sanitize_string( $string ) {
 		return trim( wc_strtolower( remove_accents( $string ) ) );
-	}
-
-	/**
-	 * Updates shipping method in WC session
-	 *
-	 * @param array $shipping_methods Array of selected shipping methods ids.
-	 */
-	public function update_shipping_method( $shipping_methods ) {
-		$chosen_shipping_methods = (array) WC()->session->get( 'chosen_shipping_methods' );
-
-		if ( is_array( $shipping_methods ) ) {
-			foreach ( $shipping_methods as $i => $value ) {
-				$chosen_shipping_methods[ $i ] = wc_clean( $value );
-			}
-		}
-
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
-	}
-
-	/**
-	 * Add express checkout payment method title to the order.
-	 *
-	 * @param integer $order_id The order ID.
-	 *
-	 * @return  void
-	 */
-	public function add_order_payment_method_title( $order_id ) {
-		if ( empty( $_POST['express_payment_type'] ) || ! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method'] ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return;
-		}
-
-		$express_payment_type   = wc_clean( wp_unslash( $_POST['express_payment_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		$express_payment_titles = [
-			'apple_pay'  => 'Apple Pay',
-			'google_pay' => 'Google Pay',
-		];
-		$payment_method_title   = $express_payment_titles[ $express_payment_type ] ?? false;
-
-		if ( ! $payment_method_title ) {
-			return;
-		}
-
-		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
-		if ( ! empty( $suffix ) ) {
-			$suffix = " ($suffix)";
-		}
-
-		$order = wc_get_order( $order_id );
-		$order->set_payment_method_title( $payment_method_title . $suffix );
-		$order->save();
-	}
-
-	/**
-	 * Calculate and set shipping method.
-	 *
-	 * @param array $address Shipping address.
-	 */
-	protected function calculate_shipping( $address = [] ) {
-		$country   = $address['country'];
-		$state     = $address['state'];
-		$postcode  = $address['postcode'];
-		$city      = $address['city'];
-		$address_1 = $address['address_1'];
-		$address_2 = $address['address_2'];
-
-		// Normalizes state to calculate shipping zones.
-		$state = $this->get_normalized_state( $state, $country );
-
-		// Normalizes postal code in case of redacted data from Apple Pay.
-		$postcode = $this->get_normalized_postal_code( $postcode, $country );
-
-		WC()->shipping->reset_shipping();
-
-		if ( $postcode && WC_Validation::is_postcode( $postcode, $country ) ) {
-			$postcode = wc_format_postcode( $postcode, $country );
-		}
-
-		if ( $country ) {
-			WC()->customer->set_location( $country, $state, $postcode, $city );
-			WC()->customer->set_shipping_location( $country, $state, $postcode, $city );
-		} else {
-			WC()->customer->set_billing_address_to_base();
-			WC()->customer->set_shipping_address_to_base();
-		}
-
-		WC()->customer->set_calculated_shipping( true );
-		WC()->customer->save();
-
-		$packages = [];
-
-		$packages[0]['contents']                 = WC()->cart->get_cart();
-		$packages[0]['contents_cost']            = 0;
-		$packages[0]['applied_coupons']          = WC()->cart->applied_coupons;
-		$packages[0]['user']['ID']               = get_current_user_id();
-		$packages[0]['destination']['country']   = $country;
-		$packages[0]['destination']['state']     = $state;
-		$packages[0]['destination']['postcode']  = $postcode;
-		$packages[0]['destination']['city']      = $city;
-		$packages[0]['destination']['address']   = $address_1;
-		$packages[0]['destination']['address_2'] = $address_2;
-
-		foreach ( WC()->cart->get_cart() as $item ) {
-			if ( $item['data']->needs_shipping() ) {
-				if ( isset( $item['line_total'] ) ) {
-					$packages[0]['contents_cost'] += $item['line_total'];
-				}
-			}
-		}
-
-		$packages = apply_filters( 'woocommerce_cart_shipping_packages', $packages );
-
-		WC()->shipping->calculate_shipping( $packages );
 	}
 }

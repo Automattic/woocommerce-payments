@@ -8,6 +8,7 @@
 use WCPay\Core\Server\Request\Get_Account_Capital_Link;
 use WCPay\Core\Server\Request\Get_Account_Login_Data;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Tracker;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -92,6 +93,7 @@ class WC_Payments_Redirect_Service {
 			$request->set_refresh_url( $refresh_url );
 
 			$capital_link = $request->send();
+			Tracker::track_admin( 'wcpay_capital_view_offer_redirect' );
 			$this->redirect_to( $capital_link['url'] );
 		} catch ( Exception $e ) {
 
@@ -116,6 +118,37 @@ class WC_Payments_Redirect_Service {
 		} catch ( API_Exception $e ) {
 			$this->redirect_to_overview_page_with_error( [ 'wcpay-server-link-error' => '1' ] );
 		}
+	}
+
+	/**
+	 * Immediately redirect to the NOX page.
+	 *
+	 * Note that this function immediately ends the execution.
+	 *
+	 * @param string|null $from   Optional. Location of the redirect.
+	 * @param string|null $source Optional. Where the merchant entered the onboarding flow.
+	 */
+	public function redirect_to_nox_flow( ?string $from = null, ?string $source = null ): void {
+		// If the WC Admin version is less than 9.5, redirect to the Connect page instead.
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '9.9.3', '<' ) ) {
+			$this->redirect_to_connect_page( null, $from, [ 'source' => $source ] );
+		}
+
+		$params = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+			'path' => '/woopayments/onboarding',
+		];
+
+		if ( ! empty( $from ) ) {
+			$params['from'] = $from;
+		}
+
+		if ( ! empty( $source ) ) {
+			$params['source'] = $source;
+		}
+
+		$this->redirect_to( admin_url( add_query_arg( $params, 'admin.php' ) ) );
 	}
 
 	/**
@@ -168,6 +201,34 @@ class WC_Payments_Redirect_Service {
 
 		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
 			// We are already in the onboarding wizard. Do nothing.
+			return;
+		}
+
+		$params = array_merge( $params, $additional_params );
+
+		if ( ! empty( $from ) ) {
+			$params['from'] = $from;
+		}
+
+		$this->redirect_to( admin_url( add_query_arg( $params, 'admin.php' ) ) );
+	}
+
+	/**
+	 * Immediately redirect to the settings page.
+	 *
+	 * Note that this function immediately ends the execution.
+	 *
+	 * @param string|null $from              Optional. Source of the redirect.
+	 * @param array       $additional_params Optional. Additional URL params to add to the redirect URL.
+	 */
+	public function redirect_to_settings_page( ?string $from = null, array $additional_params = [] ): void {
+		$params = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+		];
+
+		if ( count( $params ) === count( array_intersect_assoc( $_GET, $params ) ) ) { // phpcs:disable WordPress.Security.NonceVerification.Recommended
+			// We are already in the settings page. Do nothing.
 			return;
 		}
 

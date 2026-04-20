@@ -39,19 +39,11 @@ class WooPay_Utilities {
 	}
 
 	/**
-	 * Checks various conditions to determine if WooPay should be enabled on the checkout page.
-	 *
-	 * This function should only be called when evaluating something for the checkout or cart page. The
-	 * function will return false if you're on any other page.
+	 * Check conditions to determine if WooPay should be enabled for guest checkout.
 	 *
 	 * @return bool  True if WooPay should be enabled, false otherwise.
 	 */
-	public function should_enable_woopay_on_cart_or_checkout(): bool {
-		if ( ! is_checkout() && ! has_block( 'woocommerce/checkout' ) && ! is_cart() && ! has_block( 'woocommerce/cart' ) ) {
-			// Wrong usage, this should only be called for the checkout or cart page.
-			return false;
-		}
-
+	public function should_enable_woopay_on_guest_checkout(): bool {
 		if ( ! is_user_logged_in() ) {
 			// If there's a subscription product in the cart and the customer isn't logged in we
 			// should not enable WooPay since that situation is currently not supported.
@@ -86,7 +78,7 @@ class WooPay_Utilities {
 	 * @return bool
 	 */
 	public function is_woopay_first_party_auth_enabled() {
-		return WC_Payments_Features::is_woopay_first_party_auth_enabled() && $this->is_country_available( WC_Payments::get_gateway() ); // Feature flag.
+		return WC_Payments_Features::is_woopay_express_checkout_enabled() && $this->is_country_available( WC_Payments::get_gateway() ); // Feature flag.
 	}
 
 	/**
@@ -146,6 +138,16 @@ class WooPay_Utilities {
 		$available_countries = self::get_persisted_available_countries();
 
 		return in_array( $location_data['country'], $available_countries, true );
+	}
+
+	/**
+	 * Sanitizes an intent ID by stripping everything by underscores, characters and digits.
+	 *
+	 * @param string $intent_id ID of the intent.
+	 * @return string Sanitized value.
+	 */
+	public static function sanitize_intent_id( string $intent_id ) {
+		return preg_replace( '/[^\w_]+/', '', $intent_id );
 	}
 
 	/**

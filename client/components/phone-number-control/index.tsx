@@ -5,7 +5,7 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import { BaseControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import 'intl-tel-input';
 
 /**
@@ -74,9 +74,9 @@ const PhoneNumberControl: React.FC< Props > = ( {
 	};
 
 	return (
-		<BaseControl id={ id } { ...rest }>
+		<BaseControl id={ id } { ...rest } __nextHasNoMarginBottom>
 			<div
-				className={ classNames(
+				className={ clsx(
 					'wcpay-component-phone-number-control',
 					'components-text-control__input',
 					{

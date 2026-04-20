@@ -25,19 +25,19 @@ export default {
 			'Finish business details verifications',
 			'woocommerce-payments'
 		),
-		sandbox: __( 'Enable sandbox mode', 'woocommerce-payments' ),
+		sandbox: __( 'Create test account', 'woocommerce-payments' ),
 		reset: __( 'Reset account', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
 		sprintf(
 			/* translators: %s: first name of the merchant, if it exists, %s: WooPayments. */
-			__( 'Hi%s, Welcome to %s!', 'woocommerce' ),
+			__( 'Hi%s, Welcome to %s!', 'woocommerce-payments' ),
 			firstName ? ` ${ firstName }` : '',
 			'WooPayments'
 		),
 	paymentMethods: {
 		deposits: {
-			title: __( 'Deposits', 'woocommerce-payments' ),
+			title: __( 'Payouts', 'woocommerce-payments' ),
 			value: __( 'Automatic - Daily', 'woocommerce-payments' ),
 		},
 		capture: {
@@ -50,7 +50,7 @@ export default {
 		},
 	},
 	usp1: __(
-		'Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
+		'Offer card payments, Apple Pay, iDEAL | Wero, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
 		'woocommerce-payments'
 	),
 	usp2: __(
@@ -58,7 +58,7 @@ export default {
 		'woocommerce-payments'
 	),
 	usp3: __(
-		'Earn recurring revenue and get deposits into your bank account.',
+		'Earn recurring revenue and get payouts into your bank account.',
 		'woocommerce-payments'
 	),
 	sandboxMode: {
@@ -69,7 +69,7 @@ export default {
 		description: sprintf(
 			/* translators: %s: WooPayments */
 			__(
-				'This option will set up %s in sandbox mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+				'This option will set up a %s test account using test data. When you’re ready to launch your store, switching to live payments is easy.',
 				'woocommerce-payments'
 			),
 			'WooPayments'
@@ -77,7 +77,7 @@ export default {
 	},
 	sandboxModeNotice: interpolateComponents( {
 		mixedString: __(
-			'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please {{learnMoreLink}}disable it{{/learnMoreLink}}.',
+			'Test mode is enabled, only test accounts will be created. If you want to process live transactions, please {{learnMoreLink}}disable it{{/learnMoreLink}}.',
 			'woocommerce-payments'
 		),
 		components: {
@@ -111,7 +111,7 @@ export default {
 				'woocommerce-payments'
 			),
 		},
-		button: __( 'enable deposits.', 'woocommerce-payments' ),
+		button: __( 'enable payouts.', 'woocommerce-payments' ),
 	},
 	infoModal: {
 		title: sprintf(
@@ -202,7 +202,8 @@ export default {
 				'woocommerce-payments'
 			),
 			description: __(
-				"Here's a brief list of the information you'll need to finish payment signup:"
+				"Here's a brief list of the information you'll need to finish payment signup:",
+				'woocommerce-payments'
 			),
 		},
 		businessOwnerInfo: {
@@ -225,13 +226,13 @@ export default {
 			fields: [
 				__(
 					'Country where your business is based',
-					'woocommerce-payments '
+					'woocommerce-payments'
 				),
-				__( 'Type of business', 'woocommerce-payments ' ),
-				__( 'Industry', 'woocommerce-payments ' ),
-				__( 'Company address', 'woocommerce-payments ' ),
-				__( 'Company phone number', 'woocommerce-payments ' ),
-				__( 'Company URL', 'woocommerce-payments ' ),
+				__( 'Type of business', 'woocommerce-payments' ),
+				__( 'Industry', 'woocommerce-payments' ),
+				__( 'Company address', 'woocommerce-payments' ),
+				__( 'Company phone number', 'woocommerce-payments' ),
+				__( 'Company URL', 'woocommerce-payments' ),
 			],
 		},
 	},
@@ -252,7 +253,7 @@ export default {
 	step2: {
 		heading: __( 'Provide a few business details', 'woocommerce-payments' ),
 		description: __(
-			'Next we’ll ask you to verify your business and payment details to enable deposits.',
+			'Next we’ll ask you to verify your business and payment details to enable payouts.',
 			'woocommerce-payments'
 		),
 	},

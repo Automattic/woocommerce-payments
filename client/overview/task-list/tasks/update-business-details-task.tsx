@@ -11,9 +11,9 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import type { TaskItemProps } from '../types';
 import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-details';
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import { recordEvent } from 'wcpay/tracks';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
+import { getAdminUrl } from 'utils';
 
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
@@ -23,11 +23,10 @@ export const getUpdateBusinessDetailsTask = (
 	pastDue: boolean,
 	detailsSubmitted: boolean
 ): TaskItemProps | null => {
-	const accountRestrictedSoon = 'restricted_soon' === status;
-	const accountDetailsPastDue = 'restricted' === status && pastDue;
-	const hasMultipleErrors = 1 < errorMessages.length;
-	const hasSingleError = 1 === errorMessages.length;
-	const connectUrl = wcpaySettings.connectUrl;
+	const accountRestrictedSoon = status === 'restricted_soon';
+	const accountDetailsPastDue = status === 'restricted' && pastDue;
+	const hasMultipleErrors = errorMessages.length > 1;
+	const hasSingleError = errorMessages.length === 1;
 	const accountLinkWithSource = accountLink
 		? addQueryArgs( accountLink, {
 				from: 'WCPAY_OVERVIEW',
@@ -43,13 +42,12 @@ export const getUpdateBusinessDetailsTask = (
 		accountDetailsUpdateByDescription = sprintf(
 			/* translators: %s - formatted requirements current deadline (date) */
 			__(
-				'Update by %s to avoid a disruption in deposits.',
+				'Update by %s to avoid a disruption in payouts.',
 				'woocommerce-payments'
 			),
-			dateI18n(
-				'ga M j, Y',
-				moment( currentDeadline * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( currentDeadline, {
+				customFormat: 'ga M j, Y',
+			} )
 		);
 
 		if ( hasSingleError ) {
@@ -70,14 +68,14 @@ export const getUpdateBusinessDetailsTask = (
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until setup is completed.',
+					'Payments and payouts are disabled for this account until setup is completed.',
 					'woocommerce-payments'
 				);
 		} else {
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until missing business information is updated.',
+					'Payments and payouts are disabled for this account until missing business information is updated.',
 					'woocommerce-payments'
 				);
 		}
@@ -107,7 +105,7 @@ export const getUpdateBusinessDetailsTask = (
 	};
 
 	const handleClick = () => {
-		if ( 'complete' === status || 'enabled' === status ) {
+		if ( status === 'complete' || status === 'enabled' ) {
 			return;
 		}
 
@@ -122,12 +120,14 @@ export const getUpdateBusinessDetailsTask = (
 				source,
 			} );
 
-			// If the onboarding isn't complete use the connectUrl instead,
-			// as the accountLink doesn't handle redirecting back to the overview page.
+			// If the onboarding isn't complete redirect to the NOX onboarding page.
 			if ( ! detailsSubmitted ) {
-				window.location.href = addQueryArgs( connectUrl, {
-					from: 'WCPAY_OVERVIEW',
+				window.location.href = getAdminUrl( {
+					page: 'wc-settings',
+					tab: 'checkout',
+					path: '/woopayments/onboarding',
 					source: 'wcpay-finish-setup-task',
+					from: 'WCPAY_OVERVIEW',
 				} );
 			} else {
 				window.open( accountLinkWithSource, '_blank' );
@@ -160,7 +160,7 @@ export const getUpdateBusinessDetailsTask = (
 					'WooPayments'
 			  ),
 		content: accountDetailsTaskDescription,
-		completed: 'complete' === status || 'enabled' === status,
+		completed: status === 'complete' || status === 'enabled',
 		onClick: handleClick,
 		action: handleClick,
 		actionLabel: actionLabel,

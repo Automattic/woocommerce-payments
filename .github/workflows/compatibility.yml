@@ -6,7 +6,7 @@ on:
 env:
   WC_MIN_SUPPORTED_VERSION: '7.6.0'
   WP_MIN_SUPPORTED_VERSION: '6.0'
-  PHP_MIN_SUPPORTED_VERSION: '7.3'
+  PHP_MIN_SUPPORTED_VERSION: '7.4'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -40,12 +40,12 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-wc-compat-matrix.outputs.matrix) }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/composer/
-          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:
@@ -54,7 +54,7 @@ jobs:
           coverage: none
       # run CI checks
       - run: bash bin/run-ci-tests.bash
-  
+
   generate-wc-compat-beta-matrix:
     name: "Generate the matrix for compatibility-woocommerce-beta dynamically"
     runs-on: ubuntu-latest
@@ -81,12 +81,12 @@ jobs:
       GUTENBERG_VERSION: ${{ matrix.gutenberg }}
     steps:
       # clone the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       # enable dependencies caching
-      - uses: actions/cache@v4
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/composer/
-          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          key:  ${{ runner.os }}-composer-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
       # setup PHP, but without debug extensions for reasonable performance
       - uses: shivammathur/setup-php@v2
         with:

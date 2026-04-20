@@ -3,10 +3,9 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
-import { __, _n } from '@wordpress/i18n';
+import React from 'react';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard } from '@woocommerce/components';
-import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies.
@@ -15,13 +14,17 @@ import Page from 'components/page';
 import { TestModeNotice } from 'components/test-mode-notice';
 import ErrorBoundary from 'components/error-boundary';
 import ActiveLoanSummary from 'components/active-loan-summary';
-import { formatExplicitCurrency, isZeroDecimalCurrency } from 'utils/currency';
+import {
+	formatExplicitCurrency,
+	isZeroDecimalCurrency,
+} from 'multi-currency/interface/functions';
 import { CapitalLoan } from 'data/capital/types';
 import ClickableCell from 'components/clickable-cell';
 import Chip from 'components/chip';
 import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 const columns = [
 	{
@@ -75,9 +78,11 @@ const columns = [
 
 const getLoanStatusText = ( loan: CapitalLoan ) => {
 	return loan.fully_paid_at
-		? __( 'Paid off', 'woocommerce-payments' ) +
-				': ' +
-				dateI18n( 'M j, Y', loan.fully_paid_at )
+		? sprintf(
+				/* translators: %s: date when the loan was paid off */
+				__( 'Paid off: %s', 'woocommerce-payments' ),
+				formatDateTimeFromString( loan.fully_paid_at )
+		  )
 		: __( 'Active', 'woocommerce-payments' );
 };
 
@@ -109,7 +114,9 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 		const data = {
 			paid_out_at: {
 				value: loan.paid_out_at,
-				display: clickable( dateI18n( 'M j, Y', loan.paid_out_at ) ),
+				display: clickable(
+					formatDateTimeFromString( loan.paid_out_at )
+				),
 			},
 			status: {
 				value: getLoanStatusText( loan ),
@@ -147,7 +154,7 @@ const getRowsData = ( loans: CapitalLoan[] ) =>
 				value: loan.first_paydown_at,
 				display: clickable(
 					loan.first_paydown_at
-						? dateI18n( 'M j, Y', loan.first_paydown_at )
+						? formatDateTimeFromString( loan.first_paydown_at )
 						: '-'
 				),
 			},
@@ -174,7 +181,7 @@ const getSummary = ( loans: CapitalLoan[] ) => {
 	const currencies = Array.from(
 		new Set( loans.map( ( l ) => l.currency ) )
 	);
-	if ( 1 === currencies.length ) {
+	if ( currencies.length === 1 ) {
 		summary.push( {
 			label: __( 'total', 'woocommerce-payments' ),
 			value: formatExplicitCurrency(
@@ -220,6 +227,7 @@ const CapitalPage = (): JSX.Element => {
 				rows={ getRowsData( loans ) }
 				rowsPerPage={ loans.length }
 				summary={ getSummary( loans ) }
+				// The Capital Loan table does not have column configuration enabled, see issue #10106.
 				showMenu={ false }
 			/>
 		</Page>

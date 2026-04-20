@@ -14,8 +14,6 @@ import {
 
 export const usePaymentCompleteHandler = (
 	api,
-	stripe,
-	elements,
 	onCheckoutSuccess,
 	emitResponse,
 	shouldSavePayment
@@ -33,7 +31,7 @@ export const usePaymentCompleteHandler = (
 			),
 		// not sure if we need to disable this, but kept it as-is to ensure nothing breaks. Please consider passing all the deps.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ elements, stripe, api, shouldSavePayment ]
+		[ api, shouldSavePayment ]
 	);
 };
 
@@ -43,7 +41,7 @@ export const usePaymentCompleteHandler = (
  * Displays the error message returned from checkout processor in the noticeContexts.PAYMENTS area.
  *
  * @param {Function} onCheckoutFail The onCheckoutFail event emitter.
- * @param {Object} emitResponse   Various helpers for usage with observer.
+ * @param {Object}   emitResponse   Various helpers for usage with observer.
  */
 export const usePaymentFailHandler = ( onCheckoutFail, emitResponse ) => {
 	useEffect(

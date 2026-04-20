@@ -2,31 +2,43 @@
 /**
  * External dependencies
  */
-import classNames from 'classnames';
+import clsx from 'clsx';
 import React, { useContext } from 'react';
 
 /**
  * Internal dependencies
  */
-import interpolateComponents from '@automattic/interpolate-components';
 import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
-import { useManualCapture } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
+	getDiscountBadgeText,
+	getDiscountTooltipText,
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import { PmPromotion } from 'wcpay/data/pm-promotions/types';
 import Chip from 'wcpay/components/chip';
-import LoadableCheckboxControl from 'wcpay/components/loadable-checkbox';
-import { getDocumentationUrlForDisabledPaymentMethod } from 'wcpay/components/payment-method-disabled-tooltip';
+import PromotionalBadge from 'wcpay/components/promotional-badge';
 import Pill from 'wcpay/components/pill';
-import InlineNotice from 'wcpay/components/inline-notice';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
+import { PaymentMethodsLogos } from 'wcpay/checkout/blocks/payment-methods-logos/payment-methods-logos';
+import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
+import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
+import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
+import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
+import Diners from 'assets/images/cards/diners.svg?asset';
+import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
+import Cartebancaire from 'assets/images/cards/cartes_bancaires.svg?asset';
+import UnionPay from 'assets/images/cards/unionpay.svg?asset';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
+import usePaymentMethodAvailability from './use-payment-method-availability';
+import InlineNotice from 'wcpay/components/inline-notice';
+import { useEnabledPaymentMethodIds, usePmPromotions } from 'wcpay/data';
+import PaymentMethodItem from 'wcpay/components/payment-method-item';
 
 interface PaymentMethodProps {
 	id: string;
@@ -34,118 +46,117 @@ interface PaymentMethodProps {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	Icon: () => JSX.Element | null;
 	description: string;
-	status: string;
-	checked: boolean;
 	onCheckClick: ( id: string ) => void;
 	onUncheckClick: ( id: string ) => void;
 	className?: string;
-	isAllowingManualCapture: boolean;
-	isSetupRequired?: boolean;
-	setupTooltip?: string;
-	required: boolean;
 	locked: boolean;
-	isPoEnabled: boolean;
-	isPoComplete: boolean;
 }
 
 const PaymentMethodLabel = ( {
+	id,
 	label,
-	required,
-	status,
-	disabled,
+	accountFees,
+	badgePromotion,
 }: {
+	id: string;
 	label: string;
-	required: boolean;
-	status: string;
-	disabled: boolean;
+	accountFees?: Record< string, FeeStructure >;
+	badgePromotion?: PmPromotion;
 } ): React.ReactElement => {
+	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
+
+	const discountFee = accountFees?.[ id ]?.discount?.[ 0 ];
+	const hasDiscount = discountFee?.discount;
+
+	// Show badge for either: active discount fee OR badge-type promotion.
+	const showPromotionalBadge = hasDiscount || badgePromotion;
+
+	// Determine badge content based on source.
+	const getBadgeContent = () => {
+		if ( hasDiscount ) {
+			return {
+				message: getDiscountBadgeText( discountFee ),
+				tooltip: getDiscountTooltipText( discountFee ),
+				tooltipLabel: __( 'Discount details', 'woocommerce-payments' ),
+			};
+		}
+		if ( badgePromotion ) {
+			return {
+				message: badgePromotion.title,
+				tooltip: badgePromotion.description,
+				tooltipLabel: __( 'Promotion details', 'woocommerce-payments' ),
+				tcUrl: badgePromotion.tc_url,
+				tcLabel: badgePromotion.tc_label,
+				type: badgePromotion.badge_type,
+			};
+		}
+		return null;
+	};
+
+	const badgeContent = getBadgeContent();
+
 	return (
 		<>
 			{ label }
-			{ required && (
+			{ PAYMENT_METHOD_IDS.CARD === id && (
 				<span className="payment-method__required-label">
 					{ '(' + __( 'Required', 'woocommerce-payments' ) + ')' }
 				</span>
 			) }
-			{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-				<Chip
-					message={ __( 'Pending approval', 'woocommerce-payments' ) }
-					type="warning"
-				/>
-			) }
-			{ upeCapabilityStatuses.REJECTED === status && (
-				<Chip
-					message={ __( 'Rejected', 'woocommerce-payments' ) }
-					type="alert"
-				/>
-			) }
-			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-				<Chip
-					message={ __(
-						'Pending activation',
-						'woocommerce-payments'
-					) }
-					type="warning"
-				/>
-			) }
-			{ disabled && (
-				<Chip
-					message={ __(
-						'More information needed',
-						'woocommerce-payments'
-					) }
-					type="warning"
+			{ chip && <Chip message={ chip } type={ chipType } /> }
+			{ showPromotionalBadge && badgeContent && (
+				<PromotionalBadge
+					message={ badgeContent.message }
+					tooltip={ badgeContent.tooltip }
+					tooltipLabel={ badgeContent.tooltipLabel }
+					tcUrl={ badgeContent.tcUrl }
+					tcLabel={ badgeContent.tcLabel }
+					type={ badgeContent.type }
 				/>
 			) }
 		</>
 	);
 };
 
+// Define the supported card brands
+const cardBrands = [
+	{ name: 'visa', component: Visa },
+	{ name: 'mastercard', component: Mastercard },
+	{ name: 'amex', component: Amex },
+	{ name: 'discover', component: Discover },
+	{ name: 'diners', component: Diners },
+	{ name: 'jcb', component: Jcb },
+	{ name: 'cartes_bancaires', component: Cartebancaire },
+	{ name: 'unionpay', component: UnionPay },
+];
+
 const PaymentMethod = ( {
 	id,
 	label,
 	Icon = () => null,
 	description,
-	status,
-	checked,
 	onCheckClick,
 	onUncheckClick,
 	className,
-	isAllowingManualCapture,
-	isSetupRequired,
-	setupTooltip,
-	required,
 	locked,
-	isPoEnabled,
-	isPoComplete,
 }: PaymentMethodProps ): React.ReactElement => {
-	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
-	const isPoInProgress =
-		isPoEnabled &&
-		! isPoComplete &&
-		status !== upeCapabilityStatuses.ACTIVE;
-
-	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
-	const disabled =
-		upeCapabilityStatuses.INACTIVE === status || isPoInProgress;
+	// APMs are not actionable if they are inactive or if Progressive Onboarding is enabled and not yet complete.
 	const {
-		accountFees,
-	}: { accountFees: Record< string, FeeStructure > } = useContext(
-		WCPaySettingsContext
+		isActionable,
+		notice,
+		noticeType = 'warning' as const,
+	} = usePaymentMethodAvailability( id );
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
+
+	const { accountFees }: { accountFees?: Record< string, FeeStructure > } =
+		useContext( WCPaySettingsContext );
+
+	// Get badge-type promotion for this payment method.
+	const { pmPromotions = [] } = usePmPromotions();
+	const badgePromotion = pmPromotions?.find(
+		( promo ) => promo.payment_method === id && promo.type === 'badge'
 	);
-	const [ isManualCaptureEnabled ] = useManualCapture();
 
-	const needsMoreInformation = [
-		upeCapabilityStatuses.INACTIVE,
-		upeCapabilityStatuses.PENDING_APPROVAL,
-		upeCapabilityStatuses.PENDING_VERIFICATION,
-	].includes( status );
-
-	const needsAttention =
-		needsMoreInformation ||
-		isPoInProgress ||
-		upeCapabilityStatuses.REJECTED === status;
-	const shouldDisplayNotice = id === 'sofort';
 	const {
 		duplicates,
 		dismissedDuplicateNotices,
@@ -153,12 +164,7 @@ const PaymentMethod = ( {
 	} = useContext( DuplicatedPaymentMethodsContext );
 	const isDuplicate = Object.keys( duplicates ).includes( id );
 
-	const needsOverlay =
-		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
-		isSetupRequired ||
-		needsAttention;
-
-	const handleChange = ( newStatus: string ) => {
+	const handleChange = ( newStatus: boolean ) => {
 		// If the payment method control is locked, reject any changes.
 		if ( locked ) {
 			return;
@@ -170,201 +176,77 @@ const PaymentMethod = ( {
 		return onUncheckClick( id );
 	};
 
-	const getTooltipContent = ( paymentMethodId: string ) => {
-		if ( upeCapabilityStatuses.PENDING_APPROVAL === status ) {
-			return __(
-				'This payment method is pending approval. Once approved, you will be able to use it.',
-				'woocommerce-payments'
-			);
-		}
-
-		if ( upeCapabilityStatuses.PENDING_VERIFICATION === status ) {
-			return sprintf(
-				__(
-					"%s won't be visible to your customers until you provide the required " +
-						'information. Follow the instructions sent by our partner Stripe to %s.',
-					'woocommerce-payments'
-				),
-				label,
-				wcpaySettings?.accountEmail ?? ''
-			);
-		}
-
-		if ( upeCapabilityStatuses.REJECTED === status ) {
-			return interpolateComponents( {
-				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
-				mixedString: __(
-					'Please {{contactSupportLink}}contact support{{/contactSupportLink}} for more details.',
-					'woocommerce-payments'
-				),
-				components: {
-					contactSupportLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noreferrer"
-							title={ __(
-								'Contact Support',
-								'woocommerce-payments'
-							) }
-							href={
-								'https://woocommerce.com/my-account/contact-support/'
-							}
-						/>
-					),
-				},
-			} );
-		}
-
-		if ( isSetupRequired ) {
-			return setupTooltip;
-		}
-
-		if ( needsAttention ) {
-			return interpolateComponents( {
-				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
-				mixedString: __(
-					'We need more information from you to enable this method. ' +
-						'{{learnMoreLink}}Learn more.{{/learnMoreLink}}',
-					'woocommerce-payments'
-				),
-				components: {
-					learnMoreLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noreferrer"
-							title={ __(
-								'Learn more about enabling payment methods',
-								'woocommerce-payments'
-							) }
-							/* eslint-disable-next-line max-len */
-							href={
-								isPoInProgress
-									? 'https://woocommerce.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods'
-									: getDocumentationUrlForDisabledPaymentMethod(
-											paymentMethodId
-									  )
-							}
-						/>
-					),
-				},
-			} );
-		}
-
-		return sprintf(
-			/* translators: %s: a payment method name. */
-			__(
-				'%s is not available to your customers when the "manual capture" setting is enabled.',
-				'woocommerce-payments'
-			),
-			label
-		);
-	};
-
 	return (
-		<li
-			className={ classNames(
-				'payment-method__list-item',
-				{ 'has-icon-border': id !== 'card', overlay: needsOverlay },
-				className
-			) }
+		<PaymentMethodItem
+			className={ clsx( 'payment-method__list-item', className ) }
 		>
-			<div className="payment-method">
-				<div className="payment-method__checkbox">
-					<LoadableCheckboxControl
-						label={ label }
-						checked={ checked }
-						disabled={ disabled || locked }
-						onChange={ handleChange }
-						hideLabel
-						isAllowingManualCapture={ isAllowingManualCapture }
-						isSetupRequired={ isSetupRequired }
-						setupTooltip={ getTooltipContent( id ) as any }
-						needsAttention={ needsAttention }
-					/>
-				</div>
-				<div className="payment-method__text-container">
-					<div className="payment-method__icon">
-						<Icon />
-					</div>
-					<div className="payment-method__label payment-method__label-mobile">
+			<PaymentMethodItem.Checkbox
+				label={ label }
+				checked={ enabledMethodIds.includes( id ) }
+				disabled={ ! isActionable || locked }
+				onChange={ handleChange }
+			/>
+			<PaymentMethodItem.Body>
+				<PaymentMethodItem.Subgroup
+					Icon={ Icon }
+					label={
 						<PaymentMethodLabel
 							label={ label }
-							required={ required }
-							status={ status }
-							disabled={ disabled }
+							id={ id }
+							accountFees={ accountFees }
+							badgePromotion={ badgePromotion }
 						/>
-					</div>
-					<div className="payment-method__text">
-						<div className="payment-method__label-container">
-							<div className="payment-method__label payment-method__label-desktop">
-								<PaymentMethodLabel
-									label={ label }
-									required={ required }
-									status={ status }
-									disabled={ disabled }
-								/>
-							</div>
-							<div className="payment-method__description">
-								{ description }
-							</div>
+					}
+				>
+					{ description }
+					{ id === PAYMENT_METHOD_IDS.CARD && (
+						<div className="payment-method__supported-cards">
+							<PaymentMethodsLogos
+								paymentMethods={ cardBrands }
+								maxElements={ 8 }
+								breakpointConfigs={ [
+									{ breakpoint: 480, maxElements: 8 },
+									{ breakpoint: 768, maxElements: 8 },
+								] }
+							/>
 						</div>
-						{ accountFees && accountFees[ id ] && (
-							<div className="payment-method__fees">
-								<HoverTooltip
-									maxWidth={ '300px' }
-									content={ formatMethodFeesTooltip(
+					) }
+				</PaymentMethodItem.Subgroup>
+				{ accountFees && accountFees[ id ] && (
+					<PaymentMethodItem.Action className="payment-method__fees">
+						<HoverTooltip
+							maxWidth={ '300px' }
+							content={ formatMethodFeesTooltip(
+								accountFees[ id ]
+							) }
+						>
+							<Pill
+								aria-label={ sprintf(
+									__(
+										'Base transaction fees: %s',
+										'woocommerce-payments'
+									),
+									formatMethodFeesDescription(
+										accountFees[ id ]
+									)
+								) }
+							>
+								<span>
+									{ formatMethodFeesDescription(
 										accountFees[ id ]
 									) }
-								>
-									<Pill
-										aria-label={ sprintf(
-											__(
-												'Base transaction fees: %s',
-												'woocommerce-payments'
-											),
-											formatMethodFeesDescription(
-												accountFees[ id ]
-											)
-										) }
-									>
-										<span>
-											{ formatMethodFeesDescription(
-												accountFees[ id ]
-											) }
-										</span>
-									</Pill>
-								</HoverTooltip>
-							</div>
-						) }
-					</div>
-				</div>
-			</div>
-			{ shouldDisplayNotice && (
-				<InlineNotice
-					status="warning"
-					icon={ true }
-					isDismissible={ false }
-					className="sofort__notice"
-				>
-					<span>
-						{ __(
-							'Support for Sofort is ending soon. ',
-							'woocommerce-payments'
-						) }
-						<a
-							// eslint-disable-next-line max-len
-							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-migration"
-							target="_blank"
-							rel="external noreferrer noopener"
-						>
-							{ __( 'Learn more', 'woocommerce-payments' ) }
-						</a>
-					</span>
+								</span>
+							</Pill>
+						</HoverTooltip>
+					</PaymentMethodItem.Action>
+				) }
+			</PaymentMethodItem.Body>
+			{ notice && (
+				<InlineNotice status={ noticeType } isDismissible={ false }>
+					{ notice }
 				</InlineNotice>
 			) }
-			{ isDuplicate && (
+			{ isDuplicate && ! notice && (
 				<DuplicateNotice
 					paymentMethod={ id }
 					gatewaysEnablingPaymentMethod={ duplicates[ id ] }
@@ -374,7 +256,7 @@ const PaymentMethod = ( {
 					}
 				/>
 			) }
-		</li>
+		</PaymentMethodItem>
 	);
 };
 

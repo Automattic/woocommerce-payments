@@ -2,17 +2,15 @@
  * External dependencies
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { useDispatch } from '@wordpress/data';
-import ReactDOM from 'react-dom';
-import { OPTIONS_STORE_NAME } from '@woocommerce/data';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
  */
 import PluginDisableSurvey from './deactivation-survey';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 const PluginsPage = () => {
-	const { updateOptions } = useDispatch( OPTIONS_STORE_NAME );
 	const [ modalOpen, setModalOpen ] = useState( false );
 	const surveyModalTimestamp =
 		window.wcpayPluginsSettings?.exitSurveyLastShown ?? null;
@@ -41,9 +39,7 @@ const PluginsPage = () => {
 		const currentDate = new Date();
 
 		// Update modal dismissed option.
-		await updateOptions( {
-			wcpay_exit_survey_last_shown: currentDate,
-		} );
+		await saveOption( 'wcpay_exit_survey_last_shown', currentDate );
 
 		window.wcpayPluginsSettings.exitSurveyLastShown = currentDate;
 
@@ -77,12 +73,12 @@ const PluginsPage = () => {
 	useEffect( () => {
 		// If the survey is dismissed skip event listeners.
 		if ( isModalDismissed() ) {
-			return null;
+			return;
 		}
 
 		// Abort if the deactivation link is not present.
 		if ( deactivationLink === null ) {
-			return null;
+			return;
 		}
 
 		// Handle click event.
@@ -102,7 +98,6 @@ const PluginsPage = () => {
 	);
 };
 
-ReactDOM.render(
-	<PluginsPage />,
-	document.querySelector( '#woopayments-plugins-page-app' )
-);
+const container = document.querySelector( '#woopayments-plugins-page-app' );
+const root = createRoot( container );
+root.render( <PluginsPage /> );

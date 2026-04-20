@@ -1,157 +1,45 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useState } from 'react';
-import {
-	loadConnectAndInitialize,
-	StripeConnectInstance,
-} from '@stripe/connect-js';
-import {
-	ConnectAccountOnboarding,
-	ConnectComponentsProvider,
-} from '@stripe/react-connect-js';
-import { __ } from '@wordpress/i18n';
+import React, { useState } from 'react';
+import { __, sprintf } from '@wordpress/i18n';
+import { ExternalLink } from '@wordpress/components';
+import { LoadError } from '@stripe/connect-js';
 
 /**
  * Internal dependencies
  */
-import appearance from '../kyc/appearance';
-import BannerNotice from 'wcpay/components/banner-notice';
-import LoadBar from 'wcpay/components/load-bar';
+import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
-import {
-	createAccountSession,
-	finalizeOnboarding,
-	isPoEligible,
-} from 'wcpay/onboarding/utils';
-import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
-import {
-	trackEmbeddedStepChange,
-	trackRedirected,
-} from 'wcpay/onboarding/tracking';
+import { finalizeOnboarding } from 'wcpay/onboarding/utils';
+import { getConnectUrl, getOverviewUrl, isInDevMode } from 'wcpay/utils';
+import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';
+import { EmbeddedAccountOnboarding } from 'wcpay/embedded-components';
+import BannerNotice from 'wcpay/components/banner-notice';
+import interpolateComponents from '@automattic/interpolate-components';
 
 interface Props {
-	continueKyc?: boolean;
 	collectPayoutRequirements?: boolean;
 }
 
-// TODO: extract this logic and move it to a generic component to be used for all embedded components, not just onboarding.
 const EmbeddedKyc: React.FC< Props > = ( {
-	continueKyc = false,
 	collectPayoutRequirements = false,
 } ) => {
 	const { data } = useOnboardingContext();
-	const [ locale, setLocale ] = useState( '' );
-	const [ publishableKey, setPublishableKey ] = useState( '' );
-	const [ clientSecret, setClientSecret ] = useState<
-		( () => Promise< string > ) | null
-	>( null );
-	const [
-		stripeConnectInstance,
-		setStripeConnectInstance,
-	] = useState< StripeConnectInstance | null >( null );
+	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
 	const [ loading, setLoading ] = useState( true );
-	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
+	const [ loadError, setLoadError ] = useState< LoadError | null >( null );
 
-	const fetchAccountSession = useCallback( async () => {
-		try {
-			const isEligible = ! continueKyc && ( await isPoEligible( data ) );
-			const accountSession = await createAccountSession(
-				data,
-				isEligible
-			);
-			if ( accountSession && accountSession.clientSecret ) {
-				trackRedirected( isEligible, true );
-				return accountSession; // Return the full account session object
-			}
-
-			setLoading( false );
-			setLoadErrorMessage(
-				__(
-					"Failed to create account session. Please check that you're using the latest version of WooPayments.",
-					'woocommerce-payments'
-				)
-			);
-		} catch ( error ) {
-			setLoading( false );
-			setLoadErrorMessage(
-				__(
-					'Failed to retrieve account session. Please try again later.',
-					'woocommerce-payments'
-				)
-			);
-		}
-
-		// Return null if an error occurred.
-		return null;
-	}, [ continueKyc, data ] );
-
-	// Function to fetch clientSecret for use in Stripe auto-refresh or initialization
-	const fetchClientSecret = useCallback( async () => {
-		const accountSession = await fetchAccountSession();
-		if ( accountSession ) {
-			return accountSession.clientSecret; // Only return the clientSecret
-		}
-		throw new Error( 'Error fetching the client secret' );
-	}, [ fetchAccountSession ] );
-
-	// Effect to fetch the publishable key and clientSecret on initial render
-	useEffect( () => {
-		const fetchKeys = async () => {
-			try {
-				const accountSession = await fetchAccountSession();
-				if ( accountSession ) {
-					setLocale( accountSession.locale );
-					setPublishableKey( accountSession.publishableKey );
-					setClientSecret( () => fetchClientSecret );
-				}
-			} catch ( error ) {
-				setLoading( false );
-				setLoadErrorMessage(
-					__(
-						'Failed to create account session. Please check that you are using the latest version of WooPayments.',
-						'woocommerce-payments'
-					)
-				);
-			} finally {
-				setLoading( false );
-			}
-		};
-
-		fetchKeys();
-	}, [ data, continueKyc, fetchAccountSession, fetchClientSecret ] );
-
-	// Effect to initialize the Stripe Connect instance once publishableKey and clientSecret are ready.
-	useEffect( () => {
-		if ( publishableKey && clientSecret && ! stripeConnectInstance ) {
-			const stripeInstance = loadConnectAndInitialize( {
-				publishableKey,
-				fetchClientSecret,
-				appearance: {
-					overlays: 'drawer',
-					variables: appearance.variables,
-				},
-				locale: locale.replace( '_', '-' ),
-			} );
-
-			setStripeConnectInstance( stripeInstance );
-		}
-	}, [
-		publishableKey,
-		clientSecret,
-		stripeConnectInstance,
-		fetchClientSecret,
-		locale,
-	] );
+	const urlParams = new URLSearchParams( window.location.search );
+	const urlSource =
+		urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
 
 	const handleStepChange = ( step: string ) => {
 		trackEmbeddedStepChange( step );
 	};
 
 	const handleOnExit = async () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		const urlSource =
-			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
+		setFinalizingAccount( true );
 
 		try {
 			const response = await finalizeOnboarding( urlSource );
@@ -183,36 +71,114 @@ const EmbeddedKyc: React.FC< Props > = ( {
 		}
 	};
 
+	const handleLoadError = ( err: LoadError ) => {
+		setLoadError( err );
+	};
+
 	return (
 		<>
-			{ loading && <LoadBar /> }
-			{ loadErrorMessage && (
-				<BannerNotice status="error">{ loadErrorMessage }</BannerNotice>
-			) }
-			{ stripeConnectInstance && (
-				<ConnectComponentsProvider
-					connectInstance={ stripeConnectInstance }
+			{ isInDevMode() && (
+				<BannerNotice
+					className="wcpay-banner-notice--embedded-kyc"
+					status="warning"
+					isDismissible={ false }
 				>
-					<ConnectAccountOnboarding
-						onLoaderStart={ () => setLoading( false ) }
-						onLoadError={ ( loadError ) =>
-							setLoadErrorMessage(
-								loadError.error.message || 'Unknown error'
-							)
-						}
-						onExit={ handleOnExit }
-						onStepChange={ ( stepChange ) =>
-							handleStepChange( stepChange.step )
-						}
-						collectionOptions={ {
-							fields: collectPayoutRequirements
-								? 'eventually_due'
-								: 'currently_due',
-							futureRequirements: 'omit',
-						} }
-					/>
-				</ConnectComponentsProvider>
+					{ interpolateComponents( {
+						mixedString: sprintf(
+							/* translators: %1$s: WooPayments */
+							__(
+								'{{strong}}Your store is in development mode.{{/strong}} %1$s can only create test accounts in development or staging environments. ' +
+									'To set up a live account, switch to a production {{wpEnvLink}}WordPress environment{{/wpEnvLink}} or remove the WCPAY_DEV_MODE constant. ' +
+									'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
+								'woocommerce-payments'
+							),
+							'WooPayments'
+						),
+						components: {
+							strong: <strong />,
+							wpEnvLink: (
+								// @ts-expect-error: children is provided when interpolating the component
+								<ExternalLink
+									href={
+										'https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/'
+									}
+								/>
+							),
+							learnMoreLink: (
+								// @ts-expect-error: children is provided when interpolating the component
+								<ExternalLink
+									href={
+										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
+									}
+								/>
+							),
+						},
+					} ) }
+				</BannerNotice>
 			) }
+			{ loading && (
+				<div className="embedded-kyc-loader-wrapper padded">
+					<StripeSpinner />
+				</div>
+			) }
+			{ finalizingAccount && (
+				<div className="embedded-kyc-loader-wrapper">
+					<StripeSpinner />
+				</div>
+			) }
+			{ loadError &&
+				( loadError.error.type === 'invalid_request_error' ? (
+					<BannerNotice
+						className={ 'wcpay-banner-notice--embedded-kyc' }
+						status="warning"
+						isDismissible={ false }
+						actions={ [
+							{
+								label: __(
+									'Learn more',
+									'woocommerce-payments'
+								),
+								variant: 'primary',
+								url: 'https://woocommerce.com/document/woopayments/startup-guide/#requirements',
+								urlTarget: '_blank',
+							},
+							{
+								label: __( 'Cancel', 'woocommerce-payments' ),
+								variant: 'link',
+								url: getConnectUrl(
+									{
+										'wcpay-connection-error': '1',
+										source: urlSource,
+									},
+									'WCPAY_ONBOARDING_WIZARD'
+								),
+							},
+						] }
+					>
+						{ __(
+							'Payment activation through our financial partner requires HTTPS and cannot be completed.',
+							'woocommerce-payments'
+						) }
+					</BannerNotice>
+				) : (
+					<BannerNotice
+						className="wcpay-banner-notice--embedded-kyc"
+						status="error"
+						isDismissible={ false }
+					>
+						{ loadError.error.message }
+					</BannerNotice>
+				) ) }
+			{
+				<EmbeddedAccountOnboarding
+					onExit={ handleOnExit }
+					onStepChange={ handleStepChange }
+					onLoaderStart={ () => setLoading( false ) }
+					onLoadError={ handleLoadError }
+					onboardingData={ data }
+					collectPayoutRequirements={ collectPayoutRequirements }
+				/>
+			}
 		</>
 	);
 };

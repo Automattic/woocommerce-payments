@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -14,11 +14,7 @@ const PaymentMethodIcon = ( { Icon, label } ) => {
 	if ( ! Icon ) return null;
 
 	return (
-		<span
-			className={ classNames(
-				'woocommerce-payments__payment-method-icon'
-			) }
-		>
+		<span className={ clsx( 'woocommerce-payments__payment-method-icon' ) }>
 			<Icon />
 			{ label && (
 				<span className="woocommerce-payments__payment-method-icon__label">

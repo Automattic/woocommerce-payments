@@ -39,7 +39,7 @@ class Buyer_Fingerprinting_Service {
 	 *
 	 * @param Buyer_Fingerprinting_Service|null $instance Instance of self.
 	 */
-	public static function set_instance( self $instance = null ) {
+	public static function set_instance( ?self $instance = null ) {
 		self::$instance = $instance;
 	}
 

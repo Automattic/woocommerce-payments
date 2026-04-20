@@ -1,7 +1,9 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
+import { __, sprintf } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 import {
 	Button,
 	Card,
@@ -11,19 +13,17 @@ import {
 	FlexBlock,
 	FlexItem,
 } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies.
  */
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import Loadable from 'components/loadable';
 import { useActiveLoanSummary } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 const Block = ( {
 	title,
@@ -134,10 +134,9 @@ const ActiveLoanSummaryLoading = (): JSX.Element => {
 
 const getActiveLoanId = () => {
 	for ( const i in wcpaySettings.accountLoans.loans ) {
-		const [ loanId, status ] = wcpaySettings.accountLoans.loans[ i ].split(
-			'|'
-		);
-		if ( 'active' === status ) {
+		const [ loanId, status ] =
+			wcpaySettings.accountLoans.loans[ i ].split( '|' );
+		if ( status === 'active' ) {
 			return loanId;
 		}
 	}
@@ -162,7 +161,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 				<FlexItem>
 					{ getActiveLoanId() && (
 						<Button
-							isLink
+							variant="link"
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/transactions',
@@ -170,6 +169,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 								filter: 'advanced',
 								loan_id_is: getActiveLoanId(),
 							} ) }
+							__next40pxDefaultSize
 						>
 							{ __(
 								'View transactions',
@@ -210,12 +210,8 @@ const ActiveLoanSummary = (): JSX.Element => {
 								'Repaid this period (until %s)',
 								'woocommerce-payments'
 							),
-							dateI18n(
-								'M j, Y',
-								new Date(
-									details.current_repayment_interval.due_at *
-										1000
-								)
+							formatDateTimeFromTimestamp(
+								details.current_repayment_interval.due_at
 							)
 						) }
 					>
@@ -251,9 +247,8 @@ const ActiveLoanSummary = (): JSX.Element => {
 					<Block
 						title={ __( 'Loan disbursed', 'woocommerce-payments' ) }
 					>
-						{ dateI18n(
-							'M j, Y',
-							new Date( details.advance_paid_out_at * 1000 )
+						{ formatDateTimeFromTimestamp(
+							details.advance_paid_out_at
 						) }
 					</Block>
 					<Block
@@ -278,9 +273,8 @@ const ActiveLoanSummary = (): JSX.Element => {
 					<Block
 						title={ __( 'First paydown', 'woocommerce-payments' ) }
 					>
-						{ dateI18n(
-							'M j, Y',
-							new Date( details.repayments_begin_at * 1000 )
+						{ formatDateTimeFromTimestamp(
+							details.repayments_begin_at
 						) }
 					</Block>
 				</Flex>

@@ -143,4 +143,85 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		// Trigger the addition of the disable nonce filter when appropriate.
 		apply_filters( 'rest_request_before_callbacks', [], [], new WP_REST_Request() );
 	}
+
+	public function test_set_woopayments_gateways_before_other_gateways_when_not_in_ordering() {
+		$woopayments_gateway_ids = WC_Payments::get_woopayments_gateway_ids();
+		$main_gateway_id         = WC_Payments::get_gateway()->id;
+
+		$initial_ordering = [
+			'other_gateway_1' => 0,
+			'other_gateway_2' => 1,
+		];
+
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
+
+		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
+		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
+		$this->assertLessThan( $result['other_gateway_1'], $result[ $main_gateway_id ] );
+	}
+
+	public function test_set_woopayments_gateways_after_main_gateway() {
+		$woopayments_gateway_ids = WC_Payments::get_woopayments_gateway_ids();
+		$main_gateway_id         = WC_Payments::get_gateway()->id;
+
+		$initial_ordering = [
+			'other_gateway_1' => 0,
+			$main_gateway_id  => 1,
+			'other_gateway_2' => 2,
+		];
+
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
+
+		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
+		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
+		$this->assertLessThan( $result[ $main_gateway_id ], $result['other_gateway_1'] );
+		$this->assertLessThan( $result['other_gateway_2'], $result[ $main_gateway_id ] );
+	}
+
+	public function test_set_woopayments_gateways_at_beginning_when_ordering_is_empty() {
+		$woopayments_gateway_ids = WC_Payments::get_woopayments_gateway_ids();
+		$initial_ordering        = [];
+
+		$result = WC_Payments::order_woopayments_gateways( $initial_ordering );
+
+		$this->assertContainsAllGateways( $woopayments_gateway_ids, $result );
+		$this->assertSequentialOrdering( $woopayments_gateway_ids, $result );
+		$this->assertEquals( count( $woopayments_gateway_ids ), count( $result ) );
+	}
+
+	/**
+	 * Assert that all WooPayments gateways are in the result
+	 *
+	 * @param array $gateways Expected gateway IDs
+	 * @param array $result   Result from order_woopayments_gateways
+	 */
+	private function assertContainsAllGateways( $gateways, $result ) {
+		foreach ( $gateways as $gateway_id ) {
+			$this->assertArrayHasKey( $gateway_id, $result );
+		}
+	}
+
+	/**
+	 * Assert that the WooPayments gateways are in sequential order
+	 *
+	 * @param array $gateways Expected gateway IDs
+	 * @param array $result   Result from order_woopayments_gateways
+	 */
+	private function assertSequentialOrdering( $gateways, $result ) {
+		$positions = [];
+		foreach ( $gateways as $gateway_id ) {
+			$positions[ $gateway_id ] = $result[ $gateway_id ];
+		}
+
+		asort( $positions );
+
+		// Check that positions are sequential.
+		$previous_position = null;
+		foreach ( $positions as $position ) {
+			if ( null !== $previous_position ) {
+				$this->assertEquals( $previous_position + 1, $position, 'Gateway positions should be sequential' );
+			}
+			$previous_position = $position;
+		}
+	}
 }

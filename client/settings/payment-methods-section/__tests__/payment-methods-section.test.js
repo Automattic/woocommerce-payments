@@ -4,8 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
+import { userEvent as user } from 'jest-utils/user-event-timers';
 import { select } from '@wordpress/data';
 
 /**
@@ -21,7 +21,7 @@ import {
 	useUnselectedPaymentMethod,
 	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 jest.mock( '@woocommerce/components', () => {
@@ -35,56 +35,60 @@ jest.mock( '@woocommerce/components', () => {
 jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetAvailablePaymentMethodIds: jest.fn(),
-	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
-	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 	useGetPaymentMethodStatuses: jest.fn().mockReturnValue( {} ),
 	useManualCapture: jest.fn(),
 	useSelectedPaymentMethod: jest.fn(),
 	useUnselectedPaymentMethod: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
+} ) );
+
+jest.mock( 'multi-currency/interface/data', () => ( {
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
+} ) );
+
+jest.mock( 'multi-currency/interface/data', () => ( {
+	useCurrencies: jest.fn().mockReturnValue( { isLoading: true } ),
+	useEnabledCurrencies: jest.fn().mockReturnValue( {} ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest
-		.fn()
-		.mockReturnValue( { updateAvailablePaymentMethodIds: jest.fn() } ),
+	useDispatch: jest.fn().mockReturnValue( {} ),
 	select: jest.fn(),
 } ) );
 
 describe( 'PaymentMethodsSection', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
-		useSelectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
-		useUnselectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
+		useSelectedPaymentMethod.mockReturnValue( [ [], jest.fn() ] );
+		useUnselectedPaymentMethod.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'au_becs_debit',
 			'bancontact',
 			'eps',
-			'giropay',
 			'ideal',
 			'p24',
 			'sepa_debit',
-			'sofort',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: upeCapabilityStatuses.ACTIVE,
 			au_becs_debit: upeCapabilityStatuses.ACTIVE,
 			bancontact_payments: upeCapabilityStatuses.ACTIVE,
 			eps_payments: upeCapabilityStatuses.ACTIVE,
-			giropay_payments: upeCapabilityStatuses.ACTIVE,
 			ideal_payments: upeCapabilityStatuses.ACTIVE,
 			p24_payments: upeCapabilityStatuses.ACTIVE,
 			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {
 			isMultiCurrencyEnabled: true,
 			storeCurrency: 'USD',
 			accountEmail: 'admin@example.com',
-			capabilityRequestNotices: {},
 		};
 		select.mockImplementation( () => ( {
 			getSettings: jest.fn().mockReturnValue( {
@@ -102,7 +106,7 @@ describe( 'PaymentMethodsSection', () => {
 		render( <PaymentMethodsSection /> );
 
 		const card = screen.getByRole( 'checkbox', {
-			name: 'Credit / Debit card',
+			name: 'Credit / Debit Cards',
 		} );
 		const becs = screen.getByRole( 'checkbox', {
 			name: 'BECS Direct Debit',
@@ -120,20 +124,14 @@ describe( 'PaymentMethodsSection', () => {
 	} );
 
 	it( 'renders notice pills on inactive and pending payment methods', () => {
-		const updateEnabledMethodsMock = jest.fn( () => {} );
-		useSelectedPaymentMethod.mockReturnValue( [
-			[
-				'Credit / Debit card',
-				'BECS Direct Debit',
-				'Bancontact',
-				'EPS',
-				'giropay',
-				'iDEAL',
-				'Przelewy24 (P24)',
-				'SEPA Direct Debit',
-				'Sofort',
-			],
-			updateEnabledMethodsMock,
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'bancontact',
+			'eps',
+			'ideal',
+			'p24',
+			'sepa_debit',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: {
@@ -149,10 +147,6 @@ describe( 'PaymentMethodsSection', () => {
 				requirements: [],
 			},
 			eps_payments: {
-				status: upeCapabilityStatuses.INACTIVE,
-				requirements: [],
-			},
-			giropay_payments: {
 				status: upeCapabilityStatuses.PENDING_APPROVAL,
 				requirements: [],
 			},
@@ -165,10 +159,6 @@ describe( 'PaymentMethodsSection', () => {
 				requirements: [],
 			},
 			sepa_debit_payments: {
-				status: upeCapabilityStatuses.ACTIVE,
-				requirements: [],
-			},
-			sofort_payments: {
 				status: upeCapabilityStatuses.PENDING_VERIFICATION,
 				requirements: [ 'individual.identification_number' ],
 			},
@@ -176,19 +166,19 @@ describe( 'PaymentMethodsSection', () => {
 
 		render( <PaymentMethodsSection /> );
 
-		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
-	} );
-
-	it( 'renders the payment methods component', () => {
-		render( <PaymentMethodsSection /> );
-
-		expect( screen.queryByText( 'Payment methods' ) ).toBeInTheDocument();
 		expect(
-			screen.queryByText( 'Payment methods' ).parentElement
-		).toHaveTextContent( 'Payment methods' );
+			screen.queryAllByText( /pending/i, {
+				ignore: '.a11y-speak-region,.components-flex-item',
+			} ).length
+		).toEqual( 4 );
+		expect(
+			screen.queryAllByText( /more information needed/i, {
+				ignore: '.a11y-speak-region,.components-flex-item',
+			} ).length
+		).toEqual( 6 );
 	} );
 
-	it( 'renders the activation modal when requirements exist for the payment method', () => {
+	it( 'renders the activation modal when requirements exist for the payment method', async () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'bancontact' ] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
@@ -212,11 +202,9 @@ describe( 'PaymentMethodsSection', () => {
 
 		jest.useFakeTimers();
 
-		act( () => {
-			// Enabling a PM with requirements should show the activation modal
-			user.click( bancontactCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
+		// Enabling a PM with requirements should show the activation modal
+		await user.click( bancontactCheckbox );
+		jest.runOnlyPendingTimers();
 
 		expect(
 			screen.queryByText(
@@ -227,7 +215,9 @@ describe( 'PaymentMethodsSection', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'renders the delete modal on an already active payment method', () => {
+	it( 'disables an already active payment method without confirmation modal', async () => {
+		const mockUnselect = jest.fn();
+		useUnselectedPaymentMethod.mockReturnValue( [ null, mockUnselect ] );
 		useEnabledPaymentMethodIds.mockReturnValue( [
 			[ 'bancontact' ],
 			jest.fn(),
@@ -242,27 +232,17 @@ describe( 'PaymentMethodsSection', () => {
 
 		render( <PaymentMethodsSection /> );
 
-		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
-
 		const bancontactCheckbox = screen.getByLabelText( 'Bancontact' );
-
 		expect( bancontactCheckbox ).toBeChecked();
 
-		jest.useFakeTimers();
+		await user.click( bancontactCheckbox );
 
-		act( () => {
-			// Disabling an already active PM should show the delete modal
-			user.click( bancontactCheckbox );
-			jest.runOnlyPendingTimers();
-		} );
-
+		expect( mockUnselect ).toHaveBeenCalledWith( 'bancontact' );
 		expect(
 			screen.queryByText(
 				/Your customers will no longer be able to pay using Bancontact\./
 			)
-		).toBeInTheDocument();
-
-		jest.useRealTimers();
+		).not.toBeInTheDocument();
 	} );
 
 	it( "renders the setup tooltip correctly when multi currency is disabled and store currency doesn't support the LPM", () => {
@@ -280,34 +260,17 @@ describe( 'PaymentMethodsSection', () => {
 			},
 		} );
 
-		const { container } = render( <PaymentMethodsSection /> );
+		render( <PaymentMethodsSection /> );
 
-		// Checkbox shouldn't be rendered.
-		expect(
-			screen.queryByLabelText( 'Bancontact' )
-		).not.toBeInTheDocument();
-
-		const svgIcon = container.querySelectorAll(
-			'.gridicons-notice-outline'
-		)[ 0 ];
-
-		expect( svgIcon ).toBeInTheDocument();
-
-		jest.useFakeTimers();
-
-		act( () => {
-			fireEvent.mouseOver( svgIcon, {
-				view: window,
-				bubbles: true,
-				cancelable: true,
-			} );
-			jest.runAllTimers();
-		} );
+		// Checkbox should be rendered.
+		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeEnabled();
 
 		expect(
-			screen.queryByText( /Bancontact requires the EUR currency\./ )
+			screen.queryByText( /Bancontact requires the EUR currency\./, {
+				ignore: '.a11y-speak-region',
+			} )
 		).toBeInTheDocument();
-		jest.useRealTimers();
 	} );
 
 	it( 'should not render duplicate notices when they have been dismissed', () => {
@@ -354,5 +317,35 @@ describe( 'PaymentMethodsSection', () => {
 				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'should show manual capture banner when manual capture is enabled', () => {
+		useManualCapture.mockReturnValue( [ true, jest.fn() ] );
+
+		render( <PaymentMethodsSection /> );
+
+		expect(
+			screen.queryByText(
+				/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'should not show manual capture banner when manual capture is disabled', () => {
+		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
+
+		render( <PaymentMethodsSection /> );
+
+		expect(
+			screen.queryByText(
+				/Manual capture is enabled, so any payment methods that don't support it have been automatically disabled/i,
+				{
+					ignore: '.a11y-speak-region',
+				}
+			)
+		).not.toBeInTheDocument();
 	} );
 } );

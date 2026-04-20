@@ -10,8 +10,11 @@
 		flex-direction: column;
 		padding: 0 $grid-unit-30 $grid-unit-30;
 		p {
-			padding: 1em 0;
+			padding: 0 0 1em 0;
 			margin: 0;
+			&.no-padding {
+				padding: 0;
+			}
 		}
 	}
 

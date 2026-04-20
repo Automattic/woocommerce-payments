@@ -1,3 +1,4 @@
+@import './express-button/style';
 /* stylelint-disable selector-id-pattern */
 #contact_details {
 	float: none;
@@ -20,6 +21,21 @@
 			right: 10px;
 			width: 24px;
 		}
+	}
+}
+
+/* Fix for address form email field spinner alignment */
+.wc-block-components-address-form__email {
+	position: relative;
+
+	.wc-block-components-spinner {
+		/* Override the base style's top/left: initial */
+		top: 50%;
+		left: auto;
+		right: 10px;
+		width: 24px;
+		height: 24px;
+		transform: translateY( -50% );
 	}
 }
 
@@ -122,161 +138,6 @@
 	}
 }
 
-.woopay-express-button {
-	font-size: 18px;
-	font-weight: 500;
-	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue',
-		'Helvetica', 'Roboto', 'Arial', sans-serif;
-	letter-spacing: 0.8px;
-	height: 40px;
-	background: $white !important;
-	border: 1px solid $white !important;
-	color: $studio-black !important;
-	width: 100%;
-	border-radius: 4px;
-	padding-top: 1px;
-	padding-bottom: 1px;
-	display: flex !important;
-	align-items: center;
-	justify-content: center;
-	white-space: nowrap;
-	text-transform: none;
-	list-style-type: none;
-
-	&:not( :disabled ):hover {
-		background: #e0e0e0 !important;
-		cursor: pointer;
-	}
-
-	&:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	&.is-loading,
-	&.is-loading:hover,
-	&.is-loading:disabled {
-		opacity: 1 !important;
-	}
-
-	svg {
-		fill: $studio-woocommerce-purple-60;
-		position: relative;
-		top: 1px;
-	}
-
-	&[data-type='buy'],
-	&[data-type='book'],
-	&[data-type='donate'] {
-		min-width: 200px;
-
-		svg {
-			flex-shrink: 0.4;
-			margin-left: 6px;
-		}
-	}
-
-	&[data-width-type='wide'] {
-		svg {
-			flex-shrink: 1;
-		}
-	}
-
-	&[data-theme='dark'] {
-		background: $studio-woocommerce-purple-60 !important;
-		color: $white !important;
-		border-color: $studio-woocommerce-purple-60 !important;
-
-		svg {
-			fill: $white;
-		}
-		&:not( :disabled ):hover {
-			background: #533582 !important;
-		}
-	}
-
-	&[data-theme='light-outline'] {
-		border-color: $studio-black !important;
-		&:not( :disabled ):hover {
-			background: #e0e0e0 !important;
-		}
-	}
-
-	&[data-size='medium'] {
-		font-size: 22px;
-		height: 48px;
-
-		svg {
-			top: 2px;
-			width: auto;
-			height: 27px;
-			min-width: 60px;
-		}
-
-		&[data-type='buy'],
-		&[data-type='book'],
-		&[data-type='donate'] {
-			min-width: 229px;
-
-			svg {
-				flex-shrink: 0.6;
-				margin-left: 8px;
-			}
-		}
-
-		&[data-width-type='wide'] {
-			&[data-type='buy'],
-			&[data-type='book'],
-			&[data-type='donate'] {
-				svg {
-					flex-shrink: 1;
-				}
-			}
-		}
-	}
-
-	&[data-size='large'] {
-		font-size: 26px;
-		height: 55px;
-
-		svg {
-			top: 3px;
-			width: auto;
-			height: 32px;
-			min-width: 70px;
-		}
-
-		&[data-type='buy'],
-		&[data-type='book'],
-		&[data-type='donate'] {
-			min-width: 229px;
-
-			svg {
-				flex-shrink: 0.6;
-				margin-left: 10px;
-				margin-bottom: 0.25rem;
-			}
-		}
-
-		&[data-width-type='wide'] {
-			&[data-type='buy'],
-			&[data-type='book'],
-			&[data-type='donate'] {
-				svg {
-					flex-shrink: 1;
-					margin-bottom: 0;
-				}
-			}
-		}
-
-		// For this width range, the button's text is too large to fit
-		// in the button. The text is reduced to 22px to fit.
-		@media screen and ( min-width: 785px ) and ( max-width: 850px ) {
-			font-size: 22px;
-		}
-	}
-}
-
 @keyframes spinner__animation {
 	0% {
 		animation-timing-function: cubic-bezier(
@@ -296,30 +157,36 @@
  * Sourced from https://github.com/woocommerce/woocommerce-blocks/blob/4dfe904f761423c1ac494f0d6319c602965b5efe/assets/js/base/components/spinner/style.scss.
  * Depending on the wc-blocks version, these styles are not loaded, so they need to be included here.
  */
-.wc-block-components-spinner {
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	color: inherit;
-	box-sizing: content-box;
-	text-align: center;
-	font-size: 1.25em;
-
-	&::after {
-		content: ' ';
+.woopay-billing-email,
+.wcpay-express-checkout-wrapper,
+#wcpay-woopay-button {
+	.wc-block-components-spinner {
 		position: absolute;
-		top: 50%;
-		left: 50%;
-		margin: -0.5em 0 0 -0.5em;
-		width: 1em;
-		height: 1em;
-		box-sizing: border-box;
-		transform-origin: 50% 50%;
-		transform: translateZ( 0 ) scale( 0.5 );
-		backface-visibility: hidden;
-		border-radius: 50%;
-		border: 0.2em solid currentColor;
-		border-left-color: transparent;
-		animation: spinner__animation 1s infinite linear;
+		width: 100%;
+		height: 100%;
+		color: inherit;
+		box-sizing: content-box;
+		text-align: center;
+		font-size: 1.25em;
+		top: initial;
+		left: initial;
+
+		&::after {
+			content: ' ';
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin: -0.5em 0 0 -0.5em;
+			width: 1em;
+			height: 1em;
+			box-sizing: border-box;
+			transform-origin: 50% 50%;
+			transform: translateZ( 0 ) scale( 0.5 );
+			backface-visibility: hidden;
+			border-radius: 50%;
+			border: 0.2em solid currentColor;
+			border-left-color: transparent;
+			animation: spinner__animation 1s infinite linear;
+		}
 	}
 }

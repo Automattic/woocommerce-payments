@@ -32,7 +32,14 @@
           "fixed_rate": 0,
           "currency": "usd"
         }
-      ]
+      ],
+      "fee_exchange_rate": {
+        "from_currency": "EUR",
+        "to_currency": "USD",
+        "from_amount": 2944,
+        "to_amount": 3105,
+        "rate": 0.9481481481481482
+      }
     },
     "currency": "EUR",
     "datetime": 1651998676,
@@ -55,8 +62,8 @@
     "feeBreakdown": {
       "base": "Base fee: capped at $6.00",
       "additional-international": "International card fee: 1.5%",
-      "additional-fx": "Foreign exchange fee: 1%"
+      "additional-fx": "Currency conversion fee: 1%"
     },
-    "netString": "Net deposit: $971.04 USD"
+    "netString": "Net payout: $971.04 USD"
   }
 }

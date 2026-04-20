@@ -1,4 +1,4 @@
-@import 'node_modules/@wordpress/components/src/tooltip/style.scss';
+@import '~@wordpress/components/src/tooltip/style.scss';
 
 $space-header-item: 12px;
 
@@ -14,13 +14,6 @@ $space-header-item: 12px;
 		.conversion-indicator {
 			margin-right: 6px;
 			fill: $studio-gray-30;
-		}
-
-		&--fallback {
-			.components-popover__content {
-				position: relative;
-				top: -( $gap * 2 ); // Positioning the tooltip in a higher position to avoid having it cropped by the bottom of the table
-			}
 		}
 	}
 
@@ -153,56 +146,15 @@ $gap-small: 12px;
 			height: auto;
 		}
 	}
+}
 
-	.components-card__header {
-		// These styles improve the overflow behaviour of the Search component within the TableCard, when many tags are selected. Used for transaction list views. See PR #8996
-		.woocommerce-search.woocommerce-select-control
-			.woocommerce-select-control__listbox {
-			position: relative;
-			top: 5px;
-		}
-		.woocommerce-table__actions {
-			justify-content: space-between;
-
-			& > div {
-				width: 85%;
-				margin-right: 0;
-			}
-
-			button.woocommerce-table__download-button {
-				@include breakpoint( '<1040px' ) {
-					.woocommerce-table__download-button__label {
-						display: none;
-					}
-				}
-			}
-
-			.woocommerce-select-control.is-focused
-				.woocommerce-select-control__control {
-				flex-wrap: wrap;
-
-				.woocommerce-select-control__tags {
-					white-space: wrap;
-				}
-			}
-			.woocommerce-select-control__tags {
-				overflow-x: auto;
-				white-space: nowrap;
-				scrollbar-width: none;
-				margin-right: 25px;
-			}
-
-			.woocommerce-select-control.is-focused
-				.components-base-control
-				.components-base-control__field {
-				flex-basis: 45%;
-			}
-
-			@include breakpoint( '<960px' ) {
-				.woocommerce-search {
-					margin: 0;
-				}
-			}
-		}
+.components-snackbar-list {
+	@include breakpoint( '<660px' ) {
+		position: absolute;
+		left: $gap;
+		right: $gap;
+		bottom: 100%;
+		margin-bottom: $gap-small;
+		width: auto;
 	}
 }

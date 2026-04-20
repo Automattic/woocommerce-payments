@@ -2,10 +2,11 @@
 /**
  * External dependencies
  */
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -14,7 +15,6 @@ import AdvancedSettings from '../advanced-settings';
 import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
-import ReportingSettings from '../reporting-settings';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
@@ -23,14 +23,19 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
+import NotificationSettings, {
+	NotificationSettingsDescription,
+} from '../notification-settings';
 import {
 	useDepositDelayDays,
 	useGetDuplicatedPaymentMethodIds,
 	useSettings,
 } from '../../data';
 import FraudProtection from '../fraud-protection';
-import { isDefaultSiteLanguage } from 'wcpay/utils';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import VatFormModal from '../../vat/form-modal';
+import SpotlightPromotion from 'promotions/spotlight';
+import './style.scss';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -84,17 +89,17 @@ const DepositsDescription = () => {
 
 	return (
 		<>
-			<h2>{ __( 'Deposits', 'woocommerce-payments' ) }</h2>
+			<h2>{ __( 'Payouts', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ sprintf(
 					__(
-						'Funds are available for deposit %s business days after they’re received.',
+						'Funds are available for payout %s business days after they’re received.',
 						'woocommerce-payments'
 					),
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -124,20 +129,6 @@ const FraudProtectionDescription = () => {
 	);
 };
 
-const ReportingDescription = () => {
-	return (
-		<>
-			<h2>{ __( 'Reporting', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ __(
-					'Adjust your report exporting language preferences.',
-					'woocommerce-payments'
-				) }
-			</p>
-		</>
-	);
-};
-
 const AdvancedDescription = () => {
 	return (
 		<>
@@ -156,11 +147,18 @@ const AdvancedDescription = () => {
 };
 
 const SettingsManager = () => {
-	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
-		true
-	);
+	const [ isTransactionInputsValid, setTransactionInputsValid ] =
+		useState( true );
+	const [ isNotificationEmailValid, setNotificationEmailValid ] =
+		useState( true );
 
-	const { isLoading } = useSettings();
+	const { isLoading, isDirty } = useSettings();
+
+	useEffect( () => {
+		if ( ! isDirty ) {
+			window.onbeforeunload = null;
+		}
+	}, [ isDirty ] );
 
 	useLayoutEffect( () => {
 		const { anchor } = getQuery();
@@ -190,10 +188,45 @@ const SettingsManager = () => {
 		}
 	}, [ isLoading ] );
 
-	const [
-		dismissedDuplicateNotices,
-		setDismissedDuplicateNotices,
-	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
+	const [ dismissedDuplicateNotices, setDismissedDuplicateNotices ] =
+		useState( wcpaySettings.dismissedDuplicateNotices || {} );
+	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+
+	useEffect( () => {
+		const urlParams = new URLSearchParams( window.location.search );
+		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
+			if ( ! wcpaySettings.accountStatus.isDocumentsEnabled ) {
+				dispatch( 'core/notices' ).createErrorNotice(
+					__(
+						'Tax details collection is not available for your account.',
+						'woocommerce-payments'
+					)
+				);
+			} else if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+				setVatFormModalOpen( true );
+			} else {
+				dispatch( 'core/notices' ).createInfoNotice(
+					__(
+						'Tax details are already submitted.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		}
+	}, [] );
+
+	const handleVatFormModalClose = () => {
+		setVatFormModalOpen( false );
+		// Remove the URL parameter when the modal is closed.
+		updateQueryString( { 'woopayments-vat-details-modal': undefined } );
+	};
+
+	const handleVatFormModalCompleted = () => {
+		dispatch( 'core/notices' ).createInfoNotice(
+			__( 'Tax details updated', 'woocommerce-payments' )
+		);
+		handleVatFormModalClose();
+	};
 
 	return (
 		<SettingsLayout>
@@ -242,13 +275,27 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection description={ DepositsDescription } id="deposits">
-				<div id={ 'deposit-schedule' }>
+				<div id="payout-schedule">
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
 							<Deposits />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</div>
+			</SettingsSection>
+			<SettingsSection
+				description={ NotificationSettingsDescription }
+				id="notification-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<NotificationSettings
+							setNotificationEmailValid={
+								setNotificationEmailValid
+							}
+						/>
+					</ErrorBoundary>
+				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection
 				description={ FraudProtectionDescription }
@@ -260,18 +307,6 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ ! isDefaultSiteLanguage() && (
-				<SettingsSection
-					description={ ReportingDescription }
-					id="fp-settings"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<ReportingSettings />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
 			<SettingsSection
 				description={ AdvancedDescription }
 				id="advanced-settings"
@@ -282,7 +317,19 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
+			<SaveSettingsSection
+				disabled={
+					! isTransactionInputsValid || ! isNotificationEmailValid
+				}
+			/>
+			<VatFormModal
+				isModalOpen={ isVatFormModalOpen }
+				setModalOpen={ handleVatFormModalClose }
+				onCompleted={ handleVatFormModalCompleted }
+			/>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</SettingsLayout>
 	);
 };

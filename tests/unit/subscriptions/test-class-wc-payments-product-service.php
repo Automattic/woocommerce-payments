@@ -6,7 +6,6 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Exceptions\API_Exception;
 
 /**
  * WC_Payments_Product_Service unit tests.
@@ -32,14 +31,27 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * @var WC_Payments_Account|MockObject
+	 */
+	private $mock_account_service;
+
+	/**
+	 * Mock product.
+	 *
+	 * @var WC_Product|MockObject
+	 */
+	private $mock_product;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_product    = $this->get_mock_product();
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->product_service = new WC_Payments_Product_Service( $this->mock_api_client );
+		$this->mock_product         = $this->get_mock_product();
+		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_account_service = $this->createMock( WC_Payments_Account::class );
+		$this->product_service      = new WC_Payments_Product_Service( $this->mock_api_client, $this->mock_account_service );
 
 		WC_Payments::mode()->live();
 	}
@@ -52,33 +64,51 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 	 * Test create product.
 	 */
 	public function test_create_product() {
+		$account_id = 'acct_test123';
+		$product_id = 'prod_test123';
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_product' )
 			->with( $this->get_mock_product_data() )
-			->willReturn( [ 'wcpay_product_id' => 'prod_test123' ] );
+			->willReturn( [ 'wcpay_product_id' => $product_id ] );
+
+		$this->mock_account_service
+			->expects( $this->once() )
+			->method( 'get_stripe_account_id' )
+			->willReturn( $account_id );
 
 		$this->mock_get_period( 'month' );
 		$this->mock_get_interval( 3 );
 		$this->product_service->create_product( $this->mock_product );
-		$this->assertEquals( 'prod_test123', $this->mock_product->get_meta( self::LIVE_PRODUCT_ID_KEY, true ) );
+
+		$this->assertSame( $product_id, $this->mock_product->get_meta( self::LIVE_PRODUCT_ID_KEY ) );
+		$this->assertSame( $account_id, $this->mock_product->get_meta( self::LIVE_PRODUCT_ID_KEY . '_linked_to' ) );
 	}
 
 	/**
 	 * Test update product.
 	 */
 	public function test_update_products_live_only() {
-		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, 'prod_test123' );
+		$mock_product_id = 'prod_1234';
+		$account_id      = 'acct_test123';
+
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, $mock_product_id );
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY . '_linked_to', $account_id );
 		$this->mock_product->save();
+
+		$this->mock_account_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_stripe_account_id' )
+			->willReturn( $account_id );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_product' )
 			->with(
-				'prod_test123',
+				$mock_product_id,
 				$this->get_mock_product_data( [ 'test_mode' => false ] )
 			)
 			->willReturn(
 				[
-					'wcpay_product_id' => 'prod_test123',
+					'wcpay_product_id' => $mock_product_id,
 					'wcpay_price_id'   => 'price_test123',
 				]
 			);
@@ -92,19 +122,30 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 	 * Test update product.
 	 */
 	public function test_update_products_live_and_test() {
-		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, 'prod_test123_live' );
-		$this->mock_product->update_meta_data( self::TEST_PRODUCT_ID_KEY, 'prod_test123_test' );
+		$mock_prod_product_id = 'prod_1234';
+		$mock_test_product_id = 'prod_5678';
+		$account_id           = 'acct_test123';
+
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, $mock_prod_product_id );
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY . '_linked_to', $account_id );
+		$this->mock_product->update_meta_data( self::TEST_PRODUCT_ID_KEY, $mock_test_product_id );
+		$this->mock_product->update_meta_data( self::TEST_PRODUCT_ID_KEY . '_linked_to', $account_id );
 		$this->mock_product->save();
+
+		$this->mock_account_service
+			->expects( $this->exactly( 4 ) )
+			->method( 'get_stripe_account_id' )
+			->willReturn( $account_id );
 
 		$this->mock_api_client->expects( $this->exactly( 2 ) )
 			->method( 'update_product' )
 			->withConsecutive(
 				[
-					'prod_test123_live',
+					$mock_prod_product_id,
 					$this->get_mock_product_data( [ 'test_mode' => false ] ),
 				],
 				[
-					'prod_test123_test',
+					$mock_test_product_id,
 					$this->get_mock_product_data( [ 'test_mode' => true ] ),
 				]
 			)
@@ -126,10 +167,17 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 	 * Note: This also tests unarchive_product
 	 */
 	public function test_archive_product() {
+		$account_id = 'acct_1234';
 		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, 'prod_test123' );
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY . '_linked_to', $account_id );
 		$this->mock_product->update_meta_data( self::LIVE_PRICE_ID_KEY, 'price_test123' );
 		$this->mock_product->update_meta_data( self::TEST_PRICE_ID_KEY, 'price_test456' );
 		$this->mock_product->save();
+
+		$this->mock_account_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_stripe_account_id' )
+			->willReturn( $account_id );
 
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'update_product' )
@@ -169,7 +217,6 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->product_service->archive_product( $this->mock_product );
 
 		// Confirm that the product price IDs have been deleted.
-		$this->assertFalse( $this->mock_product->meta_exists( self::LIVE_PRICE_ID_KEY ) );
 		$this->assertFalse( $this->mock_product->meta_exists( self::LIVE_PRICE_ID_KEY ) );
 	}
 
@@ -242,40 +289,92 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		WC_Subscriptions_Product::set_interval( $interval );
 	}
 
-	/**
-	 * Tests for WC_Payments_Product_Service::get_wcpay_product_id()
-	 */
-	public function test_get_wcpay_product_id() {
-		WC_Subscriptions_Product::$is_subscription = true;
+	public function test_get_or_create_wcpay_product_id_for_test() {
+		$mock_product_id = 'prod_123';
+		$account_id      = 'acct_test123';
 
-		// Make sure the WC_Payments_Subscriptions::get_product_service() returns our mock product service object.
-		$ref = new ReflectionProperty( 'WC_Payments_Subscriptions', 'product_service' );
-		$ref->setAccessible( true );
-		$ref->setValue( null, $this->product_service );
+		$this->mock_product->update_meta_data( self::TEST_PRODUCT_ID_KEY, $mock_product_id );
+		$this->mock_product->update_meta_data( self::TEST_PRODUCT_ID_KEY . '_linked_to', $account_id );
+		$this->mock_product->save();
 
-		$mock_product_id = 'prod_123_wcpay_test_product_id';
-		$this->mock_product->update_meta_data( WC_Payments_Product_Service::LIVE_PRODUCT_ID_KEY, $mock_product_id );
+		$this->mock_account_service
+			->expects( $this->once() )
+			->method( 'get_stripe_account_id' )
+			->willReturn( $account_id );
 
-		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'create_product' );
 
-		// Test that deleting the price will cause the product to be created.
-		$this->mock_product->delete_meta_data( WC_Payments_Product_Service::LIVE_PRODUCT_ID_KEY );
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'create_product' )
-			->with( $this->get_mock_product_data() )
-			->willReturn(
-				[
-					'wcpay_product_id' => $mock_product_id,
-					'wcpay_price_id'   => 'price_test123',
-				]
-			);
+		$result = $this->product_service->get_or_create_wcpay_product_id( $this->mock_product, true );
 
-		$this->mock_get_period( 'month' );
-		$this->mock_get_interval( 3 );
-
-		$this->assertSame( $mock_product_id, $this->product_service->get_wcpay_product_id( $this->mock_product ) );
+		$this->assertEquals( $mock_product_id, $result );
 	}
 
+	public function test_get_or_create_wcpay_product_id_for_live() {
+		$mock_product_id = 'prod_123';
+		$account_id      = 'acct_test123';
+
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY, $mock_product_id );
+		$this->mock_product->update_meta_data( self::LIVE_PRODUCT_ID_KEY . '_linked_to', $account_id );
+		$this->mock_product->save();
+
+		$this->mock_account_service
+			->expects( $this->once() )
+			->method( 'get_stripe_account_id' )
+			->willReturn( $account_id );
+
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'create_product' );
+
+		$result = $this->product_service->get_or_create_wcpay_product_id( $this->mock_product, false );
+
+		$this->assertEquals( $mock_product_id, $result );
+	}
+	public function test_get_or_create_wcpay_product_id_will_create_product_if_not_exist() {
+		$new_product_id = 'prod_test123';
+		$account_id     = 'acct_test123';
+
+		$this->mock_account_service
+			->expects( $this->once() )
+			->method( 'get_stripe_account_id' )
+			->willReturn( $account_id );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_product' )
+			->with( $this->get_mock_product_data() )
+			->willReturn( [ 'wcpay_product_id' => $new_product_id ] );
+
+		$result = $this->product_service->get_or_create_wcpay_product_id( $this->mock_product );
+
+		$this->assertEquals( $new_product_id, $result );
+	}
+
+	public function test_create_new_product_for_different_account() {
+		$mock_product_id = 'prod_123';
+		$new_product_id  = 'prod_456';
+
+		$this->mock_product->update_meta_data( self::TEST_PRODUCT_ID_KEY, $mock_product_id );
+		$this->mock_product->update_meta_data( self::TEST_PRODUCT_ID_KEY . '_linked_to', 'acct_test123' );
+		$this->mock_product->save();
+
+		$this->mock_account_service
+			->expects( $this->once() )
+			->method( 'get_stripe_account_id' )
+			->willReturn( 'acct_test456' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_product' )
+			->with( $this->get_mock_product_data() )
+			->willReturn( [ 'wcpay_product_id' => $new_product_id ] );
+
+		$result = $this->product_service->get_or_create_wcpay_product_id( $this->mock_product );
+
+		$this->assertEquals( $new_product_id, $result );
+	}
 	/**
 	 * Tests for WC_Payments_Product_Service::get_wcpay_product_id_option()
 	 */
@@ -291,20 +390,27 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 	 * Tests for WC_Payments_Product_Service::get_wcpay_product_id_for_item()
 	 */
 	public function test_get_wcpay_product_id_for_item() {
+		$product_id = 'product_id_test123';
+		$account_id = 'acct_test123';
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'create_product' )
 			->willReturn(
 				[
-					'wcpay_product_id' => 'product_id_test123',
+					'wcpay_product_id' => $product_id,
 					'wcpay_price_id'   => 'price_test123',
 				]
 			);
+
+		$this->mock_account_service
+			->expects( $this->once() )
+			->method( 'get_stripe_account_id' )
+			->willReturn( $account_id );
 
 		// If type is 'Test Tax *&^ name', the result should be _wcpay_product_id_live_test_tax__name.
 		$test_type = 'Test Tax *&^ name';
 		$this->product_service->get_wcpay_product_id_for_item( $test_type );
 
 		$this->assertFalse( get_option( '_wcpay_product_id_live_Test Tax *&^ name' ) );
-		$this->assertSame( 'product_id_test123', get_option( '_wcpay_product_id_live_test_tax__name' ) );
+		$this->assertSame( $product_id, get_option( '_wcpay_product_id_live_test_tax__name' ) );
 	}
 }

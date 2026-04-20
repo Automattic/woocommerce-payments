@@ -1,34 +1,26 @@
 /**
  * External dependencies
  */
-import {
-	PaymentElement,
-	useElements,
-	useStripe,
-} from '@stripe/react-stripe-js';
+import { PaymentElement, useElements } from '@stripe/react-stripe-js';
 import {
 	getPaymentMethods,
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
 import { __ } from '@wordpress/i18n';
-import { useEffect, useRef } from 'react';
-import classNames from 'classnames';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
  */
 import { usePaymentCompleteHandler, usePaymentFailHandler } from './hooks';
-import {
-	getStripeElementOptions,
-	blocksShowLinkButtonHandler,
-	getBlocksEmailValue,
-	isLinkEnabled,
-} from 'wcpay/checkout/utils/upe';
-import { useCustomerData } from './utils';
-import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
+import { useCustomerData, getStripeElementOptions } from './utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { validateElements } from 'wcpay/checkout/classic/payment-processing';
+import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import { CardSkeleton } from './components/card-skeleton';
+import { ApmSkeleton } from './components/apm-skeleton';
+import SkeletonContext from './components/skeleton-context';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -41,7 +33,8 @@ const getBillingDetails = ( billingData ) => {
 
 			line1: billingData.address_1,
 			line2: billingData.address_2,
-			postal_code: billingData.postcode,
+			// Trim to avoid Stripe AVS mismatches on leading/trailing whitespace.
+			postal_code: billingData.postcode?.trim(),
 			state: billingData.state,
 		},
 	};
@@ -59,6 +52,7 @@ const PaymentProcessor = ( {
 	testingInstructions,
 	eventRegistration: { onPaymentSetup, onCheckoutSuccess, onCheckoutFail },
 	emitResponse,
+	components: { Skeleton: CoreSkeleton } = {},
 	paymentMethodId,
 	upeMethods,
 	errorMessage,
@@ -67,79 +61,72 @@ const PaymentProcessor = ( {
 	onLoadError = noop,
 	theme,
 } ) => {
-	const stripe = useStripe();
 	const elements = useElements();
 	const hasLoadErrorRef = useRef( false );
 
+	const [ isStripeReady, setIsStripeReady ] = useState( false );
+	const [ showSkeleton, setShowSkeleton ] = useState( true );
+	const [ cardRowCount, setCardRowCount ] = useState( 2 );
+	const isCardMethod = paymentMethodId === 'card';
+	const wrapperRef = useRef( null );
+
+	// Dynamically adjust skeleton layout and min-height based on wrapper
+	// width to match Stripe's responsive card field layout (1/2/3-row).
+	useEffect( () => {
+		if ( ! isCardMethod || ! wrapperRef.current ) {
+			return;
+		}
+
+		const el = wrapperRef.current;
+		const observer = new ResizeObserver( ( entries ) => {
+			const width = entries[ 0 ].contentRect.width;
+			// Stripe renders card fields in:
+			// - 1 row above ~660px
+			// - 2 rows between ~415px and ~660px
+			// - 3 rows below ~415px
+			let rows;
+			let minHeight;
+			if ( width >= 660 ) {
+				rows = 1;
+				minHeight = '70px';
+			} else if ( width >= 415 ) {
+				rows = 2;
+				minHeight = '145px';
+			} else {
+				rows = 3;
+				minHeight = '220px';
+			}
+			setCardRowCount( rows );
+			el.style.minHeight = minHeight;
+		} );
+
+		observer.observe( el );
+		return () => {
+			observer.disconnect();
+			el.style.minHeight = '';
+		};
+	}, [ isCardMethod ] );
+
+	// Remove skeleton from DOM after fade-out transition completes.
+	const handleSkeletonTransitionEnd = useCallback( () => {
+		setShowSkeleton( false );
+	}, [] );
+
+	const handleStripeReady = useCallback( () => {
+		setIsStripeReady( true );
+	}, [] );
+
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
-	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
-	const {
-		billingAddress: billingData,
-		setShippingAddress,
-		setBillingAddress,
-	} = useCustomerData();
-
-	useEffect( () => {
-		if ( isLinkEnabled( paymentMethodsConfig ) ) {
-			enableStripeLinkPaymentMethod( {
-				api: api,
-				elements: elements,
-				emailId: 'email',
-				onAutofill: ( billingAddress, shippingAddress ) => {
-					// in some cases (e.g.: customer doesn't select the payment method in the Link modal), the billing address is empty.
-					if ( billingAddress ) {
-						// setting the country first, in case the "state"/"county"/"province"
-						// select changes from a select to a text field (or vice-versa).
-						setBillingAddress( {
-							country: billingAddress.country,
-						} );
-						// after the country, we can safely set the other fields
-						setBillingAddress( {
-							...billingAddress,
-						} );
-					}
-
-					// in some cases (e.g.: customer doesn't select the shipping address method in the Link modal),
-					// the shipping address is empty.
-					if ( shippingAddress ) {
-						// setting the country first, in case the "state"/"county"/"province"
-						// select changes from a select to a text field (or vice-versa).
-						setShippingAddress( {
-							country: shippingAddress.country,
-						} );
-						// after the country, we can safely set the other fields
-						setShippingAddress( {
-							...shippingAddress,
-						} );
-					}
-
-					// after all the above, we can now set the email field by getting its value from the DOM.
-					setBillingAddress( {
-						email: getBlocksEmailValue(),
-					} );
-					setShippingAddress( {
-						email: getBlocksEmailValue(),
-					} );
-				},
-				onButtonShow: blocksShowLinkButtonHandler,
-			} );
-		}
-	}, [
-		api,
-		elements,
-		paymentMethodsConfig,
-		setBillingAddress,
-		setShippingAddress,
-	] );
+	const gatewayId = upeMethods[ paymentMethodId ].gatewayId;
+	const gatewayConfig = getPaymentMethods()[ gatewayId ];
+	const billingData = useCustomerData();
 
 	useEffect(
 		() =>
 			onPaymentSetup( () => {
 				async function handlePaymentProcessing() {
-					if (
-						upeMethods[ paymentMethodId ] !== activePaymentMethod
-					) {
+					if ( gatewayId !== activePaymentMethod ) {
 						return;
 					}
 
@@ -183,16 +170,16 @@ const PaymentProcessor = ( {
 						};
 					}
 
-					const result = await api
-						.getStripeForUPE( paymentMethodId )
-						.createPaymentMethod( {
-							elements,
-							params: {
-								billing_details: getBillingDetails(
-									billingData
-								),
-							},
-						} );
+					const stripeForUPE = await api.getStripeForUPE(
+						paymentMethodId
+					);
+
+					const result = await stripeForUPE.createPaymentMethod( {
+						elements,
+						params: {
+							billing_details: getBillingDetails( billingData ),
+						},
+					} );
 
 					if ( result.error ) {
 						return {
@@ -201,9 +188,9 @@ const PaymentProcessor = ( {
 							type: 'success',
 							meta: {
 								paymentMethodData: {
-									payment_method:
-										upeMethods[ paymentMethodId ],
-									'wcpay-payment-method': PAYMENT_METHOD_ERROR,
+									payment_method: gatewayId,
+									'wcpay-payment-method':
+										PAYMENT_METHOD_ERROR,
 									'wcpay-payment-method-error-code':
 										result.error.code,
 									'wcpay-payment-method-error-decline-code':
@@ -212,7 +199,8 @@ const PaymentProcessor = ( {
 										result.error.message,
 									'wcpay-payment-method-error-type':
 										result.error.type,
-									'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+									'wcpay-fraud-prevention-token':
+										getFraudPreventionToken(),
 									'wcpay-fingerprint': fingerprint,
 								},
 							},
@@ -223,9 +211,10 @@ const PaymentProcessor = ( {
 						type: 'success',
 						meta: {
 							paymentMethodData: {
-								payment_method: upeMethods[ paymentMethodId ],
+								payment_method: gatewayId,
 								'wcpay-payment-method': result.paymentMethod.id,
-								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+								'wcpay-fraud-prevention-token':
+									getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
 							},
 						},
@@ -242,7 +231,7 @@ const PaymentProcessor = ( {
 			paymentMethodId,
 			paymentMethodsConfig,
 			shouldSavePayment,
-			upeMethods,
+			gatewayId,
 			errorMessage,
 			onPaymentSetup,
 			billingData,
@@ -251,8 +240,6 @@ const PaymentProcessor = ( {
 
 	usePaymentCompleteHandler(
 		api,
-		stripe,
-		elements,
 		onCheckoutSuccess,
 		emitResponse,
 		shouldSavePayment
@@ -266,10 +253,10 @@ const PaymentProcessor = ( {
 	};
 
 	return (
-		<>
+		<SkeletonContext.Provider value={ CoreSkeleton }>
 			{ isTestMode && (
 				<p
-					className={ classNames( 'content', {
+					className={ clsx( 'content', {
 						[ `theme--${ theme }` ]: theme,
 					} ) }
 					dangerouslySetInnerHTML={ {
@@ -277,15 +264,40 @@ const PaymentProcessor = ( {
 					} }
 				/>
 			) }
-			<PaymentElement
-				options={ getStripeElementOptions(
-					shouldSavePayment,
-					paymentMethodsConfig
+			{ /* Skeleton overlay for Stripe PaymentElement loading state.
+				   Positioned absolutely over the iframe mount point and fades out
+				   when Stripe fires the `ready` event. */ }
+			<div
+				ref={ wrapperRef }
+				className={ clsx(
+					'wcpay-payment-element-wrapper',
+					! isCardMethod && 'is-apm'
 				) }
-				onLoadError={ setHasLoadError }
-				className="wcpay-payment-element"
-			/>
-		</>
+			>
+				{ showSkeleton &&
+					( isCardMethod ? (
+						<CardSkeleton
+							isHidden={ isStripeReady }
+							onTransitionEnd={ handleSkeletonTransitionEnd }
+							rowCount={ cardRowCount }
+						/>
+					) : (
+						<ApmSkeleton
+							isHidden={ isStripeReady }
+							onTransitionEnd={ handleSkeletonTransitionEnd }
+						/>
+					) ) }
+				<PaymentElement
+					options={ getStripeElementOptions(
+						shouldSavePayment,
+						paymentMethodsConfig
+					) }
+					onReady={ handleStripeReady }
+					onLoadError={ setHasLoadError }
+					className="wcpay-payment-element"
+				/>
+			</div>
+		</SkeletonContext.Provider>
 	);
 };
 

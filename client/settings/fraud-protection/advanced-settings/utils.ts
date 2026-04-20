@@ -91,7 +91,7 @@ const buildRuleset = (
 				operator:
 					// Need to use a reversed operator because we'll be matching the failure here.
 					// Example; if a country is in a ban list, block, or if a country isn't in a allow list, block.
-					'specific' === getSupportedCountriesType()
+					getSupportedCountriesType() === 'specific'
 						? CheckOperators.OPERATOR_NOT_IN
 						: CheckOperators.OPERATOR_IN,
 				value: getSettingCountries().join( '|' ).toLowerCase(),
@@ -209,7 +209,7 @@ const findCheck = (
 			const check = current.checks[ i ];
 			const result = findCheck( check, checkKey, operator );
 
-			if ( false !== result ) {
+			if ( result !== false ) {
 				return result;
 			}
 		}
@@ -233,43 +233,51 @@ export const writeRuleset = (
 	return rulesetConfig.filter( ( rule ) => rule );
 };
 
+const getRuleBlockStatus = ( outcome: string ) => {
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
+
+	if ( ! isFRTReviewFeatureActive ) {
+		return true;
+	}
+
+	return outcome === Outcomes.BLOCK;
+};
+
 export const readRuleset = (
 	rulesetConfig: FraudProtectionRule[] | string
 ): ProtectionSettingsUI => {
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
 	const isAVSChecksEnabled =
 		wcpaySettings?.accountStatus?.fraudProtection?.declineOnAVSFailure ||
 		false;
+
+	const defaultEnableConfig = {
+		enabled: false,
+		block: ! isFRTReviewFeatureActive,
+	};
 
 	const defaultUIConfig = {
 		[ Rules.RULE_AVS_VERIFICATION ]: {
 			enabled: isAVSChecksEnabled,
 			block: isAVSChecksEnabled,
 		},
-		[ Rules.RULE_ADDRESS_MISMATCH ]: { enabled: false, block: false },
-		[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: {
-			enabled: false,
-			block: false,
-		},
-		[ Rules.RULE_IP_ADDRESS_MISMATCH ]: {
-			enabled: false,
-			block: false,
-		},
+		[ Rules.RULE_ADDRESS_MISMATCH ]: { ...defaultEnableConfig },
+		[ Rules.RULE_INTERNATIONAL_IP_ADDRESS ]: { ...defaultEnableConfig },
+		[ Rules.RULE_IP_ADDRESS_MISMATCH ]: { ...defaultEnableConfig },
 		[ Rules.RULE_ORDER_ITEMS_THRESHOLD ]: {
-			enabled: false,
-			block: false,
+			...defaultEnableConfig,
 			min_items: null,
 			max_items: null,
 		},
 		[ Rules.RULE_PURCHASE_PRICE_THRESHOLD ]: {
-			enabled: false,
-			block: false,
+			...defaultEnableConfig,
 			min_amount: null,
 			max_amount: null,
 		},
 	};
 	const parsedUIConfig = {} as ProtectionSettingsUI;
 
-	if ( 'string' !== typeof rulesetConfig ) {
+	if ( typeof rulesetConfig !== 'string' ) {
 		for ( const id in rulesetConfig ) {
 			const rule = rulesetConfig[ id ];
 
@@ -277,25 +285,25 @@ export const readRuleset = (
 				case Rules.RULE_AVS_VERIFICATION:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_ADDRESS_MISMATCH:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_INTERNATIONAL_IP_ADDRESS:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_IP_ADDRESS_MISMATCH:
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 					};
 					break;
 				case Rules.RULE_ORDER_ITEMS_THRESHOLD:
@@ -311,7 +319,7 @@ export const readRuleset = (
 					) as FraudProtectionSettingsSingleCheck;
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 						min_items: minItemsCheck.value ?? '',
 						max_items: maxItemsCheck.value ?? '',
 					};
@@ -329,7 +337,7 @@ export const readRuleset = (
 					) as FraudProtectionSettingsSingleCheck;
 					parsedUIConfig[ rule.key ] = {
 						enabled: true,
-						block: rule.outcome === Outcomes.BLOCK,
+						block: getRuleBlockStatus( rule.outcome ),
 						min_amount: readFormattedRulePrice(
 							minAmountCheck.value
 						),

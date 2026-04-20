@@ -46,12 +46,16 @@ function _manually_load_plugin() {
 	update_option( 'woocommerce_currency', 'USD' );
 
 	// Enable the WCPay Subscriptions feature flag in tests to ensure we can test
-	// subscriptions funtionality.
+	// subscriptions functionality. Using 'default_option_' filter provides a default
+	// only when the option doesn't exist in the database, allowing tests to override
+	// via update_option().
 	add_filter(
-		'pre_option__wcpay_feature_subscriptions',
-		function () {
+		'default_option__wcpay_feature_subscriptions',
+		function ( $default ) {
 			return '1';
-		}
+		},
+		10,
+		1
 	);
 
 	$_plugin_dir = __DIR__ . '/../../';
@@ -75,7 +79,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-settings.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-sections-overwrite.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-orders-controller.php';
@@ -85,10 +88,11 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-terminal-locations-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-pm-promotions-controller.php';
 	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
 	require_once $_plugin_dir . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
@@ -133,6 +137,8 @@ if ( defined( 'PHP_VERSION_ID' ) && PHP_VERSION_ID >= 70400 ) {
  */
 function wcpay_init_subscriptions_core() {
 	require_once __DIR__ . '/helpers/class-wcs-helper-background-repairer.php';
+	require_once __DIR__ . '/helpers/class-wc-helper-subscriptions.php';
+	require_once __DIR__ . '/helpers/class-wc-subscriptions-change-payment-gateway.php';
 }
 
 // Placeholder for the test container.
