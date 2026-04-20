@@ -7,6 +7,8 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Logger;
+
 /**
  * REST controller for account details and status.
  */
@@ -235,11 +237,16 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		$capabilities         = ! empty( $request->get_param( 'capabilities' ) ) ? wc_clean( wp_unslash( $request->get_param( 'capabilities' ) ) ) : [];
 		$mode                 = ! empty( $request->get_param( 'mode' ) ) ? sanitize_text_field( $request->get_param( 'mode' ) ) : null;
 
-		$account_session = $this->onboarding_service->create_embedded_kyc_session(
-			$self_assessment_data,
-			$capabilities,
-			$mode
-		);
+		try {
+			$account_session = $this->onboarding_service->create_embedded_kyc_session(
+				$self_assessment_data,
+				$capabilities,
+				$mode
+			);
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to create embedded KYC session: ' . $e->getMessage() );
+			return new WP_Error( 'wcpay_onboarding_duplicate_session', $e->getMessage(), [ 'status' => 409 ] );
+		}
 
 		if ( empty( $account_session ) ) {
 			WC_Payments_Utils::log_to_wc( 'Failed to create embedded KYC session: Empty response from onboarding service.' );
