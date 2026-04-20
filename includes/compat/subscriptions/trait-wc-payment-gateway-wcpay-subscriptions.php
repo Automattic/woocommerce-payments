@@ -1306,7 +1306,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$payment_method       = $order->get_payment_method();
 		$payment_method_title = $order->get_payment_method_title();
 		$customer_id          = $order->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true );
-		$payment_method_id    = $order->get_meta( '_payment_method_id', true );
+		$payment_method_id    = $order->get_meta( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, true );
 
 		foreach ( $subscriptions as $subscription ) {
 			$dirty = false;
@@ -1323,8 +1323,8 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 				$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, $customer_id );
 				$dirty = true;
 			}
-			if ( ! empty( $payment_method_id ) && $subscription->get_meta( '_payment_method_id', true ) !== $payment_method_id ) {
-				$subscription->update_meta_data( '_payment_method_id', $payment_method_id );
+			if ( ! empty( $payment_method_id ) && $subscription->get_meta( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, true ) !== $payment_method_id ) {
+				$subscription->update_meta_data( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, $payment_method_id );
 				$dirty = true;
 			}
 

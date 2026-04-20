@@ -868,7 +868,11 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 * any subscriptions attached to the order.
 	 */
 	public function test_amazon_pay_propagates_payment_method_and_title_to_subscriptions() {
-		$order        = WC_Helper_Order::create_order();
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, 'cus_amzn_123' );
+		$order->update_meta_data( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, 'pm_amzn_abc' );
+		$order->save();
+
 		$subscription = new WC_Subscription();
 		$subscription->set_parent( $order );
 		$subscription->set_payment_method( 'woocommerce_payments' );
@@ -915,6 +919,66 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			$order->get_payment_method_title(),
 			$subscription->get_payment_method_title(),
 			'Subscription title should match the parent order.'
+		);
+		$this->assertEquals(
+			'cus_amzn_123',
+			$subscription->get_meta( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, true ),
+			'Subscription should inherit the Stripe customer ID from the parent order.'
+		);
+		$this->assertEquals(
+			'pm_amzn_abc',
+			$subscription->get_meta( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, true ),
+			'Subscription should inherit the Stripe payment method ID from the parent order.'
+		);
+	}
+
+	/**
+	 * Asserts the `$dirty` guard in `sync_payment_method_to_subscriptions`: when the parent
+	 * order's payment state already matches what's on the subscription, no save should occur.
+	 */
+	public function test_sync_payment_method_skips_save_when_nothing_changes() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_payment_method_title( 'Credit card / debit card' );
+		$order->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, 'cus_same' );
+		$order->update_meta_data( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, 'pm_same' );
+		$order->save();
+
+		$subscription = new WC_Subscription();
+		$subscription->set_parent( $order );
+		$subscription->set_payment_method( 'woocommerce_payments' );
+		$subscription->set_payment_method_title( 'Credit card / debit card' );
+		$subscription->update_meta_data( WC_Payments_Order_Service::CUSTOMER_ID_META_KEY, 'cus_same' );
+		$subscription->update_meta_data( WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY, 'pm_same' );
+		$subscription->save();
+		$initial_modified = $subscription->get_date_modified() ? $subscription->get_date_modified()->getTimestamp() : null;
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function () use ( $subscription ) {
+				return [ $subscription->get_id() => $subscription ];
+			}
+		);
+
+		// Sleep 1s so any save() would bump date_modified to a different timestamp.
+		sleep( 1 );
+
+		$this->card_gateway->set_payment_method_title_for_order(
+			$order,
+			'card',
+			[
+				'type' => 'card',
+				'card' => [
+					'brand' => 'visa',
+					'last4' => '4242',
+				],
+			]
+		);
+
+		$after_modified = $subscription->get_date_modified() ? $subscription->get_date_modified()->getTimestamp() : null;
+		$this->assertSame(
+			$initial_modified,
+			$after_modified,
+			'Subscription should not be re-saved when payment state already matches the parent order.'
 		);
 	}
 
