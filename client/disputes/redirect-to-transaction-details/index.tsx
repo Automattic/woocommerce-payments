@@ -11,7 +11,6 @@ import { getHistory } from '@woocommerce/navigation';
 import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
 import Page from 'components/page';
 import { useDispute } from 'data/index';
-import { Charge } from 'wcpay/types/charges';
 import { getAdminUrl } from 'wcpay/utils';
 
 import './style.scss';
@@ -24,14 +23,11 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 
 	useEffect( () => {
 		if ( ! isLoading && dispute?.charge ) {
-			// Dispute type allows charge as nested object or string ID,
-			// so we have to hint we expect a Charge object here.
-			const chargeObject = dispute.charge as Charge;
 			const transactionDetailsUrl = getAdminUrl( {
 				page: 'wc-admin',
 				path: '/payments/transactions/details',
-				id: chargeObject.payment_intent,
-				transaction_id: chargeObject.balance_transaction,
+				id: dispute.payment_intent,
+				transaction_id: dispute.charge.balance_transaction,
 				type: 'dispute',
 			} );
 			getHistory().replace( transactionDetailsUrl );
