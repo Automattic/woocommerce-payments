@@ -1078,6 +1078,21 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY,
 			WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY,
 			WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY,
+			// Fraud outcome is per-charge — the resubscribe hasn't been evaluated yet.
+			WC_Payments_Order_Service::WCPAY_FRAUD_META_BOX_TYPE_META_KEY,
+			WC_Payments_Order_Service::WCPAY_FRAUD_OUTCOME_STATUS_META_KEY,
+			// Multibanco reference/entity/expiry/URL are per-payment.
+			WC_Payments_Order_Service::WCPAY_MULTIBANCO_ENTITY_META_KEY,
+			WC_Payments_Order_Service::WCPAY_MULTIBANCO_REFERENCE_META_KEY,
+			WC_Payments_Order_Service::WCPAY_MULTIBANCO_EXPIRY_META_KEY,
+			WC_Payments_Order_Service::WCPAY_MULTIBANCO_URL_META_KEY,
+			// Cached details of the parent charge's payment method.
+			WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY,
+			// In-person payment channel — a resubscribe is always online.
+			WC_Payments_Order_Service::IPP_CHANNEL_META_KEY,
+			// WCPay-managed subscription ID belongs to the cancelled subscription; a resubscribe
+			// creates a brand-new WCPay subscription and must not reuse the old one.
+			WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY,
 		];
 
 		foreach ( $meta_keys as $key ) {
