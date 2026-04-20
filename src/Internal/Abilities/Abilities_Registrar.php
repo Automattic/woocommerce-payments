@@ -87,6 +87,7 @@ class Abilities_Registrar {
 		self::register_get_disputes_ability();
 		self::register_get_dispute_detail_ability();
 		self::register_get_payouts_ability();
+		self::register_get_payout_overview_ability();
 	}
 
 	/**
@@ -235,6 +236,37 @@ class Abilities_Registrar {
 			'/wc/v3/payments/deposits',
 			is_array( $input ) ? $input : null
 		);
+	}
+
+	/**
+	 * Execute callback for woopayments/get-payout-overview.
+	 *
+	 * Delegates to WC_REST_Payments_Deposits_Controller::get_all_deposits_overviews().
+	 * Answers the canonical "when do I get paid?" agent question by returning
+	 * the next scheduled payout across all enabled currencies. Zero-input — we
+	 * accept $input for API-signature compatibility but ignore it.
+	 *
+	 * @param mixed $input Optional; unused for this ability (empty input_schema).
+	 * @return array|\WP_Error Overview payload from the server, or WP_Error when
+	 *                         WooPayments is not initialized or the remote
+	 *                         request fails.
+	 */
+	public static function execute_get_payout_overview( $input = null ) {
+		if ( ! class_exists( '\WC_REST_Payments_Deposits_Controller' ) ) {
+			return new \WP_Error(
+				'woopayments_not_initialized',
+				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
+			);
+		}
+
+		$controller = new \WC_REST_Payments_Deposits_Controller();
+		$response   = $controller->get_all_deposits_overviews();
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return is_array( $response ) ? $response : [];
 	}
 
 	/**
@@ -580,6 +612,43 @@ class Abilities_Registrar {
 				'execute_callback'    => [ __CLASS__, 'execute_get_payouts' ],
 				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
 				// output_schema deliberately omitted — the payouts payload shape comes straight from the WooPayments server and we don't want to couple to a specific structure here.
+				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+					'show_in_rest' => true,
+				],
+			]
+		);
+	}
+
+	/**
+	 * Register the woopayments/get-payout-overview ability.
+	 *
+	 * Zero-input ability that answers the canonical "when do I get paid?"
+	 * agent question by returning the next scheduled payout across every
+	 * enabled store currency, plus the corresponding balances.
+	 *
+	 * @return void
+	 */
+	private static function register_get_payout_overview_ability(): void {
+		wp_register_ability(
+			'woopayments/get-payout-overview',
+			[
+				'label'               => __( 'Get WooPayments payout overview', 'woocommerce-payments' ),
+				'description'         => __( 'Returns the next scheduled WooPayments payout across every enabled store currency, along with the corresponding pending and available balances. Answers "when do I get paid?" in a single call.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => [],
+					'properties'           => [],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_payout_overview' ],
+				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
+				// output_schema deliberately omitted — the overview payload shape comes straight from the WooPayments server and we don't want to couple to a specific structure here.
 				'meta'                => [
 					'annotations'  => [
 						'readonly'    => true,

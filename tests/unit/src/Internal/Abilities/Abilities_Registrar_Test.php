@@ -207,6 +207,26 @@ class Abilities_Registrar_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Ensures the woopayments/get-payout-overview ability is registered with
+	 * the shape the Abilities Everywhere initiative expects: correct
+	 * category and the full readonly/destructive/idempotent annotation set.
+	 */
+	public function test_get_payout_overview_ability_is_registered_with_expected_shape(): void {
+		if ( ! function_exists( 'wp_get_ability' ) ) {
+			$this->markTestSkipped( 'Abilities API query functions not available in this WP version.' );
+		}
+
+		$ability = wp_get_ability( 'woopayments/get-payout-overview' );
+		$this->assertNotNull( $ability, 'get-payout-overview should be registered.' );
+		$this->assertSame( Abilities_Registrar::CATEGORY_SLUG, $ability->get_category() );
+
+		$annotations = $ability->get_meta()['annotations'];
+		$this->assertTrue( $annotations['readonly'], 'get-payout-overview should be readonly.' );
+		$this->assertFalse( $annotations['destructive'], 'get-payout-overview should not be destructive.' );
+		$this->assertTrue( $annotations['idempotent'], 'get-payout-overview should be idempotent.' );
+	}
+
+	/**
 	 * Ensures the ability's permission callback — shared across every
 	 * WooPayments ability — denies non-admins and allows admins. This is the
 	 * executable-on-current-user surface that matters for real agents.
