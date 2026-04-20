@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Docker preflight skipping infrastructure startup when database container is missing

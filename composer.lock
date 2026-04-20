@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c4453a773869f6dd2ad1dfdd9476c52d",
+    "content-hash": "52eadc7f15a55f4dfd36c20284d5d0a6",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -175,16 +175,16 @@
         },
         {
             "name": "automattic/jetpack-autoloader",
-            "version": "v5.0.15",
+            "version": "v5.0.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-autoloader.git",
-                "reference": "d5263d6ffa91dc0d0d39b1df54de1e9bb2091364"
+                "reference": "d8ae822a35e7431137e860ee60eceedaa745e4d1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/d5263d6ffa91dc0d0d39b1df54de1e9bb2091364",
-                "reference": "d5263d6ffa91dc0d0d39b1df54de1e9bb2091364",
+                "url": "https://api.github.com/repos/Automattic/jetpack-autoloader/zipball/d8ae822a35e7431137e860ee60eceedaa745e4d1",
+                "reference": "d8ae822a35e7431137e860ee60eceedaa745e4d1",
                 "shasum": ""
             },
             "require": {
@@ -192,7 +192,7 @@
                 "php": ">=7.2"
             },
             "require-dev": {
-                "automattic/jetpack-changelogger": "^6.0.12",
+                "automattic/jetpack-changelogger": "^6.0.14",
                 "automattic/phpunit-select-config": "^1.0.3",
                 "composer/composer": "^2.2",
                 "yoast/phpunit-polyfills": "^4.0.0"
@@ -234,9 +234,9 @@
                 "wordpress"
             ],
             "support": {
-                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v5.0.15"
+                "source": "https://github.com/Automattic/jetpack-autoloader/tree/v5.0.16"
             },
-            "time": "2025-12-15T11:22:11+00:00"
+            "time": "2026-02-16T10:33:15+00:00"
         },
         {
             "name": "automattic/jetpack-config",
@@ -1940,16 +1940,16 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v6.8.0",
+            "version": "v10.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3"
+                "reference": "7251902ebc048626aff04855c333afa9f3bae2d5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/aa70197bc38607e0f25a4de0b39422ab379defd3",
-                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/7251902ebc048626aff04855c333afa9f3bae2d5",
+                "reference": "7251902ebc048626aff04855c333afa9f3bae2d5",
                 "shasum": ""
             },
             "require": {
@@ -1978,9 +1978,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v6.8.0"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.7.0"
             },
-            "time": "2022-08-09T05:06:14+00:00"
+            "time": "2026-04-14T15:19:28+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
@@ -5242,16 +5242,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v5.4.47",
+            "version": "v5.4.51",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "5d1662fb32ebc94f17ddb8d635454a776066733d"
+                "reference": "467bfc56f18f5ef6d5ccb09324d7e988c1c0a98f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/5d1662fb32ebc94f17ddb8d635454a776066733d",
-                "reference": "5d1662fb32ebc94f17ddb8d635454a776066733d",
+                "url": "https://api.github.com/repos/symfony/process/zipball/467bfc56f18f5ef6d5ccb09324d7e988c1c0a98f",
+                "reference": "467bfc56f18f5ef6d5ccb09324d7e988c1c0a98f",
                 "shasum": ""
             },
             "require": {
@@ -5284,7 +5284,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v5.4.47"
+                "source": "https://github.com/symfony/process/tree/v5.4.51"
             },
             "funding": [
                 {
@@ -5296,11 +5296,15 @@
                     "type": "github"
                 },
                 {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
                     "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-11-06T11:36:42+00:00"
+            "time": "2026-01-26T15:53:37+00:00"
         },
         {
             "name": "symfony/service-contracts",
@@ -5729,16 +5733,16 @@
         },
         {
             "name": "woocommerce/woocommerce-sniffs",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/woocommerce-sniffs.git",
-                "reference": "3a65b917ff5ab5e65609e5dcb7bc62f9455bbef8"
+                "reference": "e6da0c372573724806b270ec1d5d94988b8aec52"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/woocommerce-sniffs/zipball/3a65b917ff5ab5e65609e5dcb7bc62f9455bbef8",
-                "reference": "3a65b917ff5ab5e65609e5dcb7bc62f9455bbef8",
+                "url": "https://api.github.com/repos/woocommerce/woocommerce-sniffs/zipball/e6da0c372573724806b270ec1d5d94988b8aec52",
+                "reference": "e6da0c372573724806b270ec1d5d94988b8aec52",
                 "shasum": ""
             },
             "require": {
@@ -5762,9 +5766,9 @@
             ],
             "support": {
                 "issues": "https://github.com/woocommerce/woocommerce-sniffs/issues",
-                "source": "https://github.com/woocommerce/woocommerce-sniffs/tree/1.0.0"
+                "source": "https://github.com/woocommerce/woocommerce-sniffs/tree/1.0.1"
             },
-            "time": "2023-09-29T13:52:33+00:00"
+            "time": "2025-09-03T13:34:27+00:00"
         },
         {
             "name": "wp-coding-standards/wpcs",

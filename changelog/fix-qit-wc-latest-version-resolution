@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Resolve WC version number instead of passing 'latest' to QIT CLI to work around invalid download URL construction.

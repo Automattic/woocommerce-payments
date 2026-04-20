@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix Apple Pay manual capture error when using confirmation tokens
