@@ -86,6 +86,7 @@ class Abilities_Registrar {
 		self::register_get_transactions_ability();
 		self::register_get_disputes_ability();
 		self::register_get_dispute_detail_ability();
+		self::register_get_payouts_ability();
 	}
 
 	/**
@@ -211,6 +212,28 @@ class Abilities_Registrar {
 			'get_dispute',
 			'/wc/v3/payments/disputes/' . rawurlencode( (string) $input['dispute_id'] ),
 			$input
+		);
+	}
+
+	/**
+	 * Execute callback for woopayments/get-payouts.
+	 *
+	 * Delegates to WC_REST_Payments_Deposits_Controller::get_deposits(). The
+	 * REST endpoint is `deposits`; the user-facing term everywhere else in
+	 * WooPayments is `payouts`, which is why the ability keeps the payouts
+	 * name while wrapping the deposits controller.
+	 *
+	 * @param mixed $input Optional; ability input matching the input_schema.
+	 * @return array|\WP_Error Payouts list payload from the server, or WP_Error
+	 *                         when WooPayments is not initialized or the remote
+	 *                         request fails.
+	 */
+	public static function execute_get_payouts( $input = null ) {
+		return self::delegate_to_rest_controller(
+			'WC_REST_Payments_Deposits_Controller',
+			'get_deposits',
+			'/wc/v3/payments/deposits',
+			is_array( $input ) ? $input : null
 		);
 	}
 
@@ -471,6 +494,92 @@ class Abilities_Registrar {
 				'execute_callback'    => [ __CLASS__, 'execute_get_dispute_detail' ],
 				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
 				// output_schema deliberately omitted — the dispute payload shape comes straight from the WooPayments server and we don't want to couple to a specific structure here.
+				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+					'show_in_rest' => true,
+				],
+			]
+		);
+	}
+
+	/**
+	 * Register the woopayments/get-payouts ability.
+	 *
+	 * Lists WooPayments payouts. The backing REST endpoint is `deposits`, but
+	 * user-facing naming is `payouts` — agents and merchants both speak
+	 * "payouts", so this ability uses that term.
+	 *
+	 * @return void
+	 */
+	private static function register_get_payouts_ability(): void {
+		$payout_statuses = [
+			'paid',
+			'pending',
+			'in_transit',
+			'canceled',
+			'failed',
+		];
+
+		wp_register_ability(
+			'woopayments/get-payouts',
+			[
+				'label'               => __( 'List WooPayments payouts', 'woocommerce-payments' ),
+				'description'         => __( 'Lists WooPayments payouts (funds transfers from the WooPayments balance to the merchant\'s bank account). Supports filtering by status, store currency, and date range.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => [],
+					'properties'           => [
+						'page'              => [
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'description' => __( 'Page number.', 'woocommerce-payments' ),
+						],
+						'per_page'          => [
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'maximum'     => 100,
+							'description' => __( 'Number of payouts per page.', 'woocommerce-payments' ),
+						],
+						'match'             => [
+							'type'        => 'string',
+							'enum'        => [ 'and', 'or' ],
+							'description' => __( 'Logical operator applied when combining filters.', 'woocommerce-payments' ),
+						],
+						'store_currency_is' => [
+							'type'        => 'string',
+							'description' => __( 'Filter by store currency code (e.g. "usd").', 'woocommerce-payments' ),
+						],
+						'date_before'       => [
+							'type'        => 'string',
+							'format'      => 'date-time',
+							'description' => __( 'Filter payouts before this date.', 'woocommerce-payments' ),
+						],
+						'date_after'        => [
+							'type'        => 'string',
+							'format'      => 'date-time',
+							'description' => __( 'Filter payouts after this date.', 'woocommerce-payments' ),
+						],
+						'status_is'         => [
+							'type'        => 'string',
+							'enum'        => $payout_statuses,
+							'description' => __( 'Filter to payouts whose status equals this value.', 'woocommerce-payments' ),
+						],
+						'status_is_not'     => [
+							'type'        => 'string',
+							'enum'        => $payout_statuses,
+							'description' => __( 'Filter to payouts whose status does not equal this value.', 'woocommerce-payments' ),
+						],
+					],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_payouts' ],
+				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
+				// output_schema deliberately omitted — the payouts payload shape comes straight from the WooPayments server and we don't want to couple to a specific structure here.
 				'meta'                => [
 					'annotations'  => [
 						'readonly'    => true,
