@@ -1045,6 +1045,18 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
 			WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
 			WC_Payments_Order_Service::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY,
+			// Fraud outcome is per-charge — the parent's assessment doesn't apply to the renewal.
+			WC_Payments_Order_Service::WCPAY_FRAUD_META_BOX_TYPE_META_KEY,
+			WC_Payments_Order_Service::WCPAY_FRAUD_OUTCOME_STATUS_META_KEY,
+			// Multibanco reference/entity/expiry/URL are per-payment — stale on any renewal.
+			WC_Payments_Order_Service::WCPAY_MULTIBANCO_ENTITY_META_KEY,
+			WC_Payments_Order_Service::WCPAY_MULTIBANCO_REFERENCE_META_KEY,
+			WC_Payments_Order_Service::WCPAY_MULTIBANCO_EXPIRY_META_KEY,
+			WC_Payments_Order_Service::WCPAY_MULTIBANCO_URL_META_KEY,
+			// Cached details of the parent charge's payment method — the renewal will produce its own.
+			WC_Payments_Order_Service::PAYMENT_METHOD_DETAILS_META_KEY,
+			// In-person payment channel of the parent — a renewal is always online.
+			WC_Payments_Order_Service::IPP_CHANNEL_META_KEY,
 		];
 	}
 
