@@ -154,28 +154,12 @@ class Abilities_Registrar {
 	 *                         request fails.
 	 */
 	public static function execute_get_transactions( $input = null ) {
-		if ( ! class_exists( '\WC_REST_Payments_Reports_Transactions_Controller' ) ) {
-			return new \WP_Error(
-				'woopayments_not_initialized',
-				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
-			);
-		}
-
-		$request = new \WP_REST_Request( 'GET', '/wc/v3/payments/reports/transactions' );
-		if ( is_array( $input ) ) {
-			foreach ( $input as $param => $value ) {
-				$request->set_param( $param, $value );
-			}
-		}
-
-		$controller = new \WC_REST_Payments_Reports_Transactions_Controller();
-		$response   = $controller->get_transactions( $request );
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		return $response->get_data();
+		return self::delegate_to_rest_controller(
+			'WC_REST_Payments_Reports_Transactions_Controller',
+			'get_transactions',
+			'/wc/v3/payments/reports/transactions',
+			is_array( $input ) ? $input : null
+		);
 	}
 
 	/**
@@ -192,25 +176,64 @@ class Abilities_Registrar {
 	 *                         request fails.
 	 */
 	public static function execute_get_disputes( $input = null ) {
-		if ( ! class_exists( '\WC_REST_Payments_Disputes_Controller' ) ) {
+		return self::delegate_to_rest_controller(
+			'WC_REST_Payments_Disputes_Controller',
+			'get_disputes',
+			'/wc/v3/payments/disputes',
+			is_array( $input ) ? $input : null
+		);
+	}
+
+	/**
+	 * Delegate an ability's execute callback to a WooPayments REST controller.
+	 *
+	 * Builds a WP_REST_Request from the ability's input, instantiates the
+	 * backing controller, invokes the named method, and normalizes the return
+	 * so the caller always sees an array|\WP_Error. Controllers in this plugin
+	 * return either a WP_REST_Response (e.g. the reports endpoints) or a raw
+	 * array from the server's transport layer (e.g. List_Disputes), so the
+	 * helper unwraps both shapes.
+	 *
+	 * Not used by zero-arg abilities — those call their controller directly so
+	 * we don't invent a synthetic WP_REST_Request just to discard it.
+	 *
+	 * @param string     $controller_class Fully-qualified controller class name (no leading backslash).
+	 * @param string     $method           Controller method to invoke on the built request.
+	 * @param string     $route            REST route string used when constructing WP_REST_Request.
+	 * @param array|null $input            Ability input; each key/value becomes a request param.
+	 * @return array|\WP_Error             Response payload as an array, or WP_Error on failure.
+	 */
+	private static function delegate_to_rest_controller(
+		string $controller_class,
+		string $method,
+		string $route,
+		?array $input
+	) {
+		$fqcn = '\\' . $controller_class;
+		if ( ! class_exists( $fqcn ) ) {
 			return new \WP_Error(
 				'woopayments_not_initialized',
 				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
 			);
 		}
 
-		$request = new \WP_REST_Request( 'GET', '/wc/v3/payments/disputes' );
-		if ( is_array( $input ) ) {
+		$request = new \WP_REST_Request( 'GET', $route );
+		if ( null !== $input ) {
 			foreach ( $input as $param => $value ) {
 				$request->set_param( $param, $value );
 			}
 		}
 
-		$controller = new \WC_REST_Payments_Disputes_Controller();
-		$response   = $controller->get_disputes( $request );
+		$controller = new $fqcn();
+		$response   = $controller->{$method}( $request );
 
 		if ( is_wp_error( $response ) ) {
 			return $response;
+		}
+
+		if ( $response instanceof \WP_REST_Response ) {
+			$data = $response->get_data();
+			return is_array( $data ) ? $data : [];
 		}
 
 		return is_array( $response ) ? $response : [];
