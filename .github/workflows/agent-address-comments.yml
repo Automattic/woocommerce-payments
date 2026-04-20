@@ -34,14 +34,14 @@ jobs:
 
     steps:
       - name: Checkout WooPayments
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: ${{ inputs.branch_name }}
           fetch-depth: 0
           token: ${{ secrets.BOTWOO_TOKEN }}
 
       - name: Checkout WooCommerce (context)
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: woocommerce/woocommerce
           path: woocommerce
@@ -51,7 +51,7 @@ jobs:
             plugins/woocommerce-blocks
 
       - name: Checkout gamma-ai-tools (prompt templates)
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: Automattic/gamma-ai-tools
           github-server-url: https://github.a8c.com
