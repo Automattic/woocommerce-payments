@@ -859,6 +859,65 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'woocommerce_payments', $order->get_payment_method() );
 	}
 
+	/**
+	 * Regression test: Amazon Pay subscriptions showing as "Via Card" in the
+	 * "My Subscriptions" view. The subscription is created before Stripe has
+	 * confirmed the payment method, so it inherits the default card title from
+	 * the parent order. `set_payment_method_title_for_order` is the first point
+	 * where the true payment method is known, and it must propagate that to
+	 * any subscriptions attached to the order.
+	 */
+	public function test_amazon_pay_propagates_payment_method_and_title_to_subscriptions() {
+		$order        = WC_Helper_Order::create_order();
+		$subscription = new WC_Subscription();
+		$subscription->set_parent( $order );
+		$subscription->set_payment_method( 'woocommerce_payments' );
+		$subscription->set_payment_method_title( 'Credit card / debit card' );
+		$subscription->save();
+
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function () use ( $subscription ) {
+				return [ $subscription->get_id() => $subscription ];
+			}
+		);
+
+		$payment_details = [
+			'type'       => 'amazon_pay',
+			'amazon_pay' => [
+				'funding' => [
+					'card' => [
+						'brand' => 'Visa',
+						'last4' => '4242',
+					],
+					'type' => 'card',
+				],
+			],
+		];
+
+		$this->card_gateway->set_payment_method_title_for_order( $order, 'amazon_pay', $payment_details );
+
+		$this->assertEquals(
+			'woocommerce_payments_amazon_pay',
+			$subscription->get_payment_method(),
+			'Subscription gateway should be synced to the Amazon Pay split gateway.'
+		);
+		$this->assertStringContainsString(
+			'Amazon Pay',
+			$subscription->get_payment_method_title(),
+			'Subscription title should reflect Amazon Pay, not the default card title.'
+		);
+		$this->assertEquals(
+			$order->get_payment_method(),
+			$subscription->get_payment_method(),
+			'Subscription gateway should match the parent order.'
+		);
+		$this->assertEquals(
+			$order->get_payment_method_title(),
+			$subscription->get_payment_method_title(),
+			'Subscription title should match the parent order.'
+		);
+	}
+
 	public function test_payment_methods_show_correct_default_outputs() {
 		$mock_token = WC_Helper_Token::create_token( 'pm_mock' );
 		$this->mock_token_service->expects( $this->any() )

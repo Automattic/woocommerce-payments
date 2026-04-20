@@ -2460,6 +2460,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$order->save();
+
+		$this->sync_payment_method_to_subscriptions( $order );
 	}
 
 	/**
