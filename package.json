@@ -196,7 +196,7 @@
 		"jest-environment-jsdom": "29.7.0",
 		"jquery": "3.7.1",
 		"lint-staged": "10.5.4",
-		"mini-css-extract-plugin": "2.9.3",
+		"mini-css-extract-plugin": "2.10.2",
 		"moment": "2.29.4",
 		"moment-timezone": "0.5.45",
 		"msw": "1.3.2",
