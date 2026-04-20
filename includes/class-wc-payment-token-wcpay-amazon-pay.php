@@ -61,6 +61,13 @@ class WC_Payment_Token_WCPay_Amazon_Pay extends WC_Payment_Token {
 	}
 
 	/**
+	 * Hook prefix.
+	 */
+	protected function get_hook_prefix() {
+		return 'woocommerce_payments_token_wcpay_amazon_pay_get_';
+	}
+
+	/**
 	 * Returns the redacted customer email.
 	 * Note: The email is stored in redacted format for privacy.
 	 *
@@ -91,13 +98,6 @@ class WC_Payment_Token_WCPay_Amazon_Pay extends WC_Payment_Token {
 	 */
 	public function get_type( $deprecated = '' ) {
 		return self::TYPE;
-	}
-
-	/**
-	 * Hook prefix.
-	 */
-	protected function get_hook_prefix() {
-		return 'woocommerce_payments_token_wcpay_amazon_pay_get_';
 	}
 
 	/**
