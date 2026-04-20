@@ -83,6 +83,7 @@ class Abilities_Registrar {
 		}
 
 		self::register_get_account_status_ability();
+		self::register_get_transactions_ability();
 	}
 
 	/**
@@ -136,6 +137,123 @@ class Abilities_Registrar {
 		}
 
 		return is_array( $data ) ? $data : [];
+	}
+
+	/**
+	 * Execute callback for woopayments/get-transactions.
+	 *
+	 * Delegates to WC_REST_Payments_Reports_Transactions_Controller::get_transactions()
+	 * which produces the normalized, report-shaped transaction schema
+	 * (transaction_id, date, payment_id, channel, payment_method, type,
+	 * currency, amount, fees, customer, deposit status, etc.).
+	 *
+	 * @param mixed $input Optional; ability input matching the input_schema.
+	 * @return array|\WP_Error Array of prepared transactions, or WP_Error when
+	 *                         WooPayments is not initialized or the remote
+	 *                         request fails.
+	 */
+	public static function execute_get_transactions( $input = null ) {
+		if ( ! class_exists( '\WC_REST_Payments_Reports_Transactions_Controller' ) ) {
+			return new \WP_Error(
+				'woopayments_not_initialized',
+				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
+			);
+		}
+
+		$request = new \WP_REST_Request( 'GET', '/wc/v3/payments/reports/transactions' );
+		if ( is_array( $input ) ) {
+			foreach ( $input as $param => $value ) {
+				$request->set_param( $param, $value );
+			}
+		}
+
+		$controller = new \WC_REST_Payments_Reports_Transactions_Controller();
+		$response   = $controller->get_transactions( $request );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return $response->get_data();
+	}
+
+	/**
+	 * Register the woopayments/get-transactions ability.
+	 *
+	 * Lists WooPayments transactions using the report-shaped schema so agents
+	 * receive a stable, documented payload (transaction_id, date, payment_id,
+	 * channel, payment_method, type, amount, fees, customer, deposit status)
+	 * rather than the raw Stripe balance transaction structure.
+	 *
+	 * @return void
+	 */
+	private static function register_get_transactions_ability(): void {
+		wp_register_ability(
+			'woopayments/get-transactions',
+			[
+				'label'               => __( 'List WooPayments transactions', 'woocommerce-payments' ),
+				'description'         => __( 'Lists WooPayments transactions using the stable, report-shaped schema (transaction_id, date, payment_id, channel, payment_method, type, currency, amount, fees, customer, deposit status). Supports date, pagination, and basic filter parameters.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => [],
+					'properties'           => [
+						'page'        => [
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'default'     => 1,
+							'description' => __( 'Page number.', 'woocommerce-payments' ),
+						],
+						'per_page'    => [
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'maximum'     => 100,
+							'default'     => 25,
+							'description' => __( 'Number of transactions per page.', 'woocommerce-payments' ),
+						],
+						'date_before' => [
+							'type'        => 'string',
+							'format'      => 'date-time',
+							'description' => __( 'Filter transactions before this date.', 'woocommerce-payments' ),
+						],
+						'date_after'  => [
+							'type'        => 'string',
+							'format'      => 'date-time',
+							'description' => __( 'Filter transactions after this date.', 'woocommerce-payments' ),
+						],
+						'match'       => [
+							'type'        => 'string',
+							'enum'        => [ 'and', 'or' ],
+							'default'     => 'and',
+							'description' => __( 'Logical operator applied when combining filters.', 'woocommerce-payments' ),
+						],
+						'sort'        => [
+							'type'        => 'string',
+							'default'     => 'date',
+							'description' => __( 'Field on which to sort.', 'woocommerce-payments' ),
+						],
+						'direction'   => [
+							'type'        => 'string',
+							'enum'        => [ 'asc', 'desc' ],
+							'default'     => 'desc',
+							'description' => __( 'Sort direction.', 'woocommerce-payments' ),
+						],
+					],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_transactions' ],
+				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
+				// output_schema deliberately omitted — the transactions report schema is documented on the backing REST controller and duplicating it here would couple this registrar to any future upstream change.
+				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+					'show_in_rest' => true,
+				],
+			]
+		);
 	}
 
 	/**
