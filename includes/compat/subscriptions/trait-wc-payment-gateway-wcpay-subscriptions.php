@@ -1070,6 +1070,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::INTENTION_STATUS_META_KEY,
 			WC_Payments_Order_Service::CHARGE_RISK_LEVEL_META_KEY,
 			WC_Payments_Order_Service::CUSTOMER_ID_META_KEY,
+			WC_Payments_Order_Service::PAYMENT_METHOD_ID_META_KEY,
 			WC_Payments_Order_Service::WCPAY_INTENT_CURRENCY_META_KEY,
 			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
 			WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
@@ -1077,14 +1078,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY,
 			WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY,
 			WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY,
-			'_payment_method_id',
 		];
 
 		foreach ( $meta_keys as $key ) {
 			$resubscribe_order->delete_meta_data( $key );
 		}
 
-		$resubscribe_order->save();
+		// Persist the deletions WITHOUT firing `woocommerce_update_order`: `schedule_order_tracking`
+		// hooks that action and backfills `_payment_method_id` / `_stripe_customer_id` from the parent
+		// order when they're empty, which would undo the cleanup we just performed.
+		$resubscribe_order->save_meta_data();
 	}
 
 	/**
