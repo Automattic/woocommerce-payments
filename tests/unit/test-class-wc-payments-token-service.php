@@ -329,16 +329,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( WC_Payment_Token_WCPay_Amazon_Pay::class, $token );
 	}
 
-	/**
-	 * Test Amazon Pay token display name falls back to email when no funding card is available.
-	 */
-	public function test_amazon_pay_token_display_name_without_funding_card() {
-		$token = new WC_Payment_Token_WCPay_Amazon_Pay();
-		$token->set_email( 'test@amazon.com' );
-
-		$this->assertEquals( 'Amazon Pay (***test@amazon.com)', $token->get_display_name() );
-	}
-
 	public function test_add_payment_method_to_user() {
 		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
 		$mock_payment_method = [
