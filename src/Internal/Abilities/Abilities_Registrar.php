@@ -88,6 +88,7 @@ class Abilities_Registrar {
 		self::register_get_dispute_detail_ability();
 		self::register_get_payouts_ability();
 		self::register_get_payout_overview_ability();
+		self::register_submit_dispute_evidence_ability();
 	}
 
 	/**
@@ -225,6 +226,46 @@ class Abilities_Registrar {
 			'get_dispute',
 			'/wc/v3/payments/disputes/' . rawurlencode( (string) $input['dispute_id'] ),
 			$input
+		);
+	}
+
+	/**
+	 * Execute callback for woopayments/submit-dispute-evidence.
+	 *
+	 * Delegates to WC_REST_Payments_Disputes_Controller::update_dispute(),
+	 * which accepts `dispute_id`, `evidence`, `submit`, and `metadata` and
+	 * forwards them to the WooPayments server. Defaults `submit` to false on
+	 * the input schema so evidence can be staged as a draft; agents should
+	 * only pass `submit: true` after explicit merchant confirmation because
+	 * once submitted, evidence cannot be retracted.
+	 *
+	 * Not idempotent — calling this twice with `submit: true` produces two
+	 * submission attempts against Stripe. Agent retry logic must guard
+	 * against double-calls.
+	 *
+	 * @param mixed $input Ability input; must include `dispute_id`.
+	 * @return array|\WP_Error Dispute payload from the server, or WP_Error when
+	 *                         WooPayments is not initialized, the dispute_id
+	 *                         is missing, or the remote request fails.
+	 */
+	public static function execute_submit_dispute_evidence( $input = null ) {
+		if ( ! is_array( $input ) ) {
+			$input = [];
+		}
+
+		if ( ! isset( $input['dispute_id'] ) || ! is_string( $input['dispute_id'] ) || '' === $input['dispute_id'] ) {
+			return new \WP_Error(
+				'woopayments_missing_dispute_id',
+				__( 'A dispute_id is required to submit dispute evidence.', 'woocommerce-payments' )
+			);
+		}
+
+		return self::delegate_to_rest_controller(
+			'WC_REST_Payments_Disputes_Controller',
+			'update_dispute',
+			'/wc/v3/payments/disputes/' . rawurlencode( $input['dispute_id'] ),
+			$input,
+			'POST'
 		);
 	}
 
@@ -636,6 +677,68 @@ class Abilities_Registrar {
 						'readonly'    => true,
 						'destructive' => false,
 						'idempotent'  => true,
+					],
+					'show_in_rest' => true,
+				],
+			]
+		);
+	}
+
+	/**
+	 * Register the woopayments/submit-dispute-evidence ability.
+	 *
+	 * First write ability in the WooPayments abilities surface. Attaches or
+	 * finalizes evidence for an open dispute. Chosen over create-refund and
+	 * accept-dispute for MVP because submitting evidence doesn't move money —
+	 * it's additive, not destructive.
+	 *
+	 * Annotations: readonly:false, destructive:false, idempotent:false. The
+	 * non-idempotent flag is load-bearing — duplicate submits to Stripe
+	 * produce duplicate attempts; agent retry logic must guard double-calls.
+	 *
+	 * @return void
+	 */
+	private static function register_submit_dispute_evidence_ability(): void {
+		wp_register_ability(
+			'woopayments/submit-dispute-evidence',
+			[
+				'label'               => __( 'Submit WooPayments dispute evidence', 'woocommerce-payments' ),
+				'description'         => __( 'Attach or update evidence for an open WooPayments dispute. Pass submit:true only after explicit merchant confirmation — once submitted, evidence cannot be retracted. Not idempotent: calling twice with submit:true produces duplicate submission attempts, so agent retry logic must guard against double-calls.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'required'             => [ 'dispute_id' ],
+					'properties'           => [
+						'dispute_id' => [
+							'type'        => 'string',
+							'description' => __( 'The WooPayments dispute identifier to submit evidence for. Starts with "dp_".', 'woocommerce-payments' ),
+						],
+						'evidence'   => [
+							'type'                 => 'object',
+							'description'          => __( 'The evidence payload. Accepts fields documented by Stripe\'s dispute evidence object (e.g. product_description, customer_communication, receipt, shipping_documentation). Unknown fields are forwarded to Stripe.', 'woocommerce-payments' ),
+							'additionalProperties' => true,
+						],
+						'submit'     => [
+							'type'        => 'boolean',
+							'default'     => false,
+							'description' => __( 'If true, finalize and submit the evidence to Stripe. If false (default), save as draft without submitting. Agents should default to false and only submit after explicit merchant confirmation.', 'woocommerce-payments' ),
+						],
+						'metadata'   => [
+							'type'                 => 'object',
+							'description'          => __( 'Optional metadata key/value pairs to attach to the dispute.', 'woocommerce-payments' ),
+							'additionalProperties' => [ 'type' => 'string' ],
+						],
+					],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_submit_dispute_evidence' ],
+				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
+				// output_schema deliberately omitted — the dispute payload shape comes straight from the WooPayments server and we don't want to couple to a specific structure here.
+				'meta'                => [
+					'annotations'  => [
+						'readonly'    => false,
+						'destructive' => false,
+						'idempotent'  => false,
 					],
 					'show_in_rest' => true,
 				],

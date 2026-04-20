@@ -264,4 +264,51 @@ class Abilities_Registrar_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'woopayments_missing_dispute_id', $result->get_error_code() );
 	}
+
+	/**
+	 * Ensures the woopayments/submit-dispute-evidence ability — the first write
+	 * ability — is registered with the correct category and the full
+	 * readonly/destructive/idempotent annotation set. Explicit negative
+	 * assertions on every annotation to catch copy-paste bugs where a read
+	 * ability's `readonly: true` leaks into this write ability.
+	 */
+	public function test_submit_dispute_evidence_ability_is_registered_with_expected_shape(): void {
+		if ( ! function_exists( 'wp_get_ability' ) ) {
+			$this->markTestSkipped( 'Abilities API query functions not available in this WP version.' );
+		}
+
+		$ability = wp_get_ability( 'woopayments/submit-dispute-evidence' );
+		$this->assertNotNull( $ability, 'submit-dispute-evidence should be registered.' );
+		$this->assertSame( Abilities_Registrar::CATEGORY_SLUG, $ability->get_category() );
+
+		$annotations = $ability->get_meta()['annotations'];
+		$this->assertFalse( $annotations['readonly'], 'submit-dispute-evidence must NOT be readonly.' );
+		$this->assertFalse( $annotations['destructive'], 'submit-dispute-evidence is additive (does not forfeit money).' );
+		$this->assertFalse( $annotations['idempotent'], 'submit-dispute-evidence is NOT idempotent — duplicate calls produce duplicate attempts.' );
+	}
+
+	/**
+	 * Executes the submit-dispute-evidence ability with no dispute_id and
+	 * asserts it returns a WP_Error with code woopayments_missing_dispute_id.
+	 * Consistent error code across read and write dispute abilities lets agent
+	 * retry logic handle "missing dispute_id" the same way for both.
+	 */
+	public function test_submit_dispute_evidence_returns_wp_error_when_dispute_id_missing(): void {
+		$result = Abilities_Registrar::execute_submit_dispute_evidence( [] );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'woopayments_missing_dispute_id', $result->get_error_code() );
+	}
+
+	/**
+	 * Executes the submit-dispute-evidence ability with a non-string
+	 * dispute_id (integer 123) and asserts it returns a WP_Error with code
+	 * woopayments_missing_dispute_id. Guards the explicit is_string() check —
+	 * a lax `empty()` or `isset()` guard would pass an integer through and
+	 * fail later at the backing controller's URL construction.
+	 */
+	public function test_submit_dispute_evidence_returns_wp_error_when_dispute_id_not_a_string(): void {
+		$result = Abilities_Registrar::execute_submit_dispute_evidence( [ 'dispute_id' => 123 ] );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'woopayments_missing_dispute_id', $result->get_error_code() );
+	}
 }
