@@ -307,6 +307,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			add_filter( 'wc_subscriptions_renewal_order_data', [ $this, 'remove_data_renewal_order' ], 10, 3 );
 		}
 
+		// Clear inherited Stripe identifiers on resubscribe orders so the checkout runs fresh.
+		add_action( 'wcs_resubscribe_order_created', [ $this, 'delete_resubscribe_meta' ], 10, 1 );
+
 		// Allow store managers to manually set Stripe as the payment method on a subscription.
 		add_filter( 'woocommerce_subscription_payment_meta', [ $this, 'add_subscription_payment_meta' ], 10, 2 );
 		add_filter( 'woocommerce_subscription_validate_payment_meta', [ $this, 'validate_subscription_payment_meta' ], 10, 3 );
@@ -1047,6 +1050,41 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function remove_data_renewal_order( $order_data ) {
 		unset( $order_data['_new_order_tracking_complete'] );
 		return $order_data;
+	}
+
+	/**
+	 * Don't transfer Stripe identifiers to resubscribe orders.
+	 *
+	 * A resubscribe order is a fresh checkout the customer has to complete, so any
+	 * intent/charge/payment-method/customer meta inherited from the cancelled or expired
+	 * subscription's parent order would point at stale state and may confuse payment
+	 * confirmation (e.g. confirming against a stale intent, or attaching a charge to a
+	 * payment method the customer no longer owns).
+	 *
+	 * @param \WC_Order $resubscribe_order The order created for the customer to resubscribe.
+	 */
+	public function delete_resubscribe_meta( $resubscribe_order ) {
+		$meta_keys = [
+			WC_Payments_Order_Service::INTENT_ID_META_KEY,
+			WC_Payments_Order_Service::CHARGE_ID_META_KEY,
+			WC_Payments_Order_Service::INTENTION_STATUS_META_KEY,
+			WC_Payments_Order_Service::CHARGE_RISK_LEVEL_META_KEY,
+			WC_Payments_Order_Service::CUSTOMER_ID_META_KEY,
+			WC_Payments_Order_Service::WCPAY_INTENT_CURRENCY_META_KEY,
+			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
+			WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
+			WC_Payments_Order_Service::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY,
+			WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY,
+			WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY,
+			WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY,
+			'_payment_method_id',
+		];
+
+		foreach ( $meta_keys as $key ) {
+			$resubscribe_order->delete_meta_data( $key );
+		}
+
+		$resubscribe_order->save();
 	}
 
 	/**
