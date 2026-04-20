@@ -277,10 +277,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
 
-		// Force non-reusable payment methods to manual renewal. Amazon Pay ECE subscriptions
-		// are corrected later by `sync_payment_method_to_subscriptions()` on the gateway, once
-		// Stripe has confirmed the payment method type.
-		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 11, 1 );
+		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
 
 		// Register gateway-specific hooks for all reusable gateways.
 		foreach ( $this->get_reusable_wcpay_gateway_ids() as $gateway_id ) {

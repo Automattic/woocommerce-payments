@@ -183,25 +183,6 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Non_Reusable_Methods_Test extends W
 	}
 
 	/**
-	 * Amazon Pay subscriptions that reach `maybe_force_subscription_to_manual`
-	 * still on the base card gateway (because Stripe hasn't confirmed the
-	 * payment method yet) must remain automatic — the base gateway is reusable,
-	 * and the gateway will later switch them to the Amazon Pay split gateway
-	 * via `sync_payment_method_to_subscriptions()`.
-	 */
-	public function test_amazon_pay_ece_subscription_remains_automatic_on_base_gateway() {
-		$subscription = new WC_Subscription();
-		$subscription->set_payment_method( 'woocommerce_payments' );
-		$subscription->set_requires_manual_renewal( false );
-		$subscription->save();
-
-		$this->mock_gateway->maybe_force_subscription_to_manual( $subscription );
-
-		$this->assertFalse( $subscription->is_manual(), 'Subscription on the reusable base gateway should remain automatic.' );
-		$this->assertEmpty( $subscription->get_meta( '_wcpay_original_payment_method_id', true ), 'No original payment method ID should be stored for reusable gateways.' );
-	}
-
-	/**
 	 * Test that subscriptions created via Express Checkout with Google Pay
 	 * remain on the base gateway and are NOT forced to manual.
 	 */

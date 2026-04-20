@@ -2461,7 +2461,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$order->save();
 
-		// Defined on WC_Payment_Gateway_WCPay_Subscriptions_Trait.
 		$this->sync_payment_method_to_subscriptions( $order );
 	}
 
