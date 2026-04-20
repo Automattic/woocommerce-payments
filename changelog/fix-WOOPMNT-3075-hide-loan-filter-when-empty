@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Hide the Loan advanced filter on the Transactions page when the merchant has no Stripe Capital loans.
