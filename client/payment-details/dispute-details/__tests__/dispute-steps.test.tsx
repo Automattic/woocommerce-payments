@@ -13,7 +13,7 @@ import {
 	NotDefendableInquirySteps,
 } from '../dispute-steps';
 import type { Dispute } from 'wcpay/types/disputes';
-import type { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { Charge, ChargeBillingDetails } from 'wcpay/types/charges';
 
 // Mock date formatting utility
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -34,7 +34,7 @@ declare const global: {
 const getBaseInquiryDispute = (): Dispute => ( {
 	id: 'dp_klarna_1',
 	amount: 5000,
-	charge: 'ch_mock',
+	charge: { id: 'ch_mock' } as Charge,
 	order: null,
 	balance_transactions: [
 		{
