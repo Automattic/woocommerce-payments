@@ -40,3 +40,14 @@ updates:
       reviewers:
         - 'Automattic/gamma'
         - 'Automattic/moltres'
+
+    # Enable version updates for GitHub Actions (SHA pins in .github/workflows/ and .github/actions/)
+    - package-ecosystem: 'github-actions'
+      directory: '/'
+      # Check for updates once a week
+      schedule:
+        interval: 'weekly'
+      # Reviewers for issues created
+      reviewers:
+        - 'Automattic/gamma'
+        - 'Automattic/moltres'
