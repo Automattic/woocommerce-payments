@@ -84,6 +84,7 @@ class Abilities_Registrar {
 
 		self::register_get_account_status_ability();
 		self::register_get_transactions_ability();
+		self::register_get_disputes_ability();
 	}
 
 	/**
@@ -178,6 +179,44 @@ class Abilities_Registrar {
 	}
 
 	/**
+	 * Execute callback for woopayments/get-disputes.
+	 *
+	 * Delegates to WC_REST_Payments_Disputes_Controller::get_disputes() which
+	 * returns the raw server response array from the WooPayments API. Critical
+	 * for the canonical "which disputes need a response?" agent query via
+	 * the status_is filter.
+	 *
+	 * @param mixed $input Optional; ability input matching the input_schema.
+	 * @return array|\WP_Error Disputes list payload from the server, or WP_Error
+	 *                         when WooPayments is not initialized or the remote
+	 *                         request fails.
+	 */
+	public static function execute_get_disputes( $input = null ) {
+		if ( ! class_exists( '\WC_REST_Payments_Disputes_Controller' ) ) {
+			return new \WP_Error(
+				'woopayments_not_initialized',
+				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
+			);
+		}
+
+		$request = new \WP_REST_Request( 'GET', '/wc/v3/payments/disputes' );
+		if ( is_array( $input ) ) {
+			foreach ( $input as $param => $value ) {
+				$request->set_param( $param, $value );
+			}
+		}
+
+		$controller = new \WC_REST_Payments_Disputes_Controller();
+		$response   = $controller->get_disputes( $request );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return is_array( $response ) ? $response : [];
+	}
+
+	/**
 	 * Register the woopayments/get-transactions ability.
 	 *
 	 * Lists WooPayments transactions using the report-shaped schema so agents
@@ -244,6 +283,99 @@ class Abilities_Registrar {
 				'execute_callback'    => [ __CLASS__, 'execute_get_transactions' ],
 				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
 				// output_schema deliberately omitted — the transactions report schema is documented on the backing REST controller and duplicating it here would couple this registrar to any future upstream change.
+				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+					'show_in_rest' => true,
+				],
+			]
+		);
+	}
+
+	/**
+	 * Register the woopayments/get-disputes ability.
+	 *
+	 * Lists WooPayments disputes. Supports filtering by status — essential for
+	 * the canonical "which disputes need a response?" agent query
+	 * (status_is=needs_response or warning_needs_response).
+	 *
+	 * @return void
+	 */
+	private static function register_get_disputes_ability(): void {
+		$dispute_statuses = [
+			'warning_needs_response',
+			'warning_under_review',
+			'warning_closed',
+			'needs_response',
+			'under_review',
+			'charge_refunded',
+			'won',
+			'lost',
+		];
+
+		wp_register_ability(
+			'woopayments/get-disputes',
+			[
+				'label'               => __( 'List WooPayments disputes', 'woocommerce-payments' ),
+				'description'         => __( 'Lists WooPayments disputes. Supports filtering by status (e.g. status_is=needs_response to answer "which disputes need a response?"), date range, store currency, and free-text search.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => [],
+					'properties'           => [
+						'page'              => [
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'description' => __( 'Page number.', 'woocommerce-payments' ),
+						],
+						'per_page'          => [
+							'type'        => 'integer',
+							'minimum'     => 1,
+							'maximum'     => 100,
+							'description' => __( 'Number of disputes per page.', 'woocommerce-payments' ),
+						],
+						'match'             => [
+							'type'        => 'string',
+							'enum'        => [ 'and', 'or' ],
+							'description' => __( 'Logical operator applied when combining filters.', 'woocommerce-payments' ),
+						],
+						'store_currency_is' => [
+							'type'        => 'string',
+							'description' => __( 'Filter by store currency code (e.g. "usd").', 'woocommerce-payments' ),
+						],
+						'date_before'       => [
+							'type'        => 'string',
+							'format'      => 'date-time',
+							'description' => __( 'Filter disputes created before this date.', 'woocommerce-payments' ),
+						],
+						'date_after'        => [
+							'type'        => 'string',
+							'format'      => 'date-time',
+							'description' => __( 'Filter disputes created after this date.', 'woocommerce-payments' ),
+						],
+						'search'            => [
+							'type'        => 'string',
+							'description' => __( 'Free-text search term.', 'woocommerce-payments' ),
+						],
+						'status_is'         => [
+							'type'        => 'string',
+							'enum'        => $dispute_statuses,
+							'description' => __( 'Filter to disputes whose status equals this value.', 'woocommerce-payments' ),
+						],
+						'status_is_not'     => [
+							'type'        => 'string',
+							'enum'        => $dispute_statuses,
+							'description' => __( 'Filter to disputes whose status does not equal this value.', 'woocommerce-payments' ),
+						],
+					],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_disputes' ],
+				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
+				// output_schema deliberately omitted — the disputes payload shape comes straight from the WooPayments server and we don't want to couple to a specific structure here.
 				'meta'                => [
 					'annotations'  => [
 						'readonly'    => true,
