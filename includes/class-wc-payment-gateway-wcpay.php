@@ -2009,14 +2009,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 				$order->save_meta_data();
 			}
-
-			// Amazon Pay tokens: the charge's payment_method_details is richer than the bare
-			// PaymentMethod API response, so use it to back-fill the funding card (brand, last4,
-			// expiry) on both newly-saved and pre-existing tokens.
-			$amazon_pay_token = $payment_information->get_payment_token();
-			if ( $amazon_pay_token ) {
-				$this->token_service->maybe_update_amazon_pay_token_funding_card( $amazon_pay_token, $payment_method_details );
-			}
 		} else {
 			$payment_method_details = false;
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
