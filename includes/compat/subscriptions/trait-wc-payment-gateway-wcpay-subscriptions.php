@@ -1022,6 +1022,33 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Meta keys that must NOT be copied from the parent order to a renewal order.
+	 *
+	 * These track a specific charge/intent/refund lifecycle on the parent order and
+	 * would otherwise be inherited by every renewal until the new payment overwrites
+	 * them — producing stale transaction IDs, double-counted fees on failed renewals,
+	 * phantom refund state, and test/live mode drift between parent and renewal.
+	 *
+	 * @return string[]
+	 */
+	private function get_renewal_excluded_meta_keys() {
+		return [
+			'_new_order_tracking_complete',
+			WC_Payments_Order_Service::INTENT_ID_META_KEY,
+			WC_Payments_Order_Service::CHARGE_ID_META_KEY,
+			WC_Payments_Order_Service::INTENTION_STATUS_META_KEY,
+			WC_Payments_Order_Service::CHARGE_RISK_LEVEL_META_KEY,
+			WC_Payments_Order_Service::WCPAY_INTENT_CURRENCY_META_KEY,
+			WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY,
+			WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY,
+			WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY,
+			WC_Payments_Order_Service::WCPAY_TRANSACTION_FEE_META_KEY,
+			WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
+			WC_Payments_Order_Service::WCPAY_PAYMENT_TRANSACTION_ID_META_KEY,
+		];
+	}
+
+	/**
 	 * Action called when a renewal order is created, allowing us to strip metadata that we do not
 	 * want it to inherit from the parent order.
 	 *
@@ -1032,7 +1059,13 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return string
 	 */
 	public function update_renewal_meta_data( $order_meta_query, $to_order, $from_order ) {
-		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
+		$excluded_keys     = array_map(
+			function ( $key ) {
+				return "'" . esc_sql( $key ) . "'";
+			},
+			$this->get_renewal_excluded_meta_keys()
+		);
+		$order_meta_query .= ' AND `meta_key` NOT IN (' . implode( ', ', $excluded_keys ) . ')';
 
 		return $order_meta_query;
 	}
@@ -1045,7 +1078,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return array The renewal order data with the data we don't want copied removed
 	 */
 	public function remove_data_renewal_order( $order_data ) {
-		unset( $order_data['_new_order_tracking_complete'] );
+		foreach ( $this->get_renewal_excluded_meta_keys() as $key ) {
+			unset( $order_data[ $key ] );
+		}
 		return $order_data;
 	}
 
