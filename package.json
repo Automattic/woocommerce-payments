@@ -231,7 +231,7 @@
 		"webpack-dev-server": "5.2.2",
 		"webpack-merge": "5.8.0",
 		"whatwg-fetch": "3.6.20",
-		"yarnhook": "0.5.1"
+		"yarnhook": "0.6.2"
 	},
 	"overrides": {
 		"@woocommerce/components": {
