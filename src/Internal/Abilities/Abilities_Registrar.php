@@ -85,6 +85,7 @@ class Abilities_Registrar {
 		self::register_get_account_status_ability();
 		self::register_get_transactions_ability();
 		self::register_get_disputes_ability();
+		self::register_get_dispute_detail_ability();
 	}
 
 	/**
@@ -181,6 +182,35 @@ class Abilities_Registrar {
 			'get_disputes',
 			'/wc/v3/payments/disputes',
 			is_array( $input ) ? $input : null
+		);
+	}
+
+	/**
+	 * Execute callback for woopayments/get-dispute-detail.
+	 *
+	 * Delegates to WC_REST_Payments_Disputes_Controller::get_dispute() which
+	 * fetches a single dispute by ID via the WooPayments server. The natural
+	 * prerequisite for submit-dispute-evidence so an agent can read the
+	 * dispute reason, due-by date, and current status before responding.
+	 *
+	 * @param mixed $input Ability input; must include `dispute_id`.
+	 * @return array|\WP_Error Dispute payload from the server, or WP_Error when
+	 *                         WooPayments is not initialized, the dispute_id
+	 *                         is missing, or the remote request fails.
+	 */
+	public static function execute_get_dispute_detail( $input = null ) {
+		if ( ! is_array( $input ) || empty( $input['dispute_id'] ) ) {
+			return new \WP_Error(
+				'woopayments_missing_dispute_id',
+				__( 'A dispute_id is required to fetch dispute detail.', 'woocommerce-payments' )
+			);
+		}
+
+		return self::delegate_to_rest_controller(
+			'WC_REST_Payments_Disputes_Controller',
+			'get_dispute',
+			'/wc/v3/payments/disputes/' . rawurlencode( (string) $input['dispute_id'] ),
+			$input
 		);
 	}
 
@@ -399,6 +429,48 @@ class Abilities_Registrar {
 				'execute_callback'    => [ __CLASS__, 'execute_get_disputes' ],
 				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
 				// output_schema deliberately omitted — the disputes payload shape comes straight from the WooPayments server and we don't want to couple to a specific structure here.
+				'meta'                => [
+					'annotations'  => [
+						'readonly'    => true,
+						'destructive' => false,
+						'idempotent'  => true,
+					],
+					'show_in_rest' => true,
+				],
+			]
+		);
+	}
+
+	/**
+	 * Register the woopayments/get-dispute-detail ability.
+	 *
+	 * Fetches a single WooPayments dispute by ID. The natural prerequisite for
+	 * submit-dispute-evidence (Phase 5) — an agent reads the dispute reason,
+	 * due-by date, and current status here before deciding how to respond.
+	 *
+	 * @return void
+	 */
+	private static function register_get_dispute_detail_ability(): void {
+		wp_register_ability(
+			'woopayments/get-dispute-detail',
+			[
+				'label'               => __( 'Get WooPayments dispute detail', 'woocommerce-payments' ),
+				'description'         => __( 'Fetches a single WooPayments dispute by ID. Returns the full dispute payload (status, reason, due-by date, evidence due, amount, etc.). Natural prerequisite for submit-dispute-evidence.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'required'             => [ 'dispute_id' ],
+					'properties'           => [
+						'dispute_id' => [
+							'type'        => 'string',
+							'description' => __( 'The WooPayments dispute ID (e.g. "dp_1ABCxyz...").', 'woocommerce-payments' ),
+						],
+					],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_dispute_detail' ],
+				'permission_callback' => [ __CLASS__, 'can_manage_payments' ],
+				// output_schema deliberately omitted — the dispute payload shape comes straight from the WooPayments server and we don't want to couple to a specific structure here.
 				'meta'                => [
 					'annotations'  => [
 						'readonly'    => true,
