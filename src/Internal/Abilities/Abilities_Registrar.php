@@ -234,10 +234,14 @@ class Abilities_Registrar {
 	 *
 	 * Delegates to WC_REST_Payments_Disputes_Controller::update_dispute(),
 	 * which accepts `dispute_id`, `evidence`, `submit`, and `metadata` and
-	 * forwards them to the WooPayments server. Defaults `submit` to false on
-	 * the input schema so evidence can be staged as a draft; agents should
-	 * only pass `submit: true` after explicit merchant confirmation because
-	 * once submitted, evidence cannot be retracted.
+	 * forwards them to the WooPayments server. Agents should only pass
+	 * `submit: true` after explicit merchant confirmation because once
+	 * submitted, evidence cannot be retracted.
+	 *
+	 * Normalizes the optional `submit`, `evidence`, and `metadata` input keys
+	 * to their execute-time defaults before delegating — the Abilities API's
+	 * validate path does not inject schema defaults into execute callback
+	 * input.
 	 *
 	 * Not idempotent — calling this twice with `submit: true` produces two
 	 * submission attempts against Stripe. Agent retry logic must guard
@@ -258,6 +262,21 @@ class Abilities_Registrar {
 				'woopayments_missing_dispute_id',
 				__( 'A dispute_id is required to submit dispute evidence.', 'woocommerce-payments' )
 			);
+		}
+
+		// The Abilities API validates input against the schema but does NOT apply
+		// property-level defaults. Apply them here so the backing controller sees
+		// the same shape whether the caller passed them or not.
+		if ( ! array_key_exists( 'submit', $input ) || null === $input['submit'] ) {
+			$input['submit'] = false;
+		}
+		$input['submit'] = (bool) $input['submit'];
+
+		if ( ! array_key_exists( 'evidence', $input ) || null === $input['evidence'] ) {
+			$input['evidence'] = [];
+		}
+		if ( ! array_key_exists( 'metadata', $input ) || null === $input['metadata'] ) {
+			$input['metadata'] = [];
 		}
 
 		return self::delegate_to_rest_controller(
