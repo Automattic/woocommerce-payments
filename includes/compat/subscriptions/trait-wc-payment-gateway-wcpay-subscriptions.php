@@ -1283,6 +1283,41 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
+	 * Propagate the order's payment method and title to any subscriptions created from it.
+	 *
+	 * When an order flows through Express Checkout (Amazon Pay in particular), the subscription
+	 * is created before Stripe has confirmed the payment method, so the subscription inherits
+	 * the default card gateway/title. Once the real payment method is known (in
+	 * `set_payment_method_title_for_order()`), we sync it to the subscription so the
+	 * "My Subscriptions" view and future renewals use the right one.
+	 *
+	 * @param \WC_Order $order The parent order whose payment method has just been finalised.
+	 */
+	private function sync_payment_method_to_subscriptions( $order ) {
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
+			return;
+		}
+
+		$subscriptions = wcs_get_subscriptions_for_order( $order, [ 'order_type' => 'parent' ] );
+		if ( empty( $subscriptions ) ) {
+			return;
+		}
+
+		$payment_method       = $order->get_payment_method();
+		$payment_method_title = $order->get_payment_method_title();
+
+		foreach ( $subscriptions as $subscription ) {
+			if ( $subscription->get_payment_method() === $payment_method
+				&& $subscription->get_payment_method_title() === $payment_method_title ) {
+				continue;
+			}
+			$subscription->set_payment_method( $payment_method );
+			$subscription->set_payment_method_title( $payment_method_title );
+			$subscription->save();
+		}
+	}
+
+	/**
 	 * When a customer changes the payment method for a subscription order, updates the
 	 * payment method via WC_Subscriptions_Change_Payment_Gateway and adds a notice.
 	 *
