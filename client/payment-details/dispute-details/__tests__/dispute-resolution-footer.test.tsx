@@ -9,6 +9,7 @@ import { render, screen } from '@testing-library/react';
  */
 import DisputeResolutionFooter from '../dispute-resolution-footer';
 import type { Dispute } from 'wcpay/types/disputes';
+import type { Charge } from 'wcpay/types/charges';
 
 // Mock date formatting utility
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -49,7 +50,7 @@ jest.mock( 'wcpay/disputes/utils', () => ( {
 const getBaseDispute = ( overrides = {} ): Dispute => ( {
 	id: 'dp_test123',
 	amount: 5000,
-	charge: 'ch_mock',
+	charge: { id: 'ch_mock' } as Charge,
 	order: null,
 	balance_transactions: [
 		{
