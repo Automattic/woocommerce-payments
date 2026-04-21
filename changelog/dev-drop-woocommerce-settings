@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Drop deprecated @woocommerce/settings package in favour of a local helper wrapping window.wc.wcSettings.

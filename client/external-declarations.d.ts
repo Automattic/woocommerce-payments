@@ -24,7 +24,3 @@ declare module 'dompurify' {
 	export default DOMPurify;
 	/* eslint-enable @typescript-eslint/naming-convention */
 }
-
-declare module '@woocommerce/settings' {
-	const getSetting: ( key: string ) => string;
-}

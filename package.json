@@ -142,7 +142,6 @@
 		"@woocommerce/eslint-plugin": "2.3.0",
 		"@woocommerce/experimental": "3.3.0",
 		"@woocommerce/navigation": "8.1.0",
-		"@woocommerce/settings": "1.0.0",
 		"@wordpress/a11y": "3.58.0",
 		"@wordpress/api-fetch": "6.3.1",
 		"@wordpress/babel-plugin-makepot": "6.44.0",
