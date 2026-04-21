@@ -1,4 +1,4 @@
 Significance: patch
 Type: dev
 
-Remove deprecated @types/testing-library__jest-dom and @types/wordpress__data stub type packages; bump core-js from 3.9.0 to 3.49.0
+Clean up deprecated npm dependencies: remove @types/testing-library__jest-dom and @types/wordpress__data stub types, bump core-js to 3.49.0, replace stylelint-config-wordpress with @wordpress/stylelint-config, and drop @woocommerce/settings in favour of a local helper wrapping window.wc.wcSettings.
