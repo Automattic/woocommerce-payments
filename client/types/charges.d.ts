@@ -103,20 +103,29 @@ export interface Charge {
 			key: string;
 			kind: 'fee' | 'adjustment' | 'tax';
 			label: string | null;
+			/** Magnitude for arithmetic compatibility (always >= 0 for fee/tax). */
 			amount: number;
+			/** Signed for direct rendering — no -Math.abs() needed. */
+			display_amount?: number;
 			currency: string;
+			/** Same as display_amount; amount in store/settlement currency. */
+			amount_store?: number;
+			amount_store_currency?: string;
 			rate: null | {
 				percentage?: number;
 				fixed?: number;
 				fixed_currency?: string;
 				capped?: boolean;
 				cap_amount?: number;
+				/** Pre-formatted percentage string (e.g. "2.9%", "22.00%"). */
+				percentage_display?: string;
 			};
 			meta: null | Record< string, unknown >;
 		} >;
 		totals: {
 			fee: {
 				amount: number;
+				display_amount?: number;
 				currency: string;
 				rate?: {
 					percentage?: number;
@@ -124,11 +133,30 @@ export interface Charge {
 					fixed_currency?: string;
 					capped?: boolean;
 					cap_amount?: number;
+					percentage_display?: string;
 				};
 			};
-			tax: { amount: number; currency: string };
-			net: { amount: number; currency: string };
-			gross: { amount: number; currency: string };
+			tax: {
+				amount: number;
+				display_amount?: number;
+				currency: string;
+			};
+			net: {
+				amount: number;
+				display_amount?: number;
+				currency: string;
+			};
+			gross: {
+				amount: number;
+				display_amount?: number;
+				currency: string;
+			};
+			/** Convenience: fee + tax in store currency (what Stripe deducted). */
+			fee_plus_tax?: {
+				amount: number;
+				display_amount?: number;
+				currency: string;
+			};
 		};
 		notes: Array< {
 			code: string;
@@ -136,6 +164,15 @@ export interface Charge {
 			meta?: Record< string, unknown >;
 		} >;
 		sources?: Record< string, unknown >;
+		/** Cross-currency charges only. Pre-formatted for display. */
+		fx?: {
+			rate_display: string;
+			rate: number;
+			from_currency: string;
+			to_currency: string;
+			from_amount: number;
+			to_amount: number;
+		};
 	};
 }
 

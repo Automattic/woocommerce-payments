@@ -38,10 +38,13 @@ import {
 } from './fee-breakdown-label-map';
 
 /**
- * Format a rate object (percentage + fixed) as "2.9% + $0.30" for display.
- * When the rate is capped, returns "capped at $X" instead — matching the
- * legacy "Base fee: capped at $5" treatment. Returns an empty string when
- * the rate is null or has no non-zero parts.
+ * Format a rate object as "2.9% + $0.30" / "capped at $5".
+ *
+ * The percentage string is server-owned (`rate.percentage_display`), so
+ * this function no longer picks between toFixed(2) and toFixed(3). Fixed
+ * amounts still render locale-aware via `formatCurrency`.
+ *
+ * Returns an empty string when the rate has no renderable parts.
  */
 const formatRateText = ( rate, storeCurrency ) => {
 	if ( ! rate ) {
@@ -57,14 +60,19 @@ const formatRateText = ( rate, storeCurrency ) => {
 		);
 	}
 	const parts = [];
+	// Server-owned percentage precision: prefer rate.percentage_display
+	// (e.g. "2.9%", "22.00%"); fall back to local formatting for older
+	// envelopes. This kills the 2dp-vs-3dp drift across renderers.
 	const percentage = rate.percentage ?? 0;
-	const fixed = rate.fixed ?? 0;
-	const fixedCurrency = rate.fixed_currency || storeCurrency;
-	if ( percentage !== 0 ) {
+	if ( rate.percentage_display ) {
+		parts.push( rate.percentage_display );
+	} else if ( percentage !== 0 ) {
 		parts.push(
 			`${ Number.parseFloat( ( percentage * 100 ).toFixed( 3 ) ) }%`
 		);
 	}
+	const fixed = rate.fixed ?? 0;
+	const fixedCurrency = rate.fixed_currency || storeCurrency;
 	if ( fixed !== 0 ) {
 		parts.push(
 			formatCurrency( fixed, fixedCurrency, storeCurrency )
@@ -425,12 +433,16 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 	const isSameSymbol = hasSameSymbol( customerCurrency, storeCurrency );
 	const currencySuffix = isSameSymbol ? ` ${ storeCurrency }` : '';
 
-	// Fee line: force negative sign, drop the currency-code suffix
-	// (formatCurrency vs. formatExplicitCurrency) to match the legacy
-	// "-$1.27" style.
+	// Fee line: use server-provided display_amount (already signed for
+	// display) so we don't second-guess with -Math.abs(). Drop the
+	// currency-code suffix via formatCurrency (vs. formatExplicitCurrency)
+	// to match the legacy "-$1.27" style.
+	const feeDisplayAmount =
+		breakdown.totals.fee.display_amount ??
+		-Math.abs( breakdown.totals.fee.amount );
 	const feeAmountText =
 		formatCurrency(
-			-Math.abs( breakdown.totals.fee.amount ),
+			feeDisplayAmount,
 			breakdown.totals.fee.currency,
 			storeCurrency
 		) + currencySuffix;
@@ -544,12 +556,21 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 			taxRow && taxRow.label
 				? ` ${ getLocalizedTaxDescription( taxRow.label ) }`
 				: '';
+		// Prefer the server's pre-formatted percentage_display
+		// ("22.00%") for canonical precision. Fall back to toFixed(2)
+		// on older envelopes.
 		const taxPercentageRate = taxRow?.rate?.percentage;
-		const taxPercentage = taxPercentageRate
-			? ` (${ ( taxPercentageRate * 100 ).toFixed( 2 ) }%)`
-			: '';
+		const taxPercentageStr =
+			taxRow?.rate?.percentage_display ??
+			( taxPercentageRate
+				? `${ ( taxPercentageRate * 100 ).toFixed( 2 ) }%`
+				: '' );
+		const taxPercentage = taxPercentageStr ? ` (${ taxPercentageStr })` : '';
+		const taxDisplayAmount =
+			breakdown.totals.tax.display_amount ??
+			-Math.abs( breakdown.totals.tax.amount );
 		const taxAmountText = formatCurrency(
-			-Math.abs( breakdown.totals.tax.amount ),
+			taxDisplayAmount,
 			breakdown.totals.tax.currency,
 			storeCurrency
 		);

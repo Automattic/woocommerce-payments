@@ -178,18 +178,21 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		// and dispute balance adjustments into `totals.fee` / `totals.net`.
 		// No client-side subtraction needed. `refunded` is derived for
 		// backward compatibility with consumers that still read it.
+		// Prefer the server-pre-summed fee_plus_tax; fall back to fee+tax
+		// for older servers.
+		const totalFee =
+			breakdown.totals.fee_plus_tax?.amount ??
+			breakdown.totals.fee.amount +
+				( breakdown.totals.tax?.amount ?? 0 );
 		return {
 			currency: breakdown.totals.fee.currency.toLowerCase(),
 			amount: breakdown.totals.gross.amount,
-			fee:
-				breakdown.totals.fee.amount +
-				( breakdown.totals.tax?.amount ?? 0 ),
+			fee: totalFee,
 			net: breakdown.totals.net.amount,
 			refunded:
 				breakdown.totals.gross.amount -
 				breakdown.totals.net.amount -
-				( breakdown.totals.fee.amount +
-					( breakdown.totals.tax?.amount ?? 0 ) ),
+				totalFee,
 		};
 	}
 

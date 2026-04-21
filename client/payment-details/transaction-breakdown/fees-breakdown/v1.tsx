@@ -80,10 +80,13 @@ const BreakdownRow: React.FC< {
 		row.rate?.percentage,
 		row.rate?.fixed,
 		row.rate?.fixed_currency ?? row.currency,
-		storeCurrency
+		storeCurrency,
+		row.rate?.percentage_display
 	);
+	// Use the server-signed display_amount when available — avoids
+	// render-site sign coercion.
 	const amountText = formatCurrency(
-		row.amount,
+		row.display_amount ?? row.amount,
 		row.currency,
 		storeCurrency
 	);
@@ -171,10 +174,16 @@ const buildRateText = (
 	percentage: number | undefined,
 	fixed: number | undefined,
 	currency: string,
-	storeCurrency: string
+	storeCurrency: string,
+	percentageDisplay?: string
 ): string => {
 	const parts: string[] = [];
-	if ( percentage !== undefined && percentage !== 0 ) {
+	// Prefer the server-owned percentage_display string ("2.9%", "22.00%")
+	// for canonical precision. Kills the 2dp-vs-3dp-vs-0dp drift across
+	// timeline, breakdown panel, and tax line.
+	if ( percentageDisplay ) {
+		parts.push( percentageDisplay );
+	} else if ( percentage !== undefined && percentage !== 0 ) {
 		parts.push(
 			`${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
 		);

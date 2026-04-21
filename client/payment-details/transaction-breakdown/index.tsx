@@ -67,26 +67,34 @@ const PaymentTransactionBreakdown: React.FC<
 	}
 
 	const { formattedAmount, isMultiCurrency } = transactionAmounts;
-	// const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
+
+	// Prefer the server-formatted fx.rate_display ("1 USD → 0.851712 EUR")
+	// — no client-side division or re-inversion needed. Fall back to the
+	// legacy computation for charges without the envelope.
+	const fxRateDisplay = captureEvent.fee_breakdown?.fx?.rate_display;
 	const paymentExchangeRate =
 		captureEvent.transaction_details.store_amount > 0
 			? captureEvent.transaction_details.customer_amount /
 			  captureEvent.transaction_details.store_amount
 			: 0;
 
-	const conversionRate =
-		isMultiCurrency && paymentExchangeRate > 0 ? (
-			<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
-				{ ' @ 1 ' }
-				{ captureEvent.transaction_details.customer_currency }
-				{ ' → ' }
-				{ Math.round( 1000000 / paymentExchangeRate ) / 1000000 }
-				{ '	' }
-				{ captureEvent.transaction_details.store_currency }
-			</FlexItem>
-		) : (
-			''
-		);
+	const conversionRate = fxRateDisplay ? (
+		<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
+			{ ' @ ' }
+			{ fxRateDisplay }
+		</FlexItem>
+	) : isMultiCurrency && paymentExchangeRate > 0 ? (
+		<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
+			{ ' @ 1 ' }
+			{ captureEvent.transaction_details.customer_currency }
+			{ ' → ' }
+			{ Math.round( 1000000 / paymentExchangeRate ) / 1000000 }
+			{ '	' }
+			{ captureEvent.transaction_details.store_currency }
+		</FlexItem>
+	) : (
+		''
+	);
 
 	return captureEvent ? (
 		<Card size="large">

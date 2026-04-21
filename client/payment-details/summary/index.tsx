@@ -292,9 +292,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const transactionFee =
 		envelopeFeeCurrencyMatches && charge.fee_breakdown?.totals?.fee
 		? {
+				// Prefer the server's pre-summed fee_plus_tax; fall back to
+				// adding the two components when older servers omit it.
 				fee:
+					charge.fee_breakdown.totals.fee_plus_tax?.amount ??
 					charge.fee_breakdown.totals.fee.amount +
-					( charge.fee_breakdown.totals.tax?.amount ?? 0 ),
+						( charge.fee_breakdown.totals.tax?.amount ?? 0 ),
 				currency: charge.fee_breakdown.totals.fee.currency.toLowerCase(),
 		  }
 		: charge.balance_transaction
