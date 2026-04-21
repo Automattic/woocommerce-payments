@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: normalize Amazon Pay address when line1 is empty but line2 contains the street address

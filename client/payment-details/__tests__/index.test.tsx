@@ -277,10 +277,12 @@ describe( 'DisputeNotice bank name logic', () => {
 		};
 	};
 
-	it( 'should return null when charge is a string ID', () => {
+	it( 'should not include a bank name when bankName is null', () => {
 		const dispute = {
 			id: 'dp_mock',
-			charge: 'ch_mock',
+			charge: {
+				id: 'ch_mock',
+			} as Charge,
 			reason: 'fraudulent',
 			status: 'needs_response',
 			evidence_details: {
