@@ -462,16 +462,32 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 	}
 
 	if ( breakdown.totals.tax.amount !== 0 ) {
+		// Match the legacy "Tax IT VAT (22.00%): -$X.XX" format by pulling
+		// the description + percentage off the tax row (which the builder
+		// populates from the Transaction_Fee_Detail tax record).
+		const taxRow = breakdown.rows.find(
+			( row ) => row.kind === 'tax'
+		);
+		const taxDescription =
+			taxRow && taxRow.label
+				? ` ${ getLocalizedTaxDescription( taxRow.label ) }`
+				: '';
+		const taxPercentageRate = taxRow?.rate?.percentage;
+		const taxPercentage = taxPercentageRate
+			? ` (${ ( taxPercentageRate * 100 ).toFixed( 2 ) }%)`
+			: '';
+		const taxAmountText = formatCurrency(
+			-Math.abs( breakdown.totals.tax.amount ),
+			breakdown.totals.tax.currency,
+			storeCurrency
+		);
 		lines.push(
 			sprintf(
-				/* translators: %s is a monetary amount */
-				__( 'Tax: %s', 'woocommerce-payments' ),
-				formatExplicitCurrency(
-					breakdown.totals.tax.amount,
-					breakdown.totals.tax.currency,
-					false,
-					storeCurrency
-				)
+				/* translators: 1: tax description 2: tax percentage 3: tax amount */
+				__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
+				taxDescription,
+				taxPercentage,
+				taxAmountText
 			)
 		);
 	}

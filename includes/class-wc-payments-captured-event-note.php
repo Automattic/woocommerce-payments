@@ -144,14 +144,34 @@ class WC_Payments_Captured_Event_Note {
 		}
 
 		if ( 0 !== $total_tax_amount ) {
+			// Pull description + percentage off the tax row (populated by
+			// the server builder from Transaction_Fee_Detail tax record)
+			// to match the legacy "Tax IT VAT (22.00%): -$X.XX" format.
+			$tax_row = null;
+			foreach ( $breakdown['rows'] as $candidate ) {
+				if ( 'tax' === ( $candidate['kind'] ?? '' ) ) {
+					$tax_row = $candidate;
+					break;
+				}
+			}
+			$tax_description = '';
+			if ( null !== $tax_row && ! empty( $tax_row['label'] ) ) {
+				$tax_description = ' ' . self::localize_tax_description_code( (string) $tax_row['label'] );
+			}
+			$tax_percentage = '';
+			if ( null !== $tax_row && isset( $tax_row['rate']['percentage'] ) && 0.0 !== (float) $tax_row['rate']['percentage'] ) {
+				$tax_percentage = ' (' . number_format( (float) $tax_row['rate']['percentage'] * 100, 2 ) . '%)';
+			}
+			$tax_amount_text = WC_Payments_Utils::format_currency(
+				-abs( WC_Payments_Utils::interpret_stripe_amount( $total_tax_amount, $breakdown['totals']['tax']['currency'] ) ),
+				$breakdown['totals']['tax']['currency']
+			);
 			$lines[] = sprintf(
-				/* translators: %s is a monetary amount */
-				__( 'Tax: %s', 'woocommerce-payments' ),
-				WC_Payments_Utils::format_explicit_currency(
-					WC_Payments_Utils::interpret_stripe_amount( $total_tax_amount, $breakdown['totals']['tax']['currency'] ),
-					$breakdown['totals']['tax']['currency'],
-					false
-				)
+				/* translators: 1: tax description 2: tax percentage 3: tax amount */
+				__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
+				$tax_description,
+				$tax_percentage,
+				$tax_amount_text
 			);
 		}
 
@@ -710,9 +730,19 @@ class WC_Payments_Captured_Event_Note {
 		if ( ! isset( $this->captured_event['fee_rates']['tax']['description'] ) ) {
 			return null;
 		}
+		return self::localize_tax_description_code(
+			$this->captured_event['fee_rates']['tax']['description']
+		);
+	}
 
-		$tax_description_id = $this->captured_event['fee_rates']['tax']['description'];
-
+	/**
+	 * Localize a raw tax description code (e.g. "IT VAT" → "IT VAT" in
+	 * the active locale, or "Tax" if the code is unknown).
+	 *
+	 * @param string $tax_description_id Raw code like "IT VAT" or "JP JCT".
+	 * @return string
+	 */
+	private static function localize_tax_description_code( string $tax_description_id ): string {
 		$tax_descriptions = [
 			// European Union VAT.
 			'AT VAT' => __( 'AT VAT', 'woocommerce-payments' ), // Austria.
