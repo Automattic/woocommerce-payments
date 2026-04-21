@@ -286,6 +286,18 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   }
 }
 
+.emotion-82 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-82 *,
+.emotion-82 *::before,
+.emotion-82 *::after {
+  box-sizing: inherit;
+}
+
 .emotion-84 {
   margin-bottom: calc(4px * 2);
 }
@@ -721,7 +733,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 <div>
                   <div>
                     <div
-                      class="components-base-control with-value emotion-14 emotion-15"
+                      class="components-base-control with-value emotion-82 emotion-15"
                     >
                       <div
                         class="components-base-control__field emotion-84 emotion-17"
@@ -757,7 +769,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 <div>
                   <div>
                     <div
-                      class="components-base-control with-value emotion-14 emotion-15"
+                      class="components-base-control with-value emotion-82 emotion-15"
                     >
                       <div
                         class="components-base-control__field emotion-84 emotion-17"

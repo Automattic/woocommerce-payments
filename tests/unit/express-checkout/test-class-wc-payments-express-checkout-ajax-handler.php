@@ -425,4 +425,59 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertSame( 'VE', $shipping_address['state'] );
 		$this->assertSame( 'MI', $billing_address['state'] );
 	}
+
+	public function test_tokenized_cart_address_lines_shifted_when_address_1_empty() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country'   => 'DE',
+				'address_1' => '',
+				'address_2' => 'Meininger Strasse 58',
+			]
+		);
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'   => 'DE',
+				'address_1' => '   ',
+				'address_2' => 'Meininger Strasse 58',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$billing_address  = $request->get_param( 'billing_address' );
+		$shipping_address = $request->get_param( 'shipping_address' );
+
+		$this->assertSame( 'Meininger Strasse 58', $billing_address['address_1'] );
+		$this->assertSame( '', $billing_address['address_2'] );
+		$this->assertSame( 'Meininger Strasse 58', $shipping_address['address_1'] );
+		$this->assertSame( '', $shipping_address['address_2'] );
+	}
+
+	public function test_tokenized_cart_address_lines_preserved_when_address_1_populated() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'billing_address',
+			[
+				'country'   => 'DE',
+				'address_1' => 'Meininger Strasse 58',
+				'address_2' => 'Apt 4B',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$billing_address = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'Meininger Strasse 58', $billing_address['address_1'] );
+		$this->assertSame( 'Apt 4B', $billing_address['address_2'] );
+	}
 }
