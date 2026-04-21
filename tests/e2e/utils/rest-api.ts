@@ -65,7 +65,7 @@ class RestAPI {
 				await client.delete(
 					`${ userEndpoint }/${ customers.data[ c ].id }`,
 					{
-						data: {
+						params: {
 							force: true,
 							reassign: 0,
 						},
@@ -103,7 +103,7 @@ class RestAPI {
 					await client.delete(
 						`${ widgetEndpoint }/${ widgets.data[ c ].id }`,
 						{
-							data: {
+							params: {
 								force: true,
 							},
 						}
