@@ -1219,9 +1219,16 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					],
 				};
 			} else {
+				// Prefer the envelope's authoritative deposit impact
+				// (totals.net, signed); fall back to |amount|+|fee|.
+				const depositImpact =
+					event.fee_breakdown?.totals?.net?.amount !== undefined
+						? Math.abs( event.fee_breakdown.totals.net.amount )
+						: Math.abs( event.amount ) + Math.abs( event.fee );
 				const formattedExplicitTotal = formatExplicitCurrency(
-					Math.abs( event.amount ) + Math.abs( event.fee ),
-					event.currency
+					depositImpact,
+					event.fee_breakdown?.totals?.net?.currency ||
+						event.currency
 				);
 				const disputedAmount = isFXEvent( event )
 					? formatCurrency(
@@ -1277,9 +1284,15 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'dispute_won':
+			// Prefer the envelope's authoritative deposit impact (totals.net,
+			// signed); fall back to |amount|+|fee|.
+			const depositImpactWon =
+				event.fee_breakdown?.totals?.net?.amount !== undefined
+					? Math.abs( event.fee_breakdown.totals.net.amount )
+					: Math.abs( event.amount ) + Math.abs( event.fee );
 			const formattedExplicitTotal = formatExplicitCurrency(
-				Math.abs( event.amount ) + Math.abs( event.fee ),
-				event.currency
+				depositImpactWon,
+				event.fee_breakdown?.totals?.net?.currency || event.currency
 			);
 			return [
 				getStatusChangeTimelineItem(

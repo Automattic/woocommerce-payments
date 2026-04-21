@@ -156,14 +156,26 @@ const PaymentTransactionBreakdown: React.FC<
 							{ __( 'Net deposit', 'woocommerce-payments' ) }
 						</FlexItem>
 						<FlexItem className="wcpay-transaction-breakdown__footer_amount">
+							{ /* Prefer the envelope's authoritative net;
+							     fall back to the legacy subtraction for
+							     charges without fee_breakdown. */ }
 							{ formatCurrency(
-								captureEvent.transaction_details
-									.store_amount_captured -
-									captureEvent.transaction_details.store_fee,
-								captureEvent.transaction_details.store_currency
+								captureEvent.fee_breakdown?.totals?.net
+									?.amount ??
+									captureEvent.transaction_details
+										.store_amount_captured -
+										captureEvent.transaction_details
+											.store_fee,
+								captureEvent.fee_breakdown?.totals?.net
+									?.currency ??
+									captureEvent.transaction_details
+										.store_currency
 							) }
 							&nbsp;
-							{ captureEvent.transaction_details.store_currency }
+							{ captureEvent.fee_breakdown?.totals?.net
+								?.currency ??
+								captureEvent.transaction_details
+									.store_currency }
 						</FlexItem>
 					</Flex>
 				</LoadableBlock>

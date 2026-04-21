@@ -165,39 +165,54 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		! charge.balance_transaction?.currency ||
 		breakdown.totals.fee.currency.toLowerCase() ===
 			charge.balance_transaction.currency.toLowerCase();
-	const balance =
+	if (
 		breakdown &&
 		breakdown.totals &&
 		breakdown.totals.fee &&
+		breakdown.totals.net &&
 		breakdown.totals.gross &&
 		envelopeCurrencyMatches
-			? {
-					currency: breakdown.totals.fee.currency.toLowerCase(),
-					amount: breakdown.totals.gross.amount,
-					fee:
-						breakdown.totals.fee.amount +
-						( breakdown.totals.tax?.amount ?? 0 ),
-					refunded: 0,
-					net: 0,
-			  }
-			: charge.balance_transaction
-			? {
-					currency: charge.balance_transaction.currency,
-					amount: charge.balance_transaction.amount,
-					fee: charge.balance_transaction.fee,
-					refunded: 0,
-					net: 0,
-			  }
-			: {
-					currency: charge.currency,
-					amount: charge.amount,
-					fee: charge.application_fee_amount,
-					refunded: 0,
-					net: 0,
-			  };
+	) {
+		// Envelope is authoritative for the charge's *current* state:
+		// the server has already folded customer-refunds, dispute fees,
+		// and dispute balance adjustments into `totals.fee` / `totals.net`.
+		// No client-side subtraction needed. `refunded` is derived for
+		// backward compatibility with consumers that still read it.
+		return {
+			currency: breakdown.totals.fee.currency.toLowerCase(),
+			amount: breakdown.totals.gross.amount,
+			fee:
+				breakdown.totals.fee.amount +
+				( breakdown.totals.tax?.amount ?? 0 ),
+			net: breakdown.totals.net.amount,
+			refunded:
+				breakdown.totals.gross.amount -
+				breakdown.totals.net.amount -
+				( breakdown.totals.fee.amount +
+					( breakdown.totals.tax?.amount ?? 0 ) ),
+		};
+	}
+
+	// Legacy fallback path: the envelope is absent, currencies mismatch,
+	// or the charge predates the envelope rollout. Reconstruct net the
+	// old way, absorbing customer refunds and dispute adjustments here.
+	const balance = charge.balance_transaction
+		? {
+				currency: charge.balance_transaction.currency,
+				amount: charge.balance_transaction.amount,
+				fee: charge.balance_transaction.fee,
+				refunded: 0,
+				net: 0,
+		  }
+		: {
+				currency: charge.currency,
+				amount: charge.amount,
+				fee: charge.application_fee_amount,
+				refunded: 0,
+				net: 0,
+		  };
 
 	if ( isChargeRefunded( charge ) ) {
-		// Refund balance_transactions have negative amount.
 		balance.refunded -= sumBy(
 			charge.refunds?.data,
 			'balance_transaction.amount'
@@ -212,7 +227,6 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		);
 	}
 
-	// The final net amount equals the original amount, decreased by the fee(s) and refunded amount.
 	balance.net = balance.amount - balance.fee - balance.refunded;
 
 	return balance;

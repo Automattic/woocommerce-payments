@@ -511,8 +511,14 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											'Net',
 											'woocommerce-payments'
 										) }: ` }
+										{ /* When the envelope is present, `balance.net`
+										     (from getChargeAmounts) already reflects
+										     paydown — server folded it in. Only
+										     subtract manually on the legacy path. */ }
 										{ formatExplicitCurrency(
-											charge.paydown
+											charge.fee_breakdown?.totals?.net
+												? balance.net
+												: charge.paydown
 												? balance.net -
 														Math.abs(
 															charge.paydown
