@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Replace deprecated stylelint-config-wordpress with @wordpress/stylelint-config
