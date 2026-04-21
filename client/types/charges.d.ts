@@ -109,11 +109,23 @@ export interface Charge {
 				percentage?: number;
 				fixed?: number;
 				fixed_currency?: string;
+				capped?: boolean;
+				cap_amount?: number;
 			};
 			meta: null | Record< string, unknown >;
 		} >;
 		totals: {
-			fee: { amount: number; currency: string };
+			fee: {
+				amount: number;
+				currency: string;
+				rate?: {
+					percentage?: number;
+					fixed?: number;
+					fixed_currency?: string;
+					capped?: boolean;
+					cap_amount?: number;
+				};
+			};
 			tax: { amount: number; currency: string };
 			net: { amount: number; currency: string };
 			gross: { amount: number; currency: string };

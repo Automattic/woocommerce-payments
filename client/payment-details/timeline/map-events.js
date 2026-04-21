@@ -39,11 +39,22 @@ import {
 
 /**
  * Format a rate object (percentage + fixed) as "2.9% + $0.30" for display.
- * Returns an empty string when the rate is null or has no non-zero parts.
+ * When the rate is capped, returns "capped at $X" instead — matching the
+ * legacy "Base fee: capped at $5" treatment. Returns an empty string when
+ * the rate is null or has no non-zero parts.
  */
 const formatRateText = ( rate, storeCurrency ) => {
 	if ( ! rate ) {
 		return '';
+	}
+	if ( rate.capped ) {
+		const capAmount = rate.cap_amount ?? rate.fixed ?? 0;
+		const capCurrency = rate.fixed_currency || storeCurrency;
+		return sprintf(
+			/* translators: %s is a monetary amount */
+			__( 'capped at %s', 'woocommerce-payments' ),
+			formatCurrency( capAmount, capCurrency, storeCurrency )
+		);
 	}
 	const parts = [];
 	const percentage = rate.percentage ?? 0;
@@ -406,24 +417,39 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 		lines.push( fxLine );
 	}
 
+	// Append currency-code disambiguation (e.g. " USD", " CAD") when the
+	// customer and store currencies share a symbol ($ vs $). Mirrors the
+	// legacy `hasSameSymbol(customer, store)` check in composeFeeString.
+	const customerCurrency =
+		event.transaction_details?.customer_currency ?? storeCurrency;
+	const isSameSymbol = hasSameSymbol( customerCurrency, storeCurrency );
+	const currencySuffix = isSameSymbol ? ` ${ storeCurrency }` : '';
+
 	// Fee line: force negative sign, drop the currency-code suffix
 	// (formatCurrency vs. formatExplicitCurrency) to match the legacy
 	// "-$1.27" style.
-	const feeAmountText = formatCurrency(
-		-Math.abs( breakdown.totals.fee.amount ),
-		breakdown.totals.fee.currency,
-		storeCurrency
-	);
+	const feeAmountText =
+		formatCurrency(
+			-Math.abs( breakdown.totals.fee.amount ),
+			breakdown.totals.fee.currency,
+			storeCurrency
+		) + currencySuffix;
 	const totalRateText = formatRateText(
 		breakdown.totals.fee.rate,
 		storeCurrency
 	);
+	// When the cumulative rate has a fixed part we'd also suffix the
+	// currency code after it, matching "(2.9% + $0.30 USD): -$1.27 USD".
+	const totalRateTextWithSuffix =
+		totalRateText && breakdown.totals.fee.rate?.fixed && isSameSymbol
+			? `${ totalRateText }${ currencySuffix }`
+			: totalRateText;
 	lines.push(
 		totalRateText
 			? sprintf(
 					/* translators: 1: fee rate (e.g. 2.9% + $0.30) 2: monetary amount */
 					__( 'Fee (%1$s): %2$s', 'woocommerce-payments' ),
-					totalRateText,
+					totalRateTextWithSuffix,
 					feeAmountText
 			  )
 			: sprintf(
@@ -435,8 +461,9 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 
 	// Per-component breakdown: show rate only (e.g. "Base fee: 2.9% + $0.30")
 	// as a bulleted <ul>, matching the legacy composeFeeBreakdown output.
-	// Skip when there's just one fee row — the total line above already
-	// carries the full rate context.
+	// Adjustment rows (discounts) render a nested list with the variable
+	// and fixed components separated — matching the legacy discount-split
+	// rendering. Skip when there's just one fee row.
 	const feeRows = breakdown.rows.filter( ( row ) => row.kind !== 'tax' );
 	if ( feeRows.length > 1 ) {
 		lines.push(
@@ -445,15 +472,60 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 					const label = resolveRowLabel( row.key, row.label, {
 						meta: row.meta,
 					} );
-					const rateText = formatRateText(
-						row.rate,
+					const rowCurrency =
 						row.rate?.fixed_currency ||
-							row.currency ||
-							storeCurrency
-					);
+						row.currency ||
+						storeCurrency;
+					const rateText = formatRateText( row.rate, rowCurrency );
+
+					// Discount rows: render "Discount" with a nested
+					// variable / fixed split when both are non-zero.
+					if ( row.kind === 'adjustment' && row.rate ) {
+						const pct = row.rate.percentage ?? 0;
+						const fixed = row.rate.fixed ?? 0;
+						if ( pct !== 0 && fixed !== 0 ) {
+							const variableText = `${ Number.parseFloat(
+								( Math.abs( pct ) * 100 ).toFixed( 3 )
+							) }%`;
+							const fixedText = formatCurrency(
+								Math.abs( fixed ),
+								rowCurrency,
+								storeCurrency
+							);
+							return (
+								<li key={ `${ row.key }-${ idx }` }>
+									{ label }
+									<ul className="discount-split-list">
+										<li key="variable">
+											{ sprintf(
+												/* translators: %s is a percentage */
+												__(
+													'Variable fee: %s',
+													'woocommerce-payments'
+												),
+												variableText
+											) }
+										</li>
+										<li key="fixed">
+											{ sprintf(
+												/* translators: %s is a monetary amount */
+												__(
+													'Fixed fee: %s',
+													'woocommerce-payments'
+												),
+												fixedText
+											) }
+										</li>
+									</ul>
+								</li>
+							);
+						}
+					}
 					return (
 						<li key={ `${ row.key }-${ idx }` }>
-							{ rateText ? `${ label }: ${ rateText }` : label }
+							{ rateText
+								? `${ label }: ${ rateText }`
+								: label }
 						</li>
 					);
 				} ) }

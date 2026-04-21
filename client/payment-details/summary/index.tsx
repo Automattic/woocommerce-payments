@@ -275,11 +275,26 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	// Prefer the server-driven fee_breakdown envelope when present — it
 	// carries the merchant-facing nominal fee with refunds and Stripe
-	// passthrough already absorbed. Falls back to balance_transaction.fee
-	// and then application_fee_amount for charges from older servers.
-	const transactionFee = charge.fee_breakdown?.totals?.fee
+	// passthrough already absorbed. For the dispute-fee tooltip to
+	// reconcile ("Transaction fee" + "Dispute fee" = "Total fees"), this
+	// is the FULL Stripe deduction for the charge in store currency =
+	// pre-tax fee + tax. Falls back to balance_transaction.fee and then
+	// application_fee_amount for charges from older servers.
+	//
+	// Same currency-mismatch guard as in getChargeAmounts — drop the
+	// envelope if its currency doesn't match balance_transaction.currency,
+	// rather than risk a 100× shift through zero-decimal rules.
+	const envelopeFeeCurrencyMatches =
+		charge.fee_breakdown?.totals?.fee &&
+		charge.balance_transaction?.currency &&
+		charge.fee_breakdown.totals.fee.currency.toLowerCase() ===
+			charge.balance_transaction.currency.toLowerCase();
+	const transactionFee =
+		envelopeFeeCurrencyMatches && charge.fee_breakdown?.totals?.fee
 		? {
-				fee: charge.fee_breakdown.totals.fee.amount,
+				fee:
+					charge.fee_breakdown.totals.fee.amount +
+					( charge.fee_breakdown.totals.tax?.amount ?? 0 ),
 				currency: charge.fee_breakdown.totals.fee.currency.toLowerCase(),
 		  }
 		: charge.balance_transaction

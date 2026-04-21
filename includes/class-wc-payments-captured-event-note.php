@@ -250,6 +250,20 @@ class WC_Payments_Captured_Event_Note {
 		if ( null === $rate ) {
 			return '';
 		}
+		// Capped fee: render "capped at $X" instead of the percent+fixed
+		// combo, matching the legacy "Base fee: capped at $5" treatment.
+		if ( ! empty( $rate['capped'] ) ) {
+			$cap_amount = isset( $rate['cap_amount'] ) ? (int) $rate['cap_amount'] : (int) ( $rate['fixed'] ?? 0 );
+			$cap_curr   = $rate['fixed_currency'] ?? $store_currency;
+			return sprintf(
+				/* translators: %s is a monetary amount */
+				__( 'capped at %s', 'woocommerce-payments' ),
+				WC_Payments_Utils::format_currency(
+					WC_Payments_Utils::interpret_stripe_amount( $cap_amount, $cap_curr ),
+					$cap_curr
+				)
+			);
+		}
 		$parts       = [];
 		$percentage  = isset( $rate['percentage'] ) ? (float) $rate['percentage'] : 0.0;
 		$fixed_minor = isset( $rate['fixed'] ) ? (int) $rate['fixed'] : 0;

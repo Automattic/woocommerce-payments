@@ -146,16 +146,37 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	// It carries the merchant-facing nominal fee (refunds and Stripe
 	// passthrough already absorbed server-side) so the transaction
 	// detail header matches the timeline body and the order page.
+	//
+	// `balance.fee` must represent the *full* Stripe deduction in store
+	// currency (pre-tax fee + tax), because the downstream
+	// `net = amount - fee - refunded` needs to absorb BOTH components to
+	// match `totals.net.amount` — and that formula has to stay in charge
+	// of later-arriving customer-refunds and dispute adjustments, which
+	// the envelope doesn't cover. Using only `totals.fee.amount` here
+	// (pre-tax) would drop the tax from the net calculation.
+	//
+	// Defense-in-depth: reject the envelope if its declared currency
+	// doesn't match the charge's balance_transaction.currency. A mismatch
+	// could shift amounts by 100× via zero-decimal currency rules — far
+	// better to fall back to legacy than to display a wrong number.
 	const breakdown = charge.fee_breakdown;
+	const envelopeCurrencyMatches =
+		! breakdown?.totals?.fee ||
+		! charge.balance_transaction?.currency ||
+		breakdown.totals.fee.currency.toLowerCase() ===
+			charge.balance_transaction.currency.toLowerCase();
 	const balance =
 		breakdown &&
 		breakdown.totals &&
 		breakdown.totals.fee &&
-		breakdown.totals.gross
+		breakdown.totals.gross &&
+		envelopeCurrencyMatches
 			? {
 					currency: breakdown.totals.fee.currency.toLowerCase(),
 					amount: breakdown.totals.gross.amount,
-					fee: breakdown.totals.fee.amount,
+					fee:
+						breakdown.totals.fee.amount +
+						( breakdown.totals.tax?.amount ?? 0 ),
 					refunded: 0,
 					net: 0,
 			  }
