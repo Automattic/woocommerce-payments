@@ -5064,6 +5064,14 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order->add_payment_token( $token );
 		$order->save();
 
+		// Stub the token service so `add_token_to_order()` receives a real token
+		// if the save-payment-method branch is reached (it only runs when
+		// `wcs_order_contains_subscription()` is true, which depends on whether
+		// WooCommerce Subscriptions is loaded in the CI environment).
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
 		$intent_id = 'seti_mock_pm_change';
 		$this->order_service->set_intent_id_for_order( $order, $intent_id );
 
