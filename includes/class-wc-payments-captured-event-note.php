@@ -48,6 +48,13 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	public function generate_html_note(): string {
 
+		// When the server attached a fee_breakdown envelope, render from it
+		// verbatim. This covers Amazon Pay non-card, dispute fees, partial
+		// refunds, and future fee quirks uniformly — no per-case branches.
+		if ( ! empty( $this->captured_event['fee_breakdown'] ) ) {
+			return $this->generate_html_note_from_breakdown( $this->captured_event['fee_breakdown'] );
+		}
+
 		$lines = [];
 
 		$fx_string = $this->compose_fx_string();
@@ -76,6 +83,185 @@ class WC_Payments_Captured_Event_Note {
 		return '<div class="captured-event-details">' . PHP_EOL
 				. $html
 				. '</div>';
+	}
+
+	/**
+	 * Render the HTML note from a server-driven fee_breakdown envelope.
+	 *
+	 * Takes server-authoritative rows / totals / notes and renders one HTML
+	 * paragraph per line — mirroring the legacy layout without any of the
+	 * per-event-type branching or client-side arithmetic.
+	 *
+	 * @param array $breakdown The fee_breakdown envelope.
+	 * @return string
+	 */
+	private function generate_html_note_from_breakdown( array $breakdown ): string {
+		$store_currency    = $breakdown['totals']['fee']['currency'];
+		$total_fee_amount  = (int) $breakdown['totals']['fee']['amount'];
+		$total_tax_amount  = (int) $breakdown['totals']['tax']['amount'];
+		$total_net_amount  = (int) $breakdown['totals']['net']['amount'];
+
+		$lines = [];
+
+		$fx_string = $this->compose_fx_string();
+		if ( null !== $fx_string ) {
+			$lines[] = $fx_string;
+		}
+
+		$total_rate_text = self::format_rate_text( $breakdown['totals']['fee']['rate'] ?? null, $store_currency );
+		$fee_amount_text = WC_Payments_Utils::format_explicit_currency(
+			WC_Payments_Utils::interpret_stripe_amount( $total_fee_amount, $store_currency ),
+			$store_currency,
+			false
+		);
+		$lines[] = '' !== $total_rate_text
+			/* translators: 1: fee rate (e.g. 2.9% + $0.30) 2: monetary amount */
+			? sprintf( __( 'Fee (%1$s): %2$s', 'woocommerce-payments' ), $total_rate_text, $fee_amount_text )
+			/* translators: %s is a monetary amount */
+			: sprintf( __( 'Fee: %s', 'woocommerce-payments' ), $fee_amount_text );
+
+		// Show the per-row breakdown when it adds information: skip it
+		// when there's a single fee row (the "Fee (rate): amount" line
+		// above already says everything). Sub-rows display rate only,
+		// matching the legacy "Base fee: 2.9% + $0.30" format.
+		$fee_rows = array_values(
+			array_filter(
+				$breakdown['rows'],
+				static function ( array $row ) {
+					return 'tax' !== ( $row['kind'] ?? '' );
+				}
+			)
+		);
+
+		if ( count( $fee_rows ) > 1 ) {
+			$indent = str_repeat( self::HTML_SPACE, 4 );
+			foreach ( $fee_rows as $row ) {
+				$label     = self::resolve_row_label( $row );
+				$row_curr  = $row['rate']['fixed_currency'] ?? ( $row['currency'] ?? $store_currency );
+				$rate_text = self::format_rate_text( $row['rate'] ?? null, $row_curr );
+				$lines[]   = $indent . ( '' !== $rate_text ? sprintf( '%1$s: %2$s', $label, $rate_text ) : $label );
+			}
+		}
+
+		if ( 0 !== $total_tax_amount ) {
+			$lines[] = sprintf(
+				/* translators: %s is a monetary amount */
+				__( 'Tax: %s', 'woocommerce-payments' ),
+				WC_Payments_Utils::format_explicit_currency(
+					WC_Payments_Utils::interpret_stripe_amount( $total_tax_amount, $breakdown['totals']['tax']['currency'] ),
+					$breakdown['totals']['tax']['currency'],
+					false
+				)
+			);
+		}
+
+		$lines[] = sprintf(
+			/* translators: %s is a monetary amount */
+			__( 'Net payout: %s', 'woocommerce-payments' ),
+			WC_Payments_Utils::format_explicit_currency(
+				WC_Payments_Utils::interpret_stripe_amount( $total_net_amount, $store_currency ),
+				$store_currency,
+				false
+			)
+		);
+
+		if ( ! empty( $breakdown['notes'] ) ) {
+			foreach ( $breakdown['notes'] as $note ) {
+				$note_text = self::resolve_note_text( $note );
+				if ( null !== $note_text && '' !== $note_text ) {
+					$lines[] = $note_text;
+				}
+			}
+		}
+
+		$html = '';
+		foreach ( $lines as $line ) {
+			$html .= '<p>' . $line . '</p>' . PHP_EOL;
+		}
+
+		return '<div class="captured-event-details">' . PHP_EOL
+				. $html
+				. '</div>';
+	}
+
+	/**
+	 * Resolve a row label from a fee_breakdown row.
+	 *
+	 * @param array $row Row entry from the envelope.
+	 * @return string
+	 */
+	private static function resolve_row_label( array $row ): string {
+		if ( ! empty( $row['label'] ) ) {
+			return (string) $row['label'];
+		}
+		$key = (string) ( $row['key'] ?? '' );
+
+		$map = [
+			'base'                          => __( 'Base fee', 'woocommerce-payments' ),
+			'additional.international'      => __( 'International card fee', 'woocommerce-payments' ),
+			'additional.fx'                 => __( 'Currency conversion fee', 'woocommerce-payments' ),
+			'additional.wcpay-subscription' => __( 'Subscription transaction fee', 'woocommerce-payments' ),
+			'additional.device'             => __( 'Device fee', 'woocommerce-payments' ),
+			'tax_on_fee'                    => __( 'Tax on fee', 'woocommerce-payments' ),
+			'dispute_fee'                   => __( 'Dispute fee', 'woocommerce-payments' ),
+			'dispute_fee_refund'            => __( 'Dispute fee refund', 'woocommerce-payments' ),
+			'refund_fee'                    => __( 'Refund fee', 'woocommerce-payments' ),
+			'financing_paydown'             => __( 'Loan paydown', 'woocommerce-payments' ),
+		];
+		if ( isset( $map[ $key ] ) ) {
+			return $map[ $key ];
+		}
+		if ( 0 === strpos( $key, 'discount.' ) ) {
+			return __( 'Discount', 'woocommerce-payments' );
+		}
+		return $key;
+	}
+
+	/**
+	 * Format a fee rate (percentage + fixed) for display, matching the
+	 * legacy "2.9% + $0.30" style. Returns an empty string when the rate
+	 * has no percentage and no fixed part.
+	 *
+	 * @param array|null $rate           Rate array with percentage/fixed/fixed_currency keys.
+	 * @param string     $store_currency Fallback currency for the fixed part.
+	 * @return string
+	 */
+	private static function format_rate_text( ?array $rate, string $store_currency ): string {
+		if ( null === $rate ) {
+			return '';
+		}
+		$parts       = [];
+		$percentage  = isset( $rate['percentage'] ) ? (float) $rate['percentage'] : 0.0;
+		$fixed_minor = isset( $rate['fixed'] ) ? (int) $rate['fixed'] : 0;
+		$fixed_curr  = $rate['fixed_currency'] ?? $store_currency;
+
+		if ( 0.0 !== $percentage ) {
+			$parts[] = self::format_fee( $percentage ) . '%';
+		}
+		if ( 0 !== $fixed_minor ) {
+			$parts[] = WC_Payments_Utils::format_currency(
+				WC_Payments_Utils::interpret_stripe_amount( $fixed_minor, $fixed_curr ),
+				$fixed_curr
+			);
+		}
+		return implode( ' + ', $parts );
+	}
+
+	/**
+	 * Resolve a note text from a fee_breakdown note.
+	 *
+	 * Returns null when the note has no merchant-facing text. The server may
+	 * emit internal-only codes (e.g., refund provenance) for telemetry and
+	 * support; those never surface in the order note.
+	 *
+	 * @param array $note Note entry from the envelope.
+	 * @return string|null
+	 */
+	private static function resolve_note_text( array $note ): ?string {
+		// Reserved: add merchant-facing note codes here when/if needed.
+		// Until then, every incoming note is dropped from the UI and kept
+		// only in the server-side `sources` field for traceability.
+		return null;
 	}
 
 	/**
@@ -400,7 +586,7 @@ class WC_Payments_Captured_Event_Note {
 	 *
 	 * @return string
 	 */
-	private function format_fee( float $percentage ): string {
+	private static function format_fee( float $percentage ): string {
 		return (string) round( $percentage * 100, 3 );
 	}
 

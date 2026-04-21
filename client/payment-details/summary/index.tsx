@@ -273,8 +273,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const showControlMenu =
 		charge.captured && ! charge.refunded && isDisputeRefundable;
 
-	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
-	const transactionFee = charge.balance_transaction
+	// Prefer the server-driven fee_breakdown envelope when present — it
+	// carries the merchant-facing nominal fee with refunds and Stripe
+	// passthrough already absorbed. Falls back to balance_transaction.fee
+	// and then application_fee_amount for charges from older servers.
+	const transactionFee = charge.fee_breakdown?.totals?.fee
+		? {
+				fee: charge.fee_breakdown.totals.fee.amount,
+				currency: charge.fee_breakdown.totals.fee.currency.toLowerCase(),
+		  }
+		: charge.balance_transaction
 		? {
 				fee: charge.balance_transaction.fee,
 				currency: charge.balance_transaction.currency,

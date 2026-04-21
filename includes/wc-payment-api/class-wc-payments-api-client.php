@@ -2969,6 +2969,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$charge->set_captured( $charge_array['captured'] );
 		}
 
+		if ( isset( $charge_array['fee_breakdown'] ) && is_array( $charge_array['fee_breakdown'] ) ) {
+			$charge->set_fee_breakdown( $charge_array['fee_breakdown'] );
+		}
+
 		return $charge;
 	}
 

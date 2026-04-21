@@ -142,21 +142,38 @@ export const getChargeStatus = (
  * @return {ChargeAmounts} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
-	const balance = charge.balance_transaction
-		? {
-				currency: charge.balance_transaction.currency,
-				amount: charge.balance_transaction.amount,
-				fee: charge.balance_transaction.fee,
-				refunded: 0,
-				net: 0,
-		  }
-		: {
-				currency: charge.currency,
-				amount: charge.amount,
-				fee: charge.application_fee_amount,
-				refunded: 0,
-				net: 0,
-		  };
+	// Prefer the server-driven fee_breakdown envelope when present.
+	// It carries the merchant-facing nominal fee (refunds and Stripe
+	// passthrough already absorbed server-side) so the transaction
+	// detail header matches the timeline body and the order page.
+	const breakdown = charge.fee_breakdown;
+	const balance =
+		breakdown &&
+		breakdown.totals &&
+		breakdown.totals.fee &&
+		breakdown.totals.gross
+			? {
+					currency: breakdown.totals.fee.currency.toLowerCase(),
+					amount: breakdown.totals.gross.amount,
+					fee: breakdown.totals.fee.amount,
+					refunded: 0,
+					net: 0,
+			  }
+			: charge.balance_transaction
+			? {
+					currency: charge.balance_transaction.currency,
+					amount: charge.balance_transaction.amount,
+					fee: charge.balance_transaction.fee,
+					refunded: 0,
+					net: 0,
+			  }
+			: {
+					currency: charge.currency,
+					amount: charge.amount,
+					fee: charge.application_fee_amount,
+					refunded: 0,
+					net: 0,
+			  };
 
 	if ( isChargeRefunded( charge ) ) {
 		// Refund balance_transactions have negative amount.

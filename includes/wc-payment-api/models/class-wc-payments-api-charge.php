@@ -78,6 +78,18 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	private $application_fee_amount;
 
 	/**
+	 * Server-driven fee breakdown envelope (experimental).
+	 *
+	 * When present, order meta and downstream renders should read
+	 * `totals.fee.amount` / `totals.net.amount` from here rather than
+	 * inferring from `application_fee_amount`. See the generic fee-display
+	 * design doc.
+	 *
+	 * @var array|null
+	 */
+	private $fee_breakdown;
+
+	/**
 	 * Balance transaction that describes the impact of this charge on the account balance
 	 *
 	 * @var array
@@ -333,6 +345,24 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	}
 
 	/**
+	 * Returns the server-driven fee breakdown envelope (experimental).
+	 *
+	 * @return array|null
+	 */
+	public function get_fee_breakdown() {
+		return $this->fee_breakdown;
+	}
+
+	/**
+	 * Sets the server-driven fee breakdown envelope.
+	 *
+	 * @param array|null $fee_breakdown The envelope, or null to clear.
+	 */
+	public function set_fee_breakdown( ?array $fee_breakdown ): void {
+		$this->fee_breakdown = $fee_breakdown;
+	}
+
+	/**
 	 * Returns the balance transaction associated with this charge
 	 *
 	 * @return array
@@ -477,6 +507,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 			'refunded'               => $this->get_refunded(),
 			'refunds'                => $this->get_refunds(),
 			'status'                 => $this->get_status(),
+			'fee_breakdown'          => $this->get_fee_breakdown(),
 		];
 	}
 }

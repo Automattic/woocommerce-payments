@@ -32,6 +32,35 @@ import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
+import {
+	resolveNoteText,
+	resolveRowLabel,
+} from './fee-breakdown-label-map';
+
+/**
+ * Format a rate object (percentage + fixed) as "2.9% + $0.30" for display.
+ * Returns an empty string when the rate is null or has no non-zero parts.
+ */
+const formatRateText = ( rate, storeCurrency ) => {
+	if ( ! rate ) {
+		return '';
+	}
+	const parts = [];
+	const percentage = rate.percentage ?? 0;
+	const fixed = rate.fixed ?? 0;
+	const fixedCurrency = rate.fixed_currency || storeCurrency;
+	if ( percentage !== 0 ) {
+		parts.push(
+			`${ Number.parseFloat( ( percentage * 100 ).toFixed( 3 ) ) }%`
+		);
+	}
+	if ( fixed !== 0 ) {
+		parts.push(
+			formatCurrency( fixed, fixedCurrency, storeCurrency )
+		);
+	}
+	return parts.join( ' + ' );
+};
 
 /**
  * Creates a timeline item about a payment status change
@@ -271,6 +300,19 @@ const isBaseFeeOnly = ( event ) => {
 };
 
 const formatNetString = ( event ) => {
+	// Prefer the server-authoritative totals when the envelope is present.
+	// This is the single number the order page "Transaction Fee" row and
+	// the _wcpay_net order meta also read from, so the deposit line stays
+	// consistent with every other surface.
+	if ( event.fee_breakdown ) {
+		return formatExplicitCurrency(
+			event.fee_breakdown.totals.net.amount,
+			event.fee_breakdown.totals.net.currency,
+			false,
+			event.fee_breakdown.totals.net.currency
+		);
+	}
+
 	const {
 		amount_captured: amountCaptured,
 		fee,
@@ -335,6 +377,126 @@ export const composeTaxString = ( event ) => {
 		taxPercentage,
 		formattedTaxAmount
 	);
+};
+
+/**
+ * Build the captured-event note body from a server-driven fee_breakdown envelope.
+ *
+ * Mirrors the legacy compose* chain (fee line, breakdown, tax line, net line)
+ * but without any client-side arithmetic — values come straight from
+ * `rows`, `totals`, and `notes`. Returns an array of strings suitable for
+ * passing to getMainTimelineItem.
+ */
+export const composeCapturedBodyFromBreakdown = ( event ) => {
+	const breakdown = event.fee_breakdown;
+	if ( ! breakdown ) {
+		return [];
+	}
+
+	const storeCurrency = breakdown.totals.fee.currency;
+	const lines = [];
+
+	// Cross-border / multi-currency "1 USD → 0.92 EUR: 0.50 EUR" header.
+	// Driven by the event's transaction_details (customer vs. store
+	// currency), not by the envelope — the envelope already expresses
+	// amounts in store currency, but merchants want to see the FX
+	// conversion context above the fees.
+	const fxLine = composeFXString( event );
+	if ( fxLine ) {
+		lines.push( fxLine );
+	}
+
+	// Fee line: force negative sign, drop the currency-code suffix
+	// (formatCurrency vs. formatExplicitCurrency) to match the legacy
+	// "-$1.27" style.
+	const feeAmountText = formatCurrency(
+		-Math.abs( breakdown.totals.fee.amount ),
+		breakdown.totals.fee.currency,
+		storeCurrency
+	);
+	const totalRateText = formatRateText(
+		breakdown.totals.fee.rate,
+		storeCurrency
+	);
+	lines.push(
+		totalRateText
+			? sprintf(
+					/* translators: 1: fee rate (e.g. 2.9% + $0.30) 2: monetary amount */
+					__( 'Fee (%1$s): %2$s', 'woocommerce-payments' ),
+					totalRateText,
+					feeAmountText
+			  )
+			: sprintf(
+					/* translators: %s is a monetary amount */
+					__( 'Fee: %s', 'woocommerce-payments' ),
+					feeAmountText
+			  )
+	);
+
+	// Per-component breakdown: show rate only (e.g. "Base fee: 2.9% + $0.30")
+	// as a bulleted <ul>, matching the legacy composeFeeBreakdown output.
+	// Skip when there's just one fee row — the total line above already
+	// carries the full rate context.
+	const feeRows = breakdown.rows.filter( ( row ) => row.kind !== 'tax' );
+	if ( feeRows.length > 1 ) {
+		lines.push(
+			<ul key="fee-breakdown" className="fee-breakdown-list">
+				{ feeRows.map( ( row, idx ) => {
+					const label = resolveRowLabel( row.key, row.label, {
+						meta: row.meta,
+					} );
+					const rateText = formatRateText(
+						row.rate,
+						row.rate?.fixed_currency ||
+							row.currency ||
+							storeCurrency
+					);
+					return (
+						<li key={ `${ row.key }-${ idx }` }>
+							{ rateText ? `${ label }: ${ rateText }` : label }
+						</li>
+					);
+				} ) }
+			</ul>
+		);
+	}
+
+	if ( breakdown.totals.tax.amount !== 0 ) {
+		lines.push(
+			sprintf(
+				/* translators: %s is a monetary amount */
+				__( 'Tax: %s', 'woocommerce-payments' ),
+				formatExplicitCurrency(
+					breakdown.totals.tax.amount,
+					breakdown.totals.tax.currency,
+					false,
+					storeCurrency
+				)
+			)
+		);
+	}
+
+	lines.push(
+		sprintf(
+			/* translators: %s is a monetary amount */
+			__( 'Net payout: %s', 'woocommerce-payments' ),
+			formatExplicitCurrency(
+				breakdown.totals.net.amount,
+				breakdown.totals.net.currency,
+				false,
+				storeCurrency
+			)
+		)
+	);
+
+	breakdown.notes.forEach( ( note ) => {
+		const text = resolveNoteText( note.code, { meta: note.meta } );
+		if ( text ) {
+			lines.push( text );
+		}
+	} );
+
+	return lines;
 };
 
 export const composeFeeString = ( event ) => {
@@ -824,15 +986,17 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 			];
 		case 'captured':
 			const formattedNet = formatNetString( event );
-			const body = [
-				composeFXString( event ),
-				composeFeeString( event ),
-				composeFeeBreakdown( event ),
-				event?.fee_rates?.tax?.amount !== 0
-					? composeTaxString( event )
-					: null,
-				composeNetString( event ),
-			].filter( Boolean );
+			const body = event.fee_breakdown
+				? composeCapturedBodyFromBreakdown( event )
+				: [
+						composeFXString( event ),
+						composeFeeString( event ),
+						composeFeeBreakdown( event ),
+						event?.fee_rates?.tax?.amount !== 0
+							? composeTaxString( event )
+							: null,
+						composeNetString( event ),
+				  ].filter( Boolean );
 			return [
 				getStatusChangeTimelineItem(
 					event,

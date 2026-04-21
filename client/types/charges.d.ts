@@ -92,6 +92,39 @@ export interface Charge {
 	reader_model?: string;
 	platform?: string;
 	level3?: Level3Data;
+	/**
+	 * Server-driven fee_breakdown envelope (experimental). When present,
+	 * header totals should read from `totals.fee` / `totals.net` rather
+	 * than deriving from `balance_transaction.fee` + `application_fee_amount`.
+	 */
+	fee_breakdown?: {
+		version: number;
+		rows: Array< {
+			key: string;
+			kind: 'fee' | 'adjustment' | 'tax';
+			label: string | null;
+			amount: number;
+			currency: string;
+			rate: null | {
+				percentage?: number;
+				fixed?: number;
+				fixed_currency?: string;
+			};
+			meta: null | Record< string, unknown >;
+		} >;
+		totals: {
+			fee: { amount: number; currency: string };
+			tax: { amount: number; currency: string };
+			net: { amount: number; currency: string };
+			gross: { amount: number; currency: string };
+		};
+		notes: Array< {
+			code: string;
+			severity?: 'info' | 'warning' | 'error';
+			meta?: Record< string, unknown >;
+		} >;
+		sources?: Record< string, unknown >;
+	};
 }
 
 export interface ChargeAmounts {

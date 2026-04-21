@@ -10,10 +10,18 @@ import { __ } from '@wordpress/i18n';
 /** Internal dependencies */
 import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
 import { FeeRow, TaxFeeRow } from './fee-breakdown-components';
+import FeesBreakdownV1 from './v1';
 
 const FeesBreakdown: React.FC< {
 	event: TimelineItem;
 } > = ( { event } ) => {
+	// When the server provides a `fee_breakdown` envelope, render it
+	// verbatim. Skips all client-side arithmetic and discount-math and
+	// handles Amazon Pay, dispute fees, and future cases uniformly.
+	if ( event.fee_breakdown ) {
+		return <FeesBreakdownV1 data={ event.fee_breakdown } />;
+	}
+
 	if ( ! event.fee_rates || ! event.transaction_details ) {
 		return null;
 	}

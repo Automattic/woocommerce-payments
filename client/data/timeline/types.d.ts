@@ -52,6 +52,57 @@ export interface TimelineDeposit {
 	arrival_date: number;
 }
 
+export type TimelineFeeBreakdownKind = 'fee' | 'adjustment' | 'tax';
+
+export interface TimelineFeeBreakdownRate {
+	percentage?: number;
+	fixed?: number;
+	fixed_currency?: string;
+}
+
+export interface TimelineFeeBreakdownRow {
+	/**
+	 * Stable typed key — client maps it through the label dictionary. When a
+	 * key is unknown the client falls back to `label`, then the raw key.
+	 */
+	key: string;
+	kind: TimelineFeeBreakdownKind;
+	/** Optional override label — wins over dictionary lookup when provided. */
+	label: string | null;
+	/** Signed amount in the store currency's minor units (e.g. cents). */
+	amount: number;
+	currency: string;
+	rate: TimelineFeeBreakdownRate | null;
+	meta: Record< string, unknown > | null;
+}
+
+export interface TimelineFeeBreakdownTotal {
+	amount: number;
+	currency: string;
+	rate?: TimelineFeeBreakdownRate;
+}
+
+export interface TimelineFeeBreakdownTotals {
+	fee: TimelineFeeBreakdownTotal;
+	tax: TimelineFeeBreakdownTotal;
+	net: TimelineFeeBreakdownTotal;
+	gross: TimelineFeeBreakdownTotal;
+}
+
+export interface TimelineFeeBreakdownNote {
+	code: string;
+	severity?: 'info' | 'warning' | 'error';
+	meta?: Record< string, unknown >;
+}
+
+export interface TimelineFeeBreakdown {
+	version: number;
+	rows: TimelineFeeBreakdownRow[];
+	totals: TimelineFeeBreakdownTotals;
+	notes: TimelineFeeBreakdownNote[];
+	sources?: Record< string, unknown >;
+}
+
 export interface TimelineItem {
 	type: string;
 	datetime: number;
@@ -68,6 +119,14 @@ export interface TimelineItem {
 	failure_transaction_id?: string;
 	fee?: number;
 	fee_rates?: TimelineFeeRates;
+	/**
+	 * Server-authoritative display envelope. When present the client renders
+	 * from here verbatim; when absent the legacy `fee_rates` / `fee` path is
+	 * used. Covers every event that carries fees (captured, disputes,
+	 * financing paydowns, etc.), so order notes, the fees-breakdown panel,
+	 * and the order page "Transaction Fee" row all read from one source.
+	 */
+	fee_breakdown?: TimelineFeeBreakdown;
 	loan_id?: string;
 	reason?: string;
 	transaction_details?: TimelineTransactionDetails;

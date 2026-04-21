@@ -501,18 +501,47 @@ class WC_Payments_Webhook_Processing_Service {
 			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
 		}
 
-		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+		// Prefer the server-driven fee_breakdown envelope carried on the
+		// forwarded webhook body when present. Its totals are authoritative
+		// (post-refund, tax-adjusted) so we can always write correct meta
+		// without the prior truthy-check skipping $0 values.
+		$fee_breakdown = $charges_data[0]['fee_breakdown'] ?? null;
+		if ( is_array( $fee_breakdown ) && isset( $fee_breakdown['totals']['fee']['amount'], $fee_breakdown['totals']['fee']['currency'] ) ) {
+			$fee_currency   = $fee_breakdown['totals']['fee']['currency'];
+			$fee_amount_int = (int) $fee_breakdown['totals']['fee']['amount'];
+			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount(
+				$fee_amount_int,
+				$fee_currency
+			);
+			if ( isset( $fee_breakdown['totals']['net']['amount'], $fee_breakdown['totals']['net']['currency'] ) ) {
+				$meta_data_to_update['_wcpay_net'] = WC_Payments_Utils::interpret_stripe_amount(
+					(int) $fee_breakdown['totals']['net']['amount'],
+					$fee_breakdown['totals']['net']['currency']
+				);
+			}
+		} else {
+			$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
 
-		if ( $application_fee_amount ) {
-			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
-			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
+			if ( $application_fee_amount ) {
+				$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+				$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
 
-			$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
-			$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
+				$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
+				$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
+			}
 		}
 
+		// Keys we always write when present in the envelope — including
+		// legitimate $0 values — because their truthiness is semantically
+		// meaningful for the order page "Transaction Fee" row and net.
+		$authoritative_keys = [ '_wcpay_transaction_fee', '_wcpay_net' ];
 		foreach ( $meta_data_to_update as $key => $value ) {
-			// Override existing meta data with incoming values, if present.
+			if ( in_array( $key, $authoritative_keys, true ) ) {
+				if ( null !== $value ) {
+					$order->update_meta_data( $key, $value );
+				}
+				continue;
+			}
 			if ( $value ) {
 				$order->update_meta_data( $key, $value );
 			}
