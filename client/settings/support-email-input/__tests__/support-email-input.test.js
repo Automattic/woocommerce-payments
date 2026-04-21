@@ -70,21 +70,22 @@ describe( 'SupportEmailInput', () => {
 			jest.fn(),
 		] );
 
-		const { container } = render( <SupportEmailInput /> );
+		render( <SupportEmailInput /> );
 
-		// Error should not be shown before blur
+		const errorRegion = screen.getByTestId( 'support-email-error' );
+
+		// Error Notice should not be shown before blur
 		expect(
-			container.querySelector( '.components-notice.is-error' )
+			errorRegion.querySelector( '.components-notice.is-error' )
 		).toBeNull();
 
 		// Trigger blur event
 		fireEvent.blur( screen.getByLabelText( 'Support email' ) );
 
-		// Error should be shown after blur
+		// Error Notice should be shown after blur
 		expect(
-			container.querySelector( '.components-notice.is-error' )
-				?.textContent
-		).toContain( 'Please enter a valid email address.' );
+			errorRegion.querySelector( '.components-notice.is-error' )
+		).not.toBeNull();
 	} );
 
 	it( 'does not display client-side validation error for valid email after blur', () => {

@@ -49,13 +49,18 @@ const SupportEmailInput = ( { setInputValid } ) => {
 
 	return (
 		<>
-			{ errorMessage && (
-				<div id={ errorId }>
+			<div
+				id={ errorId }
+				role="alert"
+				aria-live="assertive"
+				data-testid="support-email-error"
+			>
+				{ errorMessage && (
 					<Notice status="error" isDismissible={ false }>
 						<span>{ errorMessage }</span>
 					</Notice>
-				</div>
-			) }
+				) }
+			</div>
 
 			<TextControl
 				className="settings__account-business-support-email-input"
