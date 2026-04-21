@@ -112,8 +112,7 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 
 			<div
 				id={ errorId }
-				role="alert"
-				aria-live="assertive"
+				role="status"
 				data-testid="notifications-email-error"
 			>
 				{ errorMessage && (
@@ -138,21 +137,20 @@ const NotificationsEmailInput: React.FC< NotificationsEmailInputProps > = ( {
 				__next40pxDefaultSize
 			/>
 
+			<div
+				id="notifications-email-mismatch-error"
+				role="status"
+				data-testid="notifications-email-mismatch-error"
+			>
+				{ mismatchError && (
+					<Notice status="error" isDismissible={ false }>
+						<span>{ mismatchError }</span>
+					</Notice>
+				) }
+			</div>
+
 			{ emailHasChanged && (
 				<>
-					<div
-						id="notifications-email-mismatch-error"
-						role="alert"
-						aria-live="assertive"
-						data-testid="notifications-email-mismatch-error"
-					>
-						{ mismatchError && (
-							<Notice status="error" isDismissible={ false }>
-								<span>{ mismatchError }</span>
-							</Notice>
-						) }
-					</div>
-
 					<TextControl
 						className="settings__notifications-email-confirm-input"
 						label={ __(

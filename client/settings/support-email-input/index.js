@@ -49,12 +49,7 @@ const SupportEmailInput = ( { setInputValid } ) => {
 
 	return (
 		<>
-			<div
-				id={ errorId }
-				role="alert"
-				aria-live="assertive"
-				data-testid="support-email-error"
-			>
+			<div id={ errorId } role="status" data-testid="support-email-error">
 				{ errorMessage && (
 					<Notice status="error" isDismissible={ false }>
 						<span>{ errorMessage }</span>
