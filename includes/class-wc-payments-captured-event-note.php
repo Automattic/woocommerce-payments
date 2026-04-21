@@ -51,6 +51,8 @@ class WC_Payments_Captured_Event_Note {
 		// When the server attached a fee_breakdown envelope, render from it
 		// verbatim. This covers Amazon Pay non-card, dispute fees, partial
 		// refunds, and future fee quirks uniformly — no per-case branches.
+		// The server gates the envelope behind its own feature option; its
+		// absence is the signal to run the legacy composer below.
 		if ( ! empty( $this->captured_event['fee_breakdown'] ) ) {
 			return $this->generate_html_note_from_breakdown( $this->captured_event['fee_breakdown'] );
 		}

@@ -15,9 +15,11 @@ import FeesBreakdownV1 from './v1';
 const FeesBreakdown: React.FC< {
 	event: TimelineItem;
 } > = ( { event } ) => {
-	// When the server provides a `fee_breakdown` envelope, render it
+	// When the server attaches a fee_breakdown envelope, render from it
 	// verbatim. Skips all client-side arithmetic and discount-math and
-	// handles Amazon Pay, dispute fees, and future cases uniformly.
+	// handles Amazon Pay, dispute fees, and future cases uniformly. The
+	// server gates the envelope behind its own `_wcpay_feature_fee_breakdown_envelope_enabled`
+	// option — when absent, we fall through to the legacy allocator below.
 	if ( event.fee_breakdown ) {
 		return <FeesBreakdownV1 data={ event.fee_breakdown } />;
 	}

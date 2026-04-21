@@ -33,53 +33,10 @@ import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
 import {
-	resolveNoteText,
-	resolveRowLabel,
-} from './fee-breakdown-label-map';
-
-/**
- * Format a rate object as "2.9% + $0.30" / "capped at $5".
- *
- * The percentage string is server-owned (`rate.percentage_display`), so
- * this function no longer picks between toFixed(2) and toFixed(3). Fixed
- * amounts still render locale-aware via `formatCurrency`.
- *
- * Returns an empty string when the rate has no renderable parts.
- */
-const formatRateText = ( rate, storeCurrency ) => {
-	if ( ! rate ) {
-		return '';
-	}
-	if ( rate.capped ) {
-		const capAmount = rate.cap_amount ?? rate.fixed ?? 0;
-		const capCurrency = rate.fixed_currency || storeCurrency;
-		return sprintf(
-			/* translators: %s is a monetary amount */
-			__( 'capped at %s', 'woocommerce-payments' ),
-			formatCurrency( capAmount, capCurrency, storeCurrency )
-		);
-	}
-	const parts = [];
-	// Server-owned percentage precision: prefer rate.percentage_display
-	// (e.g. "2.9%", "22.00%"); fall back to local formatting for older
-	// envelopes. This kills the 2dp-vs-3dp drift across renderers.
-	const percentage = rate.percentage ?? 0;
-	if ( rate.percentage_display ) {
-		parts.push( rate.percentage_display );
-	} else if ( percentage !== 0 ) {
-		parts.push(
-			`${ Number.parseFloat( ( percentage * 100 ).toFixed( 3 ) ) }%`
-		);
-	}
-	const fixed = rate.fixed ?? 0;
-	const fixedCurrency = rate.fixed_currency || storeCurrency;
-	if ( fixed !== 0 ) {
-		parts.push(
-			formatCurrency( fixed, fixedCurrency, storeCurrency )
-		);
-	}
-	return parts.join( ' + ' );
-};
+	composeCapturedBodyFromBreakdown,
+	formatEnvelopeNetString,
+	getEnvelopeDepositImpact,
+} from './envelope/compose';
 
 /**
  * Creates a timeline item about a payment status change
@@ -319,19 +276,9 @@ const isBaseFeeOnly = ( event ) => {
 };
 
 const formatNetString = ( event ) => {
-	// Prefer the server-authoritative totals when the envelope is present.
-	// This is the single number the order page "Transaction Fee" row and
-	// the _wcpay_net order meta also read from, so the deposit line stays
-	// consistent with every other surface.
-	if ( event.fee_breakdown ) {
-		return formatExplicitCurrency(
-			event.fee_breakdown.totals.net.amount,
-			event.fee_breakdown.totals.net.currency,
-			false,
-			event.fee_breakdown.totals.net.currency
-		);
-	}
-
+	// Legacy net math. Envelope-aware callers should use
+	// `formatEnvelopeNetString` from ./envelope/compose instead of this
+	// function — the split keeps envelope and legacy paths independent.
 	const {
 		amount_captured: amountCaptured,
 		fee,
@@ -396,216 +343,6 @@ export const composeTaxString = ( event ) => {
 		taxPercentage,
 		formattedTaxAmount
 	);
-};
-
-/**
- * Build the captured-event note body from a server-driven fee_breakdown envelope.
- *
- * Mirrors the legacy compose* chain (fee line, breakdown, tax line, net line)
- * but without any client-side arithmetic — values come straight from
- * `rows`, `totals`, and `notes`. Returns an array of strings suitable for
- * passing to getMainTimelineItem.
- */
-export const composeCapturedBodyFromBreakdown = ( event ) => {
-	const breakdown = event.fee_breakdown;
-	if ( ! breakdown ) {
-		return [];
-	}
-
-	const storeCurrency = breakdown.totals.fee.currency;
-	const lines = [];
-
-	// Cross-border / multi-currency "1 USD → 0.92 EUR: 0.50 EUR" header.
-	// Driven by the event's transaction_details (customer vs. store
-	// currency), not by the envelope — the envelope already expresses
-	// amounts in store currency, but merchants want to see the FX
-	// conversion context above the fees.
-	const fxLine = composeFXString( event );
-	if ( fxLine ) {
-		lines.push( fxLine );
-	}
-
-	// Append currency-code disambiguation (e.g. " USD", " CAD") when the
-	// customer and store currencies share a symbol ($ vs $). Mirrors the
-	// legacy `hasSameSymbol(customer, store)` check in composeFeeString.
-	const customerCurrency =
-		event.transaction_details?.customer_currency ?? storeCurrency;
-	const isSameSymbol = hasSameSymbol( customerCurrency, storeCurrency );
-	const currencySuffix = isSameSymbol ? ` ${ storeCurrency }` : '';
-
-	// Fee line: use server-provided display_amount (already signed for
-	// display) so we don't second-guess with -Math.abs(). Drop the
-	// currency-code suffix via formatCurrency (vs. formatExplicitCurrency)
-	// to match the legacy "-$1.27" style.
-	const feeDisplayAmount =
-		breakdown.totals.fee.display_amount ??
-		-Math.abs( breakdown.totals.fee.amount );
-	const feeAmountText =
-		formatCurrency(
-			feeDisplayAmount,
-			breakdown.totals.fee.currency,
-			storeCurrency
-		) + currencySuffix;
-	const totalRateText = formatRateText(
-		breakdown.totals.fee.rate,
-		storeCurrency
-	);
-	// When the cumulative rate has a fixed part we'd also suffix the
-	// currency code after it, matching "(2.9% + $0.30 USD): -$1.27 USD".
-	const totalRateTextWithSuffix =
-		totalRateText && breakdown.totals.fee.rate?.fixed && isSameSymbol
-			? `${ totalRateText }${ currencySuffix }`
-			: totalRateText;
-	lines.push(
-		totalRateText
-			? sprintf(
-					/* translators: 1: fee rate (e.g. 2.9% + $0.30) 2: monetary amount */
-					__( 'Fee (%1$s): %2$s', 'woocommerce-payments' ),
-					totalRateTextWithSuffix,
-					feeAmountText
-			  )
-			: sprintf(
-					/* translators: %s is a monetary amount */
-					__( 'Fee: %s', 'woocommerce-payments' ),
-					feeAmountText
-			  )
-	);
-
-	// Per-component breakdown: show rate only (e.g. "Base fee: 2.9% + $0.30")
-	// as a bulleted <ul>, matching the legacy composeFeeBreakdown output.
-	// Adjustment rows (discounts) render a nested list with the variable
-	// and fixed components separated — matching the legacy discount-split
-	// rendering. Skip when there's just one fee row.
-	const feeRows = breakdown.rows.filter( ( row ) => row.kind !== 'tax' );
-	if ( feeRows.length > 1 ) {
-		lines.push(
-			<ul key="fee-breakdown" className="fee-breakdown-list">
-				{ feeRows.map( ( row, idx ) => {
-					const label = resolveRowLabel( row.key, row.label, {
-						meta: row.meta,
-					} );
-					const rowCurrency =
-						row.rate?.fixed_currency ||
-						row.currency ||
-						storeCurrency;
-					const rateText = formatRateText( row.rate, rowCurrency );
-
-					// Discount rows: render "Discount" with a nested
-					// variable / fixed split when both are non-zero.
-					if ( row.kind === 'adjustment' && row.rate ) {
-						const pct = row.rate.percentage ?? 0;
-						const fixed = row.rate.fixed ?? 0;
-						if ( pct !== 0 && fixed !== 0 ) {
-							const variableText = `${ Number.parseFloat(
-								( Math.abs( pct ) * 100 ).toFixed( 3 )
-							) }%`;
-							const fixedText = formatCurrency(
-								Math.abs( fixed ),
-								rowCurrency,
-								storeCurrency
-							);
-							return (
-								<li key={ `${ row.key }-${ idx }` }>
-									{ label }
-									<ul className="discount-split-list">
-										<li key="variable">
-											{ sprintf(
-												/* translators: %s is a percentage */
-												__(
-													'Variable fee: %s',
-													'woocommerce-payments'
-												),
-												variableText
-											) }
-										</li>
-										<li key="fixed">
-											{ sprintf(
-												/* translators: %s is a monetary amount */
-												__(
-													'Fixed fee: %s',
-													'woocommerce-payments'
-												),
-												fixedText
-											) }
-										</li>
-									</ul>
-								</li>
-							);
-						}
-					}
-					return (
-						<li key={ `${ row.key }-${ idx }` }>
-							{ rateText
-								? `${ label }: ${ rateText }`
-								: label }
-						</li>
-					);
-				} ) }
-			</ul>
-		);
-	}
-
-	if ( breakdown.totals.tax.amount !== 0 ) {
-		// Match the legacy "Tax IT VAT (22.00%): -$X.XX" format by pulling
-		// the description + percentage off the tax row (which the builder
-		// populates from the Transaction_Fee_Detail tax record).
-		const taxRow = breakdown.rows.find(
-			( row ) => row.kind === 'tax'
-		);
-		const taxDescription =
-			taxRow && taxRow.label
-				? ` ${ getLocalizedTaxDescription( taxRow.label ) }`
-				: '';
-		// Prefer the server's pre-formatted percentage_display
-		// ("22.00%") for canonical precision. Fall back to toFixed(2)
-		// on older envelopes.
-		const taxPercentageRate = taxRow?.rate?.percentage;
-		const taxPercentageStr =
-			taxRow?.rate?.percentage_display ??
-			( taxPercentageRate
-				? `${ ( taxPercentageRate * 100 ).toFixed( 2 ) }%`
-				: '' );
-		const taxPercentage = taxPercentageStr ? ` (${ taxPercentageStr })` : '';
-		const taxDisplayAmount =
-			breakdown.totals.tax.display_amount ??
-			-Math.abs( breakdown.totals.tax.amount );
-		const taxAmountText = formatCurrency(
-			taxDisplayAmount,
-			breakdown.totals.tax.currency,
-			storeCurrency
-		);
-		lines.push(
-			sprintf(
-				/* translators: 1: tax description 2: tax percentage 3: tax amount */
-				__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
-				taxDescription,
-				taxPercentage,
-				taxAmountText
-			)
-		);
-	}
-
-	lines.push(
-		sprintf(
-			/* translators: %s is a monetary amount */
-			__( 'Net payout: %s', 'woocommerce-payments' ),
-			formatExplicitCurrency(
-				breakdown.totals.net.amount,
-				breakdown.totals.net.currency,
-				false,
-				storeCurrency
-			)
-		)
-	);
-
-	breakdown.notes.forEach( ( note ) => {
-		const text = resolveNoteText( note.code, { meta: note.meta } );
-		if ( text ) {
-			lines.push( text );
-		}
-	} );
-
-	return lines;
 };
 
 export const composeFeeString = ( event ) => {
@@ -1094,7 +831,9 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'captured':
-			const formattedNet = formatNetString( event );
+			const formattedNet = event.fee_breakdown
+				? formatEnvelopeNetString( event )
+				: formatNetString( event );
 			const body = event.fee_breakdown
 				? composeCapturedBodyFromBreakdown( event )
 				: [
@@ -1240,16 +979,17 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					],
 				};
 			} else {
-				// Prefer the envelope's authoritative deposit impact
-				// (totals.net, signed); fall back to |amount|+|fee|.
+				// Prefer the envelope's authoritative deposit impact when
+				// present; fall back to legacy |amount|+|fee| math. Routed
+				// through getEnvelopeDepositImpact so nothing here has to
+				// know the envelope shape.
+				const envelopeImpact = getEnvelopeDepositImpact( event );
 				const depositImpact =
-					event.fee_breakdown?.totals?.net?.amount !== undefined
-						? Math.abs( event.fee_breakdown.totals.net.amount )
-						: Math.abs( event.amount ) + Math.abs( event.fee );
+					envelopeImpact?.amount ??
+					Math.abs( event.amount ) + Math.abs( event.fee );
 				const formattedExplicitTotal = formatExplicitCurrency(
 					depositImpact,
-					event.fee_breakdown?.totals?.net?.currency ||
-						event.currency
+					envelopeImpact?.currency ?? event.currency
 				);
 				const disputedAmount = isFXEvent( event )
 					? formatCurrency(
@@ -1305,15 +1045,15 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'dispute_won':
-			// Prefer the envelope's authoritative deposit impact (totals.net,
-			// signed); fall back to |amount|+|fee|.
+			// Envelope-authoritative deposit impact when present; legacy
+			// |amount|+|fee| fallback otherwise.
+			const disputeWonImpact = getEnvelopeDepositImpact( event );
 			const depositImpactWon =
-				event.fee_breakdown?.totals?.net?.amount !== undefined
-					? Math.abs( event.fee_breakdown.totals.net.amount )
-					: Math.abs( event.amount ) + Math.abs( event.fee );
+				disputeWonImpact?.amount ??
+				Math.abs( event.amount ) + Math.abs( event.fee );
 			const formattedExplicitTotal = formatExplicitCurrency(
 				depositImpactWon,
-				event.fee_breakdown?.totals?.net?.currency || event.currency
+				disputeWonImpact?.currency ?? event.currency
 			);
 			return [
 				getStatusChangeTimelineItem(
