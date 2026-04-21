@@ -27,6 +27,7 @@ class WC_Payments_Features {
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME                    = '_wcpay_feature_woopay_direct_checkout';
 	const DISPUTE_ISSUER_EVIDENCE                             = '_wcpay_feature_dispute_issuer_evidence';
 	const DISPUTE_ADDITIONAL_EVIDENCE_TYPES                   = '_wcpay_feature_dispute_additional_evidence_types';
+	const DISPUTE_DEFENDER_AI                                 = '_wcpay_feature_dispute_defender_ai';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
@@ -327,6 +328,17 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Dispute Defender AI feature should be enabled. Disabled by default.
+	 *
+	 * This gates the merchant-facing "Generate with AI" button on the dispute detail page.
+	 *
+	 * @return bool
+	 */
+	public static function is_dispute_defender_enabled(): bool {
+		return '1' === get_option( self::DISPUTE_DEFENDER_AI, '0' );
+	}
+
+	/**
 	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
 	 *
 	 * @return bool
@@ -399,6 +411,7 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'                    => self::is_woopay_express_checkout_enabled(),
 				'isDisputeIssuerEvidenceEnabled'           => self::is_dispute_issuer_evidence_enabled(),
 				'isDisputeAdditionalEvidenceTypesEnabled'  => self::is_dispute_additional_evidence_types_enabled(),
+				'isDisputeDefenderEnabled'                 => self::is_dispute_defender_enabled(),
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
 				'amazonPay'                                => self::is_amazon_pay_enabled(),

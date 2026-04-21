@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add Dispute_Evidence_Collector service that assembles a normalized, PII-minimized DTO for AI-drafted dispute defenses.

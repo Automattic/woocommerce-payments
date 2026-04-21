@@ -807,6 +807,22 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $status_before_request, get_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME ) );
 	}
 
+	public function test_update_settings_persists_dispute_defender_flag() {
+		$request = new WP_REST_Request( 'POST', self::$settings_route );
+		$request->set_body_params( [ 'is_dispute_defender_enabled' => true ] );
+		$response = rest_do_request( $request );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertSame( '1', get_option( WC_Payments_Features::DISPUTE_DEFENDER_AI ) );
+	}
+
+	public function test_get_settings_exposes_dispute_defender_flag() {
+		update_option( WC_Payments_Features::DISPUTE_DEFENDER_AI, '1' );
+		$request  = new WP_REST_Request( 'GET', self::$settings_route );
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+		$this->assertTrue( $data['is_dispute_defender_enabled'] );
+	}
+
 	public function deposit_schedules_data_provider() {
 		return [
 			[

@@ -146,6 +146,15 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_dispute_defender_enabled'          => [
+						'description'       => sprintf(
+							/* translators: %s: WooPayments */
+							__( '%s Dispute Defender AI feature flag setting.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'is_wcpay_subscriptions_enabled'       => [
 						'description'       => sprintf(
 							/* translators: %s: WooPayments */
@@ -536,6 +545,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_test_mode_onboarding'                => WC_Payments::mode()->is_test_mode_onboarding(),
 				'is_dev_mode_enabled'                    => WC_Payments::mode()->is_dev(),
 				'is_multi_currency_enabled'              => WC_Payments_Features::is_customer_multi_currency_enabled(),
+				'is_dispute_defender_enabled'            => WC_Payments_Features::is_dispute_defender_enabled(),
 				'is_wcpay_subscriptions_enabled'         => WC_Payments_Features::is_wcpay_subscriptions_enabled(),
 				'is_stripe_billing_enabled'              => WC_Payments_Features::is_stripe_billing_enabled(),
 				'is_wcpay_subscriptions_eligible'        => WC_Payments_Features::is_wcpay_subscriptions_eligible(),
@@ -600,6 +610,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_test_mode_enabled( $request );
 		$this->update_is_debug_log_enabled( $request );
 		$this->update_is_multi_currency_enabled( $request );
+		$this->update_is_dispute_defender_enabled( $request );
 		$this->update_is_wcpay_subscriptions_enabled( $request );
 		$this->update_is_payment_request_enabled( $request );
 		$this->update_is_express_checkout_in_payment_methods_enabled( $request );
@@ -869,6 +880,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_multi_currency_enabled = $request->get_param( 'is_multi_currency_enabled' );
 
 		update_option( '_wcpay_feature_customer_multi_currency', $is_multi_currency_enabled ? '1' : '0' );
+	}
+
+	/**
+	 * Updates the Dispute Defender AI feature flag.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_dispute_defender_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_dispute_defender_enabled' ) ) {
+			return;
+		}
+
+		$is_dispute_defender_enabled = $request->get_param( 'is_dispute_defender_enabled' );
+
+		update_option( WC_Payments_Features::DISPUTE_DEFENDER_AI, $is_dispute_defender_enabled ? '1' : '0' );
 	}
 
 	/**

@@ -112,6 +112,10 @@ export function updateIsMultiCurrencyEnabled( isEnabled ) {
 	return updateSettingsValues( { is_multi_currency_enabled: isEnabled } );
 }
 
+export function updateIsDisputeDefenderEnabled( isEnabled ) {
+	return updateSettingsValues( { is_dispute_defender_enabled: isEnabled } );
+}
+
 export function updateIsWCPaySubscriptionsEnabled( isEnabled ) {
 	return updateSettingsValues( {
 		is_wcpay_subscriptions_enabled: isEnabled,

@@ -5,7 +5,9 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Core\Server\Request\Generate_Dispute_Defense;
 use WCPay\Core\Server\Request\List_Disputes;
+use WCPay\Disputes\Dispute_Evidence_Collector;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -88,6 +90,15 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<dispute_id>\w+)/defense/draft',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'generate_defense_draft' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -158,6 +169,61 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	public function close_dispute( $request ) {
 		$dispute_id = $request->get_param( 'dispute_id' );
 		return $this->forward_request( 'close_dispute', [ $dispute_id ] );
+	}
+
+	/**
+	 * Generate an AI-assisted dispute defense draft for a dispute.
+	 *
+	 * Gated on the `WC_Payments_Features::is_dispute_defender_enabled()` flag and
+	 * restricted to `fraudulent` disputes. Collects an evidence-context DTO via
+	 * Dispute_Evidence_Collector and forwards it to Transact-Platform through the
+	 * Generate_Dispute_Defense request class.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Unchanged Transact-Platform response on success.
+	 */
+	public function generate_defense_draft( WP_REST_Request $request ) {
+		if ( ! WC_Payments_Features::is_dispute_defender_enabled() ) {
+			return new WP_Error(
+				'wcpay_dispute_defender_disabled',
+				__( 'Dispute defender AI is not enabled.', 'woocommerce-payments' ),
+				[ 'status' => 403 ]
+			);
+		}
+
+		$dispute_id = $request->get_param( 'dispute_id' );
+
+		try {
+			// Fetch the dispute to get the reason; enforce fraudulent-only.
+			$dispute = $this->api_client->get_dispute( $dispute_id );
+			if ( is_wp_error( $dispute ) ) {
+				return $dispute;
+			}
+			if ( ( $dispute['reason'] ?? '' ) !== 'fraudulent' ) {
+				return new WP_Error(
+					'wcpay_dispute_defender_unsupported_reason',
+					__( 'Only fraudulent disputes are supported.', 'woocommerce-payments' ),
+					[ 'status' => 400 ]
+				);
+			}
+
+			$collector        = new Dispute_Evidence_Collector( $this->api_client );
+			$evidence_context = $collector->collect( $dispute_id );
+
+			$defense = Generate_Dispute_Defense::create();
+			$defense->set_dispute_id( $dispute_id );
+			$defense->set_reason( 'fraudulent' );
+			$defense->set_evidence_context( $evidence_context );
+			$response = $defense->send();
+
+			return rest_ensure_response( $response );
+		} catch ( \Exception $e ) {
+			return new WP_Error(
+				'wcpay_dispute_defender_failure',
+				$e->getMessage(),
+				[ 'status' => 502 ]
+			);
+		}
 	}
 
 	/**

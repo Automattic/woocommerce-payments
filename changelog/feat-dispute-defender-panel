@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add Dispute Defender AI REST endpoint and merchant-facing panel skeleton for generating draft defense responses on fraudulent disputes.

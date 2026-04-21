@@ -11,6 +11,7 @@ import { render, screen } from '@testing-library/react';
 import AdvancedSettings from '..';
 import {
 	useMultiCurrency,
+	useDisputeDefender,
 	useWCPaySubscriptions,
 	useDevMode,
 	useDebugLog,
@@ -19,6 +20,7 @@ import {
 jest.mock( '../../../data', () => ( {
 	useSettings: jest.fn(),
 	useMultiCurrency: jest.fn(),
+	useDisputeDefender: jest.fn(),
 	useWCPaySubscriptions: jest.fn(),
 	useDevMode: jest.fn(),
 	useDebugLog: jest.fn(),
@@ -27,6 +29,7 @@ jest.mock( '../../../data', () => ( {
 describe( 'AdvancedSettings', () => {
 	beforeEach( () => {
 		useMultiCurrency.mockReturnValue( [ false, jest.fn() ] );
+		useDisputeDefender.mockReturnValue( [ false, jest.fn() ] );
 		useWCPaySubscriptions.mockReturnValue( [ false, jest.fn() ] );
 		useDevMode.mockReturnValue( false );
 		useDebugLog.mockReturnValue( [ false, jest.fn() ] );

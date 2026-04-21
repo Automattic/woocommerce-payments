@@ -417,6 +417,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-list-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-list-fraud-outcome-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-list-disputes.php';
+		include_once __DIR__ . '/core/server/request/class-generate-dispute-defense.php';
 		include_once __DIR__ . '/core/server/request/class-list-deposits.php';
 		include_once __DIR__ . '/core/server/request/class-list-documents.php';
 		include_once __DIR__ . '/core/server/request/class-list-authorizations.php';
@@ -507,6 +508,7 @@ class WC_Payments {
 		include_once __DIR__ . '/fraud-prevention/class-buyer-fingerprinting-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-risk-tools.php';
 		include_once __DIR__ . '/fraud-prevention/wc-payments-fraud-risk-tools.php';
+		include_once __DIR__ . '/disputes/class-dispute-evidence-collector.php';
 		include_once __DIR__ . '/woopay/class-woopay-store-api-token.php';
 		include_once __DIR__ . '/woopay/class-woopay-utilities.php';
 		include_once __DIR__ . '/woopay/class-woopay-order-status-sync.php';
