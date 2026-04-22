@@ -501,6 +501,7 @@ class WC_Payments_Webhook_Processing_Service {
 			$meta_data_to_update['_stripe_mandate_id'] = $mandate_id;
 		}
 
+		// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 		// Prefer the server-driven fee_breakdown envelope carried on the
 		// forwarded webhook body when present. Its totals are authoritative
 		// (post-refund, tax-adjusted) so we can always write correct meta

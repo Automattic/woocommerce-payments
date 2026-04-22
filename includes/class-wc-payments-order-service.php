@@ -1410,6 +1410,7 @@ class WC_Payments_Order_Service {
 				return;
 			}
 
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 			// Prefer the server-driven fee_breakdown envelope when present.
 			// totals.fee.amount is authoritative for every merchant-facing
 			// surface — the order page row, the _wcpay_net meta, and the

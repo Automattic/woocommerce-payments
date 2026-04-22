@@ -24,6 +24,8 @@ interface Props {
 }
 
 /**
+ * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
+ *
  * Server-driven fees breakdown renderer.
  *
  * Takes the `fee_breakdown` envelope built by the server's

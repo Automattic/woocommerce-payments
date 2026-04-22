@@ -273,6 +273,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const showControlMenu =
 		charge.captured && ! charge.refunded && isDisputeRefundable;
 
+	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 	// Prefer the server-driven fee_breakdown envelope when present — it
 	// carries the merchant-facing nominal fee with refunds and Stripe
 	// passthrough already absorbed. For the dispute-fee tooltip to

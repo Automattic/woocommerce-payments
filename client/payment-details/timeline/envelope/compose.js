@@ -1,6 +1,8 @@
 /** @format **/
 
 /**
+ * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
+ *
  * Envelope-only timeline composers.
  *
  * Every helper here reads `event.fee_breakdown` — the server-authoritative

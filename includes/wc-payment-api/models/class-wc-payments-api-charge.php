@@ -85,6 +85,8 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	 * inferring from `application_fee_amount`. See the generic fee-display
 	 * design doc.
 	 *
+	 * FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	 *
 	 * @var array|null
 	 */
 	private $fee_breakdown;
@@ -345,6 +347,8 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	}
 
 	/**
+	 * FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	 *
 	 * Returns the server-driven fee breakdown envelope (experimental).
 	 *
 	 * @return array|null
@@ -354,6 +358,8 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	}
 
 	/**
+	 * FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	 *
 	 * Sets the server-driven fee breakdown envelope.
 	 *
 	 * @param array|null $fee_breakdown The envelope, or null to clear.
@@ -507,6 +513,7 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 			'refunded'               => $this->get_refunded(),
 			'refunds'                => $this->get_refunds(),
 			'status'                 => $this->get_status(),
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 			'fee_breakdown'          => $this->get_fee_breakdown(),
 		];
 	}

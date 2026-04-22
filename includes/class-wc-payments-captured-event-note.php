@@ -88,6 +88,8 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
+	 * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
+	 *
 	 * Render the HTML note from a server-driven fee_breakdown envelope.
 	 *
 	 * Takes server-authoritative rows / totals / notes and renders one HTML

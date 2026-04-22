@@ -142,6 +142,7 @@ export const getChargeStatus = (
  * @return {ChargeAmounts} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
+	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 	// Prefer the server-driven fee_breakdown envelope when present.
 	// It carries the merchant-facing nominal fee (refunds and Stripe
 	// passthrough already absorbed server-side) so the transaction

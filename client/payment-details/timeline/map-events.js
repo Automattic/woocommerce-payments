@@ -32,6 +32,7 @@ import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
+// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 import {
 	composeCapturedBodyFromBreakdown,
 	formatEnvelopeNetString,
@@ -831,9 +832,11 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'captured':
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 			const formattedNet = event.fee_breakdown
 				? formatEnvelopeNetString( event )
 				: formatNetString( event );
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 			const body = event.fee_breakdown
 				? composeCapturedBodyFromBreakdown( event )
 				: [
@@ -979,6 +982,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 					],
 				};
 			} else {
+				// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 				// Prefer the envelope's authoritative deposit impact when
 				// present; fall back to legacy |amount|+|fee| math. Routed
 				// through getEnvelopeDepositImpact so nothing here has to
@@ -1045,6 +1049,7 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 				),
 			];
 		case 'dispute_won':
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 			// Envelope-authoritative deposit impact when present; legacy
 			// |amount|+|fee| fallback otherwise.
 			const disputeWonImpact = getEnvelopeDepositImpact( event );

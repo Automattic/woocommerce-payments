@@ -15,6 +15,7 @@ import FeesBreakdownV1 from './v1';
 const FeesBreakdown: React.FC< {
 	event: TimelineItem;
 } > = ( { event } ) => {
+	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
 	// When the server attaches a fee_breakdown envelope, render from it
 	// verbatim. Skips all client-side arithmetic and discount-math and
 	// handles Amazon Pay, dispute fees, and future cases uniformly. The

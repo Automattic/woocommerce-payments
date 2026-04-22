@@ -1,4 +1,6 @@
 /**
+ * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
+ *
  * Label dictionary for server-driven fee_breakdown rows and notes.
  *
  * The server sends typed keys (e.g. `base`, `amazon_pay.stripe_processing_fee`,
