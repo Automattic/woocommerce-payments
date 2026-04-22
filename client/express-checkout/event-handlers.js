@@ -59,7 +59,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		elements.update( {
+		await elements.update( {
 			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 			amount: applyFilters(
 				'wcpay.express-checkout.total-amount',
@@ -109,7 +109,7 @@ export const shippingRateChangeHandler = async (
 
 		lastCartData = cartData;
 
-		elements.update( {
+		await elements.update( {
 			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 			amount: applyFilters(
 				'wcpay.express-checkout.total-amount',
