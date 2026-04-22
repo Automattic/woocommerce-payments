@@ -17,9 +17,10 @@
  *
  * Shared primitives (`formatCurrency`, `hasSameSymbol`, `getLocalizedTaxDescription`,
  * the label map) are imported — duplicating those would cost more than it saves.
- * `composeEnvelopeFXString` is a local copy of the legacy `composeFXString` to
- * avoid a circular import; it reads the same `transaction_details` keys because
- * the timeline envelope (unlike `/charges/{id}`) does not yet carry an `fx` block.
+ * The FX line is sourced from the envelope's top-level `fx` block (emitted by
+ * Fee_Breakdown_Builder::build_fx_block on cross-currency charges), so this
+ * module no longer needs a local `composeFXString` copy or a read of
+ * `event.transaction_details.customer_*`.
  */
 
 /**
@@ -41,54 +42,21 @@ import { getLocalizedTaxDescription } from '../../utils/tax-descriptions';
 import { resolveNoteText, resolveRowLabel } from '../fee-breakdown-label-map';
 
 /**
- * Derived from: `isFXEvent` in `../map-events.js` (local copy to avoid
- * circular import — same semantics).
+ * Render the FX line for a captured event from the envelope's `fx` block.
+ *
+ * The server's Fee_Breakdown_Builder emits `fx` with the full from/to
+ * currency + amount pair (plus a pre-formatted `rate_display` string) so
+ * the client no longer has to read `event.transaction_details.*` directly.
+ * Returns `undefined` when the charge is same-currency (server omits `fx`).
  */
-const isFXEvent = ( event = {} ) => {
-	const { transaction_details: transactionDetails } = event;
-	if ( ! transactionDetails ) {
-		return false;
+const composeEnvelopeFXLine = ( breakdown, storeCurrency ) => {
+	const fx = breakdown.fx;
+	if ( ! fx || ! fx.from_currency || ! fx.to_currency ) {
+		return undefined;
 	}
-	const {
-		customer_currency: customerCurrency,
-		store_currency: storeCurrency,
-	} = transactionDetails;
-	return (
-		customerCurrency !== undefined &&
-		storeCurrency !== undefined &&
-		customerCurrency !== storeCurrency
-	);
-};
-
-/**
- * Derived from: `composeFXString` in `../map-events.js` (verbatim copy —
- * local only to break the circular import between that module and this one).
- * Pure formatting; reads the same `transaction_details` fields because the
- * timeline envelope does not yet carry an `fx` block.
- */
-const composeEnvelopeFXString = ( event ) => {
-	if ( ! isFXEvent( event ) ) {
-		return;
-	}
-	const {
-		transaction_details: {
-			customer_currency: customerCurrency,
-			customer_amount: customerAmount,
-			customer_amount_captured: customerAmountCaptured,
-			store_currency: storeCurrency,
-			store_amount: storeAmount,
-			store_amount_captured: storeAmountCaptured,
-		},
-	} = event;
 	return formatFX(
-		{
-			currency: customerCurrency,
-			amount: customerAmountCaptured ?? customerAmount,
-		},
-		{
-			currency: storeCurrency,
-			amount: storeAmountCaptured ?? storeAmount,
-		},
+		{ currency: fx.from_currency, amount: fx.from_amount ?? 0 },
+		{ currency: fx.to_currency, amount: fx.to_amount ?? 0 },
 		undefined,
 		storeCurrency
 	);
@@ -154,7 +122,7 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 	const storeCurrency = breakdown.totals.fee.currency;
 	const lines = [];
 
-	const fxLine = composeEnvelopeFXString( event );
+	const fxLine = composeEnvelopeFXLine( breakdown, storeCurrency );
 	if ( fxLine ) {
 		lines.push( fxLine );
 	}
@@ -162,8 +130,12 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 	// Append currency-code disambiguation (e.g. " USD", " CAD") when the
 	// customer and store currencies share a symbol ($ vs $). Mirrors the
 	// legacy `hasSameSymbol(customer, store)` check in composeFeeString.
+	// Read the customer currency off the envelope's fx block; falls back
+	// to transaction_details for envelopes missing fx (older server).
 	const customerCurrency =
-		event.transaction_details?.customer_currency ?? storeCurrency;
+		breakdown.fx?.from_currency ??
+		event.transaction_details?.customer_currency ??
+		storeCurrency;
 	const isSameSymbol = hasSameSymbol( customerCurrency, storeCurrency );
 	const currencySuffix = isSameSymbol ? ` ${ storeCurrency }` : '';
 
@@ -318,13 +290,16 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 		);
 	}
 
+	// Historical "Net payout" for the captured event — read capture-time
+	// net, not current-state net, so a later refund doesn't rewrite the
+	// deposit line of the capture event in the timeline.
 	lines.push(
 		sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Net payout: %s', 'woocommerce-payments' ),
 			formatExplicitCurrency(
-				breakdown.totals.net.amount,
-				breakdown.totals.net.currency,
+				breakdown.totals.capture_net.amount,
+				breakdown.totals.capture_net.currency,
 				false,
 				storeCurrency
 			)
@@ -342,23 +317,26 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 };
 
 /**
- * Format the envelope's net amount for the deposit-line headline.
+ * Format the envelope's capture-time net for the deposit-line headline.
  *
  * Derived from: `formatNetString` in `../map-events.js` (the `gross - fee`
  * subtraction with FX branching) — replaced by a direct read of
- * `totals.net.amount`.
+ * `totals.capture_net.amount`.
+ *
+ * Reads `totals.capture_net` (not `totals.net`) because the timeline
+ * captured event is a historical point-in-time record: a later refund
+ * gets its own timeline entry and should not retroactively rewrite the
+ * deposit headline for the capture event. `totals.net` is reserved for
+ * consumers that want current-state (summary card, `_wcpay_net` meta).
  *
  * Caller must have already verified `event.fee_breakdown_v1` is present.
- * This is the single number the order-page "Transaction Fee" row and the
- * `_wcpay_net` meta also read from — keeping the deposit line consistent
- * with every other surface.
  */
 export const formatEnvelopeNetString = ( event ) => {
 	return formatExplicitCurrency(
-		event.fee_breakdown_v1.totals.net.amount,
-		event.fee_breakdown_v1.totals.net.currency,
+		event.fee_breakdown_v1.totals.capture_net.amount,
+		event.fee_breakdown_v1.totals.capture_net.currency,
 		false,
-		event.fee_breakdown_v1.totals.net.currency
+		event.fee_breakdown_v1.totals.capture_net.currency
 	);
 };
 

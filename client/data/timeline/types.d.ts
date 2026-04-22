@@ -97,7 +97,19 @@ export interface TimelineFeeBreakdownTotal {
 export interface TimelineFeeBreakdownTotals {
 	fee: TimelineFeeBreakdownTotal;
 	tax: TimelineFeeBreakdownTotal;
+	/**
+	 * Current-state net — folds post-capture refunds, dispute balance
+	 * adjustments, and paydown. Source of truth for the summary card
+	 * "Net" value and the `_wcpay_net` order meta.
+	 */
 	net: TimelineFeeBreakdownTotal;
+	/**
+	 * Capture-time net — what the merchant received at the moment of
+	 * capture, pre-refund / pre-dispute / pre-paydown. Source of truth
+	 * for the timeline captured-event "Net payout: X" line, which is a
+	 * historical record (later refunds get their own timeline entries).
+	 */
+	capture_net: TimelineFeeBreakdownTotal;
 	gross: TimelineFeeBreakdownTotal;
 }
 
@@ -114,6 +126,11 @@ export interface TimelineFeeBreakdownFx {
 	 * store_amount` division, no re-inversion, no precision choice.
 	 */
 	rate_display?: string;
+	rate?: number;
+	from_currency?: string;
+	to_currency?: string;
+	from_amount?: number;
+	to_amount?: number;
 }
 
 export interface TimelineFeeBreakdown {
