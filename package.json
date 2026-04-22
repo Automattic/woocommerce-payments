@@ -107,7 +107,7 @@
 		"canvas-confetti": "1.9.2",
 		"decimal.js-light": "2.5.1",
 		"intl-tel-input": "17.0.15",
-		"lodash": "4.17.21"
+		"lodash": "4.18.1"
 	},
 	"devDependencies": {
 		"@automattic/color-studio": "4.0.0",
@@ -125,7 +125,7 @@
 		"@types/canvas-confetti": "1.6.4",
 		"@types/intl-tel-input": "17.0.4",
 		"@types/jest": "29.5.12",
-		"@types/lodash": "4.14.170",
+		"@types/lodash": "4.17.24",
 		"@types/node": "20.9.0",
 		"@types/react": "18.3.17",
 		"@types/react-dom": "19.1.7",
