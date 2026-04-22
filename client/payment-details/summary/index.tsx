@@ -290,26 +290,43 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.balance_transaction?.currency &&
 		charge.fee_breakdown.totals.fee.currency.toLowerCase() ===
 			charge.balance_transaction.currency.toLowerCase();
-	const transactionFee =
-		envelopeFeeCurrencyMatches && charge.fee_breakdown?.totals?.fee
-		? {
+	const transactionFee = ( () => {
+		if ( envelopeFeeCurrencyMatches && charge.fee_breakdown?.totals?.fee ) {
+			return {
 				// Prefer the server's pre-summed fee_plus_tax; fall back to
 				// adding the two components when older servers omit it.
 				fee:
 					charge.fee_breakdown.totals.fee_plus_tax?.amount ??
 					charge.fee_breakdown.totals.fee.amount +
 						( charge.fee_breakdown.totals.tax?.amount ?? 0 ),
-				currency: charge.fee_breakdown.totals.fee.currency.toLowerCase(),
-		  }
-		: charge.balance_transaction
-		? {
+				currency:
+					charge.fee_breakdown.totals.fee.currency.toLowerCase(),
+			};
+		}
+		if ( charge.balance_transaction ) {
+			return {
 				fee: charge.balance_transaction.fee,
 				currency: charge.balance_transaction.currency,
-		  }
-		: {
-				fee: charge.application_fee_amount,
-				currency: charge.currency,
-		  };
+			};
+		}
+		return {
+			fee: charge.application_fee_amount,
+			currency: charge.currency,
+		};
+	} )();
+
+	// When the envelope is present, `balance.net` (from getChargeAmounts)
+	// already reflects paydown — server folded it in. Only subtract manually
+	// on the legacy path.
+	const netAmount = ( () => {
+		if ( charge.fee_breakdown?.totals?.net ) {
+			return balance.net;
+		}
+		if ( charge.paydown ) {
+			return balance.net - Math.abs( charge.paydown.amount );
+		}
+		return balance.net;
+	} )();
 
 	// WP translation strings are injected into Moment.js for relative time terms, since Moment's own translation library increases the bundle size significantly.
 	moment.updateLocale( 'en', {
@@ -520,15 +537,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 										     paydown — server folded it in. Only
 										     subtract manually on the legacy path. */ }
 										{ formatExplicitCurrency(
-											charge.fee_breakdown?.totals?.net
-												? balance.net
-												: charge.paydown
-												? balance.net -
-														Math.abs(
-															charge.paydown
-																.amount
-														)
-												: balance.net,
+											netAmount,
 											balance.currency
 										) }
 									</Loadable>

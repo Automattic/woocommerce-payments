@@ -183,8 +183,7 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		// for older servers.
 		const totalFee =
 			breakdown.totals.fee_plus_tax?.amount ??
-			breakdown.totals.fee.amount +
-				( breakdown.totals.tax?.amount ?? 0 );
+			breakdown.totals.fee.amount + ( breakdown.totals.tax?.amount ?? 0 );
 		return {
 			currency: breakdown.totals.fee.currency.toLowerCase(),
 			amount: breakdown.totals.gross.amount,

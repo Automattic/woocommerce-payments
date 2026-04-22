@@ -38,10 +38,7 @@ import {
 } from 'multi-currency/interface/functions';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../../utils/tax-descriptions';
-import {
-	resolveNoteText,
-	resolveRowLabel,
-} from '../fee-breakdown-label-map';
+import { resolveNoteText, resolveRowLabel } from '../fee-breakdown-label-map';
 
 const isFXEvent = ( event = {} ) => {
 	const { transaction_details: transactionDetails } = event;
@@ -125,9 +122,7 @@ const formatRateText = ( rate, storeCurrency ) => {
 	const fixed = rate.fixed ?? 0;
 	const fixedCurrency = rate.fixed_currency || storeCurrency;
 	if ( fixed !== 0 ) {
-		parts.push(
-			formatCurrency( fixed, fixedCurrency, storeCurrency )
-		);
+		parts.push( formatCurrency( fixed, fixedCurrency, storeCurrency ) );
 	}
 	return parts.join( ' + ' );
 };
@@ -278,7 +273,9 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 			( taxPercentageRate
 				? `${ ( taxPercentageRate * 100 ).toFixed( 2 ) }%`
 				: '' );
-		const taxPercentage = taxPercentageStr ? ` (${ taxPercentageStr })` : '';
+		const taxPercentage = taxPercentageStr
+			? ` (${ taxPercentageStr })`
+			: '';
 		const taxDisplayAmount =
 			breakdown.totals.tax.display_amount ??
 			-Math.abs( breakdown.totals.tax.amount );

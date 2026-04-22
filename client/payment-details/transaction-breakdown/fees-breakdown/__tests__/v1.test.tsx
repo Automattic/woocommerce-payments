@@ -6,10 +6,7 @@ import React from 'react';
 
 /** Internal dependencies */
 import FeesBreakdown from '../';
-import {
-	TimelineFeeBreakdown,
-	TimelineItem,
-} from 'wcpay/data/timeline/types';
+import { TimelineFeeBreakdown, TimelineItem } from 'wcpay/data/timeline/types';
 
 declare const global: {
 	wcpaySettings: {
@@ -129,9 +126,7 @@ describe( 'FeesBreakdown (envelope v1)', () => {
 		expect(
 			screen.queryByText( /Fee adjustment/i )
 		).not.toBeInTheDocument();
-		expect(
-			screen.queryByText( /refund/i )
-		).not.toBeInTheDocument();
+		expect( screen.queryByText( /refund/i ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'suppresses internal-only notes so they never reach merchants', () => {

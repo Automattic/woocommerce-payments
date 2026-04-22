@@ -30,17 +30,16 @@ interface LabelEntry {
 }
 
 const exact = ( key: string ) => ( k: string ) => k === key;
-const prefix = ( prefix: string ) => ( k: string ) => k.startsWith( prefix );
+const prefix = ( start: string ) => ( k: string ) => k.startsWith( start );
 
-const ROW_LABELS: LabelEntry[] = [
+const rowLabels: LabelEntry[] = [
 	{
 		match: exact( 'base' ),
 		resolver: () => __( 'Base fee', 'woocommerce-payments' ),
 	},
 	{
 		match: exact( 'additional.international' ),
-		resolver: () =>
-			__( 'International card fee', 'woocommerce-payments' ),
+		resolver: () => __( 'International card fee', 'woocommerce-payments' ),
 	},
 	{
 		match: exact( 'additional.fx' ),
@@ -75,8 +74,7 @@ const ROW_LABELS: LabelEntry[] = [
 	},
 	{
 		match: exact( 'dispute_fee_refund' ),
-		resolver: () =>
-			__( 'Dispute fee refund', 'woocommerce-payments' ),
+		resolver: () => __( 'Dispute fee refund', 'woocommerce-payments' ),
 	},
 	{
 		match: exact( 'refund_fee' ),
@@ -93,7 +91,7 @@ const ROW_LABELS: LabelEntry[] = [
  * additional codes (for internal telemetry) — unknown codes are silently
  * dropped rather than leaked as raw identifiers to merchants.
  */
-const NOTE_LABELS: Record< string, LabelResolver > = {};
+const noteLabels: Record< string, LabelResolver > = {};
 
 /**
  * Resolve a human-readable label for a breakdown row.
@@ -108,7 +106,7 @@ export function resolveRowLabel(
 	if ( label !== null && label !== '' ) {
 		return label;
 	}
-	for ( const entry of ROW_LABELS ) {
+	for ( const entry of rowLabels ) {
 		const matches =
 			typeof entry.match === 'string'
 				? entry.match === key
@@ -134,7 +132,7 @@ export function resolveNoteText(
 	code: string,
 	context: FeeBreakdownLabelContext = {}
 ): string | null {
-	const resolver = NOTE_LABELS[ code ];
+	const resolver = noteLabels[ code ];
 	if ( resolver ) {
 		const resolved = resolver( context );
 		if ( resolved ) {

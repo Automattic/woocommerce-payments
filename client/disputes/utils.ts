@@ -141,10 +141,7 @@ const getDisputeDeductedBalanceTransaction = (
  * from older servers that don't emit the annotation.
  */
 export const getDisputeFeeFormatted = (
-	dispute: Pick<
-		Dispute,
-		'balance_transactions' | 'effective_fee'
-	>,
+	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >,
 	appendCurrencyCode?: boolean
 ): string | undefined => {
 	// Server-computed path: effective_fee is explicitly null when the fee
