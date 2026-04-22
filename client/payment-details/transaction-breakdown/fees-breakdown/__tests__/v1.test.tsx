@@ -33,7 +33,7 @@ const renderWithEnvelope = ( breakdown: TimelineFeeBreakdown ) => {
 	const event: TimelineItem = {
 		type: 'captured',
 		datetime: 1713100800,
-		fee_breakdown: breakdown,
+		fee_breakdown_v1: breakdown,
 		transaction_details: baseTransactionDetails,
 	};
 	return render( <FeesBreakdown event={ event } /> );
@@ -59,7 +59,6 @@ describe( 'FeesBreakdown (envelope v1)', () => {
 
 	it( 'renders a base fee row from the envelope', () => {
 		renderWithEnvelope( {
-			version: 1,
 			rows: [
 				{
 					key: 'base',
@@ -94,7 +93,6 @@ describe( 'FeesBreakdown (envelope v1)', () => {
 		// fee schedule. Merchant never sees "Stripe processing fee" or
 		// "Fee adjustment" anywhere.
 		renderWithEnvelope( {
-			version: 1,
 			rows: [
 				{
 					key: 'base',
@@ -131,7 +129,6 @@ describe( 'FeesBreakdown (envelope v1)', () => {
 
 	it( 'suppresses internal-only notes so they never reach merchants', () => {
 		renderWithEnvelope( {
-			version: 1,
 			rows: [
 				{
 					key: 'transaction_fee',
@@ -170,7 +167,6 @@ describe( 'FeesBreakdown (envelope v1)', () => {
 
 	it( 'prefers the server-provided label when supplied', () => {
 		renderWithEnvelope( {
-			version: 1,
 			rows: [
 				{
 					key: 'some.unknown.key',

@@ -502,22 +502,22 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-		// Prefer the server-driven fee_breakdown envelope carried on the
+		// Prefer the server-driven fee_breakdown_v1 envelope carried on the
 		// forwarded webhook body when present. Its totals are authoritative
 		// (post-refund, tax-adjusted) so we can always write correct meta
 		// without the prior truthy-check skipping $0 values.
-		$fee_breakdown = $charges_data[0]['fee_breakdown'] ?? null;
-		if ( is_array( $fee_breakdown ) && isset( $fee_breakdown['totals']['fee']['amount'], $fee_breakdown['totals']['fee']['currency'] ) ) {
-			$fee_currency                                  = $fee_breakdown['totals']['fee']['currency'];
-			$fee_amount_int                                = (int) $fee_breakdown['totals']['fee']['amount'];
+		$fee_breakdown_v1 = $charges_data[0]['fee_breakdown_v1'] ?? null;
+		if ( is_array( $fee_breakdown_v1 ) && isset( $fee_breakdown_v1['totals']['fee']['amount'], $fee_breakdown_v1['totals']['fee']['currency'] ) ) {
+			$fee_currency                                  = $fee_breakdown_v1['totals']['fee']['currency'];
+			$fee_amount_int                                = (int) $fee_breakdown_v1['totals']['fee']['amount'];
 			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount(
 				$fee_amount_int,
 				$fee_currency
 			);
-			if ( isset( $fee_breakdown['totals']['net']['amount'], $fee_breakdown['totals']['net']['currency'] ) ) {
+			if ( isset( $fee_breakdown_v1['totals']['net']['amount'], $fee_breakdown_v1['totals']['net']['currency'] ) ) {
 				$meta_data_to_update['_wcpay_net'] = WC_Payments_Utils::interpret_stripe_amount(
-					(int) $fee_breakdown['totals']['net']['amount'],
-					$fee_breakdown['totals']['net']['currency']
+					(int) $fee_breakdown_v1['totals']['net']['amount'],
+					$fee_breakdown_v1['totals']['net']['currency']
 				);
 			}
 		} else {

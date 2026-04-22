@@ -117,7 +117,6 @@ export interface TimelineFeeBreakdownFx {
 }
 
 export interface TimelineFeeBreakdown {
-	version: number;
 	rows: TimelineFeeBreakdownRow[];
 	totals: TimelineFeeBreakdownTotals;
 	notes: TimelineFeeBreakdownNote[];
@@ -148,7 +147,7 @@ export interface TimelineItem {
 	 * financing paydowns, etc.), so order notes, the fees-breakdown panel,
 	 * and the order page "Transaction Fee" row all read from one source.
 	 */
-	fee_breakdown?: TimelineFeeBreakdown;
+	fee_breakdown_v1?: TimelineFeeBreakdown;
 	loan_id?: string;
 	reason?: string;
 	transaction_details?: TimelineTransactionDetails;

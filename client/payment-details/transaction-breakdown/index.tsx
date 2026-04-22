@@ -71,7 +71,7 @@ const PaymentTransactionBreakdown: React.FC<
 	// Prefer the server-formatted fx.rate_display ("1 USD → 0.851712 EUR")
 	// — no client-side division or re-inversion needed. Fall back to the
 	// legacy computation for charges without the envelope.
-	const fxRateDisplay = captureEvent.fee_breakdown?.fx?.rate_display;
+	const fxRateDisplay = captureEvent.fee_breakdown_v1?.fx?.rate_display;
 	const paymentExchangeRate =
 		captureEvent.transaction_details.store_amount > 0
 			? captureEvent.transaction_details.customer_amount /
@@ -172,21 +172,21 @@ const PaymentTransactionBreakdown: React.FC<
 						<FlexItem className="wcpay-transaction-breakdown__footer_amount">
 							{ /* Prefer the envelope's authoritative net;
 							     fall back to the legacy subtraction for
-							     charges without fee_breakdown. */ }
+							     charges without fee_breakdown_v1. */ }
 							{ formatCurrency(
-								captureEvent.fee_breakdown?.totals?.net
+								captureEvent.fee_breakdown_v1?.totals?.net
 									?.amount ??
 									captureEvent.transaction_details
 										.store_amount_captured -
 										captureEvent.transaction_details
 											.store_fee,
-								captureEvent.fee_breakdown?.totals?.net
+								captureEvent.fee_breakdown_v1?.totals?.net
 									?.currency ??
 									captureEvent.transaction_details
 										.store_currency
 							) }
 							&nbsp;
-							{ captureEvent.fee_breakdown?.totals?.net
+							{ captureEvent.fee_breakdown_v1?.totals?.net
 								?.currency ??
 								captureEvent.transaction_details
 									.store_currency }

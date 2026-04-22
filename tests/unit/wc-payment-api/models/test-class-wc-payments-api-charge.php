@@ -68,7 +68,7 @@ class WC_Payments_API_Charge_Test extends WCPAY_UnitTestCase {
 				'data' => [],
 			],
 			'status'                 => 'succeeded',
-			'fee_breakdown'          => null,
+			'fee_breakdown_v1'       => null,
 		];
 
 		$charge = new WC_Payments_API_Charge(

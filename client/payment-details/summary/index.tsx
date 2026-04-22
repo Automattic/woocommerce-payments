@@ -274,7 +274,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.captured && ! charge.refunded && isDisputeRefundable;
 
 	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-	// Prefer the server-driven fee_breakdown envelope when present — it
+	// Prefer the server-driven fee_breakdown_v1 envelope when present — it
 	// carries the merchant-facing nominal fee with refunds and Stripe
 	// passthrough already absorbed. For the dispute-fee tooltip to
 	// reconcile ("Transaction fee" + "Dispute fee" = "Total fees"), this
@@ -286,21 +286,24 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// envelope if its currency doesn't match balance_transaction.currency,
 	// rather than risk a 100× shift through zero-decimal rules.
 	const envelopeFeeCurrencyMatches =
-		charge.fee_breakdown?.totals?.fee &&
+		charge.fee_breakdown_v1?.totals?.fee &&
 		charge.balance_transaction?.currency &&
-		charge.fee_breakdown.totals.fee.currency.toLowerCase() ===
+		charge.fee_breakdown_v1.totals.fee.currency.toLowerCase() ===
 			charge.balance_transaction.currency.toLowerCase();
 	const transactionFee = ( () => {
-		if ( envelopeFeeCurrencyMatches && charge.fee_breakdown?.totals?.fee ) {
+		if (
+			envelopeFeeCurrencyMatches &&
+			charge.fee_breakdown_v1?.totals?.fee
+		) {
 			return {
 				// Prefer the server's pre-summed fee_plus_tax; fall back to
 				// adding the two components when older servers omit it.
 				fee:
-					charge.fee_breakdown.totals.fee_plus_tax?.amount ??
-					charge.fee_breakdown.totals.fee.amount +
-						( charge.fee_breakdown.totals.tax?.amount ?? 0 ),
+					charge.fee_breakdown_v1.totals.fee_plus_tax?.amount ??
+					charge.fee_breakdown_v1.totals.fee.amount +
+						( charge.fee_breakdown_v1.totals.tax?.amount ?? 0 ),
 				currency:
-					charge.fee_breakdown.totals.fee.currency.toLowerCase(),
+					charge.fee_breakdown_v1.totals.fee.currency.toLowerCase(),
 			};
 		}
 		if ( charge.balance_transaction ) {
@@ -319,7 +322,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	// already reflects paydown — server folded it in. Only subtract manually
 	// on the legacy path.
 	const netAmount = ( () => {
-		if ( charge.fee_breakdown?.totals?.net ) {
+		if ( charge.fee_breakdown_v1?.totals?.net ) {
 			return balance.net;
 		}
 		if ( charge.paydown ) {

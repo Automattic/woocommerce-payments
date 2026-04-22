@@ -5,7 +5,7 @@
  *
  * Envelope-only timeline composers.
  *
- * Every helper here reads `event.fee_breakdown` — the server-authoritative
+ * Every helper here reads `event.fee_breakdown_v1` — the server-authoritative
  * envelope built by `WCPay\Utils\Fee_Breakdown_Builder`. None of it touches
  * `event.fee_rates` / `event.transaction_details.store_fee`; those are
  * legacy-allocator inputs owned by the sibling compose* functions in
@@ -128,14 +128,14 @@ const formatRateText = ( rate, storeCurrency ) => {
 };
 
 /**
- * Build the captured-event note body from a server-driven fee_breakdown envelope.
+ * Build the captured-event note body from a server-driven fee_breakdown_v1 envelope.
  *
  * Mirrors the legacy compose* chain (fee line, breakdown, tax line, net line)
  * but without any client-side arithmetic — values come straight from
  * `rows`, `totals`, and `notes`.
  */
 export const composeCapturedBodyFromBreakdown = ( event ) => {
-	const breakdown = event.fee_breakdown;
+	const breakdown = event.fee_breakdown_v1;
 	if ( ! breakdown ) {
 		return [];
 	}
@@ -321,17 +321,17 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 /**
  * Format the envelope's net amount for the deposit-line headline.
  *
- * Caller must have already verified `event.fee_breakdown` is present.
+ * Caller must have already verified `event.fee_breakdown_v1` is present.
  * This is the single number the order-page "Transaction Fee" row and the
  * `_wcpay_net` meta also read from — keeping the deposit line consistent
  * with every other surface.
  */
 export const formatEnvelopeNetString = ( event ) => {
 	return formatExplicitCurrency(
-		event.fee_breakdown.totals.net.amount,
-		event.fee_breakdown.totals.net.currency,
+		event.fee_breakdown_v1.totals.net.amount,
+		event.fee_breakdown_v1.totals.net.currency,
 		false,
-		event.fee_breakdown.totals.net.currency
+		event.fee_breakdown_v1.totals.net.currency
 	);
 };
 
@@ -343,7 +343,7 @@ export const formatEnvelopeNetString = ( event ) => {
  * `|amount| + |fee|` math in that case.
  */
 export const getEnvelopeDepositImpact = ( event ) => {
-	const net = event.fee_breakdown?.totals?.net;
+	const net = event.fee_breakdown_v1?.totals?.net;
 	if ( ! net || net.amount === undefined ) {
 		return null;
 	}

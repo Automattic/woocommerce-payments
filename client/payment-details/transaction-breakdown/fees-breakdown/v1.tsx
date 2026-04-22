@@ -155,7 +155,7 @@ const NotesList: React.FC< {
  *
  * Server-driven fees breakdown renderer.
  *
- * Takes the `fee_breakdown` envelope built by the server's
+ * Takes the `fee_breakdown_v1` envelope built by the server's
  * Fee_Breakdown_Builder and renders it verbatim: one row per
  * `rows[]` entry (plus a total row), plus any notes. Does no
  * arithmetic of its own — discounts are already applied to

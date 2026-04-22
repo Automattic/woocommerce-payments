@@ -2970,8 +2970,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-		if ( isset( $charge_array['fee_breakdown'] ) && is_array( $charge_array['fee_breakdown'] ) ) {
-			$charge->set_fee_breakdown( $charge_array['fee_breakdown'] );
+		if ( isset( $charge_array['fee_breakdown_v1'] ) && is_array( $charge_array['fee_breakdown_v1'] ) ) {
+			$charge->set_fee_breakdown_v1( $charge_array['fee_breakdown_v1'] );
 		}
 
 		return $charge;

@@ -48,13 +48,13 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	public function generate_html_note(): string {
 
-		// When the server attached a fee_breakdown envelope, render from it
+		// When the server attached a fee_breakdown_v1 envelope, render from it
 		// verbatim. This covers Amazon Pay non-card, dispute fees, partial
 		// refunds, and future fee quirks uniformly — no per-case branches.
 		// The server gates the envelope behind its own feature option; its
 		// absence is the signal to run the legacy composer below.
-		if ( ! empty( $this->captured_event['fee_breakdown'] ) ) {
-			return $this->generate_html_note_from_breakdown( $this->captured_event['fee_breakdown'] );
+		if ( ! empty( $this->captured_event['fee_breakdown_v1'] ) ) {
+			return $this->generate_html_note_from_breakdown( $this->captured_event['fee_breakdown_v1'] );
 		}
 
 		$lines = [];
@@ -90,13 +90,13 @@ class WC_Payments_Captured_Event_Note {
 	/**
 	 * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
 	 *
-	 * Render the HTML note from a server-driven fee_breakdown envelope.
+	 * Render the HTML note from a server-driven fee_breakdown_v1 envelope.
 	 *
 	 * Takes server-authoritative rows / totals / notes and renders one HTML
 	 * paragraph per line — mirroring the legacy layout without any of the
 	 * per-event-type branching or client-side arithmetic.
 	 *
-	 * @param array $breakdown The fee_breakdown envelope.
+	 * @param array $breakdown The fee_breakdown_v1 envelope.
 	 * @return string
 	 */
 	private function generate_html_note_from_breakdown( array $breakdown ): string {
@@ -209,7 +209,7 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
-	 * Resolve a row label from a fee_breakdown row.
+	 * Resolve a row label from a fee_breakdown_v1 row.
 	 *
 	 * @param array $row Row entry from the envelope.
 	 * @return string
@@ -286,7 +286,7 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
-	 * Resolve a note text from a fee_breakdown note.
+	 * Resolve a note text from a fee_breakdown_v1 note.
 	 *
 	 * Returns null when the note has no merchant-facing text. The server may
 	 * emit internal-only codes (e.g., refund provenance) for telemetry and

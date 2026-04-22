@@ -143,7 +143,7 @@ export const getChargeStatus = (
  */
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-	// Prefer the server-driven fee_breakdown envelope when present.
+	// Prefer the server-driven fee_breakdown_v1 envelope when present.
 	// It carries the merchant-facing nominal fee (refunds and Stripe
 	// passthrough already absorbed server-side) so the transaction
 	// detail header matches the timeline body and the order page.
@@ -160,7 +160,7 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	// doesn't match the charge's balance_transaction.currency. A mismatch
 	// could shift amounts by 100× via zero-decimal currency rules — far
 	// better to fall back to legacy than to display a wrong number.
-	const breakdown = charge.fee_breakdown;
+	const breakdown = charge.fee_breakdown_v1;
 	const envelopeCurrencyMatches =
 		! breakdown?.totals?.fee ||
 		! charge.balance_transaction?.currency ||

@@ -93,12 +93,11 @@ export interface Charge {
 	platform?: string;
 	level3?: Level3Data;
 	/**
-	 * Server-driven fee_breakdown envelope (experimental). When present,
+	 * Server-driven fee_breakdown_v1 envelope (experimental). When present,
 	 * header totals should read from `totals.fee` / `totals.net` rather
 	 * than deriving from `balance_transaction.fee` + `application_fee_amount`.
 	 */
-	fee_breakdown?: {
-		version: number;
+	fee_breakdown_v1?: {
 		rows: Array< {
 			key: string;
 			kind: 'fee' | 'adjustment' | 'tax';

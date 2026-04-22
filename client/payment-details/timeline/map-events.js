@@ -833,11 +833,11 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 			];
 		case 'captured':
 			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-			const formattedNet = event.fee_breakdown
+			const formattedNet = event.fee_breakdown_v1
 				? formatEnvelopeNetString( event )
 				: formatNetString( event );
 			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-			const body = event.fee_breakdown
+			const body = event.fee_breakdown_v1
 				? composeCapturedBodyFromBreakdown( event )
 				: [
 						composeFXString( event ),
