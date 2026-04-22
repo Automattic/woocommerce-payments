@@ -178,6 +178,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( isset( $request['shipping_address'] ) && is_array( $request['shipping_address'] ) ) {
 			$shipping_address = $request['shipping_address'];
 			$shipping_address = $this->transform_ece_address_state_data( $shipping_address );
+			$shipping_address = $this->transform_ece_address_lines_data( $shipping_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
@@ -188,6 +189,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( isset( $request['billing_address'] ) && is_array( $request['billing_address'] ) ) {
 			$billing_address = $request['billing_address'];
 			$billing_address = $this->transform_ece_address_state_data( $billing_address );
+			$billing_address = $this->transform_ece_address_lines_data( $billing_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
@@ -274,6 +276,41 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( ! empty( $state ) ) {
 			$address['state'] = $this->get_normalized_state( $state, $country );
 		}
+
+		return $address;
+	}
+
+	/**
+	 * Consolidates the address lines so `address_1` is always populated when any line is.
+	 *
+	 * Specifically fixes Amazon Pay on EU Stripe accounts, which can return an empty `line1` with
+	 * the street value in `line2` (e.g. `{ line1: "", line2: "Meininger Strasse 58" }`). WC
+	 * requires `address_1`, so without this the Store API rejects the order. Safe to run on all
+	 * addresses: if `address_1` is already set, this is a no-op.
+	 *
+	 * @param array $address The address to normalize.
+	 *
+	 * @return array
+	 */
+	private function transform_ece_address_lines_data( $address ) {
+		$lines = array_values(
+			array_filter(
+				[
+					trim( (string) ( $address['address_1'] ?? '' ) ),
+					trim( (string) ( $address['address_2'] ?? '' ) ),
+				],
+				function ( $line ) {
+					return '' !== $line;
+				}
+			)
+		);
+
+		if ( empty( $lines ) ) {
+			return $address;
+		}
+
+		$address['address_1'] = $lines[0];
+		$address['address_2'] = $lines[1] ?? '';
 
 		return $address;
 	}

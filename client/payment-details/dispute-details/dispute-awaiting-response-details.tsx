@@ -24,8 +24,8 @@ import {
 	Modal,
 	Tooltip,
 } from '@wordpress/components';
-import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { Dispute } from 'wcpay/types/disputes';
 import { recordEvent } from 'tracks';
 import { useDisputeAccept } from 'wcpay/data';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
@@ -44,7 +44,21 @@ import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import './style.scss';
 
 interface Props {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'id'
+		| 'amount'
+		| 'balance_transactions'
+		| 'created'
+		| 'currency'
+		| 'evidence_details'
+		| 'enhanced_eligibility_types'
+		| 'issuer_evidence'
+		| 'metadata'
+		| 'payment_intent'
+		| 'reason'
+		| 'status'
+	>;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 	orderUrl: string | undefined;
@@ -95,7 +109,16 @@ function getAcceptDisputeProps( {
 	dispute,
 	isDisputeAcceptRequestPending,
 }: {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'amount'
+		| 'balance_transactions'
+		| 'evidence_details'
+		| 'enhanced_eligibility_types'
+		| 'issuer_evidence'
+		| 'reason'
+		| 'status'
+	>;
 	isDisputeAcceptRequestPending: boolean;
 } ): AcceptDisputeProps {
 	if ( isInquiry( dispute.status ) ) {
