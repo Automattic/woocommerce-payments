@@ -76,9 +76,18 @@ const BreakdownRow: React.FC< {
 		row.rate?.percentage_display
 	);
 	// Use the server-signed display_amount when available — avoids
-	// render-site sign coercion.
+	// render-site sign coercion. When an older envelope omits
+	// display_amount, fall back to a kind-aware signed magnitude so
+	// fees/tax still render as deductions rather than as positive
+	// amounts — matches the "display_amount earns its keep on fee and
+	// tax" contract in the envelope design doc.
+	const signedAmount =
+		row.display_amount ??
+		( row.kind === 'fee' || row.kind === 'tax'
+			? -Math.abs( row.amount )
+			: row.amount );
 	const amountText = formatCurrency(
-		row.display_amount ?? row.amount,
+		signedAmount,
 		row.currency,
 		storeCurrency
 	);

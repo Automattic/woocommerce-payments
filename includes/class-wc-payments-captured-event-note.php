@@ -53,7 +53,12 @@ class WC_Payments_Captured_Event_Note {
 		// refunds, and future fee quirks uniformly — no per-case branches.
 		// The server gates the envelope behind its own feature option; its
 		// absence is the signal to run the legacy composer below.
-		if ( ! empty( $this->captured_event['fee_breakdown_v1'] ) ) {
+		//
+		// Defense-in-depth: skip the envelope path when its shape is
+		// incomplete (malformed / partial payload) so we fall back to the
+		// legacy composer instead of emitting PHP notices mid-render.
+		if ( ! empty( $this->captured_event['fee_breakdown_v1'] )
+			&& self::is_renderable_breakdown( $this->captured_event['fee_breakdown_v1'] ) ) {
 			return $this->generate_html_note_from_breakdown( $this->captured_event['fee_breakdown_v1'] );
 		}
 
@@ -110,7 +115,17 @@ class WC_Payments_Captured_Event_Note {
 		$store_currency   = $breakdown['totals']['fee']['currency'];
 		$total_fee_amount = (int) $breakdown['totals']['fee']['amount'];
 		$total_tax_amount = (int) $breakdown['totals']['tax']['amount'];
-		$total_net_amount = (int) $breakdown['totals']['net']['amount'];
+		// Read capture-time net so the order note (a historical record of
+		// the capture) doesn't drift if regenerated after a later refund
+		// or dispute. Matches the timeline captured event's "Net payout"
+		// line on the JS side (compose.js reads totals.capture_net too).
+		// Falls back to totals.net for older envelopes that pre-date the
+		// capture_net split.
+		$total_net_amount = isset( $breakdown['totals']['capture_net']['amount'] )
+			? (int) $breakdown['totals']['capture_net']['amount']
+			: (int) $breakdown['totals']['net']['amount'];
+		$net_currency     = $breakdown['totals']['capture_net']['currency']
+			?? ( $breakdown['totals']['net']['currency'] ?? $store_currency );
 
 		$lines = [];
 
@@ -204,8 +219,8 @@ class WC_Payments_Captured_Event_Note {
 			/* translators: %s is a monetary amount */
 			__( 'Net payout: %s', 'woocommerce-payments' ),
 			WC_Payments_Utils::format_explicit_currency(
-				WC_Payments_Utils::interpret_stripe_amount( $total_net_amount, $store_currency ),
-				$store_currency,
+				WC_Payments_Utils::interpret_stripe_amount( $total_net_amount, $net_currency ),
+				$net_currency,
 				false
 			)
 		);
@@ -227,6 +242,33 @@ class WC_Payments_Captured_Event_Note {
 		return '<div class="captured-event-details">' . PHP_EOL
 				. $html
 				. '</div>';
+	}
+
+	/**
+	 * Check whether an envelope has the minimum shape required by the
+	 * renderer. Returns false for missing/malformed payloads so
+	 * generate_html_note() can fall back to the legacy composer instead
+	 * of emitting PHP notices mid-render.
+	 *
+	 * We control both sides of the wire, so a malformed envelope here
+	 * represents either a rollout glitch or a manual fixture — in either
+	 * case, reverting to the legacy composer is the safer outcome than
+	 * a partially-rendered note.
+	 *
+	 * @param array $breakdown The fee_breakdown_v1 envelope candidate.
+	 * @return bool
+	 */
+	private static function is_renderable_breakdown( array $breakdown ): bool {
+		return isset(
+			$breakdown['totals']['fee']['amount'],
+			$breakdown['totals']['fee']['currency'],
+			$breakdown['totals']['tax']['amount'],
+			$breakdown['rows']
+		) && is_array( $breakdown['rows'] )
+			&& (
+				isset( $breakdown['totals']['capture_net']['amount'] )
+				|| isset( $breakdown['totals']['net']['amount'] )
+			);
 	}
 
 	/**
