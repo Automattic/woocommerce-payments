@@ -184,6 +184,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 		add_action( 'admin_notices', [ $this, 'maybe_show_test_to_live_notice' ] );
+		add_action( 'wp_loaded', [ $this, 'hide_test_to_live_notice' ] );
 
 		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
 
@@ -1681,8 +1682,15 @@ class WC_Payments_Admin {
 			admin_url( 'admin.php' )
 		);
 
+		$dismiss_url = wp_nonce_url(
+			add_query_arg( 'wcpay-hide-test-to-live-notice', '1' ),
+			'wcpay_hide_test_to_live_notice_nonce',
+			'_wcpay_test_to_live_notice_nonce'
+		);
+
 		?>
-		<div id="wcpay-test-to-live-notice" class="notice notice-info is-dismissible">
+		<div id="wcpay-test-to-live-notice" class="notice notice-info" style="position:relative;">
+			<a href="<?php echo esc_url( $dismiss_url ); ?>" class="notice-dismiss" style="position:relative;float:right;padding:9px 0 9px 9px;text-decoration:none;"></a>
 			<p>
 				<?php
 				printf(
@@ -1696,5 +1704,22 @@ class WC_Payments_Admin {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Persists the test-to-live notice dismissal in user meta when the dismiss link is followed.
+	 *
+	 * @return void
+	 */
+	public function hide_test_to_live_notice() {
+		if ( ! isset( $_GET['wcpay-hide-test-to-live-notice'] ) || ! isset( $_GET['_wcpay_test_to_live_notice_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_test_to_live_notice_nonce'] ) ), 'wcpay_hide_test_to_live_notice_nonce' ) ) {
+			return;
+		}
+
+		update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, time() );
 	}
 }
