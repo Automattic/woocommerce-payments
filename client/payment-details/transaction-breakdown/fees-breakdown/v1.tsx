@@ -23,6 +23,11 @@ interface Props {
 	data: TimelineFeeBreakdown;
 }
 
+/**
+ * Derived from: `BreakdownFeeRate` in `./fee-breakdown-components.tsx`
+ * (the `percentage * 100` + fixed-currency formatting), extended to
+ * prefer the server's `percentage_display` when present.
+ */
 const buildRateText = (
 	percentage: number | undefined,
 	fixed: number | undefined,
@@ -53,6 +58,11 @@ const buildRateText = (
 	return parts.join( ' + ' );
 };
 
+/**
+ * Derived from: `FeeRow` in `./fee-breakdown-components.tsx` — one row of
+ * the fees-breakdown panel. Reads envelope row fields directly instead of
+ * reconstructing label/rate from `type` + `additional_type`.
+ */
 const BreakdownRow: React.FC< {
 	row: TimelineFeeBreakdownRow;
 	storeCurrency: string;
@@ -93,6 +103,12 @@ const BreakdownRow: React.FC< {
 	);
 };
 
+/**
+ * Derived from: `FeeRow` in `./fee-breakdown-components.tsx` (the
+ * `type="total"` branch — percentage + fixed rendered in the total row).
+ * Reduced to a pre-computed `amount` read because the envelope already
+ * sums totals server-side.
+ */
 const TotalRow: React.FC< {
 	label?: string;
 	amount: number;
@@ -154,6 +170,11 @@ const NotesList: React.FC< {
  * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
  *
  * Server-driven fees breakdown renderer.
+ *
+ * Derived from: `FeesBreakdown` in `./index.tsx` — the legacy allocator
+ * that walks `fee_rates.history`, applies percentage/fixed discounts row
+ * by row, and re-sums the total. Rewritten here to render envelope rows
+ * verbatim (server has already applied discounts and summed totals).
  *
  * Takes the `fee_breakdown_v1` envelope built by the server's
  * Fee_Breakdown_Builder and renders it verbatim: one row per

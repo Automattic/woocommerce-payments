@@ -92,6 +92,13 @@ class WC_Payments_Captured_Event_Note {
 	 *
 	 * Render the HTML note from a server-driven fee_breakdown_v1 envelope.
 	 *
+	 * Derived from: generate_html_note() in the same class — the legacy
+	 * composer that builds the order note from fee_rates/transaction_details
+	 * via compose_fx_string / compose_fee_string / compose_fee_break_down /
+	 * compose_tax_string / compose_net_string. Same line order and layout,
+	 * but all arithmetic is removed: values come straight from the envelope's
+	 * totals, rows, and notes.
+	 *
 	 * Takes server-authoritative rows / totals / notes and renders one HTML
 	 * paragraph per line — mirroring the legacy layout without any of the
 	 * per-event-type branching or client-side arithmetic.
@@ -211,6 +218,11 @@ class WC_Payments_Captured_Event_Note {
 	/**
 	 * Resolve a row label from a fee_breakdown_v1 row.
 	 *
+	 * Derived from: the inline label-mapping inside compose_fee_break_down()
+	 * in the same class (the branches that turn `type` + `additional_type`
+	 * into "Base fee" / "International card fee" / "Currency conversion fee"
+	 * / "Discount"). Now keyed by the server's typed row key.
+	 *
 	 * @param array $row Row entry from the envelope.
 	 * @return string
 	 */
@@ -245,6 +257,11 @@ class WC_Payments_Captured_Event_Note {
 	 * Format a fee rate (percentage + fixed) for display, matching the
 	 * legacy "2.9% + $0.30" style. Returns an empty string when the rate
 	 * has no percentage and no fixed part.
+	 *
+	 * Derived from: the sprintf('%1$s (%2$f%% + %3$s ...)') block inside
+	 * compose_fee_string() and the "capped at" branch in the same class —
+	 * extracted so the envelope path can render rates without any of the
+	 * legacy fee_rates/history plumbing.
 	 *
 	 * @param array|null $rate           Rate array with percentage/fixed/fixed_currency keys.
 	 * @param string     $store_currency Fallback currency for the fixed part.
@@ -296,9 +313,36 @@ class WC_Payments_Captured_Event_Note {
 	 * @return string|null
 	 */
 	private static function resolve_note_text( array $note ): ?string {
-		// Reserved: add merchant-facing note codes here when/if needed.
-		// Until then, every incoming note is dropped from the UI and kept
-		// only in the server-side `sources` field for traceability.
+		$code = (string) ( $note['code'] ?? '' );
+		$meta = is_array( $note['meta'] ?? null ) ? $note['meta'] : [];
+
+		switch ( $code ) {
+			case 'application_fee_refunded':
+				$refunded_amount   = isset( $meta['refunded_amount'] ) ? (int) $meta['refunded_amount'] : 0;
+				$refunded_currency = (string) ( $meta['refunded_currency'] ?? '' );
+				if ( $refunded_amount <= 0 || '' === $refunded_currency ) {
+					return __(
+						'WooPayments refunded its application fee on this transaction.',
+						'woocommerce-payments'
+					);
+				}
+				$formatted = WC_Payments_Utils::format_explicit_currency(
+					WC_Payments_Utils::interpret_stripe_amount( $refunded_amount, $refunded_currency ),
+					$refunded_currency,
+					false
+				);
+				return sprintf(
+					/* translators: %s is a monetary amount */
+					__(
+						'WooPayments refunded its %s application fee on this transaction.',
+						'woocommerce-payments'
+					),
+					$formatted
+				);
+		}
+
+		// Unknown codes are internal-only — drop them silently so server-side
+		// telemetry additions never leak raw identifiers to merchants.
 		return null;
 	}
 

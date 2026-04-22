@@ -9,7 +9,8 @@
  * key. Unknown keys therefore degrade gracefully instead of crashing the UI.
  */
 
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 
 export interface FeeBreakdownLabelContext {
 	/** Row metadata passed through by the server (e.g. fee_id, discounted). */
@@ -91,10 +92,48 @@ const rowLabels: LabelEntry[] = [
  * additional codes (for internal telemetry) — unknown codes are silently
  * dropped rather than leaked as raw identifiers to merchants.
  */
-const noteLabels: Record< string, LabelResolver > = {};
+const noteLabels: Record< string, LabelResolver > = {
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	application_fee_refunded: ( { meta } ) => {
+		const refundedAmount =
+			typeof meta?.refunded_amount === 'number'
+				? meta.refunded_amount
+				: undefined;
+		const refundedCurrency =
+			typeof meta?.refunded_currency === 'string'
+				? meta.refunded_currency
+				: undefined;
+		if ( refundedAmount === undefined || ! refundedCurrency ) {
+			return __(
+				'WooPayments refunded its application fee on this transaction.',
+				'woocommerce-payments'
+			);
+		}
+		const formatted = formatExplicitCurrency(
+			refundedAmount,
+			refundedCurrency,
+			false,
+			refundedCurrency
+		);
+		return sprintf(
+			/* translators: %s is a monetary amount */
+			__(
+				'WooPayments refunded its %s application fee on this transaction.',
+				'woocommerce-payments'
+			),
+			formatted
+		);
+	},
+};
 
 /**
  * Resolve a human-readable label for a breakdown row.
+ *
+ * Derived from: `formatFeeType` in `../transaction-breakdown/utils.ts`
+ * (string table keyed by `type + additional_type`) and the inline
+ * label strings inside `composeFeeBreakdown` in
+ * `./map-events.js`. Consolidated here so server-typed keys map to
+ * a single translation source.
  *
  * Preference order: explicit server `label` → dictionary match → raw key.
  */

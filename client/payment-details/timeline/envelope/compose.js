@@ -40,6 +40,10 @@ import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../../utils/tax-descriptions';
 import { resolveNoteText, resolveRowLabel } from '../fee-breakdown-label-map';
 
+/**
+ * Derived from: `isFXEvent` in `../map-events.js` (local copy to avoid
+ * circular import — same semantics).
+ */
 const isFXEvent = ( event = {} ) => {
 	const { transaction_details: transactionDetails } = event;
 	if ( ! transactionDetails ) {
@@ -57,10 +61,10 @@ const isFXEvent = ( event = {} ) => {
 };
 
 /**
- * Local copy of the legacy composeFXString — kept here to avoid a circular
- * import between map-events.js and this module. Pure formatting; reads the
- * same transaction_details fields because the timeline envelope does not
- * yet carry an `fx` block.
+ * Derived from: `composeFXString` in `../map-events.js` (verbatim copy —
+ * local only to break the circular import between that module and this one).
+ * Pure formatting; reads the same `transaction_details` fields because the
+ * timeline envelope does not yet carry an `fx` block.
  */
 const composeEnvelopeFXString = ( event ) => {
 	if ( ! isFXEvent( event ) ) {
@@ -92,6 +96,11 @@ const composeEnvelopeFXString = ( event ) => {
 
 /**
  * Format a fee rate (percentage + fixed) for display.
+ *
+ * Derived from: the percent+fixed formatting block inside `composeFeeString`
+ * in `../map-events.js` (the `'%1$s (%2$f%% + %3$s%4$s)'` sprintf + the
+ * `capped at` branch), extracted here so envelope rendering can be
+ * exercised without any of the legacy `fee_rates`-driven branches.
  *
  * Prefers `rate.percentage_display` (server-owned canonical precision like
  * "2.9%" / "22.00%"); falls back to local toFixed(3) when older envelopes
@@ -130,8 +139,10 @@ const formatRateText = ( rate, storeCurrency ) => {
 /**
  * Build the captured-event note body from a server-driven fee_breakdown_v1 envelope.
  *
- * Mirrors the legacy compose* chain (fee line, breakdown, tax line, net line)
- * but without any client-side arithmetic — values come straight from
+ * Derived from: the `case 'captured':` body in `../map-events.js` — the
+ * chain of `composeFXString` + `composeFeeString` + `composeFeeBreakdown`
+ * + `composeTaxString` + `composeNetString`. Same line order and layout,
+ * but all arithmetic has been removed: values come straight from
  * `rows`, `totals`, and `notes`.
  */
 export const composeCapturedBodyFromBreakdown = ( event ) => {
@@ -321,6 +332,10 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 /**
  * Format the envelope's net amount for the deposit-line headline.
  *
+ * Derived from: `formatNetString` in `../map-events.js` (the `gross - fee`
+ * subtraction with FX branching) — replaced by a direct read of
+ * `totals.net.amount`.
+ *
  * Caller must have already verified `event.fee_breakdown_v1` is present.
  * This is the single number the order-page "Transaction Fee" row and the
  * `_wcpay_net` meta also read from — keeping the deposit line consistent
@@ -337,6 +352,10 @@ export const formatEnvelopeNetString = ( event ) => {
 
 /**
  * Envelope-authoritative deposit impact used by dispute timeline items.
+ *
+ * Derived from: the inline `Math.abs( event.amount ) + Math.abs( event.fee )`
+ * expressions at the `dispute_needs_response` and `dispute_won` call sites
+ * in `../map-events.js` — replaced by a direct read of `totals.net.amount`.
  *
  * Returns `{ amount, currency }` (amount is the magnitude, not signed) or
  * `null` when the envelope is absent; callers fall back to the legacy
