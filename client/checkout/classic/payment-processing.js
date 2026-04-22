@@ -401,7 +401,7 @@ export const createAndConfirmSetupIntent = ( { id }, $form, api ) => {
  *
  * @param {Event} event The change event that triggers the function.
  */
-export function renderTerms( event ) {
+export async function renderTerms( event ) {
 	const isChecked = event.target.checked;
 	const value = isChecked ? 'always' : 'never';
 	const paymentMethodType = getSelectedUPEGatewayPaymentMethod();
@@ -410,7 +410,7 @@ export function renderTerms( event ) {
 	}
 	const upeElement = gatewayUPEComponents[ paymentMethodType ].upeElement;
 	if ( upeElement ) {
-		upeElement.update( {
+		await upeElement.update( {
 			terms: getTerms( getUPEConfig( 'paymentMethodsConfig' ), value ),
 		} );
 	}
