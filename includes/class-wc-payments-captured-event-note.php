@@ -100,10 +100,10 @@ class WC_Payments_Captured_Event_Note {
 	 * @return string
 	 */
 	private function generate_html_note_from_breakdown( array $breakdown ): string {
-		$store_currency    = $breakdown['totals']['fee']['currency'];
-		$total_fee_amount  = (int) $breakdown['totals']['fee']['amount'];
-		$total_tax_amount  = (int) $breakdown['totals']['tax']['amount'];
-		$total_net_amount  = (int) $breakdown['totals']['net']['amount'];
+		$store_currency   = $breakdown['totals']['fee']['currency'];
+		$total_fee_amount = (int) $breakdown['totals']['fee']['amount'];
+		$total_tax_amount = (int) $breakdown['totals']['tax']['amount'];
+		$total_net_amount = (int) $breakdown['totals']['net']['amount'];
 
 		$lines = [];
 
@@ -118,7 +118,7 @@ class WC_Payments_Captured_Event_Note {
 			$store_currency,
 			false
 		);
-		$lines[] = '' !== $total_rate_text
+		$lines[]         = '' !== $total_rate_text
 			/* translators: 1: fee rate (e.g. 2.9% + $0.30) 2: monetary amount */
 			? sprintf( __( 'Fee (%1$s): %2$s', 'woocommerce-payments' ), $total_rate_text, $fee_amount_text )
 			/* translators: %s is a monetary amount */
@@ -170,7 +170,7 @@ class WC_Payments_Captured_Event_Note {
 				-abs( WC_Payments_Utils::interpret_stripe_amount( $total_tax_amount, $breakdown['totals']['tax']['currency'] ) ),
 				$breakdown['totals']['tax']['currency']
 			);
-			$lines[] = sprintf(
+			$lines[]         = sprintf(
 				/* translators: 1: tax description 2: tax percentage 3: tax amount */
 				__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
 				$tax_description,

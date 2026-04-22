@@ -508,8 +508,8 @@ class WC_Payments_Webhook_Processing_Service {
 		// without the prior truthy-check skipping $0 values.
 		$fee_breakdown = $charges_data[0]['fee_breakdown'] ?? null;
 		if ( is_array( $fee_breakdown ) && isset( $fee_breakdown['totals']['fee']['amount'], $fee_breakdown['totals']['fee']['currency'] ) ) {
-			$fee_currency   = $fee_breakdown['totals']['fee']['currency'];
-			$fee_amount_int = (int) $fee_breakdown['totals']['fee']['amount'];
+			$fee_currency                                  = $fee_breakdown['totals']['fee']['currency'];
+			$fee_amount_int                                = (int) $fee_breakdown['totals']['fee']['amount'];
 			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount(
 				$fee_amount_int,
 				$fee_currency

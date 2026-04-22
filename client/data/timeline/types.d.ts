@@ -58,6 +58,12 @@ export interface TimelineFeeBreakdownRate {
 	percentage?: number;
 	fixed?: number;
 	fixed_currency?: string;
+	/**
+	 * Pre-formatted percentage string (e.g. "2.9%"). When provided, the
+	 * client renders it verbatim instead of computing `percentage * 100`
+	 * and picking its own decimal precision.
+	 */
+	percentage_display?: string;
 }
 
 export interface TimelineFeeBreakdownRow {
@@ -74,6 +80,12 @@ export interface TimelineFeeBreakdownRow {
 	currency: string;
 	rate: TimelineFeeBreakdownRate | null;
 	meta: Record< string, unknown > | null;
+	/**
+	 * Server-signed display amount in minor units. When present, the client
+	 * renders it verbatim and skips its own sign coercion. Falls back to
+	 * `amount` when omitted.
+	 */
+	display_amount?: number;
 }
 
 export interface TimelineFeeBreakdownTotal {
@@ -95,12 +107,22 @@ export interface TimelineFeeBreakdownNote {
 	meta?: Record< string, unknown >;
 }
 
+export interface TimelineFeeBreakdownFx {
+	/**
+	 * Pre-formatted exchange-rate string (e.g. "1 USD → 0.851712 EUR").
+	 * When present, the client renders it directly — no `customer_amount /
+	 * store_amount` division, no re-inversion, no precision choice.
+	 */
+	rate_display?: string;
+}
+
 export interface TimelineFeeBreakdown {
 	version: number;
 	rows: TimelineFeeBreakdownRow[];
 	totals: TimelineFeeBreakdownTotals;
 	notes: TimelineFeeBreakdownNote[];
 	sources?: Record< string, unknown >;
+	fx?: TimelineFeeBreakdownFx;
 }
 
 export interface TimelineItem {
