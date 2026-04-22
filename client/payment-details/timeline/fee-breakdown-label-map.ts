@@ -168,6 +168,13 @@ export function resolveRowLabel(
 	label: string | null,
 	context: FeeBreakdownLabelContext = {}
 ): string {
+	// Return value is rendered as a React text child — React auto-escapes it,
+	// so a hostile `label` from the envelope cannot inject markup. DO NOT
+	// feed this return into `dangerouslySetInnerHTML`; doing so would remove
+	// the escape and turn a server-side envelope field into an XSS surface.
+	// (The PHP counterpart, `WC_Payments_Captured_Event_Note`, runs its
+	// label through `esc_html` because it concatenates into a persisted
+	// `<p>`-wrapped order note.)
 	if ( label !== null && label !== '' ) {
 		return label;
 	}

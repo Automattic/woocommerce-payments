@@ -134,6 +134,18 @@ class WC_Payments_Captured_Event_Note {
 			$lines[] = $fx_string;
 		}
 
+		// Defense-in-depth: every server-provided string that lands in the
+		// final `<p>`-wrapped output is passed through `esc_html`. The
+		// envelope is built by our own Fee_Breakdown_Builder and shipped
+		// via signed transport, but this HTML is persisted as an order
+		// note (the historical record in the DB), so hardening the trust
+		// boundary is cheap insurance against a future attacker-controlled
+		// label, currency code, or note reaching WooCommerce verbatim.
+		// Currency formatters (`format_currency` / `format_explicit_currency`)
+		// already strip tags internally — `esc_html` on their output is
+		// idempotent for normal amounts and defensive when a hostile
+		// currency code escapes the helper's final `$amount . ' ' . $code`
+		// concatenation.
 		$total_rate_text = self::format_rate_text( $breakdown['totals']['fee']['rate'] ?? null, $store_currency );
 		$fee_amount_text = WC_Payments_Utils::format_explicit_currency(
 			WC_Payments_Utils::interpret_stripe_amount( $total_fee_amount, $store_currency ),
@@ -149,15 +161,15 @@ class WC_Payments_Captured_Event_Note {
 			? sprintf(
 				/* translators: 1: fee label (e.g. "Fee") 2: fee rate (e.g. 2.9% + $0.30) 3: monetary amount */
 				__( '%1$s (%2$s): %3$s', 'woocommerce-payments' ),
-				$fee_line_label,
-				$total_rate_text,
-				$fee_amount_text
+				esc_html( $fee_line_label ),
+				esc_html( $total_rate_text ),
+				esc_html( $fee_amount_text )
 			)
 			: sprintf(
 				/* translators: 1: fee label (e.g. "Fee" or "Processing fee") 2: monetary amount */
 				__( '%1$s: %2$s', 'woocommerce-payments' ),
-				$fee_line_label,
-				$fee_amount_text
+				esc_html( $fee_line_label ),
+				esc_html( $fee_amount_text )
 			);
 
 		// Show the per-row breakdown when it adds information: skip it
@@ -179,7 +191,7 @@ class WC_Payments_Captured_Event_Note {
 				$label     = self::resolve_row_label( $row );
 				$row_curr  = $row['rate']['fixed_currency'] ?? ( $row['currency'] ?? $store_currency );
 				$rate_text = self::format_rate_text( $row['rate'] ?? null, $row_curr );
-				$lines[]   = $indent . ( '' !== $rate_text ? sprintf( '%1$s: %2$s', $label, $rate_text ) : $label );
+				$lines[]   = $indent . ( '' !== $rate_text ? sprintf( '%1$s: %2$s', esc_html( $label ), esc_html( $rate_text ) ) : esc_html( $label ) );
 			}
 		}
 
@@ -196,6 +208,10 @@ class WC_Payments_Captured_Event_Note {
 			}
 			$tax_description = '';
 			if ( null !== $tax_row && ! empty( $tax_row['label'] ) ) {
+				// `localize_tax_description_code` maps to a dictionary of
+				// `__()` translations or returns the "Tax" fallback — it
+				// never reflects the raw label back. `esc_html` is still
+				// applied in case a translator ever adds markup.
 				$tax_description = ' ' . self::localize_tax_description_code( (string) $tax_row['label'] );
 			}
 			$tax_percentage = '';
@@ -209,19 +225,21 @@ class WC_Payments_Captured_Event_Note {
 			$lines[]         = sprintf(
 				/* translators: 1: tax description 2: tax percentage 3: tax amount */
 				__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
-				$tax_description,
-				$tax_percentage,
-				$tax_amount_text
+				esc_html( $tax_description ),
+				esc_html( $tax_percentage ),
+				esc_html( $tax_amount_text )
 			);
 		}
 
 		$lines[] = sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Net payout: %s', 'woocommerce-payments' ),
-			WC_Payments_Utils::format_explicit_currency(
-				WC_Payments_Utils::interpret_stripe_amount( $total_net_amount, $net_currency ),
-				$net_currency,
-				false
+			esc_html(
+				WC_Payments_Utils::format_explicit_currency(
+					WC_Payments_Utils::interpret_stripe_amount( $total_net_amount, $net_currency ),
+					$net_currency,
+					false
+				)
 			)
 		);
 
@@ -229,6 +247,9 @@ class WC_Payments_Captured_Event_Note {
 			foreach ( $breakdown['notes'] as $note ) {
 				$note_text = self::resolve_note_text( $note );
 				if ( null !== $note_text && '' !== $note_text ) {
+					// `resolve_note_text` already escapes its return — we
+					// don't re-escape here so translators can't accidentally
+					// double-encode entities in the copy.
 					$lines[] = $note_text;
 				}
 			}
@@ -305,7 +326,12 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	private static function resolve_row_label( array $row ): string {
 		if ( ! empty( $row['label'] ) ) {
-			return (string) $row['label'];
+			// Server-provided label — escape on return so any downstream
+			// concat into the HTML order note can't leak attacker-
+			// controlled markup if the envelope is ever compromised
+			// upstream. The dictionary branch below returns `__()` strings
+			// that are plain text, so `esc_html` there is idempotent.
+			return esc_html( (string) $row['label'] );
 		}
 		$key = (string) ( $row['key'] ?? '' );
 
@@ -403,18 +429,26 @@ class WC_Payments_Captured_Event_Note {
 						'woocommerce-payments'
 					);
 				}
+				// `format_explicit_currency` strips HTML internally but
+				// falls back to `$amount . ' ' . $currency` when the
+				// formatted output doesn't contain the currency code —
+				// meaning a hostile `refunded_currency` would concatenate
+				// raw. Escape the final composed string so this can't reach
+				// the `<p>`-wrapped order note verbatim.
 				$formatted = WC_Payments_Utils::format_explicit_currency(
 					WC_Payments_Utils::interpret_stripe_amount( $refunded_amount, $refunded_currency ),
 					$refunded_currency,
 					false
 				);
-				return sprintf(
-					/* translators: %s is a monetary amount */
-					__(
-						'WooPayments refunded its %s application fee on this transaction.',
-						'woocommerce-payments'
-					),
-					$formatted
+				return esc_html(
+					sprintf(
+						/* translators: %s is a monetary amount */
+						__(
+							'WooPayments refunded its %s application fee on this transaction.',
+							'woocommerce-payments'
+						),
+						$formatted
+					)
 				);
 		}
 
