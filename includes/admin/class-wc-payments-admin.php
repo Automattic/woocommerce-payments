@@ -46,6 +46,20 @@ class WC_Payments_Admin {
 	const PAYMENTS_SUBMENU_SLUG = 'wc-admin&path=/payments/overview';
 
 	/**
+	 * User meta key used to record when an admin dismissed the test-to-live nudge.
+	 *
+	 * @var string
+	 */
+	const USER_META_TEST_TO_LIVE_NOTICE_DISMISSED = 'wcpay_test_to_live_notice_dismissed';
+
+	/**
+	 * Number of days a merchant must have been in test mode before the nudge is shown.
+	 *
+	 * @var int
+	 */
+	const TEST_TO_LIVE_NOTICE_DAYS_THRESHOLD = 7;
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -169,6 +183,7 @@ class WC_Payments_Admin {
 	public function init_hooks() {
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
+		add_action( 'admin_notices', [ $this, 'maybe_show_test_to_live_notice' ] );
 
 		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
 
@@ -1587,5 +1602,99 @@ class WC_Payments_Admin {
 	 */
 	public function inject_review_prompt_container() {
 		echo '<div id="wcpay-review-prompt"></div>';
+	}
+
+	/**
+	 * Check whether the test-to-live nudge should be shown to the current user.
+	 *
+	 * Conditions (all must be true):
+	 * - Gateway is connected with a valid Stripe account.
+	 * - Not a test-drive account (those have their own notice).
+	 * - Payments are enabled on the account.
+	 * - At least one WooPayments order exists (confirms a test transaction occurred).
+	 * - At least 7 days have passed since test mode was enabled.
+	 * - Current user has not dismissed the notice.
+	 *
+	 * @return bool
+	 */
+	public function should_show_test_to_live_notice(): bool {
+		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
+			return false;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+
+		if ( ! empty( $account_status['testDrive'] ) ) {
+			return false;
+		}
+
+		if ( empty( $account_status['paymentsEnabled'] ) ) {
+			return false;
+		}
+
+		if ( ! WC_Payments::mode()->is_test() ) {
+			return false;
+		}
+
+		$enabled_date = (int) get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, 0 );
+		if ( ! $enabled_date || time() < $enabled_date + self::TEST_TO_LIVE_NOTICE_DAYS_THRESHOLD * DAY_IN_SECONDS ) {
+			return false;
+		}
+
+		$orders = wc_get_orders(
+			[
+				'payment_method' => 'woocommerce_payments',
+				'limit'          => 1,
+				'return'         => 'ids',
+				'status'         => [ 'wc-completed', 'wc-processing' ],
+			]
+		);
+		if ( empty( $orders ) ) {
+			return false;
+		}
+
+		if ( get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, true ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Render the test-to-live activation nudge on the WP-admin dashboard.
+	 *
+	 * @return void
+	 */
+	public function maybe_show_test_to_live_notice() {
+		if ( ! $this->should_show_test_to_live_notice() ) {
+			return;
+		}
+
+		$onboarding_url = add_query_arg(
+			[
+				'page'   => 'wc-settings',
+				'tab'    => 'checkout',
+				'path'   => '/woopayments/onboarding',
+				'from'   => WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE,
+				'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
+			],
+			admin_url( 'admin.php' )
+		);
+
+		?>
+		<div id="wcpay-test-to-live-notice" class="notice notice-info is-dismissible">
+			<p>
+				<?php
+				printf(
+					/* translators: 1: opening anchor tag, 2: closing anchor tag, 3: WooPayments */
+					esc_html__( 'Your store is ready to accept real payments. Switch %3$s to live mode and start selling. %1$sGo live →%2$s', 'woocommerce-payments' ),
+					'<a href="' . esc_url( $onboarding_url ) . '">',
+					'</a>',
+					'WooPayments'
+				);
+				?>
+			</p>
+		</div>
+		<?php
 	}
 }
