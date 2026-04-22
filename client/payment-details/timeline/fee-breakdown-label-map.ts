@@ -98,6 +98,16 @@ const noteLabels: Record< string, LabelResolver > = {
 			typeof meta?.refunded_amount === 'number'
 				? meta.refunded_amount
 				: undefined;
+		// `original_amount` was added alongside the partial-refund work —
+		// older envelopes only carry `refunded_amount`. Handle both shapes:
+		// when `original_amount` is present, render "refunded $X of its $Y";
+		// when it's absent (old envelope), fall back to the single-amount
+		// "refunded its $X" wording so the merchant still sees the refund
+		// amount. Neither present: generic copy.
+		const originalAmount =
+			typeof meta?.original_amount === 'number'
+				? meta.original_amount
+				: undefined;
 		const refundedCurrency =
 			typeof meta?.refunded_currency === 'string'
 				? meta.refunded_currency
@@ -108,19 +118,36 @@ const noteLabels: Record< string, LabelResolver > = {
 				'woocommerce-payments'
 			);
 		}
-		const formatted = formatExplicitCurrency(
+		const refundedFormatted = formatExplicitCurrency(
 			refundedAmount,
 			refundedCurrency,
 			false,
 			refundedCurrency
 		);
+		if ( originalAmount === undefined ) {
+			return sprintf(
+				/* translators: %s is a monetary amount */
+				__(
+					'WooPayments refunded its %s application fee on this transaction.',
+					'woocommerce-payments'
+				),
+				refundedFormatted
+			);
+		}
+		const originalFormatted = formatExplicitCurrency(
+			originalAmount,
+			refundedCurrency,
+			false,
+			refundedCurrency
+		);
 		return sprintf(
-			/* translators: %s is a monetary amount */
+			/* translators: %1$s is the refunded amount, %2$s is the pre-refund fee amount */
 			__(
-				'WooPayments refunded its %s application fee on this transaction.',
+				'WooPayments refunded %1$s of its %2$s application fee on this transaction.',
 				'woocommerce-payments'
 			),
-			formatted
+			refundedFormatted,
+			originalFormatted
 		);
 	},
 };
