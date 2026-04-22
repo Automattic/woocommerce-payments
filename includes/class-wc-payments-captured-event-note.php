@@ -125,11 +125,25 @@ class WC_Payments_Captured_Event_Note {
 			$store_currency,
 			false
 		);
-		$lines[]         = '' !== $total_rate_text
-			/* translators: 1: fee rate (e.g. 2.9% + $0.30) 2: monetary amount */
-			? sprintf( __( 'Fee (%1$s): %2$s', 'woocommerce-payments' ), $total_rate_text, $fee_amount_text )
-			/* translators: %s is a monetary amount */
-			: sprintf( __( 'Fee: %s', 'woocommerce-payments' ), $fee_amount_text );
+		// Server may flag the totals row with a typed `key` (e.g.
+		// 'processing_fee' for the Amazon Pay non-card case, where our
+		// application fee was refunded). Fall back to "Fee" otherwise.
+		$totals_key     = isset( $breakdown['totals']['fee']['key'] ) ? (string) $breakdown['totals']['fee']['key'] : '';
+		$fee_line_label = self::resolve_totals_fee_label( $totals_key );
+		$lines[]        = '' !== $total_rate_text
+			? sprintf(
+				/* translators: 1: fee label (e.g. "Fee") 2: fee rate (e.g. 2.9% + $0.30) 3: monetary amount */
+				__( '%1$s (%2$s): %3$s', 'woocommerce-payments' ),
+				$fee_line_label,
+				$total_rate_text,
+				$fee_amount_text
+			)
+			: sprintf(
+				/* translators: 1: fee label (e.g. "Fee" or "Processing fee") 2: monetary amount */
+				__( '%1$s: %2$s', 'woocommerce-payments' ),
+				$fee_line_label,
+				$fee_amount_text
+			);
 
 		// Show the per-row breakdown when it adds information: skip it
 		// when there's a single fee row (the "Fee (rate): amount" line
@@ -213,6 +227,27 @@ class WC_Payments_Captured_Event_Note {
 		return '<div class="captured-event-details">' . PHP_EOL
 				. $html
 				. '</div>';
+	}
+
+	/**
+	 * Resolve the top-line label for the totals.fee block.
+	 *
+	 * Server emits a typed `key` on `totals.fee` for cases where the
+	 * default "Fee" wording is misleading — currently `processing_fee`
+	 * for the Amazon Pay non-card path where our application fee was
+	 * refunded and only Stripe's passthrough remains. Unknown or empty
+	 * keys fall back to "Fee".
+	 *
+	 * @param string $key Server-provided key, or '' when absent.
+	 * @return string
+	 */
+	private static function resolve_totals_fee_label( string $key ): string {
+		switch ( $key ) {
+			case 'processing_fee':
+				return __( 'Processing fee', 'woocommerce-payments' );
+			default:
+				return __( 'Fee', 'woocommerce-payments' );
+		}
 	}
 
 	/**

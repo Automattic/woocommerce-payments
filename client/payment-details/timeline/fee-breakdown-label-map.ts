@@ -85,6 +85,13 @@ const rowLabels: LabelEntry[] = [
 		match: exact( 'financing_paydown' ),
 		resolver: () => __( 'Loan paydown', 'woocommerce-payments' ),
 	},
+	{
+		// Emitted on totals.fee.key when our application fee was refunded —
+		// merchant's effective fee is only Stripe's passthrough. Used by the
+		// timeline captured body and the fees-breakdown total row.
+		match: exact( 'processing_fee' ),
+		resolver: () => __( 'Processing fee', 'woocommerce-payments' ),
+	},
 ];
 
 /**

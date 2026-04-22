@@ -188,17 +188,29 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 		totalRateText && breakdown.totals.fee.rate?.fixed && isSameSymbol
 			? `${ totalRateText }${ currencySuffix }`
 			: totalRateText;
+	// Server may flag the totals row with a typed `key` (e.g. 'processing_fee'
+	// for the Amazon Pay non-card case, where our application fee was
+	// refunded and only Stripe's passthrough remains). Fall back to "Fee".
+	const totalFeeLabel = resolveRowLabel(
+		breakdown.totals.fee.key ?? '',
+		null
+	);
+	const defaultFeeLabel = __( 'Fee', 'woocommerce-payments' );
+	const feeLineLabel =
+		totalFeeLabel && totalFeeLabel !== '' ? totalFeeLabel : defaultFeeLabel;
 	lines.push(
 		totalRateText
 			? sprintf(
-					/* translators: 1: fee rate (e.g. 2.9% + $0.30) 2: monetary amount */
-					__( 'Fee (%1$s): %2$s', 'woocommerce-payments' ),
+					/* translators: 1: fee label (e.g. "Fee") 2: fee rate (e.g. 2.9% + $0.30) 3: monetary amount */
+					__( '%1$s (%2$s): %3$s', 'woocommerce-payments' ),
+					feeLineLabel,
 					totalRateTextWithSuffix,
 					feeAmountText
 			  )
 			: sprintf(
-					/* translators: %s is a monetary amount */
-					__( 'Fee: %s', 'woocommerce-payments' ),
+					/* translators: 1: fee label (e.g. "Fee" or "Processing fee") 2: monetary amount */
+					__( '%1$s: %2$s', 'woocommerce-payments' ),
+					feeLineLabel,
 					feeAmountText
 			  )
 	);
