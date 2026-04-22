@@ -21,6 +21,7 @@ use WCPay\Logger;
 class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
+	const TEST_MODE_ENABLED_DATE_OPTION              = 'wcpay_test_mode_enabled_date';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
@@ -1055,8 +1056,13 @@ class WC_Payments_Onboarding_Service {
 
 		// Switch WC_Payments onboarding mode immediately.
 		if ( $test_mode ) {
+			// Record the date test mode was first enabled; preserve the original date on subsequent calls.
+			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
+				update_option( self::TEST_MODE_ENABLED_DATE_OPTION, time(), false );
+			}
 			\WC_Payments::mode()->test_mode_onboarding();
 		} else {
+			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
 	}
