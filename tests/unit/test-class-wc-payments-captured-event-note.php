@@ -50,4 +50,238 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 
 		return $res;
 	}
+
+	/**
+	 * Shared base captured-event skeleton for envelope-driven tests. The
+	 * envelope path (`generate_html_note_from_breakdown`) only reads
+	 * `fee_breakdown_v1`; the legacy-composer fallback still needs a
+	 * `fee_rates` + `transaction_details` pair so tests that exercise the
+	 * `is_renderable_breakdown` false-path don't blow up inside the legacy
+	 * chain.
+	 *
+	 * @param array $fee_breakdown_v1 Envelope payload to attach, or [] to omit entirely.
+	 * @return array
+	 */
+	private function build_captured_event_with_envelope( array $fee_breakdown_v1 = [] ): array {
+		$event = [
+			'type'                => 'captured',
+			'amount'              => 1000,
+			'amount_captured'     => 1000,
+			'fee'                 => 59,
+			'fee_rates'           => [
+				'percentage'     => 0.029,
+				'fixed'          => 30,
+				'fixed_currency' => 'USD',
+				'history'        => [
+					[
+						'type'            => 'base',
+						'additional_type' => '',
+						'fee_id'          => 'base-us-card-fee',
+						'percentage_rate' => 0.029,
+						'fixed_rate'      => 30,
+						'currency'        => 'usd',
+					],
+				],
+			],
+			'transaction_details' => [
+				'customer_currency'        => 'USD',
+				'customer_amount'          => 1000,
+				'customer_amount_captured' => 1000,
+				'customer_fee'             => 59,
+				'store_currency'           => 'USD',
+				'store_amount'             => 1000,
+				'store_amount_captured'    => 1000,
+				'store_fee'                => 59,
+			],
+		];
+		if ( ! empty( $fee_breakdown_v1 ) ) {
+			$event['fee_breakdown_v1'] = $fee_breakdown_v1;
+		}
+		return $event;
+	}
+
+	/**
+	 * Minimal well-formed `fee_breakdown_v1` envelope — one base-fee row,
+	 * no tax, no notes. Tests that care about a specific field override it
+	 * on top of this skeleton.
+	 *
+	 * @return array
+	 */
+	private function build_minimal_envelope(): array {
+		return [
+			'rows'   => [
+				[
+					'key'            => 'base',
+					'kind'           => 'fee',
+					'label'          => null,
+					'amount'         => 59,
+					'display_amount' => -59,
+					'currency'       => 'USD',
+					'rate'           => [
+						'percentage'         => 0.029,
+						'fixed'              => 30,
+						'fixed_currency'     => 'USD',
+						'percentage_display' => '2.9%',
+					],
+					'meta'           => null,
+				],
+			],
+			'totals' => [
+				'fee'         => [
+					'amount'         => 59,
+					'display_amount' => -59,
+					'currency'       => 'USD',
+					'key'            => null,
+					'rate'           => [
+						'percentage'         => 0.029,
+						'fixed'              => 30,
+						'fixed_currency'     => 'USD',
+						'percentage_display' => '2.9%',
+					],
+				],
+				'tax'         => [
+					'amount'         => 0,
+					'display_amount' => 0,
+					'currency'       => 'USD',
+				],
+				'net'         => [
+					'amount'   => 941,
+					'currency' => 'USD',
+				],
+				'capture_net' => [
+					'amount'   => 941,
+					'currency' => 'USD',
+				],
+				'gross'       => [
+					'amount'   => 1000,
+					'currency' => 'USD',
+				],
+			],
+			'notes'  => [],
+		];
+	}
+
+	public function test_generate_html_note_from_breakdown_happy_path(): void {
+		$event = $this->build_captured_event_with_envelope( $this->build_minimal_envelope() );
+		$html  = ( new WC_Payments_Captured_Event_Note( $event ) )->generate_html_note();
+
+		$this->assertStringContainsString( '<div class="captured-event-details">', $html );
+		// Fee line renders with rate + amount as "Fee (2.9% + $0.30): -$0.59".
+		$this->assertMatchesRegularExpression( '/<p>Fee \(2\.9% \+ \$0\.30\): .*0\.59.*<\/p>/', $html );
+		$this->assertMatchesRegularExpression( '/<p>Net payout: .*9\.41.*<\/p>/', $html );
+	}
+
+	public function test_generate_html_note_from_breakdown_processing_fee_totals_key(): void {
+		$envelope                          = $this->build_minimal_envelope();
+		$envelope['totals']['fee']['key']  = 'processing_fee';
+		$envelope['totals']['fee']['rate'] = null;
+		$event                             = $this->build_captured_event_with_envelope( $envelope );
+		$html                              = ( new WC_Payments_Captured_Event_Note( $event ) )->generate_html_note();
+
+		// With `processing_fee` as the totals key the top-line label
+		// flips to "Processing fee" and the rate suffix is dropped — matching
+		// the Amazon Pay non-card case where WooPayments refunded its
+		// application fee and only Stripe's passthrough remains.
+		$this->assertMatchesRegularExpression( '/<p>Processing fee: .*0\.59.*<\/p>/', $html );
+		$this->assertStringNotContainsString( '<p>Fee (2.9%', $html );
+	}
+
+	public function test_generate_html_note_from_breakdown_application_fee_refunded_note_with_amount(): void {
+		$envelope            = $this->build_minimal_envelope();
+		$envelope['notes'][] = [
+			'code'     => 'application_fee_refunded',
+			'severity' => 'info',
+			'meta'     => [
+				'refunded_amount'   => 41,
+				'refunded_currency' => 'USD',
+				'reason'            => 'amazon_pay_non_card_double_fee',
+			],
+		];
+		$event               = $this->build_captured_event_with_envelope( $envelope );
+		$html                = ( new WC_Payments_Captured_Event_Note( $event ) )->generate_html_note();
+
+		$this->assertStringContainsString(
+			'WooPayments refunded its $0.41 USD application fee on this transaction.',
+			$html
+		);
+	}
+
+	public function test_generate_html_note_from_breakdown_application_fee_refunded_note_without_amount(): void {
+		$envelope            = $this->build_minimal_envelope();
+		$envelope['notes'][] = [
+			'code'     => 'application_fee_refunded',
+			'severity' => 'info',
+			'meta'     => [
+				// No `refunded_amount` — defensive path for old envelopes
+				// or a server-side omission. Renderer drops the amount and
+				// uses the generic copy.
+				'refunded_currency' => 'USD',
+				'reason'            => 'amazon_pay_non_card_double_fee',
+			],
+		];
+		$event               = $this->build_captured_event_with_envelope( $envelope );
+		$html                = ( new WC_Payments_Captured_Event_Note( $event ) )->generate_html_note();
+
+		$this->assertStringContainsString(
+			'WooPayments refunded its application fee on this transaction.',
+			$html
+		);
+		// Make sure the amount-bearing variant isn't emitted as a leak.
+		$this->assertStringNotContainsString( 'refunded its $', $html );
+	}
+
+	public function test_generate_html_note_from_breakdown_tax_row_rendering(): void {
+		$envelope                  = $this->build_minimal_envelope();
+		$envelope['rows'][]        = [
+			'key'            => 'tax_on_fee',
+			'kind'           => 'tax',
+			'label'          => 'IT VAT',
+			'amount'         => 13,
+			'display_amount' => -13,
+			'currency'       => 'USD',
+			'rate'           => [
+				'percentage'         => 0.22,
+				'percentage_display' => '22.00%',
+			],
+			'meta'           => null,
+		];
+		$envelope['totals']['tax'] = [
+			'amount'         => 13,
+			'display_amount' => -13,
+			'currency'       => 'USD',
+		];
+		$event                     = $this->build_captured_event_with_envelope( $envelope );
+		$html                      = ( new WC_Payments_Captured_Event_Note( $event ) )->generate_html_note();
+
+		// Tax line carries the localized description + percentage + signed amount.
+		$this->assertMatchesRegularExpression(
+			'/<p>Tax IT VAT \(22\.00%\): .*0\.13.*<\/p>/',
+			$html
+		);
+	}
+
+	public function test_generate_html_note_falls_back_to_legacy_composer_when_envelope_is_not_renderable(): void {
+		// Envelope is malformed: totals.fee.amount present, but `rows` is
+		// missing entirely → `is_renderable_breakdown` returns false and
+		// `generate_html_note()` routes through the legacy fee_rates chain.
+		$malformed_envelope = [
+			'totals' => [
+				'fee' => [
+					'amount'   => 59,
+					'currency' => 'USD',
+					'key'      => 'processing_fee',
+				],
+				'tax' => [ 'amount' => 0 ],
+			],
+			// `rows` intentionally absent.
+		];
+		$event = $this->build_captured_event_with_envelope( $malformed_envelope );
+		$html  = ( new WC_Payments_Captured_Event_Note( $event ) )->generate_html_note();
+
+		// Legacy composer output: "Base fee" top line from `compose_fee_string`.
+		// If the renderer had used the envelope path, the key `processing_fee`
+		// would have produced "Processing fee" instead.
+		$this->assertStringContainsString( 'Base fee', $html );
+		$this->assertStringNotContainsString( 'Processing fee', $html );
+	}
 }
