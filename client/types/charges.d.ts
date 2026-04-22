@@ -107,9 +107,6 @@ export interface Charge {
 			/** Signed for direct rendering — no -Math.abs() needed. */
 			display_amount?: number;
 			currency: string;
-			/** Same as display_amount; amount in store/settlement currency. */
-			amount_store?: number;
-			amount_store_currency?: string;
 			rate: null | {
 				percentage?: number;
 				fixed?: number;
@@ -142,18 +139,15 @@ export interface Charge {
 			};
 			net: {
 				amount: number;
-				display_amount?: number;
 				currency: string;
 			};
 			gross: {
 				amount: number;
-				display_amount?: number;
 				currency: string;
 			};
 			/** Convenience: fee + tax in store currency (what Stripe deducted). */
 			fee_plus_tax?: {
 				amount: number;
-				display_amount?: number;
 				currency: string;
 			};
 		};
@@ -166,7 +160,6 @@ export interface Charge {
 		/** Cross-currency charges only. Pre-formatted for display. */
 		fx?: {
 			rate_display: string;
-			rate: number;
 			from_currency: string;
 			to_currency: string;
 			from_amount: number;

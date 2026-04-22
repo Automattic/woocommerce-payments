@@ -126,7 +126,6 @@ export interface TimelineFeeBreakdownFx {
 	 * store_amount` division, no re-inversion, no precision choice.
 	 */
 	rate_display?: string;
-	rate?: number;
 	from_currency?: string;
 	to_currency?: string;
 	from_amount?: number;
