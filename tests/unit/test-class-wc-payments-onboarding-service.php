@@ -327,6 +327,41 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 	}
 
+	public function test_set_test_mode_records_enabled_date() {
+		$before = time();
+		$this->onboarding_service->set_test_mode( true );
+		$after = time();
+
+		$date = get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		$this->assertGreaterThanOrEqual( $before, $date );
+		$this->assertLessThanOrEqual( $after, $date );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_preserves_original_enabled_date() {
+		$original_date = time() - 100;
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, $original_date );
+
+		$this->onboarding_service->set_test_mode( true );
+
+		$this->assertEquals( $original_date, get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
+	public function test_set_test_mode_clears_enabled_date_when_disabled() {
+		$this->onboarding_service->set_test_mode( true );
+		$this->assertNotFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		$this->onboarding_service->set_test_mode( false );
+		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
 	public function test_is_embedded_kyc_in_progress() {
 		$this->assertFalse( $this->onboarding_service->is_embedded_kyc_in_progress() );
 
