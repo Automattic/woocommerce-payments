@@ -128,10 +128,9 @@ jobs:
     steps:
       - name: "Slack ping"
         uses: slackapi/slack-github-action@v3.0.2
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
         with:
+          webhook: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
             {
               "blocks": [
