@@ -771,7 +771,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 	public function test_should_show_test_to_live_notice_returns_false_when_not_connected(): void {
 		$this->set_up_notice_global_state();
-		$admin = $this->make_payments_admin_for_notice_test( is_connected: false );
+		$admin = $this->make_payments_admin_for_notice_test( false );
 
 		$this->assertFalse( $admin->should_show_test_to_live_notice() );
 
@@ -780,7 +780,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 	public function test_should_show_test_to_live_notice_returns_false_when_account_invalid(): void {
 		$this->set_up_notice_global_state();
-		$admin = $this->make_payments_admin_for_notice_test( is_account_valid: false );
+		$admin = $this->make_payments_admin_for_notice_test( true, false );
 
 		$this->assertFalse( $admin->should_show_test_to_live_notice() );
 
@@ -789,7 +789,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 	public function test_should_show_test_to_live_notice_returns_false_for_test_drive_account(): void {
 		$this->set_up_notice_global_state();
-		$admin = $this->make_payments_admin_for_notice_test( is_test_drive: true );
+		$admin = $this->make_payments_admin_for_notice_test( true, true, true );
 
 		$this->assertFalse( $admin->should_show_test_to_live_notice() );
 
@@ -798,7 +798,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 	public function test_should_show_test_to_live_notice_returns_false_when_payments_not_enabled(): void {
 		$this->set_up_notice_global_state();
-		$admin = $this->make_payments_admin_for_notice_test( payments_enabled: false );
+		$admin = $this->make_payments_admin_for_notice_test( true, true, false, false );
 
 		$this->assertFalse( $admin->should_show_test_to_live_notice() );
 
@@ -826,7 +826,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_show_test_to_live_notice_returns_false_when_threshold_not_reached(): void {
-		$this->set_up_notice_global_state( days_in_test_mode: 3 );
+		$this->set_up_notice_global_state( 3 );
 		$admin = $this->make_payments_admin_for_notice_test();
 
 		$this->assertFalse( $admin->should_show_test_to_live_notice() );
@@ -845,7 +845,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_should_show_test_to_live_notice_returns_false_when_no_wcpay_orders(): void {
-		$this->set_up_notice_global_state( has_orders: false );
+		$this->set_up_notice_global_state( 8, false );
 		$admin = $this->make_payments_admin_for_notice_test();
 
 		$this->assertFalse( $admin->should_show_test_to_live_notice() );
@@ -868,7 +868,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-test-to-live-cta']        = '1';
 		$_GET['_wcpay_test_to_live_cta_nonce'] = wp_create_nonce( 'wcpay_test_to_live_cta_nonce' );
 
-		$admin              = $this->make_payments_admin_for_notice_test( is_live: true );
+		$admin              = $this->make_payments_admin_for_notice_test( true, true, false, true, true );
 		$redirect_intercept = function () {
 			throw new \Exception( 'redirect' );
 		};
@@ -893,7 +893,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-test-to-live-cta']        = '1';
 		$_GET['_wcpay_test_to_live_cta_nonce'] = wp_create_nonce( 'wcpay_test_to_live_cta_nonce' );
 
-		$admin              = $this->make_payments_admin_for_notice_test( is_live: false );
+		$admin              = $this->make_payments_admin_for_notice_test();
 		$redirect_intercept = function () {
 			throw new \Exception( 'redirect' );
 		};
