@@ -185,7 +185,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 		add_action( 'admin_notices', [ $this, 'maybe_show_test_to_live_notice' ] );
-		add_action( 'wp_loaded', [ $this, 'hide_test_to_live_notice' ] );
+		add_action( 'admin_init', [ $this, 'hide_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
 
 		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
