@@ -81,6 +81,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $current_screen_backup;
 
 	/**
+	 * Order created during notice tests; cleaned up in tear_down_notice_global_state().
+	 *
+	 * @var int|null
+	 */
+	private $test_order_id = null;
+
+	/**
 	 * @var WC_Payments_Admin
 	 */
 	private $payments_admin;
@@ -740,13 +747,28 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( $admin_user );
 		WC_Payments::mode()->test();
 		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, time() - $days_in_test_mode * DAY_IN_SECONDS );
-		add_filter( 'woocommerce_order_query', fn() => $has_orders ? [ 1 ] : [] );
+
+		if ( $has_orders ) {
+			$order = wc_create_order();
+			$order->set_payment_method( 'woocommerce_payments' );
+			$order->set_status( 'completed' );
+			$order->save();
+			$this->test_order_id = $order->get_id();
+		}
 	}
 
 	private function tear_down_notice_global_state(): void {
 		WC_Payments::mode()->live();
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
 		delete_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED );
+
+		if ( null !== $this->test_order_id ) {
+			$order = wc_get_order( $this->test_order_id );
+			if ( $order ) {
+				$order->delete( true );
+			}
+			$this->test_order_id = null;
+		}
 	}
 
 	public function test_should_show_test_to_live_notice_returns_true_when_all_conditions_met(): void {
