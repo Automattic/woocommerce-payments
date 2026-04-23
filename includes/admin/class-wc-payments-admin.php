@@ -185,6 +185,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 		add_action( 'admin_notices', [ $this, 'maybe_show_test_to_live_notice' ] );
 		add_action( 'wp_loaded', [ $this, 'hide_test_to_live_notice' ] );
+		add_action( 'admin_init', [ $this, 'handle_activate_live_mode' ] );
 
 		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
 
@@ -1671,16 +1672,26 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$onboarding_url = add_query_arg(
-			[
-				'page'   => 'wc-settings',
-				'tab'    => 'checkout',
-				'path'   => '/woopayments/onboarding',
-				'from'   => WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE,
-				'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
-			],
-			admin_url( 'admin.php' )
-		);
+		// If the merchant already has a live account, just flip the mode flag.
+		// Otherwise send them through live onboarding to set one up.
+		if ( $this->account->get_is_live() ) {
+			$cta_url = wp_nonce_url(
+				add_query_arg( 'wcpay-activate-live-mode', '1' ),
+				'wcpay_activate_live_mode_nonce',
+				'_wcpay_activate_live_mode_nonce'
+			);
+		} else {
+			$cta_url = add_query_arg(
+				[
+					'page'   => 'wc-settings',
+					'tab'    => 'checkout',
+					'path'   => '/woopayments/onboarding',
+					'from'   => WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE,
+					'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
+				],
+				admin_url( 'admin.php' )
+			);
+		}
 
 		$dismiss_url = wp_nonce_url(
 			add_query_arg( 'wcpay-hide-test-to-live-notice', '1' ),
@@ -1696,7 +1707,7 @@ class WC_Payments_Admin {
 				printf(
 					/* translators: 1: opening anchor tag, 2: closing anchor tag, 3: WooPayments */
 					esc_html__( 'Your store is ready to accept real payments. Switch %3$s to live mode and start selling. %1$sGo live →%2$s', 'woocommerce-payments' ),
-					'<a href="' . esc_url( $onboarding_url ) . '">',
+					'<a href="' . esc_url( $cta_url ) . '">',
 					'</a>',
 					'WooPayments'
 				);
@@ -1704,6 +1715,29 @@ class WC_Payments_Admin {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Switches the gateway from test mode to live mode when the merchant already has a live account.
+	 *
+	 * Fires on admin_init so the redirect happens before any output.
+	 *
+	 * @return void
+	 */
+	public function handle_activate_live_mode() {
+		if ( ! isset( $_GET['wcpay-activate-live-mode'] ) || ! isset( $_GET['_wcpay_activate_live_mode_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_activate_live_mode_nonce'] ) ), 'wcpay_activate_live_mode_nonce' ) ) {
+			return;
+		}
+
+		$this->wcpay_gateway->update_option( 'test_mode', 'no' );
+		WC_Payments_Onboarding_Service::set_test_mode( false );
+
+		wp_safe_redirect( remove_query_arg( [ 'wcpay-activate-live-mode', '_wcpay_activate_live_mode_nonce' ] ) );
+		exit;
 	}
 
 	/**
