@@ -190,20 +190,31 @@ class WC_Payments_Modern_Settings_Bridge {
 			return;
 		}
 
-		$handle    = 'wcpay-modern-settings-field-transformers';
-		$asset_rel = 'assets/js/admin/modern-settings-field-transformers.js';
-		$asset_abs = WCPAY_ABSPATH . $asset_rel;
-		if ( ! file_exists( $asset_abs ) ) {
-			return;
+		$handle       = 'wcpay-modern-settings-field-transformers';
+		$script_rel   = 'assets/js/admin/modern-settings-field-transformers.js';
+		$script_abs   = WCPAY_ABSPATH . $script_rel;
+		$style_handle = 'wcpay-modern-settings-field-transformers-style';
+		$style_rel    = 'assets/css/admin/modern-settings-field-transformers.css';
+		$style_abs    = WCPAY_ABSPATH . $style_rel;
+
+		if ( file_exists( $script_abs ) ) {
+			wp_enqueue_script(
+				$handle,
+				plugins_url( $script_rel, WCPAY_PLUGIN_FILE ),
+				[ 'wc-admin-settings-embed', 'wp-element', 'wp-components' ],
+				(string) filemtime( $script_abs ),
+				true
+			);
 		}
 
-		wp_enqueue_script(
-			$handle,
-			plugins_url( $asset_rel, WCPAY_PLUGIN_FILE ),
-			[ 'wc-admin-settings-embed', 'wp-element', 'wp-components' ],
-			(string) filemtime( $asset_abs ),
-			true
-		);
+		if ( file_exists( $style_abs ) ) {
+			wp_enqueue_style(
+				$style_handle,
+				plugins_url( $style_rel, WCPAY_PLUGIN_FILE ),
+				[ 'wp-components' ],
+				(string) filemtime( $style_abs )
+			);
+		}
 	}
 
 	/**

@@ -1,0 +1,47 @@
+/**
+ * Row-per-option styles for the custom `multiselect` Edit registered in
+ * assets/js/admin/modern-settings-field-transformers.js.
+ *
+ * Mirrors the per-method row layout the existing WooPayments React admin
+ * uses in its "Payment methods" and "Express checkouts" sections:
+ * label on the left, ToggleControl right-aligned, 1px divider between rows.
+ */
+
+.wcpay-modern-settings-multiselect__rows {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	overflow: hidden;
+	background: #fff;
+}
+
+.wcpay-modern-settings-multiselect__row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 16px;
+	gap: 16px;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.wcpay-modern-settings-multiselect__row:last-child {
+	border-bottom: none;
+}
+
+.wcpay-modern-settings-multiselect__row-label {
+	font-weight: 500;
+	color: #1e1e1e;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* The ToggleControl inside a row ships with its own bottom margin; zero it
+ * to keep row padding consistent. */
+.wcpay-modern-settings-multiselect__row .components-toggle-control {
+	margin-bottom: 0;
+}
+
+.wcpay-modern-settings-multiselect__row
+	.components-toggle-control
+	.components-base-control__field {
+	margin-bottom: 0;
+}
