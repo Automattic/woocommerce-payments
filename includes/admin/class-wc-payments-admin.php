@@ -185,7 +185,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 		add_action( 'admin_notices', [ $this, 'maybe_show_test_to_live_notice' ] );
 		add_action( 'wp_loaded', [ $this, 'hide_test_to_live_notice' ] );
-		add_action( 'admin_init', [ $this, 'handle_activate_live_mode' ] );
+		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
 
 		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
 
@@ -1672,26 +1672,11 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		// If the merchant already has a live account, just flip the mode flag.
-		// Otherwise send them through live onboarding to set one up.
-		if ( $this->account->get_is_live() ) {
-			$cta_url = wp_nonce_url(
-				add_query_arg( 'wcpay-activate-live-mode', '1' ),
-				'wcpay_activate_live_mode_nonce',
-				'_wcpay_activate_live_mode_nonce'
-			);
-		} else {
-			$cta_url = add_query_arg(
-				[
-					'page'   => 'wc-settings',
-					'tab'    => 'checkout',
-					'path'   => '/woopayments/onboarding',
-					'from'   => WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE,
-					'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
-				],
-				admin_url( 'admin.php' )
-			);
-		}
+		$cta_url = wp_nonce_url(
+			add_query_arg( 'wcpay-test-to-live-cta', '1' ),
+			'wcpay_test_to_live_cta_nonce',
+			'_wcpay_test_to_live_cta_nonce'
+		);
 
 		$dismiss_url = wp_nonce_url(
 			add_query_arg( 'wcpay-hide-test-to-live-notice', '1' ),
@@ -1718,25 +1703,44 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Switches the gateway from test mode to live mode when the merchant already has a live account.
+	 * Handles the "Go live" CTA from the test-to-live notice.
+	 *
+	 * If the merchant already has a live Stripe account, flips the mode flag directly.
+	 * Otherwise redirects them through the live onboarding flow.
 	 *
 	 * Fires on admin_init so the redirect happens before any output.
 	 *
 	 * @return void
 	 */
-	public function handle_activate_live_mode() {
-		if ( ! isset( $_GET['wcpay-activate-live-mode'] ) || ! isset( $_GET['_wcpay_activate_live_mode_nonce'] ) ) {
+	public function handle_test_to_live_notice_cta() {
+		if ( ! isset( $_GET['wcpay-test-to-live-cta'] ) || ! isset( $_GET['_wcpay_test_to_live_cta_nonce'] ) ) {
 			return;
 		}
 
-		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_activate_live_mode_nonce'] ) ), 'wcpay_activate_live_mode_nonce' ) ) {
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_test_to_live_cta_nonce'] ) ), 'wcpay_test_to_live_cta_nonce' ) ) {
 			return;
 		}
 
-		$this->wcpay_gateway->update_option( 'test_mode', 'no' );
-		WC_Payments_Onboarding_Service::set_test_mode( false );
+		if ( $this->account->get_is_live() ) {
+			$this->wcpay_gateway->update_option( 'test_mode', 'no' );
+			WC_Payments_Onboarding_Service::set_test_mode( false );
 
-		wp_safe_redirect( remove_query_arg( [ 'wcpay-activate-live-mode', '_wcpay_activate_live_mode_nonce' ] ) );
+			wp_safe_redirect( remove_query_arg( [ 'wcpay-test-to-live-cta', '_wcpay_test_to_live_cta_nonce' ] ) );
+		} else {
+			wp_safe_redirect(
+				add_query_arg(
+					[
+						'page'   => 'wc-settings',
+						'tab'    => 'checkout',
+						'path'   => '/woopayments/onboarding',
+						'from'   => WC_Payments_Onboarding_Service::FROM_TEST_TO_LIVE,
+						'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_SETUP_LIVE_PAYMENTS,
+					],
+					admin_url( 'admin.php' )
+				)
+			);
+		}
+
 		exit;
 	}
 
