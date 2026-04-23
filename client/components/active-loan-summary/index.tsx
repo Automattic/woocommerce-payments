@@ -165,7 +165,6 @@ const ActiveLoanSummary = (): JSX.Element => {
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/transactions',
-								type: 'charge',
 								filter: 'advanced',
 								loan_id_is: getActiveLoanId(),
 							} ) }

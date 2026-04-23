@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Remove type=charge filter from Capital loan transaction links so all loan repayment types are visible
