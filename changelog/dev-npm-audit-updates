@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Minor version bumps for the development packages; TypeScript bumped to 4.9.5 to parse newer @wordpress/element typings pulled in transitively.
+
+

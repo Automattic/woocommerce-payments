@@ -57,22 +57,29 @@ describe( 'Dispute info', () => {
 	} );
 
 	test( 'renders correctly', () => {
-		const dispute: any = {
+		const dispute: Dispute = {
 			status: 'needs_response',
 			id: '',
 			evidence_details: {
 				has_evidence: true,
 				due_by: 1573199200,
+				past_due: false,
+				submission_count: 0,
 			},
 			metadata: {},
-			productType: '',
 			order: {
+				id: 1,
 				number: '1',
 				url: 'http://test.local/order/1',
-			} as unknown,
+				customer_url: null,
+				customer_email: null,
+				customer_name: null,
+				ip_address: '127.0.0.1',
+			},
 			evidence: {} as Evidence,
 			fileSize: {},
 			reason: 'fraudulent',
+			issuer_evidence: null,
 			charge: {
 				id: 'ch_mock',
 				billing_details: {
@@ -83,10 +90,11 @@ describe( 'Dispute info', () => {
 			currency: 'usd',
 			created: 1572590800,
 			balance_transactions: [],
+			payment_intent: 'pi_mock',
 		};
 
 		const { container: info } = render(
-			<Info dispute={ dispute as Dispute } isLoading={ false } />
+			<Info dispute={ dispute } isLoading={ false } />
 		);
 		expect( info ).toMatchSnapshot();
 	} );
