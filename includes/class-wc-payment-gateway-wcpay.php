@@ -53,6 +53,7 @@ use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
+use WCPay\Internal\Admin\Settings\WooPaymentsModernSettingsPage;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Methods\UPE_Payment_Method;
@@ -1060,6 +1061,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function admin_options() {
 		// Add notices to the WooPayments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
+
+		if (
+			empty( $_GET['method'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			&& interface_exists( '\Automattic\WooCommerce\Internal\Admin\Settings\ReactSettingsPageInterface' )
+			&& class_exists( '\Automattic\WooCommerce\Internal\Admin\Settings\ReactSettingsSchema' )
+		) {
+			$modern_settings_page = new WooPaymentsModernSettingsPage( $this );
+			if ( $modern_settings_page->output() ) {
+				return;
+			}
+		}
 
 		$this->output_payments_settings_screen();
 	}
