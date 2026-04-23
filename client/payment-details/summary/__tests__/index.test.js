@@ -1042,4 +1042,59 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 		} );
 	} );
+
+	describe( 'Dispute outcome view feature flag', () => {
+		const getResolvedWonCharge = () => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'won';
+			charge.dispute.metadata = {
+				__dispute_closed_at: '1693626817',
+			};
+			return charge;
+		};
+
+		test( 'renders DisputeResolutionFooter for a resolved dispute when the flag is off', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = false;
+
+			renderCharge( getResolvedWonCharge() );
+
+			expect(
+				screen.getByText( /Good news/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).toBeInTheDocument();
+		} );
+
+		test( 'does not render DisputeResolutionFooter for a resolved dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedWonCharge() );
+
+			expect(
+				screen.queryByText( /Good news/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'still renders DisputeAwaitingResponseDetails for an unresolved dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByText(
+					/The cardholder claims this is an unauthorized transaction/,
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+		} );
+	} );
 } );
