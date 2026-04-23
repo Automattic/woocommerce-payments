@@ -172,6 +172,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected $payment_method_capability_key_map;
 
 	/**
+	 * Bridge into WooCommerce's modernised settings SDK.
+	 *
+	 * Wired by WC_Payments bootstrap when the gateway is the main instance and
+	 * the SDK class is available. Optional — when unset the gateway renders via
+	 * its existing custom React app.
+	 *
+	 * @var WC_Payments_Modern_Settings_Bridge|null
+	 */
+	private $modern_settings_bridge;
+
+	/**
 	 * WooPay utilities.
 	 *
 	 * @var WooPay_Utilities
@@ -1055,11 +1066,32 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Wire the modernised settings SDK bridge for this gateway.
+	 *
+	 * Called from the WC_Payments bootstrap on the main gateway instance only.
+	 * When the bridge is set and the modern-settings feature flag is on,
+	 * admin_options() emits the SDK's React mount instead of the existing
+	 * custom React app.
+	 *
+	 * @param WC_Payments_Modern_Settings_Bridge $bridge The bridge instance.
+	 */
+	public function set_modern_settings_bridge( WC_Payments_Modern_Settings_Bridge $bridge ): void {
+		$this->modern_settings_bridge = $bridge;
+	}
+
+	/**
 	 * Admin Panel Options.
 	 */
 	public function admin_options() {
 		// Add notices to the WooPayments settings page.
 		do_action( 'woocommerce_woocommerce_payments_admin_notices' );
+
+		// PoC: when the modernised settings flag is on, defer to the SDK's
+		// React render. The bridge returns false (and we fall through) when
+		// the flag is off or any of the SDK's render gates reject the page.
+		if ( null !== $this->modern_settings_bridge && $this->modern_settings_bridge->maybe_render_mount() ) {
+			return;
+		}
 
 		$this->output_payments_settings_screen();
 	}

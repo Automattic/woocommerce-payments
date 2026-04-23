@@ -618,6 +618,17 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
+		// PoC: bridge the main gateway into WooCommerce's modernised settings SDK
+		// when the SDK class is available (WC 10.8+). The bridge is a no-op until
+		// the `modern-settings` feature flag is on AND the request targets the
+		// gateway settings screen, so it is safe to wire unconditionally in admin.
+		if ( is_admin() && class_exists( '\Automattic\WooCommerce\Internal\Admin\Settings\ReactSettingsSchema' ) ) {
+			require_once __DIR__ . '/admin/class-wc-payments-modern-settings-bridge.php';
+			$modern_settings_bridge = new WC_Payments_Modern_Settings_Bridge( self::$card_gateway );
+			$modern_settings_bridge->init_hooks();
+			self::$card_gateway->set_modern_settings_bridge( $modern_settings_bridge );
+		}
+
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
