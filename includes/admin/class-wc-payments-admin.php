@@ -14,6 +14,7 @@ use WCPay\Database_Cache;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
 use WCPay\Logger;
+use WCPay\Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 
 defined( 'ABSPATH' ) || exit;
@@ -1722,11 +1723,15 @@ class WC_Payments_Admin {
 		}
 
 		if ( $this->account->get_is_live() ) {
+			Tracker::track_admin( 'wcpay_test_to_live_notice_cta_clicked', [ 'path' => 'switch_mode' ] );
+
 			$this->wcpay_gateway->update_option( 'test_mode', 'no' );
 			WC_Payments_Onboarding_Service::set_test_mode( false );
 
 			wp_safe_redirect( remove_query_arg( [ 'wcpay-test-to-live-cta', '_wcpay_test_to_live_cta_nonce' ] ) );
 		} else {
+			Tracker::track_admin( 'wcpay_test_to_live_notice_cta_clicked', [ 'path' => 'onboarding' ] );
+
 			wp_safe_redirect(
 				add_query_arg(
 					[
@@ -1757,6 +1762,8 @@ class WC_Payments_Admin {
 		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_test_to_live_notice_nonce'] ) ), 'wcpay_hide_test_to_live_notice_nonce' ) ) {
 			return;
 		}
+
+		Tracker::track_admin( 'wcpay_test_to_live_notice_dismissed' );
 
 		update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, time() );
 	}
