@@ -43,7 +43,7 @@
         "rregeer/phpunit-coverage-check": "0.3.1",
         "yoast/phpunit-polyfills": "2.0.5",
         "cweagans/composer-patches": "1.7.3",
-        "automattic/jetpack-changelogger": "3.3.2",
+        "automattic/jetpack-changelogger": "6.0.14",
         "spatie/phpunit-watcher": "1.23.6",
         "woocommerce/qit-cli": "1.1.9",
         "slevomat/coding-standard": "^8.15",
