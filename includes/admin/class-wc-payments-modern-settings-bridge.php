@@ -229,6 +229,10 @@ class WC_Payments_Modern_Settings_Bridge {
 	 *     option key, not per-field), so we short-circuit by setting `value`.
 	 *   - `title` entries open a section group; we synthesise matching
 	 *     `sectionend` markers so `build_response()` can assemble them.
+	 *   - When the form starts with a non-title entry (e.g. `enabled`), we
+	 *     synthesise an opening section seeded with the gateway's method title
+	 *     and description so the React form has a meaningful header rather
+	 *     than an unlabeled card.
 	 *
 	 * @return array
 	 */
@@ -237,9 +241,8 @@ class WC_Payments_Modern_Settings_Bridge {
 			return $this->settings_definitions;
 		}
 
-		$definitions   = [];
-		$current_id    = null;
-		$group_counter = 0;
+		$definitions = [];
+		$current_id  = null;
 
 		foreach ( $this->gateway->get_form_fields() as $key => $field ) {
 			$type = $field['type'] ?? 'text';
@@ -256,20 +259,19 @@ class WC_Payments_Modern_Settings_Bridge {
 					'type'  => 'title',
 					'id'    => $current_id,
 					'title' => $field['title'] ?? '',
-					'desc'  => $field['description'] ?? '',
+					'desc'  => $this->normalize_description( $field['description'] ?? '' ),
 				];
 				continue;
 			}
 
 			if ( null === $current_id ) {
-				$current_id    = 'wcpay_modern_settings_group_' . $group_counter;
+				$current_id    = 'wcpay_modern_settings_group_default';
 				$definitions[] = [
 					'type'  => 'title',
 					'id'    => $current_id,
 					'title' => $this->gateway->get_method_title(),
-					'desc'  => '',
+					'desc'  => $this->normalize_description( $this->gateway->get_method_description() ),
 				];
-				++$group_counter;
 			}
 
 			$definition = $this->build_field_definition( (string) $key, $field );
@@ -292,13 +294,20 @@ class WC_Payments_Modern_Settings_Bridge {
 	/**
 	 * Build a single SDK field definition from a gateway form_fields entry.
 	 *
-	 * Returns null when the field can't be rendered by the SDK in its current
-	 * shape — currently: select / multiselect fields whose `options` array is
-	 * empty. WCPay populates these dynamically from the payment-methods registry
-	 * (e.g. `upe_enabled_payment_method_ids`), and DataForm has no fallback Edit
-	 * for an option-less multi-value field. Wiring the runtime options into
-	 * `ReactSettingsPageInterface::get_field_options()` is a follow-up beyond
-	 * this PoC.
+	 * Replaces unrenderable raw fields with read-only `info` rows so the page
+	 * surfaces what's missing instead of silently dropping it. Two cases get
+	 * substituted today:
+	 *   - select / multiselect / radio with an empty `options` array. WCPay
+	 *     populates these dynamically from the payment-methods registry
+	 *     (e.g. `upe_enabled_payment_method_ids`); DataForm has no fallback
+	 *     Edit for an option-less multi-value field. Wiring the runtime
+	 *     options into `ReactSettingsPageInterface::get_field_options()` is
+	 *     a follow-up beyond this PoC.
+	 *   - any `multiselect`. The SDK's baseFieldTransformer produces a
+	 *     `type: 'array'` DataForm field with no built-in Edit in the 10.8-dev
+	 *     DataViews bundle currently shipping. The official sample plugin
+	 *     sidesteps it for the same reason — a custom JS transformer (out of
+	 *     PoC scope; needs a build pipeline) is the long-term fix.
 	 *
 	 * @param string $key   Field id.
 	 * @param array  $field Raw form_fields entry.
@@ -306,28 +315,24 @@ class WC_Payments_Modern_Settings_Bridge {
 	 */
 	private function build_field_definition( string $key, array $field ): ?array {
 		$type    = $field['type'] ?? 'text';
+		$title   = $this->resolve_field_title( $key, $field );
 		$default = $field['default'] ?? '';
 		$value   = $this->gateway->get_option( $key, $default );
+		$desc    = $this->normalize_description( $field['description'] ?? '' );
 
 		$has_options = isset( $field['options'] ) && is_array( $field['options'] ) && ! empty( $field['options'] );
-		if ( in_array( $type, [ 'select', 'multiselect', 'radio' ], true ) && ! $has_options ) {
-			return null;
-		}
+		$is_skipped  = 'multiselect' === $type
+			|| ( in_array( $type, [ 'select', 'radio' ], true ) && ! $has_options );
 
-		// `multiselect` is in the SDK's supported set but its baseFieldTransformer
-		// produces a `type: 'array'` DataForm field with no built-in Edit in the
-		// 10.8-dev DataViews bundle currently shipping with WC. The example
-		// plugin sidesteps it for the same reason. Skip in the PoC; revisit when
-		// DataViews ships an `array` Edit (or wire a custom transformer).
-		if ( 'multiselect' === $type ) {
-			return null;
+		if ( $is_skipped ) {
+			return $this->build_unsupported_info_row( $key, $title, $type, $value );
 		}
 
 		$definition = [
 			'id'      => $key,
 			'type'    => $type,
-			'title'   => $field['title'] ?? '',
-			'desc'    => $field['description'] ?? '',
+			'title'   => $title,
+			'desc'    => $desc,
 			'default' => $default,
 			'value'   => $value,
 		];
@@ -337,5 +342,88 @@ class WC_Payments_Modern_Settings_Bridge {
 		}
 
 		return $definition;
+	}
+
+	/**
+	 * Resolve a human-readable title for a form field.
+	 *
+	 * Some WCPay form_fields entries (notably `enabled` and
+	 * `platform_checkout_custom_message`) ship without a `title`. Falling back
+	 * to a humanized field id keeps the rendered form readable and avoids the
+	 * "naked input" effect when DataForm gets an empty label.
+	 *
+	 * @param string $key   Field id.
+	 * @param array  $field Raw form_fields entry.
+	 * @return string
+	 */
+	private function resolve_field_title( string $key, array $field ): string {
+		$title = $field['title'] ?? '';
+		if ( '' !== $title ) {
+			return $title;
+		}
+
+		$label = $field['label'] ?? '';
+		if ( '' !== $label ) {
+			return $label;
+		}
+
+		return ucfirst( str_replace( '_', ' ', $key ) );
+	}
+
+	/**
+	 * Normalize a form_fields description for the React `desc` channel.
+	 *
+	 * The legacy renderer runs descriptions through `wpautop` / `wp_kses_post`
+	 * and emits HTML; the React DataForm renders `desc` as plain text. Stripping
+	 * tags here keeps descriptions readable instead of leaking raw `<a>` markup
+	 * into the UI. Inline links are lost in the conversion — a richer text
+	 * channel for the modern renderer is pending upstream.
+	 *
+	 * @param string $description Raw description.
+	 * @return string
+	 */
+	private function normalize_description( string $description ): string {
+		if ( '' === $description ) {
+			return '';
+		}
+
+		return trim( wp_strip_all_tags( $description ) );
+	}
+
+	/**
+	 * Build an `info` row substitute for a field the PoC can't render.
+	 *
+	 * Renders as a read-only description in the DataForm with the original
+	 * field title and current value, plus a one-line note explaining why the
+	 * input is missing. This keeps the form complete and audit-able rather
+	 * than silently dropping fields.
+	 *
+	 * @param string $key   Field id.
+	 * @param string $title Resolved field title.
+	 * @param string $type  Original raw type.
+	 * @param mixed  $value Current value from the gateway option store.
+	 * @return array
+	 */
+	private function build_unsupported_info_row( string $key, string $title, string $type, $value ): array {
+		$display_value = is_array( $value ) ? implode( ', ', array_map( 'strval', $value ) ) : (string) $value;
+		if ( '' === $display_value ) {
+			$display_value = '—';
+		}
+
+		$text = sprintf(
+			/* translators: 1: field title, 2: raw field type, 3: current option value */
+			__( '%1$s — current value: %3$s. Rendering this %2$s field through the modernised SDK is pending.', 'woocommerce-payments' ),
+			$title,
+			$type,
+			$display_value
+		);
+
+		return [
+			'id'    => $key . '__info',
+			'type'  => 'info',
+			'title' => $title,
+			'desc'  => '',
+			'text'  => $text,
+		];
 	}
 }
