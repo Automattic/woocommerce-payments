@@ -1695,19 +1695,16 @@ class WC_Payments_Admin {
 		);
 
 		?>
-		<div id="wcpay-test-to-live-notice" class="notice notice-info" style="position:relative;">
-			<a href="<?php echo esc_url( $dismiss_url ); ?>" class="notice-dismiss" style="position:relative;float:right;padding:9px 0 9px 9px;text-decoration:none;"></a>
-			<p>
-				<?php
-				printf(
-					/* translators: 1: opening anchor tag, 2: closing anchor tag, 3: WooPayments */
-					esc_html__( 'Your store is ready to accept real payments. Switch %3$s to live mode and start selling. %1$sGo live →%2$s', 'woocommerce-payments' ),
-					'<a href="' . esc_url( $cta_url ) . '">',
-					'</a>',
-					'WooPayments'
-				);
-				?>
+		<div id="wcpay-test-to-live-notice" class="notice notice-success" style="display:flex;align-items:center;gap:12px;padding:12px 16px;padding-right:48px;position:relative;">
+			<a href="<?php echo esc_url( $dismiss_url ); ?>" class="notice-dismiss" style="position:absolute;top:50%;right:0;transform:translateY(-50%);padding:9px;text-decoration:none;"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss', 'woocommerce-payments' ); ?></span></a>
+			<span class="dashicons dashicons-yes-alt" style="font-size:24px;width:24px;height:24px;color:#00a32a;flex-shrink:0;"></span>
+			<p style="margin:0;flex:1;">
+				<strong><?php esc_html_e( 'Ready for your first real sale?', 'woocommerce-payments' ); ?></strong>
+				<?php esc_html_e( 'Your test payments are working. Now let\'s make them real.', 'woocommerce-payments' ); ?>
 			</p>
+			<a href="<?php echo esc_url( $cta_url ); ?>" class="button button-secondary" style="flex-shrink:0;white-space:nowrap;">
+				<?php esc_html_e( 'Go live', 'woocommerce-payments' ); ?>
+			</a>
 		</div>
 		<?php
 	}
