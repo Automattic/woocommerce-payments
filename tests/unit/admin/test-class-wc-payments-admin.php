@@ -677,4 +677,166 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		return $screen_mock;
 	}
+
+	// -------------------------------------------------------------------------
+	// should_show_test_to_live_notice tests
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Creates a WC_Payments_Admin instance with all conditions eligible to show
+	 * the test-to-live notice, using fresh mocks so individual tests can configure
+	 * each condition independently without stubbing conflicts.
+	 */
+	private function make_payments_admin_for_notice_test(
+		bool $is_connected = true,
+		bool $is_account_valid = true,
+		bool $is_test_drive = false,
+		bool $payments_enabled = true
+	): WC_Payments_Admin {
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$mock_gateway->method( 'is_connected' )->willReturn( $is_connected );
+
+		$mock_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$mock_account->method( 'is_stripe_account_valid' )->willReturn( $is_account_valid );
+		$mock_account->method( 'get_account_status_data' )->willReturn(
+			[
+				'testDrive'       => $is_test_drive,
+				'paymentsEnabled' => $payments_enabled,
+			]
+		);
+		$mock_account->method( 'get_capital' )->willReturn(
+			[
+				'loans'              => [],
+				'has_active_loan'    => false,
+				'has_previous_loans' => false,
+			]
+		);
+
+		return new WC_Payments_Admin(
+			$this->mock_api_client,
+			$mock_gateway,
+			$mock_account,
+			$this->mock_onboarding_service,
+			$this->mock_order_service,
+			$this->mock_incentives_service,
+			$this->mock_pm_promotions_service,
+			$this->mock_fraud_service,
+			$this->mock_database_cache
+		);
+	}
+
+	/**
+	 * Sets non-mock global state for the notice eligibility tests.
+	 * Call before make_payments_admin_for_notice_test().
+	 */
+	private function set_up_notice_global_state( int $days_in_test_mode = 8, bool $has_orders = true ): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+		WC_Payments::mode()->test();
+		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, time() - $days_in_test_mode * DAY_IN_SECONDS );
+		add_filter( 'woocommerce_order_query', fn() => $has_orders ? [ 1 ] : [] );
+	}
+
+	private function tear_down_notice_global_state(): void {
+		WC_Payments::mode()->live();
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		delete_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED );
+	}
+
+	public function test_should_show_test_to_live_notice_returns_true_when_all_conditions_met(): void {
+		$this->set_up_notice_global_state();
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertTrue( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_when_not_connected(): void {
+		$this->set_up_notice_global_state();
+		$admin = $this->make_payments_admin_for_notice_test( is_connected: false );
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_when_account_invalid(): void {
+		$this->set_up_notice_global_state();
+		$admin = $this->make_payments_admin_for_notice_test( is_account_valid: false );
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_for_test_drive_account(): void {
+		$this->set_up_notice_global_state();
+		$admin = $this->make_payments_admin_for_notice_test( is_test_drive: true );
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_when_payments_not_enabled(): void {
+		$this->set_up_notice_global_state();
+		$admin = $this->make_payments_admin_for_notice_test( payments_enabled: false );
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_when_not_in_test_mode(): void {
+		$this->set_up_notice_global_state();
+		WC_Payments::mode()->live();
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_when_threshold_not_reached(): void {
+		$this->set_up_notice_global_state( days_in_test_mode: 3 );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_when_no_enabled_date(): void {
+		$this->set_up_notice_global_state();
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_when_no_wcpay_orders(): void {
+		$this->set_up_notice_global_state( has_orders: false );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_false_when_dismissed(): void {
+		$this->set_up_notice_global_state();
+		update_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, time() );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
 }
