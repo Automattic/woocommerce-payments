@@ -14,6 +14,8 @@ interface DisputeOutcomeViewProps {
 	dispute: ChargeDispute;
 }
 
+// Placeholder — returns null until subsequent PRs in the RSM Dispute
+// Outcome View workstream wire up real content.
 const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = () => {
 	return null;
 };

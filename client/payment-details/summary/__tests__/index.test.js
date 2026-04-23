@@ -193,6 +193,7 @@ describe( 'PaymentDetailsSummary', () => {
 			timeFormat: 'g:ia',
 			featureFlags: {
 				isDisputeIssuerEvidenceEnabled: false,
+				isDisputeOutcomeViewEnabled: false,
 			},
 		};
 
@@ -1044,11 +1045,11 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	describe( 'Dispute outcome view feature flag', () => {
-		const getResolvedWonCharge = () => {
+		const getResolvedCharge = ( status ) => {
 			const charge = getBaseCharge();
 			charge.disputed = true;
 			charge.dispute = getBaseDispute();
-			charge.dispute.status = 'won';
+			charge.dispute.status = status;
 			charge.dispute.metadata = {
 				__dispute_closed_at: '1693626817',
 			};
@@ -1056,9 +1057,7 @@ describe( 'PaymentDetailsSummary', () => {
 		};
 
 		test( 'renders DisputeResolutionFooter for a resolved dispute when the flag is off', () => {
-			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = false;
-
-			renderCharge( getResolvedWonCharge() );
+			renderCharge( getResolvedCharge( 'won' ) );
 
 			expect(
 				screen.getByText( /Good news/i, {
@@ -1067,13 +1066,25 @@ describe( 'PaymentDetailsSummary', () => {
 			).toBeInTheDocument();
 		} );
 
-		test( 'does not render DisputeResolutionFooter for a resolved dispute when the flag is on', () => {
+		test( 'does not render DisputeResolutionFooter for a won dispute when the flag is on', () => {
 			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
 
-			renderCharge( getResolvedWonCharge() );
+			renderCharge( getResolvedCharge( 'won' ) );
 
 			expect(
 				screen.queryByText( /Good news/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'does not render DisputeResolutionFooter for a lost dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedCharge( 'lost' ) );
+
+			expect(
+				screen.queryByText( /you've lost this dispute/i, {
 					ignore: '.a11y-speak-region',
 				} )
 			).not.toBeInTheDocument();
