@@ -1621,6 +1621,10 @@ class WC_Payments_Admin {
 	 * @return bool
 	 */
 	public function should_show_test_to_live_notice(): bool {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
 		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
 			return false;
 		}
@@ -1636,6 +1640,10 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! WC_Payments::mode()->is_test() ) {
+			return false;
+		}
+
+		if ( WC_Payments::mode()->is_dev() ) {
 			return false;
 		}
 
@@ -1718,6 +1726,10 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
 		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_test_to_live_cta_nonce'] ) ), 'wcpay_test_to_live_cta_nonce' ) ) {
 			return;
 		}
@@ -1756,6 +1768,10 @@ class WC_Payments_Admin {
 	 */
 	public function hide_test_to_live_notice() {
 		if ( ! isset( $_GET['wcpay-hide-test-to-live-notice'] ) || ! isset( $_GET['_wcpay_test_to_live_notice_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
 		}
 

@@ -758,6 +758,17 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->tear_down_notice_global_state();
 	}
 
+	public function test_should_show_test_to_live_notice_returns_false_when_user_cannot_manage_woocommerce(): void {
+		$this->set_up_notice_global_state();
+		$subscriber = self::factory()->user->create( [ 'role' => 'subscriber' ] );
+		wp_set_current_user( $subscriber );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
 	public function test_should_show_test_to_live_notice_returns_false_when_not_connected(): void {
 		$this->set_up_notice_global_state();
 		$admin = $this->make_payments_admin_for_notice_test( is_connected: false );
@@ -804,6 +815,16 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->tear_down_notice_global_state();
 	}
 
+	public function test_should_show_test_to_live_notice_returns_false_in_dev_mode(): void {
+		$this->set_up_notice_global_state();
+		WC_Payments::mode()->dev();
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
 	public function test_should_show_test_to_live_notice_returns_false_when_threshold_not_reached(): void {
 		$this->set_up_notice_global_state( days_in_test_mode: 3 );
 		$admin = $this->make_payments_admin_for_notice_test();
@@ -843,6 +864,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_test_to_live_notice_cta_queues_switch_mode_event_when_account_is_live(): void {
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		$_GET['wcpay-test-to-live-cta']        = '1';
 		$_GET['_wcpay_test_to_live_cta_nonce'] = wp_create_nonce( 'wcpay_test_to_live_cta_nonce' );
 
@@ -867,6 +889,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_handle_test_to_live_notice_cta_queues_onboarding_event_when_account_not_live(): void {
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		$_GET['wcpay-test-to-live-cta']        = '1';
 		$_GET['_wcpay_test_to_live_cta_nonce'] = wp_create_nonce( 'wcpay_test_to_live_cta_nonce' );
 
