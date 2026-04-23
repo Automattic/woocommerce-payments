@@ -1090,6 +1090,19 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 		} );
 
+		test( 'still renders DisputeResolutionFooter for an under_review dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedCharge( 'under_review' ) );
+
+			expect(
+				screen.getByText(
+					/is currently reviewing the evidence you submitted/i,
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+		} );
+
 		test( 'still renders DisputeAwaitingResponseDetails for an unresolved dispute when the flag is on', () => {
 			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
 

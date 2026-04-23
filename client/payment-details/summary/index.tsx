@@ -93,6 +93,9 @@ const isTapToPay = ( model: string ) => {
 	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
 };
 
+const isOutcomeViewStatus = ( status: string ): boolean =>
+	status === 'won' || status === 'lost' || status === 'warning_closed';
+
 const renderDisputeDetails = (
 	dispute: NonNullable< Charge[ 'dispute' ] >,
 	charge: Charge,
@@ -111,7 +114,10 @@ const renderDisputeDetails = (
 		);
 	}
 
-	if ( wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled ) {
+	if (
+		wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+		isOutcomeViewStatus( dispute.status )
+	) {
 		return <DisputeOutcomeView dispute={ dispute } />;
 	}
 
