@@ -70,13 +70,15 @@ class WC_Payments_Modern_Settings_Bridge {
 	}
 
 	/**
-	 * Wire the WordPress hooks needed to publish the SDK payload.
+	 * Wire the WordPress hooks needed to publish the SDK payload and register
+	 * custom field-type transformers on the JS side.
 	 *
 	 * The mount-markup emit is driven from the gateway's admin_options() and
 	 * does not need a hook.
 	 */
 	public function init_hooks(): void {
 		add_filter( 'woocommerce_admin_shared_settings', [ $this, 'maybe_publish_payload' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'maybe_enqueue_field_transformers' ] );
 	}
 
 	/**
@@ -168,6 +170,40 @@ class WC_Payments_Modern_Settings_Bridge {
 		$current = $render_plan['response'];
 
 		return $settings;
+	}
+
+	/**
+	 * Enqueue the custom multiselect field-type transformer on the gateway
+	 * settings screen.
+	 *
+	 * The script attaches to `wc-admin-settings-embed` — the WC-side bundle
+	 * that boots the modern settings registry and calls
+	 * `registerReactSettingsScreens()`. Because that bundle exposes
+	 * `window.wcReactSettings.registerFieldTypeTransformer` at module load
+	 * time and `createRoot().render()` is deferred, a script enqueued with
+	 * `$in_footer=true` after the bundle registers in time to override the
+	 * broken built-in `multiselect` → `array` handling before React's first
+	 * commit.
+	 */
+	public function maybe_enqueue_field_transformers(): void {
+		if ( ! ReactSettingsSchema::is_feature_enabled() || ! $this->is_on_gateway_settings_screen() ) {
+			return;
+		}
+
+		$handle    = 'wcpay-modern-settings-field-transformers';
+		$asset_rel = 'assets/js/admin/modern-settings-field-transformers.js';
+		$asset_abs = WCPAY_ABSPATH . $asset_rel;
+		if ( ! file_exists( $asset_abs ) ) {
+			return;
+		}
+
+		wp_enqueue_script(
+			$handle,
+			plugins_url( $asset_rel, WCPAY_PLUGIN_FILE ),
+			[ 'wc-admin-settings-embed', 'wp-element', 'wp-components' ],
+			(string) filemtime( $asset_abs ),
+			true
+		);
 	}
 
 	/**
@@ -294,20 +330,18 @@ class WC_Payments_Modern_Settings_Bridge {
 	/**
 	 * Build a single SDK field definition from a gateway form_fields entry.
 	 *
-	 * Replaces unrenderable raw fields with read-only `info` rows so the page
-	 * surfaces what's missing instead of silently dropping it. Two cases get
-	 * substituted today:
-	 *   - select / multiselect / radio with an empty `options` array. WCPay
-	 *     populates these dynamically from the payment-methods registry
-	 *     (e.g. `upe_enabled_payment_method_ids`); DataForm has no fallback
-	 *     Edit for an option-less multi-value field. Wiring the runtime
-	 *     options into `ReactSettingsPageInterface::get_field_options()` is
-	 *     a follow-up beyond this PoC.
-	 *   - any `multiselect`. The SDK's baseFieldTransformer produces a
-	 *     `type: 'array'` DataForm field with no built-in Edit in the 10.8-dev
-	 *     DataViews bundle currently shipping. The official sample plugin
-	 *     sidesteps it for the same reason — a custom JS transformer (out of
-	 *     PoC scope; needs a build pipeline) is the long-term fix.
+	 * Returns null for select / multiselect / radio fields with an empty
+	 * `options` array — WCPay populates those dynamically from the
+	 * payment-methods registry (e.g. `upe_enabled_payment_method_ids`), and
+	 * the modern renderer has no way to render an option-less multi-value
+	 * field. Wiring the runtime options via `ReactSettingsPageInterface::get_field_options()`
+	 * is a follow-up beyond this PoC.
+	 *
+	 * `multiselect` fields with real options ARE emitted here — DataForm's
+	 * default `type: 'array'` rendering is broken in the 10.8-dev build, but
+	 * the gateway settings ship a custom JS transformer via
+	 * `WC_Payments_Modern_Settings_Scripts` that overrides it using
+	 * `window.wcReactSettings.registerFieldTypeTransformer()`.
 	 *
 	 * @param string $key   Field id.
 	 * @param array  $field Raw form_fields entry.
@@ -321,11 +355,8 @@ class WC_Payments_Modern_Settings_Bridge {
 		$desc    = $this->normalize_description( $field['description'] ?? '' );
 
 		$has_options = isset( $field['options'] ) && is_array( $field['options'] ) && ! empty( $field['options'] );
-		$is_skipped  = 'multiselect' === $type
-			|| ( in_array( $type, [ 'select', 'radio' ], true ) && ! $has_options );
-
-		if ( $is_skipped ) {
-			return $this->build_unsupported_info_row( $key, $title, $type, $value );
+		if ( in_array( $type, [ 'select', 'multiselect', 'radio' ], true ) && ! $has_options ) {
+			return null;
 		}
 
 		$definition = [
@@ -388,42 +419,5 @@ class WC_Payments_Modern_Settings_Bridge {
 		}
 
 		return trim( wp_strip_all_tags( $description ) );
-	}
-
-	/**
-	 * Build an `info` row substitute for a field the PoC can't render.
-	 *
-	 * Renders as a read-only description in the DataForm with the original
-	 * field title and current value, plus a one-line note explaining why the
-	 * input is missing. This keeps the form complete and audit-able rather
-	 * than silently dropping fields.
-	 *
-	 * @param string $key   Field id.
-	 * @param string $title Resolved field title.
-	 * @param string $type  Original raw type.
-	 * @param mixed  $value Current value from the gateway option store.
-	 * @return array
-	 */
-	private function build_unsupported_info_row( string $key, string $title, string $type, $value ): array {
-		$display_value = is_array( $value ) ? implode( ', ', array_map( 'strval', $value ) ) : (string) $value;
-		if ( '' === $display_value ) {
-			$display_value = '—';
-		}
-
-		$text = sprintf(
-			/* translators: 1: field title, 2: raw field type, 3: current option value */
-			__( '%1$s — current value: %3$s. Rendering this %2$s field through the modernised SDK is pending.', 'woocommerce-payments' ),
-			$title,
-			$type,
-			$display_value
-		);
-
-		return [
-			'id'    => $key . '__info',
-			'type'  => 'info',
-			'title' => $title,
-			'desc'  => '',
-			'text'  => $text,
-		];
 	}
 }
