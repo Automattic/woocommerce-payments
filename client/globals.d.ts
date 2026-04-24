@@ -256,6 +256,7 @@ declare global {
 	const wcpayTestToLiveNoticeSettings: {
 		ctaUrl: string;
 		dismissUrl: string;
+		snoozeUrl: string;
 	};
 
 	interface WcSettings {

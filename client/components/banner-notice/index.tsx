@@ -151,7 +151,10 @@ const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 								index
 							) => {
 								let computedVariant = variant;
-								if ( variant !== 'primary' ) {
+								if (
+									variant !== 'primary' &&
+									variant !== 'secondary'
+								) {
 									computedVariant = ! url
 										? 'secondary'
 										: 'link';

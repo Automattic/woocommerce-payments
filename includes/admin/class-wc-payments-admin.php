@@ -54,11 +54,25 @@ class WC_Payments_Admin {
 	const USER_META_TEST_TO_LIVE_NOTICE_DISMISSED = 'wcpay_test_to_live_notice_dismissed';
 
 	/**
+	 * User meta key used to record when an admin snoozed the test-to-live nudge.
+	 *
+	 * @var string
+	 */
+	const USER_META_TEST_TO_LIVE_NOTICE_SNOOZED = 'wcpay_test_to_live_notice_snoozed';
+
+	/**
 	 * Number of days a merchant must have been in test mode before the nudge is shown.
 	 *
 	 * @var int
 	 */
 	const TEST_TO_LIVE_NOTICE_DAYS_THRESHOLD = 7;
+
+	/**
+	 * Number of days the test-to-live nudge stays hidden after being snoozed.
+	 *
+	 * @var int
+	 */
+	const TEST_TO_LIVE_NOTICE_SNOOZE_DAYS = 7;
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API.
@@ -185,6 +199,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
 		add_action( 'admin_init', [ $this, 'hide_test_to_live_notice' ] );
+		add_action( 'admin_init', [ $this, 'snooze_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
 
 		add_action( 'woocommerce_admin_order_data_after_payment_info', [ $this, 'render_order_edit_payment_details_container' ] );
@@ -1677,6 +1692,11 @@ class WC_Payments_Admin {
 					'wcpay_hide_test_to_live_notice_nonce',
 					'_wcpay_test_to_live_notice_nonce'
 				),
+				'snoozeUrl'  => wp_nonce_url(
+					add_query_arg( 'wcpay-snooze-test-to-live-notice', '1' ),
+					'wcpay_snooze_test_to_live_notice_nonce',
+					'_wcpay_snooze_test_to_live_notice_nonce'
+				),
 			]
 		);
 
@@ -1742,6 +1762,11 @@ class WC_Payments_Admin {
 		}
 
 		if ( get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, true ) ) {
+			return false;
+		}
+
+		$snoozed_at = (int) get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, true );
+		if ( $snoozed_at && time() < $snoozed_at + self::TEST_TO_LIVE_NOTICE_SNOOZE_DAYS * DAY_IN_SECONDS ) {
 			return false;
 		}
 
@@ -1832,5 +1857,33 @@ class WC_Payments_Admin {
 		Tracker::track_admin( 'wcpay_test_to_live_notice_dismissed' );
 
 		update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, time() );
+	}
+
+	/**
+	 * Records the snooze timestamp in user meta when the snooze link is followed.
+	 *
+	 * The notice will be suppressed for TEST_TO_LIVE_NOTICE_SNOOZE_DAYS days.
+	 *
+	 * @return void
+	 */
+	public function snooze_test_to_live_notice() {
+		if ( ! isset( $_GET['wcpay-snooze-test-to-live-notice'] ) || ! isset( $_GET['_wcpay_snooze_test_to_live_notice_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_snooze_test_to_live_notice_nonce'] ) ), 'wcpay_snooze_test_to_live_notice_nonce' ) ) {
+			return;
+		}
+
+		Tracker::track_admin( 'wcpay_test_to_live_notice_snoozed' );
+
+		update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, time() );
+
+		wp_safe_redirect( remove_query_arg( [ 'wcpay-snooze-test-to-live-notice', '_wcpay_snooze_test_to_live_notice_nonce' ] ) );
+		exit;
 	}
 }

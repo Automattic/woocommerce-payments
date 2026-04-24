@@ -12,6 +12,7 @@ import BannerNotice from '../banner-notice';
 const TestToLiveNotice: React.FC = () => {
 	const ctaUrl = window.wcpayTestToLiveNoticeSettings?.ctaUrl ?? '';
 	const dismissUrl = window.wcpayTestToLiveNoticeSettings?.dismissUrl ?? '';
+	const snoozeUrl = window.wcpayTestToLiveNoticeSettings?.snoozeUrl ?? '';
 
 	return (
 		<BannerNotice
@@ -25,6 +26,11 @@ const TestToLiveNotice: React.FC = () => {
 					label: __( 'Go live', 'woocommerce-payments' ),
 					variant: 'primary',
 					url: ctaUrl,
+				},
+				{
+					label: __( 'Remind me in 7 days', 'woocommerce-payments' ),
+					variant: 'secondary',
+					url: snoozeUrl,
 				},
 			] }
 		>
