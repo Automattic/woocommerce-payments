@@ -1,5 +1,66 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`PaymentMethodDetails renders Amazon Pay with funding card brand and last4 1`] = `
+<div>
+  <span
+    class="payment-method-details"
+  >
+    <button
+      class="wcpay-tooltip__content-wrapper"
+      type="button"
+    >
+      <div
+        class="wcpay-tooltip__content-wrapper"
+      >
+        <img
+          alt="Amazon Pay"
+          class="payment-method__icon"
+          src="assets/images/icon-amazon_pay.svg"
+        />
+      </div>
+    </button>
+    <button
+      class="wcpay-tooltip__content-wrapper"
+      type="button"
+    >
+      <div
+        class="wcpay-tooltip__content-wrapper"
+      >
+        <span
+          aria-label="Visa"
+          class="payment-method__brand payment-method__brand--visa account-country--us"
+        />
+      </div>
+    </button>
+     •••• 
+    4242
+  </span>
+</div>
+`;
+
+exports[`PaymentMethodDetails renders Amazon Pay without funding card 1`] = `
+<div>
+  <span
+    class="payment-method-details"
+  >
+    <button
+      class="wcpay-tooltip__content-wrapper"
+      type="button"
+    >
+      <div
+        class="wcpay-tooltip__content-wrapper"
+      >
+        <img
+          alt="Amazon Pay"
+          class="payment-method__icon"
+          src="assets/images/icon-amazon_pay.svg"
+        />
+      </div>
+    </button>
+  </span>
+</div>
+`;
+
 exports[`PaymentMethodDetails renders a dash if no card was provided 1`] = `
 <div>
   <span>

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add client-side email format validation to Support email and Notifications email fields in settings
