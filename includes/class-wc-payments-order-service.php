@@ -1418,17 +1418,20 @@ class WC_Payments_Order_Service {
 			// legacy application_fee_amount inference for older servers.
 			$fee_breakdown_v1 = $charge->get_fee_breakdown_v1();
 			if ( is_array( $fee_breakdown_v1 ) && isset( $fee_breakdown_v1['totals']['fee']['amount'], $fee_breakdown_v1['totals']['fee']['currency'] ) ) {
-				$fee_currency   = $fee_breakdown_v1['totals']['fee']['currency'];
-				$fee_amount_int = (int) $fee_breakdown_v1['totals']['fee']['amount'];
 				$order->update_meta_data(
 					self::WCPAY_TRANSACTION_FEE_META_KEY,
-					WC_Payments_Utils::interpret_stripe_amount( $fee_amount_int, $fee_currency )
+					WC_Payments_Utils::interpret_stripe_amount(
+						(int) $fee_breakdown_v1['totals']['fee']['amount'],
+						$fee_breakdown_v1['totals']['fee']['currency']
+					)
 				);
 				if ( isset( $fee_breakdown_v1['totals']['net']['amount'], $fee_breakdown_v1['totals']['net']['currency'] ) ) {
-					$net_amount_int = (int) $fee_breakdown_v1['totals']['net']['amount'];
 					$order->update_meta_data(
 						'_wcpay_net',
-						WC_Payments_Utils::interpret_stripe_amount( $net_amount_int, $fee_breakdown_v1['totals']['net']['currency'] )
+						WC_Payments_Utils::interpret_stripe_amount(
+							(int) $fee_breakdown_v1['totals']['net']['amount'],
+							$fee_breakdown_v1['totals']['net']['currency']
+						)
 					);
 				}
 				$order->save_meta_data();
