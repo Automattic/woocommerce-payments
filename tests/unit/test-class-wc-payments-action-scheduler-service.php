@@ -157,6 +157,8 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_schedule_job_dedupes_deferred_callbacks_for_same_key() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
 		$hook  = 'wcpay_test_dedupe_' . uniqid();
 		$args  = [ 42 ];
 		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
@@ -177,6 +179,8 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_schedule_job_uses_latest_timestamp_when_action_scheduler_initializes() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
 		$hook      = 'wcpay_test_latest_ts_' . uniqid();
 		$args      = [ 7 ];
 		$group     = WC_Payments_Action_Scheduler_Service::GROUP_ID;
@@ -204,6 +208,8 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_schedule_job_registers_separate_callbacks_for_distinct_keys() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
 		$this->with_uninitialized_action_scheduler(
 			function () {
 				$this->action_scheduler_service->schedule_job( 100, 'wcpay_test_hook_a_' . uniqid(), [ 1 ] );
@@ -223,19 +229,23 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_schedule_job_schedules_directly_when_action_scheduler_already_initialized() {
+		$this->skip_if_deferred_schedule_path_unavailable();
+
 		$hook  = 'wcpay_test_direct_' . uniqid();
 		$args  = [];
 		$group = WC_Payments_Action_Scheduler_Service::GROUP_ID;
 		$ts    = time() + HOUR_IN_SECONDS;
 
-		$this->assertGreaterThan(
-			0,
-			did_action( 'action_scheduler_init' ),
-			'Sanity check: action_scheduler_init should already have fired in the test environment.'
-		);
+		global $wp_actions, $wp_filter;
 
-		global $wp_filter;
+		$original_action = $wp_actions['action_scheduler_init'] ?? null;
 		$original_filter = $wp_filter['action_scheduler_init'] ?? null;
+
+		// Simulate that action_scheduler_init has already fired, and isolate the hook so we can
+		// count any callbacks registered by the code under test. This makes the test deterministic
+		// regardless of whether the surrounding test environment has bootstrapped ActionScheduler.
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Simulating a fired hook for the duration of this test.
+		$wp_actions['action_scheduler_init'] = 1;
 		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Isolating the hook for the duration of this test.
 		$wp_filter['action_scheduler_init'] = new WP_Hook();
 
@@ -254,6 +264,12 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 			);
 		} finally {
 			as_unschedule_all_actions( $hook, $args, $group );
+			if ( null !== $original_action ) {
+				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the $wp_actions snapshot taken above.
+				$wp_actions['action_scheduler_init'] = $original_action;
+			} else {
+				unset( $wp_actions['action_scheduler_init'] );
+			}
 			if ( null !== $original_filter ) {
 				// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring the hook snapshot taken above.
 				$wp_filter['action_scheduler_init'] = $original_filter;
@@ -279,6 +295,17 @@ class WC_Payments_Action_Scheduler_Service_Test extends WCPAY_UnitTestCase {
 				'_wcpay_mode'         => WC_Payments::mode()->is_test() ? 'test' : 'prod',
 			]
 		);
+	}
+
+	/**
+	 * Skip the current test when the WC/ActionScheduler version in use does not expose the
+	 * `action_scheduler_init` hook. The deferred-scheduling branch being exercised was introduced
+	 * in ActionScheduler 3.5.5 (WC 7.9.0); the CI matrix pins a lower WC_MIN_SUPPORTED_VERSION.
+	 */
+	private function skip_if_deferred_schedule_path_unavailable() {
+		if ( version_compare( WC()->version, '7.9.0', '<' ) ) {
+			$this->markTestSkipped( 'schedule_job() deferred-callback path requires WC 7.9.0+ (ActionScheduler 3.5.5+).' );
+		}
 	}
 
 	/**
