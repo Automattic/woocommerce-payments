@@ -16,6 +16,7 @@ module.exports = {
 		'^assets(.*?)(\\?.*)?$': '<rootDir>/assets$1',
 		'^@woocommerce/blocks-registry$':
 			'<rootDir>/tests/js/woocommerce-blocks-registry',
+		'^@woocommerce/settings$': '<rootDir>/client/utils/wc-settings.ts',
 		'^uuid$': require.resolve( 'uuid' ),
 		'^jest-utils(.*)$': '<rootDir>/tests/js/utilities$1',
 	},
