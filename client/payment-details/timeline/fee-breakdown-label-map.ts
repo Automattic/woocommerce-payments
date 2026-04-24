@@ -1,166 +1,40 @@
 /**
  * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
  *
- * Label dictionary for server-driven fee_breakdown_v1 rows and notes.
- *
- * The server sends typed keys (e.g. `base`, `amazon_pay.stripe_processing_fee`,
- * `discount.promo_2024`) alongside a per-row `label` override. Clients prefer
- * the server's `label`, then look the key up here, then fall back to the raw
- * key. Unknown keys therefore degrade gracefully instead of crashing the UI.
+ * Clients prefer the server's per-row `label`, then look the key up here,
+ * then fall back to the raw key — so a new typed key the server starts
+ * emitting before a client release degrades gracefully instead of crashing
+ * the UI.
  */
 
 import { __, sprintf } from '@wordpress/i18n';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 
 export interface FeeBreakdownLabelContext {
-	/** Row metadata passed through by the server (e.g. fee_id, discounted). */
 	meta?: Record< string, unknown > | null;
 }
 
-type LabelResolver = (
-	context: FeeBreakdownLabelContext
-) => string | undefined;
-
-/**
- * Ordered entries: the first resolver whose matcher returns true wins.
- * Exact keys are also accepted as a shorthand (the matcher does an ===).
- */
-interface LabelEntry {
-	match: string | ( ( key: string ) => boolean );
-	resolver: LabelResolver;
-}
-
-const exact = ( key: string ) => ( k: string ) => k === key;
-const prefix = ( start: string ) => ( k: string ) => k.startsWith( start );
-
-const rowLabels: LabelEntry[] = [
-	{
-		match: exact( 'base' ),
-		resolver: () => __( 'Base fee', 'woocommerce-payments' ),
-	},
-	{
-		match: exact( 'additional.international' ),
-		resolver: () => __( 'International card fee', 'woocommerce-payments' ),
-	},
-	{
-		match: exact( 'additional.fx' ),
-		resolver: () => __( 'Currency conversion fee', 'woocommerce-payments' ),
-	},
-	{
-		match: exact( 'additional.wcpay-subscription' ),
-		resolver: () =>
-			__( 'Subscription transaction fee', 'woocommerce-payments' ),
-	},
-	{
-		match: exact( 'additional.device' ),
-		resolver: () => __( 'Device fee', 'woocommerce-payments' ),
-	},
-	{
-		match: prefix( 'discount.' ),
-		resolver: () => __( 'Discount', 'woocommerce-payments' ),
-	},
-	{
-		match: exact( 'tax_on_fee' ),
-		resolver: ( { meta } ) => {
-			const description =
-				typeof meta?.description === 'string'
-					? meta.description
-					: undefined;
-			return description ?? __( 'Tax on fee', 'woocommerce-payments' );
-		},
-	},
-	{
-		match: exact( 'dispute_fee' ),
-		resolver: () => __( 'Dispute fee', 'woocommerce-payments' ),
-	},
-	{
-		match: exact( 'dispute_fee_refund' ),
-		resolver: () => __( 'Dispute fee refund', 'woocommerce-payments' ),
-	},
-	{
-		// Emitted on totals.fee.key when our application fee was refunded —
-		// merchant's effective fee is only Stripe's passthrough. Used by the
-		// timeline captured body and the fees-breakdown total row.
-		match: exact( 'processing_fee' ),
-		resolver: () => __( 'Processing fee', 'woocommerce-payments' ),
-	},
-];
-
-/**
- * Note codes the client is currently willing to render. The server may emit
- * additional codes (for internal telemetry) — unknown codes are silently
- * dropped rather than leaked as raw identifiers to merchants.
- */
-const noteLabels: Record< string, LabelResolver > = {
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	application_fee_refunded: ( { meta } ) => {
-		const refundedAmount =
-			typeof meta?.refunded_amount === 'number'
-				? meta.refunded_amount
-				: undefined;
-		// `original_amount` was added alongside the partial-refund work —
-		// older envelopes only carry `refunded_amount`. Handle both shapes:
-		// when `original_amount` is present, render "refunded $X of its $Y";
-		// when it's absent (old envelope), fall back to the single-amount
-		// "refunded its $X" wording so the merchant still sees the refund
-		// amount. Neither present: generic copy.
-		const originalAmount =
-			typeof meta?.original_amount === 'number'
-				? meta.original_amount
-				: undefined;
-		const refundedCurrency =
-			typeof meta?.refunded_currency === 'string'
-				? meta.refunded_currency
-				: undefined;
-		if ( refundedAmount === undefined || ! refundedCurrency ) {
-			return __(
-				'WooPayments refunded its application fee on this transaction.',
-				'woocommerce-payments'
-			);
-		}
-		const refundedFormatted = formatExplicitCurrency(
-			refundedAmount,
-			refundedCurrency,
-			false,
-			refundedCurrency
-		);
-		if ( originalAmount === undefined ) {
-			return sprintf(
-				/* translators: %s is a monetary amount */
-				__(
-					'WooPayments refunded its %s application fee on this transaction.',
-					'woocommerce-payments'
-				),
-				refundedFormatted
-			);
-		}
-		const originalFormatted = formatExplicitCurrency(
-			originalAmount,
-			refundedCurrency,
-			false,
-			refundedCurrency
-		);
-		return sprintf(
-			/* translators: %1$s is the refunded amount, %2$s is the pre-refund fee amount */
-			__(
-				'WooPayments refunded %1$s of its %2$s application fee on this transaction.',
-				'woocommerce-payments'
-			),
-			refundedFormatted,
-			originalFormatted
-		);
-	},
+const rowLabels: Record< string, string > = {
+	base: __( 'Base fee', 'woocommerce-payments' ),
+	'additional.international': __(
+		'International card fee',
+		'woocommerce-payments'
+	),
+	'additional.fx': __( 'Currency conversion fee', 'woocommerce-payments' ),
+	'additional.wcpay-subscription': __(
+		'Subscription transaction fee',
+		'woocommerce-payments'
+	),
+	'additional.device': __( 'Device fee', 'woocommerce-payments' ),
+	dispute_fee: __( 'Dispute fee', 'woocommerce-payments' ),
+	dispute_fee_refund: __( 'Dispute fee refund', 'woocommerce-payments' ),
+	// Server emits this on totals.fee.key when our application fee was
+	// refunded — the merchant's effective fee is only Stripe's passthrough,
+	// so the headline must not still say "WooPayments fee".
+	processing_fee: __( 'Processing fee', 'woocommerce-payments' ),
 };
 
 /**
- * Resolve a human-readable label for a breakdown row.
- *
- * Derived from: `formatFeeType` in `../transaction-breakdown/utils.ts`
- * (string table keyed by `type + additional_type`) and the inline
- * label strings inside `composeFeeBreakdown` in
- * `./map-events.js`. Consolidated here so server-typed keys map to
- * a single translation source.
- *
  * Preference order: explicit server `label` → dictionary match → raw key.
  */
 export function resolveRowLabel(
@@ -178,38 +52,90 @@ export function resolveRowLabel(
 	if ( label !== null && label !== '' ) {
 		return label;
 	}
-	for ( const entry of rowLabels ) {
-		const matches =
-			typeof entry.match === 'string'
-				? entry.match === key
-				: entry.match( key );
-		if ( matches ) {
-			const resolved = entry.resolver( context );
-			if ( resolved ) {
-				return resolved;
-			}
-		}
+	if ( key in rowLabels ) {
+		return rowLabels[ key ];
+	}
+	if ( key.startsWith( 'discount.' ) ) {
+		return __( 'Discount', 'woocommerce-payments' );
+	}
+	if ( key === 'tax_on_fee' ) {
+		const description =
+			typeof context.meta?.description === 'string'
+				? context.meta.description
+				: undefined;
+		return description ?? __( 'Tax on fee', 'woocommerce-payments' );
 	}
 	return key;
 }
 
 /**
- * Resolve a human-readable description for a breakdown note.
- *
- * Returns `null` when the code has no merchant-facing text — the caller
- * should then suppress the note entirely. This keeps internal-only codes
- * (recorded in `sources` for support) from ever reaching the UI.
+ * Returns `null` for codes with no merchant-facing text so the caller can
+ * suppress the note — the server emits internal-only codes (recorded in
+ * `sources` for support) that must never surface in the UI as raw strings.
  */
 export function resolveNoteText(
 	code: string,
 	context: FeeBreakdownLabelContext = {}
 ): string | null {
-	const resolver = noteLabels[ code ];
-	if ( resolver ) {
-		const resolved = resolver( context );
-		if ( resolved ) {
-			return resolved;
-		}
+	if ( code !== 'application_fee_refunded' ) {
+		return null;
 	}
-	return null;
+
+	const { meta } = context;
+	const refundedAmount =
+		typeof meta?.refunded_amount === 'number'
+			? meta.refunded_amount
+			: undefined;
+
+	// `original_amount` landed with partial-refund support; older envelopes
+	// only carry `refunded_amount`. The three-branch cascade below keeps
+	// older events readable on current clients instead of showing generic
+	// copy when the merchant-visible amount is still available.
+	const originalAmount =
+		typeof meta?.original_amount === 'number'
+			? meta.original_amount
+			: undefined;
+	const refundedCurrency =
+		typeof meta?.refunded_currency === 'string'
+			? meta.refunded_currency
+			: undefined;
+	if ( refundedAmount === undefined || ! refundedCurrency ) {
+		return __(
+			'WooPayments refunded its application fee on this transaction.',
+			'woocommerce-payments'
+		);
+	}
+
+	const refundedFormatted = formatExplicitCurrency(
+		refundedAmount,
+		refundedCurrency,
+		false,
+		refundedCurrency
+	);
+	if ( originalAmount === undefined ) {
+		return sprintf(
+			/* translators: %s is a monetary amount */
+			__(
+				'WooPayments refunded its %s application fee on this transaction.',
+				'woocommerce-payments'
+			),
+			refundedFormatted
+		);
+	}
+
+	const originalFormatted = formatExplicitCurrency(
+		originalAmount,
+		refundedCurrency,
+		false,
+		refundedCurrency
+	);
+	return sprintf(
+		/* translators: %1$s is the refunded amount, %2$s is the pre-refund fee amount */
+		__(
+			'WooPayments refunded %1$s of its %2$s application fee on this transaction.',
+			'woocommerce-payments'
+		),
+		refundedFormatted,
+		originalFormatted
+	);
 }
