@@ -660,6 +660,21 @@ class WC_Payments_Admin {
 
 		wp_set_script_translations( 'WCPAY_ADMIN_SETTINGS', 'woocommerce-payments' );
 
+		WC_Payments::register_script_with_dependencies(
+			'WCPAY_MODERN_SETTINGS',
+			'dist/modern-settings',
+			[ 'wc-modern-settings-sdk', 'wp-components', 'wp-element', 'wp-i18n' ]
+		);
+		wp_set_script_translations( 'WCPAY_MODERN_SETTINGS', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_MODERN_SETTINGS',
+			plugins_url( 'dist/modern-settings.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/modern-settings.css' ),
+			'all'
+		);
+
 		WC_Payments_Utils::register_style(
 			'WCPAY_ADMIN_SETTINGS',
 			plugins_url( 'dist/settings.css', WCPAY_PLUGIN_FILE ),
