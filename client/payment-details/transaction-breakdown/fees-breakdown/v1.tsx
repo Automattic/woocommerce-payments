@@ -67,14 +67,18 @@ const BreakdownRow: React.FC< {
 	row: TimelineFeeBreakdownRow;
 	storeCurrency: string;
 } > = ( { row, storeCurrency } ) => {
-	const label = resolveFeeRowLabel( row.key, row.label, { meta: row.meta } );
-	const rateText = buildRateText(
-		row.rate?.percentage,
-		row.rate?.fixed,
-		row.rate?.fixed_currency ?? row.currency,
-		storeCurrency,
-		row.rate?.percentage_display
-	);
+	const label =
+		row.display_label ??
+		resolveFeeRowLabel( row.key, row.label, { meta: row.meta } );
+	const rateText =
+		row.display_rate ??
+		buildRateText(
+			row.rate?.percentage,
+			row.rate?.fixed,
+			row.rate?.fixed_currency ?? row.currency,
+			storeCurrency,
+			row.rate?.percentage_display
+		);
 	// Use the server-signed display_amount when available — avoids
 	// render-site sign coercion. When an older envelope omits
 	// display_amount, fall back to a kind-aware signed magnitude so
@@ -148,7 +152,14 @@ const NotesList: React.FC< {
 	const renderable = notes
 		.map( ( note ) => ( {
 			...note,
-			text: resolveNoteText( note.code, { meta: note.meta } ),
+			// `display_text === null` is an explicit "suppress this note"
+			// signal from the presenter (internal-only code). `undefined`
+			// means the envelope bypassed the presenter, so fall back.
+			text:
+				note.display_text === null
+					? null
+					: note.display_text ??
+					  resolveNoteText( note.code, { meta: note.meta } ),
 		} ) )
 		.filter(
 			( note ): note is TimelineFeeBreakdownNote & { text: string } =>

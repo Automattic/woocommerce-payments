@@ -261,24 +261,19 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 			breakdown.totals.fee.currency,
 			storeCurrency
 		) + currencySuffix;
-	const totalRateText = formatRateText(
-		breakdown.totals.fee.rate,
-		storeCurrency
-	);
+	const totalRateText =
+		breakdown.totals.fee.display_rate ??
+		formatRateText( breakdown.totals.fee.rate, storeCurrency );
 	const totalRateTextWithSuffix =
 		totalRateText && breakdown.totals.fee.rate?.fixed && isSameSymbol
 			? `${ totalRateText }${ currencySuffix }`
 			: totalRateText;
-	// Server may flag the totals row with a typed `key` (e.g. 'processing_fee'
-	// for the Amazon Pay non-card case, where our application fee was
-	// refunded and only Stripe's passthrough remains). Fall back to "Fee".
-	const totalFeeLabel = resolveFeeRowLabel(
-		breakdown.totals.fee.key ?? '',
-		null
-	);
-	const defaultFeeLabel = __( 'Fee', 'woocommerce-payments' );
+	// `display_label` is written by the PHP presenter on envelope arrival;
+	// the JS dict resolver stays as the fallback for unenriched fixtures.
 	const feeLineLabel =
-		totalFeeLabel && totalFeeLabel !== '' ? totalFeeLabel : defaultFeeLabel;
+		breakdown.totals.fee.display_label ??
+		resolveFeeRowLabel( breakdown.totals.fee.key ?? '', null ) ??
+		__( 'Fee', 'woocommerce-payments' );
 	lines.push(
 		totalRateText
 			? sprintf(
@@ -301,9 +296,11 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 		lines.push(
 			<ul key="fee-breakdown" className="fee-breakdown-list">
 				{ feeRows.map( ( row, idx ) => {
-					const label = resolveFeeRowLabel( row.key, row.label, {
-						meta: row.meta,
-					} );
+					const label =
+						row.display_label ??
+						resolveFeeRowLabel( row.key, row.label, {
+							meta: row.meta,
+						} );
 					const rowCurrency =
 						row.rate?.fixed_currency ||
 						row.currency ||
@@ -319,7 +316,9 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 						return splitRow;
 					}
 
-					const rateText = formatRateText( row.rate, rowCurrency );
+					const rateText =
+						row.display_rate ??
+						formatRateText( row.rate, rowCurrency );
 					return (
 						<li key={ `${ row.key }-${ idx }` }>
 							{ rateText ? `${ label }: ${ rateText }` : label }
@@ -330,7 +329,14 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 		);
 	}
 
-	const taxLine = composeTaxLineFromBreakdown( breakdown, storeCurrency );
+	// `display_line === null` means the presenter resolved "no tax line"
+	// (envelope reports zero tax); `undefined` means unenriched, so fall
+	// back to the JS composer. Same three-valued contract as notes.
+	const taxLine =
+		breakdown.totals.tax.display_line === null
+			? null
+			: breakdown.totals.tax.display_line ??
+			  composeTaxLineFromBreakdown( breakdown, storeCurrency );
 	if ( taxLine ) {
 		lines.push( taxLine );
 	}
@@ -338,7 +344,8 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 	// Historical "Net payout" for the captured event — read capture-time
 	// net, not current-state net, so a later refund doesn't rewrite the
 	// deposit line of the capture event in the timeline.
-	lines.push(
+	const netLine =
+		breakdown.totals.capture_net.display_line ??
 		sprintf(
 			/* translators: %s is a monetary amount */
 			__( 'Net payout: %s', 'woocommerce-payments' ),
@@ -348,11 +355,18 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 				false,
 				storeCurrency
 			)
-		)
-	);
+		);
+	lines.push( netLine );
 
 	breakdown.notes.forEach( ( note ) => {
-		const text = resolveNoteText( note.code, { meta: note.meta } );
+		// `display_text === null` is an explicit "suppress" signal from the
+		// presenter (internal-only code); `undefined` means the envelope
+		// bypassed the presenter, so fall back to the JS resolver.
+		const text =
+			note.display_text === null
+				? null
+				: note.display_text ??
+				  resolveNoteText( note.code, { meta: note.meta } );
 		if ( text ) {
 			lines.push( text );
 		}

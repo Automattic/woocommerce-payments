@@ -102,6 +102,15 @@ export interface Charge {
 			key: string;
 			kind: 'fee' | 'adjustment' | 'tax';
 			label: string | null;
+			/**
+			 * Pre-resolved merchant-facing label written by the PHP
+			 * `WC_Payments_Fee_Breakdown_Presenter` as the envelope lands
+			 * on the merchant server. Consumers render this directly; the
+			 * JS label dict is only consulted when this is absent.
+			 */
+			display_label?: string;
+			/** Pre-formatted rate ("2.9% + $0.30", "capped at $5", ""). */
+			display_rate?: string;
 			/** Magnitude for arithmetic compatibility (always >= 0 for fee/tax). */
 			amount: number;
 			/** Signed for direct rendering — no -Math.abs() needed. */
@@ -122,6 +131,11 @@ export interface Charge {
 			fee: {
 				amount: number;
 				display_amount?: number;
+				/** Pre-resolved headline label from the PHP presenter. */
+				display_label?: string;
+				/** Pre-formatted rate from the PHP presenter. */
+				display_rate?: string;
+				key?: string;
 				currency: string;
 				rate?: {
 					percentage?: number;
@@ -136,10 +150,18 @@ export interface Charge {
 				amount: number;
 				display_amount?: number;
 				currency: string;
+				/**
+				 * Pre-composed "Tax IT VAT (22.00%): -$0.22" line from the
+				 * PHP presenter. `null` signals zero tax / don't render;
+				 * `undefined` means unenriched.
+				 */
+				display_line?: string | null;
 			};
 			net: {
 				amount: number;
 				currency: string;
+				/** Pre-composed "Net payout: $X.XX" line from the PHP presenter. */
+				display_line?: string | null;
 			};
 			gross: {
 				amount: number;
@@ -155,6 +177,13 @@ export interface Charge {
 			code: string;
 			severity?: 'info' | 'warning' | 'error';
 			meta?: Record< string, unknown >;
+			/**
+			 * Pre-resolved merchant-facing text. `null` means the server
+			 * emitted an internal-only code (telemetry / support) that
+			 * the PHP presenter chose to suppress — consumers drop the
+			 * note entirely rather than fall through to a key lookup.
+			 */
+			display_text?: string | null;
 		} >;
 		sources?: Record< string, unknown >;
 		/** Cross-currency charges only. Pre-formatted for display. */

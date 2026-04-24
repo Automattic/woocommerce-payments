@@ -365,7 +365,13 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	 * @param array|null $fee_breakdown_v1 The envelope, or null to clear.
 	 */
 	public function set_fee_breakdown_v1( ?array $fee_breakdown_v1 ): void {
-		$this->fee_breakdown_v1 = $fee_breakdown_v1;
+		// Enrich on arrival so every consumer reading `get_fee_breakdown_v1()`
+		// (PHP order-note composer, REST/admin-bootstrap handoff to the React
+		// timeline) sees the same pre-resolved display strings — the dict
+		// lives in one place on the merchant server.
+		$this->fee_breakdown_v1 = is_array( $fee_breakdown_v1 )
+			? WC_Payments_Fee_Breakdown_Presenter::enrich( $fee_breakdown_v1 )
+			: $fee_breakdown_v1;
 	}
 
 	/**

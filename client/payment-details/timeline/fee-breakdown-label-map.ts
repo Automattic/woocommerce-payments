@@ -1,10 +1,11 @@
 /**
  * FEE_BREAKDOWN_FORK_CLONE: remove when envelope is the only path.
  *
- * Clients prefer the server's per-row `label`, then look the key up here,
- * then fall back to the raw key — so a new typed key the server starts
- * emitting before a client release degrades gracefully instead of crashing
- * the UI.
+ * Fallback only. Runtime code reads `row.display_label` / `note.display_text`
+ * written by the PHP `WC_Payments_Fee_Breakdown_Presenter` — the dictionary
+ * below is the last-resort resolver for envelopes that never passed through
+ * the presenter (test fixtures constructed directly in JS, or an older
+ * merchant site where the presenter isn't loaded).
  */
 
 import { __, sprintf } from '@wordpress/i18n';

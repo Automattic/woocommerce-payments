@@ -68,13 +68,25 @@ export interface TimelineFeeBreakdownRate {
 
 export interface TimelineFeeBreakdownRow {
 	/**
-	 * Stable typed key — client maps it through the label dictionary. When a
-	 * key is unknown the client falls back to `label`, then the raw key.
+	 * Stable typed key — fallback only. Clients read `display_label` first.
 	 */
 	key: string;
 	kind: TimelineFeeBreakdownKind;
-	/** Optional override label — wins over dictionary lookup when provided. */
+	/** Raw server override — fallback, below `display_label`. */
 	label: string | null;
+	/**
+	 * Pre-resolved merchant-facing label written by the PHP presenter on
+	 * envelope arrival. Rendered verbatim; the JS dictionary lookup only
+	 * runs when this is absent (e.g. test fixtures built in JS).
+	 */
+	display_label?: string;
+	/**
+	 * Pre-formatted rate string (e.g. "2.9% + $0.30", "capped at $5", or
+	 * "" when the rate has nothing renderable). Written by the PHP
+	 * presenter; consumers fall back to their own formatter only for
+	 * unenriched envelopes.
+	 */
+	display_rate?: string;
 	/** Signed amount in the store currency's minor units (e.g. cents). */
 	amount: number;
 	currency: string;
@@ -92,6 +104,18 @@ export interface TimelineFeeBreakdownTotal {
 	amount: number;
 	currency: string;
 	rate?: TimelineFeeBreakdownRate;
+	/** Typed override for the totals headline (e.g. `processing_fee`). */
+	key?: string;
+	/** Pre-resolved headline label from the PHP presenter. */
+	display_label?: string;
+	/** Pre-formatted rate string from the PHP presenter ("" when none). */
+	display_rate?: string;
+	/**
+	 * Pre-composed line ("Tax IT VAT (22.00%): -$0.22", "Net payout: $X").
+	 * `null` signals "don't render this line" (e.g. zero tax); `undefined`
+	 * means unenriched, so consumers fall back to their local composer.
+	 */
+	display_line?: string | null;
 }
 
 export interface TimelineFeeBreakdownTotals {
@@ -117,6 +141,12 @@ export interface TimelineFeeBreakdownNote {
 	code: string;
 	severity?: 'info' | 'warning' | 'error';
 	meta?: Record< string, unknown >;
+	/**
+	 * Pre-resolved merchant-facing text from the PHP presenter. `null`
+	 * signals an internal-only code the presenter chose to suppress —
+	 * consumers drop the note rather than fall through to a key lookup.
+	 */
+	display_text?: string | null;
 }
 
 export interface TimelineFeeBreakdownFx {

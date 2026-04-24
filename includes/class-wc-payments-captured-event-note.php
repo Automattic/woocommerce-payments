@@ -59,7 +59,12 @@ class WC_Payments_Captured_Event_Note {
 		// legacy composer instead of emitting PHP notices mid-render.
 		if ( ! empty( $this->captured_event['fee_breakdown_v1'] )
 			&& self::is_renderable_breakdown( $this->captured_event['fee_breakdown_v1'] ) ) {
-			return $this->generate_html_note_from_breakdown( $this->captured_event['fee_breakdown_v1'] );
+			// The webhook path lands an envelope here that hasn't passed
+			// through the API charge model's arrival hook, so enrich once
+			// at the consumer boundary to keep the rendering branch
+			// identical to the admin-UI code path.
+			$enriched = WC_Payments_Fee_Breakdown_Presenter::enrich( $this->captured_event['fee_breakdown_v1'] );
+			return $this->generate_html_note_from_breakdown( $enriched );
 		}
 
 		$lines = [];
@@ -123,38 +128,25 @@ class WC_Payments_Captured_Event_Note {
 		// final `$amount . ' ' . $code` concatenation.
 		$store_currency   = $breakdown['totals']['fee']['currency'];
 		$total_fee_amount = (int) $breakdown['totals']['fee']['amount'];
-		$total_tax_amount = (int) $breakdown['totals']['tax']['amount'];
-		// Read capture-time net so the order note (a historical record of
-		// the capture) doesn't drift if regenerated after a later refund
-		// or dispute. Matches the timeline captured event's "Net payout"
-		// line on the JS side (compose.js reads totals.capture_net too).
-		// Falls back to totals.net for older envelopes that pre-date the
-		// capture_net split.
-		$total_net_amount = isset( $breakdown['totals']['capture_net']['amount'] )
-			? (int) $breakdown['totals']['capture_net']['amount']
-			: (int) $breakdown['totals']['net']['amount'];
-		$net_currency     = $breakdown['totals']['capture_net']['currency']
-			?? ( $breakdown['totals']['net']['currency'] ?? $store_currency );
-
-		$lines = [];
+		$lines            = [];
 
 		$fx_string = $this->compose_fx_string();
 		if ( null !== $fx_string ) {
 			$lines[] = $fx_string;
 		}
 
-		$total_rate_text = self::format_rate_text( $breakdown['totals']['fee']['rate'] ?? null, $store_currency );
+		$total_rate_text = isset( $breakdown['totals']['fee']['display_rate'] )
+			? (string) $breakdown['totals']['fee']['display_rate']
+			: '';
 		$fee_amount_text = WC_Payments_Utils::format_explicit_currency(
 			WC_Payments_Utils::interpret_stripe_amount( $total_fee_amount, $store_currency ),
 			$store_currency,
 			false
 		);
-		// Server may flag the totals row with a typed `key` (e.g.
-		// 'processing_fee' for the Amazon Pay non-card case, where our
-		// application fee was refunded). Fall back to "Fee" otherwise.
-		$totals_key     = isset( $breakdown['totals']['fee']['key'] ) ? (string) $breakdown['totals']['fee']['key'] : '';
-		$fee_line_label = self::fee_label_from_key( $totals_key );
-		$lines[]        = '' !== $total_rate_text
+		$fee_line_label  = isset( $breakdown['totals']['fee']['display_label'] )
+			? (string) $breakdown['totals']['fee']['display_label']
+			: __( 'Fee', 'woocommerce-payments' );
+		$lines[]         = '' !== $total_rate_text
 			? sprintf(
 				/* translators: 1: fee label (e.g. "Fee") 2: fee rate (e.g. 2.9% + $0.30) 3: monetary amount */
 				__( '%1$s (%2$s): %3$s', 'woocommerce-payments' ),
@@ -185,70 +177,33 @@ class WC_Payments_Captured_Event_Note {
 		if ( count( $fee_rows ) > 1 ) {
 			$indent = str_repeat( self::HTML_SPACE, 4 );
 			foreach ( $fee_rows as $row ) {
-				$label     = self::label_from_row( $row );
-				$row_curr  = $row['rate']['fixed_currency'] ?? ( $row['currency'] ?? $store_currency );
-				$rate_text = self::format_rate_text( $row['rate'] ?? null, $row_curr );
+				$label     = isset( $row['display_label'] ) ? (string) $row['display_label'] : (string) ( $row['key'] ?? '' );
+				$rate_text = isset( $row['display_rate'] ) ? (string) $row['display_rate'] : '';
 				$lines[]   = $indent . ( '' !== $rate_text ? sprintf( '%1$s: %2$s', esc_html( $label ), esc_html( $rate_text ) ) : esc_html( $label ) );
 			}
 		}
 
-		if ( 0 !== $total_tax_amount ) {
-			// Pull description + percentage off the tax row (populated by
-			// the server builder from Transaction_Fee_Detail tax record)
-			// to match the legacy "Tax IT VAT (22.00%): -$X.XX" format.
-			$tax_row = null;
-			foreach ( $breakdown['rows'] as $candidate ) {
-				if ( 'tax' === ( $candidate['kind'] ?? '' ) ) {
-					$tax_row = $candidate;
-					break;
-				}
-			}
-			$tax_description = '';
-			if ( null !== $tax_row && ! empty( $tax_row['label'] ) ) {
-				// `localize_tax_description_code` maps to a dictionary of
-				// `__()` translations or returns the "Tax" fallback — it
-				// never reflects the raw label back. `esc_html` is still
-				// applied in case a translator ever adds markup.
-				$tax_description = ' ' . self::localize_tax_description_code( (string) $tax_row['label'] );
-			}
-			$tax_percentage = '';
-			if ( null !== $tax_row && isset( $tax_row['rate']['percentage'] ) && 0.0 !== (float) $tax_row['rate']['percentage'] ) {
-				$tax_percentage = ' (' . number_format( (float) $tax_row['rate']['percentage'] * 100, 2 ) . '%)';
-			}
-			$tax_amount_text = WC_Payments_Utils::format_currency(
-				-abs( WC_Payments_Utils::interpret_stripe_amount( $total_tax_amount, $breakdown['totals']['tax']['currency'] ) ),
-				$breakdown['totals']['tax']['currency']
-			);
-			$lines[]         = sprintf(
-				/* translators: 1: tax description 2: tax percentage 3: tax amount */
-				__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
-				esc_html( $tax_description ),
-				esc_html( $tax_percentage ),
-				esc_html( $tax_amount_text )
-			);
+		$tax_line = $breakdown['totals']['tax']['display_line'] ?? null;
+		if ( is_string( $tax_line ) && '' !== $tax_line ) {
+			$lines[] = esc_html( $tax_line );
 		}
 
-		$lines[] = sprintf(
-			/* translators: %s is a monetary amount */
-			__( 'Net payout: %s', 'woocommerce-payments' ),
-			esc_html(
-				WC_Payments_Utils::format_explicit_currency(
-					WC_Payments_Utils::interpret_stripe_amount( $total_net_amount, $net_currency ),
-					$net_currency,
-					false
-				)
-			)
-		);
+		// Capture-time net is the historical record of what hit the account
+		// at capture; later refunds/disputes get their own timeline entries
+		// and must not retroactively rewrite this line. Fall through to the
+		// current-state net for older envelopes that pre-date the split.
+		$net_line = $breakdown['totals']['capture_net']['display_line']
+			?? ( $breakdown['totals']['net']['display_line'] ?? null );
+		if ( is_string( $net_line ) && '' !== $net_line ) {
+			$lines[] = esc_html( $net_line );
+		}
 
 		if ( ! empty( $breakdown['notes'] ) ) {
 			foreach ( $breakdown['notes'] as $note ) {
-				$note_text = self::text_from_note( $note );
-				if ( null !== $note_text && '' !== $note_text ) {
-					// `text_from_note` already escapes its return — we
-					// don't re-escape here so translators can't accidentally
-					// double-encode entities in the copy.
-					$lines[] = $note_text;
+				if ( ! isset( $note['display_text'] ) || ! is_string( $note['display_text'] ) || '' === $note['display_text'] ) {
+					continue;
 				}
+				$lines[] = esc_html( $note['display_text'] );
 			}
 		}
 
@@ -287,167 +242,6 @@ class WC_Payments_Captured_Event_Note {
 				isset( $breakdown['totals']['capture_net']['amount'] )
 				|| isset( $breakdown['totals']['net']['amount'] )
 			);
-	}
-
-	/**
-	 * Server emits a typed `key` on `totals.fee` for cases where the
-	 * default "Fee" wording is misleading — currently `processing_fee`
-	 * for the Amazon Pay non-card path where our application fee was
-	 * refunded and only Stripe's passthrough remains. Unknown or empty
-	 * keys fall back to "Fee".
-	 *
-	 * @param string $key Server-provided key, or '' when absent.
-	 * @return string
-	 */
-	private static function fee_label_from_key( string $key ): string {
-		switch ( $key ) {
-			case 'processing_fee':
-				return __( 'Processing fee', 'woocommerce-payments' );
-			default:
-				return __( 'Fee', 'woocommerce-payments' );
-		}
-	}
-
-	/**
-	 * Derived from the inline label-mapping inside compose_fee_break_down()
-	 * in the same class (the branches that turn `type` + `additional_type`
-	 * into "Base fee" / "International card fee" / "Currency conversion fee"
-	 * / "Discount"). Now keyed by the server's typed row key so the envelope
-	 * can teach clients new labels without a PHP release.
-	 *
-	 * @param array $row Row entry from the envelope.
-	 * @return string
-	 */
-	private static function label_from_row( array $row ): string {
-		if ( ! empty( $row['label'] ) ) {
-			// Server-provided label — escape on return so any downstream
-			// concat into the HTML order note can't leak attacker-
-			// controlled markup if the envelope is ever compromised
-			// upstream. The dictionary branch below returns `__()` strings
-			// that are plain text, so `esc_html` there is idempotent.
-			return esc_html( (string) $row['label'] );
-		}
-		$key = (string) ( $row['key'] ?? '' );
-
-		$map = [
-			'base'                          => __( 'Base fee', 'woocommerce-payments' ),
-			'additional.international'      => __( 'International card fee', 'woocommerce-payments' ),
-			'additional.fx'                 => __( 'Currency conversion fee', 'woocommerce-payments' ),
-			'additional.wcpay-subscription' => __( 'Subscription transaction fee', 'woocommerce-payments' ),
-			'additional.device'             => __( 'Device fee', 'woocommerce-payments' ),
-			'tax_on_fee'                    => __( 'Tax on fee', 'woocommerce-payments' ),
-			'dispute_fee'                   => __( 'Dispute fee', 'woocommerce-payments' ),
-			'dispute_fee_refund'            => __( 'Dispute fee refund', 'woocommerce-payments' ),
-			'refund_fee'                    => __( 'Refund fee', 'woocommerce-payments' ),
-			'financing_paydown'             => __( 'Loan paydown', 'woocommerce-payments' ),
-		];
-		if ( isset( $map[ $key ] ) ) {
-			return $map[ $key ];
-		}
-		if ( 0 === strpos( $key, 'discount.' ) ) {
-			return __( 'Discount', 'woocommerce-payments' );
-		}
-		return $key;
-	}
-
-	/**
-	 * Format a fee rate (percentage + fixed) for display, matching the
-	 * legacy "2.9% + $0.30" style. Returns an empty string when the rate
-	 * has no percentage and no fixed part.
-	 *
-	 * Derived from: the sprintf('%1$s (%2$f%% + %3$s ...)') block inside
-	 * compose_fee_string() and the "capped at" branch in the same class —
-	 * extracted so the envelope path can render rates without any of the
-	 * legacy fee_rates/history plumbing.
-	 *
-	 * @param array|null $rate           Rate array with percentage/fixed/fixed_currency keys.
-	 * @param string     $store_currency Fallback currency for the fixed part.
-	 * @return string
-	 */
-	private static function format_rate_text( ?array $rate, string $store_currency ): string {
-		if ( null === $rate ) {
-			return '';
-		}
-		// Capped fee: render "capped at $X" instead of the percent+fixed
-		// combo, matching the legacy "Base fee: capped at $5" treatment.
-		if ( ! empty( $rate['capped'] ) ) {
-			$cap_amount = isset( $rate['cap_amount'] ) ? (int) $rate['cap_amount'] : (int) ( $rate['fixed'] ?? 0 );
-			$cap_curr   = $rate['fixed_currency'] ?? $store_currency;
-			return sprintf(
-				/* translators: %s is a monetary amount */
-				__( 'capped at %s', 'woocommerce-payments' ),
-				WC_Payments_Utils::format_currency(
-					WC_Payments_Utils::interpret_stripe_amount( $cap_amount, $cap_curr ),
-					$cap_curr
-				)
-			);
-		}
-		$parts       = [];
-		$percentage  = isset( $rate['percentage'] ) ? (float) $rate['percentage'] : 0.0;
-		$fixed_minor = isset( $rate['fixed'] ) ? (int) $rate['fixed'] : 0;
-		$fixed_curr  = $rate['fixed_currency'] ?? $store_currency;
-
-		if ( 0.0 !== $percentage ) {
-			$parts[] = self::format_fee( $percentage ) . '%';
-		}
-		if ( 0 !== $fixed_minor ) {
-			$parts[] = WC_Payments_Utils::format_currency(
-				WC_Payments_Utils::interpret_stripe_amount( $fixed_minor, $fixed_curr ),
-				$fixed_curr
-			);
-		}
-		return implode( ' + ', $parts );
-	}
-
-	/**
-	 * Returns null when the note has no merchant-facing text so the caller
-	 * can suppress it — the server emits internal-only codes (e.g. refund
-	 * provenance) for telemetry and support that must never surface in the
-	 * order note as raw strings.
-	 *
-	 * @param array $note Note entry from the envelope.
-	 * @return string|null
-	 */
-	private static function text_from_note( array $note ): ?string {
-		$code = (string) ( $note['code'] ?? '' );
-		$meta = is_array( $note['meta'] ?? null ) ? $note['meta'] : [];
-
-		switch ( $code ) {
-			case 'application_fee_refunded':
-				$refunded_amount   = isset( $meta['refunded_amount'] ) ? (int) $meta['refunded_amount'] : 0;
-				$refunded_currency = (string) ( $meta['refunded_currency'] ?? '' );
-				if ( $refunded_amount <= 0 || '' === $refunded_currency ) {
-					return __(
-						'WooPayments refunded its application fee on this transaction.',
-						'woocommerce-payments'
-					);
-				}
-				// `format_explicit_currency` strips HTML internally but
-				// falls back to `$amount . ' ' . $currency` when the
-				// formatted output doesn't contain the currency code —
-				// meaning a hostile `refunded_currency` would concatenate
-				// raw. Escape the final composed string so this can't reach
-				// the `<p>`-wrapped order note verbatim.
-				$formatted = WC_Payments_Utils::format_explicit_currency(
-					WC_Payments_Utils::interpret_stripe_amount( $refunded_amount, $refunded_currency ),
-					$refunded_currency,
-					false
-				);
-				return esc_html(
-					sprintf(
-						/* translators: %s is a monetary amount */
-						__(
-							'WooPayments refunded its %s application fee on this transaction.',
-							'woocommerce-payments'
-						),
-						$formatted
-					)
-				);
-		}
-
-		// Unknown codes are internal-only — drop them silently so server-side
-		// telemetry additions never leak raw identifiers to merchants.
-		return null;
 	}
 
 	/**
@@ -908,7 +702,7 @@ class WC_Payments_Captured_Event_Note {
 	 * @param string $tax_description_id Raw code like "IT VAT" or "JP JCT".
 	 * @return string
 	 */
-	private static function localize_tax_description_code( string $tax_description_id ): string {
+	public static function localize_tax_description_code( string $tax_description_id ): string {
 		$tax_descriptions = [
 			// European Union VAT.
 			'AT VAT' => __( 'AT VAT', 'woocommerce-payments' ), // Austria.
