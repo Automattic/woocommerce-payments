@@ -397,12 +397,39 @@ class WC_Payments_Admin {
 			]
 		);
 
-		// Merchants are unable to see their deposits, transactions, disputes and settings if their account is rejected or under review.
-		// That's expected, because account under review is hard-blocked account that spends in a review pretty short time-frame.
-		// Either merchant gets approved and continues to use payments or they remain suspended and can't use payments.
+		// Rejected and under-review merchants get a limited menu: Overview, Transactions, and Disputes.
+		// They need Disputes access to respond to dispute emails they receive, and Transactions for context.
+		// Payouts, Settings, Card Readers, Capital, and Documents remain hidden.
 		if ( $this->account->is_account_rejected() || $this->account->is_account_under_review() ) {
-			// If the account is rejected, only show the overview page.
 			wc_admin_register_page( $this->admin_child_pages['wc-payments-overview'] );
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-transactions'] );
+			wc_admin_register_page( $this->admin_child_pages['wc-payments-disputes'] );
+
+			// Register detail sub-pages so merchants can view individual items.
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-transaction-details',
+					'title'  => __( 'Payment details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-transactions',
+					'path'   => '/payments/transactions/details',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-disputes-details-legacy-redirect',
+					'title'  => __( 'Dispute details', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes',
+					'path'   => '/payments/disputes/details',
+				]
+			);
+			wc_admin_register_page(
+				[
+					'id'     => 'wc-payments-disputes-challenge',
+					'title'  => __( 'Challenge dispute', 'woocommerce-payments' ),
+					'parent' => 'wc-payments-disputes-details-legacy-redirect',
+					'path'   => '/payments/disputes/challenge',
+				]
+			);
 			return;
 		}
 
