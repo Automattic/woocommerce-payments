@@ -57,6 +57,7 @@ const composeEnvelopeFXLine = ( breakdown, storeCurrency ) => {
 	if ( ! fx || ! fx.from_currency || ! fx.to_currency ) {
 		return undefined;
 	}
+
 	return formatFX(
 		{ currency: fx.from_currency, amount: fx.from_amount ?? 0 },
 		{ currency: fx.to_currency, amount: fx.to_amount ?? 0 },
@@ -81,6 +82,7 @@ const formatRateText = ( rate, storeCurrency ) => {
 	if ( ! rate ) {
 		return '';
 	}
+
 	if ( rate.capped ) {
 		const capAmount = rate.cap_amount ?? rate.fixed ?? 0;
 		const capCurrency = rate.fixed_currency || storeCurrency;
@@ -90,6 +92,7 @@ const formatRateText = ( rate, storeCurrency ) => {
 			formatCurrency( capAmount, capCurrency, storeCurrency )
 		);
 	}
+
 	const parts = [];
 	const percentage = rate.percentage ?? 0;
 	if ( rate.percentage_display ) {
@@ -99,12 +102,115 @@ const formatRateText = ( rate, storeCurrency ) => {
 			`${ Number.parseFloat( ( percentage * 100 ).toFixed( 3 ) ) }%`
 		);
 	}
+
 	const fixed = rate.fixed ?? 0;
 	const fixedCurrency = rate.fixed_currency || storeCurrency;
 	if ( fixed !== 0 ) {
 		parts.push( formatCurrency( fixed, fixedCurrency, storeCurrency ) );
 	}
+
 	return parts.join( ' + ' );
+};
+
+/**
+ * When a discount row carries both a variable (%) and fixed component, show
+ * each piece as its own bullet. Fusing them into one string ("-2% + -$0.30")
+ * reads as arithmetic rather than two independent discount rules, which is
+ * what the merchant actually wants to see.
+ *
+ * Returns `null` when the row doesn't qualify (non-adjustment, no rate, or
+ * only one of the two components is non-zero) so the caller can fall through
+ * to the single-line render.
+ */
+const composeAdjustmentSplitFeeRow = (
+	row,
+	idx,
+	label,
+	rowCurrency,
+	storeCurrency
+) => {
+	if ( row.kind !== 'adjustment' || ! row.rate ) {
+		return null;
+	}
+
+	const pct = row.rate.percentage ?? 0;
+	const fixed = row.rate.fixed ?? 0;
+	if ( pct === 0 || fixed === 0 ) {
+		return null;
+	}
+
+	const variableText = `${ Number.parseFloat(
+		( Math.abs( pct ) * 100 ).toFixed( 3 )
+	) }%`;
+	const fixedText = formatCurrency(
+		Math.abs( fixed ),
+		rowCurrency,
+		storeCurrency
+	);
+	return (
+		<li key={ `${ row.key }-${ idx }` }>
+			{ label }
+			<ul className="discount-split-list">
+				<li key="variable">
+					{ sprintf(
+						/* translators: %s is a percentage */
+						__( 'Variable fee: %s', 'woocommerce-payments' ),
+						variableText
+					) }
+				</li>
+				<li key="fixed">
+					{ sprintf(
+						/* translators: %s is a monetary amount */
+						__( 'Fixed fee: %s', 'woocommerce-payments' ),
+						fixedText
+					) }
+				</li>
+			</ul>
+		</li>
+	);
+};
+
+/**
+ * Compose the tax line for the captured-event body.
+ *
+ * Returns `undefined` when the envelope reports zero tax so the caller can
+ * omit the line entirely — mirrors `composeEnvelopeFXLine`'s contract and
+ * matches the legacy `composeTaxString` behaviour of not emitting a "Tax: $0"
+ * row.
+ */
+const composeTaxLineFromBreakdown = ( breakdown, storeCurrency ) => {
+	if ( breakdown.totals.tax.amount === 0 ) {
+		return undefined;
+	}
+
+	const taxRow = breakdown.rows.find( ( row ) => row.kind === 'tax' );
+	const taxDescription =
+		taxRow && taxRow.label
+			? ` ${ getLocalizedTaxDescription( taxRow.label ) }`
+			: '';
+	const taxPercentageRate = taxRow?.rate?.percentage;
+	const taxPercentageStr =
+		taxRow?.rate?.percentage_display ??
+		( taxPercentageRate
+			? `${ ( taxPercentageRate * 100 ).toFixed( 2 ) }%`
+			: '' );
+	const taxPercentage = taxPercentageStr ? ` (${ taxPercentageStr })` : '';
+	const taxDisplayAmount =
+		breakdown.totals.tax.display_amount ??
+		-Math.abs( breakdown.totals.tax.amount );
+	const taxAmountText = formatCurrency(
+		taxDisplayAmount,
+		breakdown.totals.tax.currency,
+		storeCurrency
+	);
+
+	return sprintf(
+		/* translators: 1: tax description 2: tax percentage 3: tax amount */
+		__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
+		taxDescription,
+		taxPercentage,
+		taxAmountText
+	);
 };
 
 /**
@@ -190,10 +296,6 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 			  )
 	);
 
-	// Per-component breakdown: show rate only (e.g. "Base fee: 2.9% + $0.30")
-	// as a bulleted <ul>, matching the legacy composeFeeBreakdown output.
-	// Adjustment rows (discounts) render a nested list with the variable
-	// and fixed components separated.
 	const feeRows = breakdown.rows.filter( ( row ) => row.kind !== 'tax' );
 	if ( feeRows.length > 1 ) {
 		lines.push(
@@ -206,49 +308,18 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 						row.rate?.fixed_currency ||
 						row.currency ||
 						storeCurrency;
-					const rateText = formatRateText( row.rate, rowCurrency );
-
-					if ( row.kind === 'adjustment' && row.rate ) {
-						const pct = row.rate.percentage ?? 0;
-						const fixed = row.rate.fixed ?? 0;
-						if ( pct !== 0 && fixed !== 0 ) {
-							const variableText = `${ Number.parseFloat(
-								( Math.abs( pct ) * 100 ).toFixed( 3 )
-							) }%`;
-							const fixedText = formatCurrency(
-								Math.abs( fixed ),
-								rowCurrency,
-								storeCurrency
-							);
-							return (
-								<li key={ `${ row.key }-${ idx }` }>
-									{ label }
-									<ul className="discount-split-list">
-										<li key="variable">
-											{ sprintf(
-												/* translators: %s is a percentage */
-												__(
-													'Variable fee: %s',
-													'woocommerce-payments'
-												),
-												variableText
-											) }
-										</li>
-										<li key="fixed">
-											{ sprintf(
-												/* translators: %s is a monetary amount */
-												__(
-													'Fixed fee: %s',
-													'woocommerce-payments'
-												),
-												fixedText
-											) }
-										</li>
-									</ul>
-								</li>
-							);
-						}
+					const splitRow = composeAdjustmentSplitFeeRow(
+						row,
+						idx,
+						label,
+						rowCurrency,
+						storeCurrency
+					);
+					if ( splitRow ) {
+						return splitRow;
 					}
+
+					const rateText = formatRateText( row.rate, rowCurrency );
 					return (
 						<li key={ `${ row.key }-${ idx }` }>
 							{ rateText ? `${ label }: ${ rateText }` : label }
@@ -259,38 +330,9 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 		);
 	}
 
-	if ( breakdown.totals.tax.amount !== 0 ) {
-		const taxRow = breakdown.rows.find( ( row ) => row.kind === 'tax' );
-		const taxDescription =
-			taxRow && taxRow.label
-				? ` ${ getLocalizedTaxDescription( taxRow.label ) }`
-				: '';
-		const taxPercentageRate = taxRow?.rate?.percentage;
-		const taxPercentageStr =
-			taxRow?.rate?.percentage_display ??
-			( taxPercentageRate
-				? `${ ( taxPercentageRate * 100 ).toFixed( 2 ) }%`
-				: '' );
-		const taxPercentage = taxPercentageStr
-			? ` (${ taxPercentageStr })`
-			: '';
-		const taxDisplayAmount =
-			breakdown.totals.tax.display_amount ??
-			-Math.abs( breakdown.totals.tax.amount );
-		const taxAmountText = formatCurrency(
-			taxDisplayAmount,
-			breakdown.totals.tax.currency,
-			storeCurrency
-		);
-		lines.push(
-			sprintf(
-				/* translators: 1: tax description 2: tax percentage 3: tax amount */
-				__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
-				taxDescription,
-				taxPercentage,
-				taxAmountText
-			)
-		);
+	const taxLine = composeTaxLineFromBreakdown( breakdown, storeCurrency );
+	if ( taxLine ) {
+		lines.push( taxLine );
 	}
 
 	// Historical "Net payout" for the captured event — read capture-time
@@ -334,14 +376,13 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
  *
  * Caller must have already verified `event.fee_breakdown_v1` is present.
  */
-export const formatEnvelopeNetString = ( event ) => {
-	return formatExplicitCurrency(
+export const formatEnvelopeNetString = ( event ) =>
+	formatExplicitCurrency(
 		event.fee_breakdown_v1.totals.capture_net.amount,
 		event.fee_breakdown_v1.totals.capture_net.currency,
 		false,
 		event.fee_breakdown_v1.totals.capture_net.currency
 	);
-};
 
 /**
  * Envelope-authoritative deposit impact used by dispute timeline items.
@@ -359,6 +400,7 @@ export const getEnvelopeDepositImpact = ( event ) => {
 	if ( ! net || net.amount === undefined ) {
 		return null;
 	}
+
 	return {
 		amount: Math.abs( net.amount ),
 		currency: net.currency ?? event.currency,
