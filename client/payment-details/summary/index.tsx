@@ -25,6 +25,7 @@ import {
  * Internal dependencies.
  */
 import {
+	canUseFeeBreakdownData,
 	getChargeAmounts,
 	getChargeStatus,
 	getChargeChannel,
@@ -274,44 +275,29 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		charge.captured && ! charge.refunded && isDisputeRefundable;
 
 	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-	// Prefer the server-driven fee_breakdown_v1 envelope when present — it
-	// carries the merchant-facing nominal fee with refunds and Stripe
-	// passthrough already absorbed. For the dispute-fee tooltip to
-	// reconcile ("Transaction fee" + "Dispute fee" = "Total fees"), this
-	// is the FULL Stripe deduction for the charge in store currency =
-	// pre-tax fee + tax. Falls back to balance_transaction.fee and then
-	// application_fee_amount for charges from older servers.
-	//
-	// Same currency-mismatch guard as in getChargeAmounts — drop the
-	// envelope if its currency doesn't match balance_transaction.currency,
-	// rather than risk a 100× shift through zero-decimal rules.
-	const envelopeFeeCurrencyMatches =
-		charge.fee_breakdown_v1?.totals?.fee &&
-		charge.balance_transaction?.currency &&
-		charge.fee_breakdown_v1.totals.fee.currency.toLowerCase() ===
-			charge.balance_transaction.currency.toLowerCase();
+	// For the dispute-fee tooltip to reconcile ("Transaction fee" +
+	// "Dispute fee" = "Total fees"), `transactionFee.fee` must be the FULL
+	// Stripe deduction in store currency (pre-tax fee + tax). Older
+	// envelopes may omit `fee_plus_tax`, so sum the two components.
+	const breakdown = charge.fee_breakdown_v1;
 	const transactionFee = ( () => {
-		if (
-			envelopeFeeCurrencyMatches &&
-			charge.fee_breakdown_v1?.totals?.fee
-		) {
+		if ( canUseFeeBreakdownData( charge ) && breakdown?.totals?.fee ) {
 			return {
-				// Prefer the server's pre-summed fee_plus_tax; fall back to
-				// adding the two components when older servers omit it.
 				fee:
-					charge.fee_breakdown_v1.totals.fee_plus_tax?.amount ??
-					charge.fee_breakdown_v1.totals.fee.amount +
-						( charge.fee_breakdown_v1.totals.tax?.amount ?? 0 ),
-				currency:
-					charge.fee_breakdown_v1.totals.fee.currency.toLowerCase(),
+					breakdown.totals.fee_plus_tax?.amount ??
+					breakdown.totals.fee.amount +
+						( breakdown.totals.tax?.amount ?? 0 ),
+				currency: breakdown.totals.fee.currency.toLowerCase(),
 			};
 		}
+
 		if ( charge.balance_transaction ) {
 			return {
 				fee: charge.balance_transaction.fee,
 				currency: charge.balance_transaction.currency,
 			};
 		}
+
 		return {
 			fee: charge.application_fee_amount,
 			currency: charge.currency,
@@ -354,6 +340,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
 
 	const bankName = getBankName( charge );
+
 	return (
 		<Card>
 			<CardBody>

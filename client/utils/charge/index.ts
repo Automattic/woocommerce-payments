@@ -136,6 +136,27 @@ export const getChargeStatus = (
 };
 
 /**
+ * Envelope fee totals can't be trusted if its declared currency disagrees
+ * with the charge's balance_transaction — a mismatch could shift amounts
+ * by 100× via zero-decimal currency rules, so callers fall back to legacy
+ * fields. Missing `balance_transaction.currency` is not a mismatch; the
+ * envelope's own currency stands.
+ */
+export const canUseFeeBreakdownData = ( charge: Charge ): boolean => {
+	const feeTotal = charge.fee_breakdown_v1?.totals?.fee;
+	if ( ! feeTotal ) {
+		return false;
+	}
+
+	const chargeCurrency = charge.balance_transaction?.currency;
+	if ( ! chargeCurrency ) {
+		return true;
+	}
+
+	return feeTotal.currency.toLowerCase() === chargeCurrency.toLowerCase();
+};
+
+/**
  * Calculates display values for charge amounts in settlement currency.
  *
  * @param {Charge} charge The full charge object.
@@ -143,36 +164,18 @@ export const getChargeStatus = (
  */
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
-	// Prefer the server-driven fee_breakdown_v1 envelope when present.
-	// It carries the merchant-facing nominal fee (refunds and Stripe
-	// passthrough already absorbed server-side) so the transaction
-	// detail header matches the timeline body and the order page.
-	//
-	// `balance.fee` must represent the *full* Stripe deduction in store
-	// currency (pre-tax fee + tax), because the downstream
+	// `balance.fee` below must represent the *full* Stripe deduction in
+	// store currency (pre-tax fee + tax), because the downstream
 	// `net = amount - fee - refunded` needs to absorb BOTH components to
 	// match `totals.net.amount` — and that formula has to stay in charge
 	// of later-arriving customer-refunds and dispute adjustments, which
 	// the envelope doesn't cover. Using only `totals.fee.amount` here
 	// (pre-tax) would drop the tax from the net calculation.
-	//
-	// Defense-in-depth: reject the envelope if its declared currency
-	// doesn't match the charge's balance_transaction.currency. A mismatch
-	// could shift amounts by 100× via zero-decimal currency rules — far
-	// better to fall back to legacy than to display a wrong number.
 	const breakdown = charge.fee_breakdown_v1;
-	const envelopeCurrencyMatches =
-		! breakdown?.totals?.fee ||
-		! charge.balance_transaction?.currency ||
-		breakdown.totals.fee.currency.toLowerCase() ===
-			charge.balance_transaction.currency.toLowerCase();
 	if (
-		breakdown &&
-		breakdown.totals &&
-		breakdown.totals.fee &&
-		breakdown.totals.net &&
-		breakdown.totals.gross &&
-		envelopeCurrencyMatches
+		canUseFeeBreakdownData( charge ) &&
+		breakdown?.totals?.net &&
+		breakdown.totals.gross
 	) {
 		// Envelope is authoritative for the charge's *current* state:
 		// the server has already folded customer-refunds, dispute fees,
