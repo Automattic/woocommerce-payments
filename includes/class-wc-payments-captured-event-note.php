@@ -153,7 +153,7 @@ class WC_Payments_Captured_Event_Note {
 		// 'processing_fee' for the Amazon Pay non-card case, where our
 		// application fee was refunded). Fall back to "Fee" otherwise.
 		$totals_key     = isset( $breakdown['totals']['fee']['key'] ) ? (string) $breakdown['totals']['fee']['key'] : '';
-		$fee_line_label = self::resolve_totals_fee_label( $totals_key );
+		$fee_line_label = self::fee_label_from_key( $totals_key );
 		$lines[]        = '' !== $total_rate_text
 			? sprintf(
 				/* translators: 1: fee label (e.g. "Fee") 2: fee rate (e.g. 2.9% + $0.30) 3: monetary amount */
@@ -185,7 +185,7 @@ class WC_Payments_Captured_Event_Note {
 		if ( count( $fee_rows ) > 1 ) {
 			$indent = str_repeat( self::HTML_SPACE, 4 );
 			foreach ( $fee_rows as $row ) {
-				$label     = self::resolve_row_label( $row );
+				$label     = self::label_from_row( $row );
 				$row_curr  = $row['rate']['fixed_currency'] ?? ( $row['currency'] ?? $store_currency );
 				$rate_text = self::format_rate_text( $row['rate'] ?? null, $row_curr );
 				$lines[]   = $indent . ( '' !== $rate_text ? sprintf( '%1$s: %2$s', esc_html( $label ), esc_html( $rate_text ) ) : esc_html( $label ) );
@@ -242,9 +242,9 @@ class WC_Payments_Captured_Event_Note {
 
 		if ( ! empty( $breakdown['notes'] ) ) {
 			foreach ( $breakdown['notes'] as $note ) {
-				$note_text = self::resolve_note_text( $note );
+				$note_text = self::text_from_note( $note );
 				if ( null !== $note_text && '' !== $note_text ) {
-					// `resolve_note_text` already escapes its return — we
+					// `text_from_note` already escapes its return — we
 					// don't re-escape here so translators can't accidentally
 					// double-encode entities in the copy.
 					$lines[] = $note_text;
@@ -290,8 +290,6 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
-	 * Resolve the top-line label for the totals.fee block.
-	 *
 	 * Server emits a typed `key` on `totals.fee` for cases where the
 	 * default "Fee" wording is misleading — currently `processing_fee`
 	 * for the Amazon Pay non-card path where our application fee was
@@ -301,7 +299,7 @@ class WC_Payments_Captured_Event_Note {
 	 * @param string $key Server-provided key, or '' when absent.
 	 * @return string
 	 */
-	private static function resolve_totals_fee_label( string $key ): string {
+	private static function fee_label_from_key( string $key ): string {
 		switch ( $key ) {
 			case 'processing_fee':
 				return __( 'Processing fee', 'woocommerce-payments' );
@@ -311,17 +309,16 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
-	 * Resolve a row label from a fee_breakdown_v1 row.
-	 *
-	 * Derived from: the inline label-mapping inside compose_fee_break_down()
+	 * Derived from the inline label-mapping inside compose_fee_break_down()
 	 * in the same class (the branches that turn `type` + `additional_type`
 	 * into "Base fee" / "International card fee" / "Currency conversion fee"
-	 * / "Discount"). Now keyed by the server's typed row key.
+	 * / "Discount"). Now keyed by the server's typed row key so the envelope
+	 * can teach clients new labels without a PHP release.
 	 *
 	 * @param array $row Row entry from the envelope.
 	 * @return string
 	 */
-	private static function resolve_row_label( array $row ): string {
+	private static function label_from_row( array $row ): string {
 		if ( ! empty( $row['label'] ) ) {
 			// Server-provided label — escape on return so any downstream
 			// concat into the HTML order note can't leak attacker-
@@ -403,16 +400,15 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
-	 * Resolve a note text from a fee_breakdown_v1 note.
-	 *
-	 * Returns null when the note has no merchant-facing text. The server may
-	 * emit internal-only codes (e.g., refund provenance) for telemetry and
-	 * support; those never surface in the order note.
+	 * Returns null when the note has no merchant-facing text so the caller
+	 * can suppress it — the server emits internal-only codes (e.g. refund
+	 * provenance) for telemetry and support that must never surface in the
+	 * order note as raw strings.
 	 *
 	 * @param array $note Note entry from the envelope.
 	 * @return string|null
 	 */
-	private static function resolve_note_text( array $note ): ?string {
+	private static function text_from_note( array $note ): ?string {
 		$code = (string) ( $note['code'] ?? '' );
 		$meta = is_array( $note['meta'] ?? null ) ? $note['meta'] : [];
 
