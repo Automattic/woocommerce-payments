@@ -89,11 +89,10 @@ jobs:
       GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - name: "Slack ping"
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
         with:
+          webhook: ${{ secrets.CODE_FREEZE_SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           # For posting a rich message using Block Kit (https://api.slack.com/messaging/interactivity)
           payload: |
             {
