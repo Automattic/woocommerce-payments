@@ -37,7 +37,7 @@ const rowLabels: Record< string, string > = {
 /**
  * Preference order: explicit server `label` → dictionary match → raw key.
  */
-export function resolveRowLabel(
+export function resolveFeeRowLabel(
 	key: string,
 	label: string | null,
 	context: FeeBreakdownLabelContext = {}

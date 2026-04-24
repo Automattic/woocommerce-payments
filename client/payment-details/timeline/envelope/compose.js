@@ -39,7 +39,10 @@ import {
 } from 'multi-currency/interface/functions';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
 import { getLocalizedTaxDescription } from '../../utils/tax-descriptions';
-import { resolveNoteText, resolveRowLabel } from '../fee-breakdown-label-map';
+import {
+	resolveNoteText,
+	resolveFeeRowLabel,
+} from '../fee-breakdown-label-map';
 
 /**
  * Render the FX line for a captured event from the envelope's `fx` block.
@@ -163,7 +166,7 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 	// Server may flag the totals row with a typed `key` (e.g. 'processing_fee'
 	// for the Amazon Pay non-card case, where our application fee was
 	// refunded and only Stripe's passthrough remains). Fall back to "Fee".
-	const totalFeeLabel = resolveRowLabel(
+	const totalFeeLabel = resolveFeeRowLabel(
 		breakdown.totals.fee.key ?? '',
 		null
 	);
@@ -196,7 +199,7 @@ export const composeCapturedBodyFromBreakdown = ( event ) => {
 		lines.push(
 			<ul key="fee-breakdown" className="fee-breakdown-list">
 				{ feeRows.map( ( row, idx ) => {
-					const label = resolveRowLabel( row.key, row.label, {
+					const label = resolveFeeRowLabel( row.key, row.label, {
 						meta: row.meta,
 					} );
 					const rowCurrency =

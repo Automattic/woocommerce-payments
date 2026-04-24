@@ -16,7 +16,7 @@ import {
 import { formatCurrency } from 'multi-currency/interface/functions';
 import {
 	resolveNoteText,
-	resolveRowLabel,
+	resolveFeeRowLabel,
 } from 'wcpay/payment-details/timeline/fee-breakdown-label-map';
 
 interface Props {
@@ -67,7 +67,7 @@ const BreakdownRow: React.FC< {
 	row: TimelineFeeBreakdownRow;
 	storeCurrency: string;
 } > = ( { row, storeCurrency } ) => {
-	const label = resolveRowLabel( row.key, row.label, { meta: row.meta } );
+	const label = resolveFeeRowLabel( row.key, row.label, { meta: row.meta } );
 	const rateText = buildRateText(
 		row.rate?.percentage,
 		row.rate?.fixed,
