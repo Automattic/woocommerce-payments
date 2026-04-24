@@ -29,9 +29,12 @@ const FraudProtectionRuleCardNotice: React.FC<
 	const icon = type === 'info' ? <TipIcon /> : <NoticeOutlineIcon />;
 
 	return (
-		<InlineNotice status={ type } icon={ icon } isDismissible={ false }>
-			<span>{ children }</span>
-		</InlineNotice>
+		<InlineNotice
+			status={ type }
+			icon={ icon }
+			children={ children }
+			isDismissible={ false }
+		/>
 	);
 };
 

@@ -349,7 +349,11 @@ if ( class_exists( '\Automattic\WooCommerce\Admin\Settings\LegacySettingsPageAda
 					),
 					'order'       => 30,
 					'fields'      => [
-						$this->get_fraud_protection_rules_field(),
+						$this->get_display_field(
+							'advanced_fraud_protection_settings',
+							__( 'Advanced fraud protection', 'woocommerce-payments' ),
+							'woopayments/advanced-fraud-protection'
+						),
 					],
 				],
 			];
@@ -684,46 +688,6 @@ if ( class_exists( '\Automattic\WooCommerce\Admin\Settings\LegacySettingsPageAda
 			}
 
 			return '';
-		}
-
-		/**
-		 * Build the advanced fraud protection compound field.
-		 *
-		 * @return array
-		 */
-		private function get_fraud_protection_rules_field(): array {
-			return [
-				'id'          => 'advanced_fraud_protection_panel',
-				'label'       => __( 'Advanced fraud protection', 'woocommerce-payments' ),
-				'type'        => 'compound',
-				'description' => __( 'Configure fraud filters and their actions.', 'woocommerce-payments' ),
-				'component'   => 'woopayments/advanced-fraud-protection',
-				'save'        => [
-					'adapter' => 'none',
-				],
-				'fields'      => [
-					[
-						'id'    => 'current_protection_level',
-						'label' => __( 'Protection level', 'woocommerce-payments' ),
-						'type'  => 'text',
-						'value' => get_option( 'current_protection_level', 'basic' ),
-						'save'  => [
-							'adapter' => 'form_post',
-							'name'    => $this->gateway->get_field_key( 'current_protection_level' ),
-						],
-					],
-					[
-						'id'    => 'advanced_fraud_protection_settings',
-						'label' => __( 'Fraud rules', 'woocommerce-payments' ),
-						'type'  => 'text',
-						'value' => wp_json_encode( $this->gateway->get_option( 'advanced_fraud_protection_settings' ) ),
-						'save'  => [
-							'adapter' => 'form_post',
-							'name'    => $this->gateway->get_field_key( 'advanced_fraud_protection_settings' ),
-						],
-					],
-				],
-			];
 		}
 
 		/**
