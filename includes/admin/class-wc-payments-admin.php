@@ -184,7 +184,6 @@ class WC_Payments_Admin {
 	public function init_hooks() {
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
-		add_action( 'woocommerce_sections_checkout', [ $this, 'maybe_show_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'hide_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
 
@@ -205,6 +204,14 @@ class WC_Payments_Admin {
 		add_action( 'admin_footer', [ $this, 'inject_payment_settings_spotlight_container' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payments_review_prompt' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_test_to_live_notice_script' ] );
+
+		// Hook into the active WooCommerce settings tab so the div is injected
+		// inside the page content — after the tab/section navigation but before
+		// the settings form — bypassing the WC Admin notice interception.
+		if ( isset( $_GET['page'] ) && 'wc-settings' === sanitize_key( wp_unslash( $_GET['page'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			add_action( "woocommerce_sections_{$tab}", [ $this, 'maybe_show_test_to_live_notice' ] );
+		}
 	}
 
 	/**
