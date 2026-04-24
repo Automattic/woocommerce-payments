@@ -985,4 +985,91 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		\WCPay\Tracker::remove_admin_event( 'wcpay_test_to_live_notice_dismissed' );
 		unset( $_GET['wcpay-hide-test-to-live-notice'], $_GET['_wcpay_test_to_live_notice_nonce'] );
 	}
+
+	// -------------------------------------------------------------------------
+	// init_hooks — test-to-live notice hook registration
+	// -------------------------------------------------------------------------
+
+	public function test_init_hooks_registers_sections_hook_for_active_tab(): void {
+		$_GET['page'] = 'wc-settings';
+		$_GET['tab']  = 'general';
+		$admin        = $this->make_payments_admin_for_notice_test();
+
+		$admin->init_hooks();
+
+		$this->assertNotFalse(
+			has_action( 'woocommerce_sections_general', [ $admin, 'maybe_show_test_to_live_notice' ] )
+		);
+
+		remove_action( 'woocommerce_sections_general', [ $admin, 'maybe_show_test_to_live_notice' ] );
+		unset( $_GET['page'], $_GET['tab'] );
+	}
+
+	public function test_init_hooks_registers_sections_hook_for_checkout_tab(): void {
+		$_GET['page'] = 'wc-settings';
+		$_GET['tab']  = 'checkout';
+		$admin        = $this->make_payments_admin_for_notice_test();
+
+		$admin->init_hooks();
+
+		$this->assertNotFalse(
+			has_action( 'woocommerce_sections_checkout', [ $admin, 'maybe_show_test_to_live_notice' ] )
+		);
+
+		remove_action( 'woocommerce_sections_checkout', [ $admin, 'maybe_show_test_to_live_notice' ] );
+		unset( $_GET['page'], $_GET['tab'] );
+	}
+
+	public function test_init_hooks_defaults_to_general_tab_when_no_tab_param(): void {
+		$_GET['page'] = 'wc-settings';
+		unset( $_GET['tab'] );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$admin->init_hooks();
+
+		$this->assertNotFalse(
+			has_action( 'woocommerce_sections_general', [ $admin, 'maybe_show_test_to_live_notice' ] )
+		);
+
+		remove_action( 'woocommerce_sections_general', [ $admin, 'maybe_show_test_to_live_notice' ] );
+		unset( $_GET['page'] );
+	}
+
+	public function test_init_hooks_does_not_register_notice_when_not_on_wc_settings_page(): void {
+		$_GET['page'] = 'wc-admin';
+		$_GET['tab']  = 'checkout';
+		$admin        = $this->make_payments_admin_for_notice_test();
+
+		$admin->init_hooks();
+
+		$this->assertFalse(
+			has_action( 'woocommerce_sections_checkout', [ $admin, 'maybe_show_test_to_live_notice' ] )
+		);
+
+		unset( $_GET['page'], $_GET['tab'] );
+	}
+
+	public function test_init_hooks_does_not_register_notice_when_page_param_absent(): void {
+		unset( $_GET['page'] );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$admin->init_hooks();
+
+		$this->assertFalse(
+			has_action( 'woocommerce_sections_general', [ $admin, 'maybe_show_test_to_live_notice' ] )
+		);
+	}
+
+	public function test_maybe_show_test_to_live_notice_outputs_container_div(): void {
+		$this->set_up_notice_global_state();
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		ob_start();
+		$admin->maybe_show_test_to_live_notice();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '<div id="wcpay-test-to-live-notice">', $output );
+
+		$this->tear_down_notice_global_state();
+	}
 }
