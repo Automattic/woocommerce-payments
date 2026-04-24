@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Update Stripe JS libraries: @stripe/stripe-js to 9.2.0 and @stripe/react-stripe-js to 6.2.0.
