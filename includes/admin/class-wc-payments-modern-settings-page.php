@@ -74,6 +74,7 @@ final class WC_Payments_Modern_Settings_Page {
 
 		$this->gateway->process_admin_options();
 		$this->update_account_settings_from_post();
+		$this->update_fraud_protection_settings_from_post();
 	}
 
 	/**
@@ -121,6 +122,95 @@ final class WC_Payments_Modern_Settings_Page {
 		if ( is_wp_error( $result ) ) {
 			WC_Admin_Settings::add_error( $result->get_error_message() );
 		}
+	}
+
+	/**
+	 * Update fraud protection settings saved through the SDK compound field.
+	 *
+	 * @return void
+	 */
+	private function update_fraud_protection_settings_from_post() {
+		$protection_level_key = $this->gateway->get_field_key( 'current_protection_level' );
+		$ruleset_key          = $this->gateway->get_field_key( 'advanced_fraud_protection_settings' );
+
+		if ( ! isset( $_POST[ $protection_level_key ], $_POST[ $ruleset_key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked by WC_Admin_Settings::save().
+			return;
+		}
+
+		$protection_level = sanitize_key( wp_unslash( $_POST[ $protection_level_key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Nonce is checked by WC_Admin_Settings::save().
+
+		if ( ! in_array( $protection_level, [ 'basic', 'standard', 'high', 'advanced' ], true ) ) {
+			WC_Admin_Settings::add_error( __( 'Error: Invalid fraud protection level.', 'woocommerce-payments' ) );
+			return;
+		}
+
+		try {
+			$ruleset_config = $this->get_fraud_ruleset_for_protection_level( $protection_level, $ruleset_key );
+
+			WC_Payments::get_payments_api_client()->save_fraud_ruleset( $ruleset_config );
+			$this->gateway->update_cached_account_data(
+				'fraud_mitigation_settings',
+				[ 'avs_check_enabled' => $this->get_avs_check_enabled( $ruleset_config ) ]
+			);
+			delete_transient( 'wcpay_fraud_protection_settings' );
+			set_transient( 'wcpay_fraud_protection_settings', $ruleset_config, DAY_IN_SECONDS );
+			update_option( 'current_protection_level', $protection_level );
+		} catch ( Exception $exception ) {
+			WC_Admin_Settings::add_error( __( 'Error: Fraud protection settings were not saved.', 'woocommerce-payments' ) );
+		}
+	}
+
+	/**
+	 * Get the fraud ruleset for a protection level.
+	 *
+	 * @param string $protection_level Protection level.
+	 * @param string $ruleset_key      POST key for the advanced ruleset.
+	 * @return array
+	 * @throws InvalidArgumentException If the advanced ruleset is invalid.
+	 */
+	private function get_fraud_ruleset_for_protection_level( string $protection_level, string $ruleset_key ): array {
+		switch ( $protection_level ) {
+			case 'basic':
+				return \WCPay\Fraud_Prevention\Fraud_Risk_Tools::get_basic_protection_settings();
+			case 'standard':
+				return \WCPay\Fraud_Prevention\Fraud_Risk_Tools::get_standard_protection_settings();
+			case 'high':
+				return \WCPay\Fraud_Prevention\Fraud_Risk_Tools::get_high_protection_settings();
+			case 'advanced':
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce is checked by WC_Admin_Settings::save(); JSON is decoded and validated below.
+				$raw_ruleset      = wp_unslash( $_POST[ $ruleset_key ] ?? '' );
+				$received_ruleset = json_decode( $raw_ruleset, true );
+
+				if ( ! is_array( $received_ruleset ) ) {
+					throw new InvalidArgumentException( 'Invalid ruleset configuration' );
+				}
+
+				foreach ( $received_ruleset as $rule ) {
+					if ( ! is_array( $rule ) || ! \WCPay\Fraud_Prevention\Models\Rule::validate_array( $rule ) ) {
+						throw new InvalidArgumentException( 'Invalid ruleset configuration' );
+					}
+				}
+
+				return $received_ruleset;
+		}
+
+		return [];
+	}
+
+	/**
+	 * Determine if AVS checks are enabled in the ruleset.
+	 *
+	 * @param array $ruleset_config Ruleset config.
+	 * @return bool
+	 */
+	private function get_avs_check_enabled( array $ruleset_config ): bool {
+		foreach ( $ruleset_config as $rule_definition ) {
+			if ( isset( $rule_definition['key'] ) && 'avs_verification' === $rule_definition['key'] ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

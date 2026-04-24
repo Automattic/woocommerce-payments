@@ -1,19 +1,28 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import {
-	BaseControl,
-	Button,
-	CheckboxControl,
-	ToggleControl,
-} from '@wordpress/components';
+import React, { useMemo, useState } from 'react';
+import { BaseControl, Button, CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { RawHTML } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
+import FraudPreventionSettingsContext from '../settings/fraud-protection/advanced-settings/context';
+import AVSMismatchRuleCard from '../settings/fraud-protection/advanced-settings/cards/avs-mismatch';
+import CVCVerificationRuleCard from '../settings/fraud-protection/advanced-settings/cards/cvc-verification';
+import InternationalIPAddressRuleCard from '../settings/fraud-protection/advanced-settings/cards/international-ip-address';
+import IPAddressMismatchRuleCard from '../settings/fraud-protection/advanced-settings/cards/ip-address-mismatch';
+import AddressMismatchRuleCard from '../settings/fraud-protection/advanced-settings/cards/address-mismatch';
+import PurchasePriceThresholdRuleCard from '../settings/fraud-protection/advanced-settings/cards/purchase-price-threshold';
+import OrderItemsThresholdRuleCard from '../settings/fraud-protection/advanced-settings/cards/order-items-threshold';
+import { ProtectionLevel } from '../settings/fraud-protection/advanced-settings/constants';
+import {
+	readRuleset,
+	writeRuleset,
+} from '../settings/fraud-protection/advanced-settings/utils';
+import { ProtectionSettingsUI } from '../settings/fraud-protection/interfaces';
 import './style.scss';
 
 type SettingsFieldValue = string | number | boolean | string[] | null;
@@ -31,10 +40,18 @@ type SettingsFieldComponentProps = {
 			icon?: string;
 			category?: string;
 		} >;
+		fields?: Array< {
+			id: string;
+			label: string;
+			type: string;
+			value?: SettingsFieldValue;
+		} >;
 		disabled?: boolean;
 	};
 	value: SettingsFieldValue;
+	values: Record< string, SettingsFieldValue >;
 	onChange: ( value: SettingsFieldValue ) => void;
+	onFieldChange: ( fieldId: string, value: SettingsFieldValue ) => void;
 };
 
 declare global {
@@ -329,114 +346,81 @@ const ExpressCheckoutsField = () => {
 	);
 };
 
+const parseRulesetValue = ( value: SettingsFieldValue ) => {
+	if ( typeof value !== 'string' ) {
+		return Array.isArray( value ) ? value : [];
+	}
+
+	try {
+		const parsedValue = JSON.parse( value );
+		return Array.isArray( parsedValue ) ? parsedValue : [];
+	} catch ( error ) {
+		return [];
+	}
+};
+
+const hasEnabledFraudRule = ( settings: ProtectionSettingsUI ) =>
+	Object.values( settings ).some( ( setting ) => setting.enabled );
+
 const AdvancedFraudProtectionField = ( {
-	value,
+	values,
+	onFieldChange,
 }: SettingsFieldComponentProps ) => {
-	const parsedRules = ( () => {
-		try {
-			return typeof value === 'string' ? JSON.parse( value ) : [];
-		} catch ( error ) {
-			return [];
-		}
-	} )();
-	const enabledRules = Array.isArray( parsedRules )
-		? parsedRules
-				.filter( ( rule ) => rule?.key )
-				.map( ( rule ) => rule.key )
-		: [];
-	const ruleCards = [
-		{
-			id: 'avs_verification',
-			title: __( 'AVS Mismatch', 'woocommerce-payments' ),
-			label: __( 'Enable AVS Mismatch filter', 'woocommerce-payments' ),
-			description: __(
-				'This filter compares the street number and the post code submitted by the customer against the data on file with the card issuer. When enabled the payment will be blocked.',
-				'woocommerce-payments'
-			),
-			help: __(
-				'Buyers who can provide the street number and post code on file with the issuing bank are more likely to be the actual account holder.',
-				'woocommerce-payments'
-			),
-		},
-		{
-			id: 'international_ip_address',
-			title: __( 'International IP Address', 'woocommerce-payments' ),
-			label: '',
-			description: __(
-				'This filter is disabled because you’re currently selling to all countries.',
-				'woocommerce-payments'
-			),
-			help: __(
-				'You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information.',
-				'woocommerce-payments'
-			),
-			notice: true,
-		},
-		{
-			id: 'ip_address_mismatch',
-			title: __( 'IP Address Mismatch', 'woocommerce-payments' ),
-			label: __(
-				'Enable IP Address Mismatch filter',
-				'woocommerce-payments'
-			),
-			description: __(
-				'This filter screens for customer’s IP address to see if it is in a different country than indicated in their billing address.',
-				'woocommerce-payments'
-			),
-			help: __(
-				'Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in one country, but the billing address is in another, that could signal potential fraud.',
-				'woocommerce-payments'
-			),
-		},
-		{
-			id: 'address_mismatch',
-			title: __( 'Address Mismatch', 'woocommerce-payments' ),
-			label: __(
-				'Enable Address Mismatch filter',
-				'woocommerce-payments'
-			),
-			description: __(
-				'This filter screens for differences between the shipping information and the billing information.',
-				'woocommerce-payments'
-			),
-			help: __(
-				'There are legitimate reasons for a billing/shipping mismatch, but a mismatch could also indicate that someone is using a stolen identity.',
-				'woocommerce-payments'
-			),
-		},
-	];
+	const initialRuleset = useMemo(
+		() => parseRulesetValue( values.advanced_fraud_protection_settings ),
+		[ values.advanced_fraud_protection_settings ]
+	);
+	const [ protectionSettingsUI, setProtectionSettingsUIState ] =
+		useState< ProtectionSettingsUI >( () => readRuleset( initialRuleset ) );
+
+	const updatePersistedValues = ( nextSettings: ProtectionSettingsUI ) => {
+		const nextRuleset = writeRuleset( nextSettings );
+		const nextProtectionLevel = hasEnabledFraudRule( nextSettings )
+			? ProtectionLevel.ADVANCED
+			: ProtectionLevel.BASIC;
+
+		onFieldChange(
+			'advanced_fraud_protection_settings',
+			JSON.stringify( nextRuleset )
+		);
+		onFieldChange( 'current_protection_level', nextProtectionLevel );
+	};
+
+	const setProtectionSettingsUI = (
+		update:
+			| ProtectionSettingsUI
+			| ( ( settings: ProtectionSettingsUI ) => ProtectionSettingsUI )
+	) => {
+		setProtectionSettingsUIState( ( currentSettings ) => {
+			const nextSettings =
+				typeof update === 'function'
+					? update( currentSettings )
+					: update;
+
+			updatePersistedValues( nextSettings );
+
+			return nextSettings;
+		} );
+	};
 
 	return (
-		<div className="woopayments-modern-settings-fraud-cards">
-			{ ruleCards.map( ( rule ) => (
-				<div
-					key={ rule.id }
-					className="woopayments-modern-settings-card woopayments-modern-settings-fraud-card"
-				>
-					<h3>{ rule.title }</h3>
-					{ rule.notice ? (
-						<div className="woopayments-modern-settings-notice">
-							{ rule.description }
-						</div>
-					) : (
-						<ToggleControl
-							label={ rule.label }
-							checked={ enabledRules.includes( rule.id ) }
-							onChange={ () => undefined }
-							__nextHasNoMarginBottom
-						/>
-					) }
-					{ ! rule.notice ? <p>{ rule.description }</p> : null }
-					<h4>
-						{ __(
-							'How does this filter protect me?',
-							'woocommerce-payments'
-						) }
-					</h4>
-					<p>{ rule.help }</p>
-				</div>
-			) ) }
-		</div>
+		<FraudPreventionSettingsContext.Provider
+			value={ {
+				protectionSettingsUI,
+				setProtectionSettingsUI,
+				setIsDirty: () => undefined,
+			} }
+		>
+			<div className="woopayments-modern-settings-fraud-cards">
+				<AVSMismatchRuleCard />
+				<InternationalIPAddressRuleCard />
+				<IPAddressMismatchRuleCard />
+				<AddressMismatchRuleCard />
+				<PurchasePriceThresholdRuleCard />
+				<OrderItemsThresholdRuleCard />
+				<CVCVerificationRuleCard />
+			</div>
+		</FraudPreventionSettingsContext.Provider>
 	);
 };
 

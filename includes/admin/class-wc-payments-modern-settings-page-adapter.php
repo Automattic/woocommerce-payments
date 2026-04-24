@@ -226,7 +226,23 @@ if ( class_exists( '\Automattic\WooCommerce\Admin\Settings\LegacySettingsPageAda
 				'fraud-protection'          => [
 					'id'          => 'fraud-protection',
 					'title'       => __( 'Fraud protection', 'woocommerce-payments' ),
-					'description' => __( 'Help avoid unauthorized transactions and disputes by setting your fraud protection level.', 'woocommerce-payments' ),
+					'description' => sprintf(
+						/* translators: %s: WooPayments fraud protection documentation link. */
+						__( 'Help avoid unauthorized transactions and disputes by setting your fraud protection level. %s', 'woocommerce-payments' ),
+						'<a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Learn more', 'woocommerce-payments' ) . '</a>'
+					),
+					'actions'     => [
+						[
+							'id'      => 'configure-fraud-protection',
+							'label'   => __( 'Configure', 'woocommerce-payments' ),
+							'href'    => add_query_arg(
+								self::TAB_QUERY_ARG,
+								self::TAB_FRAUD_PROTECTION,
+								admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . WC_Payment_Gateway_WCPay::GATEWAY_ID )
+							),
+							'variant' => 'secondary',
+						],
+					],
 					'order'       => 3,
 					'fields'      => [
 						$this->get_display_field(
@@ -326,14 +342,14 @@ if ( class_exists( '\Automattic\WooCommerce\Admin\Settings\LegacySettingsPageAda
 				'advanced-fraud-protection' => [
 					'id'          => 'advanced-fraud-protection',
 					'title'       => __( 'Filter configuration', 'woocommerce-payments' ),
-					'description' => __( 'Set up advanced fraud filters. Enable at least one filter to activate advanced protection.', 'woocommerce-payments' ),
+					'description' => sprintf(
+						/* translators: %s: WooPayments fraud protection documentation link. */
+						__( 'Set up advanced fraud filters. Enable at least one filter to activate advanced protection. %s', 'woocommerce-payments' ),
+						'<a href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Learn more', 'woocommerce-payments' ) . '</a>'
+					),
 					'order'       => 30,
 					'fields'      => [
-						$this->get_display_field(
-							'advanced_fraud_protection_settings',
-							__( 'Advanced fraud protection', 'woocommerce-payments' ),
-							'woopayments/advanced-fraud-protection'
-						),
+						$this->get_fraud_protection_rules_field(),
 					],
 				],
 			];
@@ -668,6 +684,46 @@ if ( class_exists( '\Automattic\WooCommerce\Admin\Settings\LegacySettingsPageAda
 			}
 
 			return '';
+		}
+
+		/**
+		 * Build the advanced fraud protection compound field.
+		 *
+		 * @return array
+		 */
+		private function get_fraud_protection_rules_field(): array {
+			return [
+				'id'          => 'advanced_fraud_protection_panel',
+				'label'       => __( 'Advanced fraud protection', 'woocommerce-payments' ),
+				'type'        => 'compound',
+				'description' => __( 'Configure fraud filters and their actions.', 'woocommerce-payments' ),
+				'component'   => 'woopayments/advanced-fraud-protection',
+				'save'        => [
+					'adapter' => 'none',
+				],
+				'fields'      => [
+					[
+						'id'    => 'current_protection_level',
+						'label' => __( 'Protection level', 'woocommerce-payments' ),
+						'type'  => 'text',
+						'value' => get_option( 'current_protection_level', 'basic' ),
+						'save'  => [
+							'adapter' => 'form_post',
+							'name'    => $this->gateway->get_field_key( 'current_protection_level' ),
+						],
+					],
+					[
+						'id'    => 'advanced_fraud_protection_settings',
+						'label' => __( 'Fraud rules', 'woocommerce-payments' ),
+						'type'  => 'text',
+						'value' => wp_json_encode( $this->gateway->get_option( 'advanced_fraud_protection_settings' ) ),
+						'save'  => [
+							'adapter' => 'form_post',
+							'name'    => $this->gateway->get_field_key( 'advanced_fraud_protection_settings' ),
+						],
+					],
+				],
+			];
 		}
 
 		/**
