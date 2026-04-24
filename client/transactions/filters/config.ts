@@ -2,11 +2,11 @@
  * External dependencies
  */
 import { __, _x, sprintf } from '@wordpress/i18n';
-import { getSetting } from '@woocommerce/settings';
 
 /**
  * Internal dependencies
  */
+import { getSetting } from 'wcpay/utils/wc-settings';
 import {
 	displayType,
 	sourceDevice,
