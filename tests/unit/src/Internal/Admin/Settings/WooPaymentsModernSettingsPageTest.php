@@ -79,13 +79,14 @@ class WooPaymentsModernSettingsPageTest extends WCPAY_UnitTestCase {
 
 		$definitions = $this->page->get_settings_definitions();
 
-		$this->assertSame( 'manual_capture', $definitions[0]['id'] );
+		$this->assertSame( 'woocommerce_woocommerce_payments_manual_capture', $definitions[0]['id'] );
 		$this->assertSame( 'woocommerce_woocommerce_payments_manual_capture', $definitions[0]['field_name'] );
+		$this->assertSame( 'woocommerce_woocommerce_payments_manual_capture', $definitions[0]['name'] );
 		$this->assertSame( 'Capture later', $definitions[0]['title'] );
 		$this->assertSame( 'Authorize at checkout.', $definitions[0]['desc'] );
 		$this->assertSame( 'no', $definitions[0]['value'] );
 
-		$this->assertSame( 'platform_checkout_custom_message', $definitions[1]['id'] );
+		$this->assertSame( 'woocommerce_woocommerce_payments_platform_checkout_custom_message', $definitions[1]['id'] );
 		$this->assertSame( 'text', $definitions[1]['type'] );
 		$this->assertSame( 'WooPay custom message', $definitions[1]['title'] );
 		$this->assertSame( 'Default WooPay message', $definitions[1]['value'] );

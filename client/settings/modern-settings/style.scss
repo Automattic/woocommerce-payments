@@ -1,0 +1,46 @@
+.wcpay-modern-settings-multiselect {
+	.components-base-control__label {
+		display: block;
+		margin-bottom: 8px;
+		font-weight: 500;
+	}
+
+	.components-base-control__help {
+		margin-top: 8px;
+	}
+}
+
+.wcpay-modern-settings-multiselect__checkboxes {
+	display: grid;
+	grid-template-columns: repeat( auto-fit, minmax( 180px, 1fr ) );
+	gap: 10px 16px;
+	padding: 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fff;
+}
+
+.wcpay-modern-settings-payment-methods {
+	.payment-methods-list {
+		margin: 0;
+		padding: 0;
+		border: 1px solid #dcdcde;
+		border-radius: 4px;
+		background: #fff;
+	}
+
+	.payment-method-item {
+		padding: 16px;
+	}
+
+	.payment-method-item__icon img {
+		max-width: 64px;
+		max-height: 40px;
+	}
+
+	.payment-method__required-label {
+		margin-left: 4px;
+		color: #646970;
+		font-weight: 400;
+	}
+}

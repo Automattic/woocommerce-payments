@@ -93,7 +93,10 @@ final class WooPaymentsModernSettingsPage implements ReactSettingsPageInterface 
 	 * @return array<int, array{label: string, value: string}>|null
 	 */
 	public function get_field_options( string $field_id, array $field, string $section ): ?array {
-		if ( 'upe_enabled_payment_method_ids' !== $field_id ) {
+		if (
+			'upe_enabled_payment_method_ids' !== $field_id
+			&& $this->gateway->get_field_key( 'upe_enabled_payment_method_ids' ) !== $field_id
+		) {
 			return null;
 		}
 
@@ -135,7 +138,10 @@ final class WooPaymentsModernSettingsPage implements ReactSettingsPageInterface 
 		$GLOBALS['hide_save_button'] = true;
 		wp_dequeue_script( 'woocommerce_settings' );
 
-		$this->output_preloaded_settings_data( $render_plan['payload_path'], $render_plan['response'] );
+		$response = $this->include_ungrouped_fields_in_response( $render_plan['response'], $settings_definitions );
+
+		$this->enqueue_modern_settings_assets();
+		$this->enqueue_preloaded_settings_data( $render_plan['payload_path'], $response );
 		$this->output_checkbox_save_compatibility_script( $render_plan['mount_id'] );
 
 		echo '<div id="' . esc_attr( $render_plan['mount_id'] ) . '" data-wc-modern-settings="1" data-wc-settings-tab="' . esc_attr( self::TAB_ID ) . '" data-wc-settings-section="' . esc_attr( self::SECTION_ID ) . '"> </div>';
@@ -187,8 +193,9 @@ final class WooPaymentsModernSettingsPage implements ReactSettingsPageInterface 
 	 * @return array<string, mixed>
 	 */
 	private function normalize_gateway_field( string $field_id, array $field ): array {
-		$field['id']         = $field_id;
-		$field['field_name'] = $this->gateway->get_field_key( $field_id );
+		$field['id']         = $this->gateway->get_field_key( $field_id );
+		$field['field_name'] = $field['id'];
+		$field['name']       = $field['field_name'];
 		$field['value']      = $this->gateway->get_option( $field_id );
 
 		if ( empty( $field['type'] ) ) {
@@ -225,13 +232,13 @@ final class WooPaymentsModernSettingsPage implements ReactSettingsPageInterface 
 	}
 
 	/**
-	 * Preload the settings payload for WooCommerce's settings embed registry.
+	 * Enqueue the settings payload for WooCommerce's settings embed registry.
 	 *
 	 * @param array<int, string>   $payload_path Payload path.
 	 * @param array<string, mixed> $response     React settings response.
 	 * @return void
 	 */
-	private function output_preloaded_settings_data( array $payload_path, array $response ): void {
+	private function enqueue_preloaded_settings_data( array $payload_path, array $response ): void {
 		$script = sprintf(
 			'( function() {
 				window.wcSettings = window.wcSettings || {};
@@ -248,12 +255,157 @@ final class WooPaymentsModernSettingsPage implements ReactSettingsPageInterface 
 			wp_json_encode( $response )
 		);
 
-		wp_print_inline_script_tag(
+		wp_add_inline_script(
+			'wc-admin-settings-embed',
 			$script,
-			[
-				'id' => 'wcpay-modern-settings-data',
-			]
+			'before'
 		);
+	}
+
+	/**
+	 * Enqueue WCPay settings assets before WooCommerce mounts the modern settings app.
+	 *
+	 * @return void
+	 */
+	private function enqueue_modern_settings_assets(): void {
+		if ( ! wp_script_is( 'WCPAY_ADMIN_SETTINGS', 'registered' ) ) {
+			return;
+		}
+
+		wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
+		wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
+
+		$wp_scripts = wp_scripts();
+		if (
+			isset( $wp_scripts->registered['wc-admin-settings-embed'] )
+			&& ! in_array( 'WCPAY_ADMIN_SETTINGS', $wp_scripts->registered['wc-admin-settings-embed']->deps, true )
+		) {
+			$wp_scripts->registered['wc-admin-settings-embed']->deps[] = 'WCPAY_ADMIN_SETTINGS';
+		}
+	}
+
+	/**
+	 * Include fields that WooCommerce's current response builder drops before the first title marker.
+	 *
+	 * @param array<string, mixed>            $response    React settings response.
+	 * @param array<int, array<string,mixed>> $definitions Settings definitions.
+	 * @return array<string, mixed>
+	 */
+	private function include_ungrouped_fields_in_response( array $response, array $definitions ): array {
+		$fields = [];
+		$values = [];
+
+		foreach ( $definitions as $definition ) {
+			$type = isset( $definition['type'] ) && is_string( $definition['type'] ) ? $definition['type'] : 'text';
+
+			if ( 'title' === $type ) {
+				break;
+			}
+
+			if ( 'sectionend' === $type || empty( $definition['id'] ) ) {
+				continue;
+			}
+
+			$field = $this->transform_definition_to_field( $definition );
+			if ( empty( $field['id'] ) || ! is_string( $field['id'] ) ) {
+				continue;
+			}
+
+			$fields[]               = $field;
+			$values[ $field['id'] ] = $this->normalize_field_value( $definition['value'] ?? ( $definition['default'] ?? '' ), $field['type'] );
+		}
+
+		if ( empty( $fields ) ) {
+			return $response;
+		}
+
+		$groups = isset( $response['groups'] ) && is_array( $response['groups'] ) ? $response['groups'] : [];
+
+		$response['groups'] = array_merge(
+			[
+				'woocommerce_payments_general' => [
+					'title'       => __( 'General', 'woocommerce-payments' ),
+					'description' => '',
+					'order'       => -1,
+					'fields'      => $fields,
+				],
+			],
+			$groups
+		);
+		$response['values'] = array_merge(
+			$values,
+			isset( $response['values'] ) && is_array( $response['values'] ) ? $response['values'] : []
+		);
+
+		return $response;
+	}
+
+	/**
+	 * Transform a normalized gateway definition to a React settings field.
+	 *
+	 * @param array<string, mixed> $definition Gateway definition.
+	 * @return array<string, mixed>
+	 */
+	private function transform_definition_to_field( array $definition ): array {
+		$type      = isset( $definition['type'] ) && is_string( $definition['type'] ) ? $definition['type'] : 'text';
+		$type_map  = $this->get_extra_type_map( self::SECTION_ID );
+		$type      = isset( $type_map[ $type ] ) ? $type_map[ $type ] : $type;
+		$field     = [
+			'id'    => $definition['id'],
+			'label' => $definition['title'] ?? $definition['name'] ?? $definition['id'],
+			'type'  => $type,
+			'desc'  => $definition['desc'] ?? '',
+		];
+		$pass_keys = [
+			'class',
+			'css',
+			'custom_attributes',
+			'disabled',
+			'field_name',
+			'name',
+			'placeholder',
+			'row_class',
+			'suffix',
+		];
+
+		foreach ( $pass_keys as $key ) {
+			if ( array_key_exists( $key, $definition ) ) {
+				$field[ $key ] = $definition[ $key ];
+			}
+		}
+
+		if ( isset( $definition['options'] ) && is_array( $definition['options'] ) ) {
+			$field['options'] = $definition['options'];
+		}
+
+		return $field;
+	}
+
+	/**
+	 * Normalize field values to the shape expected by the modern settings SDK.
+	 *
+	 * @param mixed  $value Field value.
+	 * @param string $type  Field type.
+	 * @return mixed
+	 */
+	private function normalize_field_value( $value, string $type ) {
+		if ( 'checkbox' === $type || 'toggle' === $type ) {
+			return wc_string_to_bool( $value );
+		}
+
+		if ( 'multiselect' === $type ) {
+			return is_array( $value ) ? array_values( $value ) : [];
+		}
+
+		if ( 'number' === $type ) {
+			if ( '' === $value || null === $value ) {
+				return '';
+			}
+
+			return is_numeric( $value ) ? (float) $value : 0;
+		}
+
+		return is_string( $value ) ? $value : (string) $value;
 	}
 
 	/**

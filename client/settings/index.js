@@ -12,6 +12,7 @@ import SettingsManager from './settings-manager';
 import ExpressCheckoutSettings from './express-checkout-settings';
 import WCPaySettingsContext from './wcpay-settings-context';
 import ErrorBoundary from '../components/error-boundary';
+import './modern-settings';
 
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( wcpaySettings.fraudServices );
