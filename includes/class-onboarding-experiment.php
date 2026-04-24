@@ -16,7 +16,15 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Accelerated-onboarding experiment wrapper.
  *
- * @internal Remove together with the branch in WC_Payments_Account::maybe_redirect_from_connect_page() when the experiment ends.
+ * @internal When the experiment ends, remove together with:
+ *   - WC_Payments_Account::maybe_accelerate_onboarding() and the branch added to
+ *     maybe_redirect_from_connect_page().
+ *   - WC_Payments_Account::maybe_redirect_from_payments_settings_to_onboarding().
+ *   - The `wcpay-skip-accelerated-onboarding=1` param appended in
+ *     client/onboarding/index.tsx handleExit().
+ *   - User meta cleanup (one-shot migration) for USER_META_VARIATION_KEY and
+ *     USER_META_BYPASS_KEY. Do NOT delete USER_META_ANON_ID_KEY —
+ *     'jetpack_tracks_anon_id' is shared with Jetpack and WooPay tracking.
  */
 class Onboarding_Experiment {
 	const EXPERIMENT_NAME         = 'woopayments_accelerated_onboarding_202604';
@@ -43,12 +51,31 @@ class Onboarding_Experiment {
 	}
 
 	/**
-	 * Resolve the variation for the current user, caching the result in user meta.
+	 * Whether the current user already has a variation cached in user meta.
 	 *
-	 * The first call per user goes to ExPlat; subsequent calls read the cached variation
-	 * so the merchant's arm stays stable even if ExPlat is temporarily unreachable.
+	 * Lets callers distinguish first exposure (fire a Tracks event) from subsequent reads
+	 * (stay quiet). Does not mutate state.
 	 *
-	 * @return string Either 'control' or 'treatment'. Defaults to 'control' on any failure.
+	 * @return bool
+	 */
+	public function has_assigned_variation(): bool {
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			return false;
+		}
+
+		$cached = get_user_meta( $user_id, self::USER_META_VARIATION_KEY, true );
+		return is_string( $cached ) && '' !== $cached;
+	}
+
+	/**
+	 * Resolve the variation for the current user, caching real ExPlat responses in user meta.
+	 *
+	 * The first successful call per user goes to ExPlat; subsequent calls read the cached
+	 * variation so the merchant's arm stays stable. When ExPlat is unreachable we return
+	 * 'control' transiently without caching, so a later call can still assign the user.
+	 *
+	 * @return string Either 'control' or 'treatment'. Transient 'control' on ExPlat failure.
 	 */
 	public function get_variation(): string {
 		$user_id = get_current_user_id();
@@ -62,7 +89,7 @@ class Onboarding_Experiment {
 
 		$variation = $this->get_abtest()->get_variation( self::EXPERIMENT_NAME );
 		if ( ! is_string( $variation ) || '' === $variation ) {
-			$variation = self::VARIATION_CONTROL;
+			return self::VARIATION_CONTROL;
 		}
 
 		if ( $user_id ) {
@@ -144,7 +171,7 @@ class Onboarding_Experiment {
 			return '';
 		}
 
-		add_user_meta( $user_id, self::USER_META_ANON_ID_KEY, $anon_id, false );
+		update_user_meta( $user_id, self::USER_META_ANON_ID_KEY, $anon_id );
 		return $anon_id;
 	}
 }

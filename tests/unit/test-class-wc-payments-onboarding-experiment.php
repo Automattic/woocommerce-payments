@@ -56,23 +56,72 @@ class Onboarding_Experiment_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'treatment', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY, true ) );
 	}
 
-	public function test_get_variation_defaults_to_control_when_abtest_returns_null() {
+	public function test_get_variation_returns_transient_control_without_persisting_when_abtest_returns_null() {
 		$abtest = $this->createMock( Experimental_Abtest::class );
 		$abtest->method( 'get_variation' )->willReturn( null );
 
 		$experiment = new Onboarding_Experiment( $abtest );
 
 		$this->assertSame( 'control', $experiment->get_variation() );
-		$this->assertSame( 'control', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY, true ) );
+		$this->assertSame( '', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY, true ) );
 	}
 
-	public function test_get_variation_defaults_to_control_when_abtest_returns_empty_string() {
+	public function test_get_variation_returns_transient_control_without_persisting_when_abtest_returns_empty_string() {
 		$abtest = $this->createMock( Experimental_Abtest::class );
 		$abtest->method( 'get_variation' )->willReturn( '' );
 
 		$experiment = new Onboarding_Experiment( $abtest );
 
 		$this->assertSame( 'control', $experiment->get_variation() );
+		$this->assertSame( '', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY, true ) );
+	}
+
+	public function test_get_variation_retries_abtest_after_transient_failure() {
+		$abtest = $this->createMock( Experimental_Abtest::class );
+		$abtest->expects( $this->exactly( 2 ) )
+			->method( 'get_variation' )
+			->willReturnOnConsecutiveCalls( null, 'treatment' );
+
+		$experiment = new Onboarding_Experiment( $abtest );
+
+		$this->assertSame( 'control', $experiment->get_variation() );
+		$this->assertSame( 'treatment', $experiment->get_variation() );
+		$this->assertSame( 'treatment', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY, true ) );
+	}
+
+	public function test_has_assigned_variation_returns_false_before_any_assignment() {
+		$experiment = new Onboarding_Experiment( $this->createMock( Experimental_Abtest::class ) );
+
+		$this->assertFalse( $experiment->has_assigned_variation() );
+	}
+
+	public function test_has_assigned_variation_returns_true_after_successful_assignment() {
+		$abtest = $this->createMock( Experimental_Abtest::class );
+		$abtest->method( 'get_variation' )->willReturn( 'treatment' );
+
+		$experiment = new Onboarding_Experiment( $abtest );
+		$experiment->get_variation();
+
+		$this->assertTrue( $experiment->has_assigned_variation() );
+	}
+
+	public function test_has_assigned_variation_returns_false_after_abtest_failure() {
+		$abtest = $this->createMock( Experimental_Abtest::class );
+		$abtest->method( 'get_variation' )->willReturn( null );
+
+		$experiment = new Onboarding_Experiment( $abtest );
+		$experiment->get_variation();
+
+		$this->assertFalse( $experiment->has_assigned_variation() );
+	}
+
+	public function test_has_assigned_variation_without_logged_in_user_returns_false() {
+		update_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY, 'treatment' );
+		wp_set_current_user( 0 );
+
+		$experiment = new Onboarding_Experiment( $this->createMock( Experimental_Abtest::class ) );
+
+		$this->assertFalse( $experiment->has_assigned_variation() );
 	}
 
 	public function test_has_bypass_returns_false_when_meta_absent() {

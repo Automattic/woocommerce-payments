@@ -1180,7 +1180,27 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return bool True when a treatment redirect was issued, false otherwise.
 	 */
 	private function maybe_accelerate_onboarding( string $from ): bool {
-		if ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK !== $from ) {
+		$experiment = WC_Payments::get_onboarding_experiment();
+		$source     = WC_Payments_Onboarding_Service::get_source();
+		$from_task  = WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK === $from;
+
+		// Consume the bypass query arg regardless of `from` so the merchant's opt-out
+		// from the NOX exit (which carries `from=WCPAY_ONBOARDING_WIZARD`) still lands.
+		if ( isset( $_GET['wcpay-skip-accelerated-onboarding'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$experiment->set_bypass();
+			if ( $from_task ) {
+				$this->tracks_event(
+					'wcpay_onboarding_experiment_bypass',
+					[
+						'via'    => 'query',
+						'source' => $source,
+					]
+				);
+			}
+			return false;
+		}
+
+		if ( ! $from_task ) {
 			return false;
 		}
 
@@ -1188,35 +1208,23 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return false;
 		}
 
-		$experiment = WC_Payments::get_onboarding_experiment();
-		$source     = WC_Payments_Onboarding_Service::get_source();
-
-		if ( isset( $_GET['wcpay-skip-accelerated-onboarding'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$experiment->set_bypass();
-			$this->tracks_event(
-				'wcpay_onboarding_experiment_bypass',
-				[
-					'via'    => 'query',
-					'source' => $source,
-				]
-			);
-			return false;
-		}
-
 		if ( $experiment->has_bypass() ) {
 			return false;
 		}
 
-		$variation = $experiment->get_variation();
+		$is_first_exposure = ! $experiment->has_assigned_variation();
+		$variation         = $experiment->get_variation();
 
-		$this->tracks_event(
-			'wcpay_onboarding_experiment_exposure',
-			[
-				'experiment' => Onboarding_Experiment::EXPERIMENT_NAME,
-				'variation'  => $variation,
-				'source'     => $source,
-			]
-		);
+		if ( $is_first_exposure ) {
+			$this->tracks_event(
+				'wcpay_onboarding_experiment_exposure',
+				[
+					'experiment' => Onboarding_Experiment::EXPERIMENT_NAME,
+					'variation'  => $variation,
+					'source'     => $source,
+				]
+			);
+		}
 
 		if ( Onboarding_Experiment::VARIATION_TREATMENT !== $variation ) {
 			return false;

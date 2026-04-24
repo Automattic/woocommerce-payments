@@ -29,6 +29,7 @@ const OnboardingStepper = () => {
 				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
 				'unknown',
 			from: 'WCPAY_ONBOARDING_WIZARD',
+			'wcpay-skip-accelerated-onboarding': '1',
 		} );
 	};
 

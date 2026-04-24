@@ -1404,7 +1404,7 @@ class WC_Payments {
 	 *
 	 * @return Onboarding_Experiment
 	 */
-	public static function get_onboarding_experiment() {
+	public static function get_onboarding_experiment(): Onboarding_Experiment {
 		return self::$onboarding_experiment;
 	}
 
