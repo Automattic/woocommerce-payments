@@ -184,8 +184,7 @@ class WC_Payments_Admin {
 	public function init_hooks() {
 		add_action( 'admin_notices', [ $this, 'display_not_supported_currency_notice' ], 9999 );
 		add_action( 'admin_notices', [ $this, 'display_isk_decimal_notice' ] );
-		add_action( 'admin_notices', [ $this, 'maybe_show_test_to_live_notice' ] );
-		add_action( 'woocommerce_before_settings_checkout', [ $this, 'maybe_show_test_to_live_notice' ] );
+		add_action( 'woocommerce_sections_checkout', [ $this, 'maybe_show_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'hide_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
 
@@ -205,6 +204,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payment_settings_spotlight' ] );
 		add_action( 'admin_footer', [ $this, 'inject_payment_settings_spotlight_container' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payments_review_prompt' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_test_to_live_notice_script' ] );
 	}
 
 	/**
@@ -744,6 +744,17 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/wc-payments-review-prompt.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/wc-payments-review-prompt.css' ),
+			'all'
+		);
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_TEST_TO_LIVE_NOTICE', 'dist/wc-payments-test-to-live-notice' );
+		wp_set_script_translations( 'WCPAY_TEST_TO_LIVE_NOTICE', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_TEST_TO_LIVE_NOTICE',
+			plugins_url( 'dist/wc-payments-test-to-live-notice.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/wc-payments-test-to-live-notice.css' ),
 			'all'
 		);
 	}
@@ -1636,6 +1647,37 @@ class WC_Payments_Admin {
 	}
 
 	/**
+	 * Enqueue the test-to-live notice React bundle when the notice is eligible to be shown.
+	 *
+	 * @return void
+	 */
+	public function enqueue_test_to_live_notice_script() {
+		if ( ! $this->should_show_test_to_live_notice() ) {
+			return;
+		}
+
+		wp_localize_script(
+			'WCPAY_TEST_TO_LIVE_NOTICE',
+			'wcpayTestToLiveNoticeSettings',
+			[
+				'ctaUrl'     => wp_nonce_url(
+					add_query_arg( 'wcpay-test-to-live-cta', '1' ),
+					'wcpay_test_to_live_cta_nonce',
+					'_wcpay_test_to_live_cta_nonce'
+				),
+				'dismissUrl' => wp_nonce_url(
+					add_query_arg( 'wcpay-hide-test-to-live-notice', '1' ),
+					'wcpay_hide_test_to_live_notice_nonce',
+					'_wcpay_test_to_live_notice_nonce'
+				),
+			]
+		);
+
+		wp_enqueue_script( 'WCPAY_TEST_TO_LIVE_NOTICE' );
+		wp_enqueue_style( 'WCPAY_TEST_TO_LIVE_NOTICE' );
+	}
+
+	/**
 	 * Check whether the test-to-live nudge should be shown to the current user.
 	 *
 	 * Conditions (all must be true):
@@ -1709,31 +1751,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		$cta_url = wp_nonce_url(
-			add_query_arg( 'wcpay-test-to-live-cta', '1' ),
-			'wcpay_test_to_live_cta_nonce',
-			'_wcpay_test_to_live_cta_nonce'
-		);
-
-		$dismiss_url = wp_nonce_url(
-			add_query_arg( 'wcpay-hide-test-to-live-notice', '1' ),
-			'wcpay_hide_test_to_live_notice_nonce',
-			'_wcpay_test_to_live_notice_nonce'
-		);
-
-		?>
-		<div id="wcpay-test-to-live-notice" class="notice notice-success" style="display:flex;align-items:center;gap:12px;padding:12px 16px;padding-right:48px;position:relative;">
-			<a href="<?php echo esc_url( $dismiss_url ); ?>" class="notice-dismiss" style="position:absolute;top:50%;right:0;transform:translateY(-50%);padding:9px;text-decoration:none;"><span class="screen-reader-text"><?php esc_html_e( 'Dismiss', 'woocommerce-payments' ); ?></span></a>
-			<span class="dashicons dashicons-yes-alt" style="font-size:24px;width:24px;height:24px;color:#00a32a;flex-shrink:0;"></span>
-			<p style="margin:0;flex:1;">
-				<strong><?php esc_html_e( 'Ready for your first real sale?', 'woocommerce-payments' ); ?></strong>
-				<?php esc_html_e( 'Your test payments are working. Now let\'s make them real.', 'woocommerce-payments' ); ?>
-			</p>
-			<a href="<?php echo esc_url( $cta_url ); ?>" class="button button-secondary" style="flex-shrink:0;white-space:nowrap;">
-				<?php esc_html_e( 'Go live', 'woocommerce-payments' ); ?>
-			</a>
-		</div>
-		<?php
+		echo '<div id="wcpay-test-to-live-notice"></div>';
 	}
 
 	/**
