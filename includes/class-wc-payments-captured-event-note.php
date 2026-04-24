@@ -112,6 +112,15 @@ class WC_Payments_Captured_Event_Note {
 	 * @return string
 	 */
 	private function generate_html_note_from_breakdown( array $breakdown ): string {
+		// This HTML is persisted as an order note, so every server-provided
+		// string reaching the `<p>` output runs through `esc_html` below —
+		// cheap defense-in-depth against a future attacker-controlled label,
+		// currency code, or note reaching WooCommerce verbatim, even though
+		// the envelope itself is built by our own Fee_Breakdown_Builder and
+		// shipped via signed transport. Currency formatters strip tags
+		// internally, so the wrapping `esc_html` is idempotent for normal
+		// amounts and only matters if a hostile currency code escapes their
+		// final `$amount . ' ' . $code` concatenation.
 		$store_currency   = $breakdown['totals']['fee']['currency'];
 		$total_fee_amount = (int) $breakdown['totals']['fee']['amount'];
 		$total_tax_amount = (int) $breakdown['totals']['tax']['amount'];
@@ -134,18 +143,6 @@ class WC_Payments_Captured_Event_Note {
 			$lines[] = $fx_string;
 		}
 
-		// Defense-in-depth: every server-provided string that lands in the
-		// final `<p>`-wrapped output is passed through `esc_html`. The
-		// envelope is built by our own Fee_Breakdown_Builder and shipped
-		// via signed transport, but this HTML is persisted as an order
-		// note (the historical record in the DB), so hardening the trust
-		// boundary is cheap insurance against a future attacker-controlled
-		// label, currency code, or note reaching WooCommerce verbatim.
-		// Currency formatters (`format_currency` / `format_explicit_currency`)
-		// already strip tags internally — `esc_html` on their output is
-		// idempotent for normal amounts and defensive when a hostile
-		// currency code escapes the helper's final `$amount . ' ' . $code`
-		// concatenation.
 		$total_rate_text = self::format_rate_text( $breakdown['totals']['fee']['rate'] ?? null, $store_currency );
 		$fee_amount_text = WC_Payments_Utils::format_explicit_currency(
 			WC_Payments_Utils::interpret_stripe_amount( $total_fee_amount, $store_currency ),
