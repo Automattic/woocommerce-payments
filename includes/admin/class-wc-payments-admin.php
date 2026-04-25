@@ -61,6 +61,13 @@ class WC_Payments_Admin {
 	const USER_META_TEST_TO_LIVE_NOTICE_SNOOZED = 'wcpay_test_to_live_notice_snoozed';
 
 	/**
+	 * User meta key used to record that the test-to-live nudge impression has been tracked.
+	 *
+	 * @var string
+	 */
+	const USER_META_TEST_TO_LIVE_NOTICE_SHOWN = 'wcpay_test_to_live_notice_shown';
+
+	/**
 	 * Number of days a merchant must have been in test mode before the nudge is shown.
 	 *
 	 * @var int
@@ -1781,6 +1788,11 @@ class WC_Payments_Admin {
 	public function maybe_show_test_to_live_notice() {
 		if ( ! $this->should_show_test_to_live_notice() ) {
 			return;
+		}
+
+		if ( ! get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SHOWN, true ) ) {
+			Tracker::track_admin( 'wcpay_test_to_live_notice_shown' );
+			update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SHOWN, true );
 		}
 
 		echo '<div id="wcpay-test-to-live-notice"></div>';
