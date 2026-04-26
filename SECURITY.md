@@ -45,6 +45,6 @@ This section documents security advisories that surface in `npm audit` or GitHub
 
 **Why we don't override.** `locutus@>=3.0.25` is not vulnerable, but it changes its module shape from CommonJS default-export to a named ESM export, which breaks `@woocommerce/number`'s `import numberFormatter from 'locutus/...'` line. No published `@woocommerce/number` or `@woocommerce/currency` version exists that uses the patched locutus, so the chain currently has no clean upstream fix.
 
-**Re-evaluate when:** a new `@woocommerce/number` or `@woocommerce/currency` is published that bumps the `locutus` dependency to `>=3.0.25`, or when `@woocommerce/number` switches to a non-locutus implementation. The scheduled remote agent (`fix/npm-audit-critical-high`'s PR description has details) re-checks periodically.
+**Re-evaluate when:** a new `@woocommerce/number` or `@woocommerce/currency` is published that bumps the `locutus` dependency to `>=3.0.25`, or when `@woocommerce/number` switches to a non-locutus implementation. Until then, plugin maintainers should manually re-check this exception during regular dependency and security review.
 
 The transitive `@woocommerce/components`, `@woocommerce/currency`, and `@woocommerce/number` advisories that GitHub flags are downstream of this same locutus chain — they resolve automatically once locutus is fixed upstream.
