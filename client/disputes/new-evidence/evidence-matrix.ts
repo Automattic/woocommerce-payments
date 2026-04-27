@@ -7,7 +7,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { RecommendedDocument } from './types';
+import type { EvidenceFieldStatus } from './types';
 import { DOCUMENT_FIELD_KEYS } from './document-field-keys';
+import type { DisputeReason } from 'wcpay/types/disputes';
 
 /**
  * Evidence matrix that maps [reason][productType] to recommended document fields.
@@ -1970,4 +1972,216 @@ export const getMatrixFields = (
 
 	// Return the matrix entry for the specific productType, or undefined if not found
 	return evidenceMatrix[ reason ]?.[ productType ];
+};
+
+/**
+ * Fields whose presence on a dispute correlates with a higher win rate,
+ * per-reason. Consumed by the Dispute Outcome View to flag missing
+ * high-impact evidence.
+ *
+ * Keys are raw Stripe `dispute.evidence` field names (text and document
+ * fields alike). Reasons with an empty array have no data-backed signal
+ * and produce no `expected_missing` markers in the tri-state renderer.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention -- This is a constant object.
+export const DISPUTE_HIGH_IMPACT_FIELDS: Record< DisputeReason, string[] > = {
+	credit_not_processed: [
+		'customer_signature',
+		'customer_communication',
+		'product_description',
+	],
+	duplicate: [
+		'product_description',
+		'duplicate_charge_explanation',
+		'duplicate_charge_documentation',
+		'shipping_documentation',
+	],
+	fraudulent: [
+		'service_date',
+		'customer_communication',
+		'product_description',
+	],
+	general: [ 'product_description', 'receipt', 'customer_communication' ],
+	product_not_received: [
+		'shipping_address',
+		'shipping_tracking_number',
+		'shipping_documentation',
+		'shipping_carrier',
+		'shipping_date',
+		'customer_signature',
+		'receipt',
+		'customer_communication',
+	],
+	product_unacceptable: [
+		'access_activity_log',
+		'customer_communication',
+		'service_date',
+		'refund_refusal_explanation',
+		'shipping_documentation',
+		'shipping_carrier',
+		'shipping_date',
+		'shipping_tracking_number',
+		'shipping_address',
+	],
+	subscription_canceled: [
+		'cancellation_policy_disclosure',
+		'cancellation_policy',
+		'cancellation_rebuttal',
+	],
+	// No data-backed signal yet: tri-state renders no `expected_missing` rows.
+	bank_cannot_process: [],
+	check_returned: [],
+	customer_initiated: [],
+	debit_not_authorized: [],
+	incorrect_account_details: [],
+	insufficient_funds: [],
+	noncompliant: [],
+	unrecognized: [],
+};
+
+/**
+ * Human-readable labels for raw Stripe `dispute.evidence` keys that are not
+ * present in the evidence matrix (which is scoped to document uploads).
+ *
+ * Used by `getExpectedFieldStatus` when a high-impact field has no
+ * corresponding matrix entry from which to borrow a label.
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention -- This is a constant object.
+const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
+	billing_address: __( 'Billing address', 'woocommerce-payments' ),
+	cancellation_policy_disclosure: __(
+		'Cancellation policy disclosure',
+		'woocommerce-payments'
+	),
+	duplicate_charge_explanation: __(
+		'Duplicate charge explanation',
+		'woocommerce-payments'
+	),
+	product_description: __( 'Product description', 'woocommerce-payments' ),
+	refund_refusal_explanation: __(
+		'Refund refusal explanation',
+		'woocommerce-payments'
+	),
+	service_date: __( 'Service date', 'woocommerce-payments' ),
+	shipping_address: __( 'Shipping address', 'woocommerce-payments' ),
+	shipping_carrier: __( 'Shipping carrier', 'woocommerce-payments' ),
+	shipping_date: __( 'Shipping date', 'woocommerce-payments' ),
+	shipping_tracking_number: __(
+		'Shipping tracking number',
+		'woocommerce-payments'
+	),
+};
+
+/**
+ * Find a label for `key` by scanning all product-type variants of the matrix
+ * entry for `reason`. Returns the first match; the helper does not take a
+ * product type today.
+ */
+const findMatrixLabel = ( reason: string, key: string ): string | undefined => {
+	const productTypeEntries = evidenceMatrix[ reason ];
+	if ( ! productTypeEntries ) {
+		return undefined;
+	}
+	for ( const docs of Object.values( productTypeEntries ) ) {
+		const match = docs.find( ( doc ) => doc.key === key );
+		if ( match ) {
+			return match.label;
+		}
+	}
+	return undefined;
+};
+
+const resolveFieldLabel = ( reason: string, key: string ): string =>
+	findMatrixLabel( reason, key ) ??
+	FALLBACK_EVIDENCE_FIELD_LABELS[ key ] ??
+	key;
+
+const hasMeaningfulValue = ( value: unknown ): boolean => {
+	if ( value === undefined || value === null ) {
+		return false;
+	}
+	if ( typeof value === 'string' ) {
+		return value.trim().length > 0;
+	}
+	if ( typeof value === 'object' ) {
+		return Object.values( value as Record< string, unknown > ).some(
+			hasMeaningfulValue
+		);
+	}
+	return Boolean( value );
+};
+
+const isFieldProvided = (
+	evidence: Record< string, unknown >,
+	key: string
+): boolean => hasMeaningfulValue( evidence[ key ] );
+
+/**
+ * Determine the tri-state status of evidence fields for a given dispute reason.
+ *
+ * The helper returns one entry per key in the union of:
+ *   - `DISPUTE_HIGH_IMPACT_FIELDS[reason]`
+ *   - Every field in `evidenceMatrix[reason]`, unioned across product types
+ *
+ * States:
+ *   - `provided`:         `evidence[key]` is a non-empty string (after
+ *                         trimming) or an object containing at least one
+ *                         non-empty leaf value
+ *   - `expected_missing`: key is in `DISPUTE_HIGH_IMPACT_FIELDS[reason]` and empty
+ *   - `optional_missing`: key is in the matrix but not high-impact, and empty
+ *
+ * Reasons with an empty high-impact list produce no `expected_missing`
+ * rows. Reasons outside `DISPUTE_HIGH_IMPACT_FIELDS` return an empty array.
+ */
+export const getExpectedFieldStatus = (
+	reason: string,
+	evidence: Record< string, unknown >
+): EvidenceFieldStatus[] => {
+	const highImpactKeys =
+		DISPUTE_HIGH_IMPACT_FIELDS[ reason as DisputeReason ] ?? [];
+
+	const matrixKeys: string[] = [];
+	const productTypeEntries = evidenceMatrix[ reason ];
+	if ( productTypeEntries ) {
+		for ( const docs of Object.values( productTypeEntries ) ) {
+			for ( const doc of docs ) {
+				if ( ! matrixKeys.includes( doc.key ) ) {
+					matrixKeys.push( doc.key );
+				}
+			}
+		}
+	}
+
+	const seen = new Set< string >();
+	const result: EvidenceFieldStatus[] = [];
+
+	for ( const key of highImpactKeys ) {
+		if ( seen.has( key ) ) {
+			continue;
+		}
+		seen.add( key );
+		result.push( {
+			key,
+			label: resolveFieldLabel( reason, key ),
+			state: isFieldProvided( evidence, key )
+				? 'provided'
+				: 'expected_missing',
+		} );
+	}
+
+	for ( const key of matrixKeys ) {
+		if ( seen.has( key ) ) {
+			continue;
+		}
+		seen.add( key );
+		result.push( {
+			key,
+			label: resolveFieldLabel( reason, key ),
+			state: isFieldProvided( evidence, key )
+				? 'provided'
+				: 'optional_missing',
+		} );
+	}
+
+	return result;
 };
