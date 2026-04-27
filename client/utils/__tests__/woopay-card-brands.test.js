@@ -1,12 +1,11 @@
 /**
  * Internal dependencies
  */
-import { getWoopayCardBrands } from '../woopay-card-brands';
+import { wooPayCardBrands } from '../woopay-card-brands';
 
-describe( 'getWoopayCardBrands', () => {
+describe( 'wooPayCardBrands', () => {
 	test( 'includes all expected card brands with truthy icons', () => {
-		const brands = getWoopayCardBrands();
-		const names = brands.map( ( b ) => b.name );
+		const names = wooPayCardBrands.map( ( b ) => b.name );
 
 		expect( names ).toEqual(
 			expect.arrayContaining( [
@@ -20,7 +19,7 @@ describe( 'getWoopayCardBrands', () => {
 			] )
 		);
 
-		brands.forEach( ( brand ) => {
+		wooPayCardBrands.forEach( ( brand ) => {
 			expect( brand.component ).toBeTruthy();
 		} );
 	} );
