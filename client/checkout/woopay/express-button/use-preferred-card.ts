@@ -9,8 +9,10 @@ import { useState, useEffect } from 'react';
 import {
 	getCachedPreferredCard,
 	setCachedPreferredCard,
-	fetchPreferredCard,
+	isSameCard,
+	PreferredCard,
 } from './preferred-card-utils';
+import { fetchPreferredCard } from './preferred-card-fetch';
 
 /**
  * Hook that returns the user's preferred WooPay card.
@@ -18,23 +20,18 @@ import {
  * Initializes from localStorage cache for instant rendering, then queries
  * the WooPay Connect iframe for fresh data. Updates the cache and state
  * if the card has changed.
- *
- * @return {Object|null} The preferred card ({ brand, last4 }) or null.
  */
-const usePreferredCard = () => {
-	const [ preferredCard, setPreferredCard ] = useState(
-		getCachedPreferredCard
-	);
+const usePreferredCard = (): PreferredCard | null => {
+	const [ preferredCard, setPreferredCard ] =
+		useState< PreferredCard | null >( getCachedPreferredCard );
 
 	useEffect( () => {
 		fetchPreferredCard()
 			.then( ( card ) => {
 				setCachedPreferredCard( card );
-				setPreferredCard( ( prev ) => {
-					const hasChanged =
-						JSON.stringify( card ) !== JSON.stringify( prev );
-					return hasChanged ? card : prev;
-				} );
+				setPreferredCard( ( prev ) =>
+					isSameCard( card, prev ) ? prev : card
+				);
 			} )
 			.catch( () => {
 				// Connect iframe unavailable — keep cached state.

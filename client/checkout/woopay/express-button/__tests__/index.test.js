@@ -13,8 +13,12 @@ jest.mock( 'utils/checkout', () => ( {
 } ) );
 
 jest.mock( '../preferred-card-utils', () => ( {
+	...jest.requireActual( '../preferred-card-utils' ),
 	getCachedPreferredCard: jest.fn().mockReturnValue( null ),
 	setCachedPreferredCard: jest.fn(),
+} ) );
+
+jest.mock( '../preferred-card-fetch', () => ( {
 	fetchPreferredCard: jest.fn().mockResolvedValue( null ),
 } ) );
 

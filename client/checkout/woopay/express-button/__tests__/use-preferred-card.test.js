@@ -10,12 +10,16 @@ import usePreferredCard from '../use-preferred-card';
 import {
 	getCachedPreferredCard,
 	setCachedPreferredCard,
-	fetchPreferredCard,
 } from '../preferred-card-utils';
+import { fetchPreferredCard } from '../preferred-card-fetch';
 
 jest.mock( '../preferred-card-utils', () => ( {
+	...jest.requireActual( '../preferred-card-utils' ),
 	getCachedPreferredCard: jest.fn().mockReturnValue( null ),
 	setCachedPreferredCard: jest.fn(),
+} ) );
+
+jest.mock( '../preferred-card-fetch', () => ( {
 	fetchPreferredCard: jest.fn().mockResolvedValue( null ),
 } ) );
 

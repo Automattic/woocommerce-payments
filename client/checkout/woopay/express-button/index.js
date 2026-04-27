@@ -15,8 +15,9 @@ import { maybePersistAdminWoopayAppearance } from '../appearance/persist-admin';
 import {
 	getCachedPreferredCard,
 	setCachedPreferredCard,
-	fetchPreferredCard as fetchPreferredCardFromConnect,
+	isSameCard,
 } from './preferred-card-utils';
+import { fetchPreferredCard as fetchPreferredCardFromConnect } from './preferred-card-fetch';
 
 const oldWoopayRoots = [];
 
@@ -82,10 +83,7 @@ const fetchPreferredCard = async () => {
 
 		setCachedPreferredCard( card );
 
-		const hasChanged =
-			JSON.stringify( card ) !== JSON.stringify( currentPreferredCard );
-
-		if ( hasChanged ) {
+		if ( ! isSameCard( card, currentPreferredCard ) ) {
 			currentPreferredCard = card;
 			renderWooPayExpressCheckoutButtonWithCallbacks();
 		}

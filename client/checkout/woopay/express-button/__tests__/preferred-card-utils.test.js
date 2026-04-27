@@ -4,21 +4,10 @@
 import {
 	normalizeBrand,
 	isValidPreferredCard,
+	isSameCard,
 	getCachedPreferredCard,
 	setCachedPreferredCard,
-	fetchPreferredCard,
 } from '../preferred-card-utils';
-
-// Mock WooPayUserConnect so fetchPreferredCard doesn't need a real iframe.
-const mockGetPreferredPaymentMethod = jest.fn();
-const mockDetachMessageListener = jest.fn();
-
-jest.mock( 'wcpay/checkout/woopay/connect/user-connect', () => {
-	return jest.fn().mockImplementation( () => ( {
-		getPreferredPaymentMethod: mockGetPreferredPaymentMethod,
-		detachMessageListener: mockDetachMessageListener,
-	} ) );
-} );
 
 describe( 'preferred-card-utils', () => {
 	describe( 'normalizeBrand', () => {
@@ -62,6 +51,48 @@ describe( 'preferred-card-utils', () => {
 			[ 'missing brand', { last4: '4242' } ],
 		] )( 'returns false for %s', ( _label, card ) => {
 			expect( isValidPreferredCard( card ) ).toBeFalsy();
+		} );
+	} );
+
+	describe( 'isSameCard', () => {
+		test( 'returns true for identical cards', () => {
+			expect(
+				isSameCard(
+					{ brand: 'visa', last4: '4242' },
+					{ brand: 'visa', last4: '4242' }
+				)
+			).toBe( true );
+		} );
+
+		test( 'returns false when brand differs', () => {
+			expect(
+				isSameCard(
+					{ brand: 'visa', last4: '4242' },
+					{ brand: 'mastercard', last4: '4242' }
+				)
+			).toBe( false );
+		} );
+
+		test( 'returns false when last4 differs', () => {
+			expect(
+				isSameCard(
+					{ brand: 'visa', last4: '4242' },
+					{ brand: 'visa', last4: '5555' }
+				)
+			).toBe( false );
+		} );
+
+		test( 'returns true when both are null', () => {
+			expect( isSameCard( null, null ) ).toBe( true );
+		} );
+
+		test( 'returns false when one side is null', () => {
+			expect( isSameCard( { brand: 'visa', last4: '4242' }, null ) ).toBe(
+				false
+			);
+			expect( isSameCard( null, { brand: 'visa', last4: '4242' } ) ).toBe(
+				false
+			);
 		} );
 	} );
 
@@ -177,50 +208,6 @@ describe( 'preferred-card-utils', () => {
 			);
 			expect( () => setCachedPreferredCard( null ) ).not.toThrow();
 			Storage.prototype.removeItem.mockRestore();
-		} );
-	} );
-
-	describe( 'fetchPreferredCard', () => {
-		beforeEach( () => {
-			mockGetPreferredPaymentMethod.mockReset();
-			mockDetachMessageListener.mockReset();
-		} );
-
-		test( 'returns valid card from iframe', async () => {
-			mockGetPreferredPaymentMethod.mockResolvedValue( {
-				brand: 'mastercard',
-				last4: '5555',
-			} );
-			const result = await fetchPreferredCard();
-			expect( result ).toEqual( {
-				brand: 'mastercard',
-				last4: '5555',
-			} );
-			expect( mockDetachMessageListener ).toHaveBeenCalledTimes( 1 );
-		} );
-
-		test( 'returns null when iframe returns invalid data', async () => {
-			mockGetPreferredPaymentMethod.mockResolvedValue( {
-				brand: 'visa',
-			} );
-			const result = await fetchPreferredCard();
-			expect( result ).toBeNull();
-			expect( mockDetachMessageListener ).toHaveBeenCalledTimes( 1 );
-		} );
-
-		test( 'returns null when iframe returns null', async () => {
-			mockGetPreferredPaymentMethod.mockResolvedValue( null );
-			const result = await fetchPreferredCard();
-			expect( result ).toBeNull();
-			expect( mockDetachMessageListener ).toHaveBeenCalledTimes( 1 );
-		} );
-
-		test( 'detaches listener even when query rejects', async () => {
-			mockGetPreferredPaymentMethod.mockRejectedValue(
-				new Error( 'timeout' )
-			);
-			await expect( fetchPreferredCard() ).rejects.toThrow( 'timeout' );
-			expect( mockDetachMessageListener ).toHaveBeenCalledTimes( 1 );
 		} );
 	} );
 } );
