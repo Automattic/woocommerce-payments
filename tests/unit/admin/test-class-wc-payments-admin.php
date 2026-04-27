@@ -779,9 +779,14 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 */
 	private function set_up_notice_global_state( int $days_in_test_mode = 8, bool $has_orders = true ): void {
 		delete_transient( WC_Payments_Admin::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
+
+		// live() is the only Mode method that clears dev_mode. Calling test() alone
+		// leaves dev_mode set if a prior test called dev() without a full live() reset.
+		WC_Payments::mode()->live();
+		WC_Payments::mode()->test();
+
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_user );
-		WC_Payments::mode()->test();
 		update_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, time() - $days_in_test_mode * DAY_IN_SECONDS );
 
 		if ( $has_orders ) {
