@@ -1685,6 +1685,11 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		$screen = get_current_screen();
+		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+			return;
+		}
+
 		wp_localize_script(
 			'WCPAY_TEST_TO_LIVE_NOTICE',
 			'wcpayTestToLiveNoticeSettings',
@@ -1756,6 +1761,15 @@ class WC_Payments_Admin {
 			return false;
 		}
 
+		if ( get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, true ) ) {
+			return false;
+		}
+
+		$snoozed_at = (int) get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, true );
+		if ( $snoozed_at && time() < $snoozed_at + self::TEST_TO_LIVE_NOTICE_SNOOZE_DAYS * DAY_IN_SECONDS ) {
+			return false;
+		}
+
 		$orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
@@ -1765,15 +1779,6 @@ class WC_Payments_Admin {
 			]
 		);
 		if ( empty( $orders ) ) {
-			return false;
-		}
-
-		if ( get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, true ) ) {
-			return false;
-		}
-
-		$snoozed_at = (int) get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, true );
-		if ( $snoozed_at && time() < $snoozed_at + self::TEST_TO_LIVE_NOTICE_SNOOZE_DAYS * DAY_IN_SECONDS ) {
 			return false;
 		}
 
