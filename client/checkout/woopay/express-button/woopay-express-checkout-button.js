@@ -32,14 +32,16 @@ const BUTTON_WIDTH_THRESHOLD = 140;
 const CARD_DISPLAY_WIDTH_THRESHOLD = 220;
 
 const BRAND_DISPLAY_NAMES = {
-	visa: 'Visa',
-	mastercard: 'Mastercard',
-	amex: 'American Express',
-	discover: 'Discover',
-	jcb: 'JCB',
-	unionpay: 'UnionPay',
-	diners: 'Diners Club',
-	cartes_bancaires: 'Cartes Bancaires',
+	visa: __( 'Visa', 'woocommerce-payments' ),
+	mastercard: __( 'Mastercard', 'woocommerce-payments' ),
+	amex: __( 'American Express', 'woocommerce-payments' ),
+	discover: __( 'Discover', 'woocommerce-payments' ),
+	jcb: __( 'JCB', 'woocommerce-payments' ),
+	unionpay: __( 'UnionPay', 'woocommerce-payments' ),
+	diners: __( 'Diners Club', 'woocommerce-payments' ),
+	// TODO: CB icon not yet shipped in woopay-card-brands; this entry is a
+	// placeholder so the display name is ready when the icon lands.
+	cartes_bancaires: __( 'Cartes Bancaires', 'woocommerce-payments' ),
 };
 
 const ButtonTypeTextMap = {
