@@ -82,6 +82,13 @@ class WC_Payments_Admin {
 	const TEST_TO_LIVE_NOTICE_SNOOZE_DAYS = 7;
 
 	/**
+	 * Transient caching the result of the account-status and order eligibility check.
+	 *
+	 * @var string
+	 */
+	const TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE = 'wcpay_test_to_live_eligible';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API.
 	 *
 	 * @var WC_Payments_API_Client
@@ -226,6 +233,7 @@ class WC_Payments_Admin {
 		add_action( 'admin_footer', [ $this, 'inject_payment_settings_spotlight_container' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payments_review_prompt' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_test_to_live_notice_script' ] );
+		add_action( 'update_option_' . WC_Payments_Onboarding_Service::TEST_MODE_OPTION, [ $this, 'invalidate_test_to_live_notice_cache' ] );
 
 		// Hook into the active WooCommerce settings tab so the div is injected
 		// inside the page content — after the tab/section navigation but before
@@ -1717,49 +1725,16 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Check whether the test-to-live nudge should be shown to the current user.
+	 * Whether to show the test-to-live nudge to the current user.
 	 *
-	 * Conditions (all must be true):
-	 * - Gateway is connected with a valid Stripe account.
-	 * - Not a test-drive account (those have their own notice).
-	 * - Payments are enabled on the account.
-	 * - At least one WooPayments order exists (confirms a test transaction occurred).
-	 * - At least 7 days have passed since test mode was enabled.
-	 * - Current user has not dismissed the notice.
-	 * - Current user has not snoozed the notice.
-	 * - Current user is an administrator.
+	 * Requires: manage_woocommerce capability, connected account with payments
+	 * enabled, test mode active for at least TEST_TO_LIVE_NOTICE_DAYS_THRESHOLD
+	 * days, at least one WooPayments order, and no active dismiss or snooze.
 	 *
 	 * @return bool
 	 */
 	public function should_show_test_to_live_notice(): bool {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return false;
-		}
-
-		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
-			return false;
-		}
-
-		$account_status = $this->account->get_account_status_data();
-
-		if ( ! empty( $account_status['testDrive'] ) ) {
-			return false;
-		}
-
-		if ( empty( $account_status['paymentsEnabled'] ) ) {
-			return false;
-		}
-
-		if ( ! WC_Payments::mode()->is_test() ) {
-			return false;
-		}
-
-		if ( WC_Payments::mode()->is_dev() ) {
-			return false;
-		}
-
-		$enabled_date = (int) get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, 0 );
-		if ( ! $enabled_date || time() < $enabled_date + self::TEST_TO_LIVE_NOTICE_DAYS_THRESHOLD * DAY_IN_SECONDS ) {
 			return false;
 		}
 
@@ -1772,19 +1747,17 @@ class WC_Payments_Admin {
 			return false;
 		}
 
-		$orders = wc_get_orders(
-			[
-				'payment_method' => 'woocommerce_payments',
-				'limit'          => 1,
-				'return'         => 'ids',
-				'status'         => [ 'wc-completed', 'wc-processing' ],
-			]
-		);
-		if ( empty( $orders ) ) {
-			return false;
-		}
+		return $this->is_test_to_live_notice_eligible_to_be_shown();
+	}
 
-		return true;
+	/**
+	 * Drops the eligibility transient so the next request re-evaluates from scratch.
+	 * Hooked to test-mode option changes.
+	 *
+	 * @return void
+	 */
+	public function invalidate_test_to_live_notice_cache(): void {
+		delete_transient( self::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
 	}
 
 	/**
@@ -1907,5 +1880,75 @@ class WC_Payments_Admin {
 
 		wp_safe_redirect( remove_query_arg( [ 'wcpay-snooze-test-to-live-notice', '_wcpay_snooze_test_to_live_notice_nonce' ] ) );
 		exit;
+	}
+
+	/**
+	 * Whether the test-to-live notice is globally eligible to be shown.
+	 * Checks the cache first, populates the cache if not found, then returns the result.
+	 *
+	 * @return bool
+	 */
+	private function is_test_to_live_notice_eligible_to_be_shown(): bool {
+		$cached = get_transient( self::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
+		if ( false !== $cached ) {
+			return '1' === $cached;
+		}
+
+		$eligible = $this->compute_test_to_live_notice_eligibility();
+		set_transient( self::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, $eligible ? '1' : '0', HOUR_IN_SECONDS );
+
+		return $eligible;
+	}
+
+	/**
+	 * Compute the eligibility for the test-to-live notice.
+	 * Conditions:
+	 * - Account is connected and valid.
+	 * - Account is not a test drive account.
+	 * - Payments are enabled.
+	 * - Test mode is active.
+	 * - Test mode is not in development mode.
+	 * - At least one WooPayments order has been completed or processed.
+	 *
+	 * @return bool True if the notice should be shown, false otherwise.
+	 */
+	private function compute_test_to_live_notice_eligibility(): bool {
+		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
+			return false;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+
+		if ( ! empty( $account_status['testDrive'] ) ) {
+			return false;
+		}
+
+		if ( empty( $account_status['paymentsEnabled'] ) ) {
+			return false;
+		}
+
+		if ( ! WC_Payments::mode()->is_test() ) {
+			return false;
+		}
+
+		if ( WC_Payments::mode()->is_dev() ) {
+			return false;
+		}
+
+		$enabled_date = (int) get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION, 0 );
+		if ( ! $enabled_date || time() < $enabled_date + self::TEST_TO_LIVE_NOTICE_DAYS_THRESHOLD * DAY_IN_SECONDS ) {
+			return false;
+		}
+
+		$orders = wc_get_orders(
+			[
+				'payment_method' => 'woocommerce_payments',
+				'limit'          => 1,
+				'return'         => 'ids',
+				'status'         => [ 'wc-completed', 'wc-processing' ],
+			]
+		);
+
+		return ! empty( $orders );
 	}
 }
