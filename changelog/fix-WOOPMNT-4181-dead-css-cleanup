@@ -1,4 +1,4 @@
 Significance: patch
-Type: fix
+Type: dev
 
-Prevent download button from overlapping search input on mobile in the Transactions table
+Remove unused responsive table-action CSS from the Documents list stylesheet
