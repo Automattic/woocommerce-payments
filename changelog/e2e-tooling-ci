@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Add @critical E2E smoke job for fast PR feedback and cache Playwright browsers in CI

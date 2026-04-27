@@ -88,13 +88,6 @@ jest.mock( '@woocommerce/navigation', () => ( {
 	addHistoryListener: jest.fn(),
 } ) );
 
-jest.mock( '@woocommerce/data', () => ( {
-	useUserPreferences: jest.fn( () => ( {
-		updateUserPreferences: jest.fn(),
-		wc_payments_wporg_review_2025_prompt_dismissed: false,
-	} ) ),
-} ) );
-
 const chargeMock = {
 	id: 'ch_mock',
 	amount: 1500,
@@ -261,7 +254,8 @@ describe( 'DisputeNotice bank name logic', () => {
 			id: 'dp_mock',
 			charge: {
 				id: 'ch_mock',
-				payment_method_details: paymentMethodDetails as PaymentMethodDetails,
+				payment_method_details:
+					paymentMethodDetails as PaymentMethodDetails,
 			} as Charge,
 			reason: 'fraudulent',
 			status: 'needs_response',
@@ -283,10 +277,12 @@ describe( 'DisputeNotice bank name logic', () => {
 		};
 	};
 
-	it( 'should return null when charge is a string ID', () => {
+	it( 'should not include a bank name when bankName is null', () => {
 		const dispute = {
 			id: 'dp_mock',
-			charge: 'ch_mock',
+			charge: {
+				id: 'ch_mock',
+			} as Charge,
 			reason: 'fraudulent',
 			status: 'needs_response',
 			evidence_details: {

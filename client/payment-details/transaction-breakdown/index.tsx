@@ -37,9 +37,9 @@ interface PaymentTransactionBreakdownProps {
  */
 const disableTransactionBreakdown = true;
 
-const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > = ( {
-	paymentIntentId,
-} ) => {
+const PaymentTransactionBreakdown: React.FC<
+	PaymentTransactionBreakdownProps
+> = ( { paymentIntentId } ) => {
 	const { timeline, isLoading } = useTimeline( paymentIntentId );
 
 	/**

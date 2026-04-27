@@ -148,11 +148,8 @@ const PaymentMethod = ( {
 	} = usePaymentMethodAvailability( id );
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
-	const {
-		accountFees,
-	}: { accountFees?: Record< string, FeeStructure > } = useContext(
-		WCPaySettingsContext
-	);
+	const { accountFees }: { accountFees?: Record< string, FeeStructure > } =
+		useContext( WCPaySettingsContext );
 
 	// Get badge-type promotion for this payment method.
 	const { pmPromotions = [] } = usePmPromotions();

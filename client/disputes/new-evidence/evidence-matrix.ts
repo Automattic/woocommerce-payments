@@ -1949,9 +1949,9 @@ export const evidenceMatrix: EvidenceMatrix = {
  * For most reasons, lookup is by [reason][productType].
  * For 'duplicate' and 'credit_not_processed' reasons, lookup uses composite key: [reason][productType__status]
  *
- * @param reason - The dispute reason code
+ * @param reason      - The dispute reason code
  * @param productType - The product type
- * @param status - Optional status for status-dependent reasons (e.g., duplicateStatus or refundStatus)
+ * @param status      - Optional status for status-dependent reasons (e.g., duplicateStatus or refundStatus)
  * @return Array of recommended document fields, or undefined if no matrix entry exists
  */
 export const getMatrixFields = (

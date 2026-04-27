@@ -21,7 +21,6 @@ import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import { saveOption } from 'wcpay/data/settings/actions';
 import ErrorBoundary from 'components/error-boundary';
 import SpotlightPromotion from 'promotions/spotlight';
@@ -61,10 +60,8 @@ const useAccountStatus = () => {
 
 const NextDepositNotice: React.FC = () => {
 	const { account, hasErroredExternalAccount } = useAccountStatus();
-	const {
-		isNextDepositNoticeDismissed,
-		handleDismissNextDepositNotice,
-	} = useNextDepositNoticeState();
+	const { isNextDepositNoticeDismissed, handleDismissNextDepositNotice } =
+		useNextDepositNoticeState();
 
 	const isDepositsUnrestricted =
 		wcpaySettings.accountStatus.deposits?.restrictions ===
@@ -153,7 +150,6 @@ const DepositsPage: React.FC = () => {
 
 	return (
 		<Page>
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="deposits" />
 			<NextDepositNotice />
 			<DepositFailureNotice />

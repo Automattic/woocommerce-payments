@@ -19,10 +19,8 @@ import PaymentDetailsPaymentMethodDetail from '../detail';
 const formatPaymentMethodDetails = ( charge ) => {
 	const { billing_details: billingDetails, payment_method: id } = charge;
 
-	const {
-		bank,
-		verified_name: verifiedName,
-	} = charge.payment_method_details.eps;
+	const { bank, verified_name: verifiedName } =
+		charge.payment_method_details.eps;
 
 	const {
 		name: customerName,
@@ -57,14 +55,8 @@ const EpsDetails = ( { charge = {}, isLoading } ) => {
 		? formatPaymentMethodDetails( charge )
 		: paymentMethodPlaceholders;
 
-	const {
-		id,
-		bank,
-		verifiedName,
-		customerName,
-		email,
-		formattedAddress,
-	} = details;
+	const { id, bank, verifiedName, customerName, email, formattedAddress } =
+		details;
 
 	// Shorthand for more readable code.
 	const Detail = PaymentDetailsPaymentMethodDetail;

@@ -12,8 +12,8 @@ import { envelope, comment, page } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import type { Dispute } from 'wcpay/types/disputes';
-import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import InlineNotice from 'components/inline-notice';
@@ -24,7 +24,15 @@ import {
 } from 'wcpay/components/accordion';
 
 interface Props {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'amount'
+		| 'created'
+		| 'currency'
+		| 'evidence_details'
+		| 'reason'
+		| 'status'
+	>;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 	bankName: string | null;
@@ -424,7 +432,7 @@ export const InquirySteps: React.FC< Props > = ( {
 								</div>
 							</div>
 
-							{ /* Dispute notice */ }
+							{ /* Inquiry notice */ }
 							<div className="dispute-steps__notice">
 								<InlineNotice
 									icon
@@ -436,13 +444,13 @@ export const InquirySteps: React.FC< Props > = ( {
 										bankName
 											? sprintf(
 													__(
-														'<strong>The outcome of this dispute will be determined by %1$s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
+														'<strong>The outcome of this inquiry will be determined by %1$s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
 														'woocommerce-payments'
 													),
 													bankName
 											  )
 											: __(
-													"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
+													"<strong>The outcome of this inquiry will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 													'woocommerce-payments'
 											  ),
 										{
@@ -501,6 +509,8 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 		) }&body=${ encodeURIComponent( emailBody ) }`;
 	}
 
+	const isReturn = dispute.reason === 'credit_not_processed';
+
 	return (
 		<div className="dispute-steps">
 			<Accordion>
@@ -528,10 +538,15 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 											) }
 										</div>
 										<div className="dispute-steps__item-description">
-											{ __(
-												"Reach out to the customer to check if they're returning the item(s).",
-												'woocommerce-payments'
-											) }
+											{ isReturn
+												? __(
+														"Reach out to the customer to check if they're returning the item(s).",
+														'woocommerce-payments'
+												  )
+												: __(
+														'Identify the issue and work towards a resolution where possible.',
+														'woocommerce-payments'
+												  ) }
 										</div>
 									</div>
 									<div className="dispute-steps__item-action">
@@ -564,40 +579,47 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 											) }
 										</div>
 										<div className="dispute-steps__item-description">
-											{ __(
-												"Once you've received the item(s), refund the customer before the deadline to prevent this escalating to a dispute.",
-												'woocommerce-payments'
-											) }
+											{ isReturn
+												? __(
+														"Once you've received the item(s), refund the customer before the deadline to prevent this escalating to a dispute.",
+														'woocommerce-payments'
+												  )
+												: __(
+														'If appropriate, issue a refund to resolve the inquiry before the deadline.',
+														'woocommerce-payments'
+												  ) }
 										</div>
 									</div>
 								</div>
 
-								{ /* Step 3: Challenge the dispute if the item is not returned */ }
-								<div className="dispute-steps__item">
-									<div className="dispute-steps__item-icon">
-										<Icon icon={ envelope } />
-									</div>
-									<div className="dispute-steps__item-content">
-										<div className="dispute-steps__item-name">
-											{ __(
-												'Challenge the dispute',
-												'woocommerce-payments'
-											) }
+								{ /* Step 3: Respond when the inquiry becomes a dispute (return case only) */ }
+								{ isReturn && (
+									<div className="dispute-steps__item">
+										<div className="dispute-steps__item-icon">
+											<Icon icon={ envelope } />
 										</div>
-										<div className="dispute-steps__item-description">
-											{ __(
-												"Didn't receive the returned item(s)? Once the inquiry has automatically escalated to a dispute after 21 days, you can submit evidence and challenge the dispute.",
-												'woocommerce-payments'
-											) }
+										<div className="dispute-steps__item-content">
+											<div className="dispute-steps__item-name">
+												{ __(
+													'Respond when the inquiry becomes a dispute',
+													'woocommerce-payments'
+												) }
+											</div>
+											<div className="dispute-steps__item-description">
+												{ __(
+													"If the returned item(s) aren't received, the inquiry may escalate to a dispute after 21 days. You can then submit evidence and challenge it (a dispute fee applies), or accept the dispute and forfeit the funds.",
+													'woocommerce-payments'
+												) }
+											</div>
+										</div>
+										<div className="dispute-steps__item-action">
+											<LearnMoreButton href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns" />
 										</div>
 									</div>
-									<div className="dispute-steps__item-action">
-										<LearnMoreButton href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns" />
-									</div>
-								</div>
+								) }
 							</div>
 
-							{ /* Dispute notice */ }
+							{ /* Inquiry notice */ }
 							<div className="dispute-steps__notice">
 								<InlineNotice
 									icon
@@ -606,18 +628,14 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 									className="dispute-steps__notice-content"
 								>
 									{ createInterpolateElement(
-										bankName
-											? sprintf(
-													__(
-														'<strong>The outcome of this dispute will be determined by %1$s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
-														'woocommerce-payments'
-													),
-													bankName
-											  )
-											: __(
-													"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
-													'woocommerce-payments'
-											  ),
+										sprintf(
+											/* translators: %s is the payment provider name, eg "Klarna". */
+											__(
+												'<strong>The outcome of this inquiry will be determined by %s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
+												'woocommerce-payments'
+											),
+											bankName
+										),
 										{
 											strong: <strong />,
 										}
