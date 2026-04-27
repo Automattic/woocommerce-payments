@@ -1726,6 +1726,8 @@ class WC_Payments_Admin {
 	 * - At least one WooPayments order exists (confirms a test transaction occurred).
 	 * - At least 7 days have passed since test mode was enabled.
 	 * - Current user has not dismissed the notice.
+	 * - Current user has not snoozed the notice.
+	 * - Current user is an administrator.
 	 *
 	 * @return bool
 	 */
@@ -1874,6 +1876,9 @@ class WC_Payments_Admin {
 		Tracker::track_admin( 'wcpay_test_to_live_notice_dismissed' );
 
 		update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, time() );
+
+		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-test-to-live-notice', '_wcpay_test_to_live_notice_nonce' ] ) );
+		exit;
 	}
 
 	/**
