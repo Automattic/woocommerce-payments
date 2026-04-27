@@ -778,6 +778,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	 * Call before make_payments_admin_for_notice_test().
 	 */
 	private function set_up_notice_global_state( int $days_in_test_mode = 8, bool $has_orders = true ): void {
+		delete_transient( WC_Payments_Admin::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_user );
 		WC_Payments::mode()->test();
@@ -796,6 +797,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
 		delete_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED );
+		delete_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED );
+		delete_transient( WC_Payments_Admin::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
 
 		if ( null !== $this->test_order_id ) {
 			$order = wc_get_order( $this->test_order_id );
@@ -920,6 +923,27 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->tear_down_notice_global_state();
 	}
 
+	public function test_should_show_test_to_live_notice_returns_false_when_snoozed(): void {
+		$this->set_up_notice_global_state();
+		update_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, time() );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertFalse( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
+	public function test_should_show_test_to_live_notice_returns_true_when_snooze_expired(): void {
+		$this->set_up_notice_global_state();
+		$eight_days_ago = time() - 8 * DAY_IN_SECONDS;
+		update_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, $eight_days_ago );
+		$admin = $this->make_payments_admin_for_notice_test();
+
+		$this->assertTrue( $admin->should_show_test_to_live_notice() );
+
+		$this->tear_down_notice_global_state();
+	}
+
 	public function test_handle_test_to_live_notice_cta_queues_switch_mode_event_when_account_is_live(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		$_GET['wcpay-test-to-live-cta']        = '1';
@@ -977,13 +1001,95 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$_GET['wcpay-hide-test-to-live-notice']   = '1';
 		$_GET['_wcpay_test_to_live_notice_nonce'] = wp_create_nonce( 'wcpay_hide_test_to_live_notice_nonce' );
 
-		$admin = $this->make_payments_admin_for_notice_test();
-		$admin->hide_test_to_live_notice();
+		$admin              = $this->make_payments_admin_for_notice_test();
+		$redirect_intercept = function () {
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $redirect_intercept );
+		try {
+			$admin->hide_test_to_live_notice();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $redirect_intercept );
 
 		$this->assertArrayHasKey( 'wcpay_test_to_live_notice_dismissed', \WCPay\Tracker::get_admin_events() );
 
 		\WCPay\Tracker::remove_admin_event( 'wcpay_test_to_live_notice_dismissed' );
 		unset( $_GET['wcpay-hide-test-to-live-notice'], $_GET['_wcpay_test_to_live_notice_nonce'] );
+	}
+
+	public function test_snooze_test_to_live_notice_tracks_event_sets_meta_and_redirects(): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		$_GET['wcpay-snooze-test-to-live-notice']        = '1';
+		$_GET['_wcpay_snooze_test_to_live_notice_nonce'] = wp_create_nonce( 'wcpay_snooze_test_to_live_notice_nonce' );
+
+		$admin              = $this->make_payments_admin_for_notice_test();
+		$redirect_intercept = function () {
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $redirect_intercept );
+		try {
+			$admin->snooze_test_to_live_notice();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $redirect_intercept );
+
+		$this->assertArrayHasKey( 'wcpay_test_to_live_notice_snoozed', \WCPay\Tracker::get_admin_events() );
+		$this->assertNotEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, true ) );
+
+		\WCPay\Tracker::remove_admin_event( 'wcpay_test_to_live_notice_snoozed' );
+		delete_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED );
+		unset( $_GET['wcpay-snooze-test-to-live-notice'], $_GET['_wcpay_snooze_test_to_live_notice_nonce'] );
+	}
+
+	public function test_should_show_test_to_live_notice_caches_expensive_checks(): void {
+		$this->set_up_notice_global_state();
+
+		$mock_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$mock_account->expects( $this->once() )
+			->method( 'get_account_status_data' )
+			->willReturn(
+				[
+					'testDrive'       => false,
+					'paymentsEnabled' => true,
+				]
+			);
+		$mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$mock_account->method( 'get_capital' )->willReturn(
+			[
+				'loans'              => [],
+				'has_active_loan'    => false,
+				'has_previous_loans' => false,
+			]
+		);
+
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$mock_gateway->method( 'is_connected' )->willReturn( true );
+
+		$admin = new WC_Payments_Admin(
+			$this->mock_api_client,
+			$mock_gateway,
+			$mock_account,
+			$this->mock_onboarding_service,
+			$this->mock_order_service,
+			$this->mock_incentives_service,
+			$this->mock_pm_promotions_service,
+			$this->mock_fraud_service,
+			$this->mock_database_cache
+		);
+
+		$admin->should_show_test_to_live_notice();
+		$admin->should_show_test_to_live_notice();
+
+		$this->tear_down_notice_global_state();
 	}
 
 	// -------------------------------------------------------------------------
