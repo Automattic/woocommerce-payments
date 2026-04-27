@@ -2137,29 +2137,27 @@ export const getExpectedFieldStatus = (
 	reason: string,
 	evidence: Record< string, unknown >
 ): EvidenceFieldStatus[] => {
+	// Each `DISPUTE_HIGH_IMPACT_FIELDS[reason]` entry is curated to be
+	// duplicate-free; emitting in order without an extra dedupe pass relies
+	// on that. A duplicate in the seed data would surface as a duplicate
+	// row, which is preferable to silently masking a data bug.
 	const highImpactKeys =
 		DISPUTE_HIGH_IMPACT_FIELDS[ reason as DisputeReason ] ?? [];
+	const highImpactSet = new Set( highImpactKeys );
 
-	const matrixKeys: string[] = [];
+	const matrixKeys = new Set< string >();
 	const productTypeEntries = evidenceMatrix[ reason ];
 	if ( productTypeEntries ) {
 		for ( const docs of Object.values( productTypeEntries ) ) {
 			for ( const doc of docs ) {
-				if ( ! matrixKeys.includes( doc.key ) ) {
-					matrixKeys.push( doc.key );
-				}
+				matrixKeys.add( doc.key );
 			}
 		}
 	}
 
-	const seen = new Set< string >();
 	const result: EvidenceFieldStatus[] = [];
 
 	for ( const key of highImpactKeys ) {
-		if ( seen.has( key ) ) {
-			continue;
-		}
-		seen.add( key );
 		result.push( {
 			key,
 			label: resolveFieldLabel( reason, key ),
@@ -2170,10 +2168,9 @@ export const getExpectedFieldStatus = (
 	}
 
 	for ( const key of matrixKeys ) {
-		if ( seen.has( key ) ) {
+		if ( highImpactSet.has( key ) ) {
 			continue;
 		}
-		seen.add( key );
 		result.push( {
 			key,
 			label: resolveFieldLabel( reason, key ),
