@@ -4,6 +4,7 @@
 import apiFetch from '@wordpress/api-fetch';
 import { applyFilters } from '@wordpress/hooks';
 import { addQueryArgs } from '@wordpress/url';
+import { isNil, omitBy } from 'lodash';
 
 /**
  * Internal dependencies
@@ -28,34 +29,9 @@ export default class ExpressCheckoutCartApi {
 	 * @return {Promise} Result from `apiFetch`.
 	 */
 	async _request( options ) {
-		// Build defaults explicitly so we only include header keys when we
-		// actually have a value. apiFetch / Fetch serialize `undefined` and
-		// `null` to the literal strings "undefined" and "null" on the wire,
-		// which breaks server-side nonce verification.
-		const headerDefaults = {
-			Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
-		};
-
-		const tokenizedCartNonce =
-			getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce;
-		if ( tokenizedCartNonce ) {
-			headerDefaults[ 'X-WooPayments-Tokenized-Cart-Nonce' ] =
-				tokenizedCartNonce;
-		}
-
-		// The session nonce is only meaningful on PDP, where the custom
-		// session handler is intended to engage and create an isolated
-		// tokenized cart. Sending it on shortcode cart/checkout would replace
-		// the customer's existing cart with an empty one.
-		if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-			const sessionNonce =
-				getExpressCheckoutData( 'nonce' ).tokenized_cart_session_nonce;
-			if ( sessionNonce ) {
-				headerDefaults[ 'X-WooPayments-Tokenized-Cart-Session-Nonce' ] =
-					sessionNonce;
-			}
-		}
-
+		// Drop nullish values so we never serialize `undefined` / `null` to
+		// the literal strings "undefined" / "null" on the wire (which breaks
+		// server-side nonce verification).
 		const response = await apiFetch( {
 			...options,
 			parse: false,
@@ -67,32 +43,45 @@ export default class ExpressCheckoutCartApi {
 						'checkout'
 					).currency_code.toUpperCase(),
 			} ),
-			headers: {
-				...headerDefaults,
-				...this.cartRequestHeaders,
-				...options.headers,
-			},
+			headers: omitBy(
+				{
+					// the Store API nonce, which could later be overwritten in subsequent requests.
+					Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
+					// needed for validation of address data, etc.
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce,
+					// The session nonce is only meaningful on PDP, where the
+					// custom session handler is intended to engage and create
+					// an isolated tokenized cart. Sending it on shortcode
+					// cart/checkout would replace the customer's existing cart
+					// with an empty one.
+					'X-WooPayments-Tokenized-Cart-Session-Nonce':
+						getExpressCheckoutData( 'button_context' ) === 'product'
+							? getExpressCheckoutData( 'nonce' )
+									.tokenized_cart_session_nonce
+							: undefined,
+					...this.cartRequestHeaders,
+					...options.headers,
+				},
+				isNil
+			),
 		} );
 
 		// Only carry forward response headers we actually received. Reading
 		// an absent header returns `null`, and assigning that null over the
 		// `Nonce` default on the next request would serialize as "null" and
 		// trigger `woocommerce_rest_missing_nonce`.
-		const newCartRequestHeaders = {};
-		const rotatedNonce = response.headers.get( 'Nonce' );
-		if ( rotatedNonce ) {
-			// used as a reference on shortcode cart/checkout pages, where the Nonce might not be automatically added to the request.
-			newCartRequestHeaders.Nonce = rotatedNonce;
-		}
-		const cartSession = response.headers.get(
-			'X-WooPayments-Tokenized-Cart-Session'
+		this.cartRequestHeaders = omitBy(
+			{
+				// used as a reference on shortcode cart/checkout pages, where the Nonce might not be automatically added to the request.
+				Nonce: response.headers.get( 'Nonce' ),
+				// saving the received value as a cart reference for future usage. This value could be updated multiple times.
+				'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
+					'X-WooPayments-Tokenized-Cart-Session'
+				),
+			},
+			isNil
 		);
-		if ( cartSession !== null ) {
-			// saving the received value as a cart reference for future usage. This value could be updated multiple times.
-			newCartRequestHeaders[ 'X-WooPayments-Tokenized-Cart-Session' ] =
-				cartSession;
-		}
-		this.cartRequestHeaders = newCartRequestHeaders;
 
 		return response.json();
 	}
