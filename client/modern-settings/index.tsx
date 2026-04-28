@@ -33,33 +33,69 @@ type SettingsFieldComponentProps = {
 		} >;
 		disabled?: boolean;
 	};
-	value: SettingsFieldValue;
-	onChange: ( value: SettingsFieldValue ) => void;
+	value?: SettingsFieldValue;
+	onChange?: ( value: SettingsFieldValue ) => void;
+	values?: Record< string, SettingsFieldValue >;
+	initialValues?: Record< string, SettingsFieldValue >;
+	setValue?: ( fieldId: string, value: SettingsFieldValue ) => void;
+	setValues?: ( values: Record< string, SettingsFieldValue > ) => void;
+};
+
+type ModernSettingsExtensionConfig = {
+	scope: {
+		page: string;
+		section?: string;
+	};
+	components?: Record<
+		string,
+		( props: SettingsFieldComponentProps ) => JSX.Element | null
+	>;
 };
 
 declare global {
 	interface Window {
 		wcModernSettings?: {
-			registerSettingsExtension?: ( config: {
-				scope: {
-					page: string;
-					section?: string;
-				};
-				components?: Record<
-					string,
-					( props: SettingsFieldComponentProps ) => JSX.Element | null
-				>;
-			} ) => void;
+			registerSettingsExtension?: (
+				config: ModernSettingsExtensionConfig
+			) => void;
 		};
 	}
 }
 
-const PaymentMethodsField = ( {
-	field,
-	value,
-	onChange,
-}: SettingsFieldComponentProps ) => {
-	const selectedValues = Array.isArray( value ) ? value : [];
+const getFieldValue = (
+	props: SettingsFieldComponentProps,
+	fieldId = props.field.id
+): SettingsFieldValue => {
+	if (
+		props.values &&
+		Object.prototype.hasOwnProperty.call( props.values, fieldId )
+	) {
+		return props.values[ fieldId ];
+	}
+
+	return props.value ?? null;
+};
+
+const setFieldValue = (
+	props: SettingsFieldComponentProps,
+	fieldId: string,
+	value: SettingsFieldValue
+) => {
+	if ( props.setValue ) {
+		props.setValue( fieldId, value );
+		return;
+	}
+
+	if ( fieldId === props.field.id ) {
+		props.onChange?.( value );
+	}
+};
+
+const PaymentMethodsField = ( props: SettingsFieldComponentProps ) => {
+	const { field } = props;
+	const sourceFieldId = 'upe_enabled_payment_method_ids';
+	const sourceValue = getFieldValue( props, sourceFieldId );
+	const selectedValues = Array.isArray( sourceValue ) ? sourceValue : [];
 	const category =
 		field.id === 'upe_enabled_payment_method_ids_bnpl'
 			? 'buy-now-pay-later'
@@ -70,13 +106,17 @@ const PaymentMethodsField = ( {
 
 	const updateSelectedValues = ( optionValue: string, checked: boolean ) => {
 		if ( checked ) {
-			onChange(
+			setFieldValue(
+				props,
+				sourceFieldId,
 				Array.from( new Set( [ ...selectedValues, optionValue ] ) )
 			);
 			return;
 		}
 
-		onChange(
+		setFieldValue(
+			props,
+			sourceFieldId,
 			selectedValues.filter(
 				( selectedValue ) => selectedValue !== optionValue
 			)
@@ -212,10 +252,8 @@ const PayoutScheduleField = () => (
 	</div>
 );
 
-const FraudProtectionLevelField = ( {
-	value,
-}: SettingsFieldComponentProps ) => {
-	const isAdvanced = value === 'advanced';
+const FraudProtectionLevelField = ( props: SettingsFieldComponentProps ) => {
+	const isAdvanced = getFieldValue( props ) === 'advanced';
 	const fraudProtectionUrl =
 		'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wcpay-settings-tab=fraud-protection';
 
@@ -329,9 +367,8 @@ const ExpressCheckoutsField = () => {
 	);
 };
 
-const AdvancedFraudProtectionField = ( {
-	value,
-}: SettingsFieldComponentProps ) => {
+const AdvancedFraudProtectionField = ( props: SettingsFieldComponentProps ) => {
+	const value = getFieldValue( props );
 	const parsedRules = ( () => {
 		try {
 			return typeof value === 'string' ? JSON.parse( value ) : [];
@@ -440,7 +477,21 @@ const AdvancedFraudProtectionField = ( {
 	);
 };
 
-window.wcModernSettings?.registerSettingsExtension?.( {
+const modernSettingsWindow = window as Window & {
+	wc?: {
+		modernSettingsSdk?: {
+			registerSettingsExtension?: (
+				config: ModernSettingsExtensionConfig
+			) => void;
+		};
+	};
+};
+
+const registerSettingsExtension =
+	modernSettingsWindow.wc?.modernSettingsSdk?.registerSettingsExtension ||
+	window.wcModernSettings?.registerSettingsExtension;
+
+registerSettingsExtension?.( {
 	scope: {
 		page: 'checkout',
 		section: 'woocommerce_payments',

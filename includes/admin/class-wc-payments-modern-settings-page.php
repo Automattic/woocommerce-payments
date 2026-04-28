@@ -225,7 +225,7 @@ final class WC_Payments_Modern_Settings_Page {
 			 */
 			public function add_body_classes( $classes ) {
 				if ( $this->is_wcpay_settings_section() ) {
-					return $classes . ' woocommerce-modern-settings-page woopayments-modern-settings-page';
+					return $classes . ' woopayments-modern-settings-page';
 				}
 
 				return parent::add_body_classes( $classes );
@@ -241,20 +241,16 @@ final class WC_Payments_Modern_Settings_Page {
 
 				$modern_settings_page = $this->get_modern_settings_page();
 				if ( is_object( $modern_settings_page ) ) {
-					do_action( 'woocommerce_woocommerce_payments_admin_notices' );
-
 					$script_handles = is_callable( [ $modern_settings_page, 'get_script_handles' ] ) ? call_user_func( [ $modern_settings_page, 'get_script_handles' ], (string) $current_section ) : [];
 
 					foreach ( $script_handles as $script_handle ) {
 						if ( is_string( $script_handle ) && '' !== $script_handle ) {
 							wp_enqueue_script( $script_handle );
-							wp_enqueue_style( $script_handle );
 						}
 					}
 
+					wp_enqueue_style( 'WCPAY_MODERN_SETTINGS' );
 					$GLOBALS['hide_save_button'] = true;
-
-					$this->output_wcpay_modern_settings_header();
 
 					$page_id = is_callable( [ $modern_settings_page, 'get_page_id' ] ) ? (string) call_user_func( [ $modern_settings_page, 'get_page_id' ] ) : 'checkout';
 
@@ -268,43 +264,6 @@ final class WC_Payments_Modern_Settings_Page {
 				}
 
 				parent::output();
-			}
-
-			/**
-			 * Output the WooPayments modern settings header.
-			 *
-			 * @return void
-			 */
-			private function output_wcpay_modern_settings_header() {
-				$active_tab = WC_Payments_Modern_Settings_Page_Adapter::get_active_tab();
-				$tabs       = WC_Payments_Modern_Settings_Page_Adapter::get_tabs();
-				$base_url   = admin_url(
-					'admin.php?page=wc-settings&tab=checkout&section=' . WC_Payment_Gateway_WCPay::GATEWAY_ID
-				);
-				?>
-				<div class="woopayments-modern-settings-header">
-					<div class="woopayments-modern-settings-header__bar">
-						<a class="woopayments-modern-settings-header__back" href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=checkout' ) ); ?>" aria-label="<?php esc_attr_e( 'Back to payments settings', 'woocommerce-payments' ); ?>">
-							<span aria-hidden="true">&lsaquo;</span>
-						</a>
-						<h1><?php esc_html_e( 'WooPayments', 'woocommerce-payments' ); ?></h1>
-						<button class="button button-primary woopayments-modern-settings-header__save" type="submit" name="save" value="<?php esc_attr_e( 'Save changes', 'woocommerce-payments' ); ?>">
-							<?php esc_html_e( 'Save', 'woocommerce-payments' ); ?>
-						</button>
-					</div>
-					<nav class="woopayments-modern-settings-header__tabs" aria-label="<?php esc_attr_e( 'WooPayments settings', 'woocommerce-payments' ); ?>">
-						<?php foreach ( $tabs as $tab_id => $tab_label ) : ?>
-							<a
-								class="<?php echo esc_attr( 'woopayments-modern-settings-header__tab' . ( $active_tab === $tab_id ? ' is-active' : '' ) ); ?>"
-								href="<?php echo esc_url( add_query_arg( WC_Payments_Modern_Settings_Page_Adapter::TAB_QUERY_ARG, $tab_id, $base_url ) ); ?>"
-								<?php echo $active_tab === $tab_id ? 'aria-current="page"' : ''; ?>
-							>
-								<?php echo esc_html( $tab_label ); ?>
-							</a>
-						<?php endforeach; ?>
-					</nav>
-				</div>
-				<?php
 			}
 
 			/**

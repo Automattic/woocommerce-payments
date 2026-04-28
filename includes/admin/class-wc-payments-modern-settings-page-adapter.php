@@ -76,6 +76,13 @@ if ( class_exists( '\Automattic\WooCommerce\Admin\Settings\LegacySettingsPageAda
 				'id'      => $this->get_page_id(),
 				'title'   => 'WooPayments',
 				'section' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				'save'    => [
+					'adapter' => $this->get_save_adapter( $section ),
+				],
+				'shell'   => [
+					'title'             => __( 'WooPayments settings', 'woocommerce-payments' ),
+					'sectionNavigation' => $this->get_section_navigation(),
+				],
 				'groups'  => $this->get_groups_for_active_tab(),
 			];
 		}
@@ -113,6 +120,38 @@ if ( class_exists( '\Automattic\WooCommerce\Admin\Settings\LegacySettingsPageAda
 		 */
 		public function get_script_handles( string $section ): array {
 			return [ 'WCPAY_MODERN_SETTINGS' ];
+		}
+
+		/**
+		 * Get the default save adapter for fields on this page.
+		 *
+		 * @param string $section Section ID.
+		 * @return string
+		 */
+		public function get_save_adapter( string $section ): string {
+			return 'form_post';
+		}
+
+		/**
+		 * Get WooPayments secondary section navigation for the Core settings shell.
+		 *
+		 * @return array
+		 */
+		private function get_section_navigation(): array {
+			$active_tab = self::get_active_tab();
+			$base_url   = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=' . WC_Payment_Gateway_WCPay::GATEWAY_ID );
+			$navigation = [];
+
+			foreach ( self::get_tabs() as $tab_id => $tab_label ) {
+				$navigation[] = [
+					'id'     => $tab_id,
+					'label'  => $tab_label,
+					'href'   => add_query_arg( self::TAB_QUERY_ARG, $tab_id, $base_url ),
+					'active' => $active_tab === $tab_id,
+				];
+			}
+
+			return $navigation;
 		}
 
 		/**
