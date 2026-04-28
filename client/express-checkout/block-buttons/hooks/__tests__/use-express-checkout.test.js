@@ -39,6 +39,25 @@ jQueryMock.blockUI = () => null;
 
 window.wcpayExpressCheckoutParams = {};
 window.wcpayExpressCheckoutParams.checkout = {};
+window.wcpaySettings = {
+	zeroDecimalCurrencies: [
+		'bif',
+		'clp',
+		'djf',
+		'gnf',
+		'jpy',
+		'kmf',
+		'krw',
+		'mga',
+		'pyg',
+		'rwf',
+		'vnd',
+		'vuv',
+		'xaf',
+		'xof',
+		'xpf',
+	],
+};
 
 const buildCartData = ( {
 	items = [],
@@ -393,7 +412,7 @@ describe( 'useExpressCheckout', () => {
 
 	it( 'should transform shipping rate amounts correctly with zero-decimal currency (JPY, KRW)', () => {
 		const event = { resolve: jest.fn() };
-		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 0;
+		window.wcpayExpressCheckoutParams.checkout.currency_code = 'krw';
 
 		mockCartData = buildCartData( {
 			items: [

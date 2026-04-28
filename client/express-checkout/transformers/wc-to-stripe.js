@@ -10,24 +10,25 @@ import { decodeEntities } from '@wordpress/html-entities';
 import { getExpressCheckoutData } from '../utils';
 import { applyFilters } from '@wordpress/hooks';
 import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/shipping-limits';
+import { isZeroDecimalCurrency } from 'multi-currency/interface/functions';
 
 /**
- * GooglePay/ApplePay expect the prices to be formatted in cents.
- * But WooCommerce has a setting to define the number of decimals for amounts.
- * Using this function to ensure the prices provided to GooglePay/ApplePay
- * are always provided accurately, regardless of the number of decimals.
+ * GooglePay/ApplePay expect the prices to be formatted in the smallest unit Stripe bills in:
+ * 0 decimals for true zero-decimal currencies (e.g. JPY) and 2 decimals for everything else,
+ * including Stripe special-case currencies (TWD, HUF, ISK, UGX) that are locally rendered
+ * without sub-units but still charged as two-decimal by Stripe.
  *
  * @param {number}                        price       the price to format.
  * @param {{currency_minor_unit: number}} priceObject the price object returned by the Store API
  *
- * @return {number} the price amount for GooglePay/ApplePay, always expressed in cents.
+ * @return {number} the price amount for GooglePay/ApplePay, in the unit Stripe expects.
  */
 export const transformPrice = ( price, priceObject ) => {
-	const currencyDecimals =
-		getExpressCheckoutData( 'checkout' )?.currency_decimals ?? 2;
+	const currencyCode = getExpressCheckoutData( 'checkout' )?.currency_code;
+	const stripeMinorUnit =
+		currencyCode && isZeroDecimalCurrency( currencyCode ) ? 0 : 2;
 
-	// making sure the decimals are always correctly represented for GooglePay/ApplePay, since they don't allow us to specify the decimals.
-	return price * 10 ** ( currencyDecimals - priceObject.currency_minor_unit );
+	return price * 10 ** ( stripeMinorUnit - priceObject.currency_minor_unit );
 };
 
 /**
