@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 import { RecommendedDocument } from './types';
 import type { EvidenceFieldStatus } from './types';
 import { DOCUMENT_FIELD_KEYS } from './document-field-keys';
-import type { DisputeReason } from 'wcpay/types/disputes';
+import type { DisputeReason, ProductType } from 'wcpay/types/disputes';
 
 /**
  * Evidence matrix that maps [reason][productType] to recommended document fields.
@@ -604,6 +604,15 @@ const getSubscriptionCanceledMatrix = (): {
 			order: 25,
 		},
 		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 28,
+		},
+		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 			label: __( 'Terms of service', 'woocommerce-payments' ),
 			description: __(
@@ -643,6 +652,15 @@ const getSubscriptionCanceledMatrix = (): {
 			order: 25,
 		},
 		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 28,
+		},
+		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 			label: __( 'Terms of service', 'woocommerce-payments' ),
 			description: __(
@@ -680,6 +698,15 @@ const getSubscriptionCanceledMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 25,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 28,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
@@ -730,6 +757,15 @@ const getSubscriptionCanceledMatrix = (): {
 			order: 22,
 		},
 		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 28,
+		},
+		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 			label: __( 'Terms of service', 'woocommerce-payments' ),
 			description: __(
@@ -758,6 +794,15 @@ const getSubscriptionCanceledMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 22,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
@@ -1263,6 +1308,15 @@ const getProductUnacceptableMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 10,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 22,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
@@ -1974,69 +2028,238 @@ export const getMatrixFields = (
 	return evidenceMatrix[ reason ]?.[ productType ];
 };
 
+const emptyByProductType = (): Record< ProductType, string[] > => ( {
+	physical_product: [],
+	digital_product_or_service: [],
+	offline_service: [],
+	event: [],
+	booking_reservation: [],
+	multiple: [],
+	other: [],
+} );
+
 /**
  * Fields whose presence on a dispute correlates with a higher win rate,
- * per-reason. Consumed by the Dispute Outcome View to flag missing
- * high-impact evidence.
+ * per (reason, product type). Consumed by the Dispute Outcome View to flag
+ * missing high-impact evidence.
  *
  * Keys are raw Stripe `dispute.evidence` field names (text and document
- * fields alike). Reasons with an empty array have no data-backed signal
+ * fields alike). Cells with an empty array have no data-backed signal
  * and produce no `expected_missing` markers in the tri-state renderer.
+ *
+ * Auto-populated and unreliable fields are intentionally excluded:
+ *   - `customer_purchase_ip` (Stripe + WooPayments auto-fill on every save)
+ *   - `customer_name`, `customer_email_address`, `billing_address` (Stripe auto-fill)
+ *   - `product_description` (hybrid auto+merchant; placeholder string by
+ *     default — Q6 lift signal is denominator artifact)
+ *   - `uncategorized_file`, `uncategorized_text` (catch-alls; not actionable
+ *     guidance on their own)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention -- This is a constant object.
-export const DISPUTE_HIGH_IMPACT_FIELDS: Record< DisputeReason, string[] > = {
-	credit_not_processed: [
-		'customer_signature',
-		'customer_communication',
-		'product_description',
-	],
-	duplicate: [
-		'product_description',
-		'duplicate_charge_explanation',
-		'duplicate_charge_documentation',
-		'shipping_documentation',
-	],
-	fraudulent: [
-		'service_date',
-		'customer_communication',
-		'product_description',
-	],
-	general: [ 'product_description', 'receipt', 'customer_communication' ],
-	product_not_received: [
-		'shipping_address',
-		'shipping_tracking_number',
-		'shipping_documentation',
-		'shipping_carrier',
-		'shipping_date',
-		'customer_signature',
-		'receipt',
-		'customer_communication',
-	],
-	product_unacceptable: [
-		'access_activity_log',
-		'customer_communication',
-		'service_date',
-		'refund_refusal_explanation',
-		'shipping_documentation',
-		'shipping_carrier',
-		'shipping_date',
-		'shipping_tracking_number',
-		'shipping_address',
-	],
-	subscription_canceled: [
-		'cancellation_policy_disclosure',
-		'cancellation_policy',
-		'cancellation_rebuttal',
-	],
-	// No data-backed signal yet: tri-state renders no `expected_missing` rows.
-	bank_cannot_process: [],
-	check_returned: [],
-	customer_initiated: [],
-	debit_not_authorized: [],
-	incorrect_account_details: [],
-	insufficient_funds: [],
-	noncompliant: [],
-	unrecognized: [],
+export const DISPUTE_HIGH_IMPACT_FIELDS: Record<
+	DisputeReason,
+	Record< ProductType, string[] >
+> = {
+	credit_not_processed: {
+		// `customer_signature` is amber-flagged pending a defensible
+		// hypothesis: +9.15pp lift (n=115) but only 15% of CNP merchants
+		// attach one. Possibly a merchant-effort proxy rather than the
+		// field itself moving outcomes. Kept while the question is open.
+		physical_product: [
+			'customer_signature',
+			'customer_communication',
+			'receipt',
+		],
+		digital_product_or_service: [
+			'customer_communication',
+			'receipt',
+			'refund_refusal_explanation',
+		],
+		offline_service: [
+			'customer_communication',
+			'receipt',
+			'refund_refusal_explanation',
+		],
+		event: [
+			'customer_communication',
+			'receipt',
+			'refund_refusal_explanation',
+		],
+		booking_reservation: [
+			'customer_communication',
+			'receipt',
+			'refund_refusal_explanation',
+		],
+		// `multiple` mirrors `physical_product` as a defensible default
+		// for multi-product orders that may include a physical item.
+		multiple: [ 'customer_signature', 'customer_communication', 'receipt' ],
+		other: [
+			'customer_communication',
+			'receipt',
+			'refund_refusal_explanation',
+		],
+	},
+	duplicate: {
+		physical_product: [
+			'duplicate_charge_explanation',
+			'duplicate_charge_documentation',
+			'shipping_documentation',
+			'receipt',
+		],
+		digital_product_or_service: [
+			'duplicate_charge_explanation',
+			'duplicate_charge_documentation',
+			'receipt',
+		],
+		offline_service: [
+			'duplicate_charge_explanation',
+			'duplicate_charge_documentation',
+			'receipt',
+		],
+		event: [
+			'duplicate_charge_explanation',
+			'duplicate_charge_documentation',
+			'receipt',
+		],
+		booking_reservation: [
+			'duplicate_charge_explanation',
+			'duplicate_charge_documentation',
+			'receipt',
+		],
+		multiple: [
+			'duplicate_charge_explanation',
+			'duplicate_charge_documentation',
+			'shipping_documentation',
+			'receipt',
+		],
+		other: [
+			'duplicate_charge_explanation',
+			'duplicate_charge_documentation',
+			'receipt',
+		],
+	},
+	fraudulent: {
+		// Same lift-based picks across all product types for fraudulent.
+		physical_product: [ 'service_date', 'customer_communication' ],
+		digital_product_or_service: [
+			'service_date',
+			'customer_communication',
+		],
+		offline_service: [ 'service_date', 'customer_communication' ],
+		event: [ 'service_date', 'customer_communication' ],
+		booking_reservation: [ 'service_date', 'customer_communication' ],
+		multiple: [ 'service_date', 'customer_communication' ],
+		other: [ 'service_date', 'customer_communication' ],
+	},
+	general: {
+		physical_product: [ 'receipt', 'customer_communication' ],
+		digital_product_or_service: [ 'receipt', 'customer_communication' ],
+		offline_service: [ 'receipt', 'customer_communication' ],
+		event: [ 'receipt', 'customer_communication' ],
+		booking_reservation: [ 'receipt', 'customer_communication' ],
+		multiple: [ 'receipt', 'customer_communication' ],
+		other: [ 'receipt', 'customer_communication' ],
+	},
+	product_not_received: {
+		physical_product: [
+			'shipping_address',
+			'shipping_tracking_number',
+			'shipping_documentation',
+			'shipping_carrier',
+			'shipping_date',
+		],
+		digital_product_or_service: [
+			'receipt',
+			'customer_communication',
+			'access_activity_log',
+		],
+		offline_service: [ 'receipt', 'customer_communication' ],
+		event: [ 'receipt', 'customer_communication' ],
+		booking_reservation: [ 'receipt', 'customer_communication' ],
+		multiple: [
+			'shipping_address',
+			'shipping_tracking_number',
+			'shipping_documentation',
+			'shipping_carrier',
+			'shipping_date',
+		],
+		other: [ 'receipt', 'customer_communication' ],
+	},
+	product_unacceptable: {
+		physical_product: [
+			'customer_communication',
+			'refund_refusal_explanation',
+			'shipping_documentation',
+		],
+		digital_product_or_service: [
+			'access_activity_log',
+			'customer_communication',
+			'refund_refusal_explanation',
+		],
+		offline_service: [
+			'customer_communication',
+			'refund_refusal_explanation',
+		],
+		// Recommendations for these cells are topical-only (refund_policy,
+		// event/booking documentation). They surface as `optional_missing`
+		// via the existing matrix; no `expected_missing` markers without
+		// data-backed lift.
+		event: [],
+		booking_reservation: [],
+		multiple: [
+			'customer_communication',
+			'refund_refusal_explanation',
+			'shipping_documentation',
+		],
+		other: [],
+	},
+	subscription_canceled: {
+		physical_product: [
+			'cancellation_policy_disclosure',
+			'cancellation_policy',
+			'cancellation_rebuttal',
+		],
+		digital_product_or_service: [
+			'cancellation_policy_disclosure',
+			'cancellation_policy',
+			'cancellation_rebuttal',
+		],
+		offline_service: [
+			'cancellation_policy_disclosure',
+			'cancellation_policy',
+			'cancellation_rebuttal',
+		],
+		event: [
+			'cancellation_policy_disclosure',
+			'cancellation_policy',
+			'cancellation_rebuttal',
+		],
+		booking_reservation: [
+			'cancellation_policy_disclosure',
+			'cancellation_policy',
+			'cancellation_rebuttal',
+		],
+		multiple: [
+			'cancellation_policy_disclosure',
+			'cancellation_policy',
+			'cancellation_rebuttal',
+		],
+		other: [
+			'cancellation_policy_disclosure',
+			'cancellation_policy',
+			'cancellation_rebuttal',
+		],
+	},
+	// No data-backed signal yet: tri-state renders no `expected_missing`
+	// rows for any product type under these reasons.
+	bank_cannot_process: emptyByProductType(),
+	check_returned: emptyByProductType(),
+	customer_initiated: emptyByProductType(),
+	debit_not_authorized: emptyByProductType(),
+	incorrect_account_details: emptyByProductType(),
+	insufficient_funds: emptyByProductType(),
+	noncompliant: emptyByProductType(),
+	unrecognized: emptyByProductType(),
 };
 
 /**
@@ -2073,26 +2296,61 @@ const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 };
 
 /**
- * Find a label for `key` by scanning all product-type variants of the matrix
- * entry for `reason`. Returns the first match; the helper does not take a
- * product type today.
+ * Find a label for `key` in the matrix, preferring the cell that matches the
+ * dispute's product type so labels reflect the merchant's actual context
+ * (e.g., `cancellation_policy` resolves to "Terms of service" or
+ * "Cancellation policy" depending on the product type variant).
+ *
+ * Falls back to scanning sibling cells if the productType-specific cell does
+ * not contain the key, so labels remain available even for keys that only
+ * appear in some product-type variants.
+ *
+ * Composite-key reasons (`duplicate`, `credit_not_processed`) store cells
+ * keyed `${productType}__${status}` — we match any cell whose key equals
+ * `productType` or starts with `${productType}__`.
  */
-const findMatrixLabel = ( reason: string, key: string ): string | undefined => {
+const findMatrixLabel = (
+	reason: string,
+	productType: string,
+	key: string
+): string | undefined => {
 	const productTypeEntries = evidenceMatrix[ reason ];
 	if ( ! productTypeEntries ) {
 		return undefined;
 	}
+
+	const productTypePrefix = `${ productType }__`;
+
+	// Pass 1: prefer the product-type-specific cell (or composite variants).
+	for ( const [ matrixKey, docs ] of Object.entries( productTypeEntries ) ) {
+		if (
+			matrixKey === productType ||
+			matrixKey.startsWith( productTypePrefix )
+		) {
+			const match = docs.find( ( doc ) => doc.key === key );
+			if ( match ) {
+				return match.label;
+			}
+		}
+	}
+
+	// Pass 2: fall back to any sibling cell to keep labels available.
 	for ( const docs of Object.values( productTypeEntries ) ) {
 		const match = docs.find( ( doc ) => doc.key === key );
 		if ( match ) {
 			return match.label;
 		}
 	}
+
 	return undefined;
 };
 
-const resolveFieldLabel = ( reason: string, key: string ): string =>
-	findMatrixLabel( reason, key ) ??
+const resolveFieldLabel = (
+	reason: string,
+	productType: string,
+	key: string
+): string =>
+	findMatrixLabel( reason, productType, key ) ??
 	FALLBACK_EVIDENCE_FIELD_LABELS[ key ] ??
 	key;
 
@@ -2117,50 +2375,79 @@ const isFieldProvided = (
 ): boolean => hasMeaningfulValue( evidence[ key ] );
 
 /**
- * Determine the tri-state status of evidence fields for a given dispute reason.
+ * Collect every matrix key that applies to the given product type for the
+ * reason. Composite-key reasons (`duplicate`, `credit_not_processed`) store
+ * cells keyed `${productType}__${status}`; we union every cell whose key
+ * starts with `${productType}__` so the optional-missing pool covers all
+ * status branches the resolved dispute might have come from.
+ */
+const collectMatrixKeys = (
+	reason: string,
+	productType: string
+): Set< string > => {
+	const keys = new Set< string >();
+	const productTypeEntries = evidenceMatrix[ reason ];
+	if ( ! productTypeEntries ) {
+		return keys;
+	}
+
+	const productTypePrefix = `${ productType }__`;
+	for ( const [ matrixKey, docs ] of Object.entries( productTypeEntries ) ) {
+		if (
+			matrixKey !== productType &&
+			! matrixKey.startsWith( productTypePrefix )
+		) {
+			continue;
+		}
+		for ( const doc of docs ) {
+			keys.add( doc.key );
+		}
+	}
+	return keys;
+};
+
+/**
+ * Determine the tri-state status of evidence fields for a (reason, product
+ * type) pair.
  *
  * The helper returns one entry per key in the union of:
- *   - `DISPUTE_HIGH_IMPACT_FIELDS[reason]`
- *   - Every field in `evidenceMatrix[reason]`, unioned across product types
+ *   - `DISPUTE_HIGH_IMPACT_FIELDS[reason][productType]`
+ *   - Every field in `evidenceMatrix[reason]` whose cell applies to
+ *     `productType` (including composite `${productType}__${status}` cells)
  *
  * States:
  *   - `provided`:         `evidence[key]` is a non-empty string (after
  *                         trimming) or an object containing at least one
  *                         non-empty leaf value
- *   - `expected_missing`: key is in `DISPUTE_HIGH_IMPACT_FIELDS[reason]` and empty
+ *   - `expected_missing`: key is in the high-impact list for this cell and empty
  *   - `optional_missing`: key is in the matrix but not high-impact, and empty
  *
- * Reasons with an empty high-impact list produce no `expected_missing`
- * rows. Reasons outside `DISPUTE_HIGH_IMPACT_FIELDS` return an empty array.
+ * Cells with an empty high-impact list produce no `expected_missing` rows.
+ * Unrecognised reason or product type strings return an empty array.
  */
 export const getExpectedFieldStatus = (
 	reason: string,
+	productType: string,
 	evidence: Record< string, unknown >
 ): EvidenceFieldStatus[] => {
-	// Each `DISPUTE_HIGH_IMPACT_FIELDS[reason]` entry is curated to be
-	// duplicate-free; emitting in order without an extra dedupe pass relies
-	// on that. A duplicate in the seed data would surface as a duplicate
-	// row, which is preferable to silently masking a data bug.
+	// Each cell is curated to be duplicate-free; emitting in order without
+	// an extra dedupe pass relies on that. A duplicate in the seed data
+	// would surface as a duplicate row, which is preferable to silently
+	// masking a data bug.
 	const highImpactKeys =
-		DISPUTE_HIGH_IMPACT_FIELDS[ reason as DisputeReason ] ?? [];
+		DISPUTE_HIGH_IMPACT_FIELDS[ reason as DisputeReason ]?.[
+			productType as ProductType
+		] ?? [];
 	const highImpactSet = new Set( highImpactKeys );
 
-	const matrixKeys = new Set< string >();
-	const productTypeEntries = evidenceMatrix[ reason ];
-	if ( productTypeEntries ) {
-		for ( const docs of Object.values( productTypeEntries ) ) {
-			for ( const doc of docs ) {
-				matrixKeys.add( doc.key );
-			}
-		}
-	}
+	const matrixKeys = collectMatrixKeys( reason, productType );
 
 	const result: EvidenceFieldStatus[] = [];
 
 	for ( const key of highImpactKeys ) {
 		result.push( {
 			key,
-			label: resolveFieldLabel( reason, key ),
+			label: resolveFieldLabel( reason, productType, key ),
 			state: isFieldProvided( evidence, key )
 				? 'provided'
 				: 'expected_missing',
@@ -2173,7 +2460,7 @@ export const getExpectedFieldStatus = (
 		}
 		result.push( {
 			key,
-			label: resolveFieldLabel( reason, key ),
+			label: resolveFieldLabel( reason, productType, key ),
 			state: isFieldProvided( evidence, key )
 				? 'provided'
 				: 'optional_missing',

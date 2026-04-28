@@ -64,6 +64,15 @@ export type DisputeReason =
 	| 'noncompliant'
 	| 'unrecognized';
 
+export type ProductType =
+	| 'physical_product'
+	| 'digital_product_or_service'
+	| 'offline_service'
+	| 'event'
+	| 'booking_reservation'
+	| 'multiple'
+	| 'other';
+
 export type DisputeStatus =
 	| 'warning_needs_response'
 	| 'warning_under_review'
