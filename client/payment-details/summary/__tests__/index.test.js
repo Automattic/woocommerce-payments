@@ -193,6 +193,7 @@ describe( 'PaymentDetailsSummary', () => {
 			timeFormat: 'g:ia',
 			featureFlags: {
 				isDisputeIssuerEvidenceEnabled: false,
+				isDisputeOutcomeViewEnabled: false,
 			},
 		};
 
@@ -1040,6 +1041,84 @@ describe( 'PaymentDetailsSummary', () => {
 			expect(
 				screen.queryByLabelText( 'Transaction actions' )
 			).not.toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'Dispute outcome view feature flag', () => {
+		const getResolvedCharge = ( status ) => {
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = status;
+			charge.dispute.metadata = {
+				__dispute_closed_at: '1693626817',
+			};
+			return charge;
+		};
+
+		test( 'renders DisputeResolutionFooter for a resolved dispute when the flag is off', () => {
+			renderCharge( getResolvedCharge( 'won' ) );
+
+			expect(
+				screen.getByText( /Good news/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).toBeInTheDocument();
+		} );
+
+		test( 'does not render DisputeResolutionFooter for a won dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedCharge( 'won' ) );
+
+			expect(
+				screen.queryByText( /Good news/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'does not render DisputeResolutionFooter for a lost dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedCharge( 'lost' ) );
+
+			expect(
+				screen.queryByText( /you've lost this dispute/i, {
+					ignore: '.a11y-speak-region',
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'still renders DisputeResolutionFooter for an under_review dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			renderCharge( getResolvedCharge( 'under_review' ) );
+
+			expect(
+				screen.getByText(
+					/is currently reviewing the evidence you submitted/i,
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
+		} );
+
+		test( 'still renders DisputeAwaitingResponseDetails for an unresolved dispute when the flag is on', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getBaseCharge();
+			charge.disputed = true;
+			charge.dispute = getBaseDispute();
+			charge.dispute.status = 'needs_response';
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByText(
+					/The cardholder claims this is an unauthorized transaction/,
+					{ ignore: '.a11y-speak-region' }
+				)
+			).toBeInTheDocument();
 		} );
 	} );
 } );

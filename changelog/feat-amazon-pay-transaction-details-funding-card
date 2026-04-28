@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Show the Amazon Pay wallet icon, funding card brand, and last four digits on the admin transaction details, matching the Apple Pay and Google Pay treatment.

@@ -36,6 +36,41 @@ describe( 'PaymentMethodDetails', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'renders Amazon Pay with funding card brand and last4', () => {
+		const { container } = render(
+			<PaymentMethodDetails
+				payment={ {
+					type: 'amazon_pay',
+					amazon_pay: {
+						funding: {
+							type: 'card',
+							card: {
+								brand: 'visa',
+								last4: '4242',
+							},
+						},
+						transaction_id: null,
+					},
+				} }
+			/>
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders Amazon Pay without funding card', () => {
+		const { container } = render(
+			<PaymentMethodDetails
+				payment={ {
+					type: 'amazon_pay',
+					amazon_pay: {
+						transaction_id: null,
+					},
+				} }
+			/>
+		);
+		expect( container ).toMatchSnapshot();
+	} );
+
 	function renderCard( card ) {
 		return render(
 			<PaymentMethodDetails payment={ { card: card, type: 'card' } } />
