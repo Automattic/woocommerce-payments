@@ -2276,6 +2276,7 @@ const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 		'Cancellation policy disclosure',
 		'woocommerce-payments'
 	),
+	cancellation_rebuttal: __( 'Cancellation logs', 'woocommerce-payments' ),
 	duplicate_charge_explanation: __(
 		'Duplicate charge explanation',
 		'woocommerce-payments'
@@ -2296,18 +2297,14 @@ const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 };
 
 /**
- * Find a label for `key` in the matrix, preferring the cell that matches the
- * dispute's product type so labels reflect the merchant's actual context
- * (e.g., `cancellation_policy` resolves to "Terms of service" or
- * "Cancellation policy" depending on the product type variant).
+ * Find a label for `key` in the wizard matrix, scoped to the cells that
+ * apply to the given product type. Composite-key reasons (`duplicate`,
+ * `credit_not_processed`) store cells keyed `${productType}__${status}`;
+ * we match any cell whose key equals `productType` or starts with
+ * `${productType}__`.
  *
- * Falls back to scanning sibling cells if the productType-specific cell does
- * not contain the key, so labels remain available even for keys that only
- * appear in some product-type variants.
- *
- * Composite-key reasons (`duplicate`, `credit_not_processed`) store cells
- * keyed `${productType}__${status}` — we match any cell whose key equals
- * `productType` or starts with `${productType}__`.
+ * If the productType-specific cell does not list the key, the caller
+ * (`resolveFieldLabel`) falls through to `FALLBACK_EVIDENCE_FIELD_LABELS`.
  */
 const findMatrixLabel = (
 	reason: string,
@@ -2320,8 +2317,6 @@ const findMatrixLabel = (
 	}
 
 	const productTypePrefix = `${ productType }__`;
-
-	// Pass 1: prefer the product-type-specific cell (or composite variants).
 	for ( const [ matrixKey, docs ] of Object.entries( productTypeEntries ) ) {
 		if (
 			matrixKey === productType ||
@@ -2333,15 +2328,6 @@ const findMatrixLabel = (
 			}
 		}
 	}
-
-	// Pass 2: fall back to any sibling cell to keep labels available.
-	for ( const docs of Object.values( productTypeEntries ) ) {
-		const match = docs.find( ( doc ) => doc.key === key );
-		if ( match ) {
-			return match.label;
-		}
-	}
-
 	return undefined;
 };
 

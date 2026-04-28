@@ -175,6 +175,23 @@ describe( 'getExpectedFieldStatus', () => {
 		);
 		expect( shippingTracking?.label ).toBe( 'Shipping tracking number' );
 	} );
+
+	it( 'falls back to FALLBACK_EVIDENCE_FIELD_LABELS for cells whose matrix omits the high-impact key', () => {
+		// `cancellation_rebuttal` is high-impact for subscription_canceled
+		// across all product types, but the wizard matrix cell for `other`
+		// deliberately omits it (per spec). Label resolution must fall
+		// through to the explicit fallback table rather than render the
+		// raw key.
+		const result = getExpectedFieldStatus(
+			'subscription_canceled',
+			'other',
+			{}
+		);
+		const cancellationRebuttal = result.find(
+			( f ) => f.key === 'cancellation_rebuttal'
+		);
+		expect( cancellationRebuttal?.label ).toBe( 'Cancellation logs' );
+	} );
 } );
 
 describe( 'DISPUTE_HIGH_IMPACT_FIELDS', () => {
