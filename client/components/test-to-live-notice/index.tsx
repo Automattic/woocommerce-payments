@@ -17,31 +17,35 @@ const TestToLiveNotice: React.FC = () => {
 	return (
 		<BannerNotice
 			status="success"
+			icon={ true }
 			isDismissible={ true }
 			onRemove={ () => {
 				window.location.href = dismissUrl;
 			} }
 			actions={ [
 				{
-					label: __( 'Go live', 'woocommerce-payments' ),
+					label: __(
+						'Turn on live payments',
+						'woocommerce-payments'
+					),
 					variant: 'primary',
 					url: ctaUrl,
 				},
 				{
-					label: __( 'Remind me in 7 days', 'woocommerce-payments' ),
-					variant: 'secondary',
+					label: __( 'Maybe later', 'woocommerce-payments' ),
+					variant: 'link',
 					url: snoozeUrl,
 				},
 			] }
 		>
 			<strong>
 				{ __(
-					'Ready for your first real sale?',
+					"You're ready to take real payments.",
 					'woocommerce-payments'
 				) }
 			</strong>{ ' ' }
 			{ __(
-				'Your WooPayments setup is complete. Activate your live account to start accepting real payments.',
+				'Switch from test mode to start charging customers.',
 				'woocommerce-payments'
 			) }
 		</BannerNotice>
