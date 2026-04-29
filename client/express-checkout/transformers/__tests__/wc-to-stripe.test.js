@@ -8,32 +8,33 @@ import {
 } from '../wc-to-stripe';
 
 global.wcpayExpressCheckoutParams = {};
-global.wcpaySettings = {};
 
 describe( 'wc-to-stripe transformers', () => {
 	beforeEach( () => {
+		// Mirrors the production payload built in
+		// class-wc-payments-express-checkout-button-handler.php. The zero-decimal
+		// list is bridged through this payload (not wcpaySettings) so it is
+		// available on the storefront, where wcpaySettings is not populated.
 		global.wcpayExpressCheckoutParams.checkout = {
 			display_prices_with_tax: false,
+			zero_decimal_currencies: [
+				'bif',
+				'clp',
+				'djf',
+				'gnf',
+				'jpy',
+				'kmf',
+				'krw',
+				'mga',
+				'pyg',
+				'rwf',
+				'vnd',
+				'vuv',
+				'xaf',
+				'xof',
+				'xpf',
+			],
 		};
-		// Mirrors the production payload from WC_Payments_Utils::zero_decimal_currencies()
-		// bridged via class-wc-payments-admin.php. Required by isZeroDecimalCurrency.
-		global.wcpaySettings.zeroDecimalCurrencies = [
-			'bif',
-			'clp',
-			'djf',
-			'gnf',
-			'jpy',
-			'kmf',
-			'krw',
-			'mga',
-			'pyg',
-			'rwf',
-			'vnd',
-			'vuv',
-			'xaf',
-			'xof',
-			'xpf',
-		];
 	} );
 
 	describe( 'transformCartDataForDisplayItems', () => {

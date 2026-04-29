@@ -39,25 +39,23 @@ jQueryMock.blockUI = () => null;
 
 window.wcpayExpressCheckoutParams = {};
 window.wcpayExpressCheckoutParams.checkout = {};
-window.wcpaySettings = {
-	zeroDecimalCurrencies: [
-		'bif',
-		'clp',
-		'djf',
-		'gnf',
-		'jpy',
-		'kmf',
-		'krw',
-		'mga',
-		'pyg',
-		'rwf',
-		'vnd',
-		'vuv',
-		'xaf',
-		'xof',
-		'xpf',
-	],
-};
+const ZERO_DECIMAL_CURRENCIES = [
+	'bif',
+	'clp',
+	'djf',
+	'gnf',
+	'jpy',
+	'kmf',
+	'krw',
+	'mga',
+	'pyg',
+	'rwf',
+	'vnd',
+	'vuv',
+	'xaf',
+	'xof',
+	'xpf',
+];
 
 const buildCartData = ( {
 	items = [],
@@ -110,6 +108,7 @@ describe( 'useExpressCheckout', () => {
 		global.jQuery = jQueryMock;
 		window.wcpayExpressCheckoutParams.checkout = {
 			currency_decimals: 2,
+			zero_decimal_currencies: ZERO_DECIMAL_CURRENCIES,
 		};
 		mockCartData = buildCartData();
 	} );
