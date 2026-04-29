@@ -17,11 +17,15 @@ defined( 'ABSPATH' ) || exit;
  * Accelerated-onboarding experiment wrapper.
  *
  * @internal When the experiment ends, remove together with:
+ *   - includes/class-onboarding-experiment-abtest.php (the Onboarding_Experiment_Abtest subclass)
+ *     and its include_once line in class-wc-payments.php.
  *   - WC_Payments_Account::maybe_accelerate_onboarding() and the branch added to
  *     maybe_redirect_from_connect_page().
  *   - WC_Payments_Account::maybe_redirect_from_payments_settings_to_onboarding().
  *   - The `wcpay-skip-accelerated-onboarding=1` param appended in
- *     client/onboarding/index.tsx handleExit().
+ *     client/onboarding/index.tsx handleExit() and in
+ *     client/onboarding/steps/embedded-kyc.tsx (handleOnExit failure/catch
+ *     branches and the loadError Cancel-button URL).
  *   - User meta cleanup (one-shot migration) for USER_META_VARIATION_KEY and
  *     USER_META_BYPASS_KEY. Do NOT delete USER_META_ANON_ID_KEY —
  *     'jetpack_tracks_anon_id' is shared with Jetpack and WooPay tracking.
@@ -133,7 +137,7 @@ class Onboarding_Experiment {
 	 */
 	private function get_abtest(): Experimental_Abtest {
 		if ( null === $this->abtest ) {
-			$this->abtest = new Experimental_Abtest(
+			$this->abtest = new Onboarding_Experiment_Abtest(
 				$this->get_anon_id(),
 				'woocommerce',
 				'yes' === get_option( 'woocommerce_allow_tracking' )

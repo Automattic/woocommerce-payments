@@ -20,7 +20,7 @@ namespace WCPay;
  *
  * @internal This class is experimental and should not be used externally due to planned breaking changes.
  */
-final class Experimental_Abtest {
+class Experimental_Abtest {
 	/**
 	 * A variable to hold the tests we fetched, and their variations for the current user.
 	 *

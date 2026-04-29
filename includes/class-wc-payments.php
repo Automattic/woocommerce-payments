@@ -502,6 +502,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 		include_once __DIR__ . '/class-wc-payments-onboarding-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
+		include_once __DIR__ . '/class-onboarding-experiment-abtest.php';
 		include_once __DIR__ . '/class-onboarding-experiment.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/class-wc-payments-settings-service.php';
