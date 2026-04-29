@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add card brand logo and last 4 digits to the WooPay express checkout button when available
