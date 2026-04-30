@@ -196,8 +196,8 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					) }
 				</p>
 				<div className="transactions__customer-support">
-					<SupportEmailInput setInputVallid={ setEmailInputValid } />
-					<SupportPhoneInput setInputVallid={ setPhoneInputValid } />
+					<SupportEmailInput setInputValid={ setEmailInputValid } />
+					<SupportPhoneInput setInputValid={ setPhoneInputValid } />
 				</div>
 			</CardBody>
 		</Card>

@@ -549,7 +549,7 @@ jQuery( ( $ ) => {
 						if ( ! elements ) {
 							wcpayECE.init();
 						} else if ( newTotal !== prevTotal && newTotal > 0 ) {
-							elements.update( { amount: newTotal } );
+							await elements.update( { amount: newTotal } );
 						}
 
 						// Check if cart is eligible (filter allows extensions to override)
