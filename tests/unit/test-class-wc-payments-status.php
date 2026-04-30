@@ -316,6 +316,111 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test that the Dev Mode row shows "Enabled" with WP_ENVIRONMENT_TYPE trigger.
+	 */
+	public function test_dev_mode_row_shows_enabled_with_wp_environment_type(): void {
+		$this->set_up_connected_mocks();
+		WC_Payments::mode()->dev();
+
+		$this->env_type_callback = function () {
+			return 'staging';
+		};
+		add_filter( 'wp_get_environment_type', $this->env_type_callback );
+
+		$status = new WC_Payments_Status(
+			$this->mock_gateway,
+			$this->mock_http,
+			$this->mock_account
+		);
+
+		ob_start();
+		$status->render_status_report_section();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Enabled', $output );
+		$this->assertStringContainsString( 'WP_ENVIRONMENT_TYPE=staging', $output );
+	}
+
+	/**
+	 * Test that the Dev Mode row shows "Enabled" with WP_DEVELOPMENT_MODE trigger.
+	 */
+	public function test_dev_mode_row_shows_enabled_with_wp_development_mode(): void {
+		$this->set_up_connected_mocks();
+		WC_Payments::mode()->dev();
+
+		$this->dev_mode_callback = function () {
+			return 'plugin';
+		};
+		add_filter( 'wp_get_development_mode', $this->dev_mode_callback );
+
+		$status = new WC_Payments_Status(
+			$this->mock_gateway,
+			$this->mock_http,
+			$this->mock_account
+		);
+
+		ob_start();
+		$status->render_status_report_section();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Enabled', $output );
+		$this->assertStringContainsString( 'WP_DEVELOPMENT_MODE=plugin', $output );
+	}
+
+	/**
+	 * Test that the Dev Mode row falls back to "wcpay_dev_mode filter" when no other trigger is active.
+	 */
+	public function test_dev_mode_row_shows_wcpay_dev_mode_filter_when_no_other_trigger(): void {
+		$this->set_up_connected_mocks();
+		WC_Payments::mode()->dev();
+		// No env_type or dev_mode filters set — mode()->dev() is the sole enabler.
+
+		$status = new WC_Payments_Status(
+			$this->mock_gateway,
+			$this->mock_http,
+			$this->mock_account
+		);
+
+		ob_start();
+		$status->render_status_report_section();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Enabled', $output );
+		$this->assertStringContainsString( 'wcpay_dev_mode filter', $output );
+	}
+
+	/**
+	 * Test that the Dev Mode row shows all triggers when multiple conditions are active.
+	 */
+	public function test_dev_mode_row_shows_multiple_triggers(): void {
+		$this->set_up_connected_mocks();
+		WC_Payments::mode()->dev();
+
+		$this->env_type_callback = function () {
+			return 'development';
+		};
+		add_filter( 'wp_get_environment_type', $this->env_type_callback );
+
+		$this->dev_mode_callback = function () {
+			return 'plugin';
+		};
+		add_filter( 'wp_get_development_mode', $this->dev_mode_callback );
+
+		$status = new WC_Payments_Status(
+			$this->mock_gateway,
+			$this->mock_http,
+			$this->mock_account
+		);
+
+		ob_start();
+		$status->render_status_report_section();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'WP_ENVIRONMENT_TYPE=development', $output );
+		$this->assertStringContainsString( 'WP_DEVELOPMENT_MODE=plugin', $output );
+	}
+
+	/**
 	 * Configures class-level mocks so that render_status_report_section() reaches the Dev Mode row.
 	 */
 	private function set_up_connected_mocks(): void {
