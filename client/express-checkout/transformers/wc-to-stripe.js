@@ -16,6 +16,10 @@ import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/shippin
  * The expected count of decimals for the active currency is computed server-side and bridged
  * through the express-checkout payload as `stripe_minor_unit`.
  *
+ * Stripe rejects non-integer amounts. When WC stores prices at a finer precision than Stripe
+ * expects (e.g. JPY configured with WC decimals = 2 against Stripe's 0-decimal yen), the
+ * conversion produces a fractional value that must be rounded before being sent.
+ *
  * @param {number}                        price       the price to format.
  * @param {{currency_minor_unit: number}} priceObject the price object returned by the Store API
  *
@@ -25,7 +29,14 @@ export const transformPrice = ( price, priceObject ) => {
 	const stripeMinorUnit =
 		getExpressCheckoutData( 'checkout' )?.stripe_minor_unit ?? 2;
 
-	return price * 10 ** ( stripeMinorUnit - priceObject.currency_minor_unit );
+	const converted =
+		price * 10 ** ( stripeMinorUnit - priceObject.currency_minor_unit );
+
+	// Round only when narrowing precision; widening and same-scale conversions
+	// are already integer-exact.
+	return stripeMinorUnit < priceObject.currency_minor_unit
+		? Math.round( converted )
+		: converted;
 };
 
 /**

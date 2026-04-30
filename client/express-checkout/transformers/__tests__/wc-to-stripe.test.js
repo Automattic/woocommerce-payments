@@ -643,6 +643,18 @@ describe( 'wc-to-stripe transformers', () => {
 			);
 		} );
 
+		it( 'rounds when narrowing precision to avoid Stripe rejecting non-integer amounts', () => {
+			// JPY (Stripe zero-decimal) but WC stores prices at 2 decimals.
+			// total_price = 54125 with currency_minor_unit = 2 represents ¥541.25.
+			// Stripe expects an integer in whole yen. Without rounding, the math
+			// produces 541.25 and Stripe rejects, causing the wallet sheet to show
+			// "Invalid shipping address". The rounded result is the closest legal value.
+			global.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 0;
+			expect( transformPrice( 54125, { currency_minor_unit: 2 } ) ).toBe(
+				541
+			);
+		} );
+
 		it( 'multiplies the price by 100 for a Stripe special-case currency (e.g. TWD) configured with zero decimals', () => {
 			// TWD/HUF/ISK/UGX are locally rendered with 0 decimals but Stripe bills them as two-decimal.
 			// stripe_minor_unit stays at the default 2 (set in the outer beforeEach).
