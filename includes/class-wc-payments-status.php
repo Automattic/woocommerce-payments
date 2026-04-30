@@ -424,6 +424,7 @@ class WC_Payments_Status {
 	/**
 	 * Returns human-readable labels for each active dev mode trigger.
 	 *
+	 * @todo Implement trigger detection — WCPAY_DEV_MODE, WP_ENVIRONMENT_TYPE, WP_DEVELOPMENT_MODE, filter fallback.
 	 * @return string[]
 	 */
 	private function get_dev_mode_triggers(): array {
