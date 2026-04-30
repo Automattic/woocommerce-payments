@@ -2061,10 +2061,12 @@ export const DISPUTE_HIGH_IMPACT_FIELDS: Record<
 	Record< ProductType, string[] >
 > = {
 	credit_not_processed: {
-		// `customer_signature` is amber-flagged pending a defensible
-		// hypothesis: +9.15pp lift (n=115) but only 15% of CNP merchants
-		// attach one. Possibly a merchant-effort proxy rather than the
-		// field itself moving outcomes. Kept while the question is open.
+		// `customer_signature` (signed delivery proof) is scoped to
+		// physical_product because these disputes commonly take the shape
+		// "I returned the product and never got my refund": proving
+		// delivery corroborates the merchant's defence. The field is
+		// intentionally absent from non-physical cells (no shipping
+		// proof to attach).
 		physical_product: [
 			'customer_signature',
 			'customer_communication',
