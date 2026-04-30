@@ -656,7 +656,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 	} );
 
 	test( 'fires inquiry refund modal tracks event with dispute identifiers', async () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			reason: 'credit_not_processed' as const,
 			status: 'warning_needs_response' as const,
