@@ -422,6 +422,17 @@ class WC_Payments_Status {
 	}
 
 	/**
+	 * Returns true if the WCPAY_DEV_MODE constant is defined and truthy.
+	 *
+	 * Wrapper for testability.
+	 *
+	 * @return bool
+	 */
+	protected function is_wcpay_dev_mode_defined(): bool {
+		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
+	}
+
+	/**
 	 * Returns the current WordPress environment type.
 	 *
 	 * Wrapper for testability.
@@ -451,7 +462,7 @@ class WC_Payments_Status {
 	private function get_dev_mode_triggers(): array {
 		$triggers = [];
 
-		if ( defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE ) {
+		if ( $this->is_wcpay_dev_mode_defined() ) {
 			$triggers[] = 'WCPAY_DEV_MODE';
 		}
 
