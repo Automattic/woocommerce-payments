@@ -1771,7 +1771,7 @@ class WC_Payments_Admin {
 		}
 
 		if ( ! get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SHOWN, true ) ) {
-			Tracker::track_admin( 'wcpay_test_to_live_notice_shown' );
+			$this->record_tracks_event( 'wcpay_test_to_live_notice_shown' );
 			update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SHOWN, true );
 		}
 
@@ -1802,14 +1802,14 @@ class WC_Payments_Admin {
 		}
 
 		if ( $this->account->get_is_live() ) {
-			Tracker::track_admin( 'wcpay_test_to_live_notice_cta_clicked', [ 'path' => 'switch_mode' ] );
+			$this->record_tracks_event( 'wcpay_test_to_live_notice_cta_clicked', [ 'path' => 'switch_mode' ] );
 
 			$this->wcpay_gateway->update_option( 'test_mode', 'no' );
 			WC_Payments_Onboarding_Service::set_test_mode( false );
 
 			wp_safe_redirect( remove_query_arg( [ 'wcpay-test-to-live-cta', '_wcpay_test_to_live_cta_nonce' ] ) );
 		} else {
-			Tracker::track_admin( 'wcpay_test_to_live_notice_cta_clicked', [ 'path' => 'onboarding' ] );
+			$this->record_tracks_event( 'wcpay_test_to_live_notice_cta_clicked', [ 'path' => 'onboarding' ] );
 
 			wp_safe_redirect(
 				add_query_arg(
@@ -1846,7 +1846,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		Tracker::track_admin( 'wcpay_test_to_live_notice_dismissed' );
+		$this->record_tracks_event( 'wcpay_test_to_live_notice_dismissed' );
 
 		update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, time() );
 
@@ -1874,7 +1874,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		Tracker::track_admin( 'wcpay_test_to_live_notice_snoozed' );
+		$this->record_tracks_event( 'wcpay_test_to_live_notice_snoozed' );
 
 		update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, time() );
 
@@ -1950,5 +1950,21 @@ class WC_Payments_Admin {
 		);
 
 		return ! empty( $orders );
+	}
+
+	/**
+	 * Records a Tracks event.
+	 * Immediately via WC_Tracks::record_event() instead of the WC_Tracks queue.
+	 * The queue is flushed in admin_footer or shutdown — neither of which is reached in redirect
+	 * handlers that call wp_safe_redirect() + exit, so queued events would be silently lost.
+	 *
+	 * @param string $event      Event name.
+	 * @param array  $properties Event properties.
+	 * @return void
+	 */
+	private function record_tracks_event( string $event, array $properties = [] ): void {
+		if ( class_exists( 'WC_Tracks' ) ) {
+			WC_Tracks::record_event( $event, $properties );
+		}
 	}
 }
