@@ -949,7 +949,7 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->tear_down_notice_global_state();
 	}
 
-	public function test_handle_test_to_live_notice_cta_queues_switch_mode_event_when_account_is_live(): void {
+	public function test_handle_test_to_live_notice_cta_redirects_when_account_is_live(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		$_GET['wcpay-test-to-live-cta']        = '1';
 		$_GET['_wcpay_test_to_live_cta_nonce'] = wp_create_nonce( 'wcpay_test_to_live_cta_nonce' );
@@ -966,15 +966,10 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		}
 		remove_filter( 'wp_redirect', $redirect_intercept );
 
-		$events = \WCPay\Tracker::get_admin_events();
-		$this->assertArrayHasKey( 'wcpay_test_to_live_notice_cta_clicked', $events );
-		$this->assertSame( 'switch_mode', $events['wcpay_test_to_live_notice_cta_clicked']['path'] );
-
-		\WCPay\Tracker::remove_admin_event( 'wcpay_test_to_live_notice_cta_clicked' );
 		unset( $_GET['wcpay-test-to-live-cta'], $_GET['_wcpay_test_to_live_cta_nonce'] );
 	}
 
-	public function test_handle_test_to_live_notice_cta_queues_onboarding_event_when_account_not_live(): void {
+	public function test_handle_test_to_live_notice_cta_redirects_to_onboarding_when_account_not_live(): void {
 		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 		$_GET['wcpay-test-to-live-cta']        = '1';
 		$_GET['_wcpay_test_to_live_cta_nonce'] = wp_create_nonce( 'wcpay_test_to_live_cta_nonce' );
@@ -991,15 +986,10 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		}
 		remove_filter( 'wp_redirect', $redirect_intercept );
 
-		$events = \WCPay\Tracker::get_admin_events();
-		$this->assertArrayHasKey( 'wcpay_test_to_live_notice_cta_clicked', $events );
-		$this->assertSame( 'onboarding', $events['wcpay_test_to_live_notice_cta_clicked']['path'] );
-
-		\WCPay\Tracker::remove_admin_event( 'wcpay_test_to_live_notice_cta_clicked' );
 		unset( $_GET['wcpay-test-to-live-cta'], $_GET['_wcpay_test_to_live_cta_nonce'] );
 	}
 
-	public function test_hide_test_to_live_notice_queues_dismissed_event(): void {
+	public function test_hide_test_to_live_notice_sets_dismissed_meta_and_redirects(): void {
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_user );
 
@@ -1018,13 +1008,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		}
 		remove_filter( 'wp_redirect', $redirect_intercept );
 
-		$this->assertArrayHasKey( 'wcpay_test_to_live_notice_dismissed', \WCPay\Tracker::get_admin_events() );
+		$this->assertNotEmpty( get_user_meta( $admin_user, WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, true ) );
 
-		\WCPay\Tracker::remove_admin_event( 'wcpay_test_to_live_notice_dismissed' );
+		delete_user_meta( $admin_user, WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED );
 		unset( $_GET['wcpay-hide-test-to-live-notice'], $_GET['_wcpay_test_to_live_notice_nonce'] );
 	}
 
-	public function test_snooze_test_to_live_notice_tracks_event_sets_meta_and_redirects(): void {
+	public function test_snooze_test_to_live_notice_sets_snoozed_meta_and_redirects(): void {
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_user );
 
@@ -1043,10 +1033,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		}
 		remove_filter( 'wp_redirect', $redirect_intercept );
 
-		$this->assertArrayHasKey( 'wcpay_test_to_live_notice_snoozed', \WCPay\Tracker::get_admin_events() );
 		$this->assertNotEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, true ) );
 
-		\WCPay\Tracker::remove_admin_event( 'wcpay_test_to_live_notice_snoozed' );
 		delete_user_meta( get_current_user_id(), WC_Payments_Admin::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED );
 		unset( $_GET['wcpay-snooze-test-to-live-notice'], $_GET['_wcpay_snooze_test_to_live_notice_nonce'] );
 	}
