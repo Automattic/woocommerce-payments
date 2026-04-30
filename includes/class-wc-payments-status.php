@@ -422,13 +422,54 @@ class WC_Payments_Status {
 	}
 
 	/**
+	 * Returns the current WordPress environment type.
+	 *
+	 * Wrapper for testability.
+	 *
+	 * @return string
+	 */
+	protected function get_wp_environment_type(): string {
+		return function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : '';
+	}
+
+	/**
+	 * Returns the current WordPress development mode.
+	 *
+	 * Wrapper for testability.
+	 *
+	 * @return string
+	 */
+	protected function get_wp_development_mode(): string {
+		return function_exists( 'wp_get_development_mode' ) ? wp_get_development_mode() : '';
+	}
+
+	/**
 	 * Returns human-readable labels for each active dev mode trigger.
 	 *
-	 * @todo Implement trigger detection — WCPAY_DEV_MODE, WP_ENVIRONMENT_TYPE, WP_DEVELOPMENT_MODE, filter fallback.
 	 * @return string[]
 	 */
 	private function get_dev_mode_triggers(): array {
-		return [];
+		$triggers = [];
+
+		if ( defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE ) {
+			$triggers[] = 'WCPAY_DEV_MODE';
+		}
+
+		$env_type = $this->get_wp_environment_type();
+		if ( in_array( $env_type, \WCPay\Core\Mode::DEV_MODE_ENVIRONMENTS, true ) ) {
+			$triggers[] = 'WP_ENVIRONMENT_TYPE=' . $env_type;
+		}
+
+		$dev_mode_setting = $this->get_wp_development_mode();
+		if ( '' !== $dev_mode_setting ) {
+			$triggers[] = 'WP_DEVELOPMENT_MODE=' . $dev_mode_setting;
+		}
+
+		if ( empty( $triggers ) ) {
+			$triggers[] = 'wcpay_dev_mode filter';
+		}
+
+		return $triggers;
 	}
 
 	/**
