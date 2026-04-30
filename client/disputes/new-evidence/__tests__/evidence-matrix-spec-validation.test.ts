@@ -1,64 +1,14 @@
 /**
  * Spec-Driven Evidence Matrix Validation Tests
  *
- * This file validates the implementation against the specification document:
- * "Reason Code x Product Type Logic"
- *
- * The tests ensure that for each implemented Reason × Product Type combination:
+ * Validates the implementation against the "Reason Code x Product Type Logic"
+ * specification. For each entry in the `implementedCombinations` array below,
+ * asserts that:
  * 1. UI shows the correct document fields (getRecommendedDocumentFields)
  * 2. Cover letter includes the correct attachments (generateAttachments)
  *
- * IMPLEMENTATION STATUS (from evidence-matrix.ts):
- * ✅ Implemented combinations:
- *   - fraudulent × booking_reservation
- *   - fraudulent × physical_product
- *   - fraudulent × digital_product_or_service
- *   - product_not_received × booking_reservation
- *   - product_not_received × physical_product
- *   - product_not_received × digital_product_or_service
- *   - product_unacceptable × booking_reservation
- *   - product_unacceptable × physical_product
- *   - product_unacceptable × digital_product_or_service
- *   - subscription_canceled × booking_reservation
- *   - subscription_canceled × physical_product
- *   - subscription_canceled × digital_product_or_service
- *   - subscription_canceled × other
- *   - subscription_canceled × multiple
- *   - duplicate × booking_reservation (is_duplicate scenario)
- *   - duplicate × booking_reservation (is_not_duplicate scenario)
- *   - duplicate × physical_product (is_duplicate scenario)
- *   - duplicate × physical_product (is_not_duplicate scenario)
- *   - duplicate × digital_product_or_service (is_duplicate scenario)
- *   - duplicate × digital_product_or_service (is_not_duplicate scenario)
- *   - credit_not_processed × booking_reservation (refund_has_been_issued scenario)
- *   - credit_not_processed × booking_reservation (refund_was_not_owed scenario)
- *   - credit_not_processed × physical_product (refund_has_been_issued scenario)
- *   - credit_not_processed × physical_product (refund_was_not_owed scenario)
- *   - credit_not_processed × digital_product_or_service (refund_has_been_issued scenario)
- *   - credit_not_processed × digital_product_or_service (refund_was_not_owed scenario)
- *   - fraudulent × offline_service
- *   - product_not_received × offline_service
- *   - product_unacceptable × offline_service
- *   - subscription_canceled × offline_service
- *   - credit_not_processed × offline_service (refund_has_been_issued scenario)
- *   - credit_not_processed × offline_service (refund_was_not_owed scenario)
- *   - duplicate × offline_service (is_duplicate scenario)
- *   - duplicate × offline_service (is_not_duplicate scenario)
- *   - fraudulent × event
- *   - product_not_received × event
- *   - product_unacceptable × event
- *   - subscription_canceled × event
- *   - credit_not_processed × event (refund_has_been_issued scenario)
- *   - credit_not_processed × event (refund_was_not_owed scenario)
- *   - duplicate × event (is_duplicate scenario)
- *   - duplicate × event (is_not_duplicate scenario)
- *   - fraudulent × other
- *   - product_not_received × other
- *   - product_unacceptable × other
- *   - credit_not_processed × other (refund_has_been_issued scenario)
- *   - credit_not_processed × other (refund_was_not_owed scenario)
- *   - duplicate × other (is_duplicate scenario)
- *   - duplicate × other (is_not_duplicate scenario)
+ * `implementedCombinations` is hand-maintained and must be kept in sync with
+ * `evidence-matrix.ts` when new reason × product type entries are added.
  */
 
 /**
@@ -68,6 +18,7 @@ import { getRecommendedDocumentFields } from '../recommended-document-fields';
 import { generateAttachments } from '../cover-letter-generator';
 import { getMatrixFields } from '../evidence-matrix';
 import { DOCUMENT_FIELD_KEYS } from '../document-field-keys';
+import type { Charge } from 'wcpay/types/charges';
 import type { DisputeReason } from 'wcpay/types/disputes';
 
 // Mock wcpaySettings with feature flag enabled
@@ -2059,18 +2010,23 @@ describe( 'Evidence Matrix Specification Validation', () => {
 			}
 		);
 
-		describe( 'Non-implemented combinations should return undefined', () => {
-			const notImplemented = [
-				// Status-less call for credit_not_processed × other should return undefined
-				// (only composite keys other__refund_has_been_issued / other__refund_was_not_owed exist)
+		describe( 'Status-dependent reasons require a status argument', () => {
+			// credit_not_processed and duplicate use composite keys
+			// (e.g. other__refund_has_been_issued). A status-less lookup has
+			// no plain productType key in the matrix and must return undefined.
+			const statusDependentLookups = [
 				{
 					reason: 'credit_not_processed',
 					productType: 'other',
 				},
+				{
+					reason: 'duplicate',
+					productType: 'other',
+				},
 			];
 
-			it.each( notImplemented )(
-				'should return undefined for $reason × $productType',
+			it.each( statusDependentLookups )(
+				'should return undefined for $reason × $productType without a status',
 				( { reason, productType } ) => {
 					const fields = getMatrixFields( reason, productType );
 					expect( fields ).toBeUndefined();
@@ -2106,7 +2062,7 @@ describe( 'Evidence Matrix Specification Validation', () => {
 				customer_url: '',
 			},
 			balance_transactions: [],
-			charge: 'ch_test',
+			charge: { id: 'ch_test' } as Charge,
 		} );
 
 		describe.each(
@@ -2248,7 +2204,7 @@ describe( 'Evidence Matrix Specification Validation', () => {
 							customer_url: '',
 						},
 						balance_transactions: [],
-						charge: 'ch_test',
+						charge: { id: 'ch_test' } as Charge,
 					};
 
 					const attachments = generateAttachments(

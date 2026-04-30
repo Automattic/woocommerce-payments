@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Address remaining paths where payment method change for subscription could reduce stock amounts

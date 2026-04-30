@@ -12,14 +12,14 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { TransactionsFilters } from '../';
+import { getAdvancedFilters } from '../config';
 import { Transaction } from 'wcpay/data';
 import PAYMENT_METHOD_IDS, {
 	PAYMENT_METHOD_BRANDS,
 } from 'wcpay/constants/payment-method';
 
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
-jest.mock( '@woocommerce/settings', () => ( {
-	...jest.requireActual( '@woocommerce/settings' ),
+jest.mock( 'wcpay/utils/wc-settings', () => ( {
 	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 
@@ -461,6 +461,32 @@ describe( 'Transactions filters', () => {
 			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().customer_country_is_not ).toEqual( 'CA' );
+		} );
+	} );
+
+	describe( 'loan filter visibility', () => {
+		test( 'should not show Loan filter when no loans are available', () => {
+			const g = global as any;
+			const originalLoans = g.wcpaySettings.accountLoans.loans;
+			g.wcpaySettings.accountLoans.loans = [];
+			try {
+				const filters = getAdvancedFilters();
+				expect( filters.filters.loan_id_is ).toBeUndefined();
+			} finally {
+				g.wcpaySettings.accountLoans.loans = originalLoans;
+			}
+		} );
+
+		test( 'should show Loan filter when loans are available', () => {
+			const g = global as any;
+			const originalLoans = g.wcpaySettings.accountLoans.loans;
+			g.wcpaySettings.accountLoans.loans = [ 'flxln_123456|active' ];
+			try {
+				const filters = getAdvancedFilters();
+				expect( filters.filters.loan_id_is ).toBeDefined();
+			} finally {
+				g.wcpaySettings.accountLoans.loans = originalLoans;
+			}
 		} );
 	} );
 

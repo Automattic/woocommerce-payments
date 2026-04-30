@@ -11,8 +11,7 @@ import React from 'react';
  */
 import DisputeAwaitingResponseDetails from '../dispute-awaiting-response-details';
 import { useDisputeAccept } from 'wcpay/data';
-import type { Dispute } from 'wcpay/types/disputes';
-import type { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { ChargeBillingDetails, ChargeDispute } from 'wcpay/types/charges';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import { recordEvent } from 'tracks';
 
@@ -58,7 +57,7 @@ const mockUseDisputeAccept = useDisputeAccept as jest.MockedFunction<
 	typeof useDisputeAccept
 >;
 
-const getBaseDispute = (): Dispute => ( {
+const getBaseDispute = (): ChargeDispute => ( {
 	id: 'dp_visa_compliance_1',
 	amount: 5000,
 	charge: 'ch_mock',
@@ -212,7 +211,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 	} );
 
 	test( 'renders Visa compliance checkbox checked when there is staged evidence', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			evidence_details: {
 				due_by: 1694303999,
@@ -296,7 +295,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 	} );
 
 	test( 'Challenge button is enabled when there is staged evidence (checkbox is auto-checked)', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			evidence_details: {
 				due_by: 1694303999,
@@ -417,7 +416,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 	} );
 
 	test( 'does not render checkbox for non-Visa compliance disputes', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			reason: 'fraudulent', // Different reason
 			enhanced_eligibility_types: [],
@@ -444,7 +443,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 	} );
 
 	test( 'render checkbox when reason is noncompliant but missing visa_compliance eligibility type', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			enhanced_eligibility_types: [], // Missing visa_compliance
 		};
@@ -561,7 +560,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 	} );
 
 	test( 'renders disabled Challenge dispute button with tooltip for Klarna inquiry', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			reason: 'credit_not_processed' as const,
 			status: 'warning_needs_response' as const,
@@ -596,7 +595,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 	} );
 
 	test( 'renders Issue refund button before disabled Challenge button for Klarna inquiry', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			reason: 'credit_not_processed' as const,
 			status: 'warning_needs_response' as const,
@@ -634,7 +633,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 	} );
 
 	test( 'does not show Visa compliance checkbox for Klarna inquiries', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			reason: 'credit_not_processed' as const,
 			status: 'warning_needs_response' as const,
