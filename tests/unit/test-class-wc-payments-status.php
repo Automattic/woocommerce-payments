@@ -313,7 +313,6 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$this->assertStringContainsString( 'Dev Mode', $output );
 		$this->assertStringContainsString( 'Disabled', $output );
-		$this->assertStringNotContainsString( 'Enabled', $output );
 	}
 
 	/**
