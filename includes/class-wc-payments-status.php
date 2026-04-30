@@ -422,18 +422,6 @@ class WC_Payments_Status {
 	}
 
 	/**
-	 * Returns the triggers that activated dev mode.
-	 *
-	 * Delegates to Mode so trigger detection is not duplicated here.
-	 * Wrapped as a protected method for testability.
-	 *
-	 * @return string[]
-	 */
-	protected function get_dev_mode_trigger_labels(): array {
-		return WC_Payments::mode()->get_dev_mode_triggers();
-	}
-
-	/**
 	 * Renders WCPay information on the status page.
 	 */
 	public function render_status_report_section() {
@@ -498,7 +486,7 @@ class WC_Payments_Status {
 						<td>
 						<?php
 						if ( WC_Payments::mode()->is_dev() ) {
-							$triggers = $this->get_dev_mode_trigger_labels();
+							$triggers = WC_Payments::mode()->get_dev_mode_triggers();
 							$label    = __( 'Enabled', 'woocommerce-payments' );
 							if ( ! empty( $triggers ) ) {
 								$label .= ' (' . implode( ', ', $triggers ) . ')';

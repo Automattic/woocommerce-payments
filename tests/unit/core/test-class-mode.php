@@ -245,11 +245,10 @@ class Core_Mode_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_dev_resets_dev_mode_triggers() {
-		// Confirm that calling dev() clears any triggers that might have been set.
+	public function test_dev_sets_manual_trigger() {
 		$this->mode->dev();
 
 		$this->assertTrue( $this->mode->is_dev() );
-		$this->assertSame( [], $this->mode->get_dev_mode_triggers() );
+		$this->assertSame( [ 'manual' ], $this->mode->get_dev_mode_triggers() );
 	}
 }

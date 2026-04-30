@@ -255,7 +255,7 @@ class Mode {
 	 */
 	public function dev() {
 		$this->dev_mode          = true;
-		$this->dev_mode_triggers = [];
+		$this->dev_mode_triggers = [ 'manual' ];
 		// In dev mode, everything is in test mode.
 		$this->test_mode            = true;
 		$this->test_mode_onboarding = true;

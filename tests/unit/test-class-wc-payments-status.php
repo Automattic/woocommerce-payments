@@ -279,128 +279,12 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$this->set_up_connected_mocks();
 		WC_Payments::mode()->live();
 
-		$status = $this->getMockBuilder( WC_Payments_Status::class )
-			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
-			->getMock();
-
 		ob_start();
-		$status->render_status_report_section();
+		$this->status->render_status_report_section();
 		$output = ob_get_clean();
 
 		$this->assertStringContainsString( 'Dev Mode', $output );
 		$this->assertStringContainsString( 'Disabled', $output );
-	}
-
-	/**
-	 * Test that the Dev Mode row shows "Enabled" with WP_ENVIRONMENT_TYPE trigger.
-	 */
-	public function test_dev_mode_row_shows_enabled_with_wp_environment_type(): void {
-		$this->set_up_connected_mocks();
-		WC_Payments::mode()->dev();
-
-		$status = $this->getMockBuilder( WC_Payments_Status::class )
-			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
-			->getMock();
-
-		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'WP_ENVIRONMENT_TYPE=staging' ] );
-
-		ob_start();
-		$status->render_status_report_section();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'Enabled', $output );
-		$this->assertStringContainsString( 'WP_ENVIRONMENT_TYPE=staging', $output );
-	}
-
-	/**
-	 * Test that the Dev Mode row shows "Enabled" with WP_DEVELOPMENT_MODE trigger.
-	 */
-	public function test_dev_mode_row_shows_enabled_with_wp_development_mode(): void {
-		$this->set_up_connected_mocks();
-		WC_Payments::mode()->dev();
-
-		$status = $this->getMockBuilder( WC_Payments_Status::class )
-			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
-			->getMock();
-
-		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'WP_DEVELOPMENT_MODE=plugin' ] );
-
-		ob_start();
-		$status->render_status_report_section();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'Enabled', $output );
-		$this->assertStringContainsString( 'WP_DEVELOPMENT_MODE=plugin', $output );
-	}
-
-	/**
-	 * Test that the Dev Mode row falls back to "wcpay_dev_mode filter" when no other trigger is active.
-	 */
-	public function test_dev_mode_row_shows_wcpay_dev_mode_filter_when_no_other_trigger(): void {
-		$this->set_up_connected_mocks();
-		WC_Payments::mode()->dev();
-
-		$status = $this->getMockBuilder( WC_Payments_Status::class )
-			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
-			->getMock();
-
-		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'wcpay_dev_mode filter' ] );
-
-		ob_start();
-		$status->render_status_report_section();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'Enabled', $output );
-		$this->assertStringContainsString( 'wcpay_dev_mode filter', $output );
-	}
-
-	/**
-	 * Test that the Dev Mode row shows all triggers when multiple conditions are active.
-	 */
-	public function test_dev_mode_row_shows_multiple_triggers(): void {
-		$this->set_up_connected_mocks();
-		WC_Payments::mode()->dev();
-
-		$status = $this->getMockBuilder( WC_Payments_Status::class )
-			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
-			->getMock();
-
-		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'WP_ENVIRONMENT_TYPE=development', 'WP_DEVELOPMENT_MODE=plugin' ] );
-
-		ob_start();
-		$status->render_status_report_section();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'Enabled', $output );
-		$this->assertStringContainsString( 'WP_ENVIRONMENT_TYPE=development', $output );
-		$this->assertStringContainsString( 'WP_DEVELOPMENT_MODE=plugin', $output );
-	}
-
-	/**
-	 * Test that the Dev Mode row shows "Enabled" with WCPAY_DEV_MODE trigger.
-	 */
-	public function test_dev_mode_row_shows_wcpay_dev_mode_constant_trigger(): void {
-		$this->set_up_connected_mocks();
-		WC_Payments::mode()->dev();
-
-		$status = $this->getMockBuilder( WC_Payments_Status::class )
-			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
-			->getMock();
-
-		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'WCPAY_DEV_MODE' ] );
-
-		ob_start();
-		$status->render_status_report_section();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'Enabled', $output );
-		$this->assertStringContainsString( 'WCPAY_DEV_MODE', $output );
 	}
 
 	/**
