@@ -12,28 +12,12 @@ global.wcpayExpressCheckoutParams = {};
 describe( 'wc-to-stripe transformers', () => {
 	beforeEach( () => {
 		// Mirrors the production payload built in
-		// class-wc-payments-express-checkout-button-handler.php. The zero-decimal
-		// list is bridged through this payload (not wcpaySettings) so it is
-		// available on the storefront, where wcpaySettings is not populated.
+		// class-wc-payments-express-checkout-button-handler.php. stripe_minor_unit
+		// is the server-resolved count of decimals Stripe expects for the active
+		// currency (0 for true zero-decimal, 2 otherwise).
 		global.wcpayExpressCheckoutParams.checkout = {
 			display_prices_with_tax: false,
-			zero_decimal_currencies: [
-				'bif',
-				'clp',
-				'djf',
-				'gnf',
-				'jpy',
-				'kmf',
-				'krw',
-				'mga',
-				'pyg',
-				'rwf',
-				'vnd',
-				'vuv',
-				'xaf',
-				'xof',
-				'xpf',
-			],
+			stripe_minor_unit: 2,
 		};
 	} );
 
@@ -617,9 +601,8 @@ describe( 'wc-to-stripe transformers', () => {
 	} );
 
 	describe( 'transformPrice', () => {
-		afterEach( () => {
-			delete global.wcpayExpressCheckoutParams.checkout.currency_code;
-		} );
+		// stripe_minor_unit defaults to 2 in the outer beforeEach, mirroring the
+		// production payload for any non-zero-decimal currency.
 
 		it( 'transforms the price', () => {
 			expect( transformPrice( 180, { currency_minor_unit: 2 } ) ).toBe(
@@ -644,7 +627,7 @@ describe( 'wc-to-stripe transformers', () => {
 		} );
 
 		it( 'transforms the price if the currency is a zero decimal currency (e.g.: Yen)', () => {
-			global.wcpayExpressCheckoutParams.checkout.currency_code = 'jpy';
+			global.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 0;
 			// with zero decimals, `18` would mean `18`.
 			expect( transformPrice( 18, { currency_minor_unit: 0 } ) ).toBe(
 				18
@@ -652,7 +635,7 @@ describe( 'wc-to-stripe transformers', () => {
 		} );
 
 		it( 'transforms the price if the currency a zero decimal currency (e.g.: Yen) but it is configured with one decimal', () => {
-			global.wcpayExpressCheckoutParams.checkout.currency_code = 'jpy';
+			global.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 0;
 			// with zero decimals, `18` would mean `18`.
 			// But since Stripe expects the price to be in the minimum currency amount, the return value should be `18`
 			expect( transformPrice( 180, { currency_minor_unit: 1 } ) ).toBe(
@@ -660,28 +643,16 @@ describe( 'wc-to-stripe transformers', () => {
 			);
 		} );
 
-		it( 'multiplies the price by 100 for TWD (Stripe special-case currency) configured with zero decimals', () => {
-			// TWD is locally rendered with 0 decimals but Stripe bills it as two-decimal.
+		it( 'multiplies the price by 100 for a Stripe special-case currency (e.g. TWD) configured with zero decimals', () => {
+			// TWD/HUF/ISK/UGX are locally rendered with 0 decimals but Stripe bills them as two-decimal.
+			// stripe_minor_unit stays at the default 2 (set in the outer beforeEach).
 			// `379` (NT$379) must be sent as `37900` to render correctly in the wallet sheet.
-			global.wcpayExpressCheckoutParams.checkout.currency_code = 'twd';
 			expect( transformPrice( 379, { currency_minor_unit: 0 } ) ).toBe(
 				37900
 			);
 		} );
 
-		it.each( [ 'huf', 'isk', 'ugx' ] )(
-			'multiplies the price by 100 for %s (Stripe special-case currency) configured with zero decimals',
-			( currencyCode ) => {
-				global.wcpayExpressCheckoutParams.checkout.currency_code =
-					currencyCode;
-				expect(
-					transformPrice( 100, { currency_minor_unit: 0 } )
-				).toBe( 10000 );
-			}
-		);
-
 		it( 'transforms the price for USD with default two decimals', () => {
-			global.wcpayExpressCheckoutParams.checkout.currency_code = 'usd';
 			expect( transformPrice( 1500, { currency_minor_unit: 2 } ) ).toBe(
 				1500
 			);
@@ -690,7 +661,6 @@ describe( 'wc-to-stripe transformers', () => {
 		it( 'transforms the price for USD configured with zero decimals (WOOPMNT-5506 regression guard)', () => {
 			// Merchant has set wc_get_price_decimals() to 0 with USD active.
 			// `15` means $15 in storage; Stripe still expects 2 decimals, so result is 1500.
-			global.wcpayExpressCheckoutParams.checkout.currency_code = 'usd';
 			expect( transformPrice( 15, { currency_minor_unit: 0 } ) ).toBe(
 				1500
 			);

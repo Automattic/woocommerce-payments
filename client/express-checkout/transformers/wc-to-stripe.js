@@ -12,13 +12,9 @@ import { applyFilters } from '@wordpress/hooks';
 import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/shipping-limits';
 
 /**
- * GooglePay/ApplePay expect the prices to be formatted in the smallest unit Stripe bills in:
- * 0 decimals for true zero-decimal currencies (e.g. JPY) and 2 decimals for everything else,
- * including Stripe special-case currencies (TWD, HUF, ISK, UGX) that are locally rendered
- * without sub-units but still charged as two-decimal by Stripe.
- *
- * The zero-decimal list is bridged from PHP via the express-checkout payload so this works
- * on the storefront, where wcpaySettings is not available.
+ * GooglePay/ApplePay expect the prices to be formatted in the smallest unit Stripe bills in.
+ * The expected count of decimals for the active currency is computed server-side and bridged
+ * through the express-checkout payload as `stripe_minor_unit`.
  *
  * @param {number}                        price       the price to format.
  * @param {{currency_minor_unit: number}} priceObject the price object returned by the Store API
@@ -26,12 +22,8 @@ import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/shippin
  * @return {number} the price amount for GooglePay/ApplePay, in the unit Stripe expects.
  */
 export const transformPrice = ( price, priceObject ) => {
-	const checkout = getExpressCheckoutData( 'checkout' );
-	const currencyCode = checkout?.currency_code?.toLowerCase();
-	const zeroDecimalCurrencies = checkout?.zero_decimal_currencies ?? [];
-	const stripeMinorUnit = zeroDecimalCurrencies.includes( currencyCode )
-		? 0
-		: 2;
+	const stripeMinorUnit =
+		getExpressCheckoutData( 'checkout' )?.stripe_minor_unit ?? 2;
 
 	return price * 10 ** ( stripeMinorUnit - priceObject.currency_minor_unit );
 };

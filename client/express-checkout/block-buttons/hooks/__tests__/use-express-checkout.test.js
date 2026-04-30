@@ -39,23 +39,6 @@ jQueryMock.blockUI = () => null;
 
 window.wcpayExpressCheckoutParams = {};
 window.wcpayExpressCheckoutParams.checkout = {};
-const ZERO_DECIMAL_CURRENCIES = [
-	'bif',
-	'clp',
-	'djf',
-	'gnf',
-	'jpy',
-	'kmf',
-	'krw',
-	'mga',
-	'pyg',
-	'rwf',
-	'vnd',
-	'vuv',
-	'xaf',
-	'xof',
-	'xpf',
-];
 
 const buildCartData = ( {
 	items = [],
@@ -107,8 +90,7 @@ describe( 'useExpressCheckout', () => {
 		global.$ = jQueryMock;
 		global.jQuery = jQueryMock;
 		window.wcpayExpressCheckoutParams.checkout = {
-			currency_decimals: 2,
-			zero_decimal_currencies: ZERO_DECIMAL_CURRENCIES,
+			stripe_minor_unit: 2,
 		};
 		mockCartData = buildCartData();
 	} );
@@ -345,7 +327,6 @@ describe( 'useExpressCheckout', () => {
 
 	it( 'should transform shipping rate amounts correctly with standard 2-decimal currency', () => {
 		const event = { resolve: jest.fn() };
-		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
 
 		mockCartData = buildCartData( {
 			items: [
@@ -411,7 +392,7 @@ describe( 'useExpressCheckout', () => {
 
 	it( 'should transform shipping rate amounts correctly with zero-decimal currency (JPY, KRW)', () => {
 		const event = { resolve: jest.fn() };
-		window.wcpayExpressCheckoutParams.checkout.currency_code = 'krw';
+		window.wcpayExpressCheckoutParams.checkout.stripe_minor_unit = 0;
 
 		mockCartData = buildCartData( {
 			items: [
@@ -480,7 +461,6 @@ describe( 'useExpressCheckout', () => {
 	it( 'should transform shipping rate amounts correctly with USD configured to display zero decimals', () => {
 		const event = { resolve: jest.fn() };
 		// Mocking USD configured to display with 0 decimals - Stripe still needs cents.
-		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
 
 		mockCartData = buildCartData( {
 			items: [
@@ -547,7 +527,6 @@ describe( 'useExpressCheckout', () => {
 
 	it( 'should exclude line items when total is less than sum of display items', () => {
 		const event = { resolve: jest.fn() };
-		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
 
 		mockCartData = buildCartData( {
 			items: [
