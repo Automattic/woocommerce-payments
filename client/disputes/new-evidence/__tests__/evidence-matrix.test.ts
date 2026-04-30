@@ -4,6 +4,7 @@
 import {
 	getExpectedFieldStatus,
 	DISPUTE_HIGH_IMPACT_FIELDS,
+	DISPUTE_TOPICAL_FIELDS,
 } from '../evidence-matrix';
 
 describe( 'getExpectedFieldStatus', () => {
@@ -192,6 +193,48 @@ describe( 'getExpectedFieldStatus', () => {
 		);
 		expect( cancellationRebuttal?.label ).toBe( 'Cancellation logs' );
 	} );
+
+	it( 'surfaces topical fields as optional_missing when absent from the wizard matrix cell', () => {
+		// `refund_policy` is a topical recommendation for
+		// subscription_canceled.digital_product_or_service per Catherine's
+		// at-a-glance, but the wizard matrix cell deliberately omits it.
+		// DISPUTE_TOPICAL_FIELDS is the source for this row.
+		const result = getExpectedFieldStatus(
+			'subscription_canceled',
+			'digital_product_or_service',
+			{}
+		);
+		const refundPolicy = result.find( ( f ) => f.key === 'refund_policy' );
+		expect( refundPolicy ).toBeDefined();
+		expect( refundPolicy?.state ).toBe( 'optional_missing' );
+		expect( refundPolicy?.label ).toBe( 'Refund policy' );
+	} );
+
+	it( 'marks a topical field populated in evidence as provided', () => {
+		const result = getExpectedFieldStatus(
+			'product_unacceptable',
+			'other',
+			{ refund_policy: 'file_abc123' }
+		);
+		const refundPolicy = result.find( ( f ) => f.key === 'refund_policy' );
+		expect( refundPolicy?.state ).toBe( 'provided' );
+	} );
+
+	it( 'does not double-emit when a topical field is also present in the wizard matrix cell', () => {
+		// `refund_policy` is in `DISPUTE_TOPICAL_FIELDS` only for the
+		// cells whose wizard matrix omits it; physical_product is not
+		// one of those. The row must come from the wizard matrix path
+		// (optional_missing) without a duplicate from the topical map.
+		const result = getExpectedFieldStatus(
+			'subscription_canceled',
+			'physical_product',
+			{}
+		);
+		const refundPolicyRows = result.filter(
+			( f ) => f.key === 'refund_policy'
+		);
+		expect( refundPolicyRows ).toHaveLength( 1 );
+	} );
 } );
 
 describe( 'DISPUTE_HIGH_IMPACT_FIELDS', () => {
@@ -209,5 +252,21 @@ describe( 'DISPUTE_HIGH_IMPACT_FIELDS', () => {
 				} );
 			}
 		);
+	} );
+} );
+
+describe( 'DISPUTE_TOPICAL_FIELDS', () => {
+	it( 'excludes auto-populated, hybrid, and catch-all fields across every cell', () => {
+		Object.values( DISPUTE_TOPICAL_FIELDS ).forEach( ( byProductType ) => {
+			Object.values( byProductType ).forEach( ( fields ) => {
+				expect( fields ).not.toContain( 'customer_purchase_ip' );
+				expect( fields ).not.toContain( 'customer_name' );
+				expect( fields ).not.toContain( 'customer_email_address' );
+				expect( fields ).not.toContain( 'billing_address' );
+				expect( fields ).not.toContain( 'product_description' );
+				expect( fields ).not.toContain( 'uncategorized_file' );
+				expect( fields ).not.toContain( 'uncategorized_text' );
+			} );
+		} );
 	} );
 } );

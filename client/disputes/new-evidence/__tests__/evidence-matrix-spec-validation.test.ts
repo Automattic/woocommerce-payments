@@ -316,22 +316,22 @@ const implementedCombinations: CombinationSpec[] = [
 		reason: 'subscription_canceled',
 		productType: 'booking_reservation',
 		description:
-			'Subscription canceled for booking/reservation - needs cancellation logs and refund policy',
+			'Subscription canceled for booking/reservation - needs cancellation logs',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
-				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 			],
-			shouldExclude: [],
+			shouldExclude: [
+				DOCUMENT_FIELD_KEYS.REFUND_POLICY, // Not in spec for booking/reservation
+			],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ]:
 					'Cancellation logs',
-				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
@@ -340,7 +340,6 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Cancellation logs',
-				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -359,7 +358,6 @@ const implementedCombinations: CombinationSpec[] = [
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
-				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
@@ -369,7 +367,6 @@ const implementedCombinations: CombinationSpec[] = [
 			],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.RECEIPT ]: 'Order receipt',
-				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
@@ -377,7 +374,6 @@ const implementedCombinations: CombinationSpec[] = [
 		coverLetterAttachments: {
 			shouldInclude: [
 				'Order receipt',
-				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -831,14 +827,13 @@ const implementedCombinations: CombinationSpec[] = [
 		reason: 'subscription_canceled',
 		productType: 'digital_product_or_service',
 		description:
-			'Subscription canceled for digital product/service - needs cancellation logs, login/usage records, refund policy, terms of service',
+			'Subscription canceled for digital product/service - needs cancellation logs, login/usage records, terms of service',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 				DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			],
@@ -849,7 +844,6 @@ const implementedCombinations: CombinationSpec[] = [
 					'Cancellation logs',
 				[ DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG ]:
 					'Login or usage records',
-				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 				[ DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE ]: 'Other documents',
 			},
@@ -859,7 +853,6 @@ const implementedCombinations: CombinationSpec[] = [
 				'Order receipt',
 				'Cancellation logs',
 				'Login or usage records',
-				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -1125,21 +1118,19 @@ const implementedCombinations: CombinationSpec[] = [
 		reason: 'subscription_canceled',
 		productType: 'offline_service',
 		description:
-			'Subscription canceled for offline service - needs cancellation logs, refund policy, terms of service',
+			'Subscription canceled for offline service - needs cancellation logs, terms of service',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
-				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			],
-			shouldExclude: [],
+			shouldExclude: [ DOCUMENT_FIELD_KEYS.REFUND_POLICY ],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ]:
 					'Cancellation logs',
-				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 			},
 		},
@@ -1147,7 +1138,6 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Cancellation logs',
-				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -1412,21 +1402,19 @@ const implementedCombinations: CombinationSpec[] = [
 		reason: 'subscription_canceled',
 		productType: 'event',
 		description:
-			'Subscription canceled for event - needs cancellation logs, refund policy, terms of service',
+			'Subscription canceled for event - needs cancellation logs, terms of service',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
-				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			],
-			shouldExclude: [],
+			shouldExclude: [ DOCUMENT_FIELD_KEYS.REFUND_POLICY ],
 			expectedLabels: {
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_REBUTTAL ]:
 					'Cancellation logs',
-				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 			},
 		},
@@ -1434,7 +1422,6 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Cancellation logs',
-				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
@@ -1757,18 +1744,16 @@ const implementedCombinations: CombinationSpec[] = [
 		reason: 'product_unacceptable',
 		productType: 'other',
 		description:
-			'Product unacceptable for other product type - needs receipt, refund policy, terms of service, other documents',
+			'Product unacceptable for other product type - needs receipt, terms of service, other documents',
 		uiFields: {
 			shouldInclude: [
 				DOCUMENT_FIELD_KEYS.RECEIPT,
-				DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 				DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 				DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			],
 			shouldExclude: [ DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE ],
 			expectedLabels: {
-				[ DOCUMENT_FIELD_KEYS.REFUND_POLICY ]: 'Refund policy',
 				[ DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY ]: 'Terms of service',
 			},
 		},
@@ -1776,7 +1761,6 @@ const implementedCombinations: CombinationSpec[] = [
 			shouldInclude: [
 				'Order receipt',
 				'Customer communication',
-				'Refund policy',
 				'Terms of service',
 				'Other documents',
 			],
