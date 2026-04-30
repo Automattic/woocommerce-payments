@@ -281,12 +281,8 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$status = $this->getMockBuilder( WC_Payments_Status::class )
 			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'get_wp_development_mode' ] )
+			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
 			->getMock();
-
-		$status->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
-		$status->method( 'get_wp_environment_type' )->willReturn( '' );
-		$status->method( 'get_wp_development_mode' )->willReturn( '' );
 
 		ob_start();
 		$status->render_status_report_section();
@@ -305,12 +301,10 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$status = $this->getMockBuilder( WC_Payments_Status::class )
 			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'get_wp_development_mode' ] )
+			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
 			->getMock();
 
-		$status->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
-		$status->method( 'get_wp_environment_type' )->willReturn( 'staging' );
-		$status->method( 'get_wp_development_mode' )->willReturn( '' );
+		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'WP_ENVIRONMENT_TYPE=staging' ] );
 
 		ob_start();
 		$status->render_status_report_section();
@@ -329,12 +323,10 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$status = $this->getMockBuilder( WC_Payments_Status::class )
 			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'get_wp_development_mode' ] )
+			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
 			->getMock();
 
-		$status->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
-		$status->method( 'get_wp_environment_type' )->willReturn( '' );
-		$status->method( 'get_wp_development_mode' )->willReturn( 'plugin' );
+		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'WP_DEVELOPMENT_MODE=plugin' ] );
 
 		ob_start();
 		$status->render_status_report_section();
@@ -353,12 +345,10 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$status = $this->getMockBuilder( WC_Payments_Status::class )
 			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'get_wp_development_mode' ] )
+			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
 			->getMock();
 
-		$status->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
-		$status->method( 'get_wp_environment_type' )->willReturn( '' );
-		$status->method( 'get_wp_development_mode' )->willReturn( '' );
+		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'wcpay_dev_mode filter' ] );
 
 		ob_start();
 		$status->render_status_report_section();
@@ -377,12 +367,10 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$status = $this->getMockBuilder( WC_Payments_Status::class )
 			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'get_wp_development_mode' ] )
+			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
 			->getMock();
 
-		$status->method( 'is_wcpay_dev_mode_defined' )->willReturn( false );
-		$status->method( 'get_wp_environment_type' )->willReturn( 'development' );
-		$status->method( 'get_wp_development_mode' )->willReturn( 'plugin' );
+		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'WP_ENVIRONMENT_TYPE=development', 'WP_DEVELOPMENT_MODE=plugin' ] );
 
 		ob_start();
 		$status->render_status_report_section();
@@ -402,12 +390,10 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$status = $this->getMockBuilder( WC_Payments_Status::class )
 			->setConstructorArgs( [ $this->mock_gateway, $this->mock_http, $this->mock_account ] )
-			->setMethods( [ 'is_wcpay_dev_mode_defined', 'get_wp_environment_type', 'get_wp_development_mode' ] )
+			->setMethods( [ 'get_dev_mode_trigger_labels' ] )
 			->getMock();
 
-		$status->method( 'is_wcpay_dev_mode_defined' )->willReturn( true );
-		$status->method( 'get_wp_environment_type' )->willReturn( '' );
-		$status->method( 'get_wp_development_mode' )->willReturn( '' );
+		$status->method( 'get_dev_mode_trigger_labels' )->willReturn( [ 'WCPAY_DEV_MODE' ] );
 
 		ob_start();
 		$status->render_status_report_section();

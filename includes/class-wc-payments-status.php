@@ -422,65 +422,15 @@ class WC_Payments_Status {
 	}
 
 	/**
-	 * Returns true if the WCPAY_DEV_MODE constant is defined and truthy.
+	 * Returns the triggers that activated dev mode.
 	 *
-	 * Wrapper for testability.
-	 *
-	 * @return bool
-	 */
-	protected function is_wcpay_dev_mode_defined(): bool {
-		return defined( 'WCPAY_DEV_MODE' ) && WCPAY_DEV_MODE;
-	}
-
-	/**
-	 * Returns the current WordPress environment type.
-	 *
-	 * Wrapper for testability.
-	 *
-	 * @return string
-	 */
-	protected function get_wp_environment_type(): string {
-		return function_exists( 'wp_get_environment_type' ) ? wp_get_environment_type() : '';
-	}
-
-	/**
-	 * Returns the current WordPress development mode.
-	 *
-	 * Wrapper for testability.
-	 *
-	 * @return string
-	 */
-	protected function get_wp_development_mode(): string {
-		return function_exists( 'wp_get_development_mode' ) ? wp_get_development_mode() : '';
-	}
-
-	/**
-	 * Returns human-readable labels for each active dev mode trigger.
+	 * Delegates to Mode so trigger detection is not duplicated here.
+	 * Wrapped as a protected method for testability.
 	 *
 	 * @return string[]
 	 */
-	private function get_dev_mode_triggers(): array {
-		$triggers = [];
-
-		if ( $this->is_wcpay_dev_mode_defined() ) {
-			$triggers[] = 'WCPAY_DEV_MODE';
-		}
-
-		$env_type = $this->get_wp_environment_type();
-		if ( in_array( $env_type, \WCPay\Core\Mode::DEV_MODE_ENVIRONMENTS, true ) ) {
-			$triggers[] = 'WP_ENVIRONMENT_TYPE=' . $env_type;
-		}
-
-		$dev_mode_setting = $this->get_wp_development_mode();
-		if ( '' !== $dev_mode_setting ) {
-			$triggers[] = 'WP_DEVELOPMENT_MODE=' . $dev_mode_setting;
-		}
-
-		if ( empty( $triggers ) ) {
-			$triggers[] = 'wcpay_dev_mode filter';
-		}
-
-		return $triggers;
+	protected function get_dev_mode_trigger_labels(): array {
+		return WC_Payments::mode()->get_dev_mode_triggers();
 	}
 
 	/**
@@ -548,7 +498,7 @@ class WC_Payments_Status {
 						<td>
 						<?php
 						if ( WC_Payments::mode()->is_dev() ) {
-							$triggers = $this->get_dev_mode_triggers();
+							$triggers = $this->get_dev_mode_trigger_labels();
 							$label    = __( 'Enabled', 'woocommerce-payments' );
 							if ( ! empty( $triggers ) ) {
 								$label .= ' (' . implode( ', ', $triggers ) . ')';
