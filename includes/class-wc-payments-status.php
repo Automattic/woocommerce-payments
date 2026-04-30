@@ -422,6 +422,15 @@ class WC_Payments_Status {
 	}
 
 	/**
+	 * Returns human-readable labels for each active dev mode trigger.
+	 *
+	 * @return string[]
+	 */
+	private function get_dev_mode_triggers(): array {
+		return [];
+	}
+
+	/**
 	 * Renders WCPay information on the status page.
 	 */
 	public function render_status_report_section() {
@@ -479,6 +488,24 @@ class WC_Payments_Status {
 						<td data-export-label="Test Mode"><?php esc_html_e( 'Test Mode', 'woocommerce-payments' ); ?>:</td>
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the payment gateway has test payments enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td><?php WC_Payments::mode()->is_test() ? esc_html_e( 'Enabled', 'woocommerce-payments' ) : esc_html_e( 'Disabled', 'woocommerce-payments' ); ?></td>
+					</tr>
+					<tr>
+						<td data-export-label="Dev Mode"><?php esc_html_e( 'Dev Mode', 'woocommerce-payments' ); ?>:</td>
+						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether WooPayments is running in dev (sandbox) mode and what triggered it.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
+						<td>
+						<?php
+						if ( WC_Payments::mode()->is_dev() ) {
+							$triggers = $this->get_dev_mode_triggers();
+							$label    = __( 'Enabled', 'woocommerce-payments' );
+							if ( ! empty( $triggers ) ) {
+								$label .= ' (' . implode( ', ', $triggers ) . ')';
+							}
+							echo esc_html( $label );
+						} else {
+							esc_html_e( 'Disabled', 'woocommerce-payments' );
+						}
+						?>
+						</td>
 					</tr>
 					<tr>
 						<td data-export-label="Enabled APMs"><?php esc_html_e( 'Enabled APMs', 'woocommerce-payments' ); ?>:</td>
