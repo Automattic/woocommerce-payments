@@ -25,57 +25,9 @@
 	font-weight: 600;
 }
 
-.wcpay-dispute-readiness-card__signals {
+.wcpay-dispute-readiness-card__signals.woocommerce-experimental-list {
 	margin: 0;
 	padding: 0;
-	list-style: none;
-}
-
-.wcpay-dispute-readiness-card__signal {
-	display: flex;
-	align-items: flex-start;
-	gap: 12px;
-	padding: 12px 0;
-	border-top: 1px solid $gray-200;
-
-	&:last-child {
-		padding-bottom: 0;
-	}
-}
-
-.wcpay-dispute-readiness-card__signal-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex: 0 0 20px;
-	width: 20px;
-	height: 20px;
-	margin-top: 1px;
-	border-radius: 50%;
-
-	&.is-complete {
-		color: $studio-green-50;
-	}
-
-	&.is-incomplete {
-		font-size: 24px;
-		line-height: 20px;
-	}
-}
-
-.wcpay-dispute-readiness-card__signal-content {
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.wcpay-dispute-readiness-card__signal-action {
-	display: flex;
-	align-items: flex-end;
-	flex: 0 0 auto;
-	flex-direction: column;
-	gap: 4px;
 }
 
 .wcpay-dispute-readiness-card__actions {

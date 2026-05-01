@@ -13,7 +13,7 @@ import {
 	ExternalLink,
 	Spinner,
 } from '@wordpress/components';
-import { Icon, check } from '@wordpress/icons';
+import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 
 /**
  * Internal dependencies
@@ -24,33 +24,6 @@ import './style.scss';
 
 const LEARN_MORE_URL =
 	'https://woocommerce.com/document/woopayments/fraud-and-disputes/resolve-disputes/';
-
-const getSignalStatusLabel = ( signal ) => {
-	if ( signal.status === 'complete' ) {
-		return __( 'Complete', 'woocommerce-payments' );
-	}
-
-	return __( 'Incomplete', 'woocommerce-payments' );
-};
-
-const SignalStatusIcon = ( { signal } ) => {
-	if ( signal.status === 'complete' ) {
-		return (
-			<span className="wcpay-dispute-readiness-card__signal-icon is-complete">
-				<Icon icon={ check } size={ 20 } />
-			</span>
-		);
-	}
-
-	return (
-		<span
-			className="wcpay-dispute-readiness-card__signal-icon is-incomplete"
-			aria-hidden="true"
-		>
-			•
-		</span>
-	);
-};
 
 const DisputeReadinessCard = () => {
 	const { disputeReadiness, isLoading } = useDisputeReadiness();
@@ -144,41 +117,47 @@ const DisputeReadinessCard = () => {
 					) }
 				</div>
 
-				<ul className="wcpay-dispute-readiness-card__signals">
-					{ overview.signals.map( ( signal ) => (
-						<li
-							key={ signal.id }
-							className={ `wcpay-dispute-readiness-card__signal is-${ signal.status }` }
-						>
-							<SignalStatusIcon signal={ signal } />
-							<div className="wcpay-dispute-readiness-card__signal-content">
-								<strong>{ signal.label }</strong>
-								<span>{ signal.description }</span>
-							</div>
-							<div className="wcpay-dispute-readiness-card__signal-action">
-								<span className="wcpay-dispute-readiness-card__signal-status">
-									{ getSignalStatusLabel( signal ) }
-								</span>
-								{ signal.status !== 'complete' &&
-									signal.actionUrl && (
-										<Button
-											variant="link"
-											href={ signal.actionUrl }
-											onClick={ () =>
-												handleCtaClick( signal )
-											}
-										>
-											{ signal.actionLabel ||
-												__(
-													'Fix',
-													'woocommerce-payments'
-												) }
-										</Button>
-									) }
-							</div>
-						</li>
-					) ) }
-				</ul>
+				<CollapsibleList
+					className="wcpay-dispute-readiness-card__signals"
+					collapsed={ false }
+					show={ overview.signals.length }
+					collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
+					expandLabel={ __( 'Show tasks', 'woocommerce-payments' ) }
+				>
+					{ overview.signals.map( ( signal ) => {
+						const isComplete = signal.status === 'complete';
+						const action = isComplete
+							? undefined
+							: () => {
+									if ( ! signal.actionUrl ) {
+										return;
+									}
+
+									handleCtaClick( signal );
+									window.location.href = signal.actionUrl;
+							  };
+
+						return (
+							<TaskItem
+								key={ signal.id }
+								title={ signal.label }
+								content={ signal.description }
+								completed={ isComplete }
+								actionLabel={
+									! isComplete && signal.actionUrl
+										? signal.actionLabel ||
+										  __( 'Fix', 'woocommerce-payments' )
+										: undefined
+								}
+								action={ action }
+								onClick={ action }
+								expandable={ false }
+								expanded={ false }
+								showActionButton={ true }
+							/>
+						);
+					} ) }
+				</CollapsibleList>
 
 				<div className="wcpay-dispute-readiness-card__actions">
 					<ExternalLink href={ LEARN_MORE_URL }>
