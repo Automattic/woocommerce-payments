@@ -3,12 +3,6 @@
 	flex-direction: column;
 	gap: 16px;
 
-	h2 {
-		margin: 0 0 4px;
-		font-size: 16px;
-		line-height: 24px;
-	}
-
 	p {
 		margin: 0;
 		color: $gray-700;
@@ -23,7 +17,7 @@
 
 .wcpay-dispute-readiness-card__header {
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	justify-content: space-between;
 	gap: 16px;
 }
@@ -80,6 +74,14 @@
 	span {
 		color: $gray-700;
 	}
+}
+
+.wcpay-dispute-readiness-card__signal-action {
+	display: flex;
+	align-items: flex-end;
+	flex: 0 0 auto;
+	flex-direction: column;
+	gap: 4px;
 }
 
 .wcpay-dispute-readiness-card__signal-status {

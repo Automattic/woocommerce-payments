@@ -3,12 +3,13 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
 	CardBody,
+	CardHeader,
 	ExternalLink,
 	Spinner,
 } from '@wordpress/components';
@@ -57,12 +58,6 @@ const DisputeReadinessCard = () => {
 	const viewedRef = useRef( false );
 	const overview = disputeReadiness?.overview;
 
-	const firstIncompleteSignal = useMemo( () => {
-		return overview?.signals?.find(
-			( signal ) => signal.status !== 'complete' && signal.actionUrl
-		);
-	}, [ overview ] );
-
 	useEffect( () => {
 		if ( ! overview || overview.isDismissed || viewedRef.current ) {
 			return;
@@ -81,6 +76,9 @@ const DisputeReadinessCard = () => {
 	if ( isLoading && ! overview ) {
 		return (
 			<Card>
+				<CardHeader>
+					{ __( 'Dispute readiness', 'woocommerce-payments' ) }
+				</CardHeader>
 				<CardBody className="wcpay-dispute-readiness-card is-loading">
 					<Spinner />
 				</CardBody>
@@ -114,33 +112,28 @@ const DisputeReadinessCard = () => {
 
 	return (
 		<Card>
+			<CardHeader className="wcpay-dispute-readiness-card__header">
+				<span>
+					{ __( 'Dispute readiness', 'woocommerce-payments' ) }
+				</span>
+				<Button
+					variant="tertiary"
+					onClick={ handleDismiss }
+					aria-label={ __(
+						'Dismiss dispute readiness card',
+						'woocommerce-payments'
+					) }
+				>
+					{ __( 'Dismiss', 'woocommerce-payments' ) }
+				</Button>
+			</CardHeader>
 			<CardBody className="wcpay-dispute-readiness-card">
-				<div className="wcpay-dispute-readiness-card__header">
-					<div>
-						<h2>
-							{ __(
-								'Dispute readiness',
-								'woocommerce-payments'
-							) }
-						</h2>
-						<p>
-							{ __(
-								'Prepare your store with information that can help if a customer disputes a payment.',
-								'woocommerce-payments'
-							) }
-						</p>
-					</div>
-					<Button
-						variant="tertiary"
-						onClick={ handleDismiss }
-						aria-label={ __(
-							'Dismiss dispute readiness card',
-							'woocommerce-payments'
-						) }
-					>
-						{ __( 'Dismiss', 'woocommerce-payments' ) }
-					</Button>
-				</div>
+				<p>
+					{ __(
+						'Prepare your store with information that can help if a customer disputes a payment.',
+						'woocommerce-payments'
+					) }
+				</p>
 
 				<div className="wcpay-dispute-readiness-card__progress">
 					{ sprintf(
@@ -162,26 +155,32 @@ const DisputeReadinessCard = () => {
 								<strong>{ signal.label }</strong>
 								<span>{ signal.description }</span>
 							</div>
-							<span className="wcpay-dispute-readiness-card__signal-status">
-								{ getSignalStatusLabel( signal ) }
-							</span>
+							<div className="wcpay-dispute-readiness-card__signal-action">
+								<span className="wcpay-dispute-readiness-card__signal-status">
+									{ getSignalStatusLabel( signal ) }
+								</span>
+								{ signal.status !== 'complete' &&
+									signal.actionUrl && (
+										<Button
+											variant="link"
+											href={ signal.actionUrl }
+											onClick={ () =>
+												handleCtaClick( signal )
+											}
+										>
+											{ signal.actionLabel ||
+												__(
+													'Fix',
+													'woocommerce-payments'
+												) }
+										</Button>
+									) }
+							</div>
 						</li>
 					) ) }
 				</ul>
 
 				<div className="wcpay-dispute-readiness-card__actions">
-					{ firstIncompleteSignal && (
-						<Button
-							variant="primary"
-							href={ firstIncompleteSignal.actionUrl }
-							onClick={ () =>
-								handleCtaClick( firstIncompleteSignal )
-							}
-						>
-							{ firstIncompleteSignal.actionLabel ||
-								__( 'Fix', 'woocommerce-payments' ) }
-						</Button>
-					) }
 					<ExternalLink href={ LEARN_MORE_URL }>
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
