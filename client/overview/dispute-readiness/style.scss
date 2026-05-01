@@ -1,0 +1,94 @@
+.wcpay-dispute-readiness-card {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
+	h2 {
+		margin: 0 0 4px;
+		font-size: 16px;
+		line-height: 24px;
+	}
+
+	p {
+		margin: 0;
+		color: $gray-700;
+	}
+
+	&.is-loading {
+		align-items: center;
+		justify-content: center;
+		min-height: 80px;
+	}
+}
+
+.wcpay-dispute-readiness-card__header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.wcpay-dispute-readiness-card__progress {
+	font-weight: 600;
+}
+
+.wcpay-dispute-readiness-card__signals {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.wcpay-dispute-readiness-card__signal {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 12px 0;
+	border-top: 1px solid $gray-200;
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+}
+
+.wcpay-dispute-readiness-card__signal-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 20px;
+	width: 20px;
+	height: 20px;
+	margin-top: 1px;
+	border-radius: 50%;
+
+	&.is-complete {
+		color: $studio-green-50;
+	}
+
+	&.is-incomplete {
+		color: $gray-700;
+		font-size: 24px;
+		line-height: 20px;
+	}
+}
+
+.wcpay-dispute-readiness-card__signal-content {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 2px;
+
+	span {
+		color: $gray-700;
+	}
+}
+
+.wcpay-dispute-readiness-card__signal-status {
+	color: $gray-700;
+	font-size: 12px;
+}
+
+.wcpay-dispute-readiness-card__actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}

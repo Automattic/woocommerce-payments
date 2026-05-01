@@ -28,6 +28,7 @@ class WC_Payments_Features {
 	const DISPUTE_ISSUER_EVIDENCE                             = '_wcpay_feature_dispute_issuer_evidence';
 	const DISPUTE_ADDITIONAL_EVIDENCE_TYPES                   = '_wcpay_feature_dispute_additional_evidence_types';
 	const DISPUTE_OUTCOME_VIEW                                = '_wcpay_feature_dispute_outcome_view';
+	const DISPUTE_READINESS_OVERVIEW                          = '_wcpay_feature_dispute_readiness_overview';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
@@ -340,6 +341,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Dispute Readiness Overview feature should be enabled. Disabled by default.
+	 *
+	 * @return bool
+	 */
+	public static function is_dispute_readiness_overview_enabled(): bool {
+		return '1' === get_option( self::DISPUTE_READINESS_OVERVIEW, '0' );
+	}
+
+	/**
 	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
 	 *
 	 * @return bool
@@ -404,7 +414,7 @@ class WC_Payments_Features {
 	 * @return bool[]
 	 */
 	public static function to_array() {
-		return array_filter(
+		$feature_flags = array_filter(
 			[
 				'multiCurrency'                            => self::is_customer_multi_currency_enabled(),
 				'woopay'                                   => self::is_woopay_eligible(),
@@ -419,6 +429,10 @@ class WC_Payments_Features {
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 			]
 		);
+
+		$feature_flags['isDisputeReadinessOverviewEnabled'] = self::is_dispute_readiness_overview_enabled();
+
+		return $feature_flags;
 	}
 
 	/**

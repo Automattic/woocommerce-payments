@@ -25,6 +25,7 @@ use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Disputes\Dispute_Readiness_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
@@ -1100,6 +1101,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-disputes-controller.php';
 		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
+		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, new Dispute_Readiness_Service() );
+		$dispute_readiness_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
 		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
