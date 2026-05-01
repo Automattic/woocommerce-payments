@@ -87,6 +87,15 @@ class Dispute_Readiness_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertContains( 'terms_and_conditions', $overview['incompleteSignalIds'] );
 	}
 
+	public function test_terms_signal_uses_woocommerce_advanced_settings_url_when_no_page_is_assigned() {
+		delete_option( 'woocommerce_terms_page_id' );
+
+		$overview = $this->service->get_overview_payload()['overview'];
+		$signal   = $this->get_signal( $overview, 'terms_and_conditions' );
+
+		$this->assertSame( admin_url( 'admin.php?page=wc-settings&tab=advanced' ), $signal['actionUrl'] );
+	}
+
 	public function test_statement_descriptor_is_incomplete_when_default_like() {
 		update_option( 'blogname', 'Example Store' );
 		$this->mock_account_data(

@@ -272,7 +272,7 @@ class Dispute_Readiness_Service {
 			return $edit_post_link ? $edit_post_link : admin_url( 'post.php?post=' . $page_id . '&action=edit' );
 		}
 
-		return admin_url( 'admin.php?page=wc-settings&tab=advanced&section=page_setup' );
+		return admin_url( 'admin.php?page=wc-settings&tab=advanced' );
 	}
 
 	/**
