@@ -5,7 +5,6 @@
 
 	p {
 		margin: 0;
-		color: $gray-700;
 	}
 
 	&.is-loading {
@@ -59,7 +58,6 @@
 	}
 
 	&.is-incomplete {
-		color: $gray-700;
 		font-size: 24px;
 		line-height: 20px;
 	}
@@ -70,10 +68,6 @@
 	flex: 1;
 	flex-direction: column;
 	gap: 2px;
-
-	span {
-		color: $gray-700;
-	}
 }
 
 .wcpay-dispute-readiness-card__signal-action {
@@ -82,11 +76,6 @@
 	flex: 0 0 auto;
 	flex-direction: column;
 	gap: 4px;
-}
-
-.wcpay-dispute-readiness-card__signal-status {
-	color: $gray-700;
-	font-size: 12px;
 }
 
 .wcpay-dispute-readiness-card__actions {
