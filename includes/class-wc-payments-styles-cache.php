@@ -77,7 +77,7 @@ class WC_Payments_Styles_Cache {
 		// Auto-compute for block themes when no valid stored appearance exists.
 		if ( wp_is_block_theme() ) {
 			$appearance = self::compute_woopay_appearance_from_theme();
-			if ( null !== $appearance ) {
+			if ( null !== $appearance && self::validate_appearance_schema( $appearance ) ) {
 				$font_rules = self::get_font_rules_from_registered_styles();
 				self::set_woopay_appearance( $appearance, $font_rules );
 				return $appearance;
@@ -210,7 +210,9 @@ class WC_Payments_Styles_Cache {
 		$input_bg_resolved = self::resolve_style_value( $input_bg_raw, $input_bg_default, $styles );
 		$input_bg_resolved = self::resolve_vars_in_expression( $input_bg_resolved );
 
-		if ( preg_match( '/^(#|rgb)/', $input_bg_resolved ) ) {
+		// Accept only well-formed hex (#rgb / #rrggbb / #rrggbbaa) and rgb()/rgba()
+		// to prevent malformed values from landing verbatim in the appearance.
+		if ( preg_match( '/^(#[0-9a-f]{3}([0-9a-f]{3})?([0-9a-f]{2})?|rgba?\([\d\s.,%\/]+\))$/i', $input_bg_resolved ) ) {
 			$input_bg_color = $input_bg_resolved;
 		} else {
 			// Try evaluating CSS color functions (e.g. oklch() from Assembler).

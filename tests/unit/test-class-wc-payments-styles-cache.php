@@ -1247,6 +1247,10 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_resolve_vars_in_expression_substitutes_nested_var_tokens() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'Palette injection via wp_theme_json_data_default requires WP 6.5+.' );
+		}
+
 		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_vars_in_expression' );
 		$method->setAccessible( true );
 
@@ -1268,7 +1272,7 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 				]
 			);
 		};
-		add_filter( 'wp_theme_json_data_theme', $filter );
+		add_filter( 'wp_theme_json_data_default', $filter );
 
 		try {
 			WP_Theme_JSON_Resolver::clean_cached_data();
@@ -1288,7 +1292,7 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			// Unknown var passes through (resolve_css_var fallback).
 			$this->assertSame( 'var(--wp--preset--color--unknown)', $method->invoke( null, 'var(--wp--preset--color--unknown)' ) );
 		} finally {
-			remove_filter( 'wp_theme_json_data_theme', $filter );
+			remove_filter( 'wp_theme_json_data_default', $filter );
 			WP_Theme_JSON_Resolver::clean_cached_data();
 		}
 	}
@@ -1328,7 +1332,7 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 				]
 			);
 		};
-		add_filter( 'wp_theme_json_data_theme', $filter );
+		add_filter( 'wp_theme_json_data_default', $filter );
 
 		try {
 			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
@@ -1340,9 +1344,120 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			$this->assertNotNull( $result );
 			// #C7C78E with l*1.05, c*1.075, h*1 → #d5d496 (brighter, slightly
 			// more saturated). Critically: not the #ffffff safe-fallback.
+			// Verified against Björn Ottosson's reference OKLab transform.
 			$this->assertSame( '#d5d496', $result['rules']['.Input']['backgroundColor'] );
 		} finally {
-			remove_filter( 'wp_theme_json_data_theme', $filter );
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_parse_color_handles_hex_formats_and_rejects_malformed_input() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'parse_color' );
+		$method->setAccessible( true );
+
+		// Six-digit hex.
+		$this->assertSame( [ 0xaa, 0xbb, 0xcc ], $method->invoke( null, '#aabbcc' ) );
+		$this->assertSame( [ 0, 0, 0 ], $method->invoke( null, '#000000' ) );
+		$this->assertSame( [ 255, 255, 255 ], $method->invoke( null, '#ffffff' ) );
+
+		// Three-digit hex expands per CSS rules: #abc → #aabbcc.
+		$this->assertSame( [ 0xaa, 0xbb, 0xcc ], $method->invoke( null, '#abc' ) );
+
+		// Without leading #.
+		$this->assertSame( [ 0xff, 0x00, 0x80 ], $method->invoke( null, 'ff0080' ) );
+
+		// Malformed inputs return null.
+		$this->assertNull( $method->invoke( null, '#zzzzzz' ) );
+		$this->assertNull( $method->invoke( null, '#1234' ) );
+		$this->assertNull( $method->invoke( null, '#1234567' ) );
+		$this->assertNull( $method->invoke( null, 'rgb(0,0,0)' ) );
+		$this->assertNull( $method->invoke( null, '' ) );
+	}
+
+	public function test_custom_input_background_rgb_passes_through_short_circuit() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// A theme defining input-background as a literal rgb() value should
+		// pass through the well-formed-color short-circuit and skip resolve_oklch.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version'  => 3,
+					'settings' => [
+						'custom' => [
+							'input-background' => 'rgb(255, 200, 100)',
+						],
+					],
+					'styles'   => [
+						'color' => [
+							'background' => '#f0f0f0',
+							'text'       => '#1e1e1e',
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			$this->assertSame( 'rgb(255, 200, 100)', $result['rules']['.Input']['backgroundColor'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_custom_input_background_malformed_rejected_by_short_circuit() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// A malformed value masquerading as rgb() (e.g. with trailing CSS
+		// injection) must NOT pass the short-circuit. resolve_oklch will fail,
+		// and the safe fallback is used.
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version'  => 3,
+					'settings' => [
+						'custom' => [
+							'input-background' => 'rgb(0,0,0); background-image:url(//evil)',
+						],
+					],
+					'styles'   => [
+						'color' => [
+							'background' => '#f0f0f0',
+							'text'       => '#1e1e1e',
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_default', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			// Falls back to white on light theme — the malicious string never
+			// reaches .Input.backgroundColor.
+			$this->assertSame( '#ffffff', $result['rules']['.Input']['backgroundColor'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_default', $filter );
 			WP_Theme_JSON_Resolver::clean_cached_data();
 		}
 	}
