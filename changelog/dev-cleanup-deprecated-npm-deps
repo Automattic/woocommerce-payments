@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Clean up deprecated npm dependencies: remove @types/testing-library__jest-dom and @types/wordpress__data stub types, bump core-js to 3.49.0, replace stylelint-config-wordpress with @wordpress/stylelint-config, and drop @woocommerce/settings in favour of a local helper wrapping window.wc.wcSettings.
