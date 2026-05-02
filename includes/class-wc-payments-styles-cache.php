@@ -208,7 +208,7 @@ class WC_Payments_Styles_Cache {
 			?? $custom_settings['input-background']
 			?? $input_bg_default;
 		$input_bg_resolved = self::resolve_style_value( $input_bg_raw, $input_bg_default, $styles );
-		$input_bg_resolved = self::resolve_css_var( $input_bg_resolved );
+		$input_bg_resolved = self::resolve_vars_in_expression( $input_bg_resolved );
 
 		if ( preg_match( '/^(#|rgb)/', $input_bg_resolved ) ) {
 			$input_bg_color = $input_bg_resolved;
@@ -578,6 +578,25 @@ class WC_Payments_Styles_Cache {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Substitutes any var(--wp--preset--*) references inside a CSS expression
+	 * with their resolved concrete values. Unlike resolve_css_var(), which
+	 * only handles values that *are* a var() reference, this walks the string
+	 * and replaces var() tokens wherever they appear — needed for expressions
+	 * like oklch(from var(--wp--preset--color--theme-1) ...) where the var
+	 * is nested inside another CSS function.
+	 *
+	 * @param string $value The CSS expression possibly containing var() tokens.
+	 * @return string The expression with var() tokens substituted.
+	 */
+	private static function resolve_vars_in_expression( string $value ): string {
+		return (string) preg_replace_callback(
+			'/var\(\s*--[^)]+\)/',
+			static fn( $m ) => self::resolve_css_var( $m[0] ),
+			$value
+		);
 	}
 
 	/**

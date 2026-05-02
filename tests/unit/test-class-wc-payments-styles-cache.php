@@ -1245,4 +1245,105 @@ class WC_Payments_Styles_Cache_Test extends WCPAY_UnitTestCase {
 			WP_Theme_JSON_Resolver::clean_cached_data();
 		}
 	}
+
+	public function test_resolve_vars_in_expression_substitutes_nested_var_tokens() {
+		$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'resolve_vars_in_expression' );
+		$method->setAccessible( true );
+
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version'  => 3,
+					'settings' => [
+						'color' => [
+							'palette' => [
+								[
+									'slug'  => 'theme-1',
+									'color' => '#C7C78E',
+									'name'  => 'Theme 1',
+								],
+							],
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_theme', $filter );
+
+		try {
+			WP_Theme_JSON_Resolver::clean_cached_data();
+
+			// Bare var() — same behavior as resolve_css_var.
+			$this->assertSame( '#C7C78E', $method->invoke( null, 'var(--wp--preset--color--theme-1)' ) );
+
+			// var() nested inside oklch(from ...) — the case that was broken.
+			$this->assertSame(
+				'oklch(from #C7C78E calc(l * 1.05) calc(c * 1.075) h)',
+				$method->invoke( null, 'oklch(from var(--wp--preset--color--theme-1) calc(l * 1.05) calc(c * 1.075) h)' )
+			);
+
+			// Non-var input passes through unchanged.
+			$this->assertSame( '#abcdef', $method->invoke( null, '#abcdef' ) );
+
+			// Unknown var passes through (resolve_css_var fallback).
+			$this->assertSame( 'var(--wp--preset--color--unknown)', $method->invoke( null, 'var(--wp--preset--color--unknown)' ) );
+		} finally {
+			remove_filter( 'wp_theme_json_data_theme', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
+
+	public function test_custom_input_background_oklch_resolves_var_inside_expression() {
+		if ( version_compare( $GLOBALS['wp_version'], '6.5', '<' ) ) {
+			$this->markTestSkipped( 'WooPay appearance extraction requires WP 6.5+.' );
+		}
+
+		// Assembler-style: input-background expression references a palette
+		// preset via var(). Pre-fix this fell through to the safe-fallback
+		// white because resolve_oklch's parse_color() couldn't read var(...).
+		$filter = function ( $theme_json ) {
+			return $theme_json->update_with(
+				[
+					'version'  => 3,
+					'settings' => [
+						'color'  => [
+							'palette' => [
+								[
+									'slug'  => 'theme-1',
+									'color' => '#C7C78E',
+									'name'  => 'Theme 1',
+								],
+							],
+						],
+						'custom' => [
+							'input-background' => 'oklch(from var(--wp--preset--color--theme-1) calc(l * 1.05) calc(c * 1.075) h)',
+						],
+					],
+					'styles'   => [
+						'color' => [
+							'background' => '#FDF9EE',
+							'text'       => '#000000',
+						],
+					],
+				]
+			);
+		};
+		add_filter( 'wp_theme_json_data_theme', $filter );
+
+		try {
+			$method = new ReflectionMethod( WC_Payments_Styles_Cache::class, 'compute_woopay_appearance_from_theme' );
+			$method->setAccessible( true );
+
+			WP_Theme_JSON_Resolver::clean_cached_data();
+			$result = $method->invoke( null );
+
+			$this->assertNotNull( $result );
+			// #C7C78E with l*1.05, c*1.075, h*1 → #d5d496 (brighter, slightly
+			// more saturated). Critically: not the #ffffff safe-fallback.
+			$this->assertSame( '#d5d496', $result['rules']['.Input']['backgroundColor'] );
+		} finally {
+			remove_filter( 'wp_theme_json_data_theme', $filter );
+			WP_Theme_JSON_Resolver::clean_cached_data();
+		}
+	}
 }
