@@ -730,6 +730,7 @@ class WC_Payments {
 		if ( is_admin() ) {
 			include_once WCPAY_ABSPATH . 'includes/inline-script-payloads/class-woo-payments-payment-method-definitions.php';
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
+			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-banner.php';
 		}
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
@@ -748,6 +749,9 @@ class WC_Payments {
 
 			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway(), self::get_account_service() );
 			$admin_settings->init_hooks();
+
+			$admin_banner = new WC_Payments_Admin_Banner( self::get_gateway(), self::$account );
+			$admin_banner->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
