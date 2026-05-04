@@ -1971,7 +1971,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 		}
-		$this->order_service->update_order_status_from_intent( $order, $intent );
+		if ( $is_changing_payment_method_for_subscription ) {
+			$this->with_stock_reduction_disabled(
+				function () use ( $order, $intent ) {
+					$this->order_service->update_order_status_from_intent( $order, $intent );
+				}
+			);
+		} else {
+			$this->order_service->update_order_status_from_intent( $order, $intent );
+		}
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
@@ -2033,7 +2041,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $response;
 		}
 
-		wc_maybe_reduce_stock_levels( $order_id );
+		// Stock reduction is left to WooCommerce core: the status transition inside
+		// update_order_status_from_intent() triggers woocommerce_order_status_* and
+		// woocommerce_payment_complete, both of which run wc_maybe_reduce_stock_levels
+		// with idempotency-flag protection.
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
 		}
@@ -3871,11 +3882,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$amount                 = $order->get_total();
-			$payment_method_details = false;
-			$is_changing_payment    = isset( $_POST['is_changing_payment'] ) && filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN );
+			$amount                                = $order->get_total();
+			$payment_method_details                = false;
+			$is_changing_payment                   = isset( $_POST['is_changing_payment'] )
+				? filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN )
+				: null;
+			$is_subscription_payment_method_change = $this->is_changing_payment_method_for_subscription_from_request( $is_changing_payment );
 
-			if ( $amount > 0 && ! $is_changing_payment ) {
+			if ( $amount > 0 && ! $is_subscription_payment_method_change ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
@@ -3899,7 +3913,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// This is similar to how WC Stripe Gateway handles it - calling payment_complete()
 				// directly ensures the order transitions to the correct status and activates subscriptions.
 				// Otherwise, the order would be in a "Pending payment" state and the subscription would be "Pending".
-				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() ) {
+				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() && ! $is_subscription_payment_method_change ) {
 					$order->payment_complete( $intent_id );
 
 					// Add a success note similar to mark_payment_completed().
@@ -3928,11 +3942,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 			}
-			$this->order_service->update_order_status_from_intent( $order, $intent );
+			if ( $is_subscription_payment_method_change ) {
+				$this->with_stock_reduction_disabled(
+					function () use ( $order, $intent ) {
+						$this->order_service->update_order_status_from_intent( $order, $intent );
+					}
+				);
+			} else {
+				$this->order_service->update_order_status_from_intent( $order, $intent );
+			}
 
 			if ( $intent->is_authorized() ) {
-				wc_maybe_reduce_stock_levels( $order_id );
-				WC()->cart->empty_cart();
+				// Stock reduction is left to WooCommerce core (see note in process_payment_for_order()).
+				if ( ! $is_subscription_payment_method_change ) {
+					WC()->cart->empty_cart();
+				}
 
 				$is_subscription            = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order );
 				$should_save_payment_method = $is_subscription || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] );
@@ -3961,7 +3985,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$return_url = $this->get_return_url( $order );
 
-				if ( $is_changing_payment ) {
+				if ( $is_subscription_payment_method_change ) {
 					$this->maybe_update_subscription_payment_method( $order );
 					$return_url = method_exists( $order, 'get_view_order_url' ) ? $order->get_view_order_url() : $this->get_return_url( $order );
 				}
@@ -4940,6 +4964,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, WC_Order $order ): void {
 		if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() ) {
 			$this->handle_afterpay_shipping_requirement( $order, $request );
+		}
+	}
+
+	/**
+	 * AJAX-aware variant of {@see is_changing_payment_method_for_subscription()}.
+	 *
+	 * The `update_order_status` AJAX endpoint receives an explicit `is_changing_payment`
+	 * POST flag that reflects the intent of the client request. When that flag is present
+	 * we trust it; otherwise we fall back to the trait's live `$_GET`-based detection.
+	 *
+	 * @param bool|null $is_changing_payment Explicit flag from the current request, or null to rely on the trait.
+	 * @return bool
+	 */
+	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null ): bool {
+		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
+	}
+
+	/**
+	 * Runs a callback with the `woocommerce_payment_complete_reduce_order_stock` filter forced to false.
+	 *
+	 * Payment-method-change flows must never decrement stock: the order was already paid once
+	 * and the customer is only updating the stored payment credential. The status transition
+	 * inside WooCommerce core would otherwise trigger `wc_maybe_reduce_stock_levels()` via
+	 * `woocommerce_payment_complete` and `woocommerce_order_status_*` hooks.
+	 *
+	 * The filter is added at `PHP_INT_MAX - 1` so it wins over any upstream filter that
+	 * might re-enable reduction, and we guard against double-adding to stay reentrant.
+	 *
+	 * @param callable $callback Callback to execute with stock reduction suppressed.
+	 * @return mixed The callback's return value.
+	 */
+	private function with_stock_reduction_disabled( callable $callback ) {
+		$filter           = 'woocommerce_payment_complete_reduce_order_stock';
+		$priority         = PHP_INT_MAX - 1;
+		$already_filtered = false !== has_filter( $filter, '__return_false' );
+
+		if ( ! $already_filtered ) {
+			add_filter( $filter, '__return_false', $priority );
+		}
+
+		try {
+			return $callback();
+		} finally {
+			if ( ! $already_filtered ) {
+				remove_filter( $filter, '__return_false', $priority );
+			}
 		}
 	}
 }

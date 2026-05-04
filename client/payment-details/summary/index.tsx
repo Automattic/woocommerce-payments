@@ -63,6 +63,7 @@ import { PaymentIntent } from '../../types/payment-intents';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import DisputeOutcomeView from '../dispute-outcome';
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import {
@@ -90,6 +91,39 @@ const placeholderValues = {
 
 const isTapToPay = ( model: string ) => {
 	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
+};
+
+const isOutcomeViewStatus = ( status: string ): boolean =>
+	status === 'won' || status === 'lost' || status === 'warning_closed';
+
+const renderDisputeDetails = (
+	dispute: NonNullable< Charge[ 'dispute' ] >,
+	charge: Charge,
+	bankName: string | null
+) => {
+	if ( isAwaitingResponse( dispute.status ) ) {
+		return (
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ charge.billing_details }
+				chargeCreated={ charge.created }
+				orderUrl={ charge.order?.url }
+				paymentMethod={ charge.payment_method_details?.type }
+				bankName={ bankName }
+			/>
+		);
+	}
+
+	if (
+		wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+		isOutcomeViewStatus( dispute.status )
+	) {
+		return <DisputeOutcomeView dispute={ dispute } />;
+	}
+
+	return (
+		<DisputeResolutionFooter dispute={ dispute } bankName={ bankName } />
+	);
 };
 
 const getTapToPayChannel = ( platform: string ) => {
@@ -691,23 +725,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 			{ charge.dispute && (
 				<ErrorBoundary>
-					{ isAwaitingResponse( charge.dispute.status ) ? (
-						<DisputeAwaitingResponseDetails
-							dispute={ charge.dispute }
-							customer={ charge.billing_details }
-							chargeCreated={ charge.created }
-							orderUrl={ charge.order?.url }
-							paymentMethod={
-								charge.payment_method_details?.type
-							}
-							bankName={ bankName }
-						/>
-					) : (
-						<DisputeResolutionFooter
-							dispute={ charge.dispute }
-							bankName={ bankName }
-						/>
-					) }
+					{ renderDisputeDetails( charge.dispute, charge, bankName ) }
 				</ErrorBoundary>
 			) }
 			{ isRefundModalOpen && (

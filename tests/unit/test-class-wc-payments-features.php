@@ -111,6 +111,15 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() );
 	}
 
+	public function test_is_dispute_outcome_view_disabled_by_default() {
+		$this->assertFalse( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	}
+
+	public function test_is_dispute_outcome_view_can_be_enabled() {
+		$this->set_feature_flag_option( WC_Payments_Features::DISPUTE_OUTCOME_VIEW, '1' );
+		$this->assertTrue( WC_Payments_Features::is_dispute_outcome_view_enabled() );
+	}
+
 	public function test_is_woopay_eligible_returns_true() {
 		$this->mock_cache->method( 'get' )->willReturn( [ 'platform_checkout_eligible' => true ] );
 		$this->assertTrue( WC_Payments_Features::is_woopay_eligible() );
