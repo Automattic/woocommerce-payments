@@ -356,6 +356,14 @@ describe( 'composite-key label collision handling', () => {
 		);
 		const row = result.find( ( f ) => f.key === 'uncategorized_file' );
 		expect( row?.label ).toBe( 'Other documents' );
+		// Negative assertion guards against silent regression in
+		// collision detection: "Other documents" coincides with one of
+		// the colliding matrix labels, so a broken collision detector
+		// returning the first match could pass the positive assertion
+		// alone. "Proof of acceptance" appears only in the other status
+		// branch and never in the fallback table, so it must never be
+		// the resolved label.
+		expect( row?.label ).not.toBe( 'Proof of acceptance' );
 	} );
 
 	it( 'still resolves the productType-specific label when composite cells agree', () => {

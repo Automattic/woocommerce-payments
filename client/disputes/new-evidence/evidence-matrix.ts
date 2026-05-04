@@ -2273,11 +2273,14 @@ export const DISPUTE_TOPICAL_FIELDS: Record<
 };
 
 /**
- * Human-readable labels for raw Stripe `dispute.evidence` keys that are not
- * present in the evidence matrix (which is scoped to document uploads).
+ * Human-readable labels used as a fallback when `findMatrixLabel` cannot
+ * resolve a label for a `dispute.evidence` key — either because the key
+ * is a text/base field not stored in `evidenceMatrix` (which only carries
+ * document-upload cells), or because multiple matched wizard cells
+ * disagree on the label (collision) and no single status-specific label
+ * is appropriate in the post-resolution view.
  *
- * Used by `getExpectedFieldStatus` when a high-impact field has no
- * corresponding matrix entry from which to borrow a label.
+ * Consumed by `resolveFieldLabel` (called from `getExpectedFieldStatus`).
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention -- This is a constant object.
 const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
