@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getAppearance, getFontRulesFromPage } from '../upe-styles';
+import { getAppearance, getFontRulesFromPage } from '../styles';
 import {
 	getCachedAppearance,
 	setCachedAppearance,

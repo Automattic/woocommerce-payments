@@ -10,7 +10,7 @@ import { StoreNotice } from '@woocommerce/blocks-checkout';
  * Internal dependencies
  */
 import './style.scss';
-import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/styles';
 import {
 	getCachedAppearance,
 	setCachedAppearance,

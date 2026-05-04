@@ -13,7 +13,7 @@
  * Internal dependencies
  */
 import { getConfig } from 'wcpay/utils/checkout';
-import { getAppearance } from 'checkout/upe-styles';
+import { getAppearance } from 'checkout/styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
 import {
 	isSupportedThemeEntrypoint,

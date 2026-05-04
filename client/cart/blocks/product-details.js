@@ -10,7 +10,7 @@ import { select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/styles';
 import {
 	getCachedAppearance,
 	setCachedAppearance,

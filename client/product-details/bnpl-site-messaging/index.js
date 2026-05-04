@@ -4,7 +4,7 @@
  */
 import './style.scss';
 import WCPayAPI from 'wcpay/checkout/api';
-import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
+import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/styles';
 import {
 	getCachedAppearance,
 	setCachedAppearance,

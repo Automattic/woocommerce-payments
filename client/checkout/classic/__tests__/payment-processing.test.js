@@ -10,7 +10,7 @@ import {
 	__resetHasCheckoutCompleted,
 	isMissingRequiredAddressFieldsForBNPL,
 } from '../payment-processing';
-import { getAppearance } from '../../upe-styles';
+import { getAppearance } from '../../styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	getFingerprint,
@@ -25,7 +25,7 @@ import {
 } from '../upe-utils';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
-jest.mock( '../../upe-styles' );
+jest.mock( '../../styles' );
 jest.mock( 'wcpay/utils/appearance-cache' );
 
 jest.mock( '../upe-utils' );

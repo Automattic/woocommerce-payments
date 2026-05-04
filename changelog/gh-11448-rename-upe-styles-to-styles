@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Rename client/checkout/upe-styles/ to client/checkout/styles/ to reflect shared UPE and WooPay usage.
