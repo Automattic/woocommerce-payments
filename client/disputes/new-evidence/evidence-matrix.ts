@@ -2254,9 +2254,9 @@ export const DISPUTE_TOPICAL_FIELDS: Record<
 		multiple: [],
 		other: [ 'refund_policy' ],
 	},
-	// All other reasons: topicals (where Catherine recommends them) are
-	// already covered by the wizard matrix for the relevant product types,
-	// so no entries are needed here.
+	// All other reasons: topicals are already covered by the wizard
+	// matrix for the relevant product types, so no entries are needed
+	// here.
 	bank_cannot_process: emptyByProductType(),
 	check_returned: emptyByProductType(),
 	credit_not_processed: emptyByProductType(),
