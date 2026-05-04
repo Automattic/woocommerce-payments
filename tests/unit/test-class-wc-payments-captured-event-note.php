@@ -35,6 +35,127 @@ class WC_Payments_Captured_Event_Note_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $expectation['taxString'] ?? null, $this->captured_event_note->compose_tax_string() );
 	}
 
+	public function test_generate_html_note_envelope_path_renders_signed_discount_split() {
+		$captured_event = [
+			'type'                => 'captured',
+			'amount'              => 1000,
+			'amount_captured'     => 1000,
+			'fee'                 => 57,
+			'transaction_details' => [
+				'customer_currency'        => 'USD',
+				'customer_amount'          => 1000,
+				'customer_amount_captured' => 1000,
+				'customer_fee'             => 57,
+				'store_currency'           => 'USD',
+				'store_amount'             => 1000,
+				'store_amount_captured'    => 1000,
+				'store_fee'                => 57,
+			],
+			'fee_rates'           => [
+				'percentage'     => 0.0425,
+				'fixed'          => 28,
+				'fixed_currency' => 'USD',
+				'history'        => [
+					[
+						'type'            => 'base',
+						'additional_type' => '',
+						'fee_id'          => 'base-us-card-fee',
+						'percentage_rate' => 0.029,
+						'fixed_rate'      => 30,
+						'currency'        => 'usd',
+					],
+				],
+			],
+			'fee_breakdown_v1'    => [
+				'rows'    => [
+					[
+						'key'            => 'base',
+						'kind'           => 'fee',
+						'label'          => null,
+						'amount'         => 59,
+						'display_amount' => -59,
+						'currency'       => 'usd',
+						'rate'           => [
+							'percentage'         => 0.029,
+							'fixed'              => 30,
+							'fixed_currency'     => 'usd',
+							'percentage_display' => '2.9%',
+						],
+						'meta'           => null,
+					],
+					[
+						'key'            => 'discount.wcpay-promo-2023',
+						'kind'           => 'adjustment',
+						'label'          => null,
+						// Promo discount — negative deltas preserved through
+						// envelope to renderer. The split below renders
+						// "Variable fee: -0.15%" / "Fixed fee: -$0.02",
+						// matching the legacy `compose_fee_break_down` output.
+						'amount'         => 0,
+						'display_amount' => 0,
+						'currency'       => 'usd',
+						'rate'           => [
+							'percentage'         => -0.0015,
+							'fixed'              => -2,
+							'fixed_currency'     => 'usd',
+							'percentage_display' => '-0.15%',
+						],
+						'meta'           => [ 'fee_id' => 'wcpay-promo-2023' ],
+					],
+				],
+				'totals'  => [
+					'fee'         => [
+						'key'            => null,
+						'amount'         => 57,
+						'display_amount' => -57,
+						'currency'       => 'usd',
+						'rate'           => [
+							'percentage'         => 0.0425,
+							'fixed'              => 28,
+							'fixed_currency'     => 'usd',
+							'percentage_display' => '4.25%',
+						],
+					],
+					'tax'         => [
+						'amount'         => 0,
+						'display_amount' => 0,
+						'currency'       => 'usd',
+					],
+					'net'         => [
+						'amount'   => 943,
+						'currency' => 'usd',
+					],
+					'capture_net' => [
+						'amount'   => 943,
+						'currency' => 'usd',
+					],
+					'gross'       => [
+						'amount'   => 1000,
+						'currency' => 'usd',
+					],
+				],
+				'notes'   => [],
+				'sources' => [],
+			],
+		];
+
+		$note = new WC_Payments_Captured_Event_Note( $captured_event );
+		$html = $note->generate_html_note();
+
+		// Envelope-path rendering of the discount row must mirror the
+		// legacy `compose_fee_break_down` output: parent label line +
+		// signed Variable / Fixed sub-bullets. Without the split, the
+		// renderer would emit a single "Discount: -0.15% + -$0.02" line
+		// — the legacy production format is the split form.
+		$this->assertStringContainsString( 'Discount', $html );
+		$this->assertStringContainsString( 'Variable fee: -0.15%', $html );
+		$this->assertStringContainsString( 'Fixed fee: -$0.02', $html );
+
+		// Fused single-line form must NOT appear — that's the regression
+		// this test guards against.
+		$this->assertStringNotContainsString( 'Discount: -0.15% + -$0.02', $html );
+	}
+
 	public function provider() {
 
 		$res   = [];

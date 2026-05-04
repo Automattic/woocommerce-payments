@@ -183,10 +183,25 @@ class WC_Payments_Captured_Event_Note {
 		);
 
 		if ( count( $fee_rows ) > 1 ) {
-			$indent = str_repeat( self::HTML_SPACE, 4 );
+			$indent     = str_repeat( self::HTML_SPACE, 4 );
+			$sub_indent = str_repeat( self::HTML_SPACE, 8 );
 			foreach ( $fee_rows as $row ) {
-				$label     = self::label_from_row( $row );
-				$row_curr  = $row['rate']['fixed_currency'] ?? ( $row['currency'] ?? $store_currency );
+				$label    = self::label_from_row( $row );
+				$row_curr = $row['rate']['fixed_currency'] ?? ( $row['currency'] ?? $store_currency );
+
+				// Adjustment row with both percentage and fixed components
+				// (e.g., "-0.15% + -£0.20" promo discount): render parent
+				// label and split the components into sub-bullets, mirroring
+				// the legacy `compose_fee_break_down` HTML_WHITE_BULLET
+				// layout and the JS `composeAdjustmentSplitFeeRow` output.
+				// Fusing them into one rate string reads as arithmetic
+				// rather than two independent discount rules.
+				$adjustment_split = self::adjustment_split_lines( $row, $row_curr, $indent, $sub_indent );
+				if ( null !== $adjustment_split ) {
+					$lines = array_merge( $lines, $adjustment_split );
+					continue;
+				}
+
 				$rate_text = self::format_rate_text( $row['rate'] ?? null, $row_curr );
 				$lines[]   = $indent . ( '' !== $rate_text ? sprintf( '%1$s: %2$s', esc_html( $label ), esc_html( $rate_text ) ) : esc_html( $label ) );
 			}
@@ -348,6 +363,63 @@ class WC_Payments_Captured_Event_Note {
 			return __( 'Discount', 'woocommerce-payments' );
 		}
 		return $key;
+	}
+
+	/**
+	 * For an adjustment row (e.g. discount) carrying both a percentage and a
+	 * fixed component, return the parent label line plus two sub-bullet
+	 * lines — mirrors the legacy `compose_fee_break_down` HTML_WHITE_BULLET
+	 * layout and the JS counterpart in `compose.js::composeAdjustmentSplitFeeRow`.
+	 *
+	 * Signs are preserved (e.g. "Variable fee: -0.15%", "Fixed fee: -£0.20")
+	 * so the rendering matches the legacy snapshots; the database stores
+	 * discounts as negative deltas applied to the cumulative effective rate.
+	 *
+	 * Returns null when the row doesn't qualify (non-adjustment, no rate, or
+	 * either component is zero) so the caller can fall through to the
+	 * single-line render.
+	 *
+	 * @param array  $row        Row entry from the envelope.
+	 * @param string $row_curr   Currency to format the fixed amount in.
+	 * @param string $indent     Indent string for the parent label line.
+	 * @param string $sub_indent Indent string for the sub-bullet lines.
+	 * @return array<string>|null
+	 */
+	private static function adjustment_split_lines( array $row, string $row_curr, string $indent, string $sub_indent ): ?array {
+		if ( 'adjustment' !== ( $row['kind'] ?? '' ) || empty( $row['rate'] ) ) {
+			return null;
+		}
+		$rate        = $row['rate'];
+		$percentage  = isset( $rate['percentage'] ) ? (float) $rate['percentage'] : 0.0;
+		$fixed_minor = isset( $rate['fixed'] ) ? (int) $rate['fixed'] : 0;
+		if ( 0.0 === $percentage || 0 === $fixed_minor ) {
+			return null;
+		}
+
+		$label         = self::label_from_row( $row );
+		$variable_text = self::format_fee( $percentage ) . '%';
+		$fixed_text    = WC_Payments_Utils::format_currency(
+			WC_Payments_Utils::interpret_stripe_amount( $fixed_minor, $row_curr ),
+			$row_curr
+		);
+
+		return [
+			$indent . esc_html( $label ),
+			$sub_indent . self::HTML_WHITE_BULLET . ' ' . esc_html(
+				sprintf(
+					/* translators: %s is a percentage number */
+					__( 'Variable fee: %s', 'woocommerce-payments' ),
+					$variable_text
+				)
+			),
+			$sub_indent . self::HTML_WHITE_BULLET . ' ' . esc_html(
+				sprintf(
+					/* translators: %s is a monetary amount */
+					__( 'Fixed fee: %s', 'woocommerce-payments' ),
+					$fixed_text
+				)
+			),
+		];
 	}
 
 	/**

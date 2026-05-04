@@ -118,6 +118,13 @@ const formatRateText = ( rate, storeCurrency ) => {
  * reads as arithmetic rather than two independent discount rules, which is
  * what the merchant actually wants to see.
  *
+ * Signs are preserved on both pieces so a discount renders as
+ * "Variable fee: -0.15%" / "Fixed fee: -£0.20" — matches the legacy
+ * `map-events.js` snapshots and the production order-note format. The
+ * adjustment row's negative deltas come straight from the server's
+ * `rows_from_history` (the database stores discounts as negative deltas
+ * applied on top of the cumulative effective rate).
+ *
  * Returns `null` when the row doesn't qualify (non-adjustment, no rate, or
  * only one of the two components is non-zero) so the caller can fall through
  * to the single-line render.
@@ -140,13 +147,9 @@ const composeAdjustmentSplitFeeRow = (
 	}
 
 	const variableText = `${ Number.parseFloat(
-		( Math.abs( pct ) * 100 ).toFixed( 3 )
+		( pct * 100 ).toFixed( 3 )
 	) }%`;
-	const fixedText = formatCurrency(
-		Math.abs( fixed ),
-		rowCurrency,
-		storeCurrency
-	);
+	const fixedText = formatCurrency( fixed, rowCurrency, storeCurrency );
 	return (
 		<li key={ `${ row.key }-${ idx }` }>
 			{ label }
