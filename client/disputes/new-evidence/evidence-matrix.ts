@@ -2329,6 +2329,12 @@ const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 		'Shipping tracking number',
 		'woocommerce-payments'
 	),
+	// Catch-all field. Surfaces via the wizard matrix scan (not the
+	// high-impact or topical maps). Wizard cells label it differently per
+	// status branch in some composite-key cells (e.g. "Other documents"
+	// vs "Proof of acceptance" in CNP physical), so the neutral fallback
+	// kicks in via collision detection in `findMatrixLabel`.
+	uncategorized_file: __( 'Other documents', 'woocommerce-payments' ),
 };
 
 /**
@@ -2338,8 +2344,17 @@ const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
  * we match any cell whose key equals `productType` or starts with
  * `${productType}__`.
  *
- * If the productType-specific cell does not list the key, the caller
- * (`resolveFieldLabel`) falls through to `FALLBACK_EVIDENCE_FIELD_LABELS`.
+ * Collision handling: if matched cells disagree on the label for `key`
+ * (the wizard intentionally uses status-specific labels in some composite
+ * cells, e.g. `duplicate_charge_documentation` is "Refund receipt" under
+ * `__is_duplicate` and "Any additional receipts" under `__is_not_duplicate`),
+ * we return undefined so the caller (`resolveFieldLabel`) can fall through
+ * to a neutral label from `FALLBACK_EVIDENCE_FIELD_LABELS`. Picking either
+ * status-specific label would be misleading in the post-resolution view,
+ * which has no wizard-time status to disambiguate.
+ *
+ * Single-match wins. Multi-match with all-equal labels also wins. Multi-
+ * match with disagreement falls through.
  */
 const findMatrixLabel = (
 	reason: string,
@@ -2352,18 +2367,22 @@ const findMatrixLabel = (
 	}
 
 	const productTypePrefix = `${ productType }__`;
+	const labels = new Set< string >();
 	for ( const [ matrixKey, docs ] of Object.entries( productTypeEntries ) ) {
 		if (
-			matrixKey === productType ||
-			matrixKey.startsWith( productTypePrefix )
+			matrixKey !== productType &&
+			! matrixKey.startsWith( productTypePrefix )
 		) {
-			const match = docs.find( ( doc ) => doc.key === key );
-			if ( match ) {
-				return match.label;
+			continue;
+		}
+		for ( const doc of docs ) {
+			if ( doc.key === key ) {
+				labels.add( doc.label );
 			}
 		}
 	}
-	return undefined;
+
+	return labels.size === 1 ? [ ...labels ][ 0 ] : undefined;
 };
 
 const resolveFieldLabel = (

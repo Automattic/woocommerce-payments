@@ -315,6 +315,58 @@ describe( 'DISPUTE_HIGH_IMPACT_FIELDS', () => {
 	} );
 } );
 
+describe( 'composite-key label collision handling', () => {
+	// The wizard matrix intentionally labels some keys differently across
+	// status branches within a composite-key cell (e.g.
+	// `duplicate_charge_documentation` is "Refund receipt" under
+	// `__is_duplicate` and "Any additional receipts" under
+	// `__is_not_duplicate`). The outcome view has no wizard-time status
+	// to disambiguate, so `findMatrixLabel` returns undefined when matches
+	// disagree, and `resolveFieldLabel` falls through to a neutral
+	// FALLBACK label.
+
+	it( 'falls back to FALLBACK label when composite cells disagree on duplicate_charge_documentation', () => {
+		const result = getExpectedFieldStatus(
+			'duplicate',
+			'physical_product',
+			{}
+		);
+		const row = result.find(
+			( f ) => f.key === 'duplicate_charge_documentation'
+		);
+		// "Refund receipt" and "Any additional receipts" both appear in
+		// the wizard matrix for this cell across status branches. The
+		// neutral fallback label wins.
+		expect( row?.label ).toBe( 'Duplicate charge documentation' );
+	} );
+
+	it( 'falls back to FALLBACK label when composite cells disagree on uncategorized_file', () => {
+		// In credit_not_processed.physical_product, the wizard matrix
+		// labels uncategorized_file as "Other documents" in one status
+		// branch and "Proof of acceptance" in another.
+		const result = getExpectedFieldStatus(
+			'credit_not_processed',
+			'physical_product',
+			{}
+		);
+		const row = result.find( ( f ) => f.key === 'uncategorized_file' );
+		expect( row?.label ).toBe( 'Other documents' );
+	} );
+
+	it( 'still resolves the productType-specific label when composite cells agree', () => {
+		// `customer_communication` is consistently labelled "Customer
+		// communication" across CNP composite cells; that single label
+		// must still resolve, not fall through.
+		const result = getExpectedFieldStatus(
+			'credit_not_processed',
+			'physical_product',
+			{}
+		);
+		const row = result.find( ( f ) => f.key === 'customer_communication' );
+		expect( row?.label ).toBe( 'Customer communication' );
+	} );
+} );
+
 describe( 'DISPUTE_TOPICAL_FIELDS', () => {
 	it( 'excludes auto-populated, hybrid, and catch-all fields across every cell', () => {
 		Object.values( DISPUTE_TOPICAL_FIELDS ).forEach( ( byProductType ) => {
