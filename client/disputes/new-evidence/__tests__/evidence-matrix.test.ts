@@ -198,6 +198,45 @@ describe( 'getExpectedFieldStatus', () => {
 		);
 	} );
 
+	it( 'falls back to FALLBACK_EVIDENCE_FIELD_LABELS for shipping_documentation across reasons', () => {
+		// `shipping_documentation` is high-impact for several non-CNP
+		// cells (PNR/duplicate/PU physical) but isn't listed in those
+		// wizard matrix cells; the wizard only references it from CNP
+		// cells with a context-specific label ("Return tracking").
+		const result = getExpectedFieldStatus(
+			'product_not_received',
+			'physical_product',
+			{}
+		);
+		expect(
+			result.find( ( f ) => f.key === 'shipping_documentation' )?.label
+		).toBe( 'Shipping documentation' );
+	} );
+
+	it( 'never renders a raw snake_case key as the label for any high-impact cell', () => {
+		// Defense-in-depth: every high-impact key across every cell must
+		// resolve to a human-readable label, either via the wizard matrix
+		// or via FALLBACK_EVIDENCE_FIELD_LABELS. If this test fails, add
+		// the missing key to FALLBACK_EVIDENCE_FIELD_LABELS.
+		Object.entries( DISPUTE_HIGH_IMPACT_FIELDS ).forEach(
+			( [ reason, byProductType ] ) => {
+				Object.entries( byProductType ).forEach(
+					( [ productType, keys ] ) => {
+						const result = getExpectedFieldStatus(
+							reason,
+							productType,
+							{}
+						);
+						keys.forEach( ( key ) => {
+							const row = result.find( ( f ) => f.key === key );
+							expect( row?.label ).not.toBe( key );
+						} );
+					}
+				);
+			}
+		);
+	} );
+
 	it( 'falls back to FALLBACK_EVIDENCE_FIELD_LABELS for cells whose matrix omits the high-impact key', () => {
 		// `cancellation_rebuttal` is high-impact for subscription_canceled
 		// across all product types, but the wizard matrix cell for `other`

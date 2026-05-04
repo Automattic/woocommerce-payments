@@ -2295,6 +2295,17 @@ const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 		'Customer communication',
 		'woocommerce-payments'
 	),
+	customer_signature: __( "Customer's signature", 'woocommerce-payments' ),
+	// Document-upload fields used as high-impact picks. The wizard matrix
+	// labels each per (reason, productType) context (e.g.
+	// `shipping_documentation` is "Return tracking" in CNP cells), but
+	// the outcome view uses neutral, Stripe-aligned labels for cells
+	// where the wizard matrix has no entry to borrow from (notably the
+	// synthesised `multiple` product type).
+	duplicate_charge_documentation: __(
+		'Duplicate charge documentation',
+		'woocommerce-payments'
+	),
 	duplicate_charge_explanation: __(
 		'Duplicate charge explanation',
 		'woocommerce-payments'
@@ -2310,6 +2321,10 @@ const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 	shipping_address: __( 'Shipping address', 'woocommerce-payments' ),
 	shipping_carrier: __( 'Shipping carrier', 'woocommerce-payments' ),
 	shipping_date: __( 'Shipping date', 'woocommerce-payments' ),
+	shipping_documentation: __(
+		'Shipping documentation',
+		'woocommerce-payments'
+	),
 	shipping_tracking_number: __(
 		'Shipping tracking number',
 		'woocommerce-payments'
