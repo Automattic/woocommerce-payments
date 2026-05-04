@@ -10,6 +10,8 @@
  * @package WooCommerce\Payments\Admin
  */
 
+use WCPay\Constants\Order_Mode;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -387,6 +389,10 @@ class WC_Payments_Admin_Banner {
 				'limit'          => 1,
 				'return'         => 'ids',
 				'status'         => [ 'wc-completed', 'wc-processing' ],
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value'     => Order_Mode::TEST,
 			]
 		);
 

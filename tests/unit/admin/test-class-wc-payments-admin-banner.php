@@ -75,6 +75,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 			$order = wc_create_order();
 			$order->set_payment_method( 'woocommerce_payments' );
 			$order->set_status( 'completed' );
+			$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::TEST );
 			$order->save();
 			$this->test_order_id = $order->get_id();
 		}
