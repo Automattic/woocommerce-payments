@@ -218,6 +218,10 @@ describe( 'getExpectedFieldStatus', () => {
 		// resolve to a human-readable label, either via the wizard matrix
 		// or via FALLBACK_EVIDENCE_FIELD_LABELS. If this test fails, add
 		// the missing key to FALLBACK_EVIDENCE_FIELD_LABELS.
+		//
+		// `row` is asserted defined explicitly so a future change that
+		// stops emitting a high-impact key surfaces as a test failure
+		// rather than a silent pass via optional-chaining on undefined.
 		Object.entries( DISPUTE_HIGH_IMPACT_FIELDS ).forEach(
 			( [ reason, byProductType ] ) => {
 				Object.entries( byProductType ).forEach(
@@ -229,6 +233,7 @@ describe( 'getExpectedFieldStatus', () => {
 						);
 						keys.forEach( ( key ) => {
 							const row = result.find( ( f ) => f.key === key );
+							expect( row ).toBeDefined();
 							expect( row?.label ).not.toBe( key );
 						} );
 					}
