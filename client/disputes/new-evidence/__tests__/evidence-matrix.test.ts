@@ -261,8 +261,8 @@ describe( 'getExpectedFieldStatus', () => {
 
 	it( 'surfaces topical fields as optional_missing when absent from the wizard matrix cell', () => {
 		// `refund_policy` is a topical recommendation for
-		// subscription_canceled.digital_product_or_service per Catherine's
-		// at-a-glance, but the wizard matrix cell deliberately omits it.
+		// subscription_canceled.digital_product_or_service, but the
+		// wizard matrix cell deliberately omits it.
 		// DISPUTE_TOPICAL_FIELDS is the source for this row.
 		const result = getExpectedFieldStatus(
 			'subscription_canceled',
