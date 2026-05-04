@@ -65,6 +65,9 @@ class WooPay_Session {
 		register_deactivation_hook( WCPAY_PLUGIN_FILE, [ __CLASS__, 'run_and_remove_woopay_restore_order_customer_id_schedules' ] );
 
 		add_filter( 'automatewoo/referrals/referred_order_advocate', [ __CLASS__, 'automatewoo_refer_a_friend_referral_from_parameter' ] );
+
+		// Override REMOTE_ADDR early so WooCommerce records the customer's real IP, not the WooPay server IP.
+		self::maybe_override_customer_ip();
 	}
 
 	/**
@@ -866,6 +869,78 @@ class WooPay_Session {
 		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
 
 		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
+	}
+
+	/**
+	 * Override REMOTE_ADDR with the customer's real IP for WooPay requests.
+	 *
+	 * When WooPay proxies a checkout request to the merchant's Store API,
+	 * $_SERVER['REMOTE_ADDR'] contains the WooPay server IP instead of the
+	 * customer's real IP. WooPay forwards the customer's real IP via the
+	 * X-Forwarded-For or X-Real-IP header.
+	 *
+	 * This method overrides REMOTE_ADDR early in the request lifecycle so
+	 * WooCommerce core (and any other IP-dependent code) records the correct
+	 * customer IP on the order.
+	 *
+	 * Security: Only executes when the request is confirmed from WooPay
+	 * (User-Agent check) AND the request carries a valid blog token signature.
+	 *
+	 * @since 9.4.0
+	 * @return void
+	 */
+	public static function maybe_override_customer_ip() {
+		if ( ! self::is_request_from_woopay() ) {
+			return;
+		}
+
+		if ( ! self::has_valid_request_signature() ) {
+			return;
+		}
+
+		$customer_ip = self::get_customer_ip_from_headers();
+
+		if ( null === $customer_ip ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated -- IP is validated above.
+		$_SERVER['REMOTE_ADDR'] = $customer_ip;
+	}
+
+	/**
+	 * Extract the customer's real IP address from proxy headers.
+	 *
+	 * Checks X-Forwarded-For and X-Real-IP headers (in that order).
+	 * For X-Forwarded-For, the leftmost (first) IP is used because it
+	 * represents the originating client before any intermediate proxies.
+	 *
+	 * Only valid IPv4 and IPv6 addresses are returned.
+	 *
+	 * @since 9.4.0
+	 * @return string|null A validated IP address, or null if none found.
+	 */
+	private static function get_customer_ip_from_headers() {
+		// X-Forwarded-For can contain a comma-separated list: "client, proxy1, proxy2".
+		if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+			$forwarded_ips = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+			$client_ip     = trim( $forwarded_ips[0] );
+
+			if ( false !== filter_var( $client_ip, FILTER_VALIDATE_IP ) ) {
+				return $client_ip;
+			}
+		}
+
+		// Fallback to X-Real-IP (single IP, typically set by Nginx reverse proxies).
+		if ( ! empty( $_SERVER['HTTP_X_REAL_IP'] ) ) {
+			$real_ip = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_REAL_IP'] ) );
+
+			if ( false !== filter_var( $real_ip, FILTER_VALIDATE_IP ) ) {
+				return $real_ip;
+			}
+		}
+
+		return null;
 	}
 
 	/**
