@@ -370,6 +370,9 @@ class WC_Payments {
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 		add_action( 'enqueue_block_editor_assets', [ __CLASS__, 'disable_express_checkout_in_block_editor' ], 1 );
 
+		// Register WooPayments abilities (no-ops on WordPress < 6.9).
+		\WCPay\Internal\Abilities\Abilities_Registrar::init();
+
 		include_once __DIR__ . '/class-wc-payments-db.php';
 		self::$db_helper = new WC_Payments_DB();
 
