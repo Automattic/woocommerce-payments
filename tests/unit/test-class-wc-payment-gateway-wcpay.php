@@ -329,6 +329,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			'wc-woocommerce_payments-payment-token',
 			'wc-woocommerce_payments-new-payment-method',
 			'wcpay-express-payment-method-types',
+			'order_id',
+			'intent_id',
+			'is_changing_payment',
+			'_wpnonce',
 		];
 		foreach ( $payment_method_keys as $key ) {
 			// phpcs:disable WordPress.Security.NonceVerification.Missing
@@ -337,6 +341,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			}
 			// phpcs:enable WordPress.Security.NonceVerification.Missing
 		}
+
+		$_REQUEST = [];
 
 		wcpay_get_test_container()->reset_all_replacements();
 		WC()->session->set( 'wc_notices', [] );
@@ -5048,5 +5054,80 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		foreach ( $definition_classes as $definition_class ) {
 			$registry->register_payment_method( $definition_class );
 		}
+	}
+
+	public function test_update_order_status_does_not_reduce_stock_when_changing_subscription_payment_method() {
+		$product = $this->create_stock_managed_product( 10 );
+		$order   = WC_Helper_Order::create_order( 1, 0, $product );
+
+		$token = WC_Helper_Token::create_token( 'pm_mock' );
+		$order->add_payment_token( $token );
+		$order->save();
+
+		// Stub the token service so `add_token_to_order()` receives a real token
+		// if the save-payment-method branch is reached (it only runs when
+		// `wcs_order_contains_subscription()` is true, which depends on whether
+		// WooCommerce Subscriptions is loaded in the CI environment).
+		$this->mock_token_service
+			->method( 'add_payment_method_to_user' )
+			->willReturn( $token );
+
+		$intent_id = 'seti_mock_pm_change';
+		$this->order_service->set_intent_id_for_order( $order, $intent_id );
+
+		$nonce                = wp_create_nonce( 'wcpay_update_order_status_nonce' );
+		$_POST                = [
+			'action'              => 'update_order_status',
+			'order_id'            => $order->get_id(),
+			'intent_id'           => $intent_id,
+			'is_changing_payment' => 'true',
+			'_wpnonce'            => $nonce,
+		];
+		$_REQUEST['_wpnonce'] = $nonce;
+
+		$request = $this->mock_wcpay_request( Get_Setup_Intention::class, 1, $intent_id );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_setup_intention(
+					[
+						'id'             => $intent_id,
+						'status'         => Intent_Status::SUCCEEDED,
+						'payment_method' => 'pm_mock',
+					]
+				)
+			);
+
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+
+		try {
+			ob_start();
+			$this->card_gateway->update_order_status();
+			ob_end_clean();
+		} finally {
+			remove_filter( 'wp_doing_ajax', '__return_true' );
+			remove_filter( 'wp_die_ajax_handler', [ $this, 'return_ajax_wp_die_handler' ] );
+		}
+
+		$this->assertEquals( 10, wc_get_product( $product->get_id() )->get_stock_quantity() );
+		$this->assertEmpty( wc_get_order( $order->get_id() )->get_meta( '_order_stock_reduced', true ) );
+	}
+
+	public function return_ajax_wp_die_handler() {
+		return [ $this, 'ajax_wp_die_handler' ];
+	}
+
+	public function ajax_wp_die_handler( $message ) {
+		// Do nothing - prevents wp_die from terminating the test.
+	}
+
+	private function create_stock_managed_product( int $stock_quantity ): WC_Product_Simple {
+		$product = WC_Helper_Product::create_simple_product();
+		$product->set_manage_stock( true );
+		$product->set_stock_quantity( $stock_quantity );
+		$product->save();
+
+		return wc_get_product( $product->get_id() );
 	}
 }
