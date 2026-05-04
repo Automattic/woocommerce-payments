@@ -1,0 +1,65 @@
+/** @format */
+
+.dispute-outcome-evidence-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+
+	&__item {
+		display: flex;
+		align-items: center;
+		gap: $grid-unit-10;
+		padding: $grid-unit-05 0;
+		font-size: 13px;
+		line-height: 20px;
+	}
+
+	&__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex: 0 0 auto;
+		width: 20px;
+		height: 20px;
+
+		svg {
+			width: 20px;
+			height: 20px;
+			fill: currentColor;
+		}
+	}
+
+	&__label {
+		flex: 1 1 auto;
+	}
+
+	&__item--provided {
+		.dispute-outcome-evidence-list__icon {
+			color: $alert-green;
+		}
+
+		.dispute-outcome-evidence-list__label {
+			color: $gray-900;
+		}
+	}
+
+	&__item--expected-missing {
+		.dispute-outcome-evidence-list__icon {
+			color: $alert-red;
+		}
+
+		.dispute-outcome-evidence-list__label {
+			color: $gray-900;
+		}
+	}
+
+	&__item--optional-missing {
+		.dispute-outcome-evidence-list__icon {
+			color: $gray-700;
+		}
+
+		.dispute-outcome-evidence-list__label {
+			color: $gray-700;
+		}
+	}
+}
