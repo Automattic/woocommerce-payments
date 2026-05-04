@@ -93,17 +93,21 @@ describe( 'getExpectedFieldStatus', () => {
 		expect( result ).toEqual( [] );
 	} );
 
-	it( 'surfaces matrix-only fields as optional_missing for a reason with empty high-impact list', () => {
-		// `noncompliant` has empty high-impact lists but participates in
-		// the matrix via the Visa Compliance flow; ensure no
-		// expected_missing rows are emitted even when matrix fields exist.
+	it( 'surfaces matrix-only fields as optional_missing for a cell with empty high-impact list', () => {
+		// `product_unacceptable.event` has an empty high-impact list (no
+		// data-backed picks) but the wizard matrix cell for that
+		// (reason, productType) pair has entries. They must surface as
+		// optional_missing, never expected_missing.
 		const result = getExpectedFieldStatus(
-			'noncompliant',
-			'physical_product',
+			'product_unacceptable',
+			'event',
 			{}
 		);
 		expect( result.some( ( f ) => f.state === 'expected_missing' ) ).toBe(
 			false
+		);
+		expect( result.some( ( f ) => f.state === 'optional_missing' ) ).toBe(
+			true
 		);
 	} );
 
@@ -175,6 +179,23 @@ describe( 'getExpectedFieldStatus', () => {
 			( f ) => f.key === 'shipping_tracking_number'
 		);
 		expect( shippingTracking?.label ).toBe( 'Shipping tracking number' );
+	} );
+
+	it( 'falls back to FALLBACK_EVIDENCE_FIELD_LABELS for base fields not in the wizard cell', () => {
+		// `customer_communication` and `receipt` are auto-merged into
+		// wizard cells at runtime; the outcome-view helper reads the
+		// matrix directly and would otherwise render the raw key.
+		const result = getExpectedFieldStatus(
+			'product_not_received',
+			'digital_product_or_service',
+			{}
+		);
+		expect(
+			result.find( ( f ) => f.key === 'customer_communication' )?.label
+		).toBe( 'Customer communication' );
+		expect( result.find( ( f ) => f.key === 'receipt' )?.label ).toBe(
+			'Order receipt'
+		);
 	} );
 
 	it( 'falls back to FALLBACK_EVIDENCE_FIELD_LABELS for cells whose matrix omits the high-impact key', () => {

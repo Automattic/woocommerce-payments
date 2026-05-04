@@ -2287,11 +2287,20 @@ const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 		'woocommerce-payments'
 	),
 	cancellation_rebuttal: __( 'Cancellation logs', 'woocommerce-payments' ),
+	// Base fields are auto-merged into wizard cells at runtime by
+	// `getRecommendedDocumentFields`, not stored in `evidenceMatrix`. The
+	// outcome-view tri-state helper reads `evidenceMatrix` directly, so it
+	// would otherwise render the raw key. Match the labels the wizard uses.
+	customer_communication: __(
+		'Customer communication',
+		'woocommerce-payments'
+	),
 	duplicate_charge_explanation: __(
 		'Duplicate charge explanation',
 		'woocommerce-payments'
 	),
 	product_description: __( 'Product description', 'woocommerce-payments' ),
+	receipt: __( 'Order receipt', 'woocommerce-payments' ),
 	refund_policy: __( 'Refund policy', 'woocommerce-payments' ),
 	refund_refusal_explanation: __(
 		'Refund refusal explanation',
