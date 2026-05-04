@@ -2472,10 +2472,17 @@ export const getExpectedFieldStatus = (
 	productType: string,
 	evidence: Record< string, unknown >
 ): EvidenceFieldStatus[] => {
-	// Each cell is curated to be duplicate-free; emitting in order without
-	// an extra dedupe pass relies on that. A duplicate in the seed data
-	// would surface as a duplicate row, which is preferable to silently
-	// masking a data bug.
+	// `emitted` provides cross-source deduplication so a key shared
+	// between sources (e.g., a field that's both high-impact and topical,
+	// or both high-impact and present in the wizard matrix) renders
+	// exactly once, in source-priority order: high-impact, topical,
+	// matrix. Within a single source: high-impact entries are emitted
+	// without a self-dedupe check, so a duplicate in `DISPUTE_HIGH_IMPACT_FIELDS`
+	// surfaces as a duplicate row rather than being silently masked
+	// (we want data bugs in the seed to fail loud). Topical entries and
+	// matrix entries cannot duplicate within their source: topical loops
+	// against `emitted` (so an in-source duplicate is masked), and
+	// `matrixKeys` is a `Set` by construction.
 	const highImpactKeys =
 		DISPUTE_HIGH_IMPACT_FIELDS[ reason as DisputeReason ]?.[
 			productType as ProductType
