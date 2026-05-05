@@ -239,6 +239,21 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the number of decimals Stripe expects when billing the given currency.
+	 *
+	 * Returns 0 for true zero-decimal currencies (e.g. JPY) and 2 for everything else,
+	 * including Stripe's special-case currencies (TWD, HUF, ISK, UGX) that are locally
+	 * rendered without sub-units but still billed as two-decimal by Stripe.
+	 *
+	 * @param string $currency The currency code.
+	 *
+	 * @return int 0 or 2.
+	 */
+	public static function get_stripe_minor_unit_for_currency( string $currency ): int {
+		return self::is_zero_decimal_currency( $currency ) ? 0 : 2;
+	}
+
+	/**
 	 * List of countries enabled for Stripe platform account. See also this URL:
 	 * https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries
 	 *
