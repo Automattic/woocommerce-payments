@@ -9,7 +9,7 @@
 
 import { addFilter } from '@wordpress/hooks';
 
-const HARD_TIMEOUT_MS = 6000;
+const BAIL_AFTER_MS = 6000;
 
 const isCacheOptimizedAsyncModeActive = () =>
 	typeof wcpayAsyncPriceConfig !== 'undefined';
@@ -28,10 +28,7 @@ addFilter(
 		}
 
 		const fallback = new Promise( ( resolve ) => {
-			setTimeout(
-				async () => resolve( await upstream ),
-				HARD_TIMEOUT_MS
-			);
+			setTimeout( async () => resolve( await upstream ), BAIL_AFTER_MS );
 		} );
 
 		return Promise.race( [
