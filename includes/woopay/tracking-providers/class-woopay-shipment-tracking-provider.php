@@ -57,7 +57,11 @@ class WooPay_Shipment_Tracking_Provider implements WooPay_Tracking_Provider {
 		$shipments = [];
 
 		foreach ( $items as $item ) {
-			$tracking_number = isset( $item['tracking_number'] ) ? (string) $item['tracking_number'] : '';
+			// Sanitize before checking emptiness: a non-empty raw value can
+			// reduce to empty after wp_strip_all_tags() (e.g. tags-only input
+			// like "<script>X</script>"), and we must not emit a shipment
+			// with an empty tracking_number.
+			$tracking_number = self::sanitize_field( $item['tracking_number'] ?? '' );
 			if ( '' === $tracking_number ) {
 				continue;
 			}
@@ -75,7 +79,7 @@ class WooPay_Shipment_Tracking_Provider implements WooPay_Tracking_Provider {
 			}
 
 			$shipments[] = [
-				'tracking_number' => self::sanitize_field( $tracking_number ),
+				'tracking_number' => $tracking_number,
 				'carrier_name'    => self::sanitize_field( $carrier_raw ),
 				'tracking_url'    => self::sanitize_url( $item['custom_tracking_link'] ?? '' ),
 				'date_shipped'    => $date_shipped,
@@ -121,7 +125,7 @@ class WooPay_Shipment_Tracking_Provider implements WooPay_Tracking_Provider {
 		if ( ! is_scalar( $value ) ) {
 			return '';
 		}
-		$clean = wp_strip_all_tags( (string) $value );
+		$clean = trim( wp_strip_all_tags( (string) $value ) );
 		return mb_substr( $clean, 0, self::STRING_FIELD_MAX_LEN );
 	}
 

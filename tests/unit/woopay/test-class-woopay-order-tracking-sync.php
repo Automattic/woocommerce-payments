@@ -414,6 +414,34 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $original, $result );
 	}
 
+	public function test_create_payload_returns_original_when_topic_does_not_match() {
+		wp_set_current_user( self::$admin_user->ID );
+
+		// Construct a webhook with the WooPay delivery URL but a different topic.
+		// Both Order_Status_Sync and Order_Tracking_Sync register the same payload
+		// filter against the same delivery URL, so the topic must gate which
+		// filter handles the payload — otherwise one clobbers the other.
+		$webhook = new WC_Webhook();
+		$webhook->set_name( 'Some other woopay webhook' );
+		$webhook->set_user_id( get_current_user_id() );
+		$webhook->set_topic( 'order.status_changed' );
+		$webhook->set_secret( wp_generate_password( 50, false ) );
+		$webhook->set_delivery_url( WCPay\WooPay\WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) );
+		$webhook->set_status( 'active' );
+		$webhook->save();
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( 'is_woopay', true );
+		$order->save();
+
+		$original = [ 'status' => 'completed' ];
+		$result   = WooPay_Order_Tracking_Sync::create_payload( $original, 'order', $order->get_id(), $webhook->get_id() );
+
+		$this->assertSame( $original, $result, 'Tracking-sync payload filter must not rewrite a status_changed webhook payload.' );
+
+		$webhook->delete();
+	}
+
 	public function test_create_payload_returns_original_for_non_woopay_delivery_url() {
 		wp_set_current_user( self::$admin_user->ID );
 
@@ -551,6 +579,24 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 
 		WooPay_Order_Tracking_Sync::remove_webhook();
 		$this->assertEmpty( WooPay_Order_Tracking_Sync::get_webhook() );
+	}
+
+	public function test_remove_webhook_is_safe_when_no_webhook_exists() {
+		// Neither cached ID nor stored webhook — must not error.
+		delete_option( WooPay_Order_Tracking_Sync::WEBHOOK_ID_OPTION );
+
+		WooPay_Order_Tracking_Sync::remove_webhook();
+
+		$this->assertEmpty( WooPay_Order_Tracking_Sync::get_webhook() );
+	}
+
+	public function test_remove_webhook_handles_stale_cache_id() {
+		// Cached ID points to a webhook that no longer exists. Must not throw.
+		update_option( WooPay_Order_Tracking_Sync::WEBHOOK_ID_OPTION, 999999, false );
+
+		WooPay_Order_Tracking_Sync::remove_webhook();
+
+		$this->assertSame( 0, (int) get_option( WooPay_Order_Tracking_Sync::WEBHOOK_ID_OPTION, 0 ), 'Stale cache must be cleared after remove.' );
 	}
 
 	public function test_add_topics_registers_tracking_updated() {

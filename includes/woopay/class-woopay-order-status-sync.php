@@ -159,6 +159,14 @@ class WooPay_Order_Status_Sync {
 			return $payload;
 		}
 
+		// Topic guard: WooPay_Order_Tracking_Sync registers the same payload
+		// filter against the same delivery URL, so without this check
+		// whichever filter runs last would clobber the other webhook's
+		// payload. Tracking-sync has a mirroring guard.
+		if ( 'order.status_changed' !== $webhook->get_topic() ) {
+			return $payload;
+		}
+
 		return [
 			'blog_id'      => \Jetpack_Options::get_option( 'id' ),
 			'order_id'     => $resource_id,

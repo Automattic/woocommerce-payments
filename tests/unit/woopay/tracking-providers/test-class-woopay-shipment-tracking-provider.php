@@ -271,6 +271,38 @@ class WooPay_Shipment_Tracking_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 256, mb_strlen( $shipments[0]['carrier_name'] ) );
 	}
 
+	public function test_get_shipments_skips_entries_whose_tracking_number_sanitizes_to_empty() {
+		$order = WC_Helper_Order::create_order();
+
+		$tracking_items = [
+			// Tags-only — strips to '' and must be skipped.
+			[
+				'tracking_provider' => 'UPS',
+				'tracking_number'   => '<script></script>',
+				'date_shipped'      => '1710288000',
+			],
+			// Whitespace-only — trims to '' and must be skipped.
+			[
+				'tracking_provider' => 'UPS',
+				'tracking_number'   => "   \t  ",
+				'date_shipped'      => '1710288000',
+			],
+			// Valid entry — should still be emitted.
+			[
+				'tracking_provider' => 'FedEx',
+				'tracking_number'   => '398242362749',
+				'date_shipped'      => '1710288000',
+			],
+		];
+		$order->update_meta_data( '_wc_shipment_tracking_items', $tracking_items );
+		$order->save();
+
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertEquals( '398242362749', $shipments[0]['tracking_number'] );
+	}
+
 	public function test_get_hooks_returns_expected_hooks() {
 		$hooks = $this->provider->get_hooks();
 

@@ -138,6 +138,29 @@ class WooPay_Fulfillments_API_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'UPS', $shipments[0]['carrier_name'] );
 	}
 
+	public function test_get_shipments_skips_fulfillments_whose_tracking_number_sanitizes_to_empty() {
+		$order = WC_Helper_Order::create_order();
+
+		Fake_Fulfillments_Data_Store::$next_result = [
+			// Tags-only — strips to '' and must be skipped.
+			new Fake_Fulfillment( [ '_tracking_number' => '<script></script>' ] ),
+			// Whitespace-only — trims to '' and must be skipped.
+			new Fake_Fulfillment( [ '_tracking_number' => "   \t  " ] ),
+			// Valid entry.
+			new Fake_Fulfillment(
+				[
+					'_tracking_number'   => 'X2',
+					'_shipment_provider' => 'FedEx',
+				]
+			),
+		];
+
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertEquals( 'X2', $shipments[0]['tracking_number'] );
+	}
+
 	public function test_get_hooks_returns_fulfillment_lifecycle_hooks() {
 		$hooks = $this->provider->get_hooks();
 

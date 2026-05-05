@@ -198,6 +198,14 @@ class WooPay_Order_Tracking_Sync {
 			return $payload;
 		}
 
+		// Topic guard: WooPay_Order_Status_Sync registers the same payload
+		// filter against the same delivery URL, so without this check
+		// whichever filter runs last would clobber the other webhook's
+		// payload. Status-sync has a mirroring guard.
+		if ( self::WEBHOOK_TOPIC !== $webhook->get_topic() ) {
+			return $payload;
+		}
+
 		$order = wc_get_order( $resource_id );
 		if ( ! $order || ! $order->get_meta( 'is_woopay' ) ) {
 			return $payload;
@@ -304,13 +312,24 @@ class WooPay_Order_Tracking_Sync {
 
 	/**
 	 * Removes the webhook if woopay is disabled.
+	 *
+	 * Prefer the cached webhook ID for deletion since `is_webhook_created()`
+	 * may have validated against the cache without re-running the
+	 * (translation-name-dependent) `get_webhook()` search. Fall back to the
+	 * search and guard the array access.
 	 */
 	public static function remove_webhook(): void {
-		if ( ! self::is_webhook_created() ) {
-			return;
+		$webhook_id = (int) get_option( self::WEBHOOK_ID_OPTION, 0 );
+
+		if ( $webhook_id <= 0 ) {
+			$webhooks = self::get_webhook();
+			if ( empty( $webhooks ) ) {
+				return;
+			}
+			$webhook_id = (int) $webhooks[0];
 		}
-		$webhook_id = self::get_webhook()[0];
-		$webhook    = new \WC_Webhook( $webhook_id );
+
+		$webhook = new \WC_Webhook( $webhook_id );
 		$webhook->delete();
 		delete_option( self::WEBHOOK_ID_OPTION );
 	}
