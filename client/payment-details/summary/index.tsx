@@ -63,6 +63,7 @@ import { PaymentIntent } from '../../types/payment-intents';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
+import DisputeOutcomeView from '../dispute-outcome';
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import {
@@ -90,6 +91,39 @@ const placeholderValues = {
 
 const isTapToPay = ( model: string ) => {
 	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
+};
+
+const isOutcomeViewStatus = ( status: string ): boolean =>
+	status === 'won' || status === 'lost' || status === 'warning_closed';
+
+const renderDisputeDetails = (
+	dispute: NonNullable< Charge[ 'dispute' ] >,
+	charge: Charge,
+	bankName: string | null
+) => {
+	if ( isAwaitingResponse( dispute.status ) ) {
+		return (
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ charge.billing_details }
+				chargeCreated={ charge.created }
+				orderUrl={ charge.order?.url }
+				paymentMethod={ charge.payment_method_details?.type }
+				bankName={ bankName }
+			/>
+		);
+	}
+
+	if (
+		wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+		isOutcomeViewStatus( dispute.status )
+	) {
+		return <DisputeOutcomeView dispute={ dispute } />;
+	}
+
+	return (
+		<DisputeResolutionFooter dispute={ dispute } bankName={ bankName } />
+	);
 };
 
 const getTapToPayChannel = ( platform: string ) => {
@@ -239,13 +273,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 		: placeholderValues;
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
+	const displayStatus = getChargeStatus( charge, paymentIntent );
 
-	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
-	// We also need to exclude failed payments and payments that have been refunded, because capture === false in those cases, even
-	// if the capture is automatic.
+	// Authorization details are only relevant when the payment reached a capturable state.
 	const shouldFetchAuthorization =
 		! charge.captured &&
-		charge.status !== 'failed' &&
+		[ 'authorized', 'fraud_outcome_review' ].includes( displayStatus ) &&
 		charge.amount_refunded === 0;
 
 	const { authorization } = useAuthorization(
@@ -338,10 +371,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								) : (
 									<PaymentStatusChip
 										className="payment-details-summary__status"
-										status={ getChargeStatus(
-											charge,
-											paymentIntent
-										) }
+										status={ displayStatus }
 									/>
 								) }
 							</div>
@@ -404,6 +434,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 												content={
 													<>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Transaction fee',
@@ -423,6 +454,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															</span>
 														</Flex>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Dispute fee',
@@ -439,6 +471,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 															</span>
 														</Flex>
 														<Flex>
+															{ /* eslint-disable-next-line jsx-a11y/label-has-associated-control */ }
 															<label>
 																{ __(
 																	'Total fees',
@@ -528,7 +561,10 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											);
 										} }
 									>
-										{ __( 'Block transaction' ) }
+										{ __(
+											'Block transaction',
+											'woocommerce-payments'
+										) }
 									</CancelAuthorizationButton>
 
 									<CaptureAuthorizationButton
@@ -689,23 +725,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 			{ charge.dispute && (
 				<ErrorBoundary>
-					{ isAwaitingResponse( charge.dispute.status ) ? (
-						<DisputeAwaitingResponseDetails
-							dispute={ charge.dispute }
-							customer={ charge.billing_details }
-							chargeCreated={ charge.created }
-							orderUrl={ charge.order?.url }
-							paymentMethod={
-								charge.payment_method_details?.type
-							}
-							bankName={ bankName }
-						/>
-					) : (
-						<DisputeResolutionFooter
-							dispute={ charge.dispute }
-							bankName={ bankName }
-						/>
-					) }
+					{ renderDisputeDetails( charge.dispute, charge, bankName ) }
 				</ErrorBoundary>
 			) }
 			{ isRefundModalOpen && (

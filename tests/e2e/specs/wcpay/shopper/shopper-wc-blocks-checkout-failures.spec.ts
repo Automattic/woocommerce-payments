@@ -39,8 +39,7 @@ const failures = [
 	},
 	{
 		card: config.cards[ 'declined-processing' ],
-		error:
-			'An error occurred while processing your card. Try again in a little bit.',
+		error: 'An error occurred while processing your card. Try again in a little bit.',
 	},
 	{
 		card: config.cards[ 'declined-incorrect' ],
@@ -120,5 +119,25 @@ describeif( shouldRunWCBlocksTests )(
 				}
 			} );
 		}
+
+		test( 'should successfully complete order after retrying with a valid card without refreshing the page', async () => {
+			// First attempt: declined card.
+			await shopper.fillCardDetailsWCB(
+				shopperPage,
+				config.cards.declined
+			);
+			await shopper.placeOrderWCB( shopperPage, false );
+
+			await expect(
+				shopperPage
+					.locator( '.wc-block-checkout__form' )
+					.getByText( 'Your card was declined.' )
+			).toBeVisible();
+
+			// Second attempt: valid card, same page, no refresh.
+			// Regression scenario from issue #160 / PR #133.
+			await shopper.fillCardDetailsWCB( shopperPage, config.cards.basic );
+			await shopper.placeOrderWCB( shopperPage, true );
+		} );
 	}
 );

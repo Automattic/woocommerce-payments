@@ -146,9 +146,10 @@ export function updateErrorForAuthorizations(
 	};
 }
 
-export function updateAuthorization(
-	data: Authorization
-): { type: string; data: Authorization } {
+export function updateAuthorization( data: Authorization ): {
+	type: string;
+	data: Authorization;
+} {
 	return {
 		type: TYPES.SET_AUTHORIZATION,
 		data,
@@ -170,9 +171,10 @@ export function updateAuthorizationsSummary(
 	};
 }
 
-export function setIsRequestingAuthorization(
-	data: boolean
-): { type: string; data: boolean } {
+export function setIsRequestingAuthorization( data: boolean ): {
+	type: string;
+	data: boolean;
+} {
 	return { type: TYPES.SET_IS_REQUESTING_AUTHORIZATION, data };
 }
 

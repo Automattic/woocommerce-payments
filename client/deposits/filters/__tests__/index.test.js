@@ -13,8 +13,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { DepositsFilters } from '../';
 
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
-jest.mock( '@woocommerce/settings', () => ( {
-	...jest.requireActual( '@woocommerce/settings' ),
+jest.mock( 'wcpay/utils/wc-settings', () => ( {
 	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 
@@ -48,7 +47,7 @@ describe( 'Deposits filters', () => {
 	// Waiting for the microtask queue to be flushed to prevent "TypeError: Cannot read properties of null (reading 'documentElement')"
 	// See https://github.com/floating-ui/floating-ui/issues/1908 and https://floating-ui.com/docs/react#testing
 	afterEach( async () => {
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
+		// eslint-disable-next-line @typescript-eslint/no-empty-function, testing-library/no-unnecessary-act
 		await act( async () => {} );
 	} );
 

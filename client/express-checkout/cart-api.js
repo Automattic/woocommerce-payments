@@ -4,6 +4,7 @@
 import apiFetch from '@wordpress/api-fetch';
 import { applyFilters } from '@wordpress/hooks';
 import { addQueryArgs } from '@wordpress/url';
+import { isNil, omitBy } from 'lodash';
 
 /**
  * Internal dependencies
@@ -28,42 +29,59 @@ export default class ExpressCheckoutCartApi {
 	 * @return {Promise} Result from `apiFetch`.
 	 */
 	async _request( options ) {
+		// Drop nullish values so we never serialize `undefined` / `null` to
+		// the literal strings "undefined" / "null" on the wire (which breaks
+		// server-side nonce verification).
 		const response = await apiFetch( {
 			...options,
 			parse: false,
 			path: addQueryArgs( options.path, {
 				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
-				currency: getExpressCheckoutData(
-					'checkout'
-				).currency_code.toUpperCase(),
+				currency:
+					getExpressCheckoutData(
+						'checkout'
+					).currency_code.toUpperCase(),
 			} ),
-			headers: {
-				// the Store API nonce, which could later be overwritten in subsequent requests.
-				Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
-				// needed for validation of address data, etc.
-				'X-WooPayments-Tokenized-Cart-Nonce':
-					getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce ||
-					undefined,
-				// necessary to validate any request made to the backend from the PDP.
-				'X-WooPayments-Tokenized-Cart-Session-Nonce':
-					getExpressCheckoutData( 'button_context' ) === 'product'
-						? getExpressCheckoutData( 'nonce' )
-								.tokenized_cart_session_nonce
-						: undefined,
-				...this.cartRequestHeaders,
-				...options.headers,
-			},
+			headers: omitBy(
+				{
+					// the Store API nonce, which could later be overwritten in subsequent requests.
+					Nonce: getExpressCheckoutData( 'nonce' ).store_api_nonce,
+					// needed for validation of address data, etc.
+					'X-WooPayments-Tokenized-Cart-Nonce':
+						getExpressCheckoutData( 'nonce' ).tokenized_cart_nonce,
+					// The session nonce is only meaningful on PDP, where the
+					// custom session handler is intended to engage and create
+					// an isolated tokenized cart. Sending it on shortcode
+					// cart/checkout would replace the customer's existing cart
+					// with an empty one.
+					'X-WooPayments-Tokenized-Cart-Session-Nonce':
+						getExpressCheckoutData( 'button_context' ) === 'product'
+							? getExpressCheckoutData( 'nonce' )
+									.tokenized_cart_session_nonce
+							: undefined,
+					...this.cartRequestHeaders,
+					...options.headers,
+				},
+				isNil
+			),
 		} );
 
-		this.cartRequestHeaders = {
-			// used as a reference on shortcode cart/checkout pages, where the Nonce might not be automatically added to the request.
-			Nonce: response.headers.get( 'Nonce' ),
-			// saving the received value as a cart reference for future usage. This value could be updated multiple times.
-			'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
-				'X-WooPayments-Tokenized-Cart-Session'
-			),
-		};
+		// Only carry forward response headers we actually received. Reading
+		// an absent header returns `null`, and assigning that null over the
+		// `Nonce` default on the next request would serialize as "null" and
+		// trigger `woocommerce_rest_missing_nonce`.
+		this.cartRequestHeaders = omitBy(
+			{
+				// used as a reference on shortcode cart/checkout pages, where the Nonce might not be automatically added to the request.
+				Nonce: response.headers.get( 'Nonce' ),
+				// saving the received value as a cart reference for future usage. This value could be updated multiple times.
+				'X-WooPayments-Tokenized-Cart-Session': response.headers.get(
+					'X-WooPayments-Tokenized-Cart-Session'
+				),
+			},
+			isNil
+		);
 
 		return response.json();
 	}
@@ -76,7 +94,7 @@ export default class ExpressCheckoutCartApi {
 	 * @param {{
 	 *          billing_address: Object,
 	 *          shipping_address: Object,
-	 *          customer_note: string?,
+	 *          customer_note: string|null,
 	 *          payment_method: string,
 	 *          payment_data: Array,
 	 *        }} paymentData Additional payment data to place the order.
@@ -131,8 +149,8 @@ export default class ExpressCheckoutCartApi {
 	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/cart.md#update-customer
 	 *
 	 * @param {{
-	 *          billing_address: Object?,
-	 *          shipping_address: Object?,
+	 *          billing_address: Object|null,
+	 *          shipping_address: Object|null,
 	 *        }} customerData Customer data to update.
 	 * @return {Promise} Cart Response on success, or an Error Response on failure.
 	 */

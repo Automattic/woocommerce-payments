@@ -15,9 +15,9 @@ interface FraudProtectionRuleCardProps {
 	id: string;
 }
 
-const FraudProtectionRuleCard: React.FC< React.PropsWithChildren<
-	FraudProtectionRuleCardProps
-> > = ( { title, children, id } ) => {
+const FraudProtectionRuleCard: React.FC<
+	React.PropsWithChildren< FraudProtectionRuleCardProps >
+> = ( { title, children, id } ) => {
 	return (
 		<Card id={ id } className="fraud-protection-rule-card">
 			<CardBody className="wcpay-card-body">

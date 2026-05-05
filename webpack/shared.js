@@ -65,6 +65,15 @@ module.exports = {
 	},
 	module: {
 		rules: [
+			// `@woocommerce/onboarding` does not declare `sideEffects: false`
+			// in its package.json, which prevents webpack from tree-shaking
+			// its (large) per-icon SVG modules even when only a single named
+			// export (e.g. `Loader`) is imported. Marking it as side-effect
+			// free here lets webpack drop the unused branches.
+			{
+				test: /node_modules\/@woocommerce\/onboarding\//,
+				sideEffects: false,
+			},
 			{
 				test: /\.tsx?$/,
 				use: [ 'babel-loader' ],

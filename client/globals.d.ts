@@ -32,6 +32,7 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isDisputeAdditionalEvidenceTypesEnabled: boolean;
+			isDisputeOutcomeViewEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
@@ -90,11 +91,6 @@ declare global {
 			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
 			 */
 			campaigns: {
-				/**
-				 * The flag for the WordPress.org merchant review campaign in 2025.
-				 * Eligibility is determined per-account on transact-platform-server.
-				 */
-				wporgReview2025: boolean;
 				/**
 				 * The flag for the payments settings review prompt (Phase 0).
 				 * Eligibility is determined per-account on transact-platform-server.

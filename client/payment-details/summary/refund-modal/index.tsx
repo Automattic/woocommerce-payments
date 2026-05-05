@@ -31,9 +31,8 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 } ) => {
 	const [ reason, setReason ] = useState< string | null >( null );
 
-	const [ isRefundInProgress, setIsRefundInProgress ] = useState< boolean >(
-		false
-	);
+	const [ isRefundInProgress, setIsRefundInProgress ] =
+		useState< boolean >( false );
 
 	const { doRefund } = usePaymentIntentWithChargeFallback(
 		charge.payment_intent as string

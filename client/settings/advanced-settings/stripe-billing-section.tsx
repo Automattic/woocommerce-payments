@@ -26,10 +26,8 @@ import StripeBillingToggle from './stripe-billing-toggle';
  * @return {JSX.Element} Rendered subscriptions advanced settings section.
  */
 const StripeBillingSection: React.FC = () => {
-	const [
-		isStripeBillingEnabled,
-		updateIsStripeBillingEnabled,
-	] = useStripeBilling();
+	const [ isStripeBillingEnabled, updateIsStripeBillingEnabled ] =
+		useStripeBilling();
 	const [ isManualCaptureEnabled ] = useManualCapture();
 	const [
 		isMigrationInProgress,
@@ -46,10 +44,8 @@ const StripeBillingSection: React.FC = () => {
 	 */
 	const { isLoading, isSaving } = useSettings();
 	const [ hasSavedSettings, setHasSavedSettings ] = useState( false );
-	const [
-		savedIsStripeBillingEnabled,
-		setSavedIsStripeBillingEnabled,
-	] = useState( isStripeBillingEnabled );
+	const [ savedIsStripeBillingEnabled, setSavedIsStripeBillingEnabled ] =
+		useState( isStripeBillingEnabled );
 
 	// The settings have finished saving when the settings are not actively being saved and we've flagged they were being saved.
 	const hasFinishedSavingSettings = ! isSaving && hasSavedSettings;

@@ -68,9 +68,8 @@ addFilter(
 		}
 
 		const attributes = [];
-		const variationSelectElements = variationsForm.querySelectorAll(
-			'.variations select'
-		);
+		const variationSelectElements =
+			variationsForm.querySelectorAll( '.variations select' );
 		Array.from( variationSelectElements ).forEach( function ( select ) {
 			const attributeName =
 				select.dataset.attribute_name || select.dataset.name;

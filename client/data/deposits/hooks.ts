@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable react-hooks/exhaustive-deps -- useSelect dep arrays intentionally use JSON.stringify for object comparison */
 
 /**
  * External dependencies
@@ -24,9 +25,8 @@ export const useDeposit = (
 ): { deposit: CachedDeposit; isLoading: boolean } =>
 	useSelect(
 		( select ) => {
-			const { getDeposit, isResolving, hasFinishedResolution } = select(
-				STORE_NAME
-			);
+			const { getDeposit, isResolving, hasFinishedResolution } =
+				select( STORE_NAME );
 
 			return {
 				deposit: getDeposit( id ),

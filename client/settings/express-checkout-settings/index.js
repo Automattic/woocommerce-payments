@@ -45,7 +45,12 @@ const methods = {
 				description: () => (
 					<>
 						<div>
-							<h2>{ __( 'Checkout appearance' ) }</h2>
+							<h2>
+								{ __(
+									'Checkout appearance',
+									'woocommerce-payments'
+								) }
+							</h2>
 						</div>
 					</>
 				),
@@ -73,12 +78,10 @@ const methods = {
 			{
 				section: 'enable',
 				description: () => {
-					const {
-						icon: ApplePayIcon,
-					} = methodsConfiguration.apple_pay;
-					const {
-						icon: GooglePayIcon,
-					} = methodsConfiguration.google_pay;
+					const { icon: ApplePayIcon } =
+						methodsConfiguration.apple_pay;
+					const { icon: GooglePayIcon } =
+						methodsConfiguration.google_pay;
 
 					return (
 						<>
@@ -123,9 +126,8 @@ const methods = {
 			{
 				section: 'enable',
 				description: () => {
-					const {
-						icon: AmazonPayIcon,
-					} = methodsConfiguration.amazon_pay;
+					const { icon: AmazonPayIcon } =
+						methodsConfiguration.amazon_pay;
 
 					return (
 						<>

@@ -24,11 +24,8 @@ export const useAuthorizations = ( {
 }: Query ): Authorizations =>
 	useSelect(
 		( select ) => {
-			const {
-				getAuthorizations,
-				getAuthorizationsError,
-				isResolving,
-			} = select( STORE_NAME );
+			const { getAuthorizations, getAuthorizationsError, isResolving } =
+				select( STORE_NAME );
 
 			const pagedQuery = Number.isNaN( parseInt( paged ?? '', 10 ) );
 			const perPageQuery = Number.isNaN( parseInt( per_page ?? '', 10 ) );
@@ -82,9 +79,8 @@ export const useAuthorization = (
 } => {
 	const { authorization, isRequesting, isLoading } = useSelect(
 		( select ) => {
-			const { getAuthorization, getIsRequesting, isResolving } = select(
-				STORE_NAME
-			);
+			const { getAuthorization, getIsRequesting, isResolving } =
+				select( STORE_NAME );
 			return {
 				authorization: requiresCapture
 					? getAuthorization( paymentIntentId )
@@ -97,10 +93,8 @@ export const useAuthorization = (
 		}
 	);
 
-	const {
-		submitCaptureAuthorization,
-		submitCancelAuthorization,
-	} = useDispatch( STORE_NAME );
+	const { submitCaptureAuthorization, submitCancelAuthorization } =
+		useDispatch( STORE_NAME );
 
 	const doCaptureAuthorization = () =>
 		submitCaptureAuthorization( paymentIntentId, orderId );

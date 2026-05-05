@@ -59,7 +59,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		elements.update( {
+		await elements.update( {
 			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 			amount: applyFilters(
 				'wcpay.express-checkout.total-amount',
@@ -109,7 +109,7 @@ export const shippingRateChangeHandler = async (
 
 		lastCartData = cartData;
 
-		elements.update( {
+		await elements.update( {
 			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
 			amount: applyFilters(
 				'wcpay.express-checkout.total-amount',
@@ -188,9 +188,10 @@ export const onConfirmHandler = async (
 		// Extract redirect URL from payment_details if redirect_url is empty
 		let redirectUrl = orderResponse.payment_result.redirect_url;
 		if ( ! redirectUrl ) {
-			const redirectDetail = orderResponse.payment_result.payment_details?.find(
-				( detail ) => detail.key === 'redirect'
-			);
+			const redirectDetail =
+				orderResponse.payment_result.payment_details?.find(
+					( detail ) => detail.key === 'redirect'
+				);
 			redirectUrl = redirectDetail?.value || '';
 		}
 
