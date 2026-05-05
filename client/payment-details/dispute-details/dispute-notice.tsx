@@ -14,12 +14,12 @@ import { ExternalLink } from '@wordpress/components';
 import './style.scss';
 import InlineNotice from 'components/inline-notice';
 import { reasons } from 'wcpay/disputes/strings';
-import { Dispute } from 'wcpay/types/disputes';
+import type { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface DisputeNoticeProps {
-	dispute: Dispute;
+	dispute: Pick< Dispute, 'reason' | 'status' | 'evidence_details' >;
 	isUrgent: boolean;
 	paymentMethod: string | null;
 	bankName: string | null;
@@ -125,7 +125,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			  );
 	}
 	// Handle specific dispute reasons
-	else if ( 'noncompliant' === dispute.reason ) {
+	else if ( dispute.reason === 'noncompliant' ) {
 		/* translators: %1$s is the bank name, eg "Chase Bank". %2$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
 		noticeText = bankName
 			? sprintf(

@@ -69,7 +69,7 @@ jest.mock( 'wcpay/checkout/utils/fingerprint', () => ( {
 
 jest.mock( 'wcpay/checkout/utils/show-error-checkout', () => jest.fn() );
 
-const mockUpdateFunction = jest.fn();
+const mockUpdateFunction = jest.fn( () => Promise.resolve() );
 
 const mockMountFunction = jest.fn();
 
@@ -228,7 +228,7 @@ describe( 'Stripe Payment Element mounting', () => {
 		expect( mockMountFunction ).toHaveBeenCalled();
 	} );
 
-	test( 'Terms are rendered for an already mounted element which should be saved', () => {
+	test( 'Terms are rendered for an already mounted element which should be saved', async () => {
 		const event = {
 			target: {
 				checked: true,
@@ -241,18 +241,18 @@ describe( 'Stripe Payment Element mounting', () => {
 		} );
 
 		getSelectedUPEGatewayPaymentMethod.mockReturnValue( 'card' );
-		renderTerms( event );
+		await renderTerms( event );
 		expect( mockUpdateFunction ).toHaveBeenCalled();
 	} );
 
-	test( 'Terms are not rendered when no selected payment method is found', () => {
+	test( 'Terms are not rendered when no selected payment method is found', async () => {
 		const event = {
 			target: {
 				checked: true,
 			},
 		};
 		getSelectedUPEGatewayPaymentMethod.mockReturnValue( null );
-		renderTerms( event );
+		await renderTerms( event );
 		expect( mockUpdateFunction ).not.toHaveBeenCalled();
 	} );
 

@@ -91,9 +91,9 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 	);
 };
 
-export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > = ( {
-	balance,
-} ) => {
+export const AvailableBalanceTooltip: React.FC<
+	AvailableBalanceTooltipProps
+> = ( { balance } ) => {
 	const isBalanceNegative = balance < 0;
 	return (
 		<ClickTooltip

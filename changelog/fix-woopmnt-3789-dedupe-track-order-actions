@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent duplicate `wcpay_track_new_order` and `wcpay_track_update_order` actions being scheduled when `woocommerce_update_order` fires multiple times before ActionScheduler initializes.

@@ -1,4 +1,5 @@
 /** @format */
+/* eslint-disable react-hooks/exhaustive-deps -- useSelect dep arrays intentionally use JSON.stringify for object comparison */
 
 /**
  * External dependencies
@@ -15,6 +16,7 @@ import type {
 	CachedDisputes,
 	DisputesSummary,
 } from 'wcpay/types/disputes';
+import type { ChargeDispute } from 'wcpay/types/charges';
 import type { ApiError } from 'wcpay/types/errors';
 import { STORE_NAME } from '../constants';
 
@@ -31,9 +33,8 @@ export const useDispute = (
 } => {
 	const { dispute, error, isLoading } = useSelect(
 		( select ) => {
-			const { getDispute, getDisputeError, isResolving } = select(
-				STORE_NAME
-			);
+			const { getDispute, getDisputeError, isResolving } =
+				select( STORE_NAME );
 
 			return {
 				dispute: <Dispute | undefined>getDispute( id ),
@@ -52,7 +53,7 @@ export const useDispute = (
  * Does not return or fetch the dispute object.
  */
 export const useDisputeAccept = (
-	dispute: Dispute
+	dispute: Pick< ChargeDispute, 'id' | 'payment_intent' >
 ): {
 	doAccept: () => void;
 	isLoading: boolean;

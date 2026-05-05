@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Convert screen-reader text to target currency in cache-optimized multi-currency mode

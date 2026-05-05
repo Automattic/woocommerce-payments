@@ -30,9 +30,8 @@ import './style.scss';
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const errorId = 'invalid-woopay-phone-number';
 
-	const { setValidationErrors, clearValidationError } = useDispatch(
-		VALIDATION_STORE_KEY
-	);
+	const { setValidationErrors, clearValidationError } =
+		useDispatch( VALIDATION_STORE_KEY );
 
 	const [ isSaveDetailsChecked, setIsSaveDetailsChecked ] = useState(
 		window.woopayCheckout?.PRE_CHECK_SAVE_MY_INFO || false
@@ -51,9 +50,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	);
 
 	const isRegisteredUser = useWooPayUser();
-	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
-		isBlocksCheckout
-	);
+	const { isWCPayChosen, isNewPaymentTokenChosen } =
+		useSelectedPaymentMethod( isBlocksCheckout );
 
 	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
 	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
@@ -380,8 +378,7 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 									( isPhoneNumberTouched.current = true )
 								}
 								inputProps={ {
-									name:
-										'woopay_user_phone_field[no-country-code]',
+									name: 'woopay_user_phone_field[no-country-code]',
 								} }
 								isBlocksCheckout={ isBlocksCheckout }
 							/>

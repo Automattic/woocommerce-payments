@@ -10,6 +10,7 @@ import React from 'react';
  */
 import DisputeNotice from '../dispute-notice';
 import type { Dispute } from 'wcpay/types/disputes';
+import type { Charge } from 'wcpay/types/charges';
 
 // Mock date formatting utility
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -21,7 +22,7 @@ jest.mock( 'wcpay/utils/date-time', () => ( {
 const getBaseDispute = (): Dispute => ( {
 	id: 'dp_1',
 	amount: 5000,
-	charge: 'ch_mock',
+	charge: { id: 'ch_mock' } as Charge,
 	order: null,
 	balance_transactions: [
 		{

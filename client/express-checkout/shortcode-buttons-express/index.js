@@ -9,7 +9,7 @@ import { addAction, removeAction, applyFilters } from '@wordpress/hooks';
  * Internal dependencies
  */
 import WCPayAPI from '../../checkout/api';
-import '../../checkout/express-checkout-buttons.scss';
+import './express-checkout-buttons.scss';
 import './compatibility/wc-deposits';
 import '../compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
@@ -373,9 +373,9 @@ jQuery( ( $ ) => {
 					shippingRates: options.shippingAddressRequired
 						? shippingOptionsWithFallback
 						: undefined,
-					allowedShippingCountries: getExpressCheckoutData(
-						'checkout'
-					).allowed_shipping_countries,
+					allowedShippingCountries:
+						getExpressCheckoutData( 'checkout' )
+							.allowed_shipping_countries,
 				} );
 			} );
 
@@ -549,7 +549,7 @@ jQuery( ( $ ) => {
 						if ( ! elements ) {
 							wcpayECE.init();
 						} else if ( newTotal !== prevTotal && newTotal > 0 ) {
-							elements.update( { amount: newTotal } );
+							await elements.update( { amount: newTotal } );
 						}
 
 						// Check if cart is eligible (filter allows extensions to override)
