@@ -650,8 +650,11 @@ class WC_Payments {
 		add_action(
 			'setup_theme',
 			function () {
-				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Status_Sync::class, 'remove_webhook' ] );
-				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Tracking_Sync::class, 'remove_webhook' ] );
+				// `woocommerce_payments_account_refreshed` fires with `$account`, but
+				// neither callback uses it; declare `accepted_args=0` so PHP doesn't
+				// pass an unused argument (avoids strict-mode warnings on PHP 8+).
+				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Status_Sync::class, 'remove_webhook' ], 10, 0 );
+				add_action( 'woocommerce_payments_account_refreshed', [ WooPay_Order_Tracking_Sync::class, 'remove_webhook' ], 10, 0 );
 
 				self::maybe_register_woopay_hooks();
 				self::maybe_init_woopay_direct_checkout();

@@ -23,8 +23,9 @@ class WooPay_Fulfillments_API_Provider_Test extends WCPAY_UnitTestCase {
 
 	public function set_up() {
 		parent::set_up();
-		$this->provider                            = new WooPay_Fulfillments_API_Provider();
-		Fake_Fulfillments_Data_Store::$next_result = [];
+		$this->provider                                = new WooPay_Fulfillments_API_Provider();
+		Fake_Fulfillments_Data_Store::$next_result     = [];
+		Fake_Fulfillments_Data_Store::$read_call_count = 0;
 
 		// WC_Data_Store::load() reads the woocommerce_data_stores filter on each
 		// invocation (instances are not class-level memoized), so a filter is
@@ -34,7 +35,8 @@ class WooPay_Fulfillments_API_Provider_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		remove_filter( 'woocommerce_data_stores', [ $this, 'register_fake_data_store' ] );
-		Fake_Fulfillments_Data_Store::$next_result = [];
+		Fake_Fulfillments_Data_Store::$next_result     = [];
+		Fake_Fulfillments_Data_Store::$read_call_count = 0;
 		parent::tear_down();
 	}
 
@@ -159,6 +161,48 @@ class WooPay_Fulfillments_API_Provider_Test extends WCPAY_UnitTestCase {
 
 		$this->assertCount( 1, $shipments );
 		$this->assertEquals( 'X2', $shipments[0]['tracking_number'] );
+	}
+
+	public function test_provider_chain_invocation_reads_fulfillments_only_once_per_order() {
+		$order = WC_Helper_Order::create_order();
+
+		Fake_Fulfillments_Data_Store::$next_result = [
+			new Fake_Fulfillment(
+				[
+					'_tracking_number'   => 'X1',
+					'_shipment_provider' => 'UPS',
+				]
+			),
+		];
+
+		// Simulate the provider chain: is_available() then get_shipments() for the same order.
+		$this->assertTrue( $this->provider->is_available( $order ) );
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertSame(
+			1,
+			Fake_Fulfillments_Data_Store::$read_call_count,
+			'is_available() and get_shipments() must share one DataStore read for the same order.'
+		);
+	}
+
+	public function test_cache_is_per_order_not_global() {
+		$order_a = WC_Helper_Order::create_order();
+		$order_b = WC_Helper_Order::create_order();
+
+		Fake_Fulfillments_Data_Store::$next_result = [
+			new Fake_Fulfillment( [ '_tracking_number' => 'X1' ] ),
+		];
+
+		$this->provider->is_available( $order_a );
+		$this->provider->is_available( $order_b );
+
+		$this->assertSame(
+			2,
+			Fake_Fulfillments_Data_Store::$read_call_count,
+			'Different orders must each trigger a fresh DataStore read.'
+		);
 	}
 
 	public function test_get_hooks_returns_fulfillment_lifecycle_hooks() {

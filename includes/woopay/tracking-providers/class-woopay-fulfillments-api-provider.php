@@ -24,6 +24,18 @@ class WooPay_Fulfillments_API_Provider implements WooPay_Tracking_Provider {
 	const STRING_FIELD_MAX_LEN = 256;
 
 	/**
+	 * Per-instance cache of the fulfillments-data-store read result, keyed
+	 * by order ID. The provider chain calls `is_available()` and then
+	 * `get_shipments()` for the same order in immediate succession; without
+	 * this cache, the data store would be queried twice per qualifying
+	 * order. Instances are constructed once per request so this naturally
+	 * resets between requests.
+	 *
+	 * @var array<int, array>
+	 */
+	private $fulfillments_cache = [];
+
+	/**
 	 * Whether the Fulfillments API is available and the order has fulfillments.
 	 *
 	 * @param \WC_Order $order The WooCommerce order.
@@ -117,18 +129,30 @@ class WooPay_Fulfillments_API_Provider implements WooPay_Tracking_Provider {
 	/**
 	 * Load fulfillments for an order via the WC data store.
 	 *
+	 * Caches the result per order ID so the provider chain's back-to-back
+	 * `is_available()` + `get_shipments()` calls only hit the data store once.
+	 *
 	 * @param \WC_Order $order The order.
 	 * @return array Array of Fulfillment objects (typed as WC_Data subclass).
 	 */
 	private function read_fulfillments( \WC_Order $order ): array {
+		$order_id = (int) $order->get_id();
+
+		if ( array_key_exists( $order_id, $this->fulfillments_cache ) ) {
+			return $this->fulfillments_cache[ $order_id ];
+		}
+
 		try {
 			$data_store   = \WC_Data_Store::load( 'order-fulfillment' );
-			$fulfillments = $data_store->read_fulfillments( \WC_Order::class, (string) $order->get_id() );
+			$fulfillments = $data_store->read_fulfillments( \WC_Order::class, (string) $order_id );
 		} catch ( \Exception $e ) {
+			$this->fulfillments_cache[ $order_id ] = [];
 			return [];
 		}
 
-		return is_array( $fulfillments ) ? $fulfillments : [];
+		$result                                = is_array( $fulfillments ) ? $fulfillments : [];
+		$this->fulfillments_cache[ $order_id ] = $result;
+		return $result;
 	}
 
 	/**

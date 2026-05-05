@@ -19,6 +19,14 @@ class Fake_Fulfillments_Data_Store {
 	public static $next_result = [];
 
 	/**
+	 * Counter of how many times read_fulfillments() has been called.
+	 * Used by tests verifying request-level caching.
+	 *
+	 * @var int
+	 */
+	public static $read_call_count = 0;
+
+	/**
 	 * Stub of FulfillmentsDataStore::read_fulfillments().
 	 *
 	 * @param string $entity_type Class name of the parent entity (unused).
@@ -26,6 +34,7 @@ class Fake_Fulfillments_Data_Store {
 	 * @return array
 	 */
 	public function read_fulfillments( $entity_type, $entity_id ) {
+		++self::$read_call_count;
 		return self::$next_result;
 	}
 }
