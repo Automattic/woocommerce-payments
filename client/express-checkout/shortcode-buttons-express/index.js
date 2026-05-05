@@ -15,12 +15,16 @@ import '../compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
 import './compatibility/wc-product-bundles';
 import '../compatibility/wc-subscriptions';
+import '../compatibility/wcpbc-currency';
+import '../compatibility/mccy-async-currency';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	displayLoginConfirmation,
 } from '../utils';
+import { resolveExpressCheckoutCurrency } from '../utils/resolve-currency';
+import { getResolvedCurrency } from '../utils/resolved-currency-cache';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -225,8 +229,12 @@ jQuery( ( $ ) => {
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
+			// `creationOptions.enabledMethods` overrides the localized server value when the
+			// init flow re-evaluated availability against the post-render-resolved currency.
 			const enabledMethods =
-				getExpressCheckoutData( 'enabled_methods' ) ?? [];
+				creationOptions.enabledMethods ??
+				getExpressCheckoutData( 'enabled_methods' ) ??
+				[];
 			const paymentMethodTypes = [
 				enabledMethods.includes( 'payment_request' ) && 'card',
 				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
@@ -454,17 +462,48 @@ jQuery( ( $ ) => {
 				'automattic/wcpay/express-checkout'
 			);
 
-			// on product pages, we should be able to have `getExpressCheckoutData( 'product' )` from the backend,
-			// which saves us some AJAX calls.
+			const isProductContext =
+				getExpressCheckoutData( 'button_context' ) === 'product';
+			const initialCurrency = (
+				getExpressCheckoutData( 'product' )?.currency ||
+				getExpressCheckoutData( 'checkout' )?.currency_code ||
+				''
+			).toLowerCase();
+
+			// On product pages the localized currency is unreliable when a
+			// country-pricing plugin (e.g. WCPBC AJAX mode) or our own
+			// cache-optimized multi-currency mode resolves the customer's
+			// currency client-side after page render. Resolve before any
+			// Store API call so requests carry the post-resolution currency.
+			if ( isProductContext ) {
+				await resolveExpressCheckoutCurrency( initialCurrency, {
+					buttonContext: 'product',
+				} );
+			}
+
+			// Server-side data for bundled products is not reliable, so we
+			// fall through to the Store API path that always fires for them.
 			if (
-				getExpressCheckoutData( 'button_context' ) === 'product' &&
+				isProductContext &&
 				getExpressCheckoutData( 'product' )?.product_type === 'bundle'
 			) {
-				// server-side data for bundled products is not reliable.
 				wcpayExpressCheckoutParams.product = undefined;
 			}
 
-			if ( ! getExpressCheckoutData( 'product' ) && ! cachedCartData ) {
+			// When the resolver moved currency away from the value the page was
+			// rendered with, the server-localized `enabled_methods` may be wrong
+			// (e.g. amazon_pay listed for USD-only accounts when the visitor's
+			// currency is EUR). Re-fetching the cart with the resolved currency
+			// returns the correctly-filtered list via the Store API extension.
+			const needsMethodsReevaluation =
+				isProductContext &&
+				getResolvedCurrency( initialCurrency ) !== initialCurrency;
+
+			if (
+				! cachedCartData &&
+				( ! getExpressCheckoutData( 'product' ) ||
+					needsMethodsReevaluation )
+			) {
 				try {
 					cachedCartData = await fetchNewCartData();
 				} catch ( e ) {}
@@ -483,23 +522,37 @@ jQuery( ( $ ) => {
 				cachedCartData
 			);
 
+			const enabledMethodsFromCart =
+				cachedCartData?.extensions?.wcpay?.express_checkout_methods;
+			const enabledMethodsOverride = Array.isArray(
+				enabledMethodsFromCart
+			)
+				? enabledMethodsFromCart
+				: undefined;
+
 			if ( ! isCartEligible ) {
 				expressCheckoutButtonUi.hideContainer();
 				expressCheckoutButtonUi.getButtonSeparator().hide();
 			} else if ( cachedCartData ) {
 				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
 				// but if the data is not available, we can't render the button.
+				const cartCurrency =
+					cachedCartData.totals.currency_code.toLowerCase();
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
-					currency: cachedCartData.totals.currency_code.toLowerCase(),
+					currency: isProductContext
+						? getResolvedCurrency( cartCurrency )
+						: cartCurrency,
+					enabledMethods: enabledMethodsOverride,
 				} );
 			} else if (
-				getExpressCheckoutData( 'button_context' ) === 'product' &&
+				isProductContext &&
 				getExpressCheckoutData( 'product' )
 			) {
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
-					currency: getExpressCheckoutData( 'product' )?.currency,
+					currency: getResolvedCurrency( initialCurrency ),
+					enabledMethods: enabledMethodsOverride,
 				} );
 			} else {
 				expressCheckoutButtonUi.hideContainer();

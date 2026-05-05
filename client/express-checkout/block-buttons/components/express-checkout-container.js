@@ -32,7 +32,16 @@ const ExpressCheckoutContainer = ( props ) => {
 	const hasSubscription =
 		getExpressCheckoutData( 'has_subscription' ) ?? false;
 
-	const enabledMethods = getExpressCheckoutData( 'enabled_methods' );
+	const cartData = select( WC_STORE_CART )?.getCartData();
+	// The Store API extension carries methods filtered against the cart's
+	// resolved currency. Prefer it over the page-render-time localized list
+	// when present — that's how we keep amazon_pay out of the array on a
+	// non-USD cart for accounts whose amazon_pay only supports USD.
+	const enabledMethodsFromCart =
+		cartData?.extensions?.wcpay?.express_checkout_methods;
+	const enabledMethods = Array.isArray( enabledMethodsFromCart )
+		? enabledMethodsFromCart
+		: getExpressCheckoutData( 'enabled_methods' );
 	// Building the payment method types array to send to the server,
 	// to ensure PaymentIntent uses matching types.
 	const paymentMethodTypes = useMemo( () => {

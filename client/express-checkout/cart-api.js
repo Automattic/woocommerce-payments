@@ -10,6 +10,7 @@ import { isNil, omitBy } from 'lodash';
  * Internal dependencies
  */
 import { getExpressCheckoutData } from './utils';
+import { getResolvedCurrency } from './utils/resolved-currency-cache';
 import {
 	getProductId,
 	getQuantity,
@@ -36,12 +37,14 @@ export default class ExpressCheckoutCartApi {
 			...options,
 			parse: false,
 			path: addQueryArgs( options.path, {
+				// Prefer the post-render-resolved currency (set by the ECE
+				// resolver before the first Store API call). Falls back to
+				// the localized server value when no resolver has run yet.
 				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
-				currency:
-					getExpressCheckoutData(
-						'checkout'
-					).currency_code.toUpperCase(),
+				currency: getResolvedCurrency(
+					getExpressCheckoutData( 'checkout' ).currency_code
+				).toUpperCase(),
 			} ),
 			headers: omitBy(
 				{

@@ -185,5 +185,61 @@ describe( 'Express checkout blocks registration', () => {
 				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
 			} );
 		} );
+
+		describe( 'when the cart Store API extension carries a method list', () => {
+			beforeEach( () => {
+				// The localized list claims amazon_pay is available, but the
+				// cart's currency-filtered list excludes it (e.g. visitor's
+				// EUR cart on a US account where amazon_pay only supports USD).
+				global.wcpayExpressCheckoutParams = {
+					enabled_methods: [ 'payment_request', 'amazon_pay' ],
+				};
+				checkPaymentMethodIsAvailable.mockResolvedValue( true );
+			} );
+
+			const cartWithMethods = ( methods ) => ( {
+				...mockCart,
+				extensions: {
+					wcpay: {
+						express_checkout_methods: methods,
+					},
+				},
+			} );
+
+			it( 'rejects amazon_pay when the cart extension excludes it', () => {
+				const result = expressCheckoutElementAmazonPay(
+					mockApi
+				).canMakePayment( {
+					cart: cartWithMethods( [ 'payment_request' ] ),
+				} );
+				expect( result ).toBe( false );
+				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
+			} );
+
+			it( 'still allows apple/google pay when the cart extension keeps payment_request', () => {
+				expressCheckoutElementApplePay( mockApi ).canMakePayment( {
+					cart: cartWithMethods( [ 'payment_request' ] ),
+				} );
+				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
+					'applePay',
+					expect.any( Object ),
+					mockApi
+				);
+			} );
+
+			it( 'allows amazon_pay when the cart extension keeps it', () => {
+				expressCheckoutElementAmazonPay( mockApi ).canMakePayment( {
+					cart: cartWithMethods( [
+						'payment_request',
+						'amazon_pay',
+					] ),
+				} );
+				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
+					'amazonPay',
+					expect.any( Object ),
+					mockApi
+				);
+			} );
+		} );
 	} );
 } );

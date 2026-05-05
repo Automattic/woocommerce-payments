@@ -33,6 +33,19 @@ const LazyAmazonPayPreview = lazy( () =>
 
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
 
+// Returns the cart-currency-filtered ECE method list when the Store API
+// extension is present, falling back to the page-render-time localized list
+// otherwise. Block Checkout's `canMakePayment` receives the cart object from
+// WC Blocks; we use it to keep amazon_pay out of the registry on currencies
+// the merchant's account doesn't support.
+const getEnabledMethodsForCart = ( cart ) => {
+	const fromCart = cart?.extensions?.wcpay?.express_checkout_methods;
+	if ( Array.isArray( fromCart ) ) {
+		return fromCart;
+	}
+	return getExpressCheckoutData( 'enabled_methods' ) ?? [];
+};
+
 const ApplePayPreview = ( props ) => (
 	<Suspense fallback={ <PreviewFallback /> }>
 		<LazyApplePayPreview { ...props } />
@@ -73,8 +86,7 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 			return false;
 		}
 
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		const enabledMethods = getEnabledMethodsForCart( cart );
 		if ( ! enabledMethods.includes( 'payment_request' ) ) {
 			return false;
 		}
@@ -108,8 +120,7 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			return false;
 		}
 
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		const enabledMethods = getEnabledMethodsForCart( cart );
 		if ( ! enabledMethods.includes( 'payment_request' ) ) {
 			return false;
 		}
@@ -140,8 +151,7 @@ export const expressCheckoutElementAmazonPay = ( api ) => ( {
 			return false;
 		}
 
-		const enabledMethods =
-			getExpressCheckoutData( 'enabled_methods' ) ?? [];
+		const enabledMethods = getEnabledMethodsForCart( cart );
 		if ( ! enabledMethods.includes( 'amazon_pay' ) ) {
 			return false;
 		}

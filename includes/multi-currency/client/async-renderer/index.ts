@@ -672,9 +672,27 @@ export { WCPayAsyncPriceRenderer };
 if ( typeof wcpayAsyncPriceConfig !== 'undefined' ) {
 	const renderer = new WCPayAsyncPriceRenderer();
 
+	let initPromise: Promise< void >;
 	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', () => renderer.init() );
+		initPromise = new Promise( ( resolve ) => {
+			document.addEventListener( 'DOMContentLoaded', () =>
+				resolve( renderer.init() )
+			);
+		} );
 	} else {
-		renderer.init();
+		initPromise = renderer.init();
 	}
+
+	// Surface the resolved selected currency as a promise so the Express
+	// Checkout flow (which races against this renderer's REST fetch) can
+	// await it before instantiating Stripe.elements.
+	(
+		window as unknown as {
+			wcpayAsyncCurrency?: { ready: Promise< string > };
+		}
+	 ).wcpayAsyncCurrency = {
+		ready: initPromise.then( () =>
+			( renderer.config?.selected_currency ?? '' ).toLowerCase()
+		),
+	};
 }

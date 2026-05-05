@@ -452,6 +452,7 @@ class WC_Payments {
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-ajax-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-display-handler.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-handler.php';
+		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-store-api-extension.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-button-handler.php';
 		include_once __DIR__ . '/class-wc-payments-woopay-direct-checkout.php';
 		include_once __DIR__ . '/class-wc-payments-apple-pay-registration.php';
@@ -657,6 +658,14 @@ class WC_Payments {
 		// customer's selected currency at priorities 11-12). This ensures can_use_amazon_pay() checks
 		// availability against the correct presentment currency, not the store's default currency.
 		add_action( 'init', [ __CLASS__, 'maybe_display_express_checkout_buttons' ], 15 );
+
+		// Surface the cart-currency-filtered ECE method list on Store API cart responses
+		// so the JS can re-evaluate paymentMethodTypes when the resolver picks a currency
+		// other than the one the page was rendered with.
+		add_action(
+			'woocommerce_blocks_loaded',
+			[ __CLASS__, 'register_express_checkout_store_api_extension' ]
+		);
 
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
@@ -1829,6 +1838,19 @@ class WC_Payments {
 			$express_checkout_button_display_handler = new WC_Payments_Express_Checkout_Button_Display_Handler( self::get_gateway(), $woopay_button_handler, $express_checkout_element_button_handler, $express_checkout_ajax_handler, self::get_express_checkout_helper() );
 			$express_checkout_button_display_handler->init();
 		}
+	}
+
+	/**
+	 * Registers the Store API cart extension that surfaces the cart-currency-filtered
+	 * Express Checkout method list. Hooked on `woocommerce_blocks_loaded`.
+	 *
+	 * @return void
+	 */
+	public static function register_express_checkout_store_api_extension() {
+		$extension = new WC_Payments_Express_Checkout_Store_API_Extension(
+			self::get_express_checkout_helper()
+		);
+		$extension->init();
 	}
 
 	/**
