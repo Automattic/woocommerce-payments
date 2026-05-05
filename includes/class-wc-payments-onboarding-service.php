@@ -1109,8 +1109,6 @@ class WC_Payments_Onboarding_Service {
 			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
 		}
 
-		// Inlined to avoid loading the admin-only banner class outside admin context.
-		// Also defined as TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE on WC_Payments_Admin_Banner.
 		delete_transient( 'wcpay_test_to_live_eligible' );
 	}
 

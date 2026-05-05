@@ -42,8 +42,6 @@ const tryMount = () => {
 	// If the container is not found, create it.
 	// The bundle is only enqueued on WC screens on the backend, so falling back to inserting
 	// into the main content area is safe as we are always inside WooCommerce when this script runs.
-	// This script is only enqueued on WC screens on the backend, so falling back to inserting
-	// into the main content area is safe as we are always inside WooCommerce when this script runs.
 	if ( ! container ) {
 		container = document.createElement( 'div' );
 		container.id = containerId;
