@@ -537,13 +537,11 @@ jQuery( ( $ ) => {
 			} else if ( cachedCartData ) {
 				// If this is the cart page, or checkout page, or pay-for-order page, we need to request the cart details.
 				// but if the data is not available, we can't render the button.
-				const cartCurrency =
-					cachedCartData.totals.currency_code.toLowerCase();
+				// The cart was fetched with `?currency=<resolved>`, so its
+				// reported currency is the source of truth here.
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
-					currency: isProductContext
-						? getResolvedCurrency( cartCurrency )
-						: cartCurrency,
+					currency: cachedCartData.totals.currency_code.toLowerCase(),
 					enabledMethods: enabledMethodsOverride,
 				} );
 			} else if (

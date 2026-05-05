@@ -26,15 +26,15 @@ addFilter(
 			return upstream;
 		}
 
-		const fallback = new Promise( ( resolve ) => {
-			setTimeout( async () => resolve( await upstream ), BAIL_AFTER_MS );
+		return new Promise( ( resolve ) => {
+			const bailTimer = setTimeout(
+				async () => resolve( await upstream ),
+				BAIL_AFTER_MS
+			);
+			ready.then( ( code ) => {
+				clearTimeout( bailTimer );
+				resolve( code ? String( code ).toLowerCase() : upstream );
+			} );
 		} );
-
-		return Promise.race( [
-			ready.then( ( code ) =>
-				code ? String( code ).toLowerCase() : upstream
-			),
-			fallback,
-		] );
 	}
 );
