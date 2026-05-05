@@ -79,6 +79,9 @@ class Abilities_Registrar {
 				'output_schema'       => self::get_transactions_output_schema(),
 				'meta'                => [
 					'show_in_rest' => true,
+					'mcp'          => [
+						'public' => true,
+					],
 					'annotations'  => [
 						'readonly'    => true,
 						'destructive' => false,
