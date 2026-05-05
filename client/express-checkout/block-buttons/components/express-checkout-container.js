@@ -3,7 +3,7 @@
  */
 import { useMemo } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
-import { select } from '@wordpress/data';
+import { select, useSelect } from '@wordpress/data';
 import { applyFilters } from '@wordpress/hooks';
 
 /**
@@ -32,11 +32,14 @@ const ExpressCheckoutContainer = ( props ) => {
 	const hasSubscription =
 		getExpressCheckoutData( 'has_subscription' ) ?? false;
 
-	const cartData = select( WC_STORE_CART )?.getCartData();
 	// Prefer the cart's filtered list. Server-localized methods don't
 	// reflect the resolved currency.
-	const enabledMethodsFromCart =
-		cartData?.extensions?.wcpay?.express_checkout_methods;
+	const enabledMethodsFromCart = useSelect(
+		( s ) =>
+			s( WC_STORE_CART )?.getCartData()?.extensions?.wcpay
+				?.express_checkout_methods,
+		[]
+	);
 	const enabledMethods = Array.isArray( enabledMethodsFromCart )
 		? enabledMethodsFromCart
 		: getExpressCheckoutData( 'enabled_methods' );
