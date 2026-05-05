@@ -36,5 +36,6 @@ export async function resolveExpressCheckoutCurrency( fallback, ctx ) {
 	}
 
 	setResolvedCurrency( resolved );
+
 	return resolved;
 }

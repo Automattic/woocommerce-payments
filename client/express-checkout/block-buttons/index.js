@@ -40,6 +40,7 @@ const getEnabledMethodsForCart = ( cart ) => {
 	if ( Array.isArray( fromCart ) ) {
 		return fromCart;
 	}
+
 	return getExpressCheckoutData( 'enabled_methods' ) ?? [];
 };
 

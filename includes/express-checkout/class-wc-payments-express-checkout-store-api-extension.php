@@ -52,6 +52,7 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 		if ( ! function_exists( 'woocommerce_store_api_register_endpoint_data' ) ) {
 			return;
 		}
+
 		if ( ! class_exists( CartSchema::class ) ) {
 			return;
 		}
