@@ -9,17 +9,15 @@ import { applyFilters } from '@wordpress/hooks';
 import { setResolvedCurrency } from './resolved-currency-cache';
 
 /**
- * Asynchronous filter pipeline that lets resolvers swap in a post-render
- * currency before Stripe.elements is instantiated.
+ * Threads a `Promise<string>` through `applyFilters` so resolvers can defer
+ * (e.g. wait for an async currency lookup) before ECE instantiates Stripe's
+ * elements.
+ * Each callback receives the previous return as a promise, can chain its
+ * own resolution, and the consumer awaits the final result.
  *
- * The filter is synchronous (standard `wp.hooks` `applyFilters`), but the
- * threaded value is a `Promise<string>`, so each callback can await upstream
- * resolution and return its own promise. Awaiting the final result yields
- * the lowercase ISO currency the ECE flow should use.
- *
- * @param {string} fallback Lowercase ISO currency to use if no resolver overrides.
- * @param {Object} ctx      Caller context passed through to filter callbacks.
- * @return {Promise<string>}  Resolved lowercase ISO currency.
+ * @param {string} fallback Used if no resolver overrides.
+ * @param {Object} ctx      Passed through to filter callbacks.
+ * @return {Promise<string>} Lowercase ISO currency.
  */
 export async function resolveExpressCheckoutCurrency( fallback, ctx ) {
 	const fallbackLower = ( fallback || '' ).toLowerCase();
@@ -36,7 +34,7 @@ export async function resolveExpressCheckoutCurrency( fallback, ctx ) {
 			resolved = value.toLowerCase();
 		}
 	} catch ( e ) {
-		// A misbehaving resolver shouldn't break ECE init — keep the fallback.
+		// A misbehaving resolver shouldn't break ECE init.
 	}
 
 	setResolvedCurrency( resolved );

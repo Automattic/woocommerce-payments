@@ -229,8 +229,8 @@ jQuery( ( $ ) => {
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
-			// `creationOptions.enabledMethods` overrides the localized server value when the
-			// init flow re-evaluated availability against the post-render-resolved currency.
+			// `creationOptions.enabledMethods` is set when the init flow
+			// re-evaluated availability against the resolved currency.
 			const enabledMethods =
 				creationOptions.enabledMethods ??
 				getExpressCheckoutData( 'enabled_methods' ) ??
@@ -470,19 +470,18 @@ jQuery( ( $ ) => {
 				''
 			).toLowerCase();
 
-			// On product pages the localized currency is unreliable when a
-			// country-pricing plugin (e.g. WCPBC AJAX mode) or our own
-			// cache-optimized multi-currency mode resolves the customer's
-			// currency client-side after page render. Resolve before any
-			// Store API call so requests carry the post-resolution currency.
+			// The localized currency on product pages can be wrong when a
+			// country-pricing plugin or our own cache-optimized multi-currency
+			// mode resolves currency after page render.
+			// Resolve before any Store API call so requests carry the right
+			// value.
 			if ( isProductContext ) {
 				await resolveExpressCheckoutCurrency( initialCurrency, {
 					buttonContext: 'product',
 				} );
 			}
 
-			// Server-side data for bundled products is not reliable, so we
-			// fall through to the Store API path that always fires for them.
+			// server-side data for bundled products is not reliable.
 			if (
 				isProductContext &&
 				getExpressCheckoutData( 'product' )?.product_type === 'bundle'
@@ -490,11 +489,10 @@ jQuery( ( $ ) => {
 				wcpayExpressCheckoutParams.product = undefined;
 			}
 
-			// When the resolver moved currency away from the value the page was
-			// rendered with, the server-localized `enabled_methods` may be wrong
-			// (e.g. amazon_pay listed for USD-only accounts when the visitor's
-			// currency is EUR). Re-fetching the cart with the resolved currency
-			// returns the correctly-filtered list via the Store API extension.
+			// If the resolver moved currency, the server-localized
+			// `enabled_methods` was filtered against the wrong one.
+			// Re-fetching the cart picks up the right list via the
+			// Store API extension.
 			const needsMethodsReevaluation =
 				isProductContext &&
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;

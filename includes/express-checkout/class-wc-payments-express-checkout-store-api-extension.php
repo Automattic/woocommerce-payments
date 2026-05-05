@@ -1,12 +1,9 @@
 <?php
 /**
- * Class WC_Payments_Express_Checkout_Store_API_Extension
- *
- * Adds an `extensions.wcpay.express_checkout_methods` field to the Store API
- * cart response. The field carries the Express Checkout method list filtered
- * for the cart's currency at request time, so the client can re-evaluate
- * `payment_method_types` when its locally-resolved currency differs from
- * the one the page was rendered with.
+ * Adds `extensions.wcpay.express_checkout_methods` to the Store API cart
+ * response, currency-filtered at request time so the client can re-evaluate
+ * `payment_method_types` when the resolved currency differs from the one
+ * localized at page render.
  *
  * @package WooCommerce\Payments
  */
@@ -62,9 +59,6 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 
 	/**
 	 * Returns the ECE method list filtered for the current request's currency.
-	 *
-	 * Delegates to the canonical helper so the Store API answer matches what
-	 * the page-render-time localization would produce given the same currency.
 	 *
 	 * @return array{express_checkout_methods: string[]}
 	 */

@@ -212,6 +212,7 @@ describe( 'Express checkout blocks registration', () => {
 				).canMakePayment( {
 					cart: cartWithMethods( [ 'payment_request' ] ),
 				} );
+
 				expect( result ).toBe( false );
 				expect( checkPaymentMethodIsAvailable ).not.toHaveBeenCalled();
 			} );
@@ -220,6 +221,7 @@ describe( 'Express checkout blocks registration', () => {
 				expressCheckoutElementApplePay( mockApi ).canMakePayment( {
 					cart: cartWithMethods( [ 'payment_request' ] ),
 				} );
+
 				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
 					'applePay',
 					expect.any( Object ),
@@ -234,6 +236,7 @@ describe( 'Express checkout blocks registration', () => {
 						'amazon_pay',
 					] ),
 				} );
+
 				expect( checkPaymentMethodIsAvailable ).toHaveBeenCalledWith(
 					'amazonPay',
 					expect.any( Object ),

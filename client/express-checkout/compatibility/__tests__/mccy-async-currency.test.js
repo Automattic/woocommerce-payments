@@ -32,6 +32,7 @@ describe( 'MCCY async-renderer currency resolver', () => {
 			Promise.resolve( 'usd' ),
 			{}
 		);
+
 		expect( result ).toBe( 'usd' );
 	} );
 
@@ -43,6 +44,7 @@ describe( 'MCCY async-renderer currency resolver', () => {
 			Promise.resolve( 'usd' ),
 			{}
 		);
+
 		expect( result ).toBe( 'usd' );
 	} );
 
@@ -51,6 +53,7 @@ describe( 'MCCY async-renderer currency resolver', () => {
 		window.wcpayAsyncCurrency = { ready: Promise.resolve( 'EUR' ) };
 
 		const piped = applyFilters( FILTER, Promise.resolve( 'usd' ), {} );
+
 		await expect( piped ).resolves.toBe( 'eur' );
 	} );
 
@@ -59,6 +62,7 @@ describe( 'MCCY async-renderer currency resolver', () => {
 		window.wcpayAsyncCurrency = { ready: Promise.resolve( '' ) };
 
 		const piped = applyFilters( FILTER, Promise.resolve( 'usd' ), {} );
+
 		await expect( piped ).resolves.toBe( 'usd' );
 	} );
 

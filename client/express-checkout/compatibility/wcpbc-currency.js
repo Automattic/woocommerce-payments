@@ -1,21 +1,12 @@
 /* global jQuery, wc_price_based_country_ajax_geo_params */
 
 /**
- * Resolves the customer's currency for ECE when "Price Based on Country for
- * WooCommerce" runs in AJAX-geolocation mode.
- *
- * The plugin defers country resolution to a client-side AJAX call that fires
- * after page render. Until that AJAX response lands, `get_woocommerce_currency()`
- * server-side returns the store base currency, which is what the ECE button
- * handler localizes into `wcpayExpressCheckoutParams.checkout.currency_code`.
- * If we hand that value to `stripe.elements({ currency })`, Stripe encodes it
- * into the confirmation_token and rejects the resulting PaymentIntent because
- * the cart's resolved currency disagrees.
- *
- * WCPBC fires `wc_price_based_country_set_currency_params` on the document
- * body once its AJAX has resolved (also fired by manual country switching).
- * We listen, watchdog-retrigger if a window passes silently, and surrender
- * to the upstream fallback if WCPBC never reports.
+ * "Price Based on Country for WooCommerce" in AJAX-geolocation mode resolves
+ * the visitor's currency client-side after page render, so the value
+ * localized into `wcpayExpressCheckoutParams.checkout.currency_code` is the
+ * store base.
+ * We listen for the event WCPBC fires once it has resolved, with a watchdog
+ * in case it doesn't.
  */
 
 import { addFilter } from '@wordpress/hooks';
@@ -57,17 +48,16 @@ addFilter(
 
 			$body.on( 'wc_price_based_country_set_currency_params', handler );
 
-			// AJAX may have raced ahead of our listener (their script enqueues
-			// at priority 1 and runs synchronously). Re-trigger to force a
-			// second event we can catch.
+			// WCPBC enqueues at priority 1 and fires its AJAX synchronously,
+			// so we may attach after they've already started.
+			// Re-trigger to force a second event we can catch.
 			const softTimer = setTimeout( () => {
 				$body.triggerHandler(
 					'wc_price_based_country_ajax_geolocation'
 				);
 			}, SOFT_TIMEOUT_MS );
 
-			// Surrender to the upstream value rather than block ECE
-			// indefinitely if WCPBC never reports.
+			// Surrender rather than hang ECE forever.
 			const hardTimer = setTimeout( async () => {
 				cleanup();
 				resolve( await upstream );

@@ -1,12 +1,10 @@
-/**
- * Module-level cache for the currency the Express Checkout flow has resolved
- * for the current page render. Read by `cart-api.js` so Store API requests
- * carry the post-resolution currency rather than the localized server value
- * baked at `wp_enqueue_scripts` time, which is wrong on session-less pages
- * where currency is resolved client-side (e.g. WCPBC AJAX mode, our own
- * cache-optimized multi-currency mode).
- */
-
+// On product pages, the currency localized server-side at render time can
+// be wrong — for example, on cached pages where multi-currency runs in
+// cache-optimized mode, the server doesn't know the visitor's currency when
+// the cache entry is built, so it falls back to the store base.
+// The resolver figures out the actual currency a bit later, and we hold
+// onto it here so that when `cart-api.js` calls the Store API, the
+// `?currency=` query arg matches what the visitor is shopping in.
 let resolvedCurrency = null;
 
 export const setResolvedCurrency = ( currency ) => {

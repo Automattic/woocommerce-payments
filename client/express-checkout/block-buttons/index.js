@@ -33,11 +33,8 @@ const LazyAmazonPayPreview = lazy( () =>
 
 const PreviewFallback = () => <div style={ { minHeight: '40px' } } />;
 
-// Returns the cart-currency-filtered ECE method list when the Store API
-// extension is present, falling back to the page-render-time localized list
-// otherwise. Block Checkout's `canMakePayment` receives the cart object from
-// WC Blocks; we use it to keep amazon_pay out of the registry on currencies
-// the merchant's account doesn't support.
+// Prefer the cart-currency-filtered list so amazon_pay doesn't get
+// registered on currencies the merchant's account doesn't support.
 const getEnabledMethodsForCart = ( cart ) => {
 	const fromCart = cart?.extensions?.wcpay?.express_checkout_methods;
 	if ( Array.isArray( fromCart ) ) {

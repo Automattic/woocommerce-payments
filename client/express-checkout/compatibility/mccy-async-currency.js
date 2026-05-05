@@ -1,14 +1,10 @@
 /* global wcpayAsyncPriceConfig */
 
 /**
- * Resolves the customer's currency for ECE when WooPayments multi-currency
- * is running in cache-optimized mode without a session.
- *
- * In that mode the server intentionally avoids creating a session and ships
- * skeleton prices, so `get_woocommerce_currency()` at button-handler enqueue
- * time returns the store default. The async price renderer fetches the real
- * `selected_currency` from `/wc/v3/payments/multi-currency/public/config`
- * and publishes a `window.wcpayAsyncCurrency.ready` promise; we await it.
+ * Cache-optimized multi-currency mode resolves the visitor's currency
+ * client-side via the async price renderer.
+ * The renderer publishes the answer on `window.wcpayAsyncCurrency.ready`;
+ * we await it.
  */
 
 import { addFilter } from '@wordpress/hooks';

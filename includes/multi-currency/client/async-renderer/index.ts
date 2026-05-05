@@ -685,9 +685,8 @@ export { WCPayAsyncPriceRenderer };
 if ( typeof wcpayAsyncPriceConfig !== 'undefined' ) {
 	const renderer = new WCPayAsyncPriceRenderer();
 
-	// Surface the resolved selected currency as a promise so the Express
-	// Checkout flow (which races against this renderer's REST fetch) can
-	// await it before instantiating Stripe.elements.
+	// ECE awaits this before calling stripe.elements so it doesn't
+	// race the REST fetch.
 	window.wcpayAsyncCurrency = {
 		ready: whenDomReady()
 			.then( () => renderer.init() )

@@ -24,20 +24,17 @@ describe( 'resolveExpressCheckoutCurrency', () => {
 		const result = await resolveExpressCheckoutCurrency( 'USD', {
 			buttonContext: 'product',
 		} );
+
 		expect( result ).toBe( 'usd' );
 	} );
 
-	test( 'a resolver can override the currency', async () => {
-		addFilter( FILTER, 'test/override', () => Promise.resolve( 'eur' ) );
+	test( 'a resolver can override the currency and the result is normalized to lowercase', async () => {
+		addFilter( FILTER, 'test/uppercase', () => Promise.resolve( 'CAD' ) );
+
 		const result = await resolveExpressCheckoutCurrency( 'USD', {
 			buttonContext: 'product',
 		} );
-		expect( result ).toBe( 'eur' );
-	} );
 
-	test( 'normalizes resolver output to lowercase', async () => {
-		addFilter( FILTER, 'test/uppercase', () => Promise.resolve( 'CAD' ) );
-		const result = await resolveExpressCheckoutCurrency( 'USD', {} );
 		expect( result ).toBe( 'cad' );
 	} );
 
@@ -45,13 +42,17 @@ describe( 'resolveExpressCheckoutCurrency', () => {
 		addFilter( FILTER, 'test/throws', () =>
 			Promise.reject( new Error( 'boom' ) )
 		);
+
 		const result = await resolveExpressCheckoutCurrency( 'USD', {} );
+
 		expect( result ).toBe( 'usd' );
 	} );
 
 	test( 'writes the resolved value to the module cache', async () => {
 		addFilter( FILTER, 'test/cache', () => Promise.resolve( 'gbp' ) );
+
 		await resolveExpressCheckoutCurrency( 'USD', {} );
+
 		expect( getResolvedCurrency( 'fallback' ) ).toBe( 'gbp' );
 	} );
 
@@ -60,13 +61,17 @@ describe( 'resolveExpressCheckoutCurrency', () => {
 		addFilter( FILTER, 'test/second', ( upstream ) =>
 			upstream.then( ( c ) => c + '_x' )
 		);
+
 		const result = await resolveExpressCheckoutCurrency( 'USD', {} );
+
 		expect( result ).toBe( 'eur_x' );
 	} );
 
 	test( 'a resolver returning a non-promise non-string falls through', async () => {
 		addFilter( FILTER, 'test/nonsense', () => 42 );
+
 		const result = await resolveExpressCheckoutCurrency( 'USD', {} );
+
 		expect( result ).toBe( 'usd' );
 	} );
 } );

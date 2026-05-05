@@ -659,9 +659,8 @@ class WC_Payments {
 		// availability against the correct presentment currency, not the store's default currency.
 		add_action( 'init', [ __CLASS__, 'maybe_display_express_checkout_buttons' ], 15 );
 
-		// Surface the cart-currency-filtered ECE method list on Store API cart responses
-		// so the JS can re-evaluate paymentMethodTypes when the resolver picks a currency
-		// other than the one the page was rendered with.
+		// Surfaces the currency-filtered ECE method list on the cart response
+		// so the JS can re-evaluate paymentMethodTypes after currency resolves.
 		add_action(
 			'woocommerce_blocks_loaded',
 			[ __CLASS__, 'register_express_checkout_store_api_extension' ]
@@ -1841,8 +1840,7 @@ class WC_Payments {
 	}
 
 	/**
-	 * Registers the Store API cart extension that surfaces the cart-currency-filtered
-	 * Express Checkout method list. Hooked on `woocommerce_blocks_loaded`.
+	 * Bootstraps the Store API cart extension on `woocommerce_blocks_loaded`.
 	 *
 	 * @return void
 	 */

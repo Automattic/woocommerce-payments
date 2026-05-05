@@ -66,6 +66,7 @@ describe( 'WCPBC currency resolver', () => {
 			Promise.resolve( 'usd' ),
 			{}
 		);
+
 		expect( result ).toBe( 'usd' );
 	} );
 
@@ -93,6 +94,7 @@ describe( 'WCPBC currency resolver', () => {
 
 		// Event eventually arrives after the retrigger.
 		global.jQuery.__emit( SET_CURRENCY_EVENT, { code: 'CAD' } );
+
 		await expect( piped ).resolves.toBe( 'cad' );
 	} );
 
@@ -112,10 +114,11 @@ describe( 'WCPBC currency resolver', () => {
 
 		const piped = applyFilters( FILTER, Promise.resolve( 'usd' ), {} );
 
+		// Resolution stays pending; the hard watchdog will close it out.
 		global.jQuery.__emit( SET_CURRENCY_EVENT, {} );
-		// resolution should still be pending; hard watchdog will close it out.
 		jest.advanceTimersByTime( 6000 );
 		await Promise.resolve();
+
 		await expect( piped ).resolves.toBe( 'usd' );
 	} );
 } );
