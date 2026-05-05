@@ -49,6 +49,12 @@ define( 'FS_METHOD', 'direct' );
 define( 'FS_CHMOD_DIR', 0755 );
 define( 'FS_CHMOD_FILE', 0644 );
 
+// wpdb result-shape and SchemaController array-shape constants
+define( 'ARRAY_A', 'ARRAY_A' );
+define( 'ARRAY_N', 'ARRAY_N' );
+define( 'OBJECT', 'OBJECT' );
+define( 'OBJECT_K', 'OBJECT_K' );
+
 // Multisite constants
 define( 'WP_ALLOW_MULTISITE', false );
 define( 'MULTISITE', false );
