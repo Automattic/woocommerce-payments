@@ -437,4 +437,312 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		$this->tear_down_notice_global_state();
 	}
+
+	// -------------------------------------------------------------------------
+	// Post-KYC activation notice helpers
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Sets global state for post-KYC notice eligibility tests.
+	 *
+	 * @param int  $days_since_kyc Days to subtract from now when setting the KYC completion date.
+	 * @param bool $has_orders     Whether to create a WooPayments order.
+	 */
+	private function set_up_post_kyc_global_state( int $days_since_kyc = 8, bool $has_orders = false ): void {
+		delete_transient( WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - $days_since_kyc * DAY_IN_SECONDS );
+
+		WC_Payments::mode()->live();
+
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		if ( $has_orders ) {
+			$order = wc_create_order();
+			$order->set_payment_method( 'woocommerce_payments' );
+			$order->set_status( 'completed' );
+			$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::PRODUCTION );
+			$order->save();
+			$this->test_order_id = $order->get_id();
+		}
+	}
+
+	private function tear_down_post_kyc_global_state(): void {
+		WC_Payments::mode()->live();
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+		delete_transient( WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+
+		foreach ( [ 7, 14, 30 ] as $stage ) {
+			delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage );
+			delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage . '_shown' );
+		}
+
+		if ( null !== $this->test_order_id ) {
+			$order = wc_get_order( $this->test_order_id );
+			if ( $order ) {
+				$order->delete( true );
+			}
+			$this->test_order_id = null;
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// get_post_kyc_activation_stage tests
+	// -------------------------------------------------------------------------
+
+	public function test_get_post_kyc_activation_stage_returns_null_when_no_date(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertNull( $banner->get_post_kyc_activation_stage() );
+	}
+
+	public function test_get_post_kyc_activation_stage_returns_null_before_day_7(): void {
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 3 * DAY_IN_SECONDS );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertNull( $banner->get_post_kyc_activation_stage() );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+	}
+
+	public function test_get_post_kyc_activation_stage_returns_7_between_day_7_and_13(): void {
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 7 * DAY_IN_SECONDS );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertSame( 7, $banner->get_post_kyc_activation_stage() );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+	}
+
+	public function test_get_post_kyc_activation_stage_returns_14_between_day_14_and_29(): void {
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 14 * DAY_IN_SECONDS );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertSame( 14, $banner->get_post_kyc_activation_stage() );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+	}
+
+	public function test_get_post_kyc_activation_stage_returns_30_at_and_after_day_30(): void {
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 45 * DAY_IN_SECONDS );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertSame( 30, $banner->get_post_kyc_activation_stage() );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+	}
+
+	// -------------------------------------------------------------------------
+	// should_show_post_kyc_activation_notice tests
+	// -------------------------------------------------------------------------
+
+	public function test_should_show_post_kyc_activation_notice_returns_true_when_all_conditions_met(): void {
+		$this->set_up_post_kyc_global_state();
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertTrue( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_when_no_kyc_date(): void {
+		$this->set_up_post_kyc_global_state();
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_before_day_7(): void {
+		$this->set_up_post_kyc_global_state( 3 );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_when_stage_dismissed(): void {
+		$this->set_up_post_kyc_global_state();
+		update_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, time() );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_when_user_lacks_capability(): void {
+		$this->set_up_post_kyc_global_state();
+		$subscriber = self::factory()->user->create( [ 'role' => 'subscriber' ] );
+		wp_set_current_user( $subscriber );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_when_not_connected(): void {
+		$this->set_up_post_kyc_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( false );
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_for_test_drive(): void {
+		$this->set_up_post_kyc_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, true );
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_when_payments_not_enabled(): void {
+		$this->set_up_post_kyc_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, false );
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_in_test_mode(): void {
+		$this->set_up_post_kyc_global_state();
+		WC_Payments::mode()->test();
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_false_when_merchant_has_orders(): void {
+		$this->set_up_post_kyc_global_state( 8, true );
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_returns_true_when_merchant_only_has_test_orders(): void {
+		$this->set_up_post_kyc_global_state();
+
+		$order = wc_create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_status( 'completed' );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::TEST );
+		$order->save();
+		$this->test_order_id = $order->get_id();
+
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$this->assertTrue( $banner->should_show_post_kyc_activation_notice() );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	// -------------------------------------------------------------------------
+	// hide_post_kyc_activation_notice tests
+	// -------------------------------------------------------------------------
+
+	public function test_hide_post_kyc_activation_notice_sets_dismissed_meta_and_tracks_event(): void {
+		$this->set_up_post_kyc_global_state();
+
+		$_GET['wcpay-hide-post-kyc-activation-notice']   = '1';
+		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
+
+		$banner             = $this->make_admin_banner_for_notice_test();
+		$redirect_intercept = function () {
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $redirect_intercept );
+		try {
+			$banner->hide_post_kyc_activation_notice();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $redirect_intercept );
+
+		$dismissed = get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true );
+		$this->assertNotEmpty( $dismissed );
+
+		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'] );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_hide_post_kyc_activation_notice_ignores_missing_params(): void {
+		$banner = $this->make_admin_banner_for_notice_test();
+		unset( $_GET['wcpay-hide-post-kyc-activation-notice'] );
+
+		$banner->hide_post_kyc_activation_notice();
+
+		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true ) );
+	}
+
+	public function test_hide_post_kyc_activation_notice_ignores_invalid_nonce(): void {
+		$this->set_up_post_kyc_global_state();
+
+		$_GET['wcpay-hide-post-kyc-activation-notice']   = '1';
+		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = 'bad-nonce';
+
+		$banner = $this->make_admin_banner_for_notice_test();
+		$banner->hide_post_kyc_activation_notice();
+
+		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true ) );
+
+		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'] );
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	// -------------------------------------------------------------------------
+	// maybe_show_post_kyc_activation_notice tests
+	// -------------------------------------------------------------------------
+
+	public function test_maybe_show_post_kyc_activation_notice_outputs_container_div(): void {
+		$this->set_up_post_kyc_global_state();
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		ob_start();
+		$banner->maybe_show_post_kyc_activation_notice();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '<div id="wcpay-post-kyc-activation-notice">', $output );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_maybe_show_post_kyc_activation_notice_tracks_impression_once_per_stage(): void {
+		$this->set_up_post_kyc_global_state();
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		ob_start();
+		$banner->maybe_show_post_kyc_activation_notice();
+		$banner->maybe_show_post_kyc_activation_notice();
+		ob_end_clean();
+
+		$shown_meta = WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . '7_shown';
+		$this->assertNotEmpty( get_user_meta( get_current_user_id(), $shown_meta, true ) );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_invalidate_post_kyc_activation_notice_cache_deletes_transient(): void {
+		set_transient( WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+
+		$banner = $this->make_admin_banner_for_notice_test();
+		$banner->invalidate_post_kyc_activation_notice_cache();
+
+		$this->assertFalse( get_transient( WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+	}
 }
