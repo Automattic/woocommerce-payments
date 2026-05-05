@@ -62,6 +62,37 @@ class WC_Payments_Admin_Banner {
 	const TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE = 'wcpay_test_to_live_eligible';
 
 	/**
+	 * User meta key prefix for per-stage Post-KYC activation notice dismissals.
+	 * Append the stage day number (7, 14, or 30) to form the full key.
+	 *
+	 * @var string
+	 */
+	const USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX = 'wcpay_post_kyc_activation_stage_';
+
+	/**
+	 * Day thresholds for the three Post-KYC activation nudge stages.
+	 *
+	 * @var int[]
+	 */
+	const POST_KYC_ACTIVATION_STAGE_DAYS = [ 7, 14, 30 ];
+
+	/**
+	 * Number of days after KYC completion during which the Post-KYC activation nudge
+	 * may be shown. Past this window, the nudge is no longer eligible and the eligibility
+	 * machinery (including the live-sale order query) is short-circuited entirely.
+	 *
+	 * @var int
+	 */
+	const POST_KYC_ACTIVATION_NOTICE_WINDOW_DAYS = 60;
+
+	/**
+	 * Transient caching the result of the Post-KYC activation notice eligibility check.
+	 *
+	 * @var string
+	 */
+	const POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT = 'wcpay_post_kyc_activation_eligible';
+
+	/**
 	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -95,9 +126,14 @@ class WC_Payments_Admin_Banner {
 		add_action( 'admin_init', [ $this, 'hide_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'snooze_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'register_test_to_live_notice_script' ], 9 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_banner_scripts' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_test_to_live_notice_script' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_post_kyc_activation_notice_script' ] );
 		add_action( 'update_option_' . WC_Payments_Onboarding_Service::TEST_MODE_OPTION, [ $this, 'invalidate_test_to_live_notice_cache' ] );
+
+		add_action( 'admin_init', [ $this, 'hide_post_kyc_activation_notice' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_post_kyc_activation_notice_script' ] );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'invalidate_post_kyc_activation_notice_cache' ] );
 
 		// Hook into the active WooCommerce settings tab so the div is injected
 		// inside the page content — after the tab/section navigation but before
@@ -105,15 +141,18 @@ class WC_Payments_Admin_Banner {
 		if ( isset( $_GET['page'] ) && 'wc-settings' === sanitize_key( wp_unslash( $_GET['page'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			add_action( "woocommerce_sections_{$tab}", [ $this, 'maybe_show_test_to_live_notice' ] );
+			add_action( "woocommerce_sections_{$tab}", [ $this, 'maybe_show_post_kyc_activation_notice' ] );
 		}
 	}
 
 	/**
-	 * Register the test-to-live notice React script and style.
+	 * Registers React scripts and styles for every banner managed by this class.
+	 * Hooked at admin_enqueue_scripts priority 9 so the handles are available for
+	 * the per-banner conditional enqueue methods that run at the default priority.
 	 *
 	 * @return void
 	 */
-	public function register_test_to_live_notice_script(): void {
+	public function register_banner_scripts(): void {
 		WC_Payments::register_script_with_dependencies( 'WCPAY_TEST_TO_LIVE_NOTICE', 'dist/wc-payments-test-to-live-notice' );
 		wp_set_script_translations( 'WCPAY_TEST_TO_LIVE_NOTICE', 'woocommerce-payments' );
 
@@ -122,6 +161,17 @@ class WC_Payments_Admin_Banner {
 			plugins_url( 'dist/wc-payments-test-to-live-notice.css', WCPAY_PLUGIN_FILE ),
 			[],
 			WC_Payments::get_file_version( 'dist/wc-payments-test-to-live-notice.css' ),
+			'all'
+		);
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_POST_KYC_ACTIVATION_NOTICE', 'dist/wc-payments-post-kyc-activation-notice' );
+		wp_set_script_translations( 'WCPAY_POST_KYC_ACTIVATION_NOTICE', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_POST_KYC_ACTIVATION_NOTICE',
+			plugins_url( 'dist/wc-payments-post-kyc-activation-notice.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/wc-payments-post-kyc-activation-notice.css' ),
 			'all'
 		);
 	}
@@ -397,6 +447,255 @@ class WC_Payments_Admin_Banner {
 		);
 
 		return ! empty( $orders );
+	}
+
+	// -------------------------------------------------------------------------
+	// Post-KYC activation notice
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Enqueues the Post-KYC activation notice script and style when eligible.
+	 *
+	 * @return void
+	 */
+	public function enqueue_post_kyc_activation_notice_script(): void {
+		if ( ! $this->should_show_post_kyc_activation_notice() ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+			return;
+		}
+
+		$stage = $this->get_post_kyc_activation_stage();
+
+		wp_localize_script(
+			'WCPAY_POST_KYC_ACTIVATION_NOTICE',
+			'wcpayPostKycActivationNoticeSettings',
+			[
+				'stage'      => $stage,
+				'dismissUrl' => wp_nonce_url(
+					add_query_arg( 'wcpay-hide-post-kyc-activation-notice', '1' ),
+					'wcpay_hide_post_kyc_activation_notice_nonce',
+					'_wcpay_post_kyc_activation_notice_nonce'
+				),
+			]
+		);
+
+		wp_enqueue_script( 'WCPAY_POST_KYC_ACTIVATION_NOTICE' );
+		wp_enqueue_style( 'WCPAY_POST_KYC_ACTIVATION_NOTICE' );
+	}
+
+	/**
+	 * Renders the mount point div for the Post-KYC activation notice.
+	 * Hooked to woocommerce_sections_{$tab} so it appears inside the page content
+	 * area on WooCommerce settings pages.
+	 *
+	 * @return void
+	 */
+	public function maybe_show_post_kyc_activation_notice(): void {
+		if ( ! $this->should_show_post_kyc_activation_notice() ) {
+			return;
+		}
+
+		$stage      = $this->get_post_kyc_activation_stage();
+		$shown_meta = self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage . '_shown';
+
+		if ( ! get_user_meta( get_current_user_id(), $shown_meta, true ) ) {
+			$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_shown', [ 'stage' => $stage ] );
+			update_user_meta( get_current_user_id(), $shown_meta, true );
+		}
+
+		echo '<div id="wcpay-post-kyc-activation-notice"></div>';
+	}
+
+	/**
+	 * Persists the per-stage dismissal in user meta when the dismiss link is followed.
+	 *
+	 * @return void
+	 */
+	public function hide_post_kyc_activation_notice(): void {
+		if ( ! isset( $_GET['wcpay-hide-post-kyc-activation-notice'] ) || ! isset( $_GET['_wcpay_post_kyc_activation_notice_nonce'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_post_kyc_activation_notice_nonce'] ) ), 'wcpay_hide_post_kyc_activation_notice_nonce' ) ) {
+			return;
+		}
+
+		$stage = $this->get_post_kyc_activation_stage();
+		if ( null === $stage ) {
+			return;
+		}
+
+		$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_dismissed', [ 'stage' => $stage ] );
+
+		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, time() );
+
+		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-post-kyc-activation-notice', '_wcpay_post_kyc_activation_notice_nonce' ] ) );
+		exit;
+	}
+
+	/**
+	 * Whether the Post-KYC activation notice should be shown to the current user.
+	 *
+	 * @return bool
+	 */
+	public function should_show_post_kyc_activation_notice(): bool {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$stage = $this->get_post_kyc_activation_stage();
+		if ( null === $stage ) {
+			return false;
+		}
+
+		if ( get_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true ) ) {
+			return false;
+		}
+
+		return $this->is_post_kyc_activation_notice_eligible();
+	}
+
+	/**
+	 * Returns the current nudge stage (7, 14, or 30) based on days elapsed since KYC completion,
+	 * or null if the KYC date is not recorded yet, fewer than 7 days have passed, or the
+	 * notice window has expired.
+	 *
+	 * @return int|null
+	 */
+	public function get_post_kyc_activation_stage(): ?int {
+		$kyc_date = (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, 0 );
+		if ( ! $kyc_date ) {
+			return null;
+		}
+
+		$days_elapsed = (int) floor( ( time() - $kyc_date ) / DAY_IN_SECONDS );
+
+		if ( $days_elapsed >= self::POST_KYC_ACTIVATION_NOTICE_WINDOW_DAYS ) {
+			return null;
+		}
+
+		if ( $days_elapsed >= 30 ) {
+			return 30;
+		}
+
+		if ( $days_elapsed >= 14 ) {
+			return 14;
+		}
+
+		if ( $days_elapsed >= 7 ) {
+			return 7;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns whether the Post-KYC activation notice is eligible to be shown, with a one-hour transient cache.
+	 *
+	 * @return bool
+	 */
+	private function is_post_kyc_activation_notice_eligible(): bool {
+		$cached = get_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		if ( false !== $cached ) {
+			return '1' === $cached;
+		}
+
+		$eligible = $this->compute_post_kyc_activation_eligibility();
+		set_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $eligible ? '1' : '0', HOUR_IN_SECONDS );
+
+		return $eligible;
+	}
+
+	/**
+	 * Evaluates all eligibility conditions for the Post-KYC activation notice.
+	 *
+	 * Conditions:
+	 * - Account is connected and valid.
+	 * - Not a test-drive account.
+	 * - Payments are enabled.
+	 * - Plugin is in live mode (not test, not dev).
+	 * - KYC completion date has been recorded.
+	 * - Merchant has no live WooPayments orders yet.
+	 *
+	 * @return bool
+	 */
+	private function compute_post_kyc_activation_eligibility(): bool {
+		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
+			return false;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+
+		if ( ! empty( $account_status['testDrive'] ) ) {
+			return false;
+		}
+
+		if ( empty( $account_status['paymentsEnabled'] ) ) {
+			return false;
+		}
+
+		if ( WC_Payments::mode()->is_test() || WC_Payments::mode()->is_dev() ) {
+			return false;
+		}
+
+		if ( ! get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) ) {
+			return false;
+		}
+
+		return ! $this->store_has_live_sale();
+	}
+
+	/**
+	 * Clears the Post-KYC activation eligibility transient, forcing re-evaluation on the next request.
+	 *
+	 * @return void
+	 */
+	public function invalidate_post_kyc_activation_notice_cache(): void {
+		delete_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+	}
+
+	/**
+	 * Returns whether the store has had at least one live (production) WooPayments sale.
+	 *
+	 * Reads a one-way option set by `WC_Payments_Order_Service::maybe_record_first_live_sale()`;
+	 * falls back to a single `wc_get_orders` meta query if the option has not been
+	 * populated yet (e.g., for stores that took their first live sale before this
+	 * feature shipped).
+	 *
+	 * @return bool
+	 */
+	private function store_has_live_sale(): bool {
+		if ( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) ) {
+			return true;
+		}
+
+		$orders = wc_get_orders(
+			[
+				'payment_method' => 'woocommerce_payments',
+				'limit'          => 1,
+				'return'         => 'ids',
+				'status'         => [ 'wc-completed', 'wc-processing' ],
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value'     => Order_Mode::PRODUCTION,
+			]
+		);
+
+		if ( ! empty( $orders ) ) {
+			update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
