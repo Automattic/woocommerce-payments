@@ -214,6 +214,29 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Indirect callers (`wp_get_ability(...)->execute()` with no args) run
+	 * the ability through `WP_Ability::normalize_input()` then
+	 * `validate_input()` before the callback. Against an object-typed schema
+	 * with no top-level `default`, `null` input would be rejected with
+	 * `ability_invalid_input` and the callback would never run. Declaring
+	 * the top-level schema default makes zero-arg indirect invocation valid.
+	 */
+	public function test_input_schema_has_top_level_default_for_zero_arg_indirect_execute() {
+		$schema = $this->invoke_private_method( 'get_transactions_input_schema' );
+
+		$this->assertArrayHasKey(
+			'default',
+			$schema,
+			'Input schema must declare a top-level default so wp_get_ability(...)->execute() with no input is valid against the schema.'
+		);
+		$this->assertEquals(
+			(object) [],
+			$schema['default'],
+			'Top-level default should be an empty object so it serializes to {} rather than [], avoiding the array/object ambiguity at the JSON Schema validator boundary.'
+		);
+	}
+
+	/**
 	 * Output schema should always be an array of transaction objects so the
 	 * singular and list paths share one shape.
 	 */

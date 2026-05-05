@@ -160,6 +160,13 @@ class Abilities_Registrar {
 	private static function get_transactions_input_schema() {
 		return [
 			'type'       => 'object',
+			// Honored by WP_Ability::normalize_input() when an indirect caller
+			// (wp_get_ability(...)->execute()) invokes the ability with no
+			// input. Without this, validate_input() would reject null against
+			// the object-typed schema before the callback ever runs. PHP-level
+			// signature defaults on execute_get_transactions() are dead code
+			// for the indirect path.
+			'default'    => (object) [],
 			'properties' => [
 				'transaction_id'      => [
 					'type'        => 'string',
