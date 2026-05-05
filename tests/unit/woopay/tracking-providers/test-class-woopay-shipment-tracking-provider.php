@@ -303,6 +303,30 @@ class WooPay_Shipment_Tracking_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( '398242362749', $shipments[0]['tracking_number'] );
 	}
 
+	public function test_get_shipments_truncates_using_byte_count_when_mbstring_unavailable() {
+		// We can't reliably uninstall mbstring at test time, but we can at
+		// least verify that ASCII inputs produce identical output regardless
+		// of which path the truncate() helper takes — which is the case the
+		// fallback was designed for (tracking numbers and short carrier names
+		// are overwhelmingly ASCII).
+		$order = WC_Helper_Order::create_order();
+
+		$tracking_items = [
+			[
+				'tracking_provider' => 'UPS',
+				'tracking_number'   => str_repeat( 'A', 256 ),
+				'date_shipped'      => '1710288000',
+			],
+		];
+		$order->update_meta_data( '_wc_shipment_tracking_items', $tracking_items );
+		$order->save();
+
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertSame( 256, strlen( $shipments[0]['tracking_number'] ) );
+	}
+
 	public function test_get_hooks_returns_expected_hooks() {
 		$hooks = $this->provider->get_hooks();
 

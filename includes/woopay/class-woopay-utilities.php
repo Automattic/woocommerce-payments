@@ -94,6 +94,86 @@ class WooPay_Utilities {
 	}
 
 	/**
+	 * Option name for the shared WooPay merchant-notification webhook secret.
+	 *
+	 * Both `WooPay_Order_Status_Sync` and `WooPay_Order_Tracking_Sync` deliver
+	 * to the same WooPay endpoint and identify themselves with a single
+	 * webhook secret stored on the WooPay account. Using one shared secret
+	 * for both webhooks prevents the second `register_webhook()` call from
+	 * clobbering the first's secret on the WooPay side.
+	 */
+	const WOOPAY_WEBHOOK_SECRET_OPTION = 'wcpay_woopay_webhook_secret';
+
+	/**
+	 * Get the shared secret used to sign every WooPay merchant-notification
+	 * webhook (status_changed, tracking_updated, etc.).
+	 *
+	 * Resolution order:
+	 *   1. Cached option `WOOPAY_WEBHOOK_SECRET_OPTION` (the source of truth
+	 *      once any sync class has registered a webhook on this site).
+	 *   2. Secret from any existing active WooPay webhook on the site (so
+	 *      stores that registered status-sync before this code shipped keep
+	 *      using the secret WooPay already knows about).
+	 *   3. A freshly generated secret, persisted to the option for reuse.
+	 *
+	 * @return string The 50-char shared webhook secret.
+	 */
+	public static function get_or_create_webhook_secret(): string {
+		$cached = get_option( self::WOOPAY_WEBHOOK_SECRET_OPTION, '' );
+		if ( is_string( $cached ) && '' !== $cached ) {
+			return $cached;
+		}
+
+		$existing = self::find_existing_webhook_secret();
+		if ( '' !== $existing ) {
+			update_option( self::WOOPAY_WEBHOOK_SECRET_OPTION, $existing, false );
+			return $existing;
+		}
+
+		$secret = wp_generate_password( 50, false );
+		update_option( self::WOOPAY_WEBHOOK_SECRET_OPTION, $secret, false );
+		return $secret;
+	}
+
+	/**
+	 * Look for an existing active WooPay webhook on the site and return its
+	 * secret. Used during one-time migration so existing installs don't have
+	 * their already-known secret rotated underneath them.
+	 *
+	 * @return string Secret from the first matching webhook, or '' if none.
+	 */
+	private static function find_existing_webhook_secret(): string {
+		if ( ! class_exists( '\WC_Data_Store' ) ) {
+			return '';
+		}
+
+		try {
+			$data_store = \WC_Data_Store::load( 'webhook' );
+		} catch ( \Exception $e ) {
+			return '';
+		}
+
+		$delivery_url_prefix = self::get_woopay_rest_url( 'merchant-notification' );
+		$webhook_ids         = $data_store->search_webhooks( [ 'status' => 'active' ] );
+
+		foreach ( (array) $webhook_ids as $webhook_id ) {
+			$webhook = wc_get_webhook( $webhook_id );
+			if ( ! $webhook ) {
+				continue;
+			}
+			if ( 0 !== strpos( $webhook->get_delivery_url(), $delivery_url_prefix ) ) {
+				continue;
+			}
+			$secret = $webhook->get_secret();
+			if ( is_string( $secret ) && '' !== $secret ) {
+				return $secret;
+			}
+		}
+
+		return '';
+	}
+
+	/**
 	 * Generates a hash based on the store's blog token, merchant ID, and the time step window.
 	 *
 	 * @return string

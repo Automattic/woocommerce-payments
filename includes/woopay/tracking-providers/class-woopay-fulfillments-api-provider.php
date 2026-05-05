@@ -147,7 +147,11 @@ class WooPay_Fulfillments_API_Provider implements WooPay_Tracking_Provider {
 	}
 
 	/**
-	 * Pull a Y-m-d ship date from the fulfillment, falling back to creation time.
+	 * Pull a Y-m-d ship date from the fulfillment.
+	 *
+	 * Prefers the explicit `_date_shipped` meta key, falling back to the
+	 * fulfillment's last-updated timestamp (which approximates the ship
+	 * date when the fulfillment was created at-shipment-time).
 	 *
 	 * @param object $fulfillment Fulfillment instance.
 	 * @return string
@@ -187,7 +191,7 @@ class WooPay_Fulfillments_API_Provider implements WooPay_Tracking_Provider {
 		}
 		// WC fulfillment statuses include 'fulfilled', 'unfulfilled', etc.
 		// Pass through verbatim — WooPay normalizes for display.
-		return mb_substr( $status, 0, 64 );
+		return self::truncate( $status, 64 );
 	}
 
 	/**
@@ -201,7 +205,7 @@ class WooPay_Fulfillments_API_Provider implements WooPay_Tracking_Provider {
 			return '';
 		}
 		$clean = trim( wp_strip_all_tags( (string) $value ) );
-		return mb_substr( $clean, 0, self::STRING_FIELD_MAX_LEN );
+		return self::truncate( $clean, self::STRING_FIELD_MAX_LEN );
 	}
 
 	/**
@@ -215,6 +219,22 @@ class WooPay_Fulfillments_API_Provider implements WooPay_Tracking_Provider {
 			return '';
 		}
 		$clean = esc_url_raw( $value, [ 'http', 'https' ] );
-		return is_string( $clean ) ? mb_substr( $clean, 0, 2048 ) : '';
+		return is_string( $clean ) ? self::truncate( $clean, 2048 ) : '';
+	}
+
+	/**
+	 * Truncate a string to a max length safely on hosts without the
+	 * mbstring extension. Falls back to byte-level substr() when
+	 * mb_substr() is not available.
+	 *
+	 * @param string $value Already-sanitized string.
+	 * @param int    $max   Max character length.
+	 * @return string
+	 */
+	private static function truncate( string $value, int $max ): string {
+		if ( function_exists( 'mb_substr' ) ) {
+			return mb_substr( $value, 0, $max );
+		}
+		return substr( $value, 0, $max );
 	}
 }

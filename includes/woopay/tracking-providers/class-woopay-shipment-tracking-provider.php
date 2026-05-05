@@ -126,7 +126,7 @@ class WooPay_Shipment_Tracking_Provider implements WooPay_Tracking_Provider {
 			return '';
 		}
 		$clean = trim( wp_strip_all_tags( (string) $value ) );
-		return mb_substr( $clean, 0, self::STRING_FIELD_MAX_LEN );
+		return self::truncate( $clean, self::STRING_FIELD_MAX_LEN );
 	}
 
 	/**
@@ -141,6 +141,24 @@ class WooPay_Shipment_Tracking_Provider implements WooPay_Tracking_Provider {
 			return '';
 		}
 		$clean = esc_url_raw( $value, [ 'http', 'https' ] );
-		return is_string( $clean ) ? mb_substr( $clean, 0, 2048 ) : '';
+		return is_string( $clean ) ? self::truncate( $clean, 2048 ) : '';
+	}
+
+	/**
+	 * Truncate a string to a max length safely on hosts without the
+	 * mbstring extension. Falls back to byte-level substr() when
+	 * mb_substr() is not available; that fallback may slice a multi-byte
+	 * character mid-byte, but the values we forward are tracking numbers
+	 * and short carrier names which are overwhelmingly ASCII.
+	 *
+	 * @param string $value Already-sanitized string.
+	 * @param int    $max   Max character length.
+	 * @return string
+	 */
+	private static function truncate( string $value, int $max ): string {
+		if ( function_exists( 'mb_substr' ) ) {
+			return mb_substr( $value, 0, $max );
+		}
+		return substr( $value, 0, $max );
 	}
 }

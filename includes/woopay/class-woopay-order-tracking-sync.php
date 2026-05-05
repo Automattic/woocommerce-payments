@@ -338,17 +338,22 @@ class WooPay_Order_Tracking_Sync {
 	 * Register the webhook on WooCommerce.
 	 */
 	protected function register_webhook(): void {
+		// Shared with WooPay_Order_Status_Sync: WooPay stores a single
+		// webhook secret per site, so all merchant-notification webhooks
+		// (status_changed, tracking_updated, …) sign with the same secret.
+		$secret = WooPay_Utilities::get_or_create_webhook_secret();
+
 		$webhook = new \WC_Webhook();
 		$webhook->set_name( self::get_webhook_name() );
 		$webhook->set_user_id( get_current_user_id() );
 		$webhook->set_topic( self::WEBHOOK_TOPIC );
-		$webhook->set_secret( wp_generate_password( 50, false ) );
+		$webhook->set_secret( $secret );
 		$webhook->set_delivery_url( WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) );
 		$webhook->set_status( 'active' );
 		$webhook->save();
 
 		try {
-			$this->payments_api_client->update_woopay( [ 'webhook_secret' => $webhook->get_secret() ] );
+			$this->payments_api_client->update_woopay( [ 'webhook_secret' => $secret ] );
 			update_option( self::WEBHOOK_ID_OPTION, (int) $webhook->get_id(), false );
 		} catch ( API_Exception $e ) {
 			$webhook->delete();
