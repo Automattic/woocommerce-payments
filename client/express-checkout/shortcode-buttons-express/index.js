@@ -520,13 +520,21 @@ jQuery( ( $ ) => {
 				cachedCartData
 			);
 
+			// If the resolver moved currency away from the localized one,
+			// the localized `enabled_methods` was filtered against the
+			// wrong currency and we can't trust it.
+			// When the cart re-fetch failed (or the response didn't carry
+			// our extension), fall back to the currency-agnostic methods
+			// only — that's the safe subset that won't trip Stripe's
+			// currency-mismatch rejection.
 			const enabledMethodsFromCart =
 				cachedCartData?.extensions?.wcpay?.express_checkout_methods;
-			const enabledMethodsOverride = Array.isArray(
-				enabledMethodsFromCart
-			)
-				? enabledMethodsFromCart
-				: undefined;
+			let enabledMethodsOverride;
+			if ( Array.isArray( enabledMethodsFromCart ) ) {
+				enabledMethodsOverride = enabledMethodsFromCart;
+			} else if ( needsMethodsReevaluation ) {
+				enabledMethodsOverride = [ 'payment_request' ];
+			}
 
 			if ( ! isCartEligible ) {
 				expressCheckoutButtonUi.hideContainer();

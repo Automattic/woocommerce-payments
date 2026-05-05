@@ -1846,7 +1846,8 @@ class WC_Payments {
 	 */
 	public static function register_express_checkout_store_api_extension() {
 		$extension = new WC_Payments_Express_Checkout_Store_API_Extension(
-			self::get_express_checkout_helper()
+			self::get_express_checkout_helper(),
+			self::get_gateway()
 		);
 		$extension->init();
 	}

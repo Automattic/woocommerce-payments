@@ -20,19 +20,29 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 	const NAMESPACE_KEY = 'wcpay';
 
 	/**
-	 * Express checkout helper used to source the canonical filtered method list.
+	 * Express checkout helper used to gate amazon_pay availability.
 	 *
 	 * @var WC_Payments_Express_Checkout_Button_Helper
 	 */
 	private $express_checkout_helper;
 
 	/**
+	 * WCPay gateway used to gate the payment_request (Apple Pay / Google Pay)
+	 * availability.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $gateway;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper Express checkout helper.
+	 * @param WC_Payment_Gateway_WCPay                   $gateway                 WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper ) {
+	public function __construct( WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper, WC_Payment_Gateway_WCPay $gateway ) {
 		$this->express_checkout_helper = $express_checkout_helper;
+		$this->gateway                 = $gateway;
 	}
 
 	/**
@@ -58,16 +68,29 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 	}
 
 	/**
-	 * Returns the ECE method list filtered for the current request's currency.
+	 * Returns the ECE method list for the current request's currency.
+	 *
+	 * The location filter (cart vs product vs checkout) lives on the page-render
+	 * side and is already encoded in `wcpayExpressCheckoutParams.enabled_methods`.
+	 * The Store API call's job is narrower: tell the client whether each method
+	 * still supports the cart's resolved currency.
+	 * The client intersects this list with its localized one to get the final
+	 * (location ∩ currency) set.
 	 *
 	 * @return array{express_checkout_methods: string[]}
 	 */
 	public function extend_cart_data() {
-		return [
-			'express_checkout_methods' => array_values(
-				$this->express_checkout_helper->get_enabled_express_checkout_methods_for_context()
-			),
-		];
+		$methods = [];
+
+		if ( $this->gateway->is_payment_request_enabled() ) {
+			$methods[] = 'payment_request';
+		}
+
+		if ( $this->express_checkout_helper->can_use_amazon_pay() ) {
+			$methods[] = 'amazon_pay';
+		}
+
+		return [ 'express_checkout_methods' => $methods ];
 	}
 
 	/**
