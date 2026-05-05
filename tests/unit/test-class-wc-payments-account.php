@@ -2162,8 +2162,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	public function test_accelerated_onboarding_skipped_when_details_submitted() {
 		wp_set_current_user( 1 );
 		$_GET = [
-			'page' => 'wc-admin',
-			'path' => '/payments/connect',
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
 			'from' => WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
 		];
 		$this->cache_account_details(
@@ -2171,19 +2171,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				'account_id'        => 'acc_test',
 				'is_live'           => true,
 				'details_submitted' => true,
-				'capabilities'      => [ 'card_payments' => 'requested' ],
+				'capabilities'      => [ 'card_payments' => 'active' ],
 			]
 		);
-		$this->mock_jetpack_connection( false );
+		$this->mock_jetpack_connection( true );
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
 		$experiment->expects( $this->never() )->method( 'get_variation' );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
 		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
-		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_wcpay_connect' );
 
-		$this->wcpay_account->maybe_redirect_from_connect_page();
+		$this->assertFalse( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
 	}
 
 	public function test_accelerated_onboarding_bypass_query_arg_persists_bypass_and_falls_through() {
