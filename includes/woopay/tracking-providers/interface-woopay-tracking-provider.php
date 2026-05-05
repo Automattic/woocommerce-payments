@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-declare( strict_types=1 );
-
 namespace WCPay\WooPay\Tracking_Providers;
 
 defined( 'ABSPATH' ) || exit;

@@ -1,0 +1,31 @@
+<?php
+/**
+ * Test double for the WooCommerce fulfillment data store.
+ *
+ * @package WooCommerce\Payments\Tests
+ */
+
+/**
+ * Returns whatever was set in the public static $next_result property.
+ * Used by WooPay_Fulfillments_API_Provider tests to control what
+ * read_fulfillments() returns without spinning up the real DataStore.
+ */
+class Fake_Fulfillments_Data_Store {
+	/**
+	 * The fulfillments to return on the next read_fulfillments() call.
+	 *
+	 * @var array
+	 */
+	public static $next_result = [];
+
+	/**
+	 * Stub of FulfillmentsDataStore::read_fulfillments().
+	 *
+	 * @param string $entity_type Class name of the parent entity (unused).
+	 * @param string $entity_id   ID of the parent entity (unused).
+	 * @return array
+	 */
+	public function read_fulfillments( $entity_type, $entity_id ) {
+		return self::$next_result;
+	}
+}

@@ -5,10 +5,11 @@
  * @package WooCommerce\Payments\Tests
  */
 
-declare( strict_types=1 );
-
 use WCPay\WooPay\WooPay_Order_Tracking_Sync;
+use WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider;
 use PHPUnit\Framework\MockObject\MockObject;
+
+require_once __DIR__ . '/tracking-providers/fake-fulfillment.php';
 
 /**
  * WooPay_Order_Tracking_Sync unit tests.
@@ -65,6 +66,12 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		WC_Payments::set_database_cache( $this->cache );
 		WooPay_Order_Tracking_Sync::reset_providers();
+		// Disable WooPay between tests to avoid side effects on other tests.
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'no' );
+		// Clear any debounce transients leaked across tests.
+		global $wpdb;
+		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_woopay_tracking_webhook_%' OR option_name LIKE '_transient_timeout_woopay_tracking_webhook_%'" );
+		delete_option( WooPay_Order_Tracking_Sync::WEBHOOK_ID_OPTION );
 		parent::tear_down();
 	}
 
@@ -72,15 +79,25 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		self::$admin_user = $factory->user->create_and_get( [ 'role' => 'administrator' ] );
 	}
 
-	public function test_get_providers_returns_array() {
+	public function test_get_providers_returns_default_chain_in_priority_order() {
 		$providers = WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $providers );
-		$this->assertNotEmpty( $providers );
+		$this->assertCount( 2, $providers );
+		$this->assertInstanceOf(
+			\WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider::class,
+			$providers[0],
+			'Fulfillments API should be priority 1.'
+		);
+		$this->assertInstanceOf(
+			\WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider::class,
+			$providers[1],
+			'WC Shipment Tracking / AST should be priority 2.'
+		);
 	}
 
 	public function test_get_providers_is_filterable() {
-		$custom_provider = $this->createMock( \WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider::class );
+		$custom_provider = $this->createMock( WooPay_Tracking_Provider::class );
 		$custom_provider->method( 'get_hooks' )->willReturn( [] );
 
 		add_filter(
@@ -97,6 +114,23 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $custom_provider, $providers[0] );
 	}
 
+	public function test_get_providers_filter_receives_default_list() {
+		$received = null;
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function ( $providers ) use ( &$received ) {
+				$received = $providers;
+				return $providers;
+			}
+		);
+
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::get_providers();
+
+		$this->assertIsArray( $received );
+		$this->assertCount( 2, $received );
+	}
+
 	public function test_get_order_shipments_returns_empty_when_no_provider_has_data() {
 		$order = WC_Helper_Order::create_order();
 
@@ -105,31 +139,140 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $shipments );
 	}
 
-	public function test_get_order_shipments_returns_data_from_shipment_tracking_meta() {
+	public function test_get_order_shipments_short_circuits_on_first_non_empty_provider() {
 		$order = WC_Helper_Order::create_order();
 
-		$tracking_items = [
+		$first_provider = $this->createMock( WooPay_Tracking_Provider::class );
+		$first_provider->method( 'is_available' )->willReturn( true );
+		$first_provider->expects( $this->once() )->method( 'get_shipments' )->willReturn(
 			[
-				'tracking_provider'        => 'FedEx',
-				'custom_tracking_provider' => '',
-				'custom_tracking_link'     => 'https://fedex.com/track/123',
-				'tracking_number'          => '398242362749',
-				'date_shipped'             => '1711584000',
-			],
-		];
+				[
+					'tracking_number' => 'FIRST_PROVIDER',
+					'carrier_name'    => 'Provider1',
+					'tracking_url'    => '',
+					'date_shipped'    => '',
+					'status'          => 'fulfilled',
+					'items'           => [],
+				],
+			]
+		);
+		$first_provider->method( 'get_hooks' )->willReturn( [] );
 
-		$order->update_meta_data( '_wc_shipment_tracking_items', $tracking_items );
-		$order->save();
+		// Second provider must NEVER be queried — chain short-circuits on first match.
+		$second_provider = $this->createMock( WooPay_Tracking_Provider::class );
+		$second_provider->expects( $this->never() )->method( 'is_available' );
+		$second_provider->expects( $this->never() )->method( 'get_shipments' );
+		$second_provider->method( 'get_hooks' )->willReturn( [] );
 
-		// The provider chain requires the tracking plugin class to exist.
-		// Test get_shipments directly instead to verify normalization.
-		$provider  = new \WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider();
-		$shipments = $provider->get_shipments( $order );
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $first_provider, $second_provider ) {
+				return [ $first_provider, $second_provider ];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
 
 		$this->assertCount( 1, $shipments );
-		$this->assertEquals( '398242362749', $shipments[0]['tracking_number'] );
-		$this->assertEquals( 'FedEx', $shipments[0]['carrier_name'] );
-		$this->assertEquals( 'https://fedex.com/track/123', $shipments[0]['tracking_url'] );
+		$this->assertEquals( 'FIRST_PROVIDER', $shipments[0]['tracking_number'] );
+	}
+
+	public function test_get_order_shipments_falls_through_when_first_provider_unavailable() {
+		$order = WC_Helper_Order::create_order();
+
+		$first_provider = $this->createMock( WooPay_Tracking_Provider::class );
+		$first_provider->method( 'is_available' )->willReturn( false );
+		$first_provider->expects( $this->never() )->method( 'get_shipments' );
+		$first_provider->method( 'get_hooks' )->willReturn( [] );
+
+		$second_provider = $this->createMock( WooPay_Tracking_Provider::class );
+		$second_provider->method( 'is_available' )->willReturn( true );
+		$second_provider->expects( $this->once() )->method( 'get_shipments' )->willReturn(
+			[
+				[
+					'tracking_number' => 'FROM_SECOND',
+					'carrier_name'    => 'Provider2',
+					'tracking_url'    => '',
+					'date_shipped'    => '',
+					'status'          => 'fulfilled',
+					'items'           => [],
+				],
+			]
+		);
+		$second_provider->method( 'get_hooks' )->willReturn( [] );
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $first_provider, $second_provider ) {
+				return [ $first_provider, $second_provider ];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertEquals( 'FROM_SECOND', $shipments[0]['tracking_number'] );
+	}
+
+	public function test_get_order_shipments_falls_through_on_empty_first_provider_data() {
+		$order = WC_Helper_Order::create_order();
+
+		$first_provider = $this->createMock( WooPay_Tracking_Provider::class );
+		$first_provider->method( 'is_available' )->willReturn( true );
+		$first_provider->expects( $this->once() )->method( 'get_shipments' )->willReturn( [] );
+		$first_provider->method( 'get_hooks' )->willReturn( [] );
+
+		$second_provider = $this->createMock( WooPay_Tracking_Provider::class );
+		$second_provider->method( 'is_available' )->willReturn( true );
+		$second_provider->expects( $this->once() )->method( 'get_shipments' )->willReturn(
+			[
+				[
+					'tracking_number' => 'FROM_SECOND',
+					'carrier_name'    => 'Provider2',
+					'tracking_url'    => '',
+					'date_shipped'    => '',
+					'status'          => 'fulfilled',
+					'items'           => [],
+				],
+			]
+		);
+		$second_provider->method( 'get_hooks' )->willReturn( [] );
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $first_provider, $second_provider ) {
+				return [ $first_provider, $second_provider ];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertEquals( 'FROM_SECOND', $shipments[0]['tracking_number'] );
+	}
+
+	public function test_send_webhook_skips_when_woopay_disabled_on_shop() {
+		// Simulate a non-WooPay merchant.
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'no' );
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( 'is_woopay', true );
+		$order->save();
+
+		$action_fired = false;
+		add_action(
+			WooPay_Order_Tracking_Sync::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED,
+			function () use ( &$action_fired ) {
+				$action_fired = true;
+			}
+		);
+
+		WooPay_Order_Tracking_Sync::send_webhook( $order->get_id() );
+
+		$this->assertFalse( $action_fired, 'Account-level gate should short-circuit before any per-order work.' );
 	}
 
 	public function test_send_webhook_skips_non_woopay_orders() {
@@ -188,6 +331,27 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 1, $fire_count );
 	}
 
+	public function test_send_webhook_re_fires_after_debounce_window() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( 'is_woopay', true );
+		$order->save();
+
+		$fire_count = 0;
+		add_action(
+			WooPay_Order_Tracking_Sync::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED,
+			function () use ( &$fire_count ) {
+				++$fire_count;
+			}
+		);
+
+		WooPay_Order_Tracking_Sync::send_webhook( $order->get_id() );
+		// Simulate the debounce window expiring.
+		delete_transient( WooPay_Order_Tracking_Sync::DEBOUNCE_TRANSIENT_PREFIX . $order->get_id() );
+		WooPay_Order_Tracking_Sync::send_webhook( $order->get_id() );
+
+		$this->assertEquals( 2, $fire_count, 'Webhook should fire again once the debounce window expires.' );
+	}
+
 	public function test_send_webhook_handles_wc_order_argument() {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( 'is_woopay', true );
@@ -207,6 +371,28 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $order->get_id(), $fired_order_id );
 	}
 
+	public function test_send_webhook_handles_fulfillment_object_argument() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( 'is_woopay', true );
+		$order->save();
+
+		// Fake_Fulfillment exposes get_entity_id() returning the order ID.
+		$fulfillment = new Fake_Fulfillment( [ '_entity_id' => $order->get_id() ] );
+
+		$fired_order_id = null;
+		add_action(
+			WooPay_Order_Tracking_Sync::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED,
+			function ( $order_id ) use ( &$fired_order_id ) {
+				$fired_order_id = $order_id;
+			}
+		);
+
+		// WC Fulfillments API passes a Fulfillment object whose get_entity_id() returns the order id.
+		WooPay_Order_Tracking_Sync::send_webhook( $fulfillment );
+
+		$this->assertEquals( $order->get_id(), $fired_order_id );
+	}
+
 	public function test_send_webhook_bails_on_invalid_argument() {
 		$action_fired = false;
 		add_action(
@@ -219,6 +405,102 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		WooPay_Order_Tracking_Sync::send_webhook( 'invalid_string' );
 
 		$this->assertFalse( $action_fired );
+	}
+
+	public function test_create_payload_returns_original_when_webhook_unknown() {
+		$original = [ 'foo' => 'bar' ];
+		$result   = WooPay_Order_Tracking_Sync::create_payload( $original, 'order', 1, 999999 );
+
+		$this->assertSame( $original, $result );
+	}
+
+	public function test_create_payload_returns_original_for_non_woopay_delivery_url() {
+		wp_set_current_user( self::$admin_user->ID );
+
+		$webhook = new WC_Webhook();
+		$webhook->set_name( 'Some other webhook' );
+		$webhook->set_user_id( get_current_user_id() );
+		$webhook->set_topic( 'order.created' );
+		$webhook->set_secret( wp_generate_password( 50, false ) );
+		$webhook->set_delivery_url( 'https://example.com/some-other-receiver' );
+		$webhook->set_status( 'active' );
+		$webhook->save();
+
+		$order    = WC_Helper_Order::create_order();
+		$original = [ 'foo' => 'bar' ];
+
+		$result = WooPay_Order_Tracking_Sync::create_payload( $original, 'order', $order->get_id(), $webhook->get_id() );
+
+		$this->assertSame( $original, $result );
+
+		$webhook->delete();
+	}
+
+	public function test_create_payload_returns_original_for_non_woopay_order() {
+		wp_set_current_user( self::$admin_user->ID );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
+		$this->tracking_sync->maybe_create_woopay_order_webhook();
+		$webhook_id = WooPay_Order_Tracking_Sync::get_webhook()[0];
+
+		$order = WC_Helper_Order::create_order();
+		// No `is_woopay` meta — payload assembly should be skipped (defense-in-depth).
+
+		$original = [ 'foo' => 'bar' ];
+		$result   = WooPay_Order_Tracking_Sync::create_payload( $original, 'order', $order->get_id(), $webhook_id );
+
+		$this->assertSame( $original, $result );
+
+		WooPay_Order_Tracking_Sync::remove_webhook();
+	}
+
+	public function test_create_payload_assembles_woopay_payload_for_woopay_order() {
+		wp_set_current_user( self::$admin_user->ID );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
+		$this->tracking_sync->maybe_create_woopay_order_webhook();
+		$webhook_id = WooPay_Order_Tracking_Sync::get_webhook()[0];
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( 'is_woopay', true );
+		$order->save();
+
+		// Inject a provider that returns one shipment.
+		$provider = $this->createMock( WooPay_Tracking_Provider::class );
+		$provider->method( 'is_available' )->willReturn( true );
+		$provider->method( 'get_shipments' )->willReturn(
+			[
+				[
+					'tracking_number' => 'TEST123',
+					'carrier_name'    => 'TestCo',
+					'tracking_url'    => 'https://test.example.com/TEST123',
+					'date_shipped'    => '2026-04-01',
+					'status'          => 'fulfilled',
+					'items'           => [],
+				],
+			]
+		);
+		$provider->method( 'get_hooks' )->willReturn( [] );
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $provider ) {
+				return [ $provider ];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+
+		$payload = WooPay_Order_Tracking_Sync::create_payload( [], 'order', $order->get_id(), $webhook_id );
+
+		$this->assertArrayHasKey( 'blog_id', $payload );
+		$this->assertArrayHasKey( 'order_id', $payload );
+		$this->assertArrayHasKey( 'shipments', $payload );
+		$this->assertEquals( $order->get_id(), $payload['order_id'] );
+		$this->assertCount( 1, $payload['shipments'] );
+		$this->assertEquals( 'TEST123', $payload['shipments'][0]['tracking_number'] );
+
+		WooPay_Order_Tracking_Sync::remove_webhook();
 	}
 
 	public function test_webhook_is_created() {
@@ -235,6 +517,27 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 
 		// Cleanup.
 		WooPay_Order_Tracking_Sync::remove_webhook();
+	}
+
+	public function test_webhook_creation_caches_id_in_option() {
+		wp_set_current_user( self::$admin_user->ID );
+		$this->account_mock->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->account_mock->method( 'is_account_under_review' )->willReturn( false );
+		$this->account_mock->method( 'is_account_rejected' )->willReturn( false );
+
+		$this->assertSame( 0, (int) get_option( WooPay_Order_Tracking_Sync::WEBHOOK_ID_OPTION, 0 ) );
+		$this->tracking_sync->maybe_create_woopay_order_webhook();
+		$this->assertGreaterThan( 0, (int) get_option( WooPay_Order_Tracking_Sync::WEBHOOK_ID_OPTION, 0 ) );
+
+		// Subsequent maybe_create call should short-circuit using the cached id.
+		$call_count_before = count( WooPay_Order_Tracking_Sync::get_webhook() );
+		$this->tracking_sync->maybe_create_woopay_order_webhook();
+		$call_count_after = count( WooPay_Order_Tracking_Sync::get_webhook() );
+
+		$this->assertEquals( $call_count_before, $call_count_after, 'Subsequent calls should not create a duplicate webhook.' );
+
+		WooPay_Order_Tracking_Sync::remove_webhook();
+		$this->assertSame( 0, (int) get_option( WooPay_Order_Tracking_Sync::WEBHOOK_ID_OPTION, 0 ), 'Removal should clear the cached id.' );
 	}
 
 	public function test_webhook_removal() {

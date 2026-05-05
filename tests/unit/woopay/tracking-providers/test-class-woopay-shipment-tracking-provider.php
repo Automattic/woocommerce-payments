@@ -5,9 +5,17 @@
  * @package WooCommerce\Payments\Tests
  */
 
-declare( strict_types=1 );
-
 use WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider;
+
+// Stub the sentinel classes the provider checks for. Both WC Shipment Tracking
+// and AST share the same `_wc_shipment_tracking_items` meta key. Loading both
+// stubs exercises both detection branches (the provider uses OR — either is
+// sufficient for is_available()). Once loaded the stubs persist for the rest
+// of the PHPUnit process, so the "neither plugin present" negative branch is
+// covered indirectly by integration tests in WooPay_Order_Tracking_Sync_Test
+// that do not require this file.
+require_once __DIR__ . '/stub-wc-shipment-tracking-actions.php';
+require_once __DIR__ . '/stub-wc-advanced-shipment-tracking-actions.php';
 
 /**
  * WooPay_Shipment_Tracking_Provider unit tests.
@@ -24,11 +32,26 @@ class WooPay_Shipment_Tracking_Provider_Test extends WCPAY_UnitTestCase {
 		$this->provider = new WooPay_Shipment_Tracking_Provider();
 	}
 
-	public function test_is_available_returns_false_when_no_tracking_plugin_class_exists() {
+	public function test_is_available_returns_true_when_plugin_present_with_data() {
 		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wc_shipment_tracking_items', [ [ 'tracking_number' => 'X1' ] ] );
+		$order->save();
 
-		// Neither WC_Shipment_Tracking_Actions nor WC_Advanced_Shipment_Tracking_Actions exists
-		// in the test environment, so is_available should return false.
+		$this->assertTrue( $this->provider->is_available( $order ) );
+	}
+
+	public function test_is_available_returns_false_when_plugin_present_but_no_meta() {
+		$order = WC_Helper_Order::create_order();
+		// No `_wc_shipment_tracking_items` meta.
+
+		$this->assertFalse( $this->provider->is_available( $order ) );
+	}
+
+	public function test_is_available_returns_false_when_meta_is_not_array() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wc_shipment_tracking_items', 'not-an-array' );
+		$order->save();
+
 		$this->assertFalse( $this->provider->is_available( $order ) );
 	}
 
@@ -166,6 +189,86 @@ class WooPay_Shipment_Tracking_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 2, $shipments );
 		$this->assertEquals( 'UPS', $shipments[0]['carrier_name'] );
 		$this->assertEquals( 'FedEx', $shipments[1]['carrier_name'] );
+	}
+
+	public function test_get_shipments_strips_html_from_carrier_and_tracking_number() {
+		$order = WC_Helper_Order::create_order();
+
+		$tracking_items = [
+			[
+				'tracking_provider' => '<script>alert(1)</script>UPS',
+				'tracking_number'   => '<b>123</b>',
+				'date_shipped'      => '1710288000',
+			],
+		];
+		$order->update_meta_data( '_wc_shipment_tracking_items', $tracking_items );
+		$order->save();
+
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertEquals( 'UPS', $shipments[0]['carrier_name'] );
+		$this->assertEquals( '123', $shipments[0]['tracking_number'] );
+	}
+
+	public function test_get_shipments_rejects_javascript_url_scheme() {
+		$order = WC_Helper_Order::create_order();
+
+		$tracking_items = [
+			[
+				'tracking_number'      => 'X1',
+				'tracking_provider'    => 'UPS',
+				'custom_tracking_link' => 'javascript:alert(1)',
+				'date_shipped'         => '1710288000',
+			],
+		];
+		$order->update_meta_data( '_wc_shipment_tracking_items', $tracking_items );
+		$order->save();
+
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertEquals( '', $shipments[0]['tracking_url'], 'javascript: scheme must be stripped.' );
+	}
+
+	public function test_get_shipments_accepts_https_url() {
+		$order = WC_Helper_Order::create_order();
+
+		$tracking_items = [
+			[
+				'tracking_number'      => 'X1',
+				'tracking_provider'    => 'UPS',
+				'custom_tracking_link' => 'https://wwwapps.ups.com/track/?tracknum=X1',
+				'date_shipped'         => '1710288000',
+			],
+		];
+		$order->update_meta_data( '_wc_shipment_tracking_items', $tracking_items );
+		$order->save();
+
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertEquals( 'https://wwwapps.ups.com/track/?tracknum=X1', $shipments[0]['tracking_url'] );
+	}
+
+	public function test_get_shipments_truncates_pathologically_long_strings() {
+		$order = WC_Helper_Order::create_order();
+
+		$tracking_items = [
+			[
+				'tracking_number'   => str_repeat( 'A', 1000 ),
+				'tracking_provider' => str_repeat( 'B', 1000 ),
+				'date_shipped'      => '1710288000',
+			],
+		];
+		$order->update_meta_data( '_wc_shipment_tracking_items', $tracking_items );
+		$order->save();
+
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertSame( 256, mb_strlen( $shipments[0]['tracking_number'] ) );
+		$this->assertSame( 256, mb_strlen( $shipments[0]['carrier_name'] ) );
 	}
 
 	public function test_get_hooks_returns_expected_hooks() {

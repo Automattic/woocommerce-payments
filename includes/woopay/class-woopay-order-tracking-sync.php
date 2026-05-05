@@ -5,15 +5,15 @@
  * @package WooCommerce\Payments
  */
 
-declare( strict_types=1 );
-
 namespace WCPay\WooPay;
 
+use WC_Payments;
 use WC_Payments_Account;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 use WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider;
+use WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,19 +23,25 @@ defined( 'ABSPATH' ) || exit;
  * Uses an adapter pattern: each shipping plugin gets a provider class
  * that normalizes tracking data into a common format. Providers are
  * tried in priority order; the first to return data wins.
+ *
+ * Modeled on WooPay_Order_Status_Sync; differs in supporting variadic
+ * hook signatures (different shipping plugins fire hooks with different
+ * argument shapes) and a 5-second debounce to coalesce duplicate fires.
  */
 class WooPay_Order_Tracking_Sync {
 	const WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED = 'wcpay_webhook_platform_checkout_order_tracking_updated';
+	const WEBHOOK_TOPIC                               = 'order.tracking_updated';
+	const WEBHOOK_EVENT                               = 'tracking_updated';
+	const WEBHOOK_ID_OPTION                           = 'wcpay_woopay_tracking_webhook_id';
+	const DEBOUNCE_TRANSIENT_PREFIX                   = 'woopay_tracking_webhook_';
+	const DEBOUNCE_SECONDS                            = 5;
 
 	/**
-	 * Transient prefix for webhook debouncing.
+	 * Resolved providers for this instance.
+	 *
+	 * @var WooPay_Tracking_Provider[]|null
 	 */
-	const DEBOUNCE_TRANSIENT_PREFIX = 'woopay_tracking_webhook_';
-
-	/**
-	 * Debounce window in seconds.
-	 */
-	const DEBOUNCE_SECONDS = 5;
+	private static $providers = null;
 
 	/**
 	 * WC_Payments_Account instance.
@@ -50,13 +56,6 @@ class WooPay_Order_Tracking_Sync {
 	 * @var WC_Payments_API_Client
 	 */
 	protected $payments_api_client;
-
-	/**
-	 * Cached providers array.
-	 *
-	 * @var WooPay_Tracking_Provider[]|null
-	 */
-	private static $providers = null;
 
 	/**
 	 * Setup webhook for the WooPay Order Tracking Sync.
@@ -80,7 +79,7 @@ class WooPay_Order_Tracking_Sync {
 					$hook_config['hook'],
 					[ __CLASS__, 'send_webhook' ],
 					10,
-					$hook_config['arg_count']
+					(int) ( $hook_config['arg_count'] ?? 1 )
 				);
 			}
 		}
@@ -91,6 +90,10 @@ class WooPay_Order_Tracking_Sync {
 	/**
 	 * Get the ordered list of tracking providers.
 	 *
+	 * Filterable via `wcpay_woopay_tracking_providers`. The first provider in
+	 * the list whose `is_available()` returns true and `get_shipments()` returns
+	 * non-empty data wins — there is no merging across providers.
+	 *
 	 * @return WooPay_Tracking_Provider[]
 	 */
 	public static function get_providers(): array {
@@ -98,34 +101,34 @@ class WooPay_Order_Tracking_Sync {
 			return self::$providers;
 		}
 
-		$providers = [
+		$default_providers = [
+			// Priority 1: WC Core Fulfillments API (WC 10.2+, behind feature flag).
+			new WooPay_Fulfillments_API_Provider(),
+			// Priority 2: WC Shipment Tracking + Advanced Shipment Tracking (de facto standard, ~85% coverage).
 			new WooPay_Shipment_Tracking_Provider(),
 		];
 
 		/**
 		 * Filters the list of tracking providers.
 		 *
+		 * Order matters: providers are tried in array order and the first
+		 * non-empty result wins. To insert a custom provider at higher
+		 * priority, prepend it.
+		 *
 		 * @param WooPay_Tracking_Provider[] $providers Ordered array of providers.
 		 */
-		self::$providers = apply_filters( 'wcpay_woopay_tracking_providers', $providers );
+		self::$providers = (array) apply_filters( 'wcpay_woopay_tracking_providers', $default_providers );
 
 		return self::$providers;
 	}
 
 	/**
-	 * Reset the cached providers (for testing).
+	 * Reset the cached providers. Test-only: production code should not call this.
+	 *
+	 * @internal
 	 */
 	public static function reset_providers(): void {
 		self::$providers = null;
-	}
-
-	/**
-	 * Return the webhook name.
-	 *
-	 * @return string
-	 */
-	private static function get_webhook_name(): string {
-		return __( 'WooPayments woopay order tracking sync', 'woocommerce-payments' );
 	}
 
 	/**
@@ -144,15 +147,6 @@ class WooPay_Order_Tracking_Sync {
 	}
 
 	/**
-	 * Return true if webhook was already created.
-	 *
-	 * @return bool
-	 */
-	private static function is_webhook_created(): bool {
-		return ! empty( self::get_webhook() );
-	}
-
-	/**
 	 * Return array with the webhook id for the woopay order tracking sync.
 	 *
 	 * @return array
@@ -166,28 +160,7 @@ class WooPay_Order_Tracking_Sync {
 			'limit'  => 1,
 		];
 
-		$webhooks = $data_store->search_webhooks( $args );
-		return $webhooks;
-	}
-
-	/**
-	 * Register the webhook on WooCommerce.
-	 */
-	private function register_webhook(): void {
-		$webhook = new \WC_Webhook();
-		$webhook->set_name( self::get_webhook_name() );
-		$webhook->set_user_id( get_current_user_id() );
-		$webhook->set_topic( 'order.tracking_updated' );
-		$webhook->set_secret( wp_generate_password( 50, false ) );
-		$webhook->set_delivery_url( WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) );
-		$webhook->set_status( 'active' );
-		$webhook->save();
-
-		try {
-			$this->payments_api_client->update_woopay( [ 'webhook_secret' => $webhook->get_secret() ] );
-		} catch ( API_Exception $e ) {
-			$webhook->delete();
-		}
+		return $data_store->search_webhooks( $args );
 	}
 
 	/**
@@ -197,13 +170,17 @@ class WooPay_Order_Tracking_Sync {
 	 * @return array
 	 */
 	public static function add_topics( $topic_hooks ): array {
-		$topic_hooks['order.tracking_updated'][] = self::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED;
+		$topic_hooks[ self::WEBHOOK_TOPIC ][] = self::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED;
 
 		return $topic_hooks;
 	}
 
 	/**
 	 * Setup payload for the webhook delivery.
+	 *
+	 * The `is_woopay` re-check here is defense-in-depth: `send_webhook()`
+	 * already gates emission, but if any other code path triggers this
+	 * webhook for a non-WooPay order we should not assemble a payload either.
 	 *
 	 * @param array   $payload       Data to be sent out by the webhook.
 	 * @param string  $resource_name Type/name of the resource.
@@ -221,19 +198,14 @@ class WooPay_Order_Tracking_Sync {
 			return $payload;
 		}
 
-		// Only modify payload for tracking webhooks.
-		if ( 'order.tracking_updated' !== $webhook->get_topic() ) {
-			return $payload;
-		}
-
 		$order = wc_get_order( $resource_id );
-		if ( ! $order ) {
+		if ( ! $order || ! $order->get_meta( 'is_woopay' ) ) {
 			return $payload;
 		}
 
 		return [
 			'blog_id'   => \Jetpack_Options::get_option( 'id' ),
-			'order_id'  => $resource_id,
+			'order_id'  => (int) $resource_id,
 			'shipments' => self::get_order_shipments( $order ),
 		];
 	}
@@ -257,7 +229,7 @@ class WooPay_Order_Tracking_Sync {
 	 * @return array
 	 */
 	public static function add_event( $topic_events ): array {
-		$topic_events[] = 'tracking_updated';
+		$topic_events[] = self::WEBHOOK_EVENT;
 
 		return $topic_events;
 	}
@@ -265,15 +237,35 @@ class WooPay_Order_Tracking_Sync {
 	/**
 	 * Trigger webhook delivery.
 	 *
-	 * Normalizes the first argument from various hook signatures to an order ID,
-	 * checks if the order is a WooPay order, debounces duplicate calls, and fires
-	 * the webhook action.
+	 * Order of checks (cheapest → most expensive):
+	 *   1. WooPay enabled at all on this shop? (gateway option lookup)
+	 *   2. Resolvable order ID from the hook arg shape?
+	 *   3. Per-order debounce already set?
+	 *   4. Order exists and is a WooPay order?
+	 *
+	 * Ordering matters because some hooks (e.g. shipment-tracking) can fire
+	 * thousands of times during CSV imports; the first three checks must be
+	 * O(1) so non-WooPay merchants pay essentially nothing.
 	 *
 	 * @param mixed ...$args Hook arguments (varies by provider).
 	 */
 	public static function send_webhook( ...$args ): void {
+		// Cheap account-level gate first — saves N × wc_get_order() during bulk imports
+		// on shops where WooPay isn't enabled at all.
+		if ( ! self::is_woopay_active_on_shop() ) {
+			return;
+		}
+
 		$order_id = self::resolve_order_id( $args );
 		if ( null === $order_id ) {
+			return;
+		}
+
+		// Debounce before order load: if the same order fires multiple hooks in
+		// quick succession (e.g. add + delete + re-add by AST migration), skip
+		// the work entirely after the first one.
+		$transient_key = self::DEBOUNCE_TRANSIENT_PREFIX . $order_id;
+		if ( false !== get_transient( $transient_key ) ) {
 			return;
 		}
 
@@ -282,15 +274,122 @@ class WooPay_Order_Tracking_Sync {
 			return;
 		}
 
-		// Debounce: skip if a webhook was recently fired for this order.
-		$transient_key = self::DEBOUNCE_TRANSIENT_PREFIX . $order_id;
-		if ( false !== get_transient( $transient_key ) ) {
-			return;
-		}
-
 		set_transient( $transient_key, true, self::DEBOUNCE_SECONDS );
 
 		do_action( self::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED, $order_id );
+	}
+
+	/**
+	 * Get normalized shipments for an order using the provider chain.
+	 *
+	 * Returns shipments from the first provider whose `is_available()` is true
+	 * AND whose `get_shipments()` returns non-empty data. No merging.
+	 *
+	 * @param \WC_Order $order The WooCommerce order.
+	 * @return array[] Normalized shipments array.
+	 */
+	public static function get_order_shipments( \WC_Order $order ): array {
+		foreach ( self::get_providers() as $provider ) {
+			if ( ! $provider->is_available( $order ) ) {
+				continue;
+			}
+			$shipments = $provider->get_shipments( $order );
+			if ( ! empty( $shipments ) ) {
+				return $shipments;
+			}
+		}
+
+		return [];
+	}
+
+	/**
+	 * Removes the webhook if woopay is disabled.
+	 */
+	public static function remove_webhook(): void {
+		if ( ! self::is_webhook_created() ) {
+			return;
+		}
+		$webhook_id = self::get_webhook()[0];
+		$webhook    = new \WC_Webhook( $webhook_id );
+		$webhook->delete();
+		delete_option( self::WEBHOOK_ID_OPTION );
+	}
+
+	/**
+	 * Register the webhook on WooCommerce.
+	 */
+	protected function register_webhook(): void {
+		$webhook = new \WC_Webhook();
+		$webhook->set_name( self::get_webhook_name() );
+		$webhook->set_user_id( get_current_user_id() );
+		$webhook->set_topic( self::WEBHOOK_TOPIC );
+		$webhook->set_secret( wp_generate_password( 50, false ) );
+		$webhook->set_delivery_url( WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) );
+		$webhook->set_status( 'active' );
+		$webhook->save();
+
+		try {
+			$this->payments_api_client->update_woopay( [ 'webhook_secret' => $webhook->get_secret() ] );
+			update_option( self::WEBHOOK_ID_OPTION, (int) $webhook->get_id(), false );
+		} catch ( API_Exception $e ) {
+			$webhook->delete();
+		}
+	}
+
+	/**
+	 * Return the webhook name.
+	 *
+	 * @return string
+	 */
+	private static function get_webhook_name(): string {
+		return __( 'WooPayments woopay order tracking sync', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Return true if webhook was already created.
+	 *
+	 * Cached via wp_option so the per-`admin_init` `search_webhooks` DB query
+	 * only fires the first time. The cached ID is verified against the
+	 * webhook data store to detect manual deletion via the WC admin UI.
+	 *
+	 * @return bool
+	 */
+	private static function is_webhook_created(): bool {
+		$cached_id = (int) get_option( self::WEBHOOK_ID_OPTION, 0 );
+		if ( $cached_id > 0 ) {
+			$webhook = wc_get_webhook( $cached_id );
+			if ( $webhook && 'active' === $webhook->get_status() ) {
+				return true;
+			}
+			// Cached webhook was removed externally — clear the cache and re-search.
+			delete_option( self::WEBHOOK_ID_OPTION );
+		}
+
+		$webhooks = self::get_webhook();
+		if ( empty( $webhooks ) ) {
+			return false;
+		}
+		update_option( self::WEBHOOK_ID_OPTION, (int) $webhooks[0], false );
+		return true;
+	}
+
+	/**
+	 * Cheap shop-level gate: is WooPay enabled here at all?
+	 *
+	 * Returns false on shops that never opted into WooPay so non-WooPay
+	 * merchants don't pay `wc_get_order()` per shipping-plugin hook fire.
+	 *
+	 * @return bool
+	 */
+	private static function is_woopay_active_on_shop(): bool {
+		if ( ! class_exists( 'WC_Payments' ) ) {
+			return false;
+		}
+		$gateway = WC_Payments::get_gateway();
+		if ( ! $gateway ) {
+			return false;
+		}
+		return 'yes' === $gateway->get_option( 'platform_checkout', 'no' );
 	}
 
 	/**
@@ -328,35 +427,5 @@ class WooPay_Order_Tracking_Sync {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Get normalized shipments for an order using the provider chain.
-	 *
-	 * @param \WC_Order $order The WooCommerce order.
-	 * @return array[] Normalized shipments array.
-	 */
-	public static function get_order_shipments( \WC_Order $order ): array {
-		foreach ( self::get_providers() as $provider ) {
-			if ( $provider->is_available( $order ) ) {
-				$shipments = $provider->get_shipments( $order );
-				if ( ! empty( $shipments ) ) {
-					return $shipments;
-				}
-			}
-		}
-
-		return [];
-	}
-
-	/**
-	 * Removes the webhook if woopay is disabled.
-	 */
-	public static function remove_webhook(): void {
-		if ( self::is_webhook_created() ) {
-			$webhook_id = self::get_webhook()[0];
-			$webhook    = new \WC_Webhook( $webhook_id );
-			$webhook->delete();
-		}
 	}
 }
