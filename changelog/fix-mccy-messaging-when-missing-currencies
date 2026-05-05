@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: MCCY tooltip messaging for payment methods supporting multiple currencies now uses "or" instead of "and"
