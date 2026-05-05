@@ -260,6 +260,12 @@ declare global {
 		snoozeUrl: string;
 	};
 
+	const wcpayOneAndDoneNoticeSettings: {
+		ctaUrl: string;
+		dismissUrl: string;
+		snoozeUrl: string;
+	};
+
 	interface WcSettings {
 		ece_data?: WCPayExpressCheckoutParams;
 		woocommerce_payments_data: typeof wcpaySettings;
@@ -335,6 +341,7 @@ declare global {
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
 		wcpayTestToLiveNoticeSettings?: typeof wcpayTestToLiveNoticeSettings;
+		wcpayOneAndDoneNoticeSettings?: typeof wcpayOneAndDoneNoticeSettings;
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		wcpay_upe_config?: typeof wcpay_upe_config;
 	}

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added a banner that nudges WooPayments merchants who've taken exactly one live transaction toward Marketing tools 7 days after that transaction.

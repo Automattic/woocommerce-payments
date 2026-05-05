@@ -62,6 +62,48 @@ class WC_Payments_Admin_Banner {
 	const TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE = 'wcpay_test_to_live_eligible';
 
 	/**
+	 * User meta key used to record when an admin dismissed the one-and-done recovery nudge.
+	 *
+	 * @var string
+	 */
+	const USER_META_ONE_AND_DONE_NOTICE_DISMISSED = 'wcpay_one_and_done_notice_dismissed_at';
+
+	/**
+	 * User meta key used to record when an admin snoozed the one-and-done recovery nudge.
+	 *
+	 * @var string
+	 */
+	const USER_META_ONE_AND_DONE_NOTICE_SNOOZED = 'wcpay_one_and_done_notice_snoozed_at';
+
+	/**
+	 * User meta key used to record that the one-and-done recovery nudge impression has been tracked.
+	 *
+	 * @var string
+	 */
+	const USER_META_ONE_AND_DONE_NOTICE_SHOWN = 'wcpay_one_and_done_notice_shown';
+
+	/**
+	 * Number of days a merchant's first live transaction must be in the past before the nudge is shown.
+	 *
+	 * @var int
+	 */
+	const ONE_AND_DONE_NOTICE_DAYS_THRESHOLD = 7;
+
+	/**
+	 * Number of days the one-and-done recovery nudge stays hidden after being snoozed.
+	 *
+	 * @var int
+	 */
+	const ONE_AND_DONE_NOTICE_SNOOZE_DAYS = 7;
+
+	/**
+	 * Transient caching the result of the one-and-done recovery eligibility check.
+	 *
+	 * @var string
+	 */
+	const TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE = 'wcpay_one_and_done_eligible';
+
+	/**
 	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -92,6 +134,7 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function init_hooks(): void {
+		// Test-to-live activation nudge.
 		add_action( 'admin_init', [ $this, 'hide_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'snooze_test_to_live_notice' ] );
 		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
@@ -99,12 +142,22 @@ class WC_Payments_Admin_Banner {
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_test_to_live_notice_script' ] );
 		add_action( 'update_option_' . WC_Payments_Onboarding_Service::TEST_MODE_OPTION, [ $this, 'invalidate_test_to_live_notice_cache' ] );
 
-		// Hook into the active WooCommerce settings tab so the div is injected
+		// One-and-done recovery nudge.
+		add_action( 'admin_init', [ $this, 'hide_one_and_done_notice' ] );
+		add_action( 'admin_init', [ $this, 'snooze_one_and_done_notice' ] );
+		add_action( 'admin_init', [ $this, 'handle_one_and_done_notice_cta' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'register_one_and_done_notice_script' ], 9 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_one_and_done_notice_script' ] );
+		add_action( 'woocommerce_payment_complete', [ $this, 'invalidate_one_and_done_notice_cache_on_order' ] );
+		add_action( 'woocommerce_order_status_completed', [ $this, 'invalidate_one_and_done_notice_cache_on_order' ] );
+
+		// Hook into the active WooCommerce settings tab so the divs are injected
 		// inside the page content — after the tab/section navigation but before
 		// the settings form — bypassing the WC Admin notice interception.
 		if ( isset( $_GET['page'] ) && 'wc-settings' === sanitize_key( wp_unslash( $_GET['page'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'general'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			add_action( "woocommerce_sections_{$tab}", [ $this, 'maybe_show_test_to_live_notice' ] );
+			add_action( "woocommerce_sections_{$tab}", [ $this, 'maybe_show_one_and_done_notice' ] );
 		}
 	}
 
@@ -326,6 +379,228 @@ class WC_Payments_Admin_Banner {
 	}
 
 	/**
+	 * Register the one-and-done recovery notice React script and style.
+	 *
+	 * @return void
+	 */
+	public function register_one_and_done_notice_script(): void {
+		WC_Payments::register_script_with_dependencies( 'WCPAY_ONE_AND_DONE_NOTICE', 'dist/wc-payments-one-and-done-notice' );
+		wp_set_script_translations( 'WCPAY_ONE_AND_DONE_NOTICE', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_ONE_AND_DONE_NOTICE',
+			plugins_url( 'dist/wc-payments-one-and-done-notice.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/wc-payments-one-and-done-notice.css' ),
+			'all'
+		);
+	}
+
+	/**
+	 * Enqueue the one-and-done recovery notice React bundle when the notice is eligible to be shown.
+	 *
+	 * @return void
+	 */
+	public function enqueue_one_and_done_notice_script() {
+		if ( ! $this->should_show_one_and_done_notice() ) {
+			return;
+		}
+
+		$screen = get_current_screen();
+		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+			return;
+		}
+
+		wp_localize_script(
+			'WCPAY_ONE_AND_DONE_NOTICE',
+			'wcpayOneAndDoneNoticeSettings',
+			[
+				'ctaUrl'     => wp_nonce_url(
+					add_query_arg( 'wcpay-one-and-done-cta', '1' ),
+					'wcpay_one_and_done_cta_nonce',
+					'_wcpay_one_and_done_cta_nonce'
+				),
+				'dismissUrl' => wp_nonce_url(
+					add_query_arg( 'wcpay-hide-one-and-done-notice', '1' ),
+					'wcpay_hide_one_and_done_notice_nonce',
+					'_wcpay_one_and_done_notice_nonce'
+				),
+				'snoozeUrl'  => wp_nonce_url(
+					add_query_arg( 'wcpay-snooze-one-and-done-notice', '1' ),
+					'wcpay_snooze_one_and_done_notice_nonce',
+					'_wcpay_snooze_one_and_done_notice_nonce'
+				),
+			]
+		);
+
+		wp_enqueue_script( 'WCPAY_ONE_AND_DONE_NOTICE' );
+		wp_enqueue_style( 'WCPAY_ONE_AND_DONE_NOTICE' );
+	}
+
+	/**
+	 * Whether to show the one-and-done recovery nudge to the current user.
+	 *
+	 * Requires: manage_woocommerce capability, connected and live WooPayments
+	 * account, exactly one successful live-mode WooPayments order whose date is
+	 * at least ONE_AND_DONE_NOTICE_DAYS_THRESHOLD days in the past, and no
+	 * active dismiss or snooze.
+	 *
+	 * @return bool
+	 */
+	public function should_show_one_and_done_notice(): bool {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		if ( get_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_DISMISSED, true ) ) {
+			return false;
+		}
+
+		$snoozed_at = (int) get_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_SNOOZED, true );
+		if ( $snoozed_at && time() < $snoozed_at + self::ONE_AND_DONE_NOTICE_SNOOZE_DAYS * DAY_IN_SECONDS ) {
+			return false;
+		}
+
+		return $this->is_one_and_done_notice_eligible_to_be_shown();
+	}
+
+	/**
+	 * Drops the one-and-done eligibility transient when a WooPayments live-mode
+	 * order completes, so a real 2nd transaction self-clears the banner within
+	 * one page request rather than waiting for the 1-hour TTL.
+	 *
+	 * Short-circuits when there's no transient to invalidate to keep the
+	 * per-order overhead at a single options-table read.
+	 *
+	 * @param int $order_id Order ID.
+	 * @return void
+	 */
+	public function invalidate_one_and_done_notice_cache_on_order( $order_id ): void {
+		if ( false === get_transient( self::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE ) ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order || 'woocommerce_payments' !== $order->get_payment_method() ) {
+			return;
+		}
+
+		if ( Order_Mode::PRODUCTION !== $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY ) ) {
+			return;
+		}
+
+		delete_transient( self::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE );
+	}
+
+	/**
+	 * Render the one-and-done recovery nudge on the WP-admin dashboard.
+	 *
+	 * @return void
+	 */
+	public function maybe_show_one_and_done_notice() {
+		if ( ! $this->should_show_one_and_done_notice() ) {
+			return;
+		}
+
+		if ( ! get_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_SHOWN, true ) ) {
+			$this->record_tracks_event( 'wcpay_one_and_done_notice_shown' );
+			update_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_SHOWN, true );
+		}
+
+		echo '<div id="wcpay-one-and-done-notice"></div>';
+	}
+
+	/**
+	 * Handles the "Marketing tools" CTA from the one-and-done recovery notice.
+	 *
+	 * Redirects the merchant to the WooCommerce Marketing Hub.
+	 *
+	 * Fires on admin_init so the redirect happens before any output.
+	 *
+	 * @return void
+	 */
+	public function handle_one_and_done_notice_cta() {
+		if ( ! isset( $_GET['wcpay-one-and-done-cta'] ) || ! isset( $_GET['_wcpay_one_and_done_cta_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_one_and_done_cta_nonce'] ) ), 'wcpay_one_and_done_cta_nonce' ) ) {
+			return;
+		}
+
+		$this->record_tracks_event( 'wcpay_one_and_done_notice_cta_clicked', [ 'destination' => 'marketing' ] );
+
+		wp_safe_redirect(
+			add_query_arg(
+				[
+					'page' => 'wc-admin',
+					'path' => '/marketing',
+				],
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * Persists the one-and-done recovery notice dismissal in user meta when the dismiss link is followed.
+	 *
+	 * @return void
+	 */
+	public function hide_one_and_done_notice() {
+		if ( ! isset( $_GET['wcpay-hide-one-and-done-notice'] ) || ! isset( $_GET['_wcpay_one_and_done_notice_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_one_and_done_notice_nonce'] ) ), 'wcpay_hide_one_and_done_notice_nonce' ) ) {
+			return;
+		}
+
+		$this->record_tracks_event( 'wcpay_one_and_done_notice_dismissed' );
+
+		update_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_DISMISSED, time() );
+
+		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-one-and-done-notice', '_wcpay_one_and_done_notice_nonce' ] ) );
+		exit;
+	}
+
+	/**
+	 * Records the snooze timestamp in user meta when the snooze link is followed.
+	 *
+	 * The notice will be suppressed for ONE_AND_DONE_NOTICE_SNOOZE_DAYS days.
+	 *
+	 * @return void
+	 */
+	public function snooze_one_and_done_notice() {
+		if ( ! isset( $_GET['wcpay-snooze-one-and-done-notice'] ) || ! isset( $_GET['_wcpay_snooze_one_and_done_notice_nonce'] ) ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_snooze_one_and_done_notice_nonce'] ) ), 'wcpay_snooze_one_and_done_notice_nonce' ) ) {
+			return;
+		}
+
+		$this->record_tracks_event( 'wcpay_one_and_done_notice_snoozed' );
+
+		update_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_SNOOZED, time() );
+
+		wp_safe_redirect( remove_query_arg( [ 'wcpay-snooze-one-and-done-notice', '_wcpay_snooze_one_and_done_notice_nonce' ] ) );
+		exit;
+	}
+
+	/**
 	 * Whether the test-to-live notice is globally eligible to be shown.
 	 * Checks the cache first, populates the cache if not found, then returns the result.
 	 *
@@ -397,6 +672,97 @@ class WC_Payments_Admin_Banner {
 		);
 
 		return ! empty( $orders );
+	}
+
+	/**
+	 * Whether the one-and-done recovery notice is globally eligible to be shown.
+	 * Checks the cache first, populates the cache if not found, then returns the result.
+	 *
+	 * @return bool
+	 */
+	private function is_one_and_done_notice_eligible_to_be_shown(): bool {
+		$cached = get_transient( self::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE );
+		if ( false !== $cached ) {
+			return '1' === $cached;
+		}
+
+		$eligible = $this->compute_one_and_done_eligibility();
+		set_transient( self::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE, $eligible ? '1' : '0', HOUR_IN_SECONDS );
+
+		return $eligible;
+	}
+
+	/**
+	 * Compute the eligibility for the one-and-done recovery notice.
+	 * Conditions:
+	 * - Account is connected and valid.
+	 * - Account is not a test drive account.
+	 * - Payments are enabled.
+	 * - Stripe account is live.
+	 * - Mode is neither test nor development (merchant is currently transacting live).
+	 * - Exactly one completed/processing live-mode WooPayments order exists.
+	 * - That order's date_created is at least ONE_AND_DONE_NOTICE_DAYS_THRESHOLD days in the past.
+	 *
+	 * @return bool True if the notice should be shown, false otherwise.
+	 */
+	private function compute_one_and_done_eligibility(): bool {
+		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
+			return false;
+		}
+
+		$account_status = $this->account->get_account_status_data();
+
+		if ( ! empty( $account_status['testDrive'] ) ) {
+			return false;
+		}
+
+		if ( empty( $account_status['paymentsEnabled'] ) ) {
+			return false;
+		}
+
+		if ( ! $this->account->get_is_live() ) {
+			return false;
+		}
+
+		if ( WC_Payments::mode()->is_test() ) {
+			return false;
+		}
+
+		if ( WC_Payments::mode()->is_dev() ) {
+			return false;
+		}
+
+		// Fetch up to 2 to disambiguate "exactly 1" from "2+" without an unbounded query.
+		$orders = wc_get_orders(
+			[
+				'payment_method' => 'woocommerce_payments',
+				'limit'          => 2,
+				'orderby'        => 'date',
+				'order'          => 'ASC',
+				'return'         => 'ids',
+				'status'         => [ 'wc-completed', 'wc-processing' ],
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value'     => Order_Mode::PRODUCTION,
+			]
+		);
+
+		if ( 1 !== count( $orders ) ) {
+			return false;
+		}
+
+		$first_order = wc_get_order( $orders[0] );
+		if ( ! $first_order ) {
+			return false;
+		}
+
+		$first_order_date = $first_order->get_date_created();
+		if ( ! $first_order_date ) {
+			return false;
+		}
+
+		return time() >= $first_order_date->getTimestamp() + self::ONE_AND_DONE_NOTICE_DAYS_THRESHOLD * DAY_IN_SECONDS;
 	}
 
 	/**
