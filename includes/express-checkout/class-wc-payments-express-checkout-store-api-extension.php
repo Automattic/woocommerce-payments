@@ -68,14 +68,11 @@ class WC_Payments_Express_Checkout_Store_API_Extension {
 	}
 
 	/**
-	 * Returns the ECE method list for the current request's currency.
+	 * Returns the ECE method list filtered against the cart's resolved currency.
 	 *
-	 * The location filter (cart vs product vs checkout) lives on the page-render
-	 * side and is already encoded in `wcpayExpressCheckoutParams.enabled_methods`.
-	 * The Store API call's job is narrower: tell the client whether each method
-	 * still supports the cart's resolved currency.
-	 * The client intersects this list with its localized one to get the final
-	 * (location ∩ currency) set.
+	 * The client intersects this with the localized `enabled_methods` to get
+	 * the final location-and-currency set. We don't filter by location here -
+	 * that's already done at page render.
 	 *
 	 * @return array{express_checkout_methods: string[]}
 	 */

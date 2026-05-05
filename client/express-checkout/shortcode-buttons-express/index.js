@@ -229,8 +229,8 @@ jQuery( ( $ ) => {
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
-			// `creationOptions.enabledMethods` is set when the init flow
-			// re-evaluated availability against the resolved currency.
+			// `creationOptions.enabledMethods` overrides the localized list
+			// when the init flow re-evaluated against the resolved currency.
 			const enabledMethods =
 				creationOptions.enabledMethods ??
 				getExpressCheckoutData( 'enabled_methods' ) ??
@@ -470,11 +470,9 @@ jQuery( ( $ ) => {
 				''
 			).toLowerCase();
 
-			// The localized currency on product pages can be wrong when a
-			// country-pricing plugin or our own cache-optimized multi-currency
-			// mode resolves currency after page render.
-			// Resolve before any Store API call so requests carry the right
-			// value.
+			// On product pages, the localized currency can be stale (country-
+			// pricing plugins, cache-optimized multi-currency). Resolve
+			// before any Store API call so requests carry the right value.
 			if ( isProductContext ) {
 				await resolveExpressCheckoutCurrency( initialCurrency, {
 					buttonContext: 'product',
@@ -489,10 +487,9 @@ jQuery( ( $ ) => {
 				wcpayExpressCheckoutParams.product = undefined;
 			}
 
-			// If the resolver moved currency, the server-localized
-			// `enabled_methods` was filtered against the wrong one.
-			// Re-fetching the cart picks up the right list via the
-			// Store API extension.
+			// If the resolver settled on a different currency, the localized
+			// `enabled_methods` was filtered at the wrong one. Re-fetch the
+			// cart to pick up the right list from the Store API extension.
 			const needsMethodsReevaluation =
 				isProductContext &&
 				getResolvedCurrency( initialCurrency ) !== initialCurrency;
@@ -520,12 +517,10 @@ jQuery( ( $ ) => {
 				cachedCartData
 			);
 
-			// If the resolver moved currency away from the localized one,
-			// the localized `enabled_methods` was filtered against the
-			// wrong currency and we can't trust it.
-			// When the cart re-fetch failed (or the response didn't carry
-			// our extension), fall back to the currency-agnostic methods
-			// only — that's the safe subset that won't trip Stripe's
+			// If the resolver settled on a different currency, the localized
+			// `enabled_methods` was filtered at the wrong one. When the
+			// cart re-fetch fails (or the response is missing our extension),
+			// fall back to currency-agnostic methods so we don't trip Stripe's
 			// currency-mismatch rejection.
 			const enabledMethodsFromCart =
 				cachedCartData?.extensions?.wcpay?.express_checkout_methods;

@@ -1,12 +1,10 @@
 /* global jQuery, wc_price_based_country_ajax_geo_params */
 
 /**
- * "Price Based on Country for WooCommerce" in AJAX-geolocation mode resolves
- * the visitor's currency client-side after page render, so the value
- * localized into `wcpayExpressCheckoutParams.checkout.currency_code` is the
- * store base.
- * We listen for the event WCPBC fires once it has resolved, with a watchdog
- * in case it doesn't.
+ * WCPBC's AJAX-geolocation mode resolves the visitor's currency client-side
+ * after page render, so the localized currency on the page is still the store
+ * base. We wait for WCPBC's currency event, with a watchdog in case it never
+ * fires.
  */
 
 import { addFilter } from '@wordpress/hooks';
@@ -36,9 +34,8 @@ const waitForWCPBCCurrency = ( upstream ) =>
 			$body.off( 'wc_price_based_country_set_currency_params', onEvent )
 		);
 
-		// WCPBC enqueues at priority 1 and fires its AJAX synchronously, so
-		// we may attach after they've already started.
-		// Re-trigger to force a second event we can catch.
+		// WCPBC fires synchronously at priority 1, so we may attach after
+		// their AJAX has already started. Re-trigger to catch a second event.
 		const retriggerTimer = setTimeout(
 			() =>
 				$body.triggerHandler(

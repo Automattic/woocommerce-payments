@@ -33,7 +33,7 @@ const ExpressCheckoutContainer = ( props ) => {
 		getExpressCheckoutData( 'has_subscription' ) ?? false;
 
 	const cartData = select( WC_STORE_CART )?.getCartData();
-	// Prefer the cart's filtered list — server-localized methods don't
+	// Prefer the cart's filtered list. Server-localized methods don't
 	// reflect the resolved currency.
 	const enabledMethodsFromCart =
 		cartData?.extensions?.wcpay?.express_checkout_methods;

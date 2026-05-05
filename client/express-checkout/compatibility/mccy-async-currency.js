@@ -1,10 +1,9 @@
 /* global wcpayAsyncPriceConfig */
 
 /**
- * Cache-optimized multi-currency mode resolves the visitor's currency
- * client-side via the async price renderer.
- * The renderer publishes the answer on `window.wcpayAsyncCurrency.ready`;
- * we await it.
+ * In cache-optimized multi-currency mode, the async price renderer resolves
+ * the visitor's currency client-side and publishes it on
+ * `window.wcpayAsyncCurrency.ready`. We await it.
  */
 
 import { addFilter } from '@wordpress/hooks';

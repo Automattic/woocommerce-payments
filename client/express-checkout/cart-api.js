@@ -38,9 +38,8 @@ export default class ExpressCheckoutCartApi {
 			parse: false,
 			path: addQueryArgs( options.path, {
 				// The resolver fires before any Store API call on product
-				// pages.
-				// Cart/checkout/pay-for-order fall back to the localized
-				// value — the resolver doesn't run there.
+				// pages. Cart/checkout/pay-for-order fall back to the
+				// localized value (the resolver doesn't run there).
 				// `wcpayExpressCheckoutParams` will always be defined if this file is needed.
 				// If there's an issue with it, ask yourself why this file is queued and `wcpayExpressCheckoutParams` isn't present.
 				currency: getResolvedCurrency(

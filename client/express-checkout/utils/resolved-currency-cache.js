@@ -1,10 +1,7 @@
-// On product pages, the currency localized server-side at render time can
-// be wrong — for example, on cached pages where multi-currency runs in
-// cache-optimized mode, the server doesn't know the visitor's currency when
-// the cache entry is built, so it falls back to the store base.
-// The resolver figures out the actual currency a bit later, and we hold
-// onto it here so that when `cart-api.js` calls the Store API, the
-// `?currency=` query arg matches what the visitor is shopping in.
+// Cache-optimized multi-currency mode caches product pages at the store
+// base, so the localized currency is wrong until the resolver figures it
+// out post-render. We hold onto the resolved value here so cart-api can
+// pass it as `?currency=` on Store API calls.
 let resolvedCurrency = null;
 
 export const setResolvedCurrency = ( currency ) => {
