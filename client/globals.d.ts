@@ -260,6 +260,11 @@ declare global {
 		snoozeUrl: string;
 	};
 
+	const wcpayPostKycActivationNoticeSettings: {
+		stage: 7 | 14 | 30;
+		dismissUrl: string;
+	};
+
 	interface WcSettings {
 		ece_data?: WCPayExpressCheckoutParams;
 		woocommerce_payments_data: typeof wcpaySettings;
@@ -335,6 +340,7 @@ declare global {
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 		wcpayReviewPromptSettings?: typeof wcpayReviewPromptSettings;
 		wcpayTestToLiveNoticeSettings?: typeof wcpayTestToLiveNoticeSettings;
+		wcpayPostKycActivationNoticeSettings?: typeof wcpayPostKycActivationNoticeSettings;
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		wcpay_upe_config?: typeof wcpay_upe_config;
 	}
