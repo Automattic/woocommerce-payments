@@ -6,8 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { RecommendedDocument } from './types';
-import type { EvidenceFieldStatus } from './types';
+import type { RecommendedDocument, EvidenceFieldStatus } from './types';
 import { DOCUMENT_FIELD_KEYS } from './document-field-keys';
 import type { DisputeReason, ProductType } from 'wcpay/types/disputes';
 
@@ -2423,6 +2422,13 @@ const isFieldProvided = (
  * cells keyed `${productType}__${status}`; we union every cell whose key
  * starts with `${productType}__` so the optional-missing pool covers all
  * status branches the resolved dispute might have come from.
+ *
+ * Mirrors the base-field merge that `getRecommendedDocumentFields` applies:
+ * when at least one cell matches, `customer_communication` is implicitly
+ * recommended (the wizard adds it as a base field for cells that don't
+ * already include it). Without this, cells that omit `customer_communication`
+ * explicitly (37 of 49 today) would silently drop it from the optional-
+ * missing pool in the outcome view.
  */
 const collectMatrixKeys = (
 	reason: string,
@@ -2435,6 +2441,7 @@ const collectMatrixKeys = (
 	}
 
 	const productTypePrefix = `${ productType }__`;
+	let matched = false;
 	for ( const [ matrixKey, docs ] of Object.entries( productTypeEntries ) ) {
 		if (
 			matrixKey !== productType &&
@@ -2442,9 +2449,13 @@ const collectMatrixKeys = (
 		) {
 			continue;
 		}
+		matched = true;
 		for ( const doc of docs ) {
 			keys.add( doc.key );
 		}
+	}
+	if ( matched ) {
+		keys.add( 'customer_communication' );
 	}
 	return keys;
 };

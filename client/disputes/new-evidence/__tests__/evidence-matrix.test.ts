@@ -300,6 +300,39 @@ describe( 'getExpectedFieldStatus', () => {
 		);
 		expect( refundPolicyRows ).toHaveLength( 1 );
 	} );
+
+	it( 'mirrors the wizard customer_communication base-field merge for cells that omit it explicitly', () => {
+		// `duplicate.physical_product__{is_duplicate,is_not_duplicate}` cells
+		// don't list `customer_communication` explicitly; the wizard auto-
+		// merges it as a base field via `getRecommendedDocumentFields`.
+		// `getExpectedFieldStatus` must mirror that merge so the outcome
+		// view doesn't silently drop `customer_communication` from the
+		// optional-missing pool.
+		const result = getExpectedFieldStatus(
+			'duplicate',
+			'physical_product',
+			{}
+		);
+		const customerCommunication = result.find(
+			( f ) => f.key === 'customer_communication'
+		);
+		expect( customerCommunication ).toBeDefined();
+		expect( customerCommunication?.state ).toBe( 'optional_missing' );
+		expect( customerCommunication?.label ).toBe( 'Customer communication' );
+	} );
+
+	it( 'does not synthesise customer_communication when no wizard cell matches', () => {
+		// `unrecognized` has no wizard matrix entry. The base-field merge
+		// must not run for an unmatched (reason, productType) pair, otherwise
+		// every empty cell would surface a phantom `customer_communication`
+		// row.
+		const result = getExpectedFieldStatus(
+			'unrecognized',
+			'physical_product',
+			{}
+		);
+		expect( result ).toHaveLength( 0 );
+	} );
 } );
 
 describe( 'DISPUTE_HIGH_IMPACT_FIELDS', () => {
