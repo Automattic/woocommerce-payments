@@ -10,12 +10,20 @@ use WCPay\WooPay\Tracking_Providers\WooPay_ShipStation_Provider;
 require_once __DIR__ . '/../../../../includes/woopay/tracking-providers/interface-woopay-tracking-provider.php';
 require_once __DIR__ . '/../../../../includes/woopay/tracking-providers/class-woopay-shipstation-provider.php';
 
-// Load the ShipStation detection stub. This simulates the plugin being active.
-// WC_Shipment_Tracking is intentionally NOT loaded here: once that stub is
-// required it persists for the whole PHPUnit process and would break
-// is_available() for every subsequent test. The "WC ST present → returns false"
-// exclusion branch is covered in WooPay_Order_Tracking_Sync_Test instead,
-// which can inject mock providers without class pollution.
+/*
+ * Load the ShipStation detection stub. This simulates the plugin being active.
+ * WC_Shipment_Tracking is intentionally NOT loaded here: once that stub is
+ * required it persists for the whole PHPUnit process and would break
+ * is_available() for every subsequent test.
+ *
+ * The class_exists('WC_Shipment_Tracking') → return false branch of is_available()
+ * is therefore not directly testable in this file. This gap is acceptable because:
+ * (a) ShipStation's own source uses the identical sentinel to decide which meta path
+ * to write — if WC_Shipment_Tracking is present, ShipStation never writes the
+ * flat meta keys this provider reads, so the branch is structurally unreachable
+ * in production; and (b) the provider chain ordering in WooPay_Order_Tracking_Sync
+ * ensures Phase 1 (WooPay_Shipment_Tracking_Provider) wins first.
+ */
 require_once __DIR__ . '/stub-wc-shipstation-integration.php';
 
 /**
