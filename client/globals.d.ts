@@ -262,6 +262,7 @@ declare global {
 
 	const wcpayPostKycActivationNoticeSettings: {
 		stage: 7 | 14 | 30;
+		ctaUrl: string;
 		dismissUrl: string;
 	};
 

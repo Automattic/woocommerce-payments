@@ -12,38 +12,38 @@ import BannerNotice from '../banner-notice';
 const stageContent: Record< number, { heading: string; body: string } > = {
 	7: {
 		heading: __(
-			'Your account is live — time for your first sale',
+			'Your store is open. Now bring in your first customer.',
 			'woocommerce-payments'
 		),
 		body: __(
-			"Your payments are set up and ready. Now it's about getting eyes on your store — share your link, tell your network, and make your first sale.",
+			'Share your store link with your network, on social, or by email to spread the word.',
 			'woocommerce-payments'
 		),
 	},
 	14: {
 		heading: __(
-			'Two weeks in — have you shared your store yet?',
+			'Two weeks on, still no first sale?',
 			'woocommerce-payments'
 		),
 		body: __(
-			'Your account is fully approved and accepting payments. Share your store with your first potential customers to get that first sale.',
+			"Most first sales come from word of mouth or social shares. If you've already tried those, marketing tools can help reach a wider audience.",
 			'woocommerce-payments'
 		),
 	},
 	30: {
 		heading: __(
-			'Your payments are ready — your first sale can be too',
+			"A month in. Let's get your first sale.",
 			'woocommerce-payments'
 		),
 		body: __(
-			'Everything on the payments side is ready. The next step is getting your first customer through the door — share your store link and start spreading the word.',
+			"If organic sharing hasn't worked, marketing tools can help: paid ads, email campaigns, or SEO improvements usually move the needle.",
 			'woocommerce-payments'
 		),
 	},
 };
 
 const PostKycActivationNotice: React.FC = () => {
-	const { stage, dismissUrl } =
+	const { stage, ctaUrl, dismissUrl } =
 		window?.wcpayPostKycActivationNoticeSettings ?? {};
 
 	const content = stage ? stageContent[ stage ] : null;
@@ -58,6 +58,13 @@ const PostKycActivationNotice: React.FC = () => {
 			onRemove={ () => {
 				window.location.href = dismissUrl ?? '';
 			} }
+			actions={ [
+				{
+					label: __( 'Promote my store', 'woocommerce-payments' ),
+					variant: 'primary',
+					url: ctaUrl ?? '',
+				},
+			] }
 		>
 			<strong>{ content.heading }</strong> { content.body }
 		</BannerNotice>

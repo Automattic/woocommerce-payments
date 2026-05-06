@@ -475,6 +475,13 @@ class WC_Payments_Admin_Banner {
 			'wcpayPostKycActivationNoticeSettings',
 			[
 				'stage'      => $stage,
+				'ctaUrl'     => add_query_arg(
+					[
+						'page' => 'wc-admin',
+						'path' => '/marketing',
+					],
+					admin_url( 'admin.php' )
+				),
 				'dismissUrl' => wp_nonce_url(
 					add_query_arg( 'wcpay-hide-post-kyc-activation-notice', '1' ),
 					'wcpay_hide_post_kyc_activation_notice_nonce',
