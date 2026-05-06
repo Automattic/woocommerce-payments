@@ -13,7 +13,7 @@ import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
 import OverviewCard from 'wcpay/components/overview-card';
-import { LoadableBlock } from 'wcpay/components/loadable';
+import Loadable, { LoadableBlock } from 'wcpay/components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
@@ -30,9 +30,44 @@ import useRecentDeposits from './hooks';
 import './style.scss';
 
 const DepositsLoadingState: React.FC = () => (
-	<CardBody className="wcpay-deposits-overview__schedule__container">
-		<LoadableBlock isLoading numLines={ 1 } />
-	</CardBody>
+	<>
+		<CardBody className="wcpay-deposits-overview__schedule__container">
+			<Loadable
+				isLoading
+				placeholder={ __(
+					'Available funds are automatically dispatched every day.',
+					'woocommerce-payments'
+				) }
+			/>
+		</CardBody>
+
+		<CardBody className="wcpay-deposits-overview__heading">
+			<span className="wcpay-deposits-overview__heading__title">
+				{ __( 'Payout history', 'woocommerce-payments' ) }
+			</span>
+		</CardBody>
+
+		<CardBody>
+			<LoadableBlock isLoading numLines={ 4 } />
+		</CardBody>
+
+		<CardFooter className="wcpay-deposits-overview__footer">
+			<Loadable
+				isLoading
+				placeholder={ __(
+					'View full payout history',
+					'woocommerce-payments'
+				) }
+			/>
+			<Loadable
+				isLoading
+				placeholder={ __(
+					'Change payout schedule',
+					'woocommerce-payments'
+				) }
+			/>
+		</CardFooter>
+	</>
 );
 
 const DepositsOverview: React.FC = () => {

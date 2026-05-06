@@ -294,11 +294,18 @@ describe( 'Deposits Overview information', () => {
 
 		const { container } = render( <DepositsOverview /> );
 
-		// no help icon (or any SVG) inside the loading state.
-		expect( container.querySelector( 'svg' ) ).not.toBeInTheDocument();
-		expect(
-			container.querySelector( '.is-loadable-placeholder' )
-		).toBeInTheDocument();
+		const placeholders = container.querySelectorAll(
+			'.is-loadable-placeholder'
+		);
+
+		expect( placeholders.length ).toBeGreaterThan( 0 );
+
+		// no help icon (or any SVG) inside the loading state
+		placeholders.forEach( ( placeholder ) => {
+			expect(
+				placeholder.querySelector( 'svg' )
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	test( `Component doesn't render for new accounts with no pending funds`, () => {
