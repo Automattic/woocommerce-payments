@@ -11,7 +11,8 @@ interface OverviewCardProps {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	LoadingState: React.ComponentType;
 	className?: string;
-	children: React.ReactNode;
+	headerClassName?: string;
+	children?: React.ReactNode;
 }
 
 const OverviewCard: React.FC< OverviewCardProps > = ( {
@@ -19,10 +20,11 @@ const OverviewCard: React.FC< OverviewCardProps > = ( {
 	isLoading,
 	LoadingState,
 	className,
+	headerClassName,
 	children,
 } ) => (
 	<Card className={ className }>
-		<CardHeader>{ title }</CardHeader>
+		<CardHeader className={ headerClassName }>{ title }</CardHeader>
 		{ isLoading ? <LoadingState /> : children }
 	</Card>
 );

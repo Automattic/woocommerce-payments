@@ -118,19 +118,15 @@ const getActiveLoanId = () => {
 const ActiveLoanSummary = (): JSX.Element => {
 	const { summary, isLoading } = useActiveLoanSummary();
 	const showLoadingState = isLoading || ! summary;
+	const activeLoanId = getActiveLoanId();
 
-	// Wrapping the title in a Flex carrying `wcpay-loan-summary-header` keeps
-	// the existing CSS selector working (it scopes the "View transactions"
-	// link's text-decoration) and preserves the FlexItem layout that
-	// CardHeader used to provide. OverviewCard's CardHeader doesn't accept a
-	// className, so the class lives on this inner wrapper instead.
 	const title = (
-		<Flex className="wcpay-loan-summary-header">
+		<>
 			<FlexItem>
 				{ __( 'Active loan overview', 'woocommerce-payments' ) }
 			</FlexItem>
 			<FlexItem>
-				{ ! showLoadingState && getActiveLoanId() && (
+				{ ! showLoadingState && activeLoanId && (
 					<Button
 						variant="link"
 						href={ getAdminUrl( {
@@ -138,7 +134,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 							path: '/payments/transactions',
 							type: 'charge',
 							filter: 'advanced',
-							loan_id_is: getActiveLoanId(),
+							loan_id_is: activeLoanId,
 						} ) }
 						__next40pxDefaultSize
 					>
@@ -146,18 +142,17 @@ const ActiveLoanSummary = (): JSX.Element => {
 					</Button>
 				) }
 			</FlexItem>
-		</Flex>
+		</>
 	);
 
 	if ( showLoadingState ) {
 		return (
 			<OverviewCard
 				title={ title }
-				isLoading
+				headerClassName="wcpay-loan-summary-header"
+				isLoading={ true }
 				LoadingState={ LoanSummaryLoadingState }
-			>
-				{ null }
-			</OverviewCard>
+			/>
 		);
 	}
 
@@ -166,6 +161,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 	return (
 		<OverviewCard
 			title={ title }
+			headerClassName="wcpay-loan-summary-header"
 			isLoading={ false }
 			LoadingState={ LoanSummaryLoadingState }
 		>

@@ -14,13 +14,14 @@ const LoadingState: React.FC = () => (
 );
 
 describe( 'OverviewCard', () => {
-	test( 'renders children (and not the LoadingState) when not loading, with title and forwarded className', () => {
+	test( 'renders children (and not the LoadingState) when not loading, with title and forwarded class names', () => {
 		const { container, getByText, queryByTestId } = render(
 			<OverviewCard
 				title="Payouts"
 				isLoading={ false }
 				LoadingState={ LoadingState }
 				className="custom-card-class"
+				headerClassName="custom-header-class"
 			>
 				<div>loaded content</div>
 			</OverviewCard>
@@ -31,6 +32,9 @@ describe( 'OverviewCard', () => {
 		expect( queryByTestId( 'loading-state' ) ).not.toBeInTheDocument();
 		expect(
 			container.querySelector( '.custom-card-class' )
+		).toBeInTheDocument();
+		expect(
+			container.querySelector( '.custom-header-class' )
 		).toBeInTheDocument();
 	} );
 

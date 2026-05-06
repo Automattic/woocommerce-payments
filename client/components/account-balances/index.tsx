@@ -90,9 +90,7 @@ const AccountBalances: React.FC = () => {
 				className="wcpay-account-balances"
 				isLoading
 				LoadingState={ BalancesLoadingState }
-			>
-				{ null }
-			</OverviewCard>
+			/>
 		);
 	}
 
