@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -399,7 +399,10 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		);
 
 		// Confirm acceptance from within the modal.
-		const confirmButton = screen.getByTestId( 'accept-dispute-button' );
+		const confirmButton = within( screen.getByRole( 'dialog' ) ).getByRole(
+			'button',
+			{ name: /Accept dispute/i }
+		);
 		await userEvent.click( confirmButton );
 
 		// Confirming should fire a separate tracks event with matching properties,
@@ -669,7 +672,7 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 				dispute={ dispute }
 				customer={ customer }
 				chargeCreated={ 1693453017 }
-				orderUrl="https://example.com/order/123"
+				orderUrl=""
 				paymentMethod="klarna"
 				bankName={ null }
 			/>
@@ -681,6 +684,22 @@ describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
 
 		expect( recordEvent ).toHaveBeenCalledWith(
 			'wcpay_dispute_inquiry_refund_modal_view',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
+
+		await userEvent.click(
+			within( screen.getByRole( 'dialog' ) ).getByRole( 'button', {
+				name: /View order to issue refund/i,
+			} )
+		);
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_inquiry_refund_click',
 			{
 				dispute_id: dispute.id,
 				dispute_status: dispute.status,
