@@ -794,6 +794,32 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Get the BNPL limits per currency for a specific payment method.
+	 *
+	 * Looks up the payment method definition via the registry and returns its
+	 * declared currency limits. Returns an empty array if the id is not registered.
+	 *
+	 * @param string $payment_method The payment method id ('affirm', 'afterpay_clearpay', or 'klarna').
+	 * @return array The BNPL limits per currency for the specified payment method.
+	 */
+	public static function get_bnpl_limits_per_currency( $payment_method ) {
+		$registry    = PaymentMethodDefinitionRegistry::instance();
+		$definitions = $registry->get_all_payment_method_definitions();
+
+		if ( empty( $definitions ) ) {
+			$registry->init();
+			$definitions = $registry->get_all_payment_method_definitions();
+		}
+
+		$definition_class = $definitions[ $payment_method ] ?? null;
+		if ( null === $definition_class ) {
+			return [];
+		}
+
+		return $definition_class::get_limits_per_currency();
+	}
+
+	/**
 	 * Check if any BNPL method is available for a given country, currency, and price.
 	 *
 	 * @param array  $enabled_methods Array of enabled BNPL methods.
@@ -806,7 +832,7 @@ class WC_Payments_Utils {
 		$price_in_cents = $price;
 
 		foreach ( $enabled_methods as $method ) {
-			$limits = self::get_bnpl_method_limits( $method );
+			$limits = self::get_bnpl_limits_per_currency( $method );
 
 			if ( isset( $limits[ $currency_code ][ $country_code ] ) ) {
 				$min_amount = $limits[ $currency_code ][ $country_code ]['min'];
@@ -831,7 +857,7 @@ class WC_Payments_Utils {
 	 */
 	public static function is_any_bnpl_supporting_country( array $enabled_methods, string $country_code, string $currency_code ): bool {
 		foreach ( $enabled_methods as $method ) {
-			$limits = self::get_bnpl_method_limits( $method );
+			$limits = self::get_bnpl_limits_per_currency( $method );
 			if ( isset( $limits[ $currency_code ][ $country_code ] ) ) {
 				return true;
 			}
@@ -1325,32 +1351,6 @@ class WC_Payments_Utils {
 			$logger = wc_get_logger();
 			$logger->$level( $message, [ 'source' => 'woopayments' ] );
 		}
-	}
-
-	/**
-	 * Look up the per-currency limits for a BNPL payment method via its definition.
-	 *
-	 * Lazily initializes the registry — the production bootstrap (WC_Payments::init_service)
-	 * already calls init(), but lazy init keeps callers safe in early-boot or partial-test setups.
-	 *
-	 * @param string $payment_method_id Payment method id (e.g. 'affirm', 'afterpay_clearpay', 'klarna').
-	 * @return array Currency-keyed limits, or empty array if the id is not registered.
-	 */
-	private static function get_bnpl_method_limits( string $payment_method_id ): array {
-		$registry    = PaymentMethodDefinitionRegistry::instance();
-		$definitions = $registry->get_all_payment_method_definitions();
-
-		if ( empty( $definitions ) ) {
-			$registry->init();
-			$definitions = $registry->get_all_payment_method_definitions();
-		}
-
-		$definition_class = $definitions[ $payment_method_id ] ?? null;
-		if ( null === $definition_class ) {
-			return [];
-		}
-
-		return $definition_class::get_limits_per_currency();
 	}
 
 	/**
