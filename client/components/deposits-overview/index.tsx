@@ -34,6 +34,7 @@ const DepositsLoadingState: React.FC = () => (
 		<CardBody className="wcpay-deposits-overview__schedule__container">
 			<Loadable
 				isLoading
+				aria-hidden
 				placeholder={ __(
 					'Available funds are automatically dispatched every day.',
 					'woocommerce-payments'
@@ -54,6 +55,7 @@ const DepositsLoadingState: React.FC = () => (
 		<CardFooter className="wcpay-deposits-overview__footer">
 			<Loadable
 				isLoading
+				aria-hidden
 				placeholder={ __(
 					'View full payout history',
 					'woocommerce-payments'
@@ -61,6 +63,7 @@ const DepositsLoadingState: React.FC = () => (
 			/>
 			<Loadable
 				isLoading
+				aria-hidden
 				placeholder={ __(
 					'Change payout schedule',
 					'woocommerce-payments'

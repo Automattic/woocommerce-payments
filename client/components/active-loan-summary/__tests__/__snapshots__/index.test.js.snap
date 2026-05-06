@@ -520,6 +520,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             >
               <span
                 aria-busy="true"
+                aria-hidden="true"
                 class="is-loadable-placeholder is-inline"
               >
                 Total repaid placeholder
@@ -541,6 +542,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             >
               <span
                 aria-busy="true"
+                aria-hidden="true"
                 class="is-loadable-placeholder is-inline"
               >
                 Repaid this period placeholder
@@ -568,6 +570,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             >
               <span
                 aria-busy="true"
+                aria-hidden="true"
                 class="is-loadable-placeholder is-inline"
               >
                 Date disbursed
@@ -589,6 +592,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             >
               <span
                 aria-busy="true"
+                aria-hidden="true"
                 class="is-loadable-placeholder is-inline"
               >
                 Loan amount
@@ -610,6 +614,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             >
               <span
                 aria-busy="true"
+                aria-hidden="true"
                 class="is-loadable-placeholder is-inline"
               >
                 Fixed fee
@@ -631,6 +636,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             >
               <span
                 aria-busy="true"
+                aria-hidden="true"
                 class="is-loadable-placeholder is-inline"
               >
                 Rate
@@ -652,6 +658,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             >
               <span
                 aria-busy="true"
+                aria-hidden="true"
                 class="is-loadable-placeholder is-inline"
               >
                 First paydown

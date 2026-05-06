@@ -43,6 +43,7 @@ const LoanSummaryLoadingState: React.FC = () => (
 			<Block title={ __( 'Total repaid', 'woocommerce-payments' ) }>
 				<Loadable
 					isLoading={ true }
+					aria-hidden
 					display="inline"
 					placeholder={ __(
 						'Total repaid placeholder',
@@ -53,6 +54,7 @@ const LoanSummaryLoadingState: React.FC = () => (
 			<Block title={ __( 'Repaid this period', 'woocommerce-payments' ) }>
 				<Loadable
 					isLoading={ true }
+					aria-hidden
 					display="inline"
 					placeholder={ __(
 						'Repaid this period placeholder',
@@ -65,6 +67,7 @@ const LoanSummaryLoadingState: React.FC = () => (
 			<Block title={ __( 'Loan disbursed', 'woocommerce-payments' ) }>
 				<Loadable
 					isLoading={ true }
+					aria-hidden
 					display="inline"
 					placeholder="Date disbursed"
 				/>
@@ -72,6 +75,7 @@ const LoanSummaryLoadingState: React.FC = () => (
 			<Block title={ __( 'Loan amount', 'woocommerce-payments' ) }>
 				<Loadable
 					isLoading={ true }
+					aria-hidden
 					display="inline"
 					placeholder="Loan amount"
 				/>
@@ -79,6 +83,7 @@ const LoanSummaryLoadingState: React.FC = () => (
 			<Block title={ __( 'Fixed fee', 'woocommerce-payments' ) }>
 				<Loadable
 					isLoading={ true }
+					aria-hidden
 					display="inline"
 					placeholder="Fixed fee"
 				/>
@@ -86,6 +91,7 @@ const LoanSummaryLoadingState: React.FC = () => (
 			<Block title={ __( 'Withhold rate', 'woocommerce-payments' ) }>
 				<Loadable
 					isLoading={ true }
+					aria-hidden
 					display="inline"
 					placeholder="Rate"
 				/>
@@ -93,6 +99,7 @@ const LoanSummaryLoadingState: React.FC = () => (
 			<Block title={ __( 'First paydown', 'woocommerce-payments' ) }>
 				<Loadable
 					isLoading={ true }
+					aria-hidden
 					display="inline"
 					placeholder={ __(
 						'First paydown',
