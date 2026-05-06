@@ -129,6 +129,28 @@ class WC_Payments_Admin_Banner {
 	}
 
 	/**
+	 * Registers hooks that must fire regardless of request context.
+	 *
+	 * The one-and-done recovery banner relies on `woocommerce_payment_complete`
+	 * and `woocommerce_order_status_completed` to drop its eligibility transient
+	 * the moment a real 2nd transaction lands. Those events fire from frontend
+	 * checkout (storefront, `is_admin()` false) and from Stripe webhook REST
+	 * handlers (also `is_admin()` false), so registering them inside
+	 * init_hooks() — which is only called in admin context — would silently miss
+	 * the production paths the cache invalidation is meant to cover.
+	 *
+	 * Call this on every request; init_hooks() stays admin-gated for the
+	 * render/CTA/dismiss/snooze surface.
+	 *
+	 * @return void
+	 */
+	public function init_global_hooks(): void {
+		add_action( 'woocommerce_payment_complete', [ $this, 'invalidate_one_and_done_notice_cache_on_order' ] );
+		add_action( 'woocommerce_order_status_completed', [ $this, 'invalidate_one_and_done_notice_cache_on_order' ] );
+		add_action( 'woocommerce_order_status_processing', [ $this, 'invalidate_one_and_done_notice_cache_on_order' ] );
+	}
+
+	/**
 	 * Registers hooks for every banner managed by this class.
 	 *
 	 * @return void
@@ -148,8 +170,6 @@ class WC_Payments_Admin_Banner {
 		add_action( 'admin_init', [ $this, 'handle_one_and_done_notice_cta' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_one_and_done_notice_script' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_one_and_done_notice_script' ] );
-		add_action( 'woocommerce_payment_complete', [ $this, 'invalidate_one_and_done_notice_cache_on_order' ] );
-		add_action( 'woocommerce_order_status_completed', [ $this, 'invalidate_one_and_done_notice_cache_on_order' ] );
 
 		// Hook into the active WooCommerce settings tab so the divs are injected
 		// inside the page content — after the tab/section navigation but before
@@ -465,9 +485,16 @@ class WC_Payments_Admin_Banner {
 	}
 
 	/**
-	 * Drops the one-and-done eligibility transient when a WooPayments live-mode
-	 * order completes, so a real 2nd transaction self-clears the banner within
-	 * one page request rather than waiting for the 1-hour TTL.
+	 * Drops the one-and-done eligibility transient when an order that affects
+	 * the predicate's count completes, so the banner self-clears within one
+	 * page request rather than waiting for the 1-hour TTL.
+	 *
+	 * Any non-test-mode order completion can change eligibility — a 2nd
+	 * WooPayments live order disqualifies, and a non-WooPayments order (cheque,
+	 * COD, etc.) also disqualifies because the eligibility predicate counts
+	 * total real-customer orders. Only test-mode WooPayments orders are
+	 * skipped: they don't represent real customers and the predicate ignores
+	 * them.
 	 *
 	 * Short-circuits when there's no transient to invalidate to keep the
 	 * per-order overhead at a single options-table read.
@@ -481,11 +508,14 @@ class WC_Payments_Admin_Banner {
 		}
 
 		$order = wc_get_order( $order_id );
-		if ( ! $order || 'woocommerce_payments' !== $order->get_payment_method() ) {
+		if ( ! $order ) {
 			return;
 		}
 
-		if ( Order_Mode::PRODUCTION !== $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY ) ) {
+		// Test-mode WooPayments orders don't count toward real-customer
+		// eligibility, so they don't need to invalidate the cache.
+		if ( 'woocommerce_payments' === $order->get_payment_method()
+			&& Order_Mode::TEST === $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY ) ) {
 			return;
 		}
 
@@ -533,6 +563,12 @@ class WC_Payments_Admin_Banner {
 		}
 
 		$this->record_tracks_event( 'wcpay_one_and_done_notice_cta_clicked', [ 'destination' => 'marketing' ] );
+
+		// Clicking the CTA is a terminal engagement — the merchant followed the call to action,
+		// so we suppress the banner permanently. Reuses the dismissed_at user_meta as the
+		// suppression flag (the dedicated _cta_clicked Tracks event lets analytics distinguish
+		// "user dismissed via X" from "user dismissed by clicking through").
+		update_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_DISMISSED, time() );
 
 		wp_safe_redirect(
 			add_query_arg(
@@ -700,8 +736,15 @@ class WC_Payments_Admin_Banner {
 	 * - Payments are enabled.
 	 * - Stripe account is live.
 	 * - Mode is neither test nor development (merchant is currently transacting live).
-	 * - Exactly one completed/processing live-mode WooPayments order exists.
-	 * - That order's date_created is at least ONE_AND_DONE_NOTICE_DAYS_THRESHOLD days in the past.
+	 * - The store has exactly one real-customer order (across all gateways), excluding
+	 *   test-mode WooPayments orders. A merchant with one WooPayments live order plus
+	 *   any other completed orders (cheque, COD, bank transfer, etc.) is not "one and
+	 *   done" at the store level — they're already getting business through other
+	 *   channels and the banner's framing doesn't apply.
+	 * - That single order is a WooPayments live-mode order (otherwise the merchant
+	 *   hasn't used WooPayments yet and this banner doesn't apply).
+	 * - That order's date_created is at least ONE_AND_DONE_NOTICE_DAYS_THRESHOLD days
+	 *   in the past.
 	 *
 	 * @return bool True if the notice should be shown, false otherwise.
 	 */
@@ -732,37 +775,67 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
-		// Fetch up to 2 to disambiguate "exactly 1" from "2+" without an unbounded query.
+		// Fetch up to 20 completed/processing orders, then filter in PHP. We can't
+		// use a `meta_query` to exclude test-mode WooPayments orders inside the
+		// query because the legacy CPT order datastore doesn't support it
+		// (`Order query argument (meta_query) is not supported on the current
+		// order datastore.` — only HPOS does), and we need to work on both.
+		// Twenty is enough for realistic one-and-done cohorts: any merchant with
+		// more orders than that is not "one and done" regardless of mix.
 		$orders = wc_get_orders(
 			[
-				'payment_method' => 'woocommerce_payments',
-				'limit'          => 2,
-				'orderby'        => 'date',
-				'order'          => 'ASC',
-				'return'         => 'ids',
-				'status'         => [ 'wc-completed', 'wc-processing' ],
-				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
-				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'meta_value'     => Order_Mode::PRODUCTION,
+				'limit'   => 20,
+				'orderby' => 'date',
+				'order'   => 'ASC',
+				'status'  => [ 'wc-completed', 'wc-processing' ],
 			]
 		);
 
-		if ( 1 !== count( $orders ) ) {
+		// Saturated — merchant has at least 20 completed/processing orders. Not
+		// "one and done" by any reasonable definition.
+		if ( count( $orders ) >= 20 ) {
 			return false;
 		}
 
-		$first_order = wc_get_order( $orders[0] );
-		if ( ! $first_order ) {
+		// Walk the list and find the single real-customer order, bailing as soon
+		// as we see a second one. Test-mode WooPayments orders are skipped — they
+		// don't represent a real customer transaction.
+		$real_count      = 0;
+		$only_real_order = null;
+		$wcpay_mode_key  = WC_Payments_Order_Service::WCPAY_MODE_META_KEY;
+		foreach ( $orders as $order ) {
+			if ( 'woocommerce_payments' === $order->get_payment_method()
+				&& Order_Mode::TEST === $order->get_meta( $wcpay_mode_key ) ) {
+				continue;
+			}
+			++$real_count;
+			if ( 1 === $real_count ) {
+				$only_real_order = $order;
+			} elseif ( $real_count > 1 ) {
+				return false;
+			}
+		}
+
+		if ( 1 !== $real_count || ! $only_real_order ) {
 			return false;
 		}
 
-		$first_order_date = $first_order->get_date_created();
-		if ( ! $first_order_date ) {
+		// The single real order must be a WooPayments live-mode order — otherwise
+		// the merchant has had a transaction through some other gateway but
+		// never used WooPayments, and this banner's prompt doesn't apply.
+		if ( 'woocommerce_payments' !== $only_real_order->get_payment_method() ) {
+			return false;
+		}
+		if ( Order_Mode::PRODUCTION !== $only_real_order->get_meta( $wcpay_mode_key ) ) {
 			return false;
 		}
 
-		return time() >= $first_order_date->getTimestamp() + self::ONE_AND_DONE_NOTICE_DAYS_THRESHOLD * DAY_IN_SECONDS;
+		$order_date = $only_real_order->get_date_created();
+		if ( ! $order_date ) {
+			return false;
+		}
+
+		return time() >= $order_date->getTimestamp() + self::ONE_AND_DONE_NOTICE_DAYS_THRESHOLD * DAY_IN_SECONDS;
 	}
 
 	/**

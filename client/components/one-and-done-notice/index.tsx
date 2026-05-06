@@ -24,7 +24,7 @@ const OneAndDoneNotice: React.FC = () => {
 			} }
 			actions={ [
 				{
-					label: __( 'Marketing tools', 'woocommerce-payments' ),
+					label: __( 'Promote my store', 'woocommerce-payments' ),
 					variant: 'primary',
 					url: ctaUrl,
 				},
@@ -37,12 +37,12 @@ const OneAndDoneNotice: React.FC = () => {
 		>
 			<strong>
 				{ __(
-					'Want to get your next customer?',
+					'Your store made its first sale.',
 					'woocommerce-payments'
 				) }
 			</strong>{ ' ' }
 			{ __(
-				'You took your first payment. Here are some tips to get the next one.',
+				"Now bring more shoppers in with Woo's marketing tools.",
 				'woocommerce-payments'
 			) }
 		</BannerNotice>
