@@ -66,27 +66,25 @@ describe( 'EvidenceSubmittedList', () => {
 		expect( within( item ).getByText( /provided/i ) ).toBeInTheDocument();
 	} );
 
-	it( 'announces a "missing" state to assistive tech for expected_missing fields', () => {
+	it( 'renders a "Not provided" suffix for both missing states (icon and color carry the urgency)', () => {
 		render(
 			<EvidenceSubmittedList
-				fields={ [ expectedMissing( 'Refund policy' ) ] }
+				fields={ [
+					expectedMissing( 'Refund policy' ),
+					optionalMissing( 'Service date' ),
+				] }
 			/>
 		);
-		const item = screen.getByRole( 'listitem' );
-		expect( item ).toHaveTextContent( /Refund policy/ );
-		expect( within( item ).getByText( /missing/i ) ).toBeInTheDocument();
-	} );
 
-	it( 'announces a "not provided" state for optional_missing fields', () => {
-		render(
-			<EvidenceSubmittedList
-				fields={ [ optionalMissing( 'Service date' ) ] }
-			/>
-		);
-		const item = screen.getByRole( 'listitem' );
-		expect( item ).toHaveTextContent( /Service date/ );
+		const items = screen.getAllByRole( 'listitem' );
+		expect( items[ 0 ] ).toHaveTextContent( /Refund policy/ );
 		expect(
-			within( item ).getByText( /not provided/i )
+			within( items[ 0 ] ).getByText( /not provided/i )
+		).toBeInTheDocument();
+
+		expect( items[ 1 ] ).toHaveTextContent( /Service date/ );
+		expect(
+			within( items[ 1 ] ).getByText( /not provided/i )
 		).toBeInTheDocument();
 	} );
 
@@ -117,22 +115,20 @@ describe( 'EvidenceSubmittedList', () => {
 		);
 	} );
 
-	it( 'renders the "missing" and "not provided" state phrases as visible inline text', () => {
+	it( 'renders the missing-state suffix as visible inline text on every missing row', () => {
 		render(
 			<EvidenceSubmittedList
 				fields={ [ expectedMissing( 'A' ), optionalMissing( 'B' ) ] }
 			/>
 		);
 
-		const missingNode = screen.getByText( /^missing$/i );
-		const notProvidedNode = screen.getByText( /^not provided$/i );
-
-		expect( missingNode.className ).toMatch(
-			/dispute-outcome-evidence-list__state/
-		);
-		expect( notProvidedNode.className ).toMatch(
-			/dispute-outcome-evidence-list__state/
-		);
+		const stateNodes = screen.getAllByText( /^not provided$/i );
+		expect( stateNodes ).toHaveLength( 2 );
+		stateNodes.forEach( ( node ) => {
+			expect( node.className ).toMatch(
+				/dispute-outcome-evidence-list__state/
+			);
+		} );
 	} );
 
 	it( 'uses the field key as the React key (does not warn about missing keys)', () => {

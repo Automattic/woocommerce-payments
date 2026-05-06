@@ -32,7 +32,6 @@ const renderStateLabel = ( state: EvidenceFieldState ): string => {
 		case 'provided':
 			return __( 'Provided', 'woocommerce-payments' );
 		case 'expected_missing':
-			return __( 'Missing', 'woocommerce-payments' );
 		case 'optional_missing':
 			return __( 'Not provided', 'woocommerce-payments' );
 	}
