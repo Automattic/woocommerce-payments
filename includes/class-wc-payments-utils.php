@@ -807,16 +807,16 @@ class WC_Payments_Utils {
 				return [
 					Currency_Code::CANADIAN_DOLLAR      => [
 						Country_Code::CANADA => [
-							'min' => 5000,
+							'min' => 3500,
 							'max' => 3000000,
-						], // Represents CAD 50 - 30,000 CAD.
+						], // Represents CAD 35 - 30,000 CAD.
 					],
 					Currency_Code::UNITED_STATES_DOLLAR => [
 						Country_Code::UNITED_STATES => [
-							'min' => 5000,
+							'min' => 3500,
 							'max' => 3000000,
 						],
-					], // Represents USD 50 - 30,000 USD.
+					], // Represents USD 35 - 30,000 USD.
 				];
 			case 'afterpay_clearpay':
 				return [
