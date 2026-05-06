@@ -136,12 +136,72 @@ export const getChargeStatus = (
 };
 
 /**
+ * Envelope fee totals can't be trusted if its declared currency disagrees
+ * with the charge's balance_transaction — a mismatch could shift amounts
+ * by 100× via zero-decimal currency rules, so callers fall back to legacy
+ * fields. Missing `balance_transaction.currency` is not a mismatch; the
+ * envelope's own currency stands.
+ */
+export const canUseFeeBreakdownData = ( charge: Charge ): boolean => {
+	const feeTotal = charge.fee_breakdown_v1?.totals?.fee;
+	if ( ! feeTotal ) {
+		return false;
+	}
+
+	const chargeCurrency = charge.balance_transaction?.currency;
+	if ( ! chargeCurrency ) {
+		return true;
+	}
+
+	return feeTotal.currency.toLowerCase() === chargeCurrency.toLowerCase();
+};
+
+/**
  * Calculates display values for charge amounts in settlement currency.
  *
  * @param {Charge} charge The full charge object.
  * @return {ChargeAmounts} An object, containing the `currency`, `amount`, `net`, `fee`, and `refunded` amounts in Stripe format (*100).
  */
 export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
+	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	// `balance.fee` below must represent the *full* Stripe deduction in
+	// store currency (pre-tax fee + tax), because the downstream
+	// `net = amount - fee - refunded` needs to absorb BOTH components to
+	// match `totals.net.amount` — and that formula has to stay in charge
+	// of later-arriving customer-refunds and dispute adjustments, which
+	// the envelope doesn't cover. Using only `totals.fee.amount` here
+	// (pre-tax) would drop the tax from the net calculation.
+	const breakdown = charge.fee_breakdown_v1;
+	if (
+		canUseFeeBreakdownData( charge ) &&
+		breakdown?.totals?.net &&
+		breakdown.totals.gross
+	) {
+		// Envelope is authoritative for the charge's *current* state:
+		// the server has already folded customer-refunds, dispute fees,
+		// and dispute balance adjustments into `totals.fee` / `totals.net`.
+		// No client-side subtraction needed. `refunded` is derived for
+		// backward compatibility with consumers that still read it.
+		// Prefer the server-pre-summed fee_plus_tax; fall back to fee+tax
+		// for older servers.
+		const totalFee =
+			breakdown.totals.fee_plus_tax?.amount ??
+			breakdown.totals.fee.amount + ( breakdown.totals.tax?.amount ?? 0 );
+		return {
+			currency: breakdown.totals.fee.currency.toLowerCase(),
+			amount: breakdown.totals.gross.amount,
+			fee: totalFee,
+			net: breakdown.totals.net.amount,
+			refunded:
+				breakdown.totals.gross.amount -
+				breakdown.totals.net.amount -
+				totalFee,
+		};
+	}
+
+	// Legacy fallback path: the envelope is absent, currencies mismatch,
+	// or the charge predates the envelope rollout. Reconstruct net the
+	// old way, absorbing customer refunds and dispute adjustments here.
 	const balance = charge.balance_transaction
 		? {
 				currency: charge.balance_transaction.currency,
@@ -159,7 +219,6 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		  };
 
 	if ( isChargeRefunded( charge ) ) {
-		// Refund balance_transactions have negative amount.
 		balance.refunded -= sumBy(
 			charge.refunds?.data,
 			'balance_transaction.amount'
@@ -174,7 +233,6 @@ export const getChargeAmounts = ( charge: Charge ): ChargeAmounts => {
 		);
 	}
 
-	// The final net amount equals the original amount, decreased by the fee(s) and refunded amount.
 	balance.net = balance.amount - balance.fee - balance.refunded;
 
 	return balance;
