@@ -4,13 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
-import {
-	Button,
-	Card,
-	CardBody,
-	CardFooter,
-	CardHeader,
-} from '@wordpress/components';
+import { Button, CardBody, CardFooter } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -18,7 +12,8 @@ import {
 import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
-import Loadable from 'components/loadable';
+import OverviewCard from 'wcpay/components/overview-card';
+import { LoadableBlock } from 'wcpay/components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';
@@ -33,6 +28,12 @@ import {
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import useRecentDeposits from './hooks';
 import './style.scss';
+
+const DepositsLoadingState: React.FC = () => (
+	<CardBody className="wcpay-deposits-overview__schedule__container">
+		<LoadableBlock isLoading numLines={ 1 } />
+	</CardBody>
+);
 
 const DepositsOverview: React.FC = () => {
 	const {
@@ -91,34 +92,8 @@ const DepositsOverview: React.FC = () => {
 		);
 	};
 
-	// Show a loading state if the page is still loading.
-	if ( isLoading ) {
-		return (
-			<Card className="wcpay-deposits-overview">
-				<CardHeader>
-					{ __( 'Payouts', 'woocommerce-payments' ) }
-				</CardHeader>
-
-				<CardBody className="wcpay-deposits-overview__schedule__container">
-					<Loadable
-						isLoading
-						placeholder={
-							<DepositSchedule
-								depositsSchedule={ {
-									delay_days: 0,
-									interval: 'daily',
-									monthly_anchor: 1,
-									weekly_anchor: 'monday',
-								} }
-							/>
-						}
-					/>
-				</CardBody>
-			</Card>
-		);
-	}
-
 	if (
+		! isLoading &&
 		! hasCompletedWaitingPeriod &&
 		availableFunds === 0 &&
 		pendingFunds === 0
@@ -129,9 +104,12 @@ const DepositsOverview: React.FC = () => {
 	}
 
 	return (
-		<Card className="wcpay-deposits-overview">
-			<CardHeader>{ __( 'Payouts', 'woocommerce-payments' ) }</CardHeader>
-
+		<OverviewCard
+			title={ __( 'Payouts', 'woocommerce-payments' ) }
+			className="wcpay-deposits-overview"
+			isLoading={ isLoading }
+			LoadingState={ DepositsLoadingState }
+		>
 			{ /* Deposit schedule message */ }
 			{ isDepositsUnrestricted && !! account && hasScheduledDeposits && (
 				<CardBody className="wcpay-deposits-overview__schedule__container">
@@ -228,7 +206,7 @@ const DepositsOverview: React.FC = () => {
 					) }
 				</CardFooter>
 			) }
-		</Card>
+		</OverviewCard>
 	);
 };
 

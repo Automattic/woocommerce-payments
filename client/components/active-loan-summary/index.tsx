@@ -6,9 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import {
 	Button,
-	Card,
 	CardBody,
-	CardHeader,
 	Flex,
 	FlexBlock,
 	FlexItem,
@@ -19,6 +17,7 @@ import {
  */
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import Loadable from 'components/loadable';
+import OverviewCard from 'wcpay/components/overview-card';
 import { useActiveLoanSummary } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 
@@ -38,99 +37,72 @@ const Block = ( {
 	</FlexBlock>
 );
 
-const ActiveLoanSummaryLoading = (): JSX.Element => {
-	return (
-		<Card>
-			<CardHeader size="medium" className="wcpay-loan-summary-header">
-				<FlexItem>
-					{ __( 'Active loan overview', 'woocommerce-payments' ) }
-				</FlexItem>
-			</CardHeader>
-			<CardBody className="wcpay-loan-summary-body">
-				<Flex align="normal" className="wcpay-loan-summary-row">
-					<Block
-						title={ __( 'Total repaid', 'woocommerce-payments' ) }
-					>
-						<Loadable
-							isLoading={ true }
-							display="inline"
-							placeholder={ __(
-								'Total repaid placeholder',
-								'woocommerce-payments'
-							) }
-						/>
-					</Block>
-					<Block
-						title={ __(
-							'Repaid this period',
-							'woocommerce-payments'
-						) }
-					>
-						<Loadable
-							isLoading={ true }
-							display="inline"
-							placeholder={ __(
-								'Repaid this period placeholder',
-								'woocommerce-payments'
-							) }
-						/>
-					</Block>
-				</Flex>
-				<Flex
-					align="normal"
-					className="wcpay-loan-summary-row is-bottom-row"
-				>
-					<Block
-						title={ __( 'Loan disbursed', 'woocommerce-payments' ) }
-					>
-						<Loadable
-							isLoading={ true }
-							display="inline"
-							placeholder="Date disbursed"
-						/>
-					</Block>
-					<Block
-						title={ __( 'Loan amount', 'woocommerce-payments' ) }
-					>
-						<Loadable
-							isLoading={ true }
-							display="inline"
-							placeholder="Loan amount"
-						/>
-					</Block>
-					<Block title={ __( 'Fixed fee', 'woocommerce-payments' ) }>
-						<Loadable
-							isLoading={ true }
-							display="inline"
-							placeholder="Fixed fee"
-						/>
-					</Block>
-					<Block
-						title={ __( 'Withhold rate', 'woocommerce-payments' ) }
-					>
-						<Loadable
-							isLoading={ true }
-							display="inline"
-							placeholder="Rate"
-						/>
-					</Block>
-					<Block
-						title={ __( 'First paydown', 'woocommerce-payments' ) }
-					>
-						<Loadable
-							isLoading={ true }
-							display="inline"
-							placeholder={ __(
-								'First paydown',
-								'woocommerce-payments'
-							) }
-						/>
-					</Block>
-				</Flex>
-			</CardBody>
-		</Card>
-	);
-};
+const LoanSummaryLoadingState: React.FC = () => (
+	<CardBody className="wcpay-loan-summary-body">
+		<Flex align="normal" className="wcpay-loan-summary-row">
+			<Block title={ __( 'Total repaid', 'woocommerce-payments' ) }>
+				<Loadable
+					isLoading={ true }
+					display="inline"
+					placeholder={ __(
+						'Total repaid placeholder',
+						'woocommerce-payments'
+					) }
+				/>
+			</Block>
+			<Block title={ __( 'Repaid this period', 'woocommerce-payments' ) }>
+				<Loadable
+					isLoading={ true }
+					display="inline"
+					placeholder={ __(
+						'Repaid this period placeholder',
+						'woocommerce-payments'
+					) }
+				/>
+			</Block>
+		</Flex>
+		<Flex align="normal" className="wcpay-loan-summary-row is-bottom-row">
+			<Block title={ __( 'Loan disbursed', 'woocommerce-payments' ) }>
+				<Loadable
+					isLoading={ true }
+					display="inline"
+					placeholder="Date disbursed"
+				/>
+			</Block>
+			<Block title={ __( 'Loan amount', 'woocommerce-payments' ) }>
+				<Loadable
+					isLoading={ true }
+					display="inline"
+					placeholder="Loan amount"
+				/>
+			</Block>
+			<Block title={ __( 'Fixed fee', 'woocommerce-payments' ) }>
+				<Loadable
+					isLoading={ true }
+					display="inline"
+					placeholder="Fixed fee"
+				/>
+			</Block>
+			<Block title={ __( 'Withhold rate', 'woocommerce-payments' ) }>
+				<Loadable
+					isLoading={ true }
+					display="inline"
+					placeholder="Rate"
+				/>
+			</Block>
+			<Block title={ __( 'First paydown', 'woocommerce-payments' ) }>
+				<Loadable
+					isLoading={ true }
+					display="inline"
+					placeholder={ __(
+						'First paydown',
+						'woocommerce-payments'
+					) }
+				/>
+			</Block>
+		</Flex>
+	</CardBody>
+);
 
 const getActiveLoanId = () => {
 	for ( const i in wcpaySettings.accountLoans.loans ) {
@@ -145,40 +117,58 @@ const getActiveLoanId = () => {
 
 const ActiveLoanSummary = (): JSX.Element => {
 	const { summary, isLoading } = useActiveLoanSummary();
+	const showLoadingState = isLoading || ! summary;
 
-	if ( isLoading || ! summary ) {
-		return <ActiveLoanSummaryLoading />;
+	// Wrapping the title in a Flex carrying `wcpay-loan-summary-header` keeps
+	// the existing CSS selector working (it scopes the "View transactions"
+	// link's text-decoration) and preserves the FlexItem layout that
+	// CardHeader used to provide. OverviewCard's CardHeader doesn't accept a
+	// className, so the class lives on this inner wrapper instead.
+	const title = (
+		<Flex className="wcpay-loan-summary-header">
+			<FlexItem>
+				{ __( 'Active loan overview', 'woocommerce-payments' ) }
+			</FlexItem>
+			<FlexItem>
+				{ ! showLoadingState && getActiveLoanId() && (
+					<Button
+						variant="link"
+						href={ getAdminUrl( {
+							page: 'wc-admin',
+							path: '/payments/transactions',
+							type: 'charge',
+							filter: 'advanced',
+							loan_id_is: getActiveLoanId(),
+						} ) }
+						__next40pxDefaultSize
+					>
+						{ __( 'View transactions', 'woocommerce-payments' ) }
+					</Button>
+				) }
+			</FlexItem>
+		</Flex>
+	);
+
+	if ( showLoadingState ) {
+		return (
+			<OverviewCard
+				title={ title }
+				isLoading
+				LoadingState={ LoanSummaryLoadingState }
+			>
+				{ null }
+			</OverviewCard>
+		);
 	}
 
 	const { details } = summary;
 
 	return (
-		<Card>
-			<CardHeader size="medium" className="wcpay-loan-summary-header">
-				<FlexItem>
-					{ __( 'Active loan overview', 'woocommerce-payments' ) }
-				</FlexItem>
-				<FlexItem>
-					{ getActiveLoanId() && (
-						<Button
-							variant="link"
-							href={ getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/transactions',
-								type: 'charge',
-								filter: 'advanced',
-								loan_id_is: getActiveLoanId(),
-							} ) }
-							__next40pxDefaultSize
-						>
-							{ __(
-								'View transactions',
-								'woocommerce-payments'
-							) }
-						</Button>
-					) }
-				</FlexItem>
-			</CardHeader>
+		<OverviewCard
+			title={ title }
+			isLoading={ false }
+			LoadingState={ LoanSummaryLoadingState }
+		>
 			<CardBody className="wcpay-loan-summary-body">
 				<Flex align="normal" className="wcpay-loan-summary-row">
 					<Block
@@ -279,7 +269,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 					</Block>
 				</Flex>
 			</CardBody>
-		</Card>
+		</OverviewCard>
 	);
 };
 
