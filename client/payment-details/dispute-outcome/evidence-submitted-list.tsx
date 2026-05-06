@@ -70,9 +70,15 @@ const EvidenceSubmittedList: React.FC< Props > = ( { fields } ) => {
 					<span className="dispute-outcome-evidence-list__label">
 						{ label }
 					</span>
-					<VisuallyHidden>
-						{ renderStateLabel( state ) }
-					</VisuallyHidden>
+					{ state === 'provided' ? (
+						<VisuallyHidden>
+							{ renderStateLabel( state ) }
+						</VisuallyHidden>
+					) : (
+						<span className="dispute-outcome-evidence-list__state">
+							{ renderStateLabel( state ) }
+						</span>
+					) }
 				</li>
 			) ) }
 		</ul>

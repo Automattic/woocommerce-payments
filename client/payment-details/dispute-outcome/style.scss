@@ -30,7 +30,18 @@
 	}
 
 	&__label {
-		flex: 1 1 auto;
+		flex: 0 0 auto;
+	}
+
+	// Visible state suffix appended after the label on missing rows.
+	// Provided rows get the state phrase via VisuallyHidden so screen readers
+	// still hear it, but it stays out of the visual layout.
+	&__state {
+		flex: 0 0 auto;
+
+		&::before {
+			content: ' \2014\00a0'; // em dash + non-breaking space
+		}
 	}
 
 	&__item--provided {
@@ -44,21 +55,17 @@
 	}
 
 	&__item--expected-missing {
-		.dispute-outcome-evidence-list__icon {
+		.dispute-outcome-evidence-list__icon,
+		.dispute-outcome-evidence-list__label,
+		.dispute-outcome-evidence-list__state {
 			color: $alert-red;
-		}
-
-		.dispute-outcome-evidence-list__label {
-			color: $gray-900;
 		}
 	}
 
 	&__item--optional-missing {
-		.dispute-outcome-evidence-list__icon {
-			color: $gray-700;
-		}
-
-		.dispute-outcome-evidence-list__label {
+		.dispute-outcome-evidence-list__icon,
+		.dispute-outcome-evidence-list__label,
+		.dispute-outcome-evidence-list__state {
 			color: $gray-700;
 		}
 	}

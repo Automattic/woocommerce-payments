@@ -104,6 +104,37 @@ describe( 'EvidenceSubmittedList', () => {
 		expect( items[ 2 ].className ).toMatch( /optional-missing/ );
 	} );
 
+	it( 'renders the "provided" state phrase via a visually-hidden span (not visible inline)', () => {
+		render(
+			<EvidenceSubmittedList fields={ [ provided( 'Receipt' ) ] } />
+		);
+		const stateNode = screen.getByText( /provided/i );
+		// VisuallyHidden has its own class signature; the visible state suffix
+		// uses our BEM modifier class. Make sure the provided phrase is NOT
+		// rendered into the visible slot.
+		expect( stateNode.className ).not.toMatch(
+			/dispute-outcome-evidence-list__state/
+		);
+	} );
+
+	it( 'renders the "missing" and "not provided" state phrases as visible inline text', () => {
+		render(
+			<EvidenceSubmittedList
+				fields={ [ expectedMissing( 'A' ), optionalMissing( 'B' ) ] }
+			/>
+		);
+
+		const missingNode = screen.getByText( /^missing$/i );
+		const notProvidedNode = screen.getByText( /^not provided$/i );
+
+		expect( missingNode.className ).toMatch(
+			/dispute-outcome-evidence-list__state/
+		);
+		expect( notProvidedNode.className ).toMatch(
+			/dispute-outcome-evidence-list__state/
+		);
+	} );
+
 	it( 'uses the field key as the React key (does not warn about missing keys)', () => {
 		const consoleError = jest
 			.spyOn( console, 'error' )
