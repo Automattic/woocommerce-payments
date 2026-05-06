@@ -1,11 +1,9 @@
 /**
  * Internal dependencies
  */
-import {
-	getExpectedFieldStatus,
-	DISPUTE_HIGH_IMPACT_FIELDS,
-	DISPUTE_TOPICAL_FIELDS,
-} from '../evidence-matrix';
+import { getExpectedFieldStatus } from '../evidence-field-status';
+import { DISPUTE_HIGH_IMPACT_FIELDS } from '../constants/high-impact-fields';
+import { DISPUTE_TOPICAL_FIELDS } from '../constants/topical-fields';
 
 describe( 'getExpectedFieldStatus', () => {
 	it( 'marks a high-impact field populated in evidence as provided', () => {
