@@ -12,8 +12,9 @@ use WC_Payments_Account;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 use WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider;
-use WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider;
+use WCPay\WooPay\Tracking_Providers\WooPay_ShipStation_Provider;
+use WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -106,6 +107,8 @@ class WooPay_Order_Tracking_Sync {
 			new WooPay_Fulfillments_API_Provider(),
 			// Priority 2: WC Shipment Tracking + Advanced Shipment Tracking (de facto standard, ~85% coverage).
 			new WooPay_Shipment_Tracking_Provider(),
+			// Priority 3: ShipStation standalone (no WC Shipment Tracking bridge).
+			new WooPay_ShipStation_Provider(),
 		];
 
 		/**

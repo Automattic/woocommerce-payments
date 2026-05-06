@@ -514,6 +514,7 @@ class WC_Payments {
 		include_once __DIR__ . '/woopay/tracking-providers/interface-woopay-tracking-provider.php';
 		include_once __DIR__ . '/woopay/tracking-providers/class-woopay-fulfillments-api-provider.php';
 		include_once __DIR__ . '/woopay/tracking-providers/class-woopay-shipment-tracking-provider.php';
+		include_once __DIR__ . '/woopay/tracking-providers/class-woopay-shipstation-provider.php';
 		include_once __DIR__ . '/woopay/class-woopay-order-tracking-sync.php';
 		include_once __DIR__ . '/woopay/class-woopay-store-api-session-handler.php';
 		include_once __DIR__ . '/woopay/class-woopay-scheduler.php';

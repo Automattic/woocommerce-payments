@@ -83,7 +83,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$providers = WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $providers );
-		$this->assertCount( 2, $providers );
+		$this->assertCount( 3, $providers );
 		$this->assertInstanceOf(
 			\WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider::class,
 			$providers[0],
@@ -93,6 +93,11 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 			\WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider::class,
 			$providers[1],
 			'WC Shipment Tracking / AST should be priority 2.'
+		);
+		$this->assertInstanceOf(
+			\WCPay\WooPay\Tracking_Providers\WooPay_ShipStation_Provider::class,
+			$providers[2],
+			'ShipStation standalone should be priority 3.'
 		);
 	}
 
@@ -128,7 +133,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $received );
-		$this->assertCount( 2, $received );
+		$this->assertCount( 3, $received );
 	}
 
 	public function test_get_order_shipments_returns_empty_when_no_provider_has_data() {
