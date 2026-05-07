@@ -28,7 +28,7 @@
         "automattic/jetpack-autoloader": "5.0.16",
         "automattic/jetpack-sync": "4.24.1",
         "woocommerce/subscriptions-core": "6.7.1",
-        "automattic/jetpack-constants": "3.0.8"
+        "automattic/jetpack-constants": "3.0.9"
     },
     "require-dev": {
         "composer/installers": "1.10.0",
