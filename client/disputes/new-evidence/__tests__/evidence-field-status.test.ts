@@ -1,11 +1,9 @@
 /**
  * Internal dependencies
  */
-import {
-	getExpectedFieldStatus,
-	DISPUTE_HIGH_IMPACT_FIELDS,
-	DISPUTE_TOPICAL_FIELDS,
-} from '../evidence-matrix';
+import { getExpectedFieldStatus } from '../evidence-field-status';
+import { DISPUTE_HIGH_IMPACT_FIELDS } from '../constants/high-impact-fields';
+import { DISPUTE_TOPICAL_FIELDS } from '../constants/topical-fields';
 
 describe( 'getExpectedFieldStatus', () => {
 	it( 'marks a high-impact field populated in evidence as provided', () => {
@@ -35,9 +33,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'marks a matrix-only field missing from evidence as optional_missing', () => {
-		// `refund_policy` appears in the fraudulent matrix but is not
-		// high-impact for fraudulent, so it must surface as
-		// optional_missing when empty.
 		const result = getExpectedFieldStatus(
 			'fraudulent',
 			'physical_product',
@@ -94,10 +89,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'surfaces matrix-only fields as optional_missing for a cell with empty high-impact list', () => {
-		// `product_unacceptable.event` has an empty high-impact list (no
-		// data-backed picks) but the wizard matrix cell for that
-		// (reason, productType) pair has entries. They must surface as
-		// optional_missing, never expected_missing.
 		const result = getExpectedFieldStatus(
 			'product_unacceptable',
 			'event',
@@ -130,8 +121,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'narrows expected_missing rows to the product type cell', () => {
-		// `shipping_address` is high-impact for product_not_received on
-		// physical_product but not on digital_product_or_service.
 		const physical = getExpectedFieldStatus(
 			'product_not_received',
 			'physical_product',
@@ -155,9 +144,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'resolves the product-type-specific label for cancellation_policy', () => {
-		// Subscription_canceled labels cancellation_policy as "Terms of
-		// service" across product-type cells in the matrix; this confirms
-		// the label resolves through the productType-specific cell.
 		const result = getExpectedFieldStatus(
 			'subscription_canceled',
 			'physical_product',
@@ -182,9 +168,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'falls back to FALLBACK_EVIDENCE_FIELD_LABELS for base fields not in the wizard cell', () => {
-		// `customer_communication` and `receipt` are auto-merged into
-		// wizard cells at runtime; the outcome-view helper reads the
-		// matrix directly and would otherwise render the raw key.
 		const result = getExpectedFieldStatus(
 			'product_not_received',
 			'digital_product_or_service',
@@ -199,10 +182,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'falls back to FALLBACK_EVIDENCE_FIELD_LABELS for shipping_documentation across reasons', () => {
-		// `shipping_documentation` is high-impact for several non-CNP
-		// cells (PNR/duplicate/PU physical) but isn't listed in those
-		// wizard matrix cells; the wizard only references it from CNP
-		// cells with a context-specific label ("Return tracking").
 		const result = getExpectedFieldStatus(
 			'product_not_received',
 			'physical_product',
@@ -243,11 +222,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'falls back to FALLBACK_EVIDENCE_FIELD_LABELS for cells whose matrix omits the high-impact key', () => {
-		// `cancellation_rebuttal` is high-impact for subscription_canceled
-		// across all product types, but the wizard matrix cell for `other`
-		// deliberately omits it (per spec). Label resolution must fall
-		// through to the explicit fallback table rather than render the
-		// raw key.
 		const result = getExpectedFieldStatus(
 			'subscription_canceled',
 			'other',
@@ -260,10 +234,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'surfaces topical fields as optional_missing when absent from the wizard matrix cell', () => {
-		// `refund_policy` is a topical recommendation for
-		// subscription_canceled.digital_product_or_service, but the
-		// wizard matrix cell deliberately omits it.
-		// DISPUTE_TOPICAL_FIELDS is the source for this row.
 		const result = getExpectedFieldStatus(
 			'subscription_canceled',
 			'digital_product_or_service',
@@ -286,10 +256,6 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'does not double-emit when a topical field is also present in the wizard matrix cell', () => {
-		// `refund_policy` is in `DISPUTE_TOPICAL_FIELDS` only for the
-		// cells whose wizard matrix omits it; physical_product is not
-		// one of those. The row must come from the wizard matrix path
-		// (optional_missing) without a duplicate from the topical map.
 		const result = getExpectedFieldStatus(
 			'subscription_canceled',
 			'physical_product',
@@ -299,6 +265,29 @@ describe( 'getExpectedFieldStatus', () => {
 			( f ) => f.key === 'refund_policy'
 		);
 		expect( refundPolicyRows ).toHaveLength( 1 );
+	} );
+
+	it( 'mirrors the wizard customer_communication base-field merge for cells that omit it explicitly', () => {
+		const result = getExpectedFieldStatus(
+			'duplicate',
+			'physical_product',
+			{}
+		);
+		const customerCommunication = result.find(
+			( f ) => f.key === 'customer_communication'
+		);
+		expect( customerCommunication ).toBeDefined();
+		expect( customerCommunication?.state ).toBe( 'optional_missing' );
+		expect( customerCommunication?.label ).toBe( 'Customer communication' );
+	} );
+
+	it( 'does not synthesise customer_communication when no wizard cell matches', () => {
+		const result = getExpectedFieldStatus(
+			'unrecognized',
+			'physical_product',
+			{}
+		);
+		expect( result ).toHaveLength( 0 );
 	} );
 } );
 
@@ -321,15 +310,6 @@ describe( 'DISPUTE_HIGH_IMPACT_FIELDS', () => {
 } );
 
 describe( 'composite-key label collision handling', () => {
-	// The wizard matrix intentionally labels some keys differently across
-	// status branches within a composite-key cell (e.g.
-	// `duplicate_charge_documentation` is "Refund receipt" under
-	// `__is_duplicate` and "Any additional receipts" under
-	// `__is_not_duplicate`). The outcome view has no wizard-time status
-	// to disambiguate, so `findMatrixLabel` returns undefined when matches
-	// disagree, and `resolveFieldLabel` falls through to a neutral
-	// FALLBACK label.
-
 	it( 'falls back to FALLBACK label when composite cells disagree on duplicate_charge_documentation', () => {
 		const result = getExpectedFieldStatus(
 			'duplicate',
@@ -339,16 +319,10 @@ describe( 'composite-key label collision handling', () => {
 		const row = result.find(
 			( f ) => f.key === 'duplicate_charge_documentation'
 		);
-		// "Refund receipt" and "Any additional receipts" both appear in
-		// the wizard matrix for this cell across status branches. The
-		// neutral fallback label wins.
 		expect( row?.label ).toBe( 'Duplicate charge documentation' );
 	} );
 
 	it( 'falls back to FALLBACK label when composite cells disagree on uncategorized_file', () => {
-		// In credit_not_processed.physical_product, the wizard matrix
-		// labels uncategorized_file as "Other documents" in one status
-		// branch and "Proof of acceptance" in another.
 		const result = getExpectedFieldStatus(
 			'credit_not_processed',
 			'physical_product',
@@ -356,20 +330,16 @@ describe( 'composite-key label collision handling', () => {
 		);
 		const row = result.find( ( f ) => f.key === 'uncategorized_file' );
 		expect( row?.label ).toBe( 'Other documents' );
-		// Negative assertion guards against silent regression in
-		// collision detection: "Other documents" coincides with one of
-		// the colliding matrix labels, so a broken collision detector
-		// returning the first match could pass the positive assertion
-		// alone. "Proof of acceptance" appears only in the other status
-		// branch and never in the fallback table, so it must never be
-		// the resolved label.
+		// Negative assertion guards against silent regression in collision
+		// detection: "Other documents" coincides with one of the colliding
+		// matrix labels, so a broken collision detector returning the first
+		// match could pass the positive assertion alone. "Proof of acceptance"
+		// appears only in the other status branch and never in the fallback
+		// table, so it must never be the resolved label.
 		expect( row?.label ).not.toBe( 'Proof of acceptance' );
 	} );
 
 	it( 'still resolves the productType-specific label when composite cells agree', () => {
-		// `customer_communication` is consistently labelled "Customer
-		// communication" across CNP composite cells; that single label
-		// must still resolve, not fall through.
 		const result = getExpectedFieldStatus(
 			'credit_not_processed',
 			'physical_product',
