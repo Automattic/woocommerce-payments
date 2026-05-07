@@ -76,10 +76,18 @@ class Onboarding_Experiment {
 	 * Resolve the variation for the current user, caching real ExPlat responses in user meta.
 	 *
 	 * The first successful call per user goes to ExPlat; subsequent calls read the cached
-	 * variation so the merchant's arm stays stable. When ExPlat is unreachable we return
-	 * 'control' transiently without caching, so a later call can still assign the user.
+	 * variation so the merchant's arm stays stable. Three paths return 'control':
+	 *  - ExPlat assigns 'control' (cached).
+	 *  - User is outside the experiment audience — ExPlat returns null, the parent
+	 *    Experimental_Abtest collapses that to 'control' (cached, so we don't re-hit ExPlat).
+	 *  - Transient failure: no consent or WP_Error from the subclass (returned but NOT cached,
+	 *    so a later call can still assign the user).
 	 *
-	 * @return string Either 'control' or 'treatment'. Transient 'control' on ExPlat failure.
+	 * Only known arm strings are cached; an unrecognized value from ExPlat (misconfigured
+	 * experiment, renamed arm) falls through as transient control to avoid locking a merchant
+	 * into a typo for the lifetime of the experiment.
+	 *
+	 * @return string Either 'control' or 'treatment'.
 	 */
 	public function get_variation(): string {
 		$user_id = get_current_user_id();
@@ -92,7 +100,7 @@ class Onboarding_Experiment {
 		}
 
 		$variation = $this->get_abtest()->get_variation( self::EXPERIMENT_NAME );
-		if ( ! is_string( $variation ) || '' === $variation ) {
+		if ( ! in_array( $variation, [ self::VARIATION_CONTROL, self::VARIATION_TREATMENT ], true ) ) {
 			return self::VARIATION_CONTROL;
 		}
 
@@ -132,6 +140,11 @@ class Onboarding_Experiment {
 
 	/**
 	 * Lazy-build the abtest client using the merchant's anon-ID and tracking consent.
+	 *
+	 * ExPlat keys assignments by anon-ID, but our wrapper caches the resolved variation by
+	 * user-ID (see get_variation()). The asymmetry is only on paper: get_anon_id() persists
+	 * the anon-ID under user_meta on first read, so a given WP user has a stable anon-ID
+	 * across browsers and sessions — both keys end up identifying the same merchant.
 	 *
 	 * @return Experimental_Abtest
 	 */

@@ -76,6 +76,16 @@ class Onboarding_Experiment_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( '', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY, true ) );
 	}
 
+	public function test_get_variation_returns_transient_control_without_persisting_when_abtest_returns_unknown_arm() {
+		$abtest = $this->createMock( Experimental_Abtest::class );
+		$abtest->method( 'get_variation' )->willReturn( 'experimental_arm_v2' );
+
+		$experiment = new Onboarding_Experiment( $abtest );
+
+		$this->assertSame( 'control', $experiment->get_variation() );
+		$this->assertSame( '', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY, true ) );
+	}
+
 	public function test_get_variation_retries_abtest_after_transient_failure() {
 		$abtest = $this->createMock( Experimental_Abtest::class );
 		$abtest->expects( $this->exactly( 2 ) )
