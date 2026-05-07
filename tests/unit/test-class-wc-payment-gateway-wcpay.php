@@ -1130,7 +1130,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$affirm_method   = $this->payment_methods['affirm'];
 		$afterpay_method = $this->payment_methods['afterpay_clearpay'];
 
-		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) ); // Affirm minimum is 50 USD.
+		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) ); // Affirm minimum is 35 USD.
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) ); // AfterPay minimum is 1 USD.
 
 		// Currency Limits check for affirm can be skipped by passing a second parameter (this is a workaround for the blocks editor).
@@ -1150,8 +1150,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		WC()->session->init();
 		WC()->cart->empty_cart();
-		// Total is 40 USD, which is below Affirm minimum.
-		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 4 );
+		// Total is 30 USD, which is below Affirm minimum.
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 3 );
 		WC()->cart->calculate_totals();
 
 		$affirm_method   = $this->payment_methods['affirm'];
@@ -1186,8 +1186,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		WC_Helper_Site_Currency::$mock_site_currency = 'USD';
 
-		// Total is 40 USD, which is below Affirm minimum.
-		$order                = WC_Helper_Order::create_order( 1, 40 );
+		// Total is 30 USD, which is below Affirm minimum.
+		$order                = WC_Helper_Order::create_order( 1, 30 );
 		$order_id             = $order->get_id();
 		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
 		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
