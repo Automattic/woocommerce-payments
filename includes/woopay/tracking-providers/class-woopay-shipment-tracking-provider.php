@@ -94,21 +94,43 @@ class WooPay_Shipment_Tracking_Provider implements WooPay_Tracking_Provider {
 	/**
 	 * Return hooks that signal tracking changes.
 	 *
-	 * Both WC Shipment Tracking and AST fire these hooks.
+	 * Verified against upstream sources: neither WC Shipment Tracking nor
+	 * AST fires a custom `do_action` for tracking add/delete — they only
+	 * write `_wc_shipment_tracking_items` order meta and call
+	 * `apply_filters` for in-process customization. We therefore hook the
+	 * WordPress core meta-write events instead, filtered to the meta key.
+	 *
+	 * Registering both `*_post_meta` (legacy CPT order storage) and
+	 * `*_order_meta` (HPOS) ensures we fire regardless of how WooCommerce
+	 * is configured to store order metadata.
 	 *
 	 * @return array[]
 	 */
 	public function get_hooks(): array {
+		// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- 'meta_key' here is an array key in the hook spec, not a DB query argument.
 		return [
 			[
-				'hook'      => 'woocommerce_shipment_tracking_added',
-				'arg_count' => 2,
+				'hook'      => 'added_post_meta',
+				'arg_count' => 4,
+				'meta_key'  => self::META_KEY,
 			],
 			[
-				'hook'      => 'woocommerce_shipment_tracking_deleted',
-				'arg_count' => 2,
+				'hook'      => 'updated_post_meta',
+				'arg_count' => 4,
+				'meta_key'  => self::META_KEY,
+			],
+			[
+				'hook'      => 'added_order_meta',
+				'arg_count' => 4,
+				'meta_key'  => self::META_KEY,
+			],
+			[
+				'hook'      => 'updated_order_meta',
+				'arg_count' => 4,
+				'meta_key'  => self::META_KEY,
 			],
 		];
+		// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 	}
 
 	/**

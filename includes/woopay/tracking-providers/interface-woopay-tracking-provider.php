@@ -49,6 +49,12 @@ interface WooPay_Tracking_Provider {
 	 * @return array[] Array of hook configs, each with keys:
 	 *   - hook      (string) The WordPress action hook name.
 	 *   - arg_count (int)    Number of arguments the hook passes.
+	 *   - meta_key  (string, optional) When the hook is a generic WordPress
+	 *               meta-write event (added_post_meta, updated_post_meta,
+	 *               added_order_meta, updated_order_meta) the sync class
+	 *               filters fires by this key. The hook signature is then
+	 *               assumed to be ($meta_id, $object_id, $meta_key, $meta_value)
+	 *               and arg_count must be 4.
 	 */
 	public function get_hooks(): array;
 }

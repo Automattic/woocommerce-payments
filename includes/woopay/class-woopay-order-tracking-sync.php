@@ -76,12 +76,37 @@ class WooPay_Order_Tracking_Sync {
 		// Register hooks from all available providers.
 		foreach ( self::get_providers() as $provider ) {
 			foreach ( $provider->get_hooks() as $hook_config ) {
-				add_action(
-					$hook_config['hook'],
-					[ __CLASS__, 'send_webhook' ],
-					10,
-					(int) ( $hook_config['arg_count'] ?? 1 )
-				);
+				$arg_count = (int) ( $hook_config['arg_count'] ?? 1 );
+
+				if ( isset( $hook_config['meta_key'] ) ) {
+					// Meta-write hooks (added_post_meta, updated_post_meta,
+					// added_order_meta, updated_order_meta) all fire with the
+					// signature ($meta_id, $object_id, $meta_key, $meta_value).
+					// We can't register `send_webhook` directly because every
+					// meta key on every object would trigger it; the closure
+					// short-circuits on key mismatch and forwards just the
+					// order ID to send_webhook so resolve_order_id() handles
+					// it via its existing numeric path.
+					$expected_key = $hook_config['meta_key'];
+					add_action(
+						$hook_config['hook'],
+						function ( $meta_id, $object_id, $key, $value ) use ( $expected_key ) {
+							if ( $key !== $expected_key ) {
+								return;
+							}
+							self::send_webhook( $object_id );
+						},
+						10,
+						$arg_count
+					);
+				} else {
+					add_action(
+						$hook_config['hook'],
+						[ __CLASS__, 'send_webhook' ],
+						10,
+						$arg_count
+					);
+				}
 			}
 
 			// Some providers persist hook arguments before send_webhook fires.

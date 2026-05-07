@@ -327,13 +327,23 @@ class WooPay_Shipment_Tracking_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 256, strlen( $shipments[0]['tracking_number'] ) );
 	}
 
-	public function test_get_hooks_returns_expected_hooks() {
+	public function test_get_hooks_returns_meta_write_hooks_filtered_by_key() {
 		$hooks = $this->provider->get_hooks();
 
-		$this->assertCount( 2, $hooks );
-		$this->assertEquals( 'woocommerce_shipment_tracking_added', $hooks[0]['hook'] );
-		$this->assertEquals( 2, $hooks[0]['arg_count'] );
-		$this->assertEquals( 'woocommerce_shipment_tracking_deleted', $hooks[1]['hook'] );
-		$this->assertEquals( 2, $hooks[1]['arg_count'] );
+		// Both legacy (*_post_meta) and HPOS (*_order_meta) coverage, both add + update.
+		$this->assertCount( 4, $hooks );
+
+		$expected_hook_names = [
+			'added_post_meta',
+			'updated_post_meta',
+			'added_order_meta',
+			'updated_order_meta',
+		];
+
+		foreach ( $hooks as $i => $hook ) {
+			$this->assertEquals( $expected_hook_names[ $i ], $hook['hook'] );
+			$this->assertEquals( 4, $hook['arg_count'] );
+			$this->assertEquals( '_wc_shipment_tracking_items', $hook['meta_key'] );
+		}
 	}
 }

@@ -162,6 +162,53 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_constructor_routes_meta_key_hooks_through_closure_with_key_filter() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( 'is_woopay', true );
+		$order->save();
+
+		$provider = $this->createMock( WooPay_Tracking_Provider::class );
+		$provider->method( 'get_hooks' )->willReturn(
+			[
+				[
+					'hook'      => 'updated_post_meta',
+					'arg_count' => 4,
+					// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- array key in a hook spec, not a DB arg.
+					'meta_key'  => '_test_filtered_key',
+				],
+			]
+		);
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $provider ) {
+				return [ $provider ];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+
+		// Reconstruct the sync class so the constructor's hook loop wires the
+		// closure to `updated_post_meta`.
+		new WooPay_Order_Tracking_Sync( $this->api_client_mock, $this->account_mock );
+
+		$fire_count = 0;
+		add_action(
+			WooPay_Order_Tracking_Sync::WCPAY_WEBHOOK_WOOPAY_ORDER_TRACKING_UPDATED,
+			function () use ( &$fire_count ) {
+				++$fire_count;
+			}
+		);
+
+		// Non-matching meta key — closure must short-circuit, send_webhook must NOT fire.
+		do_action( 'updated_post_meta', 1, $order->get_id(), '_some_other_meta', 'value' );
+		$this->assertSame( 0, $fire_count, 'Non-matching meta key must not trigger send_webhook.' );
+
+		// Matching meta key — closure forwards the order ID to send_webhook,
+		// which fires the WooPay tracking-updated action.
+		do_action( 'updated_post_meta', 1, $order->get_id(), '_test_filtered_key', 'value' );
+		$this->assertSame( 1, $fire_count, 'Matching meta key must trigger send_webhook.' );
+	}
+
 	public function test_get_order_shipments_returns_empty_when_no_provider_has_data() {
 		$order = WC_Helper_Order::create_order();
 
