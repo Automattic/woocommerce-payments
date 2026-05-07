@@ -1406,9 +1406,39 @@ class WC_Payments_Order_Service {
 	 */
 	public function attach_transaction_fee_to_order( $order, $charge ) {
 		try {
-			// Only set transaction fee if the charge was actually captured.
-			// Canceled authorizations should not have fees since no payment was processed.
-			if ( $charge && null !== $charge->get_application_fee_amount() && $charge->is_captured() ) {
+			if ( ! $charge || ! $charge->is_captured() ) {
+				return;
+			}
+
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+			// Prefer the server-driven fee_breakdown_v1 envelope when present.
+			// totals.fee.amount is authoritative for every merchant-facing
+			// surface — the order page row, the _wcpay_net meta, and the
+			// timeline all read from the same place. Falls back to the
+			// legacy application_fee_amount inference for older servers.
+			$fee_breakdown_v1 = $charge->get_fee_breakdown_v1();
+			if ( is_array( $fee_breakdown_v1 ) && isset( $fee_breakdown_v1['totals']['fee']['amount'], $fee_breakdown_v1['totals']['fee']['currency'] ) ) {
+				$order->update_meta_data(
+					self::WCPAY_TRANSACTION_FEE_META_KEY,
+					WC_Payments_Utils::interpret_stripe_amount(
+						(int) $fee_breakdown_v1['totals']['fee']['amount'],
+						$fee_breakdown_v1['totals']['fee']['currency']
+					)
+				);
+				if ( isset( $fee_breakdown_v1['totals']['net']['amount'], $fee_breakdown_v1['totals']['net']['currency'] ) ) {
+					$order->update_meta_data(
+						'_wcpay_net',
+						WC_Payments_Utils::interpret_stripe_amount(
+							(int) $fee_breakdown_v1['totals']['net']['amount'],
+							$fee_breakdown_v1['totals']['net']['currency']
+						)
+					);
+				}
+				$order->save_meta_data();
+				return;
+			}
+
+			if ( null !== $charge->get_application_fee_amount() ) {
 				$order->update_meta_data(
 					self::WCPAY_TRANSACTION_FEE_META_KEY,
 					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() )

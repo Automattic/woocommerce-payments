@@ -107,18 +107,20 @@ export const isVisaComplianceDispute = (
 /**
  * Returns the dispute fee balance transaction for a dispute if it exists
  * and the deduction has not been reversed.
+ *
+ * Legacy-only implementation: the "fee reversed when dispute_reversal row
+ * exists" rule is business logic the server should own. Prefer reading
+ * `dispute.effective_fee` (set by Disputes_Controller) via
+ * `getDisputeFeeFormatted` — this helper is retained for consumers that
+ * pre-date the server annotation.
  */
 const getDisputeDeductedBalanceTransaction = (
 	dispute: Pick< Dispute, 'balance_transactions' >
 ): BalanceTransaction | undefined => {
-	// Note that there can only be, at most, two balance transactions for a given dispute:
-
-	// One balance transaction with reporting_category: 'dispute' will be present if funds have been withdrawn from the account.
 	const disputeFee = dispute.balance_transactions.find(
 		( transaction ) => transaction.reporting_category === 'dispute'
 	);
 
-	// A second balance transaction with the reporting_category: 'dispute_reversal' will be present if funds have been reinstated to the account.
 	const disputeFeeReversal = dispute.balance_transactions.find(
 		( transaction ) => transaction.reporting_category === 'dispute_reversal'
 	);
@@ -133,20 +135,39 @@ const getDisputeDeductedBalanceTransaction = (
 /**
  * Returns the dispute fee formatted as a currency string if it exists
  * and the deduction has not been reversed.
+ *
+ * Prefers the server-computed `dispute.effective_fee` when present.
+ * Falls back to inspecting `balance_transactions` directly for responses
+ * from older servers that don't emit the annotation.
  */
 export const getDisputeFeeFormatted = (
-	dispute: Pick< Dispute, 'balance_transactions' >,
+	dispute: Pick< Dispute, 'balance_transactions' | 'effective_fee' >,
 	appendCurrencyCode?: boolean
 ): string | undefined => {
-	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
+	// Server-computed path: effective_fee is explicitly null when the fee
+	// was reversed, an object when it's still effective.
+	if ( dispute.effective_fee !== undefined ) {
+		if ( dispute.effective_fee === null ) {
+			return undefined;
+		}
+		return appendCurrencyCode
+			? formatExplicitCurrency(
+					dispute.effective_fee.amount,
+					dispute.effective_fee.currency
+			  )
+			: formatCurrency(
+					dispute.effective_fee.amount,
+					dispute.effective_fee.currency
+			  );
+	}
 
+	// Legacy fallback.
+	const disputeFee = getDisputeDeductedBalanceTransaction( dispute );
 	if ( ! disputeFee ) {
 		return undefined;
 	}
-
 	if ( appendCurrencyCode ) {
 		return formatExplicitCurrency( disputeFee.fee, disputeFee.currency );
 	}
-
 	return formatCurrency( disputeFee.fee, disputeFee.currency );
 };
