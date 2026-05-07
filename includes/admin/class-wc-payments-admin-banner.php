@@ -811,7 +811,8 @@ class WC_Payments_Admin_Banner {
 			++$real_count;
 			if ( 1 === $real_count ) {
 				$only_real_order = $order;
-			} elseif ( $real_count > 1 ) {
+			} else {
+				// Second real-customer order seen — merchant isn't one-and-done. Bail early.
 				return false;
 			}
 		}
