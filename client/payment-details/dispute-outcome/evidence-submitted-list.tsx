@@ -37,6 +37,21 @@ const renderStateLabel = ( state: EvidenceFieldState ): string => {
 	}
 };
 
+// Severity qualifier surfaced only to screen readers. The visible copy is
+// unified ("Not provided") per the mock; sighted users get the severity from
+// icon shape and color. SR users have neither, so the qualifier is what makes
+// the tri-state distinguishable to them.
+const renderSeverityHint = ( state: EvidenceFieldState ): string | null => {
+	switch ( state ) {
+		case 'expected_missing':
+			return __( 'required', 'woocommerce-payments' );
+		case 'optional_missing':
+			return __( 'optional', 'woocommerce-payments' );
+		case 'provided':
+			return null;
+	}
+};
+
 const renderStateIcon = ( state: EvidenceFieldState ): JSX.Element => {
 	switch ( state ) {
 		case 'provided':
@@ -79,8 +94,11 @@ const EvidenceSubmittedList: React.FC< Props > = ( { fields } ) => {
 							</VisuallyHidden>
 						) : (
 							<span className="dispute-outcome-evidence-list__state">
-								<span aria-hidden="true">{ '— ' }</span>
+								<span aria-hidden="true">{ '— ' }</span>
 								{ renderStateLabel( state ) }
+								<VisuallyHidden>
+									{ ` (${ renderSeverityHint( state ) })` }
+								</VisuallyHidden>
 							</span>
 						) }
 					</span>

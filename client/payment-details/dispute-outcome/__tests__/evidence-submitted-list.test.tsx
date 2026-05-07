@@ -152,7 +152,7 @@ describe( 'EvidenceSubmittedList', () => {
 		expect( labelNode.parentElement ).toBe( stateNode.parentElement );
 	} );
 
-	it( 'uses the field key as the React key (does not warn about missing keys)', () => {
+	it( 'does not emit a React missing-key warning when fields have valid keys', () => {
 		const consoleError = jest
 			.spyOn( console, 'error' )
 			.mockImplementation( () => undefined );
@@ -176,6 +176,35 @@ describe( 'EvidenceSubmittedList', () => {
 			)
 		);
 		expect( sawUniqueKeyWarning ).toBe( false );
+		consoleError.mockRestore();
+	} );
+
+	it( 'uses field.key as the React key (duplicates trigger React warning)', () => {
+		// Render two fields whose `key` properties collide. If the component
+		// uses `field.key` as the React key (the contract), React detects the
+		// duplicate and warns. Any other keying strategy (e.g. array index)
+		// would mask the collision and the warning would not fire.
+		const consoleError = jest
+			.spyOn( console, 'error' )
+			.mockImplementation( () => undefined );
+
+		render(
+			<EvidenceSubmittedList
+				fields={ [
+					{ key: 'shared_key', label: 'A', state: 'provided' },
+					{ key: 'shared_key', label: 'B', state: 'provided' },
+				] }
+			/>
+		);
+
+		const sawDuplicateKeyWarning = consoleError.mock.calls.some( ( args ) =>
+			args.some(
+				( arg ) =>
+					typeof arg === 'string' &&
+					/two children with the same key/.test( arg )
+			)
+		);
+		expect( sawDuplicateKeyWarning ).toBe( true );
 		consoleError.mockRestore();
 	} );
 
