@@ -66,18 +66,20 @@ const EvidenceSubmittedList: React.FC< Props > = ( { fields } ) => {
 					>
 						{ renderStateIcon( state ) }
 					</span>
-					<span className="dispute-outcome-evidence-list__label">
-						{ label }
-					</span>
-					{ state === 'provided' ? (
-						<VisuallyHidden>
-							{ renderStateLabel( state ) }
-						</VisuallyHidden>
-					) : (
-						<span className="dispute-outcome-evidence-list__state">
-							{ renderStateLabel( state ) }
+					<span className="dispute-outcome-evidence-list__text">
+						<span className="dispute-outcome-evidence-list__label">
+							{ label }
 						</span>
-					) }
+						{ state === 'provided' ? (
+							<VisuallyHidden>
+								{ renderStateLabel( state ) }
+							</VisuallyHidden>
+						) : (
+							<span className="dispute-outcome-evidence-list__state">
+								{ renderStateLabel( state ) }
+							</span>
+						) }
+					</span>
 				</li>
 			) ) }
 		</ul>

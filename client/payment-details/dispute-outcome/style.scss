@@ -7,7 +7,7 @@
 
 	&__item {
 		display: flex;
-		align-items: center;
+		align-items: flex-start; // top-align so icon stays with first line of wrapped text
 		gap: $grid-unit-10;
 		padding: $grid-unit-05 0;
 		font-size: 13px;
@@ -18,7 +18,7 @@
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		flex: 0 0 auto;
+		flex: 0 0 20px;
 		width: 20px;
 		height: 20px;
 
@@ -29,16 +29,19 @@
 		}
 	}
 
+	&__text {
+		flex: 1 1 auto;
+		min-width: 0; // allow children to shrink below their intrinsic width and wrap
+	}
+
 	&__label {
-		flex: 0 0 auto;
+		// inline so it flows with __state in the same wrapping text block
 	}
 
 	// Visible state suffix appended after the label on missing rows.
 	// Provided rows get the state phrase via VisuallyHidden so screen readers
 	// still hear it, but it stays out of the visual layout.
 	&__state {
-		flex: 0 0 auto;
-
 		&::before {
 			content: ' \2014\00a0'; // em dash + non-breaking space
 		}

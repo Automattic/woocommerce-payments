@@ -131,6 +131,27 @@ describe( 'EvidenceSubmittedList', () => {
 		} );
 	} );
 
+	it( 'wraps the label and state suffix inside a __text container so long labels can wrap without overflowing', () => {
+		render(
+			<EvidenceSubmittedList
+				fields={ [ expectedMissing( 'A long label' ) ] }
+			/>
+		);
+		const item = screen.getByRole( 'listitem' );
+		const labelNode = within( item ).getByText( 'A long label' );
+		const stateNode = within( item ).getByText( /not provided/i );
+
+		// Both must share the same __text parent so they flow as one
+		// wrapping text block (rather than sitting in separate flex columns).
+		expect( labelNode.parentElement?.className ).toMatch(
+			/dispute-outcome-evidence-list__text/
+		);
+		expect( stateNode.parentElement?.className ).toMatch(
+			/dispute-outcome-evidence-list__text/
+		);
+		expect( labelNode.parentElement ).toBe( stateNode.parentElement );
+	} );
+
 	it( 'uses the field key as the React key (does not warn about missing keys)', () => {
 		const consoleError = jest
 			.spyOn( console, 'error' )
