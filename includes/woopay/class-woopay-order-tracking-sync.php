@@ -83,6 +83,15 @@ class WooPay_Order_Tracking_Sync {
 					(int) ( $hook_config['arg_count'] ?? 1 )
 				);
 			}
+
+			// Some providers persist hook arguments before send_webhook fires.
+			// Required when a plugin's hook delivers tracking data only as a
+			// transient argument (e.g. ShipStation in standalone mode) — by
+			// the time WC_Webhook delivery builds the payload, the hook arg
+			// is gone, so the provider must capture it into stable storage.
+			if ( method_exists( $provider, 'register_persistence_hooks' ) ) {
+				$provider::register_persistence_hooks();
+			}
 		}
 
 		add_action( 'admin_init', [ $this, 'maybe_create_woopay_order_webhook' ], 10 );

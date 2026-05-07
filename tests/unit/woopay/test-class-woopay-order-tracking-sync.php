@@ -10,6 +10,7 @@ use WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider;
 use PHPUnit\Framework\MockObject\MockObject;
 
 require_once __DIR__ . '/tracking-providers/fake-fulfillment.php';
+require_once __DIR__ . '/tracking-providers/fake-persistence-provider.php';
 
 /**
  * WooPay_Order_Tracking_Sync unit tests.
@@ -134,6 +135,31 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 
 		$this->assertIsArray( $received );
 		$this->assertCount( 3, $received );
+	}
+
+	public function test_constructor_calls_register_persistence_hooks_on_providers_that_implement_it() {
+		Fake_Persistence_Provider::reset();
+
+		$provider = new Fake_Persistence_Provider();
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $provider ) {
+				return [ $provider ];
+			}
+		);
+
+		WooPay_Order_Tracking_Sync::reset_providers();
+
+		// Constructing the sync class is what triggers the persistence hook
+		// registration — `set_up()` already constructed one with the default
+		// provider list, so we construct a fresh one against the filtered list.
+		new WooPay_Order_Tracking_Sync( $this->api_client_mock, $this->account_mock );
+
+		$this->assertSame(
+			1,
+			Fake_Persistence_Provider::$register_calls,
+			'register_persistence_hooks should be invoked exactly once during sync construction.'
+		);
 	}
 
 	public function test_get_order_shipments_returns_empty_when_no_provider_has_data() {
