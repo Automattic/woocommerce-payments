@@ -4,12 +4,8 @@
 import type { DisputeReason, ProductType } from 'wcpay/types/disputes';
 
 /**
- * Build an empty `Record<ProductType, string[]>` for use as a default cell
- * across reasons in `DISPUTE_HIGH_IMPACT_FIELDS` and `DISPUTE_TOPICAL_FIELDS`.
- * Returns a fresh object each call so callers can reuse it without sharing
- * mutable references between cells.
- *
- * Imported by `topical-fields.ts` as a sibling.
+ * Default empty cell for reasons with no per-product-type entries. Returns a
+ * fresh object so cells don't share mutable references.
  */
 export const emptyByProductType = (): Record< ProductType, string[] > => ( {
 	physical_product: [],
@@ -22,21 +18,15 @@ export const emptyByProductType = (): Record< ProductType, string[] > => ( {
 } );
 
 /**
- * Fields whose presence on a dispute correlates with a higher win rate,
- * per (reason, product type). Consumed by the Dispute Outcome View to flag
- * missing high-impact evidence.
+ * Fields whose presence correlates with a higher win rate, per (reason,
+ * product type). Surfaced as `expected_missing` (red) when absent. Empty
+ * cells produce no markers.
  *
- * Keys are raw Stripe `dispute.evidence` field names (text and document
- * fields alike). Cells with an empty array have no data-backed signal
- * and produce no `expected_missing` markers in the tri-state renderer.
- *
- * Auto-populated and unreliable fields are intentionally excluded:
- *   - `customer_purchase_ip` (Stripe + WooPayments auto-fill on every save)
- *   - `customer_name`, `customer_email_address`, `billing_address` (Stripe auto-fill)
- *   - `product_description` (hybrid auto+merchant; placeholder string by
- *     default — Q6 lift signal is denominator artifact)
- *   - `uncategorized_file`, `uncategorized_text` (catch-alls; not actionable
- *     guidance on their own)
+ * Excluded by design:
+ *   - `customer_purchase_ip`, `customer_name`, `customer_email_address`,
+ *     `billing_address` (auto-populated)
+ *   - `product_description` (hybrid; placeholder default skews lift signal)
+ *   - `uncategorized_file`, `uncategorized_text` (catch-alls; not actionable)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention -- This is a constant object.
 export const DISPUTE_HIGH_IMPACT_FIELDS: Record<

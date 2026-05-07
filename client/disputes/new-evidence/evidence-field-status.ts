@@ -9,23 +9,12 @@ import { DISPUTE_TOPICAL_FIELDS } from './constants/topical-fields';
 import { FALLBACK_EVIDENCE_FIELD_LABELS } from './constants/fallback-field-labels';
 
 /**
- * Find a label for `key` in the wizard matrix, scoped to the cells that
- * apply to the given product type. Composite-key reasons (`duplicate`,
- * `credit_not_processed`) store cells keyed `${productType}__${status}`;
- * we match any cell whose key equals `productType` or starts with
- * `${productType}__`.
- *
- * Collision handling: if matched cells disagree on the label for `key`
- * (the wizard intentionally uses status-specific labels in some composite
- * cells, e.g. `duplicate_charge_documentation` is "Refund receipt" under
- * `__is_duplicate` and "Any additional receipts" under `__is_not_duplicate`),
- * we return undefined so the caller (`resolveFieldLabel`) can fall through
- * to a neutral label from `FALLBACK_EVIDENCE_FIELD_LABELS`. Picking either
- * status-specific label would be misleading in the post-resolution view,
- * which has no wizard-time status to disambiguate.
- *
- * Single-match wins. Multi-match with all-equal labels also wins. Multi-
- * match with disagreement falls through.
+ * Find a label for `key` across wizard matrix cells that apply to
+ * `productType` (including composite `${productType}__${status}` cells).
+ * Returns undefined when matched cells disagree on the label: status-specific
+ * labels would be misleading in the post-resolution view, which has no
+ * wizard-time status to disambiguate. The caller then falls back to
+ * `FALLBACK_EVIDENCE_FIELD_LABELS`.
  */
 const findMatrixLabel = (
 	reason: string,
@@ -86,18 +75,12 @@ const isFieldProvided = (
 ): boolean => hasMeaningfulValue( evidence[ key ] );
 
 /**
- * Collect every matrix key that applies to the given product type for the
- * reason. Composite-key reasons (`duplicate`, `credit_not_processed`) store
- * cells keyed `${productType}__${status}`; we union every cell whose key
- * starts with `${productType}__` so the optional-missing pool covers all
- * status branches the resolved dispute might have come from.
+ * Union of matrix keys for cells that apply to `productType`, across every
+ * status branch of composite cells.
  *
- * Mirrors the base-field merge that `getRecommendedDocumentFields` applies:
- * when at least one cell matches, `customer_communication` is implicitly
- * recommended (the wizard adds it as a base field for cells that don't
- * already include it). Without this, cells that omit `customer_communication`
- * explicitly (37 of 49 today) would silently drop it from the optional-
- * missing pool in the outcome view.
+ * Mirrors the wizard's base-field merge: `customer_communication` is added
+ * when any cell matches, since `getRecommendedDocumentFields` auto-merges it
+ * into cells that omit it explicitly (37 of 49 today).
  */
 const collectMatrixKeys = (
 	reason: string,
@@ -130,42 +113,24 @@ const collectMatrixKeys = (
 };
 
 /**
- * Determine the tri-state status of evidence fields for a (reason, product
- * type) pair.
+ * Tri-state status of evidence fields for a (reason, productType) pair.
  *
- * The helper returns one entry per key in the union of three sources:
- *   - `DISPUTE_HIGH_IMPACT_FIELDS[reason][productType]` (red ✗ when missing)
- *   - `DISPUTE_TOPICAL_FIELDS[reason][productType]` (muted — when missing)
- *   - Every field in `evidenceMatrix[reason]` whose cell applies to
- *     `productType`, including composite `${productType}__${status}`
- *     cells (muted — when missing)
+ * Unions three sources, each with its own missing-state mapping:
+ *   - `DISPUTE_HIGH_IMPACT_FIELDS` -> `expected_missing` when empty
+ *   - `DISPUTE_TOPICAL_FIELDS`     -> `optional_missing` when empty
+ *   - wizard `evidenceMatrix`      -> `optional_missing` when empty
  *
- * States:
- *   - `provided`:         `evidence[key]` is a non-empty string (after
- *                         trimming) or an object containing at least one
- *                         non-empty leaf value
- *   - `expected_missing`: key is in the high-impact list for this cell and empty
- *   - `optional_missing`: key is topical or matrix-only, and empty
- *
- * Cells with an empty high-impact list produce no `expected_missing` rows.
- * Unrecognised reason or product type strings return an empty array.
+ * Returns [] for unrecognised reason or product type.
  */
 export const getExpectedFieldStatus = (
 	reason: string,
 	productType: string,
 	evidence: Record< string, unknown >
 ): EvidenceFieldStatus[] => {
-	// `emitted` provides cross-source deduplication so a key shared
-	// between sources (e.g., a field that's both high-impact and topical,
-	// or both high-impact and present in the wizard matrix) renders
-	// exactly once, in source-priority order: high-impact, topical,
-	// matrix. Within a single source: high-impact entries are emitted
-	// without a self-dedupe check, so a duplicate in `DISPUTE_HIGH_IMPACT_FIELDS`
-	// surfaces as a duplicate row rather than being silently masked
-	// (we want data bugs in the seed to fail loud). Topical entries and
-	// matrix entries cannot duplicate within their source: topical loops
-	// against `emitted` (so an in-source duplicate is masked), and
-	// `matrixKeys` is a `Set` by construction.
+	// Cross-source dedupe in priority order: high-impact > topical > matrix.
+	// High-impact loops without a self-dedupe check so seed-data duplicates
+	// surface as duplicate rows (fail loud). Topical and matrix sources can't
+	// self-duplicate (topical dedupes against `emitted`; `matrixKeys` is a Set).
 	const highImpactKeys =
 		DISPUTE_HIGH_IMPACT_FIELDS[ reason as DisputeReason ]?.[
 			productType as ProductType

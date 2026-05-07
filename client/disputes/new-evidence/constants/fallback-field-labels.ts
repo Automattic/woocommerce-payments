@@ -4,14 +4,9 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * Human-readable labels used as a fallback when `findMatrixLabel` cannot
- * resolve a label for a `dispute.evidence` key — either because the key
- * is a text/base field not stored in `evidenceMatrix` (which only carries
- * document-upload cells), or because multiple matched wizard cells
- * disagree on the label (collision) and no single status-specific label
- * is appropriate in the post-resolution view.
- *
- * Consumed by `resolveFieldLabel` (called from `getExpectedFieldStatus`).
+ * Fallback labels for `dispute.evidence` keys not present (or not uniquely
+ * labelled) in the wizard matrix. Consumed by `resolveFieldLabel` after
+ * `findMatrixLabel` fails to resolve.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention -- This is a constant object.
 export const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
@@ -21,21 +16,17 @@ export const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 		'woocommerce-payments'
 	),
 	cancellation_rebuttal: __( 'Cancellation logs', 'woocommerce-payments' ),
-	// Base fields are auto-merged into wizard cells at runtime by
-	// `getRecommendedDocumentFields`, not stored in `evidenceMatrix`. The
-	// outcome-view tri-state helper reads `evidenceMatrix` directly, so it
-	// would otherwise render the raw key. Match the labels the wizard uses.
+	// Base fields auto-merged by the wizard but absent from `evidenceMatrix`.
+	// Labels match the wizard's, so outcome-view rows align with wizard rows.
 	customer_communication: __(
 		'Customer communication',
 		'woocommerce-payments'
 	),
 	customer_signature: __( "Customer's signature", 'woocommerce-payments' ),
-	// Document-upload fields used as high-impact picks. The wizard matrix
-	// labels each per (reason, productType) context (e.g.
-	// `shipping_documentation` is "Return tracking" in CNP cells), but
-	// the outcome view uses neutral, Stripe-aligned labels for cells
-	// where the wizard matrix has no entry to borrow from (notably the
-	// synthesised `multiple` product type).
+	// High-impact fields whose wizard labels are context-specific (e.g.
+	// `shipping_documentation` = "Return tracking" in CNP cells). The
+	// outcome view uses neutral Stripe-aligned labels for cells where no
+	// matrix entry exists to borrow from (notably synthesised `multiple`).
 	duplicate_charge_documentation: __(
 		'Duplicate charge documentation',
 		'woocommerce-payments'
@@ -63,10 +54,8 @@ export const FALLBACK_EVIDENCE_FIELD_LABELS: Record< string, string > = {
 		'Shipping tracking number',
 		'woocommerce-payments'
 	),
-	// Catch-all field. Surfaces via the wizard matrix scan (not the
-	// high-impact or topical maps). Wizard cells label it differently per
-	// status branch in some composite-key cells (e.g. "Other documents"
-	// vs "Proof of acceptance" in CNP physical), so the neutral fallback
-	// kicks in via collision detection in `findMatrixLabel`.
+	// Catch-all. Wizard cells label this differently per status branch in
+	// some composite cells (e.g. "Other documents" vs "Proof of acceptance"),
+	// so collision detection in `findMatrixLabel` triggers this fallback.
 	uncategorized_file: __( 'Other documents', 'woocommerce-payments' ),
 };

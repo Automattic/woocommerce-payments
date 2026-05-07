@@ -5,21 +5,14 @@ import type { DisputeReason, ProductType } from 'wcpay/types/disputes';
 import { emptyByProductType } from './high-impact-fields';
 
 /**
- * Fields that are topically relevant to a dispute reason × product type
- * but lack a defensible win-rate lift signal — and that the wizard's
- * `evidenceMatrix` deliberately omits for that cell. Surfaced by the
- * Dispute Outcome View tri-state renderer as `optional_missing` (muted),
- * never as `expected_missing` (red).
+ * Topical recommendations the Outcome View surfaces as `optional_missing`
+ * (muted), but the wizard intentionally omits.
  *
- * This map exists because the wizard matrix and the Outcome View serve
- * different surfaces (pre-response challenge UI vs. post-resolution
- * coaching). Topical recommendations from the post-resolution surface
- * should not bleed into the pre-response wizard, so they live here
- * instead of in `evidenceMatrix`.
+ * Lives separately from `evidenceMatrix` so post-resolution coaching doesn't
+ * bleed into the pre-response wizard surface.
  *
- * When a Q-refresh promotes a topical field to a defensible lift signal
- * (≥ +3pp), move the entry from `DISPUTE_TOPICAL_FIELDS` to
- * `DISPUTE_HIGH_IMPACT_FIELDS`. Same shape; pure data move.
+ * Promotion to `DISPUTE_HIGH_IMPACT_FIELDS` is a pure data move when a
+ * Q-refresh shows a lift signal of at least +3pp.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention -- This is a constant object.
 export const DISPUTE_TOPICAL_FIELDS: Record<
