@@ -80,13 +80,16 @@ const Loadable = ( {
  *
  * @return {ReactNode} Loadable content
  */
-export const LoadableBlock = ( props: LoadableBlockProps ): JSX.Element => {
+export const LoadableBlock = ( {
+	numLines,
+	...rest
+}: LoadableBlockProps ): JSX.Element => {
 	const placeholder = (
-		<p style={ { lineHeight: props.numLines } }>Block placeholder</p>
+		<p style={ { lineHeight: numLines } }>Block placeholder</p>
 	);
 	return (
 		<Loadable
-			{ ...props }
+			{ ...rest }
 			placeholder={ placeholder }
 			display="block"
 			aria-hidden
