@@ -166,9 +166,16 @@ describe( 'EvidenceSubmittedList', () => {
 			/>
 		);
 
-		expect( consoleError ).not.toHaveBeenCalledWith(
-			expect.stringMatching( /unique "key" prop/ )
+		// React 18 calls console.error with format-string + interpolation args,
+		// so single-arg matchers like toHaveBeenCalledWith( stringMatching ) miss
+		// the warning. Inspect every call's args and look for the substring.
+		const sawUniqueKeyWarning = consoleError.mock.calls.some( ( args ) =>
+			args.some(
+				( arg ) =>
+					typeof arg === 'string' && /unique "key" prop/.test( arg )
+			)
 		);
+		expect( sawUniqueKeyWarning ).toBe( false );
 		consoleError.mockRestore();
 	} );
 

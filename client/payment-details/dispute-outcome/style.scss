@@ -38,15 +38,6 @@
 		// inline so it flows with __state in the same wrapping text block
 	}
 
-	// Visible state suffix appended after the label on missing rows.
-	// Provided rows get the state phrase via VisuallyHidden so screen readers
-	// still hear it, but it stays out of the visual layout.
-	&__state {
-		&::before {
-			content: ' \2014\00a0'; // em dash + non-breaking space
-		}
-	}
-
 	&__item--provided {
 		.dispute-outcome-evidence-list__icon {
 			color: $alert-green;

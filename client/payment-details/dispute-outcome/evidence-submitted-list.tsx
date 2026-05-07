@@ -70,12 +70,16 @@ const EvidenceSubmittedList: React.FC< Props > = ( { fields } ) => {
 						<span className="dispute-outcome-evidence-list__label">
 							{ label }
 						</span>
+						{ /* Explicit space between label and state so screen
+						   readers get a word boundary rather than concatenating
+						   the two phrases. */ }{ ' ' }
 						{ state === 'provided' ? (
 							<VisuallyHidden>
 								{ renderStateLabel( state ) }
 							</VisuallyHidden>
 						) : (
 							<span className="dispute-outcome-evidence-list__state">
+								<span aria-hidden="true">{ '— ' }</span>
 								{ renderStateLabel( state ) }
 							</span>
 						) }

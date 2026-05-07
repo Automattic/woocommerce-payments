@@ -3,7 +3,7 @@
 /**
  * Hand-built `EvidenceFieldStatus[]` fixtures for the EvidenceSubmittedList
  * component. These mirror the shape returned by `getExpectedFieldStatus`
- * (see `client/disputes/new-evidence/helpers.ts`) so tests can exercise
+ * (see `client/disputes/new-evidence/evidence-field-status.ts`) so tests can exercise
  * each tri-state without spinning up a full dispute.
  */
 
