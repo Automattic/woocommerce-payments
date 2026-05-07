@@ -92,8 +92,14 @@ class WooPay_AfterShip_Provider implements WooPay_Tracking_Provider {
 				continue;
 			}
 
+			// Defensive: tolerate `additional_fields` being a non-array (e.g. a
+			// string or null) without raising a PHP 8+ "Cannot access offset of
+			// type X" notice. The is_string guard on $raw_date below still
+			// produces a safe empty date_shipped for any non-string value.
+			$additional_fields = is_array( $item['additional_fields'] ?? null ) ? $item['additional_fields'] : [];
+
 			$date_shipped = '';
-			$raw_date     = $item['additional_fields']['ship_date'] ?? '';
+			$raw_date     = $additional_fields['ship_date'] ?? '';
 			if ( is_string( $raw_date ) && '' !== $raw_date ) {
 				$dt = \DateTime::createFromFormat( 'Y-m-d', $raw_date );
 				if ( $dt && $dt->format( 'Y-m-d' ) === $raw_date ) {
@@ -104,6 +110,11 @@ class WooPay_AfterShip_Provider implements WooPay_Tracking_Provider {
 			$shipments[] = [
 				'tracking_number' => $tracking_number,
 				'carrier_name'    => self::sanitize_field( $item['slug'] ?? '' ),
+				// AfterShip generates tracking URLs server-side and doesn't
+				// store them in meta. If a future AfterShip release starts
+				// persisting URLs in `_aftership_tracking_items`, switch this
+				// to `self::sanitize_url( $item['tracking_url'] ?? '' )` and
+				// add a `sanitize_url()` helper mirroring Phase 1's pattern.
 				'tracking_url'    => '',
 				'date_shipped'    => $date_shipped,
 				'status'          => 'fulfilled',
@@ -157,6 +168,10 @@ class WooPay_AfterShip_Provider implements WooPay_Tracking_Provider {
 	/**
 	 * Strip HTML/JS, trim, and bound the length of a string field.
 	 *
+	 * Defense-in-depth: tracking meta is written by 3rd-party plugins, so
+	 * any string forwarded to WooPay should be defanged before transmission
+	 * even though the receiver re-escapes on render.
+	 *
 	 * @param mixed $value Raw value from order meta.
 	 * @return string
 	 */
@@ -169,7 +184,11 @@ class WooPay_AfterShip_Provider implements WooPay_Tracking_Provider {
 	}
 
 	/**
-	 * Truncate a string to a max length, with mbstring fallback.
+	 * Truncate a string to a max length safely on hosts without the
+	 * mbstring extension. Falls back to byte-level substr() when
+	 * mb_substr() is not available; that fallback may slice a multi-byte
+	 * character mid-byte, but the values we forward are tracking numbers
+	 * and short carrier slugs which are overwhelmingly ASCII.
 	 *
 	 * @param string $value Already-sanitized string.
 	 * @param int    $max   Max character length.

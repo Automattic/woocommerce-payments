@@ -257,8 +257,19 @@ class WooPay_AfterShip_Provider_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data(
 			WooPay_AfterShip_Provider::META_KEY,
 			[
+				// Tags-only: wp_strip_all_tags produces an empty string.
 				[
 					'tracking_number' => '<script></script>',
+					'slug'            => 'fedex',
+				],
+				// Whitespace-only: trim() produces an empty string.
+				[
+					'tracking_number' => "   \t  ",
+					'slug'            => 'fedex',
+				],
+				// Mixed tags + whitespace: combined sanitization produces empty.
+				[
+					'tracking_number' => "  <b></b>\n",
 					'slug'            => 'fedex',
 				],
 				[
