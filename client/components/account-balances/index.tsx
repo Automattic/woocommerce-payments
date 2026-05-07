@@ -4,13 +4,7 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	Flex,
-	ExternalLink,
-} from '@wordpress/components';
+import { CardBody, Flex, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -20,6 +14,7 @@ import BalanceBlock from './balance-block';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import InlineNotice from '../inline-notice';
 import InstantPayoutButton from 'wcpay/deposits/instant-payouts';
+import OverviewCard from 'wcpay/components/overview-card';
 import SendMoneyIcon from 'assets/images/icons/send-money.svg?asset';
 import {
 	TotalBalanceTooltip,
@@ -50,6 +45,28 @@ const useInstantDepositNoticeState = () => {
 	};
 };
 
+const BalancesLoadingState: React.FC = () => {
+	const currencyCode = wcpaySettings.accountDefaultCurrency;
+	return (
+		<CardBody className="wcpay-account-balances__balances">
+			<BalanceBlock
+				id={ `wcpay-account-balances-${ currencyCode }-total` }
+				title={ fundLabelStrings.total }
+				amount={ 0 }
+				currencyCode={ currencyCode }
+				isLoading
+			/>
+			<BalanceBlock
+				id={ `wcpay-account-balances-${ currencyCode }-available` }
+				title={ fundLabelStrings.available }
+				amount={ 0 }
+				currencyCode={ currencyCode }
+				isLoading
+			/>
+		</CardBody>
+	);
+};
+
 /**
  * Renders account balances for the selected currency.
  */
@@ -67,37 +84,13 @@ const AccountBalances: React.FC = () => {
 	}
 
 	if ( isLoading ) {
-		// While the data is loading, we show a loading state for the balances.
-		const loadingData = {
-			name: 'loading',
-			currencyCode: wcpaySettings.accountDefaultCurrency,
-			availableFunds: 0,
-			pendingFunds: 0,
-			delayDays: 0,
-		};
-
 		return (
-			<Card className="wcpay-account-balances">
-				<CardHeader>
-					{ __( 'Balance', 'woocommerce-payments' ) }
-				</CardHeader>
-				<CardBody className="wcpay-account-balances__balances">
-					<BalanceBlock
-						id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
-						title={ fundLabelStrings.total }
-						amount={ 0 }
-						currencyCode={ loadingData.currencyCode }
-						isLoading
-					/>
-					<BalanceBlock
-						id={ `wcpay-account-balances-${ loadingData.currencyCode }-available` }
-						title={ fundLabelStrings.available }
-						amount={ 0 }
-						currencyCode={ loadingData.currencyCode }
-						isLoading
-					/>
-				</CardBody>
-			</Card>
+			<OverviewCard
+				title={ __( 'Balance', 'woocommerce-payments' ) }
+				className="wcpay-account-balances"
+				isLoading
+				LoadingState={ BalancesLoadingState }
+			/>
 		);
 	}
 
@@ -124,10 +117,12 @@ const AccountBalances: React.FC = () => {
 
 	return (
 		<>
-			<Card className="wcpay-account-balances">
-				<CardHeader>
-					{ __( 'Balance', 'woocommerce-payments' ) }
-				</CardHeader>
+			<OverviewCard
+				title={ __( 'Balance', 'woocommerce-payments' ) }
+				className="wcpay-account-balances"
+				isLoading={ false }
+				LoadingState={ BalancesLoadingState }
+			>
 				<CardBody className="wcpay-account-balances__balances">
 					<BalanceBlock
 						id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
@@ -150,7 +145,7 @@ const AccountBalances: React.FC = () => {
 						}
 					/>
 				</CardBody>
-			</Card>
+			</OverviewCard>
 			{ selectedOverview.instantBalance &&
 				selectedOverview.instantBalance.amount > 0 && (
 					<Flex
