@@ -276,6 +276,38 @@ describe( 'Deposits Overview information', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	test( 'does not render the icon when loading', () => {
+		mockUseSelectedCurrencyOverview.mockReturnValue( {
+			account: mockAccount,
+			overview: createMockOverview( 'usd' ),
+			isLoading: true,
+		} );
+		mockUseDeposits.mockReturnValue( {
+			depositsCount: 0,
+			deposits: [],
+			isLoading: true,
+		} );
+		mockUseSelectedCurrency.mockReturnValue( {
+			selectedCurrency: 'usd',
+			setSelectedCurrency: mockSetSelectedCurrency,
+		} );
+
+		const { container } = render( <DepositsOverview /> );
+
+		const placeholders = container.querySelectorAll(
+			'.is-loadable-placeholder'
+		);
+
+		expect( placeholders.length ).toBeGreaterThan( 0 );
+
+		// no help icon (or any SVG) inside the loading state
+		placeholders.forEach( ( placeholder ) => {
+			expect(
+				placeholder.querySelector( 'svg' )
+			).not.toBeInTheDocument();
+		} );
+	} );
+
 	test( `Component doesn't render for new accounts with no pending funds`, () => {
 		global.wcpaySettings.accountStatus.deposits.completed_waiting_period =
 			false;
