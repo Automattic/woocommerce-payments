@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Added AfterShip provider for WooPay order tracking sync, covering merchants using the AfterShip WooCommerce Tracking plugin.

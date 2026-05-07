@@ -15,6 +15,7 @@ use WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_ShipStation_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider;
+use WCPay\WooPay\Tracking_Providers\WooPay_AfterShip_Provider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -152,6 +153,8 @@ class WooPay_Order_Tracking_Sync {
 			new WooPay_Shipment_Tracking_Provider(),
 			// Priority 3: ShipStation standalone (no WC Shipment Tracking bridge).
 			new WooPay_ShipStation_Provider(),
+			// Priority 4: AfterShip WooCommerce Tracking (1M+ downloads, separate meta key).
+			new WooPay_AfterShip_Provider(),
 		];
 
 		/**
