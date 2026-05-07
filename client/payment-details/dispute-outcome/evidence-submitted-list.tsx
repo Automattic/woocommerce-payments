@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __, _x, sprintf } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { Icon, check, closeSmall } from '@wordpress/icons';
 import { VisuallyHidden } from '@wordpress/components';
 
@@ -40,37 +40,31 @@ const renderStateLabel = ( state: EvidenceFieldState ): string => {
 // Severity qualifier surfaced only to screen readers. The visible copy is
 // unified ("Not provided") per the mock; sighted users get the severity from
 // icon shape and color. SR users have neither, so the qualifier is what makes
-// the tri-state distinguishable to them.
-//
-// The whole suffix (parens + spacing + word) is one translatable string via
-// sprintf so locales can adapt the punctuation; the severity word itself uses
-// _x for context so translators know which sense of "required"/"optional" is
-// meant.
+// the tri-state distinguishable to them. The whole suffix (parens + spacing +
+// word) is one translatable string via sprintf so locales can adapt the
+// surrounding punctuation.
 const renderSeverityHint = ( state: EvidenceFieldState ): string | null => {
+	let severity: string;
 	switch ( state ) {
 		case 'expected_missing':
-			return sprintf(
-				/* translators: %s: severity label ("required" or "optional"); the whole phrase is hidden visually and read only by screen readers as the suffix to "Not provided". */
-				__( ' (%s)', 'woocommerce-payments' ),
-				_x(
-					'required',
-					'severity of a missing evidence field, read by screen readers',
-					'woocommerce-payments'
-				)
-			);
+			// translators: severity of a missing evidence field; surfaced only
+			// to screen readers as the suffix to "Not provided".
+			severity = __( 'required', 'woocommerce-payments' );
+			break;
 		case 'optional_missing':
-			return sprintf(
-				/* translators: %s: severity label ("required" or "optional"); the whole phrase is hidden visually and read only by screen readers as the suffix to "Not provided". */
-				__( ' (%s)', 'woocommerce-payments' ),
-				_x(
-					'optional',
-					'severity of a missing evidence field, read by screen readers',
-					'woocommerce-payments'
-				)
-			);
+			// translators: severity of a missing evidence field; surfaced only
+			// to screen readers as the suffix to "Not provided".
+			severity = __( 'optional', 'woocommerce-payments' );
+			break;
 		case 'provided':
 			return null;
 	}
+
+	return sprintf(
+		/* translators: %s: severity label ("required" or "optional"); the whole phrase is hidden visually and read only by screen readers as the suffix to "Not provided". */
+		__( ' (%s)', 'woocommerce-payments' ),
+		severity
+	);
 };
 
 const renderStateIcon = ( state: EvidenceFieldState ): JSX.Element => {
