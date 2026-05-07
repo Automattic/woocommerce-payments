@@ -76,12 +76,16 @@ class WooPay_Order_Tracking_Sync {
 		// Register hooks from all available providers.
 		foreach ( self::get_providers() as $provider ) {
 			foreach ( $provider->get_hooks() as $hook_config ) {
-				$arg_count = (int) ( $hook_config['arg_count'] ?? 1 );
-
 				if ( isset( $hook_config['meta_key'] ) ) {
 					// Meta-write hooks (added_post_meta, updated_post_meta,
 					// added_order_meta, updated_order_meta) all fire with the
 					// signature ($meta_id, $object_id, $meta_key, $meta_value).
+					// arg_count is hard-forced to 4 here regardless of what
+					// the hook spec declares — the closure below requires all
+					// four parameters, and forwarding fewer would fatal with
+					// ArgumentCountError on hook fire if a third-party provider
+					// declared `meta_key` but forgot `arg_count`.
+					//
 					// We can't register `send_webhook` directly because every
 					// meta key on every object would trigger it; the closure
 					// short-circuits on key mismatch and forwards just the
@@ -97,14 +101,14 @@ class WooPay_Order_Tracking_Sync {
 							self::send_webhook( $object_id );
 						},
 						10,
-						$arg_count
+						4
 					);
 				} else {
 					add_action(
 						$hook_config['hook'],
 						[ __CLASS__, 'send_webhook' ],
 						10,
-						$arg_count
+						(int) ( $hook_config['arg_count'] ?? 1 )
 					);
 				}
 			}
