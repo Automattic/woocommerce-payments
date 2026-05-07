@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add checkout evidence to unit test order fixtures for WooCommerce beta compatibility.

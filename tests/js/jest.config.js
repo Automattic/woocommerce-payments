@@ -68,7 +68,17 @@ module.exports = {
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',
 	},
 	transformIgnorePatterns: [
-		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/|@automattic/material-design-icons/)',
+		[
+			'node_modules/(?!',
+			'(@woocommerce/.+)',
+			'|gridicons',
+			'|@automattic/components/',
+			'|@automattic/material-design-icons/',
+			// d3 packages bumped for ReDoS fix ship pure ESM and need Babel transform.
+			'|d3-(color|interpolate|scale|scale-chromatic|format|time|time-format|array)/',
+			'|internmap/',
+			')',
+		].join( '' ),
 	],
 	snapshotSerializers: [ '@emotion/jest/serializer' ],
 };
