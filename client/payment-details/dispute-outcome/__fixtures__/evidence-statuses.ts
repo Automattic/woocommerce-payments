@@ -1,14 +1,10 @@
 /** @format */
 
 /**
- * Mock `EvidenceFieldStatus[]` fixtures for the EvidenceSubmittedList component.
- *
- * These mimic the shape returned by `getExpectedFieldStatus(reason, productType, evidence)`
- * from `client/disputes/new-evidence/helpers.ts`. They are not runtime artifacts of the
- * real helper — they are hand-built so visual reviews and tests can exercise each tri-state
- * (`provided`, `expected_missing`, `optional_missing`) without spinning up a full dispute.
- *
- * Future Storybook setup can import these directly as story args.
+ * Hand-built `EvidenceFieldStatus[]` fixtures for the EvidenceSubmittedList
+ * component. These mirror the shape returned by `getExpectedFieldStatus`
+ * (see `client/disputes/new-evidence/helpers.ts`) so tests can exercise
+ * each tri-state without spinning up a full dispute.
  */
 
 /**
