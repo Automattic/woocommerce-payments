@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "378a9a5633bb31c700e86b2690499d49",
+    "content-hash": "ba4b75f5aa57c01b109f9857b4ad46b3",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -240,36 +240,20 @@
         },
         {
             "name": "automattic/jetpack-config",
-            "version": "v3.1.1",
+            "version": "v3.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-config.git",
-                "reference": "2704e4122684c6553c618cca76e5d84cd524738c"
+                "reference": "04d05c01995db9d921a7057d59c4ea79fc8f98ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/2704e4122684c6553c618cca76e5d84cd524738c",
-                "reference": "2704e4122684c6553c618cca76e5d84cd524738c",
+                "url": "https://api.github.com/repos/Automattic/jetpack-config/zipball/04d05c01995db9d921a7057d59c4ea79fc8f98ca",
+                "reference": "04d05c01995db9d921a7057d59c4ea79fc8f98ca",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.2"
-            },
-            "require-dev": {
-                "automattic/jetpack-account-protection": "@dev",
-                "automattic/jetpack-changelogger": "^6.0.5",
-                "automattic/jetpack-connection": "@dev",
-                "automattic/jetpack-import": "@dev",
-                "automattic/jetpack-jitm": "@dev",
-                "automattic/jetpack-post-list": "@dev",
-                "automattic/jetpack-publicize": "@dev",
-                "automattic/jetpack-search": "@dev",
-                "automattic/jetpack-stats": "@dev",
-                "automattic/jetpack-stats-admin": "@dev",
-                "automattic/jetpack-sync": "@dev",
-                "automattic/jetpack-videopress": "@dev",
-                "automattic/jetpack-waf": "@dev",
-                "automattic/jetpack-yoast-promo": "@dev"
             },
             "suggest": {
                 "automattic/jetpack-autoloader": "Allow for better interoperability with other plugins that use this package."
@@ -314,9 +298,9 @@
             ],
             "description": "Jetpack configuration package that initializes other packages and configures Jetpack's functionality. Can be used as a base for all variants of Jetpack package usage.",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-config/tree/v3.1.1"
+                "source": "https://github.com/Automattic/jetpack-config/tree/v3.1.2"
             },
-            "time": "2025-06-19T13:25:10+00:00"
+            "time": "2026-05-04T16:17:31+00:00"
         },
         {
             "name": "automattic/jetpack-connection",
