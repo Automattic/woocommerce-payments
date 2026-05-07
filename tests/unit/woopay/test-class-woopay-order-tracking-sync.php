@@ -84,7 +84,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$providers = WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $providers );
-		$this->assertCount( 3, $providers );
+		$this->assertCount( 4, $providers );
 		$this->assertInstanceOf(
 			\WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider::class,
 			$providers[0],
@@ -99,6 +99,11 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 			\WCPay\WooPay\Tracking_Providers\WooPay_ShipStation_Provider::class,
 			$providers[2],
 			'ShipStation standalone should be priority 3.'
+		);
+		$this->assertInstanceOf(
+			\WCPay\WooPay\Tracking_Providers\WooPay_AfterShip_Provider::class,
+			$providers[3],
+			'AfterShip should be priority 4.'
 		);
 	}
 
@@ -134,7 +139,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $received );
-		$this->assertCount( 3, $received );
+		$this->assertCount( 4, $received );
 	}
 
 	public function test_constructor_calls_register_persistence_hooks_on_providers_that_implement_it() {
