@@ -37,6 +37,13 @@ const optionalMissing = ( label = 'Service date' ): EvidenceFieldStatus => ( {
 } );
 
 describe( 'EvidenceSubmittedList', () => {
+	// Guarantees console.error spies are restored even if an assertion
+	// throws before an explicit mockRestore() runs, preventing mock leak
+	// across tests.
+	afterEach( () => {
+		jest.restoreAllMocks();
+	} );
+
 	it( 'renders nothing when fields is empty', () => {
 		const { container } = render( <EvidenceSubmittedList fields={ [] } /> );
 		expect( container ).toBeEmptyDOMElement();
@@ -176,7 +183,6 @@ describe( 'EvidenceSubmittedList', () => {
 			)
 		);
 		expect( sawUniqueKeyWarning ).toBe( false );
-		consoleError.mockRestore();
 	} );
 
 	it( 'uses field.key as the React key (duplicates trigger React warning)', () => {
@@ -205,7 +211,6 @@ describe( 'EvidenceSubmittedList', () => {
 			)
 		);
 		expect( sawDuplicateKeyWarning ).toBe( true );
-		consoleError.mockRestore();
 	} );
 
 	describe( 'fixture variants', () => {
