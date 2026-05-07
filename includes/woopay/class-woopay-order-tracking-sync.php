@@ -114,8 +114,13 @@ class WooPay_Order_Tracking_Sync {
 			// transient argument (e.g. ShipStation in standalone mode) — by
 			// the time WC_Webhook delivery builds the payload, the hook arg
 			// is gone, so the provider must capture it into stable storage.
+			//
+			// Dispatched via call_user_func with a string-class callable so
+			// PHPStan can resolve the static method from the runtime class
+			// instead of the WooPay_Tracking_Provider interface (which
+			// intentionally does not declare this optional method).
 			if ( method_exists( $provider, 'register_persistence_hooks' ) ) {
-				$provider::register_persistence_hooks();
+				call_user_func( [ get_class( $provider ), 'register_persistence_hooks' ] );
 			}
 		}
 
