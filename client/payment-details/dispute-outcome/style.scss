@@ -34,10 +34,6 @@
 		min-width: 0; // allow children to shrink below their intrinsic width and wrap
 	}
 
-	&__label {
-		// inline so it flows with __state in the same wrapping text block
-	}
-
 	&__item--provided {
 		.dispute-outcome-evidence-list__icon {
 			color: $alert-green;
