@@ -141,6 +141,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	} >( {} );
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
+	const getDisputeTracksProperties = () => ( {
+		dispute_id: dispute.id,
+		dispute_status: dispute.status,
+		dispute_reason: dispute.reason,
+	} );
+
 	const isFeatureFlagEnabled =
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
 		false;
@@ -512,7 +518,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_success'
-				: 'wcpay_dispute_save_evidence_success'
+				: 'wcpay_dispute_save_evidence_success',
+			getDisputeTracksProperties()
 		);
 
 		createSuccessNotice( message, {
@@ -531,7 +538,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		recordEvent(
 			submit
 				? 'wcpay_dispute_submit_evidence_failed'
-				: 'wcpay_dispute_save_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed',
+			getDisputeTracksProperties()
 		);
 
 		const message = submit
@@ -561,7 +569,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			recordEvent(
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked',
+				getDisputeTracksProperties()
 			);
 
 			// Build base evidence object
@@ -826,7 +835,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 
 	const updateProductType = ( newType: string ) => {
-		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
+		recordEvent( 'wcpay_dispute_product_selected', {
+			...getDisputeTracksProperties(),
+			selection: newType,
+		} );
 		setProductType( newType );
 		// Reset the manual edit flag so the cover letter regenerates with the new product type
 		// This ensures attachment labels are updated to match the selected product type
@@ -903,6 +915,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 
 		recordEvent( 'wcpay_dispute_file_upload_started', {
+			...getDisputeTracksProperties(),
 			type: key,
 		} );
 
@@ -939,10 +952,12 @@ export default ( { query }: { query: { id: string } } ) => {
 			} ) );
 
 			recordEvent( 'wcpay_dispute_file_upload_success', {
+				...getDisputeTracksProperties(),
 				type: key,
 			} );
 		} catch ( err ) {
 			recordEvent( 'wcpay_dispute_file_upload_failed', {
+				...getDisputeTracksProperties(),
 				message: err instanceof Error ? err.message : String( err ),
 			} );
 
