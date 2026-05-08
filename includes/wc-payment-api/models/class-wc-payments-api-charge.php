@@ -78,6 +78,20 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	private $application_fee_amount;
 
 	/**
+	 * Server-driven fee breakdown envelope (experimental).
+	 *
+	 * When present, order meta and downstream renders should read
+	 * `totals.fee.amount` / `totals.net.amount` from here rather than
+	 * inferring from `application_fee_amount`. See the generic fee-display
+	 * design doc.
+	 *
+	 * FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	 *
+	 * @var array|null
+	 */
+	private $fee_breakdown_v1;
+
+	/**
 	 * Balance transaction that describes the impact of this charge on the account balance
 	 *
 	 * @var array
@@ -333,6 +347,28 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 	}
 
 	/**
+	 * FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	 *
+	 * Returns the server-driven fee breakdown v1 envelope (experimental).
+	 *
+	 * @return array|null
+	 */
+	public function get_fee_breakdown_v1() {
+		return $this->fee_breakdown_v1;
+	}
+
+	/**
+	 * FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	 *
+	 * Sets the server-driven fee breakdown v1 envelope.
+	 *
+	 * @param array|null $fee_breakdown_v1 The envelope, or null to clear.
+	 */
+	public function set_fee_breakdown_v1( ?array $fee_breakdown_v1 ): void {
+		$this->fee_breakdown_v1 = $fee_breakdown_v1;
+	}
+
+	/**
 	 * Returns the balance transaction associated with this charge
 	 *
 	 * @return array
@@ -477,6 +513,8 @@ class WC_Payments_API_Charge implements \JsonSerializable {
 			'refunded'               => $this->get_refunded(),
 			'refunds'                => $this->get_refunds(),
 			'status'                 => $this->get_status(),
+			// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+			'fee_breakdown_v1'       => $this->get_fee_breakdown_v1(),
 		];
 	}
 }
