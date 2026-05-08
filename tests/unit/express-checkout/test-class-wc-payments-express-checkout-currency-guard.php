@@ -113,6 +113,15 @@ class WC_Payments_Express_Checkout_Currency_Guard_Test extends WCPAY_UnitTestCas
 		$this->assertTrue( true );
 	}
 
+	public function test_register_hooks_the_assertion_on_store_api_order_build() {
+		WC_Payments_Express_Checkout_Currency_Guard::register();
+
+		$this->assertNotFalse(
+			has_action( 'woocommerce_store_api_checkout_update_order_from_request' ),
+			'Expected register() to hook woocommerce_store_api_checkout_update_order_from_request.'
+		);
+	}
+
 	public function test_throws_route_exception_on_currency_mismatch() {
 		$this->set_ece_request_headers();
 		$_SERVER[ self::CURRENCY_HEADER ] = 'USD';

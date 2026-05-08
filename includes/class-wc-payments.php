@@ -670,10 +670,7 @@ class WC_Payments {
 		// Rejects order placement if the cart's currency drifted away from
 		// the one the Element booted with — e.g. a multi-currency plugin
 		// flipped the cart on shipping address change inside the wallet sheet.
-		add_action(
-			'woocommerce_blocks_loaded',
-			[ __CLASS__, 'register_express_checkout_currency_guard' ]
-		);
+		WC_Payments_Express_Checkout_Currency_Guard::register();
 
 		if ( self::get_gateway()->is_enabled() ) {
 			// Insert the Stripe Payment Messaging Element only if there is at least one BNPL method enabled.
@@ -1859,17 +1856,6 @@ class WC_Payments {
 			self::get_gateway()
 		);
 		$extension->init();
-	}
-
-	/**
-	 * Bootstraps the express checkout currency guard on
-	 * `woocommerce_blocks_loaded`.
-	 *
-	 * @return void
-	 */
-	public static function register_express_checkout_currency_guard() {
-		$guard = new WC_Payments_Express_Checkout_Currency_Guard();
-		$guard->init();
 	}
 
 	/**

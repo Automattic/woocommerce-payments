@@ -26,14 +26,17 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 	const MISMATCH_ERROR_CODE     = 'wcpay_express_checkout_currency_mismatch';
 
 	/**
-	 * Register the assertion on Store API checkout order builds.
+	 * Boots the guard. Wires itself onto Store API checkout order builds so
+	 * the surrounding bootstrap doesn't need to know how the assertion is
+	 * dispatched.
 	 *
 	 * @return void
 	 */
-	public function init() {
+	public static function register() {
+		$guard = new self();
 		add_action(
 			'woocommerce_store_api_checkout_update_order_from_request',
-			[ $this, 'assert_currency_matches_element' ],
+			[ $guard, 'assert_currency_matches_element' ],
 			10,
 			2
 		);
