@@ -52,7 +52,7 @@ describe( 'Express checkout event handlers', () => {
 				reject: jest.fn(),
 			};
 			elements = {
-				update: jest.fn(),
+				update: jest.fn( () => Promise.resolve() ),
 			};
 		} );
 

@@ -18,6 +18,7 @@ import { getRecommendedDocumentFields } from '../recommended-document-fields';
 import { generateAttachments } from '../cover-letter-generator';
 import { getMatrixFields } from '../evidence-matrix';
 import { DOCUMENT_FIELD_KEYS } from '../document-field-keys';
+import type { Charge } from 'wcpay/types/charges';
 import type { DisputeReason } from 'wcpay/types/disputes';
 
 // Mock wcpaySettings with feature flag enabled
@@ -2061,7 +2062,7 @@ describe( 'Evidence Matrix Specification Validation', () => {
 				customer_url: '',
 			},
 			balance_transactions: [],
-			charge: 'ch_test',
+			charge: { id: 'ch_test' } as Charge,
 		} );
 
 		describe.each(
@@ -2203,7 +2204,7 @@ describe( 'Evidence Matrix Specification Validation', () => {
 							customer_url: '',
 						},
 						balance_transactions: [],
-						charge: 'ch_test',
+						charge: { id: 'ch_test' } as Charge,
 					};
 
 					const attachments = generateAttachments(

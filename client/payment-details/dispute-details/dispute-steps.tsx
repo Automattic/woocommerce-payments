@@ -12,8 +12,8 @@ import { envelope, comment, page } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
+import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import type { Dispute } from 'wcpay/types/disputes';
-import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import InlineNotice from 'components/inline-notice';
@@ -24,7 +24,15 @@ import {
 } from 'wcpay/components/accordion';
 
 interface Props {
-	dispute: Dispute;
+	dispute: Pick<
+		Dispute,
+		| 'amount'
+		| 'created'
+		| 'currency'
+		| 'evidence_details'
+		| 'reason'
+		| 'status'
+	>;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
 	bankName: string | null;
