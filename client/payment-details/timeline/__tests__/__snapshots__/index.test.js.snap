@@ -1615,6 +1615,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
       >
         <span
           aria-busy="true"
+          aria-hidden="true"
           class="is-loadable-placeholder is-block"
         >
           <p
@@ -1625,6 +1626,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
         <span
           aria-busy="true"
+          aria-hidden="true"
           class="is-loadable-placeholder is-block"
         >
           <p
@@ -1635,6 +1637,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
         <span
           aria-busy="true"
+          aria-hidden="true"
           class="is-loadable-placeholder is-block"
         >
           <p
@@ -1645,6 +1648,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
         <span
           aria-busy="true"
+          aria-hidden="true"
           class="is-loadable-placeholder is-block"
         >
           <p
