@@ -678,7 +678,7 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
-		add_filter( 'woocommerce_printable_order_receipt_data', [ __CLASS__, 'add_card_brand_icon_to_printable_order_receipt' ], 10, 2 );
+		add_filter( 'woocommerce_printable_order_receipt_css', [ __CLASS__, 'fit_card_brand_icon_for_printable_order_receipt' ], 10, 2 );
 
 		add_filter( 'woocommerce_address_providers', [ __CLASS__, 'add_address_provider' ] );
 		// Add note query support for source.
@@ -883,41 +883,21 @@ class WC_Payments {
 	}
 
 	/**
-	 * Adds WCPay card brand artwork to WooCommerce Core printable receipts.
+	 * Fits WCPay card brand artwork in WooCommerce Core printable receipts.
 	 *
-	 * WooCommerce Core owns the remote receipt endpoint used by the mobile apps. Core falls back to an
-	 * unknown card icon for terminal-specific networks it does not know about yet, so WCPay supplies the
-	 * artwork when the order payment details contain one of our supported card brands.
+	 * Core receipt card icons are rendered as CSS background images. Wide network marks such as eftpos
+	 * and Cartes Bancaires need contain sizing so they are visible in the remote receipts used by mobile.
 	 *
-	 * @param array    $data  Printable receipt data.
+	 * @param string   $css   Printable receipt CSS.
 	 * @param WC_Order $order Order instance.
-	 * @return array
+	 * @return string
 	 */
-	public static function add_card_brand_icon_to_printable_order_receipt( array $data, $order ): array {
+	public static function fit_card_brand_icon_for_printable_order_receipt( string $css, $order ): string {
 		if ( ! $order instanceof WC_Order || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $order->get_payment_method() ) {
-			return $data;
+			return $css;
 		}
 
-		if ( empty( $data['payment_info']['brand'] ) ) {
-			return $data;
-		}
-
-		$card_brand_asset_name = WC_Payments_Utils::get_card_brand_asset_name( $data['payment_info']['brand'] );
-
-		if ( ! in_array( $card_brand_asset_name, [ 'eftpos_au', 'cartes_bancaires' ], true ) ) {
-			return $data;
-		}
-
-		$card_brand_icon = WC_Payments_Utils::get_card_brand_icon_base64( $data['payment_info']['brand'] );
-
-		if ( '' === $card_brand_icon ) {
-			return $data;
-		}
-
-		$data['payment_info']['icon']      = $card_brand_icon;
-		$data['payment_info']['card_icon'] = $card_brand_icon;
-
-		return $data;
+		return $css . "\n.card-icon {\n\tbackground-position: center;\n\tbackground-size: contain;\n}\n";
 	}
 
 	/**

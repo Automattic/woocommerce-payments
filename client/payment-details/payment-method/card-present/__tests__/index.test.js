@@ -32,6 +32,7 @@ describe( 'CardPresentDetails', () => {
 			payment_method_details: {
 				type: 'card_present',
 				card_present: {
+					brand: 'network',
 					last4: '9999',
 					fingerprint: '123456789abc',
 					exp_month: '11',
@@ -60,6 +61,7 @@ describe( 'CardPresentDetails', () => {
 			payment_method_details: {
 				type: 'card_present',
 				card_present: {
+					brand: 'visa',
 					last4: '0978',
 					fingerprint: '123456789abc',
 					exp_month: '12',
@@ -84,11 +86,44 @@ describe( 'CardPresentDetails', () => {
 		expect( container.textContent ).not.toContain( 'Eftpos_au' );
 	} );
 
+	test( 'uses brand for unsupported networks', () => {
+		const charge = {
+			payment_method_details: {
+				type: 'card_present',
+				card_present: {
+					brand: 'visa',
+					last4: '0978',
+					fingerprint: '123456789abc',
+					exp_month: '12',
+					exp_year: '2030',
+					funding: 'debit',
+					network: 'unsupported_network',
+					country: 'US',
+				},
+			},
+			billing_details: {
+				name: 'foo',
+				email: 'bar',
+				formattedAddress: 'baz',
+			},
+		};
+
+		const { container } = render(
+			<CardPresentDetails charge={ charge } isLoading={ false } />
+		);
+
+		expect( container.textContent ).toContain( 'Visa debit card' );
+		expect( container.textContent ).not.toContain(
+			'Unsupported_network debit card'
+		);
+	} );
+
 	test( 'renders cartes_bancaires as Cartes Bancaires', () => {
 		const charge = {
 			payment_method_details: {
 				type: 'card_present',
 				card_present: {
+					brand: 'visa',
 					last4: '4242',
 					fingerprint: '123456789abc',
 					exp_month: '12',

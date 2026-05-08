@@ -45,6 +45,56 @@ describe( 'PaymentMethodDetails', () => {
 		expect( container.textContent ).toContain( '0978' );
 	} );
 
+	test( 'prefers the routed network for co-branded card-present payments', () => {
+		const { container } = render(
+			<PaymentMethodDetails
+				payment={ {
+					type: 'card_present',
+					card_present: {
+						brand: 'visa',
+						network: 'eftpos_au',
+						last4: '0978',
+					},
+				} }
+			/>
+		);
+
+		expect(
+			container.querySelector(
+				'.payment-method__brand--eftpos_au[aria-label="eftpos"]'
+			)
+		).not.toBeNull();
+		expect(
+			container.querySelector( '.payment-method__brand--visa' )
+		).toBeNull();
+		expect( container.textContent ).toContain( '0978' );
+	} );
+
+	test( 'falls back to brand for unsupported card-present networks', () => {
+		const { container } = render(
+			<PaymentMethodDetails
+				payment={ {
+					type: 'card_present',
+					card_present: {
+						brand: 'visa',
+						network: 'unsupported_network',
+						last4: '0978',
+					},
+				} }
+			/>
+		);
+
+		expect(
+			container.querySelector( '.payment-method__brand--visa' )
+		).not.toBeNull();
+		expect(
+			container.querySelector(
+				'.payment-method__brand--unsupported_network'
+			)
+		).toBeNull();
+		expect( container.textContent ).toContain( '0978' );
+	} );
+
 	test( 'renders a dash if no card was provided', () => {
 		const { container: paymentMethodDetails } = renderCard( null );
 		expect( paymentMethodDetails ).toMatchSnapshot();

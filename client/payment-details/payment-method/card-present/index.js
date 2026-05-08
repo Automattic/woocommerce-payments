@@ -13,6 +13,8 @@ import PaymentDetailsPaymentMethodDetail from '../detail';
 const getCardNetworkDisplayName = ( network ) => {
 	const networkDisplayNames = {
 		cartes_bancaires: __( 'Cartes Bancaires', 'woocommerce-payments' ),
+		cb: __( 'Cartes Bancaires', 'woocommerce-payments' ),
+		eftpos: __( 'eftpos', 'woocommerce-payments' ),
 		eftpos_au: __( 'eftpos', 'woocommerce-payments' ),
 	};
 
@@ -25,6 +27,11 @@ const getCardNetworkDisplayName = ( network ) => {
 		network.charAt( 0 ).toUpperCase() + network.slice( 1 )
 	);
 };
+
+const shouldDisplayNetworkOverBrand = ( network ) =>
+	[ 'cartes_bancaires', 'cb', 'eftpos', 'eftpos_au' ].includes(
+		network
+	);
 
 /**
  * Extracts and formats payment method details from a card-present charge.
@@ -58,10 +65,13 @@ const formatPaymentMethodDetails = ( charge ) => {
 		prepaid: __( 'prepaid', 'woocommerce-payments' ),
 		unknown: __( 'unknown', 'woocommerce-payments' ),
 	};
+	const displayBrand = shouldDisplayNetworkOverBrand( network )
+		? network
+		: brand;
 	const cardType = sprintf(
 		// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
 		__( '%1$s %2$s card', 'woocommerce-payments' ),
-		getCardNetworkDisplayName( network || brand ), // Brand
+		getCardNetworkDisplayName( displayBrand ), // Brand
 		fundingTypes[ funding ]
 	);
 

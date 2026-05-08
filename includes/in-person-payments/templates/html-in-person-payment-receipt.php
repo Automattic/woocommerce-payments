@@ -5,13 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-/**
- * Helper to generate markup to render a price.
- *
- * @param  array  $product The product to display.
- * @param  string $currency The currency to display.
- * @return string
- */
 if ( ! function_exists( 'wcpay_format_price_helper' ) ) {
 	/**
 	 * Helper to generate markup to render a price.
@@ -33,7 +26,9 @@ if ( ! function_exists( 'wcpay_format_price_helper' ) ) {
 	}
 }
 
-$payment_method_brand_display_name = $payment_method_brand_display_name ?? ucfirst( $payment_method_details['brand'] ?? '' );
+$payment_method_network            = $payment_method_details['network'] ?? '';
+$payment_method_brand              = WC_Payments_Utils::should_display_card_network_over_brand( $payment_method_network ) ? $payment_method_network : ( $payment_method_details['brand'] ?? '' );
+$payment_method_brand_display_name = $payment_method_brand_display_name ?? WC_Payments_Utils::get_card_brand_display_name( $payment_method_brand );
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -114,13 +109,6 @@ $payment_method_brand_display_name = $payment_method_brand_display_name ?? ucfir
 		#powered_by {
 			font-size: 7px;
 			padding-top: 5px;
-		}
-
-		.card-brand-logo {
-			max-width: 26px;
-			max-height: 16px;
-			margin-right: 4px;
-			vertical-align: middle;
 		}
 
 	</style>
@@ -223,12 +211,7 @@ $payment_method_brand_display_name = $payment_method_brand_display_name ?? ucfir
 					<td class="align-right"><b><?php echo wp_kses( wc_price( $amount_captured, [ 'currency' => $order['currency'] ] ), 'post' ); ?></b></td>
 				</tr>
 				<tr>
-					<td colspan="2" class="align-left">
-						<?php if ( ! empty( $payment_method_brand_image_url ) ) : ?>
-							<img class="card-brand-logo" src="<?php echo esc_url( $payment_method_brand_image_url ); ?>" alt="<?php echo esc_attr( $payment_method_brand_display_name ); ?>" />
-						<?php endif; ?>
-						<?php echo esc_html( sprintf( '%s - %s', $payment_method_brand_display_name, $payment_method_details['last4'] ) ); ?>
-					</td>
+					<td colspan="2" class="align-left"><?php echo esc_html( sprintf( '%s - %s', $payment_method_brand_display_name, $payment_method_details['last4'] ) ); ?></td>
 				</tr>
 			</table>
 		</div>

@@ -44,7 +44,8 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 		}
 
 		$payment_method_details = $charge['payment_method_details']['card_present'];
-		$card_brand             = $payment_method_details['brand'];
+		$card_network           = $payment_method_details['network'] ?? '';
+		$card_brand             = WC_Payments_Utils::should_display_card_network_over_brand( $card_network ) ? $card_network : $payment_method_details['brand'];
 
 		ob_start();
 
@@ -59,7 +60,6 @@ class WC_Payments_In_Person_Payments_Receipts_Service {
 				'order'                             => $order_data,
 				'payment_method_details'            => $payment_method_details,
 				'payment_method_brand_display_name' => WC_Payments_Utils::get_card_brand_display_name( $card_brand ),
-				'payment_method_brand_image_url'    => WC_Payments_Utils::get_card_brand_icon_url( $card_brand ),
 				'receipt'                           => $payment_method_details['receipt'],
 				'support_address'                   => $settings['support_info']['address'],
 				'support_email'                     => $settings['support_info']['email'],

@@ -67,12 +67,16 @@
 	background-image: url( '../images/cards/visa.svg' );
 }
 
-.payment-method__brand--eftpos {
-	background-image: url( '../images/cards/eftpos.svg' );
-}
-
 .payment-method__brand--eftpos_au {
 	background-image: url( '../images/cards/eftpos_au.svg' );
+	background-color: #fff;
+	background-size: contain;
+}
+
+.payment-method__brand--cartes_bancaires,
+.payment-method__brand--eftpos_au {
+	background-size: contain;
+	outline: 0;
 }
 
 .payment-method__brand--alipay {

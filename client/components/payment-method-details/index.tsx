@@ -19,6 +19,11 @@ interface Payment {
 	[ key: string ]: any;
 }
 
+const shouldDisplayNetworkOverBrand = ( network?: string ) =>
+	[ 'cartes_bancaires', 'cb', 'eftpos', 'eftpos_au' ].includes(
+		network ?? ''
+	);
+
 /**
  *
  * @param payment Payment charge object
@@ -103,8 +108,9 @@ const PaymentMethodDetails = ( { payment }: PaymentMethodDetailsProps ) => {
 	const details = formatDetails( payment );
 
 	const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
-	const brand =
-		paymentMethod?.brand || paymentMethod?.network || payment?.type;
+	const brand = shouldDisplayNetworkOverBrand( paymentMethod?.network )
+		? paymentMethod.network
+		: paymentMethod?.brand || payment?.type;
 
 	return (
 		<span className="payment-method-details">
