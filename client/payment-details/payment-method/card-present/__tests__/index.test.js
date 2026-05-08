@@ -13,6 +13,7 @@ describe( 'CardPresentDetails', () => {
 		jest.clearAllMocks();
 		global.wcSettings = {
 			countries: {
+				AU: 'Australia',
 				US: 'United States of America',
 			},
 		};
@@ -52,5 +53,67 @@ describe( 'CardPresentDetails', () => {
 		);
 
 		expect( container ).toMatchSnapshot();
+	} );
+
+	test( 'renders eftpos_au as eftpos', () => {
+		const charge = {
+			payment_method_details: {
+				type: 'card_present',
+				card_present: {
+					last4: '0978',
+					fingerprint: '123456789abc',
+					exp_month: '12',
+					exp_year: '2030',
+					funding: 'debit',
+					network: 'eftpos_au',
+					country: 'AU',
+				},
+			},
+			billing_details: {
+				name: 'foo',
+				email: 'bar',
+				formattedAddress: 'baz',
+			},
+		};
+
+		const { container } = render(
+			<CardPresentDetails charge={ charge } isLoading={ false } />
+		);
+
+		expect( container.textContent ).toContain( 'eftpos debit card' );
+		expect( container.textContent ).not.toContain( 'Eftpos_au' );
+	} );
+
+	test( 'renders cartes_bancaires as Cartes Bancaires', () => {
+		const charge = {
+			payment_method_details: {
+				type: 'card_present',
+				card_present: {
+					last4: '4242',
+					fingerprint: '123456789abc',
+					exp_month: '12',
+					exp_year: '2030',
+					funding: 'debit',
+					network: 'cartes_bancaires',
+					country: 'FR',
+				},
+			},
+			billing_details: {
+				name: 'foo',
+				email: 'bar',
+				formattedAddress: 'baz',
+			},
+		};
+
+		global.wcSettings.countries.FR = 'France';
+
+		const { container } = render(
+			<CardPresentDetails charge={ charge } isLoading={ false } />
+		);
+
+		expect( container.textContent ).toContain(
+			'Cartes Bancaires debit card'
+		);
+		expect( container.textContent ).not.toContain( 'Cartes_bancaires' );
 	} );
 } );

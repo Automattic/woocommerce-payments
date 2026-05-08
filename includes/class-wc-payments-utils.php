@@ -289,6 +289,115 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the card brand asset name used for card artwork.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The asset name, without extension.
+	 */
+	public static function get_card_brand_asset_name( string $brand ): string {
+		$brand = strtolower( str_replace( '-', '_', $brand ) );
+
+		$brand_asset_names = [
+			'amex'             => 'amex',
+			'american_express' => 'amex',
+			'cartes_bancaires' => 'cartes_bancaires',
+			'cb'               => 'cartes_bancaires',
+			'diners'           => 'diners',
+			'diners_club'      => 'diners',
+			'discover'         => 'discover',
+			'eftpos'           => 'eftpos',
+			'eftpos_au'        => 'eftpos_au',
+			'jcb'              => 'jcb',
+			'master_card'      => 'mastercard',
+			'mastercard'       => 'mastercard',
+			'union_pay'        => 'unionpay',
+			'unionpay'         => 'unionpay',
+			'visa'             => 'visa',
+		];
+
+		return $brand_asset_names[ $brand ] ?? '';
+	}
+
+	/**
+	 * Returns the card brand icon URL for a Stripe card brand.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The card brand icon URL, or an empty string when unavailable.
+	 */
+	public static function get_card_brand_icon_url( string $brand ): string {
+		$asset_name = self::get_card_brand_asset_name( $brand );
+
+		if ( '' === $asset_name ) {
+			return '';
+		}
+
+		$asset_path = "assets/images/cards/{$asset_name}.svg";
+
+		if ( ! file_exists( WCPAY_ABSPATH . $asset_path ) ) {
+			return '';
+		}
+
+		return plugins_url( $asset_path, WCPAY_PLUGIN_FILE );
+	}
+
+	/**
+	 * Returns the card brand icon as a base64-encoded SVG for receipt CSS.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The base64-encoded SVG, or an empty string when unavailable.
+	 */
+	public static function get_card_brand_icon_base64( string $brand ): string {
+		$asset_name = self::get_card_brand_asset_name( $brand );
+
+		if ( '' === $asset_name ) {
+			return '';
+		}
+
+		$asset_path = WCPAY_ABSPATH . "assets/images/cards/{$asset_name}.svg";
+
+		if ( ! file_exists( $asset_path ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		return base64_encode( file_get_contents( $asset_path ) );
+	}
+
+	/**
+	 * Returns the display name for a Stripe card brand.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The display name.
+	 */
+	public static function get_card_brand_display_name( string $brand ): string {
+		$brand = strtolower( str_replace( '-', '_', $brand ) );
+
+		$brand_display_names = [
+			'amex'             => __( 'American Express', 'woocommerce-payments' ),
+			'american_express' => __( 'American Express', 'woocommerce-payments' ),
+			'cartes_bancaires' => __( 'Cartes Bancaires', 'woocommerce-payments' ),
+			'cb'               => __( 'Cartes Bancaires', 'woocommerce-payments' ),
+			'diners'           => __( 'Diners Club', 'woocommerce-payments' ),
+			'diners_club'      => __( 'Diners Club', 'woocommerce-payments' ),
+			'discover'         => __( 'Discover', 'woocommerce-payments' ),
+			'eftpos'           => __( 'eftpos', 'woocommerce-payments' ),
+			'eftpos_au'        => __( 'eftpos', 'woocommerce-payments' ),
+			'jcb'              => __( 'JCB', 'woocommerce-payments' ),
+			'master_card'      => __( 'Mastercard', 'woocommerce-payments' ),
+			'mastercard'       => __( 'Mastercard', 'woocommerce-payments' ),
+			'union_pay'        => __( 'Union Pay', 'woocommerce-payments' ),
+			'unionpay'         => __( 'Union Pay', 'woocommerce-payments' ),
+			'visa'             => __( 'Visa', 'woocommerce-payments' ),
+		];
+
+		if ( isset( $brand_display_names[ $brand ] ) ) {
+			return $brand_display_names[ $brand ];
+		}
+
+		return ucwords( str_replace( '_', ' ', $brand ) );
+	}
+
+	/**
 	 * Verifies whether a certain ZIP code is valid for the US, incl. 4-digit extensions.
 	 *
 	 * @param string $zip The ZIP code to verify.

@@ -94,6 +94,59 @@ class WC_Payments_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $registered_gateways[0]->get_stripe_id(), 'card' );
 	}
 
+	public function test_add_card_brand_icon_to_printable_order_receipt_updates_wcpay_terminal_network_icon() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$receipt_data = [
+			'payment_info' => [
+				'brand'     => 'eftpos_au',
+				'icon'      => 'unknown-icon',
+				'card_icon' => 'unknown-icon',
+			],
+		];
+
+		$result        = WC_Payments::add_card_brand_icon_to_printable_order_receipt( $receipt_data, $order );
+		$expected_icon = WC_Payments_Utils::get_card_brand_icon_base64( 'eftpos_au' );
+
+		$this->assertSame( $expected_icon, $result['payment_info']['icon'] );
+		$this->assertSame( $expected_icon, $result['payment_info']['card_icon'] );
+	}
+
+	public function test_add_card_brand_icon_to_printable_order_receipt_leaves_non_wcpay_receipts_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'bacs' );
+
+		$receipt_data = [
+			'payment_info' => [
+				'brand'     => 'eftpos_au',
+				'icon'      => 'unknown-icon',
+				'card_icon' => 'unknown-icon',
+			],
+		];
+
+		$result = WC_Payments::add_card_brand_icon_to_printable_order_receipt( $receipt_data, $order );
+
+		$this->assertSame( $receipt_data, $result );
+	}
+
+	public function test_add_card_brand_icon_to_printable_order_receipt_leaves_core_supported_brands_unchanged() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$receipt_data = [
+			'payment_info' => [
+				'brand'     => 'visa',
+				'icon'      => 'core-visa-icon',
+				'card_icon' => 'core-visa-icon',
+			],
+		];
+
+		$result = WC_Payments::add_card_brand_icon_to_printable_order_receipt( $receipt_data, $order );
+
+		$this->assertSame( $receipt_data, $result );
+	}
+
 	public function test_rest_endpoints_validate_nonce() {
 
 		if ( $this->is_wpcom() ) {
