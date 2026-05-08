@@ -70,13 +70,6 @@ class WC_Payments_Admin_Banner {
 	const USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX = 'wcpay_post_kyc_activation_stage_';
 
 	/**
-	 * Day thresholds for the three Post-KYC activation nudge stages.
-	 *
-	 * @var int[]
-	 */
-	const POST_KYC_ACTIVATION_STAGE_DAYS = [ 7, 14, 30 ];
-
-	/**
 	 * Number of days after KYC completion during which the Post-KYC activation nudge
 	 * may be shown. Past this window, the nudge is no longer eligible and the eligibility
 	 * machinery (including the live-sale order query) is short-circuited entirely.
@@ -128,8 +121,7 @@ class WC_Payments_Admin_Banner {
 		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_banner_scripts' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_test_to_live_notice_script' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_post_kyc_activation_notice_script' ] );
-		add_action( 'update_option_' . WC_Payments_Onboarding_Service::TEST_MODE_OPTION, [ $this, 'invalidate_test_to_live_notice_cache' ] );
+		add_action( 'update_option_' . WC_Payments_Onboarding_Service::TEST_MODE_OPTION, [ $this, 'invalidate_notice_caches' ] );
 
 		add_action( 'admin_init', [ $this, 'hide_post_kyc_activation_notice' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_post_kyc_activation_notice_script' ] );
@@ -174,6 +166,16 @@ class WC_Payments_Admin_Banner {
 			WC_Payments::get_file_version( 'dist/wc-payments-post-kyc-activation-notice.css' ),
 			'all'
 		);
+	}
+
+	/**
+	 * Invalidates the caches for all notices managed by this class.
+	 *
+	 * @return void
+	 */
+	public function invalidate_notice_caches(): void {
+		delete_transient( self::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
+		delete_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 
 	/**
@@ -468,7 +470,13 @@ class WC_Payments_Admin_Banner {
 			return;
 		}
 
-		$stage = $this->get_post_kyc_activation_stage();
+		$stage      = $this->get_post_kyc_activation_stage();
+		$shown_meta = self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage . '_shown';
+
+		if ( ! get_user_meta( get_current_user_id(), $shown_meta, true ) ) {
+			$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_shown', [ 'stage' => $stage ] );
+			update_user_meta( get_current_user_id(), $shown_meta, true );
+		}
 
 		wp_localize_script(
 			'WCPAY_POST_KYC_ACTIVATION_NOTICE',
@@ -504,14 +512,6 @@ class WC_Payments_Admin_Banner {
 	public function maybe_show_post_kyc_activation_notice(): void {
 		if ( ! $this->should_show_post_kyc_activation_notice() ) {
 			return;
-		}
-
-		$stage      = $this->get_post_kyc_activation_stage();
-		$shown_meta = self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage . '_shown';
-
-		if ( ! get_user_meta( get_current_user_id(), $shown_meta, true ) ) {
-			$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_shown', [ 'stage' => $stage ] );
-			update_user_meta( get_current_user_id(), $shown_meta, true );
 		}
 
 		echo '<div id="wcpay-post-kyc-activation-notice"></div>';
