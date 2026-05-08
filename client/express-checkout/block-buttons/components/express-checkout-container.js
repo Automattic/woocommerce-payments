@@ -14,6 +14,7 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
 } from '../../utils';
+import { setElementCurrency } from '../../utils/element-currency-cache';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
 import { WC_STORE_CART } from 'wcpay/checkout/constants';
@@ -54,6 +55,9 @@ const ExpressCheckoutContainer = ( props ) => {
 		].filter( Boolean );
 	}, [ enabledMethods ] );
 
+	const elementCurrency = billing.currency.code.toLowerCase();
+	setElementCurrency( elementCurrency );
+
 	const options = {
 		mode: 'payment',
 		...( useConfirmationToken
@@ -73,7 +77,7 @@ const ExpressCheckoutContainer = ( props ) => {
 			} ),
 			select( WC_STORE_CART )?.getCartData()
 		),
-		currency: billing.currency.code.toLowerCase(),
+		currency: elementCurrency,
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
 	};

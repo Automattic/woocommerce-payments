@@ -11,6 +11,7 @@ import { isNil, omitBy } from 'lodash';
  */
 import { getExpressCheckoutData } from './utils';
 import { getResolvedCurrency } from './utils/resolved-currency-cache';
+import { getElementCurrency } from './utils/element-currency-cache';
 import {
 	getProductId,
 	getQuantity,
@@ -104,11 +105,18 @@ export default class ExpressCheckoutCartApi {
 	 * @return {Promise} Result of the order creation request.
 	 */
 	async placeOrder( paymentData ) {
+		const elementCurrency = getElementCurrency();
+
 		return await this._request( {
 			method: 'POST',
 			path: '/wc/store/v1/checkout',
 			headers: {
 				'X-WooPayments-Tokenized-Cart': true,
+				// Lets the server reject placement when the cart's currency
+				// drifted away from the one the Element booted with.
+				...( elementCurrency && {
+					'X-WooPayments-Payment-Currency': elementCurrency,
+				} ),
 				...this.cartRequestHeaders,
 			},
 			data: paymentData,

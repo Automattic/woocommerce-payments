@@ -25,6 +25,7 @@ import {
 } from '../utils';
 import { resolveExpressCheckoutCurrency } from '../utils/resolve-currency';
 import { getResolvedCurrency } from '../utils/resolved-currency-cache';
+import { setElementCurrency } from '../utils/element-currency-cache';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -239,6 +240,8 @@ jQuery( ( $ ) => {
 				enabledMethods.includes( 'payment_request' ) && 'card',
 				enabledMethods.includes( 'amazon_pay' ) && 'amazon_pay',
 			].filter( Boolean );
+
+			setElementCurrency( creationOptions.currency );
 
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
