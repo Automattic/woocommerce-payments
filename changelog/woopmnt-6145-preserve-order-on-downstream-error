@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Don't mark an order as Failed when a third-party plugin throws after the payment intent has already succeeded
