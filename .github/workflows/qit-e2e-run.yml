@@ -69,6 +69,9 @@ jobs:
           E2E_JP_SITE_ID: ${{ secrets.E2E_QIT_JP_SITE_ID }}
           E2E_JP_BLOG_TOKEN: ${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}
           E2E_JP_USER_TOKEN: ${{ secrets.E2E_QIT_JP_USER_TOKEN }}
+        # TEMP DIAGNOSTIC: --verbose added to capture upstream URL + response
+        # while investigating "Invalid ZIP file downloaded for 'woocommerce'"
+        # failures on `--woo=*-dev` snapshots. Revert once root cause confirmed.
         run: |
           qit run:e2e woocommerce-payments \
             --zip=woocommerce-payments.zip \
@@ -81,7 +84,36 @@ jobs:
             --env E2E_JP_USER_TOKEN=$E2E_JP_USER_TOKEN \
             --wait \
             --print-report-url \
+            --verbose \
             -- --project=${{ inputs.playwright-project }}
+
+      # TEMP DIAGNOSTIC: dumps QIT's plugin cache when the run fails, so we can
+      # tell *why* the WooCommerce ZIP was rejected (truncated, HTML body, 0
+      # bytes, etc.). Remove together with the --verbose flag above.
+      - name: Capture QIT cache forensics on failure
+        if: failure()
+        run: |
+          set +e
+          CACHE_DIR="$HOME/.config/woo-qit-cli/cache/plugin"
+          echo "::group::QIT CLI version"
+          qit --version || true
+          echo "::endgroup::"
+
+          echo "::group::Cache directory listing"
+          ls -la "$CACHE_DIR" 2>&1 || echo "Cache dir not present: $CACHE_DIR"
+          echo "::endgroup::"
+
+          shopt -s nullglob
+          for f in "$CACHE_DIR"/*.zip; do
+            echo "::group::File: $f"
+            ls -la "$f"
+            file "$f" || true
+            echo "--- unzip -l (truncated) ---"
+            unzip -l "$f" 2>&1 | head -20
+            echo "--- head -c 500 ---"
+            head -c 500 "$f" | od -c | head -20
+            echo "::endgroup::"
+          done
 
       - name: Upload test results
         if: always()
