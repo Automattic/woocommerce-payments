@@ -3,11 +3,12 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import BannerNotice from '../banner-notice';
+import BannerNotice from 'components/banner-notice';
 
 const OneAndDoneNotice: React.FC = () => {
 	const ctaUrl = window.wcpayOneAndDoneNoticeSettings?.ctaUrl ?? '';
@@ -35,15 +36,12 @@ const OneAndDoneNotice: React.FC = () => {
 				},
 			] }
 		>
-			<strong>
-				{ __(
-					'Your store made its first sale.',
+			{ createInterpolateElement(
+				__(
+					"<strong>Your store made its first sale.</strong> Now bring more shoppers in with Woo's marketing tools.",
 					'woocommerce-payments'
-				) }
-			</strong>{ ' ' }
-			{ __(
-				"Now bring more shoppers in with Woo's marketing tools.",
-				'woocommerce-payments'
+				),
+				{ strong: <strong /> }
 			) }
 		</BannerNotice>
 	);

@@ -480,6 +480,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SNOOZED );
 		delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SHOWN );
 		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE );
+		delete_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE );
 
 		foreach ( $this->one_and_done_order_ids as $order_id ) {
 			$order = wc_get_order( $order_id );
@@ -590,6 +591,13 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $banner->should_show_one_and_done_notice() );
 
+		// ≥2 live WCPay orders is irreversible — flag must be set so subsequent
+		// requests short-circuit before re-running the order query.
+		$this->assertSame(
+			'1',
+			get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE )
+		);
+
 		$this->tear_down_one_and_done_global_state();
 	}
 
@@ -608,6 +616,12 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
 
 		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		// Non-WCPay order present — also irreversible, flag must be set.
+		$this->assertSame(
+			'1',
+			get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE )
+		);
 
 		$this->tear_down_one_and_done_global_state();
 	}
@@ -686,6 +700,114 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
 
 		$this->assertTrue( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_eligible_with_many_test_mode_orders(): void {
+		// L793 regression: with the previous 20-row PHP scan, 19+ test-mode orders
+		// could saturate the window and silently exclude an eligible merchant.
+		// The new query filters server-side on `_wcpay_mode = PRODUCTION` so test
+		// orders are never returned regardless of count.
+		$this->set_up_one_and_done_global_state();
+
+		for ( $i = 0; $i < 25; $i++ ) {
+			$test_order = wc_create_order();
+			$test_order->set_payment_method( 'woocommerce_payments' );
+			$test_order->set_status( 'completed' );
+			$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::TEST );
+			$test_order->save();
+			$this->one_and_done_order_ids[] = $test_order->get_id();
+		}
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertTrue( $banner->should_show_one_and_done_notice() );
+		$this->assertFalse(
+			(bool) get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE ),
+			'Test-mode orders alone must not set the permanent ineligibility flag.'
+		);
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_one_and_done_permanent_ineligible_flag_short_circuits_eligibility_check(): void {
+		// Once the flag is set, subsequent calls must short-circuit before reading
+		// the transient or running any query. We verify by setting the flag on a
+		// store that would otherwise be eligible.
+		$this->set_up_one_and_done_global_state();
+		update_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE, '1' );
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_does_not_set_permanent_flag_for_reversible_disqualifiers(): void {
+		// In dev mode, payments-disabled, account-not-live, etc., the merchant
+		// could still recover into the cohort once the underlying state changes.
+		// The permanent flag must NOT be set for any of these reversible cases.
+		$this->set_up_one_and_done_global_state();
+		WC_Payments::mode()->dev();
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+		$this->assertFalse(
+			(bool) get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE ),
+			'Dev mode is reversible — permanent flag must not be set.'
+		);
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_does_not_set_permanent_flag_for_recent_first_order(): void {
+		// Order age <7 days is reversible (the order ages over time). Permanent
+		// flag must not be set when the only disqualifier is age.
+		$this->set_up_one_and_done_global_state( 1, 3 );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+		$this->assertFalse(
+			(bool) get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE ),
+			'Order age <threshold is reversible — permanent flag must not be set.'
+		);
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_caches_expensive_checks(): void {
+		// Memoization: even when called multiple times in the same request (once
+		// from admin_enqueue_scripts and once from the woocommerce_sections_*
+		// render hook), the public method must only run the expensive backing
+		// computation once.
+		$this->set_up_one_and_done_global_state();
+
+		$mock_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$mock_account->expects( $this->once() )
+			->method( 'get_account_status_data' )
+			->willReturn(
+				[
+					'testDrive'       => false,
+					'paymentsEnabled' => true,
+				]
+			);
+		$mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$mock_account->method( 'get_is_live' )->willReturn( true );
+
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$mock_gateway->method( 'is_connected' )->willReturn( true );
+
+		$banner = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+
+		$banner->should_show_one_and_done_notice();
+		$banner->should_show_one_and_done_notice();
+		$banner->should_show_one_and_done_notice();
 
 		$this->tear_down_one_and_done_global_state();
 	}

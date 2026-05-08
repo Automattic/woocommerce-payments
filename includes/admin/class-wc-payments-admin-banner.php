@@ -104,6 +104,17 @@ class WC_Payments_Admin_Banner {
 	const TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE = 'wcpay_one_and_done_eligible';
 
 	/**
+	 * Sticky option set the first time the store hits an irreversible disqualifier
+	 * (≥2 WooPayments live orders, or ≥1 order through any other gateway). Once set,
+	 * `is_one_and_done_notice_eligible_to_be_shown()` short-circuits before the
+	 * transient lookup and order queries — the merchant has permanently aged out of
+	 * the cohort and can never re-enter (orders aren't deleted in normal operation).
+	 *
+	 * @var string
+	 */
+	const OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE = 'wcpay_one_and_done_permanently_ineligible';
+
+	/**
 	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -116,6 +127,23 @@ class WC_Payments_Admin_Banner {
 	 * @var WC_Payments_Account
 	 */
 	private $account;
+
+	/**
+	 * Per-request memo of `should_show_test_to_live_notice()`. The same instance is
+	 * reused across both the `admin_enqueue_scripts` and the `woocommerce_sections_*`
+	 * callbacks, so a single user_meta + transient pass per request is enough.
+	 *
+	 * @var ?bool
+	 */
+	private $should_show_test_to_live_notice_memo = null;
+
+	/**
+	 * Per-request memo of `should_show_one_and_done_notice()`. See sibling memo for
+	 * rationale.
+	 *
+	 * @var ?bool
+	 */
+	private $should_show_one_and_done_notice_memo = null;
 
 	/**
 	 * Constructor.
@@ -250,20 +278,13 @@ class WC_Payments_Admin_Banner {
 	 * @return bool
 	 */
 	public function should_show_test_to_live_notice(): bool {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return false;
+		if ( null !== $this->should_show_test_to_live_notice_memo ) {
+			return $this->should_show_test_to_live_notice_memo;
 		}
 
-		if ( get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, true ) ) {
-			return false;
-		}
+		$this->should_show_test_to_live_notice_memo = $this->compute_should_show_test_to_live_notice();
 
-		$snoozed_at = (int) get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, true );
-		if ( $snoozed_at && time() < $snoozed_at + self::TEST_TO_LIVE_NOTICE_SNOOZE_DAYS * DAY_IN_SECONDS ) {
-			return false;
-		}
-
-		return $this->is_test_to_live_notice_eligible_to_be_shown();
+		return $this->should_show_test_to_live_notice_memo;
 	}
 
 	/**
@@ -277,7 +298,8 @@ class WC_Payments_Admin_Banner {
 	}
 
 	/**
-	 * Render the test-to-live activation nudge on the WP-admin dashboard.
+	 * Output the React mount point for the test-to-live activation nudge. The
+	 * notice itself is rendered client-side from `client/entrypoints/test-to-live-notice/`.
 	 *
 	 * @return void
 	 */
@@ -468,20 +490,13 @@ class WC_Payments_Admin_Banner {
 	 * @return bool
 	 */
 	public function should_show_one_and_done_notice(): bool {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return false;
+		if ( null !== $this->should_show_one_and_done_notice_memo ) {
+			return $this->should_show_one_and_done_notice_memo;
 		}
 
-		if ( get_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_DISMISSED, true ) ) {
-			return false;
-		}
+		$this->should_show_one_and_done_notice_memo = $this->compute_should_show_one_and_done_notice();
 
-		$snoozed_at = (int) get_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_SNOOZED, true );
-		if ( $snoozed_at && time() < $snoozed_at + self::ONE_AND_DONE_NOTICE_SNOOZE_DAYS * DAY_IN_SECONDS ) {
-			return false;
-		}
-
-		return $this->is_one_and_done_notice_eligible_to_be_shown();
+		return $this->should_show_one_and_done_notice_memo;
 	}
 
 	/**
@@ -523,7 +538,8 @@ class WC_Payments_Admin_Banner {
 	}
 
 	/**
-	 * Render the one-and-done recovery nudge on the WP-admin dashboard.
+	 * Output the React mount point for the one-and-done recovery nudge. The
+	 * notice itself is rendered client-side from `client/entrypoints/one-and-done-notice/`.
 	 *
 	 * @return void
 	 */
@@ -717,6 +733,14 @@ class WC_Payments_Admin_Banner {
 	 * @return bool
 	 */
 	private function is_one_and_done_notice_eligible_to_be_shown(): bool {
+		// Permanent disqualifier: once a store has been seen with ≥2 real-customer
+		// orders we never re-evaluate (orders aren't deleted in normal operation).
+		// Checked before the transient so stores that have permanently aged out
+		// don't re-run order queries every TTL.
+		if ( get_option( self::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE ) ) {
+			return false;
+		}
+
 		$cached = get_transient( self::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE );
 		if ( false !== $cached ) {
 			return '1' === $cached;
@@ -736,15 +760,30 @@ class WC_Payments_Admin_Banner {
 	 * - Payments are enabled.
 	 * - Stripe account is live.
 	 * - Mode is neither test nor development (merchant is currently transacting live).
-	 * - The store has exactly one real-customer order (across all gateways), excluding
-	 *   test-mode WooPayments orders. A merchant with one WooPayments live order plus
-	 *   any other completed orders (cheque, COD, bank transfer, etc.) is not "one and
-	 *   done" at the store level — they're already getting business through other
-	 *   channels and the banner's framing doesn't apply.
-	 * - That single order is a WooPayments live-mode order (otherwise the merchant
-	 *   hasn't used WooPayments yet and this banner doesn't apply).
-	 * - That order's date_created is at least ONE_AND_DONE_NOTICE_DAYS_THRESHOLD days
-	 *   in the past.
+	 * - The store has exactly one WooPayments live-mode order and zero orders through
+	 *   any other gateway. A merchant with one WooPayments live order plus any other
+	 *   completed orders (cheque, COD, bank transfer, etc.) is not "one and done" at
+	 *   the store level — they're already getting business through other channels and
+	 *   the banner's framing doesn't apply.
+	 * - That single order's date_created is at least ONE_AND_DONE_NOTICE_DAYS_THRESHOLD
+	 *   days in the past.
+	 *
+	 * Strategy: two narrow indexed queries against post_meta rather than one wide
+	 * unindexed scan.
+	 *
+	 *   Q1 — WooPayments live orders capped at 2: filtered server-side by
+	 *        `_payment_method` + `_wcpay_mode` (same shape `compute_test_to_live_notice_eligibility()`
+	 *        already uses). Test-mode WCPay orders are excluded by construction, so
+	 *        the previous saturation false-negative ("19 old test-mode orders + 1
+	 *        live → silently excluded") can no longer occur.
+	 *   Q2 — non-WooPayments orders capped at 1: filtered server-side by
+	 *        `_payment_method IN [other registered gateways]`. Caveat: this misses
+	 *        orders paid via since-uninstalled gateways. Acceptable for the cohort —
+	 *        a one-and-done merchant uninstalling a gateway is a vanishing edge case.
+	 *
+	 * Sets `OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE` whenever an irreversible
+	 * disqualifier is observed (≥2 WCPay live orders or ≥1 non-WCPay order) so
+	 * subsequent calls short-circuit before reaching this query at all.
 	 *
 	 * @return bool True if the notice should be shown, false otherwise.
 	 */
@@ -775,68 +814,108 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
-		// Fetch up to 20 completed/processing orders, then filter in PHP. We can't
-		// use a `meta_query` to exclude test-mode WooPayments orders inside the
-		// query because the legacy CPT order datastore doesn't support it
-		// (`Order query argument (meta_query) is not supported on the current
-		// order datastore.` — only HPOS does), and we need to work on both.
-		// Twenty is enough for realistic one-and-done cohorts: any merchant with
-		// more orders than that is not "one and done" regardless of mix.
-		$orders = wc_get_orders(
+		// Q1 — WooPayments live-mode orders, capped at 2.
+		$wcpay_live_orders = wc_get_orders(
 			[
-				'limit'   => 20,
-				'orderby' => 'date',
-				'order'   => 'ASC',
-				'status'  => [ 'wc-completed', 'wc-processing' ],
+				'payment_method' => 'woocommerce_payments',
+				'limit'          => 2,
+				'orderby'        => 'date',
+				'order'          => 'ASC',
+				'status'         => [ 'wc-completed', 'wc-processing' ],
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value'     => Order_Mode::PRODUCTION,
 			]
 		);
 
-		// Saturated — merchant has at least 20 completed/processing orders. Not
-		// "one and done" by any reasonable definition.
-		if ( count( $orders ) >= 20 ) {
+		$wcpay_live_count = count( $wcpay_live_orders );
+
+		if ( $wcpay_live_count >= 2 ) {
+			update_option( self::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE, '1' );
 			return false;
 		}
 
-		// Walk the list and find the single real-customer order, bailing as soon
-		// as we see a second one. Test-mode WooPayments orders are skipped — they
-		// don't represent a real customer transaction.
-		$real_count      = 0;
-		$only_real_order = null;
-		$wcpay_mode_key  = WC_Payments_Order_Service::WCPAY_MODE_META_KEY;
-		foreach ( $orders as $order ) {
-			if ( 'woocommerce_payments' === $order->get_payment_method()
-				&& Order_Mode::TEST === $order->get_meta( $wcpay_mode_key ) ) {
-				continue;
-			}
-			++$real_count;
-			if ( 1 === $real_count ) {
-				$only_real_order = $order;
-			} else {
-				// Second real-customer order seen — merchant isn't one-and-done. Bail early.
+		if ( 1 !== $wcpay_live_count ) {
+			// Zero live WCPay orders — not a candidate, but reversible (a live order
+			// could still arrive). No permanent flag.
+			return false;
+		}
+
+		// Q2 — any order through a different gateway disqualifies the merchant.
+		$other_gateway_ids = array_diff(
+			array_keys( WC()->payment_gateways()->payment_gateways() ),
+			[ 'woocommerce_payments' ]
+		);
+
+		if ( ! empty( $other_gateway_ids ) ) {
+			$non_wcpay_orders = wc_get_orders(
+				[
+					'payment_method' => $other_gateway_ids,
+					'limit'          => 1,
+					'return'         => 'ids',
+					'status'         => [ 'wc-completed', 'wc-processing' ],
+				]
+			);
+
+			if ( ! empty( $non_wcpay_orders ) ) {
+				update_option( self::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE, '1' );
 				return false;
 			}
 		}
 
-		if ( 1 !== $real_count || ! $only_real_order ) {
-			return false;
-		}
-
-		// The single real order must be a WooPayments live-mode order — otherwise
-		// the merchant has had a transaction through some other gateway but
-		// never used WooPayments, and this banner's prompt doesn't apply.
-		if ( 'woocommerce_payments' !== $only_real_order->get_payment_method() ) {
-			return false;
-		}
-		if ( Order_Mode::PRODUCTION !== $only_real_order->get_meta( $wcpay_mode_key ) ) {
-			return false;
-		}
-
-		$order_date = $only_real_order->get_date_created();
+		$order_date = $wcpay_live_orders[0]->get_date_created();
 		if ( ! $order_date ) {
 			return false;
 		}
 
 		return time() >= $order_date->getTimestamp() + self::ONE_AND_DONE_NOTICE_DAYS_THRESHOLD * DAY_IN_SECONDS;
+	}
+
+	/**
+	 * Backs `should_show_test_to_live_notice()`. Kept separate so the public method
+	 * is purely a memoization wrapper.
+	 *
+	 * @return bool
+	 */
+	private function compute_should_show_test_to_live_notice(): bool {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		if ( get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_DISMISSED, true ) ) {
+			return false;
+		}
+
+		$snoozed_at = (int) get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SNOOZED, true );
+		if ( $snoozed_at && time() < $snoozed_at + self::TEST_TO_LIVE_NOTICE_SNOOZE_DAYS * DAY_IN_SECONDS ) {
+			return false;
+		}
+
+		return $this->is_test_to_live_notice_eligible_to_be_shown();
+	}
+
+	/**
+	 * Backs `should_show_one_and_done_notice()`. Kept separate so the public method
+	 * is purely a memoization wrapper.
+	 *
+	 * @return bool
+	 */
+	private function compute_should_show_one_and_done_notice(): bool {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		if ( get_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_DISMISSED, true ) ) {
+			return false;
+		}
+
+		$snoozed_at = (int) get_user_meta( get_current_user_id(), self::USER_META_ONE_AND_DONE_NOTICE_SNOOZED, true );
+		if ( $snoozed_at && time() < $snoozed_at + self::ONE_AND_DONE_NOTICE_SNOOZE_DAYS * DAY_IN_SECONDS ) {
+			return false;
+		}
+
+		return $this->is_one_and_done_notice_eligible_to_be_shown();
 	}
 
 	/**

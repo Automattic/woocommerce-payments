@@ -7,7 +7,7 @@ import { createRoot, Root } from 'react-dom/client';
 /**
  * Internal dependencies
  */
-import TestToLiveNotice from 'components/test-to-live-notice';
+import TestToLiveNotice from './components/notice';
 
 const containerId = 'wcpay-test-to-live-notice';
 let mountedContainer: HTMLElement | null = null;
