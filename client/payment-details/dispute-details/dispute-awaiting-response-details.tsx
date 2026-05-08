@@ -276,6 +276,13 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		);
 	};
 
+	const disputeTracksProperties = {
+		dispute_id: dispute.id,
+		dispute_status: dispute.status,
+		dispute_reason: dispute.reason,
+		on_page: 'transaction_details',
+	};
+
 	const disputeAcceptAction = getAcceptDisputeProps( {
 		dispute,
 		isDisputeAcceptRequestPending,
@@ -362,10 +369,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					<ExternalLink
 						href={ getLearnMoreDocsUrl() }
 						onClick={ () => {
-							recordEvent( 'wcpay_dispute_help_link_clicked', {
-								dispute_status: dispute.status,
-								on_page: 'transaction_details',
-							} );
+							recordEvent(
+								'wcpay_dispute_help_link_clicked',
+								disputeTracksProperties
+							);
 						} }
 					>
 						{ getHelpLinkText() }
@@ -412,10 +419,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 									onClick={ () => {
 										recordEvent(
 											'wcpay_dispute_challenge_clicked',
-											{
-												dispute_status: dispute.status,
-												on_page: 'transaction_details',
-											}
+											disputeTracksProperties
 										);
 									} }
 									__next40pxDefaultSize
@@ -437,10 +441,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							onClick={ () => {
 								recordEvent(
 									disputeAcceptAction.acceptButtonTracksEvent,
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									disputeTracksProperties
 								);
 								setModalOpen( true );
 							} }
@@ -539,12 +540,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 										onClick={ () => {
 											recordEvent(
 												disputeAcceptAction.modalButtonTracksEvent,
-												{
-													dispute_status:
-														dispute.status,
-													on_page:
-														'transaction_details',
-												}
+												disputeTracksProperties
 											);
 
 											/**
