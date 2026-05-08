@@ -59,7 +59,7 @@ jobs:
       - name: Install QIT CLI
         # Pin to a stable release to avoid regressions from dev-trunk.
         # Test packages feature is available since 1.1.0.
-        run: composer global require woocommerce/qit-cli:1.1.8
+        run: composer global require woocommerce/qit-cli:1.1.9
 
       - name: Authenticate QIT
         run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
