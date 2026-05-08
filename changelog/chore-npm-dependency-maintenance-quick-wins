@@ -1,5 +1,5 @@
 Significance: patch
-Type: dev
-Comment: Update of package dependencies, mostly used for development purposes.
+Type: update
+Comment: Update of package dependencies, including runtime dependency bumps.
 
 
