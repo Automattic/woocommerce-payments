@@ -67,12 +67,12 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 		}
 
 		Logger::error(
-			sprintf(
-				'Express checkout currency mismatch at order placement. order_id=%d element_currency=%s order_currency=%s',
-				$order->get_id(),
-				$expected,
-				$actual
-			)
+			'Express checkout currency mismatch at order placement.',
+			[
+				'order_id'         => $order->get_id(),
+				'element_currency' => $expected,
+				'order_currency'   => $actual,
+			]
 		);
 
 		throw new RouteException(
