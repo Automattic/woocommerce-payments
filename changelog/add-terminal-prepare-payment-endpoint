@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add a terminal payment preparation endpoint for single-step Interac and EFTPOS capture flows.
