@@ -20,10 +20,7 @@ use WCPay\Logger;
  */
 class WC_Payments_Express_Checkout_Currency_Guard {
 
-	const PAYMENT_CURRENCY_HEADER = 'HTTP_X_WOOPAYMENTS_PAYMENT_CURRENCY';
-	const TOKENIZED_CART_HEADER   = 'HTTP_X_WOOPAYMENTS_TOKENIZED_CART';
-	const TOKENIZED_CART_NONCE    = 'HTTP_X_WOOPAYMENTS_TOKENIZED_CART_NONCE';
-	const MISMATCH_ERROR_CODE     = 'wcpay_express_checkout_currency_mismatch';
+	const MISMATCH_ERROR_CODE = 'wcpay_express_checkout_currency_mismatch';
 
 	/**
 	 * Boots the guard. Wires itself onto Store API checkout order builds so
@@ -48,22 +45,18 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 	 * non-ECE caller).
 	 *
 	 * @param WC_Order        $order   The order being created.
-	 * @param WP_REST_Request $request The Store API request (unused).
+	 * @param WP_REST_Request $request The Store API request.
 	 *
 	 * @return void
 	 *
 	 * @throws RouteException When the currencies disagree.
 	 */
 	public function assert_currency_matches_element( $order, $request ) {
-		if ( ! $this->is_express_checkout_request() ) {
+		if ( ! $this->is_express_checkout_request( $request ) ) {
 			return;
 		}
 
-		$expected = strtolower(
-			sanitize_text_field(
-				wp_unslash( $_SERVER[ self::PAYMENT_CURRENCY_HEADER ] ?? '' )
-			)
-		);
+		$expected = strtolower( (string) $request->get_header( 'X-WooPayments-Payment-Currency' ) );
 		if ( '' === $expected ) {
 			return;
 		}
@@ -87,7 +80,7 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 			sprintf(
 				/* translators: 1: expected currency code, 2: actual currency code */
 				__(
-					'The selected shipping address requires a different currency (%2$s) than the one used to start this payment (%1$s). Please reload the page.',
+					'The shipping address you selected requires a different currency (%2$s) than the one this payment was started with (%1$s). You have not been charged — please reload the page and try again.',
 					'woocommerce-payments'
 				),
 				strtoupper( $expected ),
@@ -102,19 +95,16 @@ class WC_Payments_Express_Checkout_Currency_Guard {
 	 * scope behavior to ECE-originated Store API requests: the tokenized
 	 * cart header must be set and its nonce must verify.
 	 *
+	 * @param WP_REST_Request $request The Store API request.
+	 *
 	 * @return bool
 	 */
-	private function is_express_checkout_request() {
-		$is_tokenized_cart = 'true' === sanitize_text_field(
-			wp_unslash( $_SERVER[ self::TOKENIZED_CART_HEADER ] ?? '' )
-		);
-		if ( ! $is_tokenized_cart ) {
+	private function is_express_checkout_request( $request ) {
+		if ( 'true' !== $request->get_header( 'X-WooPayments-Tokenized-Cart' ) ) {
 			return false;
 		}
 
-		$nonce = sanitize_text_field(
-			wp_unslash( $_SERVER[ self::TOKENIZED_CART_NONCE ] ?? '' )
-		);
+		$nonce = (string) $request->get_header( 'X-WooPayments-Tokenized-Cart-Nonce' );
 		return (bool) wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' );
 	}
 }
