@@ -62,12 +62,14 @@ class WC_Payments_Admin_Banner {
 	const TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE = 'wcpay_test_to_live_eligible';
 
 	/**
-	 * User meta key prefix for per-stage Post-KYC activation notice dismissals.
-	 * Append the stage day number (7, 14, or 30) to form the full key.
+	 * User meta key prefix for the Post-KYC activation notice. Combine with
+	 * the stage day number (7, 14, or 30) and '_dismissed' or '_shown' to form the
+	 * full key, e.g. 'wcpay_post_kyc_activation_7_dismissed' or
+	 * 'wcpay_post_kyc_activation_7_shown'.
 	 *
 	 * @var string
 	 */
-	const USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX = 'wcpay_post_kyc_activation_stage_';
+	const USER_META_POST_KYC_ACTIVATION_PREFIX = 'wcpay_post_kyc_activation_';
 
 	/**
 	 * Number of days after KYC completion during which the Post-KYC activation nudge
@@ -474,7 +476,7 @@ class WC_Payments_Admin_Banner {
 		}
 
 		$stage      = $this->get_post_kyc_activation_stage();
-		$shown_meta = self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage . '_shown';
+		$shown_meta = self::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_shown';
 
 		if ( ! get_user_meta( get_current_user_id(), $shown_meta, true ) ) {
 			$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_shown', [ 'stage' => $stage ] );
@@ -553,7 +555,7 @@ class WC_Payments_Admin_Banner {
 
 		$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_dismissed', [ 'stage' => $stage ] );
 
-		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true );
+		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_dismissed', true );
 
 		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-post-kyc-activation-notice', '_wcpay_post_kyc_activation_notice_nonce', 'wcpay_stage' ] ) );
 		exit;
@@ -589,7 +591,7 @@ class WC_Payments_Admin_Banner {
 
 		$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_cta_clicked', [ 'stage' => $stage ] );
 
-		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true );
+		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_dismissed', true );
 
 		wp_safe_redirect(
 			add_query_arg(
@@ -671,7 +673,7 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
-		if ( get_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true ) ) {
+		if ( get_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_dismissed', true ) ) {
 			return false;
 		}
 
