@@ -9,24 +9,12 @@ import { controls } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { ACTION_TYPES } from './action-types';
 import { NAMESPACE } from '../constants';
 
-export const updateDisputeReadiness = ( data ) => ( {
-	type: ACTION_TYPES.SET_DISPUTE_READINESS,
-	data,
-} );
-
-export const updateErrorForDisputeReadiness = ( error ) => ( {
-	type: ACTION_TYPES.SET_ERROR_FOR_DISPUTE_READINESS,
-	error,
-} );
-
-export function* dismissDisputeReadinessCard() {
+export function* getDisputeReadiness(): unknown {
 	try {
 		const result = yield apiFetch( {
-			path: `${ NAMESPACE }/dispute-readiness/dismiss`,
-			method: 'POST',
+			path: `${ NAMESPACE }/dispute-readiness`,
 		} );
 
 		yield controls.dispatch(

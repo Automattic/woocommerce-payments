@@ -13,33 +13,11 @@ import { Button, CardBody, Spinner } from '@wordpress/components';
 import { useDisputeReadiness, useDisputeReadinessActions } from 'data';
 import { recordEvent } from 'wcpay/tracks';
 import OverviewCard from 'wcpay/components/overview-card';
+import { DisputeReadinessSignal } from '../../data/dispute-readiness/types';
 import './style.scss';
 
 const learnMoreUrl =
 	'https://woocommerce.com/document/woopayments/fraud-and-disputes/resolve-disputes/';
-
-type DisputeReadinessSignal = {
-	id: string;
-	status: 'complete' | 'incomplete';
-	label: string;
-	actionLabel?: string;
-	actionUrl?: string;
-};
-
-type DisputeReadinessOverview = {
-	enabled: boolean;
-	score: number;
-	total: number;
-	state: string;
-	isDismissed: boolean;
-	completeSignalIds: string[];
-	incompleteSignalIds: string[];
-	signals: DisputeReadinessSignal[];
-};
-
-type DisputeReadinessResponse = {
-	overview?: DisputeReadinessOverview;
-};
 
 const LoadingState = () => (
 	<CardBody className="wcpay-dispute-readiness-card__body is-loading">
@@ -51,7 +29,7 @@ const DisputeReadinessCard = () => {
 	const { disputeReadiness, isLoading } = useDisputeReadiness();
 	const { dismissDisputeReadinessCard } = useDisputeReadinessActions();
 	const viewedRef = useRef( false );
-	const overview = ( disputeReadiness as DisputeReadinessResponse )?.overview;
+	const overview = disputeReadiness?.overview;
 
 	useEffect( () => {
 		if ( ! overview || overview.isDismissed || viewedRef.current ) {

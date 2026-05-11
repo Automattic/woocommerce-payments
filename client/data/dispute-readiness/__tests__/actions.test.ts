@@ -9,25 +9,38 @@ import { controls } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { getDisputeReadiness } from '../resolvers';
+import { dismissDisputeReadinessCard } from '../actions';
+import { DisputeReadinessData } from '../types';
+import { ApiError } from '../../../types/errors';
 
-const readinessPayload = {
+const readinessPayload: DisputeReadinessData = {
 	overview: {
 		enabled: true,
-		score: 2,
+		hidden: false,
+		score: 4,
 		total: 4,
+		state: 'complete',
+		isDismissed: true,
+		completeSignalIds: [],
+		incompleteSignalIds: [],
+		signals: [],
 	},
 };
-const errorResponse = { code: 'error' };
+const errorResponse: ApiError = { code: 'error' };
 
-describe( 'getDisputeReadiness resolver', () => {
-	let generator = null;
+describe( 'dismissDisputeReadinessCard action', () => {
+	let generator: Generator< unknown, unknown, unknown >;
 
 	beforeEach( () => {
-		generator = getDisputeReadiness();
+		generator = dismissDisputeReadinessCard() as Generator<
+			unknown,
+			unknown,
+			unknown
+		>;
 		expect( generator.next().value ).toEqual(
 			apiFetch( {
-				path: '/wc/v3/payments/dispute-readiness',
+				path: '/wc/v3/payments/dispute-readiness/dismiss',
+				method: 'POST',
 			} )
 		);
 	} );
