@@ -50,39 +50,32 @@ test.describe( 'Multi-currency checkout', () => {
 		Object.keys( currenciesOrders ).forEach( ( currency: string ) => {
 			test( `checkout with ${ currency }`, async () => {
 				await test.step( `pay with ${ currency }`, async () => {
-					currenciesOrders[
-						currency
-					] = await shopper.placeOrderWithCurrency(
-						shopperPage,
-						currency
-					);
+					currenciesOrders[ currency ] =
+						await shopper.placeOrderWithCurrency(
+							shopperPage,
+							currency
+						);
 				} );
 
-				await test.step(
-					`should display ${ currency } in the order received page`,
-					async () => {
-						await expect(
-							shopperPage.locator(
-								'.woocommerce-order-overview__total'
-							)
-						).toHaveText( new RegExp( currency ) );
-					}
-				);
+				await test.step( `should display ${ currency } in the order received page`, async () => {
+					await expect(
+						shopperPage.locator(
+							'.woocommerce-order-overview__total'
+						)
+					).toHaveText( new RegExp( currency ) );
+				} );
 
-				await test.step(
-					`should display ${ currency } in the customer order page`,
-					async () => {
-						await navigation.goToOrder(
-							shopperPage,
-							currenciesOrders[ currency ]
-						);
-						await expect(
-							shopperPage.getByRole( 'cell', {
-								name: /\$?\d\d[\.,]\d\d\s€?\s?[A-Z]{3}/,
-							} )
-						).toHaveText( new RegExp( currency ) );
-					}
-				);
+				await test.step( `should display ${ currency } in the customer order page`, async () => {
+					await navigation.goToOrder(
+						shopperPage,
+						currenciesOrders[ currency ]
+					);
+					await expect(
+						shopperPage.getByRole( 'cell', {
+							name: /\$?\d\d[\.,]\d\d\s€?\s?[A-Z]{3}/,
+						} )
+					).toHaveText( new RegExp( currency ) );
+				} );
 			} );
 		} );
 	} );

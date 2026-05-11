@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
@@ -11,9 +11,9 @@ import React from 'react';
  */
 import DisputeAwaitingResponseDetails from '../dispute-awaiting-response-details';
 import { useDisputeAccept } from 'wcpay/data';
-import type { Dispute } from 'wcpay/types/disputes';
-import type { ChargeBillingDetails } from 'wcpay/types/charges';
+import type { ChargeBillingDetails, ChargeDispute } from 'wcpay/types/charges';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
+import { recordEvent } from 'tracks';
 
 const mockDisputeDoAccept = jest.fn();
 
@@ -57,7 +57,7 @@ const mockUseDisputeAccept = useDisputeAccept as jest.MockedFunction<
 	typeof useDisputeAccept
 >;
 
-const getBaseDispute = (): Dispute => ( {
+const getBaseDispute = (): ChargeDispute => ( {
 	id: 'dp_visa_compliance_1',
 	amount: 5000,
 	charge: 'ch_mock',
@@ -211,7 +211,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 	} );
 
 	test( 'renders Visa compliance checkbox checked when there is staged evidence', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			evidence_details: {
 				due_by: 1694303999,
@@ -295,7 +295,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 	} );
 
 	test( 'Challenge button is enabled when there is staged evidence (checkbox is auto-checked)', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			evidence_details: {
 				due_by: 1694303999,
@@ -386,10 +386,40 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		expect(
 			screen.getByRole( 'heading', { name: /Accept the dispute\?/i } )
 		).toBeInTheDocument();
+
+		// Opening the modal should fire a tracks event identifying the dispute.
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_accept_modal_view',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
+
+		// Confirm acceptance from within the modal.
+		const confirmButton = within( screen.getByRole( 'dialog' ) ).getByRole(
+			'button',
+			{ name: /Accept dispute/i }
+		);
+		await userEvent.click( confirmButton );
+
+		// Confirming should fire a separate tracks event with matching properties,
+		// so drop-off between open and confirm can be measured.
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_accept_click',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
 	} );
 
 	test( 'does not render checkbox for non-Visa compliance disputes', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			reason: 'fraudulent', // Different reason
 			enhanced_eligibility_types: [],
@@ -416,7 +446,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 	} );
 
 	test( 'render checkbox when reason is noncompliant but missing visa_compliance eligibility type', () => {
-		const dispute: Dispute = {
+		const dispute: ChargeDispute = {
 			...getBaseDispute(),
 			enhanced_eligibility_types: [], // Missing visa_compliance
 		};
@@ -496,5 +526,186 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 				exact: false,
 			} )
 		).toBeInTheDocument();
+	} );
+} );
+
+describe( 'DisputeAwaitingResponseDetails - Klarna Inquiry', () => {
+	// eslint-disable-next-line
+	const originalWarn = console.warn;
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+
+		global.wcpaySettings = {
+			zeroDecimalCurrencies: [],
+			connect: {
+				country: 'US',
+			},
+		};
+
+		// Suppress the List component deprecation warning
+		// eslint-disable-next-line
+		console.warn = ( ...args ) => {
+			const warningMessage = args[ 0 ];
+			if (
+				typeof warningMessage === 'string' &&
+				warningMessage.includes( 'List with items prop is deprecated' )
+			) {
+				return;
+			}
+			originalWarn( ...args );
+		};
+	} );
+
+	afterEach( () => {
+		// eslint-disable-next-line
+		console.warn = originalWarn;
+	} );
+
+	test( 'renders disabled Challenge dispute button with tooltip for Klarna inquiry', () => {
+		const dispute: ChargeDispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed' as const,
+			status: 'warning_needs_response' as const,
+			enhanced_eligibility_types: [],
+		};
+		const customer = getBaseBillingDetails();
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl="https://example.com/order/123"
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		// Challenge dispute button should be present but disabled
+		const disabledButton = screen.getByTestId(
+			'challenge-dispute-button-disabled'
+		);
+		expect( disabledButton ).toBeInTheDocument();
+		expect( disabledButton ).toBeDisabled();
+
+		// Issue refund button should be primary and enabled
+		const refundButton = screen.getByRole( 'button', {
+			name: /Issue refund/i,
+		} );
+		expect( refundButton ).toBeInTheDocument();
+		expect( refundButton ).not.toBeDisabled();
+	} );
+
+	test( 'renders Issue refund button before disabled Challenge button for Klarna inquiry', () => {
+		const dispute: ChargeDispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed' as const,
+			status: 'warning_needs_response' as const,
+			enhanced_eligibility_types: [],
+		};
+		const customer = getBaseBillingDetails();
+
+		const { container } = renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl="https://example.com/order/123"
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		// Check button order: Issue refund should come before Challenge dispute
+		const actionsContainer = container.querySelector(
+			'.transaction-details-dispute-details-body__actions'
+		);
+		expect( actionsContainer ).not.toBeNull();
+		if ( ! actionsContainer ) {
+			throw new Error(
+				'Expected dispute actions container to be present.'
+			);
+		}
+
+		const buttons = actionsContainer.querySelectorAll( 'button' );
+		expect( buttons.length ).toBeGreaterThanOrEqual( 2 );
+
+		// First button should be "Issue refund"
+		expect( buttons[ 0 ].textContent ).toMatch( /Issue refund/i );
+	} );
+
+	test( 'does not show Visa compliance checkbox for Klarna inquiries', () => {
+		const dispute: ChargeDispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed' as const,
+			status: 'warning_needs_response' as const,
+			enhanced_eligibility_types: [],
+		};
+		const customer = getBaseBillingDetails();
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl="https://example.com/order/123"
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		expect( screen.queryByRole( 'checkbox' ) ).not.toBeInTheDocument();
+	} );
+
+	test( 'fires inquiry refund modal tracks event with dispute identifiers', async () => {
+		const dispute: ChargeDispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed' as const,
+			status: 'warning_needs_response' as const,
+			enhanced_eligibility_types: [],
+		};
+		const customer = getBaseBillingDetails();
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl=""
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Issue refund/i } )
+		);
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_inquiry_refund_modal_view',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
+
+		await userEvent.click(
+			within( screen.getByRole( 'dialog' ) ).getByRole( 'button', {
+				name: /View order to issue refund/i,
+			} )
+		);
+
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_dispute_inquiry_refund_click',
+			{
+				dispute_id: dispute.id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+				on_page: 'transaction_details',
+			}
+		);
 	} );
 } );

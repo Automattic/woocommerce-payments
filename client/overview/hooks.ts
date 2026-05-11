@@ -58,10 +58,8 @@ type SelectedCurrencyOverview = {
  * @return {SelectedCurrencyOverview} An object containing the account and the overview for the selected currency.
  */
 export const useSelectedCurrencyOverview = (): SelectedCurrencyOverview => {
-	const {
-		overviews,
-		isLoading: isAccountOverviewsLoading,
-	} = useAllDepositsOverviews();
+	const { overviews, isLoading: isAccountOverviewsLoading } =
+		useAllDepositsOverviews();
 	const { currencies, account } = overviews;
 
 	const { selectedCurrency } = useSelectedCurrency();

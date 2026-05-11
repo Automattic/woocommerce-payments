@@ -172,7 +172,7 @@ async function checkAllExpressMethodsAvailability(
 		return {};
 	}
 
-	if ( ( ( stripe as unknown ) as { error: unknown } )?.error ) {
+	if ( ( stripe as unknown as { error: unknown } )?.error ) {
 		cachedStripePromise = null;
 		memoizedCheck = null;
 		return {};

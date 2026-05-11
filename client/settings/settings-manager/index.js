@@ -147,12 +147,10 @@ const AdvancedDescription = () => {
 };
 
 const SettingsManager = () => {
-	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
-		true
-	);
-	const [ isNotificationEmailValid, setNotificationEmailValid ] = useState(
-		true
-	);
+	const [ isTransactionInputsValid, setTransactionInputsValid ] =
+		useState( true );
+	const [ isNotificationEmailValid, setNotificationEmailValid ] =
+		useState( true );
 
 	const { isLoading, isDirty } = useSettings();
 
@@ -190,10 +188,8 @@ const SettingsManager = () => {
 		}
 	}, [ isLoading ] );
 
-	const [
-		dismissedDuplicateNotices,
-		setDismissedDuplicateNotices,
-	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
+	const [ dismissedDuplicateNotices, setDismissedDuplicateNotices ] =
+		useState( wcpaySettings.dismissedDuplicateNotices || {} );
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
 
 	useEffect( () => {

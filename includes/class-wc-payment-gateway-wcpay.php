@@ -59,6 +59,7 @@ use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\CardDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
  * Gateway class for WooPayments
@@ -1230,6 +1231,36 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Log the exception.
 			Logger::exception( 'Error occurred during the payment process.', $e );
 
+			// Defense in depth: when the payment intent already succeeded, a
+			// downstream exception (e.g. third-party plugin throwing from
+			// woocommerce_reduce_order_stock, woocommerce_payment_complete, or
+			// woocommerce_order_status_processing) must not flip the order to
+			// Failed or surface a failure to the customer who has already been
+			// charged. Preserve the post-payment order status, record a
+			// diagnostic note, and complete the checkout normally.
+			if ( Intent_Status::SUCCEEDED === $this->order_service->get_intention_status_for_order( $order ) ) {
+				$order->add_order_note(
+					sprintf(
+						/* translators: %s: error message from the downstream exception */
+						__( 'Payment succeeded, but a downstream error occurred during post-payment processing: %s. Order status preserved.', 'woocommerce-payments' ),
+						esc_html( $e->getMessage() )
+					)
+				);
+
+				Logger::warning(
+					sprintf(
+						'Payment intent already succeeded; downstream %s on order #%d suppressed to preserve order status.',
+						get_class( $e ),
+						$order->get_id()
+					)
+				);
+
+				return [
+					'result'   => 'success',
+					'redirect' => $this->get_return_url( $order ),
+				];
+			}
+
 			// We set this variable to be used in following checks.
 			$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $e );
 
@@ -1970,7 +2001,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 		}
-		$this->order_service->update_order_status_from_intent( $order, $intent );
+		if ( $is_changing_payment_method_for_subscription ) {
+			$this->with_stock_reduction_disabled(
+				function () use ( $order, $intent ) {
+					$this->order_service->update_order_status_from_intent( $order, $intent );
+				}
+			);
+		} else {
+			$this->order_service->update_order_status_from_intent( $order, $intent );
+		}
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
@@ -1999,6 +2038,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 				$order->save_meta_data();
 			}
+			if ( 'amazon_pay' === $payment_method_type
+				&& isset( $payment_method_details['amazon_pay']['funding']['card']['last4'] ) ) {
+				$funding_card = $payment_method_details['amazon_pay']['funding']['card'];
+				$order->add_meta_data( 'last4', $funding_card['last4'], true );
+				if ( isset( $funding_card['brand'] ) ) {
+					$order->add_meta_data( '_card_brand', strtolower( $funding_card['brand'] ), true );
+				}
+				$order->save_meta_data();
+			}
 		} else {
 			$payment_method_details = false;
 			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
@@ -2023,7 +2071,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $response;
 		}
 
-		wc_maybe_reduce_stock_levels( $order_id );
+		// Stock reduction is left to WooCommerce core: the status transition inside
+		// update_order_status_from_intent() triggers woocommerce_order_status_* and
+		// woocommerce_payment_complete, both of which run wc_maybe_reduce_stock_levels
+		// with idempotency-flag protection.
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
 		}
@@ -2277,19 +2328,48 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_method_types( $payment_information ): array {
-		// For Express Checkout payments, use the payment method types sent by the client.
-		// These must match the types used to initialize Stripe Elements on the frontend.
+		// For Express Checkout payments, validate the payment method types sent by the client
+		// against the server-authoritative list of enabled express payment methods.
 		// phpcs:ignore WordPress.Security.NonceVerification
 		if ( ! empty( $_POST['wcpay-express-payment-method-types'] ) ) {
-			// phpcs:ignore WordPress.Security.NonceVerification
-			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $_POST['wcpay-express-payment-method-types'] ) ), true );
-			if ( is_array( $express_payment_method_types ) && ! empty( $express_payment_method_types ) ) {
-				return $express_payment_method_types;
+			// phpcs:ignore WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$raw_types = $_POST['wcpay-express-payment-method-types'];
+			// Guard against the field being sent as an array (e.g. wcpay-express-payment-method-types[]=...)
+			// which would cause sanitize_text_field/json_decode to emit warnings.
+			if ( ! is_string( $raw_types ) ) {
+				$raw_types = '';
+			}
+			$express_payment_method_types = json_decode( sanitize_text_field( wp_unslash( $raw_types ) ), true );
+			// Normalize to a flat list of strings — guard against nested arrays/objects in the JSON payload.
+			$express_payment_method_types = is_array( $express_payment_method_types )
+				? array_values( array_filter( $express_payment_method_types, 'is_string' ) )
+				: [];
+			if ( ! empty( $express_payment_method_types ) ) {
+				$allowed   = $this->get_allowed_express_payment_method_types();
+				$validated = array_values( array_intersect( $express_payment_method_types, $allowed ) );
+
+				$rejected = array_diff( $express_payment_method_types, $allowed );
+				if ( ! empty( $rejected ) ) {
+					// Cap the logged list to avoid log spam from unbounded client input.
+					// Use wp_json_encode to safely escape special characters (e.g. newlines from JSON decode).
+					$rejected_log = wp_json_encode( array_slice( array_values( $rejected ), 0, 5 ) );
+					Logger::warning(
+						sprintf(
+							'Express checkout payment method types rejected during validation: %s.',
+							$rejected_log
+						)
+					);
+				}
+
+				if ( ! empty( $validated ) ) {
+					return $validated;
+				}
 			}
 		}
 
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
+		$payment_methods          = [];
 
 		if ( ! empty( $requested_payment_method ) ) {
 			// All checkout requests should contain $_POST context, so we check this first.
@@ -2382,10 +2462,23 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return;
 		}
 
+		// Detect express checkout type: first from metadata that may have been set earlier in the flow,
+		// then fall back to Stripe's wallet info (authoritative for Apple Pay, Google Pay, Link).
+		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
+		$wallet_type           = is_array( $payment_method_details ) ? $payment_method_details['card']['wallet']['type'] ?? null : null;
+		// Amazon Pay reports its type at the top level rather than under card.wallet.
+		if ( ! $wallet_type && is_array( $payment_method_details )
+			&& 'amazon_pay' === ( $payment_method_details['type'] ?? null ) ) {
+			$wallet_type = 'amazon_pay';
+		}
+		if ( ! $express_checkout_type && $wallet_type ) {
+			$express_checkout_type = sanitize_text_field( $wallet_type );
+			$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_checkout_type );
+		}
+
 		// express checkout can be Amazon Pay/Google Pay/Apple Pay/Link,
 		// but Google Pay/Apple Pay/Link use the `card` gateway; Amazon Pay has its own gateway.
-		$express_checkout_type = $order->get_meta( '_wcpay_express_checkout_payment_method' );
-		$effective_type        = $express_checkout_type ? $express_checkout_type : $payment_method_type;
+		$effective_type = $express_checkout_type ? $express_checkout_type : $payment_method_type;
 
 		$payment_methods_using_card = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::GOOGLE_PAY, Payment_Method::APPLE_PAY ];
 		$payment_gateway            = in_array( $effective_type, $payment_methods_using_card, true )
@@ -2395,12 +2488,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// this will ensure that the refunds are handled by the correct split gateway class.
 		$order->set_payment_method( $payment_gateway );
 
-		// the Express Checkout handler already set the method's title in `tokenized_cart_set_payment_method_type`, earlier in the flow.
-		if ( ! $express_checkout_type ) {
+		if ( $express_checkout_type ) {
+			$express_method = WC_Payments::get_payment_method_by_id( $express_checkout_type );
+			$title          = $express_method ? $express_method->get_title() : 'Payment Request';
+			$suffix         = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
+			if ( ! empty( $suffix ) ) {
+				$suffix = " ($suffix)";
+			}
+			$order->set_payment_method_title( $title . $suffix );
+		} else {
 			$order->set_payment_method_title( $payment_method->get_title( $this->get_account_country(), $payment_method_details ) );
 		}
 
 		$order->save();
+
+		$this->sync_payment_method_to_subscriptions( $order );
 	}
 
 	/**
@@ -3810,11 +3912,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			$amount                 = $order->get_total();
-			$payment_method_details = false;
-			$is_changing_payment    = isset( $_POST['is_changing_payment'] ) && filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN );
+			$amount                                = $order->get_total();
+			$payment_method_details                = false;
+			$is_changing_payment                   = isset( $_POST['is_changing_payment'] )
+				? filter_var( wp_unslash( $_POST['is_changing_payment'] ), FILTER_VALIDATE_BOOLEAN )
+				: null;
+			$is_subscription_payment_method_change = $this->is_changing_payment_method_for_subscription_from_request( $is_changing_payment );
 
-			if ( $amount > 0 && ! $is_changing_payment ) {
+			if ( $amount > 0 && ! $is_subscription_payment_method_change ) {
 				// An exception is thrown if an intent can't be found for the given intent ID.
 				$request = Get_Intention::create( $intent_id );
 				$request->set_hook_args( $order );
@@ -3838,7 +3943,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// This is similar to how WC Stripe Gateway handles it - calling payment_complete()
 				// directly ensures the order transitions to the correct status and activates subscriptions.
 				// Otherwise, the order would be in a "Pending payment" state and the subscription would be "Pending".
-				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() ) {
+				if ( Intent_Status::SUCCEEDED === $status && ! $order->is_paid() && ! $is_subscription_payment_method_change ) {
 					$order->payment_complete( $intent_id );
 
 					// Add a success note similar to mark_payment_completed().
@@ -3867,11 +3972,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 			}
-			$this->order_service->update_order_status_from_intent( $order, $intent );
+			if ( $is_subscription_payment_method_change ) {
+				$this->with_stock_reduction_disabled(
+					function () use ( $order, $intent ) {
+						$this->order_service->update_order_status_from_intent( $order, $intent );
+					}
+				);
+			} else {
+				$this->order_service->update_order_status_from_intent( $order, $intent );
+			}
 
 			if ( $intent->is_authorized() ) {
-				wc_maybe_reduce_stock_levels( $order_id );
-				WC()->cart->empty_cart();
+				// Stock reduction is left to WooCommerce core (see note in process_payment_for_order()).
+				if ( ! $is_subscription_payment_method_change ) {
+					WC()->cart->empty_cart();
+				}
 
 				$is_subscription            = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order );
 				$should_save_payment_method = $is_subscription || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] );
@@ -3900,7 +4015,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				$return_url = $this->get_return_url( $order );
 
-				if ( $is_changing_payment ) {
+				if ( $is_subscription_payment_method_change ) {
 					$this->maybe_update_subscription_payment_method( $order );
 					$return_url = method_exists( $order, 'get_view_order_url' ) ? $order->get_view_order_url() : $this->get_return_url( $order );
 				}
@@ -4704,6 +4819,50 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Get the Stripe PaymentMethod types allowed for express checkout payments.
+	 *
+	 * Dynamically built from the payment method definitions registry by filtering
+	 * for EXPRESS_CHECKOUT capability and checking gateway availability.
+	 *
+	 * @return string[] Allowed Stripe PaymentMethod type strings (e.g., ['card', 'amazon_pay']).
+	 */
+	private function get_allowed_express_payment_method_types(): array {
+		$allowed = [];
+
+		// Google Pay and Apple Pay use 'card' as their Stripe payment method type.
+		// Check via is_payment_request_enabled() on the main gateway rather than
+		// looking up split gateways, which may fail availability checks designed
+		// for regular checkout gateways (e.g., is_available_for_express_checkout()).
+		if ( $this->is_payment_request_enabled() ) {
+			$allowed[] = 'card';
+		}
+
+		// Check other express checkout methods (e.g., Amazon Pay) via their split gateways.
+		$registry    = PaymentMethodDefinitionRegistry::instance();
+		$definitions = $registry->get_all_payment_method_definitions();
+
+		foreach ( $definitions as $definition_class ) {
+			if ( ! PaymentMethodUtils::is_express_checkout( $definition_class ) ) {
+				continue;
+			}
+
+			// Skip methods that use 'card' — already handled above.
+			if ( 'card' === $definition_class::get_stripe_payment_method_type() ) {
+				continue;
+			}
+
+			$gateway = $this->wc_payments_get_payment_gateway_by_id( $definition_class::get_id() );
+			if ( ! $gateway || ! $gateway->is_enabled() || ! $gateway->is_available_for_express_checkout() ) {
+				continue;
+			}
+
+			$allowed[] = $definition_class::get_stripe_payment_method_type();
+		}
+
+		return array_values( array_unique( $allowed ) );
+	}
+
+	/**
 	 * Handles the shipping requirement for Afterpay payments.
 	 *
 	 * This method extracts the shipping and billing data from the order and sets the appropriate
@@ -4835,6 +4994,52 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, WC_Order $order ): void {
 		if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() ) {
 			$this->handle_afterpay_shipping_requirement( $order, $request );
+		}
+	}
+
+	/**
+	 * AJAX-aware variant of {@see is_changing_payment_method_for_subscription()}.
+	 *
+	 * The `update_order_status` AJAX endpoint receives an explicit `is_changing_payment`
+	 * POST flag that reflects the intent of the client request. When that flag is present
+	 * we trust it; otherwise we fall back to the trait's live `$_GET`-based detection.
+	 *
+	 * @param bool|null $is_changing_payment Explicit flag from the current request, or null to rely on the trait.
+	 * @return bool
+	 */
+	private function is_changing_payment_method_for_subscription_from_request( ?bool $is_changing_payment = null ): bool {
+		return $is_changing_payment ?? $this->is_changing_payment_method_for_subscription();
+	}
+
+	/**
+	 * Runs a callback with the `woocommerce_payment_complete_reduce_order_stock` filter forced to false.
+	 *
+	 * Payment-method-change flows must never decrement stock: the order was already paid once
+	 * and the customer is only updating the stored payment credential. The status transition
+	 * inside WooCommerce core would otherwise trigger `wc_maybe_reduce_stock_levels()` via
+	 * `woocommerce_payment_complete` and `woocommerce_order_status_*` hooks.
+	 *
+	 * The filter is added at `PHP_INT_MAX - 1` so it wins over any upstream filter that
+	 * might re-enable reduction, and we guard against double-adding to stay reentrant.
+	 *
+	 * @param callable $callback Callback to execute with stock reduction suppressed.
+	 * @return mixed The callback's return value.
+	 */
+	private function with_stock_reduction_disabled( callable $callback ) {
+		$filter           = 'woocommerce_payment_complete_reduce_order_stock';
+		$priority         = PHP_INT_MAX - 1;
+		$already_filtered = false !== has_filter( $filter, '__return_false' );
+
+		if ( ! $already_filtered ) {
+			add_filter( $filter, '__return_false', $priority );
+		}
+
+		try {
+			return $callback();
+		} finally {
+			if ( ! $already_filtered ) {
+				remove_filter( $filter, '__return_false', $priority );
+			}
 		}
 	}
 }

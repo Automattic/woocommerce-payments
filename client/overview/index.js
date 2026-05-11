@@ -30,7 +30,6 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
@@ -69,9 +68,8 @@ const OverviewPage = () => {
 	} = wcpaySettings;
 
 	// Don't show the update details and verify business tasks by default due to embedded component.
-	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
-		false
-	);
+	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] =
+		useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -81,13 +79,10 @@ const OverviewPage = () => {
 		stripeNotificationsBannerErrorType,
 		setStripeNotificationsBannerErrorType,
 	] = useState( '' );
-	const [
-		notificationsBannerMessage,
-		setNotificationsBannerMessage,
-	] = React.useState( '' );
-	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
-		true
-	);
+	const [ notificationsBannerMessage, setNotificationsBannerMessage ] =
+		React.useState( '' );
+	const [ stripeComponentLoading, setStripeComponentLoading ] =
+		useState( true );
 	// Variable to memoize the count of Stripe notifications.
 	const [
 		stripeNotificationsCountToAddressMemo,
@@ -96,10 +91,8 @@ const OverviewPage = () => {
 
 	const isTestModeOnboarding = isInTestModeOnboarding();
 	const { isLoading: settingsIsLoading } = useSettings();
-	const [
-		isTestDriveSuccessDisplayed,
-		setTestDriveSuccessDisplayed,
-	] = useState( false );
+	const [ isTestDriveSuccessDisplayed, setTestDriveSuccessDisplayed ] =
+		useState( false );
 	const settings = useGetSettings();
 
 	const { disputes: activeDisputes } = useDisputes( {
@@ -245,7 +238,6 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
-			<MaybeShowMerchantFeedbackPrompt />
 			<OverviewPageError />
 			<JetpackIdcNotice />
 			{ showLoanOfferError && (

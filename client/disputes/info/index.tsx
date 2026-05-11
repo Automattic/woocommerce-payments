@@ -34,8 +34,7 @@ const fields: { key: string; label: string }[] = [
 ];
 
 const composeTransactionIdLink = ( dispute: Dispute ): JSX.Element => {
-	const chargeId =
-		'object' === typeof dispute.charge ? dispute.charge.id : dispute.charge;
+	const chargeId = dispute.charge.id;
 	return (
 		<Link href={ getDetailsURL( chargeId, 'transactions' ) }>
 			{ chargeId }
@@ -83,17 +82,14 @@ const Info = ( {
 				order: dispute.order ? (
 					<OrderLink order={ dispute.order } />
 				) : null,
-				customer:
-					'object' === typeof dispute.charge
-						? dispute.charge.billing_details.name
-						: null,
+				customer: dispute.charge.billing_details.name,
 				transactionId: composeTransactionIdLink( dispute ),
 		  };
 
 	return (
 		<div className="wcpay-dispute-info">
 			{ fields.map( ( { key, label } ) => {
-				if ( null == data[ key ] ) {
+				if ( data[ key ] == null ) {
 					return null;
 				}
 				return (

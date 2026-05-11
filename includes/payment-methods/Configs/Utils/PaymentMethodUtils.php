@@ -89,6 +89,16 @@ class PaymentMethodUtils {
 	}
 
 	/**
+	 * Is the payment method an express checkout payment method?
+	 *
+	 * @param string $payment_method_definition The payment method definition class name.
+	 * @return boolean
+	 */
+	public static function is_express_checkout( string $payment_method_definition ): bool {
+		return in_array( PaymentMethodCapability::EXPRESS_CHECKOUT, $payment_method_definition::get_capabilities(), true );
+	}
+
+	/**
 	 * Checks if a currency is domestic for a given country.
 	 *
 	 * @param string $currency The currency code to check.

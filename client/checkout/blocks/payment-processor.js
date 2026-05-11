@@ -189,7 +189,8 @@ const PaymentProcessor = ( {
 							meta: {
 								paymentMethodData: {
 									payment_method: gatewayId,
-									'wcpay-payment-method': PAYMENT_METHOD_ERROR,
+									'wcpay-payment-method':
+										PAYMENT_METHOD_ERROR,
 									'wcpay-payment-method-error-code':
 										result.error.code,
 									'wcpay-payment-method-error-decline-code':
@@ -198,7 +199,8 @@ const PaymentProcessor = ( {
 										result.error.message,
 									'wcpay-payment-method-error-type':
 										result.error.type,
-									'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+									'wcpay-fraud-prevention-token':
+										getFraudPreventionToken(),
 									'wcpay-fingerprint': fingerprint,
 								},
 							},
@@ -211,7 +213,8 @@ const PaymentProcessor = ( {
 							paymentMethodData: {
 								payment_method: gatewayId,
 								'wcpay-payment-method': result.paymentMethod.id,
-								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
+								'wcpay-fraud-prevention-token':
+									getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
 							},
 						},

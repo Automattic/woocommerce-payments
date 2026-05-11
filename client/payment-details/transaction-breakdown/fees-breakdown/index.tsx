@@ -10,10 +10,21 @@ import { __ } from '@wordpress/i18n';
 /** Internal dependencies */
 import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
 import { FeeRow, TaxFeeRow } from './fee-breakdown-components';
+import FeesBreakdownV1 from './v1';
 
 const FeesBreakdown: React.FC< {
 	event: TimelineItem;
 } > = ( { event } ) => {
+	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	// When the server attaches a fee_breakdown_v1 envelope, render from it
+	// verbatim. Skips all client-side arithmetic and discount-math and
+	// handles Amazon Pay, dispute fees, and future cases uniformly. The
+	// server gates the envelope behind its own `_wcpay_feature_fee_breakdown_envelope_enabled`
+	// option — when absent, we fall through to the legacy allocator below.
+	if ( event.fee_breakdown_v1 ) {
+		return <FeesBreakdownV1 data={ event.fee_breakdown_v1 } />;
+	}
+
 	if ( ! event.fee_rates || ! event.transaction_details ) {
 		return null;
 	}
@@ -47,7 +58,7 @@ const FeesBreakdown: React.FC< {
 		);
 	} else {
 		event.fee_rates.history.map( ( fee: TimelineFeeRate ) => {
-			if ( 'discount' === fee.type ) {
+			if ( fee.type === 'discount' ) {
 				/**
 				 * Skip discount fees, because we will subtract discount fees from the other fees in the fee breadown.
 				 */
