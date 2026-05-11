@@ -43,6 +43,24 @@ describe( 'getExpectedFieldStatus', () => {
 		expect( refundPolicy?.state ).toBe( 'optional_missing' );
 	} );
 
+	it( 'tracks shipping_date (not service_date) as the fulfilment date for fraudulent + physical_product', () => {
+		// The wizard never collects `service_date` for physical_product; it
+		// collects `shipping_date`. The high-impact entry must match so the
+		// merchant's wizard input lights up the "provided" state here.
+		const result = getExpectedFieldStatus(
+			'fraudulent',
+			'physical_product',
+			{
+				shipping_date: '2026-04-15',
+			}
+		);
+		expect( result.some( ( f ) => f.key === 'service_date' ) ).toBe(
+			false
+		);
+		const shippingDate = result.find( ( f ) => f.key === 'shipping_date' );
+		expect( shippingDate?.state ).toBe( 'provided' );
+	} );
+
 	it.each( [ '', '   ' ] )( 'treats %j as not provided', ( value ) => {
 		const result = getExpectedFieldStatus(
 			'product_not_received',
