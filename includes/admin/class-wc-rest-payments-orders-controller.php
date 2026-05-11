@@ -92,8 +92,13 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				'callback'            => [ $this, 'prepare_terminal_payment' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
+					'order_id'          => [
+						'required' => true,
+						'type'     => 'integer',
+					],
 					'payment_intent_id' => [
 						'required' => true,
+						'type'     => 'string',
 					],
 				],
 			]
@@ -296,7 +301,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	public function prepare_terminal_payment( WP_REST_Request $request ) {
 		try {
 			$intent_id = $request['payment_intent_id'];
-			$order_id  = $request['order_id'];
+			$order_id  = absint( $request['order_id'] );
 
 			// Do not process non-existing orders.
 			$order = wc_get_order( $order_id );
@@ -304,7 +309,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			if ( ! is_string( $intent_id ) || 1 !== preg_match( '/^pi_\w{1,250}$/', $intent_id ) ) {
+			// Match the export download route pattern: allow future Stripe ID formats while blocking path traversal.
+			if ( ! is_string( $intent_id ) || 1 !== preg_match( '/^[^\/\\\\%]+$/', $intent_id ) ) {
 				return new WP_Error(
 					'wcpay_invalid_payment_intent_id',
 					__( 'Invalid payment intent ID.', 'woocommerce-payments' ),
@@ -321,20 +327,9 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				);
 			}
 
-			$get_intent_request = Get_Intention::create( $intent_id );
-			$get_intent_request->set_hook_args( $order );
-			$intent = $get_intent_request->send();
-
-			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
-			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
-			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-			if ( $intent_meta_order_id !== $order->get_id() ) {
-				Logger::error( 'Terminal payment preparation rejected due to failed validation: order id on intent is incorrect or missing.' );
-				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'This terminal payment cannot be prepared for the order.', 'woocommerce-payments' ), [ 'status' => 400 ] );
-			}
-
-			// TPS validates the PaymentIntent state before applying terminal-specific updates.
+			// TPS validates the PaymentIntent order metadata and state before applying terminal-specific updates.
 			$prepare_request = Prepare_Terminal_Payment::create( $intent_id );
+			$prepare_request->set_order_id( $order_id );
 			$prepare_request->set_hook_args( $order );
 			$response = $prepare_request->send();
 
