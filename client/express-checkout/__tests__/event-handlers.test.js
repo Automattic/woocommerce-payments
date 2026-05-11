@@ -413,7 +413,154 @@ describe( 'Express checkout event handlers', () => {
 			expect( event.reject ).not.toHaveBeenCalled();
 			expect( event.resolve ).toHaveBeenCalled();
 		} );
+
+		describe( 'when wallet address triggers Local Pickup → delivery switch', () => {
+			const buildCart = ( shippingRates, totalPrice = 1000 ) => ( {
+				items: [],
+				shipping_rates: [
+					{
+						package_id: 0,
+						name: 'Shipment 1',
+						destination: {},
+						items: [],
+						shipping_rates: shippingRates,
+					},
+				],
+				totals: {
+					total_price: totalPrice,
+					currency_minor_unit: 2,
+					currency_code: 'USD',
+					currency_symbol: '$',
+					currency_decimal_separator: '.',
+					currency_thousand_separator: ',',
+					currency_prefix: '$',
+					currency_suffix: '',
+				},
+			} );
+
+			const baseRate = {
+				description: '',
+				delivery_time: '',
+				taxes: '0',
+				meta_data: [],
+				currency_code: 'USD',
+				currency_symbol: '$',
+				currency_minor_unit: 2,
+				currency_decimal_separator: '.',
+				currency_thousand_separator: ',',
+				currency_prefix: '$',
+				currency_suffix: '',
+			};
+
+			const pickupRate = {
+				...baseRate,
+				rate_id: 'pickup_location:0',
+				name: 'Local Pickup',
+				price: '0',
+				instance_id: 0,
+				method_id: 'pickup_location',
+				selected: true,
+			};
+
+			const deliveryRate = {
+				...baseRate,
+				rate_id: 'flat_rate:14',
+				name: 'Standard Shipping',
+				price: '1000',
+				instance_id: 14,
+				method_id: 'flat_rate',
+				selected: false,
+			};
+
+			it( 'reselects the first delivery rate when Local Pickup is stuck as selected', async () => {
+				cartApiUpdateCustomerMock.mockResolvedValue(
+					buildCart( [ pickupRate, deliveryRate ], 0 )
+				);
+				cartApiSelectShippingRateMock.mockResolvedValue(
+					buildCart(
+						[
+							{ ...pickupRate, selected: false },
+							{ ...deliveryRate, selected: true },
+						],
+						1000
+					)
+				);
+
+				await shippingAddressChangeHandler( event, elements );
+
+				expect( cartApiSelectShippingRateMock ).toHaveBeenCalledWith( {
+					package_id: 0,
+					rate_id: 'flat_rate:14',
+				} );
+				expect( elements.update ).toHaveBeenCalledWith( {
+					amount: 1000,
+				} );
+				expect( event.resolve ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						shippingRates: [
+							expect.objectContaining( {
+								id: 'flat_rate:14',
+							} ),
+							expect.objectContaining( {
+								id: 'pickup_location:0',
+							} ),
+						],
+					} )
+				);
+			} );
+
+			it( 'leaves the selection alone when only Local Pickup is available', async () => {
+				cartApiUpdateCustomerMock.mockResolvedValue(
+					buildCart( [ pickupRate ], 0 )
+				);
+
+				await shippingAddressChangeHandler( event, elements );
+
+				expect( cartApiSelectShippingRateMock ).not.toHaveBeenCalled();
+				expect( event.resolve ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						shippingRates: [
+							expect.objectContaining( {
+								id: 'pickup_location:0',
+							} ),
+						],
+					} )
+				);
+			} );
+
+			it( 'leaves the selection alone when a delivery rate is already selected', async () => {
+				cartApiUpdateCustomerMock.mockResolvedValue(
+					buildCart(
+						[
+							{ ...pickupRate, selected: false },
+							{ ...deliveryRate, selected: true },
+						],
+						1000
+					)
+				);
+
+				await shippingAddressChangeHandler( event, elements );
+
+				expect( cartApiSelectShippingRateMock ).not.toHaveBeenCalled();
+			} );
+
+			it( 'falls back to the original cart data if reselect fails', async () => {
+				cartApiUpdateCustomerMock.mockResolvedValue(
+					buildCart( [ pickupRate, deliveryRate ], 0 )
+				);
+				cartApiSelectShippingRateMock.mockRejectedValue(
+					new Error( 'network' )
+				);
+
+				await shippingAddressChangeHandler( event, elements );
+
+				expect( cartApiSelectShippingRateMock ).toHaveBeenCalled();
+				expect( event.reject ).not.toHaveBeenCalled();
+				expect( event.resolve ).toHaveBeenCalled();
+			} );
+		} );
 	} );
+
 
 	describe( 'shippingRateChangeHandler', () => {
 		let event;

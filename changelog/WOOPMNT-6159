@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Express Checkout (Apple Pay/Google Pay): switch the auto-selected shipping method to delivery when the wallet provides a shipping address, instead of keeping the previously-chosen Local Pickup.

@@ -85,6 +85,53 @@ const getElementsUpdateOptionsForCart = ( cartData ) => ( {
 		: {} ),
 } );
 
+// Matches WooCommerce core's `LocalPickupUtils::get_local_pickup_method_ids()`
+// seed list. Extension methods that opt in via `supports('local-pickup')` are
+// not covered, but the two core IDs handle the reported customer impact.
+const LOCAL_PICKUP_METHOD_IDS = [ 'local_pickup', 'pickup_location' ];
+
+const isLocalPickupRate = ( rate ) =>
+	LOCAL_PICKUP_METHOD_IDS.includes( rate?.method_id );
+
+/**
+ * When the wallet provides a shipping address the customer clearly wants
+ * delivery, but the Store API may still return Local Pickup as the selected
+ * rate because WooCommerce keeps the previously chosen pickup method sticky
+ * (see `wc_get_default_shipping_method_for_package()`). Reselect the first
+ * non-pickup rate so the modal — and the session used at place-order time —
+ * align with the customer's intent.
+ *
+ * @param {Object} cartData Cart response from `updateCustomer`.
+ * @return {Promise<Object>} Cart data with a non-pickup rate selected when applicable.
+ */
+const preferDeliveryOverLocalPickup = async ( cartData ) => {
+	const shippingPackage = cartData.shipping_rates?.[ 0 ];
+	const rates = shippingPackage?.shipping_rates ?? [];
+	const selectedRate = rates.find( ( rate ) => rate.selected );
+
+	if ( ! selectedRate || ! isLocalPickupRate( selectedRate ) ) {
+		return cartData;
+	}
+
+	const firstDeliveryRate = rates.find(
+		( rate ) => ! isLocalPickupRate( rate )
+	);
+	if ( ! firstDeliveryRate ) {
+		return cartData;
+	}
+
+	try {
+		return await cartApi.selectShippingRate( {
+			package_id: shippingPackage.package_id,
+			rate_id: firstDeliveryRate.rate_id,
+		} );
+	} catch ( e ) {
+		// Fall back to the original cart data; the wallet will still show
+		// Local Pickup as selected but the user can change it manually.
+		return cartData;
+	}
+};
+
 export const shippingAddressChangeHandler = async (
 	event,
 	elements,
@@ -95,19 +142,23 @@ export const shippingAddressChangeHandler = async (
 	try {
 		// Please note that the `event.address` might not contain all the fields.
 		// Some fields might not be present (like `line_1` or `line_2`) due to semi-anonymized data.
-		const cartData = await cartApi.updateCustomer( {
+		const updatedCustomerData = await cartApi.updateCustomer( {
 			shipping_address: transformStripeShippingAddressForStoreApi(
 				event.name,
 				event.address
 			),
 		} );
 
-		if ( cartCurrencyDriftedFromElement( cartData ) ) {
-			errorHandler?.( getCurrencyMismatchMessage( cartData ) );
+		if ( cartCurrencyDriftedFromElement( updatedCustomerData ) ) {
+			errorHandler?.( getCurrencyMismatchMessage( updatedCustomerData ) );
 			event.reject();
 
 			return;
 		}
+
+		const cartData = await preferDeliveryOverLocalPickup(
+			updatedCustomerData
+		);
 
 		const shippingRates = transformCartDataForShippingRates( cartData );
 
