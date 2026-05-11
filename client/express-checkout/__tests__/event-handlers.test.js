@@ -542,9 +542,32 @@ describe( 'Express checkout event handlers', () => {
 				await shippingAddressChangeHandler( event, elements );
 
 				expect( cartApiSelectShippingRateMock ).not.toHaveBeenCalled();
+				expect( event.reject ).not.toHaveBeenCalled();
+				expect( elements.update ).toHaveBeenCalledWith( {
+					amount: 1000,
+				} );
+				expect( event.resolve ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						// Both rates remain in the package; the transformer
+						// sorts the selected one (Flat Rate) first.
+						shippingRates: expect.arrayContaining( [
+							expect.objectContaining( {
+								id: 'flat_rate:14',
+							} ),
+							expect.objectContaining( {
+								id: 'pickup_location:0',
+							} ),
+						] ),
+					} )
+				);
 			} );
 
 			it( 'falls back to the original cart data if reselect fails', async () => {
+				// Suppress the expected console.warn from the catch block so the
+				// test output stays clean; we still assert it was called below.
+				const consoleWarnSpy = jest
+					.spyOn( console, 'warn' )
+					.mockImplementation( () => {} );
 				cartApiUpdateCustomerMock.mockResolvedValue(
 					buildCart( [ pickupRate, deliveryRate ], 0 )
 				);
@@ -556,7 +579,28 @@ describe( 'Express checkout event handlers', () => {
 
 				expect( cartApiSelectShippingRateMock ).toHaveBeenCalled();
 				expect( event.reject ).not.toHaveBeenCalled();
-				expect( event.resolve ).toHaveBeenCalled();
+				expect( event.resolve ).toHaveBeenCalledWith(
+					expect.objectContaining( {
+						// Original cart from updateCustomer still has the
+						// pickup rate marked selected; transformer sorts it first.
+						shippingRates: expect.arrayContaining( [
+							expect.objectContaining( {
+								id: 'pickup_location:0',
+							} ),
+							expect.objectContaining( {
+								id: 'flat_rate:14',
+							} ),
+						] ),
+					} )
+				);
+				expect( consoleWarnSpy ).toHaveBeenCalledWith(
+					expect.stringContaining(
+						'preferDeliveryOverLocalPickup failed'
+					),
+					expect.any( Error )
+				);
+
+				consoleWarnSpy.mockRestore();
 			} );
 		} );
 	} );

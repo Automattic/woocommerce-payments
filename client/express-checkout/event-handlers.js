@@ -85,9 +85,12 @@ const getElementsUpdateOptionsForCart = ( cartData ) => ( {
 		: {} ),
 } );
 
-// Matches WooCommerce core's `LocalPickupUtils::get_local_pickup_method_ids()`
-// seed list. Extension methods that opt in via `supports('local-pickup')` are
-// not covered, but the two core IDs handle the reported customer impact.
+// Mirrors the two built-in WooCommerce local-pickup method IDs: `local_pickup`
+// (the seed hardcoded in `LocalPickupUtils::get_local_pickup_method_ids()`) and
+// `pickup_location` (WC Blocks's PickupLocation method, which dynamically
+// appears in that list via `supports('local-pickup')`). Third-party methods
+// that opt in via the same `supports('local-pickup')` flag are not covered;
+// the two built-in IDs handle the reported customer impact.
 const LOCAL_PICKUP_METHOD_IDS = [ 'local_pickup', 'pickup_location' ];
 
 const isLocalPickupRate = ( rate ) =>
@@ -100,6 +103,10 @@ const isLocalPickupRate = ( rate ) =>
  * (see `wc_get_default_shipping_method_for_package()`). Reselect the first
  * non-pickup rate so the modal — and the session used at place-order time —
  * align with the customer's intent.
+ *
+ * Costs one extra Store API round-trip (`select-shipping-rate`) per address
+ * change in the bug scenario, because the WC session must be updated server-
+ * side. Once WOOPLUG-6671 lands the WC core fix, this helper can be removed.
  *
  * @param {Object} cartData Cart response from `updateCustomer`.
  * @return {Promise<Object>} Cart data with a non-pickup rate selected when applicable.
@@ -128,6 +135,13 @@ const preferDeliveryOverLocalPickup = async ( cartData ) => {
 	} catch ( e ) {
 		// Fall back to the original cart data; the wallet will still show
 		// Local Pickup as selected but the user can change it manually.
+		// Logged so we can tell the mitigation is failing in production vs.
+		// silently always falling back.
+		// eslint-disable-next-line no-console
+		console.warn(
+			'[WCPay ECE] preferDeliveryOverLocalPickup failed, falling back to original cart:',
+			e
+		);
 		return cartData;
 	}
 };
