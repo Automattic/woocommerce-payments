@@ -35,9 +35,10 @@ jest.mock( 'wcpay/overview/hooks', () => ( {
 	useSelectedCurrency: jest.fn(),
 } ) );
 
-const mockUseAllDepositsOverviews = useAllDepositsOverviews as jest.MockedFunction<
-	typeof useAllDepositsOverviews
->;
+const mockUseAllDepositsOverviews =
+	useAllDepositsOverviews as jest.MockedFunction<
+		typeof useAllDepositsOverviews
+	>;
 const mockUseSelectedCurrency = useSelectedCurrency as jest.MockedFunction<
 	typeof useSelectedCurrency
 >;

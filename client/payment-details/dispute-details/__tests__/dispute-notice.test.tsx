@@ -10,6 +10,7 @@ import React from 'react';
  */
 import DisputeNotice from '../dispute-notice';
 import type { Dispute } from 'wcpay/types/disputes';
+import type { Charge } from 'wcpay/types/charges';
 
 // Mock date formatting utility
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -21,7 +22,7 @@ jest.mock( 'wcpay/utils/date-time', () => ( {
 const getBaseDispute = (): Dispute => ( {
 	id: 'dp_1',
 	amount: 5000,
-	charge: 'ch_mock',
+	charge: { id: 'ch_mock' } as Charge,
 	order: null,
 	balance_transactions: [
 		{
@@ -239,5 +240,120 @@ describe( 'DisputeNotice - Visa Compliance', () => {
 		expect( notice ).toBeInTheDocument();
 
 		expect( container ).toMatchSnapshot();
+	} );
+} );
+
+describe( 'DisputeNotice - Klarna Inquiries', () => {
+	test( 'renders return-specific banner for credit_not_processed Klarna inquiry', () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			reason: 'credit_not_processed',
+			status: 'warning_needs_response',
+		};
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ true }
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		const notice = container.querySelector( '.dispute-notice' );
+		expect( notice ).toBeInTheDocument();
+
+		// Should show return-specific text
+		expect( notice?.textContent ).toMatch( /reporting a return/i );
+		expect( notice?.textContent ).toMatch(
+			/standard part of Klarna's returns process/i
+		);
+		expect( notice?.textContent ).toMatch( /may escalate to a dispute/i );
+
+		// Should include Learn more link
+		const link = notice?.querySelector( 'a' );
+		expect( link ).toBeInTheDocument();
+		expect( link ).toHaveAttribute(
+			'href',
+			'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns'
+		);
+	} );
+
+	test( 'renders per-reason banner for fraudulent Klarna inquiry', () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			reason: 'fraudulent',
+			status: 'warning_needs_response',
+		};
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ true }
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		const notice = container.querySelector( '.dispute-notice' );
+		expect( notice ).toBeInTheDocument();
+
+		// Should show per-reason clause
+		expect( notice?.textContent ).toMatch(
+			/filed an inquiry through Klarna, claiming this transaction was unauthorized/i
+		);
+		expect( notice?.textContent ).toMatch(
+			/working it out with the customer directly or issuing a refund/i
+		);
+
+		// Should NOT show return-specific text
+		expect( notice?.textContent ).not.toMatch( /reporting a return/i );
+	} );
+
+	test( 'renders fallback banner for unknown Klarna inquiry reason', () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			reason: 'general',
+			status: 'warning_needs_response',
+		};
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ true }
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		const notice = container.querySelector( '.dispute-notice' );
+		expect( notice ).toBeInTheDocument();
+
+		// Should show fallback clause
+		expect( notice?.textContent ).toMatch(
+			/filed an inquiry through Klarna, regarding this transaction/i
+		);
+	} );
+
+	test( 'includes deadline in Klarna inquiry banners', () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			reason: 'product_not_received',
+			status: 'warning_needs_response',
+		};
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ true }
+				paymentMethod="klarna"
+				bankName={ null }
+			/>
+		);
+
+		const notice = container.querySelector( '.dispute-notice' );
+		expect( notice?.textContent ).toMatch(
+			/11:59 PM on September 9, 2023/i
+		);
 	} );
 } );

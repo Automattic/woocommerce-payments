@@ -58,9 +58,9 @@ const formatButtonList = ( buttonNames: string[] ) => {
 	);
 };
 
-const ExpressCheckoutSettingsNotices: React.FC< ExpressCheckoutSettingsNoticesProps > = ( {
-	currentMethod,
-} ) => {
+const ExpressCheckoutSettingsNotices: React.FC<
+	ExpressCheckoutSettingsNoticesProps
+> = ( { currentMethod } ) => {
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 	const [ isAmazonPayEnabled ] = useAmazonPayEnabledSettings();

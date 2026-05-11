@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Drop deprecated @woocommerce/api E2E dep in favor of axios, bringing the axios version up to date

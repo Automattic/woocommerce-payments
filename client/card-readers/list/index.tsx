@@ -55,14 +55,14 @@ const ReadersList = (): JSX.Element => {
 						<CardBody className="card-readers-list__body">
 							<ul>
 								{ ! isLoading &&
-									Object.entries(
-										readers
-									).map( ( [ index, reader ] ) => (
-										<CardReaderListItem
-											key={ index }
-											reader={ reader }
-										/>
-									) ) }
+									Object.entries( readers ).map(
+										( [ index, reader ] ) => (
+											<CardReaderListItem
+												key={ index }
+												reader={ reader }
+											/>
+										)
+									) }
 							</ul>
 						</CardBody>
 					</Card>

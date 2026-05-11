@@ -132,6 +132,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Add all other hooks.
 		add_filter( 'allowed_redirect_hosts', [ $this, 'allowed_redirect_hosts' ] );
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
+		add_action( 'jetpack_site_disconnected', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
 		// Hook into the recurring store setup sync action and do the store setup sync.
@@ -381,8 +382,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 			// Campaigns are temporary flags that are used to enable/disable features for a limited time.
 			'campaigns'           => [
-				// The flag for the WordPress.org merchant review campaign in 2025. Eligibility is determined per-account on transact-platform-server.
-				'wporgReview2025'    => $account['eligibility_wporg_review_campaign_2025'] ?? false,
 				// The flag for the payments settings review prompt (Phase 0). Eligibility is determined per-account on transact-platform-server.
 				'reviewPromptPhase0' => $account['eligibility_review_prompt_phase_0'] ?? false,
 			],

@@ -72,52 +72,46 @@ test.describe(
 		} );
 
 		[ false, true ].forEach( ( ctpEnabled ) => {
-			test.describe(
-				`Card testing protection enabled: ${ ctpEnabled }`,
-				() => {
-					test.beforeAll( async () => {
-						if ( ctpEnabled ) {
-							await enableCardTestingProtection( merchantPage );
-						}
-					} );
+			test.describe( `Card testing protection enabled: ${ ctpEnabled }`, () => {
+				test.beforeAll( async () => {
+					if ( ctpEnabled ) {
+						await enableCardTestingProtection( merchantPage );
+					}
+				} );
 
-					test.afterAll( async () => {
-						if ( ctpEnabled ) {
-							await disableCardTestingProtection( merchantPage );
-						}
-					} );
+				test.afterAll( async () => {
+					if ( ctpEnabled ) {
+						await disableCardTestingProtection( merchantPage );
+					}
+				} );
 
-					// Reload after each test to prevent state leaking between tests.
-					test.afterEach( async () => {
-						await shopperPage.reload();
-					} );
+				// Reload after each test to prevent state leaking between tests.
+				test.afterEach( async () => {
+					await shopperPage.reload();
+				} );
 
-					test( 'should successfully place order with Bancontact', async () => {
-						await addToCartFromShopPage( shopperPage );
-						await goToCheckout( shopperPage );
-						await fillBillingAddress(
-							shopperPage,
-							config.addresses[ 'upe-customer' ].billing.be
-						);
-						await expectFraudPreventionToken(
-							shopperPage,
-							ctpEnabled
-						);
-						await selectPaymentMethod( shopperPage, 'Bancontact' );
+				test( 'should successfully place order with Bancontact', async () => {
+					await addToCartFromShopPage( shopperPage );
+					await goToCheckout( shopperPage );
+					await fillBillingAddress(
+						shopperPage,
+						config.addresses[ 'upe-customer' ].billing.be
+					);
+					await expectFraudPreventionToken( shopperPage, ctpEnabled );
+					await selectPaymentMethod( shopperPage, 'Bancontact' );
 
-						await focusPlaceOrderButton( shopperPage );
-						await placeOrder( shopperPage );
-						await shopperPage
-							.getByRole( 'link', {
-								name: 'Authorize Test Payment',
-							} )
-							.click();
-						await expect(
-							shopperPage.getByText( 'Order received' ).first()
-						).toBeVisible();
-					} );
-				}
-			);
+					await focusPlaceOrderButton( shopperPage );
+					await placeOrder( shopperPage );
+					await shopperPage
+						.getByRole( 'link', {
+							name: 'Authorize Test Payment',
+						} )
+						.click();
+					await expect(
+						shopperPage.getByText( 'Order received' ).first()
+					).toBeVisible();
+				} );
+			} );
 		} );
 	}
 );

@@ -24,8 +24,7 @@ import { getAdminUrl } from 'wcpay/utils';
 const documentationTypeMap = {
 	DEFAULT:
 		'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
-	BNPLS:
-		'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
+	BNPLS: 'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
 	DELAYED_APPROVAL:
 		'https://woocommerce.com/document/woopayments/payment-methods/local-payment-methods/#approval-delays',
 };

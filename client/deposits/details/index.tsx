@@ -40,7 +40,6 @@ import {
 import { depositStatusLabels, payoutFailureMessages } from '../strings';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
@@ -203,7 +202,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 								deposit.currency
 							) }
 							valueClass={
-								0 < deposit.fee && 'wcpay-deposit-fee'
+								deposit.fee > 0 && 'wcpay-deposit-fee'
 							}
 						/>,
 						<SummaryItem
@@ -315,7 +314,6 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 
 	return (
 		<Page>
-			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
 				{ isLoading ? (

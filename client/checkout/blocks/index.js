@@ -22,7 +22,7 @@ import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
 	expressCheckoutElementAmazonPay,
-} from 'wcpay/express-checkout/blocks';
+} from 'wcpay/express-checkout/block-buttons';
 
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';

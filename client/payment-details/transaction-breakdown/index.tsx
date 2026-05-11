@@ -37,9 +37,9 @@ interface PaymentTransactionBreakdownProps {
  */
 const disableTransactionBreakdown = true;
 
-const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > = ( {
-	paymentIntentId,
-} ) => {
+const PaymentTransactionBreakdown: React.FC<
+	PaymentTransactionBreakdownProps
+> = ( { paymentIntentId } ) => {
 	const { timeline, isLoading } = useTimeline( paymentIntentId );
 
 	/**
@@ -67,26 +67,40 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 	}
 
 	const { formattedAmount, isMultiCurrency } = transactionAmounts;
-	// const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
+
+	// Prefer the server-formatted fx.rate_display ("1 USD → 0.851712 EUR")
+	// — no client-side division or re-inversion needed. Fall back to the
+	// legacy computation for charges without the envelope.
+	const fxRateDisplay = captureEvent.fee_breakdown_v1?.fx?.rate_display;
 	const paymentExchangeRate =
 		captureEvent.transaction_details.store_amount > 0
 			? captureEvent.transaction_details.customer_amount /
 			  captureEvent.transaction_details.store_amount
 			: 0;
 
-	const conversionRate =
-		isMultiCurrency && paymentExchangeRate > 0 ? (
-			<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
-				{ ' @ 1 ' }
-				{ captureEvent.transaction_details.customer_currency }
-				{ ' → ' }
-				{ Math.round( 1000000 / paymentExchangeRate ) / 1000000 }
-				{ '	' }
-				{ captureEvent.transaction_details.store_currency }
-			</FlexItem>
-		) : (
-			''
-		);
+	const conversionRate = ( () => {
+		if ( fxRateDisplay ) {
+			return (
+				<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
+					{ ' @ ' }
+					{ fxRateDisplay }
+				</FlexItem>
+			);
+		}
+		if ( isMultiCurrency && paymentExchangeRate > 0 ) {
+			return (
+				<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
+					{ ' @ 1 ' }
+					{ captureEvent.transaction_details.customer_currency }
+					{ ' → ' }
+					{ Math.round( 1000000 / paymentExchangeRate ) / 1000000 }
+					{ '	' }
+					{ captureEvent.transaction_details.store_currency }
+				</FlexItem>
+			);
+		}
+		return '';
+	} )();
 
 	return captureEvent ? (
 		<Card size="large">
@@ -156,14 +170,26 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 							{ __( 'Net deposit', 'woocommerce-payments' ) }
 						</FlexItem>
 						<FlexItem className="wcpay-transaction-breakdown__footer_amount">
+							{ /* Prefer the envelope's authoritative net;
+							     fall back to the legacy subtraction for
+							     charges without fee_breakdown_v1. */ }
 							{ formatCurrency(
-								captureEvent.transaction_details
-									.store_amount_captured -
-									captureEvent.transaction_details.store_fee,
-								captureEvent.transaction_details.store_currency
+								captureEvent.fee_breakdown_v1?.totals?.net
+									?.amount ??
+									captureEvent.transaction_details
+										.store_amount_captured -
+										captureEvent.transaction_details
+											.store_fee,
+								captureEvent.fee_breakdown_v1?.totals?.net
+									?.currency ??
+									captureEvent.transaction_details
+										.store_currency
 							) }
 							&nbsp;
-							{ captureEvent.transaction_details.store_currency }
+							{ captureEvent.fee_breakdown_v1?.totals?.net
+								?.currency ??
+								captureEvent.transaction_details
+									.store_currency }
 						</FlexItem>
 					</Flex>
 				</LoadableBlock>

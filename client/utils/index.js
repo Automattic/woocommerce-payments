@@ -77,7 +77,7 @@ export const isInTestMode = ( fallback = false ) => {
  * Returns true if WooPayments is in test mode onboarding, false otherwise.
  *
  * @param {boolean} fallback Fallback in case test mode onboarding value can't be found
- * 							 (for example if the wcpaySettings are undefined).
+ *                           (for example if the wcpaySettings are undefined).
  *
  * @return {boolean} True if in test mode onboarding, false otherwise.
  * 					 Fallback value if test mode onboarding value can't be found.
@@ -286,7 +286,7 @@ export const objectRemoveEmptyProperties = ( obj ) => {
  * Supports semantic version strings like "1.2.3-beta" by ignoring pre-release tags.
  *
  * @param {string} version Version that is compared.
- * @param {string} base Version to compare with.
+ * @param {string} base    Version to compare with.
  * @return {boolean} Whether version is greater than or equal to base.
  */
 export const isVersionGreaterOrEqual = ( version, base ) => {

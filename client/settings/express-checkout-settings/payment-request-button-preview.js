@@ -12,6 +12,7 @@ import { useStripe } from '@stripe/react-stripe-js';
  */
 import InlineNotice from 'components/inline-notice';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/woopay/express-button/woopay-express-checkout-button';
+import usePreferredCard from 'wcpay/checkout/woopay/express-button/use-preferred-card';
 import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
@@ -20,7 +21,7 @@ import {
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from '../../data';
-import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/components/express-checkout-preview';
+import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/block-buttons/components/express-checkout-preview';
 
 const buttonSizeToPxMap = {
 	small: 40,
@@ -28,24 +29,29 @@ const buttonSizeToPxMap = {
 	large: 55,
 };
 
-const WooPayButtonPreview = ( { size, buttonType, theme, radius } ) => (
-	<WoopayExpressCheckoutButton
-		isPreview={ true }
-		buttonSettings={ {
-			type: buttonType,
-			text: 'Buy',
-			theme: theme,
-			height: `${
-				buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium
-			}px`,
-			size,
-		} }
-		buttonAttributes={ {
-			height: buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium,
-			borderRadius: radius,
-		} }
-	/>
-);
+const WooPayButtonPreview = ( { size, buttonType, theme, radius } ) => {
+	const preferredCard = usePreferredCard();
+
+	return (
+		<WoopayExpressCheckoutButton
+			isPreview={ true }
+			buttonSettings={ {
+				type: buttonType,
+				text: 'Buy',
+				theme: theme,
+				height: `${
+					buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium
+				}px`,
+				size,
+			} }
+			buttonAttributes={ {
+				height: buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium,
+				borderRadius: radius,
+			} }
+			preferredCard={ preferredCard }
+		/>
+	);
+};
 
 const ButtonPreviewWrapper = ( { theme, children } ) => (
 	<>

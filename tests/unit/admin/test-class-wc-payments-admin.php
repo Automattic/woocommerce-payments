@@ -223,6 +223,41 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
 	}
 
+	/**
+	 * @dataProvider data_rejected_or_under_review_menu
+	 */
+	public function test_rejected_or_under_review_account_registers_limited_menu( bool $is_rejected, bool $is_under_review ) {
+		global $submenu;
+
+		$this->mock_current_user_is_admin();
+
+		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
+		$this->mock_account->method( 'is_account_rejected' )->willReturn( $is_rejected );
+		$this->mock_account->method( 'is_account_under_review' )->willReturn( $is_under_review );
+
+		$this->payments_admin->add_payments_menu();
+
+		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+
+		// These pages should be registered for rejected/under-review accounts.
+		$this->assertArrayHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
+		$this->assertArrayHasKey( 'wc-admin&path=/payments/transactions', $item_names_by_urls );
+		$this->assertArrayHasKey( 'wc-admin&path=/payments/disputes', $item_names_by_urls );
+
+		// These pages should NOT be registered.
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/deposits', $item_names_by_urls );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/settings/regular', $item_names_by_urls );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/documents', $item_names_by_urls );
+	}
+
+	public function data_rejected_or_under_review_menu(): array {
+		return [
+			'rejected account'     => [ true, false ],
+			'under review account' => [ false, true ],
+		];
+	}
+
 	private function mock_current_user_is_admin() {
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		wp_set_current_user( $admin_user );

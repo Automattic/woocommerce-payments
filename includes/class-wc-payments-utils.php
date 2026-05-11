@@ -239,6 +239,21 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the number of decimals Stripe expects when billing the given currency.
+	 *
+	 * Returns 0 for true zero-decimal currencies (e.g. JPY) and 2 for everything else,
+	 * including Stripe's special-case currencies (TWD, HUF, ISK, UGX) that are locally
+	 * rendered without sub-units but still billed as two-decimal by Stripe.
+	 *
+	 * @param string $currency The currency code.
+	 *
+	 * @return int 0 or 2.
+	 */
+	public static function get_stripe_minor_unit_for_currency( string $currency ): int {
+		return self::is_zero_decimal_currency( $currency ) ? 0 : 2;
+	}
+
+	/**
 	 * List of countries enabled for Stripe platform account. See also this URL:
 	 * https://woocommerce.com/document/woopayments/compatibility/countries/#supported-countries
 	 *
@@ -883,16 +898,16 @@ class WC_Payments_Utils {
 				return [
 					Currency_Code::CANADIAN_DOLLAR      => [
 						Country_Code::CANADA => [
-							'min' => 5000,
+							'min' => 3500,
 							'max' => 3000000,
-						], // Represents CAD 50 - 30,000 CAD.
+						], // Represents CAD 35 - 30,000 CAD.
 					],
 					Currency_Code::UNITED_STATES_DOLLAR => [
 						Country_Code::UNITED_STATES => [
-							'min' => 5000,
+							'min' => 3500,
 							'max' => 3000000,
 						],
-					], // Represents USD 50 - 30,000 USD.
+					], // Represents USD 35 - 30,000 USD.
 				];
 			case 'afterpay_clearpay':
 				return [

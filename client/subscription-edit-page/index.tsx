@@ -42,9 +42,9 @@ export const clearTokenCache = (): void => {
 /**
  * Fetch the tokens for a user from the back-end.
  *
- * @param {number}  userId    The user ID.
- * @param {string}  ajaxUrl   The AJAX URL.
- * @param {string}  nonce     The nonce.
+ * @param {number} userId    The user ID.
+ * @param {string} ajaxUrl   The AJAX URL.
+ * @param {string} nonce     The nonce.
  * @param {string} gatewayId Gateway ID to filter tokens.
  * @return {Promise<Token[]>} The tokens for the user.
  * @throws {Error} If the tokens cannot be fetched or the response is invalid.
@@ -125,7 +125,7 @@ export const addCustomerSelectListener = (
 /**
  * Get the default token for a user and gateway.
  *
- * @param {number}  userId    The user ID.
+ * @param {number} userId    The user ID.
  * @param {string} gatewayId The gateway ID.
  * @return {number} The default token ID or 0 if no default token is found.
  */
@@ -223,7 +223,7 @@ export const PaymentMethodSelect = ( {
 	return (
 		// eslint-disable-next-line
 		<select name={ inputName } defaultValue={ value } key={ userId }>
-			{ 0 === value && (
+			{ value === 0 && (
 				<option value={ 0 } key={ 'select' } disabled>
 					{ __(
 						'Please select a payment method',
