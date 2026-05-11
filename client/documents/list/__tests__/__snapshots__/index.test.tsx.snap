@@ -204,7 +204,7 @@ exports[`Documents list renders correctly 1`] = `
       </div>
     </div>
     <div
-      class="components-surface components-card woocommerce-table documents-list woocommerce-report-table has-search has-actions has-menu emotion-0 emotion-1"
+      class="components-surface components-card woocommerce-table documents-list woocommerce-report-table has-actions has-menu emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
@@ -672,7 +672,7 @@ exports[`Documents list renders table summary only when the documents summary da
       </div>
     </div>
     <div
-      class="components-surface components-card woocommerce-table documents-list woocommerce-report-table has-search has-actions has-menu emotion-0 emotion-1"
+      class="components-surface components-card woocommerce-table documents-list woocommerce-report-table has-actions has-menu emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
