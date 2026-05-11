@@ -110,7 +110,7 @@ const PaymentMethodDetails = ( { payment }: PaymentMethodDetailsProps ) => {
 	const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
 	const brand = shouldDisplayNetworkOverBrand( paymentMethod?.network )
 		? paymentMethod.network
-		: paymentMethod?.brand || payment?.type;
+		: paymentMethod?.brand || paymentMethod?.network || payment?.type;
 
 	return (
 		<span className="payment-method-details">

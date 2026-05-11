@@ -17,9 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$payment_method_network            = $payment_method_details['network'] ?? '';
-$payment_method_brand              = WC_Payments_Utils::should_display_card_network_over_brand( $payment_method_network ) ? $payment_method_network : ( $payment_method_details['brand'] ?? '' );
-$payment_method_brand_display_name = $payment_method_brand_display_name ?? WC_Payments_Utils::get_card_brand_display_name( $payment_method_brand );
+$payment_method_display_name = $payment_method_display_name ?? '';
 ?>
 
 <div style="margin-bottom: 40px;">
@@ -30,7 +28,7 @@ $payment_method_brand_display_name = $payment_method_brand_display_name ?? WC_Pa
 					<?php esc_html_e( 'Payment Method', 'woocommerce-payments' ); ?>
 				</th>
 				<td class="td">
-					<div><?php echo esc_html( sprintf( '%s - %s', $payment_method_brand_display_name, $payment_method_details['last4'] ) ); ?></div>
+					<div><?php echo esc_html( sprintf( '%s - %s', $payment_method_display_name, $payment_method_details['last4'] ) ); ?></div>
 				</td>
 			</tr>
 			<tr>

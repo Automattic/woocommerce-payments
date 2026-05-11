@@ -95,6 +95,27 @@ describe( 'PaymentMethodDetails', () => {
 		expect( container.textContent ).toContain( '0978' );
 	} );
 
+	test( 'falls back to network when brand is unavailable', () => {
+		const { container } = render(
+			<PaymentMethodDetails
+				payment={ {
+					type: 'card_present',
+					card_present: {
+						network: 'unsupported_network',
+						last4: '0978',
+					},
+				} }
+			/>
+		);
+
+		expect(
+			container.querySelector(
+				'.payment-method__brand--unsupported_network'
+			)
+		).not.toBeNull();
+		expect( container.textContent ).toContain( '0978' );
+	} );
+
 	test( 'renders a dash if no card was provided', () => {
 		const { container: paymentMethodDetails } = renderCard( null );
 		expect( paymentMethodDetails ).toMatchSnapshot();

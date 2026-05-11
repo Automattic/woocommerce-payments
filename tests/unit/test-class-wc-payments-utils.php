@@ -1453,4 +1453,40 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WC_Payments_Utils::should_display_card_network_over_brand( 'cartes_bancaires' ) );
 		$this->assertFalse( WC_Payments_Utils::should_display_card_network_over_brand( 'unknown_network' ) );
 	}
+
+	public function test_get_terminal_card_display_brand_prefers_supported_networks() {
+		$this->assertSame(
+			'eftpos_au',
+			WC_Payments_Utils::get_terminal_card_display_brand(
+				[
+					'brand'   => 'visa',
+					'network' => 'eftpos_au',
+				]
+			)
+		);
+	}
+
+	public function test_get_terminal_card_display_brand_uses_brand_for_unsupported_networks() {
+		$this->assertSame(
+			'visa',
+			WC_Payments_Utils::get_terminal_card_display_brand(
+				[
+					'brand'   => 'visa',
+					'network' => 'unsupported_network',
+				]
+			)
+		);
+	}
+
+	public function test_get_terminal_card_display_name_maps_selected_brand() {
+		$this->assertSame(
+			'eftpos',
+			WC_Payments_Utils::get_terminal_card_display_name(
+				[
+					'brand'   => 'visa',
+					'network' => 'eftpos_au',
+				]
+			)
+		);
+	}
 }

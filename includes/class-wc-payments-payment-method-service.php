@@ -105,7 +105,7 @@ class WC_Payments_Payment_Method_Service {
 					break;
 				case 'card_present':
 				case 'interac_present':
-					$card_info['brand']        = ( ! empty( $details['network'] ) && WC_Payments_Utils::should_display_card_network_over_brand( $details['network'] ) ) ? $details['network'] : ( $details['brand'] ?? '' );
+					$card_info['brand']        = WC_Payments_Utils::get_terminal_card_display_brand( $details );
 					$card_info['last4']        = $details['last4'] ?? '';
 					$card_info['account_type'] = $details['receipt']['account_type'] ?? '';
 					$card_info['aid']          = $details['receipt']['dedicated_file_name'] ?? '';

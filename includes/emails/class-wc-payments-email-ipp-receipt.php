@@ -340,13 +340,11 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			// Ensure we have all required data for preview.
 			$charge                 = $this->get_preview_charge( $charge );
 			$payment_method_details = $charge['payment_method_details']['card_present'] ?? [];
-			$card_network           = $payment_method_details['network'] ?? '';
-			$card_brand             = WC_Payments_Utils::should_display_card_network_over_brand( $card_network ) ? $card_network : ( $payment_method_details['brand'] ?? '' );
 
 			$template_data = [
-				'payment_method_details'            => $payment_method_details,
-				'payment_method_brand_display_name' => WC_Payments_Utils::get_card_brand_display_name( $card_brand ),
-				'receipt'                           => $payment_method_details['receipt'] ?? [],
+				'payment_method_details'      => $payment_method_details,
+				'payment_method_display_name' => WC_Payments_Utils::get_terminal_card_display_name( $payment_method_details ),
+				'receipt'                     => $payment_method_details['receipt'] ?? [],
 			];
 
 			if ( $plain_text ) {

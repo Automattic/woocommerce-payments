@@ -86,7 +86,7 @@ describe( 'CardPresentDetails', () => {
 		expect( container.textContent ).not.toContain( 'Eftpos_au' );
 	} );
 
-	test( 'uses brand for unsupported networks', () => {
+	test( 'renders unsupported networks using the network value', () => {
 		const charge = {
 			payment_method_details: {
 				type: 'card_present',
@@ -112,8 +112,7 @@ describe( 'CardPresentDetails', () => {
 			<CardPresentDetails charge={ charge } isLoading={ false } />
 		);
 
-		expect( container.textContent ).toContain( 'Visa debit card' );
-		expect( container.textContent ).not.toContain(
+		expect( container.textContent ).toContain(
 			'Unsupported_network debit card'
 		);
 	} );

@@ -28,11 +28,6 @@ const getCardNetworkDisplayName = ( network ) => {
 	);
 };
 
-const shouldDisplayNetworkOverBrand = ( network ) =>
-	[ 'cartes_bancaires', 'cb', 'eftpos', 'eftpos_au' ].includes(
-		network
-	);
-
 /**
  * Extracts and formats payment method details from a card-present charge.
  *
@@ -49,7 +44,6 @@ const formatPaymentMethodDetails = ( charge ) => {
 		exp_year: year,
 		funding,
 		network,
-		brand,
 		country: countryCode,
 	} = charge.payment_method_details.card_present;
 
@@ -65,13 +59,10 @@ const formatPaymentMethodDetails = ( charge ) => {
 		prepaid: __( 'prepaid', 'woocommerce-payments' ),
 		unknown: __( 'unknown', 'woocommerce-payments' ),
 	};
-	const displayBrand = shouldDisplayNetworkOverBrand( network )
-		? network
-		: brand;
 	const cardType = sprintf(
-		// Translators: %1$s card brand, %2$s card funding (prepaid, credit, etc.).
+		// Translators: %1$s card network, %2$s card funding (prepaid, credit, etc.).
 		__( '%1$s %2$s card', 'woocommerce-payments' ),
-		getCardNetworkDisplayName( displayBrand ), // Brand
+		getCardNetworkDisplayName( network ),
 		fundingTypes[ funding ]
 	);
 

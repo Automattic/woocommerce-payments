@@ -26,9 +26,7 @@ if ( ! function_exists( 'wcpay_format_price_helper' ) ) {
 	}
 }
 
-$payment_method_network            = $payment_method_details['network'] ?? '';
-$payment_method_brand              = WC_Payments_Utils::should_display_card_network_over_brand( $payment_method_network ) ? $payment_method_network : ( $payment_method_details['brand'] ?? '' );
-$payment_method_brand_display_name = $payment_method_brand_display_name ?? WC_Payments_Utils::get_card_brand_display_name( $payment_method_brand );
+$payment_method_display_name = $payment_method_display_name ?? '';
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -211,7 +209,7 @@ $payment_method_brand_display_name = $payment_method_brand_display_name ?? WC_Pa
 					<td class="align-right"><b><?php echo wp_kses( wc_price( $amount_captured, [ 'currency' => $order['currency'] ] ), 'post' ); ?></b></td>
 				</tr>
 				<tr>
-					<td colspan="2" class="align-left"><?php echo esc_html( sprintf( '%s - %s', $payment_method_brand_display_name, $payment_method_details['last4'] ) ); ?></td>
+					<td colspan="2" class="align-left"><?php echo esc_html( sprintf( '%s - %s', $payment_method_display_name, $payment_method_details['last4'] ) ); ?></td>
 				</tr>
 			</table>
 		</div>

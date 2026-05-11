@@ -364,6 +364,32 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the terminal card display brand for a card-present payment method.
+	 *
+	 * @param array $payment_method_details The card-present payment method details from Stripe.
+	 * @return string The card network when it should take display priority, otherwise the card brand.
+	 */
+	public static function get_terminal_card_display_brand( array $payment_method_details ): string {
+		$network = $payment_method_details['network'] ?? '';
+
+		if ( self::should_display_card_network_over_brand( $network ) ) {
+			return $network;
+		}
+
+		return $payment_method_details['brand'] ?? '';
+	}
+
+	/**
+	 * Returns the display name for a terminal card-present payment method.
+	 *
+	 * @param array $payment_method_details The card-present payment method details from Stripe.
+	 * @return string The payment method display name.
+	 */
+	public static function get_terminal_card_display_name( array $payment_method_details ): string {
+		return self::get_card_brand_display_name( self::get_terminal_card_display_brand( $payment_method_details ) );
+	}
+
+	/**
 	 * Verifies whether a certain ZIP code is valid for the US, incl. 4-digit extensions.
 	 *
 	 * @param string $zip The ZIP code to verify.
