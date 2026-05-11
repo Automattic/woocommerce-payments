@@ -114,26 +114,23 @@
 		gap: 8px;
 		align-items: center;
 		margin: 0;
-	}
-
-	.is-complete {
-		color: #1e1e1e;
-	}
-
-	.is-incomplete {
-		color: #cc1818;
+		color: #50575e;
 	}
 }
 
 .wcpay-dispute-readiness-card__signal-icon {
-	font-size: 18px;
-	line-height: 18px;
+	font-size: 16px;
+	line-height: 16px;
 	font-weight: 600;
 	text-align: center;
 }
 
 .is-complete .wcpay-dispute-readiness-card__signal-icon {
 	color: #4ab866;
+}
+
+.is-incomplete .wcpay-dispute-readiness-card__signal-icon {
+	color: #cc1818;
 }
 
 .wcpay-dispute-readiness-card__signal-action {
@@ -146,6 +143,6 @@
 	}
 
 	.wcpay-dispute-readiness-card__signals li {
-		grid-template-columns: 24px minmax( 0, 1fr ) auto;
+		grid-template-columns: 20px minmax( 0, 1fr ) auto;
 	}
 }

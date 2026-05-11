@@ -97,12 +97,12 @@ const DisputeReadinessCard = () => {
 						/* translators: %d: total number of dispute readiness steps. */
 						__(
 							// eslint-disable-next-line max-len
-							"Sometimes a customer's bank questions a charge. These %d steps can help you respond confidently when it happens.",
+							'These %d steps help customers recognize charges, understand your policies, and contact you before opening a dispute.',
 							'woocommerce-payments'
 						),
 						overview.total
 					) }{ ' ' }
-					<a href={ LEARN_MORE_URL }>
+					<a href={ LEARN_MORE_URL } target="_blank" rel="noreferrer">
 						{ __( 'Learn more →', 'woocommerce-payments' ) }
 					</a>
 				</p>

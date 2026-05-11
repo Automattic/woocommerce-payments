@@ -362,12 +362,6 @@ const OverviewPage = () => {
 						</Card>
 					) }
 
-					{ showDisputeReadinessCard && (
-						<ErrorBoundary>
-							<DisputeReadinessCard />
-						</ErrorBoundary>
-					) }
-
 					<Card>
 						<ErrorBoundary>
 							<AccountBalances />
@@ -384,6 +378,11 @@ const OverviewPage = () => {
 					accountLink={ accountStatus.accountLink }
 				/>
 			</ErrorBoundary>
+			{ showDisputeReadinessCard && (
+				<ErrorBoundary>
+					<DisputeReadinessCard />
+				</ErrorBoundary>
+			) }
 			{ hasActiveLoan && (
 				<ErrorBoundary>
 					<ActiveLoanSummary />
