@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
@@ -14,7 +14,7 @@ import Page from 'components/page';
 import { ReportsHeader } from './header';
 import { getLastFullCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
-import { useReportsTabState } from './hooks';
+import { useReportsTabReload } from './hooks';
 import type { ReportsTabStatus } from './types';
 import './style.scss';
 
@@ -25,21 +25,39 @@ interface ReportsPageProps {
 
 export const ReportsPage: React.FC< ReportsPageProps > = ( {
 	initialTabStatus = 'empty',
-	now = new Date(),
+	now,
 } ) => {
-	const currentQuery = getQuery();
-	const activeTab = normalizeReportsTab( currentQuery.tab );
-	const period = getLastFullCalendarMonthUTC( now );
-	const { status, reload } = useReportsTabState(
-		activeTab,
-		period,
-		initialTabStatus
+	const [ activeTab, setActiveTab ] = useState( () =>
+		normalizeReportsTab( getQuery().tab )
 	);
+	const period = useMemo(
+		() => getLastFullCalendarMonthUTC( now ?? new Date() ),
+		[ now ]
+	);
+	const reload = useReportsTabReload( activeTab, period );
+
+	useEffect( () => {
+		const syncActiveTabFromUrl = () => {
+			setActiveTab( normalizeReportsTab( getQuery().tab ) );
+		};
+
+		window.addEventListener( 'popstate', syncActiveTabFromUrl );
+		return () => {
+			window.removeEventListener( 'popstate', syncActiveTabFromUrl );
+		};
+	}, [] );
 
 	const onTabSelected = ( tab: string ) => {
+		const nextTab = normalizeReportsTab( tab );
+
+		if ( nextTab === activeTab ) {
+			return;
+		}
+
+		setActiveTab( nextTab );
 		updateQueryString(
 			{
-				tab,
+				tab: nextTab,
 			},
 			'/payments/reports'
 		);
@@ -49,6 +67,7 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 		<Page className="wcpay-reports-page">
 			<ReportsHeader />
 			<TabPanel
+				key={ activeTab }
 				className="wcpay-reports-tab-panel"
 				activeClass="active-tab"
 				onSelect={ onTabSelected }
@@ -59,7 +78,7 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 					<div className="wcpay-reports-content">
 						<ReportsTabPanel
 							tab={ normalizeReportsTab( tab.name ) }
-							status={ status }
+							status={ initialTabStatus }
 							onReload={ reload }
 						/>
 					</div>

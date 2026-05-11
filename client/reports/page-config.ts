@@ -16,7 +16,7 @@ interface ReportsPageConfigArgs {
 	rootLink: [ string, string ];
 }
 
-export function getReportsPageConfig( {
+function getReportsPageConfig( {
 	container,
 	menuID,
 	rootLink,
@@ -52,6 +52,7 @@ export function maybeAddReportsPage(
 	pages: PageConfig[],
 	args: ReportsPageConfigArgs
 ): PageConfig[] {
+	// Keep route availability in one module so direct JS registration mirrors PHP menu gating.
 	if ( isReportsRouteAvailable() ) {
 		pages.push( getReportsPageConfig( args ) );
 	}

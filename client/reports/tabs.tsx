@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -64,17 +64,74 @@ function getErrorTitle( tab: ReportsTab ): string {
 		: __( 'Balance unavailable', 'woocommerce-payments' );
 }
 
+function getPartialContent( tab: ReportsTab ): {
+	title: string;
+	description: string;
+} {
+	if ( tab === 'fees' ) {
+		return {
+			title: __( 'Fees report partially loaded', 'woocommerce-payments' ),
+			description: __(
+				'Some fees data is still being prepared.',
+				'woocommerce-payments'
+			),
+		};
+	}
+
+	return {
+		title: __( 'Balance partially loaded', 'woocommerce-payments' ),
+		description: __(
+			'Some balance data is still being prepared.',
+			'woocommerce-payments'
+		),
+	};
+}
+
 export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 	tab,
 	status,
 	onReload,
 } ) => {
-	if ( status === 'error' ) {
+	const contentHeadingRef = useRef< HTMLHeadingElement >( null );
+	const previousStatusRef = useRef< ReportsTabStatus >( status );
+
+	useEffect( () => {
+		if ( previousStatusRef.current === 'error' && status !== 'error' ) {
+			contentHeadingRef.current?.focus();
+		}
+
+		previousStatusRef.current = status;
+	}, [ status ] );
+
+	if ( status === 'loading' ) {
 		return (
 			<div
-				className="wcpay-reports-state wcpay-reports-state--error"
-				role="alert"
+				className="wcpay-reports-state wcpay-reports-state--loading"
+				role="status"
 			>
+				<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
+					{ __( 'Loading report', 'woocommerce-payments' ) }
+				</h2>
+			</div>
+		);
+	}
+
+	if ( status === 'partial' ) {
+		const { title, description } = getPartialContent( tab );
+
+		return (
+			<div className="wcpay-reports-state wcpay-reports-state--partial">
+				<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
+					{ title }
+				</h2>
+				<p>{ description }</p>
+			</div>
+		);
+	}
+
+	if ( status === 'error' ) {
+		return (
+			<div className="wcpay-reports-state wcpay-reports-state--error">
 				<h2>{ getErrorTitle( tab ) }</h2>
 				<Button variant="secondary" onClick={ onReload }>
 					{ __( 'Reload report', 'woocommerce-payments' ) }
@@ -87,7 +144,9 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 
 	return (
 		<div className="wcpay-reports-state wcpay-reports-state--empty">
-			<h2>{ title }</h2>
+			<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
+				{ title }
+			</h2>
 			{ description && <p>{ description }</p> }
 		</div>
 	);

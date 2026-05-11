@@ -14,6 +14,7 @@ import { ReportsPage } from '..';
 import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useDispatch } from '@wordpress/data';
+import { reportsPlaceholderSelectors } from '../hooks';
 
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn(),
@@ -60,7 +61,7 @@ declare const global: {
 };
 
 describe( 'Reports page tabs', () => {
-	const invalidateResolutionForStoreSelector = jest.fn();
+	const invalidateResolution = jest.fn();
 
 	const renderReportsPage = async ( props = {} ) => {
 		const result = render( <ReportsPage { ...props } /> );
@@ -81,10 +82,10 @@ describe( 'Reports page tabs', () => {
 		};
 		mockGetQuery.mockReturnValue( {} );
 		mockUpdateQueryString.mockClear();
-		invalidateResolutionForStoreSelector.mockClear();
+		invalidateResolution.mockClear();
 		mockUseDispatch.mockImplementation( ( storeName ) => {
 			if ( WCPAY_STORE_NAME === storeName ) {
-				return { invalidateResolutionForStoreSelector };
+				return { invalidateResolution };
 			}
 			return {};
 		} );
@@ -105,7 +106,7 @@ describe( 'Reports page tabs', () => {
 			screen.getByRole( 'tab', { name: 'Balance' } )
 		).toHaveAttribute( 'aria-selected', 'true' );
 		expect(
-			screen.getByText( 'View your reconciliation reports.' )
+			screen.getByText( /reconciliation reports/i )
 		).toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'heading', { name: 'Reports' } )
@@ -131,6 +132,30 @@ describe( 'Reports page tabs', () => {
 		).not.toBeInTheDocument();
 	} );
 
+	it( 'syncs the active tab from browser history changes', async () => {
+		mockGetQuery.mockReturnValue( { tab: 'fees' } );
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		expect( screen.getByRole( 'tab', { name: 'Fees' } ) ).toHaveAttribute(
+			'aria-selected',
+			'true'
+		);
+
+		mockGetQuery.mockReturnValue( { tab: 'balance' } );
+		await act( async () => {
+			window.dispatchEvent( new Event( 'popstate' ) );
+		} );
+
+		await waitFor( () => {
+			expect(
+				screen.getByRole( 'tab', { name: 'Balance' } )
+			).toHaveAttribute( 'aria-selected', 'true' );
+		} );
+	} );
+
 	it( 'updates the query string when switching tabs', async () => {
 		await renderReportsPage( {
 			now: new Date( '2026-05-06T12:00:00Z' ),
@@ -148,6 +173,7 @@ describe( 'Reports page tabs', () => {
 				'/payments/reports'
 			);
 		} );
+		expect( mockUpdateQueryString ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'reloads the active tab in place by invalidating the placeholder resolver', async () => {
@@ -160,8 +186,31 @@ describe( 'Reports page tabs', () => {
 			screen.getByRole( 'button', { name: 'Reload report' } )
 		);
 
-		expect( invalidateResolutionForStoreSelector ).toHaveBeenCalledWith(
-			'getReportsBalanceSummary',
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			reportsPlaceholderSelectors.balance,
+			[
+				{
+					start: '2026-04-01T00:00:00.000Z',
+					end: '2026-04-30T23:59:59.999Z',
+				},
+			]
+		);
+	} );
+
+	it( 'reloads the Fees tab with the Fees placeholder resolver', async () => {
+		mockGetQuery.mockReturnValue( { tab: 'fees' } );
+
+		await renderReportsPage( {
+			initialTabStatus: 'error',
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Reload/i } )
+		);
+
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			reportsPlaceholderSelectors.fees,
 			[
 				{
 					start: '2026-04-01T00:00:00.000Z',

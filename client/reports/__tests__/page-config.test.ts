@@ -82,7 +82,21 @@ describe( 'Reports page config', () => {
 		expect( pages ).toHaveLength( 0 );
 	} );
 
-	it.each( [ 'rejected.fraud', 'under_review' ] )(
+	it( 'does not register the Reports route when Jetpack is disconnected', () => {
+		const pages: Record< string, unknown >[] = [];
+		global.wcpaySettings.featureFlags.reportsArea = true;
+		global.wcpaySettings.isJetpackConnected = false;
+
+		maybeAddReportsPage( pages, {
+			container: jest.fn(),
+			menuID: 'toplevel_page_wc-admin-path--payments-overview',
+			rootLink: [ '/payments/overview', 'Payments' ],
+		} );
+
+		expect( pages ).toHaveLength( 0 );
+	} );
+
+	it.each( [ 'rejected.fraud', 'rejected.other', 'under_review' ] )(
 		'does not register the Reports route for %s accounts',
 		( status ) => {
 			const pages: Record< string, unknown >[] = [];
