@@ -1066,7 +1066,7 @@ describe( 'PaymentDetailsSummary', () => {
 			).toBeInTheDocument();
 		} );
 
-		test( 'does not render DisputeResolutionFooter for a won dispute when the flag is on', () => {
+		test( 'renders the Outcome View Evidence Submitted section for a won dispute when the flag is on', () => {
 			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
 
 			renderCharge( getResolvedCharge( 'won' ) );
@@ -1076,9 +1076,12 @@ describe( 'PaymentDetailsSummary', () => {
 					ignore: '.a11y-speak-region',
 				} )
 			).not.toBeInTheDocument();
+			expect(
+				screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
+			).toBeInTheDocument();
 		} );
 
-		test( 'does not render DisputeResolutionFooter for a lost dispute when the flag is on', () => {
+		test( 'renders the Outcome View Evidence Submitted section for a lost dispute when the flag is on', () => {
 			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
 
 			renderCharge( getResolvedCharge( 'lost' ) );
@@ -1088,6 +1091,9 @@ describe( 'PaymentDetailsSummary', () => {
 					ignore: '.a11y-speak-region',
 				} )
 			).not.toBeInTheDocument();
+			expect(
+				screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
+			).toBeInTheDocument();
 		} );
 
 		test( 'still renders DisputeResolutionFooter for an under_review dispute when the flag is on', () => {

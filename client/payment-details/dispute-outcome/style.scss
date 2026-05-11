@@ -1,5 +1,18 @@
 /** @format */
 
+.dispute-outcome-view {
+	padding: $grid-unit-15 $grid-unit-30 $grid-unit-10;
+
+	&__section-heading {
+		margin: 0 0 $grid-unit-15;
+		// Heading LG, matches transaction-details-dispute-details-title
+		font-size: 15px;
+		font-weight: 500;
+		line-height: 20px;
+		color: $gray-900;
+	}
+}
+
 .dispute-outcome-evidence-list {
 	list-style: none;
 	margin: 0;

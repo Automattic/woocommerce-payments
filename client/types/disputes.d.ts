@@ -101,6 +101,13 @@ export interface Dispute {
 		 * Unix timestamp of when dispute evidence was submitted.
 		 */
 		__evidence_submitted_at?: string;
+		/**
+		 * Product type the merchant selected in the dispute response wizard.
+		 * The wizard writes this back on save (see `client/disputes/new-evidence/`).
+		 * Possible values match the `ProductType` union plus the legacy
+		 * `'multiple'` value that the wizard normalizes at read time.
+		 */
+		__product_type?: string;
 		/* eslint-enable @typescript-eslint/naming-convention */
 	};
 	order: null | OrderDetails;

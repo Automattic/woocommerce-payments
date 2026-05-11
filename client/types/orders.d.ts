@@ -26,4 +26,12 @@ interface OrderDetails {
 	subscriptions?: SubscriptionDetails[];
 	fraud_meta_box_type?: string;
 	ip_address: string;
+	/**
+	 * Server-suggested product type derived from order line items. Used as a
+	 * fallback when the merchant has not yet selected a product type via the
+	 * dispute response wizard. Possible values match the `ProductType` union
+	 * in `client/types/disputes.d.ts`, plus the empty string / `'multiple'`
+	 * legacy values that the wizard normalizes at read time.
+	 */
+	suggested_product_type?: string;
 }
