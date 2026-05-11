@@ -616,6 +616,10 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
+		if ( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) ) {
+			return false;
+		}
+
 		$stage = $this->get_post_kyc_activation_stage();
 		if ( null === $stage ) {
 			return false;
