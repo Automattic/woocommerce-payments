@@ -471,12 +471,12 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_post_kyc_activation_notice_script(): void {
-		if ( ! $this->should_show_post_kyc_activation_notice() ) {
+		$screen = get_current_screen();
+		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
 			return;
 		}
 
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->should_show_post_kyc_activation_notice() ) {
 			return;
 		}
 
