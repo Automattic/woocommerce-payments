@@ -354,16 +354,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Returns whether a card network should be displayed instead of the card brand.
-	 *
-	 * @param string $network The card network from Stripe.
-	 * @return bool
-	 */
-	public static function should_display_card_network_over_brand( string $network ): bool {
-		return '' !== self::get_terminal_card_brand_asset_name( $network );
-	}
-
-	/**
 	 * Returns the terminal card display brand for a card-present payment method.
 	 *
 	 * @param array $payment_method_details The card-present payment method details from Stripe.
@@ -372,7 +362,7 @@ class WC_Payments_Utils {
 	public static function get_terminal_card_display_brand( array $payment_method_details ): string {
 		$network = $payment_method_details['network'] ?? '';
 
-		if ( self::should_display_card_network_over_brand( $network ) ) {
+		if ( '' !== self::get_terminal_card_brand_asset_name( $network ) ) {
 			return $network;
 		}
 

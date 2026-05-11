@@ -1448,12 +1448,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $expected, WC_Payments_Utils::get_terminal_card_brand_icon_base64( 'eftpos_au' ) );
 	}
 
-	public function test_should_display_card_network_over_brand_allows_terminal_specific_brands() {
-		$this->assertTrue( WC_Payments_Utils::should_display_card_network_over_brand( 'eftpos_au' ) );
-		$this->assertTrue( WC_Payments_Utils::should_display_card_network_over_brand( 'cartes_bancaires' ) );
-		$this->assertFalse( WC_Payments_Utils::should_display_card_network_over_brand( 'unknown_network' ) );
-	}
-
 	public function test_get_terminal_card_display_brand_prefers_supported_networks() {
 		$this->assertSame(
 			'eftpos_au',
