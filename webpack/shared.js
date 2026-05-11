@@ -57,7 +57,7 @@ module.exports = {
 			'wc-payments-test-to-live-notice':
 				'./client/wc-payments-test-to-live-notice.tsx',
 			'wc-payments-post-kyc-activation-notice':
-				'./client/wc-payments-post-kyc-activation-notice.tsx',
+				'./client/entrypoints/post-kyc-activation-notice/index.tsx',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.

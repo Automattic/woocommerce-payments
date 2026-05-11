@@ -7,7 +7,7 @@ import { createRoot, Root } from 'react-dom/client';
 /**
  * Internal dependencies
  */
-import PostKycActivationNotice from 'components/post-kyc-activation-notice';
+import PostKycActivationNotice from './components/notice';
 
 const containerId = 'wcpay-post-kyc-activation-notice';
 let mountedContainer: HTMLElement | null = null;
