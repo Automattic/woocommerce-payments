@@ -25,6 +25,7 @@ import {
  * Internal dependencies.
  */
 import {
+	canUseFeeBreakdownData,
 	getChargeAmounts,
 	getChargeStatus,
 	getChargeChannel,
@@ -307,16 +308,48 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const showControlMenu =
 		charge.captured && ! charge.refunded && isDisputeRefundable;
 
-	// Use the balance_transaction fee if available. If not (e.g. authorized but not captured), use the application_fee_amount.
-	const transactionFee = charge.balance_transaction
-		? {
+	// FEE_BREAKDOWN_FORK_PATCH: remove when envelope is the only path.
+	// For the dispute-fee tooltip to reconcile ("Transaction fee" +
+	// "Dispute fee" = "Total fees"), `transactionFee.fee` must be the FULL
+	// Stripe deduction in store currency (pre-tax fee + tax). Older
+	// envelopes may omit `fee_plus_tax`, so sum the two components.
+	const breakdown = charge.fee_breakdown_v1;
+	const transactionFee = ( () => {
+		if ( canUseFeeBreakdownData( charge ) && breakdown?.totals?.fee ) {
+			return {
+				fee:
+					breakdown.totals.fee_plus_tax?.amount ??
+					breakdown.totals.fee.amount +
+						( breakdown.totals.tax?.amount ?? 0 ),
+				currency: breakdown.totals.fee.currency.toLowerCase(),
+			};
+		}
+
+		if ( charge.balance_transaction ) {
+			return {
 				fee: charge.balance_transaction.fee,
 				currency: charge.balance_transaction.currency,
-		  }
-		: {
-				fee: charge.application_fee_amount,
-				currency: charge.currency,
-		  };
+			};
+		}
+
+		return {
+			fee: charge.application_fee_amount,
+			currency: charge.currency,
+		};
+	} )();
+
+	// When the envelope is present, `balance.net` (from getChargeAmounts)
+	// already reflects paydown — server folded it in. Only subtract manually
+	// on the legacy path.
+	const netAmount = ( () => {
+		if ( charge.fee_breakdown_v1?.totals?.net ) {
+			return balance.net;
+		}
+		if ( charge.paydown ) {
+			return balance.net - Math.abs( charge.paydown.amount );
+		}
+		return balance.net;
+	} )();
 
 	// WP translation strings are injected into Moment.js for relative time terms, since Moment's own translation library increases the bundle size significantly.
 	moment.updateLocale( 'en', {
@@ -341,6 +374,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
 
 	const bankName = getBankName( charge );
+
 	return (
 		<Card>
 			<CardBody>
@@ -522,14 +556,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											'Net',
 											'woocommerce-payments'
 										) }: ` }
+										{ /* When the envelope is present, `balance.net`
+										     (from getChargeAmounts) already reflects
+										     paydown — server folded it in. Only
+										     subtract manually on the legacy path. */ }
 										{ formatExplicitCurrency(
-											charge.paydown
-												? balance.net -
-														Math.abs(
-															charge.paydown
-																.amount
-														)
-												: balance.net,
+											netAmount,
 											balance.currency
 										) }
 									</Loadable>
