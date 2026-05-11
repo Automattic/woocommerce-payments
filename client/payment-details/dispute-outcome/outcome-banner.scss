@@ -1,0 +1,63 @@
+/** @format */
+
+.dispute-outcome-banner {
+	display: flex;
+	flex-direction: column;
+	gap: $grid-unit-15;
+	padding: $grid-unit-20;
+	border: 1px solid $gray-200;
+	border-radius: 4px;
+	background: $white;
+
+	&__header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: $grid-unit-10;
+		flex-wrap: wrap;
+	}
+
+	&__issuer {
+		font-size: 13px;
+		color: $gray-700;
+	}
+
+	&__amounts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: $grid-unit-20;
+		margin: 0;
+		padding: $grid-unit-10 0;
+		border-top: 1px solid $gray-200;
+		border-bottom: 1px solid $gray-200;
+	}
+
+	&__amount {
+		display: flex;
+		flex-direction: column;
+		min-width: 96px;
+
+		dt {
+			font-size: 12px;
+			font-weight: 600;
+			text-transform: uppercase;
+			color: $gray-700;
+			margin: 0 0 $grid-unit-05 0;
+		}
+
+		dd {
+			font-size: 16px;
+			color: $gray-900;
+			margin: 0;
+		}
+	}
+
+	&__meta {
+		font-size: 13px;
+		color: $gray-700;
+	}
+
+	&__decision-date {
+		display: inline-block;
+	}
+}

@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add outcome banner component for the dispute outcome view (behind feature flag).
