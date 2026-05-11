@@ -1,20 +1,25 @@
 <?php
 /**
- * Class Dispute_Readiness_Service_Test
+ * Class DisputeReadinessServiceTest
  *
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Disputes\Dispute_Readiness_Service;
+namespace WCPay\Tests\Internal\Service;
+
+use WC_Payments;
+use WC_Payments_Account;
+use WCPay\Internal\Service\DisputeReadinessService;
+use WCPAY_UnitTestCase;
 
 /**
- * Dispute_Readiness_Service unit tests.
+ * DisputeReadinessService unit tests.
  */
-class Dispute_Readiness_Service_Test extends WCPAY_UnitTestCase {
+class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 	/**
 	 * Service under test.
 	 *
-	 * @var Dispute_Readiness_Service
+	 * @var DisputeReadinessService
 	 */
 	private $service;
 
@@ -28,7 +33,7 @@ class Dispute_Readiness_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->service                  = new Dispute_Readiness_Service();
+		$this->service                  = new DisputeReadinessService();
 		$this->original_account_service = WC_Payments::get_account_service();
 		$this->mock_account_data(
 			[
@@ -44,7 +49,7 @@ class Dispute_Readiness_Service_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		delete_option( 'woocommerce_refund_returns_page_id' );
 		delete_option( 'woocommerce_terms_page_id' );
-		delete_option( Dispute_Readiness_Service::DISMISSAL_OPTION );
+		delete_option( DisputeReadinessService::DISMISSAL_OPTION );
 
 		if ( $this->original_account_service ) {
 			WC_Payments::set_account_service( $this->original_account_service );

@@ -5,7 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Disputes\Dispute_Readiness_Service;
+use WCPay\Internal\Service\DisputeReadinessService;
 
 require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
 
@@ -23,7 +23,7 @@ class WC_REST_Payments_Dispute_Readiness_Controller_Test extends WCPAY_UnitTestC
 	/**
 	 * Service mock.
 	 *
-	 * @var Dispute_Readiness_Service|PHPUnit\Framework\MockObject\MockObject
+	 * @var DisputeReadinessService|PHPUnit\Framework\MockObject\MockObject
 	 */
 	private $service;
 
@@ -38,7 +38,7 @@ class WC_REST_Payments_Dispute_Readiness_Controller_Test extends WCPAY_UnitTestC
 		parent::set_up();
 
 		$this->api_client = $this->createMock( WC_Payments_API_Client::class );
-		$this->service    = $this->createMock( Dispute_Readiness_Service::class );
+		$this->service    = $this->createMock( DisputeReadinessService::class );
 		$this->controller = new WC_REST_Payments_Dispute_Readiness_Controller( $this->api_client, $this->service );
 	}
 

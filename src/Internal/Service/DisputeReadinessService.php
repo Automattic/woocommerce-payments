@@ -1,18 +1,18 @@
 <?php
 /**
- * Class Dispute_Readiness_Service
+ * Class DisputeReadinessService
  *
  * @package WooCommerce\Payments
  */
 
 declare( strict_types=1 );
 
-namespace WCPay\Disputes;
+namespace WCPay\Internal\Service;
 
 /**
  * Builds the dispute readiness overview payload.
  */
-class Dispute_Readiness_Service {
+class DisputeReadinessService {
 	public const DISMISSAL_OPTION = 'wcpay_dispute_readiness_card_dismissed';
 
 	private const SIGNAL_REFUND_POLICY        = 'refund_policy';

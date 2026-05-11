@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Disputes\Dispute_Readiness_Service;
+use WCPay\Internal\Service\DisputeReadinessService;
 
 /**
  * REST controller for dispute readiness functionality.
@@ -24,17 +24,17 @@ class WC_REST_Payments_Dispute_Readiness_Controller extends WC_Payments_REST_Con
 	/**
 	 * Dispute readiness service.
 	 *
-	 * @var Dispute_Readiness_Service
+	 * @var DisputeReadinessService
 	 */
 	private $dispute_readiness_service;
 
 	/**
 	 * WC_REST_Payments_Dispute_Readiness_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client    $api_client WooPayments API client.
-	 * @param Dispute_Readiness_Service $service    Dispute readiness service.
+	 * @param WC_Payments_API_Client  $api_client WooPayments API client.
+	 * @param DisputeReadinessService $service    Dispute readiness service.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, Dispute_Readiness_Service $service ) {
+	public function __construct( WC_Payments_API_Client $api_client, DisputeReadinessService $service ) {
 		parent::__construct( $api_client );
 		$this->dispute_readiness_service = $service;
 	}
