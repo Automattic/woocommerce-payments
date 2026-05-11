@@ -79,13 +79,6 @@ class WC_Payments_Admin_Banner {
 	const POST_KYC_ACTIVATION_NOTICE_WINDOW_DAYS = 60;
 
 	/**
-	 * Transient caching the result of the Post-KYC activation notice eligibility check.
-	 *
-	 * @var string
-	 */
-	const POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT = 'wcpay_post_kyc_activation_eligible';
-
-	/**
 	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -185,7 +178,7 @@ class WC_Payments_Admin_Banner {
 	 */
 	public function invalidate_notice_caches(): void {
 		delete_transient( self::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
-		delete_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 
 	/**
@@ -691,13 +684,13 @@ class WC_Payments_Admin_Banner {
 	 * @return bool
 	 */
 	private function is_post_kyc_activation_notice_eligible(): bool {
-		$cached = get_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		$cached = get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 		if ( false !== $cached ) {
 			return '1' === $cached;
 		}
 
 		$eligible = $this->compute_post_kyc_activation_eligibility();
-		set_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $eligible ? '1' : '0', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $eligible ? '1' : '0', HOUR_IN_SECONDS );
 
 		return $eligible;
 	}
@@ -747,7 +740,7 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function invalidate_post_kyc_activation_notice_cache(): void {
-		delete_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 
 	/**

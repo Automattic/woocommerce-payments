@@ -449,7 +449,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	 * @param bool $has_orders     Whether to create a WooPayments order.
 	 */
 	private function set_up_post_kyc_global_state( int $days_since_kyc = 8, bool $has_orders = false ): void {
-		delete_transient( WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - $days_since_kyc * DAY_IN_SECONDS );
 
@@ -472,7 +472,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		delete_transient( WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 
 		foreach ( [ 7, 14, 30 ] as $stage ) {
 			delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage );
@@ -686,11 +686,11 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 			++$transient_reads;
 			return $value;
 		};
-		add_filter( 'pre_transient_' . WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $counter );
+		add_filter( 'pre_transient_' . WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $counter );
 
 		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
 
-		remove_filter( 'pre_transient_' . WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $counter );
+		remove_filter( 'pre_transient_' . WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $counter );
 
 		$this->assertSame( 0, $transient_reads );
 
@@ -923,11 +923,11 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_invalidate_post_kyc_activation_notice_cache_deletes_transient(): void {
-		set_transient( WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
 
 		$banner = $this->make_admin_banner_for_notice_test();
 		$banner->invalidate_post_kyc_activation_notice_cache();
 
-		$this->assertFalse( get_transient( WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+		$this->assertFalse( get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
 	}
 }
