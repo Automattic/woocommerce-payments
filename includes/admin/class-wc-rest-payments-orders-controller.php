@@ -329,7 +329,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$intent_metadata          = is_array( $intent->get_metadata() ) ? $intent->get_metadata() : [];
 			$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
 			$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-			if ( $intent_meta_order_id !== $order->get_id() ) {
+			if ( $intent_meta_order_id !== $order_id() ) {
 				Logger::error( 'Terminal payment preparation rejected due to failed validation: order id on intent is incorrect or missing.' );
 				return new WP_Error( 'wcpay_intent_order_mismatch', __( 'This terminal payment cannot be prepared for the order.', 'woocommerce-payments' ), [ 'status' => 400 ] );
 			}
