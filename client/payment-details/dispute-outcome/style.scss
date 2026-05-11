@@ -1,10 +1,12 @@
 /** @format */
 
 .dispute-outcome-view {
-	padding: $grid-unit-15 $grid-unit-30 $grid-unit-10;
+	// No horizontal padding so the leading CardDivider spans the full card
+	// width, matching the divider above the order-meta row.
+	padding: 0 0 $grid-unit-10;
 
 	&__section-heading {
-		margin: 0 0 $grid-unit-15;
+		margin: $grid-unit-15 $grid-unit-30;
 		// Heading LG, matches transaction-details-dispute-details-title
 		font-size: 15px;
 		font-weight: 500;
@@ -16,7 +18,7 @@
 .dispute-outcome-evidence-list {
 	list-style: none;
 	margin: 0;
-	padding: 0;
+	padding: 0 $grid-unit-30;
 
 	&__item {
 		display: flex;

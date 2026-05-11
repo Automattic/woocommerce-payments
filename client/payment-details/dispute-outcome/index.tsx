@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -39,6 +40,7 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 
 	return (
 		<section className="dispute-outcome-view">
+			<CardDivider />
 			<h3 className="dispute-outcome-view__section-heading">
 				{ __( 'Evidence Submitted', 'woocommerce-payments' ) }
 			</h3>
