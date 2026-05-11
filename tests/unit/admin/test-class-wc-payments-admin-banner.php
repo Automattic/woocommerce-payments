@@ -475,8 +475,8 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 
 		foreach ( [ 7, 14, 30 ] as $stage ) {
-			delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage );
-			delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage . '_shown' );
+			delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_dismissed' );
+			delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_shown' );
 		}
 
 		if ( null !== $this->test_order_id ) {
@@ -569,7 +569,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 	public function test_should_show_post_kyc_activation_notice_returns_false_when_stage_dismissed(): void {
 		$this->set_up_post_kyc_global_state();
-		update_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true );
+		update_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_dismissed', true );
 		$banner = $this->make_admin_banner_for_notice_test();
 
 		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
@@ -655,7 +655,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$this->set_up_post_kyc_global_state();
 		$banner = $this->make_admin_banner_for_notice_test();
 
-		$dismissal_key   = WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7;
+		$dismissal_key   = WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_dismissed';
 		$dismissal_reads = 0;
 		$counter         = function ( $value, $object_id, $meta_key ) use ( &$dismissal_reads, $dismissal_key ) {
 			if ( $meta_key === $dismissal_key ) {
@@ -720,7 +720,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		}
 		remove_filter( 'wp_redirect', $redirect_intercept );
 
-		$dismissed = get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true );
+		$dismissed = get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_dismissed', true );
 		$this->assertNotEmpty( $dismissed );
 
 		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'], $_GET['wcpay_stage'] );
@@ -751,10 +751,10 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'wp_redirect', $redirect_intercept );
 
 		$this->assertNotEmpty(
-			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true )
+			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_dismissed', true )
 		);
 		$this->assertEmpty(
-			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 14, true )
+			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '14_dismissed', true )
 		);
 
 		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'], $_GET['wcpay_stage'] );
@@ -773,7 +773,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		foreach ( [ 7, 14, 30, 99 ] as $stage ) {
 			$this->assertEmpty(
-				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true )
+				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_dismissed', true )
 			);
 		}
 
@@ -793,7 +793,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		foreach ( [ 7, 14, 30 ] as $stage ) {
 			$this->assertEmpty(
-				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true )
+				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_dismissed', true )
 			);
 		}
 
@@ -807,7 +807,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		$banner->hide_post_kyc_activation_notice();
 
-		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true ) );
+		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_dismissed', true ) );
 	}
 
 	public function test_hide_post_kyc_activation_notice_ignores_invalid_nonce(): void {
@@ -819,7 +819,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$banner = $this->make_admin_banner_for_notice_test();
 		$banner->hide_post_kyc_activation_notice();
 
-		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true ) );
+		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_dismissed', true ) );
 
 		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'] );
 		$this->tear_down_post_kyc_global_state();
@@ -848,7 +848,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'wp_redirect', $redirect_intercept );
 
 		$this->assertNotEmpty(
-			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true )
+			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_dismissed', true )
 		);
 		$this->assertStringContainsString( 'page=wc-admin', (string) $redirect_target );
 		$this->assertStringContainsString( 'path=/marketing', (string) $redirect_target );
@@ -867,7 +867,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$banner = $this->make_admin_banner_for_notice_test();
 		$banner->handle_post_kyc_activation_notice_cta();
 
-		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true ) );
+		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_dismissed', true ) );
 
 		unset( $_GET['wcpay-post-kyc-activation-cta'], $_GET['_wcpay_post_kyc_activation_cta_nonce'], $_GET['wcpay_stage'] );
 		$this->tear_down_post_kyc_global_state();
@@ -885,7 +885,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		foreach ( [ 7, 14, 30, 99 ] as $stage ) {
 			$this->assertEmpty(
-				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true )
+				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . $stage . '_dismissed', true )
 			);
 		}
 
@@ -916,7 +916,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		$banner->enqueue_post_kyc_activation_notice_script();
 
-		$shown_meta = WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . '7_shown';
+		$shown_meta = WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_PREFIX . '7_shown';
 		$this->assertNotEmpty( get_user_meta( get_current_user_id(), $shown_meta, true ) );
 
 		$this->tear_down_post_kyc_global_state();
