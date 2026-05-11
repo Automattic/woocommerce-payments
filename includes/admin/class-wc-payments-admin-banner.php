@@ -494,12 +494,22 @@ class WC_Payments_Admin_Banner {
 			[
 				'stage'      => $stage,
 				'ctaUrl'     => wp_nonce_url(
-					add_query_arg( 'wcpay-post-kyc-activation-cta', '1' ),
+					add_query_arg(
+						[
+							'wcpay-post-kyc-activation-cta' => '1',
+							'wcpay_stage' => $stage,
+						]
+					),
 					'wcpay_post_kyc_activation_cta_nonce',
 					'_wcpay_post_kyc_activation_cta_nonce'
 				),
 				'dismissUrl' => wp_nonce_url(
-					add_query_arg( 'wcpay-hide-post-kyc-activation-notice', '1' ),
+					add_query_arg(
+						[
+							'wcpay-hide-post-kyc-activation-notice' => '1',
+							'wcpay_stage' => $stage,
+						]
+					),
 					'wcpay_hide_post_kyc_activation_notice_nonce',
 					'_wcpay_post_kyc_activation_notice_nonce'
 				),
@@ -543,8 +553,8 @@ class WC_Payments_Admin_Banner {
 			return;
 		}
 
-		$stage = $this->get_post_kyc_activation_stage();
-		if ( null === $stage ) {
+		$stage = isset( $_GET['wcpay_stage'] ) ? (int) $_GET['wcpay_stage'] : 0;
+		if ( ! in_array( $stage, [ 7, 14, 30 ], true ) ) {
 			return;
 		}
 
@@ -552,7 +562,7 @@ class WC_Payments_Admin_Banner {
 
 		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true );
 
-		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-post-kyc-activation-notice', '_wcpay_post_kyc_activation_notice_nonce' ] ) );
+		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-post-kyc-activation-notice', '_wcpay_post_kyc_activation_notice_nonce', 'wcpay_stage' ] ) );
 		exit;
 	}
 
@@ -579,8 +589,8 @@ class WC_Payments_Admin_Banner {
 			return;
 		}
 
-		$stage = $this->get_post_kyc_activation_stage();
-		if ( null === $stage ) {
+		$stage = isset( $_GET['wcpay_stage'] ) ? (int) $_GET['wcpay_stage'] : 0;
+		if ( ! in_array( $stage, [ 7, 14, 30 ], true ) ) {
 			return;
 		}
 

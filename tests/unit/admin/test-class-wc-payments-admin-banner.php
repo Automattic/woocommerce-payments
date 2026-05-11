@@ -706,6 +706,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		$_GET['wcpay-hide-post-kyc-activation-notice']   = '1';
 		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
+		$_GET['wcpay_stage']                             = '7';
 
 		$banner             = $this->make_admin_banner_for_notice_test();
 		$redirect_intercept = function () {
@@ -722,8 +723,81 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$dismissed = get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true );
 		$this->assertNotEmpty( $dismissed );
 
-		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'] );
+		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'], $_GET['wcpay_stage'] );
 
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_hide_post_kyc_activation_notice_records_url_stage_when_active_stage_has_advanced(): void {
+		$this->set_up_post_kyc_global_state();
+
+		// Banner was rendered at stage 7 but the page sat open until stage 14 became active.
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 14 * DAY_IN_SECONDS );
+
+		$_GET['wcpay-hide-post-kyc-activation-notice']   = '1';
+		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
+		$_GET['wcpay_stage']                             = '7';
+
+		$banner             = $this->make_admin_banner_for_notice_test();
+		$redirect_intercept = function () {
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $redirect_intercept );
+		try {
+			$banner->hide_post_kyc_activation_notice();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $redirect_intercept );
+
+		$this->assertNotEmpty(
+			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true )
+		);
+		$this->assertEmpty(
+			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 14, true )
+		);
+
+		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'], $_GET['wcpay_stage'] );
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_hide_post_kyc_activation_notice_ignores_invalid_stage(): void {
+		$this->set_up_post_kyc_global_state();
+
+		$_GET['wcpay-hide-post-kyc-activation-notice']   = '1';
+		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
+		$_GET['wcpay_stage']                             = '99';
+
+		$banner = $this->make_admin_banner_for_notice_test();
+		$banner->hide_post_kyc_activation_notice();
+
+		foreach ( [ 7, 14, 30, 99 ] as $stage ) {
+			$this->assertEmpty(
+				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true )
+			);
+		}
+
+		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'], $_GET['wcpay_stage'] );
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_hide_post_kyc_activation_notice_ignores_missing_stage(): void {
+		$this->set_up_post_kyc_global_state();
+
+		$_GET['wcpay-hide-post-kyc-activation-notice']   = '1';
+		$_GET['_wcpay_post_kyc_activation_notice_nonce'] = wp_create_nonce( 'wcpay_hide_post_kyc_activation_notice_nonce' );
+		unset( $_GET['wcpay_stage'] );
+
+		$banner = $this->make_admin_banner_for_notice_test();
+		$banner->hide_post_kyc_activation_notice();
+
+		foreach ( [ 7, 14, 30 ] as $stage ) {
+			$this->assertEmpty(
+				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true )
+			);
+		}
+
+		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'] );
 		$this->tear_down_post_kyc_global_state();
 	}
 
@@ -756,6 +830,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		$_GET['wcpay-post-kyc-activation-cta']        = '1';
 		$_GET['_wcpay_post_kyc_activation_cta_nonce'] = wp_create_nonce( 'wcpay_post_kyc_activation_cta_nonce' );
+		$_GET['wcpay_stage']                          = '7';
 
 		$banner = $this->make_admin_banner_for_notice_test();
 
@@ -778,7 +853,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( 'page=wc-admin', (string) $redirect_target );
 		$this->assertStringContainsString( 'path=/marketing', (string) $redirect_target );
 
-		unset( $_GET['wcpay-post-kyc-activation-cta'], $_GET['_wcpay_post_kyc_activation_cta_nonce'] );
+		unset( $_GET['wcpay-post-kyc-activation-cta'], $_GET['_wcpay_post_kyc_activation_cta_nonce'], $_GET['wcpay_stage'] );
 		$this->tear_down_post_kyc_global_state();
 	}
 
@@ -787,13 +862,34 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 		$_GET['wcpay-post-kyc-activation-cta']        = '1';
 		$_GET['_wcpay_post_kyc_activation_cta_nonce'] = 'bad-nonce';
+		$_GET['wcpay_stage']                          = '7';
 
 		$banner = $this->make_admin_banner_for_notice_test();
 		$banner->handle_post_kyc_activation_notice_cta();
 
 		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true ) );
 
-		unset( $_GET['wcpay-post-kyc-activation-cta'], $_GET['_wcpay_post_kyc_activation_cta_nonce'] );
+		unset( $_GET['wcpay-post-kyc-activation-cta'], $_GET['_wcpay_post_kyc_activation_cta_nonce'], $_GET['wcpay_stage'] );
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_handle_post_kyc_activation_notice_cta_ignores_invalid_stage(): void {
+		$this->set_up_post_kyc_global_state();
+
+		$_GET['wcpay-post-kyc-activation-cta']        = '1';
+		$_GET['_wcpay_post_kyc_activation_cta_nonce'] = wp_create_nonce( 'wcpay_post_kyc_activation_cta_nonce' );
+		$_GET['wcpay_stage']                          = '99';
+
+		$banner = $this->make_admin_banner_for_notice_test();
+		$banner->handle_post_kyc_activation_notice_cta();
+
+		foreach ( [ 7, 14, 30, 99 ] as $stage ) {
+			$this->assertEmpty(
+				get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true )
+			);
+		}
+
+		unset( $_GET['wcpay-post-kyc-activation-cta'], $_GET['_wcpay_post_kyc_activation_cta_nonce'], $_GET['wcpay_stage'] );
 		$this->tear_down_post_kyc_global_state();
 	}
 
