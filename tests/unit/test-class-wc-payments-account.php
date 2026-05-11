@@ -2134,7 +2134,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
 		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'has_assigned_variation' )->willReturn( false );
+		$experiment->method( 'has_recorded_exposure' )->willReturn( false );
+		$experiment->expects( $this->once() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_TREATMENT );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
@@ -2149,7 +2150,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
 		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'has_assigned_variation' )->willReturn( false );
+		$experiment->method( 'has_recorded_exposure' )->willReturn( false );
+		$experiment->expects( $this->once() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
@@ -2269,18 +2271,42 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->maybe_redirect_from_connect_page();
 	}
 
-	public function test_accelerated_onboarding_checks_has_assigned_variation_before_exposure() {
+	public function test_accelerated_onboarding_skips_exposure_when_already_recorded() {
 		$this->arrange_task_list_origin_with_partial_kyc();
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
 		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->expects( $this->once() )->method( 'has_assigned_variation' )->willReturn( true );
+		$experiment->expects( $this->once() )->method( 'has_recorded_exposure' )->willReturn( true );
+		$experiment->expects( $this->never() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
 		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_wcpay_connect' );
 
+		$this->wcpay_account->maybe_redirect_from_connect_page();
+	}
+
+	/**
+	 * Regression test: while ExPlat is unreachable, get_variation() returns transient 'control'
+	 * without caching, so a cache-based exposure gate would re-fire on every admin load. The
+	 * mark_exposed() flag persists independently of the variation cache, so the second invocation
+	 * sees has_recorded_exposure() === true and skips the event even though the variation cache
+	 * is still empty.
+	 */
+	public function test_accelerated_onboarding_exposure_only_fires_once_when_explat_keeps_failing() {
+		$this->arrange_task_list_origin_with_partial_kyc();
+
+		$experiment = $this->createMock( Onboarding_Experiment::class );
+		$experiment->method( 'has_bypass' )->willReturn( false );
+		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
+		// First call: exposure not yet recorded → mark_exposed() fires.
+		// Second call: exposure now recorded → mark_exposed() must NOT fire again.
+		$experiment->method( 'has_recorded_exposure' )->willReturnOnConsecutiveCalls( false, true );
+		$experiment->expects( $this->once() )->method( 'mark_exposed' );
+		WC_Payments::set_onboarding_experiment( $experiment );
+
+		$this->wcpay_account->maybe_redirect_from_connect_page();
 		$this->wcpay_account->maybe_redirect_from_connect_page();
 	}
 
@@ -2307,7 +2333,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
 		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'has_assigned_variation' )->willReturn( false );
+		$experiment->method( 'has_recorded_exposure' )->willReturn( false );
+		$experiment->expects( $this->once() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_TREATMENT );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
@@ -2321,7 +2348,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
 		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'has_assigned_variation' )->willReturn( false );
+		$experiment->method( 'has_recorded_exposure' )->willReturn( false );
+		$experiment->expects( $this->once() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
 		WC_Payments::set_onboarding_experiment( $experiment );
 

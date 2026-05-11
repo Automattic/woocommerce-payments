@@ -28,6 +28,7 @@ class Onboarding_Experiment_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		delete_user_meta( $this->user_id, Onboarding_Experiment::USER_META_VARIATION_KEY );
 		delete_user_meta( $this->user_id, Onboarding_Experiment::USER_META_BYPASS_KEY );
+		delete_user_meta( $this->user_id, Onboarding_Experiment::USER_META_EXPOSED_KEY );
 		delete_user_meta( $this->user_id, Onboarding_Experiment::USER_META_ANON_ID_KEY );
 		parent::tear_down();
 	}
@@ -154,6 +155,47 @@ class Onboarding_Experiment_Test extends WCPAY_UnitTestCase {
 		$experiment->set_bypass();
 
 		$this->assertSame( '1', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_BYPASS_KEY, true ) );
+	}
+
+	public function test_has_recorded_exposure_returns_false_when_meta_absent() {
+		$experiment = new Onboarding_Experiment( $this->createMock( Experimental_Abtest::class ) );
+
+		$this->assertFalse( $experiment->has_recorded_exposure() );
+	}
+
+	public function test_has_recorded_exposure_returns_true_when_meta_set() {
+		update_user_meta( $this->user_id, Onboarding_Experiment::USER_META_EXPOSED_KEY, 1 );
+
+		$experiment = new Onboarding_Experiment( $this->createMock( Experimental_Abtest::class ) );
+
+		$this->assertTrue( $experiment->has_recorded_exposure() );
+	}
+
+	public function test_mark_exposed_persists_user_meta() {
+		$experiment = new Onboarding_Experiment( $this->createMock( Experimental_Abtest::class ) );
+
+		$experiment->mark_exposed();
+
+		$this->assertSame( '1', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_EXPOSED_KEY, true ) );
+	}
+
+	public function test_has_recorded_exposure_without_logged_in_user_returns_false() {
+		update_user_meta( $this->user_id, Onboarding_Experiment::USER_META_EXPOSED_KEY, 1 );
+		wp_set_current_user( 0 );
+
+		$experiment = new Onboarding_Experiment( $this->createMock( Experimental_Abtest::class ) );
+
+		$this->assertFalse( $experiment->has_recorded_exposure() );
+	}
+
+	public function test_mark_exposed_without_logged_in_user_is_noop() {
+		wp_set_current_user( 0 );
+
+		$experiment = new Onboarding_Experiment( $this->createMock( Experimental_Abtest::class ) );
+
+		$experiment->mark_exposed();
+
+		$this->assertSame( '', get_user_meta( $this->user_id, Onboarding_Experiment::USER_META_EXPOSED_KEY, true ) );
 	}
 
 	public function test_get_variation_without_logged_in_user_falls_back_to_control_without_persisting() {

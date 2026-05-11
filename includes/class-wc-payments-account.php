@@ -1212,10 +1212,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return false;
 		}
 
-		$is_first_exposure = ! $experiment->has_assigned_variation();
-		$variation         = $experiment->get_variation();
+		$variation = $experiment->get_variation();
 
-		if ( $is_first_exposure ) {
+		if ( ! $experiment->has_recorded_exposure() ) {
 			$this->tracks_event(
 				'wcpay_onboarding_experiment_exposure',
 				[
@@ -1224,6 +1223,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					'source'     => $source,
 				]
 			);
+			$experiment->mark_exposed();
 		}
 
 		if ( Onboarding_Experiment::VARIATION_TREATMENT !== $variation ) {
