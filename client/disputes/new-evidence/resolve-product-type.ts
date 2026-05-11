@@ -14,16 +14,23 @@
  * (`product-details.tsx`), so legacy values coming back from the backend or
  * from older drafts are coerced to `'other'` to avoid an
  * unselected-dropdown / inconsistent-matrix-cell state.
+ *
+ * Accepts an explicit `{ __product_type?: string }` shape rather than the
+ * looser `Record<string, unknown>` so the metadata read doesn't require a
+ * cast; matches the `Dispute['metadata']` type in `types/disputes.d.ts`.
  */
 export const resolveProductType = (
-	metadata: Record< string, unknown > | null | undefined,
+	metadata:
+		| {
+				/* eslint-disable-next-line @typescript-eslint/naming-convention -- Stripe metadata key; leading underscores are part of the wire format. */
+				__product_type?: string;
+		  }
+		| null
+		| undefined,
 	suggestedProductType: string | null | undefined,
 	isAdditionalEvidenceTypesEnabled: boolean
 ): string => {
-	const raw =
-		( metadata?.__product_type as string | undefined ) ||
-		suggestedProductType ||
-		'';
+	const raw = metadata?.__product_type || suggestedProductType || '';
 	return isAdditionalEvidenceTypesEnabled && raw === 'multiple'
 		? 'other'
 		: raw;
