@@ -576,7 +576,6 @@ class WC_Payments {
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
 		self::$fee_remediation                      = new WC_Payments_Remediate_Canceled_Auth_Fees();
-		self::$post_kyc_activation_email_service    = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account );
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
@@ -584,7 +583,6 @@ class WC_Payments {
 		self::$order_service->init_hooks();
 		self::$action_scheduler_service->init_hooks();
 		self::$account->init_hooks();
-		self::$post_kyc_activation_email_service->init_hooks();
 		self::$fraud_service->init_hooks();
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
@@ -631,6 +629,9 @@ class WC_Payments {
 
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
+
+		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway );
+		self::$post_kyc_activation_email_service->init_hooks();
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );

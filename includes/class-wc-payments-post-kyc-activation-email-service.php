@@ -42,12 +42,21 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 	private $account;
 
 	/**
+	 * WCPay gateway instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $wcpay_gateway;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payments_Account $account Account service.
+	 * @param WC_Payments_Account      $account       Account service.
+	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WCPay gateway.
 	 */
-	public function __construct( WC_Payments_Account $account ) {
-		$this->account = $account;
+	public function __construct( WC_Payments_Account $account, WC_Payment_Gateway_WCPay $wcpay_gateway ) {
+		$this->account       = $account;
+		$this->wcpay_gateway = $wcpay_gateway;
 	}
 
 	/**
@@ -143,7 +152,7 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 	 * @return bool
 	 */
 	public function is_eligible(): bool {
-		if ( ! $this->account->is_stripe_account_valid() ) {
+		if ( ! $this->wcpay_gateway->is_connected() || ! $this->account->is_stripe_account_valid() ) {
 			return false;
 		}
 
@@ -161,6 +170,28 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 			return false;
 		}
 
+		if ( ! get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) ) {
+			return false;
+		}
+
+		return ! $this->store_has_live_sale();
+	}
+
+	/**
+	 * Returns whether the store has had at least one live (production) WooPayments sale.
+	 *
+	 * Reads a one-way option set by `WC_Payments_Order_Service::maybe_record_first_live_sale()`;
+	 * falls back to a single `wc_get_orders` meta query if the option has not been
+	 * populated yet (e.g., for stores that took their first live sale before this
+	 * feature shipped). Writes the option on hit so subsequent reads short-circuit.
+	 *
+	 * @return bool
+	 */
+	private function store_has_live_sale(): bool {
+		if ( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) ) {
+			return true;
+		}
+
 		$orders = wc_get_orders(
 			[
 				'payment_method' => 'woocommerce_payments',
@@ -174,6 +205,11 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 			]
 		);
 
-		return empty( $orders );
+		if ( ! empty( $orders ) ) {
+			update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
+			return true;
+		}
+
+		return false;
 	}
 }
