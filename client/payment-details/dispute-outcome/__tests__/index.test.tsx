@@ -54,7 +54,7 @@ describe( 'DisputeOutcomeView', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders a list item per field returned by the helper, in order', () => {
+	it( 'renders a list item per field returned by the helper', () => {
 		const dispute = buildDispute( {
 			metadata: { __product_type: 'physical_product' },
 		} );
@@ -117,8 +117,10 @@ describe( 'DisputeOutcomeView', () => {
 	} );
 
 	it( 'renders only the heading when no product type is available', () => {
-		// With reason set but productType empty, the helper returns [] for
-		// reasons that only have product-type-specific cells.
+		// With productType empty, none of the helper's three lookup tables
+		// (high-impact, topical, matrix) have a matching key, so it returns
+		// `[]` regardless of the reason — and the section renders just the
+		// heading.
 		const dispute = buildDispute( { metadata: {}, order: null } );
 
 		render( <DisputeOutcomeView dispute={ dispute } /> );
