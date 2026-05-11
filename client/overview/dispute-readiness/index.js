@@ -5,13 +5,14 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Card, CardBody, Spinner } from '@wordpress/components';
+import { Button, CardBody, Spinner } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { useDisputeReadiness, useDisputeReadinessActions } from 'data';
 import { recordEvent } from 'wcpay/tracks';
+import OverviewCard from 'wcpay/components/overview-card';
 import './style.scss';
 
 const LEARN_MORE_URL =
@@ -39,12 +40,19 @@ const DisputeReadinessCard = () => {
 	}, [ overview ] );
 
 	if ( isLoading && ! overview ) {
+		const LoadingState = () => (
+			<CardBody className="wcpay-dispute-readiness-card__body is-loading">
+				<Spinner />
+			</CardBody>
+		);
+
 		return (
-			<Card className="wcpay-dispute-readiness-card">
-				<CardBody className="wcpay-dispute-readiness-card__body is-loading">
-					<Spinner />
-				</CardBody>
-			</Card>
+			<OverviewCard
+				title={ __( 'Dispute Readiness', 'woocommerce-payments' ) }
+				className="wcpay-dispute-readiness-card"
+				isLoading
+				LoadingState={ LoadingState }
+			/>
 		);
 	}
 
@@ -77,21 +85,31 @@ const DisputeReadinessCard = () => {
 		: 0;
 
 	return (
-		<Card className="wcpay-dispute-readiness-card">
+		<OverviewCard
+			title={
+				<>
+					<span>
+						{ __( 'Dispute Readiness', 'woocommerce-payments' ) }
+					</span>
+					<Button
+						className="wcpay-dispute-readiness-card__dismiss"
+						variant="tertiary"
+						onClick={ handleDismiss }
+						aria-label={ __(
+							'Dismiss dispute readiness card',
+							'woocommerce-payments'
+						) }
+					>
+						×
+					</Button>
+				</>
+			}
+			className="wcpay-dispute-readiness-card"
+			headerClassName="wcpay-dispute-readiness-card__header"
+			isLoading={ false }
+			LoadingState={ () => null }
+		>
 			<CardBody className="wcpay-dispute-readiness-card__body">
-				<Button
-					className="wcpay-dispute-readiness-card__dismiss"
-					variant="tertiary"
-					onClick={ handleDismiss }
-					aria-label={ __(
-						'Dismiss dispute readiness card',
-						'woocommerce-payments'
-					) }
-				>
-					×
-				</Button>
-
-				<h2>{ __( 'Dispute Readiness', 'woocommerce-payments' ) }</h2>
 				<p className="wcpay-dispute-readiness-card__description">
 					{ sprintf(
 						/* translators: %d: total number of dispute readiness steps. */
@@ -179,7 +197,7 @@ const DisputeReadinessCard = () => {
 					</ul>
 				</div>
 			</CardBody>
-		</Card>
+		</OverviewCard>
 	);
 };
 
