@@ -49,6 +49,8 @@ class WC_REST_Payments_Dispute_Readiness_Controller_Test extends WCPAY_UnitTestC
 	}
 
 	public function test_get_readiness_returns_disabled_payload_when_feature_flag_is_off() {
+		update_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '0' );
+
 		$disabled_payload = [
 			'overview' => [
 				'enabled' => false,
@@ -66,8 +68,7 @@ class WC_REST_Payments_Dispute_Readiness_Controller_Test extends WCPAY_UnitTestC
 		$this->assertSame( $disabled_payload, $response->get_data() );
 	}
 
-	public function test_get_readiness_returns_overview_payload_when_feature_flag_is_on() {
-		update_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '1' );
+	public function test_get_readiness_returns_overview_payload_by_default() {
 		$payload = [
 			'overview' => [
 				'enabled' => true,
@@ -85,6 +86,8 @@ class WC_REST_Payments_Dispute_Readiness_Controller_Test extends WCPAY_UnitTestC
 	}
 
 	public function test_dismiss_card_returns_error_when_feature_flag_is_off() {
+		update_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '0' );
+
 		$this->service->expects( $this->never() )
 			->method( 'dismiss_overview_card' );
 
@@ -95,8 +98,7 @@ class WC_REST_Payments_Dispute_Readiness_Controller_Test extends WCPAY_UnitTestC
 		$this->assertSame( 403, $response->get_error_data()['status'] );
 	}
 
-	public function test_dismiss_card_stores_and_returns_updated_payload_when_feature_flag_is_on() {
-		update_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '1' );
+	public function test_dismiss_card_stores_and_returns_updated_payload_by_default() {
 		$payload = [
 			'overview' => [
 				'enabled'     => true,

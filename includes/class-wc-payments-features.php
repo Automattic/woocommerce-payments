@@ -341,12 +341,12 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the Dispute Readiness Overview feature should be enabled. Disabled by default.
+	 * Checks whether the Dispute Readiness Overview feature should be enabled. Enabled by default.
 	 *
 	 * @return bool
 	 */
 	public static function is_dispute_readiness_overview_enabled(): bool {
-		return '1' === get_option( self::DISPUTE_READINESS_OVERVIEW, '0' );
+		return '1' === get_option( self::DISPUTE_READINESS_OVERVIEW, '1' );
 	}
 
 	/**
