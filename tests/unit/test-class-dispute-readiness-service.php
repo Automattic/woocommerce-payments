@@ -111,7 +111,6 @@ class Dispute_Readiness_Service_Test extends WCPAY_UnitTestCase {
 		$signal   = $this->get_signal( $overview, 'statement_descriptor' );
 
 		$this->assertSame( 'incomplete', $signal['status'] );
-		$this->assertSame( 'default_like', $signal['reason'] );
 	}
 
 	public function test_support_contact_is_complete_when_email_or_phone_exists() {
@@ -144,6 +143,33 @@ class Dispute_Readiness_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $overview['isDismissed'] );
 		$this->assertSame( 'score_decreased', $overview['dismissal']['reappearReason'] );
+	}
+
+	public function test_dismissed_card_reappears_when_incomplete_signals_change_without_score_change() {
+		$this->service->dismiss_overview_card();
+
+		$page_id = self::factory()->post->create(
+			[
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_content' => 'Refunds are available within 30 days.',
+			]
+		);
+		update_option( 'woocommerce_refund_returns_page_id', $page_id );
+		$this->mock_account_data(
+			[
+				'statement_descriptor' => '',
+				'business_profile'     => [
+					'support_email' => 'support@example.com',
+				],
+			]
+		);
+
+		$overview = $this->service->get_overview_payload()['overview'];
+
+		$this->assertSame( 2, $overview['score'] );
+		$this->assertFalse( $overview['isDismissed'] );
+		$this->assertSame( 'incomplete_signals_changed', $overview['dismissal']['reappearReason'] );
 	}
 
 	/**

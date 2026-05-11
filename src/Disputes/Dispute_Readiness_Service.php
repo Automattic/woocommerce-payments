@@ -69,7 +69,7 @@ class Dispute_Readiness_Service {
 		}
 
 		$score     = count( $complete_signal_ids );
-		$dismissal = $this->get_dismissal_state( $score, $total );
+		$dismissal = $this->get_dismissal_state( $score, $total, $incomplete_signal_ids );
 
 		return [
 			'overview' => [
@@ -140,12 +140,8 @@ class Dispute_Readiness_Service {
 			'id'          => self::SIGNAL_REFUND_POLICY,
 			'status'      => $status,
 			'label'       => __( 'Refund policy page published', 'woocommerce-payments' ),
-			'description' => self::STATUS_COMPLETE === $status
-				? __( 'A published refund and returns policy page is set.', 'woocommerce-payments' )
-				: __( 'Add a clear refund and returns policy to help set customer expectations.', 'woocommerce-payments' ),
 			'actionLabel' => __( 'Fix', 'woocommerce-payments' ),
 			'actionUrl'   => $this->get_page_action_url( $page_id ),
-			'reason'      => self::STATUS_COMPLETE === $status ? 'page_assigned_published_non_empty' : 'missing_or_incomplete_page',
 		];
 	}
 
@@ -162,12 +158,8 @@ class Dispute_Readiness_Service {
 			'id'          => self::SIGNAL_TERMS_AND_CONDITIONS,
 			'status'      => $status,
 			'label'       => __( 'Terms & conditions linked at checkout', 'woocommerce-payments' ),
-			'description' => self::STATUS_COMPLETE === $status
-				? __( 'A published terms and conditions page is set.', 'woocommerce-payments' )
-				: __( 'Add store terms so customers can review policies before buying.', 'woocommerce-payments' ),
 			'actionLabel' => __( 'Fix', 'woocommerce-payments' ),
 			'actionUrl'   => $this->get_page_action_url( $page_id ),
-			'reason'      => self::STATUS_COMPLETE === $status ? 'page_assigned_published_non_empty' : 'missing_or_incomplete_page',
 		];
 	}
 
@@ -186,12 +178,8 @@ class Dispute_Readiness_Service {
 			'id'          => self::SIGNAL_STATEMENT_DESCRIPTOR,
 			'status'      => $status,
 			'label'       => __( 'Recognizable statement descriptor', 'woocommerce-payments' ),
-			'description' => self::STATUS_COMPLETE === $status
-				? __( 'Your customer bank statement descriptor appears to be customized.', 'woocommerce-payments' )
-				: __( 'Review the descriptor customers may see on their bank statements.', 'woocommerce-payments' ),
 			'actionLabel' => __( 'Review', 'woocommerce-payments' ),
 			'actionUrl'   => admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
-			'reason'      => self::STATUS_COMPLETE === $status ? 'customized' : ( '' === trim( $descriptor ) ? 'empty' : 'default_like' ),
 		];
 	}
 
@@ -211,12 +199,8 @@ class Dispute_Readiness_Service {
 			'id'          => self::SIGNAL_SUPPORT_CONTACT,
 			'status'      => $status,
 			'label'       => __( 'Customer support contact linked in order emails', 'woocommerce-payments' ),
-			'description' => self::STATUS_COMPLETE === $status
-				? __( 'A customer support email or phone number is available.', 'woocommerce-payments' )
-				: __( 'Add a customer support email or phone number for payment questions.', 'woocommerce-payments' ),
 			'actionLabel' => __( 'Review', 'woocommerce-payments' ),
 			'actionUrl'   => admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
-			'reason'      => self::STATUS_COMPLETE === $status ? 'support_contact_present' : 'missing_support_contact',
 		];
 	}
 
@@ -277,11 +261,12 @@ class Dispute_Readiness_Service {
 	/**
 	 * Returns the current dismissal state.
 	 *
-	 * @param int $score Current score.
-	 * @param int $total Current total.
+	 * @param int   $score                 Current score.
+	 * @param int   $total                 Current total.
+	 * @param array $incomplete_signal_ids Current incomplete signal IDs.
 	 * @return array
 	 */
-	private function get_dismissal_state( int $score, int $total ): array {
+	private function get_dismissal_state( int $score, int $total, array $incomplete_signal_ids ): array {
 		$stored = get_option( self::DISMISSAL_OPTION, [] );
 		if ( ! is_array( $stored ) || empty( $stored['dismissed'] ) ) {
 			return [
@@ -291,14 +276,21 @@ class Dispute_Readiness_Service {
 			];
 		}
 
-		$score_at_dismissal = isset( $stored['score_at_dismissal'] ) ? (int) $stored['score_at_dismissal'] : 0;
-		$total_at_dismissal = isset( $stored['total_at_dismissal'] ) ? (int) $stored['total_at_dismissal'] : 0;
-		$reappear_reason    = null;
+		$score_at_dismissal     = isset( $stored['score_at_dismissal'] ) ? (int) $stored['score_at_dismissal'] : 0;
+		$total_at_dismissal     = isset( $stored['total_at_dismissal'] ) ? (int) $stored['total_at_dismissal'] : 0;
+		$stored_incomplete_ids  = isset( $stored['incomplete_signal_ids'] ) && is_array( $stored['incomplete_signal_ids'] ) ? array_values( $stored['incomplete_signal_ids'] ) : [];
+		$current_incomplete_ids = array_values( $incomplete_signal_ids );
+		$reappear_reason        = null;
+
+		sort( $stored_incomplete_ids );
+		sort( $current_incomplete_ids );
 
 		if ( $total !== $total_at_dismissal ) {
 			$reappear_reason = 'total_changed';
 		} elseif ( $score < $score_at_dismissal ) {
 			$reappear_reason = 'score_decreased';
+		} elseif ( $score === $score_at_dismissal && $current_incomplete_ids !== $stored_incomplete_ids ) {
+			$reappear_reason = 'incomplete_signals_changed';
 		}
 
 		return [
@@ -308,7 +300,7 @@ class Dispute_Readiness_Service {
 			'dismissedAt'         => isset( $stored['dismissed_at'] ) ? (string) $stored['dismissed_at'] : null,
 			'scoreAtDismissal'    => $score_at_dismissal,
 			'totalAtDismissal'    => $total_at_dismissal,
-			'incompleteSignalIds' => isset( $stored['incomplete_signal_ids'] ) && is_array( $stored['incomplete_signal_ids'] ) ? array_values( $stored['incomplete_signal_ids'] ) : [],
+			'incompleteSignalIds' => $stored_incomplete_ids,
 		];
 	}
 

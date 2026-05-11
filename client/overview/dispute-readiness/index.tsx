@@ -20,7 +20,7 @@ const learnMoreUrl =
 
 type DisputeReadinessSignal = {
 	id: string;
-	status: 'complete' | 'incomplete' | 'unknown';
+	status: 'complete' | 'incomplete';
 	label: string;
 	actionLabel?: string;
 	actionUrl?: string;
