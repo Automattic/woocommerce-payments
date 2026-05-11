@@ -414,7 +414,7 @@ class WC_Payments_Features {
 	 * @return bool[]
 	 */
 	public static function to_array() {
-		$feature_flags = array_filter(
+		return array_filter(
 			[
 				'multiCurrency'                            => self::is_customer_multi_currency_enabled(),
 				'woopay'                                   => self::is_woopay_eligible(),
@@ -423,16 +423,13 @@ class WC_Payments_Features {
 				'isDisputeIssuerEvidenceEnabled'           => self::is_dispute_issuer_evidence_enabled(),
 				'isDisputeAdditionalEvidenceTypesEnabled'  => self::is_dispute_additional_evidence_types_enabled(),
 				'isDisputeOutcomeViewEnabled'              => self::is_dispute_outcome_view_enabled(),
+				'isDisputeReadinessOverviewEnabled'        => self::is_dispute_readiness_overview_enabled(),
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 			]
 		);
-
-		$feature_flags['isDisputeReadinessOverviewEnabled'] = self::is_dispute_readiness_overview_enabled();
-
-		return $feature_flags;
 	}
 
 	/**
