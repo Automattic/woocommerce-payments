@@ -1,37 +1,151 @@
 .wcpay-dispute-readiness-card {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
+	position: relative;
 
-	p {
-		margin: 0;
+	.wcpay-dispute-readiness-card__body {
+		padding: 24px 48px 32px 24px;
+
+		&.is-loading {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-height: 120px;
+		}
 	}
 
-	&.is-loading {
-		align-items: center;
-		justify-content: center;
-		min-height: 80px;
+	h2 {
+		margin: 0 0 8px;
+		font-size: 20px;
+		line-height: 28px;
+		font-weight: 600;
 	}
 }
 
-.wcpay-dispute-readiness-card__header {
-	display: flex;
+.wcpay-dispute-readiness-card__dismiss.components-button.is-tertiary {
+	position: absolute;
+	top: 18px;
+	right: 24px;
+	min-width: 24px;
+	height: 24px;
+	padding: 0;
+	color: #50575e;
+	font-size: 32px;
+	line-height: 24px;
+	text-decoration: none;
+
+	&:hover,
+	&:focus {
+		color: #1e1e1e;
+		box-shadow: none;
+	}
+}
+
+.wcpay-dispute-readiness-card__description {
+	max-width: calc( 100% - 32px );
+	margin: 0;
+	color: #50575e;
+	font-size: 16px;
+	line-height: 24px;
+}
+
+.wcpay-dispute-readiness-card__content {
+	display: grid;
+	grid-template-columns: 120px minmax( 0, 1fr );
+	gap: 28px;
 	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
+	margin-top: 32px;
 }
 
 .wcpay-dispute-readiness-card__progress {
+	--wcpay-dispute-readiness-progress: 0%;
+
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	width: 88px;
+	height: 88px;
+	border-radius: 50%;
+	background: conic-gradient(
+		#3858e9 var( --wcpay-dispute-readiness-progress ),
+		#e0e0e0 0
+	);
+
+	&::before {
+		position: absolute;
+		inset: 8px;
+		border-radius: 50%;
+		background: #fff;
+		content: '';
+	}
+}
+
+.wcpay-dispute-readiness-card__progress-score,
+.wcpay-dispute-readiness-card__progress-total {
+	position: relative;
+	z-index: 1;
+}
+
+.wcpay-dispute-readiness-card__progress-score {
+	font-size: 24px;
+	line-height: 28px;
 	font-weight: 600;
 }
 
-.wcpay-dispute-readiness-card__signals.woocommerce-experimental-list {
-	margin: 0;
-	padding: 0;
+.wcpay-dispute-readiness-card__progress-total {
+	font-size: 13px;
+	line-height: 18px;
+	color: #50575e;
 }
 
-.wcpay-dispute-readiness-card__actions {
+.wcpay-dispute-readiness-card__signals {
 	display: flex;
-	align-items: center;
+	flex-direction: column;
 	gap: 12px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	font-size: 16px;
+	line-height: 24px;
+
+	li {
+		display: grid;
+		grid-template-columns: 24px minmax( 0, max-content ) 1fr;
+		gap: 8px;
+		align-items: center;
+		margin: 0;
+	}
+
+	.is-complete {
+		color: #1e1e1e;
+	}
+
+	.is-incomplete {
+		color: #cc1818;
+	}
+}
+
+.wcpay-dispute-readiness-card__signal-icon {
+	font-size: 22px;
+	line-height: 22px;
+	font-weight: 600;
+	text-align: center;
+}
+
+.is-complete .wcpay-dispute-readiness-card__signal-icon {
+	color: #4ab866;
+}
+
+.wcpay-dispute-readiness-card__signal-action {
+	justify-self: end;
+}
+
+@media ( max-width: 782px ) {
+	.wcpay-dispute-readiness-card__content {
+		grid-template-columns: 1fr;
+	}
+
+	.wcpay-dispute-readiness-card__signals li {
+		grid-template-columns: 24px minmax( 0, 1fr ) auto;
+	}
 }

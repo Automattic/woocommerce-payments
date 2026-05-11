@@ -5,15 +5,7 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import {
-	Button,
-	Card,
-	CardBody,
-	CardHeader,
-	ExternalLink,
-	Spinner,
-} from '@wordpress/components';
-import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
+import { Button, Card, CardBody, Spinner } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -48,11 +40,8 @@ const DisputeReadinessCard = () => {
 
 	if ( isLoading && ! overview ) {
 		return (
-			<Card>
-				<CardHeader>
-					{ __( 'Dispute readiness', 'woocommerce-payments' ) }
-				</CardHeader>
-				<CardBody className="wcpay-dispute-readiness-card is-loading">
+			<Card className="wcpay-dispute-readiness-card">
+				<CardBody className="wcpay-dispute-readiness-card__body is-loading">
 					<Spinner />
 				</CardBody>
 			</Card>
@@ -83,13 +72,15 @@ const DisputeReadinessCard = () => {
 		} );
 	};
 
+	const progress = overview.total
+		? Math.round( ( overview.score / overview.total ) * 100 )
+		: 0;
+
 	return (
-		<Card>
-			<CardHeader className="wcpay-dispute-readiness-card__header">
-				<span>
-					{ __( 'Dispute readiness', 'woocommerce-payments' ) }
-				</span>
+		<Card className="wcpay-dispute-readiness-card">
+			<CardBody className="wcpay-dispute-readiness-card__body">
 				<Button
+					className="wcpay-dispute-readiness-card__dismiss"
 					variant="tertiary"
 					onClick={ handleDismiss }
 					aria-label={ __(
@@ -97,72 +88,95 @@ const DisputeReadinessCard = () => {
 						'woocommerce-payments'
 					) }
 				>
-					{ __( 'Dismiss', 'woocommerce-payments' ) }
+					×
 				</Button>
-			</CardHeader>
-			<CardBody className="wcpay-dispute-readiness-card">
-				<p>
-					{ __(
-						'Prepare your store with information that can help if a customer disputes a payment.',
-						'woocommerce-payments'
-					) }
+
+				<h2>{ __( 'Dispute Readiness', 'woocommerce-payments' ) }</h2>
+				<p className="wcpay-dispute-readiness-card__description">
+					{ sprintf(
+						/* translators: %d: total number of dispute readiness steps. */
+						__(
+							// eslint-disable-next-line max-len
+							"Sometimes a customer's bank questions a charge. These %d steps can help you respond confidently when it happens.",
+							'woocommerce-payments'
+						),
+						overview.total
+					) }{ ' ' }
+					<a href={ LEARN_MORE_URL }>
+						{ __( 'Learn more →', 'woocommerce-payments' ) }
+					</a>
 				</p>
 
-				<div className="wcpay-dispute-readiness-card__progress">
-					{ sprintf(
-						/* translators: 1: number of completed signals, 2: total number of signals. */
-						__( '%1$d of %2$d complete', 'woocommerce-payments' ),
-						overview.score,
-						overview.total
-					) }
-				</div>
+				<div className="wcpay-dispute-readiness-card__content">
+					<div
+						className="wcpay-dispute-readiness-card__progress"
+						style={ {
+							'--wcpay-dispute-readiness-progress': `${ progress }%`,
+						} }
+						aria-label={ sprintf(
+							/* translators: 1: number of completed signals, 2: total number of signals. */
+							__(
+								'%1$d of %2$d complete',
+								'woocommerce-payments'
+							),
+							overview.score,
+							overview.total
+						) }
+					>
+						<span className="wcpay-dispute-readiness-card__progress-score">
+							{ overview.score }
+						</span>
+						<span className="wcpay-dispute-readiness-card__progress-total">
+							{ sprintf(
+								/* translators: %d: total number of signals. */
+								__( 'of %d', 'woocommerce-payments' ),
+								overview.total
+							) }
+						</span>
+					</div>
 
-				<CollapsibleList
-					className="wcpay-dispute-readiness-card__signals"
-					collapsed={ false }
-					show={ overview.signals.length }
-					collapseLabel={ __( 'Hide tasks', 'woocommerce-payments' ) }
-					expandLabel={ __( 'Show tasks', 'woocommerce-payments' ) }
-				>
-					{ overview.signals.map( ( signal ) => {
-						const isComplete = signal.status === 'complete';
-						const action = isComplete
-							? undefined
-							: () => {
-									if ( ! signal.actionUrl ) {
-										return;
+					<ul className="wcpay-dispute-readiness-card__signals">
+						{ overview.signals.map( ( signal ) => {
+							const isComplete = signal.status === 'complete';
+
+							return (
+								<li
+									key={ signal.id }
+									className={
+										isComplete
+											? 'is-complete'
+											: 'is-incomplete'
 									}
-
-									handleCtaClick( signal );
-									window.location.href = signal.actionUrl;
-							  };
-
-						return (
-							<TaskItem
-								key={ signal.id }
-								title={ signal.label }
-								content={ signal.description }
-								completed={ isComplete }
-								actionLabel={
-									! isComplete && signal.actionUrl
-										? signal.actionLabel ||
-										  __( 'Fix', 'woocommerce-payments' )
-										: undefined
-								}
-								action={ action }
-								onClick={ action }
-								expandable={ false }
-								expanded={ false }
-								showActionButton={ true }
-							/>
-						);
-					} ) }
-				</CollapsibleList>
-
-				<div className="wcpay-dispute-readiness-card__actions">
-					<ExternalLink href={ LEARN_MORE_URL }>
-						{ __( 'Learn more', 'woocommerce-payments' ) }
-					</ExternalLink>
+								>
+									<span
+										className="wcpay-dispute-readiness-card__signal-icon"
+										aria-hidden="true"
+									>
+										{ isComplete ? '✓' : '×' }
+									</span>
+									<span className="wcpay-dispute-readiness-card__signal-label">
+										{ signal.label }
+									</span>
+									{ ! isComplete && signal.actionUrl && (
+										<a
+											className="wcpay-dispute-readiness-card__signal-action"
+											href={ signal.actionUrl }
+											onClick={ () =>
+												handleCtaClick( signal )
+											}
+										>
+											{ signal.actionLabel ||
+												__(
+													'Fix',
+													'woocommerce-payments'
+												) }{ ' ' }
+											→
+										</a>
+									) }
+								</li>
+							);
+						} ) }
+					</ul>
 				</div>
 			</CardBody>
 		</Card>
