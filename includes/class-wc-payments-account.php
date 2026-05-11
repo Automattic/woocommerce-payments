@@ -50,6 +50,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 	const KYC_SUBMITTED_DATE_OPTION = 'wcpay_kyc_submitted_date';
 
+	const POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT = 'wcpay_post_kyc_activation_eligible';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *

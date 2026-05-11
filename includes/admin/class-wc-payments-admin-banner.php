@@ -79,13 +79,6 @@ class WC_Payments_Admin_Banner {
 	const POST_KYC_ACTIVATION_NOTICE_WINDOW_DAYS = 60;
 
 	/**
-	 * Transient caching the result of the Post-KYC activation notice eligibility check.
-	 *
-	 * @var string
-	 */
-	const POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT = 'wcpay_post_kyc_activation_eligible';
-
-	/**
 	 * WCPay Gateway instance to get information regarding WooCommerce Payments setup.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -185,7 +178,7 @@ class WC_Payments_Admin_Banner {
 	 */
 	public function invalidate_notice_caches(): void {
 		delete_transient( self::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
-		delete_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 
 	/**
@@ -471,12 +464,12 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function enqueue_post_kyc_activation_notice_script(): void {
-		if ( ! $this->should_show_post_kyc_activation_notice() ) {
+		$screen = get_current_screen();
+		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
 			return;
 		}
 
-		$screen = get_current_screen();
-		if ( $screen && ! in_array( $screen->id, wc_get_screen_ids(), true ) && ! wc_admin_is_registered_page() ) {
+		if ( ! $this->should_show_post_kyc_activation_notice() ) {
 			return;
 		}
 
@@ -494,12 +487,22 @@ class WC_Payments_Admin_Banner {
 			[
 				'stage'      => $stage,
 				'ctaUrl'     => wp_nonce_url(
-					add_query_arg( 'wcpay-post-kyc-activation-cta', '1' ),
+					add_query_arg(
+						[
+							'wcpay-post-kyc-activation-cta' => '1',
+							'wcpay_stage' => $stage,
+						]
+					),
 					'wcpay_post_kyc_activation_cta_nonce',
 					'_wcpay_post_kyc_activation_cta_nonce'
 				),
 				'dismissUrl' => wp_nonce_url(
-					add_query_arg( 'wcpay-hide-post-kyc-activation-notice', '1' ),
+					add_query_arg(
+						[
+							'wcpay-hide-post-kyc-activation-notice' => '1',
+							'wcpay_stage' => $stage,
+						]
+					),
 					'wcpay_hide_post_kyc_activation_notice_nonce',
 					'_wcpay_post_kyc_activation_notice_nonce'
 				),
@@ -543,8 +546,8 @@ class WC_Payments_Admin_Banner {
 			return;
 		}
 
-		$stage = $this->get_post_kyc_activation_stage();
-		if ( null === $stage ) {
+		$stage = isset( $_GET['wcpay_stage'] ) ? (int) $_GET['wcpay_stage'] : 0;
+		if ( ! in_array( $stage, [ 7, 14, 30 ], true ) ) {
 			return;
 		}
 
@@ -552,7 +555,7 @@ class WC_Payments_Admin_Banner {
 
 		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true );
 
-		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-post-kyc-activation-notice', '_wcpay_post_kyc_activation_notice_nonce' ] ) );
+		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-post-kyc-activation-notice', '_wcpay_post_kyc_activation_notice_nonce', 'wcpay_stage' ] ) );
 		exit;
 	}
 
@@ -579,8 +582,8 @@ class WC_Payments_Admin_Banner {
 			return;
 		}
 
-		$stage = $this->get_post_kyc_activation_stage();
-		if ( null === $stage ) {
+		$stage = isset( $_GET['wcpay_stage'] ) ? (int) $_GET['wcpay_stage'] : 0;
+		if ( ! in_array( $stage, [ 7, 14, 30 ], true ) ) {
 			return;
 		}
 
@@ -681,13 +684,13 @@ class WC_Payments_Admin_Banner {
 	 * @return bool
 	 */
 	private function is_post_kyc_activation_notice_eligible(): bool {
-		$cached = get_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		$cached = get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 		if ( false !== $cached ) {
 			return '1' === $cached;
 		}
 
 		$eligible = $this->compute_post_kyc_activation_eligibility();
-		set_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $eligible ? '1' : '0', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $eligible ? '1' : '0', HOUR_IN_SECONDS );
 
 		return $eligible;
 	}
@@ -737,7 +740,7 @@ class WC_Payments_Admin_Banner {
 	 * @return void
 	 */
 	public function invalidate_post_kyc_activation_notice_cache(): void {
-		delete_transient( self::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 
 	/**
