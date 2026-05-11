@@ -100,6 +100,15 @@ class WC_Payments_Admin_Banner {
 	private $account;
 
 	/**
+	 * Per-request memo for should_show_post_kyc_activation_notice().
+	 * Same banner instance is reused across admin_enqueue_scripts and
+	 * woocommerce_sections_{$tab}, so a per-request cache is safe.
+	 *
+	 * @var bool|null
+	 */
+	private $should_show_post_kyc_activation_notice = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WCPay Gateway instance.
@@ -550,24 +559,17 @@ class WC_Payments_Admin_Banner {
 
 	/**
 	 * Whether the Post-KYC activation notice should be shown to the current user.
+	 * Memoized per-request — the same banner instance is reused across the
+	 * admin_enqueue_scripts and woocommerce_sections_{$tab} callbacks.
 	 *
 	 * @return bool
 	 */
 	public function should_show_post_kyc_activation_notice(): bool {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			return false;
+		if ( null === $this->should_show_post_kyc_activation_notice ) {
+			$this->should_show_post_kyc_activation_notice = $this->compute_should_show_post_kyc_activation_notice();
 		}
 
-		$stage = $this->get_post_kyc_activation_stage();
-		if ( null === $stage ) {
-			return false;
-		}
-
-		if ( get_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true ) ) {
-			return false;
-		}
-
-		return $this->is_post_kyc_activation_notice_eligible();
+		return $this->should_show_post_kyc_activation_notice;
 	}
 
 	/**
@@ -602,6 +604,28 @@ class WC_Payments_Admin_Banner {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Evaluates whether the Post-KYC activation notice should be shown to the current user.
+	 *
+	 * @return bool
+	 */
+	private function compute_should_show_post_kyc_activation_notice(): bool {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$stage = $this->get_post_kyc_activation_stage();
+		if ( null === $stage ) {
+			return false;
+		}
+
+		if ( get_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true ) ) {
+			return false;
+		}
+
+		return $this->is_post_kyc_activation_notice_eligible();
 	}
 
 	/**
