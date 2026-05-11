@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: prevent tooltip from rendering outside the viewport horizontally on narrow breakpoints
