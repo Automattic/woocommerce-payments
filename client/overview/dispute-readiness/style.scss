@@ -16,7 +16,7 @@
 		margin: 0 0 8px;
 		font-size: 20px;
 		line-height: 28px;
-		font-weight: 600;
+		font-weight: 400;
 	}
 }
 
@@ -28,7 +28,7 @@
 	height: 24px;
 	padding: 0;
 	color: #50575e;
-	font-size: 32px;
+	font-size: 24px;
 	line-height: 24px;
 	text-decoration: none;
 
@@ -43,8 +43,8 @@
 	max-width: calc( 100% - 32px );
 	margin: 0;
 	color: #50575e;
-	font-size: 16px;
-	line-height: 24px;
+	font-size: 13px;
+	line-height: 20px;
 }
 
 .wcpay-dispute-readiness-card__content {
@@ -101,16 +101,16 @@
 .wcpay-dispute-readiness-card__signals {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 8px;
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	font-size: 16px;
-	line-height: 24px;
+	font-size: 13px;
+	line-height: 20px;
 
 	li {
 		display: grid;
-		grid-template-columns: 24px minmax( 0, max-content ) 1fr;
+		grid-template-columns: 20px minmax( 0, max-content ) 1fr;
 		gap: 8px;
 		align-items: center;
 		margin: 0;
@@ -126,8 +126,8 @@
 }
 
 .wcpay-dispute-readiness-card__signal-icon {
-	font-size: 22px;
-	line-height: 22px;
+	font-size: 18px;
+	line-height: 18px;
 	font-weight: 600;
 	text-align: center;
 }
