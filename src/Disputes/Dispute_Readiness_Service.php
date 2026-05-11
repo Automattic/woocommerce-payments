@@ -22,7 +22,6 @@ class Dispute_Readiness_Service {
 
 	private const STATUS_COMPLETE   = 'complete';
 	private const STATUS_INCOMPLETE = 'incomplete';
-	private const STATUS_UNKNOWN    = 'unknown';
 
 	/**
 	 * Returns the disabled response used while the feature flag is off.
