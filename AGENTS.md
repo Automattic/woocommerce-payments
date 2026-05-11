@@ -374,6 +374,7 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 
 - Prefer editing existing files over creating new ones
 - Check both `src/` and `includes/` when searching for PHP code
+- New PHP code in `src/` must follow PSR-4 class/file naming and existing folder conventions. Prefer `WCPay\Internal\Service\PascalCaseService` in `src/Internal/Service/`, register services in the appropriate `src/Internal/DependencyManagement/ServiceProvider/*ServiceProvider.php`, resolve them through `wcpay_get_container()` from legacy `includes/` code, and place matching tests under `tests/unit/src/...` with namespaced PascalCase test classes.
 - React components follow WordPress patterns (@wordpress packages)
 - Prefer TypeScript for new client code where possible (`.ts`/`.tsx` over `.js`/`.jsx`), especially for new React components and shared data/types.
 - For client UI changes, reuse existing WooPayments/WooCommerce components, typography, spacing, colors, and interaction patterns where appropriate; check nearby screens/components before introducing custom styles so new UI remains visually consistent with the rest of the client.
