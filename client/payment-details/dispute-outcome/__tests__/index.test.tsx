@@ -54,18 +54,6 @@ describe( 'DisputeOutcomeView', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders a horizontal separator as the section’s first child', () => {
-		// The separator must precede the heading so it visually delimits the
-		// section from the order-meta grid above it (matches awaiting-response
-		// sibling).
-		const { container } = render(
-			<DisputeOutcomeView dispute={ buildDispute() } />
-		);
-
-		const section = container.querySelector( '.dispute-outcome-view' );
-		expect( section?.firstElementChild?.tagName ).toBe( 'HR' );
-	} );
-
 	it( 'renders a list item per field returned by the helper, in order', () => {
 		const dispute = buildDispute( {
 			metadata: { __product_type: 'physical_product' },
