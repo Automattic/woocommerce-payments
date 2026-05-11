@@ -121,10 +121,10 @@ class Dispute_Readiness_Service {
 		$account_data = $this->get_cached_account_data();
 
 		return [
-			$this->get_refund_policy_signal(),
-			$this->get_terms_and_conditions_signal(),
 			$this->get_statement_descriptor_signal( $account_data ),
+			$this->get_refund_policy_signal(),
 			$this->get_support_contact_signal( $account_data ),
+			$this->get_terms_and_conditions_signal(),
 		];
 	}
 
@@ -140,7 +140,7 @@ class Dispute_Readiness_Service {
 		return [
 			'id'          => self::SIGNAL_REFUND_POLICY,
 			'status'      => $status,
-			'label'       => __( 'Refund policy', 'woocommerce-payments' ),
+			'label'       => __( 'Refund policy page published', 'woocommerce-payments' ),
 			'description' => self::STATUS_COMPLETE === $status
 				? __( 'A published refund and returns policy page is set.', 'woocommerce-payments' )
 				: __( 'Add a clear refund and returns policy to help set customer expectations.', 'woocommerce-payments' ),
@@ -162,7 +162,7 @@ class Dispute_Readiness_Service {
 		return [
 			'id'          => self::SIGNAL_TERMS_AND_CONDITIONS,
 			'status'      => $status,
-			'label'       => __( 'Terms and conditions', 'woocommerce-payments' ),
+			'label'       => __( 'Terms & conditions linked at checkout', 'woocommerce-payments' ),
 			'description' => self::STATUS_COMPLETE === $status
 				? __( 'A published terms and conditions page is set.', 'woocommerce-payments' )
 				: __( 'Add store terms so customers can review policies before buying.', 'woocommerce-payments' ),
@@ -186,7 +186,7 @@ class Dispute_Readiness_Service {
 		return [
 			'id'          => self::SIGNAL_STATEMENT_DESCRIPTOR,
 			'status'      => $status,
-			'label'       => __( 'Statement descriptor', 'woocommerce-payments' ),
+			'label'       => __( 'Recognizable statement descriptor', 'woocommerce-payments' ),
 			'description' => self::STATUS_COMPLETE === $status
 				? __( 'Your customer bank statement descriptor appears to be customized.', 'woocommerce-payments' )
 				: __( 'Review the descriptor customers may see on their bank statements.', 'woocommerce-payments' ),
@@ -211,7 +211,7 @@ class Dispute_Readiness_Service {
 		return [
 			'id'          => self::SIGNAL_SUPPORT_CONTACT,
 			'status'      => $status,
-			'label'       => __( 'Support contact', 'woocommerce-payments' ),
+			'label'       => __( 'Customer support contact linked in order emails', 'woocommerce-payments' ),
 			'description' => self::STATUS_COMPLETE === $status
 				? __( 'A customer support email or phone number is available.', 'woocommerce-payments' )
 				: __( 'Add a customer support email or phone number for payment questions.', 'woocommerce-payments' ),
