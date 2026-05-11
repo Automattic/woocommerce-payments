@@ -133,6 +133,7 @@ class WC_Payments_Admin_Banner {
 		add_action( 'update_option_' . WC_Payments_Onboarding_Service::TEST_MODE_OPTION, [ $this, 'invalidate_notice_caches' ] );
 
 		add_action( 'admin_init', [ $this, 'hide_post_kyc_activation_notice' ] );
+		add_action( 'admin_init', [ $this, 'handle_post_kyc_activation_notice_cta' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_post_kyc_activation_notice_script' ] );
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'invalidate_post_kyc_activation_notice_cache' ] );
 
@@ -492,12 +493,10 @@ class WC_Payments_Admin_Banner {
 			'wcpayPostKycActivationNoticeSettings',
 			[
 				'stage'      => $stage,
-				'ctaUrl'     => add_query_arg(
-					[
-						'page' => 'wc-admin',
-						'path' => '/marketing',
-					],
-					admin_url( 'admin.php' )
+				'ctaUrl'     => wp_nonce_url(
+					add_query_arg( 'wcpay-post-kyc-activation-cta', '1' ),
+					'wcpay_post_kyc_activation_cta_nonce',
+					'_wcpay_post_kyc_activation_cta_nonce'
 				),
 				'dismissUrl' => wp_nonce_url(
 					add_query_arg( 'wcpay-hide-post-kyc-activation-notice', '1' ),
@@ -551,9 +550,53 @@ class WC_Payments_Admin_Banner {
 
 		$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_dismissed', [ 'stage' => $stage ] );
 
-		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, time() );
+		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true );
 
 		wp_safe_redirect( remove_query_arg( [ 'wcpay-hide-post-kyc-activation-notice', '_wcpay_post_kyc_activation_notice_nonce' ] ) );
+		exit;
+	}
+
+	/**
+	 * Records the CTA-clicked Tracks event, persists the per-stage dismissal,
+	 * and redirects to the WC Admin Marketing Hub.
+	 *
+	 * Hooked on admin_init so the redirect lands before any output and the
+	 * Tracks event flushes synchronously via record_tracks_event() ahead of
+	 * the wp_safe_redirect() + exit.
+	 *
+	 * @return void
+	 */
+	public function handle_post_kyc_activation_notice_cta(): void {
+		if ( ! isset( $_GET['wcpay-post-kyc-activation-cta'] ) || ! isset( $_GET['_wcpay_post_kyc_activation_cta_nonce'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! wp_verify_nonce( wc_clean( wp_unslash( $_GET['_wcpay_post_kyc_activation_cta_nonce'] ) ), 'wcpay_post_kyc_activation_cta_nonce' ) ) {
+			return;
+		}
+
+		$stage = $this->get_post_kyc_activation_stage();
+		if ( null === $stage ) {
+			return;
+		}
+
+		$this->record_tracks_event( 'wcpay_post_kyc_activation_notice_cta_clicked', [ 'stage' => $stage ] );
+
+		update_user_meta( get_current_user_id(), self::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . $stage, true );
+
+		wp_safe_redirect(
+			add_query_arg(
+				[
+					'page' => 'wc-admin',
+					'path' => '/marketing',
+				],
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 

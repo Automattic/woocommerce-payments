@@ -569,7 +569,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 	public function test_should_show_post_kyc_activation_notice_returns_false_when_stage_dismissed(): void {
 		$this->set_up_post_kyc_global_state();
-		update_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, time() );
+		update_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true );
 		$banner = $this->make_admin_banner_for_notice_test();
 
 		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
@@ -748,6 +748,52 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true ) );
 
 		unset( $_GET['wcpay-hide-post-kyc-activation-notice'], $_GET['_wcpay_post_kyc_activation_notice_nonce'] );
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_handle_post_kyc_activation_notice_cta_records_dismissal_and_redirects_to_marketing(): void {
+		$this->set_up_post_kyc_global_state();
+
+		$_GET['wcpay-post-kyc-activation-cta']        = '1';
+		$_GET['_wcpay_post_kyc_activation_cta_nonce'] = wp_create_nonce( 'wcpay_post_kyc_activation_cta_nonce' );
+
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$redirect_target    = null;
+		$redirect_intercept = function ( $location ) use ( &$redirect_target ) {
+			$redirect_target = $location;
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $redirect_intercept );
+		try {
+			$banner->handle_post_kyc_activation_notice_cta();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $redirect_intercept );
+
+		$this->assertNotEmpty(
+			get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true )
+		);
+		$this->assertStringContainsString( 'page=wc-admin', (string) $redirect_target );
+		$this->assertStringContainsString( 'path=/marketing', (string) $redirect_target );
+
+		unset( $_GET['wcpay-post-kyc-activation-cta'], $_GET['_wcpay_post_kyc_activation_cta_nonce'] );
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_handle_post_kyc_activation_notice_cta_ignores_invalid_nonce(): void {
+		$this->set_up_post_kyc_global_state();
+
+		$_GET['wcpay-post-kyc-activation-cta']        = '1';
+		$_GET['_wcpay_post_kyc_activation_cta_nonce'] = 'bad-nonce';
+
+		$banner = $this->make_admin_banner_for_notice_test();
+		$banner->handle_post_kyc_activation_notice_cta();
+
+		$this->assertEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7, true ) );
+
+		unset( $_GET['wcpay-post-kyc-activation-cta'], $_GET['_wcpay_post_kyc_activation_cta_nonce'] );
 		$this->tear_down_post_kyc_global_state();
 	}
 
