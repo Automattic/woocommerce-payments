@@ -2,7 +2,7 @@
 
 WooPayments e2e tests can be found in the `./tests/e2e/specs` directory. These tests run with Playwright and replaced the Puppeteer e2e tests when we completed the migration to Playwright in early 2025.
 
-E2E tests can be run locally or in GitHub Actions. Github Actions are already configured and don't require any changes to run the tests.
+E2E tests can be run locally or in GitHub Actions. GitHub Actions are already configured and don't require any changes to run the tests.
 
 ## Role in the release process
 
