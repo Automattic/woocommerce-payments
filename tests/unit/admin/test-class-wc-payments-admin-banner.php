@@ -651,6 +651,52 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$this->tear_down_post_kyc_global_state();
 	}
 
+	public function test_should_show_post_kyc_activation_notice_memoizes_per_request(): void {
+		$this->set_up_post_kyc_global_state();
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$dismissal_key   = WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . 7;
+		$dismissal_reads = 0;
+		$counter         = function ( $value, $object_id, $meta_key ) use ( &$dismissal_reads, $dismissal_key ) {
+			if ( $meta_key === $dismissal_key ) {
+				++$dismissal_reads;
+			}
+			return $value;
+		};
+		add_filter( 'get_user_metadata', $counter, 10, 3 );
+
+		$banner->should_show_post_kyc_activation_notice();
+		$banner->should_show_post_kyc_activation_notice();
+
+		remove_filter( 'get_user_metadata', $counter, 10 );
+
+		$this->assertSame( 1, $dismissal_reads );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
+	public function test_should_show_post_kyc_activation_notice_short_circuits_when_first_live_sale_recorded(): void {
+		$this->set_up_post_kyc_global_state();
+		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1' );
+
+		$banner = $this->make_admin_banner_for_notice_test();
+
+		$transient_reads = 0;
+		$counter         = function ( $value ) use ( &$transient_reads ) {
+			++$transient_reads;
+			return $value;
+		};
+		add_filter( 'pre_transient_' . WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $counter );
+
+		$this->assertFalse( $banner->should_show_post_kyc_activation_notice() );
+
+		remove_filter( 'pre_transient_' . WC_Payments_Admin_Banner::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $counter );
+
+		$this->assertSame( 0, $transient_reads );
+
+		$this->tear_down_post_kyc_global_state();
+	}
+
 	// -------------------------------------------------------------------------
 	// hide_post_kyc_activation_notice tests
 	// -------------------------------------------------------------------------
@@ -722,14 +768,11 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		$this->tear_down_post_kyc_global_state();
 	}
 
-	public function test_maybe_show_post_kyc_activation_notice_tracks_impression_once_per_stage(): void {
+	public function test_enqueue_post_kyc_activation_notice_script_tracks_impression_once_per_stage(): void {
 		$this->set_up_post_kyc_global_state();
 		$banner = $this->make_admin_banner_for_notice_test();
 
-		ob_start();
-		$banner->maybe_show_post_kyc_activation_notice();
-		$banner->maybe_show_post_kyc_activation_notice();
-		ob_end_clean();
+		$banner->enqueue_post_kyc_activation_notice_script();
 
 		$shown_meta = WC_Payments_Admin_Banner::USER_META_POST_KYC_ACTIVATION_DISMISSED_PREFIX . '7_shown';
 		$this->assertNotEmpty( get_user_meta( get_current_user_id(), $shown_meta, true ) );
