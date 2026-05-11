@@ -6,10 +6,10 @@ E2E tests can be run locally or in GitHub Actions. Github Actions are already co
 
 ## Role in the release process
 
-This suite isn't only PR validation — it's also the release-zip smoke gate. Before deleting or "moving down the pyramid," check what each spec is protecting at release time. The [scheduled release process](https://wcpay.wordpress.com/dev-resources/release-documentation/scheduled-release-process/) wires this suite in three places:
+This suite isn't only PR validation — it's also the release-zip smoke gate. Before deleting or "moving down the pyramid," check what each spec is protecting at release time. The scheduled release process ( PaJDYF-6n7-p2 ) wires this suite in three places:
 
 1. **Code-freeze workflow** (Wednesday of week 4) runs the full E2E matrix against the release branch. Failures here block the freeze.
-2. **Manual E2E run on the release branch** (Thursday of week 4) is a release-lead checklist item. The release lead manually classifies failures as flake vs. real (per [Updates on the E2E testing workflow](https://wcpay.wordpress.com/2024/03/28/updates-on-the-e2e-testing-workflow/)).
+2. **Manual E2E run on the release branch** (Thursday of week 4) is a release-lead checklist item. The release lead manually classifies failures as flake vs. real (per Updates on the E2E testing workflow ( paJDYF-cZg-p2 )).
 3. **`build-zip-and-run-smoke-tests.yml`** runs the E2E suite against the built release zip — this *is* the smoke test that gates the test package handed to internal testers and (later) the deployment.
 
 Implications when adding/removing specs:
