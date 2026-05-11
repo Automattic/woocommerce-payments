@@ -242,6 +242,11 @@ class WC_Payments_Admin_Banner {
 			return;
 		}
 
+		if ( ! get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SHOWN, true ) ) {
+			$this->record_tracks_event( 'wcpay_test_to_live_notice_shown' );
+			update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SHOWN, true );
+		}
+
 		wp_localize_script(
 			'WCPAY_TEST_TO_LIVE_NOTICE',
 			'wcpayTestToLiveNoticeSettings',
@@ -306,11 +311,6 @@ class WC_Payments_Admin_Banner {
 	public function maybe_show_test_to_live_notice() {
 		if ( ! $this->should_show_test_to_live_notice() ) {
 			return;
-		}
-
-		if ( ! get_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SHOWN, true ) ) {
-			$this->record_tracks_event( 'wcpay_test_to_live_notice_shown' );
-			update_user_meta( get_current_user_id(), self::USER_META_TEST_TO_LIVE_NOTICE_SHOWN, true );
 		}
 
 		echo '<div id="wcpay-test-to-live-notice"></div>';

@@ -220,7 +220,11 @@ export const DisputesList = (): JSX.Element => {
 		) => {
 			// Use client-side routing to avoid page refresh.
 			e.preventDefault();
-			recordEvent( 'wcpay_disputes_row_action_click' );
+			recordEvent( 'wcpay_disputes_row_action_click', {
+				dispute_id: dispute.dispute_id,
+				dispute_status: dispute.status,
+				dispute_reason: dispute.reason,
+			} );
 			const history = getHistory();
 			history.push( getDetailsURL( dispute.charge_id, 'transactions' ) );
 		};

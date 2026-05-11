@@ -23,9 +23,6 @@ jobs:
         id: build_plugin
         uses: ./.github/actions/build
 
-      - name: Install PHP & Composer
-        run: sudo apt-get update && sudo apt-get install -y php-cli php-zip unzip
-
       - name: Install QIT CLI
         run: composer global require woocommerce/qit-cli:^1.0
 

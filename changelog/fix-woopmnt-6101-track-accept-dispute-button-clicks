@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Enrich 'Accept dispute' tracks events with dispute ID and reason so merchant intent can be distinguished from inaction.
