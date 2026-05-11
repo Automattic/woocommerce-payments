@@ -18,6 +18,13 @@ class Prepare_Terminal_Payment extends Request {
 	use Intention;
 
 	/**
+	 * Order ID required for server-side intent metadata validation.
+	 *
+	 * @var string[]
+	 */
+	const REQUIRED_PARAMS = [ 'order_id' ];
+
+	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
 	 * @var string
@@ -34,6 +41,15 @@ class Prepare_Terminal_Payment extends Request {
 	protected function set_id( string $id ) {
 		$this->validate_stripe_id( $id );
 		$this->id = $id;
+	}
+
+	/**
+	 * Sets the order ID used to validate the PaymentIntent belongs to the order before preparation.
+	 *
+	 * @param int $order_id Order ID.
+	 */
+	public function set_order_id( int $order_id ): void {
+		$this->set_param( 'order_id', $order_id );
 	}
 
 	/**

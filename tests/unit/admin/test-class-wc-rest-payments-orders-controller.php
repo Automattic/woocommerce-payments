@@ -535,26 +535,16 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_prepare_terminal_payment_success() {
-		$order       = $this->create_mock_order();
-		$mock_intent = WC_Helper_Intention::create_intention(
-			[
-				'status'   => Intent_Status::REQUIRES_CONFIRMATION,
-				'metadata' => [
-					'order_id' => $order->get_id(),
-				],
-			]
-		);
-
-		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
-		$get_intent_request->expects( $this->once() )
-			->method( 'format_response' )
-			->willReturn( $mock_intent );
+		$order = $this->create_mock_order();
 
 		$update_response = [
 			'id'     => $this->mock_intent_id,
 			'status' => Intent_Status::REQUIRES_CONFIRMATION,
 		];
-		$this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id, $update_response );
+		$prepare_request = $this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id, $update_response );
+		$prepare_request->expects( $this->once() )
+			->method( 'set_order_id' )
+			->with( $order->get_id() );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -658,20 +648,15 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_prepare_terminal_payment_intent_order_mismatch() {
-		$order       = $this->create_mock_order();
-		$mock_intent = WC_Helper_Intention::create_intention(
-			[
-				'status'   => Intent_Status::REQUIRES_CONFIRMATION,
-				'metadata' => [
-					'order_id' => $order->get_id() + 1,
-				],
-			]
-		);
+		$order = $this->create_mock_order();
 
-		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
-		$get_intent_request->expects( $this->once() )
+		$prepare_request = $this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id );
+		$prepare_request->expects( $this->once() )
+			->method( 'set_order_id' )
+			->with( $order->get_id() );
+		$prepare_request->expects( $this->once() )
 			->method( 'format_response' )
-			->willReturn( $mock_intent );
+			->willThrowException( new API_Exception( 'PaymentIntent order mismatch.', 'payment_intent_order_mismatch', 400 ) );
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
@@ -687,14 +672,17 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$data = $response->get_error_data();
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 400, $data['status'] );
-		$this->assertSame( 'wcpay_intent_order_mismatch', $response->get_error_code() );
+		$this->assertSame( 'payment_intent_order_mismatch', $response->get_error_code() );
 	}
 
 	public function test_prepare_terminal_payment_handles_exceptions() {
 		$order = $this->create_mock_order();
 
-		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
-		$get_intent_request->expects( $this->once() )
+		$prepare_request = $this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id );
+		$prepare_request->expects( $this->once() )
+			->method( 'set_order_id' )
+			->with( $order->get_id() );
+		$prepare_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willThrowException( new Exception( 'test error' ) );
 
@@ -718,8 +706,11 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_prepare_terminal_payment_passes_through_api_exceptions() {
 		$order = $this->create_mock_order();
 
-		$get_intent_request = $this->mock_wcpay_request( Get_Intention::class, 1, $this->mock_intent_id );
-		$get_intent_request->expects( $this->once() )
+		$prepare_request = $this->mock_wcpay_request( Prepare_Terminal_Payment::class, 1, $this->mock_intent_id );
+		$prepare_request->expects( $this->once() )
+			->method( 'set_order_id' )
+			->with( $order->get_id() );
+		$prepare_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willThrowException( new API_Exception( 'No such payment_intent: pi_sensitive', 'resource_missing', 404 ) );
 
