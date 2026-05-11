@@ -10,6 +10,7 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import DisputeOutcomeView from '../index';
+import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import type { ChargeDispute } from 'wcpay/types/charges';
 
 // `product_unacceptable × physical_product` is well-covered by the
@@ -58,13 +59,20 @@ describe( 'DisputeOutcomeView', () => {
 		const dispute = buildDispute( {
 			metadata: { __product_type: 'physical_product' },
 		} );
+		const expected = getExpectedFieldStatus(
+			dispute.reason,
+			'physical_product',
+			dispute.evidence
+		);
 
 		render( <DisputeOutcomeView dispute={ dispute } /> );
 
-		const items = screen.getAllByRole( 'listitem' );
-		expect( items.length ).toBeGreaterThan( 0 );
-		// Provided rows render the human label; missing rows render the same
-		// label plus a visible "— Not provided" suffix.
+		expect( screen.getAllByRole( 'listitem' ) ).toHaveLength(
+			expected.length
+		);
+		// Anchor field that only appears when the physical-product matrix
+		// cell is used, so we know the wrapper passed the resolved product
+		// type through (not the digital fallback).
 		expect(
 			screen.getByText( /Shipping documentation/i )
 		).toBeInTheDocument();
