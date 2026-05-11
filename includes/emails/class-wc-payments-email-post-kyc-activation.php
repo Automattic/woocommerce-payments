@@ -1,0 +1,145 @@
+<?php
+/**
+ * Class WC_Payments_Email_Post_Kyc_Activation file
+ *
+ * @package WooCommerce\Emails
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
+
+	/**
+	 * Post-KYC Activation Email.
+	 *
+	 * Sent to merchants on day 7, 14, and 30 after KYC completion when they have not yet made their first sale.
+	 */
+	class WC_Payments_Email_Post_Kyc_Activation extends WC_Email {
+
+		/**
+		 * Stage of the nudge sequence (7, 14, or 30).
+		 *
+		 * @var int
+		 */
+		public $stage = 7;
+
+		/**
+		 * Constructor.
+		 */
+		public function __construct() {
+			$this->id             = 'wcpay_post_kyc_activation';
+			$this->customer_email = false;
+			$this->title          = __( 'Post-KYC activation reminder', 'woocommerce-payments' );
+			$this->description    = __( 'Sent to merchants 7, 14, and 30 days after their account is approved if they have not yet made their first sale.', 'woocommerce-payments' );
+			$this->template_base  = WCPAY_ABSPATH . 'templates/';
+			$this->template_html  = 'emails/post-kyc-activation.php';
+			$this->template_plain = 'emails/plain/post-kyc-activation.php';
+			$this->plugin_id      = 'woocommerce_woocommerce_payments_';
+			$this->placeholders   = [
+				'{stage}'      => '',
+				'{site_title}' => $this->get_blogname(),
+			];
+
+			parent::__construct();
+
+			$this->recipient = $this->get_option( 'recipient', get_option( 'admin_email' ) );
+		}
+
+		/**
+		 * Get default subject.
+		 *
+		 * @return string
+		 */
+		public function get_default_subject(): string {
+			return __( 'Ready for your first sale on {site_title}?', 'woocommerce-payments' );
+		}
+
+		/**
+		 * Get default heading.
+		 *
+		 * @return string
+		 */
+		public function get_default_heading(): string {
+			return __( 'Your store is ready — let’s make your first sale', 'woocommerce-payments' );
+		}
+
+		/**
+		 * Trigger sending the email.
+		 *
+		 * @param int $stage The stage day (7, 14, or 30).
+		 * @return void
+		 */
+		public function trigger( int $stage ): void {
+			if ( ! in_array( $stage, [ 7, 14, 30 ], true ) ) {
+				return;
+			}
+
+			$this->stage                   = $stage;
+			$this->placeholders['{stage}'] = (string) $stage;
+
+			$this->setup_locale();
+
+			if ( $this->is_enabled() && $this->get_recipient() ) {
+				$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+			}
+
+			$this->restore_locale();
+		}
+
+		/**
+		 * Get content html.
+		 *
+		 * @return string
+		 */
+		public function get_content_html(): string {
+			return wc_get_template_html(
+				$this->template_html,
+				[
+					'stage'              => $this->stage,
+					'email_heading'      => $this->get_heading(),
+					'additional_content' => $this->get_additional_content(),
+					'sent_to_admin'      => true,
+					'plain_text'         => false,
+					'email'              => $this,
+				],
+				'',
+				WCPAY_ABSPATH . 'templates/'
+			);
+		}
+
+		/**
+		 * Get content plain.
+		 *
+		 * @return string
+		 */
+		public function get_content_plain(): string {
+			return wc_get_template_html(
+				$this->template_plain,
+				[
+					'stage'              => $this->stage,
+					'email_heading'      => $this->get_heading(),
+					'additional_content' => $this->get_additional_content(),
+					'sent_to_admin'      => true,
+					'plain_text'         => true,
+					'email'              => $this,
+				],
+				'',
+				WCPAY_ABSPATH . 'templates/'
+			);
+		}
+
+		/**
+		 * Default additional content.
+		 *
+		 * @return string
+		 */
+		public function get_default_additional_content(): string {
+			return __( 'Thanks for choosing WooPayments.', 'woocommerce-payments' );
+		}
+	}
+
+endif;
+
+return new WC_Payments_Email_Post_Kyc_Activation();

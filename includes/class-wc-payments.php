@@ -326,6 +326,13 @@ class WC_Payments {
 	private static $fee_remediation;
 
 	/**
+	 * Instance of WC_Payments_Post_Kyc_Activation_Email_Service, created in init function
+	 *
+	 * @var WC_Payments_Post_Kyc_Activation_Email_Service
+	 */
+	private static $post_kyc_activation_email_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -437,6 +444,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-session-service.php';
 		include_once __DIR__ . '/class-wc-payments-redirect-service.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
+		include_once __DIR__ . '/class-wc-payments-post-kyc-activation-email-service.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-logger-context.php';
@@ -536,6 +544,9 @@ class WC_Payments {
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 
+		// Register the post-KYC activation reminder email.
+		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_post_kyc_activation_email' ], 10 );
+
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
@@ -565,6 +576,7 @@ class WC_Payments {
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
 		self::$fee_remediation                      = new WC_Payments_Remediate_Canceled_Auth_Fees();
+		self::$post_kyc_activation_email_service    = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account );
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
@@ -572,6 +584,7 @@ class WC_Payments {
 		self::$order_service->init_hooks();
 		self::$action_scheduler_service->init_hooks();
 		self::$account->init_hooks();
+		self::$post_kyc_activation_email_service->init_hooks();
 		self::$fraud_service->init_hooks();
 		self::$onboarding_service->init_hooks();
 		self::$incentives_service->init_hooks();
@@ -814,6 +827,17 @@ class WC_Payments {
 	 */
 	public static function add_ipp_emails( array $email_classes ): array {
 		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
+		return $email_classes;
+	}
+
+	/**
+	 * Adds the post-KYC activation reminder email to WooCommerce emails.
+	 *
+	 * @param array $email_classes the email classes.
+	 * @return array
+	 */
+	public static function add_post_kyc_activation_email( array $email_classes ): array {
+		$email_classes['WC_Payments_Email_Post_Kyc_Activation'] = include __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
 		return $email_classes;
 	}
 
