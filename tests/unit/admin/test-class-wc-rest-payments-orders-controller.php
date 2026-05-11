@@ -587,14 +587,17 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 404, $data['status'] );
 	}
 
-	public function test_prepare_terminal_payment_invalid_payment_intent_id() {
+	/**
+	 * @dataProvider provider_prepare_terminal_payment_path_traversal_intent_ids
+	 */
+	public function test_prepare_terminal_payment_rejects_payment_intent_ids_with_path_traversal_patterns( string $payment_intent_id ) {
 		$order = $this->create_mock_order();
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
 				'order_id'          => $order->get_id(),
-				'payment_intent_id' => 'not_a_payment_intent',
+				'payment_intent_id' => $payment_intent_id,
 			]
 		);
 
@@ -605,6 +608,25 @@ class WC_REST_Payments_Orders_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'status', $data );
 		$this->assertSame( 400, $data['status'] );
 		$this->assertSame( 'wcpay_invalid_payment_intent_id', $response->get_error_code() );
+	}
+
+	public function provider_prepare_terminal_payment_path_traversal_intent_ids(): array {
+		return [
+			'dot-dot-slash traversal'             => [ '../etc/passwd' ],
+			'slash only'                          => [ '/' ],
+			'id with embedded slash'              => [ 'id/traversal' ],
+			'backslash traversal'                 => [ '..\\etc\\passwd' ],
+			'backslash only'                      => [ '\\' ],
+			'id with embedded backslash'          => [ 'id\\traversal' ],
+			'percent-encoded slash'               => [ 'id%2ftraversal' ],
+			'percent-encoded slash uppercase'     => [ 'id%2Ftraversal' ],
+			'percent-encoded backslash'           => [ 'id%5ctraversal' ],
+			'percent-encoded backslash uppercase' => [ 'id%5Ctraversal' ],
+			'percent-encoded dot sequence'        => [ '%2e%2e%2fetc' ],
+			'double-encoded percent'              => [ 'id%252ftraversal' ],
+			'percent sign only'                   => [ '%' ],
+			'empty string'                        => [ '' ],
+		];
 	}
 
 	public function test_prepare_terminal_payment_refunded_order() {

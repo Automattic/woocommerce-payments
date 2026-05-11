@@ -304,7 +304,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 				return new WP_Error( 'wcpay_missing_order', __( 'Order not found', 'woocommerce-payments' ), [ 'status' => 404 ] );
 			}
 
-			if ( ! is_string( $intent_id ) || 1 !== preg_match( '/^pi_\w{1,250}$/', $intent_id ) ) {
+			// Match the export download route pattern: allow future Stripe ID formats while blocking path traversal.
+			if ( ! is_string( $intent_id ) || 1 !== preg_match( '/^[^\/\\\\%]+$/', $intent_id ) ) {
 				return new WP_Error(
 					'wcpay_invalid_payment_intent_id',
 					__( 'Invalid payment intent ID.', 'woocommerce-payments' ),
