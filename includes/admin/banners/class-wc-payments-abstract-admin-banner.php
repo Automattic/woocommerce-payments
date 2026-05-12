@@ -505,6 +505,17 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
+	 * Drops the eligibility transient so the next request re-evaluates from
+	 * scratch. Used by subclasses that hook external signals (order
+	 * completion, account refresh, etc.) to invalidate the cache.
+	 *
+	 * @return void
+	 */
+	protected function delete_eligibility_cache(): void {
+		delete_transient( $this->eligibility_transient_key() );
+	}
+
+	/**
 	 * Standard terminal-CTA flow: record the cta_clicked event, mark the
 	 * banner as dismissed for this user, then redirect to the destination.
 	 * Subclasses with non-terminal CTAs (test-to-live's "flip mode" variant)
