@@ -750,6 +750,7 @@ class WC_Payments {
 		// invalidation hooks must fire on storefront checkout and REST webhooks
 		// (both non-admin contexts). Admin-only hooks are registered separately
 		// further below, gated on is_admin() && manage_woocommerce.
+		include_once WCPAY_ABSPATH . 'includes/admin/banners/class-wc-payments-abstract-admin-banner.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-banner.php';
 		$admin_banner = new WC_Payments_Admin_Banner( self::get_gateway(), self::$account );
 		$admin_banner->init_global_hooks();
