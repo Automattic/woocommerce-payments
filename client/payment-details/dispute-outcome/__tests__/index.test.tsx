@@ -13,10 +13,8 @@ import DisputeOutcomeView from '../index';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import type { ChargeDispute } from 'wcpay/types/charges';
 
-// `product_unacceptable × physical_product` is well-covered by the
-// `DISPUTE_HIGH_IMPACT_FIELDS` matrix (shipping_documentation,
-// shipping_address, shipping_date, etc.), so it gives us a non-empty
-// `getExpectedFieldStatus` result without having to mock the helper.
+// product_unacceptable × physical_product yields a non-empty matrix
+// cell, so list-item assertions exercise real rows.
 const buildDispute = (
 	overrides: Partial< ChargeDispute > = {}
 ): ChargeDispute =>
