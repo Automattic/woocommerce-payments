@@ -642,7 +642,7 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
-		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway );
+		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway, self::$order_service );
 		self::$post_kyc_activation_email_service->init_hooks();
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
@@ -765,7 +765,7 @@ class WC_Payments {
 		// (both non-admin contexts). Admin-only hooks are registered separately
 		// further below, gated on is_admin() && manage_woocommerce.
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-banner.php';
-		$admin_banner = new WC_Payments_Admin_Banner( self::get_gateway(), self::$account );
+		$admin_banner = new WC_Payments_Admin_Banner( self::get_gateway(), self::$account, self::$order_service );
 		$admin_banner->init_global_hooks();
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {

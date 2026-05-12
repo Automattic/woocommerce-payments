@@ -50,7 +50,9 @@ class WC_Payments_Post_Kyc_Activation_Email_Service_Test extends WCPAY_UnitTestC
 			]
 		);
 
-		return new WC_Payments_Post_Kyc_Activation_Email_Service( $mock_account, $mock_gateway );
+		$order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
+
+		return new WC_Payments_Post_Kyc_Activation_Email_Service( $mock_account, $mock_gateway, $order_service );
 	}
 
 	/**

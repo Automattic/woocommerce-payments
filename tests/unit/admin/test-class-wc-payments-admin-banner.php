@@ -52,7 +52,9 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		);
 		$mock_account->method( 'get_is_live' )->willReturn( $is_live );
 
-		return new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+		$order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
+
+		return new WC_Payments_Admin_Banner( $mock_gateway, $mock_account, $order_service );
 	}
 
 	/**
@@ -343,7 +345,8 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 			->getMock();
 		$mock_gateway->method( 'is_connected' )->willReturn( true );
 
-		$banner = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+		$order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
+		$banner        = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account, $order_service );
 
 		$banner->should_show_test_to_live_notice();
 		$banner->should_show_test_to_live_notice();
@@ -1296,7 +1299,8 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 			->getMock();
 		$mock_gateway->method( 'is_connected' )->willReturn( true );
 
-		$banner = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+		$order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
+		$banner        = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account, $order_service );
 
 		$banner->should_show_one_and_done_notice();
 		$banner->should_show_one_and_done_notice();
