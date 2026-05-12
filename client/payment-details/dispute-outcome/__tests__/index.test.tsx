@@ -13,8 +13,6 @@ import DisputeOutcomeView from '../index';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import type { ChargeDispute } from 'wcpay/types/charges';
 
-// product_unacceptable × physical_product yields a non-empty matrix
-// cell, so list-item assertions exercise real rows.
 const buildDispute = (
 	overrides: Partial< ChargeDispute > = {}
 ): ChargeDispute =>
