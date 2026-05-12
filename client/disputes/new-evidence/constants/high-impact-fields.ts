@@ -114,13 +114,9 @@ export const DISPUTE_HIGH_IMPACT_FIELDS: Record<
 		],
 	},
 	fraudulent: {
-		// Same lift-based picks across all product types for fraudulent: the
-		// date the merchant fulfilled the order plus customer communication.
-		// For physical goods the fulfilment date is `shipping_date`; for
-		// non-physical product types it's `service_date`. Both are distinct
-		// Stripe evidence fields and the wizard collects only the relevant
-		// one per product type, so mismatching here surfaces a field the
-		// merchant can never provide.
+		// Fulfilment date varies by product type: `shipping_date` for
+		// physical, `service_date` otherwise. The wizard collects only the
+		// matching field, so mismatching surfaces an unprovidable field.
 		physical_product: [ 'shipping_date', 'customer_communication' ],
 		digital_product_or_service: [
 			'service_date',
