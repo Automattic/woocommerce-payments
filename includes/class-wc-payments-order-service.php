@@ -229,7 +229,6 @@ class WC_Payments_Order_Service {
 
 		if ( Order_Mode::PRODUCTION === $order->get_meta( self::WCPAY_MODE_META_KEY ) ) {
 			update_option( self::HAS_LIVE_SALE_OPTION, '1', true );
-			delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 
 			if ( class_exists( 'WC_Tracks' ) ) {
 				WC_Tracks::record_event( 'wcpay_first_live_sale' );

@@ -516,6 +516,15 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
+	 * Default cache invalidator wired to external signals.
+	 *
+	 * @return void
+	 */
+	public function invalidate_cache(): void {
+		$this->delete_eligibility_cache();
+	}
+
+	/**
 	 * Standard terminal-CTA flow: record the cta_clicked event, mark the
 	 * banner as dismissed for this user, then redirect to the destination.
 	 * Subclasses with non-terminal CTAs (test-to-live's "flip mode" variant)

@@ -79,13 +79,15 @@ class WC_Payments_Post_Kyc_Activation_Banner extends WC_Payments_Abstract_Admin_
 	}
 
 	/**
-	 * Drops the eligibility transient so the next request re-evaluates from
-	 * scratch — used when account state refreshes externally.
+	 * Registers this banner's non-admin-context hooks.
 	 *
 	 * @return void
 	 */
-	public function invalidate_cache(): void {
-		$this->delete_eligibility_cache();
+	public function init_global_hooks(): void {
+		add_action(
+			'add_option_' . WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION,
+			[ $this, 'invalidate_cache' ]
+		);
 	}
 
 	/**
