@@ -2133,9 +2133,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->arrange_task_list_origin_with_partial_kyc();
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'has_recorded_exposure' )->willReturn( false );
-		$experiment->expects( $this->once() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_TREATMENT );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
@@ -2149,9 +2146,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->arrange_task_list_origin_with_partial_kyc();
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'has_recorded_exposure' )->willReturn( false );
-		$experiment->expects( $this->once() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
@@ -2187,63 +2181,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
 	}
 
-	public function test_accelerated_onboarding_bypass_query_arg_persists_bypass_and_falls_through() {
-		$this->arrange_task_list_origin_with_partial_kyc();
-		$_GET['wcpay-skip-accelerated-onboarding'] = '1';
-
-		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->expects( $this->once() )->method( 'set_bypass' );
-		$experiment->expects( $this->never() )->method( 'get_variation' );
-		WC_Payments::set_onboarding_experiment( $experiment );
-
-		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
-		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_wcpay_connect' );
-
-		$this->wcpay_account->maybe_redirect_from_connect_page();
-	}
-
-	public function test_accelerated_onboarding_bypass_query_arg_persists_bypass_from_nox_exit() {
-		wp_set_current_user( 1 );
-		$_GET = [
-			'page'                              => 'wc-admin',
-			'path'                              => '/payments/connect',
-			'from'                              => WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
-			'wcpay-skip-accelerated-onboarding' => '1',
-		];
-		$this->cache_account_details(
-			[
-				'account_id'        => 'acc_test',
-				'is_live'           => true,
-				'details_submitted' => false,
-				'capabilities'      => [ 'card_payments' => 'requested' ],
-			]
-		);
-		$this->mock_jetpack_connection( false );
-
-		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->expects( $this->once() )->method( 'set_bypass' );
-		$experiment->expects( $this->never() )->method( 'get_variation' );
-		WC_Payments::set_onboarding_experiment( $experiment );
-
-		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
-
-		$this->wcpay_account->maybe_redirect_from_connect_page();
-	}
-
-	public function test_accelerated_onboarding_bypass_meta_prevents_re_exposure() {
-		$this->arrange_task_list_origin_with_partial_kyc();
-
-		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->method( 'has_bypass' )->willReturn( true );
-		$experiment->expects( $this->never() )->method( 'get_variation' );
-		WC_Payments::set_onboarding_experiment( $experiment );
-
-		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
-		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_wcpay_connect' );
-
-		$this->wcpay_account->maybe_redirect_from_connect_page();
-	}
-
 	public function test_accelerated_onboarding_does_not_fire_for_nox_in_context_origin() {
 		wp_set_current_user( 1 );
 		$_GET = [
@@ -2271,45 +2208,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->wcpay_account->maybe_redirect_from_connect_page();
 	}
 
-	public function test_accelerated_onboarding_skips_exposure_when_already_recorded() {
-		$this->arrange_task_list_origin_with_partial_kyc();
-
-		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->expects( $this->once() )->method( 'has_recorded_exposure' )->willReturn( true );
-		$experiment->expects( $this->never() )->method( 'mark_exposed' );
-		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
-		WC_Payments::set_onboarding_experiment( $experiment );
-
-		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
-		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_wcpay_connect' );
-
-		$this->wcpay_account->maybe_redirect_from_connect_page();
-	}
-
-	/**
-	 * Regression test: while ExPlat is unreachable, get_variation() returns transient 'control'
-	 * without caching, so a cache-based exposure gate would re-fire on every admin load. The
-	 * mark_exposed() flag persists independently of the variation cache, so the second invocation
-	 * sees has_recorded_exposure() === true and skips the event even though the variation cache
-	 * is still empty.
-	 */
-	public function test_accelerated_onboarding_exposure_only_fires_once_when_explat_keeps_failing() {
-		$this->arrange_task_list_origin_with_partial_kyc();
-
-		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
-		// First call: exposure not yet recorded → mark_exposed() fires.
-		// Second call: exposure now recorded → mark_exposed() must NOT fire again.
-		$experiment->method( 'has_recorded_exposure' )->willReturnOnConsecutiveCalls( false, true );
-		$experiment->expects( $this->once() )->method( 'mark_exposed' );
-		WC_Payments::set_onboarding_experiment( $experiment );
-
-		$this->wcpay_account->maybe_redirect_from_connect_page();
-		$this->wcpay_account->maybe_redirect_from_connect_page();
-	}
-
 	private function arrange_task_list_origin_with_partial_kyc() {
 		wp_set_current_user( 1 );
 		$_GET = [
@@ -2332,9 +2230,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->arrange_settings_url_task_list_origin_with_partial_kyc();
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'has_recorded_exposure' )->willReturn( false );
-		$experiment->expects( $this->once() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_TREATMENT );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
@@ -2347,24 +2242,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->arrange_settings_url_task_list_origin_with_partial_kyc();
 
 		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->method( 'has_bypass' )->willReturn( false );
-		$experiment->method( 'has_recorded_exposure' )->willReturn( false );
-		$experiment->expects( $this->once() )->method( 'mark_exposed' );
 		$experiment->method( 'get_variation' )->willReturn( Onboarding_Experiment::VARIATION_CONTROL );
-		WC_Payments::set_onboarding_experiment( $experiment );
-
-		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
-
-		$this->assertFalse( $this->wcpay_account->maybe_redirect_from_payments_settings_to_onboarding() );
-	}
-
-	public function test_redirect_from_payments_settings_bypass_query_arg_persists_bypass() {
-		$this->arrange_settings_url_task_list_origin_with_partial_kyc();
-		$_GET['wcpay-skip-accelerated-onboarding'] = '1';
-
-		$experiment = $this->createMock( Onboarding_Experiment::class );
-		$experiment->expects( $this->once() )->method( 'set_bypass' );
-		$experiment->expects( $this->never() )->method( 'get_variation' );
 		WC_Payments::set_onboarding_experiment( $experiment );
 
 		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );

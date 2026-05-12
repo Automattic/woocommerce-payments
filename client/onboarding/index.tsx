@@ -21,8 +21,6 @@ import './style.scss';
 const OnboardingStepper = () => {
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
-		const isFromAcceleratedOnboardingExperiment =
-			urlParams.get( 'from' ) === 'WCADMIN_PAYMENT_TASK';
 
 		window.location.href = getAdminUrl( {
 			page: 'wc-admin',
@@ -31,9 +29,6 @@ const OnboardingStepper = () => {
 				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
 				'unknown',
 			from: 'WCPAY_ONBOARDING_WIZARD',
-			...( isFromAcceleratedOnboardingExperiment && {
-				'wcpay-skip-accelerated-onboarding': '1',
-			} ),
 		} );
 	};
 

@@ -33,11 +33,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 	const urlParams = new URLSearchParams( window.location.search );
 	const urlSource =
 		urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown';
-	const isFromAcceleratedOnboardingExperiment =
-		urlParams.get( 'from' ) === 'WCADMIN_PAYMENT_TASK';
-	const acceleratedOnboardingBypass = isFromAcceleratedOnboardingExperiment
-		? { 'wcpay-skip-accelerated-onboarding': '1' }
-		: {};
 
 	const handleStepChange = ( step: string ) => {
 		trackEmbeddedStepChange( step );
@@ -61,7 +56,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					{
 						...response.params,
 						'wcpay-connection-error': '1',
-						...acceleratedOnboardingBypass,
 					},
 					'WCPAY_ONBOARDING_WIZARD'
 				);
@@ -71,7 +65,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 				{
 					'wcpay-connection-error': '1',
 					source: urlSource,
-					...acceleratedOnboardingBypass,
 				},
 				'WCPAY_ONBOARDING_WIZARD'
 			);
@@ -156,7 +149,6 @@ const EmbeddedKyc: React.FC< Props > = ( {
 									{
 										'wcpay-connection-error': '1',
 										source: urlSource,
-										...acceleratedOnboardingBypass,
 									},
 									'WCPAY_ONBOARDING_WIZARD'
 								),

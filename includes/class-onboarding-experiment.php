@@ -22,20 +22,13 @@ defined( 'ABSPATH' ) || exit;
  *   - WC_Payments_Account::maybe_accelerate_onboarding() and the branch added to
  *     maybe_redirect_from_connect_page().
  *   - WC_Payments_Account::maybe_redirect_from_payments_settings_to_onboarding().
- *   - The `wcpay-skip-accelerated-onboarding=1` param appended in
- *     client/onboarding/index.tsx handleExit() and in
- *     client/onboarding/steps/embedded-kyc.tsx (handleOnExit failure/catch
- *     branches and the loadError Cancel-button URL).
- *   - User meta cleanup (one-shot migration) for USER_META_VARIATION_KEY,
- *     USER_META_BYPASS_KEY, and USER_META_EXPOSED_KEY. Do NOT delete
- *     USER_META_ANON_ID_KEY — 'jetpack_tracks_anon_id' is shared with Jetpack
- *     and WooPay tracking.
+ *   - User meta cleanup (one-shot migration) for USER_META_VARIATION_KEY. Do NOT
+ *     delete USER_META_ANON_ID_KEY — 'jetpack_tracks_anon_id' is shared with
+ *     Jetpack and WooPay tracking.
  */
 class Onboarding_Experiment {
 	const EXPERIMENT_NAME         = 'woopayments_accelerated_onboarding_202604';
 	const USER_META_VARIATION_KEY = '_wcpay_onboarding_experiment_variation';
-	const USER_META_BYPASS_KEY    = '_wcpay_onboarding_experiment_bypass';
-	const USER_META_EXPOSED_KEY   = '_wcpay_onboarding_experiment_exposed';
 	const USER_META_ANON_ID_KEY   = 'jetpack_tracks_anon_id';
 	const VARIATION_CONTROL       = 'control';
 	const VARIATION_TREATMENT     = 'treatment';
@@ -54,24 +47,6 @@ class Onboarding_Experiment {
 	 */
 	public function __construct( ?Experimental_Abtest $abtest = null ) {
 		$this->abtest = $abtest;
-	}
-
-	/**
-	 * Whether the current user already has a variation cached in user meta.
-	 *
-	 * Lets callers distinguish first exposure (fire a Tracks event) from subsequent reads
-	 * (stay quiet). Does not mutate state.
-	 *
-	 * @return bool
-	 */
-	public function has_assigned_variation(): bool {
-		$user_id = get_current_user_id();
-		if ( ! $user_id ) {
-			return false;
-		}
-
-		$cached = get_user_meta( $user_id, self::USER_META_VARIATION_KEY, true );
-		return is_string( $cached ) && '' !== $cached;
 	}
 
 	/**
@@ -111,66 +86,6 @@ class Onboarding_Experiment {
 		}
 
 		return $variation;
-	}
-
-	/**
-	 * Whether the current user has opted out of the experiment via the bypass flag.
-	 *
-	 * @return bool
-	 */
-	public function has_bypass(): bool {
-		$user_id = get_current_user_id();
-		if ( ! $user_id ) {
-			return false;
-		}
-
-		return (bool) get_user_meta( $user_id, self::USER_META_BYPASS_KEY, true );
-	}
-
-	/**
-	 * Persist the bypass flag for the current user so subsequent qualifying visits
-	 * don't re-route into the treatment arm.
-	 */
-	public function set_bypass(): void {
-		$user_id = get_current_user_id();
-		if ( ! $user_id ) {
-			return;
-		}
-
-		update_user_meta( $user_id, self::USER_META_BYPASS_KEY, 1 );
-	}
-
-	/**
-	 * Whether the current user has already had an exposure event recorded for this experiment.
-	 *
-	 * Decoupled from has_assigned_variation() on purpose: get_variation() does NOT cache
-	 * transient-control responses (no consent / WP_Error / unknown arm), so a cache-based
-	 * gate would re-fire the exposure event on every admin load while ExPlat is unreachable.
-	 * This flag is set unconditionally by mark_exposed() after the event is recorded, so
-	 * the event stays at-most-once per merchant regardless of ExPlat reachability.
-	 *
-	 * @return bool
-	 */
-	public function has_recorded_exposure(): bool {
-		$user_id = get_current_user_id();
-		if ( ! $user_id ) {
-			return false;
-		}
-
-		return (bool) get_user_meta( $user_id, self::USER_META_EXPOSED_KEY, true );
-	}
-
-	/**
-	 * Persist the exposed flag for the current user so the exposure Tracks event is recorded
-	 * at most once per merchant. Call after the event has been emitted.
-	 */
-	public function mark_exposed(): void {
-		$user_id = get_current_user_id();
-		if ( ! $user_id ) {
-			return;
-		}
-
-		update_user_meta( $user_id, self::USER_META_EXPOSED_KEY, 1 );
 	}
 
 	/**
