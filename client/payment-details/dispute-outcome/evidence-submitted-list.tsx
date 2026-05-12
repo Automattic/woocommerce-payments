@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Icon, check, closeSmall } from '@wordpress/icons';
+import { Icon, check, closeSmall, lineSolid } from '@wordpress/icons';
 import { VisuallyHidden } from '@wordpress/components';
 
 /**
@@ -27,44 +27,30 @@ const stateModifiers: Record< EvidenceFieldState, string > = {
 	optional_missing: 'optional-missing',
 };
 
-const renderStateLabel = ( state: EvidenceFieldState ): string => {
-	switch ( state ) {
-		case 'provided':
-			return __( 'Provided', 'woocommerce-payments' );
-		case 'expected_missing':
-		case 'optional_missing':
-			return __( 'Not provided', 'woocommerce-payments' );
-	}
+const stateLabels: Record< EvidenceFieldState, string > = {
+	provided: __( 'Provided', 'woocommerce-payments' ),
+	expected_missing: __( 'Not provided', 'woocommerce-payments' ),
+	optional_missing: __( 'Not provided', 'woocommerce-payments' ),
 };
 
 // Severity qualifier surfaced only to screen readers. The visible copy is
 // unified ("Not provided") per the mock; sighted users get the severity from
 // icon shape and color. SR users have neither, so the qualifier is what makes
 // the tri-state distinguishable to them.
-const renderSeverityHint = ( state: EvidenceFieldState ): string | null => {
-	switch ( state ) {
-		case 'expected_missing':
-			// translators: severity of a missing evidence field; surfaced only
-			// to screen readers as the suffix to "Not provided".
-			return __( 'required', 'woocommerce-payments' );
-		case 'optional_missing':
-			// translators: severity of a missing evidence field; surfaced only
-			// to screen readers as the suffix to "Not provided".
-			return __( 'optional', 'woocommerce-payments' );
-		case 'provided':
-			return null;
-	}
+const stateSeverityHints: Record< EvidenceFieldState, string | null > = {
+	provided: null,
+	// translators: severity of a missing evidence field; surfaced only
+	// to screen readers as the suffix to "Not provided".
+	expected_missing: __( 'required', 'woocommerce-payments' ),
+	// translators: severity of a missing evidence field; surfaced only
+	// to screen readers as the suffix to "Not provided".
+	optional_missing: __( 'optional', 'woocommerce-payments' ),
 };
 
-const renderStateIcon = ( state: EvidenceFieldState ): JSX.Element => {
-	switch ( state ) {
-		case 'provided':
-			return <Icon icon={ check } />;
-		case 'expected_missing':
-			return <Icon icon={ closeSmall } />;
-		case 'optional_missing':
-			return <>—</>;
-	}
+const stateIcons: Record< EvidenceFieldState, JSX.Element > = {
+	provided: <Icon icon={ check } />,
+	expected_missing: <Icon icon={ closeSmall } />,
+	optional_missing: <Icon icon={ lineSolid } />,
 };
 
 const EvidenceSubmittedList: React.FC< Props > = ( { fields } ) => {
@@ -83,7 +69,7 @@ const EvidenceSubmittedList: React.FC< Props > = ( { fields } ) => {
 						className="dispute-outcome-evidence-list__icon"
 						aria-hidden="true"
 					>
-						{ renderStateIcon( state ) }
+						{ stateIcons[ state ] }
 					</span>
 					<span className="dispute-outcome-evidence-list__text">
 						<span className="dispute-outcome-evidence-list__label">
@@ -94,14 +80,14 @@ const EvidenceSubmittedList: React.FC< Props > = ( { fields } ) => {
 						   the two phrases. */ }{ ' ' }
 						{ state === 'provided' ? (
 							<VisuallyHidden>
-								{ renderStateLabel( state ) }
+								{ stateLabels[ state ] }
 							</VisuallyHidden>
 						) : (
 							<span className="dispute-outcome-evidence-list__state">
 								<span aria-hidden="true">{ '— ' }</span>
-								{ renderStateLabel( state ) }
+								{ stateLabels[ state ] }
 								<VisuallyHidden>
-									{ ' ' + renderSeverityHint( state ) }
+									{ ' ' + stateSeverityHints[ state ] }
 								</VisuallyHidden>
 							</span>
 						) }
