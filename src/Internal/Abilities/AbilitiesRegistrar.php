@@ -131,6 +131,20 @@ class AbilitiesRegistrar {
 		self::$abilities_registered = true;
 
 		self::register_get_account_ability();
+		self::register_get_deposits_overview_ability();
+		self::register_get_transactions_ability();
+		self::register_get_transactions_summary_ability();
+		self::register_get_disputes_ability();
+		self::register_get_disputes_summary_ability();
+		self::register_get_dispute_ability();
+		self::register_get_authorizations_ability();
+		self::register_get_authorizations_summary_ability();
+		self::register_get_deposits_ability();
+		self::register_get_deposits_summary_ability();
+		self::register_get_payment_intent_ability();
+		self::register_get_charge_ability();
+		self::register_get_timeline_ability();
+		self::register_get_active_loan_summary_ability();
 	}
 
 	/**
@@ -195,6 +209,177 @@ class AbilitiesRegistrar {
 	}
 
 	/**
+	 * Execute callback — `get-deposits-overview`.
+	 *
+	 * @param mixed $input Unused.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_deposits_overview( $input = null ) {
+		unset( $input );
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits/overview-all' );
+	}
+
+	/**
+	 * Execute callback — `get-transactions`.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_transactions( $input = null ) {
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/transactions', is_array( $input ) ? $input : [] );
+	}
+
+	/**
+	 * Execute callback — `get-transactions-summary`.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_transactions_summary( $input = null ) {
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/transactions/summary', is_array( $input ) ? $input : [] );
+	}
+
+	/**
+	 * Execute callback — `get-disputes`.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_disputes( $input = null ) {
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/disputes', is_array( $input ) ? $input : [] );
+	}
+
+	/**
+	 * Execute callback — `get-disputes-summary`.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_disputes_summary( $input = null ) {
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/disputes/summary', is_array( $input ) ? $input : [] );
+	}
+
+	/**
+	 * Execute callback — `get-dispute`.
+	 *
+	 * @param mixed $input Ability input. Must include `dispute_id`.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_dispute( $input = null ) {
+		if ( ! is_array( $input ) || empty( $input['dispute_id'] ) || ! is_string( $input['dispute_id'] ) ) {
+			return new \WP_Error(
+				'woocommerce_payments_missing_dispute_id',
+				__( 'A non-empty `dispute_id` is required.', 'woocommerce-payments' )
+			);
+		}
+		$dispute_id = $input['dispute_id'];
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/disputes/' . rawurlencode( $dispute_id ) );
+	}
+
+	/**
+	 * Execute callback — `get-authorizations`.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_authorizations( $input = null ) {
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/authorizations', is_array( $input ) ? $input : [] );
+	}
+
+	/**
+	 * Execute callback — `get-authorizations-summary`.
+	 *
+	 * @param mixed $input Unused.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_authorizations_summary( $input = null ) {
+		unset( $input );
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/authorizations/summary' );
+	}
+
+	/**
+	 * Execute callback — `get-deposits`.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_deposits( $input = null ) {
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits', is_array( $input ) ? $input : [] );
+	}
+
+	/**
+	 * Execute callback — `get-deposits-summary`.
+	 *
+	 * @param mixed $input Ability input.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_deposits_summary( $input = null ) {
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits/summary', is_array( $input ) ? $input : [] );
+	}
+
+	/**
+	 * Execute callback — `get-payment-intent`.
+	 *
+	 * @param mixed $input Ability input. Must include `payment_intent_id`.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_payment_intent( $input = null ) {
+		if ( ! is_array( $input ) || empty( $input['payment_intent_id'] ) || ! is_string( $input['payment_intent_id'] ) ) {
+			return new \WP_Error(
+				'woocommerce_payments_missing_payment_intent_id',
+				__( 'A non-empty `payment_intent_id` is required.', 'woocommerce-payments' )
+			);
+		}
+		$intent_id = $input['payment_intent_id'];
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/payment_intents/' . rawurlencode( $intent_id ) );
+	}
+
+	/**
+	 * Execute callback — `get-charge`.
+	 *
+	 * @param mixed $input Ability input. Must include `charge_id`.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_charge( $input = null ) {
+		if ( ! is_array( $input ) || empty( $input['charge_id'] ) || ! is_string( $input['charge_id'] ) ) {
+			return new \WP_Error(
+				'woocommerce_payments_missing_charge_id',
+				__( 'A non-empty `charge_id` is required.', 'woocommerce-payments' )
+			);
+		}
+		$charge_id = $input['charge_id'];
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/charges/' . rawurlencode( $charge_id ) );
+	}
+
+	/**
+	 * Execute callback — `get-timeline`.
+	 *
+	 * @param mixed $input Ability input. Must include `intention_id`.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_timeline( $input = null ) {
+		if ( ! is_array( $input ) || empty( $input['intention_id'] ) || ! is_string( $input['intention_id'] ) ) {
+			return new \WP_Error(
+				'woocommerce_payments_missing_intention_id',
+				__( 'A non-empty `intention_id` is required.', 'woocommerce-payments' )
+			);
+		}
+		$intent_id = $input['intention_id'];
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/timeline/' . rawurlencode( $intent_id ) );
+	}
+
+	/**
+	 * Execute callback — `get-active-loan-summary`.
+	 *
+	 * @param mixed $input Unused.
+	 * @return array|\WP_Error
+	 */
+	public static function execute_get_active_loan_summary( $input = null ) {
+		unset( $input );
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/capital/active_loan_summary' );
+	}
+
+	/**
 	 * Register the `woocommerce-payments/get-account` ability.
 	 *
 	 * Zero-arg read returning the merchant's WooPayments account state —
@@ -225,18 +410,596 @@ class AbilitiesRegistrar {
 				// output_schema deliberately omitted — the payload shape comes
 				// straight from the backing controller and we don't want to
 				// couple this registrar to a specific structure here.
-				'meta'                => [
-					'annotations'  => [
-						'readonly'    => true,
-						'destructive' => false,
-						'idempotent'  => true,
-					],
-					'show_in_rest' => true,
-					'mcp'          => [
-						'public' => true,
-					],
-				],
+				'meta'                => self::read_meta(),
 			]
 		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-deposits-overview` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_deposits_overview_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-deposits-overview',
+			[
+				'label'               => __( 'Get payouts overview', 'woocommerce-payments' ),
+				'description'         => __( 'Return a per-currency overview of upcoming and recent payouts (Stripe deposits). Answers \'when is my next payout and how much?\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::zero_arg_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_deposits_overview' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-transactions` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_transactions_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-transactions',
+			[
+				'label'               => __( 'List transactions', 'woocommerce-payments' ),
+				'description'         => __( 'List WooPayments transactions with filters (date range, type, source device, channel, customer country, risk level, currency, search). Answers \'show me transactions where X\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::transactions_list_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_transactions' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-transactions-summary` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_transactions_summary_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-transactions-summary',
+			[
+				'label'               => __( 'Get transactions summary', 'woocommerce-payments' ),
+				'description'         => __( 'Return aggregate counts and totals for a transactions filter. Answers \'how many transactions / how much volume in this window?\' without paging the list.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::transactions_list_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_transactions_summary' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-disputes` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_disputes_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-disputes',
+			[
+				'label'               => __( 'List disputes', 'woocommerce-payments' ),
+				'description'         => __( 'List disputes with status and date-range filters. Answers \'which disputes need response?\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::disputes_list_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_disputes' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-disputes-summary` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_disputes_summary_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-disputes-summary',
+			[
+				'label'               => __( 'Get disputes summary', 'woocommerce-payments' ),
+				'description'         => __( 'Return aggregate counts of disputes by status. Answers \'how many disputes are pending response right now?\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::disputes_list_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_disputes_summary' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-dispute` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_dispute_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-dispute',
+			[
+				'label'               => __( 'Get dispute by ID', 'woocommerce-payments' ),
+				'description'         => __( 'Look up a single dispute by ID. Answers \'what evidence is needed for dispute dp_X and by when?\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => (object) [],
+					'properties'           => [
+						'dispute_id' => [
+							'type'        => 'string',
+							'description' => 'Stripe dispute ID (starts with `dp_`).',
+							'pattern'     => '^dp_',
+						],
+					],
+					'required'             => [ 'dispute_id' ],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_dispute' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-authorizations` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_authorizations_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-authorizations',
+			[
+				'label'               => __( 'List authorizations', 'woocommerce-payments' ),
+				'description'         => __( 'List uncaptured card authorizations. Answers \'which authorizations expire soon / still need capture?\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::pagination_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_authorizations' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-authorizations-summary` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_authorizations_summary_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-authorizations-summary',
+			[
+				'label'               => __( 'Get authorizations summary', 'woocommerce-payments' ),
+				'description'         => __( 'Return aggregate counts and total authorized amount for pending authorizations. Answers \'how much money is held in uncaptured authorizations?\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::zero_arg_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_authorizations_summary' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-deposits` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_deposits_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-deposits',
+			[
+				'label'               => __( 'List payouts', 'woocommerce-payments' ),
+				'description'         => __( 'List payouts (Stripe deposits) with status, date-range, and currency filters. Answers \'show me my recent payouts\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::deposits_list_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_deposits' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-deposits-summary` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_deposits_summary_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-deposits-summary',
+			[
+				'label'               => __( 'Get payouts summary', 'woocommerce-payments' ),
+				'description'         => __( 'Return aggregate counts and totals of payouts by status and currency. Answers \'how many payouts have I received this month?\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::deposits_list_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_deposits_summary' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-payment-intent` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_payment_intent_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-payment-intent',
+			[
+				'label'               => __( 'Get payment intent by ID', 'woocommerce-payments' ),
+				'description'         => __( 'Look up a single payment intent by Stripe ID (pi_…). Answers \'what is the state of intent pi_X?\' during incident response.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => (object) [],
+					'properties'           => [
+						'payment_intent_id' => [
+							'type'        => 'string',
+							'description' => 'Stripe payment intent ID (starts with `pi_`).',
+							'pattern'     => '^pi_',
+						],
+					],
+					'required'             => [ 'payment_intent_id' ],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_payment_intent' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-charge` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_charge_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-charge',
+			[
+				'label'               => __( 'Get charge by ID', 'woocommerce-payments' ),
+				'description'         => __( 'Look up a single charge by Stripe ID (ch_… or py_…). Answers \'what happened with charge ch_X?\'.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => (object) [],
+					'properties'           => [
+						'charge_id' => [
+							'type'        => 'string',
+							'description' => 'Stripe charge ID (starts with `ch_` or `py_`).',
+							'pattern'     => '^(ch_|py_)',
+						],
+					],
+					'required'             => [ 'charge_id' ],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_charge' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-timeline` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_timeline_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-timeline',
+			[
+				'label'               => __( 'Get timeline for payment intent', 'woocommerce-payments' ),
+				'description'         => __( 'Return the chronological event timeline for a payment intent (created → succeeded → refunded → disputed). Helps reconstruct what happened to one transaction.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => [
+					'type'                 => 'object',
+					'default'              => (object) [],
+					'properties'           => [
+						'intention_id' => [
+							'type'        => 'string',
+							'description' => 'Stripe payment intent ID (starts with `pi_`).',
+							'pattern'     => '^pi_',
+						],
+					],
+					'required'             => [ 'intention_id' ],
+					'additionalProperties' => false,
+				],
+				'execute_callback'    => [ __CLASS__, 'execute_get_timeline' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Register the `woocommerce-payments/get-active-loan-summary` ability.
+	 *
+	 * @return void
+	 */
+	private static function register_get_active_loan_summary_ability() {
+		wp_register_ability(
+			'woocommerce-payments/get-active-loan-summary',
+			[
+				'label'               => __( 'Get active Capital loan summary', 'woocommerce-payments' ),
+				'description'         => __( 'Return the merchant\'s active Stripe Capital loan summary. Answers \'how much do I still owe on my Capital loan and what is the daily repayment rate?\'. Returns an empty shape if no loan is active.', 'woocommerce-payments' ),
+				'category'            => self::CATEGORY_SLUG,
+				'input_schema'        => self::zero_arg_input_schema(),
+				'execute_callback'    => [ __CLASS__, 'execute_get_active_loan_summary' ],
+				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
+				'meta'                => self::read_meta(),
+			]
+		);
+	}
+
+	/**
+	 * Standard `read` meta used by every read ability registered here.
+	 *
+	 * @return array
+	 */
+	private static function read_meta() {
+		return [
+			'annotations'  => [
+				'readonly'    => true,
+				'destructive' => false,
+				'idempotent'  => true,
+			],
+			'show_in_rest' => true,
+			'mcp'          => [
+				'public' => true,
+			],
+		];
+	}
+
+	/**
+	 * Empty input schema used by zero-arg abilities.
+	 *
+	 * @return array
+	 */
+	private static function zero_arg_input_schema() {
+		return [
+			'type'                 => 'object',
+			'default'              => (object) [],
+			'properties'           => [],
+			'additionalProperties' => false,
+		];
+	}
+
+	/**
+	 * Input schema for transactions list/summary abilities. Accepts the common
+	 * filters surfaced by the backing controller. `additionalProperties: true`
+	 * because the underlying List_Transactions request supports many more
+	 * filters than are useful to document inline; the controller validates.
+	 *
+	 * @return array
+	 */
+	private static function transactions_list_input_schema() {
+		return [
+			'type'                 => 'object',
+			'default'              => (object) [],
+			'properties'           => [
+				'match'                => [
+					'type'        => 'string',
+					'description' => 'Filter join mode (any|all).',
+				],
+				'date_before'          => [
+					'type'        => 'string',
+					'description' => 'ISO-8601 date upper bound.',
+				],
+				'date_after'           => [
+					'type'        => 'string',
+					'description' => 'ISO-8601 date lower bound.',
+				],
+				'date_between'         => [
+					'type'        => 'array',
+					'items'       => [ 'type' => 'string' ],
+					'description' => 'Two-element ISO date range [start, end].',
+				],
+				'type_is'              => [
+					'type'        => 'string',
+					'description' => 'Transaction type filter (charge|refund|dispute|adjustment|…).',
+				],
+				'source_device_is'     => [ 'type' => 'string' ],
+				'channel_is'           => [ 'type' => 'string' ],
+				'customer_country_is'  => [ 'type' => 'string' ],
+				'risk_level_is'        => [ 'type' => 'string' ],
+				'store_currency_is'    => [ 'type' => 'string' ],
+				'customer_currency_is' => [ 'type' => 'string' ],
+				'search'               => [
+					'type'  => 'array',
+					'items' => [ 'type' => 'string' ],
+				],
+				'page'                 => [
+					'type'    => 'integer',
+					'minimum' => 1,
+				],
+				'per_page'             => [
+					'type'    => 'integer',
+					'minimum' => 1,
+					'maximum' => 100,
+				],
+				'orderby'              => [ 'type' => 'string' ],
+				'order'                => [
+					'type' => 'string',
+					'enum' => [ 'asc', 'desc' ],
+				],
+				'deposit_id'           => [
+					'type'        => 'string',
+					'description' => 'Filter to a single payout (deposit) ID; applies to summary only.',
+				],
+			],
+			'additionalProperties' => true,
+		];
+	}
+
+	/**
+	 * Input schema for disputes list/summary abilities.
+	 *
+	 * @return array
+	 */
+	private static function disputes_list_input_schema() {
+		return [
+			'type'                 => 'object',
+			'default'              => (object) [],
+			'properties'           => [
+				'match'             => [ 'type' => 'string' ],
+				'store_currency_is' => [ 'type' => 'string' ],
+				'date_before'       => [ 'type' => 'string' ],
+				'date_after'        => [ 'type' => 'string' ],
+				'date_between'      => [
+					'type'  => 'array',
+					'items' => [ 'type' => 'string' ],
+				],
+				'search'            => [
+					'type'  => 'array',
+					'items' => [ 'type' => 'string' ],
+				],
+				'status_is'         => [
+					'type'        => 'string',
+					'description' => 'Dispute status (warning_needs_response|needs_response|under_review|won|lost|warning_under_review|warning_closed).',
+				],
+				'status_is_not'     => [ 'type' => 'string' ],
+				'page'              => [
+					'type'    => 'integer',
+					'minimum' => 1,
+				],
+				'per_page'          => [
+					'type'    => 'integer',
+					'minimum' => 1,
+					'maximum' => 100,
+				],
+				'orderby'           => [ 'type' => 'string' ],
+				'order'             => [
+					'type' => 'string',
+					'enum' => [ 'asc', 'desc' ],
+				],
+			],
+			'additionalProperties' => true,
+		];
+	}
+
+	/**
+	 * Input schema for deposits (payouts) list/summary abilities.
+	 *
+	 * @return array
+	 */
+	private static function deposits_list_input_schema() {
+		return [
+			'type'                 => 'object',
+			'default'              => (object) [],
+			'properties'           => [
+				'match'             => [ 'type' => 'string' ],
+				'store_currency_is' => [ 'type' => 'string' ],
+				'date_before'       => [ 'type' => 'string' ],
+				'date_after'        => [ 'type' => 'string' ],
+				'date_between'      => [
+					'type'  => 'array',
+					'items' => [ 'type' => 'string' ],
+				],
+				'status_is'         => [
+					'type'        => 'string',
+					'description' => 'Payout status (paid|pending|in_transit|canceled|failed).',
+				],
+				'status_is_not'     => [ 'type' => 'string' ],
+				'page'              => [
+					'type'    => 'integer',
+					'minimum' => 1,
+				],
+				'per_page'          => [
+					'type'    => 'integer',
+					'minimum' => 1,
+					'maximum' => 100,
+				],
+				'orderby'           => [ 'type' => 'string' ],
+				'order'             => [
+					'type' => 'string',
+					'enum' => [ 'asc', 'desc' ],
+				],
+			],
+			'additionalProperties' => true,
+		];
+	}
+
+	/**
+	 * Generic pagination-only input schema for endpoints that take no other filters.
+	 *
+	 * @return array
+	 */
+	private static function pagination_input_schema() {
+		return [
+			'type'                 => 'object',
+			'default'              => (object) [],
+			'properties'           => [
+				'page'     => [
+					'type'    => 'integer',
+					'minimum' => 1,
+				],
+				'per_page' => [
+					'type'    => 'integer',
+					'minimum' => 1,
+					'maximum' => 100,
+				],
+				'orderby'  => [ 'type' => 'string' ],
+				'order'    => [
+					'type' => 'string',
+					'enum' => [ 'asc', 'desc' ],
+				],
+			],
+			'additionalProperties' => true,
+		];
+	}
+
+	/**
+	 * Delegate to a REST route via `rest_do_request()`.
+	 *
+	 * Builds a WP_REST_Request from the ability's input, dispatches through
+	 * the REST router (which handles controller instantiation and its
+	 * dependencies), then unwraps both `WP_REST_Response` and raw-array
+	 * return shapes.
+	 *
+	 * Shape 2 from the abilities-api skill — used for low-stakes reads with
+	 * no telemetry side effects. Backing controllers in WooPayments either
+	 * call `forward_request()` against the API client or hand off to a
+	 * Request class via `handle_rest_request()` — neither path emits
+	 * analytics events.
+	 *
+	 * Note: outside a REST request lifecycle (CLI, cron), the first call
+	 * pays a one-time `rest_get_server()` + `rest_api_init` bootstrap cost.
+	 *
+	 * @param string              $http_method HTTP method (GET, POST, …).
+	 * @param string              $route       REST route path (e.g. `/wc/v3/payments/transactions`).
+	 * @param array<string,mixed> $params     Request parameters (query/body).
+	 * @return array|\WP_Error Unwrapped response data, or WP_Error on failure.
+	 */
+	private static function delegate_to_rest_controller( $http_method, $route, $params = [] ) {
+		$request = new \WP_REST_Request( $http_method, $route );
+		foreach ( $params as $key => $value ) {
+			$request->set_param( $key, $value );
+		}
+
+		$response = rest_do_request( $request );
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+		if ( $response instanceof \WP_REST_Response ) {
+			if ( $response->is_error() ) {
+				return $response->as_error();
+			}
+			$data = $response->get_data();
+			return is_array( $data ) ? $data : [];
+		}
+		return is_array( $response ) ? $response : [];
 	}
 }

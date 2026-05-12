@@ -164,4 +164,72 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			'get-account must be opted into MCP discovery via meta.mcp.public.'
 		);
 	}
+
+	/**
+	 * @dataProvider provide_expected_abilities
+	 */
+	public function test_all_read_abilities_are_registered_with_read_only_shape( string $ability_name ) {
+		if ( ! function_exists( 'wp_get_ability' ) || ! function_exists( 'wp_get_abilities' ) ) {
+			$this->markTestSkipped( 'Abilities API query functions not available in this WordPress version.' );
+		}
+
+		add_filter( self::FEATURE_FILTER, '__return_true' );
+		AbilitiesRegistrar::init();
+		wp_get_abilities();
+
+		$ability = wp_get_ability( $ability_name );
+		$this->assertNotNull( $ability, $ability_name . ' should be registered.' );
+		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $ability->get_category() );
+
+		$meta = $ability->get_meta();
+		$this->assertTrue( $meta['annotations']['readonly'], $ability_name . ' must be readonly.' );
+		$this->assertFalse( $meta['annotations']['destructive'], $ability_name . ' must not be destructive.' );
+		$this->assertTrue( $meta['annotations']['idempotent'], $ability_name . ' must be idempotent.' );
+		$this->assertTrue( $meta['show_in_rest'] ?? false, $ability_name . ' must opt into show_in_rest.' );
+		$this->assertTrue( $meta['mcp']['public'] ?? false, $ability_name . ' must opt into MCP discovery.' );
+	}
+
+	public function provide_expected_abilities(): array {
+		return [
+			[ 'woocommerce-payments/get-account' ],
+			[ 'woocommerce-payments/get-deposits-overview' ],
+			[ 'woocommerce-payments/get-transactions' ],
+			[ 'woocommerce-payments/get-transactions-summary' ],
+			[ 'woocommerce-payments/get-disputes' ],
+			[ 'woocommerce-payments/get-disputes-summary' ],
+			[ 'woocommerce-payments/get-dispute' ],
+			[ 'woocommerce-payments/get-authorizations' ],
+			[ 'woocommerce-payments/get-authorizations-summary' ],
+			[ 'woocommerce-payments/get-deposits' ],
+			[ 'woocommerce-payments/get-deposits-summary' ],
+			[ 'woocommerce-payments/get-payment-intent' ],
+			[ 'woocommerce-payments/get-charge' ],
+			[ 'woocommerce-payments/get-timeline' ],
+			[ 'woocommerce-payments/get-active-loan-summary' ],
+		];
+	}
+
+	public function test_execute_get_dispute_rejects_missing_id() {
+		$result = AbilitiesRegistrar::execute_get_dispute( [] );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'woocommerce_payments_missing_dispute_id', $result->get_error_code() );
+	}
+
+	public function test_execute_get_payment_intent_rejects_missing_id() {
+		$result = AbilitiesRegistrar::execute_get_payment_intent( [] );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'woocommerce_payments_missing_payment_intent_id', $result->get_error_code() );
+	}
+
+	public function test_execute_get_charge_rejects_missing_id() {
+		$result = AbilitiesRegistrar::execute_get_charge( [] );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'woocommerce_payments_missing_charge_id', $result->get_error_code() );
+	}
+
+	public function test_execute_get_timeline_rejects_missing_id() {
+		$result = AbilitiesRegistrar::execute_get_timeline( [] );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'woocommerce_payments_missing_intention_id', $result->get_error_code() );
+	}
 }
