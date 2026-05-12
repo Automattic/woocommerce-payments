@@ -23,11 +23,7 @@ interface DisputeOutcomeViewProps {
 const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 	dispute,
 } ) => {
-	// `resolve-product-type.ts` reads metadata first (wizard-written) then
-	// the order's suggested type, and normalizes legacy `multiple` to `other`
-	// when the additional-evidence-types flag is on, so this view looks up
-	// the same matrix cell the wizard wrote against. Either source may be
-	// empty, in which case `getExpectedFieldStatus` returns no rows.
+	// Mirror the wizard's resolution so both look up the same matrix cell.
 	const productType = resolveProductType(
 		dispute.metadata,
 		dispute.order?.suggested_product_type,
