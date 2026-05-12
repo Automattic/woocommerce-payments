@@ -131,3 +131,51 @@ export interface EvidenceFieldStatus {
 	label: string;
 	state: EvidenceFieldState;
 }
+
+/**
+ * Outcome framing for the post-resolution Recommendations card.
+ * `could_help` is shown on lost; `keep_doing` on won. warning_closed
+ * maps to neither (inquiries have no merchant-submitted evidence).
+ */
+export type RecommendationOutcome = 'could_help' | 'keep_doing';
+
+/**
+ * Visual urgency of a recommendation; drives title color.
+ *   - `critical` (red): the gap materially hurt the case.
+ *   - `tip`      (orange): soft "next time" suggestion.
+ *   - `neutral`  (default): reinforcement or observation.
+ */
+export type RecommendationUrgency = 'critical' | 'neutral' | 'tip';
+
+export interface RecommendationLink {
+	label: string;
+	href: string;
+}
+
+/**
+ * Conditions under which a catalog entry fires. AND across clauses;
+ * arrays inside a clause OR. Absent clauses don't constrain.
+ */
+export interface RecommendationWhen {
+	outcome: RecommendationOutcome;
+	reasonIn: string[];
+	productTypeIn?: string[];
+	requireExpectedMissing?: string[];
+	requireProvided?: string[];
+}
+
+export interface Recommendation {
+	id: string;
+	title: string;
+	body: string;
+	urgency: RecommendationUrgency;
+	when: RecommendationWhen;
+	link?: RecommendationLink;
+}
+
+export interface RecommendationContext {
+	reason: string;
+	productType: string;
+	outcome: RecommendationOutcome;
+	evidence: Record< string, unknown >;
+}
