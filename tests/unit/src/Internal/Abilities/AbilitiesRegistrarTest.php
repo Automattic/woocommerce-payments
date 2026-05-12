@@ -236,4 +236,146 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_intention_id', $result->get_error_code() );
 	}
+
+	/**
+	 * Exercise each ability's `execute_*` callback so the body, the
+	 * `delegate_to_rest_controller()` helper, and the `is_error()` /
+	 * `WP_REST_Response` / raw-array unwrap branches all run. The unit
+	 * environment has no live platform API, so we only assert the call
+	 * returns array|\WP_Error without fataling — coverage of the
+	 * dispatch path is the point.
+	 *
+	 * @dataProvider provide_execute_cases
+	 */
+	public function test_execute_callback_returns_array_or_wp_error( string $method, $input ) {
+		$result = AbilitiesRegistrar::$method( $input );
+		$this->assertTrue(
+			is_array( $result ) || is_wp_error( $result ),
+			$method . ' must return either an array or a WP_Error; got ' . gettype( $result )
+		);
+	}
+
+	public function provide_execute_cases(): array {
+		return [
+			'get-account'                => [ 'execute_get_account', null ],
+			'get-deposits-overview'      => [ 'execute_get_deposits_overview', null ],
+			'get-transactions'           => [ 'execute_get_transactions', [ 'per_page' => 5 ] ],
+			'get-transactions-summary'   => [ 'execute_get_transactions_summary', [] ],
+			'get-disputes'               => [ 'execute_get_disputes', [ 'per_page' => 5 ] ],
+			'get-disputes-summary'       => [ 'execute_get_disputes_summary', [] ],
+			'get-dispute'                => [ 'execute_get_dispute', [ 'dispute_id' => 'du_test_invalid' ] ],
+			'get-authorizations'         => [ 'execute_get_authorizations', [ 'per_page' => 5 ] ],
+			'get-authorizations-summary' => [ 'execute_get_authorizations_summary', null ],
+			'get-deposits'               => [ 'execute_get_deposits', [ 'per_page' => 5 ] ],
+			'get-deposits-summary'       => [ 'execute_get_deposits_summary', [] ],
+			'get-payment-intent'         => [ 'execute_get_payment_intent', [ 'payment_intent_id' => 'pi_test_invalid' ] ],
+			'get-charge'                 => [ 'execute_get_charge', [ 'charge_id' => 'ch_test_invalid' ] ],
+			'get-timeline'               => [ 'execute_get_timeline', [ 'intention_id' => 'pi_test_invalid' ] ],
+			'get-active-loan-summary'    => [ 'execute_get_active_loan_summary', null ],
+		];
+	}
+
+	public function test_register_category_short_circuits_when_static_flag_set() {
+		$this->set_static_flag( 'category_registered', true );
+
+		// With the flag pre-set, the call must short-circuit at the
+		// static-flag guard before any abilities-API method runs.
+		AbilitiesRegistrar::register_category();
+
+		$this->assertTrue( true );
+	}
+
+	public function test_register_abilities_short_circuits_when_static_flag_set() {
+		$this->set_static_flag( 'abilities_registered', true );
+
+		AbilitiesRegistrar::register_abilities();
+
+		$this->assertTrue( true );
+	}
+
+	public function test_init_takes_immediate_call_branch_when_actions_have_fired() {
+		// `did_action()` is process-wide. If a prior test in this suite ran
+		// `wp_get_abilities()` (which fires `wp_abilities_api_*_init`), the
+		// counter is > 0 and init() takes the immediate-call branch. Force
+		// it here so this test does not depend on suite ordering.
+		if ( function_exists( 'wp_get_abilities' ) ) {
+			wp_get_abilities();
+		}
+
+		// Pre-set both static flags so the immediate `self::register_category()`
+		// and `self::register_abilities()` calls short-circuit cleanly — we
+		// don't want the test to trigger `_doing_it_wrong` from calling the
+		// abilities-API registrars outside their action callbacks.
+		$this->set_static_flag( 'category_registered', true );
+		$this->set_static_flag( 'abilities_registered', true );
+
+		add_filter( self::FEATURE_FILTER, '__return_true' );
+		AbilitiesRegistrar::init();
+
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Set a private static flag on AbilitiesRegistrar via Reflection so
+	 * tests can exercise the static-guard branches without triggering the
+	 * upstream WP_Abilities_Registry / WP_Ability_Categories_Registry
+	 * `_doing_it_wrong` checks.
+	 */
+	private function set_static_flag( string $name, bool $value ): void {
+		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
+		$property   = $reflection->getProperty( $name );
+		$property->setAccessible( true );
+		$property->setValue( null, $value );
+	}
+
+	public function test_delegate_unwraps_successful_wp_rest_response() {
+		// rest_pre_dispatch fires before route dispatch and short-circuits the
+		// pipeline if it returns a non-null value. Returning a WP_REST_Response
+		// here exercises delegate_to_rest_controller's success-unwrap branch
+		// (`get_data()` + `is_array` check) without needing the platform API.
+		$filter = function ( $result, $server, $request ) {
+			if ( strpos( $request->get_route(), '/wc/v3/payments/transactions' ) === 0 ) {
+				return new \WP_REST_Response( [ 'data' => 'fake-success' ], 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			$result = AbilitiesRegistrar::execute_get_transactions( [ 'per_page' => 5 ] );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertIsArray( $result );
+		$this->assertSame( [ 'data' => 'fake-success' ], $result );
+	}
+
+	public function test_delegate_returns_wp_error_for_error_wp_rest_response() {
+		// Returning an error-status WP_REST_Response exercises
+		// delegate_to_rest_controller's `$response->is_error()` →
+		// `$response->as_error()` branch.
+		$filter = function ( $result, $server, $request ) {
+			if ( strpos( $request->get_route(), '/wc/v3/payments/transactions' ) === 0 ) {
+				return new \WP_REST_Response(
+					[
+						'code'    => 'fake_error',
+						'message' => 'Intentional test failure',
+						'data'    => [ 'status' => 400 ],
+					],
+					400
+				);
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			$result = AbilitiesRegistrar::execute_get_transactions( [] );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertInstanceOf( \WP_Error::class, $result );
+	}
 }

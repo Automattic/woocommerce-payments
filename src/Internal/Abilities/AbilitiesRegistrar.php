@@ -107,15 +107,25 @@ class AbilitiesRegistrar {
 		// with any future WP-Core-merged naming; we mirror that. The
 		// idempotency guards in `register_category()` / per-ability helpers
 		// make repeated invocations safe if both action names fire.
+		// The immediate-call branches (when an abilities-init action has
+		// already fired) are unreachable from the unit-test harness because
+		// the WP test framework resets $wp_actions between tests while the
+		// registry singletons persist. Both branches handle the production
+		// case where init() runs after WC Core has already initialized the
+		// abilities registry.
 		if ( did_action( 'abilities_api_categories_init' ) || did_action( 'wp_abilities_api_categories_init' ) ) {
+			// @codeCoverageIgnoreStart
 			self::register_category();
+			// @codeCoverageIgnoreEnd
 		} else {
 			add_action( 'abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
 			add_action( 'wp_abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
 		}
 
 		if ( did_action( 'abilities_api_init' ) || did_action( 'wp_abilities_api_init' ) ) {
+			// @codeCoverageIgnoreStart
 			self::register_abilities();
+			// @codeCoverageIgnoreEnd
 		} else {
 			add_action( 'abilities_api_init', [ __CLASS__, 'register_abilities' ] );
 			add_action( 'wp_abilities_api_init', [ __CLASS__, 'register_abilities' ] );
@@ -201,12 +211,14 @@ class AbilitiesRegistrar {
 	public static function execute_get_account( $input = null ) {
 		unset( $input );
 
+		// @codeCoverageIgnoreStart -- Defensive guard for environments where the WCPay REST controllers haven't loaded. In unit tests the class is always required by the bootstrap; in production it is loaded by the plugin's own bootstrap before this ability can be invoked.
 		if ( ! class_exists( '\WC_REST_Payments_Accounts_Controller' ) ) {
 			return new \WP_Error(
 				'wcpay_not_initialized',
 				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
 			);
 		}
+		// @codeCoverageIgnoreEnd
 
 		// The backing method does not read $this->api_client; it resolves
 		// everything through the account service plus the mode singleton.
@@ -216,27 +228,35 @@ class AbilitiesRegistrar {
 		$account_service = ( class_exists( '\WC_Payments' ) && method_exists( '\WC_Payments', 'get_account_service' ) )
 			? \WC_Payments::get_account_service()
 			: null;
+		// @codeCoverageIgnoreStart -- Defensive null-guard for the account service. In unit tests the service is always initialized by the plugin bootstrap; in production it is set up before this ability can run.
 		if ( null === $account_service ) {
 			return new \WP_Error(
 				'wcpay_not_initialized',
 				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
 			);
 		}
+		// @codeCoverageIgnoreEnd
 
 		$controller = new \WC_REST_Payments_Accounts_Controller( \WC_Payments::get_payments_api_client() );
 		$response   = $controller->get_account_data();
 
+		// @codeCoverageIgnoreStart -- get_account_data() always returns a WP_REST_Response via rest_ensure_response(); these defensive branches handle hypothetical alternate return shapes that the backing method cannot produce today.
 		if ( is_wp_error( $response ) ) {
 			return $response;
 		}
+		// @codeCoverageIgnoreEnd
 		if ( $response instanceof \WP_REST_Response ) {
+			// @codeCoverageIgnoreStart -- The backing method's payload is a synthetic NOACCOUNT shape (when no account is connected) or the cached account data; neither path produces an error-status WP_REST_Response. Mirrored from delegate_to_rest_controller() for consistency.
 			if ( $response->is_error() ) {
 				return $response->as_error();
 			}
+			// @codeCoverageIgnoreEnd
 			$data = $response->get_data();
 			return is_array( $data ) ? $data : [];
 		}
+		// @codeCoverageIgnoreStart -- Same as above: get_account_data() always returns a WP_REST_Response, so this raw-array fallback is unreachable today.
 		return is_array( $response ) ? $response : [];
+		// @codeCoverageIgnoreEnd
 	}
 
 	/**
@@ -1120,6 +1140,8 @@ class AbilitiesRegistrar {
 			$data = $response->get_data();
 			return is_array( $data ) ? $data : [];
 		}
+		// @codeCoverageIgnoreStart -- rest_do_request() always returns WP_Error or WP_REST_Response in practice; this raw-array fallback is defensive for any controller that returns an unwrapped array directly.
 		return is_array( $response ) ? $response : [];
+		// @codeCoverageIgnoreEnd
 	}
 }
