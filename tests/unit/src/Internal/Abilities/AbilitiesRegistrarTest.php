@@ -24,12 +24,16 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	const FEATURE_FILTER  = 'woocommerce_payments_abilities_enabled';
 
 	/**
-	 * Tear down — reset filter, hooks, and current user so state does not
-	 * leak across tests in the same process.
+	 * Tear down — reset filter, hooks, current user, and the registrar's
+	 * static idempotency flags so each test exercises a fresh registration
+	 * path. Note: the upstream WP_Abilities_Registry singleton holds onto
+	 * registrations across tests; assertions about ability presence are a
+	 * post-condition of any test in the suite, not of the test in isolation.
 	 */
 	public function tear_down() {
 		remove_all_filters( self::FEATURE_FILTER );
 		wp_set_current_user( 0 );
+		AbilitiesRegistrar::reset_for_testing();
 		parent::tear_down();
 	}
 
@@ -56,61 +60,62 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_init_registers_category() {
-		remove_all_actions( self::CATEGORIES_HOOK );
+	public function test_init_hooks_register_category_on_categories_action() {
+		// Force the deferred-branch path by removing actions and asserting the
+		// hook registration. We cannot reset `did_action()` (process-wide), so
+		// instead of branching on it we assert the hook is wired for either
+		// action variant — `abilities_api_categories_init` (composer package)
+		// or `wp_abilities_api_categories_init` (WP Core merge target).
+		remove_all_actions( 'abilities_api_categories_init' );
+		remove_all_actions( 'wp_abilities_api_categories_init' );
 		add_filter( self::FEATURE_FILTER, '__return_true' );
 
 		AbilitiesRegistrar::init();
 
-		// `wp_abilities_api_categories_init` fires lazily — the first time any
-		// code calls into `WP_Ability_Categories_Registry::get_instance()`.
-		// Whether `did_action()` returns 0 or 1 depends on whether the test's
-		// bootstrap has triggered the registry yet. Assert end-state in the
-		// immediate-call branch and action wiring otherwise; `did_action()`
-		// state is process-wide and cannot be reset.
-		if ( did_action( self::CATEGORIES_HOOK ) ) {
-			if ( function_exists( 'wp_get_ability_category' ) ) {
-				$this->assertNotNull(
-					wp_get_ability_category( AbilitiesRegistrar::CATEGORY_SLUG ),
-					'Expected category to be registered when wp_abilities_api_categories_init has already fired.'
-				);
-			} else {
-				$this->markTestSkipped( 'Abilities API not available on this WordPress version.' );
-			}
-		} else {
-			$this->assertNotFalse(
-				has_action(
-					self::CATEGORIES_HOOK,
-					[ AbilitiesRegistrar::class, 'register_category' ]
-				),
-				'Expected init() to hook register_category when the API has not yet booted.'
-			);
-		}
+		$wp_core_hook = has_action(
+			'wp_abilities_api_categories_init',
+			[ AbilitiesRegistrar::class, 'register_category' ]
+		);
+		$package_hook = has_action(
+			'abilities_api_categories_init',
+			[ AbilitiesRegistrar::class, 'register_category' ]
+		);
+		$category_now = function_exists( 'wp_get_ability_category' )
+			? wp_get_ability_category( AbilitiesRegistrar::CATEGORY_SLUG )
+			: null;
+
+		// Either init() hooked the deferred callback OR (if either action
+		// already fired earlier in the process) the category is registered
+		// end-to-end. Both outcomes prove init() did its job.
+		$this->assertTrue(
+			false !== $wp_core_hook || false !== $package_hook || null !== $category_now,
+			'Expected init() to either hook register_category on one of the abilities-init actions or to have registered the category directly when the action already fired.'
+		);
 	}
 
-	public function test_init_registers_abilities() {
-		remove_all_actions( self::ABILITIES_HOOK );
+	public function test_init_hooks_register_abilities_on_abilities_action() {
+		remove_all_actions( 'abilities_api_init' );
+		remove_all_actions( 'wp_abilities_api_init' );
 		add_filter( self::FEATURE_FILTER, '__return_true' );
 
 		AbilitiesRegistrar::init();
 
-		if ( did_action( self::ABILITIES_HOOK ) ) {
-			// Immediate-call branch — `register_abilities()` is a Phase-I no-op.
-			// Concrete abilities land in subsequent commits; this assertion
-			// confirms the deferred branch is covered above.
-			$this->assertTrue(
-				true,
-				'Phase I scaffold: no abilities registered yet; deferred-branch coverage is asserted in the no-op-when-disabled test.'
-			);
-		} else {
-			$this->assertNotFalse(
-				has_action(
-					self::ABILITIES_HOOK,
-					[ AbilitiesRegistrar::class, 'register_abilities' ]
-				),
-				'Expected init() to hook register_abilities when the API has not yet booted.'
-			);
-		}
+		$wp_core_hook = has_action(
+			'wp_abilities_api_init',
+			[ AbilitiesRegistrar::class, 'register_abilities' ]
+		);
+		$package_hook = has_action(
+			'abilities_api_init',
+			[ AbilitiesRegistrar::class, 'register_abilities' ]
+		);
+		$ability_now  = function_exists( 'wp_get_ability' )
+			? wp_get_ability( 'woocommerce-payments/get-account' )
+			: null;
+
+		$this->assertTrue(
+			false !== $wp_core_hook || false !== $package_hook || null !== $ability_now,
+			'Expected init() to either hook register_abilities on one of the abilities-init actions or to have registered the abilities directly when the action already fired.'
+		);
 	}
 
 	public function test_current_user_can_manage_woocommerce_matches_capability() {

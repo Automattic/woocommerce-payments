@@ -10,10 +10,18 @@ namespace WCPay\Internal\Abilities;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers WooPayments abilities with the WordPress Abilities API.
+ * Registers WooPayments with the WordPress Abilities API.
  *
- * Concrete abilities are registered in follow-up phases; this scaffold wires
- * the registration hooks and declares the `woocommerce-payments` category.
+ * Declares the `woocommerce-payments` ability category and registers 15
+ * read-only abilities covering account state, transactions (list + summary),
+ * disputes (list + summary + single), authorizations (list + summary),
+ * payouts/deposits (list + overview + summary), single intent/charge/timeline
+ * lookups, and the active Stripe Capital loan summary. All abilities gate on
+ * `manage_woocommerce`, matching `WC_Payments_REST_Controller::check_permission()`.
+ *
+ * Registration is gated behind the `woocommerce_payments_abilities_enabled`
+ * filter (default `false`) so the scaffolding can ship without committing
+ * the final surface; per-site opt-in until validated.
  */
 class AbilitiesRegistrar {
 
@@ -23,6 +31,28 @@ class AbilitiesRegistrar {
 	 * @var string
 	 */
 	const CATEGORY_SLUG = 'woocommerce-payments';
+
+	/**
+	 * Translate from the agent-facing pagination/sort key names to the
+	 * names the WooPayments `Paginated` request class expects.
+	 *
+	 * The ability `input_schema` uses WP-Core REST conventions (`per_page`,
+	 * `orderby`, `order`) because that is what MCP clients and the Abilities
+	 * REST bridge expect. The backing `Paginated::from_rest_request()`
+	 * (`includes/core/server/request/class-paginated.php`) reads `pagesize`,
+	 * `sort`, and `direction`. Without translation, list abilities silently
+	 * return the default 25 rows / created-desc regardless of what the
+	 * caller asked for.
+	 *
+	 * `page` is named the same in both layers and passes through unchanged.
+	 *
+	 * @var array<string,string>
+	 */
+	const PAGINATION_KEY_MAP = [
+		'per_page' => 'pagesize',
+		'orderby'  => 'sort',
+		'order'    => 'direction',
+	];
 
 	/**
 	 * Tracks whether the category has been registered in this process to
@@ -55,11 +85,17 @@ class AbilitiesRegistrar {
 		 *
 		 * Default false during initial rollout so the scaffolding can ship
 		 * without committing to the final ability shape. Flip per-site to
-		 * opt in.
+		 * opt in. The filter name uses the full `woocommerce_payments_`
+		 * prefix (rather than the internal `wcpay_` prefix used by most
+		 * filters in this plugin) because the name is part of the public
+		 * surface that MCP clients and external documentation tools will
+		 * key off of — matching the plugin slug is the more discoverable
+		 * choice for an externally-facing toggle.
 		 *
 		 * @since 10.8.0
 		 *
 		 * @param bool $enabled Whether to register WooPayments abilities. Default false.
+		 * @return bool
 		 */
 		if ( ! apply_filters( 'woocommerce_payments_abilities_enabled', false ) ) {
 			return;
@@ -206,6 +242,29 @@ class AbilitiesRegistrar {
 	 */
 	public static function current_user_can_manage_woocommerce() {
 		return current_user_can( 'manage_woocommerce' );
+	}
+
+	/**
+	 * Reset registrar state for tests.
+	 *
+	 * Resets the static idempotency flags so a single PHPUnit process can
+	 * exercise registration paths repeatedly without each test inheriting the
+	 * "already registered" state from a prior one. Tests that want to verify
+	 * `register_*` runs correctly should call this in `tear_down()`.
+	 *
+	 * Note: the upstream `WP_Abilities_Registry` / `WP_Ability_Categories_Registry`
+	 * singletons retain abilities and categories registered earlier in the
+	 * process — those are not reset here because clearing them would wipe
+	 * WooCommerce Core's registrations alongside ours. Tests that need a
+	 * pristine registry should run in a dedicated process / `@runInSeparateProcess`.
+	 *
+	 * @internal
+	 *
+	 * @return void
+	 */
+	public static function reset_for_testing() {
+		self::$category_registered  = false;
+		self::$abilities_registered = false;
 	}
 
 	/**
@@ -386,9 +445,15 @@ class AbilitiesRegistrar {
 	 * onboarding status, country, currencies, KYC deadlines, test/live mode.
 	 * Backed by `WC_REST_Payments_Accounts_Controller::get_account_data()`.
 	 *
-	 * This is the reference pattern: simplest safe read, no input, direct
-	 * call to the controller (no `WP_REST_Request` synthesis needed because
-	 * the backing method is zero-arg).
+	 * Unlike the other 14 read abilities, the execute callback for this
+	 * ability calls the controller directly rather than going through
+	 * `delegate_to_rest_controller()` (and therefore through `rest_do_request()`).
+	 * The backing method takes no `WP_REST_Request`, the controller has no
+	 * REST-lifecycle middleware to gain from in this codebase, and the data
+	 * source is a local cache — the direct call avoids the one-time
+	 * `rest_get_server()` bootstrap cost on CLI / cron / agent execution
+	 * contexts where this is often the first ability invoked. If REST
+	 * middleware ever lands for `/payments/accounts`, revisit this choice.
 	 *
 	 * @return void
 	 */
@@ -399,12 +464,7 @@ class AbilitiesRegistrar {
 				'label'               => __( 'Get WooPayments account state', 'woocommerce-payments' ),
 				'description'         => __( 'Return the merchant\'s WooPayments account state: onboarding status, country, store and customer currencies, KYC requirements, deadlines, and test/live mode flags.', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => [
-					'type'                 => 'object',
-					'default'              => (object) [],
-					'properties'           => [],
-					'additionalProperties' => false,
-				],
+				'input_schema'        => self::zero_arg_input_schema(),
 				'execute_callback'    => [ __CLASS__, 'execute_get_account' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				// output_schema deliberately omitted — the payload shape comes
@@ -467,7 +527,7 @@ class AbilitiesRegistrar {
 				'label'               => __( 'Get transactions summary', 'woocommerce-payments' ),
 				'description'         => __( 'Return aggregate counts and totals for a transactions filter. Answers \'how many transactions / how much volume in this window?\' without paging the list.', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::transactions_list_input_schema(),
+				'input_schema'        => self::filters_only( self::transactions_list_input_schema() ),
 				'execute_callback'    => [ __CLASS__, 'execute_get_transactions_summary' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				'meta'                => self::read_meta(),
@@ -507,7 +567,7 @@ class AbilitiesRegistrar {
 				'label'               => __( 'Get disputes summary', 'woocommerce-payments' ),
 				'description'         => __( 'Return aggregate counts of disputes by status. Answers \'how many disputes are pending response right now?\'.', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::disputes_list_input_schema(),
+				'input_schema'        => self::filters_only( self::disputes_list_input_schema() ),
 				'execute_callback'    => [ __CLASS__, 'execute_get_disputes_summary' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				'meta'                => self::read_meta(),
@@ -619,7 +679,7 @@ class AbilitiesRegistrar {
 				'label'               => __( 'Get payouts summary', 'woocommerce-payments' ),
 				'description'         => __( 'Return aggregate counts and totals of payouts by status and currency. Answers \'how many payouts have I received this month?\'.', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::deposits_list_input_schema(),
+				'input_schema'        => self::filters_only( self::deposits_list_input_schema() ),
 				'execute_callback'    => [ __CLASS__, 'execute_get_deposits_summary' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				'meta'                => self::read_meta(),
@@ -694,6 +754,14 @@ class AbilitiesRegistrar {
 	/**
 	 * Register the `woocommerce-payments/get-timeline` ability.
 	 *
+	 * The input field is named `intention_id` (rather than `payment_intent_id`
+	 * as used by `get-payment-intent`) to match the URL parameter on the
+	 * backing route `/payments/timeline/(?P<intention_id>\w+)`. The two
+	 * names refer to the same Stripe `pi_…` identifier. The pattern is
+	 * restricted to `^pi_` deliberately: setup intents (`seti_…`) have
+	 * different timeline semantics and the backing endpoint is not designed
+	 * for them — widening this pattern needs a backing-endpoint review.
+	 *
 	 * @return void
 	 */
 	private static function register_get_timeline_ability() {
@@ -701,7 +769,7 @@ class AbilitiesRegistrar {
 			'woocommerce-payments/get-timeline',
 			[
 				'label'               => __( 'Get timeline for payment intent', 'woocommerce-payments' ),
-				'description'         => __( 'Return the chronological event timeline for a payment intent (created → succeeded → refunded → disputed). Helps reconstruct what happened to one transaction.', 'woocommerce-payments' ),
+				'description'         => __( 'Return the chronological event timeline for a payment intent (created → succeeded → refunded → disputed). Helps reconstruct what happened to one transaction. Takes `intention_id` (the same Stripe `pi_…` identifier accepted by `get-payment-intent` as `payment_intent_id` — both names exist because they mirror the underlying REST route parameters).', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => [
 					'type'                 => 'object',
@@ -709,7 +777,7 @@ class AbilitiesRegistrar {
 					'properties'           => [
 						'intention_id' => [
 							'type'        => 'string',
-							'description' => 'Stripe payment intent ID (starts with `pi_`).',
+							'description' => 'Stripe payment intent ID (starts with `pi_`). Same identifier accepted by `get-payment-intent` under the field name `payment_intent_id`.',
 							'pattern'     => '^pi_',
 						],
 					],
@@ -836,7 +904,7 @@ class AbilitiesRegistrar {
 				],
 				'deposit_id'           => [
 					'type'        => 'string',
-					'description' => 'Filter to a single payout (deposit) ID; applies to summary only.',
+					'description' => 'Filter to transactions belonging to a single payout (deposit) ID. Accepted by both the list and the summary endpoints.',
 				],
 			],
 			'additionalProperties' => true,
@@ -961,12 +1029,29 @@ class AbilitiesRegistrar {
 	}
 
 	/**
+	 * Strip pagination and sort properties from a list-style input schema so
+	 * it can be reused for the matching summary ability. Summary endpoints
+	 * don't paginate or sort — keeping the keys in the schema is misleading
+	 * because they would silently no-op.
+	 *
+	 * @param array $list_schema Input schema produced by a `*_list_input_schema()` helper.
+	 * @return array
+	 */
+	private static function filters_only( array $list_schema ): array {
+		foreach ( [ 'page', 'per_page', 'orderby', 'order' ] as $key ) {
+			unset( $list_schema['properties'][ $key ] );
+		}
+		return $list_schema;
+	}
+
+	/**
 	 * Delegate to a REST route via `rest_do_request()`.
 	 *
 	 * Builds a WP_REST_Request from the ability's input, dispatches through
 	 * the REST router (which handles controller instantiation and its
 	 * dependencies), then unwraps both `WP_REST_Response` and raw-array
-	 * return shapes.
+	 * return shapes. Translates pagination/sort keys at the boundary (see
+	 * `PAGINATION_KEY_MAP`).
 	 *
 	 * Shape 2 from the abilities-api skill — used for low-stakes reads with
 	 * no telemetry side effects. Backing controllers in WooPayments either
@@ -979,10 +1064,19 @@ class AbilitiesRegistrar {
 	 *
 	 * @param string              $http_method HTTP method (GET, POST, …).
 	 * @param string              $route       REST route path (e.g. `/wc/v3/payments/transactions`).
-	 * @param array<string,mixed> $params     Request parameters (query/body).
+	 * @param array<string,mixed> $params      Request parameters (query/body).
 	 * @return array|\WP_Error Unwrapped response data, or WP_Error on failure.
 	 */
 	private static function delegate_to_rest_controller( $http_method, $route, $params = [] ) {
+		// Translate WP-Core REST pagination/sort keys to the names the
+		// WooPayments Paginated request class consumes.
+		foreach ( self::PAGINATION_KEY_MAP as $agent_key => $request_key ) {
+			if ( array_key_exists( $agent_key, $params ) ) {
+				$params[ $request_key ] = $params[ $agent_key ];
+				unset( $params[ $agent_key ] );
+			}
+		}
+
 		$request = new \WP_REST_Request( $http_method, $route );
 		foreach ( $params as $key => $value ) {
 			$request->set_param( $key, $value );
