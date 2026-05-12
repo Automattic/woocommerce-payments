@@ -137,9 +137,6 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 
 	/**
 	 * Persists the dismissal in user meta when the dismiss link is followed.
-	 * Meta only writes after wp_safe_redirect confirms headers went out — if
-	 * a filter intercepts the redirect, the banner reappears next request
-	 * rather than getting silently suppressed.
 	 *
 	 * @return void
 	 */
@@ -148,10 +145,9 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 			return;
 		}
 		$this->record_tracks_event( $this->dismissed_event_name() );
-		if ( wp_safe_redirect( remove_query_arg( [ $this->hide_query_arg(), $this->hide_nonce_arg() ] ) ) ) {
-			update_user_meta( get_current_user_id(), $this->dismissed_meta_key(), time() );
-			exit;
-		}
+		update_user_meta( get_current_user_id(), $this->dismissed_meta_key(), time() );
+		wp_safe_redirect( remove_query_arg( [ $this->hide_query_arg(), $this->hide_nonce_arg() ] ) );
+		exit;
 	}
 
 	/**
@@ -167,10 +163,9 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 			return;
 		}
 		$this->record_tracks_event( $this->snoozed_event_name() );
-		if ( wp_safe_redirect( remove_query_arg( [ $this->snooze_query_arg(), $this->snooze_nonce_arg() ] ) ) ) {
-			update_user_meta( get_current_user_id(), $this->snoozed_meta_key(), time() );
-			exit;
-		}
+		update_user_meta( get_current_user_id(), $this->snoozed_meta_key(), time() );
+		wp_safe_redirect( remove_query_arg( [ $this->snooze_query_arg(), $this->snooze_nonce_arg() ] ) );
+		exit;
 	}
 
 	/**
@@ -453,10 +448,10 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	}
 
 	/**
-	 * Standard terminal-CTA flow: record event, redirect, then write dismiss
-	 * meta after the redirect headers actually go out. Subclasses with
-	 * non-terminal CTAs (test-to-live's "flip mode" variant) should not call
-	 * this — they record their own event and redirect directly.
+	 * Standard terminal-CTA flow: record the cta_clicked event, mark the
+	 * banner as dismissed for this user, then redirect to the destination.
+	 * Subclasses with non-terminal CTAs (test-to-live's "flip mode" variant)
+	 * should not call this — they record their own event and redirect directly.
 	 *
 	 * @param string $destination_url Where to send the user after the CTA.
 	 * @param array  $tracks_props    Properties attached to the cta_clicked event.
@@ -464,10 +459,9 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	 */
 	protected function record_dismissal_and_redirect( string $destination_url, array $tracks_props = [] ): void {
 		$this->record_tracks_event( $this->cta_event_name(), $tracks_props );
-		if ( wp_safe_redirect( $destination_url ) ) {
-			update_user_meta( get_current_user_id(), $this->dismissed_meta_key(), time() );
-			exit;
-		}
+		update_user_meta( get_current_user_id(), $this->dismissed_meta_key(), time() );
+		wp_safe_redirect( $destination_url );
+		exit;
 	}
 
 	/**
