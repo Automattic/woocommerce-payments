@@ -66,6 +66,16 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 		}
 
 		/**
+		 * Hide the heading form field from WC Settings → Emails. The template
+		 * renders per-stage hard-coded headings, so a merchant override would
+		 * silently flatten all three stages to the same heading.
+		 */
+		public function init_form_fields() {
+			parent::init_form_fields();
+			unset( $this->form_fields['heading'] );
+		}
+
+		/**
 		 * Trigger sending the email.
 		 *
 		 * @param int $stage The stage day (7, 14, or 30).
