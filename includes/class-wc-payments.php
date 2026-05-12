@@ -32,6 +32,7 @@ use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\WC_Payments_Currency_Manager;
+use WCPay\Onboarding_Experiment;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -65,6 +66,13 @@ class WC_Payments {
 	 * @var WC_Payments_Account
 	 */
 	private static $account;
+
+	/**
+	 * Instance of WCPay\Onboarding_Experiment, created in init function.
+	 *
+	 * @var Onboarding_Experiment
+	 */
+	private static $onboarding_experiment;
 
 	/**
 	 * Instance of WC_Payments_Session_Service, created in init function.
@@ -495,6 +503,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 		include_once __DIR__ . '/class-wc-payments-onboarding-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
+		include_once __DIR__ . '/class-onboarding-experiment-abtest.php';
+		include_once __DIR__ . '/class-onboarding-experiment.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/class-wc-payments-settings-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
@@ -550,6 +560,7 @@ class WC_Payments {
 		self::$redirect_service                     = new WC_Payments_Redirect_Service( self::$api_client );
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache, self::$session_service );
 		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service, self::$onboarding_service, self::$redirect_service );
+		self::$onboarding_experiment                = new Onboarding_Experiment();
 		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$session_service, self::$order_service );
 		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
@@ -1407,6 +1418,24 @@ class WC_Payments {
 	 */
 	public static function set_account_service( WC_Payments_Account $account ) {
 		self::$account = $account;
+	}
+
+	/**
+	 * Returns the Onboarding_Experiment instance.
+	 *
+	 * @return Onboarding_Experiment
+	 */
+	public static function get_onboarding_experiment(): Onboarding_Experiment {
+		return self::$onboarding_experiment;
+	}
+
+	/**
+	 * Sets the Onboarding_Experiment instance.
+	 *
+	 * @param Onboarding_Experiment $onboarding_experiment The experiment instance.
+	 */
+	public static function set_onboarding_experiment( Onboarding_Experiment $onboarding_experiment ) {
+		self::$onboarding_experiment = $onboarding_experiment;
 	}
 
 	/**
