@@ -31,8 +31,8 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 		public function __construct() {
 			$this->id             = 'wcpay_post_kyc_activation';
 			$this->customer_email = false;
-			$this->title          = __( 'Post-KYC activation reminder', 'woocommerce-payments' );
-			$this->description    = __( 'Sent to merchants 7, 14, and 30 days after their account is approved if they have not yet made their first sale.', 'woocommerce-payments' );
+			$this->title          = __( 'First sale reminder', 'woocommerce-payments' );
+			$this->description    = __( "We'll send a couple of reminders during your first month of accepting payments, to help you bring in your first sale. Stops automatically once you've taken one.", 'woocommerce-payments' );
 			$this->template_base  = WCPAY_ABSPATH . 'templates/';
 			$this->template_html  = 'emails/post-kyc-activation.php';
 			$this->template_plain = 'emails/plain/post-kyc-activation.php';
