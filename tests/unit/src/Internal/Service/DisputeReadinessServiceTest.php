@@ -75,7 +75,7 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$this->assertContains( 'refund_policy', $overview['completeSignalIds'] );
 	}
 
-	public function test_terms_signal_treats_empty_published_page_as_complete() {
+	public function test_terms_signal_treats_empty_published_page_as_incomplete() {
 		$page_id = self::factory()->post->create(
 			[
 				'post_type'    => 'page',
@@ -88,8 +88,8 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$overview = $this->service->get_overview_payload()['overview'];
 		$signal   = $this->get_signal( $overview, 'terms_and_conditions' );
 
-		$this->assertSame( 'complete', $signal['status'] );
-		$this->assertContains( 'terms_and_conditions', $overview['completeSignalIds'] );
+		$this->assertSame( 'incomplete', $signal['status'] );
+		$this->assertContains( 'terms_and_conditions', $overview['incompleteSignalIds'] );
 	}
 
 	public function test_terms_signal_uses_woocommerce_advanced_settings_url_when_no_page_is_assigned() {
@@ -104,8 +104,9 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 	public function test_terms_signal_uses_woocommerce_advanced_settings_url_when_page_is_assigned() {
 		$page_id = self::factory()->post->create(
 			[
-				'post_type'   => 'page',
-				'post_status' => 'publish',
+				'post_type'    => 'page',
+				'post_status'  => 'publish',
+				'post_content' => 'Store terms apply.',
 			]
 		);
 		update_option( 'woocommerce_terms_page_id', $page_id );

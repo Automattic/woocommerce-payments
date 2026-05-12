@@ -152,7 +152,7 @@ class DisputeReadinessService {
 	 */
 	private function get_terms_and_conditions_signal(): array {
 		$page_id = function_exists( 'wc_terms_and_conditions_page_id' ) ? (int) wc_terms_and_conditions_page_id() : (int) get_option( 'woocommerce_terms_page_id', 0 );
-		$status  = $this->is_published_page( $page_id ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
+		$status  = $this->is_complete_page( $page_id ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
 
 		return [
 			'id'          => self::SIGNAL_TERMS_AND_CONDITIONS,
