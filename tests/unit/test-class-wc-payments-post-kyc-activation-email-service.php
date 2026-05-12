@@ -298,4 +298,15 @@ class WC_Payments_Post_Kyc_Activation_Email_Service_Test extends WCPAY_UnitTestC
 
 		$this->assertFalse( get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
 	}
+
+	public function test_send_email_for_stage_bails_when_action_fires_too_late(): void {
+		$this->set_up_eligible_state();
+		// KYC was 15 days ago — stage-7 send time was 8 days ago, past the 7-day stale grace.
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 15 * DAY_IN_SECONDS );
+		$service = $this->make_service();
+
+		$service->send_email_for_stage( 7 );
+
+		$this->assertFalse( get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
+	}
 }

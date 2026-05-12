@@ -125,6 +125,16 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 			return;
 		}
 
+		// Re-check staleness at fire time in case Action Scheduler runs the
+		// action well after its scheduled time (e.g. WP-Cron stalled for weeks).
+		$kyc_date = (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, 0 );
+		if ( ! $kyc_date ) {
+			return;
+		}
+		if ( time() > $kyc_date + $stage * DAY_IN_SECONDS + self::STALE_GRACE_SECONDS ) {
+			return;
+		}
+
 		if ( ! $this->is_eligible() ) {
 			return;
 		}
