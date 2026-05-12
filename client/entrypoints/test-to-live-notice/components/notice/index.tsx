@@ -3,11 +3,12 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
  */
-import BannerNotice from '../banner-notice';
+import BannerNotice from 'components/banner-notice';
 
 const TestToLiveNotice: React.FC = () => {
 	const ctaUrl = window.wcpayTestToLiveNoticeSettings?.ctaUrl ?? '';
@@ -38,15 +39,12 @@ const TestToLiveNotice: React.FC = () => {
 				},
 			] }
 		>
-			<strong>
-				{ __(
-					"You're ready to take real payments.",
+			{ createInterpolateElement(
+				__(
+					"<strong>You're ready to take real payments.</strong> Switch from test mode to start charging customers.",
 					'woocommerce-payments'
-				) }
-			</strong>{ ' ' }
-			{ __(
-				'Switch from test mode to start charging customers.',
-				'woocommerce-payments'
+				),
+				{ strong: <strong /> }
 			) }
 		</BannerNotice>
 	);

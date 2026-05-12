@@ -304,6 +304,97 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Returns the display name for a Stripe card brand.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The display name.
+	 */
+	public static function get_card_brand_display_name( string $brand ): string {
+		$brand = strtolower( str_replace( '-', '_', $brand ) );
+
+		$brand_display_names = [
+			'cartes_bancaires' => __( 'Cartes Bancaires', 'woocommerce-payments' ),
+			'cb'               => __( 'Cartes Bancaires', 'woocommerce-payments' ),
+			'eftpos'           => __( 'eftpos', 'woocommerce-payments' ),
+			'eftpos_au'        => __( 'eftpos', 'woocommerce-payments' ),
+		];
+
+		if ( isset( $brand_display_names[ $brand ] ) ) {
+			return $brand_display_names[ $brand ];
+		}
+
+		return ucfirst( $brand );
+	}
+
+	/**
+	 * Returns the terminal card brand asset name used for card artwork.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The asset name, without extension.
+	 */
+	public static function get_terminal_card_brand_asset_name( string $brand ): string {
+		$brand = strtolower( str_replace( '-', '_', $brand ) );
+
+		$brand_asset_names = [
+			'cartes_bancaires' => 'cartes_bancaires',
+			'cb'               => 'cartes_bancaires',
+			'eftpos'           => 'eftpos_au',
+			'eftpos_au'        => 'eftpos_au',
+		];
+
+		return $brand_asset_names[ $brand ] ?? '';
+	}
+
+	/**
+	 * Returns the terminal card brand icon as a base64-encoded SVG for receipt CSS.
+	 *
+	 * @param string $brand The card brand from Stripe.
+	 * @return string The base64-encoded SVG, or an empty string when unavailable.
+	 */
+	public static function get_terminal_card_brand_icon_base64( string $brand ): string {
+		$asset_name = self::get_terminal_card_brand_asset_name( $brand );
+
+		if ( '' === $asset_name ) {
+			return '';
+		}
+
+		$asset_path = WCPAY_ABSPATH . "assets/images/cards/{$asset_name}.svg";
+
+		if ( ! file_exists( $asset_path ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		return base64_encode( file_get_contents( $asset_path ) );
+	}
+
+	/**
+	 * Returns the terminal card display brand for a card-present payment method.
+	 *
+	 * @param array $payment_method_details The card-present payment method details from Stripe.
+	 * @return string The card network when it should take display priority, otherwise the card brand.
+	 */
+	public static function get_terminal_card_display_brand( array $payment_method_details ): string {
+		$network = $payment_method_details['network'] ?? '';
+
+		if ( '' !== self::get_terminal_card_brand_asset_name( $network ) ) {
+			return $network;
+		}
+
+		return $payment_method_details['brand'] ?? '';
+	}
+
+	/**
+	 * Returns the display name for a terminal card-present payment method.
+	 *
+	 * @param array $payment_method_details The card-present payment method details from Stripe.
+	 * @return string The payment method display name.
+	 */
+	public static function get_terminal_card_display_name( array $payment_method_details ): string {
+		return self::get_card_brand_display_name( self::get_terminal_card_display_brand( $payment_method_details ) );
+	}
+
+	/**
 	 * Verifies whether a certain ZIP code is valid for the US, incl. 4-digit extensions.
 	 *
 	 * @param string $zip The ZIP code to verify.

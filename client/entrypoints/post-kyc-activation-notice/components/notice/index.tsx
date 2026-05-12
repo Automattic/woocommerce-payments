@@ -30,7 +30,7 @@ const stageContent: Record< number, string > = {
 
 const PostKycActivationNotice: React.FC = () => {
 	const { stage, ctaUrl, dismissUrl } =
-		window?.wcpayPostKycActivationNoticeSettings ?? {};
+		window.wcpayPostKycActivationNoticeSettings ?? {};
 
 	const content = stage ? stageContent[ stage ] : null;
 	if ( ! content ) {

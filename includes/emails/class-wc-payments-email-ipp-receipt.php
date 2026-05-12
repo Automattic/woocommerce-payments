@@ -338,11 +338,13 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 */
 		public function compliance_details( array $charge, bool $plain_text ) {
 			// Ensure we have all required data for preview.
-			$charge = $this->get_preview_charge( $charge );
+			$charge                 = $this->get_preview_charge( $charge );
+			$payment_method_details = $charge['payment_method_details']['card_present'] ?? [];
 
 			$template_data = [
-				'payment_method_details' => $charge['payment_method_details']['card_present'] ?? [],
-				'receipt'                => $charge['payment_method_details']['card_present']['receipt'] ?? [],
+				'payment_method_details'      => $payment_method_details,
+				'payment_method_display_name' => WC_Payments_Utils::get_terminal_card_display_name( $payment_method_details ),
+				'receipt'                     => $payment_method_details['receipt'] ?? [],
 			];
 
 			if ( $plain_text ) {

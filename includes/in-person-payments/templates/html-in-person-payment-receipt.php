@@ -5,24 +5,28 @@
  * @package WooCommerce\Payments
  */
 
-/**
- * Helper to generate markup to render a price.
- *
- * @param  array  $product The product to display.
- * @param  string $currency The currency to display.
- * @return string
- */
-function wcpay_format_price_helper( array $product, string $currency ): string {
-	$active_price  = $product['price'];
-	$regular_price = $product['regular_price'];
-	$has_discount  = $active_price !== $regular_price;
+if ( ! function_exists( 'wcpay_format_price_helper' ) ) {
+	/**
+	 * Helper to generate markup to render a price.
+	 *
+	 * @param  array  $product The product to display.
+	 * @param  string $currency The currency to display.
+	 * @return string
+	 */
+	function wcpay_format_price_helper( array $product, string $currency ): string {
+		$active_price  = $product['price'];
+		$regular_price = $product['regular_price'];
+		$has_discount  = $active_price !== $regular_price;
 
-	if ( $has_discount ) {
-		return '<s>' . wc_price( $regular_price, [ 'currency' => $currency ] ) . '</s> ' . wc_price( $active_price, [ 'currency' => $currency ] );
+		if ( $has_discount ) {
+			return '<s>' . wc_price( $regular_price, [ 'currency' => $currency ] ) . '</s> ' . wc_price( $active_price, [ 'currency' => $currency ] );
+		}
+
+		return wc_price( $active_price, [ 'currency' => $currency ] );
 	}
-
-	return wc_price( $active_price, [ 'currency' => $currency ] );
 }
+
+$payment_method_display_name = $payment_method_display_name ?? '';
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -205,7 +209,7 @@ function wcpay_format_price_helper( array $product, string $currency ): string {
 					<td class="align-right"><b><?php echo wp_kses( wc_price( $amount_captured, [ 'currency' => $order['currency'] ] ), 'post' ); ?></b></td>
 				</tr>
 				<tr>
-					<td colspan="2" class="align-left"><?php echo esc_html( sprintf( '%s - %s', ucfirst( $payment_method_details['brand'] ), $payment_method_details['last4'] ) ); ?></td>
+					<td colspan="2" class="align-left"><?php echo esc_html( sprintf( '%s - %s', $payment_method_display_name, $payment_method_details['last4'] ) ); ?></td>
 				</tr>
 			</table>
 		</div>
