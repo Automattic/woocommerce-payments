@@ -38,7 +38,10 @@ const buildDispute = (
 		metadata: {},
 		payment_intent: 'pi_test',
 		reason: 'product_unacceptable',
-		status: 'lost',
+		// Default to warning_closed so existing tests focus on the
+		// Evidence Submitted section without the recommendations list
+		// also rendering. Won/lost behavior has its own dedicated tests.
+		status: 'warning_closed',
 		...overrides,
 	} as ChargeDispute );
 
@@ -126,5 +129,73 @@ describe( 'DisputeOutcomeView', () => {
 			screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
 		).toBeInTheDocument();
 		expect( screen.queryAllByRole( 'listitem' ) ).toHaveLength( 0 );
+	} );
+
+	describe( 'recommendations section', () => {
+		it( 'renders "What could help" for a lost dispute', () => {
+			const dispute = buildDispute( {
+				status: 'lost',
+				metadata: { __product_type: 'physical_product' },
+			} );
+
+			render( <DisputeOutcomeView dispute={ dispute } /> );
+
+			expect(
+				screen.getByRole( 'heading', { name: /what could help/i } )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what to keep doing/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'renders "What to keep doing" for a won dispute when a high-impact field is provided', () => {
+			const dispute = buildDispute( {
+				status: 'won',
+				metadata: { __product_type: 'physical_product' },
+				// shipping_address + shipping_documentation are high-impact
+				// for product_unacceptable + physical_product? No — for
+				// product_unacceptable the high-impact set differs. Pin
+				// reason to product_not_received where shipping_address is
+				// high-impact to keep this test against the actual map.
+				reason: 'product_not_received',
+				evidence: {
+					shipping_address: '123 Main St',
+					shipping_tracking_number: '1Z999',
+				},
+			} );
+
+			render( <DisputeOutcomeView dispute={ dispute } /> );
+
+			expect(
+				screen.getByRole( 'heading', { name: /what to keep doing/i } )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', { name: /what could help/i } )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'renders neither recommendations heading for a warning_closed dispute', () => {
+			const dispute = buildDispute( {
+				status: 'warning_closed',
+				metadata: { __product_type: 'physical_product' },
+			} );
+
+			render( <DisputeOutcomeView dispute={ dispute } /> );
+
+			// Evidence Submitted still renders for warning_closed.
+			expect(
+				screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
+			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', { name: /what could help/i } )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what to keep doing/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
 	} );
 } );

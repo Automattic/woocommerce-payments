@@ -75,3 +75,41 @@
 		}
 	}
 }
+
+.dispute-outcome-recommendations-list {
+	list-style: none;
+	margin: 0;
+	padding: 0 $grid-unit-30;
+
+	&__intro {
+		margin: 0 $grid-unit-30 $grid-unit-15;
+		font-size: 13px;
+		line-height: 20px;
+		color: $gray-700;
+	}
+
+	&__item {
+		display: flex;
+		flex-direction: column;
+		gap: $grid-unit-05;
+		padding: $grid-unit-10 0;
+		font-size: 13px;
+		line-height: 20px;
+
+		& + & {
+			border-top: 1px solid $gray-100;
+		}
+	}
+
+	&__label {
+		color: $gray-900;
+		font-weight: 500;
+	}
+
+	&__placeholder {
+		// Placeholder copy is intentionally de-emphasized: it greps for
+		// `TODO(catherine)` and disappears entirely once RiskOps copy lands.
+		color: $gray-500;
+		font-style: italic;
+	}
+}
