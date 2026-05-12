@@ -309,4 +309,21 @@ class WC_Payments_Post_Kyc_Activation_Email_Service_Test extends WCPAY_UnitTestC
 
 		$this->assertFalse( get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
 	}
+
+	public function test_send_email_for_stage_triggers_email_and_marks_sent_on_success(): void {
+		$this->set_up_eligible_state();
+
+		// Plugin init registers the email class via the woocommerce_email_classes
+		// filter; this assertion locks in that the registration is in place.
+		$emails = WC()->mailer()->get_emails();
+		$this->assertInstanceOf(
+			WC_Payments_Email_Post_Kyc_Activation::class,
+			$emails['WC_Payments_Email_Post_Kyc_Activation'] ?? null
+		);
+
+		$service = $this->make_service();
+		$service->send_email_for_stage( 7 );
+
+		$this->assertSame( [ 7 ], get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
+	}
 }
