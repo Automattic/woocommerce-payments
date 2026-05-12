@@ -4,7 +4,13 @@
  * External dependencies
  */
 import React from 'react';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import {
+	act,
+	fireEvent,
+	render,
+	screen,
+	waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -109,8 +115,8 @@ describe( 'Reports page tabs', () => {
 			screen.getByText( /reconciliation reports/i )
 		).toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'heading', { name: 'Reports' } )
-		).not.toBeInTheDocument();
+			screen.getByRole( 'heading', { name: 'Reports', level: 1 } )
+		).toBeInTheDocument();
 		expect(
 			screen.queryByRole( 'navigation', { name: 'Breadcrumb' } )
 		).not.toBeInTheDocument();
@@ -161,11 +167,7 @@ describe( 'Reports page tabs', () => {
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 
-		await act( async () => {
-			await userEvent.click(
-				screen.getByRole( 'tab', { name: 'Fees' } )
-			);
-		} );
+		fireEvent.click( screen.getByRole( 'tab', { name: 'Fees' } ) );
 
 		await waitFor( () => {
 			expect( mockUpdateQueryString ).toHaveBeenCalledWith(
@@ -174,16 +176,17 @@ describe( 'Reports page tabs', () => {
 			);
 		} );
 		expect( mockUpdateQueryString ).toHaveBeenCalledTimes( 1 );
+		expect( screen.getByRole( 'tab', { name: 'Fees' } ) ).toHaveFocus();
 	} );
 
 	it( 'reloads the active tab in place by invalidating the placeholder resolver', async () => {
 		await renderReportsPage( {
-			initialTabStatus: 'error',
+			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 
 		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Reload report' } )
+			screen.getByRole( 'button', { name: /Reload/i } )
 		);
 
 		expect( invalidateResolution ).toHaveBeenCalledWith(
@@ -201,7 +204,7 @@ describe( 'Reports page tabs', () => {
 		mockGetQuery.mockReturnValue( { tab: 'fees' } );
 
 		await renderReportsPage( {
-			initialTabStatus: 'error',
+			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 

@@ -203,6 +203,7 @@ addFilter(
 			},
 			capability: 'manage_woocommerce',
 		} );
+		// Reports has additional feature-flag setup, so its route config lives with the Reports shell.
 		maybeAddReportsPage( pages, {
 			container: ReportsPage,
 			menuID,

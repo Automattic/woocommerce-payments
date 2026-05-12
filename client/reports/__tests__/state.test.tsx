@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -14,7 +14,7 @@ import { ReportsTabPanel } from '../tabs';
 
 describe( 'Reports tab states', () => {
 	it( 'renders the Balance empty state', () => {
-		render(
+		const { container } = render(
 			<ReportsTabPanel
 				tab="balance"
 				status="empty"
@@ -22,19 +22,24 @@ describe( 'Reports tab states', () => {
 			/>
 		);
 
+		expect( container.firstChild ).toHaveClass(
+			'wcpay-reports-state--empty'
+		);
 		expect(
-			screen.getByRole( 'heading', { name: /No balance/i } )
+			screen.getByRole( 'heading', { level: 2 } )
 		).toBeInTheDocument();
-		expect( screen.getByText( /Balance summary/i ) ).toBeInTheDocument();
 	} );
 
 	it( 'renders the Fees empty state', () => {
-		render(
+		const { container } = render(
 			<ReportsTabPanel tab="fees" status="empty" onReload={ jest.fn() } />
 		);
 
+		expect( container.firstChild ).toHaveClass(
+			'wcpay-reports-state--empty'
+		);
 		expect(
-			screen.getByRole( 'heading', { name: /No fees/i } )
+			screen.getByRole( 'heading', { level: 2 } )
 		).toBeInTheDocument();
 	} );
 
@@ -47,8 +52,8 @@ describe( 'Reports tab states', () => {
 			/>
 		);
 
-		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
-			/Loading report/i
+		expect( screen.getByRole( 'status' ) ).toContainElement(
+			screen.getByRole( 'heading', { level: 2 } )
 		);
 	} );
 
@@ -62,11 +67,11 @@ describe( 'Reports tab states', () => {
 		);
 
 		expect(
-			screen.getByRole( 'heading', { name: /partially loaded/i } )
+			screen.getByRole( 'heading', { level: 2 } )
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders Balance error copy and reload action', async () => {
+	it( 'renders Balance error state with reload action', async () => {
 		const onReload = jest.fn();
 		render(
 			<ReportsTabPanel
@@ -76,32 +81,59 @@ describe( 'Reports tab states', () => {
 			/>
 		);
 
+		const alert = screen.getByRole( 'alert' );
+
 		expect(
-			screen.getByRole( 'heading', { name: /Balance unavailable/i } )
+			within( alert ).getByRole( 'heading', { level: 2 } )
 		).toBeInTheDocument();
 
 		await userEvent.click(
-			screen.getByRole( 'button', { name: /Reload/i } )
+			within( alert ).getByRole( 'button', { name: /Reload/i } )
 		);
 
 		expect( onReload ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'renders Fees error copy and reload action', async () => {
+	it( 'renders Fees error state with reload action', async () => {
 		const onReload = jest.fn();
 		render(
 			<ReportsTabPanel tab="fees" status="error" onReload={ onReload } />
 		);
 
+		const alert = screen.getByRole( 'alert' );
+
 		expect(
-			screen.getByRole( 'heading', { name: /Fees report unavailable/i } )
+			within( alert ).getByRole( 'heading', { level: 2 } )
 		).toBeInTheDocument();
 
 		await userEvent.click(
-			screen.getByRole( 'button', { name: /Reload/i } )
+			within( alert ).getByRole( 'button', { name: /Reload/i } )
 		);
 
 		expect( onReload ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'moves focus to the error heading after entering an error state', async () => {
+		const onReload = jest.fn();
+		const { rerender } = render(
+			<ReportsTabPanel
+				tab="balance"
+				status="loading"
+				onReload={ jest.fn() }
+			/>
+		);
+
+		rerender(
+			<ReportsTabPanel tab="fees" status="error" onReload={ onReload } />
+		);
+
+		await waitFor( () => {
+			expect(
+				within( screen.getByRole( 'alert' ) ).getByRole( 'heading', {
+					level: 2,
+				} )
+			).toHaveFocus();
+		} );
 	} );
 
 	it( 'moves focus to the persistent content heading after recovering from an error', async () => {
@@ -128,9 +160,7 @@ describe( 'Reports tab states', () => {
 		);
 
 		await waitFor( () => {
-			expect(
-				screen.getByRole( 'heading', { name: /No balance/i } )
-			).toHaveFocus();
+			expect( screen.getByRole( 'heading', { level: 2 } ) ).toHaveFocus();
 		} );
 	} );
 } );

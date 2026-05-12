@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
@@ -15,21 +15,23 @@ import { ReportsHeader } from './header';
 import { getLastFullCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
 import { useReportsTabReload } from './hooks';
-import type { ReportsTabStatus } from './types';
+import type { ReportsTab, ReportsTabStatus } from './types';
 import './style.scss';
 
 interface ReportsPageProps {
-	initialTabStatus?: ReportsTabStatus;
+	tabStatus?: ReportsTabStatus;
 	now?: Date;
 }
 
 export const ReportsPage: React.FC< ReportsPageProps > = ( {
-	initialTabStatus = 'empty',
+	tabStatus = 'empty',
 	now,
 } ) => {
 	const [ activeTab, setActiveTab ] = useState( () =>
 		normalizeReportsTab( getQuery().tab )
 	);
+	const tabPanelWrapperRef = useRef< HTMLDivElement >( null );
+	const previousActiveTabRef = useRef< ReportsTab >( activeTab );
 	const period = useMemo(
 		() => getLastFullCalendarMonthUTC( now ?? new Date() ),
 		[ now ]
@@ -46,6 +48,18 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 			window.removeEventListener( 'popstate', syncActiveTabFromUrl );
 		};
 	}, [] );
+
+	useEffect( () => {
+		if ( previousActiveTabRef.current !== activeTab ) {
+			tabPanelWrapperRef.current
+				?.querySelector< HTMLElement >(
+					'[role="tab"][aria-selected="true"]'
+				)
+				?.focus();
+		}
+
+		previousActiveTabRef.current = activeTab;
+	}, [ activeTab ] );
 
 	const onTabSelected = ( tab: string ) => {
 		const nextTab = normalizeReportsTab( tab );
@@ -66,24 +80,26 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 	return (
 		<Page className="wcpay-reports-page">
 			<ReportsHeader />
-			<TabPanel
-				key={ activeTab }
-				className="wcpay-reports-tab-panel"
-				activeClass="active-tab"
-				onSelect={ onTabSelected }
-				initialTabName={ activeTab }
-				tabs={ reportsTabs }
-			>
-				{ ( tab ) => (
-					<div className="wcpay-reports-content">
-						<ReportsTabPanel
-							tab={ normalizeReportsTab( tab.name ) }
-							status={ initialTabStatus }
-							onReload={ reload }
-						/>
-					</div>
-				) }
-			</TabPanel>
+			<div ref={ tabPanelWrapperRef }>
+				<TabPanel
+					key={ activeTab }
+					className="wcpay-reports-tab-panel"
+					activeClass="active-tab"
+					onSelect={ onTabSelected }
+					initialTabName={ activeTab }
+					tabs={ reportsTabs }
+				>
+					{ ( tab ) => (
+						<div className="wcpay-reports-content">
+							<ReportsTabPanel
+								tab={ tab.name as ReportsTab }
+								status={ tabStatus }
+								onReload={ reload }
+							/>
+						</div>
+					) }
+				</TabPanel>
+			</div>
 		</Page>
 	);
 };

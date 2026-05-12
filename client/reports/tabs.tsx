@@ -96,7 +96,12 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 	const previousStatusRef = useRef< ReportsTabStatus >( status );
 
 	useEffect( () => {
-		if ( previousStatusRef.current === 'error' && status !== 'error' ) {
+		const previousStatus = previousStatusRef.current;
+
+		if (
+			previousStatus !== status &&
+			( previousStatus === 'error' || status === 'error' )
+		) {
 			contentHeadingRef.current?.focus();
 		}
 
@@ -131,8 +136,13 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 
 	if ( status === 'error' ) {
 		return (
-			<div className="wcpay-reports-state wcpay-reports-state--error">
-				<h2>{ getErrorTitle( tab ) }</h2>
+			<div
+				className="wcpay-reports-state wcpay-reports-state--error"
+				role="alert"
+			>
+				<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
+					{ getErrorTitle( tab ) }
+				</h2>
 				<Button variant="secondary" onClick={ onReload }>
 					{ __( 'Reload report', 'woocommerce-payments' ) }
 				</Button>
