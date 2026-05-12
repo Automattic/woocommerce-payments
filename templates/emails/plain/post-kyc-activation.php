@@ -17,6 +17,8 @@
  * @var int    $stage
  * @var string $email_heading
  * @var string $additional_content
+ * @var string $cta_url
+ * @var string $cta_label
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -41,6 +43,8 @@ $content = $stage_copy[ $stage ] ?? $stage_copy[7];
 echo esc_html( wp_strip_all_tags( $content['heading'] ) ) . "\n\n";
 echo "=====================================================\n\n";
 echo esc_html( $content['body'] ) . "\n\n";
+
+echo esc_html( $cta_label ) . ': ' . esc_url( $cta_url ) . "\n\n";
 
 if ( $additional_content ) {
 	echo "-----------------------------------------------------\n\n";

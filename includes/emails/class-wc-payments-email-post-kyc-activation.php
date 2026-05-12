@@ -99,6 +99,31 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 		}
 
 		/**
+		 * Returns the absolute URL the email CTA button links to.
+		 * Mirrors the in-app banner's "Promote my store" destination.
+		 *
+		 * @return string
+		 */
+		public function get_cta_url(): string {
+			return add_query_arg(
+				[
+					'page' => 'wc-admin',
+					'path' => '/marketing',
+				],
+				admin_url( 'admin.php' )
+			);
+		}
+
+		/**
+		 * Label for the email CTA button. Matches the in-app banner's CTA label.
+		 *
+		 * @return string
+		 */
+		public function get_cta_label(): string {
+			return __( 'Promote my store', 'woocommerce-payments' );
+		}
+
+		/**
 		 * Get content html.
 		 *
 		 * @return string
@@ -110,6 +135,8 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 					'stage'              => $this->stage,
 					'email_heading'      => $this->get_heading(),
 					'additional_content' => $this->get_additional_content(),
+					'cta_url'            => $this->get_cta_url(),
+					'cta_label'          => $this->get_cta_label(),
 					'sent_to_admin'      => true,
 					'plain_text'         => false,
 					'email'              => $this,
@@ -131,6 +158,8 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 					'stage'              => $this->stage,
 					'email_heading'      => $this->get_heading(),
 					'additional_content' => $this->get_additional_content(),
+					'cta_url'            => $this->get_cta_url(),
+					'cta_label'          => $this->get_cta_label(),
 					'sent_to_admin'      => true,
 					'plain_text'         => true,
 					'email'              => $this,

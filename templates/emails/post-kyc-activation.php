@@ -17,6 +17,8 @@
  * @var int      $stage
  * @var string   $email_heading
  * @var string   $additional_content
+ * @var string   $cta_url
+ * @var string   $cta_label
  * @var bool     $sent_to_admin
  * @var bool     $plain_text
  * @var WC_Email $email
@@ -44,6 +46,12 @@ $content = $stage_copy[ $stage ] ?? $stage_copy[7];
 do_action( 'woocommerce_email_header', $content['heading'], $email ); ?>
 
 <p><?php echo esc_html( $content['body'] ); ?></p>
+
+<p style="text-align: center; margin: 24px 0;">
+	<a href="<?php echo esc_url( $cta_url ); ?>" style="display: inline-block; padding: 12px 28px; background-color: #3858E9; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: 600;">
+		<?php echo esc_html( $cta_label ); ?>
+	</a>
+</p>
 
 <?php if ( $additional_content ) : ?>
 	<p><?php echo wp_kses_post( wptexturize( $additional_content ) ); ?></p>
