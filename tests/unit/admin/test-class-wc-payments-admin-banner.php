@@ -439,6 +439,598 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	}
 
 	// -------------------------------------------------------------------------
+	// should_show_one_and_done_notice tests
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Order IDs created during one-and-done tests; cleaned up in tear_down_one_and_done_global_state().
+	 *
+	 * @var int[]
+	 */
+	private $one_and_done_order_ids = [];
+
+	/**
+	 * Sets non-mock global state for the one-and-done notice eligibility tests.
+	 * Call before make_admin_banner_for_notice_test( ..., $is_live = true ).
+	 */
+	private function set_up_one_and_done_global_state( int $live_order_count = 1, int $first_order_age_days = 8 ): void {
+		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE );
+
+		// Reset Mode to live (one-and-done requires the merchant to be transacting live, not in test or dev).
+		WC_Payments::mode()->live();
+
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		for ( $i = 0; $i < $live_order_count; $i++ ) {
+			$order = wc_create_order();
+			$order->set_payment_method( 'woocommerce_payments' );
+			$order->set_status( 'completed' );
+			$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::PRODUCTION );
+			// Stagger ages so the first (oldest) order is exactly $first_order_age_days old.
+			$order->set_date_created( time() - ( $first_order_age_days - $i ) * DAY_IN_SECONDS );
+			$order->save();
+			$this->one_and_done_order_ids[] = $order->get_id();
+		}
+	}
+
+	private function tear_down_one_and_done_global_state(): void {
+		WC_Payments::mode()->live();
+		delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_DISMISSED );
+		delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SNOOZED );
+		delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SHOWN );
+		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE );
+		delete_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE );
+
+		foreach ( $this->one_and_done_order_ids as $order_id ) {
+			$order = wc_get_order( $order_id );
+			if ( $order ) {
+				$order->delete( true );
+			}
+		}
+		$this->one_and_done_order_ids = [];
+	}
+
+	public function test_should_show_one_and_done_notice_returns_true_when_all_conditions_met(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertTrue( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_user_cannot_manage_woocommerce(): void {
+		$this->set_up_one_and_done_global_state();
+		$subscriber = self::factory()->user->create( [ 'role' => 'subscriber' ] );
+		wp_set_current_user( $subscriber );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_not_connected(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( false, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_account_invalid(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, false, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_for_test_drive_account(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, true, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_payments_not_enabled(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, false, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_account_not_live(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, false );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_in_test_mode(): void {
+		$this->set_up_one_and_done_global_state();
+		WC_Payments::mode()->test();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_in_dev_mode(): void {
+		$this->set_up_one_and_done_global_state();
+		WC_Payments::mode()->dev();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_no_live_orders(): void {
+		$this->set_up_one_and_done_global_state( 0 );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_two_live_orders(): void {
+		$this->set_up_one_and_done_global_state( 2 );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		// ≥2 live WCPay orders is irreversible — flag must be set so subsequent
+		// requests short-circuit before re-running the order query.
+		$this->assertSame(
+			'1',
+			get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE )
+		);
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_one_wcpay_and_one_non_wcpay(): void {
+		// 1 WooPayments live order (from the helper) + 1 cheque order = 2 real-
+		// customer transactions at the store level. The merchant has activity
+		// through other channels, so the banner shouldn't show.
+		$this->set_up_one_and_done_global_state();
+
+		$cheque = wc_create_order();
+		$cheque->set_payment_method( 'cheque' );
+		$cheque->set_status( 'completed' );
+		$cheque->save();
+		$this->one_and_done_order_ids[] = $cheque->get_id();
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		// Non-WCPay order present — also irreversible, flag must be set.
+		$this->assertSame(
+			'1',
+			get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE )
+		);
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_only_order_is_non_wcpay(): void {
+		// 0 WooPayments orders, 1 cheque order. The merchant hasn't used
+		// WooPayments yet, so this banner's prompt doesn't apply (a different
+		// "use WooPayments" banner would be the right surface, not this one).
+		$this->set_up_one_and_done_global_state( 0 );
+
+		$cheque = wc_create_order();
+		$cheque->set_payment_method( 'cheque' );
+		$cheque->set_status( 'completed' );
+		$cheque->save();
+		$this->one_and_done_order_ids[] = $cheque->get_id();
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_first_order_too_recent(): void {
+		$this->set_up_one_and_done_global_state( 1, 3 );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_ignores_test_mode_orders(): void {
+		// One live order at threshold age — should be eligible.
+		$this->set_up_one_and_done_global_state();
+
+		// A test-mode WCPay order also exists; test orders must not count toward the live count.
+		$test_order = wc_create_order();
+		$test_order->set_payment_method( 'woocommerce_payments' );
+		$test_order->set_status( 'completed' );
+		$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::TEST );
+		$test_order->save();
+		$this->one_and_done_order_ids[] = $test_order->get_id();
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertTrue( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_dismissed(): void {
+		$this->set_up_one_and_done_global_state();
+		update_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_DISMISSED, time() );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_false_when_snoozed(): void {
+		$this->set_up_one_and_done_global_state();
+		update_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SNOOZED, time() );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_returns_true_when_snooze_expired(): void {
+		$this->set_up_one_and_done_global_state();
+		$eight_days_ago = time() - 8 * DAY_IN_SECONDS;
+		update_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SNOOZED, $eight_days_ago );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertTrue( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_eligible_with_many_test_mode_orders(): void {
+		// L793 regression: with the previous 20-row PHP scan, 19+ test-mode orders
+		// could saturate the window and silently exclude an eligible merchant.
+		// The new query filters server-side on `_wcpay_mode = PRODUCTION` so test
+		// orders are never returned regardless of count.
+		$this->set_up_one_and_done_global_state();
+
+		for ( $i = 0; $i < 25; $i++ ) {
+			$test_order = wc_create_order();
+			$test_order->set_payment_method( 'woocommerce_payments' );
+			$test_order->set_status( 'completed' );
+			$test_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::TEST );
+			$test_order->save();
+			$this->one_and_done_order_ids[] = $test_order->get_id();
+		}
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertTrue( $banner->should_show_one_and_done_notice() );
+		$this->assertFalse(
+			(bool) get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE ),
+			'Test-mode orders alone must not set the permanent ineligibility flag.'
+		);
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_one_and_done_permanent_ineligible_flag_short_circuits_eligibility_check(): void {
+		// Once the flag is set, subsequent calls must short-circuit before reading
+		// the transient or running any query. We verify by setting the flag on a
+		// store that would otherwise be eligible.
+		$this->set_up_one_and_done_global_state();
+		update_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE, '1' );
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_does_not_set_permanent_flag_for_reversible_disqualifiers(): void {
+		// In dev mode, payments-disabled, account-not-live, etc., the merchant
+		// could still recover into the cohort once the underlying state changes.
+		// The permanent flag must NOT be set for any of these reversible cases.
+		$this->set_up_one_and_done_global_state();
+		WC_Payments::mode()->dev();
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+		$this->assertFalse(
+			(bool) get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE ),
+			'Dev mode is reversible — permanent flag must not be set.'
+		);
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_does_not_set_permanent_flag_for_recent_first_order(): void {
+		// Order age <7 days is reversible (the order ages over time). Permanent
+		// flag must not be set when the only disqualifier is age.
+		$this->set_up_one_and_done_global_state( 1, 3 );
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$this->assertFalse( $banner->should_show_one_and_done_notice() );
+		$this->assertFalse(
+			(bool) get_option( WC_Payments_Admin_Banner::OPTION_ONE_AND_DONE_PERMANENTLY_INELIGIBLE ),
+			'Order age <threshold is reversible — permanent flag must not be set.'
+		);
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_should_show_one_and_done_notice_caches_expensive_checks(): void {
+		// Memoization: even when called multiple times in the same request (once
+		// from admin_enqueue_scripts and once from the woocommerce_sections_*
+		// render hook), the public method must only run the expensive backing
+		// computation once.
+		$this->set_up_one_and_done_global_state();
+
+		$mock_account = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$mock_account->expects( $this->once() )
+			->method( 'get_account_status_data' )
+			->willReturn(
+				[
+					'testDrive'       => false,
+					'paymentsEnabled' => true,
+				]
+			);
+		$mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
+		$mock_account->method( 'get_is_live' )->willReturn( true );
+
+		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+			->disableOriginalConstructor()
+			->getMock();
+		$mock_gateway->method( 'is_connected' )->willReturn( true );
+
+		$banner = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+
+		$banner->should_show_one_and_done_notice();
+		$banner->should_show_one_and_done_notice();
+		$banner->should_show_one_and_done_notice();
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_handle_one_and_done_notice_cta_redirects_to_marketing_and_suppresses_banner(): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+		$_GET['wcpay-one-and-done-cta']        = '1';
+		$_GET['_wcpay_one_and_done_cta_nonce'] = wp_create_nonce( 'wcpay_one_and_done_cta_nonce' );
+
+		$banner             = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+		$captured_url       = null;
+		$redirect_intercept = function ( $location ) use ( &$captured_url ) {
+			$captured_url = $location;
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $redirect_intercept );
+		try {
+			$banner->handle_one_and_done_notice_cta();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $redirect_intercept );
+
+		$this->assertStringContainsString( 'page=wc-admin', $captured_url );
+		$this->assertStringContainsString( 'path=/marketing', $captured_url );
+		$this->assertNotEmpty( get_user_meta( $admin_user, WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_DISMISSED, true ) );
+
+		delete_user_meta( $admin_user, WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_DISMISSED );
+		unset( $_GET['wcpay-one-and-done-cta'], $_GET['_wcpay_one_and_done_cta_nonce'] );
+	}
+
+	public function test_hide_one_and_done_notice_sets_dismissed_meta_and_redirects(): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		$_GET['wcpay-hide-one-and-done-notice']   = '1';
+		$_GET['_wcpay_one_and_done_notice_nonce'] = wp_create_nonce( 'wcpay_hide_one_and_done_notice_nonce' );
+
+		$banner             = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+		$redirect_intercept = function () {
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $redirect_intercept );
+		try {
+			$banner->hide_one_and_done_notice();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $redirect_intercept );
+
+		$this->assertNotEmpty( get_user_meta( $admin_user, WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_DISMISSED, true ) );
+
+		delete_user_meta( $admin_user, WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_DISMISSED );
+		unset( $_GET['wcpay-hide-one-and-done-notice'], $_GET['_wcpay_one_and_done_notice_nonce'] );
+	}
+
+	public function test_snooze_one_and_done_notice_sets_snoozed_meta_and_redirects(): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		$_GET['wcpay-snooze-one-and-done-notice']        = '1';
+		$_GET['_wcpay_snooze_one_and_done_notice_nonce'] = wp_create_nonce( 'wcpay_snooze_one_and_done_notice_nonce' );
+
+		$banner             = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+		$redirect_intercept = function () {
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $redirect_intercept );
+		try {
+			$banner->snooze_one_and_done_notice();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $redirect_intercept );
+
+		$this->assertNotEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SNOOZED, true ) );
+
+		delete_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SNOOZED );
+		unset( $_GET['wcpay-snooze-one-and-done-notice'], $_GET['_wcpay_snooze_one_and_done_notice_nonce'] );
+	}
+
+	public function test_maybe_show_one_and_done_notice_outputs_container_div(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		ob_start();
+		$banner->maybe_show_one_and_done_notice();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '<div id="wcpay-one-and-done-notice">', $output );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_maybe_show_one_and_done_notice_only_records_impression_once_per_user(): void {
+		$this->set_up_one_and_done_global_state();
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		ob_start();
+		$banner->maybe_show_one_and_done_notice();
+		$banner->maybe_show_one_and_done_notice();
+		ob_end_clean();
+
+		$this->assertNotEmpty( get_user_meta( get_current_user_id(), WC_Payments_Admin_Banner::USER_META_ONE_AND_DONE_NOTICE_SHOWN, true ) );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_invalidate_one_and_done_notice_cache_on_order_drops_transient_for_live_wcpay_order(): void {
+		$this->set_up_one_and_done_global_state();
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$order = wc_create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::PRODUCTION );
+		$order->save();
+		$this->one_and_done_order_ids[] = $order->get_id();
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+		$banner->invalidate_one_and_done_notice_cache_on_order( $order->get_id() );
+
+		$this->assertFalse( get_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE ) );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_invalidate_one_and_done_notice_cache_on_order_ignores_test_mode_orders(): void {
+		$this->set_up_one_and_done_global_state();
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$order = wc_create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, \WCPay\Constants\Order_Mode::TEST );
+		$order->save();
+		$this->one_and_done_order_ids[] = $order->get_id();
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+		$banner->invalidate_one_and_done_notice_cache_on_order( $order->get_id() );
+
+		$this->assertSame( '1', get_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE ) );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_invalidate_one_and_done_notice_cache_on_order_drops_transient_for_non_wcpay_orders(): void {
+		// Non-WCPay orders count toward the "one real-customer order" predicate,
+		// so they must invalidate the cache. A merchant who's already taking
+		// cheque/COD/etc. orders is no longer "one and done" at the store level.
+		$this->set_up_one_and_done_global_state();
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$order = wc_create_order();
+		$order->set_payment_method( 'cheque' );
+		$order->save();
+		$this->one_and_done_order_ids[] = $order->get_id();
+
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+		$banner->invalidate_one_and_done_notice_cache_on_order( $order->get_id() );
+
+		$this->assertFalse( get_transient( WC_Payments_Admin_Banner::TRANSIENT_ONE_AND_DONE_NOTICE_ELIGIBLE ) );
+
+		$this->tear_down_one_and_done_global_state();
+	}
+
+	public function test_init_hooks_registers_one_and_done_sections_hook(): void {
+		$_GET['page'] = 'wc-settings';
+		$_GET['tab']  = 'general';
+		$banner       = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$banner->init_hooks();
+
+		$this->assertNotFalse(
+			has_action( 'woocommerce_sections_general', [ $banner, 'maybe_show_one_and_done_notice' ] )
+		);
+
+		remove_action( 'woocommerce_sections_general', [ $banner, 'maybe_show_one_and_done_notice' ] );
+		remove_action( 'woocommerce_sections_general', [ $banner, 'maybe_show_test_to_live_notice' ] );
+		unset( $_GET['page'], $_GET['tab'] );
+	}
+
+	public function test_init_global_hooks_registers_order_completion_listeners(): void {
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$banner->init_global_hooks();
+
+		$this->assertNotFalse(
+			has_action( 'woocommerce_payment_complete', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] ),
+			'woocommerce_payment_complete must register globally so storefront checkout / REST webhook flows clear the eligibility transient.'
+		);
+		$this->assertNotFalse(
+			has_action( 'woocommerce_order_status_completed', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] ),
+			'woocommerce_order_status_completed must register globally; order status transitions to completed can fire outside admin context.'
+		);
+		$this->assertNotFalse(
+			has_action( 'woocommerce_order_status_processing', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] ),
+			'woocommerce_order_status_processing must register globally so cheque/COD/bank-transfer orders moving to processing also invalidate the cache.'
+		);
+
+		remove_action( 'woocommerce_payment_complete', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] );
+		remove_action( 'woocommerce_order_status_completed', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] );
+		remove_action( 'woocommerce_order_status_processing', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] );
+	}
+
+	public function test_init_hooks_does_not_register_order_completion_listeners(): void {
+		// Guards against regressing the global/admin hook split. Order-completion
+		// hooks must be registered by init_global_hooks(), not init_hooks().
+		$banner = $this->make_admin_banner_for_notice_test( true, true, false, true, true );
+
+		$banner->init_hooks();
+
+		$this->assertFalse(
+			has_action( 'woocommerce_payment_complete', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] )
+		);
+		$this->assertFalse(
+			has_action( 'woocommerce_order_status_completed', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] )
+		);
+		$this->assertFalse(
+			has_action( 'woocommerce_order_status_processing', [ $banner, 'invalidate_one_and_done_notice_cache_on_order' ] )
+		);
+	}
+
+	// -------------------------------------------------------------------------
 	// Post-KYC activation notice helpers
 	// -------------------------------------------------------------------------
 
