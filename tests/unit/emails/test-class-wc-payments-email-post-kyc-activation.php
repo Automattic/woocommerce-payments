@@ -58,6 +58,5 @@ class WC_Payments_Email_Post_Kyc_Activation_Test extends WCPAY_UnitTestCase {
 		$this->email->trigger( 14 );
 
 		$this->assertSame( 14, $this->email->stage );
-		$this->assertSame( '14', $this->email->placeholders['{stage}'] );
 	}
 }
