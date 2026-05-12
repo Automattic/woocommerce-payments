@@ -362,6 +362,24 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 	}
 
+	public function test_set_test_mode_invalidates_eligibility_transient() {
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$this->onboarding_service->set_test_mode( true );
+
+		$this->assertFalse(
+			get_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE ),
+			'set_test_mode() owns the eligibility transient cleanup so every flip site stays in sync.'
+		);
+
+		// Same on the way back to live.
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+		$this->onboarding_service->set_test_mode( false );
+		$this->assertFalse( get_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE ) );
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
+	}
+
 	public function test_maybe_handle_gateway_test_mode_toggle_records_date_when_toggled_on() {
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
 
@@ -400,21 +418,37 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
 	}
 
-	public function test_maybe_handle_gateway_test_mode_toggle_invalidates_eligibility_cache() {
-		set_transient( 'wcpay_test_to_live_eligible', '1', HOUR_IN_SECONDS );
+	public function test_maybe_handle_gateway_test_mode_toggle_does_not_write_onboarding_test_mode_option() {
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 
 		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
 			[ 'test_mode' => 'no' ],
 			[ 'test_mode' => 'yes' ]
 		);
 
-		$this->assertFalse( get_transient( 'wcpay_test_to_live_eligible' ) );
+		$this->assertFalse(
+			get_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION ),
+			'Gateway toggle handler must not write TEST_MODE_OPTION — that flag is the higher-priority override and should only be flipped by set_test_mode() callers.'
+		);
+
+		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
+	}
+
+	public function test_maybe_handle_gateway_test_mode_toggle_invalidates_eligibility_cache() {
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
+
+		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
+			[ 'test_mode' => 'no' ],
+			[ 'test_mode' => 'yes' ]
+		);
+
+		$this->assertFalse( get_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE ) );
 
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
 	}
 
 	public function test_maybe_handle_gateway_test_mode_toggle_no_op_when_unchanged() {
-		set_transient( 'wcpay_test_to_live_eligible', '1', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE, '1', HOUR_IN_SECONDS );
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION );
 
 		$this->onboarding_service->maybe_handle_gateway_test_mode_toggle(
@@ -422,10 +456,10 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 			[ 'test_mode' => 'yes' ]
 		);
 
-		$this->assertSame( '1', get_transient( 'wcpay_test_to_live_eligible' ) );
+		$this->assertSame( '1', get_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE ) );
 		$this->assertFalse( get_option( WC_Payments_Onboarding_Service::TEST_MODE_ENABLED_DATE_OPTION ) );
 
-		delete_transient( 'wcpay_test_to_live_eligible' );
+		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
 	}
 
 	public function test_maybe_handle_gateway_test_mode_toggle_treats_non_array_old_value_as_off() {
