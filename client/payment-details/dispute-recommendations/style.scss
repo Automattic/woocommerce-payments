@@ -1,0 +1,66 @@
+/** @format */
+
+.dispute-recommendations-card {
+	&__heading {
+		// Heading LG, matches transaction-details-dispute-details-title and
+		// the Evidence Submitted section heading style.
+		font-size: 15px;
+		font-weight: 500;
+		line-height: 20px;
+		color: $gray-900;
+		margin: 0;
+	}
+}
+
+.dispute-recommendations__item {
+	padding: $grid-unit-15 0;
+	font-size: 13px;
+	line-height: 20px;
+
+	& + & {
+		border-top: 1px solid $gray-100;
+	}
+
+	&:first-child {
+		padding-top: 0;
+	}
+
+	&:last-child {
+		padding-bottom: 0;
+	}
+
+	&--critical {
+		.dispute-recommendations__title {
+			color: $alert-red;
+		}
+	}
+
+	&--tip {
+		.dispute-recommendations__title {
+			color: $alert-yellow;
+		}
+	}
+
+	&--neutral {
+		.dispute-recommendations__title {
+			color: $gray-900;
+		}
+	}
+}
+
+.dispute-recommendations__title {
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 20px;
+	margin: 0 0 $grid-unit-05;
+}
+
+.dispute-recommendations__body {
+	color: $gray-700;
+	margin: 0;
+}
+
+.dispute-recommendations__link {
+	display: inline-block;
+	margin-top: $grid-unit-05;
+}
