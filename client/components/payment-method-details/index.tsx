@@ -19,6 +19,11 @@ interface Payment {
 	[ key: string ]: any;
 }
 
+const shouldDisplayNetworkOverBrand = ( network?: string ) =>
+	[ 'cartes_bancaires', 'cb', 'eftpos', 'eftpos_au' ].includes(
+		network ?? ''
+	);
+
 /**
  *
  * @param payment Payment charge object
@@ -129,11 +134,12 @@ const PaymentMethodDetails = ( { payment }: PaymentMethodDetailsProps ) => {
 
 	const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
 	const fundingCardBrand = paymentMethod?.funding?.card?.brand?.toLowerCase();
-	const brand =
-		paymentMethod?.brand ||
-		paymentMethod?.network ||
-		fundingCardBrand ||
-		payment?.type;
+	const brand = shouldDisplayNetworkOverBrand( paymentMethod?.network )
+		? paymentMethod.network
+		: paymentMethod?.brand ||
+		  paymentMethod?.network ||
+		  fundingCardBrand ||
+		  payment?.type;
 
 	// When the wallet icon already identifies the payment method (Amazon Pay
 	// paid with a non-card instrument), the brand sprite would just duplicate it.

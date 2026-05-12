@@ -22,7 +22,8 @@ export type TransactionType =
 	| 'card_reader_fee'
 	| 'financing_payout'
 	| 'financing_paydown'
-	| 'fee_refund';
+	| 'fee_refund'
+	| 'network_costs';
 
 export type TransactionSource =
 	| 'ach_credit_transfer'
