@@ -76,6 +76,8 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 		add_action( 'add_option_' . WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, [ $this, 'schedule_stage_emails' ], 10, 2 );
 		// Handler for each scheduled stage send.
 		add_action( self::SEND_HOOK, [ $this, 'send_email_for_stage' ] );
+		// Tracks click-throughs from the email CTA into the Marketing Hub.
+		add_action( 'admin_init', [ $this, 'maybe_track_cta_click' ] );
 	}
 
 	/**
@@ -192,5 +194,37 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 		}
 
 		return ! $this->order_service->has_live_sale();
+	}
+
+	/**
+	 * Fires `wcpay_post_kyc_activation_email_cta_clicked` when an admin lands on
+	 * Marketing Hub via the email CTA, then strips the marker query args so a
+	 * page refresh doesn't double-count the click.
+	 *
+	 * @return void
+	 */
+	public function maybe_track_cta_click(): void {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( ! isset( $_GET['wcpay_referrer'] ) || 'post_kyc_email' !== $_GET['wcpay_referrer'] ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		$stage = isset( $_GET['wcpay_referrer_stage'] ) ? (int) $_GET['wcpay_referrer_stage'] : 0;
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		if ( ! in_array( $stage, self::STAGE_DAYS, true ) ) {
+			return;
+		}
+
+		if ( class_exists( 'WC_Tracks' ) ) {
+			WC_Tracks::record_event( 'wcpay_post_kyc_activation_email_cta_clicked', [ 'stage' => $stage ] );
+		}
+
+		wp_safe_redirect( remove_query_arg( [ 'wcpay_referrer', 'wcpay_referrer_stage' ] ) );
+		exit;
 	}
 }

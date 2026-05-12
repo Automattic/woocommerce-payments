@@ -34,6 +34,14 @@ class WC_Payments_Email_Post_Kyc_Activation_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( admin_url( 'admin.php' ), $url );
 	}
 
+	public function test_get_cta_url_includes_referrer_params_for_click_tracking(): void {
+		$this->email->stage = 14;
+		$url                = $this->email->get_cta_url();
+
+		$this->assertStringContainsString( 'wcpay_referrer=post_kyc_email', $url );
+		$this->assertStringContainsString( 'wcpay_referrer_stage=14', $url );
+	}
+
 	public function test_get_cta_label_returns_promote_my_store(): void {
 		$this->assertSame( 'Promote my store', $this->email->get_cta_label() );
 	}

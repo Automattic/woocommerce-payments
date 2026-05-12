@@ -91,24 +91,32 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 
 			$this->setup_locale();
 
+			$sent = false;
 			if ( $this->is_enabled() && $this->get_recipient() ) {
-				$this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
+				$sent = $this->send( $this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), $this->get_attachments() );
 			}
 
 			$this->restore_locale();
+
+			if ( $sent && class_exists( 'WC_Tracks' ) ) {
+				WC_Tracks::record_event( 'wcpay_post_kyc_activation_email_sent', [ 'stage' => $stage ] );
+			}
 		}
 
 		/**
 		 * Returns the absolute URL the email CTA button links to.
-		 * Mirrors the in-app banner's "Promote my store" destination.
+		 * Mirrors the in-app banner's "Promote my store" destination, plus
+		 * referrer params consumed by the click handler on admin_init.
 		 *
 		 * @return string
 		 */
 		public function get_cta_url(): string {
 			return add_query_arg(
 				[
-					'page' => 'wc-admin',
-					'path' => '/marketing',
+					'page'                 => 'wc-admin',
+					'path'                 => '/marketing',
+					'wcpay_referrer'       => 'post_kyc_email',
+					'wcpay_referrer_stage' => $this->stage,
 				],
 				admin_url( 'admin.php' )
 			);

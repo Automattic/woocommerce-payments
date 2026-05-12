@@ -328,4 +328,144 @@ class WC_Payments_Post_Kyc_Activation_Email_Service_Test extends WCPAY_UnitTestC
 
 		$this->assertSame( [ 7 ], get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
 	}
+
+	// -------------------------------------------------------------------------
+	// maybe_track_cta_click tests
+	// -------------------------------------------------------------------------
+
+	public function test_maybe_track_cta_click_bails_when_referrer_param_absent(): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		$redirected = false;
+		$intercept  = function () use ( &$redirected ) {
+			$redirected = true;
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $intercept );
+		try {
+			$this->make_service()->maybe_track_cta_click();
+		} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Bail-path tests; intercept filter only throws if maybe_track_cta_click() unexpectedly reaches wp_safe_redirect().
+			// Should not redirect.
+		}
+		remove_filter( 'wp_redirect', $intercept );
+
+		$this->assertFalse( $redirected );
+	}
+
+	public function test_maybe_track_cta_click_bails_when_referrer_value_does_not_match(): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		$_GET['wcpay_referrer']       = 'something_else';
+		$_GET['wcpay_referrer_stage'] = '7';
+
+		$redirected = false;
+		$intercept  = function () use ( &$redirected ) {
+			$redirected = true;
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $intercept );
+		try {
+			$this->make_service()->maybe_track_cta_click();
+		} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Bail-path tests; intercept filter only throws if maybe_track_cta_click() unexpectedly reaches wp_safe_redirect().
+			// Should not redirect.
+		}
+		remove_filter( 'wp_redirect', $intercept );
+
+		$this->assertFalse( $redirected );
+
+		unset( $_GET['wcpay_referrer'], $_GET['wcpay_referrer_stage'] );
+	}
+
+	public function test_maybe_track_cta_click_bails_when_user_lacks_capability(): void {
+		$subscriber = self::factory()->user->create( [ 'role' => 'subscriber' ] );
+		wp_set_current_user( $subscriber );
+
+		$_GET['wcpay_referrer']       = 'post_kyc_email';
+		$_GET['wcpay_referrer_stage'] = '7';
+
+		$redirected = false;
+		$intercept  = function () use ( &$redirected ) {
+			$redirected = true;
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $intercept );
+		try {
+			$this->make_service()->maybe_track_cta_click();
+		} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Bail-path tests; intercept filter only throws if maybe_track_cta_click() unexpectedly reaches wp_safe_redirect().
+			// Should not redirect.
+		}
+		remove_filter( 'wp_redirect', $intercept );
+
+		$this->assertFalse( $redirected );
+
+		unset( $_GET['wcpay_referrer'], $_GET['wcpay_referrer_stage'] );
+	}
+
+	public function test_maybe_track_cta_click_bails_when_stage_is_invalid(): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		$_GET['wcpay_referrer']       = 'post_kyc_email';
+		$_GET['wcpay_referrer_stage'] = '99';
+
+		$redirected = false;
+		$intercept  = function () use ( &$redirected ) {
+			$redirected = true;
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $intercept );
+		try {
+			$this->make_service()->maybe_track_cta_click();
+		} catch ( \Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- Bail-path tests; intercept filter only throws if maybe_track_cta_click() unexpectedly reaches wp_safe_redirect().
+			// Should not redirect.
+		}
+		remove_filter( 'wp_redirect', $intercept );
+
+		$this->assertFalse( $redirected );
+
+		unset( $_GET['wcpay_referrer'], $_GET['wcpay_referrer_stage'] );
+	}
+
+	public function test_maybe_track_cta_click_redirects_and_strips_marker_query_args_on_valid_request(): void {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
+
+		$_GET['wcpay_referrer']       = 'post_kyc_email';
+		$_GET['wcpay_referrer_stage'] = '14';
+		$_SERVER['REQUEST_URI']       = '/wp-admin/admin.php?page=wc-admin&path=/marketing&wcpay_referrer=post_kyc_email&wcpay_referrer_stage=14';
+
+		$captured_url = null;
+		$intercept    = function ( $location ) use ( &$captured_url ) {
+			$captured_url = $location;
+			throw new \Exception( 'redirect' );
+		};
+		add_filter( 'wp_redirect', $intercept );
+		try {
+			$this->make_service()->maybe_track_cta_click();
+		} catch ( \Exception $e ) {
+			$this->assertSame( 'redirect', $e->getMessage() );
+		}
+		remove_filter( 'wp_redirect', $intercept );
+
+		$this->assertNotNull( $captured_url );
+		$this->assertStringNotContainsString( 'wcpay_referrer=', $captured_url );
+		$this->assertStringNotContainsString( 'wcpay_referrer_stage=', $captured_url );
+		$this->assertStringContainsString( 'page=wc-admin', $captured_url );
+		$this->assertStringContainsString( 'path=/marketing', urldecode( $captured_url ) );
+
+		unset( $_GET['wcpay_referrer'], $_GET['wcpay_referrer_stage'], $_SERVER['REQUEST_URI'] );
+	}
+
+	public function test_init_hooks_registers_cta_click_handler(): void {
+		$service = $this->make_service();
+		$service->init_hooks();
+
+		$this->assertNotFalse(
+			has_action( 'admin_init', [ $service, 'maybe_track_cta_click' ] )
+		);
+
+		remove_action( 'admin_init', [ $service, 'maybe_track_cta_click' ] );
+	}
 }
