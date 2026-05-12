@@ -154,7 +154,7 @@ class WC_Payments_Admin_Banner {
 	 *
 	 * @var bool|null
 	 */
-	private $should_show_post_kyc_activation_notice = null;
+	private $should_show_post_kyc_activation_notice_memo = null;
 
 	/**
 	 * Per-request memo of `should_show_test_to_live_notice()`. The same instance is
@@ -940,11 +940,11 @@ class WC_Payments_Admin_Banner {
 	 * @return bool
 	 */
 	public function should_show_post_kyc_activation_notice(): bool {
-		if ( null === $this->should_show_post_kyc_activation_notice ) {
-			$this->should_show_post_kyc_activation_notice = $this->compute_should_show_post_kyc_activation_notice();
+		if ( null === $this->should_show_post_kyc_activation_notice_memo ) {
+			$this->should_show_post_kyc_activation_notice_memo = $this->compute_should_show_post_kyc_activation_notice();
 		}
 
-		return $this->should_show_post_kyc_activation_notice;
+		return $this->should_show_post_kyc_activation_notice_memo;
 	}
 
 	/**
