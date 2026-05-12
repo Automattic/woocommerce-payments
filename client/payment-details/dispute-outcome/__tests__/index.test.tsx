@@ -127,4 +127,55 @@ describe( 'DisputeOutcomeView', () => {
 		).toBeInTheDocument();
 		expect( screen.queryAllByRole( 'listitem' ) ).toHaveLength( 0 );
 	} );
+
+	describe( 'optional-missing collapse by status', () => {
+		// `fraudulent × physical_product` with rich evidence yields a row
+		// shape that includes optional_missing entries (receipt,
+		// refund_policy) alongside provided rows. Mirrors the
+		// `wonFraudulentPhysical` fixture without rebuilding it.
+		const collapsibleDispute = (
+			status: 'won' | 'lost' | 'warning_closed'
+		) =>
+			buildDispute( {
+				status,
+				reason: 'fraudulent',
+				metadata: { __product_type: 'physical_product' },
+				evidence: {
+					customer_communication: 'present',
+					shipping_documentation: 'present',
+					shipping_address: 'present',
+					shipping_tracking_number: 'present',
+					shipping_date: '2026-04-15',
+					customer_signature: 'present',
+				},
+			} );
+
+		it( 'collapses optional_missing rows when status is won', () => {
+			render(
+				<DisputeOutcomeView dispute={ collapsibleDispute( 'won' ) } />
+			);
+
+			const disclosure = screen.queryByRole( 'group' );
+			expect( disclosure ).not.toBeNull();
+			expect( disclosure?.tagName ).toBe( 'DETAILS' );
+		} );
+
+		it( 'collapses optional_missing rows when status is warning_closed', () => {
+			render(
+				<DisputeOutcomeView
+					dispute={ collapsibleDispute( 'warning_closed' ) }
+				/>
+			);
+
+			expect( screen.queryByRole( 'group' ) ).not.toBeNull();
+		} );
+
+		it( 'leaves optional_missing rows inline when status is lost', () => {
+			render(
+				<DisputeOutcomeView dispute={ collapsibleDispute( 'lost' ) } />
+			);
+
+			expect( screen.queryByRole( 'group' ) ).toBeNull();
+		} );
+	} );
 } );

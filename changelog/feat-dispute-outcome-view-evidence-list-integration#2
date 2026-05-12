@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Collapse optional-missing evidence rows behind a disclosure on won and warning_closed outcomes

@@ -35,6 +35,11 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 		productType,
 		dispute.evidence
 	);
+	// On a successful outcome the optional rows are non-actionable noise
+	// next to the wins, so collapse them behind a disclosure. On lost they
+	// stay inline as helpful "what was missing" context.
+	const collapseOptionalMissing =
+		dispute.status === 'won' || dispute.status === 'warning_closed';
 
 	return (
 		<section className="dispute-outcome-view">
@@ -42,7 +47,10 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 			<h3 className="dispute-outcome-view__section-heading">
 				{ __( 'Evidence Submitted', 'woocommerce-payments' ) }
 			</h3>
-			<EvidenceSubmittedList fields={ fields } />
+			<EvidenceSubmittedList
+				fields={ fields }
+				collapseOptionalMissing={ collapseOptionalMissing }
+			/>
 		</section>
 	);
 };
