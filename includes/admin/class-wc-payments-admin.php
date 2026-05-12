@@ -366,6 +366,19 @@ class WC_Payments_Admin {
 			],
 		];
 
+		if ( WC_Payments_Features::is_reports_area_enabled() ) {
+			$this->admin_child_pages['wc-payments-reports'] = [
+				'id'       => 'wc-payments-reports',
+				'title'    => __( 'Reports', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/reports',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 35,
+				],
+			];
+		}
+
 		try {
 			// Render full payments menu with sub-items only if:
 			// - we have working WPCOM/Jetpack connection;
@@ -468,19 +481,6 @@ class WC_Payments_Admin {
 		}
 
 		if ( $should_render_full_menu ) {
-			if ( WC_Payments_Features::is_reports_area_enabled() ) {
-				$this->admin_child_pages['wc-payments-reports'] = [
-					'id'       => 'wc-payments-reports',
-					'title'    => __( 'Reports', 'woocommerce-payments' ),
-					'parent'   => 'wc-payments',
-					'path'     => '/payments/reports',
-					'nav_args' => [
-						'parent' => 'wc-payments',
-						'order'  => 35,
-					],
-				];
-			}
-
 			if ( $this->account->is_card_present_eligible() && $this->account->has_card_readers_available() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
 					'id'       => 'wc-payments-card-readers',

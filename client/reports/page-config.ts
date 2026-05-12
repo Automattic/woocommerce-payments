@@ -34,25 +34,14 @@ function getReportsPageConfig( {
 }
 
 function isReportsRouteAvailable(): boolean {
-	const accountStatus = wcpaySettings?.accountStatus?.status;
-	const isAccountRejected =
-		typeof accountStatus === 'string' &&
-		accountStatus.startsWith( 'rejected' );
-
-	return !! (
-		wcpaySettings?.featureFlags?.reportsArea &&
-		wcpaySettings?.isJetpackConnected &&
-		wcpaySettings?.isAccountValid &&
-		! isAccountRejected &&
-		accountStatus !== 'under_review'
-	);
+	return !! wcpaySettings?.featureFlags?.reportsArea;
 }
 
 export function maybeAddReportsPage(
 	pages: PageConfig[],
 	args: ReportsPageConfigArgs
 ): PageConfig[] {
-	// Keep route availability in one module so direct JS registration mirrors PHP menu gating.
+	// Keep the feature-gated Reports route aligned with sibling payment routes; PHP controls account gating and redirects.
 	if ( isReportsRouteAvailable() ) {
 		pages.push( getReportsPageConfig( args ) );
 	}

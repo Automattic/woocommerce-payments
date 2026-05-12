@@ -68,40 +68,38 @@ describe( 'Reports page config', () => {
 		);
 	} );
 
-	it( 'does not register the Reports route when the account is not valid', () => {
-		const pages: Record< string, unknown >[] = [];
-		global.wcpaySettings.featureFlags.reportsArea = true;
-		global.wcpaySettings.isAccountValid = false;
-
-		maybeAddReportsPage( pages, {
-			container: jest.fn(),
-			menuID: 'toplevel_page_wc-admin-path--payments-overview',
-			rootLink: [ '/payments/overview', 'Payments' ],
-		} );
-
-		expect( pages ).toHaveLength( 0 );
-	} );
-
-	it( 'does not register the Reports route when Jetpack is disconnected', () => {
-		const pages: Record< string, unknown >[] = [];
-		global.wcpaySettings.featureFlags.reportsArea = true;
-		global.wcpaySettings.isJetpackConnected = false;
-
-		maybeAddReportsPage( pages, {
-			container: jest.fn(),
-			menuID: 'toplevel_page_wc-admin-path--payments-overview',
-			rootLink: [ '/payments/overview', 'Payments' ],
-		} );
-
-		expect( pages ).toHaveLength( 0 );
-	} );
-
-	it.each( [ 'rejected.fraud', 'rejected.other', 'under_review' ] )(
-		'does not register the Reports route for %s accounts',
-		( status ) => {
+	it.each< [ string, () => void ] >( [
+		[
+			'an invalid account',
+			() => {
+				global.wcpaySettings.isAccountValid = false;
+			},
+		],
+		[
+			'a disconnected Jetpack account',
+			() => {
+				global.wcpaySettings.isJetpackConnected = false;
+			},
+		],
+		[
+			'a rejected account',
+			() => {
+				global.wcpaySettings.accountStatus.status = 'rejected.other';
+			},
+		],
+		[
+			'an under review account',
+			() => {
+				global.wcpaySettings.accountStatus.status = 'under_review';
+			},
+		],
+	] )(
+		'registers the feature-gated Reports route for %s',
+		( accountStateLabel, updateSettings ) => {
+			void accountStateLabel;
 			const pages: Record< string, unknown >[] = [];
 			global.wcpaySettings.featureFlags.reportsArea = true;
-			global.wcpaySettings.accountStatus.status = status;
+			updateSettings();
 
 			maybeAddReportsPage( pages, {
 				container: jest.fn(),
@@ -109,7 +107,11 @@ describe( 'Reports page config', () => {
 				rootLink: [ '/payments/overview', 'Payments' ],
 			} );
 
-			expect( pages ).toHaveLength( 0 );
+			expect( pages ).toContainEqual(
+				expect.objectContaining( {
+					path: '/payments/reports',
+				} )
+			);
 		}
 	);
 } );
