@@ -73,6 +73,10 @@ parameters:
             message: '#Automattic\\WooCommerce\\(Utilities|StoreApi)#'
         }
         - {
+            message: '#Automattic\\WooCommerce\\Admin\\Settings\\ModernSettingsPageInterface#',
+            path: includes/admin/class-wc-payments-modern-settings-page.php
+        }
+        - {
             identifier: class.notFound
             message: '#MailPoet\\#'
         }
