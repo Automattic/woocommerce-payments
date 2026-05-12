@@ -1652,7 +1652,7 @@ class WC_Payments_Onboarding_Service {
 			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
 		}
 
-		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
+		delete_transient( WC_Payments_Test_To_Live_Banner::TRANSIENT_ELIGIBLE );
 		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 }

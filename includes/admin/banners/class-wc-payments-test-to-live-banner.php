@@ -25,6 +25,16 @@ class WC_Payments_Test_To_Live_Banner extends WC_Payments_Abstract_Admin_Banner 
 	const DAYS_THRESHOLD = 7;
 
 	/**
+	 * Eligibility transient key. Public so the onboarding service can drop the
+	 * cache when test mode flips. Mirrors what eligibility_transient_key()
+	 * derives from the slug — kept in sync via the override below so callers
+	 * referencing the constant don't desync from the base's lookup.
+	 *
+	 * @var string
+	 */
+	const TRANSIENT_ELIGIBLE = 'wcpay_test_to_live_eligible';
+
+	/**
 	 * Gateway service.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -104,6 +114,17 @@ class WC_Payments_Test_To_Live_Banner extends WC_Payments_Abstract_Admin_Banner 
 	 */
 	protected function get_slug(): string {
 		return 'test_to_live';
+	}
+
+	/**
+	 * Override: return the public TRANSIENT_ELIGIBLE constant so external
+	 * callers (the onboarding service's banner-state sync) and the base's
+	 * is_eligible() cache lookup share a single source of truth.
+	 *
+	 * @return string
+	 */
+	protected function eligibility_transient_key(): string {
+		return self::TRANSIENT_ELIGIBLE;
 	}
 
 	/**
