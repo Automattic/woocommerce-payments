@@ -218,7 +218,6 @@ class WC_Payments_Admin_Banner {
 		add_action( 'admin_init', [ $this, 'handle_test_to_live_notice_cta' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_banner_scripts' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_test_to_live_notice_script' ] );
-		add_action( 'update_option_' . WC_Payments_Onboarding_Service::TEST_MODE_OPTION, [ $this, 'invalidate_notice_caches' ] );
 
 		add_action( 'admin_init', [ $this, 'hide_post_kyc_activation_notice' ] );
 		add_action( 'admin_init', [ $this, 'handle_post_kyc_activation_notice_cta' ] );
@@ -272,16 +271,6 @@ class WC_Payments_Admin_Banner {
 			WC_Payments::get_file_version( 'dist/wc-payments-post-kyc-activation-notice.css' ),
 			'all'
 		);
-	}
-
-	/**
-	 * Invalidates the caches for all notices managed by this class.
-	 *
-	 * @return void
-	 */
-	public function invalidate_notice_caches(): void {
-		delete_transient( self::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 
 	/**
@@ -347,16 +336,6 @@ class WC_Payments_Admin_Banner {
 		$this->should_show_test_to_live_notice_memo = $this->compute_should_show_test_to_live_notice();
 
 		return $this->should_show_test_to_live_notice_memo;
-	}
-
-	/**
-	 * Drops the eligibility transient so the next request re-evaluates from scratch.
-	 * Hooked to test-mode option changes.
-	 *
-	 * @return void
-	 */
-	public function invalidate_test_to_live_notice_cache(): void {
-		delete_transient( self::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
 	}
 
 	/**
