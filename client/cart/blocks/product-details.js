@@ -6,6 +6,7 @@ import {
 	PaymentMethodMessagingElement,
 } from '@stripe/react-stripe-js';
 import { select } from '@wordpress/data';
+// eslint-disable-next-line import/no-unresolved
 import { ExperimentalOrderMeta } from '@woocommerce/blocks-checkout';
 
 /**

@@ -7,6 +7,7 @@ import {
 	registerExpressPaymentMethod,
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
+// eslint-disable-next-line import/no-unresolved
 import { registerCheckoutFilters } from '@woocommerce/blocks-checkout';
 
 /**
