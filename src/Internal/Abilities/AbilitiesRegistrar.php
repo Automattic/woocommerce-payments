@@ -230,6 +230,9 @@ class AbilitiesRegistrar {
 			return $response;
 		}
 		if ( $response instanceof \WP_REST_Response ) {
+			if ( $response->is_error() ) {
+				return $response->as_error();
+			}
 			$data = $response->get_data();
 			return is_array( $data ) ? $data : [];
 		}
