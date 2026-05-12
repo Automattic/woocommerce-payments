@@ -82,11 +82,11 @@ describe( 'RecommendationsList', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	it( 'includes TODO(catherine) placeholder markers in the rendered output', () => {
+	it( 'includes TODO(riskops) placeholder markers in the rendered output', () => {
 		// Defense against accidental removal of the TODO marker before
-		// Catherine's final copy lands. The marker is the canary; when she
-		// ships strings, the placeholder string disappears and this test
-		// updates with it.
+		// the final RiskOps copy lands. The marker is the canary; when
+		// the real strings ship, the placeholder string disappears and
+		// this test updates with it.
 		render(
 			<RecommendationsList
 				fields={ couldHelpFields }
@@ -94,7 +94,7 @@ describe( 'RecommendationsList', () => {
 			/>
 		);
 
-		const placeholders = screen.getAllByText( /TODO\(catherine\)/ );
+		const placeholders = screen.getAllByText( /TODO\(riskops\)/ );
 		expect( placeholders.length ).toBeGreaterThan( 0 );
 	} );
 } );

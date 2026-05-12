@@ -23,20 +23,20 @@ const headings: Record< RecommendationOutcome, string > = {
 	keep_doing: __( 'What to keep doing', 'woocommerce-payments' ),
 };
 
-// Placeholder copy until RiskOps (catkiinson) delivers final strings for
-// RSM-1169 (could_help) and RSM-1170 (keep_doing). Intentionally not
-// translated: throwaway strings would pollute .po files. When Catherine
-// ships final copy, wrap with `__()` and drop the TODO markers.
+// Placeholder copy pending final strings from RiskOps for RSM-1169
+// (could_help) and RSM-1170 (keep_doing). Intentionally not translated:
+// throwaway strings would pollute .po files. When final copy arrives,
+// wrap with `__()` and drop the TODO markers.
 const introCopy: Record< RecommendationOutcome, string > = {
 	could_help:
-		'TODO(catherine): RSM-1169 intro copy. Explains how the listed evidence types could have strengthened the response.',
+		'TODO(riskops): RSM-1169 intro copy. Explains how the listed evidence types could have strengthened the response.',
 	keep_doing:
-		'TODO(catherine): RSM-1170 intro copy. Reinforces that the listed evidence types contributed to the win.',
+		'TODO(riskops): RSM-1170 intro copy. Reinforces that the listed evidence types contributed to the win.',
 };
 
 const placeholderExplanation: Record< RecommendationOutcome, string > = {
-	could_help: 'TODO(catherine): per-field explanation for the lost path.',
-	keep_doing: 'TODO(catherine): per-field reinforcement for the won path.',
+	could_help: 'TODO(riskops): per-field explanation for the lost path.',
+	keep_doing: 'TODO(riskops): per-field reinforcement for the won path.',
 };
 
 const RecommendationsList: React.FC< Props > = ( { fields, outcome } ) => {
