@@ -75,7 +75,7 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$this->assertContains( 'refund_policy', $overview['completeSignalIds'] );
 	}
 
-	public function test_terms_signal_treats_empty_published_page_as_incomplete() {
+	public function test_terms_signal_treats_empty_published_page_as_complete() {
 		$page_id = self::factory()->post->create(
 			[
 				'post_type'    => 'page',
@@ -88,8 +88,8 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$overview = $this->service->get_overview_payload()['overview'];
 		$signal   = $this->get_signal( $overview, 'terms_and_conditions' );
 
-		$this->assertSame( 'incomplete', $signal['status'] );
-		$this->assertContains( 'terms_and_conditions', $overview['incompleteSignalIds'] );
+		$this->assertSame( 'complete', $signal['status'] );
+		$this->assertContains( 'terms_and_conditions', $overview['completeSignalIds'] );
 	}
 
 	public function test_terms_signal_uses_woocommerce_advanced_settings_url_when_no_page_is_assigned() {
@@ -101,7 +101,22 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( admin_url( 'admin.php?page=wc-settings&tab=advanced' ), $signal['actionUrl'] );
 	}
 
-	public function test_statement_descriptor_is_incomplete_when_default_like() {
+	public function test_terms_signal_uses_woocommerce_advanced_settings_url_when_page_is_assigned() {
+		$page_id = self::factory()->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+			]
+		);
+		update_option( 'woocommerce_terms_page_id', $page_id );
+
+		$overview = $this->service->get_overview_payload()['overview'];
+		$signal   = $this->get_signal( $overview, 'terms_and_conditions' );
+
+		$this->assertSame( admin_url( 'admin.php?page=wc-settings&tab=advanced' ), $signal['actionUrl'] );
+	}
+
+	public function test_statement_descriptor_is_complete_when_default_like() {
 		update_option( 'blogname', 'Example Store' );
 		$this->mock_account_data(
 			[
@@ -115,7 +130,7 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$overview = $this->service->get_overview_payload()['overview'];
 		$signal   = $this->get_signal( $overview, 'statement_descriptor' );
 
-		$this->assertSame( 'incomplete', $signal['status'] );
+		$this->assertSame( 'complete', $signal['status'] );
 	}
 
 	public function test_support_contact_is_complete_when_email_or_phone_exists() {

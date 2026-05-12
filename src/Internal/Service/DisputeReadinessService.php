@@ -152,14 +152,14 @@ class DisputeReadinessService {
 	 */
 	private function get_terms_and_conditions_signal(): array {
 		$page_id = function_exists( 'wc_terms_and_conditions_page_id' ) ? (int) wc_terms_and_conditions_page_id() : (int) get_option( 'woocommerce_terms_page_id', 0 );
-		$status  = $this->is_complete_page( $page_id ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
+		$status  = $this->is_published_page( $page_id ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
 
 		return [
 			'id'          => self::SIGNAL_TERMS_AND_CONDITIONS,
 			'status'      => $status,
 			'label'       => __( 'Terms & conditions linked at checkout', 'woocommerce-payments' ),
 			'actionLabel' => __( 'Fix', 'woocommerce-payments' ),
-			'actionUrl'   => $this->get_page_action_url( $page_id ),
+			'actionUrl'   => $this->get_woocommerce_advanced_settings_url(),
 		];
 	}
 
@@ -170,9 +170,8 @@ class DisputeReadinessService {
 	 * @return array
 	 */
 	private function get_statement_descriptor_signal( array $account_data ): array {
-		$descriptor = isset( $account_data['statement_descriptor'] ) ? (string) $account_data['statement_descriptor'] : '';
-		$is_default = $this->is_default_like_descriptor( $descriptor, $account_data );
-		$status     = '' !== trim( $descriptor ) && ! $is_default ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
+		$descriptor = $this->get_statement_descriptor( $account_data );
+		$status     = '' !== trim( $descriptor ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
 
 		return [
 			'id'          => self::SIGNAL_STATEMENT_DESCRIPTOR,
@@ -226,20 +225,32 @@ class DisputeReadinessService {
 	 * @return bool
 	 */
 	private function is_complete_page( int $page_id ): bool {
-		if ( $page_id <= 0 ) {
+		if ( ! $this->is_published_page( $page_id ) ) {
 			return false;
 		}
 
-		$page = get_post( $page_id );
-		if ( ! $page || 'publish' !== $page->post_status ) {
-			return false;
-		}
-
+		$page    = get_post( $page_id );
 		$content = strip_shortcodes( (string) $page->post_content );
 		$content = wp_strip_all_tags( $content );
 		$content = preg_replace( '/\s+/', '', $content );
 
 		return '' !== $content;
+	}
+
+	/**
+	 * Determines whether a configured page exists and is published.
+	 *
+	 * @param int $page_id Page ID.
+	 * @return bool
+	 */
+	private function is_published_page( int $page_id ): bool {
+		if ( $page_id <= 0 ) {
+			return false;
+		}
+
+		$page = get_post( $page_id );
+
+		return $page && 'publish' === $page->post_status;
 	}
 
 	/**
@@ -255,6 +266,15 @@ class DisputeReadinessService {
 			return $edit_post_link ? $edit_post_link : admin_url( 'post.php?post=' . $page_id . '&action=edit' );
 		}
 
+		return $this->get_woocommerce_advanced_settings_url();
+	}
+
+	/**
+	 * Returns the WooCommerce advanced settings URL.
+	 *
+	 * @return string
+	 */
+	private function get_woocommerce_advanced_settings_url(): string {
 		return admin_url( 'admin.php?page=wc-settings&tab=advanced' );
 	}
 
@@ -305,79 +325,20 @@ class DisputeReadinessService {
 	}
 
 	/**
-	 * Detects default-like statement descriptors using normalized comparison values.
+	 * Returns the current account statement descriptor.
 	 *
-	 * @param string $descriptor   Statement descriptor.
-	 * @param array  $account_data Cached account data.
-	 * @return bool
-	 */
-	private function is_default_like_descriptor( string $descriptor, array $account_data ): bool {
-		$normalized_descriptor = $this->normalize_descriptor_value( $descriptor );
-		if ( '' === $normalized_descriptor ) {
-			return true;
-		}
-
-		$candidates = array_merge(
-			[
-				get_bloginfo( 'name' ),
-				get_home_url(),
-				get_site_url(),
-				'woocommerce',
-				'woopayments',
-				'woopaymentsstore',
-				'mystore',
-				'teststore',
-			],
-			$this->get_url_candidates( get_home_url() ),
-			$this->get_url_candidates( get_site_url() )
-		);
-
-		$business_profile = isset( $account_data['business_profile'] ) && is_array( $account_data['business_profile'] ) ? $account_data['business_profile'] : [];
-		if ( ! empty( $business_profile['url'] ) ) {
-			$candidates = array_merge( $candidates, $this->get_url_candidates( (string) $business_profile['url'] ) );
-		}
-
-		foreach ( array_unique( array_filter( $candidates ) ) as $candidate ) {
-			if ( $normalized_descriptor === $this->normalize_descriptor_value( (string) $candidate ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns host/path candidates for a URL.
-	 *
-	 * @param string $url URL.
-	 * @return array
-	 */
-	private function get_url_candidates( string $url ): array {
-		$host = (string) wp_parse_url( $url, PHP_URL_HOST );
-		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
-
-		return array_filter(
-			[
-				$url,
-				$host,
-				preg_replace( '/^www\./i', '', $host ),
-				trim( $path, '/' ),
-			]
-		);
-	}
-
-	/**
-	 * Normalizes values for statement descriptor comparison.
-	 *
-	 * @param string $value Raw value.
+	 * @param array $account_data Cached account data.
 	 * @return string
 	 */
-	private function normalize_descriptor_value( string $value ): string {
-		$value = strtolower( trim( $value ) );
-		$value = preg_replace( '#^https?://#', '', $value );
-		$value = preg_replace( '#^www\.#', '', $value );
-		$value = preg_replace( '/[^a-z0-9]/', '', $value );
+	private function get_statement_descriptor( array $account_data ): string {
+		if ( isset( $account_data['statement_descriptor'] ) ) {
+			return (string) $account_data['statement_descriptor'];
+		}
 
-		return is_string( $value ) ? $value : '';
+		if ( class_exists( '\WC_Payments' ) && \WC_Payments::get_gateway() ) {
+			return (string) \WC_Payments::get_gateway()->get_option( 'account_statement_descriptor', '' );
+		}
+
+		return '';
 	}
 }

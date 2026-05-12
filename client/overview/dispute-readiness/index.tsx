@@ -17,7 +17,7 @@ import { DisputeReadinessSignal } from '../../data/dispute-readiness/types';
 import './style.scss';
 
 const learnMoreUrl =
-	'https://woocommerce.com/document/woopayments/fraud-and-disputes/resolve-disputes/';
+	'https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/';
 
 const LoadingState = () => (
 	<CardBody className="wcpay-dispute-readiness-card__body is-loading">
