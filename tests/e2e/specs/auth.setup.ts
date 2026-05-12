@@ -38,7 +38,9 @@ const isAuthStateStale = ( authStateFile: string ) => {
 	return isStale;
 };
 
-setup( 'authenticate as admin', async ( { page }, { project } ) => {
+setup( 'authenticate as admin', async ( { page }, testInfo ) => {
+	const { project } = testInfo;
+
 	// For local development, use existing state if it exists and isn't stale.
 	if ( ! process.env.CI ) {
 		if ( ! isAuthStateStale( merchantStorageFile ) ) {
@@ -49,12 +51,17 @@ setup( 'authenticate as admin', async ( { page }, { project } ) => {
 
 	await addSupportSessionDetectedCookie( page, project );
 
-	// Sign in as admin user and save state
-	let adminLoggedIn = false;
-	const adminRetries = 5;
-	for ( let i = 0; i < adminRetries; i++ ) {
+	// Sign in as admin user and save state. We allow one retry for transient
+	// login failures, but every retry is annotated on the test report so the
+	// release lead can spot flake during the Thursday Week 4 manual E2E run
+	// (release process: silent retries actively hide that signal).
+	const adminAttempts = 2;
+	let lastError: unknown;
+	for ( let i = 1; i <= adminAttempts; i++ ) {
 		try {
-			console.log( 'Trying to log-in as admin...' );
+			console.log(
+				`Trying to log-in as admin (attempt ${ i }/${ adminAttempts })...`
+			);
 			await wpAdminLogin( page, admin );
 			await page.waitForLoadState( 'domcontentloaded' );
 			await page.goto( `/wp-admin` );
@@ -64,25 +71,29 @@ setup( 'authenticate as admin', async ( { page }, { project } ) => {
 				page.getByRole( 'heading', { name: 'Dashboard' } )
 			).toBeVisible();
 
-			console.log( 'Logged-in as admin successfully.' );
-			adminLoggedIn = true;
-			break;
+			if ( i > 1 ) {
+				testInfo.annotations.push( {
+					type: 'flake',
+					description: `Admin login required ${ i } attempts. Investigate before assuming flake.`,
+				} );
+			}
+
+			await page.context().storageState( { path: merchantStorageFile } );
+			return;
 		} catch ( e ) {
-			console.log(
-				`Admin log-in failed, Retrying... ${ i }/${ adminRetries }`
+			lastError = e;
+			console.error(
+				`Admin log-in attempt ${ i }/${ adminAttempts } failed.`,
+				e
 			);
-			console.log( e );
 		}
 	}
 
-	if ( ! adminLoggedIn ) {
-		throw new Error(
-			'Cannot proceed e2e test, as admin login failed. Please check if the test site has been setup correctly.'
-		);
-	}
-
-	// End of authentication steps.
-	await page.context().storageState( { path: merchantStorageFile } );
+	throw new Error(
+		`Cannot proceed e2e test: admin login failed after ${ adminAttempts } attempts. Last error: ${ String(
+			lastError
+		) }`
+	);
 } );
 
 setup( 'authenticate as customer', async ( { page }, { project } ) => {
