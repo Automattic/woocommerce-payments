@@ -1163,5 +1163,74 @@ describe( 'PaymentDetailsSummary', () => {
 				)
 			).toBeInTheDocument();
 		} );
+
+		test( 'renders the recommendations card for a lost dispute with a matching reason × product type', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getResolvedCharge( 'lost' );
+			charge.dispute.reason = 'product_not_received';
+			charge.dispute.metadata.__product_type = 'physical_product';
+			charge.dispute.evidence = {}; // tracking missing → critical recommendation fires
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /what could help in future disputes/i,
+				} )
+			).toBeInTheDocument();
+		} );
+
+		test( 'renders the recommendations card for a won dispute with a matching reason × product type', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getResolvedCharge( 'won' );
+			charge.dispute.reason = 'product_not_received';
+			charge.dispute.metadata.__product_type = 'physical_product';
+			charge.dispute.evidence = {
+				shipping_tracking_number: '1Z999',
+				shipping_carrier: 'UPS',
+			};
+
+			renderCharge( charge );
+
+			expect(
+				screen.getByRole( 'heading', { name: /what to keep doing/i } )
+			).toBeInTheDocument();
+		} );
+
+		test( 'does not render the recommendations card for a warning_closed dispute', () => {
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getResolvedCharge( 'warning_closed' );
+			charge.dispute.reason = 'product_not_received';
+			charge.dispute.metadata.__product_type = 'physical_product';
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what could help in future disputes/i,
+				} )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', { name: /what to keep doing/i } )
+			).not.toBeInTheDocument();
+		} );
+
+		test( 'does not render the recommendations card when the flag is off', () => {
+			// Flag intentionally off; getResolvedCharge does not toggle it.
+			const charge = getResolvedCharge( 'lost' );
+			charge.dispute.reason = 'product_not_received';
+			charge.dispute.metadata.__product_type = 'physical_product';
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what could help in future disputes/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
 	} );
 } );

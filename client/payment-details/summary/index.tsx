@@ -65,6 +65,7 @@ import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-noti
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import DisputeOutcomeView from '../dispute-outcome';
+import DisputeRecommendationsCard from '../dispute-recommendations';
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import {
@@ -852,10 +853,23 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 	props
-) => (
-	<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
-		<PaymentDetailsSummary { ...props } />
-	</WCPaySettingsContext.Provider>
-);
+) => {
+	const dispute = props.charge?.dispute;
+	const showRecommendationsCard =
+		!! dispute &&
+		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+		isOutcomeViewStatus( dispute.status );
+
+	return (
+		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
+			<PaymentDetailsSummary { ...props } />
+			{ showRecommendationsCard && dispute && (
+				<ErrorBoundary>
+					<DisputeRecommendationsCard dispute={ dispute } />
+				</ErrorBoundary>
+			) }
+		</WCPaySettingsContext.Provider>
+	);
+};
 
 export default PaymentDetailsSummaryWrapper;
