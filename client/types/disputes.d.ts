@@ -64,6 +64,15 @@ export type DisputeReason =
 	| 'noncompliant'
 	| 'unrecognized';
 
+export type ProductType =
+	| 'physical_product'
+	| 'digital_product_or_service'
+	| 'offline_service'
+	| 'event'
+	| 'booking_reservation'
+	| 'multiple'
+	| 'other';
+
 export type DisputeStatus =
 	| 'warning_needs_response'
 	| 'warning_under_review'
@@ -109,6 +118,17 @@ export interface Dispute {
 	 * A second balance transaction with the `reporting_category: 'dispute_reversal'` will be present if funds have been reinstated to the account.
 	 */
 	balance_transactions: BalanceTransaction[];
+	/**
+	 * Server-computed dispute fee after accounting for reversals.
+	 * - `null` → the dispute fee was reversed (or never charged).
+	 * - `{ amount, currency }` → the effective fee the merchant paid.
+	 * - `undefined` → older server that hasn't annotated this field;
+	 *   callers should fall back to scanning `balance_transactions`.
+	 *
+	 * Prefer reading this over re-implementing the reversal rule
+	 * client-side.
+	 */
+	effective_fee?: { amount: number; currency: string } | null;
 	payment_intent: string;
 	enhanced_eligibility_types?: string[];
 }

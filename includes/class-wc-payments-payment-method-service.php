@@ -105,11 +105,16 @@ class WC_Payments_Payment_Method_Service {
 					break;
 				case 'card_present':
 				case 'interac_present':
-					$card_info['brand']        = $details['brand'] ?? '';
+					$card_info['brand']        = WC_Payments_Utils::get_terminal_card_display_brand( $details );
 					$card_info['last4']        = $details['last4'] ?? '';
 					$card_info['account_type'] = $details['receipt']['account_type'] ?? '';
 					$card_info['aid']          = $details['receipt']['dedicated_file_name'] ?? '';
 					$card_info['app_name']     = $details['receipt']['application_preferred_name'] ?? '';
+
+					$card_brand_icon = WC_Payments_Utils::get_terminal_card_brand_icon_base64( $card_info['brand'] );
+					if ( '' !== $card_brand_icon ) {
+						$card_info['icon'] = $card_brand_icon;
+					}
 					break;
 			}
 		}
