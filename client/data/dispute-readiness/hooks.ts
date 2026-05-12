@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import { useCallback } from 'react';
 import { useDispatch, useSelect } from '@wordpress/data';
 
 /**
@@ -24,7 +25,16 @@ export const useDisputeReadiness = (): DisputeReadinessResponse =>
 	} );
 
 export const useDisputeReadinessActions = (): DisputeReadinessActions => {
-	const { dismissDisputeReadinessCard } = useDispatch( STORE_NAME );
+	const {
+		dismissDisputeReadinessCard,
+		invalidateResolutionForStoreSelector,
+	} = useDispatch( STORE_NAME );
+	const refreshDisputeReadiness = useCallback( () => {
+		invalidateResolutionForStoreSelector( 'getDisputeReadiness' );
+	}, [ invalidateResolutionForStoreSelector ] );
 
-	return { dismissDisputeReadinessCard };
+	return {
+		dismissDisputeReadinessCard,
+		refreshDisputeReadiness,
+	};
 };

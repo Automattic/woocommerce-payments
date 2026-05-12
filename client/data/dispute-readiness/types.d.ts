@@ -56,6 +56,7 @@ export interface DisputeReadinessResponse {
 
 export interface DisputeReadinessActions {
 	dismissDisputeReadinessCard: () => void;
+	refreshDisputeReadiness: () => void;
 }
 
 export interface UpdateDisputeReadinessAction {

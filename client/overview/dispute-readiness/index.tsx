@@ -27,9 +27,14 @@ const LoadingState = () => (
 
 const DisputeReadinessCard = () => {
 	const { disputeReadiness, isLoading } = useDisputeReadiness();
-	const { dismissDisputeReadinessCard } = useDisputeReadinessActions();
+	const { dismissDisputeReadinessCard, refreshDisputeReadiness } =
+		useDisputeReadinessActions();
 	const viewedRef = useRef( false );
 	const overview = disputeReadiness?.overview;
+
+	useEffect( () => {
+		refreshDisputeReadiness();
+	}, [ refreshDisputeReadiness ] );
 
 	useEffect( () => {
 		if ( ! overview || overview.isDismissed || viewedRef.current ) {
