@@ -56,6 +56,8 @@ module.exports = {
 				'./client/wc-payments-review-prompt.tsx',
 			'wc-payments-test-to-live-notice':
 				'./client/entrypoints/test-to-live-notice/index.tsx',
+			'wc-payments-post-kyc-activation-notice':
+				'./client/entrypoints/post-kyc-activation-notice/index.tsx',
 			'wc-payments-one-and-done-notice':
 				'./client/entrypoints/one-and-done-notice/index.tsx',
 		},
