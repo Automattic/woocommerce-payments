@@ -15,6 +15,10 @@ use WCPay\Internal\Abilities\AbilitiesRegistrar;
  */
 class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
+	// The registrar hooks both `abilities_api_*_init` (the abilities-api
+	// composer package) and `wp_abilities_api_*_init` (the WP-Core merge).
+	// Asserting on either action name verifies the wiring; we use the WP-Core
+	// merge names since that's what fires on WP 6.9+ test environments.
 	const CATEGORIES_HOOK = 'wp_abilities_api_categories_init';
 	const ABILITIES_HOOK  = 'wp_abilities_api_init';
 	const FEATURE_FILTER  = 'woocommerce_payments_abilities_enabled';
@@ -122,6 +126,42 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertTrue(
 			AbilitiesRegistrar::current_user_can_manage_woocommerce(),
 			'Administrators must pass the manage_woocommerce capability check.'
+		);
+	}
+
+	public function test_get_account_ability_is_registered_with_expected_shape() {
+		if ( ! function_exists( 'wp_get_ability' ) || ! function_exists( 'wp_get_abilities' ) ) {
+			$this->markTestSkipped( 'Abilities API query functions not available in this WordPress version.' );
+		}
+
+		add_filter( self::FEATURE_FILTER, '__return_true' );
+		AbilitiesRegistrar::init();
+
+		// Categories and abilities can only be registered from inside the
+		// abilities-init action callbacks. The actions fire lazily on first
+		// access of the registry singleton — wp_get_abilities() is the
+		// shortest path to trigger both initializations.
+		wp_get_abilities();
+
+		$ability = wp_get_ability( 'woocommerce-payments/get-account' );
+		$this->assertNotNull( $ability, 'woocommerce-payments/get-account should be registered.' );
+		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $ability->get_category() );
+
+		$meta = $ability->get_meta();
+		$this->assertIsArray( $meta );
+		$this->assertArrayHasKey( 'annotations', $meta );
+
+		$annotations = $meta['annotations'];
+		$this->assertTrue( $annotations['readonly'], 'get-account should be readonly.' );
+		$this->assertFalse( $annotations['destructive'], 'get-account should not be destructive.' );
+		$this->assertTrue( $annotations['idempotent'], 'get-account should be idempotent.' );
+		$this->assertTrue(
+			$meta['show_in_rest'] ?? false,
+			'get-account must be exposed via show_in_rest for the REST bridge.'
+		);
+		$this->assertTrue(
+			$meta['mcp']['public'] ?? false,
+			'get-account must be opted into MCP discovery via meta.mcp.public.'
 		);
 	}
 }
