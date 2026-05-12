@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add accelerated-onboarding ExPlat experiment that routes Payments-task clicks straight into the WooPayments onboarding modal for merchants with incomplete KYC

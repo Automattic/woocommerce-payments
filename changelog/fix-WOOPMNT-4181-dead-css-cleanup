@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Decouple the Documents list from search-related CSS: drop the misleading has-search className and the dead responsive rules in its stylesheet

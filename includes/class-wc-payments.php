@@ -32,6 +32,7 @@ use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\WC_Payments_Currency_Manager;
+use WCPay\Onboarding_Experiment;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -65,6 +66,13 @@ class WC_Payments {
 	 * @var WC_Payments_Account
 	 */
 	private static $account;
+
+	/**
+	 * Instance of WCPay\Onboarding_Experiment, created in init function.
+	 *
+	 * @var Onboarding_Experiment
+	 */
+	private static $onboarding_experiment;
 
 	/**
 	 * Instance of WC_Payments_Session_Service, created in init function.
@@ -398,6 +406,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
 		include_once __DIR__ . '/core/server/request/class-update-intention.php';
+		include_once __DIR__ . '/core/server/request/class-prepare-terminal-payment.php';
 		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
 		include_once __DIR__ . '/core/server/request/class-cancel-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
@@ -494,6 +503,8 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-fraud-service.php';
 		include_once __DIR__ . '/class-wc-payments-onboarding-service.php';
 		include_once __DIR__ . '/class-experimental-abtest.php';
+		include_once __DIR__ . '/class-onboarding-experiment-abtest.php';
+		include_once __DIR__ . '/class-onboarding-experiment.php';
 		include_once __DIR__ . '/class-wc-payments-localization-service.php';
 		include_once __DIR__ . '/class-wc-payments-settings-service.php';
 		include_once __DIR__ . '/in-person-payments/class-wc-payments-in-person-payments-receipts-service.php';
@@ -549,6 +560,7 @@ class WC_Payments {
 		self::$redirect_service                     = new WC_Payments_Redirect_Service( self::$api_client );
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache, self::$session_service );
 		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service, self::$onboarding_service, self::$redirect_service );
+		self::$onboarding_experiment                = new Onboarding_Experiment();
 		self::$customer_service                     = new WC_Payments_Customer_Service( self::$api_client, self::$account, self::$session_service, self::$order_service );
 		self::$token_service                        = new WC_Payments_Token_Service( self::$api_client, self::$customer_service );
 		self::$remote_note_service                  = new WC_Payments_Remote_Note_Service( WC_Data_Store::load( 'admin-note' ) );
@@ -678,6 +690,7 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
+		add_filter( 'woocommerce_printable_order_receipt_css', [ __CLASS__, 'fit_card_brand_icon_for_printable_order_receipt' ], 10, 2 );
 
 		add_filter( 'woocommerce_address_providers', [ __CLASS__, 'add_address_provider' ] );
 		// Add note query support for source.
@@ -889,6 +902,24 @@ class WC_Payments {
 		}
 
 		return $gateways;
+	}
+
+	/**
+	 * Fits WCPay card brand artwork in WooCommerce Core printable receipts.
+	 *
+	 * Core receipt card icons are rendered as CSS background images. Wide network marks such as eftpos
+	 * and Cartes Bancaires need contain sizing so they are visible in the remote receipts used by mobile.
+	 *
+	 * @param string   $css   Printable receipt CSS.
+	 * @param WC_Order $order Order instance.
+	 * @return string
+	 */
+	public static function fit_card_brand_icon_for_printable_order_receipt( string $css, $order ): string {
+		if ( ! $order instanceof WC_Order || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $order->get_payment_method() ) {
+			return $css;
+		}
+
+		return $css . "\n.card-icon {\n\tbackground-position: center;\n\tbackground-size: contain;\n}\n";
 	}
 
 	/**
@@ -1398,6 +1429,24 @@ class WC_Payments {
 	 */
 	public static function set_account_service( WC_Payments_Account $account ) {
 		self::$account = $account;
+	}
+
+	/**
+	 * Returns the Onboarding_Experiment instance.
+	 *
+	 * @return Onboarding_Experiment
+	 */
+	public static function get_onboarding_experiment(): Onboarding_Experiment {
+		return self::$onboarding_experiment;
+	}
+
+	/**
+	 * Sets the Onboarding_Experiment instance.
+	 *
+	 * @param Onboarding_Experiment $onboarding_experiment The experiment instance.
+	 */
+	public static function set_onboarding_experiment( Onboarding_Experiment $onboarding_experiment ) {
+		self::$onboarding_experiment = $onboarding_experiment;
 	}
 
 	/**
