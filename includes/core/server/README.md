@@ -158,6 +158,7 @@ Currently the WooCommerce Payments API client contains around 100 requests. The 
 	- [Create_Intention](request/class-create-intention.md)
 	- [Create_Setup_Intention](request/class-create-setup-intention.md)
 	- [Get_Intention](request/class-get-intention.md)
+	- [Prepare_Terminal_Payment](request/class-prepare-terminal-payment.md)
 	- [Update_Intention](request/class-update-intention.md)
 - [Get_Charge](request/class-get-charge.md)
 - Paginated lists (mainly used for the REST API):

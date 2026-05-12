@@ -18,6 +18,7 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 use WCPay\Database_Cache;
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
+use WCPay\Onboarding_Experiment;
 
 /**
  * Class handling any account connection functionality
@@ -123,6 +124,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_wizard_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_overview_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_from_payments_settings_to_onboarding' ], 15 );
 
 		// Add handlers for inbox notes and reminders.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
@@ -1094,6 +1096,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Determine from where the merchant was directed to the Connect page.
 		$from = WC_Payments_Onboarding_Service::get_from();
 
+		// Accelerated-onboarding experiment: route task-list clicks straight into the
+		// WooPayments onboarding modal for merchants who have not yet completed KYC.
+		if ( $this->maybe_accelerate_onboarding( $from ) ) {
+			return true;
+		}
+
 		// If the user came from the core Payments task list item or the WC Payments Settings NOX in-context flow,
 		// skip the Connect page and go directly to the Jetpack connection flow and/or onboarding wizard.
 		if ( in_array(
@@ -1119,6 +1127,79 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Redirects the WooCommerce Settings > Payments page to the WooPayments onboarding
+	 * modal when a merchant arrives from the core Payments task list and has not yet
+	 * completed KYC, gated by the accelerated-onboarding experiment.
+	 *
+	 * In current WC Admin, clicking "Set up payments" in the task list lands the merchant
+	 * on `?page=wc-settings&tab=checkout&from=WCADMIN_PAYMENT_TASK` (the providers list)
+	 * rather than on `/payments/connect`, so this is the URL that actually needs to be
+	 * intercepted for the experiment to engage.
+	 *
+	 * @return bool True if a redirection happened, false otherwise.
+	 */
+	public function maybe_redirect_from_payments_settings_to_onboarding(): bool {
+		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return false;
+		}
+
+		$params = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+		];
+
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
+		if ( count( $params ) !== count( array_intersect_assoc( $_GET, $params ) ) ) {
+			return false;
+		}
+
+		// A specific gateway section — or a deep-link path like /woopayments/onboarding — is
+		// already being handled by its own renderer; don't override those.
+		if ( ! empty( $_GET['section'] ) || ! empty( $_GET['path'] ) ) {
+			return false;
+		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+
+		$from = WC_Payments_Onboarding_Service::get_from();
+
+		return $this->maybe_accelerate_onboarding( $from );
+	}
+
+	/**
+	 * Shared experiment branch for accelerated onboarding. Redirects qualifying merchants
+	 * (task-list origin + KYC incomplete + treatment variation) into the WooPayments
+	 * onboarding modal.
+	 *
+	 * Shared by maybe_redirect_from_connect_page() (legacy `/payments/connect` landing) and
+	 * maybe_redirect_from_payments_settings_to_onboarding() (modern task-click landing).
+	 *
+	 * @param string $from Resolved onboarding origin.
+	 * @return bool True when a treatment redirect was issued, false otherwise.
+	 */
+	private function maybe_accelerate_onboarding( string $from ): bool {
+		if ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK !== $from ) {
+			return false;
+		}
+
+		if ( $this->is_details_submitted() ) {
+			return false;
+		}
+
+		$experiment = WC_Payments::get_onboarding_experiment();
+		$variation  = $experiment->get_variation();
+
+		if ( Onboarding_Experiment::VARIATION_TREATMENT !== $variation ) {
+			return false;
+		}
+
+		$this->redirect_service->redirect_to_nox_flow(
+			WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+			WC_Payments_Onboarding_Service::get_source()
+		);
+		return true;
 	}
 
 	/**
