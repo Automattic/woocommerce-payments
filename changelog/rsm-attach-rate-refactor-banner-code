@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Refactor: extract admin banner notice lifecycle into an abstract base and one concrete class per notice.
