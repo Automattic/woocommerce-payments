@@ -61,11 +61,17 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_init_hooks_register_category_on_categories_action() {
-		// Force the deferred-branch path by removing actions and asserting the
-		// hook registration. We cannot reset `did_action()` (process-wide), so
-		// instead of branching on it we assert the hook is wired for either
-		// action variant — `abilities_api_categories_init` (composer package)
-		// or `wp_abilities_api_categories_init` (WP Core merge target).
+		// Assert hook wiring on either action variant — the abilities-api
+		// composer package fires `abilities_api_categories_init`; the WP Core
+		// merge fires `wp_abilities_api_categories_init`. The registrar hooks
+		// both for forward compatibility, so either being wired is a pass.
+		//
+		// We deliberately do NOT fall through to checking the registry
+		// singleton state, because the WP_Abilities_Registry singleton
+		// persists across tests in the same PHP process; once any prior
+		// registration-triggering test populates it, that check would always
+		// succeed regardless of whether `init()` actually wired the hooks
+		// (a vacuous green). The hook-wiring check is the load-bearing one.
 		remove_all_actions( 'abilities_api_categories_init' );
 		remove_all_actions( 'wp_abilities_api_categories_init' );
 		add_filter( self::FEATURE_FILTER, '__return_true' );
@@ -80,20 +86,16 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			'abilities_api_categories_init',
 			[ AbilitiesRegistrar::class, 'register_category' ]
 		);
-		$category_now = function_exists( 'wp_get_ability_category' )
-			? wp_get_ability_category( AbilitiesRegistrar::CATEGORY_SLUG )
-			: null;
 
-		// Either init() hooked the deferred callback OR (if either action
-		// already fired earlier in the process) the category is registered
-		// end-to-end. Both outcomes prove init() did its job.
 		$this->assertTrue(
-			false !== $wp_core_hook || false !== $package_hook || null !== $category_now,
-			'Expected init() to either hook register_category on one of the abilities-init actions or to have registered the category directly when the action already fired.'
+			false !== $wp_core_hook || false !== $package_hook,
+			'Expected init() to hook register_category on either `abilities_api_categories_init` or `wp_abilities_api_categories_init`.'
 		);
 	}
 
 	public function test_init_hooks_register_abilities_on_abilities_action() {
+		// See the note on the category-hook test above for why we only assert
+		// hook wiring and deliberately skip the singleton state check.
 		remove_all_actions( 'abilities_api_init' );
 		remove_all_actions( 'wp_abilities_api_init' );
 		add_filter( self::FEATURE_FILTER, '__return_true' );
@@ -108,13 +110,10 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			'abilities_api_init',
 			[ AbilitiesRegistrar::class, 'register_abilities' ]
 		);
-		$ability_now  = function_exists( 'wp_get_ability' )
-			? wp_get_ability( 'woocommerce-payments/get-account' )
-			: null;
 
 		$this->assertTrue(
-			false !== $wp_core_hook || false !== $package_hook || null !== $ability_now,
-			'Expected init() to either hook register_abilities on one of the abilities-init actions or to have registered the abilities directly when the action already fired.'
+			false !== $wp_core_hook || false !== $package_hook,
+			'Expected init() to hook register_abilities on either `abilities_api_init` or `wp_abilities_api_init`.'
 		);
 	}
 
@@ -217,24 +216,24 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	public function test_execute_get_dispute_rejects_missing_id() {
 		$result = AbilitiesRegistrar::execute_get_dispute( [] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'woocommerce_payments_missing_dispute_id', $result->get_error_code() );
+		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
 	}
 
 	public function test_execute_get_payment_intent_rejects_missing_id() {
 		$result = AbilitiesRegistrar::execute_get_payment_intent( [] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'woocommerce_payments_missing_payment_intent_id', $result->get_error_code() );
+		$this->assertSame( 'wcpay_missing_payment_intent_id', $result->get_error_code() );
 	}
 
 	public function test_execute_get_charge_rejects_missing_id() {
 		$result = AbilitiesRegistrar::execute_get_charge( [] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'woocommerce_payments_missing_charge_id', $result->get_error_code() );
+		$this->assertSame( 'wcpay_missing_charge_id', $result->get_error_code() );
 	}
 
 	public function test_execute_get_timeline_rejects_missing_id() {
 		$result = AbilitiesRegistrar::execute_get_timeline( [] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'woocommerce_payments_missing_intention_id', $result->get_error_code() );
+		$this->assertSame( 'wcpay_missing_intention_id', $result->get_error_code() );
 	}
 }

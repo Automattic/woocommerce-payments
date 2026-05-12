@@ -203,23 +203,27 @@ class AbilitiesRegistrar {
 
 		if ( ! class_exists( '\WC_REST_Payments_Accounts_Controller' ) ) {
 			return new \WP_Error(
-				'woocommerce_payments_not_initialized',
+				'wcpay_not_initialized',
 				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
 			);
 		}
 
-		$api_client = null;
-		if ( class_exists( '\WC_Payments' ) && method_exists( '\WC_Payments', 'get_payments_api_client' ) ) {
-			$api_client = \WC_Payments::get_payments_api_client();
-		}
-		if ( null === $api_client ) {
+		// The backing method does not read $this->api_client; it resolves
+		// everything through the account service plus the mode singleton.
+		// Guard on the account service (what the method actually needs);
+		// the API client is only passed to satisfy the base controller's
+		// constructor signature.
+		$account_service = ( class_exists( '\WC_Payments' ) && method_exists( '\WC_Payments', 'get_account_service' ) )
+			? \WC_Payments::get_account_service()
+			: null;
+		if ( null === $account_service ) {
 			return new \WP_Error(
-				'woocommerce_payments_not_initialized',
+				'wcpay_not_initialized',
 				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
 			);
 		}
 
-		$controller = new \WC_REST_Payments_Accounts_Controller( $api_client );
+		$controller = new \WC_REST_Payments_Accounts_Controller( \WC_Payments::get_payments_api_client() );
 		$response   = $controller->get_account_data();
 
 		if ( is_wp_error( $response ) ) {
@@ -327,7 +331,7 @@ class AbilitiesRegistrar {
 	public static function execute_get_dispute( $input = null ) {
 		if ( ! is_array( $input ) || empty( $input['dispute_id'] ) || ! is_string( $input['dispute_id'] ) ) {
 			return new \WP_Error(
-				'woocommerce_payments_missing_dispute_id',
+				'wcpay_missing_dispute_id',
 				__( 'A non-empty `dispute_id` is required.', 'woocommerce-payments' )
 			);
 		}
@@ -385,7 +389,7 @@ class AbilitiesRegistrar {
 	public static function execute_get_payment_intent( $input = null ) {
 		if ( ! is_array( $input ) || empty( $input['payment_intent_id'] ) || ! is_string( $input['payment_intent_id'] ) ) {
 			return new \WP_Error(
-				'woocommerce_payments_missing_payment_intent_id',
+				'wcpay_missing_payment_intent_id',
 				__( 'A non-empty `payment_intent_id` is required.', 'woocommerce-payments' )
 			);
 		}
@@ -402,7 +406,7 @@ class AbilitiesRegistrar {
 	public static function execute_get_charge( $input = null ) {
 		if ( ! is_array( $input ) || empty( $input['charge_id'] ) || ! is_string( $input['charge_id'] ) ) {
 			return new \WP_Error(
-				'woocommerce_payments_missing_charge_id',
+				'wcpay_missing_charge_id',
 				__( 'A non-empty `charge_id` is required.', 'woocommerce-payments' )
 			);
 		}
@@ -419,7 +423,7 @@ class AbilitiesRegistrar {
 	public static function execute_get_timeline( $input = null ) {
 		if ( ! is_array( $input ) || empty( $input['intention_id'] ) || ! is_string( $input['intention_id'] ) ) {
 			return new \WP_Error(
-				'woocommerce_payments_missing_intention_id',
+				'wcpay_missing_intention_id',
 				__( 'A non-empty `intention_id` is required.', 'woocommerce-payments' )
 			);
 		}
@@ -585,7 +589,7 @@ class AbilitiesRegistrar {
 			'woocommerce-payments/get-dispute',
 			[
 				'label'               => __( 'Get dispute by ID', 'woocommerce-payments' ),
-				'description'         => __( 'Look up a single dispute by ID. Answers \'what evidence is needed for dispute dp_X and by when?\'.', 'woocommerce-payments' ),
+				'description'         => __( 'Look up a single dispute by ID. Answers \'what evidence is needed for dispute du_X and by when?\'.', 'woocommerce-payments' ),
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => [
 					'type'                 => 'object',
@@ -593,8 +597,8 @@ class AbilitiesRegistrar {
 					'properties'           => [
 						'dispute_id' => [
 							'type'        => 'string',
-							'description' => 'Stripe dispute ID (starts with `dp_`).',
-							'pattern'     => '^dp_',
+							'description' => 'Stripe dispute ID (starts with `du_`). Not to be confused with the deposit/payout ID prefix `dp_`.',
+							'pattern'     => '^du_',
 						],
 					],
 					'required'             => [ 'dispute_id' ],
@@ -1024,7 +1028,12 @@ class AbilitiesRegistrar {
 					'enum' => [ 'asc', 'desc' ],
 				],
 			],
-			'additionalProperties' => true,
+			// Closed contract — the only consumer of this schema is the
+			// `get-authorizations` ability, whose backing
+			// `List_Authorizations` extends `Paginated` with no extra
+			// filters. Any extra key would silently no-op at the request
+			// layer, so we reject them up front.
+			'additionalProperties' => false,
 		];
 	}
 
@@ -1059,8 +1068,22 @@ class AbilitiesRegistrar {
 	 * Request class via `handle_rest_request()` — neither path emits
 	 * analytics events.
 	 *
-	 * Note: outside a REST request lifecycle (CLI, cron), the first call
-	 * pays a one-time `rest_get_server()` + `rest_api_init` bootstrap cost.
+	 * Permission model — the request runs through `rest_do_request()`, so the
+	 * backing route's own `permission_callback`
+	 * (`WC_Payments_REST_Controller::check_permission()` → `manage_woocommerce`)
+	 * fires in addition to the ability layer's `current_user_can_manage_woocommerce()`.
+	 * Currently both gate on the same capability so the double-check is harmless,
+	 * but if the ability layer ever tightens to a more granular capability the
+	 * backing route's permission check must move in lockstep.
+	 *
+	 * Caching — no caching is added at the ability layer; whether a backing
+	 * controller caches is its concern (e.g. `get-account` reads from a local
+	 * cache, others issue fresh API calls each time). Don't add a transient
+	 * layer here without coordinating with every backing controller.
+	 *
+	 * Performance — outside a REST request lifecycle (CLI, cron), the first
+	 * call pays a one-time `rest_get_server()` + `rest_api_init` bootstrap
+	 * cost.
 	 *
 	 * @param string              $http_method HTTP method (GET, POST, …).
 	 * @param string              $route       REST route path (e.g. `/wc/v3/payments/transactions`).
