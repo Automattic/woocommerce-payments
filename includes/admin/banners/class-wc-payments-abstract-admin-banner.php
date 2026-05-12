@@ -122,13 +122,23 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 			return;
 		}
 
-		$settings = [
-			'ctaUrl'     => $this->build_action_url( $this->cta_query_arg(), $this->cta_nonce_action(), $this->cta_nonce_arg() ),
-			'dismissUrl' => $this->build_action_url( $this->hide_query_arg(), $this->hide_nonce_action(), $this->hide_nonce_arg() ),
-		];
-		if ( $this->supports_snooze() ) {
-			$settings['snoozeUrl'] = $this->build_action_url( $this->snooze_query_arg(), $this->snooze_nonce_action(), $this->snooze_nonce_arg() );
-		}
+		// Record the impression here in addition to maybe_show() — maybe_show()
+		// only fires on WC settings pages (via woocommerce_sections_{$tab}),
+		// while enqueue_script() fires on every eligible WC-admin screen where
+		// the React mount can actually render. record_impression_if_first() is
+		// idempotent so the duplication is safe.
+		$this->record_impression_if_first();
+
+		$settings = array_merge(
+			[
+				'ctaUrl'     => $this->build_action_url( $this->cta_query_arg(), $this->cta_nonce_action(), $this->cta_nonce_arg() ),
+				'dismissUrl' => $this->build_action_url( $this->hide_query_arg(), $this->hide_nonce_action(), $this->hide_nonce_arg() ),
+			],
+			$this->supports_snooze() ? [
+				'snoozeUrl' => $this->build_action_url( $this->snooze_query_arg(), $this->snooze_nonce_action(), $this->snooze_nonce_arg() ),
+			] : [],
+			$this->get_extra_localize_data()
+		);
 
 		wp_localize_script( $this->script_handle(), $this->localize_var_name(), $settings );
 		wp_enqueue_script( $this->script_handle() );
@@ -146,7 +156,14 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 		}
 		$this->record_tracks_event( $this->dismissed_event_name() );
 		update_user_meta( get_current_user_id(), $this->dismissed_meta_key(), time() );
-		wp_safe_redirect( remove_query_arg( [ $this->hide_query_arg(), $this->hide_nonce_arg() ] ) );
+		wp_safe_redirect(
+			remove_query_arg(
+				array_merge(
+					[ $this->hide_query_arg(), $this->hide_nonce_arg() ],
+					array_keys( $this->get_extra_action_query_args() )
+				)
+			)
+		);
 		exit;
 	}
 
@@ -164,7 +181,14 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 		}
 		$this->record_tracks_event( $this->snoozed_event_name() );
 		update_user_meta( get_current_user_id(), $this->snoozed_meta_key(), time() );
-		wp_safe_redirect( remove_query_arg( [ $this->snooze_query_arg(), $this->snooze_nonce_arg() ] ) );
+		wp_safe_redirect(
+			remove_query_arg(
+				array_merge(
+					[ $this->snooze_query_arg(), $this->snooze_nonce_arg() ],
+					array_keys( $this->get_extra_action_query_args() )
+				)
+			)
+		);
 		exit;
 	}
 
@@ -201,6 +225,39 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	 */
 	protected function supports_snooze(): bool {
 		return true;
+	}
+
+	/**
+	 * Extra query args appended to every action URL (cta/dismiss/snooze) and
+	 * stripped from the redirect URL after the handler fires. Used by
+	 * subclasses that need per-request context (e.g. the Post-KYC notice's
+	 * `wcpay_stage`).
+	 *
+	 * @return array<string, scalar>
+	 */
+	protected function get_extra_action_query_args(): array {
+		return [];
+	}
+
+	/**
+	 * Extra entries merged into the script's localized settings object — for
+	 * subclasses that need to pass data beyond the standard URL trio to their
+	 * React entrypoint.
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected function get_extra_localize_data(): array {
+		return [];
+	}
+
+	/**
+	 * Properties attached to the impression Tracks event. Subclasses override
+	 * to thread per-request context (e.g. the current stage).
+	 *
+	 * @return array<string, scalar>
+	 */
+	protected function get_impression_tracks_props(): array {
+		return [];
 	}
 
 	/**
@@ -496,19 +553,26 @@ abstract class WC_Payments_Abstract_Admin_Banner {
 	 * @return string
 	 */
 	private function build_action_url( string $query_arg, string $nonce_action, string $nonce_arg ): string {
-		return wp_nonce_url( add_query_arg( $query_arg, '1' ), $nonce_action, $nonce_arg );
+		return wp_nonce_url(
+			add_query_arg(
+				array_merge( [ $query_arg => '1' ], $this->get_extra_action_query_args() )
+			),
+			$nonce_action,
+			$nonce_arg
+		);
 	}
 
 	/**
 	 * Records the impression Tracks event the first time the user sees the
 	 * banner, then writes the user_meta marker so subsequent views don't
-	 * re-record.
+	 * re-record. Idempotent — safe to call from both `enqueue_script()` and
+	 * `maybe_show()`.
 	 *
 	 * @return void
 	 */
 	private function record_impression_if_first(): void {
 		if ( ! get_user_meta( get_current_user_id(), $this->shown_meta_key(), true ) ) {
-			$this->record_tracks_event( $this->shown_event_name() );
+			$this->record_tracks_event( $this->shown_event_name(), $this->get_impression_tracks_props() );
 			update_user_meta( get_current_user_id(), $this->shown_meta_key(), true );
 		}
 	}

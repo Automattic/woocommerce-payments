@@ -82,6 +82,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/banners/class-wc-payments-abstract-admin-banner.php';
 	require_once $_plugin_dir . 'includes/admin/banners/class-wc-payments-one-and-done-banner.php';
 	require_once $_plugin_dir . 'includes/admin/banners/class-wc-payments-test-to-live-banner.php';
+	require_once $_plugin_dir . 'includes/admin/banners/class-wc-payments-post-kyc-activation-banner.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-banner.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
