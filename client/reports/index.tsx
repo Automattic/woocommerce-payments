@@ -30,6 +30,7 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 	const [ activeTab, setActiveTab ] = useState( () =>
 		normalizeReportsTab( getQuery().tab )
 	);
+	const [ tabPanelKey, setTabPanelKey ] = useState( 0 );
 	const tabPanelWrapperRef = useRef< HTMLDivElement >( null );
 	const previousActiveTabRef = useRef< ReportsTab >( activeTab );
 	const period = useMemo(
@@ -40,7 +41,10 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 
 	useEffect( () => {
 		const syncActiveTabFromUrl = () => {
-			setActiveTab( normalizeReportsTab( getQuery().tab ) );
+			const nextTab = normalizeReportsTab( getQuery().tab );
+
+			setActiveTab( nextTab );
+			setTabPanelKey( ( key ) => key + 1 );
 		};
 
 		window.addEventListener( 'popstate', syncActiveTabFromUrl );
@@ -82,7 +86,7 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 			<ReportsHeader />
 			<div ref={ tabPanelWrapperRef }>
 				<TabPanel
-					key={ activeTab }
+					key={ tabPanelKey }
 					className="wcpay-reports-tab-panel"
 					activeClass="active-tab"
 					onSelect={ onTabSelected }

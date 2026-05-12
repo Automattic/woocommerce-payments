@@ -15,7 +15,7 @@ import type { ReportsTab } from './types';
 
 // Shell placeholder — replaced once real selectors land. Until then, reload
 // no-ops on unregistered resolvers (invalidateResolution is safe in that case).
-export const reportsPlaceholderSelectors: Record< ReportsTab, string > = {
+const reportsPlaceholderSelectors: Record< ReportsTab, string > = {
 	balance: 'getReportsBalanceSummary',
 	fees: 'getReportsFees',
 };

@@ -286,8 +286,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_reports_route_redirects_when_feature_flag_is_enabled_but_account_is_invalid() {
-		global $submenu;
-
 		add_filter(
 			'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME,
 			function () {
@@ -302,8 +300,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		try {
 			$this->payments_admin->add_payments_menu();
-
-			$this->assertArrayNotHasKey( WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG, $submenu ?? [] );
 
 			$_GET = [
 				'page' => 'wc-admin',

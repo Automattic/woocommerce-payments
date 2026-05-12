@@ -66,9 +66,9 @@ describe( 'Reports tab states', () => {
 			/>
 		);
 
-		expect(
+		expect( screen.getByRole( 'status' ) ).toContainElement(
 			screen.getByRole( 'heading', { level: 2 } )
-		).toBeInTheDocument();
+		);
 	} );
 
 	it( 'renders Balance error state with reload action', async () => {
@@ -81,14 +81,14 @@ describe( 'Reports tab states', () => {
 			/>
 		);
 
-		const alert = screen.getByRole( 'alert' );
+		const group = screen.getByRole( 'group' );
 
 		expect(
-			within( alert ).getByRole( 'heading', { level: 2 } )
+			within( group ).getByRole( 'heading', { level: 2 } )
 		).toBeInTheDocument();
 
 		await userEvent.click(
-			within( alert ).getByRole( 'button', { name: /Reload/i } )
+			within( group ).getByRole( 'button', { name: /Reload/i } )
 		);
 
 		expect( onReload ).toHaveBeenCalledTimes( 1 );
@@ -100,14 +100,14 @@ describe( 'Reports tab states', () => {
 			<ReportsTabPanel tab="fees" status="error" onReload={ onReload } />
 		);
 
-		const alert = screen.getByRole( 'alert' );
+		const group = screen.getByRole( 'group' );
 
 		expect(
-			within( alert ).getByRole( 'heading', { level: 2 } )
+			within( group ).getByRole( 'heading', { level: 2 } )
 		).toBeInTheDocument();
 
 		await userEvent.click(
-			within( alert ).getByRole( 'button', { name: /Reload/i } )
+			within( group ).getByRole( 'button', { name: /Reload/i } )
 		);
 
 		expect( onReload ).toHaveBeenCalledTimes( 1 );
@@ -129,7 +129,7 @@ describe( 'Reports tab states', () => {
 
 		await waitFor( () => {
 			expect(
-				within( screen.getByRole( 'alert' ) ).getByRole( 'heading', {
+				within( screen.getByRole( 'group' ) ).getByRole( 'heading', {
 					level: 2,
 				} )
 			).toHaveFocus();

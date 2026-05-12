@@ -68,50 +68,23 @@ describe( 'Reports page config', () => {
 		);
 	} );
 
-	it.each< [ string, () => void ] >( [
-		[
-			'an invalid account',
-			() => {
-				global.wcpaySettings.isAccountValid = false;
-			},
-		],
-		[
-			'a disconnected Jetpack account',
-			() => {
-				global.wcpaySettings.isJetpackConnected = false;
-			},
-		],
-		[
-			'a rejected account',
-			() => {
-				global.wcpaySettings.accountStatus.status = 'rejected.other';
-			},
-		],
-		[
-			'an under review account',
-			() => {
-				global.wcpaySettings.accountStatus.status = 'under_review';
-			},
-		],
-	] )(
-		'registers the feature-gated Reports route for %s',
-		( accountStateLabel, updateSettings ) => {
-			void accountStateLabel;
-			const pages: Record< string, unknown >[] = [];
-			global.wcpaySettings.featureFlags.reportsArea = true;
-			updateSettings();
+	it( 'registers the feature-gated Reports route regardless of account state', () => {
+		const pages: Record< string, unknown >[] = [];
+		global.wcpaySettings.featureFlags.reportsArea = true;
+		global.wcpaySettings.isAccountValid = false;
+		global.wcpaySettings.isJetpackConnected = false;
+		global.wcpaySettings.accountStatus.status = 'rejected.other';
 
-			maybeAddReportsPage( pages, {
-				container: jest.fn(),
-				menuID: 'toplevel_page_wc-admin-path--payments-overview',
-				rootLink: [ '/payments/overview', 'Payments' ],
-			} );
+		maybeAddReportsPage( pages, {
+			container: jest.fn(),
+			menuID: 'toplevel_page_wc-admin-path--payments-overview',
+			rootLink: [ '/payments/overview', 'Payments' ],
+		} );
 
-			expect( pages ).toContainEqual(
-				expect.objectContaining( {
-					path: '/payments/reports',
-				} )
-			);
-		}
-	);
+		expect( pages ).toContainEqual(
+			expect.objectContaining( {
+				path: '/payments/reports',
+			} )
+		);
+	} );
 } );

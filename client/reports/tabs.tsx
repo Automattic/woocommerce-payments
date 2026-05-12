@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
@@ -94,6 +94,7 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 } ) => {
 	const contentHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousStatusRef = useRef< ReportsTabStatus >( status );
+	const headingId = useId();
 
 	useEffect( () => {
 		const previousStatus = previousStatusRef.current;
@@ -125,8 +126,11 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 		const { title, description } = getPartialContent( tab );
 
 		return (
-			<div className="wcpay-reports-state wcpay-reports-state--partial">
-				<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
+			<div
+				className="wcpay-reports-state wcpay-reports-state--partial"
+				role="status"
+			>
+				<h2 id={ headingId } ref={ contentHeadingRef } tabIndex={ -1 }>
 					{ title }
 				</h2>
 				<p>{ description }</p>
@@ -138,9 +142,10 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 		return (
 			<div
 				className="wcpay-reports-state wcpay-reports-state--error"
-				role="alert"
+				role="group"
+				aria-labelledby={ headingId }
 			>
-				<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
+				<h2 id={ headingId } ref={ contentHeadingRef } tabIndex={ -1 }>
 					{ getErrorTitle( tab ) }
 				</h2>
 				<Button variant="secondary" onClick={ onReload }>

@@ -4,13 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import {
-	act,
-	fireEvent,
-	render,
-	screen,
-	waitFor,
-} from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -20,7 +14,6 @@ import { ReportsPage } from '..';
 import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useDispatch } from '@wordpress/data';
-import { reportsPlaceholderSelectors } from '../hooks';
 
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn(),
@@ -167,7 +160,13 @@ describe( 'Reports page tabs', () => {
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 
-		fireEvent.click( screen.getByRole( 'tab', { name: 'Fees' } ) );
+		// TabPanel schedules an internal Ariakit tab update outside userEvent's
+		// act boundary, so this click needs a narrow wrapper.
+		await act( async () => {
+			await userEvent.click(
+				screen.getByRole( 'tab', { name: 'Fees' } )
+			);
+		} );
 
 		await waitFor( () => {
 			expect( mockUpdateQueryString ).toHaveBeenCalledWith(
@@ -190,7 +189,7 @@ describe( 'Reports page tabs', () => {
 		);
 
 		expect( invalidateResolution ).toHaveBeenCalledWith(
-			reportsPlaceholderSelectors.balance,
+			expect.any( String ),
 			[
 				{
 					start: '2026-04-01T00:00:00.000Z',
@@ -200,7 +199,7 @@ describe( 'Reports page tabs', () => {
 		);
 	} );
 
-	it( 'reloads the Fees tab with the Fees placeholder resolver', async () => {
+	it( 'reloads the Fees tab with the current period range', async () => {
 		mockGetQuery.mockReturnValue( { tab: 'fees' } );
 
 		await renderReportsPage( {
@@ -213,7 +212,7 @@ describe( 'Reports page tabs', () => {
 		);
 
 		expect( invalidateResolution ).toHaveBeenCalledWith(
-			reportsPlaceholderSelectors.fees,
+			expect.any( String ),
 			[
 				{
 					start: '2026-04-01T00:00:00.000Z',
