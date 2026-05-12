@@ -398,6 +398,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
 		include_once __DIR__ . '/core/server/request/class-update-intention.php';
+		include_once __DIR__ . '/core/server/request/class-prepare-terminal-payment.php';
 		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
 		include_once __DIR__ . '/core/server/request/class-cancel-intention.php';
 		include_once __DIR__ . '/core/server/request/class-create-setup-intention.php';
@@ -677,6 +678,7 @@ class WC_Payments {
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
+		add_filter( 'woocommerce_printable_order_receipt_css', [ __CLASS__, 'fit_card_brand_icon_for_printable_order_receipt' ], 10, 2 );
 
 		add_filter( 'woocommerce_address_providers', [ __CLASS__, 'add_address_provider' ] );
 		// Add note query support for source.
@@ -878,6 +880,24 @@ class WC_Payments {
 		}
 
 		return $gateways;
+	}
+
+	/**
+	 * Fits WCPay card brand artwork in WooCommerce Core printable receipts.
+	 *
+	 * Core receipt card icons are rendered as CSS background images. Wide network marks such as eftpos
+	 * and Cartes Bancaires need contain sizing so they are visible in the remote receipts used by mobile.
+	 *
+	 * @param string   $css   Printable receipt CSS.
+	 * @param WC_Order $order Order instance.
+	 * @return string
+	 */
+	public static function fit_card_brand_icon_for_printable_order_receipt( string $css, $order ): string {
+		if ( ! $order instanceof WC_Order || WC_Payment_Gateway_WCPay::GATEWAY_ID !== $order->get_payment_method() ) {
+			return $css;
+		}
+
+		return $css . "\n.card-icon {\n\tbackground-position: center;\n\tbackground-size: contain;\n}\n";
 	}
 
 	/**
