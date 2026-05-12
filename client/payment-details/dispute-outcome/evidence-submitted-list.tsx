@@ -15,7 +15,6 @@ import type {
 	EvidenceFieldState,
 	EvidenceFieldStatus,
 } from 'wcpay/disputes/new-evidence/types';
-import './style.scss';
 
 interface Props {
 	fields: EvidenceFieldStatus[];
