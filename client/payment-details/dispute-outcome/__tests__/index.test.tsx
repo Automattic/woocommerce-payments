@@ -66,9 +66,7 @@ describe( 'DisputeOutcomeView', () => {
 		expect( screen.getAllByRole( 'listitem' ) ).toHaveLength(
 			expected.length
 		);
-		// Anchor field that only appears when the physical-product matrix
-		// cell is used, so we know the wrapper passed the resolved product
-		// type through (not the digital fallback).
+		// Physical-product-only field; presence proves the resolved type reached the helper.
 		expect(
 			screen.getByText( /Shipping documentation/i )
 		).toBeInTheDocument();
@@ -91,8 +89,7 @@ describe( 'DisputeOutcomeView', () => {
 
 		render( <DisputeOutcomeView dispute={ dispute } /> );
 
-		// `shipping_documentation` is a physical-product field. If the
-		// digital fallback had won, the list wouldn't include it.
+		// Physical-product-only field; would be absent if the digital fallback had won.
 		expect(
 			screen.getByText( /Shipping documentation/i )
 		).toBeInTheDocument();
@@ -121,10 +118,6 @@ describe( 'DisputeOutcomeView', () => {
 	} );
 
 	it( 'renders only the heading when no product type is available', () => {
-		// With productType empty, none of the helper's three lookup tables
-		// (high-impact, topical, matrix) have a matching key, so it returns
-		// `[]` regardless of the reason — and the section renders just the
-		// heading.
 		const dispute = buildDispute( { metadata: {}, order: null } );
 
 		render( <DisputeOutcomeView dispute={ dispute } /> );

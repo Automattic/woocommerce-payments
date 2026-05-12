@@ -163,9 +163,6 @@ export default ( { query }: { query: { id: string } } ) => {
 					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
-				// See `resolve-product-type.ts` for source priority and the
-				// `multiple` → `other` normalization (shared with the Outcome
-				// View so both surfaces look up the same matrix cell).
 				const suggestedProductType = resolveProductType(
 					d.metadata,
 					d.order?.suggested_product_type,

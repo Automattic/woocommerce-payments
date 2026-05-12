@@ -44,9 +44,7 @@ describe( 'getExpectedFieldStatus', () => {
 	} );
 
 	it( 'tracks shipping_date (not service_date) as the fulfilment date for fraudulent + physical_product', () => {
-		// The wizard never collects `service_date` for physical_product; it
-		// collects `shipping_date`. The high-impact entry must match so the
-		// merchant's wizard input lights up the "provided" state here.
+		// Regression: wizard collects `shipping_date`, not `service_date`, for physical_product.
 		const result = getExpectedFieldStatus(
 			'fraudulent',
 			'physical_product',
