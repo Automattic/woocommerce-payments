@@ -1064,16 +1064,8 @@ class WC_Payments_Onboarding_Service {
 		update_option( self::TEST_MODE_OPTION, $test_mode ? 'yes' : 'no', true );
 
 		if ( $test_mode ) {
-			// Record the date test mode was first enabled; preserve the original date on subsequent calls.
-			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
-				update_option( self::TEST_MODE_ENABLED_DATE_OPTION, time(), false );
-			}
 			\WC_Payments::mode()->test_mode_onboarding();
 		} else {
-			// Intentionally deleted the option so that re-entering test mode
-			// restarts the nudge clock from the new enable date rather than inheriting
-			// the original timestamp. The option is not meant as permanent history.
-			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
 
