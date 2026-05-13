@@ -1079,6 +1079,19 @@ describe( 'PaymentDetailsSummary', () => {
 			).toBeInTheDocument();
 		} );
 
+		// Returns the `.dispute-outcome-view` section wrapping the
+		// Evidence Submitted heading, so list-item assertions don't
+		// accidentally count `<li>` elements from other parts of the
+		// PaymentDetailsSummary page (e.g. the meta row).
+		const getOutcomeViewSection = () => {
+			const heading = screen.getByRole( 'heading', {
+				name: 'Evidence Submitted',
+			} );
+			const section = heading.closest( '.dispute-outcome-view' );
+			expect( section ).not.toBeNull();
+			return section;
+		};
+
 		test( 'renders the Outcome View Evidence Submitted section for a won dispute when the flag is on', () => {
 			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
 
@@ -1089,17 +1102,15 @@ describe( 'PaymentDetailsSummary', () => {
 					ignore: '.a11y-speak-region',
 				} )
 			).not.toBeInTheDocument();
-			expect(
-				screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
-			).toBeInTheDocument();
+			const section = getOutcomeViewSection();
 			// Real-data path: the fixture sets product type + matching
 			// evidence, so the helper produces a non-empty list and at
 			// least one provided row makes it to the DOM.
-			expect( screen.getAllByRole( 'listitem' ).length ).toBeGreaterThan(
-				0
-			);
 			expect(
-				screen.getByText( /Customer communication/i )
+				within( section ).getAllByRole( 'listitem' ).length
+			).toBeGreaterThan( 0 );
+			expect(
+				within( section ).getByText( /Customer communication/i )
 			).toBeInTheDocument();
 		} );
 
@@ -1113,14 +1124,12 @@ describe( 'PaymentDetailsSummary', () => {
 					ignore: '.a11y-speak-region',
 				} )
 			).not.toBeInTheDocument();
+			const section = getOutcomeViewSection();
 			expect(
-				screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
-			).toBeInTheDocument();
-			expect( screen.getAllByRole( 'listitem' ).length ).toBeGreaterThan(
-				0
-			);
+				within( section ).getAllByRole( 'listitem' ).length
+			).toBeGreaterThan( 0 );
 			expect(
-				screen.getByText( /Customer communication/i )
+				within( section ).getByText( /Customer communication/i )
 			).toBeInTheDocument();
 		} );
 

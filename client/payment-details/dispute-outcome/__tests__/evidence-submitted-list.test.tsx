@@ -232,17 +232,17 @@ describe( 'EvidenceSubmittedList', () => {
 			).toBeInTheDocument();
 			expect( screen.getByText( 'Refund policy' ) ).toBeInTheDocument();
 
-			// The optional_missing row is tucked inside <details>; the
-			// summary advertises the count.
-			const disclosure = screen.getByRole( 'group' );
-			expect( disclosure.tagName ).toBe( 'DETAILS' );
+			// Locate the disclosure via its visible summary text rather
+			// than the implicit `<details>` role, so the test follows
+			// what a user actually sees and doesn't break if the role
+			// mapping shifts.
+			const summary = screen.getByText(
+				/1 optional evidence field not provided/
+			);
+			const disclosure = summary.closest( 'details' );
+			expect( disclosure ).not.toBeNull();
 			expect(
-				within( disclosure ).getByText(
-					/1 optional evidence field not provided/
-				)
-			).toBeInTheDocument();
-			expect(
-				within( disclosure ).getByText( 'Service date' )
+				within( disclosure as HTMLElement ).getByText( 'Service date' )
 			).toBeInTheDocument();
 		} );
 
@@ -257,7 +257,6 @@ describe( 'EvidenceSubmittedList', () => {
 				/>
 			);
 
-			expect( screen.queryByRole( 'group' ) ).not.toBeInTheDocument();
 			expect(
 				screen.queryByText( /optional evidence field/ )
 			).not.toBeInTheDocument();

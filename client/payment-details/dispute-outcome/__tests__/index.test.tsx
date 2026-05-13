@@ -168,14 +168,20 @@ describe( 'DisputeOutcomeView', () => {
 				},
 			} );
 
+		// Locate the disclosure via its visible summary copy + walk up
+		// to <details>, rather than relying on the implicit role
+		// mapping; mirrors what a user can see on the page.
+		const findDisclosure = () => {
+			const summary = screen.queryByText( /optional evidence field/i );
+			return summary?.closest( 'details' ) ?? null;
+		};
+
 		it( 'collapses optional_missing rows when status is won', () => {
 			render(
 				<DisputeOutcomeView dispute={ collapsibleDispute( 'won' ) } />
 			);
 
-			const disclosure = screen.queryByRole( 'group' );
-			expect( disclosure ).not.toBeNull();
-			expect( disclosure?.tagName ).toBe( 'DETAILS' );
+			expect( findDisclosure() ).not.toBeNull();
 		} );
 
 		it( 'collapses optional_missing rows when status is warning_closed', () => {
@@ -185,7 +191,7 @@ describe( 'DisputeOutcomeView', () => {
 				/>
 			);
 
-			expect( screen.queryByRole( 'group' ) ).not.toBeNull();
+			expect( findDisclosure() ).not.toBeNull();
 		} );
 
 		it( 'leaves optional_missing rows inline when status is lost', () => {
@@ -193,7 +199,7 @@ describe( 'DisputeOutcomeView', () => {
 				<DisputeOutcomeView dispute={ collapsibleDispute( 'lost' ) } />
 			);
 
-			expect( screen.queryByRole( 'group' ) ).toBeNull();
+			expect( findDisclosure() ).toBeNull();
 		} );
 	} );
 } );
