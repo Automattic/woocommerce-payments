@@ -520,6 +520,52 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		},
 	},
 
+	// ============ CLUSTER 8b: shipping date (fraudulent + physical only) ============
+	// Parallel to Cluster 8, keyed off `shipping_date` (the field the wizard
+	// collects for physical_product fraudulent disputes) instead of
+	// `service_date`. Gives physical-fraud merchants the same narrative
+	// coaching that digital/service merchants get from Cluster 8.
+	// Copy mirrors Cluster 8's voice; final wording pending RiskOps.
+	{
+		id: 'c8b-shipping-date-provided',
+		urgency: 'positive',
+		title: 'Shipping date on record',
+		// TODO(riskops): final wording from RSM-1170 for the fraudulent+physical case
+		body: 'Including the shipping date helped tie the transaction to a verifiable event.',
+		when: {
+			outcome: 'keep_doing',
+			reasonIn: [ 'fraudulent' ],
+			productTypeIn: [ 'physical_product' ],
+			requireProvided: { keys: [ 'shipping_date' ] },
+		},
+	},
+	{
+		id: 'c8b-shipping-date-include',
+		urgency: 'critical',
+		title: 'Include the shipping date',
+		// TODO(riskops): final wording from RSM-1169 for the fraudulent+physical case
+		body: 'The shipping date ties the transaction to a verifiable event, which can help defend fraud disputes.',
+		when: {
+			outcome: 'could_help',
+			reasonIn: [ 'fraudulent' ],
+			productTypeIn: [ 'physical_product' ],
+			requireMissing: { keys: [ 'shipping_date' ] },
+		},
+	},
+	{
+		id: 'c8b-shipping-date-document',
+		urgency: 'tip',
+		title: 'Document the shipping date',
+		// TODO(riskops): final wording from RSM-1170 for the fraudulent+physical case
+		body: 'Documenting the shipping date helps tie transactions to verifiable events in fraud disputes.',
+		when: {
+			outcome: 'keep_doing',
+			reasonIn: [ 'fraudulent' ],
+			productTypeIn: [ 'physical_product' ],
+			requireMissing: { keys: [ 'shipping_date' ] },
+		},
+	},
+
 	// ============ CLUSTER 9: service documentation ============
 	{
 		id: 'c9-service-documentation-provided',

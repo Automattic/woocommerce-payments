@@ -280,18 +280,17 @@ describe( 'DisputeRecommendationsCard', () => {
 		} );
 	} );
 
-	describe( 'Cluster 8 product-type scoping', () => {
+	describe( 'Cluster 8 / 8b product-type scoping', () => {
 		// Regression for a bug where Cluster 8 (service_date) entries fired on
 		// fraudulent + physical_product. The wizard collects `shipping_date`
 		// (not `service_date`) for physical, so the recommendation coached
-		// merchants on a field they could not reach.
+		// merchants on a field they could not reach. Cluster 8b mirrors
+		// Cluster 8 for physical, keyed off shipping_date.
 		it( 'does not fire the service_date tip on fraudulent + physical_product', () => {
 			const dispute = buildDispute( {
 				status: 'won',
 				reason: 'fraudulent',
 				metadata: { __product_type: 'physical_product' },
-				// shipping_date filled (the correct field for physical),
-				// service_date empty (matches wizard behavior).
 				evidence: { shipping_date: '2026-04-15' },
 			} );
 
@@ -324,6 +323,57 @@ describe( 'DisputeRecommendationsCard', () => {
 					name: /include the service date/i,
 				} )
 			).toBeInTheDocument();
+		} );
+
+		it( 'fires the shipping_date positive on fraudulent + physical when shipping_date is provided (won)', () => {
+			const dispute = buildDispute( {
+				status: 'won',
+				reason: 'fraudulent',
+				metadata: { __product_type: 'physical_product' },
+				evidence: { shipping_date: '2026-04-15' },
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /shipping date on record/i,
+				} )
+			).toBeInTheDocument();
+		} );
+
+		it( 'fires the shipping_date critical on fraudulent + physical when shipping_date is missing (lost)', () => {
+			const dispute = buildDispute( {
+				status: 'lost',
+				reason: 'fraudulent',
+				metadata: { __product_type: 'physical_product' },
+				evidence: { receipt: 'r' }, // dodge c15 suppression
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /include the shipping date/i,
+				} )
+			).toBeInTheDocument();
+		} );
+
+		it( 'does not fire shipping_date entries on fraudulent + digital', () => {
+			const dispute = buildDispute( {
+				status: 'won',
+				reason: 'fraudulent',
+				metadata: { __product_type: 'digital_product_or_service' },
+				evidence: { shipping_date: '2026-04-15' },
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /shipping date on record/i,
+				} )
+			).not.toBeInTheDocument();
 		} );
 	} );
 
