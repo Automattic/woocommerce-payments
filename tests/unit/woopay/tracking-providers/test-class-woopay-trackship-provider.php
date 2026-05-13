@@ -510,6 +510,38 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $once, $twice );
 	}
 
+	public function test_overlay_skips_non_scalar_meta_fields_without_notice() {
+		// Regression guard: order meta is mutable. A tampered entry with
+		// non-scalar status / status_updated_at / tracking_number must not
+		// trigger PHP "Array to string conversion" notices in overlay().
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data(
+			WooPay_TrackShip_Provider::META_KEY,
+			[
+				[
+					'tracking_number'   => '1Z999',
+					'status'            => [ 'array', 'instead', 'of', 'string' ],
+					'status_updated_at' => new \stdClass(),
+				],
+			]
+		);
+		$order->save();
+
+		$shipments = [
+			[
+				'tracking_number' => '1Z999',
+				'status'          => WooPay_Order_Tracking_Sync::STATUS_FULFILLED,
+			],
+		];
+
+		$result = $this->provider->overlay( $order, $shipments );
+
+		// Non-scalar fields are silently skipped; the shipment's existing
+		// status stays as the primary chain emitted it.
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $result[0]['status'] );
+		$this->assertArrayNotHasKey( 'status_updated_at', $result[0] );
+	}
+
 	public function test_overlay_skips_non_array_meta_entries() {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data(

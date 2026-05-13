@@ -71,6 +71,13 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		WC_Payments::set_database_cache( $this->cache );
 		WooPay_Order_Tracking_Sync::reset_providers();
 		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+		// Strip per-test filter callbacks. `reset_*_providers()` clears the
+		// static cache but the filter callbacks added by individual tests
+		// would otherwise persist across the PHPUnit process and bleed into
+		// later tests (silent order-dependence). remove_all_filters() is
+		// scoped to these two tags only.
+		remove_all_filters( 'wcpay_woopay_tracking_providers' );
+		remove_all_filters( 'wcpay_woopay_status_overlay_providers' );
 		// Disable WooPay between tests to avoid side effects on other tests.
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'no' );
 		// Clear any debounce transients leaked across tests.
@@ -429,6 +436,51 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 
 		// The malicious status downgrades cleanly, and the wire payload is safe.
 		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $shipments[0]['status'] );
+	}
+
+	public function test_get_order_shipments_defaults_non_scalar_status_to_fulfilled() {
+		// Regression guard: tampered meta or buggy provider could supply
+		// a non-scalar status (array/object). The wire boundary must not
+		// emit "Array to string conversion" notices. Treat non-scalar as
+		// missing and default to STATUS_FULFILLED.
+		$order = WC_Helper_Order::create_order();
+
+		$primary = $this->createMock( WooPay_Tracking_Provider::class );
+		$primary->method( 'is_available' )->willReturn( true );
+		$primary->method( 'get_hooks' )->willReturn( [] );
+		$primary->method( 'get_shipments' )->willReturn(
+			[
+				[
+					'tracking_number' => '1Z999',
+					'status'          => [ 'array', 'instead', 'of', 'string' ],
+				],
+				[
+					'tracking_number' => '9400111',
+					'status'          => new \stdClass(),
+				],
+			]
+		);
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $primary ) {
+				return [ $primary ];
+			}
+		);
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () {
+				return [];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		$this->assertCount( 2, $shipments );
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $shipments[0]['status'] );
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $shipments[1]['status'] );
 	}
 
 	public function test_get_order_shipments_defaults_status_when_provider_omits_it() {
