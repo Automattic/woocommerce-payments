@@ -1176,7 +1176,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 			expect(
 				screen.getByRole( 'heading', {
-					name: /what could help in future disputes/i,
+					name: /what could help next time/i,
 				} )
 			).toBeInTheDocument();
 		} );
@@ -1195,7 +1195,7 @@ describe( 'PaymentDetailsSummary', () => {
 			renderCharge( charge );
 
 			expect(
-				screen.getByRole( 'heading', { name: /what to keep doing/i } )
+				screen.getByRole( 'heading', { name: /what's working well/i } )
 			).toBeInTheDocument();
 		} );
 
@@ -1210,11 +1210,13 @@ describe( 'PaymentDetailsSummary', () => {
 
 			expect(
 				screen.queryByRole( 'heading', {
-					name: /what could help in future disputes/i,
+					name: /what could help next time/i,
 				} )
 			).not.toBeInTheDocument();
 			expect(
-				screen.queryByRole( 'heading', { name: /what to keep doing/i } )
+				screen.queryByRole( 'heading', {
+					name: /what's working well/i,
+				} )
 			).not.toBeInTheDocument();
 		} );
 
@@ -1228,7 +1230,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 			expect(
 				screen.queryByRole( 'heading', {
-					name: /what could help in future disputes/i,
+					name: /what could help next time/i,
 				} )
 			).not.toBeInTheDocument();
 		} );

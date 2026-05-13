@@ -4,19 +4,17 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	ExternalLink,
-} from '@wordpress/components';
+import { __, sprintf } from '@wordpress/i18n';
+import { Card, CardBody, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import type { ChargeDispute } from 'wcpay/types/charges';
-import type { RecommendationOutcome } from 'wcpay/disputes/new-evidence/types';
+import type {
+	Recommendation,
+	RecommendationOutcome,
+} from 'wcpay/disputes/new-evidence/types';
 import { getRecommendations } from 'wcpay/disputes/new-evidence/recommendations';
 import { RECOMMENDATIONS_CATALOG } from 'wcpay/disputes/new-evidence/recommendation-catalog';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
@@ -26,8 +24,12 @@ interface Props {
 	dispute: ChargeDispute;
 }
 
-// warning_closed has no entry: inquiries never carry merchant-submitted
-// evidence, so neither framing has a behavioral hook.
+// eslint-disable-next-line @typescript-eslint/naming-convention -- module-level numeric constant
+const VISIBLE_PER_SECTION = 3;
+
+// Map dispute status to the outcome framing used for catalog matching.
+// warning_closed has no entry: inquiries carry no merchant-submitted
+// evidence, so neither outcome's recommendations have a behavioral hook.
 const outcomeByStatus: Partial<
 	Record< ChargeDispute[ 'status' ], RecommendationOutcome >
 > = {
@@ -35,12 +37,65 @@ const outcomeByStatus: Partial<
 	won: 'keep_doing',
 };
 
-const cardHeadings: Record< RecommendationOutcome, string > = {
-	could_help: __(
-		'What could help in future disputes',
-		'woocommerce-payments'
-	),
-	keep_doing: __( 'What to keep doing', 'woocommerce-payments' ),
+// Higher lift first; entries without a measured lift sort to the bottom.
+// Within the same lift bucket, catalog order is preserved (Array#sort is
+// stable in modern engines).
+const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
+	const aLift = typeof a.lift === 'number' ? a.lift : -Infinity;
+	const bLift = typeof b.lift === 'number' ? b.lift : -Infinity;
+	return bLift - aLift;
+};
+
+const renderItem = ( rec: Recommendation ): JSX.Element => (
+	<article
+		key={ rec.id }
+		className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
+	>
+		<h4 className="dispute-recommendations__title">{ rec.title }</h4>
+		<p className="dispute-recommendations__body">{ rec.body }</p>
+		{ rec.link && (
+			<ExternalLink
+				className="dispute-recommendations__link"
+				href={ rec.link.href }
+			>
+				{ rec.link.label }
+			</ExternalLink>
+		) }
+	</article>
+);
+
+const renderSection = (
+	heading: string,
+	items: Recommendation[]
+): JSX.Element | null => {
+	if ( items.length === 0 ) {
+		return null;
+	}
+
+	const sorted = [ ...items ].sort( sortByLift );
+	const visible = sorted.slice( 0, VISIBLE_PER_SECTION );
+	const hidden = sorted.slice( VISIBLE_PER_SECTION );
+
+	return (
+		<section className="dispute-recommendations-card__section">
+			<h3 className="dispute-recommendations-card__section-heading">
+				{ heading }
+			</h3>
+			{ visible.map( renderItem ) }
+			{ hidden.length > 0 && (
+				<details className="dispute-recommendations-card__show-more">
+					<summary>
+						{ sprintf(
+							/* translators: %d is the number of additional recommendations hidden by default. */
+							__( 'Show %d more', 'woocommerce-payments' ),
+							hidden.length
+						) }
+					</summary>
+					{ hidden.map( renderItem ) }
+				</details>
+			) }
+		</section>
+	);
 };
 
 const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
@@ -70,35 +125,24 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 		return null;
 	}
 
+	const positives = recommendations.filter(
+		( r ) => r.urgency === 'positive'
+	);
+	const criticalsAndTips = recommendations.filter(
+		( r ) => r.urgency !== 'positive'
+	);
+
 	return (
 		<Card className="dispute-recommendations-card">
-			<CardHeader>
-				<h3 className="dispute-recommendations-card__heading">
-					{ cardHeadings[ outcome ] }
-				</h3>
-			</CardHeader>
 			<CardBody>
-				{ recommendations.map( ( rec ) => (
-					<article
-						key={ rec.id }
-						className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
-					>
-						<h4 className="dispute-recommendations__title">
-							{ rec.title }
-						</h4>
-						<p className="dispute-recommendations__body">
-							{ rec.body }
-						</p>
-						{ rec.link && (
-							<ExternalLink
-								className="dispute-recommendations__link"
-								href={ rec.link.href }
-							>
-								{ rec.link.label }
-							</ExternalLink>
-						) }
-					</article>
-				) ) }
+				{ renderSection(
+					__( "What's working well", 'woocommerce-payments' ),
+					positives
+				) }
+				{ renderSection(
+					__( 'What could help next time', 'woocommerce-payments' ),
+					criticalsAndTips
+				) }
 			</CardBody>
 		</Card>
 	);

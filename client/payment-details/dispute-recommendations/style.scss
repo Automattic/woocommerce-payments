@@ -1,14 +1,44 @@
 /** @format */
 
 .dispute-recommendations-card {
-	&__heading {
+	&__section {
+		& + & {
+			margin-top: $grid-unit-20;
+			padding-top: $grid-unit-20;
+			border-top: 1px solid $gray-100;
+		}
+	}
+
+	&__section-heading {
 		// Heading LG, matches transaction-details-dispute-details-title and
 		// the Evidence Submitted section heading style.
 		font-size: 15px;
 		font-weight: 500;
 		line-height: 20px;
 		color: $gray-900;
-		margin: 0;
+		margin: 0 0 $grid-unit-10;
+	}
+
+	&__show-more {
+		// Disclosure for items beyond the per-section cap.
+		margin-top: $grid-unit-10;
+
+		summary {
+			cursor: pointer;
+			font-size: 13px;
+			line-height: 20px;
+			color: $studio-blue-50;
+			user-select: none;
+			list-style: none;
+
+			&::-webkit-details-marker {
+				display: none;
+			}
+
+			&:hover {
+				color: $studio-blue-60;
+			}
+		}
 	}
 }
 
@@ -41,9 +71,9 @@
 		}
 	}
 
-	&--neutral {
+	&--positive {
 		.dispute-recommendations__title {
-			color: $gray-900;
+			color: $alert-green;
 		}
 	}
 }
