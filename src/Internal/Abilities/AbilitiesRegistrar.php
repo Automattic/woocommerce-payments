@@ -112,13 +112,15 @@ class AbilitiesRegistrar {
 		// merge target uses the `wp_` variants. We hook both so the registrar
 		// works against either version of the API.
 		//
-		// Safe provided no other plugin triggers `WP_Abilities_Registry::get_instance()`
-		// at an earlier `plugins_loaded` priority than ours (11) — `WP_Hook`
-		// does NOT replay fired actions for late-registered callbacks, so if
-		// the registry's init action has already fired by the time we hook,
-		// the registration is silently skipped. WooCommerce Core (priority 1)
-		// initializes the registry from admin/REST flows rather than at
-		// `plugins_loaded`, so this assumption holds today.
+		// Safe provided no other plugin or WP Core itself calls
+		// `WP_Abilities_Registry::get_instance()` before our hooks fire —
+		// `WP_Hook` does NOT replay fired actions for late-registered
+		// callbacks. The registry is initialized lazily: `get_instance()`
+		// requires `did_action('init')` and fires `wp_abilities_api_init`
+		// on its first call, which WordPress Core's REST endpoint handler
+		// (`class-wp-rest-abilities-v1-run-controller.php`) triggers at
+		// REST request time — not at `plugins_loaded`. So the registration
+		// timing holds today.
 		//
 		// The idempotency guards in register_category() / register_abilities()
 		// handle the dual-hook double-fire scenario when both variant names
@@ -226,6 +228,17 @@ class AbilitiesRegistrar {
 		// account yields the synthetic NOACCOUNT shape (non-empty array),
 		// so an empty array here is an unambiguous init-failure signal.
 		if ( is_array( $result ) && [] === $result ) {
+			// Log here too — delegate_to_rest_controller() only logs in its
+			// WP_Error and is_error() branches. This conversion happens at
+			// the ability layer AFTER delegation returned a non-error empty
+			// array, so the existing delegate-layer logging doesn't catch
+			// it. Without this entry, on-call grepping
+			// wc-logs/woopayments-abilities-*.log for `wcpay_not_initialized`
+			// would find nothing.
+			wc_get_logger()->error(
+				'execute_get_account: WooPayments account not initialized — delegate returned an empty array.',
+				[ 'source' => 'woopayments-abilities' ]
+			);
 			return new \WP_Error(
 				'wcpay_not_initialized',
 				__( 'WooPayments is not initialized.', 'woocommerce-payments' )

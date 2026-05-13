@@ -402,6 +402,38 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$property->setValue( null, $value );
 	}
 
+	public function test_execute_get_account_returns_wp_error_when_account_data_is_empty_array() {
+		// Simulate the init-failure path: WC_Payments_Account::get_cached_account_data()
+		// returns false on an API error, the controller wraps it via
+		// rest_ensure_response(false), and delegate_to_rest_controller() unwraps
+		// the boolean false to []. The execute_get_account guard must convert
+		// that [] sentinel back into the documented WP_Error contract.
+		$filter = function ( $result, $server, $request ) {
+			if ( $request->get_route() === '/wc/v3/payments/accounts' ) {
+				return new \WP_REST_Response( false, 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			$result = AbilitiesRegistrar::execute_get_account( null );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertInstanceOf(
+			\WP_Error::class,
+			$result,
+			'execute_get_account must convert the [] init-failure sentinel back into a WP_Error.'
+		);
+		$this->assertSame(
+			'wcpay_not_initialized',
+			$result->get_error_code(),
+			'execute_get_account must surface the wcpay_not_initialized error code so callers using is_wp_error() can detect init failure.'
+		);
+	}
+
 	public function test_delegate_unwraps_successful_wp_rest_response() {
 		// rest_pre_dispatch fires before route dispatch and short-circuits the
 		// pipeline if it returns a non-null value. Returning a WP_REST_Response
