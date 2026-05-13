@@ -108,7 +108,8 @@ class WooPay_Order_Tracking_Sync {
 		add_filter( 'woocommerce_valid_webhook_resources', [ __CLASS__, 'add_resource' ], 10, 1 );
 		add_filter( 'woocommerce_valid_webhook_events', [ __CLASS__, 'add_event' ], 10, 1 );
 
-		// Register hooks from all available providers.
+		// Register get_hooks() entries from primary providers only — overlay
+		// providers do not contribute to the send_webhook firing surface.
 		foreach ( self::get_providers() as $provider ) {
 			foreach ( $provider->get_hooks() as $hook_config ) {
 				if ( isset( $hook_config['meta_key'] ) ) {
@@ -147,17 +148,31 @@ class WooPay_Order_Tracking_Sync {
 					);
 				}
 			}
+		}
 
-			// Some providers persist hook arguments before send_webhook fires.
-			// Required when a plugin's hook delivers tracking data only as a
-			// transient argument (e.g. ShipStation in standalone mode) — by
-			// the time WC_Webhook delivery builds the payload, the hook arg
-			// is gone, so the provider must capture it into stable storage.
-			//
-			// Dispatched via call_user_func with a string-class callable so
-			// PHPStan can resolve the static method from the runtime class
-			// instead of the WooPay_Tracking_Provider interface (which
-			// intentionally does not declare this optional method).
+		// Persistence hook registration is independent of which chain a
+		// provider lives in. Overlay-only providers (TrackShip is the
+		// canonical case — it doesn't produce primary shipments but does
+		// need to capture transient hook args into stable storage) must
+		// be able to register listeners without also appearing in the
+		// primary chain.
+		//
+		// Iterate both lists, deduplicating by object identity so a
+		// provider that implements BOTH interfaces (and therefore appears
+		// in both default lists) doesn't register its listener twice and
+		// double-fire on hook events.
+		//
+		// Dispatched via call_user_func with a string-class callable so
+		// PHPStan can resolve the static method from the runtime class
+		// instead of the WooPay_Tracking_Provider interface (which
+		// intentionally does not declare this optional method).
+		$seen_provider_ids = [];
+		foreach ( array_merge( self::get_providers(), self::get_overlay_providers() ) as $provider ) {
+			$id = spl_object_id( $provider );
+			if ( isset( $seen_provider_ids[ $id ] ) ) {
+				continue;
+			}
+			$seen_provider_ids[ $id ] = true;
 			if ( method_exists( $provider, 'register_persistence_hooks' ) ) {
 				call_user_func( [ get_class( $provider ), 'register_persistence_hooks' ] );
 			}
@@ -189,13 +204,11 @@ class WooPay_Order_Tracking_Sync {
 			new WooPay_ShipStation_Provider(),
 			// Priority 4: AfterShip WooCommerce Tracking (1M+ downloads, separate meta key).
 			new WooPay_AfterShip_Provider(),
-			// Priority 5: TrackShip — primary chain entry returns empty
-			// (it's a status enricher, not a tracking-data producer), but
-			// the entry is required here so the sync constructor invokes its
-			// register_persistence_hooks() to listen on
-			// trackship_shipment_status_trigger. The real enrichment work
-			// happens via the WooPay_Status_Overlay_Provider interface.
-			new WooPay_TrackShip_Provider(),
+			// Note: TrackShip is intentionally NOT in the primary chain —
+			// it doesn't produce primary shipments. It lives only in the
+			// overlay chain (see get_overlay_providers()) where its
+			// enrichment work happens. The sync constructor discovers its
+			// register_persistence_hooks() via the overlay chain too.
 		];
 
 		/**

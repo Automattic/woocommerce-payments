@@ -7,12 +7,12 @@
 
 use WCPay\WooPay\WooPay_Order_Tracking_Sync;
 use WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider;
-use WCPay\WooPay\Tracking_Providers\WooPay_Status_Overlay_Provider;
 use PHPUnit\Framework\MockObject\MockObject;
 
 require_once __DIR__ . '/tracking-providers/fake-fulfillment.php';
 require_once __DIR__ . '/tracking-providers/fake-persistence-provider.php';
 require_once __DIR__ . '/tracking-providers/fake-overlay-provider.php';
+require_once __DIR__ . '/tracking-providers/fake-overlay-persistence-provider.php';
 
 /**
  * WooPay_Order_Tracking_Sync unit tests.
@@ -88,7 +88,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$providers = WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $providers );
-		$this->assertCount( 5, $providers );
+		$this->assertCount( 4, $providers );
 		$this->assertInstanceOf(
 			\WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider::class,
 			$providers[0],
@@ -109,11 +109,23 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 			$providers[3],
 			'AfterShip should be priority 4.'
 		);
-		$this->assertInstanceOf(
-			\WCPay\WooPay\Tracking_Providers\WooPay_TrackShip_Provider::class,
-			$providers[4],
-			'TrackShip should be priority 5 (primary-chain stub; real work via overlay interface).'
-		);
+	}
+
+	public function test_trackship_is_not_in_primary_chain_by_default() {
+		// Regression guard: TrackShip is an overlay-only provider. It must
+		// not appear in the primary chain, otherwise the sync constructor
+		// would attempt to register its persistence hook twice (once from
+		// primary iteration, once from overlay iteration) and the listener
+		// would fire double on every TrackShip carrier update.
+		$providers = WooPay_Order_Tracking_Sync::get_providers();
+
+		foreach ( $providers as $provider ) {
+			$this->assertNotInstanceOf(
+				\WCPay\WooPay\Tracking_Providers\WooPay_TrackShip_Provider::class,
+				$provider,
+				'TrackShip lives in the overlay chain only — it must not appear in get_providers().'
+			);
+		}
 	}
 
 	public function test_get_providers_is_filterable() {
@@ -148,7 +160,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $received );
-		$this->assertCount( 5, $received );
+		$this->assertCount( 4, $received );
 	}
 
 	// -------------------------------------------------------------------------
@@ -484,6 +496,33 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 			1,
 			Fake_Persistence_Provider::$register_calls,
 			'register_persistence_hooks should be invoked exactly once during sync construction.'
+		);
+	}
+
+	public function test_constructor_calls_register_persistence_hooks_on_overlay_providers() {
+		// Regression guard for the architectural cleanup: overlay-only
+		// providers (TrackShip is the canonical case) must be able to
+		// register persistence listeners during sync construction without
+		// also appearing in the primary chain.
+		Fake_Persistence_Provider::reset();
+
+		$overlay_provider = new Fake_Overlay_Persistence_Provider();
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () use ( $overlay_provider ) {
+				return [ $overlay_provider ];
+			}
+		);
+
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+
+		new WooPay_Order_Tracking_Sync( $this->api_client_mock, $this->account_mock );
+
+		$this->assertSame(
+			1,
+			Fake_Overlay_Persistence_Provider::$register_calls,
+			'register_persistence_hooks should be invoked on overlay providers, not just primary ones.'
 		);
 	}
 
