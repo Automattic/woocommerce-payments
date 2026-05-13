@@ -159,7 +159,19 @@ class WC_Payments_Post_Kyc_Activation_Email_Service {
 			return;
 		}
 
-		$email->trigger( $stage );
+		// Merchant opted out — email disabled in WC > Settings > Emails, or
+		// no recipient. Nothing to send; let the stage expire silently.
+		if ( ! $email->is_enabled() || ! $email->get_recipient() ) {
+			return;
+		}
+
+		if ( ! $email->trigger( $stage ) ) {
+			// Mailer rejected the send (e.g. SMTP failure). Leave the stage
+			// unconsumed so the drop surfaces via the
+			// `wcpay_post_kyc_activation_email_send_failed` tracks event
+			// rather than being silently swallowed.
+			return;
+		}
 
 		$sent_stages[] = $stage;
 		update_option( self::EMAIL_SENT_OPTION, array_values( array_unique( $sent_stages ) ), false );

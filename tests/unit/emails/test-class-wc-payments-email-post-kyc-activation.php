@@ -57,8 +57,7 @@ class WC_Payments_Email_Post_Kyc_Activation_Test extends WCPAY_UnitTestCase {
 
 	public function test_trigger_bails_on_invalid_stage(): void {
 		// Invalid stage should not mutate $this->stage from its constructor default.
-		$this->email->trigger( 99 );
-
+		$this->assertFalse( $this->email->trigger( 99 ) );
 		$this->assertSame( 7, $this->email->stage );
 	}
 
@@ -66,5 +65,40 @@ class WC_Payments_Email_Post_Kyc_Activation_Test extends WCPAY_UnitTestCase {
 		$this->email->trigger( 14 );
 
 		$this->assertSame( 14, $this->email->stage );
+	}
+
+	public function test_trigger_returns_true_when_mailer_reports_success(): void {
+		add_filter( 'pre_wp_mail', '__return_true' );
+
+		$result = $this->email->trigger( 7 );
+
+		remove_filter( 'pre_wp_mail', '__return_true' );
+
+		$this->assertTrue( $result );
+	}
+
+	public function test_trigger_returns_false_when_email_is_disabled(): void {
+		add_filter( 'woocommerce_email_enabled_wcpay_post_kyc_activation', '__return_false' );
+
+		// pre_wp_mail set to true to prove the disabled gate short-circuits
+		// before send() runs — otherwise this would return true.
+		add_filter( 'pre_wp_mail', '__return_true' );
+
+		$result = $this->email->trigger( 7 );
+
+		remove_filter( 'pre_wp_mail', '__return_true' );
+		remove_filter( 'woocommerce_email_enabled_wcpay_post_kyc_activation', '__return_false' );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_trigger_returns_false_when_mailer_reports_failure(): void {
+		add_filter( 'pre_wp_mail', '__return_false' );
+
+		$result = $this->email->trigger( 7 );
+
+		remove_filter( 'pre_wp_mail', '__return_false' );
+
+		$this->assertFalse( $result );
 	}
 }

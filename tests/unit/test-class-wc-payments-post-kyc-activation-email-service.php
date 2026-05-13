@@ -323,10 +323,45 @@ class WC_Payments_Post_Kyc_Activation_Email_Service_Test extends WCPAY_UnitTestC
 			$emails['WC_Payments_Email_Post_Kyc_Activation'] ?? null
 		);
 
+		add_filter( 'pre_wp_mail', '__return_true' );
+
 		$service = $this->make_service();
 		$service->send_email_for_stage( 7 );
 
+		remove_filter( 'pre_wp_mail', '__return_true' );
+
 		$this->assertSame( [ 7 ], get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
+	}
+
+	public function test_send_email_for_stage_does_not_mark_stage_when_email_is_disabled(): void {
+		$this->set_up_eligible_state();
+
+		// Merchant opted out via WC > Settings > Emails. The handler bails
+		// before calling trigger() and EMAIL_SENT_OPTION is left untouched —
+		// it tracks only stages where an email was actually delivered.
+		add_filter( 'woocommerce_email_enabled_wcpay_post_kyc_activation', '__return_false' );
+
+		$this->make_service()->send_email_for_stage( 7 );
+
+		remove_filter( 'woocommerce_email_enabled_wcpay_post_kyc_activation', '__return_false' );
+
+		$this->assertFalse( get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
+	}
+
+	public function test_send_email_for_stage_does_not_mark_stage_when_mailer_fails(): void {
+		$this->set_up_eligible_state();
+
+		// Email is enabled and has a recipient, but wp_mail returns false.
+		// The stage must stay unconsumed so the failure shows up as a
+		// `wcpay_post_kyc_activation_email_send_failed` tracks event instead
+		// of being silently swallowed.
+		add_filter( 'pre_wp_mail', '__return_false' );
+
+		$this->make_service()->send_email_for_stage( 7 );
+
+		remove_filter( 'pre_wp_mail', '__return_false' );
+
+		$this->assertFalse( get_option( WC_Payments_Post_Kyc_Activation_Email_Service::EMAIL_SENT_OPTION ) );
 	}
 
 	// -------------------------------------------------------------------------

@@ -78,12 +78,17 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 		/**
 		 * Trigger sending the email.
 		 *
+		 * Returns whether `$this->send()` actually delivered the message. Returns
+		 * false in three cases: invalid stage, opted out (email disabled or no
+		 * recipient), or the underlying mailer rejected the send. The caller uses
+		 * this signal to decide whether the stage should be considered consumed.
+		 *
 		 * @param int $stage The stage day (7, 14, or 30).
-		 * @return void
+		 * @return bool True if the mailer reported a successful send, false otherwise.
 		 */
-		public function trigger( int $stage ): void {
+		public function trigger( int $stage ): bool {
 			if ( ! in_array( $stage, [ 7, 14, 30 ], true ) ) {
-				return;
+				return false;
 			}
 
 			$this->stage                   = $stage;
@@ -98,9 +103,16 @@ if ( ! class_exists( 'WC_Payments_Email_Post_Kyc_Activation' ) ) :
 
 			$this->restore_locale();
 
-			if ( $sent && class_exists( 'WC_Tracks' ) ) {
-				WC_Tracks::record_event( 'wcpay_post_kyc_activation_email_sent', [ 'stage' => $stage ] );
+			if ( class_exists( 'WC_Tracks' ) ) {
+				if ( $sent ) {
+					WC_Tracks::record_event( 'wcpay_post_kyc_activation_email_sent', [ 'stage' => $stage ] );
+				} elseif ( $this->is_enabled() && $this->get_recipient() ) {
+					// Mailer rejected the send — distinct from an intentional opt-out.
+					WC_Tracks::record_event( 'wcpay_post_kyc_activation_email_send_failed', [ 'stage' => $stage ] );
+				}
 			}
+
+			return $sent;
 		}
 
 		/**
