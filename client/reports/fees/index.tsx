@@ -109,6 +109,17 @@ export const hasActiveFeesFilters = ( query: FeesReportQuery ): boolean =>
 		return Array.isArray( value ) ? value.length > 0 : Boolean( value );
 	} );
 
+const getFeesFiltersQuery = ( feesQuery: FeesReportQuery ): FeesReportQuery => {
+	if ( ! hasActiveFeesFilters( feesQuery ) ) {
+		return feesQuery;
+	}
+
+	return {
+		...feesQuery,
+		filter: 'advanced',
+	};
+};
+
 const getOrderUrl = ( orderId: ReportsFee[ 'order_id' ] ): string =>
 	getAdminUrl( {
 		page: 'wc-orders',
@@ -435,7 +446,10 @@ export const FeesReport = ( {
 
 	return (
 		<>
-			<FeesFilters feesSummary={ feesSummary } />
+			<FeesFilters
+				feesSummary={ feesSummary }
+				query={ getFeesFiltersQuery( feesQuery ) }
+			/>
 			<TableCard
 				className="fees-report woocommerce-report-table has-search"
 				title={ __( 'Fees', 'woocommerce-payments' ) }

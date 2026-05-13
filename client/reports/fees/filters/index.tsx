@@ -18,10 +18,12 @@ import { recordEvent } from 'tracks';
 
 interface FeesFiltersProps {
 	feesSummary?: FeesSummaryForFilters;
+	query?: ReturnType< typeof getQuery >;
 }
 
 export const FeesFilters = ( {
 	feesSummary = {},
+	query = getQuery(),
 }: FeesFiltersProps ): JSX.Element => {
 	const { methodOptions, typeOptions } = useMemo(
 		() => getFeesFilterOptionsFromSummary( feesSummary ),
@@ -41,7 +43,7 @@ export const FeesFilters = ( {
 				advancedFilters={ advancedFilters }
 				showDatePicker={ false }
 				path="/payments/reports"
-				query={ getQuery() }
+				query={ query }
 				onAdvancedFilterAction={ (
 					event,
 					filterQuery: Record< string, unknown > = {}

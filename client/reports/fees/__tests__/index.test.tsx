@@ -217,6 +217,10 @@ describe( 'FeesReport', () => {
 			feesSummary: expect.objectContaining( {
 				count: 1,
 			} ),
+			query: expect.objectContaining( {
+				filter: 'advanced',
+				date_between: [ '2026-04-01', '2026-04-30' ],
+			} ),
 		} );
 		expect( tableCardMock ).toHaveBeenCalledWith(
 			expect.objectContaining( {
