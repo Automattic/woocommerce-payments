@@ -75,11 +75,18 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 	const TRACKING_HOOK = 'trackship_shipment_status_trigger';
 
 	/**
-	 * Whether TrackShip is active. Primary chain availability is irrelevant
-	 * (this provider never produces primary shipments), but the sync class
-	 * checks this before invoking `get_shipments()`. We return true whenever
-	 * TrackShip is loaded so the overlay path can also rely on the same
-	 * detection sentinel.
+	 * Detection sentinel for TrackShip. Used by `overlay()` and
+	 * `persist_tracking_data()` to short-circuit when the plugin isn't
+	 * loaded — even though both methods are also defensive about their
+	 * inputs, gating on the canonical detection check makes the intent
+	 * explicit and avoids unnecessary work.
+	 *
+	 * Note: `WooPay_Order_Tracking_Sync::get_order_shipments()` does NOT
+	 * consult this method for overlay providers — the overlay chain runs
+	 * all registered overlays regardless of `is_available()`. This method
+	 * remains on the `WooPay_Tracking_Provider` interface contract; in
+	 * practice it's used only as a shared sentinel by this class's own
+	 * private codepaths.
 	 *
 	 * @param \WC_Order $order The WooCommerce order.
 	 * @return bool
@@ -155,6 +162,16 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 	 * @param string $tracking_number       Tracking number this event applies to.
 	 */
 	public static function persist_tracking_data( $order_id, $previous_status, $tracking_event_status, $tracking_number ): void {
+		// Defensive: the persistence listener is registered unconditionally
+		// during sync construction. If something else fires the same action
+		// (hook-name collision, test code, unrelated plugin) while TrackShip
+		// itself isn't loaded, bail out — we have no business writing to
+		// `_wcpay_trackship_tracking_items` when the source plugin isn't
+		// active.
+		if ( ! class_exists( 'Trackship_For_Woocommerce' ) ) {
+			return;
+		}
+
 		if ( ! is_numeric( $order_id ) ) {
 			return;
 		}
@@ -229,6 +246,14 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 	 */
 	public function overlay( \WC_Order $order, array $shipments ): array {
 		if ( empty( $shipments ) ) {
+			return $shipments;
+		}
+
+		// Detection-sentinel gate: if TrackShip isn't loaded, there's no
+		// authoritative source of truth for the meta we'd be enriching from,
+		// so skip the overlay even if stale entries linger from a previous
+		// install. Symmetric with persist_tracking_data().
+		if ( ! $this->is_available( $order ) ) {
 			return $shipments;
 		}
 
