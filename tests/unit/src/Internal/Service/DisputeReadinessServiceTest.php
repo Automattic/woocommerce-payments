@@ -44,6 +44,18 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		parent::tear_down();
 	}
 
+	public function test_disabled_overview_payload_returns_hidden_dismissed_state() {
+		$payload  = $this->service->get_disabled_overview_payload();
+		$overview = $payload['overview'];
+
+		$this->assertFalse( $overview['enabled'] );
+		$this->assertTrue( $overview['hidden'] );
+		$this->assertSame( 0, $overview['score'] );
+		$this->assertSame( 0, $overview['total'] );
+		$this->assertTrue( $overview['isDismissed'] );
+		$this->assertSame( 'feature_disabled', $overview['dismissal']['reappearReason'] );
+	}
+
 	public function test_refund_policy_signal_requires_assigned_published_non_empty_page() {
 		$page_id = self::factory()->post->create(
 			[
@@ -76,6 +88,24 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'incomplete', $signal['status'] );
 		$this->assertContains( 'terms_and_conditions', $overview['incompleteSignalIds'] );
+	}
+
+	public function test_refund_policy_signal_uses_fallback_edit_url_when_edit_link_is_empty() {
+		$page_id = self::factory()->post->create(
+			[
+				'post_type'    => 'page',
+				'post_status'  => 'draft',
+				'post_content' => 'Draft refund policy.',
+			]
+		);
+		update_option( 'woocommerce_refund_returns_page_id', $page_id );
+
+		add_filter( 'get_edit_post_link', '__return_empty_string' );
+		$overview = $this->service->get_overview_payload()['overview'];
+		remove_filter( 'get_edit_post_link', '__return_empty_string' );
+		$signal = $this->get_signal( $overview, 'refund_policy' );
+
+		$this->assertSame( admin_url( 'post.php?post=' . $page_id . '&action=edit' ), $signal['actionUrl'] );
 	}
 
 	public function test_terms_signal_uses_woocommerce_advanced_settings_url_when_no_page_is_assigned() {
@@ -120,6 +150,17 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'complete', $signal['status'] );
 	}
 
+	public function test_statement_descriptor_is_incomplete_when_account_data_is_not_an_array() {
+		$account = $this->createMock( WC_Payments_Account::class );
+		$account->method( 'get_cached_account_data' )->willReturn( null );
+		$this->service = new DisputeReadinessService( $account );
+
+		$overview = $this->service->get_overview_payload()['overview'];
+		$signal   = $this->get_signal( $overview, 'statement_descriptor' );
+
+		$this->assertSame( 'incomplete', $signal['status'] );
+	}
+
 	public function test_support_contact_is_complete_when_email_or_phone_exists() {
 		$this->mock_account_data(
 			[
@@ -136,6 +177,17 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'complete', $signal['status'] );
 	}
 
+	public function test_dismissed_card_stays_dismissed_when_state_is_unchanged() {
+		$overview = $this->service->dismiss_overview_card()['overview'];
+
+		$this->assertTrue( $overview['isDismissed'] );
+		$this->assertTrue( $overview['dismissal']['isStoredDismissal'] );
+		$this->assertNull( $overview['dismissal']['reappearReason'] );
+		$this->assertSame( $overview['score'], $overview['dismissal']['scoreAtDismissal'] );
+		$this->assertSame( $overview['total'], $overview['dismissal']['totalAtDismissal'] );
+		$this->assertNotEmpty( $overview['dismissal']['dismissedAt'] );
+	}
+
 	public function test_dismissed_card_reappears_when_score_decreases() {
 		$this->service->dismiss_overview_card();
 
@@ -150,6 +202,25 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $overview['isDismissed'] );
 		$this->assertSame( 'score_decreased', $overview['dismissal']['reappearReason'] );
+	}
+
+	public function test_dismissed_card_reappears_when_total_changes() {
+		update_option(
+			DisputeReadinessService::DISMISSAL_OPTION,
+			[
+				'dismissed'             => true,
+				'dismissed_at'          => gmdate( 'c' ),
+				'score_at_dismissal'    => 2,
+				'total_at_dismissal'    => 3,
+				'incomplete_signal_ids' => [],
+			],
+			false
+		);
+
+		$overview = $this->service->get_overview_payload()['overview'];
+
+		$this->assertFalse( $overview['isDismissed'] );
+		$this->assertSame( 'total_changed', $overview['dismissal']['reappearReason'] );
 	}
 
 	public function test_dismissed_card_reappears_when_incomplete_signals_change_without_score_change() {
