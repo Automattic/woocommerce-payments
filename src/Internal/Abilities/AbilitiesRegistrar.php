@@ -22,6 +22,12 @@ defined( 'ABSPATH' ) || exit;
  * Registration is gated behind the `woocommerce_payments_abilities_enabled`
  * filter (default `false`) so the scaffolding can ship without committing
  * the final surface; per-site opt-in until validated.
+ *
+ * Implemented as a static class rather than a DI-wired instance (the
+ * convention for hook-registering classes elsewhere under `src/Internal/`)
+ * because the Abilities API registers callables at action hook time;
+ * static methods serialize cleanly across `add_action()` boundaries without
+ * needing the DI container at dispatch time.
  */
 class AbilitiesRegistrar {
 
@@ -102,34 +108,20 @@ class AbilitiesRegistrar {
 		}
 
 		// The abilities-api package fires the non-prefixed action names
-		// (`abilities_api_init`, `abilities_api_categories_init`). WooCommerce
-		// Core additionally hooks the `wp_` variants for forward compatibility
-		// with any future WP-Core-merged naming; we mirror that. The
-		// idempotency guards in `register_category()` / per-ability helpers
-		// make repeated invocations safe if both action names fire.
-		// The immediate-call branches (when an abilities-init action has
-		// already fired) are unreachable from the unit-test harness because
-		// the WP test framework resets $wp_actions between tests while the
-		// registry singletons persist. Both branches handle the production
-		// case where init() runs after WC Core has already initialized the
-		// abilities registry.
-		if ( did_action( 'abilities_api_categories_init' ) || did_action( 'wp_abilities_api_categories_init' ) ) {
-			// @codeCoverageIgnoreStart
-			self::register_category();
-			// @codeCoverageIgnoreEnd
-		} else {
-			add_action( 'abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
-			add_action( 'wp_abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
-		}
-
-		if ( did_action( 'abilities_api_init' ) || did_action( 'wp_abilities_api_init' ) ) {
-			// @codeCoverageIgnoreStart
-			self::register_abilities();
-			// @codeCoverageIgnoreEnd
-		} else {
-			add_action( 'abilities_api_init', [ __CLASS__, 'register_abilities' ] );
-			add_action( 'wp_abilities_api_init', [ __CLASS__, 'register_abilities' ] );
-		}
+		// (`abilities_api_init`, `abilities_api_categories_init`); WP Core's
+		// merge target uses the `wp_` variants. We hook both so the registrar
+		// works against either version of the API. The Abilities API registry
+		// is lazy — its singleton fires the init actions on first access — so
+		// `add_action()` during `plugins_loaded` is safe even if the registry
+		// has already been bootstrapped elsewhere; the lazy registry will fire
+		// our handler on the next access. The idempotency guards in
+		// register_category()/register_abilities() handle the dual-hook
+		// double-fire scenario when both variant names fire in the same
+		// process.
+		add_action( 'abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
+		add_action( 'wp_abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
+		add_action( 'abilities_api_init', [ __CLASS__, 'register_abilities' ] );
+		add_action( 'wp_abilities_api_init', [ __CLASS__, 'register_abilities' ] );
 	}
 
 	/**
@@ -144,6 +136,9 @@ class AbilitiesRegistrar {
 	 * @return void
 	 */
 	public static function register_category() {
+		// Public visibility is required: this method is registered as an
+		// `add_action()` callback and invoked by WordPress's WP_Hook from
+		// outside the class.
 		if ( self::$category_registered || ! function_exists( 'wp_register_ability_category' ) ) {
 			return;
 		}
@@ -170,6 +165,9 @@ class AbilitiesRegistrar {
 	 * @return void
 	 */
 	public static function register_abilities() {
+		// Public visibility is required: this method is registered as an
+		// `add_action()` callback and invoked by WordPress's WP_Hook from
+		// outside the class.
 		if ( self::$abilities_registered || ! function_exists( 'wp_register_ability' ) ) {
 			return;
 		}
@@ -201,7 +199,9 @@ class AbilitiesRegistrar {
 	 * `card_present_eligible`, `test_mode`, and `test_mode_onboarding` flags
 	 * on top of the cached service payload).
 	 *
-	 * Reads from the local account cache — no remote API request is issued.
+	 * Reads account state from the local cache when available; issues a
+	 * remote API request to the Transact platform if the cache is empty
+	 * or stale (the get-or-fetch semantics of `WC_Payments_Account::get_cached_account_data()`).
 	 *
 	 * @param mixed $input Unused (zero-arg ability); accepted to match the
 	 *                     Abilities API execute_callback signature.
@@ -210,53 +210,7 @@ class AbilitiesRegistrar {
 	 */
 	public static function execute_get_account( $input = null ) {
 		unset( $input );
-
-		// @codeCoverageIgnoreStart -- Defensive guard for environments where the WCPay REST controllers haven't loaded. In unit tests the class is always required by the bootstrap; in production it is loaded by the plugin's own bootstrap before this ability can be invoked.
-		if ( ! class_exists( '\WC_REST_Payments_Accounts_Controller' ) ) {
-			return new \WP_Error(
-				'wcpay_not_initialized',
-				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
-			);
-		}
-		// @codeCoverageIgnoreEnd
-
-		// The backing method does not read $this->api_client; it resolves
-		// everything through the account service plus the mode singleton.
-		// Guard on the account service (what the method actually needs);
-		// the API client is only passed to satisfy the base controller's
-		// constructor signature.
-		$account_service = ( class_exists( '\WC_Payments' ) && method_exists( '\WC_Payments', 'get_account_service' ) )
-			? \WC_Payments::get_account_service()
-			: null;
-		// @codeCoverageIgnoreStart -- Defensive null-guard for the account service. In unit tests the service is always initialized by the plugin bootstrap; in production it is set up before this ability can run.
-		if ( null === $account_service ) {
-			return new \WP_Error(
-				'wcpay_not_initialized',
-				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
-			);
-		}
-		// @codeCoverageIgnoreEnd
-
-		$controller = new \WC_REST_Payments_Accounts_Controller( \WC_Payments::get_payments_api_client() );
-		$response   = $controller->get_account_data();
-
-		// @codeCoverageIgnoreStart -- get_account_data() always returns a WP_REST_Response via rest_ensure_response(); these defensive branches handle hypothetical alternate return shapes that the backing method cannot produce today.
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-		// @codeCoverageIgnoreEnd
-		if ( $response instanceof \WP_REST_Response ) {
-			// @codeCoverageIgnoreStart -- The backing method's payload is a synthetic NOACCOUNT shape (when no account is connected) or the cached account data; neither path produces an error-status WP_REST_Response. Mirrored from delegate_to_rest_controller() for consistency.
-			if ( $response->is_error() ) {
-				return $response->as_error();
-			}
-			// @codeCoverageIgnoreEnd
-			$data = $response->get_data();
-			return is_array( $data ) ? $data : [];
-		}
-		// @codeCoverageIgnoreStart -- Same as above: get_account_data() always returns a WP_REST_Response, so this raw-array fallback is unreachable today.
-		return is_array( $response ) ? $response : [];
-		// @codeCoverageIgnoreEnd
+		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/accounts' );
 	}
 
 	/**
@@ -290,6 +244,15 @@ class AbilitiesRegistrar {
 	 * @return void
 	 */
 	public static function reset_for_testing() {
+		// Production-environment guard. The `@internal` docblock is advisory;
+		// this runtime guard prevents accidental flag resets from a misbehaving
+		// plugin or hook callback, which would re-arm registration outside an
+		// action callback and trigger `_doing_it_wrong` from the Abilities API.
+		// `WCPAY_TEST_ENV` is defined by the project's PHPUnit bootstrap
+		// (`tests/unit/bootstrap.php`) and is absent in production.
+		if ( ! defined( 'WCPAY_TEST_ENV' ) ) {
+			return;
+		}
 		self::$category_registered  = false;
 		self::$abilities_registered = false;
 	}
@@ -605,6 +568,14 @@ class AbilitiesRegistrar {
 	/**
 	 * Register the `woocommerce-payments/get-dispute` ability.
 	 *
+	 * PII surface: the backing controller returns the full Stripe charge
+	 * object via `dispute->evidence` and `dispute->charge`, including
+	 * `billing_details` (name/email/phone/address) and any associated
+	 * `order` data (`customer_email`, `ip_address`). Reviewed and accepted
+	 * for `manage_woocommerce`-gated MCP clients — admins already see this
+	 * data in the dispute admin UI. If the cap gate ever moves below admin,
+	 * revisit this and add response filtering.
+	 *
 	 * @return void
 	 */
 	private static function register_get_dispute_ability() {
@@ -620,8 +591,8 @@ class AbilitiesRegistrar {
 					'properties'           => [
 						'dispute_id' => [
 							'type'        => 'string',
-							'description' => 'Stripe dispute ID (starts with `du_`). Not to be confused with the deposit/payout ID prefix `dp_`.',
-							'pattern'     => '^du_',
+							'description' => 'Stripe dispute ID — starts with `du_` (PaymentIntent disputes) or `dp_` (legacy Charge disputes; also used by `stripe trigger dispute.*`). Note the prefix overlap with deposit/payout IDs.',
+							'pattern'     => '^(du_|dp_)',
 						],
 					],
 					'required'             => [ 'dispute_id' ],
@@ -717,6 +688,12 @@ class AbilitiesRegistrar {
 	/**
 	 * Register the `woocommerce-payments/get-payment-intent` ability.
 	 *
+	 * PII surface: the backing controller returns the full intent payload
+	 * including the nested charge (`billing_details` name/email/phone/address)
+	 * and any card metadata (`last4`, brand). Reviewed and accepted for
+	 * `manage_woocommerce`-gated MCP clients. If the cap gate ever moves
+	 * below admin, revisit this and add response filtering.
+	 *
 	 * @return void
 	 */
 	private static function register_get_payment_intent_ability() {
@@ -748,6 +725,14 @@ class AbilitiesRegistrar {
 
 	/**
 	 * Register the `woocommerce-payments/get-charge` ability.
+	 *
+	 * PII surface: the backing controller returns the full Stripe charge
+	 * object including `billing_details` (name/email/phone/address) and
+	 * order metadata (`customer_email`, `customer_name`, `ip_address`,
+	 * `fraud_meta_box_type`). Reviewed and accepted for
+	 * `manage_woocommerce`-gated MCP clients — admins already see this
+	 * in the order/charge admin UI. If the cap gate ever moves below
+	 * admin, revisit this and add response filtering.
 	 *
 	 * @return void
 	 */
@@ -851,6 +836,11 @@ class AbilitiesRegistrar {
 				'idempotent'  => true,
 			],
 			'show_in_rest' => true,
+			// `mcp.public` is read by the wordpress/mcp-adapter package
+			// (McpAbilityHelperTrait::is_public_mcp_ability() +
+			// DefaultServerFactory::register_abilities()) to gate MCP
+			// discoverability. The key is the adapter's contract, not a
+			// WP Core convention.
 			'mcp'          => [
 				'public' => true,
 			],
@@ -1115,10 +1105,15 @@ class AbilitiesRegistrar {
 	 */
 	private static function delegate_to_rest_controller( $http_method, $route, $params = [] ) {
 		// Translate WP-Core REST pagination/sort keys to the names the
-		// WooPayments Paginated request class consumes.
+		// WooPayments Paginated request class consumes. When the caller
+		// supplies both the agent-facing key (e.g. `per_page`) and the
+		// canonical key (e.g. `pagesize`), the canonical key wins — silently
+		// overwriting an explicit `pagesize` was a footgun in earlier drafts.
 		foreach ( self::PAGINATION_KEY_MAP as $agent_key => $request_key ) {
 			if ( array_key_exists( $agent_key, $params ) ) {
-				$params[ $request_key ] = $params[ $agent_key ];
+				if ( ! array_key_exists( $request_key, $params ) ) {
+					$params[ $request_key ] = $params[ $agent_key ];
+				}
 				unset( $params[ $agent_key ] );
 			}
 		}
@@ -1131,11 +1126,30 @@ class AbilitiesRegistrar {
 		$response = rest_do_request( $request );
 
 		if ( is_wp_error( $response ) ) {
+			\WCPay\Logger::error(
+				sprintf(
+					'AbilitiesRegistrar delegation failed [%s %s]: %s (%s)',
+					$http_method,
+					$route,
+					$response->get_error_message(),
+					$response->get_error_code()
+				)
+			);
 			return $response;
 		}
 		if ( $response instanceof \WP_REST_Response ) {
 			if ( $response->is_error() ) {
-				return $response->as_error();
+				$wp_error = $response->as_error();
+				\WCPay\Logger::error(
+					sprintf(
+						'AbilitiesRegistrar delegation error response [%s %s]: %s (%s)',
+						$http_method,
+						$route,
+						$wp_error->get_error_message(),
+						$wp_error->get_error_code()
+					)
+				);
+				return $wp_error;
 			}
 			$data = $response->get_data();
 			return is_array( $data ) ? $data : [];

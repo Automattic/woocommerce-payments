@@ -38,6 +38,11 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_init_is_no_op_when_feature_flag_disabled() {
+		// Remove all four hook variants (both composer-package names and the
+		// WP-Core merge names) — init() hooks all four when enabled, so the
+		// feature-flag no-op test must check that none of them are wired.
+		remove_all_actions( 'abilities_api_categories_init' );
+		remove_all_actions( 'abilities_api_init' );
 		remove_all_actions( self::CATEGORIES_HOOK );
 		remove_all_actions( self::ABILITIES_HOOK );
 		remove_all_filters( self::FEATURE_FILTER );
@@ -49,14 +54,28 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 				self::CATEGORIES_HOOK,
 				[ AbilitiesRegistrar::class, 'register_category' ]
 			),
-			'Expected init() to short-circuit when the feature filter is unset (default false).'
+			'Expected init() to short-circuit on wp_abilities_api_categories_init when the feature filter is unset.'
 		);
 		$this->assertFalse(
 			has_action(
 				self::ABILITIES_HOOK,
 				[ AbilitiesRegistrar::class, 'register_abilities' ]
 			),
-			'Expected init() to short-circuit when the feature filter is unset (default false).'
+			'Expected init() to short-circuit on wp_abilities_api_init when the feature filter is unset.'
+		);
+		$this->assertFalse(
+			has_action(
+				'abilities_api_categories_init',
+				[ AbilitiesRegistrar::class, 'register_category' ]
+			),
+			'Expected init() to also short-circuit on the composer-package categories action variant.'
+		);
+		$this->assertFalse(
+			has_action(
+				'abilities_api_init',
+				[ AbilitiesRegistrar::class, 'register_abilities' ]
+			),
+			'Expected init() to also short-circuit on the composer-package abilities action variant.'
 		);
 	}
 
@@ -238,81 +257,115 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Exercise each ability's `execute_*` callback so the body, the
-	 * `delegate_to_rest_controller()` helper, and the `is_error()` /
-	 * `WP_REST_Response` / raw-array unwrap branches all run. The unit
-	 * environment has no live platform API, so we only assert the call
-	 * returns array|\WP_Error without fataling — coverage of the
-	 * dispatch path is the point.
+	 * Exercise each ability's `execute_*` callback by injecting a canned
+	 * successful `WP_REST_Response` via `rest_pre_dispatch` for the expected
+	 * route, then assert the ability returns the unwrapped payload as an
+	 * array. This is a real behavioural test: a mis-wired route would fail
+	 * the injection and surface as an unexpected `WP_Error` from the real
+	 * REST router.
 	 *
 	 * @dataProvider provide_execute_cases
 	 */
-	public function test_execute_callback_returns_array_or_wp_error( string $method, $input ) {
-		$result = AbilitiesRegistrar::$method( $input );
-		$this->assertTrue(
-			is_array( $result ) || is_wp_error( $result ),
-			$method . ' must return either an array or a WP_Error; got ' . gettype( $result )
+	public function test_execute_callback_routes_to_expected_endpoint( string $method, $input, string $expected_route ) {
+		$canned = [ 'data' => 'fake-success-' . $method ];
+		$filter = function ( $result, $server, $request ) use ( $expected_route, $canned ) {
+			// Exact route match — a mis-routed ability (wrong path or wrong
+			// path suffix) would miss this filter and surface as an unexpected
+			// `WP_Error` from the real REST router, which the assertion below
+			// catches via `assertIsArray`.
+			if ( $request->get_route() === $expected_route ) {
+				return new \WP_REST_Response( $canned, 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			$result = AbilitiesRegistrar::$method( $input );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertIsArray(
+			$result,
+			$method . ' must unwrap the WP_REST_Response into an array. Got: ' . ( is_wp_error( $result ) ? 'WP_Error(' . $result->get_error_code() . ')' : gettype( $result ) )
+		);
+		$this->assertSame(
+			$canned,
+			$result,
+			$method . ' must return the canned payload from the injected route ' . $expected_route . '. Mismatch indicates the ability routed to a different REST path than expected.'
 		);
 	}
 
 	public function provide_execute_cases(): array {
 		return [
-			'get-account'                => [ 'execute_get_account', null ],
-			'get-deposits-overview'      => [ 'execute_get_deposits_overview', null ],
-			'get-transactions'           => [ 'execute_get_transactions', [ 'per_page' => 5 ] ],
-			'get-transactions-summary'   => [ 'execute_get_transactions_summary', [] ],
-			'get-disputes'               => [ 'execute_get_disputes', [ 'per_page' => 5 ] ],
-			'get-disputes-summary'       => [ 'execute_get_disputes_summary', [] ],
-			'get-dispute'                => [ 'execute_get_dispute', [ 'dispute_id' => 'du_test_invalid' ] ],
-			'get-authorizations'         => [ 'execute_get_authorizations', [ 'per_page' => 5 ] ],
-			'get-authorizations-summary' => [ 'execute_get_authorizations_summary', null ],
-			'get-deposits'               => [ 'execute_get_deposits', [ 'per_page' => 5 ] ],
-			'get-deposits-summary'       => [ 'execute_get_deposits_summary', [] ],
-			'get-payment-intent'         => [ 'execute_get_payment_intent', [ 'payment_intent_id' => 'pi_test_invalid' ] ],
-			'get-charge'                 => [ 'execute_get_charge', [ 'charge_id' => 'ch_test_invalid' ] ],
-			'get-timeline'               => [ 'execute_get_timeline', [ 'intention_id' => 'pi_test_invalid' ] ],
-			'get-active-loan-summary'    => [ 'execute_get_active_loan_summary', null ],
+			'get-account'                => [ 'execute_get_account', null, '/wc/v3/payments/accounts' ],
+			'get-deposits-overview'      => [ 'execute_get_deposits_overview', null, '/wc/v3/payments/deposits/overview-all' ],
+			'get-transactions'           => [ 'execute_get_transactions', [ 'per_page' => 5 ], '/wc/v3/payments/transactions' ],
+			'get-transactions-summary'   => [ 'execute_get_transactions_summary', [], '/wc/v3/payments/transactions/summary' ],
+			'get-disputes'               => [ 'execute_get_disputes', [ 'per_page' => 5 ], '/wc/v3/payments/disputes' ],
+			'get-disputes-summary'       => [ 'execute_get_disputes_summary', [], '/wc/v3/payments/disputes/summary' ],
+			'get-dispute'                => [ 'execute_get_dispute', [ 'dispute_id' => 'du_test_invalid' ], '/wc/v3/payments/disputes/du_test_invalid' ],
+			'get-dispute-dp-prefix'      => [ 'execute_get_dispute', [ 'dispute_id' => 'dp_test_legacy' ], '/wc/v3/payments/disputes/dp_test_legacy' ],
+			'get-authorizations'         => [ 'execute_get_authorizations', [ 'per_page' => 5 ], '/wc/v3/payments/authorizations' ],
+			'get-authorizations-summary' => [ 'execute_get_authorizations_summary', null, '/wc/v3/payments/authorizations/summary' ],
+			'get-deposits'               => [ 'execute_get_deposits', [ 'per_page' => 5 ], '/wc/v3/payments/deposits' ],
+			'get-deposits-summary'       => [ 'execute_get_deposits_summary', [], '/wc/v3/payments/deposits/summary' ],
+			'get-payment-intent'         => [ 'execute_get_payment_intent', [ 'payment_intent_id' => 'pi_test_invalid' ], '/wc/v3/payments/payment_intents/pi_test_invalid' ],
+			'get-charge'                 => [ 'execute_get_charge', [ 'charge_id' => 'ch_test_invalid' ], '/wc/v3/payments/charges/ch_test_invalid' ],
+			'get-timeline'               => [ 'execute_get_timeline', [ 'intention_id' => 'pi_test_invalid' ], '/wc/v3/payments/timeline/pi_test_invalid' ],
+			'get-active-loan-summary'    => [ 'execute_get_active_loan_summary', null, '/wc/v3/payments/capital/active_loan_summary' ],
 		];
 	}
 
 	public function test_register_category_short_circuits_when_static_flag_set() {
+		// When the static idempotency flag is pre-set, calling register_category()
+		// must short-circuit at the flag guard — no `_doing_it_wrong` notice
+		// from re-registering. Catch any `_doing_it_wrong` calls via the
+		// `doing_it_wrong_run` action; this is the load-bearing assertion
+		// for the idempotency guard.
 		$this->set_static_flag( 'category_registered', true );
 
-		// With the flag pre-set, the call must short-circuit at the
-		// static-flag guard before any abilities-API method runs.
-		AbilitiesRegistrar::register_category();
+		$called = false;
+		$spy    = function () use ( &$called ) {
+			$called = true;
+		};
+		add_action( 'doing_it_wrong_run', $spy );
 
-		$this->assertTrue( true );
+		try {
+			AbilitiesRegistrar::register_category();
+		} finally {
+			remove_action( 'doing_it_wrong_run', $spy );
+		}
+
+		$this->assertFalse(
+			$called,
+			'register_category() with the static flag pre-set must short-circuit before invoking wp_register_ability_category() (which would emit _doing_it_wrong on re-registration).'
+		);
 	}
 
 	public function test_register_abilities_short_circuits_when_static_flag_set() {
+		// Same contract as the category test above: pre-set the static
+		// idempotency flag and verify no `_doing_it_wrong` fires when the
+		// short-circuit guard runs.
 		$this->set_static_flag( 'abilities_registered', true );
 
-		AbilitiesRegistrar::register_abilities();
+		$called = false;
+		$spy    = function () use ( &$called ) {
+			$called = true;
+		};
+		add_action( 'doing_it_wrong_run', $spy );
 
-		$this->assertTrue( true );
-	}
-
-	public function test_init_takes_immediate_call_branch_when_actions_have_fired() {
-		// `did_action()` is process-wide. If a prior test in this suite ran
-		// `wp_get_abilities()` (which fires `wp_abilities_api_*_init`), the
-		// counter is > 0 and init() takes the immediate-call branch. Force
-		// it here so this test does not depend on suite ordering.
-		if ( function_exists( 'wp_get_abilities' ) ) {
-			wp_get_abilities();
+		try {
+			AbilitiesRegistrar::register_abilities();
+		} finally {
+			remove_action( 'doing_it_wrong_run', $spy );
 		}
 
-		// Pre-set both static flags so the immediate `self::register_category()`
-		// and `self::register_abilities()` calls short-circuit cleanly — we
-		// don't want the test to trigger `_doing_it_wrong` from calling the
-		// abilities-API registrars outside their action callbacks.
-		$this->set_static_flag( 'category_registered', true );
-		$this->set_static_flag( 'abilities_registered', true );
-
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-		AbilitiesRegistrar::init();
-
-		$this->assertTrue( true );
+		$this->assertFalse(
+			$called,
+			'register_abilities() with the static flag pre-set must short-circuit before invoking wp_register_ability() (which would emit _doing_it_wrong on re-registration).'
+		);
 	}
 
 	/**

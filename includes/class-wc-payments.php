@@ -25,6 +25,7 @@ use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
@@ -736,7 +737,7 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
-		\WCPay\Internal\Abilities\AbilitiesRegistrar::init();
+		AbilitiesRegistrar::init();
 
 		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
