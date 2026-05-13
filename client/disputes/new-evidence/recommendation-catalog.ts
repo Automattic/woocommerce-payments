@@ -454,7 +454,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		},
 	},
 
-	// ============ CLUSTER 8: service date ============
+	// ============ CLUSTER 8: service date (non-physical only) ============
+	// Scoped to non-physical product types because the wizard collects
+	// `shipping_date` (not `service_date`) for physical_product fraudulent
+	// disputes. Coaching a physical-product merchant on `service_date` asks
+	// them to populate a field the wizard never surfaces for their type.
+	// Mirrors DISPUTE_HIGH_IMPACT_FIELDS, which already encodes the same
+	// distinction for fraudulent. Follow-up: separate shipping_date
+	// coaching for fraudulent + physical_product if RiskOps wants it.
 	{
 		id: 'c8-service-date-provided',
 		urgency: 'positive',
@@ -463,6 +470,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'fraudulent' ],
+			productTypeIn: [
+				'digital_product_or_service',
+				'offline_service',
+				'event',
+				'booking_reservation',
+				'multiple',
+				'other',
+			],
 			requireProvided: { keys: [ 'service_date' ] },
 		},
 	},
@@ -474,6 +489,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'fraudulent' ],
+			productTypeIn: [
+				'digital_product_or_service',
+				'offline_service',
+				'event',
+				'booking_reservation',
+				'multiple',
+				'other',
+			],
 			requireMissing: { keys: [ 'service_date' ] },
 		},
 	},
@@ -485,6 +508,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'fraudulent' ],
+			productTypeIn: [
+				'digital_product_or_service',
+				'offline_service',
+				'event',
+				'booking_reservation',
+				'multiple',
+				'other',
+			],
 			requireMissing: { keys: [ 'service_date' ] },
 		},
 	},

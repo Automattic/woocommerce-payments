@@ -280,6 +280,53 @@ describe( 'DisputeRecommendationsCard', () => {
 		} );
 	} );
 
+	describe( 'Cluster 8 product-type scoping', () => {
+		// Regression for a bug where Cluster 8 (service_date) entries fired on
+		// fraudulent + physical_product. The wizard collects `shipping_date`
+		// (not `service_date`) for physical, so the recommendation coached
+		// merchants on a field they could not reach.
+		it( 'does not fire the service_date tip on fraudulent + physical_product', () => {
+			const dispute = buildDispute( {
+				status: 'won',
+				reason: 'fraudulent',
+				metadata: { __product_type: 'physical_product' },
+				// shipping_date filled (the correct field for physical),
+				// service_date empty (matches wizard behavior).
+				evidence: { shipping_date: '2026-04-15' },
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /document the service date/i,
+				} )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /include the service date/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'still fires service_date entries on fraudulent + digital_product_or_service', () => {
+			const dispute = buildDispute( {
+				status: 'lost',
+				reason: 'fraudulent',
+				metadata: { __product_type: 'digital_product_or_service' },
+				evidence: { receipt: 'r' }, // dodge c15 suppression
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			expect(
+				screen.getByRole( 'heading', {
+					name: /include the service date/i,
+				} )
+			).toBeInTheDocument();
+		} );
+	} );
+
 	describe( 'Cluster 15 suppression', () => {
 		it( 'shows the catch-all critical and suppresses other criticals when no evidence is submitted', () => {
 			const dispute = buildDispute( {
