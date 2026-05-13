@@ -260,7 +260,10 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 					$shipment['status'] = (string) $entry['status'];
 				}
 				if ( isset( $entry['status_updated_at'] ) ) {
-					$shipment['status_updated_at'] = (string) $entry['status_updated_at'];
+					$validated = self::sanitize_status_updated_at( (string) $entry['status_updated_at'] );
+					if ( '' !== $validated ) {
+						$shipment['status_updated_at'] = $validated;
+					}
 				}
 				return $shipment;
 			},
@@ -345,5 +348,38 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 			return mb_substr( $value, 0, $max );
 		}
 		return substr( $value, 0, $max );
+	}
+
+	/**
+	 * Validate an ISO 8601 UTC timestamp string before forwarding it to the
+	 * webhook payload. Returns the validated value or `''` if invalid.
+	 *
+	 * Defense-in-depth: while `persist_tracking_data()` writes this field
+	 * via `gmdate( 'Y-m-d\TH:i:s\Z' )`, order meta is mutable by other
+	 * plugins/admins between write and read. The read path treats the
+	 * stored value as untrusted: strict format match plus round-trip
+	 * verification rejects any value that doesn't match the exact shape
+	 * the receiver expects, so malformed/tampered values are silently
+	 * dropped rather than propagated to WooPay.
+	 *
+	 * @param string $value Raw value from `_wcpay_trackship_tracking_items` meta.
+	 * @return string Validated ISO 8601 UTC string, or '' if invalid.
+	 */
+	private static function sanitize_status_updated_at( string $value ): string {
+		// Length bound and quick shape check; rejects newlines, control
+		// chars, embedded NULs without needing a regex pass.
+		if ( strlen( $value ) > 32 ) {
+			return '';
+		}
+		if ( 1 !== preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $value ) ) {
+			return '';
+		}
+		// Round-trip via DateTime to reject calendar-invalid values like
+		// "2026-13-99T25:99:99Z" that the regex alone would accept.
+		$dt = \DateTime::createFromFormat( 'Y-m-d\TH:i:s\Z', $value, new \DateTimeZone( 'UTC' ) );
+		if ( ! $dt || $dt->format( 'Y-m-d\TH:i:s\Z' ) !== $value ) {
+			return '';
+		}
+		return $value;
 	}
 }

@@ -25,6 +25,13 @@ require_once __DIR__ . '/stub-trackship.php';
 
 /**
  * WooPay_TrackShip_Provider unit tests.
+ *
+ * Note on the `$reloaded = wc_get_order(...)` pattern used throughout:
+ * `persist_tracking_data()` loads a fresh order instance internally via
+ * `wc_get_order()` and mutates THAT instance — the caller's `$order`
+ * reference is untouched. Tests must reload the order from the datastore
+ * before asserting against meta, otherwise stale reads would let
+ * accidental writes pass undetected.
  */
 class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 
@@ -190,7 +197,8 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 
 		WooPay_TrackShip_Provider::persist_tracking_data( $order->get_id(), '', '', '1Z999' );
 
-		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
+		$reloaded = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
 	}
 
 	public function test_persist_skips_when_tracking_number_empty() {
@@ -198,7 +206,8 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 
 		WooPay_TrackShip_Provider::persist_tracking_data( $order->get_id(), '', 'in_transit', '' );
 
-		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
+		$reloaded = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
 	}
 
 	public function test_persist_skips_when_tracking_number_whitespace_only() {
@@ -206,7 +215,8 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 
 		WooPay_TrackShip_Provider::persist_tracking_data( $order->get_id(), '', 'in_transit', "   \t  " );
 
-		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
+		$reloaded = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
 	}
 
 	public function test_persist_strips_html_from_tracking_number() {
@@ -236,7 +246,8 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 			'<script></script>'
 		);
 
-		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
+		$reloaded = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
 	}
 
 	public function test_persist_truncates_pathologically_long_tracking_number() {
@@ -268,7 +279,8 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 			'1Z999'
 		);
 
-		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
+		$reloaded = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
 	}
 
 	public function test_persist_proceeds_when_previous_is_empty_string_first_event() {
@@ -290,7 +302,8 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 
 		WooPay_TrackShip_Provider::persist_tracking_data( $order->get_id(), '', 'unknown', '1Z999' );
 
-		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
+		$reloaded = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
 	}
 
 	public function test_persist_drops_garbage_status_silently() {
@@ -298,7 +311,8 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 
 		WooPay_TrackShip_Provider::persist_tracking_data( $order->get_id(), '', 'wibble', '1Z999' );
 
-		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
+		$reloaded = wc_get_order( $order->get_id() );
+		$this->assertEmpty( $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
 	}
 
 	public function test_persist_skips_when_order_does_not_exist() {
@@ -521,5 +535,86 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 		$result = $this->provider->overlay( $order, $shipments );
 
 		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_IN_TRANSIT, $result[0]['status'] );
+	}
+
+	public function provide_invalid_status_updated_at(): array {
+		return [
+			'empty string'               => [ '' ],
+			'unix timestamp as string'   => [ '1747147200' ],
+			'date only (missing time)'   => [ '2026-05-13' ],
+			'missing Z timezone marker'  => [ '2026-05-13T12:00:00' ],
+			'local timezone offset'      => [ '2026-05-13T12:00:00+02:00' ],
+			'calendar-invalid month'     => [ '2026-13-01T00:00:00Z' ],
+			'calendar-invalid hour'      => [ '2026-05-13T25:00:00Z' ],
+			'newline injection attempt'  => [ "2026-05-13T12:00:00Z\nfake log line" ],
+			'pathologically long string' => [ str_repeat( '2', 100 ) ],
+			'malformed garbage'          => [ 'not-a-date' ],
+		];
+	}
+
+	/**
+	 * @dataProvider provide_invalid_status_updated_at
+	 */
+	public function test_overlay_omits_invalid_status_updated_at( string $bad_value ) {
+		// Regression guard: order meta is mutable by other plugins/admins
+		// after our listener writes it. The overlay path treats stored
+		// `status_updated_at` as untrusted; invalid values are silently
+		// omitted rather than forwarded to the WooPay webhook payload.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data(
+			WooPay_TrackShip_Provider::META_KEY,
+			[
+				[
+					'tracking_number'   => '1Z999',
+					'status'            => WooPay_Order_Tracking_Sync::STATUS_IN_TRANSIT,
+					'status_updated_at' => $bad_value,
+				],
+			]
+		);
+		$order->save();
+
+		$shipments = [
+			[
+				'tracking_number' => '1Z999',
+				'status'          => WooPay_Order_Tracking_Sync::STATUS_FULFILLED,
+			],
+		];
+
+		$result = $this->provider->overlay( $order, $shipments );
+
+		// Status still overlaid, but status_updated_at is omitted because
+		// the stored value did not match the strict ISO 8601 UTC contract.
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_IN_TRANSIT, $result[0]['status'] );
+		$this->assertArrayNotHasKey(
+			'status_updated_at',
+			$result[0],
+			sprintf( 'Invalid status_updated_at "%s" should be omitted, not forwarded.', $bad_value )
+		);
+	}
+
+	public function test_overlay_forwards_valid_status_updated_at() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data(
+			WooPay_TrackShip_Provider::META_KEY,
+			[
+				[
+					'tracking_number'   => '1Z999',
+					'status'            => WooPay_Order_Tracking_Sync::STATUS_IN_TRANSIT,
+					'status_updated_at' => '2026-05-13T12:34:56Z',
+				],
+			]
+		);
+		$order->save();
+
+		$shipments = [
+			[
+				'tracking_number' => '1Z999',
+				'status'          => WooPay_Order_Tracking_Sync::STATUS_FULFILLED,
+			],
+		];
+
+		$result = $this->provider->overlay( $order, $shipments );
+
+		$this->assertSame( '2026-05-13T12:34:56Z', $result[0]['status_updated_at'] );
 	}
 }
