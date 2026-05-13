@@ -24,17 +24,23 @@ defined( 'ABSPATH' ) || exit;
  *
  * Why both interfaces:
  *
- *   - `WooPay_Tracking_Provider::get_shipments()` returns `[]` — TrackShip
- *     does NOT produce primary shipments. The reason this provider is still
- *     in the primary provider chain is that the sync constructor invokes
- *     `register_persistence_hooks()` on every primary provider that exposes
- *     it, and that's where the listener for `trackship_shipment_status_trigger`
- *     gets wired up.
- *
  *   - `WooPay_Status_Overlay_Provider::overlay()` does the real work: looks
  *     up `_wcpay_trackship_tracking_items` meta and overlays `status` +
  *     `status_updated_at` on shipments produced by an earlier provider
- *     (typically Phase 1's WC Shipment Tracking / AST provider).
+ *     (typically Phase 1's WC Shipment Tracking / AST provider). This is
+ *     why the class participates in the overlay chain.
+ *
+ *   - `WooPay_Tracking_Provider::get_shipments()` returns `[]` — TrackShip
+ *     does NOT produce primary shipments. The class implements this
+ *     interface anyway so it can sit alongside the other providers under
+ *     a single shared contract for consumers that iterate either chain.
+ *     The default configuration in
+ *     `WooPay_Order_Tracking_Sync::get_providers()` does NOT register
+ *     this class in the primary chain — TrackShip lives only in the
+ *     overlay chain. The sync constructor discovers
+ *     `register_persistence_hooks()` by iterating both chains with
+ *     dedup-by-object-identity, so overlay-only providers register
+ *     their listeners without needing a primary-chain stub entry.
  *
  * **What TrackShip never sees:** if a merchant doesn't have WC Shipment
  * Tracking or AST installed, TrackShip can't function — it has no source of

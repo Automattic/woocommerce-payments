@@ -24,7 +24,7 @@ class Fake_Overlay_Provider implements WooPay_Status_Overlay_Provider {
 	public $status;
 
 	/**
-	 * Count of times overlay() has been invoked across the process.
+	 * Count of times overlay() has been invoked on this specific instance.
 	 *
 	 * @var int
 	 */
