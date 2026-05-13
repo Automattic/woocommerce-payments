@@ -93,7 +93,13 @@ export const getFeesQuery = (
 	query: FeesReportQuery,
 	period: ReportsPeriodRange
 ): FeesReportQuery => {
-	if ( query.date_before || query.date_after || query.date_between ) {
+	if (
+		query.filter === 'advanced' ||
+		query.filter === 'all' ||
+		query.date_before ||
+		query.date_after ||
+		query.date_between
+	) {
 		return query;
 	}
 

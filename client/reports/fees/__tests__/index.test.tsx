@@ -9,7 +9,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { FeesReport } from '../';
+import { FeesReport, getFeesQuery } from '../';
 import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { getQuery } from '@woocommerce/navigation';
@@ -322,6 +322,21 @@ describe( 'FeesReport', () => {
 				date_between: [ '2026-04-01', '2026-04-30' ],
 			} )
 		);
+	} );
+
+	test( 'does not re-apply period defaults after filters are explicitly cleared', () => {
+		expect(
+			getFeesQuery(
+				{
+					tab: 'fees',
+					filter: 'advanced',
+				},
+				period
+			)
+		).toEqual( {
+			tab: 'fees',
+			filter: 'advanced',
+		} );
 	} );
 
 	test( 'renders the Fees error state when data loading fails', () => {
