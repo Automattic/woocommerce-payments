@@ -229,13 +229,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	public function test_rejected_or_under_review_account_registers_limited_menu( bool $is_rejected, bool $is_under_review ) {
 		global $submenu;
 
-		add_filter(
-			'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME,
-			function () {
-				return '1';
-			}
-		);
-
 		$this->mock_current_user_is_admin();
 
 		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
@@ -243,24 +236,19 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->mock_account->method( 'is_account_rejected' )->willReturn( $is_rejected );
 		$this->mock_account->method( 'is_account_under_review' )->willReturn( $is_under_review );
 
-		try {
-			$this->payments_admin->add_payments_menu();
+		$this->payments_admin->add_payments_menu();
 
-			$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
+		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
 
-			// These pages should be registered for rejected/under-review accounts.
-			$this->assertArrayHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
-			$this->assertArrayHasKey( 'wc-admin&path=/payments/transactions', $item_names_by_urls );
-			$this->assertArrayHasKey( 'wc-admin&path=/payments/disputes', $item_names_by_urls );
+		// These pages should be registered for rejected/under-review accounts.
+		$this->assertArrayHasKey( 'wc-admin&path=/payments/overview', $item_names_by_urls );
+		$this->assertArrayHasKey( 'wc-admin&path=/payments/transactions', $item_names_by_urls );
+		$this->assertArrayHasKey( 'wc-admin&path=/payments/disputes', $item_names_by_urls );
 
-			// These pages should NOT be registered.
-			$this->assertArrayNotHasKey( 'wc-admin&path=/payments/deposits', $item_names_by_urls );
-			$this->assertArrayNotHasKey( 'wc-admin&path=/payments/reports', $item_names_by_urls );
-			$this->assertArrayNotHasKey( 'wc-admin&path=/payments/settings/regular', $item_names_by_urls );
-			$this->assertArrayNotHasKey( 'wc-admin&path=/payments/documents', $item_names_by_urls );
-		} finally {
-			remove_all_filters( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME );
-		}
+		// These pages should NOT be registered.
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/deposits', $item_names_by_urls );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/settings/regular', $item_names_by_urls );
+		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/documents', $item_names_by_urls );
 	}
 
 	public function data_rejected_or_under_review_menu(): array {
@@ -268,79 +256,6 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 			'rejected account'     => [ true, false ],
 			'under review account' => [ false, true ],
 		];
-	}
-
-	public function test_reports_menu_item_is_hidden_when_feature_flag_is_disabled() {
-		global $submenu;
-
-		$this->mock_current_user_is_admin();
-
-		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
-		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
-
-		$this->payments_admin->add_payments_menu();
-
-		$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
-
-		$this->assertArrayNotHasKey( 'wc-admin&path=/payments/reports', $item_names_by_urls );
-	}
-
-	public function test_reports_route_redirects_when_feature_flag_is_enabled_but_account_is_invalid() {
-		add_filter(
-			'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME,
-			function () {
-				return '1';
-			}
-		);
-
-		$this->mock_current_user_is_admin();
-
-		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( false );
-		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
-
-		try {
-			$this->payments_admin->add_payments_menu();
-
-			$_GET = [
-				'page' => 'wc-admin',
-				'path' => '/payments/reports',
-			];
-
-			$this->mock_account
-				->expects( $this->once() )
-				->method( 'redirect_to_onboarding_welcome_page' );
-
-			$this->assertTrue( $this->payments_admin->maybe_redirect_from_payments_admin_child_pages() );
-		} finally {
-			$_GET = [];
-			remove_all_filters( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME );
-		}
-	}
-
-	public function test_reports_menu_item_is_visible_when_feature_flag_is_enabled() {
-		global $submenu;
-
-		add_filter(
-			'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME,
-			function () {
-				return '1';
-			}
-		);
-
-		$this->mock_current_user_is_admin();
-
-		$this->mock_account->method( 'is_stripe_account_valid' )->willReturn( true );
-		$this->mock_account->method( 'has_working_jetpack_connection' )->willReturn( true );
-
-		try {
-			$this->payments_admin->add_payments_menu();
-
-			$item_names_by_urls = wp_list_pluck( $submenu[ WC_Payments_Admin::PAYMENTS_SUBMENU_SLUG ], 0, 2 );
-
-			$this->assertArrayHasKey( 'wc-admin&path=/payments/reports', $item_names_by_urls );
-		} finally {
-			remove_all_filters( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME );
-		}
 	}
 
 	private function mock_current_user_is_admin() {
