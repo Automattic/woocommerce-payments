@@ -7,6 +7,8 @@
 
 namespace WCPay\WooPay\Tracking_Providers;
 
+use WCPay\WooPay\WooPay_Order_Tracking_Sync;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -207,14 +209,16 @@ class WooPay_Fulfillments_API_Provider implements WooPay_Tracking_Provider {
 	 */
 	private static function extract_status( $fulfillment ): string {
 		if ( ! method_exists( $fulfillment, 'get_status' ) ) {
-			return 'fulfilled';
+			return WooPay_Order_Tracking_Sync::STATUS_FULFILLED;
 		}
 		$status = $fulfillment->get_status();
 		if ( ! is_string( $status ) || '' === $status ) {
-			return 'fulfilled';
+			return WooPay_Order_Tracking_Sync::STATUS_FULFILLED;
 		}
 		// WC fulfillment statuses include 'fulfilled', 'unfulfilled', etc.
-		// Pass through verbatim — WooPay normalizes for display.
+		// Pass through verbatim — `WooPay_Order_Tracking_Sync::ensure_canonical_status()`
+		// downgrades any non-canonical value at the wire boundary, so this
+		// stays safe even if WC adds new fulfillment statuses.
 		return self::truncate( $status, 64 );
 	}
 

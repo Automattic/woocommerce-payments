@@ -7,10 +7,12 @@
 
 use WCPay\WooPay\WooPay_Order_Tracking_Sync;
 use WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider;
+use WCPay\WooPay\Tracking_Providers\WooPay_Status_Overlay_Provider;
 use PHPUnit\Framework\MockObject\MockObject;
 
 require_once __DIR__ . '/tracking-providers/fake-fulfillment.php';
 require_once __DIR__ . '/tracking-providers/fake-persistence-provider.php';
+require_once __DIR__ . '/tracking-providers/fake-overlay-provider.php';
 
 /**
  * WooPay_Order_Tracking_Sync unit tests.
@@ -51,6 +53,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
 
 		$this->account_mock    = $this->createMock( WC_Payments_Account::class );
 		$this->api_client_mock = $this->createMock( WC_Payments_API_Client::class );
@@ -67,6 +70,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		WC_Payments::set_database_cache( $this->cache );
 		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
 		// Disable WooPay between tests to avoid side effects on other tests.
 		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'no' );
 		// Clear any debounce transients leaked across tests.
@@ -84,7 +88,7 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$providers = WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $providers );
-		$this->assertCount( 4, $providers );
+		$this->assertCount( 5, $providers );
 		$this->assertInstanceOf(
 			\WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider::class,
 			$providers[0],
@@ -104,6 +108,11 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 			\WCPay\WooPay\Tracking_Providers\WooPay_AfterShip_Provider::class,
 			$providers[3],
 			'AfterShip should be priority 4.'
+		);
+		$this->assertInstanceOf(
+			\WCPay\WooPay\Tracking_Providers\WooPay_TrackShip_Provider::class,
+			$providers[4],
+			'TrackShip should be priority 5 (primary-chain stub; real work via overlay interface).'
 		);
 	}
 
@@ -139,7 +148,242 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		WooPay_Order_Tracking_Sync::get_providers();
 
 		$this->assertIsArray( $received );
-		$this->assertCount( 4, $received );
+		$this->assertCount( 5, $received );
+	}
+
+	// -------------------------------------------------------------------------
+	// Overlay provider chain — `get_overlay_providers()` + filterability
+	// -------------------------------------------------------------------------
+
+	public function test_get_overlay_providers_returns_default_chain() {
+		$overlays = WooPay_Order_Tracking_Sync::get_overlay_providers();
+
+		$this->assertIsArray( $overlays );
+		$this->assertCount( 1, $overlays );
+		$this->assertInstanceOf(
+			\WCPay\WooPay\Tracking_Providers\WooPay_TrackShip_Provider::class,
+			$overlays[0],
+			'TrackShip should be the only default overlay provider.'
+		);
+	}
+
+	public function test_get_overlay_providers_is_filterable() {
+		$custom = new Fake_Overlay_Provider( WooPay_Order_Tracking_Sync::STATUS_IN_TRANSIT );
+
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () use ( $custom ) {
+				return [ $custom ];
+			}
+		);
+
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+		$overlays = WooPay_Order_Tracking_Sync::get_overlay_providers();
+
+		$this->assertCount( 1, $overlays );
+		$this->assertSame( $custom, $overlays[0] );
+	}
+
+	// -------------------------------------------------------------------------
+	// Two-pass orchestration in `get_order_shipments()`
+	// -------------------------------------------------------------------------
+
+	public function test_get_order_shipments_runs_overlay_after_primary_chain() {
+		$order = WC_Helper_Order::create_order();
+
+		$primary = $this->createMock( WooPay_Tracking_Provider::class );
+		$primary->method( 'is_available' )->willReturn( true );
+		$primary->method( 'get_hooks' )->willReturn( [] );
+		$primary->method( 'get_shipments' )->willReturn(
+			[
+				[
+					'tracking_number' => '1Z999',
+					'carrier_name'    => 'UPS',
+					'status'          => WooPay_Order_Tracking_Sync::STATUS_FULFILLED,
+				],
+			]
+		);
+
+		$overlay = new Fake_Overlay_Provider( WooPay_Order_Tracking_Sync::STATUS_OUT_FOR_DELIVERY );
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $primary ) {
+				return [ $primary ];
+			}
+		);
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () use ( $overlay ) {
+				return [ $overlay ];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_OUT_FOR_DELIVERY, $shipments[0]['status'] );
+		$this->assertSame( 1, $overlay->overlay_calls, 'Overlay must be invoked exactly once.' );
+	}
+
+	public function test_get_order_shipments_skips_overlays_when_primary_chain_empty() {
+		$order = WC_Helper_Order::create_order();
+
+		$primary = $this->createMock( WooPay_Tracking_Provider::class );
+		$primary->method( 'is_available' )->willReturn( true );
+		$primary->method( 'get_hooks' )->willReturn( [] );
+		$primary->method( 'get_shipments' )->willReturn( [] );
+
+		$overlay = new Fake_Overlay_Provider( WooPay_Order_Tracking_Sync::STATUS_OUT_FOR_DELIVERY );
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $primary ) {
+				return [ $primary ];
+			}
+		);
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () use ( $overlay ) {
+				return [ $overlay ];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		$this->assertSame( [], $shipments );
+		$this->assertSame(
+			0,
+			$overlay->overlay_calls,
+			'Overlay providers are enrichers, not producers — must not run on an empty primary result.'
+		);
+	}
+
+	public function test_get_order_shipments_runs_multiple_overlays_in_order() {
+		$order = WC_Helper_Order::create_order();
+
+		$primary = $this->createMock( WooPay_Tracking_Provider::class );
+		$primary->method( 'is_available' )->willReturn( true );
+		$primary->method( 'get_hooks' )->willReturn( [] );
+		$primary->method( 'get_shipments' )->willReturn(
+			[
+				[
+					'tracking_number' => '1Z999',
+					'status'          => WooPay_Order_Tracking_Sync::STATUS_FULFILLED,
+				],
+			]
+		);
+
+		$first  = new Fake_Overlay_Provider( WooPay_Order_Tracking_Sync::STATUS_IN_TRANSIT );
+		$second = new Fake_Overlay_Provider( WooPay_Order_Tracking_Sync::STATUS_DELIVERED );
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $primary ) {
+				return [ $primary ];
+			}
+		);
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () use ( $first, $second ) {
+				return [ $first, $second ];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		// Both ran, last-registered wins for the same field.
+		$this->assertSame( 1, $first->overlay_calls );
+		$this->assertSame( 1, $second->overlay_calls );
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_DELIVERED, $shipments[0]['status'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// `ensure_canonical_status()` enforcement at the wire boundary
+	// -------------------------------------------------------------------------
+
+	public function test_get_order_shipments_downgrades_non_canonical_status_to_fulfilled() {
+		$order = WC_Helper_Order::create_order();
+
+		$primary = $this->createMock( WooPay_Tracking_Provider::class );
+		$primary->method( 'is_available' )->willReturn( true );
+		$primary->method( 'get_hooks' )->willReturn( [] );
+		$primary->method( 'get_shipments' )->willReturn(
+			[
+				[
+					'tracking_number' => '1Z999',
+					'status'          => 'no_such_status',
+				],
+			]
+		);
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $primary ) {
+				return [ $primary ];
+			}
+		);
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () {
+				return [];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $shipments[0]['status'] );
+	}
+
+	public function test_get_order_shipments_defaults_status_when_provider_omits_it() {
+		$order = WC_Helper_Order::create_order();
+
+		$primary = $this->createMock( WooPay_Tracking_Provider::class );
+		$primary->method( 'is_available' )->willReturn( true );
+		$primary->method( 'get_hooks' )->willReturn( [] );
+		$primary->method( 'get_shipments' )->willReturn(
+			[ [ 'tracking_number' => '1Z999' ] ] // No 'status' key.
+		);
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $primary ) {
+				return [ $primary ];
+			}
+		);
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () {
+				return [];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $shipments[0]['status'] );
+	}
+
+	public function test_shipment_statuses_constant_has_no_pending_value() {
+		// Regression guard: "pending" is an order-level state (no shipments),
+		// not a shipment status. Receiver assumes this exact set.
+		$this->assertNotContains( 'pending', WooPay_Order_Tracking_Sync::SHIPMENT_STATUSES );
+		$this->assertContains( 'fulfilled', WooPay_Order_Tracking_Sync::SHIPMENT_STATUSES );
+		$this->assertContains( 'in_transit', WooPay_Order_Tracking_Sync::SHIPMENT_STATUSES );
+		$this->assertContains( 'out_for_delivery', WooPay_Order_Tracking_Sync::SHIPMENT_STATUSES );
+		$this->assertContains( 'available_for_pickup', WooPay_Order_Tracking_Sync::SHIPMENT_STATUSES );
+		$this->assertContains( 'delivered', WooPay_Order_Tracking_Sync::SHIPMENT_STATUSES );
+		$this->assertContains( 'exception', WooPay_Order_Tracking_Sync::SHIPMENT_STATUSES );
+		$this->assertCount( 6, WooPay_Order_Tracking_Sync::SHIPMENT_STATUSES );
 	}
 
 	public function test_constructor_calls_register_persistence_hooks_on_providers_that_implement_it() {

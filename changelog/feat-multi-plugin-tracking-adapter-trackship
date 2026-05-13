@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Added TrackShip provider for WooPay order tracking sync, normalizing live shipment status from carrier polling (in transit, out for delivery, delivered, exception) into a canonical vocabulary.
