@@ -1101,42 +1101,6 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Records or clears TEST_MODE_ENABLED_DATE_OPTION when the gateway's `test_mode`
-	 * setting is toggled. Both the classic admin form and the REST settings controller
-	 * write to the same `woocommerce_<gateway_id>_settings` option, so a single hook
-	 * covers both flows. Without this, set_test_mode() (the only other date-option
-	 * maintainer) is bypassed by the settings UI flows and the test-to-live nudge
-	 * never becomes eligible for merchants who toggled via settings.
-	 *
-	 * Also invalidates the test-to-live banner eligibility cache so mode toggles
-	 * take effect immediately rather than waiting up to an hour for the transient
-	 * to expire.
-	 *
-	 * @param mixed $old_value Previous option value (gateway settings array, or '' on first save).
-	 * @param mixed $new_value New option value (gateway settings array).
-	 * @return void
-	 */
-	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void {
-		$old_test_mode = is_array( $old_value ) ? ( $old_value['test_mode'] ?? 'no' ) : 'no';
-		$new_test_mode = is_array( $new_value ) ? ( $new_value['test_mode'] ?? 'no' ) : 'no';
-
-		if ( $old_test_mode === $new_test_mode ) {
-			return;
-		}
-
-		if ( 'yes' === $new_test_mode ) {
-			// Preserve the original enabled date if already recorded — matches set_test_mode() semantics.
-			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
-				update_option( self::TEST_MODE_ENABLED_DATE_OPTION, time(), false );
-			}
-		} else {
-			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
-		}
-
-		delete_transient( 'wcpay_test_to_live_eligible' );
-	}
-
-	/**
 	 * Determine if test mode onboarding is enabled.
 	 *
 	 * @return bool Whether test mode onboarding is enabled or not.
