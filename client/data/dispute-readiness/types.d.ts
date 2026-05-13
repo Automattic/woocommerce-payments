@@ -8,12 +8,20 @@ import { ACTION_TYPES } from './action-types';
 
 export type DisputeReadinessSignalStatus = 'complete' | 'incomplete';
 
+export interface DisputeReadinessSignalReviewPrompt {
+	text: string;
+	confirmLabel: string;
+	updateLabel: string;
+}
+
 export interface DisputeReadinessSignal {
 	id: string;
 	status: DisputeReadinessSignalStatus;
 	label: string;
 	actionLabel?: string;
 	actionUrl?: string;
+	reason?: string;
+	reviewPrompt?: DisputeReadinessSignalReviewPrompt;
 }
 
 export interface DisputeReadinessDismissal {
@@ -56,6 +64,7 @@ export interface DisputeReadinessResponse {
 
 export interface DisputeReadinessActions {
 	dismissDisputeReadinessCard: () => void;
+	confirmStatementDescriptor: () => void;
 	refreshDisputeReadiness: () => void;
 }
 

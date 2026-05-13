@@ -13,7 +13,8 @@ namespace WCPay\Internal\Service;
  * Builds the dispute readiness overview payload.
  */
 class DisputeReadinessService {
-	public const DISMISSAL_OPTION = 'wcpay_dispute_readiness_card_dismissed';
+	public const DISMISSAL_OPTION                         = 'wcpay_dispute_readiness_card_dismissed';
+	public const STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION = 'wcpay_dispute_readiness_statement_descriptor_confirmed';
 
 	private const SIGNAL_REFUND_POLICY        = 'refund_policy';
 	private const SIGNAL_TERMS_AND_CONDITIONS = 'terms_and_conditions';
@@ -128,6 +129,28 @@ class DisputeReadinessService {
 	}
 
 	/**
+	 * Confirms that the current statement descriptor clearly identifies the store.
+	 *
+	 * @return array Updated overview payload.
+	 */
+	public function confirm_statement_descriptor(): array {
+		$descriptor = $this->get_statement_descriptor( $this->get_cached_account_data() );
+
+		update_option(
+			self::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION,
+			[
+				'confirmed'             => true,
+				'confirmed_at'          => gmdate( 'c' ),
+				'descriptor'            => $descriptor,
+				'normalized_descriptor' => $this->normalize_descriptor_value( $descriptor ),
+			],
+			false
+		);
+
+		return $this->get_overview_payload();
+	}
+
+	/**
 	 * Builds all v1 overview signals.
 	 *
 	 * @return array[]
@@ -186,16 +209,38 @@ class DisputeReadinessService {
 	 * @return array
 	 */
 	private function get_statement_descriptor_signal( array $account_data ): array {
-		$descriptor = $this->get_statement_descriptor( $account_data );
-		$status     = '' !== trim( $descriptor ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
+		$descriptor    = $this->get_statement_descriptor( $account_data );
+		$trimmed       = trim( $descriptor );
+		$is_empty      = '' === $trimmed;
+		$needs_review  = ! $is_empty && ! $this->looks_like_recognizable_descriptor( $descriptor, $account_data );
+		$is_confirmed  = $needs_review && $this->is_statement_descriptor_confirmed( $descriptor );
+		$status        = ! $is_empty && ( ! $needs_review || $is_confirmed ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
+		$action_label  = $is_empty ? __( 'Update', 'woocommerce-payments' ) : __( 'Review', 'woocommerce-payments' );
+		$settings_url  = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' );
+		$review_prompt = null;
 
-		return [
+		if ( self::STATUS_INCOMPLETE === $status && $needs_review ) {
+			$review_prompt = [
+				'text'         => __( "Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?", 'woocommerce-payments' ),
+				'confirmLabel' => __( 'Looks good', 'woocommerce-payments' ),
+				'updateLabel'  => __( 'Update', 'woocommerce-payments' ),
+			];
+		}
+
+		$signal = [
 			'id'          => self::SIGNAL_STATEMENT_DESCRIPTOR,
 			'status'      => $status,
 			'label'       => __( 'Recognizable statement descriptor', 'woocommerce-payments' ),
-			'actionLabel' => __( 'Review', 'woocommerce-payments' ),
-			'actionUrl'   => admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
+			'actionLabel' => $action_label,
+			'actionUrl'   => $settings_url,
+			'reason'      => $this->get_statement_descriptor_reason( $descriptor, $needs_review, $is_confirmed ),
 		];
+
+		if ( null !== $review_prompt ) {
+			$signal['reviewPrompt'] = $review_prompt;
+		}
+
+		return $signal;
 	}
 
 	/**
@@ -348,5 +393,157 @@ class DisputeReadinessService {
 		}
 
 		return '';
+	}
+
+	/**
+	 * Returns the reason code for the statement descriptor signal.
+	 *
+	 * @param string $descriptor   Statement descriptor.
+	 * @param bool   $needs_review Whether the descriptor needs review.
+	 * @param bool   $is_confirmed Whether the merchant confirmed the descriptor.
+	 * @return string
+	 */
+	private function get_statement_descriptor_reason( string $descriptor, bool $needs_review, bool $is_confirmed ): string {
+		if ( '' === trim( $descriptor ) ) {
+			return 'empty';
+		}
+
+		if ( $is_confirmed ) {
+			return 'confirmed';
+		}
+
+		return $needs_review ? 'needs_review' : 'looks_recognizable';
+	}
+
+	/**
+	 * Determines whether a descriptor looks recognizable enough to complete automatically.
+	 *
+	 * @param string $descriptor   Statement descriptor.
+	 * @param array  $account_data Cached account data.
+	 * @return bool
+	 */
+	private function looks_like_recognizable_descriptor( string $descriptor, array $account_data ): bool {
+		$normalized_descriptor = $this->normalize_descriptor_value( $descriptor );
+		if ( '' === $normalized_descriptor || $this->is_generic_descriptor_value( $normalized_descriptor ) ) {
+			return false;
+		}
+
+		foreach ( $this->get_store_descriptor_candidates( $account_data ) as $candidate ) {
+			$normalized_candidate = $this->normalize_descriptor_value( (string) $candidate );
+			if ( '' === $normalized_candidate || $this->is_generic_descriptor_value( $normalized_candidate ) ) {
+				continue;
+			}
+
+			if ( $normalized_descriptor === $normalized_candidate ) {
+				return true;
+			}
+		}
+
+		return strlen( $normalized_descriptor ) >= 5;
+	}
+
+	/**
+	 * Determines whether the merchant confirmed the current descriptor.
+	 *
+	 * @param string $descriptor Statement descriptor.
+	 * @return bool
+	 */
+	private function is_statement_descriptor_confirmed( string $descriptor ): bool {
+		$stored = get_option( self::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION, [] );
+		if ( ! is_array( $stored ) || empty( $stored['confirmed'] ) ) {
+			return false;
+		}
+
+		$stored_descriptor = isset( $stored['normalized_descriptor'] ) ? (string) $stored['normalized_descriptor'] : '';
+
+		return '' !== $stored_descriptor && $stored_descriptor === $this->normalize_descriptor_value( $descriptor );
+	}
+
+	/**
+	 * Returns possible store-specific descriptor comparison values.
+	 *
+	 * @param array $account_data Cached account data.
+	 * @return array
+	 */
+	private function get_store_descriptor_candidates( array $account_data ): array {
+		$candidates = array_merge(
+			[
+				get_bloginfo( 'name' ),
+				get_home_url(),
+				get_site_url(),
+			],
+			$this->get_url_candidates( get_home_url() ),
+			$this->get_url_candidates( get_site_url() )
+		);
+
+		$business_profile = isset( $account_data['business_profile'] ) && is_array( $account_data['business_profile'] ) ? $account_data['business_profile'] : [];
+		if ( ! empty( $business_profile['url'] ) ) {
+			$candidates = array_merge( $candidates, $this->get_url_candidates( (string) $business_profile['url'] ) );
+		}
+
+		return array_unique( array_filter( $candidates ) );
+	}
+
+	/**
+	 * Returns host/path candidates for a URL.
+	 *
+	 * @param string $url URL.
+	 * @return array
+	 */
+	private function get_url_candidates( string $url ): array {
+		$host = (string) wp_parse_url( $url, PHP_URL_HOST );
+		$path = (string) wp_parse_url( $url, PHP_URL_PATH );
+
+		return array_filter(
+			[
+				$url,
+				$host,
+				preg_replace( '/^www\./i', '', $host ),
+				trim( $path, '/' ),
+			]
+		);
+	}
+
+	/**
+	 * Determines whether a normalized descriptor value is generic.
+	 *
+	 * @param string $normalized_descriptor Normalized descriptor.
+	 * @return bool
+	 */
+	private function is_generic_descriptor_value( string $normalized_descriptor ): bool {
+		$generic_values = [
+			'woocommerce',
+			'woocommercepayments',
+			'woopayments',
+			'woopaymentsstore',
+			'mystore',
+			'teststore',
+			'store',
+			'shop',
+			'onlinestore',
+		];
+
+		foreach ( $generic_values as $generic_value ) {
+			if ( $normalized_descriptor === $generic_value || 0 === strpos( $normalized_descriptor, $generic_value ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Normalizes values for statement descriptor comparison.
+	 *
+	 * @param string $value Raw value.
+	 * @return string
+	 */
+	private function normalize_descriptor_value( string $value ): string {
+		$value = strtolower( trim( $value ) );
+		$value = preg_replace( '#^https?://#', '', $value );
+		$value = preg_replace( '#^www\.#', '', $value );
+		$value = preg_replace( '/[^a-z0-9]/', '', $value );
+
+		return is_string( $value ) ? $value : '';
 	}
 }

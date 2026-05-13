@@ -62,6 +62,16 @@ class WC_REST_Payments_Dispute_Readiness_Controller extends WC_Payments_REST_Con
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/statement-descriptor/confirm',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'confirm_statement_descriptor' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -92,5 +102,22 @@ class WC_REST_Payments_Dispute_Readiness_Controller extends WC_Payments_REST_Con
 		}
 
 		return rest_ensure_response( $this->dispute_readiness_service->dismiss_overview_card() );
+	}
+
+	/**
+	 * Confirm the current statement descriptor.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function confirm_statement_descriptor() {
+		if ( ! WC_Payments_Features::is_dispute_readiness_overview_enabled() ) {
+			return new WP_Error(
+				'wcpay_dispute_readiness_disabled',
+				__( 'Dispute readiness is disabled.', 'woocommerce-payments' ),
+				[ 'status' => 403 ]
+			);
+		}
+
+		return rest_ensure_response( $this->dispute_readiness_service->confirm_statement_descriptor() );
 	}
 }

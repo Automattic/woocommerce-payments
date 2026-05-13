@@ -27,8 +27,11 @@ const LoadingState = () => (
 
 const DisputeReadinessCard = () => {
 	const { disputeReadiness, isLoading } = useDisputeReadiness();
-	const { dismissDisputeReadinessCard, refreshDisputeReadiness } =
-		useDisputeReadinessActions();
+	const {
+		dismissDisputeReadinessCard,
+		confirmStatementDescriptor,
+		refreshDisputeReadiness,
+	} = useDisputeReadinessActions();
 	const viewedRef = useRef( false );
 	const overview = disputeReadiness?.overview;
 
@@ -84,6 +87,15 @@ const DisputeReadinessCard = () => {
 			score: overview.score,
 			total: overview.total,
 		} );
+	};
+
+	const handleStatementDescriptorConfirm = () => {
+		recordEvent( 'wcpay_dispute_readiness_statement_descriptor_confirmed', {
+			surface: 'overview',
+			score: overview.score,
+			total: overview.total,
+		} );
+		confirmStatementDescriptor();
 	};
 
 	const progress = overview.total
@@ -164,6 +176,8 @@ const DisputeReadinessCard = () => {
 						{ overview.signals.map(
 							( signal: DisputeReadinessSignal ) => {
 								const isComplete = signal.status === 'complete';
+								const hasReviewPrompt =
+									! isComplete && !! signal.reviewPrompt;
 
 								return (
 									<li
@@ -183,21 +197,62 @@ const DisputeReadinessCard = () => {
 										<span className="wcpay-dispute-readiness-card__signal-label">
 											{ signal.label }
 										</span>
-										{ ! isComplete && signal.actionUrl && (
-											<a
-												className="wcpay-dispute-readiness-card__signal-action"
-												href={ signal.actionUrl }
-												onClick={ () =>
-													handleCtaClick( signal )
-												}
-											>
-												{ signal.actionLabel ||
-													__(
-														'Fix',
-														'woocommerce-payments'
-													) }{ ' ' }
-												→
-											</a>
+										{ ! isComplete &&
+											signal.actionUrl &&
+											! hasReviewPrompt && (
+												<a
+													className="wcpay-dispute-readiness-card__signal-action"
+													href={ signal.actionUrl }
+													onClick={ () =>
+														handleCtaClick( signal )
+													}
+												>
+													{ signal.actionLabel ||
+														__(
+															'Fix',
+															'woocommerce-payments'
+														) }{ ' ' }
+													→
+												</a>
+											) }
+										{ hasReviewPrompt && (
+											<div className="wcpay-dispute-readiness-card__signal-review">
+												<p>
+													{
+														signal.reviewPrompt
+															?.text
+													}
+												</p>
+												<div className="wcpay-dispute-readiness-card__signal-review-actions">
+													<Button
+														variant="secondary"
+														onClick={
+															handleStatementDescriptorConfirm
+														}
+													>
+														{
+															signal.reviewPrompt
+																?.confirmLabel
+														}
+													</Button>
+													<a
+														className="wcpay-dispute-readiness-card__signal-review-update"
+														href={
+															signal.actionUrl
+														}
+														onClick={ () =>
+															handleCtaClick(
+																signal
+															)
+														}
+													>
+														{
+															signal.reviewPrompt
+																?.updateLabel
+														}
+													</a>
+												</div>
+											</div>
 										) }
 									</li>
 								);

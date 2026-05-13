@@ -40,6 +40,7 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		delete_option( 'woocommerce_refund_returns_page_id' );
 		delete_option( 'woocommerce_terms_page_id' );
 		delete_option( DisputeReadinessService::DISMISSAL_OPTION );
+		delete_option( DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION );
 
 		parent::tear_down();
 	}
@@ -133,7 +134,7 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( admin_url( 'admin.php?page=wc-settings&tab=advanced' ), $signal['actionUrl'] );
 	}
 
-	public function test_statement_descriptor_is_complete_when_default_like() {
+	public function test_statement_descriptor_is_complete_when_it_matches_store_name() {
 		update_option( 'blogname', 'Example Store' );
 		$this->mock_account_data(
 			[
@@ -148,6 +149,72 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$signal   = $this->get_signal( $overview, 'statement_descriptor' );
 
 		$this->assertSame( 'complete', $signal['status'] );
+		$this->assertSame( 'looks_recognizable', $signal['reason'] );
+	}
+
+	public function test_statement_descriptor_prompts_for_review_when_descriptor_is_generic() {
+		$this->mock_account_data(
+			[
+				'statement_descriptor' => 'WOOCOMMERCE PAYMENTS D',
+				'business_profile'     => [
+					'support_phone' => '+15555555555',
+				],
+			]
+		);
+
+		$overview = $this->service->get_overview_payload()['overview'];
+		$signal   = $this->get_signal( $overview, 'statement_descriptor' );
+
+		$this->assertSame( 'incomplete', $signal['status'] );
+		$this->assertSame( 'needs_review', $signal['reason'] );
+		$this->assertSame( "Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?", $signal['reviewPrompt']['text'] );
+		$this->assertSame( 'Looks good', $signal['reviewPrompt']['confirmLabel'] );
+		$this->assertSame( 'Update', $signal['reviewPrompt']['updateLabel'] );
+	}
+
+	public function test_confirmed_statement_descriptor_is_complete_for_current_descriptor() {
+		$this->mock_account_data(
+			[
+				'statement_descriptor' => 'WooPayments',
+				'business_profile'     => [
+					'support_phone' => '+15555555555',
+				],
+			]
+		);
+
+		$overview = $this->service->confirm_statement_descriptor()['overview'];
+		$signal   = $this->get_signal( $overview, 'statement_descriptor' );
+
+		$this->assertSame( 'complete', $signal['status'] );
+		$this->assertSame( 'confirmed', $signal['reason'] );
+		$this->assertArrayNotHasKey( 'reviewPrompt', $signal );
+	}
+
+	public function test_statement_descriptor_confirmation_does_not_apply_after_descriptor_changes() {
+		$this->mock_account_data(
+			[
+				'statement_descriptor' => 'WooPayments',
+				'business_profile'     => [
+					'support_phone' => '+15555555555',
+				],
+			]
+		);
+		$this->service->confirm_statement_descriptor();
+
+		$this->mock_account_data(
+			[
+				'statement_descriptor' => 'My Store',
+				'business_profile'     => [
+					'support_phone' => '+15555555555',
+				],
+			]
+		);
+
+		$overview = $this->service->get_overview_payload()['overview'];
+		$signal   = $this->get_signal( $overview, 'statement_descriptor' );
+
+		$this->assertSame( 'incomplete', $signal['status'] );
+		$this->assertSame( 'needs_review', $signal['reason'] );
 	}
 
 	public function test_statement_descriptor_is_incomplete_when_account_data_is_not_an_array() {

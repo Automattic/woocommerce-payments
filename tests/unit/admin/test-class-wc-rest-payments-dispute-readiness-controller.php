@@ -113,4 +113,33 @@ class WC_REST_Payments_Dispute_Readiness_Controller_Test extends WCPAY_UnitTestC
 
 		$this->assertSame( $payload, $response->get_data() );
 	}
+
+	public function test_confirm_statement_descriptor_returns_error_when_feature_flag_is_off() {
+		update_option( WC_Payments_Features::DISPUTE_READINESS_OVERVIEW, '0' );
+
+		$this->service->expects( $this->never() )
+			->method( 'confirm_statement_descriptor' );
+
+		$response = $this->controller->confirm_statement_descriptor();
+
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_dispute_readiness_disabled', $response->get_error_code() );
+		$this->assertSame( 403, $response->get_error_data()['status'] );
+	}
+
+	public function test_confirm_statement_descriptor_stores_and_returns_updated_payload_by_default() {
+		$payload = [
+			'overview' => [
+				'enabled' => true,
+				'score'   => 4,
+			],
+		];
+		$this->service->expects( $this->once() )
+			->method( 'confirm_statement_descriptor' )
+			->willReturn( $payload );
+
+		$response = $this->controller->confirm_statement_descriptor();
+
+		$this->assertSame( $payload, $response->get_data() );
+	}
 }

@@ -135,6 +135,26 @@
 	justify-self: end;
 }
 
+.wcpay-dispute-readiness-card__signal-review {
+	grid-column: 2 / -1;
+	margin-top: 4px;
+
+	p {
+		margin: 0 0 8px;
+		color: #50575e;
+	}
+}
+
+.wcpay-dispute-readiness-card__signal-review-actions {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+}
+
+.wcpay-dispute-readiness-card__signal-review-update {
+	text-decoration: none;
+}
+
 @media ( max-width: 782px ) {
 	.wcpay-dispute-readiness-card__content {
 		grid-template-columns: 1fr;

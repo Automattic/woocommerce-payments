@@ -9,7 +9,10 @@ import { controls } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { dismissDisputeReadinessCard } from '../actions';
+import {
+	confirmStatementDescriptor,
+	dismissDisputeReadinessCard,
+} from '../actions';
 import { DisputeReadinessData } from '../types';
 import { ApiError } from '../../../types/errors';
 
@@ -28,44 +31,96 @@ const readinessPayload: DisputeReadinessData = {
 };
 const errorResponse: ApiError = { code: 'error' };
 
-describe( 'dismissDisputeReadinessCard action', () => {
-	let generator: Generator< unknown, unknown, unknown >;
+const expectDisputeReadinessPostAction = (
+	generator: Generator< unknown, unknown, unknown >,
+	path: string
+) => {
+	expect( generator.next().value ).toEqual(
+		apiFetch( {
+			path,
+			method: 'POST',
+		} )
+	);
+};
 
-	beforeEach( () => {
-		generator = dismissDisputeReadinessCard() as Generator<
+const expectUpdatesDisputeReadinessOnSuccess = (
+	generator: Generator< unknown, unknown, unknown >
+) => {
+	expect( generator.next( readinessPayload ).value ).toEqual(
+		controls.dispatch(
+			'wc/payments',
+			'updateDisputeReadiness',
+			readinessPayload
+		)
+	);
+	expect( generator.next().done ).toStrictEqual( true );
+};
+
+const expectUpdatesDisputeReadinessErrorOnFailure = (
+	generator: Generator< unknown, unknown, unknown >
+) => {
+	expect( generator.throw( errorResponse ).value ).toEqual(
+		controls.dispatch(
+			'wc/payments',
+			'updateErrorForDisputeReadiness',
+			errorResponse
+		)
+	);
+	expect( generator.next().done ).toStrictEqual( true );
+};
+
+describe( 'dismissDisputeReadinessCard action', () => {
+	test( 'updates dispute readiness on success', () => {
+		const generator = dismissDisputeReadinessCard() as Generator<
 			unknown,
 			unknown,
 			unknown
 		>;
-		expect( generator.next().value ).toEqual(
-			apiFetch( {
-				path: '/wc/v3/payments/dispute-readiness/dismiss',
-				method: 'POST',
-			} )
+		expectDisputeReadinessPostAction(
+			generator,
+			'/wc/v3/payments/dispute-readiness/dismiss'
 		);
-	} );
-
-	afterEach( () => {
-		expect( generator.next().done ).toStrictEqual( true );
-	} );
-
-	test( 'updates dispute readiness on success', () => {
-		expect( generator.next( readinessPayload ).value ).toEqual(
-			controls.dispatch(
-				'wc/payments',
-				'updateDisputeReadiness',
-				readinessPayload
-			)
-		);
+		expectUpdatesDisputeReadinessOnSuccess( generator );
 	} );
 
 	test( 'updates dispute readiness error on failure', () => {
-		expect( generator.throw( errorResponse ).value ).toEqual(
-			controls.dispatch(
-				'wc/payments',
-				'updateErrorForDisputeReadiness',
-				errorResponse
-			)
+		const generator = dismissDisputeReadinessCard() as Generator<
+			unknown,
+			unknown,
+			unknown
+		>;
+		expectDisputeReadinessPostAction(
+			generator,
+			'/wc/v3/payments/dispute-readiness/dismiss'
 		);
+		expectUpdatesDisputeReadinessErrorOnFailure( generator );
+	} );
+} );
+
+describe( 'confirmStatementDescriptor action', () => {
+	test( 'updates dispute readiness on success', () => {
+		const generator = confirmStatementDescriptor() as Generator<
+			unknown,
+			unknown,
+			unknown
+		>;
+		expectDisputeReadinessPostAction(
+			generator,
+			'/wc/v3/payments/dispute-readiness/statement-descriptor/confirm'
+		);
+		expectUpdatesDisputeReadinessOnSuccess( generator );
+	} );
+
+	test( 'updates dispute readiness error on failure', () => {
+		const generator = confirmStatementDescriptor() as Generator<
+			unknown,
+			unknown,
+			unknown
+		>;
+		expectDisputeReadinessPostAction(
+			generator,
+			'/wc/v3/payments/dispute-readiness/statement-descriptor/confirm'
+		);
+		expectUpdatesDisputeReadinessErrorOnFailure( generator );
 	} );
 } );

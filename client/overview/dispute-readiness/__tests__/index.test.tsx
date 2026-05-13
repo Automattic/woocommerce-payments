@@ -23,6 +23,7 @@ jest.mock( 'wcpay/tracks', () => ( {
 } ) );
 
 const dismissDisputeReadinessCard = jest.fn();
+const confirmStatementDescriptor = jest.fn();
 const refreshDisputeReadiness = jest.fn();
 
 const readinessPayload = {
@@ -86,6 +87,7 @@ describe( 'DisputeReadinessCard', () => {
 		jest.clearAllMocks();
 		mockUseDisputeReadinessActions.mockReturnValue( {
 			dismissDisputeReadinessCard,
+			confirmStatementDescriptor,
 			refreshDisputeReadiness,
 		} );
 	} );
@@ -144,6 +146,55 @@ describe( 'DisputeReadinessCard', () => {
 		);
 
 		expect( dismissDisputeReadinessCard ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'renders and confirms the statement descriptor review prompt', async () => {
+		renderCard( {
+			disputeReadiness: {
+				overview: {
+					...readinessPayload.overview,
+					score: 2,
+					completeSignalIds: [ 'refund_policy', 'support_contact' ],
+					incompleteSignalIds: [
+						'statement_descriptor',
+						'terms_and_conditions',
+					],
+					signals: [
+						{
+							id: 'statement_descriptor',
+							status: 'incomplete',
+							label: 'Recognizable statement descriptor',
+							actionUrl:
+								'https://example.test/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments',
+							reviewPrompt: {
+								text: "Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?",
+								confirmLabel: 'Looks good',
+								updateLabel: 'Update',
+							},
+						},
+						...readinessPayload.overview.signals.slice( 1 ),
+					],
+				},
+			},
+		} );
+
+		expect(
+			screen.getByText(
+				"Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?"
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'link', { name: 'Update' } )
+		).toHaveAttribute(
+			'href',
+			'https://example.test/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments'
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Looks good' } )
+		);
+
+		expect( confirmStatementDescriptor ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'refreshes dispute readiness when mounted', () => {

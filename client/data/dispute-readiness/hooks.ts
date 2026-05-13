@@ -27,6 +27,7 @@ export const useDisputeReadiness = (): DisputeReadinessResponse =>
 export const useDisputeReadinessActions = (): DisputeReadinessActions => {
 	const {
 		dismissDisputeReadinessCard,
+		confirmStatementDescriptor,
 		invalidateResolutionForStoreSelector,
 	} = useDispatch( STORE_NAME );
 	const refreshDisputeReadiness = useCallback( () => {
@@ -35,6 +36,7 @@ export const useDisputeReadinessActions = (): DisputeReadinessActions => {
 
 	return {
 		dismissDisputeReadinessCard,
+		confirmStatementDescriptor,
 		refreshDisputeReadiness,
 	};
 };
