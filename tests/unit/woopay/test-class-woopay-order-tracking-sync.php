@@ -184,6 +184,43 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $custom, $overlays[0] );
 	}
 
+	public function test_get_providers_filters_out_non_conforming_filter_entries() {
+		// A misbehaving filter callback that returns junk alongside a valid
+		// provider must not be able to fatal the sync orchestrator.
+		$valid = $this->createMock( WooPay_Tracking_Provider::class );
+		$valid->method( 'get_hooks' )->willReturn( [] );
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $valid ) {
+				return [ $valid, 'not-an-object', null, 42, new \stdClass() ];
+			}
+		);
+
+		WooPay_Order_Tracking_Sync::reset_providers();
+		$providers = WooPay_Order_Tracking_Sync::get_providers();
+
+		$this->assertCount( 1, $providers, 'Non-conforming entries must be filtered out.' );
+		$this->assertSame( $valid, $providers[0] );
+	}
+
+	public function test_get_overlay_providers_filters_out_non_conforming_filter_entries() {
+		$valid = new Fake_Overlay_Provider( WooPay_Order_Tracking_Sync::STATUS_IN_TRANSIT );
+
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () use ( $valid ) {
+				return [ 'garbage', $valid, new \stdClass(), 0 ];
+			}
+		);
+
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+		$overlays = WooPay_Order_Tracking_Sync::get_overlay_providers();
+
+		$this->assertCount( 1, $overlays );
+		$this->assertSame( $valid, $overlays[0] );
+	}
+
 	// -------------------------------------------------------------------------
 	// Two-pass orchestration in `get_order_shipments()`
 	// -------------------------------------------------------------------------

@@ -102,17 +102,16 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 	}
 
 	/**
-	 * Return the hook spec for `register_persistence_hooks()`'s purposes.
-	 * The sync constructor does NOT register `send_webhook` on this hook
-	 * (TrackShip's status changes route through the existing order-status
-	 * sync webhook when applicable). The hook spec is here so the
-	 * constructor's loop can find the provider and call its static
-	 * `register_persistence_hooks()` method.
+	 * Intentionally returns an empty array — TrackShip has no hook that
+	 * should trigger `send_webhook()` directly.
 	 *
-	 * Returns an empty array because we don't want a webhook to fire on the
-	 * trigger — we only want the persistence listener to record the change.
-	 * The next tracking_updated webhook (fired by Phase 1 on the next meta
-	 * write) will carry the enriched status via the overlay path.
+	 * The persistence listener for `trackship_shipment_status_trigger` is
+	 * registered separately via the optional `register_persistence_hooks()`
+	 * method, which the sync constructor discovers via `method_exists()`.
+	 * That listener captures the status change into our owned meta key;
+	 * the enriched status then rides the *next* `tracking_updated` webhook
+	 * (fired by Phase 1 when AST/WC ST updates `_wc_shipment_tracking_items`)
+	 * via the overlay path. No webhook fires off the TrackShip hook itself.
 	 *
 	 * @return array[]
 	 */

@@ -207,7 +207,18 @@ class WooPay_Order_Tracking_Sync {
 		 *
 		 * @param WooPay_Tracking_Provider[] $providers Ordered array of providers.
 		 */
-		self::$providers = (array) apply_filters( 'wcpay_woopay_tracking_providers', $default_providers );
+		$filtered = (array) apply_filters( 'wcpay_woopay_tracking_providers', $default_providers );
+
+		// Filter out non-conforming entries — a third-party filter callback
+		// returning the wrong shape should not be able to fatal the sync
+		// orchestrator. array_filter preserves keys, so re-index for
+		// downstream consumers that walk by numeric index.
+		self::$providers = array_values(
+			array_filter(
+				$filtered,
+				static fn( $p ) => $p instanceof WooPay_Tracking_Provider
+			)
+		);
 
 		return self::$providers;
 	}
@@ -240,7 +251,17 @@ class WooPay_Order_Tracking_Sync {
 		 *
 		 * @param WooPay_Status_Overlay_Provider[] $overlay_providers Ordered array of overlays.
 		 */
-		self::$overlay_providers = (array) apply_filters( 'wcpay_woopay_status_overlay_providers', $default_overlays );
+		$filtered = (array) apply_filters( 'wcpay_woopay_status_overlay_providers', $default_overlays );
+
+		// Filter out non-conforming entries — a third-party filter callback
+		// returning the wrong shape should not be able to fatal the sync
+		// orchestrator's overlay pass.
+		self::$overlay_providers = array_values(
+			array_filter(
+				$filtered,
+				static fn( $p ) => $p instanceof WooPay_Status_Overlay_Provider
+			)
+		);
 
 		return self::$overlay_providers;
 	}
