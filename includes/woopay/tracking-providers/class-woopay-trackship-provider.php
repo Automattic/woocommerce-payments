@@ -282,15 +282,23 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 
 		return array_map(
 			static function ( $shipment ) use ( $by_number ) {
-				$number = isset( $shipment['tracking_number'] ) ? (string) $shipment['tracking_number'] : '';
+				// Defensive scalar guards before casting: order meta is
+				// mutable by other plugins/admins, and a tampered value
+				// that's an array/object would trigger "Array to string
+				// conversion" notices. is_scalar() check first; non-scalar
+				// values are treated as missing and skip the overlay step
+				// for that field.
+				$number = ( isset( $shipment['tracking_number'] ) && is_scalar( $shipment['tracking_number'] ) )
+					? (string) $shipment['tracking_number']
+					: '';
 				if ( '' === $number || ! isset( $by_number[ $number ] ) ) {
 					return $shipment;
 				}
 				$entry = $by_number[ $number ];
-				if ( isset( $entry['status'] ) ) {
+				if ( isset( $entry['status'] ) && is_scalar( $entry['status'] ) ) {
 					$shipment['status'] = (string) $entry['status'];
 				}
-				if ( isset( $entry['status_updated_at'] ) ) {
+				if ( isset( $entry['status_updated_at'] ) && is_scalar( $entry['status_updated_at'] ) ) {
 					$validated = self::sanitize_status_updated_at( (string) $entry['status_updated_at'] );
 					if ( '' !== $validated ) {
 						$shipment['status_updated_at'] = $validated;

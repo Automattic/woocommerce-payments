@@ -499,7 +499,13 @@ class WooPay_Order_Tracking_Sync {
 
 		return array_map(
 			static function ( $shipment ) {
-				if ( isset( $shipment['status'] ) ) {
+				// Belt-and-suspenders: a tampered meta source or a buggy
+				// provider could supply a non-scalar status (array/object).
+				// Casting that to string would emit a PHP notice before
+				// ensure_canonical_status() got a chance to coerce. Default
+				// to STATUS_FULFILLED in that case — same outcome as
+				// non-canonical values, no notice.
+				if ( isset( $shipment['status'] ) && is_scalar( $shipment['status'] ) ) {
 					$shipment['status'] = self::ensure_canonical_status( (string) $shipment['status'] );
 				} else {
 					$shipment['status'] = self::STATUS_FULFILLED;
