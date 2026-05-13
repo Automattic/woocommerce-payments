@@ -84,6 +84,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'available_on_after', '2026-04-02 00:00:00' );
 		$request->set_param( 'available_on_before', '2026-05-01 00:00:00' );
 		$request->set_param( 'match', 'all' );
+		$request->set_param( 'search', [ 'txn_123' ] );
 		$request->set_param( 'user_timezone', '+00:00' );
 
 		$this->assertSame(
@@ -99,6 +100,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 				'available_on_before' => '2026-05-01 00:00:00',
 				'available_on_after'  => '2026-04-02 00:00:00',
 				'match'               => 'all',
+				'search'              => [ 'txn_123' ],
 				'user_timezone'       => '+00:00',
 			],
 			$this->get_fees_transaction_filters_for_test( $request )

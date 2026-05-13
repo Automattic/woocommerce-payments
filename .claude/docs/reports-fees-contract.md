@@ -1,6 +1,6 @@
 # WooPayments Reports - Fees Contract
 
-**Last updated:** 2026-05-13 13:08
+**Last updated:** 2026-05-13 13:44
 
 ## Scope
 
@@ -48,6 +48,7 @@ Report query params map to transaction API filters as follows:
 | `available_on_after` | `available_on_after` |
 | `available_on_before` | `available_on_before` |
 | `match` | `match` |
+| `search` | `search` |
 | `user_timezone` | `user_timezone` |
 
 The helper applies the default Fees ledger type filter only when the request does not include `type`.
@@ -77,6 +78,7 @@ The collection route inherits the parent report params:
 - `order_id`
 - `deposit_id`
 - `customer_email`
+- `search`
 - `payment_method_type`
 - `type`
 - `match`

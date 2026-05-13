@@ -194,6 +194,11 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 			'format'      => 'date-time',
 			'required'    => false,
 		];
+		$params['search']              = [
+			'description' => __( 'Search transactions by known identifiers.', 'woocommerce-payments' ),
+			'type'        => 'array',
+			'required'    => false,
+		];
 
 		return $params;
 	}
@@ -256,6 +261,7 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 				'available_on_after'   => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'available_on_after' ), $user_timezone ),
 				'available_on_between' => $available_on_between_filter,
 				'match'                => $request->get_param( 'match' ),
+				'search'               => $request->get_param( 'search' ),
 				'user_timezone'        => $user_timezone,
 			]
 		);
