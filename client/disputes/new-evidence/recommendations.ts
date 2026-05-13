@@ -1,7 +1,11 @@
 /**
  * Internal dependencies
  */
-import type { Recommendation, RecommendationContext } from './types';
+import type {
+	FieldCountPredicate,
+	Recommendation,
+	RecommendationContext,
+} from './types';
 
 /**
  * True when a value is non-null, non-empty, and (for nested objects) has at
@@ -29,15 +33,38 @@ const isProvided = (
 ): boolean => hasMeaningfulValue( evidence[ key ] );
 
 /**
+ * Counts how many keys satisfy `condition` and tests against the count
+ * predicate's `min`/`max` (inclusive). Defaults:
+ *   - `max` unset → `keys.length` (no upper bound)
+ *   - `min` unset:
+ *       - if `max` is also unset → 1 (OR semantics — at least one satisfies)
+ *       - if `max` is set       → 0 (the caller specified an upper bound only,
+ *                                    so the lower bound should not constrain)
+ */
+const matchesCount = (
+	predicate: FieldCountPredicate,
+	condition: ( key: string ) => boolean
+): boolean => {
+	const count = predicate.keys.filter( condition ).length;
+	const maxExplicit = predicate.max !== undefined;
+	const min = predicate.min ?? ( maxExplicit ? 0 : 1 );
+	const max = predicate.max ?? predicate.keys.length;
+	return count >= min && count <= max;
+};
+
+/**
  * Returns the catalog entries that apply to this dispute. AND across `when`
- * clauses; arrays inside a clause OR. Catalog is passed in (not imported)
- * so tests can supply fixtures and the live call site stays explicit.
+ * clauses. Catalog is passed in (not imported) so tests can supply fixtures.
+ *
+ * Applies Cluster 15-style suppression after matching: when any matching
+ * entry carries `suppressOtherCriticals: true`, all other `critical`
+ * entries are dropped from the result.
  */
 export const getRecommendations = (
 	context: RecommendationContext,
 	catalog: Recommendation[]
-): Recommendation[] =>
-	catalog.filter( ( entry ) => {
+): Recommendation[] => {
+	const matched = catalog.filter( ( entry ) => {
 		const { when } = entry;
 
 		if ( when.outcome !== context.outcome ) {
@@ -54,15 +81,16 @@ export const getRecommendations = (
 		}
 		if (
 			when.requireProvided &&
-			! when.requireProvided.some( ( key ) =>
+			! matchesCount( when.requireProvided, ( key ) =>
 				isProvided( context.evidence, key )
 			)
 		) {
 			return false;
 		}
 		if (
-			when.requireExpectedMissing &&
-			! when.requireExpectedMissing.some(
+			when.requireMissing &&
+			! matchesCount(
+				when.requireMissing,
 				( key ) => ! isProvided( context.evidence, key )
 			)
 		) {
@@ -71,3 +99,17 @@ export const getRecommendations = (
 
 		return true;
 	} );
+
+	// Suppression: when any matching entry says so, drop other critical
+	// entries. The suppressing entry itself stays.
+	const suppressor = matched.find(
+		( entry ) => entry.suppressOtherCriticals
+	);
+	if ( suppressor ) {
+		return matched.filter(
+			( entry ) => entry === suppressor || entry.urgency !== 'critical'
+		);
+	}
+
+	return matched;
+};

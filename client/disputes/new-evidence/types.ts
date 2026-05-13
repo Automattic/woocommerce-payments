@@ -133,35 +133,52 @@ export interface EvidenceFieldStatus {
 }
 
 /**
- * Outcome framing for the post-resolution Recommendations card.
- * `could_help` is shown on lost; `keep_doing` on won. warning_closed
- * maps to neither (inquiries have no merchant-submitted evidence).
+ * Outcome framing carried over from the dispute status. Used to gate which
+ * catalog entries fire. The component's two visual sections (Positives vs
+ * Critical+Tip) are driven by urgency, not by outcome.
  */
 export type RecommendationOutcome = 'could_help' | 'keep_doing';
 
 /**
- * Visual urgency of a recommendation; drives title color.
- *   - `critical` (red): the gap materially hurt the case.
- *   - `tip`      (orange): soft "next time" suggestion.
- *   - `neutral`  (default): reinforcement or observation.
+ * Visual urgency of a recommendation. Drives both title color and which
+ * card section the entry renders under.
+ *   - `critical` (red):   "fix this next time" — high-lift gap on a lost dispute.
+ *   - `tip`      (orange): "would have made the case stronger" — soft suggestion.
+ *   - `positive` (green): "you did this right" — reinforcement.
  */
-export type RecommendationUrgency = 'critical' | 'neutral' | 'tip';
+export type RecommendationUrgency = 'critical' | 'positive' | 'tip';
 
 export interface RecommendationLink {
 	label: string;
 	href: string;
+	/**
+	 * Used when `href` contains template placeholders (e.g. `{customer_id}`)
+	 * and the substitution data isn't available at render time.
+	 */
+	fallbackHref?: string;
 }
 
 /**
- * Conditions under which a catalog entry fires. AND across clauses;
- * arrays inside a clause OR. Absent clauses don't constrain.
+ * Count-based predicate over a set of evidence field keys. `min` and `max`
+ * (inclusive) cap how many of the listed keys must satisfy the underlying
+ * condition (provided or missing). Defaults: `min` = 1, `max` = keys.length.
+ */
+export interface FieldCountPredicate {
+	keys: string[];
+	min?: number;
+	max?: number;
+}
+
+/**
+ * Conditions under which a catalog entry fires. AND across clauses.
+ * Absent clauses don't constrain.
  */
 export interface RecommendationWhen {
 	outcome: RecommendationOutcome;
 	reasonIn: string[];
 	productTypeIn?: string[];
-	requireExpectedMissing?: string[];
-	requireProvided?: string[];
+	requireProvided?: FieldCountPredicate;
+	requireMissing?: FieldCountPredicate;
 }
 
 export interface Recommendation {
@@ -171,6 +188,19 @@ export interface Recommendation {
 	urgency: RecommendationUrgency;
 	when: RecommendationWhen;
 	link?: RecommendationLink;
+	/**
+	 * Q6 win-rate lift in percentage points, when known. Used to rank
+	 * recommendations within a section when capping (top N by lift).
+	 * Entries without a measured lift sort to the bottom.
+	 */
+	lift?: number;
+	/**
+	 * When this entry fires, hide all other `critical` entries on the same
+	 * dispute. Used by the catch-all no-evidence recommendation so a
+	 * disengaged merchant sees one clear message rather than a stack of
+	 * "missing X" entries.
+	 */
+	suppressOtherCriticals?: boolean;
 }
 
 export interface RecommendationContext {

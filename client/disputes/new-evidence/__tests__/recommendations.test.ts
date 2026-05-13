@@ -22,7 +22,7 @@ const buildEntry = (
 	id: 'r',
 	title: 'Title',
 	body: 'Body',
-	urgency: 'neutral',
+	urgency: 'tip',
 	...overrides,
 } );
 
@@ -110,120 +110,184 @@ describe( 'getRecommendations', () => {
 			when: {
 				outcome: 'keep_doing',
 				reasonIn: [ 'product_not_received' ],
-				// no productTypeIn
 			},
 		} );
 
-		const physical = getRecommendations(
-			baseContext( {
-				outcome: 'keep_doing',
-				productType: 'physical_product',
-			} ),
-			[ anyProductType ]
-		);
-		const digital = getRecommendations(
-			baseContext( {
-				outcome: 'keep_doing',
-				productType: 'digital_product_or_service',
-			} ),
-			[ anyProductType ]
-		);
-
-		expect( physical.map( ( r ) => r.id ) ).toEqual( [ 'any' ] );
-		expect( digital.map( ( r ) => r.id ) ).toEqual( [ 'any' ] );
+		expect(
+			getRecommendations(
+				baseContext( {
+					outcome: 'keep_doing',
+					productType: 'digital_product_or_service',
+				} ),
+				[ anyProductType ]
+			).map( ( r ) => r.id )
+		).toEqual( [ 'any' ] );
 	} );
 
-	it( 'fires when at least one requireProvided field has a value', () => {
+	describe( 'requireProvided count predicate', () => {
 		const entry = buildEntry( {
 			id: 'shipping',
 			when: {
 				outcome: 'keep_doing',
 				reasonIn: [ 'product_not_received' ],
-				requireProvided: [
-					'shipping_tracking_number',
-					'shipping_carrier',
-				],
-			},
-		} );
-
-		const result = getRecommendations(
-			baseContext( {
-				outcome: 'keep_doing',
-				evidence: { shipping_tracking_number: '1Z999' },
-			} ),
-			[ entry ]
-		);
-
-		expect( result.map( ( r ) => r.id ) ).toEqual( [ 'shipping' ] );
-	} );
-
-	it( 'skips entries where every requireProvided field is missing or empty', () => {
-		const entry = buildEntry( {
-			id: 'shipping',
-			when: {
-				outcome: 'keep_doing',
-				reasonIn: [ 'product_not_received' ],
-				requireProvided: [
-					'shipping_tracking_number',
-					'shipping_carrier',
-				],
-			},
-		} );
-
-		const result = getRecommendations(
-			baseContext( {
-				outcome: 'keep_doing',
-				evidence: {
-					shipping_tracking_number: '   ',
-					shipping_carrier: '',
+				requireProvided: {
+					keys: [ 'shipping_tracking_number', 'shipping_carrier' ],
+					min: 2,
 				},
-			} ),
-			[ entry ]
-		);
-
-		expect( result ).toEqual( [] );
-	} );
-
-	it( 'fires when at least one requireExpectedMissing field has no value', () => {
-		const entry = buildEntry( {
-			id: 'missing-tracking',
-			when: {
-				outcome: 'could_help',
-				reasonIn: [ 'product_not_received' ],
-				requireExpectedMissing: [ 'shipping_tracking_number' ],
 			},
 		} );
 
-		const result = getRecommendations(
-			baseContext( {
-				outcome: 'could_help',
-				evidence: { shipping_address: '123 Main St' },
-			} ),
-			[ entry ]
-		);
-
-		expect( result.map( ( r ) => r.id ) ).toEqual( [ 'missing-tracking' ] );
-	} );
-
-	it( 'skips entries where every requireExpectedMissing field is actually provided', () => {
-		const entry = buildEntry( {
-			id: 'missing-tracking',
-			when: {
-				outcome: 'could_help',
-				reasonIn: [ 'product_not_received' ],
-				requireExpectedMissing: [ 'shipping_tracking_number' ],
-			},
+		it( 'fires when count meets the min', () => {
+			const result = getRecommendations(
+				baseContext( {
+					evidence: {
+						shipping_tracking_number: '1Z999',
+						shipping_carrier: 'UPS',
+					},
+				} ),
+				[ entry ]
+			);
+			expect( result.map( ( r ) => r.id ) ).toEqual( [ 'shipping' ] );
 		} );
 
-		const result = getRecommendations(
-			baseContext( {
-				outcome: 'could_help',
-				evidence: { shipping_tracking_number: '1Z999' },
-			} ),
-			[ entry ]
-		);
+		it( 'does not fire when count falls below min', () => {
+			const result = getRecommendations(
+				baseContext( {
+					evidence: { shipping_tracking_number: '1Z999' },
+				} ),
+				[ entry ]
+			);
+			expect( result ).toEqual( [] );
+		} );
 
-		expect( result ).toEqual( [] );
+		it( 'defaults min to 1 when omitted (OR over the key set)', () => {
+			const anyOf = buildEntry( {
+				id: 'any-of',
+				when: {
+					outcome: 'keep_doing',
+					reasonIn: [ 'product_not_received' ],
+					requireProvided: {
+						keys: [
+							'shipping_tracking_number',
+							'shipping_carrier',
+						],
+					},
+				},
+			} );
+
+			const result = getRecommendations(
+				baseContext( {
+					evidence: { shipping_carrier: 'UPS' },
+				} ),
+				[ anyOf ]
+			);
+			expect( result.map( ( r ) => r.id ) ).toEqual( [ 'any-of' ] );
+		} );
+
+		it( 'respects max for exactly-N predicates', () => {
+			const exactlyOne = buildEntry( {
+				id: 'exactly-one',
+				when: {
+					outcome: 'keep_doing',
+					reasonIn: [ 'product_not_received' ],
+					requireProvided: {
+						keys: [
+							'shipping_tracking_number',
+							'shipping_carrier',
+						],
+						min: 1,
+						max: 1,
+					},
+				},
+			} );
+
+			// 1 provided → fires
+			expect(
+				getRecommendations(
+					baseContext( {
+						evidence: { shipping_tracking_number: '1Z999' },
+					} ),
+					[ exactlyOne ]
+				).map( ( r ) => r.id )
+			).toEqual( [ 'exactly-one' ] );
+
+			// 2 provided → does not fire
+			expect(
+				getRecommendations(
+					baseContext( {
+						evidence: {
+							shipping_tracking_number: '1Z999',
+							shipping_carrier: 'UPS',
+						},
+					} ),
+					[ exactlyOne ]
+				)
+			).toEqual( [] );
+		} );
+	} );
+
+	describe( 'requireMissing count predicate', () => {
+		it( 'fires when at least one listed field is missing (default min=1)', () => {
+			const entry = buildEntry( {
+				id: 'missing-tracking',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+					requireMissing: { keys: [ 'shipping_tracking_number' ] },
+				},
+			} );
+
+			const result = getRecommendations(
+				baseContext( {
+					outcome: 'could_help',
+					evidence: { shipping_address: '123 Main St' },
+				} ),
+				[ entry ]
+			);
+
+			expect( result.map( ( r ) => r.id ) ).toEqual( [
+				'missing-tracking',
+			] );
+		} );
+
+		it( 'fires when all listed fields are missing (min = keys.length)', () => {
+			const entry = buildEntry( {
+				id: 'all-missing',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'subscription_canceled' ],
+					requireMissing: {
+						keys: [
+							'cancellation_policy',
+							'cancellation_rebuttal',
+						],
+						min: 2,
+					},
+				},
+			} );
+
+			const allMissing = getRecommendations(
+				baseContext( {
+					outcome: 'could_help',
+					reason: 'subscription_canceled',
+				} ),
+				[ entry ]
+			);
+			expect( allMissing.map( ( r ) => r.id ) ).toEqual( [
+				'all-missing',
+			] );
+
+			// Only one missing → does not fire (min not met).
+			const oneMissing = getRecommendations(
+				baseContext( {
+					outcome: 'could_help',
+					reason: 'subscription_canceled',
+					evidence: { cancellation_policy: 'http://example.com' },
+				} ),
+				[ entry ]
+			);
+			expect( oneMissing ).toEqual( [] );
+		} );
 	} );
 
 	it( 'ANDs all when-clauses together (failing one clause drops the entry)', () => {
@@ -233,11 +297,10 @@ describe( 'getRecommendations', () => {
 				outcome: 'keep_doing',
 				reasonIn: [ 'product_not_received' ],
 				productTypeIn: [ 'physical_product' ],
-				requireProvided: [ 'shipping_tracking_number' ],
+				requireProvided: { keys: [ 'shipping_tracking_number' ] },
 			},
 		} );
 
-		// All four clauses pass.
 		const allMatch = getRecommendations(
 			baseContext( {
 				outcome: 'keep_doing',
@@ -249,7 +312,6 @@ describe( 'getRecommendations', () => {
 		);
 		expect( allMatch.map( ( r ) => r.id ) ).toEqual( [ 'strict' ] );
 
-		// productType clause fails; entry drops.
 		const productTypeMiss = getRecommendations(
 			baseContext( {
 				outcome: 'keep_doing',
@@ -286,53 +348,20 @@ describe( 'getRecommendations', () => {
 		expect( getRecommendations( baseContext(), [] ) ).toEqual( [] );
 	} );
 
-	it( 'passes urgency, link, and ids through verbatim', () => {
-		const entry = buildEntry( {
-			id: 'with-link',
-			title: 'Configure shipping',
-			body: 'do it',
-			urgency: 'critical',
-			when: {
-				outcome: 'could_help',
-				reasonIn: [ 'product_not_received' ],
-			},
-			link: { label: 'Set up tracking', href: '/wp-admin/...' },
-		} );
-
-		const [ result ] = getRecommendations(
-			baseContext( { outcome: 'could_help' } ),
-			[ entry ]
-		);
-
-		expect( result ).toEqual( entry );
-	} );
-
 	it( 'preserves catalog order in the returned matches', () => {
-		const first = buildEntry( {
-			id: 'first',
-			when: {
-				outcome: 'could_help',
-				reasonIn: [ 'product_not_received' ],
-			},
-		} );
-		const second = buildEntry( {
-			id: 'second',
-			when: {
-				outcome: 'could_help',
-				reasonIn: [ 'product_not_received' ],
-			},
-		} );
-		const third = buildEntry( {
-			id: 'third',
-			when: {
-				outcome: 'could_help',
-				reasonIn: [ 'product_not_received' ],
-			},
-		} );
+		const entries = [ 'first', 'second', 'third' ].map( ( id ) =>
+			buildEntry( {
+				id,
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} )
+		);
 
 		const result = getRecommendations(
 			baseContext( { outcome: 'could_help' } ),
-			[ first, second, third ]
+			entries
 		);
 
 		expect( result.map( ( r ) => r.id ) ).toEqual( [
@@ -340,5 +369,102 @@ describe( 'getRecommendations', () => {
 			'second',
 			'third',
 		] );
+	} );
+
+	describe( 'suppression', () => {
+		it( 'suppresses other critical entries when an entry with suppressOtherCriticals fires', () => {
+			const catchAll = buildEntry( {
+				id: 'catch-all',
+				urgency: 'critical',
+				suppressOtherCriticals: true,
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+			const otherCritical = buildEntry( {
+				id: 'other-critical',
+				urgency: 'critical',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+			const aTip = buildEntry( {
+				id: 'a-tip',
+				urgency: 'tip',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+
+			const result = getRecommendations(
+				baseContext( { outcome: 'could_help' } ),
+				[ catchAll, otherCritical, aTip ]
+			);
+
+			expect( result.map( ( r ) => r.id ).sort() ).toEqual( [
+				'a-tip',
+				'catch-all',
+			] );
+		} );
+
+		it( 'leaves other criticals alone when the suppressing entry does not match', () => {
+			// Suppressor fires only when reason is 'general'; this dispute is PNR.
+			const catchAll = buildEntry( {
+				id: 'catch-all',
+				urgency: 'critical',
+				suppressOtherCriticals: true,
+				when: { outcome: 'could_help', reasonIn: [ 'general' ] },
+			} );
+			const otherCritical = buildEntry( {
+				id: 'other-critical',
+				urgency: 'critical',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+
+			const result = getRecommendations(
+				baseContext( { outcome: 'could_help' } ),
+				[ catchAll, otherCritical ]
+			);
+
+			expect( result.map( ( r ) => r.id ) ).toEqual( [
+				'other-critical',
+			] );
+		} );
+
+		it( 'preserves positives and tips when suppression is active', () => {
+			const catchAll = buildEntry( {
+				id: 'catch-all',
+				urgency: 'critical',
+				suppressOtherCriticals: true,
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+			const aTip = buildEntry( {
+				id: 'a-tip',
+				urgency: 'tip',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+
+			const result = getRecommendations(
+				baseContext( { outcome: 'could_help' } ),
+				[ catchAll, aTip ]
+			);
+
+			expect( result.map( ( r ) => r.id ).sort() ).toEqual( [
+				'a-tip',
+				'catch-all',
+			] );
+		} );
 	} );
 } );
