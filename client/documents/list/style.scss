@@ -27,82 +27,8 @@ button.components-button.documents-list__download-button {
  * Depending on the wc-admin version, these styles are not loaded if not using the analytics report components, so they need to be included here.
  * If we switch to the Report components, we can remove them from here, as they would be loaded by wc-admin.
 */
-$gap: 16px;
-$gap-small: 12px;
 .woocommerce-report-table {
-	.woocommerce-search {
-		flex-grow: 1;
-	}
-
 	.woocommerce-card__header {
 		position: relative;
-	}
-
-	&.has-compare,
-	&.has-search {
-		.woocommerce-table__actions {
-			align-items: center;
-			text-align: left;
-			display: grid;
-			width: 100%;
-			grid-template-columns: auto 1fr auto;
-		}
-
-		@include breakpoint( '<960px' ) {
-			.woocommerce-table__actions {
-				grid-gap: $gap-small;
-				grid-template-columns: auto 1fr;
-				grid-row-start: 2;
-				grid-row-end: 2;
-				grid-column-start: 1;
-				grid-column-end: 4;
-				margin: 0;
-
-				.woocommerce-table__compare {
-					display: flex;
-				}
-
-				.woocommerce-search {
-					grid-area: 2 / 2 / 3 / 4;
-					margin-right: 0;
-				}
-			}
-		}
-
-		&.has-search:not( .has-compare ) {
-			.woocommerce-table__actions {
-				grid-template-columns: 1fr auto;
-
-				.woocommerce-search {
-					align-self: center;
-					grid-column-start: 1;
-					grid-column-end: 2;
-				}
-			}
-
-			@include breakpoint( '<960px' ) {
-				.woocommerce-table__actions {
-					grid-template-columns: 1fr;
-
-					.woocommerce-search {
-						grid-area: 2 / 1 / 3 / 2;
-						margin: 0;
-					}
-				}
-			}
-		}
-
-		.woocommerce-search {
-			margin: 0 $gap;
-
-			.woocommerce-select-control__control {
-				height: 38px;
-			}
-		}
-
-		.woocommerce-compare-button {
-			padding: 3px $gap-small;
-			height: auto;
-		}
 	}
 }

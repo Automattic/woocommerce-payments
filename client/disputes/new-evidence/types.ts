@@ -120,3 +120,14 @@ export interface BaseEvidence {
 export type EvidenceState = Partial< BaseEvidence > & {
 	[ key: string ]: string | undefined;
 };
+
+export type EvidenceFieldState =
+	| 'provided'
+	| 'expected_missing'
+	| 'optional_missing';
+
+export interface EvidenceFieldStatus {
+	key: string;
+	label: string;
+	state: EvidenceFieldState;
+}

@@ -16,6 +16,8 @@
  */
 
 defined( 'ABSPATH' ) || exit;
+
+$payment_method_display_name = $payment_method_display_name ?? '';
 ?>
 
 <div style="margin-bottom: 40px;">
@@ -26,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
 					<?php esc_html_e( 'Payment Method', 'woocommerce-payments' ); ?>
 				</th>
 				<td class="td">
-					<div><?php echo esc_html( sprintf( '%s - %s', ucfirst( $payment_method_details['brand'] ), $payment_method_details['last4'] ) ); ?></div>
+					<div><?php echo esc_html( sprintf( '%s - %s', $payment_method_display_name, $payment_method_details['last4'] ) ); ?></div>
 				</td>
 			</tr>
 			<tr>
