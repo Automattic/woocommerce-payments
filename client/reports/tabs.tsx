@@ -11,11 +11,17 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import type { ReportsTab, ReportsTabStatus } from './types';
+import {
+	getLastFullCalendarMonthUTC,
+	type ReportsPeriodRange,
+} from './period-selector';
+import { FeesReport } from './fees';
 
 interface ReportsTabPanelProps {
 	tab: ReportsTab;
 	status: ReportsTabStatus;
 	onReload: () => void;
+	period?: ReportsPeriodRange;
 }
 
 export const reportsTabs: Array< {
@@ -46,6 +52,10 @@ function getEmptyContent( tab: ReportsTab ): {
 	if ( tab === 'fees' ) {
 		return {
 			title: __( 'No fees yet', 'woocommerce-payments' ),
+			description: __(
+				'Fees will appear here once you start receiving payments.',
+				'woocommerce-payments'
+			),
 		};
 	}
 
@@ -91,6 +101,7 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 	tab,
 	status,
 	onReload,
+	period,
 } ) => {
 	const contentHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousStatusRef = useRef< ReportsTabStatus >( status );
@@ -108,6 +119,15 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 
 		previousStatusRef.current = status;
 	}, [ status ] );
+
+	if ( tab === 'fees' && status === 'ready' ) {
+		return (
+			<FeesReport
+				period={ period ?? getLastFullCalendarMonthUTC() }
+				onReload={ onReload }
+			/>
+		);
+	}
 
 	if ( status === 'loading' ) {
 		return (

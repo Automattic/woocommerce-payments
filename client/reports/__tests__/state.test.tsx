@@ -12,6 +12,10 @@ import userEvent from '@testing-library/user-event';
  */
 import { ReportsTabPanel } from '../tabs';
 
+jest.mock( '../fees', () => ( {
+	FeesReport: () => <div>Fees ledger table</div>,
+} ) );
+
 describe( 'Reports tab states', () => {
 	it( 'renders the Balance empty state', () => {
 		const { container } = render(
@@ -69,6 +73,14 @@ describe( 'Reports tab states', () => {
 		expect( screen.getByRole( 'status' ) ).toContainElement(
 			screen.getByRole( 'heading', { level: 2 } )
 		);
+	} );
+
+	it( 'renders the Fees report when the Fees tab is ready', () => {
+		render(
+			<ReportsTabPanel tab="fees" status="ready" onReload={ jest.fn() } />
+		);
+
+		expect( screen.getByText( 'Fees ledger table' ) ).toBeInTheDocument();
 	} );
 
 	it( 'renders Balance error state with reload action', async () => {

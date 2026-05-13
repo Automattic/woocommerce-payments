@@ -22,6 +22,7 @@ interface UserPreferences {
 	wc_payments_payouts_hidden_columns: string[] | '';
 	wc_payments_disputes_hidden_columns: string[] | '';
 	wc_payments_documents_hidden_columns: string[] | '';
+	wc_payments_reports_fees_hidden_columns: string[] | '';
 }
 
 /**

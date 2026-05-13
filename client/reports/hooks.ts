@@ -13,9 +13,7 @@ import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
 import type { ReportsPeriodRange } from './period-selector';
 import type { ReportsTab } from './types';
 
-// Shell placeholder — replaced once real selectors land. Until then, reload
-// no-ops on unregistered resolvers (invalidateResolution is safe in that case).
-const reportsPlaceholderSelectors: Record< ReportsTab, string > = {
+const reportsSelectors: Record< ReportsTab, string > = {
 	balance: 'getReportsBalanceSummary',
 	fees: 'getReportsFees',
 };
@@ -26,13 +24,17 @@ interface WCPayResolutionDispatch {
 
 export function useReportsTabReload(
 	tab: ReportsTab,
-	period: ReportsPeriodRange
+	period: ReportsPeriodRange,
+	feesQuery?: unknown
 ): () => void {
 	const { invalidateResolution } = useDispatch(
 		WCPAY_STORE_NAME
 	) as unknown as WCPayResolutionDispatch;
 
 	return useCallback( () => {
-		invalidateResolution( reportsPlaceholderSelectors[ tab ], [ period ] );
-	}, [ invalidateResolution, period, tab ] );
+		invalidateResolution(
+			reportsSelectors[ tab ],
+			tab === 'fees' && feesQuery ? [ feesQuery ] : [ period ]
+		);
+	}, [ feesQuery, invalidateResolution, period, tab ] );
 }

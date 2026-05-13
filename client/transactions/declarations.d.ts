@@ -38,7 +38,10 @@ declare module '@woocommerce/components' {
 		path?: string;
 		query?: Query;
 		showDatePicker: boolean;
-		onAdvancedFilterAction?: ( args: string ) => void;
+		onAdvancedFilterAction?: (
+			args: string,
+			query?: Record< string, unknown >
+		) => void;
 		// some properties are omitted, as we are not currently using them
 	}
 

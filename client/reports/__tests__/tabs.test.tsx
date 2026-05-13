@@ -12,12 +12,53 @@ import userEvent from '@testing-library/user-event';
  */
 import { ReportsPage } from '..';
 import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
+import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useDispatch } from '@wordpress/data';
+import { recordEvent } from 'tracks';
+
+jest.mock( '../fees', () => ( {
+	FeesReport: () => <div>Fees ledger table</div>,
+	getFeesQuery: (
+		query: Record< string, unknown >,
+		period: { start: string; end: string }
+	) =>
+		query.date_before || query.date_after || query.date_between
+			? query
+			: {
+					...query,
+					date_between: [
+						period.start.slice( 0, 10 ),
+						period.end.slice( 0, 10 ),
+					],
+			  },
+	hasActiveFeesFilters: ( query: Record< string, unknown > ) =>
+		[
+			'date_before',
+			'date_after',
+			'date_between',
+			'payment_method_type',
+			'type',
+			'order_id',
+			'deposit_id',
+			'customer_email',
+			'search',
+			'match',
+		].some( ( key ) => Boolean( query[ key ] ) ),
+} ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn(),
 	updateQueryString: jest.fn(),
+} ) );
+
+jest.mock( 'wcpay/data', () => ( {
+	useReportsFees: jest.fn(),
+	useReportsFeesSummary: jest.fn(),
+} ) );
+
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
 } ) );
 
 // Explicit, narrow mock of @wordpress/data. We only rely on `useDispatch` in
@@ -51,6 +92,8 @@ jest.mock( '@wordpress/data', () => ( {
 const mockGetQuery = getQuery as jest.Mock;
 const mockUpdateQueryString = updateQueryString as jest.Mock;
 const mockUseDispatch = useDispatch as jest.Mock;
+const mockUseReportsFees = useReportsFees as jest.Mock;
+const mockUseReportsFeesSummary = useReportsFeesSummary as jest.Mock;
 
 declare const global: {
 	wcpaySettings: {
@@ -80,7 +123,19 @@ describe( 'Reports page tabs', () => {
 			fraudServices: [],
 		};
 		mockGetQuery.mockReturnValue( {} );
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: false,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: {
+				count: 0,
+			},
+			isLoading: false,
+		} );
 		mockUpdateQueryString.mockClear();
+		jest.mocked( recordEvent ).mockClear();
 		invalidateResolution.mockClear();
 		mockUseDispatch.mockImplementation( ( storeName ) => {
 			if ( WCPAY_STORE_NAME === storeName ) {
@@ -113,6 +168,9 @@ describe( 'Reports page tabs', () => {
 		expect(
 			screen.queryByRole( 'navigation', { name: 'Breadcrumb' } )
 		).not.toBeInTheDocument();
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_page_viewed'
+		);
 	} );
 
 	it( 'uses the tab query parameter for direct Fees navigation', async () => {
@@ -175,10 +233,16 @@ describe( 'Reports page tabs', () => {
 			);
 		} );
 		expect( mockUpdateQueryString ).toHaveBeenCalledTimes( 1 );
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_tab_viewed',
+			{
+				report: 'fees',
+			}
+		);
 		expect( screen.getByRole( 'tab', { name: 'Fees' } ) ).toHaveFocus();
 	} );
 
-	it( 'reloads the active tab in place by invalidating the placeholder resolver', async () => {
+	it( 'reloads the Balance tab in place by invalidating the Balance selector', async () => {
 		await renderReportsPage( {
 			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
@@ -189,7 +253,7 @@ describe( 'Reports page tabs', () => {
 		);
 
 		expect( invalidateResolution ).toHaveBeenCalledWith(
-			expect.any( String ),
+			'getReportsBalanceSummary',
 			[
 				{
 					start: '2026-04-01T00:00:00.000Z',
@@ -199,7 +263,7 @@ describe( 'Reports page tabs', () => {
 		);
 	} );
 
-	it( 'reloads the Fees tab with the current period range', async () => {
+	it( 'reloads the Fees tab with the current Fees query', async () => {
 		mockGetQuery.mockReturnValue( { tab: 'fees' } );
 
 		await renderReportsPage( {
@@ -211,14 +275,37 @@ describe( 'Reports page tabs', () => {
 			screen.getByRole( 'button', { name: /Reload/i } )
 		);
 
-		expect( invalidateResolution ).toHaveBeenCalledWith(
-			expect.any( String ),
-			[
-				{
-					start: '2026-04-01T00:00:00.000Z',
-					end: '2026-04-30T23:59:59.999Z',
-				},
-			]
+		expect( invalidateResolution ).toHaveBeenCalledWith( 'getReportsFees', [
+			expect.objectContaining( {
+				tab: 'fees',
+				date_between: [ '2026-04-01', '2026-04-30' ],
+			} ),
+		] );
+	} );
+
+	it( 'renders the Fees report when Fees data has resolved with rows', async () => {
+		mockGetQuery.mockReturnValue( { tab: 'fees' } );
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [ { transaction_id: 'txn_123' } ],
+			feesError: {},
+			isLoading: false,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: {
+				count: 1,
+			},
+			isLoading: false,
+		} );
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		expect( screen.getByText( 'Fees ledger table' ) ).toBeInTheDocument();
+		expect( mockUseReportsFees ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				date_between: [ '2026-04-01', '2026-04-30' ],
+			} )
 		);
 	} );
 } );
