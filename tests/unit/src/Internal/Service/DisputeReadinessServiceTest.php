@@ -7,7 +7,6 @@
 
 namespace WCPay\Tests\Internal\Service;
 
-use WC_Payments;
 use WC_Payments_Account;
 use WCPay\Internal\Service\DisputeReadinessService;
 use WCPAY_UnitTestCase;
@@ -23,18 +22,9 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 	 */
 	private $service;
 
-	/**
-	 * Original account service.
-	 *
-	 * @var WC_Payments_Account|null
-	 */
-	private $original_account_service;
-
 	public function set_up() {
 		parent::set_up();
 
-		$this->service                  = new DisputeReadinessService();
-		$this->original_account_service = WC_Payments::get_account_service();
 		$this->mock_account_data(
 			[
 				'statement_descriptor' => 'CUSTOM SHOP',
@@ -50,10 +40,6 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		delete_option( 'woocommerce_refund_returns_page_id' );
 		delete_option( 'woocommerce_terms_page_id' );
 		delete_option( DisputeReadinessService::DISMISSAL_OPTION );
-
-		if ( $this->original_account_service ) {
-			WC_Payments::set_account_service( $this->original_account_service );
-		}
 
 		parent::tear_down();
 	}
@@ -201,7 +187,8 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 	private function mock_account_data( array $account_data ) {
 		$account = $this->createMock( WC_Payments_Account::class );
 		$account->method( 'get_cached_account_data' )->willReturn( $account_data );
-		WC_Payments::set_account_service( $account );
+
+		$this->service = new DisputeReadinessService( $account );
 	}
 
 	/**

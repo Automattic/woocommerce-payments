@@ -24,6 +24,22 @@ class DisputeReadinessService {
 	private const STATUS_INCOMPLETE = 'incomplete';
 
 	/**
+	 * WooPayments account service.
+	 *
+	 * @var \WC_Payments_Account
+	 */
+	private $account;
+
+	/**
+	 * DisputeReadinessService constructor.
+	 *
+	 * @param \WC_Payments_Account $account WooPayments account service.
+	 */
+	public function __construct( \WC_Payments_Account $account ) {
+		$this->account = $account;
+	}
+
+	/**
 	 * Returns the disabled response used while the feature flag is off.
 	 *
 	 * @return array
@@ -209,11 +225,7 @@ class DisputeReadinessService {
 	 * @return array
 	 */
 	private function get_cached_account_data(): array {
-		if ( ! class_exists( '\WC_Payments' ) || ! \WC_Payments::get_account_service() ) {
-			return [];
-		}
-
-		$account_data = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_data = $this->account->get_cached_account_data();
 
 		return is_array( $account_data ) ? $account_data : [];
 	}
@@ -333,10 +345,6 @@ class DisputeReadinessService {
 	private function get_statement_descriptor( array $account_data ): string {
 		if ( isset( $account_data['statement_descriptor'] ) ) {
 			return (string) $account_data['statement_descriptor'];
-		}
-
-		if ( class_exists( '\WC_Payments' ) && \WC_Payments::get_gateway() ) {
-			return (string) \WC_Payments::get_gateway()->get_option( 'account_statement_descriptor', '' );
 		}
 
 		return '';
