@@ -20,6 +20,7 @@ CLAUDE.local.md
 .serena/
 .zed/
 .phpactor.json
+.superpowers/
 
 # Bundle
 dist

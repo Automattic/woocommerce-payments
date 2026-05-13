@@ -47,6 +47,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 	const STORE_SETUP_SYNC_ACTION = 'wcpay_store_setup_sync';
 
+	const KYC_COMPLETION_DATE_OPTION = 'wcpay_kyc_completion_date';
+
+	const POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT = 'wcpay_post_kyc_activation_eligible';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -141,6 +145,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
 		// Also do a store setup sync when the client is updated to a new version.
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'store_setup_sync' ] );
+
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'maybe_record_kyc_completion_date' ] );
 	}
 
 	/**
@@ -2590,6 +2596,30 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				Logger::error( __( 'Failed to update Account locale. ', 'woocommerce-payments' ) . $e );
 			}
 		}
+	}
+
+	/**
+	 * Records the date a merchant's account first becomes KYC-approved and payments-enabled on live mode.
+	 *
+	 * @param array|bool $account The account data passed by woocommerce_payments_account_refreshed.
+	 *
+	 * @return void
+	 */
+	public function maybe_record_kyc_completion_date( $account ): void {
+		if ( empty( $account ) || ! is_array( $account ) ) {
+			return;
+		}
+
+		if ( empty( $account['payments_enabled'] ) || empty( $account['is_live'] ) || ! empty( $account['is_test_drive'] ) ) {
+			return;
+		}
+
+		// Preserve the original date — do not overwrite on subsequent refreshes.
+		if ( get_option( self::KYC_COMPLETION_DATE_OPTION ) ) {
+			return;
+		}
+
+		update_option( self::KYC_COMPLETION_DATE_OPTION, time(), false );
 	}
 
 
