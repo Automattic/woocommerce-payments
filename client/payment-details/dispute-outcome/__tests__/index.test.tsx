@@ -44,7 +44,15 @@ const buildDispute = (
 
 describe( 'DisputeOutcomeView', () => {
 	it( 'renders the "Evidence Submitted" section heading', () => {
-		render( <DisputeOutcomeView dispute={ buildDispute() } /> );
+		// Needs a resolvable product type so the wrapper produces rows;
+		// without rows the section is suppressed entirely (covered below).
+		render(
+			<DisputeOutcomeView
+				dispute={ buildDispute( {
+					metadata: { __product_type: 'physical_product' },
+				} ) }
+			/>
+		);
 
 		expect(
 			screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
@@ -117,15 +125,21 @@ describe( 'DisputeOutcomeView', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders only the heading when no product type is available', () => {
-		const dispute = buildDispute( { metadata: {}, order: null } );
+	it( 'renders nothing when no product type is available', () => {
+		// With neither `metadata.__product_type` nor
+		// `order.suggested_product_type`, the helper returns no rows; the
+		// wrapper should suppress the whole section rather than emit a
+		// chrome-only "Evidence Submitted" heading.
+		const { container } = render(
+			<DisputeOutcomeView
+				dispute={ buildDispute( { metadata: {}, order: null } ) }
+			/>
+		);
 
-		render( <DisputeOutcomeView dispute={ dispute } /> );
-
+		expect( container ).toBeEmptyDOMElement();
 		expect(
-			screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
-		).toBeInTheDocument();
-		expect( screen.queryAllByRole( 'listitem' ) ).toHaveLength( 0 );
+			screen.queryByRole( 'heading', { name: 'Evidence Submitted' } )
+		).not.toBeInTheDocument();
 	} );
 
 	describe( 'optional-missing collapse by status', () => {

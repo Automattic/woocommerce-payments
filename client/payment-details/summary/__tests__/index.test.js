@@ -1052,6 +1052,18 @@ describe( 'PaymentDetailsSummary', () => {
 			charge.dispute.status = status;
 			charge.dispute.metadata = {
 				__dispute_closed_at: '1693626817',
+				// Set a real product type so resolveProductType() returns
+				// a non-empty cell and the Outcome View actually renders
+				// rows; otherwise the tests would only assert chrome.
+				__product_type: 'physical_product',
+			};
+			// Top up evidence with rows the matrix expects for
+			// fraudulent × physical_product so we get at least one
+			// "provided" item rendering through the real data path.
+			charge.dispute.evidence = {
+				...charge.dispute.evidence,
+				shipping_date: '2026-01-01',
+				customer_communication: 'Email thread with the customer',
 			};
 			return charge;
 		};
@@ -1079,6 +1091,15 @@ describe( 'PaymentDetailsSummary', () => {
 			expect(
 				screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
 			).toBeInTheDocument();
+			// Real-data path: the fixture sets product type + matching
+			// evidence, so the helper produces a non-empty list and at
+			// least one provided row makes it to the DOM.
+			expect( screen.getAllByRole( 'listitem' ).length ).toBeGreaterThan(
+				0
+			);
+			expect(
+				screen.getByText( /Customer communication/i )
+			).toBeInTheDocument();
 		} );
 
 		test( 'renders the Outcome View Evidence Submitted section for a lost dispute when the flag is on', () => {
@@ -1093,6 +1114,12 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 			expect(
 				screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
+			).toBeInTheDocument();
+			expect( screen.getAllByRole( 'listitem' ).length ).toBeGreaterThan(
+				0
+			);
+			expect(
+				screen.getByText( /Customer communication/i )
 			).toBeInTheDocument();
 		} );
 
