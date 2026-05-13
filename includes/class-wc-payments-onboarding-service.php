@@ -942,6 +942,9 @@ class WC_Payments_Onboarding_Service {
 		// Clear the entire database cache since everything hinges on the account.
 		// If the account is gone, everything else is too.
 		$this->database_cache->delete_all();
+
+		// Clean up the test-to-live banner state.
+		self::sync_banner_state( false );
 	}
 
 	/**
@@ -1060,7 +1063,6 @@ class WC_Payments_Onboarding_Service {
 	public static function set_test_mode( bool $test_mode ): void {
 		update_option( self::TEST_MODE_OPTION, $test_mode ? 'yes' : 'no', true );
 
-		// Switch WC_Payments onboarding mode immediately.
 		if ( $test_mode ) {
 			// Record the date test mode was first enabled; preserve the original date on subsequent calls.
 			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
@@ -1074,6 +1076,28 @@ class WC_Payments_Onboarding_Service {
 			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
 			\WC_Payments::mode()->live_mode_onboarding();
 		}
+
+		self::sync_banner_state( $test_mode );
+	}
+
+	/**
+	 * Hook handler for `update_option_woocommerce_<gateway_id>_settings`. Keeps
+	 * the test-to-live nudge's bookkeeping in sync when the gateway's
+	 * `test_mode` value flips.
+	 *
+	 * @param mixed $old_value Previous gateway settings array, or '' on first save.
+	 * @param mixed $new_value New gateway settings array.
+	 * @return void
+	 */
+	public function maybe_handle_gateway_test_mode_toggle( $old_value, $new_value ): void {
+		$old_test_mode = is_array( $old_value ) ? ( $old_value['test_mode'] ?? 'no' ) : 'no';
+		$new_test_mode = is_array( $new_value ) ? ( $new_value['test_mode'] ?? 'no' ) : 'no';
+
+		if ( $old_test_mode === $new_test_mode ) {
+			return;
+		}
+
+		self::sync_banner_state( 'yes' === $new_test_mode );
 	}
 
 	/**
@@ -1651,5 +1675,28 @@ class WC_Payments_Onboarding_Service {
 		wc_admin_record_tracks_event( $name, $properties );
 
 		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
+	}
+
+	/**
+	 * Maintains banner state that depends on test mode: sets/clears
+	 * TEST_MODE_ENABLED_DATE_OPTION (test-to-live nudge clock) and drops the
+	 * test-to-live and post-KYC eligibility transients.
+	 *
+	 * @param bool $test_mode True if test mode is being enabled, false if disabled.
+	 * @return void
+	 */
+	private static function sync_banner_state( bool $test_mode ): void {
+		if ( $test_mode ) {
+			// Preserve the original enable date on subsequent calls.
+			if ( ! get_option( self::TEST_MODE_ENABLED_DATE_OPTION ) ) {
+				update_option( self::TEST_MODE_ENABLED_DATE_OPTION, time(), false );
+			}
+		} else {
+			// Cleared on disable so re-entering test mode restarts the nudge clock.
+			delete_option( self::TEST_MODE_ENABLED_DATE_OPTION );
+		}
+
+		delete_transient( WC_Payments_Admin_Banner::TRANSIENT_TEST_TO_LIVE_NOTICE_ELIGIBLE );
+		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
 	}
 }

@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Harden postMessage origin validation in WooPay iframe communication
