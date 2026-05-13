@@ -31,14 +31,14 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 		// Default: 8 days post-KYC (active stage = 7), no live sale.
 		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, time() - 8 * DAY_IN_SECONDS );
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE );
 	}
 
 	public function tear_down(): void {
 		WC_Payments::mode()->live();
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE );
 
 		foreach ( [ 7, 14, 30 ] as $stage ) {
 			delete_user_meta( get_current_user_id(), 'wcpay_post_kyc_activation_' . $stage . '_dismissed' );
@@ -155,11 +155,11 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 			++$transient_reads;
 			return $value;
 		};
-		add_filter( 'pre_transient_' . WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $counter );
+		add_filter( 'pre_transient_' . WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE, $counter );
 
 		$this->assertFalse( $this->make_banner()->should_show() );
 
-		remove_filter( 'pre_transient_' . WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, $counter );
+		remove_filter( 'pre_transient_' . WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE, $counter );
 
 		$this->assertSame( 0, $transient_reads, 'compute_should_show() must short-circuit before reaching the eligibility transient when a live sale exists.' );
 	}
@@ -330,11 +330,11 @@ class WC_Payments_Post_Kyc_Activation_Banner_Test extends WCPAY_UnitTestCase {
 	// ---- invalidate_cache ----------------------------------------------------
 
 	public function test_invalidate_cache_drops_transient(): void {
-		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
+		set_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE, '1', HOUR_IN_SECONDS );
 
 		$this->make_banner()->invalidate_cache();
 
-		$this->assertFalse( get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
+		$this->assertFalse( get_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE ) );
 	}
 
 	// ---- Helpers --------------------------------------------------------------

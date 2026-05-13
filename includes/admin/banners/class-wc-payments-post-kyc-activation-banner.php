@@ -44,6 +44,13 @@ class WC_Payments_Post_Kyc_Activation_Banner extends WC_Payments_Abstract_Admin_
 	const USER_META_PREFIX = 'wcpay_post_kyc_activation_';
 
 	/**
+	 * Eligibility transient key.
+	 *
+	 * @var string
+	 */
+	const TRANSIENT_ELIGIBLE = 'wcpay_post_kyc_activation_eligible';
+
+	/**
 	 * Gateway service.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -180,6 +187,18 @@ class WC_Payments_Post_Kyc_Activation_Banner extends WC_Payments_Abstract_Admin_
 	 */
 	protected function get_slug(): string {
 		return 'post_kyc_activation';
+	}
+
+	/**
+	 * Override: return the public TRANSIENT_ELIGIBLE constant so external
+	 * callers (the onboarding service's test-mode-flip cache invalidation)
+	 * and the base's is_eligible() cache lookup share a single source of
+	 * truth.
+	 *
+	 * @return string
+	 */
+	protected function eligibility_transient_key(): string {
+		return self::TRANSIENT_ELIGIBLE;
 	}
 
 	/**

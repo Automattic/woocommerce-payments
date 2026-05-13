@@ -1653,6 +1653,6 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		delete_transient( WC_Payments_Test_To_Live_Banner::TRANSIENT_ELIGIBLE );
-		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
+		delete_transient( WC_Payments_Post_Kyc_Activation_Banner::TRANSIENT_ELIGIBLE );
 	}
 }
