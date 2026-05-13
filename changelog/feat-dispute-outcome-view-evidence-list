@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Add EvidenceSubmittedList presentational component for the Dispute Outcome View (behind feature flag).

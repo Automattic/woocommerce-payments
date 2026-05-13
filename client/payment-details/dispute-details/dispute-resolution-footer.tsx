@@ -26,6 +26,15 @@ import {
 import './style.scss';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
+const getDisputeTracksProperties = (
+	dispute: Pick< Dispute, 'id' | 'status' | 'reason' >
+) => ( {
+	dispute_id: dispute.id,
+	dispute_status: dispute.status,
+	dispute_reason: dispute.reason,
+	on_page: 'transaction_details',
+} );
+
 const DisputeUnderReviewFooter: React.FC< {
 	dispute: Pick<
 		Dispute,
@@ -100,10 +109,7 @@ const DisputeUnderReviewFooter: React.FC< {
 							onClick={ () => {
 								recordEvent(
 									'wcpay_view_submitted_evidence_clicked',
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									getDisputeTracksProperties( dispute )
 								);
 							} }
 						>
@@ -193,10 +199,7 @@ const DisputeWonFooter: React.FC< {
 							onClick={ () => {
 								recordEvent(
 									'wcpay_view_submitted_evidence_clicked',
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									getDisputeTracksProperties( dispute )
 								);
 							} }
 						>
@@ -323,10 +326,7 @@ const DisputeLostFooter: React.FC< {
 								onClick={ () => {
 									recordEvent(
 										'wcpay_view_submitted_evidence_clicked',
-										{
-											dispute_status: dispute.status,
-											on_page: 'transaction_details',
-										}
+										getDisputeTracksProperties( dispute )
 									);
 								} }
 							>
@@ -344,7 +344,7 @@ const DisputeLostFooter: React.FC< {
 };
 
 const InquiryUnderReviewFooter: React.FC< {
-	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' | 'reason' >;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
@@ -397,10 +397,7 @@ const InquiryUnderReviewFooter: React.FC< {
 							onClick={ () => {
 								recordEvent(
 									'wcpay_view_submitted_evidence_clicked',
-									{
-										dispute_status: dispute.status,
-										on_page: 'transaction_details',
-									}
+									getDisputeTracksProperties( dispute )
 								);
 							} }
 						>
@@ -417,7 +414,7 @@ const InquiryUnderReviewFooter: React.FC< {
 };
 
 const InquiryClosedFooter: React.FC< {
-	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' | 'reason' >;
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
@@ -460,10 +457,7 @@ const InquiryClosedFooter: React.FC< {
 								onClick={ () => {
 									recordEvent(
 										'wcpay_view_submitted_evidence_clicked',
-										{
-											dispute_status: dispute.status,
-											on_page: 'transaction_details',
-										}
+										getDisputeTracksProperties( dispute )
 									);
 								} }
 							>

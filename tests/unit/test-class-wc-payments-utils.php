@@ -1429,4 +1429,58 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals( 'Error: Custom: card expired', $result );
 	}
+
+	public function test_get_card_brand_display_name_maps_terminal_specific_brands() {
+		$this->assertSame( 'eftpos', WC_Payments_Utils::get_card_brand_display_name( 'eftpos_au' ) );
+		$this->assertSame( 'Cartes Bancaires', WC_Payments_Utils::get_card_brand_display_name( 'cartes_bancaires' ) );
+	}
+
+	public function test_get_terminal_card_brand_asset_name_maps_terminal_specific_brands() {
+		$this->assertSame( 'eftpos_au', WC_Payments_Utils::get_terminal_card_brand_asset_name( 'eftpos_au' ) );
+		$this->assertSame( 'cartes_bancaires', WC_Payments_Utils::get_terminal_card_brand_asset_name( 'cartes_bancaires' ) );
+		$this->assertSame( '', WC_Payments_Utils::get_terminal_card_brand_asset_name( 'visa' ) );
+	}
+
+	public function test_get_terminal_card_brand_icon_base64_returns_existing_asset_contents() {
+		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode, WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		$expected = base64_encode( file_get_contents( WCPAY_ABSPATH . 'assets/images/cards/eftpos_au.svg' ) );
+
+		$this->assertSame( $expected, WC_Payments_Utils::get_terminal_card_brand_icon_base64( 'eftpos_au' ) );
+	}
+
+	public function test_get_terminal_card_display_brand_prefers_supported_networks() {
+		$this->assertSame(
+			'eftpos_au',
+			WC_Payments_Utils::get_terminal_card_display_brand(
+				[
+					'brand'   => 'visa',
+					'network' => 'eftpos_au',
+				]
+			)
+		);
+	}
+
+	public function test_get_terminal_card_display_brand_uses_brand_for_unsupported_networks() {
+		$this->assertSame(
+			'visa',
+			WC_Payments_Utils::get_terminal_card_display_brand(
+				[
+					'brand'   => 'visa',
+					'network' => 'unsupported_network',
+				]
+			)
+		);
+	}
+
+	public function test_get_terminal_card_display_name_maps_selected_brand() {
+		$this->assertSame(
+			'eftpos',
+			WC_Payments_Utils::get_terminal_card_display_name(
+				[
+					'brand'   => 'visa',
+					'network' => 'eftpos_au',
+				]
+			)
+		);
+	}
 }
