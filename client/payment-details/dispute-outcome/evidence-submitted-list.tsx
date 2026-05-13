@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { Icon, check, closeSmall, lineSolid } from '@wordpress/icons';
 import { VisuallyHidden } from '@wordpress/components';
 
@@ -123,7 +123,12 @@ const EvidenceSubmittedList: React.FC< Props > = ( {
 	const summaryLabel = sprintf(
 		// translators: %d is the number of optional evidence fields the
 		// merchant did not provide.
-		__( 'Optional evidence not provided (%d)', 'woocommerce-payments' ),
+		_n(
+			'Optional evidence not provided (%d)',
+			'Optional evidence not provided (%d)',
+			collapsedFields.length,
+			'woocommerce-payments'
+		),
 		collapsedFields.length
 	);
 
