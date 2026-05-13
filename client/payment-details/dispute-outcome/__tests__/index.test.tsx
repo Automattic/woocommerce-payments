@@ -44,8 +44,9 @@ const buildDispute = (
 
 describe( 'DisputeOutcomeView', () => {
 	it( 'renders the "Evidence Submitted" section heading', () => {
-		// Needs a resolvable product type so the wrapper produces rows;
-		// without rows the section is suppressed entirely (covered below).
+		// Set a real product type so the helper produces matrix-derived
+		// rows alongside the universal cover letter row, mirroring the
+		// usual production shape.
 		render(
 			<DisputeOutcomeView
 				dispute={ buildDispute( {

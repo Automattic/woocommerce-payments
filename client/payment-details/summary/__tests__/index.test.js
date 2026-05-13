@@ -1052,14 +1052,15 @@ describe( 'PaymentDetailsSummary', () => {
 			charge.dispute.status = status;
 			charge.dispute.metadata = {
 				__dispute_closed_at: '1693626817',
-				// Set a real product type so resolveProductType() returns
-				// a non-empty cell and the Outcome View actually renders
-				// rows; otherwise the tests would only assert chrome.
+				// Set a real product type so `resolveProductType()` lands
+				// on a real matrix cell. Drives the matrix-derived rows
+				// (e.g., "Customer communication"), not just the universal
+				// cover letter row, so the tests exercise the data path.
 				__product_type: 'physical_product',
 			};
 			// Top up evidence with rows the matrix expects for
 			// fraudulent × physical_product so we get at least one
-			// "provided" item rendering through the real data path.
+			// matrix-driven "provided" row alongside the cover letter.
 			charge.dispute.evidence = {
 				...charge.dispute.evidence,
 				shipping_date: '2026-01-01',
