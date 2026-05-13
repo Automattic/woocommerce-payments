@@ -2,9 +2,11 @@
 
 /**
  * Hand-built `EvidenceFieldStatus[]` fixtures for the EvidenceSubmittedList
- * component. These mirror the shape returned by `getExpectedFieldStatus`
- * (see `client/disputes/new-evidence/evidence-field-status.ts`) so tests can exercise
- * each tri-state without spinning up a full dispute.
+ * component. Representative of the shape returned by `getExpectedFieldStatus`
+ * (see `client/disputes/new-evidence/evidence-field-status.ts`), including
+ * the universal cover-letter row (`uncategorized_text`) that the helper
+ * always appends. Tests can exercise each tri-state without spinning up a
+ * full dispute.
  */
 
 /**
@@ -14,12 +16,18 @@ import type { EvidenceFieldStatus } from 'wcpay/disputes/new-evidence/types';
 
 /**
  * Won case: `fraudulent` × `physical_product` where the merchant submitted strong evidence.
- * Most fields provided; a couple of optional fields left blank (muted dashes).
+ * Most fields provided (including the auto-generated cover letter); a couple of optional
+ * fields left blank (muted dashes).
  */
 export const wonFraudulentPhysical: EvidenceFieldStatus[] = [
 	{
 		key: 'customer_communication',
 		label: 'Customer communication',
+		state: 'provided',
+	},
+	{
+		key: 'uncategorized_text',
+		label: 'Cover letter',
 		state: 'provided',
 	},
 	{
@@ -57,12 +65,18 @@ export const wonFraudulentPhysical: EvidenceFieldStatus[] = [
 /**
  * Lost case: `product_unacceptable` × `physical_product` where the merchant submitted
  * partial evidence. Several expected fields are missing (red ✗); some optional fields
- * also left blank.
+ * also left blank. Cover letter is provided here as the typical case (merchant engaged
+ * with the wizard, which auto-fills it).
  */
 export const lostProductUnacceptablePhysical: EvidenceFieldStatus[] = [
 	{
 		key: 'customer_communication',
 		label: 'Customer communication',
+		state: 'provided',
+	},
+	{
+		key: 'uncategorized_text',
+		label: 'Cover letter',
 		state: 'provided',
 	},
 	{
@@ -83,11 +97,6 @@ export const lostProductUnacceptablePhysical: EvidenceFieldStatus[] = [
 	{
 		key: 'refund_policy',
 		label: 'Refund policy',
-		state: 'optional_missing',
-	},
-	{
-		key: 'uncategorized_text',
-		label: 'Additional information',
 		state: 'optional_missing',
 	},
 ];

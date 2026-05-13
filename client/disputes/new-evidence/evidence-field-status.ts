@@ -130,7 +130,11 @@ const collectMatrixKeys = (
  *   - `DISPUTE_TOPICAL_FIELDS`     -> `optional_missing` when empty
  *   - wizard `evidenceMatrix`      -> `optional_missing` when empty
  *
- * Returns [] for unrecognised reason or product type.
+ * Always appends a synthetic cover-letter row (`uncategorized_text`)
+ * regardless of (reason, productType), since the wizard auto-generates
+ * the cover letter and an empty value is an actionable gap on every
+ * dispute. Unrecognised reason/productType therefore returns just that
+ * single row.
  */
 export const getExpectedFieldStatus = (
 	reason: string,

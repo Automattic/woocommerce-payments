@@ -238,7 +238,7 @@ describe( 'EvidenceSubmittedList', () => {
 			expect( disclosure.tagName ).toBe( 'DETAILS' );
 			expect(
 				within( disclosure ).getByText(
-					/Optional evidence not provided \(1\)/
+					/1 optional evidence field not provided/
 				)
 			).toBeInTheDocument();
 			expect(
@@ -259,7 +259,7 @@ describe( 'EvidenceSubmittedList', () => {
 
 			expect( screen.queryByRole( 'group' ) ).not.toBeInTheDocument();
 			expect(
-				screen.queryByText( /Optional evidence not provided/ )
+				screen.queryByText( /optional evidence field/ )
 			).not.toBeInTheDocument();
 		} );
 
@@ -294,7 +294,7 @@ describe( 'EvidenceSubmittedList', () => {
 			);
 
 			expect(
-				screen.getByText( /Optional evidence not provided \(3\)/ )
+				screen.getByText( /3 optional evidence fields not provided/ )
 			).toBeInTheDocument();
 		} );
 	} );

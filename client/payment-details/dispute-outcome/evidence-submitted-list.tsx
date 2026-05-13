@@ -124,8 +124,8 @@ const EvidenceSubmittedList: React.FC< Props > = ( {
 		// translators: %d is the number of optional evidence fields the
 		// merchant did not provide.
 		_n(
-			'Optional evidence not provided (%d)',
-			'Optional evidence not provided (%d)',
+			'%d optional evidence field not provided',
+			'%d optional evidence fields not provided',
 			collapsedFields.length,
 			'woocommerce-payments'
 		),
