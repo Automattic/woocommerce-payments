@@ -109,7 +109,7 @@ class WC_Payments_Test_To_Live_Banner extends WC_Payments_Abstract_Admin_Banner 
 
 	/**
 	 * Snake_case identifier.
-
+	 *
 	 * @return string
 	 */
 	protected function get_slug(): string {

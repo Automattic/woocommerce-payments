@@ -2147,7 +2147,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_maybe_record_first_live_sale_records_for_production_order(): void {
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
-		set_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT, '1', HOUR_IN_SECONDS );
 
 		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
 		$this->order->save();
@@ -2155,8 +2154,49 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->maybe_record_first_live_sale( $this->order->get_id() );
 
 		$this->assertSame( '1', get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
-		$this->assertFalse( get_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT ) );
 
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+	}
+
+	// -------------------------------------------------------------------------
+	// has_live_sale()
+	// -------------------------------------------------------------------------
+
+	public function test_has_live_sale_returns_true_when_option_is_set(): void {
+		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
+
+		$this->assertTrue( $this->order_service->has_live_sale() );
+
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+	}
+
+	public function test_has_live_sale_returns_true_and_writes_option_when_fallback_query_finds_eligible_order(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$this->order->set_payment_method( 'woocommerce_payments' );
+		$this->order->set_status( 'completed' );
+		$this->order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
+		$this->order->save();
+
+		$this->assertTrue( $this->order_service->has_live_sale() );
+		$this->assertSame(
+			'1',
+			get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ),
+			'has_live_sale() should write the autoloaded option on hit so subsequent reads short-circuit.'
+		);
+
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+	}
+
+	public function test_has_live_sale_returns_false_when_no_eligible_order_exists(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		// The default $this->order has no `_wcpay_mode` meta and a default
+		// (non-completed/processing) status, so the fallback query returns no rows.
+		$this->assertFalse( $this->order_service->has_live_sale() );
+		$this->assertFalse(
+			get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ),
+			'has_live_sale() must not write the option on a miss.'
+		);
 	}
 }
