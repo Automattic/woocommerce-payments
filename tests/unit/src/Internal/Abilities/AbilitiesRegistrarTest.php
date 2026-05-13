@@ -238,27 +238,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
 	}
 
-	public function test_get_dispute_input_schema_accepts_both_dispute_id_prefixes() {
-		if ( ! function_exists( 'wp_get_ability' ) || ! function_exists( 'wp_get_abilities' ) ) {
-			$this->markTestSkipped( 'Abilities API query functions not available in this WordPress version.' );
-		}
-
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-		AbilitiesRegistrar::init();
-		wp_get_abilities();
-
-		$ability = wp_get_ability( 'woocommerce-payments/get-dispute' );
-		$this->assertNotNull( $ability, 'woocommerce-payments/get-dispute should be registered.' );
-
-		$schema = $ability->get_input_schema();
-		$this->assertIsArray( $schema );
-		$this->assertSame(
-			'^(du_|dp_)',
-			$schema['properties']['dispute_id']['pattern'] ?? null,
-			'get-dispute input_schema must accept both `du_` (PaymentIntent disputes) and `dp_` (legacy Charge disputes) prefixes. Reverting to `^du_` would silently reject legitimate dp_-prefixed disputes from stripe trigger and WCPay test fixtures.'
-		);
-	}
-
 	public function test_execute_get_payment_intent_rejects_missing_id() {
 		$result = AbilitiesRegistrar::execute_get_payment_intent( [] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
@@ -432,6 +411,79 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			$result->get_error_code(),
 			'execute_get_account must surface the wcpay_not_initialized error code so callers using is_wp_error() can detect init failure.'
 		);
+	}
+
+	public function test_delegate_translates_pagination_keys_at_request_layer() {
+		// PAGINATION_KEY_MAP maps the agent-facing WP-Core REST keys (`per_page`,
+		// `orderby`, `order`) to the names the WooPayments Paginated request
+		// class consumes (`pagesize`, `sort`, `direction`). This test asserts
+		// the translation actually reaches the WP_REST_Request — a regression
+		// in the boundary mapping would silently revert list abilities to the
+		// default 25 rows / created-desc regardless of caller input.
+		$captured = null;
+		$filter   = function ( $result, $server, $request ) use ( &$captured ) {
+			if ( $request->get_route() === '/wc/v3/payments/transactions' ) {
+				$captured = [
+					'per_page'  => $request->get_param( 'per_page' ),
+					'pagesize'  => $request->get_param( 'pagesize' ),
+					'orderby'   => $request->get_param( 'orderby' ),
+					'sort'      => $request->get_param( 'sort' ),
+					'order'     => $request->get_param( 'order' ),
+					'direction' => $request->get_param( 'direction' ),
+				];
+				return new \WP_REST_Response( [], 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			AbilitiesRegistrar::execute_get_transactions(
+				[
+					'per_page' => 5,
+					'orderby'  => 'amount',
+					'order'    => 'asc',
+				]
+			);
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertNotNull( $captured, 'rest_pre_dispatch filter did not capture the transactions request — route mismatch.' );
+		$this->assertSame( 5, $captured['pagesize'], 'per_page must translate to pagesize on the WP_REST_Request.' );
+		$this->assertSame( 'amount', $captured['sort'], 'orderby must translate to sort on the WP_REST_Request.' );
+		$this->assertSame( 'asc', $captured['direction'], 'order must translate to direction on the WP_REST_Request.' );
+		$this->assertNull( $captured['per_page'], 'per_page must be removed after translation.' );
+		$this->assertNull( $captured['orderby'], 'orderby must be removed after translation.' );
+		$this->assertNull( $captured['order'], 'order must be removed after translation.' );
+	}
+
+	public function test_delegate_preserves_canonical_key_when_caller_supplies_both() {
+		// When the caller supplies both the agent-facing key (`per_page`) and
+		// the canonical Paginated key (`pagesize`), the canonical value wins
+		// — silently overwriting an explicit `pagesize` would be a footgun.
+		$captured = null;
+		$filter   = function ( $result, $server, $request ) use ( &$captured ) {
+			if ( $request->get_route() === '/wc/v3/payments/transactions' ) {
+				$captured = $request->get_param( 'pagesize' );
+				return new \WP_REST_Response( [], 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			AbilitiesRegistrar::execute_get_transactions(
+				[
+					'per_page' => 5,
+					'pagesize' => 99,
+				]
+			);
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertSame( 99, $captured, 'When both `per_page` and `pagesize` are supplied, the canonical `pagesize` must win.' );
 	}
 
 	public function test_delegate_unwraps_successful_wp_rest_response() {

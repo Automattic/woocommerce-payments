@@ -28,6 +28,9 @@ defined( 'ABSPATH' ) || exit;
  * because the Abilities API registers callables at action hook time;
  * static methods serialize cleanly across `add_action()` boundaries without
  * needing the DI container at dispatch time.
+ *
+ * Delegation errors and init-failure conversions are logged to the
+ * `woopayments-abilities` source via `wc_get_logger()`.
  */
 class AbilitiesRegistrar {
 
@@ -107,24 +110,11 @@ class AbilitiesRegistrar {
 			return;
 		}
 
-		// The abilities-api package fires the non-prefixed action names
-		// (`abilities_api_init`, `abilities_api_categories_init`); WP Core's
-		// merge target uses the `wp_` variants. We hook both so the registrar
-		// works against either version of the API.
-		//
-		// Safe provided no other plugin or WP Core itself calls
-		// `WP_Abilities_Registry::get_instance()` before our hooks fire —
-		// `WP_Hook` does NOT replay fired actions for late-registered
-		// callbacks. The registry is initialized lazily: `get_instance()`
-		// requires `did_action('init')` and fires `wp_abilities_api_init`
-		// on its first call, which WordPress Core's REST endpoint handler
-		// (`class-wp-rest-abilities-v1-run-controller.php`) triggers at
-		// REST request time — not at `plugins_loaded`. So the registration
-		// timing holds today.
-		//
-		// The idempotency guards in register_category() / register_abilities()
-		// handle the dual-hook double-fire scenario when both variant names
-		// fire in the same process.
+		// The abilities-api composer package fires the non-prefixed action
+		// names; WP Core's merge target uses the `wp_` variants. Hook both
+		// so the registrar works against either version of the API. The
+		// idempotency guards in register_category() / register_abilities()
+		// handle the dual-hook double-fire scenario.
 		add_action( 'abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
 		add_action( 'wp_abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
 		add_action( 'abilities_api_init', [ __CLASS__, 'register_abilities' ] );
@@ -143,10 +133,7 @@ class AbilitiesRegistrar {
 	 * @return void
 	 */
 	public static function register_category() {
-		// Public visibility is required: this method is registered as an
-		// `add_action()` callback and invoked by WordPress's WP_Hook from
-		// outside the class.
-		if ( self::$category_registered || ! function_exists( 'wp_register_ability_category' ) ) {
+		if ( self::$category_registered ) {
 			return;
 		}
 
@@ -172,10 +159,7 @@ class AbilitiesRegistrar {
 	 * @return void
 	 */
 	public static function register_abilities() {
-		// Public visibility is required: this method is registered as an
-		// `add_action()` callback and invoked by WordPress's WP_Hook from
-		// outside the class.
-		if ( self::$abilities_registered || ! function_exists( 'wp_register_ability' ) ) {
+		if ( self::$abilities_registered ) {
 			return;
 		}
 
@@ -216,25 +200,12 @@ class AbilitiesRegistrar {
 	 *                         has not finished initializing.
 	 */
 	public static function execute_get_account( $input = null ) {
-		unset( $input );
 		$result = self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/accounts' );
 
-		// Restore the documented WP_Error contract on init failure. The
-		// backing controller returns rest_ensure_response(false) when
-		// WC_Payments_Account::get_cached_account_data() signals an API
-		// error (server unreachable, unexpected error code, invalid cache)
-		// — that response unwraps to `false` and falls through to `[]` in
-		// delegate_to_rest_controller(). A connected-but-not-yet-onboarded
-		// account yields the synthetic NOACCOUNT shape (non-empty array),
-		// so an empty array here is an unambiguous init-failure signal.
+		// The backing controller returns `false` (unwrapped to `[]` here) when
+		// WooPayments is not initialized or not connected. A connected account
+		// always returns a non-empty array, so an empty array is unambiguous.
 		if ( is_array( $result ) && [] === $result ) {
-			// Log here too — delegate_to_rest_controller() only logs in its
-			// WP_Error and is_error() branches. This conversion happens at
-			// the ability layer AFTER delegation returned a non-error empty
-			// array, so the existing delegate-layer logging doesn't catch
-			// it. Without this entry, on-call grepping
-			// wc-logs/woopayments-abilities-*.log for `wcpay_not_initialized`
-			// would find nothing.
 			wc_get_logger()->error(
 				'execute_get_account: WooPayments account not initialized — delegate returned an empty array.',
 				[ 'source' => 'woopayments-abilities' ]
@@ -277,16 +248,11 @@ class AbilitiesRegistrar {
 	 * @internal
 	 *
 	 * @return void
+	 * @throws \Exception When called outside the PHPUnit test environment.
 	 */
 	public static function reset_for_testing() {
-		// Production-environment guard. The `@internal` docblock is advisory;
-		// this runtime guard prevents accidental flag resets from a misbehaving
-		// plugin or hook callback, which would re-arm registration outside an
-		// action callback and trigger `_doing_it_wrong` from the Abilities API.
-		// `WCPAY_TEST_ENV` is defined by the project's PHPUnit bootstrap
-		// (`tests/unit/bootstrap.php`) and is absent in production.
 		if ( ! defined( 'WCPAY_TEST_ENV' ) ) {
-			return;
+			throw new \Exception( 'AbilitiesRegistrar::reset_for_testing() must not be called outside the PHPUnit test environment.' );
 		}
 		self::$category_registered  = false;
 		self::$abilities_registered = false;
@@ -299,7 +265,6 @@ class AbilitiesRegistrar {
 	 * @return array|\WP_Error
 	 */
 	public static function execute_get_deposits_overview( $input = null ) {
-		unset( $input );
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits/overview-all' );
 	}
 
@@ -377,7 +342,6 @@ class AbilitiesRegistrar {
 	 * @return array|\WP_Error
 	 */
 	public static function execute_get_authorizations_summary( $input = null ) {
-		unset( $input );
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/authorizations/summary' );
 	}
 
@@ -459,7 +423,6 @@ class AbilitiesRegistrar {
 	 * @return array|\WP_Error
 	 */
 	public static function execute_get_active_loan_summary( $input = null ) {
-		unset( $input );
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/capital/active_loan_summary' );
 	}
 
@@ -612,8 +575,7 @@ class AbilitiesRegistrar {
 					'properties'           => [
 						'dispute_id' => [
 							'type'        => 'string',
-							'description' => 'Stripe dispute ID — starts with `du_` (PaymentIntent disputes) or `dp_` (legacy Charge disputes; also used by `stripe trigger dispute.*`). Note the prefix overlap with deposit/payout IDs.',
-							'pattern'     => '^(du_|dp_)',
+							'description' => 'Stripe dispute ID (typically `du_…` or legacy `dp_…`). Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.',
 						],
 					],
 					'required'             => [ 'dispute_id' ],
@@ -730,8 +692,7 @@ class AbilitiesRegistrar {
 					'properties'           => [
 						'payment_intent_id' => [
 							'type'        => 'string',
-							'description' => 'Stripe payment intent ID (starts with `pi_`).',
-							'pattern'     => '^pi_',
+							'description' => 'Stripe payment intent ID (typically `pi_…`). Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.',
 						],
 					],
 					'required'             => [ 'payment_intent_id' ],
@@ -770,8 +731,7 @@ class AbilitiesRegistrar {
 					'properties'           => [
 						'charge_id' => [
 							'type'        => 'string',
-							'description' => 'Stripe charge ID (starts with `ch_` or `py_`).',
-							'pattern'     => '^(ch_|py_)',
+							'description' => 'Stripe charge ID (typically `ch_…` or `py_…`). Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.',
 						],
 					],
 					'required'             => [ 'charge_id' ],
@@ -789,11 +749,8 @@ class AbilitiesRegistrar {
 	 *
 	 * The input field is named `intention_id` (rather than `payment_intent_id`
 	 * as used by `get-payment-intent`) to match the URL parameter on the
-	 * backing route `/payments/timeline/(?P<intention_id>\w+)`. The two
-	 * names refer to the same Stripe `pi_…` identifier. The pattern is
-	 * restricted to `^pi_` deliberately: setup intents (`seti_…`) have
-	 * different timeline semantics and the backing endpoint is not designed
-	 * for them — widening this pattern needs a backing-endpoint review.
+	 * backing route `/payments/timeline/(?P<intention_id>\w+)`. Both names
+	 * refer to the same Stripe payment-intent identifier.
 	 *
 	 * @return void
 	 */
@@ -810,8 +767,7 @@ class AbilitiesRegistrar {
 					'properties'           => [
 						'intention_id' => [
 							'type'        => 'string',
-							'description' => 'Stripe payment intent ID (starts with `pi_`). Same identifier accepted by `get-payment-intent` under the field name `payment_intent_id`.',
-							'pattern'     => '^pi_',
+							'description' => 'Stripe payment intent ID (typically `pi_…`). Same identifier accepted by `get-payment-intent` under the field name `payment_intent_id`. Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.',
 						],
 					],
 					'required'             => [ 'intention_id' ],
@@ -1090,34 +1046,10 @@ class AbilitiesRegistrar {
 	/**
 	 * Delegate to a REST route via `rest_do_request()`.
 	 *
-	 * Builds a WP_REST_Request from the ability's input, dispatches through
-	 * the REST router (which handles controller instantiation and its
-	 * dependencies), then unwraps both `WP_REST_Response` and raw-array
-	 * return shapes. Translates pagination/sort keys at the boundary (see
-	 * `PAGINATION_KEY_MAP`).
-	 *
-	 * Shape 2 from the abilities-api skill — used for low-stakes reads with
-	 * no telemetry side effects. Backing controllers in WooPayments either
-	 * call `forward_request()` against the API client or hand off to a
-	 * Request class via `handle_rest_request()` — neither path emits
-	 * analytics events.
-	 *
-	 * Permission model — the request runs through `rest_do_request()`, so the
-	 * backing route's own `permission_callback`
-	 * (`WC_Payments_REST_Controller::check_permission()` → `manage_woocommerce`)
-	 * fires in addition to the ability layer's `current_user_can_manage_woocommerce()`.
-	 * Currently both gate on the same capability so the double-check is harmless,
-	 * but if the ability layer ever tightens to a more granular capability the
-	 * backing route's permission check must move in lockstep.
-	 *
-	 * Caching — no caching is added at the ability layer; whether a backing
-	 * controller caches is its concern (e.g. `get-account` reads from a local
-	 * cache, others issue fresh API calls each time). Don't add a transient
-	 * layer here without coordinating with every backing controller.
-	 *
-	 * Performance — outside a REST request lifecycle (CLI, cron), the first
-	 * call pays a one-time `rest_get_server()` + `rest_api_init` bootstrap
-	 * cost.
+	 * Translates pagination/sort keys at the boundary (see `PAGINATION_KEY_MAP`),
+	 * builds a WP_REST_Request, dispatches through the REST router, and unwraps
+	 * the response. Permissions are enforced by the backing route's
+	 * `permission_callback`; caching is the backing controller's concern.
 	 *
 	 * @param string              $http_method HTTP method (GET, POST, …).
 	 * @param string              $route       REST route path (e.g. `/wc/v3/payments/transactions`).
@@ -1146,6 +1078,10 @@ class AbilitiesRegistrar {
 
 		$response = rest_do_request( $request );
 
+		if ( $response instanceof \WP_REST_Response && $response->is_error() ) {
+			$response = $response->as_error();
+		}
+
 		if ( is_wp_error( $response ) ) {
 			wc_get_logger()->error(
 				sprintf(
@@ -1159,34 +1095,13 @@ class AbilitiesRegistrar {
 			);
 			return $response;
 		}
+
 		if ( $response instanceof \WP_REST_Response ) {
-			if ( $response->is_error() ) {
-				$wp_error = $response->as_error();
-				wc_get_logger()->error(
-					sprintf(
-						'AbilitiesRegistrar delegation error response [%s %s]: %s (%s)',
-						$http_method,
-						$route,
-						$wp_error->get_error_message(),
-						$wp_error->get_error_code()
-					),
-					[ 'source' => 'woopayments-abilities' ]
-				);
-				return $wp_error;
-			}
 			$data = $response->get_data();
 			return is_array( $data ) ? $data : [];
 		}
-		// @codeCoverageIgnoreStart -- rest_do_request() always returns WP_Error or WP_REST_Response in practice; this raw-array fallback is defensive for any controller that returns an unwrapped array directly. If this branch ever activates, the warning leaves a breadcrumb for triage.
-		wc_get_logger()->warning(
-			sprintf(
-				'AbilitiesRegistrar delegation returned an unexpected response type [%s %s]: %s',
-				$http_method,
-				$route,
-				is_object( $response ) ? get_class( $response ) : gettype( $response )
-			),
-			[ 'source' => 'woopayments-abilities' ]
-		);
+
+		// @codeCoverageIgnoreStart -- rest_do_request() always returns WP_Error or WP_REST_Response in practice; this raw-array fallback is defensive.
 		return is_array( $response ) ? $response : [];
 		// @codeCoverageIgnoreEnd
 	}
