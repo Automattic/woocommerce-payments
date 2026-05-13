@@ -213,6 +213,91 @@ describe( 'EvidenceSubmittedList', () => {
 		expect( sawDuplicateKeyWarning ).toBe( true );
 	} );
 
+	describe( 'collapseOptionalMissing', () => {
+		it( 'hides optional_missing rows behind a disclosure when enabled', () => {
+			render(
+				<EvidenceSubmittedList
+					fields={ [
+						provided( 'Customer communication' ),
+						expectedMissing( 'Refund policy' ),
+						optionalMissing( 'Service date' ),
+					] }
+					collapseOptionalMissing
+				/>
+			);
+
+			// The inline group renders provided + expected_missing.
+			expect(
+				screen.getByText( 'Customer communication' )
+			).toBeInTheDocument();
+			expect( screen.getByText( 'Refund policy' ) ).toBeInTheDocument();
+
+			// Locate the disclosure via its visible summary text rather
+			// than the implicit `<details>` role, so the test follows
+			// what a user actually sees and doesn't break if the role
+			// mapping shifts.
+			const summary = screen.getByText(
+				/1 optional evidence field not provided/
+			);
+			const disclosure = summary.closest( 'details' );
+			expect( disclosure ).not.toBeNull();
+			expect(
+				within( disclosure as HTMLElement ).getByText( 'Service date' )
+			).toBeInTheDocument();
+		} );
+
+		it( 'renders no disclosure when there are no optional_missing rows', () => {
+			render(
+				<EvidenceSubmittedList
+					fields={ [
+						provided( 'Customer communication' ),
+						expectedMissing( 'Refund policy' ),
+					] }
+					collapseOptionalMissing
+				/>
+			);
+
+			expect(
+				screen.queryByText( /optional evidence field/ )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'leaves optional_missing rows inline when collapseOptionalMissing is false (default)', () => {
+			render(
+				<EvidenceSubmittedList
+					fields={ [
+						provided( 'Customer communication' ),
+						optionalMissing( 'Service date' ),
+					] }
+				/>
+			);
+
+			expect( screen.queryByRole( 'group' ) ).not.toBeInTheDocument();
+			const optionalItem = screen
+				.getAllByRole( 'listitem' )
+				.find( ( i ) => i.className.includes( 'optional-missing' ) );
+			expect( optionalItem ).toBeDefined();
+		} );
+
+		it( 'pluralises the disclosure count correctly for multiple rows', () => {
+			render(
+				<EvidenceSubmittedList
+					fields={ [
+						provided( 'A' ),
+						optionalMissing( 'B' ),
+						{ ...optionalMissing( 'C' ), key: 'service_date_2' },
+						{ ...optionalMissing( 'D' ), key: 'service_date_3' },
+					] }
+					collapseOptionalMissing
+				/>
+			);
+
+			expect(
+				screen.getByText( /3 optional evidence fields not provided/ )
+			).toBeInTheDocument();
+		} );
+	} );
+
 	describe( 'fixture variants', () => {
 		it( 'renders the Won (fraudulent × physical) fixture with at least one provided field and no expected_missing items', () => {
 			render(

@@ -101,6 +101,8 @@ export interface Dispute {
 		 * Unix timestamp of when dispute evidence was submitted.
 		 */
 		__evidence_submitted_at?: string;
+		/** Product type the merchant selected via the response wizard. */
+		__product_type?: string;
 		/* eslint-enable @typescript-eslint/naming-convention */
 	};
 	order: null | OrderDetails;
