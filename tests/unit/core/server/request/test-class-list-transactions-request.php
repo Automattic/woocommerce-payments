@@ -53,32 +53,47 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$request->set_date_before( '2022-01-01' );
 	}
 
+	public function test_exception_will_throw_if_available_on_after_is_invalid_format() {
+		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->set_available_on_after( '2026-04-01' );
+	}
+
+	public function test_exception_will_throw_if_available_on_before_is_invalid_format() {
+		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$request->set_available_on_before( '2026-04-30' );
+	}
+
 	public function test_list_transactions_request_will_be_date() {
-		$page              = 2;
-		$page_size         = 50;
-		$direction         = 'asc';
-		$sort              = 'date';
-		$filters           = [
+		$page                 = 2;
+		$page_size            = 50;
+		$direction            = 'asc';
+		$sort                 = 'date';
+		$filters              = [
 			'key' => 'value',
 		];
-		$date_after        = '2022-01-01 00:00:00';
-		$date_before       = '2022-02-01 00:00:00';
-		$date_between      = [ $date_after, $date_before ];
-		$match             = 'match';
-		$type              = 'bill';
-		$type_is_not       = 'passport';
-		$device            = 'ios';
-		$device_is_not     = 'android';
-		$channel           = 'online';
-		$channel_is_not    = 'in_person';
-		$country           = Country_Code::UNITED_STATES;
-		$country_is_not    = Country_Code::CANADA;
-		$risk_level        = '0';
-		$risk_level_is_not = '1';
-		$search            = [ 'search' ];
-		$currency          = 'usd';
-		$cs_currency       = 'eur';
-		$loan_id           = 'loan_id';
+		$date_after           = '2022-01-01 00:00:00';
+		$date_before          = '2022-02-01 00:00:00';
+		$date_between         = [ $date_after, $date_before ];
+		$available_on_after   = '2026-04-01 00:00:00';
+		$available_on_before  = '2026-04-30 23:59:59';
+		$available_on_between = [ $available_on_after, $available_on_before ];
+		$match                = 'match';
+		$type                 = 'bill';
+		$type_is_not          = 'passport';
+		$device               = 'ios';
+		$device_is_not        = 'android';
+		$channel              = 'online';
+		$channel_is_not       = 'in_person';
+		$country              = Country_Code::UNITED_STATES;
+		$country_is_not       = Country_Code::CANADA;
+		$risk_level           = '0';
+		$risk_level_is_not    = '1';
+		$search               = [ 'search' ];
+		$currency             = 'usd';
+		$cs_currency          = 'eur';
+		$loan_id              = 'loan_id';
 
 		$request = new List_Transactions( $this->mock_api_client, $this->mock_wc_payments_http_client );
 		$request->set_page( $page );
@@ -88,6 +103,9 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$request->set_date_after( $date_after );
 		$request->set_date_before( $date_before );
 		$request->set_date_between( $date_between );
+		$request->set_available_on_after( $available_on_after );
+		$request->set_available_on_before( $available_on_before );
+		$request->set_available_on_between( $available_on_between );
 		$request->set_match( $match );
 		$request->set_type_is( $type );
 		$request->set_type_is_not( $type_is_not );
@@ -116,6 +134,9 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $date_after, $params['date_after'] );
 		$this->assertSame( $date_before, $params['date_before'] );
 		$this->assertSame( $date_between, $params['date_between'] );
+		$this->assertSame( $available_on_after, $params['available_on_after'] );
+		$this->assertSame( $available_on_before, $params['available_on_before'] );
+		$this->assertSame( $available_on_between, $params['available_on_between'] );
 		$this->assertSame( $match, $params['match'] );
 		$this->assertSame( $type, $params['type_is'] );
 		$this->assertSame( $type_is_not, $params['type_is_not'] );
@@ -137,28 +158,31 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WC_Payments_API_Client::TRANSACTIONS_API, $request->get_api() );
 	}
 	public function test_list_transactions_request_will_be_date_using_from_rest_request_function() {
-		$page              = 2;
-		$page_size         = 50;
-		$direction         = 'asc';
-		$sort              = 'date';
-		$date_after        = '2022-01-01 00:00:00';
-		$date_before       = '2022-02-01 00:00:00';
-		$date_between      = [ $date_after, $date_before ];
-		$match             = 'match';
-		$type              = 'bill';
-		$type_is_not       = 'passport';
-		$device            = 'ios';
-		$device_is_not     = 'android';
-		$channel           = 'online';
-		$channel_is_not    = 'in_person';
-		$country           = Country_Code::UNITED_STATES;
-		$country_is_not    = Country_Code::CANADA;
-		$risk_level        = '0';
-		$risk_level_is_not = '1';
-		$search            = [ 'search' ];
-		$currency          = 'usd';
-		$cs_currency       = 'eur';
-		$loan_id           = 'loan_id';
+		$page                 = 2;
+		$page_size            = 50;
+		$direction            = 'asc';
+		$sort                 = 'date';
+		$date_after           = '2022-01-01 00:00:00';
+		$date_before          = '2022-02-01 00:00:00';
+		$date_between         = [ $date_after, $date_before ];
+		$available_on_after   = '2026-04-01 00:00:00';
+		$available_on_before  = '2026-04-30 23:59:59';
+		$available_on_between = [ $available_on_after, $available_on_before ];
+		$match                = 'match';
+		$type                 = 'bill';
+		$type_is_not          = 'passport';
+		$device               = 'ios';
+		$device_is_not        = 'android';
+		$channel              = 'online';
+		$channel_is_not       = 'in_person';
+		$country              = Country_Code::UNITED_STATES;
+		$country_is_not       = Country_Code::CANADA;
+		$risk_level           = '0';
+		$risk_level_is_not    = '1';
+		$search               = [ 'search' ];
+		$currency             = 'usd';
+		$cs_currency          = 'eur';
+		$loan_id              = 'loan_id';
 
 		$rest_request = new WP_REST_Request( 'GET' );
 		$rest_request->set_param( 'page', $page );
@@ -168,6 +192,9 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$rest_request->set_param( 'date_after', $date_after );
 		$rest_request->set_param( 'date_before', $date_before );
 		$rest_request->set_param( 'date_between', $date_between );
+		$rest_request->set_param( 'available_on_after', $available_on_after );
+		$rest_request->set_param( 'available_on_before', $available_on_before );
+		$rest_request->set_param( 'available_on_between', $available_on_between );
 		$rest_request->set_param( 'match', $match );
 		$rest_request->set_param( 'type_is', $type );
 		$rest_request->set_param( 'type_is_not', $type_is_not );
@@ -197,6 +224,9 @@ class List_Transactions_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $date_after, $params['date_after'] );
 		$this->assertSame( $date_before, $params['date_before'] );
 		$this->assertSame( $date_between, $params['date_between'] );
+		$this->assertSame( $available_on_after, $params['available_on_after'] );
+		$this->assertSame( $available_on_before, $params['available_on_before'] );
+		$this->assertSame( $available_on_between, $params['available_on_between'] );
 		$this->assertSame( $match, $params['match'] );
 		$this->assertSame( $type, $params['type_is'] );
 		$this->assertSame( $type_is_not, $params['type_is_not'] );

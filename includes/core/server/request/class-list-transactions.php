@@ -62,9 +62,10 @@ class List_Transactions extends Paginated {
 	 * @return static
 	 */
 	public static function from_rest_request( $request ) {
-		$wcpay_request       = parent::from_rest_request( $request );
-		$date_between_filter = $request->get_param( 'date_between' );
-		$user_timezone       = $request->get_param( 'user_timezone' );
+		$wcpay_request               = parent::from_rest_request( $request );
+		$date_between_filter         = $request->get_param( 'date_between' );
+		$available_on_between_filter = $request->get_param( 'available_on_between' );
+		$user_timezone               = $request->get_param( 'user_timezone' );
 
 		if ( ! is_null( $date_between_filter ) ) {
 			$date_between_filter = array_map(
@@ -75,11 +76,23 @@ class List_Transactions extends Paginated {
 			);
 		}
 
+		if ( ! is_null( $available_on_between_filter ) ) {
+			$available_on_between_filter = array_map(
+				function ( $transaction_date ) use ( $user_timezone ) {
+					return Request_Utils::format_transaction_date_by_timezone( $transaction_date, $user_timezone );
+				},
+				$available_on_between_filter
+			);
+		}
+
 		$filters = [
 			'match'                    => $request->get_param( 'match' ),
 			'date_before'              => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ),
 			'date_after'               => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
 			'date_between'             => $date_between_filter,
+			'available_on_before'      => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'available_on_before' ), $user_timezone ),
+			'available_on_after'       => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'available_on_after' ), $user_timezone ),
+			'available_on_between'     => $available_on_between_filter,
 			'type_is'                  => $request->get_param( 'type_is' ),
 			'type_is_not'              => $request->get_param( 'type_is_not' ),
 			'type_is_in'               => (array) $request->get_param( 'type_is_in' ),
@@ -102,6 +115,49 @@ class List_Transactions extends Paginated {
 		];
 		$wcpay_request->set_filters( $filters );
 		return $wcpay_request;
+	}
+
+	/**
+	 * Set available_on after.
+	 *
+	 * @param string $available_on_after Available_on after.
+	 *
+	 * @return void
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
+	 */
+	public function set_available_on_after( string $available_on_after ) {
+		$this->validate_date( $available_on_after );
+		$this->set_param( 'available_on_after', $available_on_after );
+	}
+
+	/**
+	 * Set available_on before.
+	 *
+	 * @param string $available_on_before Available_on before.
+	 *
+	 * @return void
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
+	 */
+	public function set_available_on_before( string $available_on_before ) {
+		$this->validate_date( $available_on_before );
+		$this->set_param( 'available_on_before', $available_on_before );
+	}
+
+	/**
+	 * Set available_on between.
+	 *
+	 * @param array $available_on_between Available_on between.
+	 *
+	 * @return void
+	 * @throws \WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception
+	 */
+	public function set_available_on_between( array $available_on_between ) {
+		if ( ! empty( $available_on_between ) ) {
+			foreach ( $available_on_between as $date ) {
+				$this->validate_date( $date );
+			}
+			$this->set_param( 'available_on_between', $available_on_between );
+		}
 	}
 
 	/**

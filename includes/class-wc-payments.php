@@ -1238,6 +1238,10 @@ class WC_Payments {
 		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
 		$reports_transactions_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
+		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
+		$reports_fees_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );
 		$reports_authorizations_controller->register_routes();

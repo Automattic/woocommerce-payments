@@ -309,6 +309,18 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
+	 * Return summary for Fees report transactions.
+	 *
+	 * @param array $filters The filters to be used in the query.
+	 *
+	 * @return array The Fees report summary.
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_reports_fees_summary( $filters = [] ) {
+		return $this->request( $filters, self::TRANSACTIONS_API . '/summary', self::GET );
+	}
+
+	/**
 	 * Retrieves transaction list for a given fraud outcome status.
 	 *
 	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.
@@ -458,6 +470,28 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
+	 * Initiates Fees report export via API.
+	 *
+	 * @param array  $filters    The filters to be used in the query.
+	 * @param string $user_email The email to notify.
+	 * @param string $locale     Site locale.
+	 *
+	 * @return array Export summary.
+	 *
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_reports_fees_export( $filters = [], $user_email = '', $locale = null ) {
+		if ( ! empty( $user_email ) ) {
+			$filters['user_email'] = $user_email;
+		}
+		if ( ! empty( $locale ) ) {
+			$filters['locale'] = $locale;
+		}
+
+		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
+	}
+
+	/**
 	 * Get the transactions export URL for a given export ID, if available.
 	 *
 	 * @param string $export_id The export ID.
@@ -466,6 +500,18 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
 	public function get_transactions_export_url( string $export_id ): array {
+		return $this->request( [], self::TRANSACTIONS_API . "/download/{$export_id}", self::GET );
+	}
+
+	/**
+	 * Get the Fees report export URL for a given export ID, if available.
+	 *
+	 * @param string $export_id The export ID.
+	 *
+	 * @return array The export URL response.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_reports_fees_export_url( string $export_id ): array {
 		return $this->request( [], self::TRANSACTIONS_API . "/download/{$export_id}", self::GET );
 	}
 
