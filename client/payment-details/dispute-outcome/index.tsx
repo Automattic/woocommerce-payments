@@ -35,13 +35,6 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 		productType,
 		dispute.evidence
 	);
-	// Hide the whole section when no product type is resolvable so we
-	// don't emit a divider + heading with no rows underneath. Real-world
-	// trigger: a Stripe-Dashboard-created dispute with no metadata and no
-	// associated WooCommerce order.
-	if ( fields.length === 0 ) {
-		return null;
-	}
 	// On a successful outcome the optional rows are non-actionable noise
 	// next to the wins, so collapse them behind a disclosure. On lost they
 	// stay inline as helpful "what was missing" context.

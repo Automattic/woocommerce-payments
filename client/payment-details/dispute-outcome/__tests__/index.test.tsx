@@ -125,21 +125,24 @@ describe( 'DisputeOutcomeView', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders nothing when no product type is available', () => {
+	it( 'renders only the cover letter row when no product type is available', () => {
 		// With neither `metadata.__product_type` nor
-		// `order.suggested_product_type`, the helper returns no rows; the
-		// wrapper should suppress the whole section rather than emit a
-		// chrome-only "Evidence Submitted" heading.
-		const { container } = render(
+		// `order.suggested_product_type`, the helper still emits the
+		// universal cover letter row (Catherine's request: it's
+		// merchant-actionable on every dispute), so the section renders
+		// with that single row only.
+		render(
 			<DisputeOutcomeView
 				dispute={ buildDispute( { metadata: {}, order: null } ) }
 			/>
 		);
 
-		expect( container ).toBeEmptyDOMElement();
 		expect(
-			screen.queryByRole( 'heading', { name: 'Evidence Submitted' } )
-		).not.toBeInTheDocument();
+			screen.getByRole( 'heading', { name: 'Evidence Submitted' } )
+		).toBeInTheDocument();
+		const items = screen.getAllByRole( 'listitem' );
+		expect( items ).toHaveLength( 1 );
+		expect( items[ 0 ] ).toHaveTextContent( /Cover letter/ );
 	} );
 
 	describe( 'optional-missing collapse by status', () => {
