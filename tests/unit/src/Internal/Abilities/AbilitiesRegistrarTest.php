@@ -238,6 +238,27 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
 	}
 
+	public function test_get_dispute_input_schema_accepts_both_dispute_id_prefixes() {
+		if ( ! function_exists( 'wp_get_ability' ) || ! function_exists( 'wp_get_abilities' ) ) {
+			$this->markTestSkipped( 'Abilities API query functions not available in this WordPress version.' );
+		}
+
+		add_filter( self::FEATURE_FILTER, '__return_true' );
+		AbilitiesRegistrar::init();
+		wp_get_abilities();
+
+		$ability = wp_get_ability( 'woocommerce-payments/get-dispute' );
+		$this->assertNotNull( $ability, 'woocommerce-payments/get-dispute should be registered.' );
+
+		$schema = $ability->get_input_schema();
+		$this->assertIsArray( $schema );
+		$this->assertSame(
+			'^(du_|dp_)',
+			$schema['properties']['dispute_id']['pattern'] ?? null,
+			'get-dispute input_schema must accept both `du_` (PaymentIntent disputes) and `dp_` (legacy Charge disputes) prefixes. Reverting to `^du_` would silently reject legitimate dp_-prefixed disputes from stripe trigger and WCPay test fixtures.'
+		);
+	}
+
 	public function test_execute_get_payment_intent_rejects_missing_id() {
 		$result = AbilitiesRegistrar::execute_get_payment_intent( [] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
