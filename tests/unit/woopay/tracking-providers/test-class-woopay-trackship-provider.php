@@ -209,6 +209,55 @@ class WooPay_TrackShip_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
 	}
 
+	public function test_persist_strips_html_from_tracking_number() {
+		$order = WC_Helper_Order::create_order();
+
+		WooPay_TrackShip_Provider::persist_tracking_data(
+			$order->get_id(),
+			'',
+			'in_transit',
+			'<script>alert(1)</script>1Z999AA10123456784'
+		);
+
+		$reloaded = wc_get_order( $order->get_id() );
+		$entries  = $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY );
+		$this->assertCount( 1, $entries );
+		$this->assertSame( '1Z999AA10123456784', $entries[0]['tracking_number'] );
+	}
+
+	public function test_persist_skips_when_tracking_number_sanitizes_to_empty() {
+		// Tags-only input: wp_strip_all_tags + trim produces ''.
+		$order = WC_Helper_Order::create_order();
+
+		WooPay_TrackShip_Provider::persist_tracking_data(
+			$order->get_id(),
+			'',
+			'in_transit',
+			'<script></script>'
+		);
+
+		$this->assertEmpty( $order->get_meta( WooPay_TrackShip_Provider::META_KEY ) );
+	}
+
+	public function test_persist_truncates_pathologically_long_tracking_number() {
+		$order = WC_Helper_Order::create_order();
+
+		WooPay_TrackShip_Provider::persist_tracking_data(
+			$order->get_id(),
+			'',
+			'in_transit',
+			str_repeat( 'A', 1000 )
+		);
+
+		$reloaded = wc_get_order( $order->get_id() );
+		$entries  = $reloaded->get_meta( WooPay_TrackShip_Provider::META_KEY );
+		$this->assertCount( 1, $entries );
+		$this->assertSame(
+			WooPay_TrackShip_Provider::STRING_FIELD_MAX_LEN,
+			mb_strlen( $entries[0]['tracking_number'] )
+		);
+	}
+
 	public function test_persist_skips_when_previous_equals_new_status() {
 		$order = WC_Helper_Order::create_order();
 

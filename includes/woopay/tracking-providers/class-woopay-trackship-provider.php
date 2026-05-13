@@ -55,6 +55,13 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 	const META_KEY = '_wcpay_trackship_tracking_items';
 
 	/**
+	 * Maximum length for forwarded string fields. Tracking numbers are
+	 * overwhelmingly under 40 characters in practice; the cap is a defensive
+	 * bound on pathological input from TrackShip's REST endpoint.
+	 */
+	const STRING_FIELD_MAX_LEN = 256;
+
+	/**
 	 * Hook fired by TrackShip's REST endpoint on every carrier-status update.
 	 *
 	 * Args: `($order_id, $previous_status, $tracking_event_status, $tracking_number)`.
@@ -155,7 +162,13 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 
 		$previous_status       = is_string( $previous_status ) ? $previous_status : '';
 		$tracking_event_status = is_string( $tracking_event_status ) ? $tracking_event_status : '';
-		$tracking_number       = is_string( $tracking_number ) ? trim( $tracking_number ) : '';
+		// Tracking numbers from TrackShip's REST endpoint pass through
+		// sanitize_field (wp_strip_all_tags + trim + length cap) before
+		// storage. Phase 1-4 providers apply the same pattern; doing so
+		// here keeps the wire payload guaranteed-printable without relying
+		// on receiver re-escape, and defangs HTML/script content from a
+		// compromised TrackShip API caller.
+		$tracking_number = self::sanitize_field( $tracking_number );
 
 		if ( '' === $tracking_event_status || '' === $tracking_number ) {
 			return;
@@ -294,5 +307,44 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 		}
 
 		return $map[ $trackship_status ] ?? null;
+	}
+
+	/**
+	 * Strip HTML/JS, trim, and bound the length of a string field.
+	 *
+	 * Defense-in-depth: tracking numbers arrive via TrackShip's WP REST
+	 * endpoint and are written to order meta before being forwarded in the
+	 * webhook payload. Any string forwarded to WooPay should be defanged
+	 * before transmission even though the receiver re-escapes on render.
+	 *
+	 * Mirrors the `sanitize_field()` pattern used by Phase 1-4 providers.
+	 *
+	 * @param mixed $value Raw value from the hook arg or order meta.
+	 * @return string
+	 */
+	private static function sanitize_field( $value ): string {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+		$clean = trim( wp_strip_all_tags( (string) $value ) );
+		return self::truncate( $clean, self::STRING_FIELD_MAX_LEN );
+	}
+
+	/**
+	 * Truncate a string to a max length safely on hosts without the mbstring
+	 * extension. Falls back to byte-level substr() when mb_substr() is not
+	 * available; that fallback may slice a multi-byte character mid-byte,
+	 * but the values forwarded here (tracking numbers) are overwhelmingly
+	 * ASCII.
+	 *
+	 * @param string $value Already-sanitized string.
+	 * @param int    $max   Max character length.
+	 * @return string
+	 */
+	private static function truncate( string $value, int $max ): string {
+		if ( function_exists( 'mb_substr' ) ) {
+			return mb_substr( $value, 0, $max );
+		}
+		return substr( $value, 0, $max );
 	}
 }

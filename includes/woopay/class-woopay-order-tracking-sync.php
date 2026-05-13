@@ -627,6 +627,13 @@ class WooPay_Order_Tracking_Sync {
 	 * through. Falls back to `STATUS_FULFILLED` so the wire payload always
 	 * carries a renderable value.
 	 *
+	 * Logging contract: a non-canonical value is logged via wc_get_logger
+	 * for diagnosability. Control characters are stripped and the value is
+	 * truncated before logging — defense-in-depth against log-injection
+	 * (newline-spoofed log lines) if a compromised provider emits a status
+	 * containing CR/LF. Canonical statuses are all short alphanumeric
+	 * tokens, so the 64-char cap is a generous bound on legitimate values.
+	 *
 	 * @param string $status Status emitted by a provider or overlay.
 	 * @return string A value guaranteed to be in `SHIPMENT_STATUSES`.
 	 */
@@ -636,8 +643,13 @@ class WooPay_Order_Tracking_Sync {
 		}
 
 		if ( function_exists( 'wc_get_logger' ) ) {
+			$safe_for_log = substr(
+				(string) preg_replace( '/[\x00-\x1f\x7f]+/', ' ', $status ),
+				0,
+				64
+			);
 			wc_get_logger()->notice(
-				sprintf( 'Non-canonical shipment status emitted: "%s". Falling back to fulfilled.', $status ),
+				sprintf( 'Non-canonical shipment status emitted: "%s". Falling back to fulfilled.', $safe_for_log ),
 				[ 'source' => 'woopay-order-tracking-sync' ]
 			);
 		}

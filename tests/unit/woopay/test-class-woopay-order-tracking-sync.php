@@ -343,6 +343,45 @@ class WooPay_Order_Tracking_Sync_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $shipments[0]['status'] );
 	}
 
+	public function test_get_order_shipments_downgrades_status_with_control_chars_safely() {
+		// Regression guard for log-injection hardening in ensure_canonical_status:
+		// a status containing newline / CR / NUL must downgrade to fulfilled
+		// without fataling, and the logger sanitization path must run.
+		$order = WC_Helper_Order::create_order();
+
+		$primary = $this->createMock( WooPay_Tracking_Provider::class );
+		$primary->method( 'is_available' )->willReturn( true );
+		$primary->method( 'get_hooks' )->willReturn( [] );
+		$primary->method( 'get_shipments' )->willReturn(
+			[
+				[
+					'tracking_number' => '1Z999',
+					'status'          => "in_transit\nFAKE_LOG_LINE\r\0",
+				],
+			]
+		);
+
+		add_filter(
+			'wcpay_woopay_tracking_providers',
+			function () use ( $primary ) {
+				return [ $primary ];
+			}
+		);
+		add_filter(
+			'wcpay_woopay_status_overlay_providers',
+			function () {
+				return [];
+			}
+		);
+		WooPay_Order_Tracking_Sync::reset_providers();
+		WooPay_Order_Tracking_Sync::reset_overlay_providers();
+
+		$shipments = WooPay_Order_Tracking_Sync::get_order_shipments( $order );
+
+		// The malicious status downgrades cleanly, and the wire payload is safe.
+		$this->assertSame( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $shipments[0]['status'] );
+	}
+
 	public function test_get_order_shipments_defaults_status_when_provider_omits_it() {
 		$order = WC_Helper_Order::create_order();
 
