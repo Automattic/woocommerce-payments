@@ -16,18 +16,23 @@
 class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 
 	/**
-	 * Hooks registered during the test, removed in tear_down() to prevent
-	 * leakage into the next test in the suite.
+	 * Coordinators built during the test. tear_down() iterates each one and
+	 * removes every callback init_hooks() / init_global_hooks() can register
+	 * for its banners — not just the ones the test happened to assert on —
+	 * so untracked hooks (handle_cta, register_script, snooze_notice, etc.)
+	 * don't leak into the next test and cause order-dependent failures.
 	 *
-	 * @var array<int, array{0: string, 1: callable}>
+	 * @var WC_Payments_Admin_Banner[]
 	 */
-	private $registered_hooks = [];
+	private $coordinators = [];
 
 	public function tear_down(): void {
-		foreach ( $this->registered_hooks as [ $tag, $callback ] ) {
-			remove_action( $tag, $callback );
+		foreach ( $this->coordinators as $coordinator ) {
+			foreach ( $this->get_coordinator_banners( $coordinator ) as $banner ) {
+				$this->remove_banner_hooks( $banner );
+			}
 		}
-		$this->registered_hooks = [];
+		$this->coordinators = [];
 		parent::tear_down();
 	}
 
@@ -68,10 +73,10 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Asserts a specific callback is registered on a hook and queues it for
-	 * removal in tear_down(). Using a specific [$object, 'method'] callable
-	 * avoids the false positives that `has_action( $tag )` (any callback)
-	 * would produce when WC core or other plugins share the hook.
+	 * Asserts a specific callback is registered on a hook. Uses the specific
+	 * `[$object, 'method']` callable form rather than `has_action( $tag )`,
+	 * which would return any callback registered on the tag (false positives
+	 * when WC core or other plugins share the hook).
 	 *
 	 * @param string   $tag      Hook tag.
 	 * @param callable $callback Specific callback to assert is registered.
@@ -82,13 +87,47 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 			has_action( $tag, $callback ),
 			"Expected callback to be registered on hook '$tag'."
 		);
-		$this->registered_hooks[] = [ $tag, $callback ];
+	}
+
+	/**
+	 * Removes every callback init_hooks() / init_global_hooks() can register
+	 * for a banner. `remove_action()` is idempotent for unregistered callbacks,
+	 * so this is safe to call regardless of which init_* the test exercised.
+	 *
+	 * Kept in sync by hand with the production hook registrations in
+	 * WC_Payments_Abstract_Admin_Banner::init_hooks() and the per-subclass
+	 * overrides.
+	 *
+	 * @param WC_Payments_Abstract_Admin_Banner $banner Banner instance.
+	 * @return void
+	 */
+	private function remove_banner_hooks( WC_Payments_Abstract_Admin_Banner $banner ): void {
+		// Base init_hooks() registrations.
+		remove_action( 'admin_init', [ $banner, 'hide_notice' ] );
+		remove_action( 'admin_init', [ $banner, 'snooze_notice' ] );
+		remove_action( 'admin_init', [ $banner, 'handle_cta' ] );
+		remove_action( 'admin_enqueue_scripts', [ $banner, 'register_script' ], 9 );
+		remove_action( 'admin_enqueue_scripts', [ $banner, 'enqueue_script' ] );
+
+		// Subclass-specific registrations.
+		if ( $banner instanceof WC_Payments_One_And_Done_Banner ) {
+			remove_action( 'woocommerce_payment_complete', [ $banner, 'invalidate_cache_on_order' ] );
+			remove_action( 'woocommerce_order_status_completed', [ $banner, 'invalidate_cache_on_order' ] );
+			remove_action( 'woocommerce_order_status_processing', [ $banner, 'invalidate_cache_on_order' ] );
+		}
+		if ( $banner instanceof WC_Payments_Post_Kyc_Activation_Banner ) {
+			remove_action( 'woocommerce_payments_account_refreshed', [ $banner, 'invalidate_cache' ] );
+			remove_action(
+				'add_option_' . WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION,
+				[ $banner, 'invalidate_cache' ]
+			);
+		}
 	}
 
 	/**
 	 * Reflects into the coordinator's private $banners array so the tests can
 	 * bind their assertions to the actual instances the coordinator created
-	 * (and clean up the same callbacks after).
+	 * (and tear_down() can remove the same callbacks afterwards).
 	 *
 	 * @param WC_Payments_Admin_Banner $coordinator Coordinator instance.
 	 * @return WC_Payments_Abstract_Admin_Banner[]
@@ -119,12 +158,14 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 	}
 
 	private function make_coordinator(): WC_Payments_Admin_Banner {
-		$mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
+		$mock_gateway         = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->getMock();
-		$mock_account = $this->getMockBuilder( WC_Payments_Account::class )
+		$mock_account         = $this->getMockBuilder( WC_Payments_Account::class )
 			->disableOriginalConstructor()
 			->getMock();
-		return new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+		$coordinator          = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+		$this->coordinators[] = $coordinator;
+		return $coordinator;
 	}
 }
