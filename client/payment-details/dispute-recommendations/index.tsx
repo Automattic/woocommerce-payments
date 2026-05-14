@@ -39,12 +39,19 @@ const outcomeByStatus: Partial<
 };
 
 // Higher lift first; entries without a measured lift sort to the bottom.
-// Within the same lift bucket, catalog order is preserved (Array#sort is
-// stable in modern engines).
+// Ties (including both-unmeasured) return 0, so the stable sort preserves
+// catalog order within a bucket.
 const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
-	const aLift = typeof a.lift === 'number' ? a.lift : -Infinity;
-	const bLift = typeof b.lift === 'number' ? b.lift : -Infinity;
-	return bLift - aLift;
+	if ( typeof a.lift !== 'number' && typeof b.lift !== 'number' ) {
+		return 0;
+	}
+	if ( typeof a.lift !== 'number' ) {
+		return 1;
+	}
+	if ( typeof b.lift !== 'number' ) {
+		return -1;
+	}
+	return b.lift - a.lift;
 };
 
 // Catalog links are either absolute external URLs (woocommerce.com docs)

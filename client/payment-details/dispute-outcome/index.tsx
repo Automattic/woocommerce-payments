@@ -30,19 +30,13 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ??
 			false
 	);
+	// Always non-empty: getExpectedFieldStatus appends a synthetic cover
+	// letter row regardless of (reason, productType).
 	const fields = getExpectedFieldStatus(
 		dispute.reason,
 		productType,
 		dispute.evidence
 	);
-
-	// Nothing to show: skip the section entirely so the page doesn't render
-	// an "Evidence Submitted" heading with an empty body below it. The
-	// Recommendations card (when status maps to one) continues to render
-	// independently and carries the "no evidence" framing via Cluster 15.
-	if ( fields.length === 0 ) {
-		return null;
-	}
 
 	// On a successful outcome the optional rows are non-actionable noise
 	// next to the wins, so collapse them behind a disclosure. On lost they

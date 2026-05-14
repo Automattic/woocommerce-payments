@@ -7,6 +7,20 @@
 			padding-top: $grid-unit-20;
 			border-top: 1px solid $gray-100;
 		}
+
+		// Trim the outer padding on the first and last items sitting
+		// directly in the section. `:first-child` / `:last-child` would
+		// miss them: the heading is always the first child, and the
+		// show-more <details> (when present) is the last. The `> ...
+		// :*-of-type` form targets the first/last direct-child item
+		// without reaching into the items nested inside the disclosure.
+		> .dispute-recommendations__item:first-of-type {
+			padding-top: 0;
+		}
+
+		> .dispute-recommendations__item:last-of-type {
+			padding-bottom: 0;
+		}
 	}
 
 	&__section-heading {
@@ -49,14 +63,6 @@
 
 	& + & {
 		border-top: 1px solid $gray-100;
-	}
-
-	&:first-child {
-		padding-top: 0;
-	}
-
-	&:last-child {
-		padding-bottom: 0;
 	}
 
 	&--critical {
