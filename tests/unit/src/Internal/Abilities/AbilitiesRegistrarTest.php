@@ -180,37 +180,9 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		return [
 			[ 'woocommerce-payments/get-transactions' ],
 			[ 'woocommerce-payments/get-disputes' ],
-			[ 'woocommerce-payments/get-dispute' ],
 			[ 'woocommerce-payments/get-authorizations' ],
 			[ 'woocommerce-payments/get-deposits' ],
-			[ 'woocommerce-payments/get-payment-intent' ],
-			[ 'woocommerce-payments/get-charge' ],
-			[ 'woocommerce-payments/get-timeline' ],
 		];
-	}
-
-	public function test_execute_get_dispute_rejects_missing_id() {
-		$result = AbilitiesRegistrar::execute_get_dispute( [] );
-		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
-	}
-
-	public function test_execute_get_payment_intent_rejects_missing_id() {
-		$result = AbilitiesRegistrar::execute_get_payment_intent( [] );
-		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'wcpay_missing_payment_intent_id', $result->get_error_code() );
-	}
-
-	public function test_execute_get_charge_rejects_missing_id() {
-		$result = AbilitiesRegistrar::execute_get_charge( [] );
-		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'wcpay_missing_charge_id', $result->get_error_code() );
-	}
-
-	public function test_execute_get_timeline_rejects_missing_id() {
-		$result = AbilitiesRegistrar::execute_get_timeline( [] );
-		$this->assertInstanceOf( \WP_Error::class, $result );
-		$this->assertSame( 'wcpay_missing_intention_id', $result->get_error_code() );
 	}
 
 	/**
@@ -256,15 +228,10 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
 	public function provide_execute_cases(): array {
 		return [
-			'get-transactions'      => [ 'execute_get_transactions', [ 'per_page' => 5 ], '/wc/v3/payments/transactions' ],
-			'get-disputes'          => [ 'execute_get_disputes', [ 'per_page' => 5 ], '/wc/v3/payments/disputes' ],
-			'get-dispute'           => [ 'execute_get_dispute', [ 'dispute_id' => 'du_test_invalid' ], '/wc/v3/payments/disputes/du_test_invalid' ],
-			'get-dispute-dp-prefix' => [ 'execute_get_dispute', [ 'dispute_id' => 'dp_test_legacy' ], '/wc/v3/payments/disputes/dp_test_legacy' ],
-			'get-authorizations'    => [ 'execute_get_authorizations', [ 'per_page' => 5 ], '/wc/v3/payments/authorizations' ],
-			'get-deposits'          => [ 'execute_get_deposits', [ 'per_page' => 5 ], '/wc/v3/payments/deposits' ],
-			'get-payment-intent'    => [ 'execute_get_payment_intent', [ 'payment_intent_id' => 'pi_test_invalid' ], '/wc/v3/payments/payment_intents/pi_test_invalid' ],
-			'get-charge'            => [ 'execute_get_charge', [ 'charge_id' => 'ch_test_invalid' ], '/wc/v3/payments/charges/ch_test_invalid' ],
-			'get-timeline'          => [ 'execute_get_timeline', [ 'intention_id' => 'pi_test_invalid' ], '/wc/v3/payments/timeline/pi_test_invalid' ],
+			'get-transactions'   => [ 'execute_get_transactions', [ 'per_page' => 5 ], '/wc/v3/payments/transactions' ],
+			'get-disputes'       => [ 'execute_get_disputes', [ 'per_page' => 5 ], '/wc/v3/payments/disputes' ],
+			'get-authorizations' => [ 'execute_get_authorizations', [ 'per_page' => 5 ], '/wc/v3/payments/authorizations' ],
+			'get-deposits'       => [ 'execute_get_deposits', [ 'per_page' => 5 ], '/wc/v3/payments/deposits' ],
 		];
 	}
 

@@ -81,6 +81,10 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetDisputesSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetAuthorizationsSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetDepositsSummary::class,
+		\WCPay\Internal\Abilities\Domain\GetDispute::class,
+		\WCPay\Internal\Abilities\Domain\GetPaymentIntent::class,
+		\WCPay\Internal\Abilities\Domain\GetCharge::class,
+		\WCPay\Internal\Abilities\Domain\GetTimeline::class,
 	];
 
 	/**
@@ -210,12 +214,8 @@ class AbilitiesRegistrar {
 
 		self::register_get_transactions_ability();
 		self::register_get_disputes_ability();
-		self::register_get_dispute_ability();
 		self::register_get_authorizations_ability();
 		self::register_get_deposits_ability();
-		self::register_get_payment_intent_ability();
-		self::register_get_charge_ability();
-		self::register_get_timeline_ability();
 	}
 
 	/**
@@ -278,23 +278,6 @@ class AbilitiesRegistrar {
 	}
 
 	/**
-	 * Execute callback — `get-dispute`.
-	 *
-	 * @param mixed $input Ability input. Must include `dispute_id`.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_dispute( $input = null ) {
-		if ( ! is_array( $input ) || empty( $input['dispute_id'] ) || ! is_string( $input['dispute_id'] ) ) {
-			return new \WP_Error(
-				'wcpay_missing_dispute_id',
-				__( 'A non-empty `dispute_id` is required.', 'woocommerce-payments' )
-			);
-		}
-		$dispute_id = $input['dispute_id'];
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/disputes/' . rawurlencode( $dispute_id ) );
-	}
-
-	/**
 	 * Execute callback — `get-authorizations`.
 	 *
 	 * @param mixed $input Ability input.
@@ -312,57 +295,6 @@ class AbilitiesRegistrar {
 	 */
 	public static function execute_get_deposits( $input = null ) {
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits', is_array( $input ) ? $input : [] );
-	}
-
-	/**
-	 * Execute callback — `get-payment-intent`.
-	 *
-	 * @param mixed $input Ability input. Must include `payment_intent_id`.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_payment_intent( $input = null ) {
-		if ( ! is_array( $input ) || empty( $input['payment_intent_id'] ) || ! is_string( $input['payment_intent_id'] ) ) {
-			return new \WP_Error(
-				'wcpay_missing_payment_intent_id',
-				__( 'A non-empty `payment_intent_id` is required.', 'woocommerce-payments' )
-			);
-		}
-		$intent_id = $input['payment_intent_id'];
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/payment_intents/' . rawurlencode( $intent_id ) );
-	}
-
-	/**
-	 * Execute callback — `get-charge`.
-	 *
-	 * @param mixed $input Ability input. Must include `charge_id`.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_charge( $input = null ) {
-		if ( ! is_array( $input ) || empty( $input['charge_id'] ) || ! is_string( $input['charge_id'] ) ) {
-			return new \WP_Error(
-				'wcpay_missing_charge_id',
-				__( 'A non-empty `charge_id` is required.', 'woocommerce-payments' )
-			);
-		}
-		$charge_id = $input['charge_id'];
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/charges/' . rawurlencode( $charge_id ) );
-	}
-
-	/**
-	 * Execute callback — `get-timeline`.
-	 *
-	 * @param mixed $input Ability input. Must include `intention_id`.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_timeline( $input = null ) {
-		if ( ! is_array( $input ) || empty( $input['intention_id'] ) || ! is_string( $input['intention_id'] ) ) {
-			return new \WP_Error(
-				'wcpay_missing_intention_id',
-				__( 'A non-empty `intention_id` is required.', 'woocommerce-payments' )
-			);
-		}
-		$intent_id = $input['intention_id'];
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/timeline/' . rawurlencode( $intent_id ) );
 	}
 
 	/**
@@ -487,45 +419,6 @@ class AbilitiesRegistrar {
 	}
 
 	/**
-	 * Register the `woocommerce-payments/get-dispute` ability.
-	 *
-	 * PII surface: the backing controller returns the full Stripe charge
-	 * object via `dispute->evidence` and `dispute->charge`, including
-	 * `billing_details` (name/email/phone/address) and any associated
-	 * `order` data (`customer_email`, `ip_address`). Reviewed and accepted
-	 * for `manage_woocommerce`-gated MCP clients — admins already see this
-	 * data in the dispute admin UI. If the cap gate ever moves below admin,
-	 * revisit this and add response filtering.
-	 *
-	 * @return void
-	 */
-	private static function register_get_dispute_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-dispute',
-			[
-				'label'               => __( 'Get dispute by ID', 'woocommerce-payments' ),
-				'description'         => __( 'Look up a single dispute by ID. Answers \'what evidence is needed for dispute du_X and by when?\'.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => [
-					'type'                 => 'object',
-					'default'              => (object) [],
-					'properties'           => [
-						'dispute_id' => [
-							'type'        => 'string',
-							'description' => 'Stripe dispute ID (typically `du_…` or legacy `dp_…`). Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.',
-						],
-					],
-					'required'             => [ 'dispute_id' ],
-					'additionalProperties' => false,
-				],
-				'execute_callback'    => [ __CLASS__, 'execute_get_dispute' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
-	}
-
-	/**
 	 * Register the `woocommerce-payments/get-authorizations` ability.
 	 *
 	 * @return void
@@ -559,118 +452,6 @@ class AbilitiesRegistrar {
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => self::deposits_list_input_schema(),
 				'execute_callback'    => [ __CLASS__, 'execute_get_deposits' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-payment-intent` ability.
-	 *
-	 * PII surface: the backing controller returns the full intent payload
-	 * including the nested charge (`billing_details` name/email/phone/address)
-	 * and any card metadata (`last4`, brand). Reviewed and accepted for
-	 * `manage_woocommerce`-gated MCP clients. If the cap gate ever moves
-	 * below admin, revisit this and add response filtering.
-	 *
-	 * @return void
-	 */
-	private static function register_get_payment_intent_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-payment-intent',
-			[
-				'label'               => __( 'Get payment intent by ID', 'woocommerce-payments' ),
-				'description'         => __( 'Look up a single payment intent by Stripe ID (pi_…). Answers \'what is the state of intent pi_X?\' during incident response.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => [
-					'type'                 => 'object',
-					'default'              => (object) [],
-					'properties'           => [
-						'payment_intent_id' => [
-							'type'        => 'string',
-							'description' => 'Stripe payment intent ID (typically `pi_…`). Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.',
-						],
-					],
-					'required'             => [ 'payment_intent_id' ],
-					'additionalProperties' => false,
-				],
-				'execute_callback'    => [ __CLASS__, 'execute_get_payment_intent' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-charge` ability.
-	 *
-	 * PII surface: the backing controller returns the full Stripe charge
-	 * object including `billing_details` (name/email/phone/address) and
-	 * order metadata (`customer_email`, `customer_name`, `ip_address`,
-	 * `fraud_meta_box_type`). Reviewed and accepted for
-	 * `manage_woocommerce`-gated MCP clients — admins already see this
-	 * in the order/charge admin UI. If the cap gate ever moves below
-	 * admin, revisit this and add response filtering.
-	 *
-	 * @return void
-	 */
-	private static function register_get_charge_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-charge',
-			[
-				'label'               => __( 'Get charge by ID', 'woocommerce-payments' ),
-				'description'         => __( 'Look up a single charge by Stripe ID (ch_… or py_…). Answers \'what happened with charge ch_X?\'.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => [
-					'type'                 => 'object',
-					'default'              => (object) [],
-					'properties'           => [
-						'charge_id' => [
-							'type'        => 'string',
-							'description' => 'Stripe charge ID (typically `ch_…` or `py_…`). Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.',
-						],
-					],
-					'required'             => [ 'charge_id' ],
-					'additionalProperties' => false,
-				],
-				'execute_callback'    => [ __CLASS__, 'execute_get_charge' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-timeline` ability.
-	 *
-	 * The input field is named `intention_id` (rather than `payment_intent_id`
-	 * as used by `get-payment-intent`) to match the URL parameter on the
-	 * backing route `/payments/timeline/(?P<intention_id>\w+)`. Both names
-	 * refer to the same Stripe payment-intent identifier.
-	 *
-	 * @return void
-	 */
-	private static function register_get_timeline_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-timeline',
-			[
-				'label'               => __( 'Get timeline for payment intent', 'woocommerce-payments' ),
-				'description'         => __( 'Return the chronological event timeline for a payment intent (created → succeeded → refunded → disputed). Helps reconstruct what happened to one transaction. Takes `intention_id` (the same Stripe `pi_…` identifier accepted by `get-payment-intent` as `payment_intent_id` — both names exist because they mirror the underlying REST route parameters).', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => [
-					'type'                 => 'object',
-					'default'              => (object) [],
-					'properties'           => [
-						'intention_id' => [
-							'type'        => 'string',
-							'description' => 'Stripe payment intent ID (typically `pi_…`). Same identifier accepted by `get-payment-intent` under the field name `payment_intent_id`. Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.',
-						],
-					],
-					'required'             => [ 'intention_id' ],
-					'additionalProperties' => false,
-				],
-				'execute_callback'    => [ __CLASS__, 'execute_get_timeline' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				'meta'                => self::read_meta(),
 			]
