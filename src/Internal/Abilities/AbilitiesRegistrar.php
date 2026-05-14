@@ -76,6 +76,7 @@ class AbilitiesRegistrar {
 	private const ABILITY_CLASSES = [
 		\WCPay\Internal\Abilities\Domain\GetAccount::class,
 		\WCPay\Internal\Abilities\Domain\GetActiveLoanSummary::class,
+		\WCPay\Internal\Abilities\Domain\GetAuthorizationsSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetDepositsOverview::class,
 		\WCPay\Internal\Abilities\Domain\GetDisputesSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetTransactionsSummary::class,
@@ -210,7 +211,6 @@ class AbilitiesRegistrar {
 		self::register_get_disputes_ability();
 		self::register_get_dispute_ability();
 		self::register_get_authorizations_ability();
-		self::register_get_authorizations_summary_ability();
 		self::register_get_deposits_ability();
 		self::register_get_deposits_summary_ability();
 		self::register_get_payment_intent_ability();
@@ -302,16 +302,6 @@ class AbilitiesRegistrar {
 	 */
 	public static function execute_get_authorizations( $input = null ) {
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/authorizations', is_array( $input ) ? $input : [] );
-	}
-
-	/**
-	 * Execute callback — `get-authorizations-summary`.
-	 *
-	 * @param mixed $input Unused.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_authorizations_summary( $input = null ) {
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/authorizations/summary' );
 	}
 
 	/**
@@ -559,26 +549,6 @@ class AbilitiesRegistrar {
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => self::pagination_input_schema(),
 				'execute_callback'    => [ __CLASS__, 'execute_get_authorizations' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-authorizations-summary` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_authorizations_summary_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-authorizations-summary',
-			[
-				'label'               => __( 'Get authorizations summary', 'woocommerce-payments' ),
-				'description'         => __( 'Return aggregate counts and total authorized amount for pending authorizations. Answers \'how much money is held in uncaptured authorizations?\'.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::zero_arg_input_schema(),
-				'execute_callback'    => [ __CLASS__, 'execute_get_authorizations_summary' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				'meta'                => self::read_meta(),
 			]
