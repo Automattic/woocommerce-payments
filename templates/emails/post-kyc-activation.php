@@ -54,7 +54,7 @@ do_action( 'woocommerce_email_header', $content['heading'], $email ); ?>
 </p>
 
 <?php if ( $additional_content ) : ?>
-	<p><?php echo wp_kses_post( wptexturize( $additional_content ) ); ?></p>
+	<?php echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) ); ?>
 <?php endif; ?>
 
 <?php do_action( 'woocommerce_email_footer', $email ); ?>

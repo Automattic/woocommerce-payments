@@ -44,7 +44,7 @@ echo esc_html( wp_strip_all_tags( $content['heading'] ) ) . "\n\n";
 echo "=====================================================\n\n";
 echo esc_html( $content['body'] ) . "\n\n";
 
-echo esc_html( $cta_label ) . ': ' . esc_url( $cta_url ) . "\n\n";
+echo esc_html( $cta_label ) . ': ' . esc_url_raw( $cta_url ) . "\n\n";
 
 if ( $additional_content ) {
 	echo "-----------------------------------------------------\n\n";
