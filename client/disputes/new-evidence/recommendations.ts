@@ -70,12 +70,19 @@ export const getRecommendations = (
 		if ( when.outcome !== context.outcome ) {
 			return false;
 		}
-		if ( ! when.reasonIn.includes( context.reason ) ) {
+		// `reasonIn` / `productTypeIn` are strongly typed in the catalog;
+		// the context carries raw server values (typed `string`), so widen
+		// the catalog arrays for the membership check.
+		if (
+			! ( when.reasonIn as readonly string[] ).includes( context.reason )
+		) {
 			return false;
 		}
 		if (
 			when.productTypeIn &&
-			! when.productTypeIn.includes( context.productType )
+			! ( when.productTypeIn as readonly string[] ).includes(
+				context.productType
+			)
 		) {
 			return false;
 		}

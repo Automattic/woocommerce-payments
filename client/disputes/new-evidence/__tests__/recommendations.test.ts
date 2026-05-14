@@ -184,6 +184,45 @@ describe( 'getRecommendations', () => {
 			expect( result.map( ( r ) => r.id ) ).toEqual( [ 'any-of' ] );
 		} );
 
+		it( 'defaults min to 0 when only max is set (max-only predicate)', () => {
+			// Mirrors the Cluster 15 "no evidence" entry: `max: 0` with `min`
+			// omitted must mean "zero of the listed keys are provided", not
+			// "min defaults to 1" (which would make the predicate unsatisfiable).
+			const noneProvided = buildEntry( {
+				id: 'none-provided',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+					requireProvided: {
+						keys: [
+							'shipping_tracking_number',
+							'shipping_carrier',
+						],
+						max: 0,
+					},
+				},
+			} );
+
+			// 0 provided → fires.
+			expect(
+				getRecommendations(
+					baseContext( { outcome: 'could_help', evidence: {} } ),
+					[ noneProvided ]
+				).map( ( r ) => r.id )
+			).toEqual( [ 'none-provided' ] );
+
+			// 1 provided → exceeds max → does not fire.
+			expect(
+				getRecommendations(
+					baseContext( {
+						outcome: 'could_help',
+						evidence: { shipping_carrier: 'UPS' },
+					} ),
+					[ noneProvided ]
+				)
+			).toEqual( [] );
+		} );
+
 		it( 'respects max for exactly-N predicates', () => {
 			const exactlyOne = buildEntry( {
 				id: 'exactly-one',

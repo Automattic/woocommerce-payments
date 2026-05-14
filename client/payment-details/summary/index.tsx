@@ -855,10 +855,13 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 	props
 ) => {
 	const dispute = props.charge?.dispute;
+	// Gate on won/lost specifically rather than isOutcomeViewStatus():
+	// DisputeRecommendationsCard has no entries for warning_closed (inquiries
+	// carry no merchant-submitted evidence) and would render nothing there.
 	const showRecommendationsCard =
 		!! dispute &&
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
-		isOutcomeViewStatus( dispute.status );
+		( dispute.status === 'won' || dispute.status === 'lost' );
 
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>

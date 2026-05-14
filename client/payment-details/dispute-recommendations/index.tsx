@@ -6,6 +6,7 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Card, CardBody, ExternalLink } from '@wordpress/components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -46,6 +47,37 @@ const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
 	return bLift - aLift;
 };
 
+// Catalog links are either absolute external URLs (woocommerce.com docs)
+// or wp-admin destinations built via getAdminUrl()/addQueryArgs(). Only the
+// former should render as an ExternalLink (new tab + external affordance);
+// wp-admin links use the standard internal Link to stay in the admin.
+const isExternalHref = ( href: string ): boolean => /^https?:\/\//.test( href );
+
+const renderLink = ( link: Recommendation[ 'link' ] ): JSX.Element | null => {
+	if ( ! link ) {
+		return null;
+	}
+	if ( isExternalHref( link.href ) ) {
+		return (
+			<ExternalLink
+				className="dispute-recommendations__link"
+				href={ link.href }
+			>
+				{ link.label }
+			</ExternalLink>
+		);
+	}
+	return (
+		<Link
+			className="dispute-recommendations__link"
+			href={ link.href }
+			type="wp-admin"
+		>
+			{ link.label }
+		</Link>
+	);
+};
+
 const renderItem = ( rec: Recommendation ): JSX.Element => (
 	<article
 		key={ rec.id }
@@ -53,14 +85,7 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	>
 		<h4 className="dispute-recommendations__title">{ rec.title }</h4>
 		<p className="dispute-recommendations__body">{ rec.body }</p>
-		{ rec.link && (
-			<ExternalLink
-				className="dispute-recommendations__link"
-				href={ rec.link.href }
-			>
-				{ rec.link.label }
-			</ExternalLink>
-		) }
+		{ renderLink( rec.link ) }
 	</article>
 );
 

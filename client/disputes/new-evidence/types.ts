@@ -5,7 +5,7 @@
 /**
  * Internal dependencies
  */
-import { Dispute } from 'wcpay/types/disputes';
+import { Dispute, DisputeReason, ProductType } from 'wcpay/types/disputes';
 import { Charge } from 'wcpay/types/charges';
 
 export interface ExtendedDispute
@@ -150,12 +150,13 @@ export type RecommendationUrgency = 'critical' | 'positive' | 'tip';
 
 export interface RecommendationLink {
 	label: string;
-	href: string;
 	/**
-	 * Used when `href` contains template placeholders (e.g. `{customer_id}`)
-	 * and the substitution data isn't available at render time.
+	 * Destination URL. External destinations are absolute `https://` URLs
+	 * (rendered as `ExternalLink`); wp-admin destinations are built with
+	 * `getAdminUrl()` / `addQueryArgs()` in the catalog so they resolve
+	 * correctly on subdirectory installs (rendered as an internal `Link`).
 	 */
-	fallbackHref?: string;
+	href: string;
 }
 
 /**
@@ -175,8 +176,8 @@ export interface FieldCountPredicate {
  */
 export interface RecommendationWhen {
 	outcome: RecommendationOutcome;
-	reasonIn: string[];
-	productTypeIn?: string[];
+	reasonIn: DisputeReason[];
+	productTypeIn?: ProductType[];
 	requireProvided?: FieldCountPredicate;
 	requireMissing?: FieldCountPredicate;
 }

@@ -422,5 +422,24 @@ describe( 'DisputeRecommendationsCard', () => {
 				} )
 			).toBeInTheDocument();
 		} );
+
+		it( 'renders wp-admin links as internal links, not external links', () => {
+			// wonPhysicalShippingProvided fires c1-shipping-evidence-strengthen
+			// (tracking provided, shipping_documentation missing), whose link
+			// points to a wp-admin settings page.
+			render(
+				<DisputeRecommendationsCard
+					dispute={ wonPhysicalShippingProvided() }
+				/>
+			);
+
+			const link = screen.getByRole( 'link', {
+				name: /configure shipping options/i,
+			} );
+			// Internal Link sets data-link-type="wp-admin"; ExternalLink does not.
+			expect( link ).toHaveAttribute( 'data-link-type', 'wp-admin' );
+			// And it must not carry the external-link new-tab affordance.
+			expect( link ).not.toHaveAttribute( 'target', '_blank' );
+		} );
 	} );
 } );

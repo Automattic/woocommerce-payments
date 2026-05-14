@@ -1,6 +1,13 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
+
+/**
  * Internal dependencies
  */
+import { getAdminUrl } from 'wcpay/utils';
 import type { Recommendation } from './types';
 
 /**
@@ -8,16 +15,19 @@ import type { Recommendation } from './types';
  *
  * Authored by RiskOps. Each entry has:
  *   - title + body: copy that renders verbatim (voice rules: softer
- *     evidence language, single-sentence bodies, no em-dashes).
+ *     evidence language, single-sentence bodies, no em-dashes). Wrapped in
+ *     `__()` so the strings are translatable.
  *   - urgency: drives title color and section grouping.
  *     `positive` (green) → "What's working well" section.
  *     `critical` (red) + `tip` (orange) → "What could help next time".
  *   - when: predicates the runtime helper checks against the dispute.
  *     `requireProvided` / `requireMissing` are count predicates over a
  *     key set (`min`/`max` inclusive; defaults: min=1, max=keys.length).
- *   - link (optional): inline action link. `href` can contain `{token}`
- *     placeholders; the component substitutes from dispute context and
- *     falls back to `fallbackHref` if a token can't be resolved.
+ *   - link (optional): inline action link. External destinations are
+ *     absolute `https://` URLs; wp-admin destinations are built with
+ *     `getAdminUrl()` / `addQueryArgs()` here so they resolve correctly on
+ *     subdirectory installs. The component renders the two link kinds
+ *     differently (see `dispute-recommendations/index.tsx`).
  *   - suppressOtherCriticals: catch-all "no evidence" entry uses this to
  *     hide other critical entries on the same dispute.
  *
@@ -39,8 +49,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c1-shipping-evidence-strong',
 		urgency: 'positive',
-		title: 'Strong shipping evidence',
-		body: 'Your tracking number and carrier info helped demonstrate delivery.',
+		title: __( 'Strong shipping evidence', 'woocommerce-payments' ),
+		body: __(
+			'Your tracking number and carrier info helped demonstrate delivery.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'product_not_received' ],
@@ -54,8 +67,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c1-shipping-tracking-add',
 		urgency: 'critical',
-		title: 'Add shipping tracking for every order',
-		body: 'Shipping tracking that shows delivery is among the strongest evidence for product-not-received disputes.',
+		title: __(
+			'Add shipping tracking for every order',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Shipping tracking that shows delivery is among the strongest evidence for product-not-received disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'product_not_received' ],
@@ -63,15 +82,21 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			requireMissing: { keys: [ 'shipping_tracking_number' ] },
 		},
 		link: {
-			label: 'Set up shipping tracking',
+			label: __( 'Set up shipping tracking', 'woocommerce-payments' ),
 			href: 'https://woocommerce.com/products/shipment-tracking/',
 		},
 	},
 	{
 		id: 'c1-shipping-evidence-strengthen',
 		urgency: 'tip',
-		title: 'Strengthen your shipping evidence',
-		body: 'Adding carrier info or a delivery date alongside tracking gives a fuller picture for physical goods disputes.',
+		title: __(
+			'Strengthen your shipping evidence',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Adding carrier info or a delivery date alongside tracking gives a fuller picture for physical goods disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'product_not_received' ],
@@ -87,8 +112,8 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			},
 		},
 		link: {
-			label: 'Configure shipping options',
-			href: '/wp-admin/admin.php?page=wc-settings&tab=shipping',
+			label: __( 'Configure shipping options', 'woocommerce-payments' ),
+			href: getAdminUrl( { page: 'wc-settings', tab: 'shipping' } ),
 		},
 	},
 
@@ -96,8 +121,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c2-receipt-provided',
 		urgency: 'positive',
-		title: 'Clear proof of purchase',
-		body: 'A receipt added support to your defense.',
+		title: __( 'Clear proof of purchase', 'woocommerce-payments' ),
+		body: __(
+			'A receipt added support to your defense.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -113,8 +141,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c2-receipt-include',
 		urgency: 'critical',
-		title: 'Include the order receipt',
-		body: 'A clear receipt is one of the more reliable pieces of evidence across dispute types.',
+		title: __( 'Include the order receipt', 'woocommerce-payments' ),
+		body: __(
+			'A clear receipt is one of the more reliable pieces of evidence across dispute types.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [
@@ -130,8 +161,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c2-receipt-include-tip',
 		urgency: 'tip',
-		title: 'Include a receipt with your evidence',
-		body: 'Receipts tend to strengthen evidence packages across most dispute types, even when you win without one.',
+		title: __(
+			'Include a receipt with your evidence',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Receipts tend to strengthen evidence packages across most dispute types, even when you win without one.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -149,8 +186,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c3-communication-provided',
 		urgency: 'positive',
-		title: 'Customer communication on file',
-		body: 'Your correspondence with the customer added helpful context.',
+		title: __( 'Customer communication on file', 'woocommerce-payments' ),
+		body: __(
+			'Your correspondence with the customer added helpful context.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -166,8 +206,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c3-communication-include',
 		urgency: 'critical',
-		title: 'Include customer correspondence',
-		body: 'Emails or messages with the customer can add helpful context to your defense.',
+		title: __( 'Include customer correspondence', 'woocommerce-payments' ),
+		body: __(
+			'Emails or messages with the customer can add helpful context to your defense.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [
@@ -183,8 +226,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c3-communication-consider',
 		urgency: 'tip',
-		title: 'Consider attaching customer correspondence',
-		body: 'Relevant correspondence tends to help across dispute types where the conversation supports your position.',
+		title: __(
+			'Consider attaching customer correspondence',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Relevant correspondence tends to help across dispute types where the conversation supports your position.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -202,8 +251,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c4-refund-refusal-provided',
 		urgency: 'positive',
-		title: 'Clear explanation for the refund decision',
-		body: "Your written explanation of why the refund wasn't owed gave context for your decision.",
+		title: __(
+			'Clear explanation for the refund decision',
+			'woocommerce-payments'
+		),
+		body: __(
+			"Your written explanation of why the refund wasn't owed gave context for your decision.",
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
@@ -213,8 +268,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c4-refund-refusal-explain',
 		urgency: 'critical',
-		title: 'Explain the refund decision',
-		body: "A written explanation of why the refund wasn't owed helps clarify your reasoning on refund-related disputes.",
+		title: __( 'Explain the refund decision', 'woocommerce-payments' ),
+		body: __(
+			"A written explanation of why the refund wasn't owed helps clarify your reasoning on refund-related disputes.",
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
@@ -224,8 +282,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c4-refund-refusal-add',
 		urgency: 'tip',
-		title: 'Add an explanation for refund decisions',
-		body: 'Adding a written explanation for refund decisions tends to round out the evidence on refund disputes.',
+		title: __(
+			'Add an explanation for refund decisions',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Adding a written explanation for refund decisions tends to round out the evidence on refund disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
@@ -237,8 +301,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c5-refund-policy-provided',
 		urgency: 'positive',
-		title: 'Clear refund policy',
-		body: 'Your refund policy gave context for how returns work in your store.',
+		title: __( 'Clear refund policy', 'woocommerce-payments' ),
+		body: __(
+			'Your refund policy gave context for how returns work in your store.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -253,8 +320,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c5-refund-policy-publish-won',
 		urgency: 'tip',
-		title: 'Publish a clear refund policy',
-		body: 'A published refund policy gives customers context for how returns work in your store, and ties together your other refund-related evidence.',
+		title: __( 'Publish a clear refund policy', 'woocommerce-payments' ),
+		body: __(
+			'A published refund policy gives customers context for how returns work in your store, and ties together your other refund-related evidence.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -266,16 +336,20 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			requireMissing: { keys: [ 'refund_policy' ] },
 		},
 		link: {
-			// TODO(wiring): substitute {refund_policy_page_id} when WC settings reach the client.
-			label: 'Edit your refund policy page',
-			href: '/wp-admin/admin.php?page=wc-settings&tab=advanced',
+			// TODO(wiring): deep-link to the refund policy page itself once
+			// the WC settings page id reaches the client.
+			label: __( 'Edit your refund policy page', 'woocommerce-payments' ),
+			href: getAdminUrl( { page: 'wc-settings', tab: 'advanced' } ),
 		},
 	},
 	{
 		id: 'c5-refund-policy-publish-lost',
 		urgency: 'tip',
-		title: 'Publish a clear refund policy',
-		body: 'A published refund policy gives customers context for how returns work in your store, and ties together your other refund-related evidence.',
+		title: __( 'Publish a clear refund policy', 'woocommerce-payments' ),
+		body: __(
+			'A published refund policy gives customers context for how returns work in your store, and ties together your other refund-related evidence.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [
@@ -287,8 +361,8 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			requireMissing: { keys: [ 'refund_policy' ] },
 		},
 		link: {
-			label: 'Edit your refund policy page',
-			href: '/wp-admin/admin.php?page=wc-settings&tab=advanced',
+			label: __( 'Edit your refund policy page', 'woocommerce-payments' ),
+			href: getAdminUrl( { page: 'wc-settings', tab: 'advanced' } ),
 		},
 	},
 
@@ -296,8 +370,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c6-cancellation-provided',
 		urgency: 'positive',
-		title: 'Cancellation policy on record',
-		body: 'Your cancellation policy and supporting records helped clarify the subscription terms.',
+		title: __( 'Cancellation policy on record', 'woocommerce-payments' ),
+		body: __(
+			'Your cancellation policy and supporting records helped clarify the subscription terms.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'subscription_canceled' ],
@@ -310,8 +387,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c6-cancellation-document',
 		urgency: 'critical',
-		title: 'Document your cancellation terms',
-		body: 'Cancellation policies, terms shown at checkout, and cancellation records are central to subscription disputes.',
+		title: __( 'Document your cancellation terms', 'woocommerce-payments' ),
+		body: __(
+			'Cancellation policies, terms shown at checkout, and cancellation records are central to subscription disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'subscription_canceled' ],
@@ -321,15 +401,24 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			},
 		},
 		link: {
-			label: 'Configure subscription settings',
-			href: '/wp-admin/admin.php?page=wc-settings&tab=subscriptions',
+			label: __(
+				'Configure subscription settings',
+				'woocommerce-payments'
+			),
+			href: getAdminUrl( {
+				page: 'wc-settings',
+				tab: 'subscriptions',
+			} ),
 		},
 	},
 	{
 		id: 'c6-cancellation-add-exactly-one',
 		urgency: 'tip',
-		title: 'Add cancellation documentation',
-		body: 'Documented cancellation terms and supporting records help defend subscription disputes.',
+		title: __( 'Add cancellation documentation', 'woocommerce-payments' ),
+		body: __(
+			'Documented cancellation terms and supporting records help defend subscription disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'subscription_canceled' ],
@@ -340,15 +429,24 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			},
 		},
 		link: {
-			label: 'Configure subscription settings',
-			href: '/wp-admin/admin.php?page=wc-settings&tab=subscriptions',
+			label: __(
+				'Configure subscription settings',
+				'woocommerce-payments'
+			),
+			href: getAdminUrl( {
+				page: 'wc-settings',
+				tab: 'subscriptions',
+			} ),
 		},
 	},
 	{
 		id: 'c6-cancellation-add-exactly-one-lost',
 		urgency: 'tip',
-		title: 'Add cancellation documentation',
-		body: 'Documented cancellation terms and supporting records help defend subscription disputes.',
+		title: __( 'Add cancellation documentation', 'woocommerce-payments' ),
+		body: __(
+			'Documented cancellation terms and supporting records help defend subscription disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'subscription_canceled' ],
@@ -359,15 +457,24 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			},
 		},
 		link: {
-			label: 'Configure subscription settings',
-			href: '/wp-admin/admin.php?page=wc-settings&tab=subscriptions',
+			label: __(
+				'Configure subscription settings',
+				'woocommerce-payments'
+			),
+			href: getAdminUrl( {
+				page: 'wc-settings',
+				tab: 'subscriptions',
+			} ),
 		},
 	},
 	{
 		id: 'c6-cancellation-add-none-on-won',
 		urgency: 'tip',
-		title: 'Add cancellation documentation',
-		body: 'Documented cancellation terms and supporting records help defend subscription disputes.',
+		title: __( 'Add cancellation documentation', 'woocommerce-payments' ),
+		body: __(
+			'Documented cancellation terms and supporting records help defend subscription disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'subscription_canceled' ],
@@ -377,8 +484,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			},
 		},
 		link: {
-			label: 'Configure subscription settings',
-			href: '/wp-admin/admin.php?page=wc-settings&tab=subscriptions',
+			label: __(
+				'Configure subscription settings',
+				'woocommerce-payments'
+			),
+			href: getAdminUrl( {
+				page: 'wc-settings',
+				tab: 'subscriptions',
+			} ),
 		},
 	},
 
@@ -386,8 +499,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c7-duplicate-charge-explained',
 		urgency: 'positive',
-		title: 'Two charges, clearly explained',
-		body: 'An explanation alongside documentation made the two charges easier to distinguish.',
+		title: __( 'Two charges, clearly explained', 'woocommerce-payments' ),
+		body: __(
+			'An explanation alongside documentation made the two charges easier to distinguish.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'duplicate' ],
@@ -403,8 +519,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c7-duplicate-charge-explain',
 		urgency: 'critical',
-		title: 'Explain and document the duplicate charge',
-		body: 'A clear explanation alongside documentation distinguishing the charges is central evidence for duplicate disputes.',
+		title: __(
+			'Explain and document the duplicate charge',
+			'woocommerce-payments'
+		),
+		body: __(
+			'A clear explanation alongside documentation distinguishing the charges is central evidence for duplicate disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'duplicate' ],
@@ -420,8 +542,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c7-duplicate-charge-missing-piece-won',
 		urgency: 'tip',
-		title: 'Add the missing duplicate-charge piece',
-		body: 'An explanation and documentation together help build out the defense for duplicate disputes.',
+		title: __(
+			'Add the missing duplicate-charge piece',
+			'woocommerce-payments'
+		),
+		body: __(
+			'An explanation and documentation together help build out the defense for duplicate disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'duplicate' ],
@@ -438,8 +566,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c7-duplicate-charge-missing-piece-lost',
 		urgency: 'tip',
-		title: 'Add the missing duplicate-charge piece',
-		body: 'An explanation and documentation together help build out the defense for duplicate disputes.',
+		title: __(
+			'Add the missing duplicate-charge piece',
+			'woocommerce-payments'
+		),
+		body: __(
+			'An explanation and documentation together help build out the defense for duplicate disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'duplicate' ],
@@ -465,8 +599,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c8-service-date-provided',
 		urgency: 'positive',
-		title: 'Service date on record',
-		body: 'Including the service date helped tie the transaction to a verifiable event.',
+		title: __( 'Service date on record', 'woocommerce-payments' ),
+		body: __(
+			'Including the service date helped tie the transaction to a verifiable event.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'fraudulent' ],
@@ -484,8 +621,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c8-service-date-include',
 		urgency: 'critical',
-		title: 'Include the service date',
-		body: 'The service date ties the transaction to a verifiable event, which can help defend fraud disputes.',
+		title: __( 'Include the service date', 'woocommerce-payments' ),
+		body: __(
+			'The service date ties the transaction to a verifiable event, which can help defend fraud disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'fraudulent' ],
@@ -503,8 +643,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c8-service-date-document',
 		urgency: 'tip',
-		title: 'Document the service date',
-		body: 'Documenting the service date helps tie transactions to verifiable events in fraud disputes.',
+		title: __( 'Document the service date', 'woocommerce-payments' ),
+		body: __(
+			'Documenting the service date helps tie transactions to verifiable events in fraud disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'fraudulent' ],
@@ -529,9 +672,12 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c8b-shipping-date-provided',
 		urgency: 'positive',
-		title: 'Shipping date on record',
 		// TODO(riskops): final wording from RSM-1170 for the fraudulent+physical case
-		body: 'Including the shipping date helped tie the transaction to a verifiable event.',
+		title: __( 'Shipping date on record', 'woocommerce-payments' ),
+		body: __(
+			'Including the shipping date helped tie the transaction to a verifiable event.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'fraudulent' ],
@@ -542,9 +688,12 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c8b-shipping-date-include',
 		urgency: 'critical',
-		title: 'Include the shipping date',
 		// TODO(riskops): final wording from RSM-1169 for the fraudulent+physical case
-		body: 'The shipping date ties the transaction to a verifiable event, which can help defend fraud disputes.',
+		title: __( 'Include the shipping date', 'woocommerce-payments' ),
+		body: __(
+			'The shipping date ties the transaction to a verifiable event, which can help defend fraud disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'fraudulent' ],
@@ -555,9 +704,12 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c8b-shipping-date-document',
 		urgency: 'tip',
-		title: 'Document the shipping date',
 		// TODO(riskops): final wording from RSM-1170 for the fraudulent+physical case
-		body: 'Documenting the shipping date helps tie transactions to verifiable events in fraud disputes.',
+		title: __( 'Document the shipping date', 'woocommerce-payments' ),
+		body: __(
+			'Documenting the shipping date helps tie transactions to verifiable events in fraud disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'fraudulent' ],
@@ -570,8 +722,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c9-service-documentation-provided',
 		urgency: 'positive',
-		title: 'Proof of service delivered',
-		body: 'Service documentation helped establish that the service was delivered.',
+		title: __( 'Proof of service delivered', 'woocommerce-payments' ),
+		body: __(
+			'Service documentation helped establish that the service was delivered.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -590,8 +745,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c9-service-documentation-attach-won',
 		urgency: 'tip',
-		title: 'Attach proof the service was delivered',
-		body: 'Records showing the event, reservation, or service was completed help defend service-based disputes.',
+		title: __(
+			'Attach proof the service was delivered',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Records showing the event, reservation, or service was completed help defend service-based disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -610,8 +771,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c9-service-documentation-attach-lost',
 		urgency: 'tip',
-		title: 'Attach proof the service was delivered',
-		body: 'Records showing the event, reservation, or service was completed help defend service-based disputes.',
+		title: __(
+			'Attach proof the service was delivered',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Records showing the event, reservation, or service was completed help defend service-based disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [
@@ -632,8 +799,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c10-access-log-provided',
 		urgency: 'positive',
-		title: 'Usage records on file',
-		body: 'Your access logs helped show the customer used the product.',
+		title: __( 'Usage records on file', 'woocommerce-payments' ),
+		body: __(
+			'Your access logs helped show the customer used the product.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -648,8 +818,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c10-access-log-include',
 		urgency: 'critical',
-		title: 'Include usage records for digital products',
-		body: 'Access logs showing the customer used the product are central evidence for digital product-quality disputes.',
+		title: __(
+			'Include usage records for digital products',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Access logs showing the customer used the product are central evidence for digital product-quality disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'product_unacceptable' ],
@@ -660,8 +836,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c10-access-log-add',
 		urgency: 'tip',
-		title: 'Add access logs to your evidence',
-		body: 'Usage records help defend digital product disputes by showing the customer accessed the product.',
+		title: __( 'Add access logs to your evidence', 'woocommerce-payments' ),
+		body: __(
+			'Usage records help defend digital product disputes by showing the customer accessed the product.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [
@@ -678,8 +857,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c11a-signature-provided',
 		urgency: 'positive',
-		title: 'Signed delivery proof',
-		body: 'Signed delivery records helped confirm the customer received the product.',
+		title: __( 'Signed delivery proof', 'woocommerce-payments' ),
+		body: __(
+			'Signed delivery records helped confirm the customer received the product.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'product_not_received' ],
@@ -690,8 +872,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c11a-signature-include',
 		urgency: 'critical',
-		title: 'Include signed delivery proof',
-		body: 'Signed proof of delivery confirms the customer received the product, which is central to product-not-received disputes.',
+		title: __( 'Include signed delivery proof', 'woocommerce-payments' ),
+		body: __(
+			'Signed proof of delivery confirms the customer received the product, which is central to product-not-received disputes.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'product_not_received' ],
@@ -699,15 +884,21 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			requireMissing: { keys: [ 'customer_signature' ] },
 		},
 		link: {
-			label: 'Set up shipping with delivery confirmation',
+			label: __(
+				'Set up shipping with delivery confirmation',
+				'woocommerce-payments'
+			),
 			href: 'https://woocommerce.com/products/shipment-tracking/',
 		},
 	},
 	{
 		id: 'c11a-signature-add',
 		urgency: 'tip',
-		title: 'Add signed delivery proof',
-		body: 'Where signed delivery records are available, they tend to strengthen physical goods dispute evidence.',
+		title: __( 'Add signed delivery proof', 'woocommerce-payments' ),
+		body: __(
+			'Where signed delivery records are available, they tend to strengthen physical goods dispute evidence.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'product_not_received' ],
@@ -715,7 +906,10 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			requireMissing: { keys: [ 'customer_signature' ] },
 		},
 		link: {
-			label: 'Set up shipping with delivery confirmation',
+			label: __(
+				'Set up shipping with delivery confirmation',
+				'woocommerce-payments'
+			),
 			href: 'https://woocommerce.com/products/shipment-tracking/',
 		},
 	},
@@ -724,8 +918,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c11b-signature-provided',
 		urgency: 'positive',
-		title: 'Signed delivery proof (refund case)',
-		body: 'Signed delivery proof from the original order showed the customer received the product before disputing the refund.',
+		title: __(
+			'Signed delivery proof (refund case)',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Signed delivery proof from the original order showed the customer received the product before disputing the refund.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'credit_not_processed' ],
@@ -736,8 +936,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c11b-signature-include',
 		urgency: 'critical',
-		title: 'Include signed delivery proof from the original order',
-		body: 'For refund disputes on physical goods, signed delivery proof from the original order establishes the customer received the product before the dispute.',
+		title: __(
+			'Include signed delivery proof from the original order',
+			'woocommerce-payments'
+		),
+		body: __(
+			'For refund disputes on physical goods, signed delivery proof from the original order establishes the customer received the product before the dispute.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'credit_not_processed' ],
@@ -745,15 +951,24 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			requireMissing: { keys: [ 'customer_signature' ] },
 		},
 		link: {
-			label: 'Set up shipping with delivery confirmation',
+			label: __(
+				'Set up shipping with delivery confirmation',
+				'woocommerce-payments'
+			),
 			href: 'https://woocommerce.com/products/shipment-tracking/',
 		},
 	},
 	{
 		id: 'c11b-signature-consider',
 		urgency: 'tip',
-		title: 'Consider attaching signed delivery proof',
-		body: 'Signed delivery records from the original order can support refund disputes on physical goods.',
+		title: __(
+			'Consider attaching signed delivery proof',
+			'woocommerce-payments'
+		),
+		body: __(
+			'Signed delivery records from the original order can support refund disputes on physical goods.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'credit_not_processed' ],
@@ -761,7 +976,10 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			requireMissing: { keys: [ 'customer_signature' ] },
 		},
 		link: {
-			label: 'Set up shipping with delivery confirmation',
+			label: __(
+				'Set up shipping with delivery confirmation',
+				'woocommerce-payments'
+			),
 			href: 'https://woocommerce.com/products/shipment-tracking/',
 		},
 	},
@@ -773,8 +991,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c12-cover-letter-include',
 		urgency: 'tip',
-		title: 'Include a cover letter with your evidence',
-		body: 'The cover letter is how you introduce your case and tie your evidence together.',
+		title: __(
+			'Include a cover letter with your evidence',
+			'woocommerce-payments'
+		),
+		body: __(
+			'The cover letter is how you introduce your case and tie your evidence together.',
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [
@@ -800,16 +1024,26 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c14-prior-history-mention',
 		urgency: 'tip',
-		title: 'Mention prior good history with the customer',
-		body: "Where possible, mention in your cover letter the customer's prior successful orders, and attach proof from their order history.",
+		title: __(
+			'Mention prior good history with the customer',
+			'woocommerce-payments'
+		),
+		body: __(
+			"Where possible, mention in your cover letter the customer's prior successful orders, and attach proof from their order history.",
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'fraudulent' ],
 		},
 		link: {
-			// TODO(wiring): substitute {customer_id} when dispute.order.customer reaches the component.
-			label: "View customer's order history",
-			href: '/wp-admin/edit.php?post_type=shop_order',
+			// TODO(wiring): filter to this customer's orders once
+			// dispute.order.customer reaches the component.
+			label: __(
+				"View customer's order history",
+				'woocommerce-payments'
+			),
+			href: addQueryArgs( 'edit.php', { post_type: 'shop_order' } ),
 		},
 	},
 
@@ -817,8 +1051,14 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c15-no-evidence-submit',
 		urgency: 'critical',
-		title: 'Submit evidence with your dispute response',
-		body: "Without evidence to weigh against the customer's claim, disputes generally default in the customer's favor.",
+		title: __(
+			'Submit evidence with your dispute response',
+			'woocommerce-payments'
+		),
+		body: __(
+			"Without evidence to weigh against the customer's claim, disputes generally default in the customer's favor.",
+			'woocommerce-payments'
+		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [
@@ -838,16 +1078,23 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'noncompliant',
 				'unrecognized',
 			],
-			// Predicate: at least one of these key evidence fields is provided.
-			// When ALL are missing, the entry fires (max:0) and its suppression
-			// rule hides every other critical entry on the dispute.
+			// Predicate: at least one wizard-submittable evidence field is
+			// provided. When ALL are missing, the entry fires (max:0) and its
+			// suppression rule hides every other critical entry on the dispute.
+			// The key set must cover every field the response wizard can
+			// collect — otherwise the entry can fire (and suppress criticals)
+			// while meaningful evidence sits in an unlisted field.
 			requireProvided: {
 				keys: [
 					'customer_communication',
 					'receipt',
 					'shipping_documentation',
 					'shipping_tracking_number',
+					'shipping_carrier',
+					'shipping_date',
+					'shipping_address',
 					'service_documentation',
+					'service_date',
 					'access_activity_log',
 					'duplicate_charge_documentation',
 					'duplicate_charge_explanation',
@@ -856,6 +1103,7 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 					'cancellation_policy',
 					'cancellation_rebuttal',
 					'customer_signature',
+					'customer_purchase_ip',
 					'uncategorized_file',
 					'uncategorized_text',
 				],
@@ -863,7 +1111,7 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			},
 		},
 		link: {
-			label: 'Learn how to defend disputes',
+			label: __( 'Learn how to defend disputes', 'woocommerce-payments' ),
 			href: 'https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/#be-prepared',
 		},
 		suppressOtherCriticals: true,
