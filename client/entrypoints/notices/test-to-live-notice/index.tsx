@@ -7,10 +7,10 @@ import { createRoot, Root } from 'react-dom/client';
 /**
  * Internal dependencies
  */
-import OneAndDoneNotice from './components/notice';
-import './style.scss';
+import TestToLiveNotice from './components/notice';
+import '../style.scss';
 
-const containerId = 'wcpay-one-and-done-notice';
+const containerId = 'wcpay-test-to-live-notice';
 let mountedContainer: HTMLElement | null = null;
 let root: Root | null = null;
 
@@ -84,7 +84,7 @@ const tryMount = () => {
 	}
 
 	root = createRoot( container );
-	root.render( <OneAndDoneNotice /> );
+	root.render( <TestToLiveNotice /> );
 	mountedContainer = container;
 };
 
