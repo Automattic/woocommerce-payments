@@ -88,6 +88,7 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetTransactions::class,
 		\WCPay\Internal\Abilities\Domain\GetDisputes::class,
 		\WCPay\Internal\Abilities\Domain\GetAuthorizations::class,
+		\WCPay\Internal\Abilities\Domain\GetDeposits::class,
 	];
 
 	/**
@@ -214,8 +215,6 @@ class AbilitiesRegistrar {
 		}
 
 		self::$abilities_registered = true;
-
-		self::register_get_deposits_ability();
 	}
 
 	/**
@@ -255,16 +254,6 @@ class AbilitiesRegistrar {
 		}
 		self::$category_registered  = false;
 		self::$abilities_registered = false;
-	}
-
-	/**
-	 * Execute callback — `get-deposits`.
-	 *
-	 * @param mixed $input Ability input.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_deposits( $input = null ) {
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits', is_array( $input ) ? $input : [] );
 	}
 
 	/**
@@ -346,26 +335,6 @@ class AbilitiesRegistrar {
 	 */
 	private static function woo_abilities_loader_available(): bool {
 		return class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' );
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-deposits` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_deposits_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-deposits',
-			[
-				'label'               => __( 'List payouts', 'woocommerce-payments' ),
-				'description'         => __( 'List payouts (Stripe deposits) with status, date-range, and currency filters. Answers \'show me my recent payouts\'.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::deposits_list_input_schema(),
-				'execute_callback'    => [ __CLASS__, 'execute_get_deposits' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
 	}
 
 	/**
