@@ -190,7 +190,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			[ 'woocommerce-payments/get-payment-intent' ],
 			[ 'woocommerce-payments/get-charge' ],
 			[ 'woocommerce-payments/get-timeline' ],
-			[ 'woocommerce-payments/get-active-loan-summary' ],
 		];
 	}
 
@@ -274,7 +273,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 			'get-payment-intent'         => [ 'execute_get_payment_intent', [ 'payment_intent_id' => 'pi_test_invalid' ], '/wc/v3/payments/payment_intents/pi_test_invalid' ],
 			'get-charge'                 => [ 'execute_get_charge', [ 'charge_id' => 'ch_test_invalid' ], '/wc/v3/payments/charges/ch_test_invalid' ],
 			'get-timeline'               => [ 'execute_get_timeline', [ 'intention_id' => 'pi_test_invalid' ], '/wc/v3/payments/timeline/pi_test_invalid' ],
-			'get-active-loan-summary'    => [ 'execute_get_active_loan_summary', null, '/wc/v3/payments/capital/active_loan_summary' ],
 		];
 	}
 

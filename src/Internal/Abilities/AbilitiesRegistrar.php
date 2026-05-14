@@ -75,6 +75,7 @@ class AbilitiesRegistrar {
 	 */
 	private const ABILITY_CLASSES = [
 		\WCPay\Internal\Abilities\Domain\GetAccount::class,
+		\WCPay\Internal\Abilities\Domain\GetActiveLoanSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetDepositsOverview::class,
 	];
 
@@ -215,7 +216,6 @@ class AbilitiesRegistrar {
 		self::register_get_payment_intent_ability();
 		self::register_get_charge_ability();
 		self::register_get_timeline_ability();
-		self::register_get_active_loan_summary_ability();
 	}
 
 	/**
@@ -403,16 +403,6 @@ class AbilitiesRegistrar {
 		}
 		$intent_id = $input['intention_id'];
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/timeline/' . rawurlencode( $intent_id ) );
-	}
-
-	/**
-	 * Execute callback — `get-active-loan-summary`.
-	 *
-	 * @param mixed $input Unused.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_active_loan_summary( $input = null ) {
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/capital/active_loan_summary' );
 	}
 
 	/**
@@ -801,26 +791,6 @@ class AbilitiesRegistrar {
 					'additionalProperties' => false,
 				],
 				'execute_callback'    => [ __CLASS__, 'execute_get_timeline' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-active-loan-summary` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_active_loan_summary_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-active-loan-summary',
-			[
-				'label'               => __( 'Get active Capital loan summary', 'woocommerce-payments' ),
-				'description'         => __( 'Return the merchant\'s active Stripe Capital loan summary. Answers \'how much do I still owe on my Capital loan and what is the daily repayment rate?\'. Returns an empty shape if no loan is active.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::zero_arg_input_schema(),
-				'execute_callback'    => [ __CLASS__, 'execute_get_active_loan_summary' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				'meta'                => self::read_meta(),
 			]
