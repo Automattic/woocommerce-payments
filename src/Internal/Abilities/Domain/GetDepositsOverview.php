@@ -1,0 +1,86 @@
+<?php
+/**
+ * Get Deposits Overview ability definition.
+ *
+ * @package WooCommerce\Payments
+ */
+
+// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
+
+namespace WCPay\Internal\Abilities\Domain;
+
+use Automattic\WooCommerce\Abilities\AbilityDefinition;
+use WCPay\Internal\Abilities\AbilitiesRegistrar;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Registers the `woocommerce-payments/get-deposits-overview` ability.
+ *
+ * Zero-arg read that returns a per-currency overview of upcoming and
+ * recent payouts (Stripe deposits). Delegates to
+ * `WC_REST_Payments_Deposits_Controller` via the `/wc/v3/payments/deposits/overview-all`
+ * endpoint. Answers "when is my next payout and how much?".
+ *
+ * @internal Only loaded when WooCommerce Core 10.9+ is active. The
+ * `AbilitiesRegistrar` short-circuits before referencing this class on
+ * earlier WC versions; PHP's lazy autoload means the unresolved
+ * AbilityDefinition interface FQN never reaches the parser there.
+ */
+class GetDepositsOverview implements AbilityDefinition {
+
+	/**
+	 * Return the ability name.
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return 'woocommerce-payments/get-deposits-overview';
+	}
+
+	/**
+	 * Return registration args for this ability.
+	 *
+	 * @return array
+	 */
+	public static function get_registration_args(): array {
+		return [
+			'label'               => __( 'Get payouts overview', 'woocommerce-payments' ),
+			'description'         => __( 'Return a per-currency overview of upcoming and recent payouts (Stripe deposits). Answers \'when is my next payout and how much?\'.', 'woocommerce-payments' ),
+			'category'            => AbilitiesRegistrar::CATEGORY_SLUG,
+			'input_schema'        => [
+				'type'                 => 'object',
+				'default'              => (object) [],
+				'properties'           => [],
+				'additionalProperties' => false,
+			],
+			'execute_callback'    => [ self::class, 'execute' ],
+			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
+			'meta'                => [
+				'annotations'  => [
+					'readonly'    => true,
+					'destructive' => false,
+					'idempotent'  => true,
+				],
+				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => true,
+				],
+			],
+		];
+	}
+
+	/**
+	 * Execute the get-deposits-overview ability.
+	 *
+	 * Delegates to the `/wc/v3/payments/deposits/overview-all` REST endpoint
+	 * to return a per-currency overview of upcoming and recent payouts.
+	 *
+	 * @param mixed $input Unused (zero-arg ability); accepted to match the
+	 *                     Abilities API execute_callback signature.
+	 * @return array|\WP_Error Deposits overview data array, or WP_Error on failure.
+	 */
+	public static function execute( $input = null ) {
+		return AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits/overview-all' );
+	}
+}

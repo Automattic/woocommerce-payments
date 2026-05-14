@@ -75,6 +75,7 @@ class AbilitiesRegistrar {
 	 */
 	private const ABILITY_CLASSES = [
 		\WCPay\Internal\Abilities\Domain\GetAccount::class,
+		\WCPay\Internal\Abilities\Domain\GetDepositsOverview::class,
 	];
 
 	/**
@@ -202,7 +203,6 @@ class AbilitiesRegistrar {
 
 		self::$abilities_registered = true;
 
-		self::register_get_deposits_overview_ability();
 		self::register_get_transactions_ability();
 		self::register_get_transactions_summary_ability();
 		self::register_get_disputes_ability();
@@ -255,16 +255,6 @@ class AbilitiesRegistrar {
 		}
 		self::$category_registered  = false;
 		self::$abilities_registered = false;
-	}
-
-	/**
-	 * Execute callback — `get-deposits-overview`.
-	 *
-	 * @param mixed $input Unused.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_deposits_overview( $input = null ) {
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits/overview-all' );
 	}
 
 	/**
@@ -504,26 +494,6 @@ class AbilitiesRegistrar {
 	 */
 	private static function woo_abilities_loader_available(): bool {
 		return class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' );
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-deposits-overview` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_deposits_overview_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-deposits-overview',
-			[
-				'label'               => __( 'Get payouts overview', 'woocommerce-payments' ),
-				'description'         => __( 'Return a per-currency overview of upcoming and recent payouts (Stripe deposits). Answers \'when is my next payout and how much?\'.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::zero_arg_input_schema(),
-				'execute_callback'    => [ __CLASS__, 'execute_get_deposits_overview' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
 	}
 
 	/**
