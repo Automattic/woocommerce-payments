@@ -37,7 +37,7 @@ class GetDepositsSummaryTest extends WCPAY_UnitTestCase {
 		$this->assertTrue( $args['meta']['show_in_rest'] );
 		$this->assertTrue( $args['meta']['annotations']['readonly'] );
 		$this->assertSame( 'object', $args['input_schema']['type'] );
-		$this->assertTrue( $args['input_schema']['additionalProperties'] );
+		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 	}
 
 	public function test_execute_delegates_to_deposits_summary_endpoint() {

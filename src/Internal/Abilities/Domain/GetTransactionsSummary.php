@@ -92,7 +92,7 @@ class GetTransactionsSummary implements AbilityDefinition {
 						'description' => 'Filter to transactions belonging to a single payout (deposit) ID. Accepted by both the list and the summary endpoints.',
 					],
 				],
-				'additionalProperties' => true,
+				'additionalProperties' => false,
 			],
 			'execute_callback'    => [ self::class, 'execute' ],
 			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],

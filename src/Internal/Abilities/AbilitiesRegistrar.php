@@ -75,12 +75,12 @@ class AbilitiesRegistrar {
 	 */
 	private const ABILITY_CLASSES = [
 		\WCPay\Internal\Abilities\Domain\GetAccount::class,
-		\WCPay\Internal\Abilities\Domain\GetActiveLoanSummary::class,
-		\WCPay\Internal\Abilities\Domain\GetAuthorizationsSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetDepositsOverview::class,
-		\WCPay\Internal\Abilities\Domain\GetDepositsSummary::class,
-		\WCPay\Internal\Abilities\Domain\GetDisputesSummary::class,
+		\WCPay\Internal\Abilities\Domain\GetActiveLoanSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetTransactionsSummary::class,
+		\WCPay\Internal\Abilities\Domain\GetDisputesSummary::class,
+		\WCPay\Internal\Abilities\Domain\GetAuthorizationsSummary::class,
+		\WCPay\Internal\Abilities\Domain\GetDepositsSummary::class,
 	];
 
 	/**

@@ -73,7 +73,7 @@ class GetDisputesSummary implements AbilityDefinition {
 					],
 					'status_is_not'     => [ 'type' => 'string' ],
 				],
-				'additionalProperties' => true,
+				'additionalProperties' => false,
 			],
 			'execute_callback'    => [ self::class, 'execute' ],
 			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
