@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -17,19 +15,12 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Registers the `woocommerce-payments/get-deposits` ability.
  *
- * Paginated list of payouts (Stripe deposits). Adopts the WC 10.9 paginated
- * output envelope: `{ deposits: [...], total_pages, page, per_page }`.
+ * Paginated list of payouts (Stripe deposits). Returns the WC 10.9 paginated
+ * envelope: `{ deposits: [...], total_pages, page, per_page }`. `page` /
+ * `per_page` echo what the ability sent to the controller (the caller's
+ * input, or this class's defaults).
  *
- * WIRE-FORMAT BREAK vs the pre-migration ability: previously returned the
- * controller's raw response. Now wraps that in the canonical envelope.
- * Acceptable because the `woocommerce_payments_abilities_enabled` filter
- * is default false and there are no production consumers.
- *
- * Input shape unchanged (page + per_page + payout filters); the registrar's
- * `translate_pagination_keys()` helper still maps these to the WCPay
- * `Paginated` request class's `pagesize` at the delegate boundary.
- *
- * @internal Only loaded when WooCommerce Core 10.9+ is active.
+ * @see \WC_REST_Payments_Deposits_Controller::get_deposits()
  */
 class GetDeposits extends AbstractWCPayAbility implements AbilityDefinition {
 
@@ -110,15 +101,15 @@ class GetDeposits extends AbstractWCPayAbility implements AbilityDefinition {
 	/**
 	 * Execute the get-deposits ability.
 	 *
-	 * Wraps the controller response in the WC 10.9 paginated envelope.
+	 * @see \WC_REST_Payments_Deposits_Controller::get_deposits()
 	 *
 	 * @param mixed $input Ability input.
 	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {
-		$input    = is_array( $input ) ? $input : [];
-		$page     = isset( $input['page'] ) ? (int) $input['page'] : 1;
-		$per_page = isset( $input['per_page'] ) ? (int) $input['per_page'] : self::DEFAULT_PER_PAGE;
+		$input             = is_array( $input ) ? $input : [];
+		$input['page']     = isset( $input['page'] ) ? (int) $input['page'] : 1;
+		$input['per_page'] = isset( $input['per_page'] ) ? (int) $input['per_page'] : self::DEFAULT_PER_PAGE;
 
 		$response = AbilitiesRegistrar::delegate_to_rest_controller(
 			'GET',
@@ -126,6 +117,6 @@ class GetDeposits extends AbstractWCPayAbility implements AbilityDefinition {
 			$input
 		);
 
-		return self::wrap_paginated_response( $response, 'deposits', $page, $per_page );
+		return self::wrap_paginated_response( $response, 'deposits', $input['page'], $input['per_page'] );
 	}
 }
