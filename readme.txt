@@ -87,6 +87,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 10.8.0-test-1 - unreleased =
+
+
 = 10.8.0 - 2026-05-20 =
 * Add - Add a terminal payment preparation endpoint for single-step Interac and EFTPOS capture flows.
 * Add - Add card brand logo and last 4 digits to the WooPay express checkout button when available
