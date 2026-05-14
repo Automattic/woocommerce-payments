@@ -7,6 +7,8 @@
 
 namespace WCPay\WooPay\Tracking_Providers;
 
+use WCPay\WooPay\WooPay_Order_Tracking_Sync;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -117,7 +119,7 @@ class WooPay_AfterShip_Provider implements WooPay_Tracking_Provider {
 				// add a `sanitize_url()` helper mirroring Phase 1's pattern.
 				'tracking_url'    => '',
 				'date_shipped'    => $date_shipped,
-				'status'          => 'fulfilled',
+				'status'          => WooPay_Order_Tracking_Sync::STATUS_FULFILLED,
 				'items'           => [],
 			];
 		}

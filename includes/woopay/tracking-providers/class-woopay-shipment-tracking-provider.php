@@ -7,6 +7,8 @@
 
 namespace WCPay\WooPay\Tracking_Providers;
 
+use WCPay\WooPay\WooPay_Order_Tracking_Sync;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -83,7 +85,7 @@ class WooPay_Shipment_Tracking_Provider implements WooPay_Tracking_Provider {
 				'carrier_name'    => self::sanitize_field( $carrier_raw ),
 				'tracking_url'    => self::sanitize_url( $item['custom_tracking_link'] ?? '' ),
 				'date_shipped'    => $date_shipped,
-				'status'          => 'fulfilled',
+				'status'          => WooPay_Order_Tracking_Sync::STATUS_FULFILLED,
 				'items'           => [],
 			];
 		}

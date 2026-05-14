@@ -6,6 +6,7 @@
  */
 
 use WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider;
+use WCPay\WooPay\WooPay_Order_Tracking_Sync;
 
 require_once __DIR__ . '/stub-wc-fulfillment.php';
 require_once __DIR__ . '/fake-fulfillment.php';
@@ -83,6 +84,22 @@ class WooPay_Fulfillments_API_Provider_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'https://wwwapps.ups.com/track/?tracknum=1Z999AA10123456784', $shipments[0]['tracking_url'] );
 		$this->assertEquals( '2024-03-13', $shipments[0]['date_shipped'] );
 		$this->assertEquals( 'fulfilled', $shipments[0]['status'] );
+	}
+
+	public function test_get_shipments_maps_unfulfilled_status_to_canonical_fulfilled() {
+		// WC Fulfillments uses 'fulfilled' / 'unfulfilled' (binary off is_fulfilled).
+		// Both must map to canonical STATUS_FULFILLED upstream of the canonical-
+		// coercion logger, so 'unfulfilled' with a tracking number doesn't spam logs.
+		$order = WC_Helper_Order::create_order();
+
+		Fake_Fulfillments_Data_Store::$next_result = [
+			new Fake_Fulfillment( [ '_tracking_number' => 'X1' ], 'unfulfilled' ),
+		];
+
+		$shipments = $this->provider->get_shipments( $order );
+
+		$this->assertCount( 1, $shipments );
+		$this->assertEquals( WooPay_Order_Tracking_Sync::STATUS_FULFILLED, $shipments[0]['status'] );
 	}
 
 	public function test_get_shipments_skips_fulfillments_without_tracking_number() {

@@ -12,10 +12,12 @@ use WC_Payments_Account;
 use WC_Payments_API_Client;
 use WCPay\Exceptions\API_Exception;
 use WCPay\WooPay\Tracking_Providers\WooPay_Tracking_Provider;
+use WCPay\WooPay\Tracking_Providers\WooPay_Status_Overlay_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_Fulfillments_API_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_ShipStation_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_Shipment_Tracking_Provider;
 use WCPay\WooPay\Tracking_Providers\WooPay_AfterShip_Provider;
+use WCPay\WooPay\Tracking_Providers\WooPay_TrackShip_Provider;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -38,12 +40,44 @@ class WooPay_Order_Tracking_Sync {
 	const DEBOUNCE_TRANSIENT_PREFIX                   = 'woopay_tracking_webhook_';
 	const DEBOUNCE_SECONDS                            = 5;
 
+	// Canonical shipment status vocabulary. The WooPay receiver is coded against
+	// this exact set (client/utils/shipments.js#SHIPMENT_STATUSES on the
+	// shipping-tracker-banner-redesign branch). Providers MUST emit one of
+	// these values; raw provider-specific strings are rejected by
+	// ensure_canonical_status() and downgraded to STATUS_FULFILLED.
+	//
+	// Note: "pending" is intentionally NOT a shipment status — "order placed
+	// with no tracking yet" is an order-level state, signalled by zero
+	// shipments in the payload. The receiver renders that as "Ordered {date}".
+	const STATUS_FULFILLED            = 'fulfilled';
+	const STATUS_IN_TRANSIT           = 'in_transit';
+	const STATUS_OUT_FOR_DELIVERY     = 'out_for_delivery';
+	const STATUS_AVAILABLE_FOR_PICKUP = 'available_for_pickup';
+	const STATUS_DELIVERED            = 'delivered';
+	const STATUS_EXCEPTION            = 'exception';
+
+	const SHIPMENT_STATUSES = [
+		self::STATUS_FULFILLED,
+		self::STATUS_IN_TRANSIT,
+		self::STATUS_OUT_FOR_DELIVERY,
+		self::STATUS_AVAILABLE_FOR_PICKUP,
+		self::STATUS_DELIVERED,
+		self::STATUS_EXCEPTION,
+	];
+
 	/**
-	 * Resolved providers for this instance.
+	 * Resolved primary tracking providers (produce shipments).
 	 *
 	 * @var WooPay_Tracking_Provider[]|null
 	 */
 	private static $providers = null;
+
+	/**
+	 * Resolved status-overlay providers (enrich shipments with carrier status).
+	 *
+	 * @var WooPay_Status_Overlay_Provider[]|null
+	 */
+	private static $overlay_providers = null;
 
 	/**
 	 * WC_Payments_Account instance.
@@ -74,7 +108,8 @@ class WooPay_Order_Tracking_Sync {
 		add_filter( 'woocommerce_valid_webhook_resources', [ __CLASS__, 'add_resource' ], 10, 1 );
 		add_filter( 'woocommerce_valid_webhook_events', [ __CLASS__, 'add_event' ], 10, 1 );
 
-		// Register hooks from all available providers.
+		// Register get_hooks() entries from primary providers only — overlay
+		// providers do not contribute to the send_webhook firing surface.
 		foreach ( self::get_providers() as $provider ) {
 			foreach ( $provider->get_hooks() as $hook_config ) {
 				if ( isset( $hook_config['meta_key'] ) ) {
@@ -113,19 +148,34 @@ class WooPay_Order_Tracking_Sync {
 					);
 				}
 			}
+		}
 
-			// Some providers persist hook arguments before send_webhook fires.
-			// Required when a plugin's hook delivers tracking data only as a
-			// transient argument (e.g. ShipStation in standalone mode) — by
-			// the time WC_Webhook delivery builds the payload, the hook arg
-			// is gone, so the provider must capture it into stable storage.
-			//
-			// Dispatched via call_user_func with a string-class callable so
-			// PHPStan can resolve the static method from the runtime class
-			// instead of the WooPay_Tracking_Provider interface (which
-			// intentionally does not declare this optional method).
+		// Persistence hook registration is independent of which chain a
+		// provider lives in. Overlay-only providers (TrackShip is the
+		// canonical case — it doesn't produce primary shipments but does
+		// need to capture transient hook args into stable storage) must
+		// be able to register listeners without also appearing in the
+		// primary chain.
+		//
+		// Iterate both lists, deduplicating by class name. register_persistence_hooks()
+		// is a static method, so two separate instances of the same provider class
+		// (e.g. defaults and a filter both instantiating independently) would still
+		// register the same listener. Dedup-by-class guarantees one call per class
+		// regardless of how many instances exist across the chains.
+		//
+		// Dispatched via call_user_func with a string-class callable so
+		// PHPStan can resolve the static method from the runtime class
+		// instead of the WooPay_Tracking_Provider interface (which
+		// intentionally does not declare this optional method).
+		$seen_provider_classes = [];
+		foreach ( array_merge( self::get_providers(), self::get_overlay_providers() ) as $provider ) {
+			$class = get_class( $provider );
+			if ( isset( $seen_provider_classes[ $class ] ) ) {
+				continue;
+			}
+			$seen_provider_classes[ $class ] = true;
 			if ( method_exists( $provider, 'register_persistence_hooks' ) ) {
-				call_user_func( [ get_class( $provider ), 'register_persistence_hooks' ] );
+				call_user_func( [ $class, 'register_persistence_hooks' ] );
 			}
 		}
 
@@ -155,6 +205,11 @@ class WooPay_Order_Tracking_Sync {
 			new WooPay_ShipStation_Provider(),
 			// Priority 4: AfterShip WooCommerce Tracking (1M+ downloads, separate meta key).
 			new WooPay_AfterShip_Provider(),
+			// Note: TrackShip is intentionally NOT in the primary chain —
+			// it doesn't produce primary shipments. It lives only in the
+			// overlay chain (see get_overlay_providers()) where its
+			// enrichment work happens. The sync constructor discovers its
+			// register_persistence_hooks() via the overlay chain too.
 		];
 
 		/**
@@ -166,18 +221,81 @@ class WooPay_Order_Tracking_Sync {
 		 *
 		 * @param WooPay_Tracking_Provider[] $providers Ordered array of providers.
 		 */
-		self::$providers = (array) apply_filters( 'wcpay_woopay_tracking_providers', $default_providers );
+		$filtered = (array) apply_filters( 'wcpay_woopay_tracking_providers', $default_providers );
+
+		// Filter out non-conforming entries — a third-party filter callback
+		// returning the wrong shape should not be able to fatal the sync
+		// orchestrator. array_filter preserves keys, so re-index for
+		// downstream consumers that walk by numeric index.
+		self::$providers = array_values(
+			array_filter(
+				$filtered,
+				static fn( $p ) => $p instanceof WooPay_Tracking_Provider
+			)
+		);
 
 		return self::$providers;
 	}
 
 	/**
-	 * Reset the cached providers. Test-only: production code should not call this.
+	 * Get the ordered list of status-overlay providers.
+	 *
+	 * Overlay providers enrich shipments produced by the primary chain with
+	 * carrier-status data (status, status_updated_at). Filterable via
+	 * `wcpay_woopay_status_overlay_providers`. Unlike the primary chain,
+	 * ALL overlays run in priority order — each may enrich the result.
+	 *
+	 * @return WooPay_Status_Overlay_Provider[]
+	 */
+	public static function get_overlay_providers(): array {
+		if ( null !== self::$overlay_providers ) {
+			return self::$overlay_providers;
+		}
+
+		$default_overlays = [
+			// Priority 5: TrackShip — first carrier-status enricher in the chain.
+			new WooPay_TrackShip_Provider(),
+		];
+
+		/**
+		 * Filters the list of status-overlay providers.
+		 *
+		 * Order matters: overlays run in array order; later overlays may
+		 * overwrite fields set by earlier ones for the same shipment.
+		 *
+		 * @param WooPay_Status_Overlay_Provider[] $overlay_providers Ordered array of overlays.
+		 */
+		$filtered = (array) apply_filters( 'wcpay_woopay_status_overlay_providers', $default_overlays );
+
+		// Filter out non-conforming entries — a third-party filter callback
+		// returning the wrong shape should not be able to fatal the sync
+		// orchestrator's overlay pass.
+		self::$overlay_providers = array_values(
+			array_filter(
+				$filtered,
+				static fn( $p ) => $p instanceof WooPay_Status_Overlay_Provider
+			)
+		);
+
+		return self::$overlay_providers;
+	}
+
+	/**
+	 * Reset the cached primary providers. Test-only: production code should not call this.
 	 *
 	 * @internal
 	 */
 	public static function reset_providers(): void {
 		self::$providers = null;
+	}
+
+	/**
+	 * Reset the cached overlay providers. Test-only: production code should not call this.
+	 *
+	 * @internal
+	 */
+	public static function reset_overlay_providers(): void {
+		self::$overlay_providers = null;
 	}
 
 	/**
@@ -337,26 +455,66 @@ class WooPay_Order_Tracking_Sync {
 	}
 
 	/**
-	 * Get normalized shipments for an order using the provider chain.
+	 * Get normalized shipments for an order, with overlay enrichment.
 	 *
-	 * Returns shipments from the first provider whose `is_available()` is true
-	 * AND whose `get_shipments()` returns non-empty data. No merging.
+	 * Two-pass orchestration:
+	 *   1. **Primary chain** — first provider with `is_available() === true`
+	 *      AND non-empty `get_shipments()` wins. Produces tracking_number,
+	 *      carrier_name, tracking_url, date_shipped, items, plus a default
+	 *      `status` of `STATUS_FULFILLED`.
+	 *   2. **Overlay chain** — every registered overlay provider runs in
+	 *      priority order over the result. Each may enrich `status` and
+	 *      `status_updated_at` by matching shipments on `tracking_number`.
+	 *      Overlays are skipped if the primary chain produced nothing —
+	 *      enrichers, not producers.
+	 *
+	 * Finally, every shipment's `status` is run through
+	 * `ensure_canonical_status()` so the wire payload is guaranteed to use
+	 * only values from `SHIPMENT_STATUSES`, regardless of which provider
+	 * emitted them.
 	 *
 	 * @param \WC_Order $order The WooCommerce order.
 	 * @return array[] Normalized shipments array.
 	 */
 	public static function get_order_shipments( \WC_Order $order ): array {
+		$shipments = [];
+
 		foreach ( self::get_providers() as $provider ) {
 			if ( ! $provider->is_available( $order ) ) {
 				continue;
 			}
-			$shipments = $provider->get_shipments( $order );
-			if ( ! empty( $shipments ) ) {
-				return $shipments;
+			$result = $provider->get_shipments( $order );
+			if ( ! empty( $result ) ) {
+				$shipments = $result;
+				break;
 			}
 		}
 
-		return [];
+		if ( empty( $shipments ) ) {
+			return [];
+		}
+
+		foreach ( self::get_overlay_providers() as $overlay ) {
+			$shipments = $overlay->overlay( $order, $shipments );
+		}
+
+		return array_map(
+			static function ( $shipment ) {
+				// Belt-and-suspenders: a tampered meta source or a buggy
+				// provider could supply a non-scalar status (array/object).
+				// Casting that to string would emit a PHP notice before
+				// ensure_canonical_status() got a chance to coerce. Default
+				// to STATUS_FULFILLED in that case — same outcome as
+				// non-canonical values, no notice.
+				if ( isset( $shipment['status'] ) && is_scalar( $shipment['status'] ) ) {
+					$shipment['status'] = self::ensure_canonical_status( (string) $shipment['status'] );
+				} else {
+					$shipment['status'] = self::STATUS_FULFILLED;
+				}
+				return $shipment;
+			},
+			$shipments
+		);
 	}
 
 	/**
@@ -500,5 +658,43 @@ class WooPay_Order_Tracking_Sync {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Coerce a shipment status to a canonical value from `SHIPMENT_STATUSES`.
+	 *
+	 * Defensive: catches future providers emitting non-canonical values,
+	 * mapping bugs, and unsanitized raw vendor-specific statuses leaking
+	 * through. Falls back to `STATUS_FULFILLED` so the wire payload always
+	 * carries a renderable value.
+	 *
+	 * Logging contract: a non-canonical value is logged via wc_get_logger
+	 * for diagnosability. Control characters are stripped and the value is
+	 * truncated before logging — defense-in-depth against log-injection
+	 * (newline-spoofed log lines) if a compromised provider emits a status
+	 * containing CR/LF. Canonical statuses are all short alphanumeric
+	 * tokens, so the 64-char cap is a generous bound on legitimate values.
+	 *
+	 * @param string $status Status emitted by a provider or overlay.
+	 * @return string A value guaranteed to be in `SHIPMENT_STATUSES`.
+	 */
+	private static function ensure_canonical_status( string $status ): string {
+		if ( in_array( $status, self::SHIPMENT_STATUSES, true ) ) {
+			return $status;
+		}
+
+		if ( function_exists( 'wc_get_logger' ) ) {
+			$safe_for_log = substr(
+				(string) preg_replace( '/[\x00-\x1f\x7f]+/', ' ', $status ),
+				0,
+				64
+			);
+			wc_get_logger()->notice(
+				sprintf( 'Non-canonical shipment status emitted: "%s". Falling back to fulfilled.', $safe_for_log ),
+				[ 'source' => 'woopay-order-tracking-sync' ]
+			);
+		}
+
+		return self::STATUS_FULFILLED;
 	}
 }

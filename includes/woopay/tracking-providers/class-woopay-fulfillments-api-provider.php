@@ -7,6 +7,8 @@
 
 namespace WCPay\WooPay\Tracking_Providers;
 
+use WCPay\WooPay\WooPay_Order_Tracking_Sync;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -202,19 +204,34 @@ class WooPay_Fulfillments_API_Provider implements WooPay_Tracking_Provider {
 	/**
 	 * Map a fulfillment status to a normalized shipment status.
 	 *
+	 * WC's Fulfillments API uses two statuses (`Fulfillment.php:214`):
+	 * `fulfilled` (the `is_fulfilled` flag is true) and `unfulfilled` (the
+	 * flag is false). Both correspond to the canonical `fulfilled` shipment
+	 * state — we only emit a shipment here when a tracking number exists
+	 * (`get_shipments()` skips empty tracking numbers), and "tracking added,
+	 * carrier hasn't acknowledged" is exactly what canonical `fulfilled`
+	 * means. Mapping both upstream avoids routing the expected
+	 * `unfulfilled` value through `ensure_canonical_status()`, which would
+	 * log a notice on every emission.
+	 *
+	 * Anything else (e.g. a new status WC adds in the future) passes through
+	 * verbatim so the canonical-coercion logger can flag it as genuinely
+	 * unexpected.
+	 *
 	 * @param object $fulfillment Fulfillment instance.
 	 * @return string
 	 */
 	private static function extract_status( $fulfillment ): string {
 		if ( ! method_exists( $fulfillment, 'get_status' ) ) {
-			return 'fulfilled';
+			return WooPay_Order_Tracking_Sync::STATUS_FULFILLED;
 		}
 		$status = $fulfillment->get_status();
 		if ( ! is_string( $status ) || '' === $status ) {
-			return 'fulfilled';
+			return WooPay_Order_Tracking_Sync::STATUS_FULFILLED;
 		}
-		// WC fulfillment statuses include 'fulfilled', 'unfulfilled', etc.
-		// Pass through verbatim — WooPay normalizes for display.
+		if ( 'fulfilled' === $status || 'unfulfilled' === $status ) {
+			return WooPay_Order_Tracking_Sync::STATUS_FULFILLED;
+		}
 		return self::truncate( $status, 64 );
 	}
 
