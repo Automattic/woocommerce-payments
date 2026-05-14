@@ -73,7 +73,9 @@ class AbilitiesRegistrar {
 	 *
 	 * @var array<int, class-string>
 	 */
-	private const ABILITY_CLASSES = [];
+	private const ABILITY_CLASSES = [
+		\WCPay\Internal\Abilities\Domain\GetAccount::class,
+	];
 
 	/**
 	 * Tracks whether the category has been registered in this process to
@@ -200,7 +202,6 @@ class AbilitiesRegistrar {
 
 		self::$abilities_registered = true;
 
-		self::register_get_account_ability();
 		self::register_get_deposits_overview_ability();
 		self::register_get_transactions_ability();
 		self::register_get_transactions_summary_ability();
@@ -215,43 +216,6 @@ class AbilitiesRegistrar {
 		self::register_get_charge_ability();
 		self::register_get_timeline_ability();
 		self::register_get_active_loan_summary_ability();
-	}
-
-	/**
-	 * Execute callback for `woocommerce-payments/get-account`.
-	 *
-	 * Delegates to `WC_REST_Payments_Accounts_Controller::get_account_data()`
-	 * to preserve parity with the existing REST endpoint (controller adds
-	 * `card_present_eligible`, `test_mode`, and `test_mode_onboarding` flags
-	 * on top of the cached service payload).
-	 *
-	 * Reads account state from the local cache when available; issues a
-	 * remote API request to the Transact platform if the cache is empty
-	 * or stale (the get-or-fetch semantics of `WC_Payments_Account::get_cached_account_data()`).
-	 *
-	 * @param mixed $input Unused (zero-arg ability); accepted to match the
-	 *                     Abilities API execute_callback signature.
-	 * @return array|\WP_Error Account data array, or WP_Error when WooPayments
-	 *                         has not finished initializing.
-	 */
-	public static function execute_get_account( $input = null ) {
-		$result = self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/accounts' );
-
-		// The backing controller returns `false` (unwrapped to `[]` here) when
-		// WooPayments is not initialized or not connected. A connected account
-		// always returns a non-empty array, so an empty array is unambiguous.
-		if ( is_array( $result ) && [] === $result ) {
-			wc_get_logger()->error(
-				'execute_get_account: WooPayments account not initialized — delegate returned an empty array.',
-				[ 'source' => 'woopayments-abilities' ]
-			);
-			return new \WP_Error(
-				'wcpay_not_initialized',
-				__( 'WooPayments is not initialized.', 'woocommerce-payments' )
-			);
-		}
-
-		return $result;
 	}
 
 	/**
@@ -462,6 +426,69 @@ class AbilitiesRegistrar {
 	}
 
 	/**
+	 * Delegate to a REST route via `rest_do_request()`.
+	 *
+	 * Translates pagination/sort keys at the boundary (see `PAGINATION_KEY_MAP`),
+	 * builds a WP_REST_Request, dispatches through the REST router, and unwraps
+	 * the response. Permissions are enforced by the backing route's
+	 * `permission_callback`; caching is the backing controller's concern.
+	 *
+	 * @param string              $http_method HTTP method (GET, POST, …).
+	 * @param string              $route       REST route path (e.g. `/wc/v3/payments/transactions`).
+	 * @param array<string,mixed> $params      Request parameters (query/body).
+	 * @return array|\WP_Error Unwrapped response data, or WP_Error on failure.
+	 */
+	public static function delegate_to_rest_controller( $http_method, $route, $params = [] ) {
+		// Translate WP-Core REST pagination/sort keys to the names the
+		// WooPayments Paginated request class consumes. When the caller
+		// supplies both the agent-facing key (e.g. `per_page`) and the
+		// canonical key (e.g. `pagesize`), the canonical key wins — silently
+		// overwriting an explicit `pagesize` was a footgun in earlier drafts.
+		foreach ( self::PAGINATION_KEY_MAP as $agent_key => $request_key ) {
+			if ( array_key_exists( $agent_key, $params ) ) {
+				if ( ! array_key_exists( $request_key, $params ) ) {
+					$params[ $request_key ] = $params[ $agent_key ];
+				}
+				unset( $params[ $agent_key ] );
+			}
+		}
+
+		$request = new \WP_REST_Request( $http_method, $route );
+		foreach ( $params as $key => $value ) {
+			$request->set_param( $key, $value );
+		}
+
+		$response = rest_do_request( $request );
+
+		if ( $response instanceof \WP_REST_Response && $response->is_error() ) {
+			$response = $response->as_error();
+		}
+
+		if ( is_wp_error( $response ) ) {
+			wc_get_logger()->error(
+				sprintf(
+					'AbilitiesRegistrar delegation failed [%s %s]: %s (%s)',
+					$http_method,
+					$route,
+					$response->get_error_message(),
+					$response->get_error_code()
+				),
+				[ 'source' => 'woopayments-abilities' ]
+			);
+			return $response;
+		}
+
+		if ( $response instanceof \WP_REST_Response ) {
+			$data = $response->get_data();
+			return is_array( $data ) ? $data : [];
+		}
+
+		// @codeCoverageIgnoreStart -- rest_do_request() always returns WP_Error or WP_REST_Response in practice; this raw-array fallback is defensive.
+		return is_array( $response ) ? $response : [];
+		// @codeCoverageIgnoreEnd
+	}
+
+	/**
 	 * Whether WooCommerce 10.9's AbilitiesLoader is available.
 	 *
 	 * Used as a hard gate for the WC 10.9 filter-driven registration path.
@@ -477,29 +504,6 @@ class AbilitiesRegistrar {
 	 */
 	private static function woo_abilities_loader_available(): bool {
 		return class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' );
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-account` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_account_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-account',
-			[
-				'label'               => __( 'Get WooPayments account state', 'woocommerce-payments' ),
-				'description'         => __( 'Return the merchant\'s WooPayments account state: onboarding status, country, store and customer currencies, KYC requirements, deadlines, and test/live mode flags.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::zero_arg_input_schema(),
-				'execute_callback'    => [ __CLASS__, 'execute_get_account' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				// output_schema deliberately omitted — the payload shape comes
-				// straight from the backing controller and we don't want to
-				// couple this registrar to a specific structure here.
-				'meta'                => self::read_meta(),
-			]
-		);
 	}
 
 	/**
@@ -1094,68 +1098,5 @@ class AbilitiesRegistrar {
 			unset( $list_schema['properties'][ $key ] );
 		}
 		return $list_schema;
-	}
-
-	/**
-	 * Delegate to a REST route via `rest_do_request()`.
-	 *
-	 * Translates pagination/sort keys at the boundary (see `PAGINATION_KEY_MAP`),
-	 * builds a WP_REST_Request, dispatches through the REST router, and unwraps
-	 * the response. Permissions are enforced by the backing route's
-	 * `permission_callback`; caching is the backing controller's concern.
-	 *
-	 * @param string              $http_method HTTP method (GET, POST, …).
-	 * @param string              $route       REST route path (e.g. `/wc/v3/payments/transactions`).
-	 * @param array<string,mixed> $params      Request parameters (query/body).
-	 * @return array|\WP_Error Unwrapped response data, or WP_Error on failure.
-	 */
-	private static function delegate_to_rest_controller( $http_method, $route, $params = [] ) {
-		// Translate WP-Core REST pagination/sort keys to the names the
-		// WooPayments Paginated request class consumes. When the caller
-		// supplies both the agent-facing key (e.g. `per_page`) and the
-		// canonical key (e.g. `pagesize`), the canonical key wins — silently
-		// overwriting an explicit `pagesize` was a footgun in earlier drafts.
-		foreach ( self::PAGINATION_KEY_MAP as $agent_key => $request_key ) {
-			if ( array_key_exists( $agent_key, $params ) ) {
-				if ( ! array_key_exists( $request_key, $params ) ) {
-					$params[ $request_key ] = $params[ $agent_key ];
-				}
-				unset( $params[ $agent_key ] );
-			}
-		}
-
-		$request = new \WP_REST_Request( $http_method, $route );
-		foreach ( $params as $key => $value ) {
-			$request->set_param( $key, $value );
-		}
-
-		$response = rest_do_request( $request );
-
-		if ( $response instanceof \WP_REST_Response && $response->is_error() ) {
-			$response = $response->as_error();
-		}
-
-		if ( is_wp_error( $response ) ) {
-			wc_get_logger()->error(
-				sprintf(
-					'AbilitiesRegistrar delegation failed [%s %s]: %s (%s)',
-					$http_method,
-					$route,
-					$response->get_error_message(),
-					$response->get_error_code()
-				),
-				[ 'source' => 'woopayments-abilities' ]
-			);
-			return $response;
-		}
-
-		if ( $response instanceof \WP_REST_Response ) {
-			$data = $response->get_data();
-			return is_array( $data ) ? $data : [];
-		}
-
-		// @codeCoverageIgnoreStart -- rest_do_request() always returns WP_Error or WP_REST_Response in practice; this raw-array fallback is defensive.
-		return is_array( $response ) ? $response : [];
-		// @codeCoverageIgnoreEnd
 	}
 }

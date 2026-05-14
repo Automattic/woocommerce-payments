@@ -152,42 +152,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_get_account_ability_is_registered_with_expected_shape() {
-		if ( ! function_exists( 'wp_get_ability' ) || ! function_exists( 'wp_get_abilities' ) ) {
-			$this->markTestSkipped( 'Abilities API query functions not available in this WordPress version.' );
-		}
-
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-		AbilitiesRegistrar::init();
-
-		// Categories and abilities can only be registered from inside the
-		// abilities-init action callbacks. The actions fire lazily on first
-		// access of the registry singleton — wp_get_abilities() is the
-		// shortest path to trigger both initializations.
-		wp_get_abilities();
-
-		$ability = wp_get_ability( 'woocommerce-payments/get-account' );
-		$this->assertNotNull( $ability, 'woocommerce-payments/get-account should be registered.' );
-		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $ability->get_category() );
-
-		$meta = $ability->get_meta();
-		$this->assertIsArray( $meta );
-		$this->assertArrayHasKey( 'annotations', $meta );
-
-		$annotations = $meta['annotations'];
-		$this->assertTrue( $annotations['readonly'], 'get-account should be readonly.' );
-		$this->assertFalse( $annotations['destructive'], 'get-account should not be destructive.' );
-		$this->assertTrue( $annotations['idempotent'], 'get-account should be idempotent.' );
-		$this->assertTrue(
-			$meta['show_in_rest'] ?? false,
-			'get-account must be exposed via show_in_rest for the REST bridge.'
-		);
-		$this->assertTrue(
-			$meta['mcp']['public'] ?? false,
-			'get-account must be opted into MCP discovery via meta.mcp.public.'
-		);
-	}
-
 	/**
 	 * @dataProvider provide_expected_abilities
 	 */
@@ -214,7 +178,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
 	public function provide_expected_abilities(): array {
 		return [
-			[ 'woocommerce-payments/get-account' ],
 			[ 'woocommerce-payments/get-deposits-overview' ],
 			[ 'woocommerce-payments/get-transactions' ],
 			[ 'woocommerce-payments/get-transactions-summary' ],
@@ -299,7 +262,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
 	public function provide_execute_cases(): array {
 		return [
-			'get-account'                => [ 'execute_get_account', null, '/wc/v3/payments/accounts' ],
 			'get-deposits-overview'      => [ 'execute_get_deposits_overview', null, '/wc/v3/payments/deposits/overview-all' ],
 			'get-transactions'           => [ 'execute_get_transactions', [ 'per_page' => 5 ], '/wc/v3/payments/transactions' ],
 			'get-transactions-summary'   => [ 'execute_get_transactions_summary', [], '/wc/v3/payments/transactions/summary' ],
@@ -379,38 +341,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$property   = $reflection->getProperty( $name );
 		$property->setAccessible( true );
 		$property->setValue( null, $value );
-	}
-
-	public function test_execute_get_account_returns_wp_error_when_account_data_is_empty_array() {
-		// Simulate the init-failure path: WC_Payments_Account::get_cached_account_data()
-		// returns false on an API error, the controller wraps it via
-		// rest_ensure_response(false), and delegate_to_rest_controller() unwraps
-		// the boolean false to []. The execute_get_account guard must convert
-		// that [] sentinel back into the documented WP_Error contract.
-		$filter = function ( $result, $server, $request ) {
-			if ( $request->get_route() === '/wc/v3/payments/accounts' ) {
-				return new \WP_REST_Response( false, 200 );
-			}
-			return $result;
-		};
-		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
-
-		try {
-			$result = AbilitiesRegistrar::execute_get_account( null );
-		} finally {
-			remove_filter( 'rest_pre_dispatch', $filter, 10 );
-		}
-
-		$this->assertInstanceOf(
-			\WP_Error::class,
-			$result,
-			'execute_get_account must convert the [] init-failure sentinel back into a WP_Error.'
-		);
-		$this->assertSame(
-			'wcpay_not_initialized',
-			$result->get_error_code(),
-			'execute_get_account must surface the wcpay_not_initialized error code so callers using is_wp_error() can detect init failure.'
-		);
 	}
 
 	public function test_delegate_translates_pagination_keys_at_request_layer() {
