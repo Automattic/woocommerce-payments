@@ -12,12 +12,18 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Registers WooPayments with the WordPress Abilities API.
  *
- * Declares the `woocommerce-payments` ability category and registers 15
- * read-only abilities covering account state, transactions (list + summary),
- * disputes (list + summary + single), authorizations (list + summary),
- * payouts/deposits (list + overview + summary), single intent/charge/timeline
- * lookups, and the active Stripe Capital loan summary. All abilities gate on
- * `manage_woocommerce`, matching `WC_Payments_REST_Controller::check_permission()`.
+ * Registers 15 read-only abilities under the shared `woocommerce` category
+ * covering account state, transactions (list + summary), disputes (list +
+ * summary + single), authorizations (list + summary), payouts/deposits (list
+ * + overview + summary), single intent/charge/timeline lookups, and the
+ * active Stripe Capital loan summary. All abilities gate on `manage_woocommerce`,
+ * matching `WC_Payments_REST_Controller::check_permission()`.
+ *
+ * Plugin ownership is carried by the ability namespace
+ * (`woocommerce-payments/*`); the `woocommerce` category itself is owned
+ * and registered by WooCommerce Core 10.9+, so this class does not
+ * re-register it (the Abilities API fires `_doing_it_wrong` on duplicate
+ * slug registration).
  *
  * Registration is gated behind the `woocommerce_payments_abilities_enabled`
  * filter (default `false`) so the scaffolding can ship without committing
@@ -37,9 +43,13 @@ class AbilitiesRegistrar {
 	/**
 	 * The category slug used for every WooPayments ability.
 	 *
+	 * The `woocommerce` category is owned and registered by WooCommerce
+	 * Core (10.9+); plugin ownership lives in the ability namespace
+	 * (`woocommerce-payments/*`), not the category.
+	 *
 	 * @var string
 	 */
-	const CATEGORY_SLUG = 'woocommerce-payments';
+	const CATEGORY_SLUG = 'woocommerce';
 
 	/**
 	 * Translate from the agent-facing pagination/sort key names to the
@@ -91,14 +101,6 @@ class AbilitiesRegistrar {
 	];
 
 	/**
-	 * Tracks whether the category has been registered in this process to
-	 * keep `register_category()` idempotent across action variants.
-	 *
-	 * @var bool
-	 */
-	private static $category_registered = false;
-
-	/**
 	 * Initialize the abilities registration.
 	 *
 	 * Gated behind the `woocommerce_payments_abilities_enabled` filter (default
@@ -134,14 +136,6 @@ class AbilitiesRegistrar {
 		if ( self::woo_abilities_loader_available() ) {
 			add_filter( 'woocommerce_ability_definition_classes', [ __CLASS__, 'append_classes' ] );
 		}
-
-		// The abilities-api composer package fires the non-prefixed action
-		// names; WP Core's merge target uses the `wp_` variants. Hook both
-		// so the registrar works against either version of the API. The
-		// idempotency guard in register_category() handles the dual-hook
-		// double-fire scenario.
-		add_action( 'abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
-		add_action( 'wp_abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
 	}
 
 	/**
@@ -160,34 +154,6 @@ class AbilitiesRegistrar {
 	}
 
 	/**
-	 * Register the WooPayments ability category.
-	 *
-	 * Idempotent — re-registering the same category, or looking it up before
-	 * it is registered, both fire `_doing_it_wrong` from the Abilities API.
-	 * Tracking with a static flag keeps both paths silent across the variant
-	 * action names (`abilities_api_categories_init` and the WP-Core merge
-	 * target `wp_abilities_api_categories_init`).
-	 *
-	 * @return void
-	 */
-	public static function register_category() {
-		if ( self::$category_registered ) {
-			return;
-		}
-
-		self::$category_registered = true;
-
-		wp_register_ability_category(
-			self::CATEGORY_SLUG,
-			[
-				// "WooPayments" is a product name and is not translated.
-				'label'       => 'WooPayments',
-				'description' => __( 'Abilities for inspecting a merchant\'s WooPayments account, transactions, disputes, payouts, and related state.', 'woocommerce-payments' ),
-			]
-		);
-	}
-
-	/**
 	 * Permission callback mirroring WC_Payments_REST_Controller::check_permission().
 	 *
 	 * Used as the `permission_callback` for every WooPayments ability so the
@@ -202,10 +168,10 @@ class AbilitiesRegistrar {
 	/**
 	 * Reset registrar state for tests.
 	 *
-	 * Resets the static idempotency flags so a single PHPUnit process can
-	 * exercise registration paths repeatedly without each test inheriting the
-	 * "already registered" state from a prior one. Tests that want to verify
-	 * `register_*` runs correctly should call this in `tear_down()`.
+	 * Hook (`woocommerce_ability_definition_classes`) accumulated state lives
+	 * in the global `$wp_filter` array; this helper exists as a stable hook
+	 * point for tests should future state require resetting. Currently a
+	 * no-op beyond the environment guard.
 	 *
 	 * Note: the upstream `WP_Abilities_Registry` / `WP_Ability_Categories_Registry`
 	 * singletons retain abilities and categories registered earlier in the
@@ -222,7 +188,6 @@ class AbilitiesRegistrar {
 		if ( ! defined( 'WCPAY_TEST_ENV' ) ) {
 			throw new \Exception( 'AbilitiesRegistrar::reset_for_testing() must not be called outside the PHPUnit test environment.' );
 		}
-		self::$category_registered = false;
 	}
 
 	/**

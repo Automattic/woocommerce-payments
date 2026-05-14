@@ -15,12 +15,7 @@ use WCPay\Internal\Abilities\AbilitiesRegistrar;
  */
 class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
-	// The registrar hooks both `abilities_api_*_init` (the abilities-api
-	// composer package) and `wp_abilities_api_*_init` (the WP-Core merge).
-	// Asserting on either action name verifies the wiring; we use the WP-Core
-	// merge names since that's what fires on WP 6.9+ test environments.
-	const CATEGORIES_HOOK = 'wp_abilities_api_categories_init';
-	const FEATURE_FILTER  = 'woocommerce_payments_abilities_enabled';
+	const FEATURE_FILTER = 'woocommerce_payments_abilities_enabled';
 
 	/**
 	 * Tear down — reset filter, hooks, current user, and the registrar's
@@ -37,68 +32,16 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_init_is_no_op_when_feature_flag_disabled() {
-		// Remove both hook variants (composer-package name and the WP-Core merge
-		// name) — init() hooks both when enabled, so the feature-flag no-op test
-		// must check that neither is wired.
-		remove_all_actions( 'abilities_api_categories_init' );
-		remove_all_actions( self::CATEGORIES_HOOK );
 		remove_all_filters( self::FEATURE_FILTER );
 
 		AbilitiesRegistrar::init();
 
-		$this->assertFalse(
-			has_action(
-				self::CATEGORIES_HOOK,
-				[ AbilitiesRegistrar::class, 'register_category' ]
-			),
-			'Expected init() to short-circuit on wp_abilities_api_categories_init when the feature filter is unset.'
-		);
-		$this->assertFalse(
-			has_action(
-				'abilities_api_categories_init',
-				[ AbilitiesRegistrar::class, 'register_category' ]
-			),
-			'Expected init() to also short-circuit on the composer-package categories action variant.'
-		);
 		$this->assertFalse(
 			has_filter(
 				'woocommerce_ability_definition_classes',
 				[ AbilitiesRegistrar::class, 'append_classes' ]
 			),
 			'Expected init() to skip the WC 10.9 filter wire when the feature filter is unset.'
-		);
-	}
-
-	public function test_init_hooks_register_category_on_categories_action() {
-		// Assert hook wiring on either action variant — the abilities-api
-		// composer package fires `abilities_api_categories_init`; the WP Core
-		// merge fires `wp_abilities_api_categories_init`. The registrar hooks
-		// both for forward compatibility, so either being wired is a pass.
-		//
-		// We deliberately do NOT fall through to checking the registry
-		// singleton state, because the WP_Abilities_Registry singleton
-		// persists across tests in the same PHP process; once any prior
-		// registration-triggering test populates it, that check would always
-		// succeed regardless of whether `init()` actually wired the hooks
-		// (a vacuous green). The hook-wiring check is the load-bearing one.
-		remove_all_actions( 'abilities_api_categories_init' );
-		remove_all_actions( 'wp_abilities_api_categories_init' );
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-
-		AbilitiesRegistrar::init();
-
-		$wp_core_hook = has_action(
-			'wp_abilities_api_categories_init',
-			[ AbilitiesRegistrar::class, 'register_category' ]
-		);
-		$package_hook = has_action(
-			'abilities_api_categories_init',
-			[ AbilitiesRegistrar::class, 'register_category' ]
-		);
-
-		$this->assertTrue(
-			false !== $wp_core_hook || false !== $package_hook,
-			'Expected init() to hook register_category on either `abilities_api_categories_init` or `wp_abilities_api_categories_init`.'
 		);
 	}
 
@@ -189,45 +132,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
 	public function provide_execute_cases(): array {
 		return [];
-	}
-
-	public function test_register_category_short_circuits_when_static_flag_set() {
-		// When the static idempotency flag is pre-set, calling register_category()
-		// must short-circuit at the flag guard — no `_doing_it_wrong` notice
-		// from re-registering. Catch any `_doing_it_wrong` calls via the
-		// `doing_it_wrong_run` action; this is the load-bearing assertion
-		// for the idempotency guard.
-		$this->set_static_flag( 'category_registered', true );
-
-		$called = false;
-		$spy    = function () use ( &$called ) {
-			$called = true;
-		};
-		add_action( 'doing_it_wrong_run', $spy );
-
-		try {
-			AbilitiesRegistrar::register_category();
-		} finally {
-			remove_action( 'doing_it_wrong_run', $spy );
-		}
-
-		$this->assertFalse(
-			$called,
-			'register_category() with the static flag pre-set must short-circuit before invoking wp_register_ability_category() (which would emit _doing_it_wrong on re-registration).'
-		);
-	}
-
-	/**
-	 * Set a private static flag on AbilitiesRegistrar via Reflection so
-	 * tests can exercise the static-guard branches without triggering the
-	 * upstream WP_Abilities_Registry / WP_Ability_Categories_Registry
-	 * `_doing_it_wrong` checks.
-	 */
-	private function set_static_flag( string $name, bool $value ): void {
-		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
-		$property   = $reflection->getProperty( $name );
-		$property->setAccessible( true );
-		$property->setValue( null, $value );
 	}
 
 	public function test_delegate_translates_pagination_keys_at_request_layer() {
@@ -443,7 +347,10 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		foreach ( $classes as $class ) {
 			$this->assertTrue( method_exists( $class, 'get_name' ), "$class should define get_name()." );
 			$name = $class::get_name();
-			$this->assertStringStartsWith( AbilitiesRegistrar::CATEGORY_SLUG . '/', $name );
+			// Namespace (not category) — plugin ownership lives in the ability
+			// name's leading prefix. Category is the broader `woocommerce`
+			// discoverability bucket and would not match here.
+			$this->assertStringStartsWith( 'woocommerce-payments/', $name );
 		}
 	}
 }
