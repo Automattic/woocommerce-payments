@@ -64,6 +64,18 @@ class AbilitiesRegistrar {
 	];
 
 	/**
+	 * Ability definition classes registered through the WC 10.9 loader.
+	 *
+	 * Filled in incrementally as each ability migrates from inline
+	 * register_*() / execute_*() to a Domain class. Once every ability
+	 * lives in this list, the inline register_abilities() aggregator
+	 * is removed.
+	 *
+	 * @var array<int, class-string>
+	 */
+	private const ABILITY_CLASSES = [];
+
+	/**
 	 * Tracks whether the category has been registered in this process to
 	 * keep `register_category()` idempotent across action variants.
 	 *
@@ -110,6 +122,14 @@ class AbilitiesRegistrar {
 			return;
 		}
 
+		// WC 10.9 loader-driven registration path. On WC < 10.9 this
+		// short-circuits; the legacy add_action() path below keeps the
+		// partially-migrated state functional. Once every ability has
+		// moved to a Domain class, the legacy path goes away.
+		if ( self::woo_abilities_loader_available() ) {
+			add_filter( 'woocommerce_ability_definition_classes', [ __CLASS__, 'append_classes' ] );
+		}
+
 		// The abilities-api composer package fires the non-prefixed action
 		// names; WP Core's merge target uses the `wp_` variants. Hook both
 		// so the registrar works against either version of the API. The
@@ -119,6 +139,21 @@ class AbilitiesRegistrar {
 		add_action( 'wp_abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
 		add_action( 'abilities_api_init', [ __CLASS__, 'register_abilities' ] );
 		add_action( 'wp_abilities_api_init', [ __CLASS__, 'register_abilities' ] );
+	}
+
+	/**
+	 * Append WCPay ability definition classes to Woo Core's loader.
+	 *
+	 * Filter callback for `woocommerce_ability_definition_classes`. The
+	 * loader iterates the resulting class list, calls
+	 * `is_a( $class, AbilityDefinition::class, true )` on each, and
+	 * registers those that pass via wp_register_ability().
+	 *
+	 * @param array $classes Class names accumulated by the loader.
+	 * @return array
+	 */
+	public static function append_classes( array $classes ): array {
+		return array_merge( $classes, self::ABILITY_CLASSES );
 	}
 
 	/**
@@ -424,6 +459,24 @@ class AbilitiesRegistrar {
 	 */
 	public static function execute_get_active_loan_summary( $input = null ) {
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/capital/active_loan_summary' );
+	}
+
+	/**
+	 * Whether WooCommerce 10.9's AbilitiesLoader is available.
+	 *
+	 * Used as a hard gate for the WC 10.9 filter-driven registration path.
+	 * On WC < 10.9 the filter wire is skipped; the legacy direct-registration
+	 * path (action hooks on `abilities_api_init` / `wp_abilities_api_init`)
+	 * still handles the abilities that have not yet migrated to Domain
+	 * classes.
+	 *
+	 * WC 10.9 also depends on WP 6.9, so wp_register_ability() is implicitly
+	 * available wherever the loader exists.
+	 *
+	 * @return bool
+	 */
+	private static function woo_abilities_loader_available(): bool {
+		return class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' );
 	}
 
 	/**
