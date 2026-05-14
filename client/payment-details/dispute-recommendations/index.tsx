@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { Card, CardBody, ExternalLink } from '@wordpress/components';
 import { Link } from '@woocommerce/components';
 
@@ -119,7 +119,12 @@ const renderSection = (
 					<summary>
 						{ sprintf(
 							/* translators: %d is the number of additional recommendations hidden by default. */
-							__( 'Show %d more', 'woocommerce-payments' ),
+							_n(
+								'Show %d more',
+								'Show %d more',
+								hidden.length,
+								'woocommerce-payments'
+							),
 							hidden.length
 						) }
 					</summary>

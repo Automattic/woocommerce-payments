@@ -162,7 +162,10 @@ export interface RecommendationLink {
 /**
  * Count-based predicate over a set of evidence field keys. `min` and `max`
  * (inclusive) cap how many of the listed keys must satisfy the underlying
- * condition (provided or missing). Defaults: `min` = 1, `max` = keys.length.
+ * condition (provided or missing). Defaults are applied by `matchesCount()`
+ * in recommendations.ts: `max` = keys.length; `min` = 1, or 0 when `max` is
+ * set explicitly (so a `max`-only predicate such as Cluster 15's `max: 0`
+ * stays satisfiable). See that function for the authoritative rule.
  */
 export interface FieldCountPredicate {
 	keys: string[];

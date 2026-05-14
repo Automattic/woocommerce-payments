@@ -22,7 +22,8 @@ import type { Recommendation } from './types';
  *     `critical` (red) + `tip` (orange) → "What could help next time".
  *   - when: predicates the runtime helper checks against the dispute.
  *     `requireProvided` / `requireMissing` are count predicates over a
- *     key set (`min`/`max` inclusive; defaults: min=1, max=keys.length).
+ *     key set (`min`/`max` inclusive; see `FieldCountPredicate` and
+ *     `matchesCount()` for the default semantics, including `max`-only).
  *   - link (optional): inline action link. External destinations are
  *     absolute `https://` URLs; wp-admin destinations are built with
  *     `getAdminUrl()` / `addQueryArgs()` here so they resolve correctly on
