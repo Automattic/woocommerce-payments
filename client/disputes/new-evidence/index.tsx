@@ -42,6 +42,7 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
+import { resolveProductType } from './resolve-product-type';
 import {
 	Button,
 	HorizontalRule,
@@ -162,20 +163,11 @@ export default ( { query }: { query: { id: string } } ) => {
 					isVisaComplianceDispute( d );
 				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
 				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
-				const rawSuggestedProductType =
-					d.metadata?.__product_type ||
-					d.order?.suggested_product_type ||
-					'';
-				// `multiple` is no longer a selectable option when the new form is active
-				// (see product-details.tsx), so mixed-product orders coming back from the
-				// backend or from legacy drafts get normalized to `other` to avoid an
-				// unselected dropdown. `subscription_canceled × multiple` still has a
-				// matrix entry for the legacy path.
-				const suggestedProductType =
-					isFeatureFlagEnabled &&
-					rawSuggestedProductType === 'multiple'
-						? 'other'
-						: rawSuggestedProductType;
+				const suggestedProductType = resolveProductType(
+					d.metadata,
+					d.order?.suggested_product_type,
+					isFeatureFlagEnabled
+				);
 				setProductType( suggestedProductType );
 				// Load saved product description from evidence or level3 line items
 				const level3ProductNames = d.charge?.level3?.line_items
