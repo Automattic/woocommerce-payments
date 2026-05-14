@@ -7,6 +7,8 @@
 
 namespace WCPay\Internal\Abilities;
 
+use Automattic\WooCommerce\Abilities\AbilityDefinition;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -37,6 +39,12 @@ defined( 'ABSPATH' ) || exit;
  *
  * Delegation errors and init-failure conversions are logged to the
  * `woopayments-abilities` source via `wc_get_logger()`.
+ *
+ * Domain classes under `src/Internal/Abilities/Domain/` are only referenced
+ * when WooCommerce Core 10.9+ is active (`AbilitiesLoader` available);
+ * `init()` short-circuits otherwise so the unresolved `AbilityDefinition`
+ * interface FQN inside each Domain class never reaches the parser on
+ * older WC versions.
  */
 class AbilitiesRegistrar {
 
@@ -80,7 +88,7 @@ class AbilitiesRegistrar {
 	 * checks `is_a( $class, AbilityDefinition::class, true )` on each,
 	 * and registers those that pass via wp_register_ability().
 	 *
-	 * @var array<int, class-string>
+	 * @var class-string<AbilityDefinition>[]
 	 */
 	private const ABILITY_CLASSES = [
 		\WCPay\Internal\Abilities\Domain\GetAccount::class,
@@ -127,7 +135,7 @@ class AbilitiesRegistrar {
 		 * @param bool $enabled Whether to register WooPayments abilities. Default false.
 		 * @return bool
 		 */
-		if ( ! apply_filters( 'woocommerce_payments_abilities_enabled', false ) ) {
+		if ( false === apply_filters( 'woocommerce_payments_abilities_enabled', false ) ) {
 			return;
 		}
 
@@ -244,13 +252,13 @@ class AbilitiesRegistrar {
 		}
 
 		if ( $response instanceof \WP_REST_Response ) {
-			$data = $response->get_data();
-			return is_array( $data ) ? $data : [];
+			$response = $response->get_data();
 		}
 
-		// @codeCoverageIgnoreStart -- rest_do_request() always returns WP_Error or WP_REST_Response in practice; this raw-array fallback is defensive.
+		// rest_do_request() always returns WP_Error or WP_REST_Response in
+		// practice; the non-array fallback covers a hypothetical future
+		// controller that hands back a scalar.
 		return is_array( $response ) ? $response : [];
-		// @codeCoverageIgnoreEnd
 	}
 
 	/**
