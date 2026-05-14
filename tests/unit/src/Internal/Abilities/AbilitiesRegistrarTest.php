@@ -180,7 +180,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		return [
 			[ 'woocommerce-payments/get-transactions' ],
 			[ 'woocommerce-payments/get-disputes' ],
-			[ 'woocommerce-payments/get-disputes-summary' ],
 			[ 'woocommerce-payments/get-dispute' ],
 			[ 'woocommerce-payments/get-authorizations' ],
 			[ 'woocommerce-payments/get-authorizations-summary' ],
@@ -261,7 +260,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		return [
 			'get-transactions'           => [ 'execute_get_transactions', [ 'per_page' => 5 ], '/wc/v3/payments/transactions' ],
 			'get-disputes'               => [ 'execute_get_disputes', [ 'per_page' => 5 ], '/wc/v3/payments/disputes' ],
-			'get-disputes-summary'       => [ 'execute_get_disputes_summary', [], '/wc/v3/payments/disputes/summary' ],
 			'get-dispute'                => [ 'execute_get_dispute', [ 'dispute_id' => 'du_test_invalid' ], '/wc/v3/payments/disputes/du_test_invalid' ],
 			'get-dispute-dp-prefix'      => [ 'execute_get_dispute', [ 'dispute_id' => 'dp_test_legacy' ], '/wc/v3/payments/disputes/dp_test_legacy' ],
 			'get-authorizations'         => [ 'execute_get_authorizations', [ 'per_page' => 5 ], '/wc/v3/payments/authorizations' ],
