@@ -42,9 +42,6 @@ class GetAuthorizations extends AbstractWCPayAbility implements AbilityDefinitio
 	 * @return array
 	 */
 	public static function get_registration_args(): array {
-		// Authorizations takes pagination only — no extra filter properties.
-		// Lifted from AbilitiesRegistrar::pagination_input_schema() which was
-		// the sole consumer; additionalProperties stays false (closed contract).
 		$filter_properties = [
 			'orderby' => [ 'type' => 'string' ],
 			'order'   => [

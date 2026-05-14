@@ -12,13 +12,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Shared helpers for WooPayments ability definitions.
  *
- * Mirrors the shape of Woo Core's `Internal\Abilities\Domain\AbstractDomainAbility`
- * (introduced in WooCommerce 10.9 via woocommerce/woocommerce#64606) without
- * coupling WCPay to that class — Woo Core's lives under `Internal\`, which we
- * treat as off-limits for cross-plugin reuse.
- *
- * @internal Plugin-internal base intended for use by classes in this Domain
- *           namespace, not third-party code.
+ * @internal Plugin-internal base for classes in this Domain namespace.
  */
 abstract class AbstractWCPayAbility {
 

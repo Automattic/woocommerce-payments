@@ -50,9 +50,8 @@ class GetAccount implements AbilityDefinition {
 			],
 			'execute_callback'    => [ self::class, 'execute' ],
 			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
-			// output_schema deliberately omitted — the payload shape comes
-			// straight from the backing controller and we don't want to
-			// couple this registrar to a specific structure here.
+			// output_schema omitted: payload shape comes straight from the
+			// backing controller.
 			'meta'                => [
 				'annotations'  => [
 					'readonly'    => true,
@@ -60,11 +59,7 @@ class GetAccount implements AbilityDefinition {
 					'idempotent'  => true,
 				],
 				'show_in_rest' => true,
-				// `mcp.public` is read by the wordpress/mcp-adapter package
-				// (McpAbilityHelperTrait::is_public_mcp_ability() +
-				// DefaultServerFactory::register_abilities()) to gate MCP
-				// discoverability. The key is the adapter's contract, not a
-				// WP Core convention.
+				// `mcp.public` gates MCP discoverability via wordpress/mcp-adapter.
 				'mcp'          => [
 					'public' => true,
 				],

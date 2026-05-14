@@ -42,8 +42,6 @@ class GetDeposits extends AbstractWCPayAbility implements AbilityDefinition {
 	 * @return array
 	 */
 	public static function get_registration_args(): array {
-		// Filter properties lifted verbatim from AbilitiesRegistrar::deposits_list_input_schema()
-		// MINUS page/per_page — those come from get_pagination_input_properties() in the base class.
 		$filter_properties = [
 			'match'             => [ 'type' => 'string' ],
 			'store_currency_is' => [ 'type' => 'string' ],

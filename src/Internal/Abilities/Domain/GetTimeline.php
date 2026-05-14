@@ -15,15 +15,11 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Registers the `woocommerce-payments/get-timeline` ability.
  *
- * Return the chronological event timeline for a payment intent (created →
- * succeeded → refunded → disputed). Helps reconstruct what happened to one
- * transaction. Returns `WP_Error( 'wcpay_missing_intention_id' )` when
- * `intention_id` is missing, empty, or non-string.
- *
- * The input field is named `intention_id` (rather than `payment_intent_id`
- * as used by `get-payment-intent`) to match the URL parameter on the
- * backing route `/payments/timeline/(?P<intention_id>\w+)`. Both names
- * refer to the same Stripe payment-intent identifier.
+ * Return the chronological event timeline for a payment intent. Returns
+ * `WP_Error( 'wcpay_missing_intention_id' )` when `intention_id` is missing,
+ * empty, or non-string. The input field name mirrors the route parameter
+ * `/payments/timeline/(?P<intention_id>\w+)` — the same identifier
+ * `get-payment-intent` accepts as `payment_intent_id`.
  *
  * @see \WC_REST_Payments_Timeline_Controller::get_timeline()
  */
