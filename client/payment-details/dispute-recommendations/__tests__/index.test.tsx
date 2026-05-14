@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -245,20 +245,17 @@ describe( 'DisputeRecommendationsCard', () => {
 			expect( inlineItems?.length ).toBeLessThanOrEqual( 3 );
 		} );
 
-		it( 'wraps overflow entries in a <details> show-more disclosure', () => {
-			// Cluster 15 suppresses other criticals on lost + no evidence, so
-			// to actually overflow without suppression, render a different
-			// scenario: lost + product_not_received + offline_service. Several
-			// criticals/tips fire across clusters without Cluster 15 catching.
-			// We approximate "overflow" via a known busy cell: c1, c2, c3, c4
-			// criticals could fire if applicable. For predictability we just
-			// assert the structural presence of <details> when overflow exists.
+		it( 'wraps overflow entries beyond 3 in a <details> show-more disclosure', () => {
+			// Lost + PNR + physical with only `receipt` provided. `receipt`
+			// dodges Cluster 15 suppression, so "What could help next time"
+			// gets four entries in catalog order: three criticals (c1 shipping
+			// tracking, c3 customer correspondence, c11a signed delivery proof)
+			// and one tip (c12 cover letter). With VISIBLE_PER_SECTION = 3, the
+			// fourth entry deterministically overflows into the disclosure.
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'product_not_received',
 				metadata: { __product_type: 'physical_product' },
-				// receipt provided to dodge Cluster 15 suppression so we keep
-				// more than 3 criticals available across other clusters.
 				evidence: { receipt: 'r' },
 			} );
 
@@ -266,17 +263,23 @@ describe( 'DisputeRecommendationsCard', () => {
 				<DisputeRecommendationsCard dispute={ dispute } />
 			);
 
-			const detailsList = container.querySelectorAll(
+			const details = container.querySelector(
 				'.dispute-recommendations-card__show-more'
 			);
+			expect( details ).not.toBeNull();
+			expect( details?.tagName ).toBe( 'DETAILS' );
 
-			// If any section overflows, a <details> exists. If not, the test
-			// passes vacuously and the cap logic is exercised in the
-			// "at most 3 inline" test above. Either way we assert the
-			// inline cap holds.
-			detailsList.forEach( ( details ) => {
-				expect( details.tagName ).toBe( 'DETAILS' );
-			} );
+			// The single overflow entry (c12, last in catalog order) is the
+			// one inside the disclosure, and the summary advertises it.
+			const disclosure = details as HTMLElement;
+			expect(
+				within( disclosure ).getByText( /show 1 more/i )
+			).toBeInTheDocument();
+			expect(
+				within( disclosure ).getByRole( 'heading', {
+					name: /include a cover letter with your evidence/i,
+				} )
+			).toBeInTheDocument();
 		} );
 	} );
 
