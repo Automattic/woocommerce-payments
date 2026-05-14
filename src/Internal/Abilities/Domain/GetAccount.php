@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -17,18 +15,11 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Registers the `woocommerce-payments/get-account` ability.
  *
- * Zero-arg read that returns WooPayments account state. Delegates to
- * `WC_REST_Payments_Accounts_Controller::get_account_data()` to preserve
- * parity with the existing REST endpoint (adds `card_present_eligible`,
- * `test_mode`, `test_mode_onboarding` flags on top of the cached service
- * payload). Returns `WP_Error( 'wcpay_not_initialized' )` when WooPayments
- * has not finished initializing (delegate returns the unwrapped `false`
- * as `[]`).
+ * Zero-arg read that returns WooPayments account state. Returns
+ * `WP_Error( 'wcpay_not_initialized' )` when WooPayments has not finished
+ * initializing (delegate returns the unwrapped `false` as `[]`).
  *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Accounts_Controller::get_account_data()
  */
 class GetAccount implements AbilityDefinition {
 
@@ -84,14 +75,7 @@ class GetAccount implements AbilityDefinition {
 	/**
 	 * Execute the get-account ability.
 	 *
-	 * Delegates to `WC_REST_Payments_Accounts_Controller::get_account_data()`
-	 * to preserve parity with the existing REST endpoint (controller adds
-	 * `card_present_eligible`, `test_mode`, and `test_mode_onboarding` flags
-	 * on top of the cached service payload).
-	 *
-	 * Reads account state from the local cache when available; issues a
-	 * remote API request to the Transact platform if the cache is empty
-	 * or stale (the get-or-fetch semantics of `WC_Payments_Account::get_cached_account_data()`).
+	 * @see \WC_REST_Payments_Accounts_Controller::get_account_data()
 	 *
 	 * @param mixed $input Unused (zero-arg ability); accepted to match the
 	 *                     Abilities API execute_callback signature.
@@ -101,9 +85,9 @@ class GetAccount implements AbilityDefinition {
 	public static function execute( $input = null ) {
 		$result = AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/accounts' );
 
-		// The backing controller returns `false` (unwrapped to `[]` here) when
-		// WooPayments is not initialized or not connected. A connected account
-		// always returns a non-empty array, so an empty array is unambiguous.
+		// `false` from the controller (unwrapped to `[]` here) means WooPayments
+		// is not initialized or not connected. A connected account always
+		// returns a non-empty array.
 		if ( is_array( $result ) && [] === $result ) {
 			wc_get_logger()->error(
 				'execute_get_account: WooPayments account not initialized — delegate returned an empty array.',

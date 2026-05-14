@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,14 +16,10 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-deposits-overview` ability.
  *
  * Zero-arg read that returns a per-currency overview of upcoming and
- * recent payouts (Stripe deposits). Delegates to
- * `WC_REST_Payments_Deposits_Controller` via the `/wc/v3/payments/deposits/overview-all`
- * endpoint. Answers "when is my next payout and how much?".
+ * recent payouts (Stripe deposits). Answers "when is my next payout and
+ * how much?".
  *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Deposits_Controller::get_all_deposits_overviews()
  */
 class GetDepositsOverview implements AbilityDefinition {
 
@@ -73,8 +67,7 @@ class GetDepositsOverview implements AbilityDefinition {
 	/**
 	 * Execute the get-deposits-overview ability.
 	 *
-	 * Delegates to the `/wc/v3/payments/deposits/overview-all` REST endpoint
-	 * to return a per-currency overview of upcoming and recent payouts.
+	 * @see \WC_REST_Payments_Deposits_Controller::get_all_deposits_overviews()
 	 *
 	 * @param mixed $input Unused (zero-arg ability); accepted to match the
 	 *                     Abilities API execute_callback signature.

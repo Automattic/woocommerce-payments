@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,15 +16,10 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-dispute` ability.
  *
  * Look up a single dispute by ID. Answers 'what evidence is needed for
- * dispute du_X and by when?'. Delegates to
- * `/wc/v3/payments/disputes/{dispute_id}`. Returns
- * `WP_Error( 'wcpay_missing_dispute_id' )` when `dispute_id` is missing,
- * empty, or non-string.
+ * dispute du_X and by when?'. Returns `WP_Error( 'wcpay_missing_dispute_id' )`
+ * when `dispute_id` is missing, empty, or non-string.
  *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Disputes_Controller::get_dispute()
  */
 class GetDispute implements AbilityDefinition {
 
@@ -80,7 +73,7 @@ class GetDispute implements AbilityDefinition {
 	/**
 	 * Execute the get-dispute ability.
 	 *
-	 * Body lifted verbatim from AbilitiesRegistrar::execute_get_dispute().
+	 * @see \WC_REST_Payments_Disputes_Controller::get_dispute()
 	 *
 	 * @param mixed $input Ability input. Must include `dispute_id`.
 	 * @return array|\WP_Error

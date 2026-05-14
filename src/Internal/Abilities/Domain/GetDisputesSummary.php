@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,17 +16,9 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-disputes-summary` ability.
  *
  * Filters-only read that returns aggregate counts of disputes by status.
- * Delegates to the `/wc/v3/payments/disputes/summary` endpoint. Answers
- * "how many disputes are pending response right now?".
+ * Answers "how many disputes are pending response right now?".
  *
- * The input_schema is the disputes list schema with pagination/sort
- * properties (`page`, `per_page`, `orderby`, `order`) removed — summary
- * endpoints don't paginate and keeping those keys would be misleading.
- *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Disputes_Controller::get_disputes_summary()
  */
 class GetDisputesSummary implements AbilityDefinition {
 
@@ -94,8 +84,7 @@ class GetDisputesSummary implements AbilityDefinition {
 	/**
 	 * Execute the get-disputes-summary ability.
 	 *
-	 * Delegates to the `/wc/v3/payments/disputes/summary` REST endpoint
-	 * to return aggregate counts of disputes by status.
+	 * @see \WC_REST_Payments_Disputes_Controller::get_disputes_summary()
 	 *
 	 * @param mixed $input Ability input (filter parameters).
 	 * @return array|\WP_Error Disputes summary array, or WP_Error on failure.

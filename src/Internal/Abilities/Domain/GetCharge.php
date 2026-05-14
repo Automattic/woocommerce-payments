@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,23 +16,15 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-charge` ability.
  *
  * Look up a single charge by Stripe ID (ch_… or py_…). Answers 'what
- * happened with charge ch_X?'. Delegates to
- * `/wc/v3/payments/charges/{charge_id}`. Returns
- * `WP_Error( 'wcpay_missing_charge_id' )` when `charge_id` is missing,
- * empty, or non-string.
+ * happened with charge ch_X?'. Returns `WP_Error( 'wcpay_missing_charge_id' )`
+ * when `charge_id` is missing, empty, or non-string.
  *
- * PII surface: the backing controller returns the full Stripe charge
- * object including `billing_details` (name/email/phone/address) and
- * order metadata (`customer_email`, `customer_name`, `ip_address`,
- * `fraud_meta_box_type`). Reviewed and accepted for
- * `manage_woocommerce`-gated MCP clients — admins already see this
- * in the order/charge admin UI. If the cap gate ever moves below
- * admin, revisit this and add response filtering.
+ * PII exposure: billing details (name/email/phone/address) and order
+ * metadata (customer_email, customer_name, ip_address, fraud_meta_box_type)
+ * on the Stripe charge. No additional exposure over the existing admin
+ * REST surface — the ability requires `manage_woocommerce`.
  *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Charges_Controller::get_charge()
  */
 class GetCharge implements AbilityDefinition {
 
@@ -88,7 +78,7 @@ class GetCharge implements AbilityDefinition {
 	/**
 	 * Execute the get-charge ability.
 	 *
-	 * Body lifted verbatim from AbilitiesRegistrar::execute_get_charge().
+	 * @see \WC_REST_Payments_Charges_Controller::get_charge()
 	 *
 	 * @param mixed $input Ability input. Must include `charge_id`.
 	 * @return array|\WP_Error

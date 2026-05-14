@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,21 +16,16 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-payment-intent` ability.
  *
  * Look up a single payment intent by Stripe ID (pi_…). Answers 'what is
- * the state of intent pi_X?' during incident response. Delegates to
- * `/wc/v3/payments/payment_intents/{payment_intent_id}`. Returns
+ * the state of intent pi_X?' during incident response. Returns
  * `WP_Error( 'wcpay_missing_payment_intent_id' )` when `payment_intent_id`
  * is missing, empty, or non-string.
  *
- * PII surface: the backing controller returns the full intent payload
- * including the nested charge (`billing_details` name/email/phone/address)
- * and any card metadata (`last4`, brand). Reviewed and accepted for
- * `manage_woocommerce`-gated MCP clients. If the cap gate ever moves
- * below admin, revisit this and add response filtering.
+ * PII exposure: billing details on the nested charge (name/email/phone/
+ * address) and payment-method metadata (last4, brand). No additional
+ * exposure over the existing admin REST surface — the ability requires
+ * `manage_woocommerce`.
  *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Payment_Intents_Controller::get_payment_intent()
  */
 class GetPaymentIntent implements AbilityDefinition {
 
@@ -86,7 +79,7 @@ class GetPaymentIntent implements AbilityDefinition {
 	/**
 	 * Execute the get-payment-intent ability.
 	 *
-	 * Body lifted verbatim from AbilitiesRegistrar::execute_get_payment_intent().
+	 * @see \WC_REST_Payments_Payment_Intents_Controller::get_payment_intent()
 	 *
 	 * @param mixed $input Ability input. Must include `payment_intent_id`.
 	 * @return array|\WP_Error

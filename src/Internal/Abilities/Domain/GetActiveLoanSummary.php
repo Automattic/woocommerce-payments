@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,14 +16,10 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-active-loan-summary` ability.
  *
  * Zero-arg read that returns the merchant's active Stripe Capital loan
- * summary. Delegates to the `/wc/v3/payments/capital/active_loan_summary`
- * endpoint. Answers "how much do I still owe on my Capital loan and what
- * is the daily repayment rate?". Returns an empty shape if no loan is active.
+ * summary. Answers "how much do I still owe on my Capital loan and what
+ * is the daily repayment rate?".
  *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Capital_Controller::get_active_loan_summary()
  */
 class GetActiveLoanSummary implements AbilityDefinition {
 
@@ -73,8 +67,7 @@ class GetActiveLoanSummary implements AbilityDefinition {
 	/**
 	 * Execute the get-active-loan-summary ability.
 	 *
-	 * Delegates to the `/wc/v3/payments/capital/active_loan_summary` REST
-	 * endpoint to return the merchant's active Stripe Capital loan summary.
+	 * @see \WC_REST_Payments_Capital_Controller::get_active_loan_summary()
 	 *
 	 * @param mixed $input Unused (zero-arg ability); accepted to match the
 	 *                     Abilities API execute_callback signature.

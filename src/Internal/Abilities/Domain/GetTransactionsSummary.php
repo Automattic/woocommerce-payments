@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,18 +16,10 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-transactions-summary` ability.
  *
  * Filters-only read that returns aggregate counts and totals for a
- * transactions filter. Delegates to the
- * `/wc/v3/payments/transactions/summary` endpoint. Answers "how many
- * transactions / how much volume in this window?" without paging the list.
+ * transactions filter. Answers "how many transactions / how much volume
+ * in this window?" without paging the list.
  *
- * The input_schema is the transactions list schema with pagination/sort
- * properties (`page`, `per_page`, `orderby`, `order`) removed — summary
- * endpoints don't paginate and keeping those keys would be misleading.
- *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Transactions_Controller::get_transactions_summary()
  */
 class GetTransactionsSummary implements AbilityDefinition {
 
@@ -113,8 +103,7 @@ class GetTransactionsSummary implements AbilityDefinition {
 	/**
 	 * Execute the get-transactions-summary ability.
 	 *
-	 * Delegates to the `/wc/v3/payments/transactions/summary` REST endpoint
-	 * to return aggregate counts and totals for the given filter set.
+	 * @see \WC_REST_Payments_Transactions_Controller::get_transactions_summary()
 	 *
 	 * @param mixed $input Ability input (filter parameters).
 	 * @return array|\WP_Error Transactions summary array, or WP_Error on failure.

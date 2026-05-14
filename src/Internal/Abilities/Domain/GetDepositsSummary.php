@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,17 +16,10 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-deposits-summary` ability.
  *
  * Filters-only read that returns aggregate counts and totals of payouts by
- * status and currency. Delegates to the `/wc/v3/payments/deposits/summary`
- * endpoint. Answers "how many payouts have I received this month?".
+ * status and currency. Answers "how many payouts have I received this
+ * month?".
  *
- * The input_schema is the deposits list schema with pagination/sort
- * properties (`page`, `per_page`, `orderby`, `order`) removed — summary
- * endpoints don't paginate and keeping those keys would be misleading.
- *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Deposits_Controller::get_deposits_summary()
  */
 class GetDepositsSummary implements AbilityDefinition {
 
@@ -90,8 +81,7 @@ class GetDepositsSummary implements AbilityDefinition {
 	/**
 	 * Execute the get-deposits-summary ability.
 	 *
-	 * Delegates to the `/wc/v3/payments/deposits/summary` REST endpoint
-	 * to return aggregate counts and totals of payouts by status and currency.
+	 * @see \WC_REST_Payments_Deposits_Controller::get_deposits_summary()
 	 *
 	 * @param mixed $input Ability input (filter parameters).
 	 * @return array|\WP_Error Deposits summary array, or WP_Error on failure.

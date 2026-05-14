@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments
  */
 
-// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
-
 namespace WCPay\Internal\Abilities\Domain;
 
 use Automattic\WooCommerce\Abilities\AbilityDefinition;
@@ -18,14 +16,10 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/get-authorizations-summary` ability.
  *
  * Zero-arg read that returns aggregate counts and total authorized amount
- * for pending authorizations. Delegates to the
- * `/wc/v3/payments/authorizations/summary` endpoint. Answers "how much
- * money is held in uncaptured authorizations?".
+ * for pending authorizations. Answers "how much money is held in uncaptured
+ * authorizations?".
  *
- * @internal Only loaded when WooCommerce Core 10.9+ is active. The
- * `AbilitiesRegistrar` short-circuits before referencing this class on
- * earlier WC versions; PHP's lazy autoload means the unresolved
- * AbilityDefinition interface FQN never reaches the parser there.
+ * @see \WC_REST_Payments_Authorizations_Controller::get_authorizations_summary()
  */
 class GetAuthorizationsSummary implements AbilityDefinition {
 
@@ -73,9 +67,7 @@ class GetAuthorizationsSummary implements AbilityDefinition {
 	/**
 	 * Execute the get-authorizations-summary ability.
 	 *
-	 * Delegates to the `/wc/v3/payments/authorizations/summary` REST endpoint
-	 * to return aggregate counts and total authorized amount for pending
-	 * authorizations.
+	 * @see \WC_REST_Payments_Authorizations_Controller::get_authorizations_summary()
 	 *
 	 * @param mixed $input Unused (zero-arg ability); accepted to match the
 	 *                     Abilities API execute_callback signature.
