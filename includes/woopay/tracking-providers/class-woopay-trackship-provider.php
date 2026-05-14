@@ -19,8 +19,12 @@ defined( 'ABSPATH' ) || exit;
  * `_wc_shipment_tracking_items` (written by WC Shipment Tracking / AST),
  * polls carriers via its SaaS backend, then pushes status updates back to
  * WordPress via the `wc/v1/tracking-webhook` REST endpoint. That endpoint
- * fires `trackship_shipment_status_trigger` synchronously *before* mutating
- * local state.
+ * fires `trackship_shipment_status_trigger` *after* persisting the new
+ * status to TrackShip's own `trackship_shipment` table and to
+ * `ts_shipment_status` order meta (verified against TrackShip for
+ * WooCommerce 2.0.3, `class-trackship-rest-api-controller.php:240-281`).
+ * Our listener reads `$tracking_event_status` from the hook args directly,
+ * so the ordering does not affect correctness.
  *
  * Why both interfaces:
  *
@@ -39,13 +43,23 @@ defined( 'ABSPATH' ) || exit;
  *     this class in the primary chain — TrackShip lives only in the
  *     overlay chain. The sync constructor discovers
  *     `register_persistence_hooks()` by iterating both chains with
- *     dedup-by-object-identity, so overlay-only providers register
- *     their listeners without needing a primary-chain stub entry.
+ *     dedup-by-class, so overlay-only providers register their listeners
+ *     without needing a primary-chain stub entry.
  *
  * **What TrackShip never sees:** if a merchant doesn't have WC Shipment
  * Tracking or AST installed, TrackShip can't function — it has no source of
  * tracking numbers. That configuration is invalid from TrackShip's own
  * perspective, so no special handling is needed here.
+ *
+ * **Caveat — multi-shipment orders with auto-promote-to-delivered:**
+ * TrackShip registers a `wc-delivered` WC order status and offers an
+ * auto-promote feature. The hook is gated on
+ * `'delivered' != $order->get_status()` (the WC *order* status, not the
+ * shipment status). On a multi-shipment order where one shipment delivers
+ * and promotes the order to `wc-delivered`, no further
+ * `trackship_shipment_status_trigger` events fire for the remaining
+ * shipments — those status changes will not propagate through this
+ * provider. Single-shipment orders are unaffected.
  *
  * **Why we don't read TrackShip's DB table directly:** TrackShip stores
  * shipment state in a `{$wpdb->prefix}trackship_shipment` table whose schema
@@ -72,11 +86,12 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 	 *
 	 * Args: `($order_id, $previous_status, $tracking_event_status, $tracking_number)`.
 	 *
-	 * Verified against the TrackShip plugin source (tested against TrackShip
-	 * for WooCommerce as published on wordpress.org). The hook is gated by
-	 * TrackShip to fire only on real transitions and excludes orders already
-	 * in 'delivered' status — our listener still does its own no-op check
-	 * defensively.
+	 * Verified against TrackShip for WooCommerce 2.0.3. The hook is gated by
+	 * TrackShip to fire only on real transitions (`$previous_status !=
+	 * $tracking_event_status`) and only when the WC order status is not
+	 * `wc-delivered` — our listener still does its own no-op check
+	 * defensively. See the class docblock for the multi-shipment caveat
+	 * implied by the second gate.
 	 */
 	const TRACKING_HOOK = 'trackship_shipment_status_trigger';
 
