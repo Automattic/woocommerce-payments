@@ -77,6 +77,7 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetAccount::class,
 		\WCPay\Internal\Abilities\Domain\GetActiveLoanSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetDepositsOverview::class,
+		\WCPay\Internal\Abilities\Domain\GetTransactionsSummary::class,
 	];
 
 	/**
@@ -205,7 +206,6 @@ class AbilitiesRegistrar {
 		self::$abilities_registered = true;
 
 		self::register_get_transactions_ability();
-		self::register_get_transactions_summary_ability();
 		self::register_get_disputes_ability();
 		self::register_get_disputes_summary_ability();
 		self::register_get_dispute_ability();
@@ -265,16 +265,6 @@ class AbilitiesRegistrar {
 	 */
 	public static function execute_get_transactions( $input = null ) {
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/transactions', is_array( $input ) ? $input : [] );
-	}
-
-	/**
-	 * Execute callback — `get-transactions-summary`.
-	 *
-	 * @param mixed $input Ability input.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_transactions_summary( $input = null ) {
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/transactions/summary', is_array( $input ) ? $input : [] );
 	}
 
 	/**
@@ -500,26 +490,6 @@ class AbilitiesRegistrar {
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => self::transactions_list_input_schema(),
 				'execute_callback'    => [ __CLASS__, 'execute_get_transactions' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-transactions-summary` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_transactions_summary_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-transactions-summary',
-			[
-				'label'               => __( 'Get transactions summary', 'woocommerce-payments' ),
-				'description'         => __( 'Return aggregate counts and totals for a transactions filter. Answers \'how many transactions / how much volume in this window?\' without paging the list.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::filters_only( self::transactions_list_input_schema() ),
-				'execute_callback'    => [ __CLASS__, 'execute_get_transactions_summary' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				'meta'                => self::read_meta(),
 			]
