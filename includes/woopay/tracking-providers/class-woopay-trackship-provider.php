@@ -220,7 +220,14 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 			if ( ! is_array( $entry ) ) {
 				continue;
 			}
-			$entry_number = isset( $entry['tracking_number'] ) ? (string) $entry['tracking_number'] : '';
+			// is_scalar() guard before the cast: order meta is mutable by
+			// other plugins/admins, and a tampered non-scalar value would
+			// trigger "Array to string conversion" notices. Drop tampered
+			// entries entirely rather than carry them forward.
+			if ( ! isset( $entry['tracking_number'] ) || ! is_scalar( $entry['tracking_number'] ) ) {
+				continue;
+			}
+			$entry_number = (string) $entry['tracking_number'];
 			if ( $entry_number === $tracking_number ) {
 				// Replace the existing entry for this tracking number.
 				continue;
@@ -273,7 +280,14 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 			if ( ! is_array( $entry ) ) {
 				continue;
 			}
-			$number = isset( $entry['tracking_number'] ) ? (string) $entry['tracking_number'] : '';
+			// is_scalar() guard before the cast: order meta is mutable by
+			// other plugins/admins, and a tampered non-scalar value would
+			// trigger "Array to string conversion" notices. Skip tampered
+			// entries so they don't index $by_number.
+			if ( ! isset( $entry['tracking_number'] ) || ! is_scalar( $entry['tracking_number'] ) ) {
+				continue;
+			}
+			$number = (string) $entry['tracking_number'];
 			if ( '' === $number ) {
 				continue;
 			}
