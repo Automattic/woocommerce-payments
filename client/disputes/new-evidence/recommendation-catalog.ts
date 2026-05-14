@@ -669,11 +669,9 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	// collects for physical_product fraudulent disputes) instead of
 	// `service_date`. Gives physical-fraud merchants the same narrative
 	// coaching that digital/service merchants get from Cluster 8.
-	// Copy mirrors Cluster 8's voice; final wording pending RiskOps.
 	{
 		id: 'c8b-shipping-date-provided',
 		urgency: 'positive',
-		// TODO(riskops): final wording from RSM-1170 for the fraudulent+physical case
 		title: __( 'Shipping date on record', 'woocommerce-payments' ),
 		body: __(
 			'Including the shipping date helped tie the transaction to a verifiable event.',
@@ -689,7 +687,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c8b-shipping-date-include',
 		urgency: 'critical',
-		// TODO(riskops): final wording from RSM-1169 for the fraudulent+physical case
 		title: __( 'Include the shipping date', 'woocommerce-payments' ),
 		body: __(
 			'The shipping date ties the transaction to a verifiable event, which can help defend fraud disputes.',
@@ -705,7 +702,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	{
 		id: 'c8b-shipping-date-document',
 		urgency: 'tip',
-		// TODO(riskops): final wording from RSM-1170 for the fraudulent+physical case
 		title: __( 'Document the shipping date', 'woocommerce-payments' ),
 		body: __(
 			'Documenting the shipping date helps tie transactions to verifiable events in fraud disputes.',
