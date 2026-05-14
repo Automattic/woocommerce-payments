@@ -78,6 +78,7 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetActiveLoanSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetAuthorizationsSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetDepositsOverview::class,
+		\WCPay\Internal\Abilities\Domain\GetDepositsSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetDisputesSummary::class,
 		\WCPay\Internal\Abilities\Domain\GetTransactionsSummary::class,
 	];
@@ -212,7 +213,6 @@ class AbilitiesRegistrar {
 		self::register_get_dispute_ability();
 		self::register_get_authorizations_ability();
 		self::register_get_deposits_ability();
-		self::register_get_deposits_summary_ability();
 		self::register_get_payment_intent_ability();
 		self::register_get_charge_ability();
 		self::register_get_timeline_ability();
@@ -312,16 +312,6 @@ class AbilitiesRegistrar {
 	 */
 	public static function execute_get_deposits( $input = null ) {
 		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits', is_array( $input ) ? $input : [] );
-	}
-
-	/**
-	 * Execute callback — `get-deposits-summary`.
-	 *
-	 * @param mixed $input Ability input.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_deposits_summary( $input = null ) {
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/deposits/summary', is_array( $input ) ? $input : [] );
 	}
 
 	/**
@@ -569,26 +559,6 @@ class AbilitiesRegistrar {
 				'category'            => self::CATEGORY_SLUG,
 				'input_schema'        => self::deposits_list_input_schema(),
 				'execute_callback'    => [ __CLASS__, 'execute_get_deposits' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-deposits-summary` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_deposits_summary_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-deposits-summary',
-			[
-				'label'               => __( 'Get payouts summary', 'woocommerce-payments' ),
-				'description'         => __( 'Return aggregate counts and totals of payouts by status and currency. Answers \'how many payouts have I received this month?\'.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::filters_only( self::deposits_list_input_schema() ),
-				'execute_callback'    => [ __CLASS__, 'execute_get_deposits_summary' ],
 				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
 				'meta'                => self::read_meta(),
 			]
