@@ -4084,6 +4084,125 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		delete_transient( 'wcpay_fraud_protection_settings' );
 	}
 
+	/**
+	 * Regression test for WOOPMNT-6145.
+	 *
+	 * When the payment intent has already succeeded but a third-party plugin
+	 * hooked into a post-payment WooCommerce hook (e.g. Square's inventory sync
+	 * on woocommerce_reduce_order_stock) throws an exception that escapes
+	 * process_payment_for_order(), the catch block must NOT flip the order to
+	 * Failed nor return 'fail' to the checkout. Doing so caused merchants to
+	 * see successfully-paid orders marked Failed, customers to retry payments,
+	 * and resulting duplicate charges.
+	 */
+	public function test_process_payment_does_not_mark_failed_when_intent_succeeded_and_downstream_throws() {
+		$order = WC_Helper_Order::create_order();
+
+		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$mock_order_service
+			->expects( $this->any() )
+			->method( 'get_intention_status_for_order' )
+			->willReturn( Intent_Status::SUCCEEDED );
+
+		$expected_redirect = 'https://example.com/test-redirect';
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway(
+			[ 'prepare_payment_information', 'process_payment_for_order', 'get_return_url' ],
+			[ WC_Payments_Order_Service::class => $mock_order_service ]
+		);
+
+		$mock_wcpay_gateway
+			->expects( $this->any() )
+			->method( 'get_return_url' )
+			->willReturn( $expected_redirect );
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new Exception( 'Auth credentials missing' ) );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'success', $result['result'] );
+		$this->assertSame( $expected_redirect, $result['redirect'] );
+
+		// WC_Helper_Order::create_order() produces a 'pending' order; the
+		// guard must leave the status unchanged when the downstream throw is
+		// caught after the intent has succeeded.
+		$persisted_order = wc_get_order( $order->get_id() );
+		$this->assertSame( Order_Status::PENDING, $persisted_order->get_status() );
+
+		$notes               = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$matching_note_count = count(
+			array_filter(
+				$notes,
+				function ( $note ) {
+					return false !== stripos( $note->content, 'Auth credentials missing' );
+				}
+			)
+		);
+		$this->assertGreaterThan( 0, $matching_note_count, 'Expected an order note containing the downstream error message.' );
+	}
+
+	/**
+	 * Sanity counterpart to the WOOPMNT-6145 regression test above.
+	 *
+	 * When the intent has not succeeded, a thrown exception must still flip
+	 * the order to Failed and return 'fail' to the checkout. Locks in the
+	 * existing behavior so the new guard does not over-broaden.
+	 */
+	public function test_process_payment_still_marks_failed_when_intent_not_succeeded_and_downstream_throws() {
+		$order = WC_Helper_Order::create_order();
+
+		$mock_order_service = $this->getMockBuilder( WC_Payments_Order_Service::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$mock_order_service
+			->expects( $this->any() )
+			->method( 'get_intention_status_for_order' )
+			->willReturn( '' );
+
+		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway(
+			[ 'prepare_payment_information', 'process_payment_for_order' ],
+			[ WC_Payments_Order_Service::class => $mock_order_service ]
+		);
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'prepare_payment_information' );
+
+		$mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'process_payment_for_order' )
+			->willThrowException( new Exception( 'Genuine payment failure' ) );
+
+		$result = $mock_wcpay_gateway->process_payment( $order->get_id() );
+
+		$this->assertSame( 'fail', $result['result'] );
+
+		$persisted_order = wc_get_order( $order->get_id() );
+		$this->assertSame( Order_Status::FAILED, $persisted_order->get_status() );
+
+		// Counterpart assertion: the WOOPMNT-6145 guard must NOT fire on the
+		// failure path, so the diagnostic note must be absent.
+		$notes      = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$guard_note = array_filter(
+			$notes,
+			function ( $note ) {
+				return false !== stripos( $note->content, 'Payment succeeded, but a downstream error occurred' );
+			}
+		);
+		$this->assertEmpty( $guard_note, 'Guard diagnostic note must not appear on the failure path.' );
+	}
+
 	public function test_process_payment_continues_if_valid_fraud_prevention_token() {
 		$order = WC_Helper_Order::create_order();
 

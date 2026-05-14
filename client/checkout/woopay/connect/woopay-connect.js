@@ -34,9 +34,8 @@ class WoopayConnect {
 	 */
 	attachMessageListener() {
 		const messageListener = ( event ) => {
-			const isFromWoopayHost = getConfig( 'woopayHost' ).startsWith(
-				event.origin
-			);
+			const woopayOrigin = new URL( getConfig( 'woopayHost' ) ).origin;
+			const isFromWoopayHost = event.origin === woopayOrigin;
 
 			// If the message is not from WooPay, ignore it.
 			if ( ! isFromWoopayHost ) {

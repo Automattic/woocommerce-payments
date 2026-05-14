@@ -64,6 +64,15 @@ export type DisputeReason =
 	| 'noncompliant'
 	| 'unrecognized';
 
+export type ProductType =
+	| 'physical_product'
+	| 'digital_product_or_service'
+	| 'offline_service'
+	| 'event'
+	| 'booking_reservation'
+	| 'multiple'
+	| 'other';
+
 export type DisputeStatus =
 	| 'warning_needs_response'
 	| 'warning_under_review'
@@ -92,6 +101,8 @@ export interface Dispute {
 		 * Unix timestamp of when dispute evidence was submitted.
 		 */
 		__evidence_submitted_at?: string;
+		/** Product type the merchant selected via the response wizard. */
+		__product_type?: string;
 		/* eslint-enable @typescript-eslint/naming-convention */
 	};
 	order: null | OrderDetails;

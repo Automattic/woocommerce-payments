@@ -193,6 +193,54 @@ class WC_Payments_Payment_Method_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $expected, $result );
 	}
 
+	public function test_get_card_info_prefers_terminal_network_for_card_present_payment_method() {
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'get_payment_method' )->willReturn( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$payment_method_details = [
+			'type'         => 'card_present',
+			'card_present' => [
+				'brand'   => 'visa',
+				'network' => 'eftpos_au',
+				'last4'   => '0978',
+			],
+		];
+
+		$this->mock_order_service
+			->method( 'get_payment_method_details' )
+			->willReturn( $payment_method_details );
+
+		$result = $this->payment_method_service->get_card_info( [], $order );
+
+		$this->assertSame( 'eftpos_au', $result['brand'] );
+		$this->assertSame( '0978', $result['last4'] );
+		$this->assertSame( WC_Payments_Utils::get_terminal_card_brand_icon_base64( 'eftpos_au' ), $result['icon'] );
+	}
+
+	public function test_get_card_info_uses_brand_for_unsupported_card_present_network() {
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'get_payment_method' )->willReturn( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+		$payment_method_details = [
+			'type'         => 'card_present',
+			'card_present' => [
+				'brand'   => 'visa',
+				'network' => 'unsupported_network',
+				'last4'   => '0978',
+			],
+		];
+
+		$this->mock_order_service
+			->method( 'get_payment_method_details' )
+			->willReturn( $payment_method_details );
+
+		$result = $this->payment_method_service->get_card_info( [], $order );
+
+		$this->assertSame( 'visa', $result['brand'] );
+		$this->assertSame( '0978', $result['last4'] );
+		$this->assertArrayNotHasKey( 'icon', $result );
+	}
+
 	/**
 	 * Test get_card_info caches payment method details when retrieved from API.
 	 */

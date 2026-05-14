@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Wire dispute Outcome View placeholder to render the Evidence Submitted section behind the existing feature flag; optional-missing rows collapse behind a disclosure on won and warning_closed outcomes

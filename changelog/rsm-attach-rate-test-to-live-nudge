@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added a banner that nudges WooPayments merchants who've been in test mode for at least 7 days to switch to live payments.
