@@ -178,7 +178,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
 	public function provide_expected_abilities(): array {
 		return [
-			[ 'woocommerce-payments/get-authorizations' ],
 			[ 'woocommerce-payments/get-deposits' ],
 		];
 	}
@@ -226,8 +225,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
 	public function provide_execute_cases(): array {
 		return [
-			'get-authorizations' => [ 'execute_get_authorizations', [ 'per_page' => 5 ], '/wc/v3/payments/authorizations' ],
-			'get-deposits'       => [ 'execute_get_deposits', [ 'per_page' => 5 ], '/wc/v3/payments/deposits' ],
+			'get-deposits' => [ 'execute_get_deposits', [ 'per_page' => 5 ], '/wc/v3/payments/deposits' ],
 		];
 	}
 

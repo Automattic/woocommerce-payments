@@ -87,6 +87,7 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetTimeline::class,
 		\WCPay\Internal\Abilities\Domain\GetTransactions::class,
 		\WCPay\Internal\Abilities\Domain\GetDisputes::class,
+		\WCPay\Internal\Abilities\Domain\GetAuthorizations::class,
 	];
 
 	/**
@@ -214,7 +215,6 @@ class AbilitiesRegistrar {
 
 		self::$abilities_registered = true;
 
-		self::register_get_authorizations_ability();
 		self::register_get_deposits_ability();
 	}
 
@@ -255,16 +255,6 @@ class AbilitiesRegistrar {
 		}
 		self::$category_registered  = false;
 		self::$abilities_registered = false;
-	}
-
-	/**
-	 * Execute callback — `get-authorizations`.
-	 *
-	 * @param mixed $input Ability input.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_authorizations( $input = null ) {
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/authorizations', is_array( $input ) ? $input : [] );
 	}
 
 	/**
@@ -356,26 +346,6 @@ class AbilitiesRegistrar {
 	 */
 	private static function woo_abilities_loader_available(): bool {
 		return class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' );
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-authorizations` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_authorizations_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-authorizations',
-			[
-				'label'               => __( 'List authorizations', 'woocommerce-payments' ),
-				'description'         => __( 'List uncaptured card authorizations. Answers \'which authorizations expire soon / still need capture?\'.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::pagination_input_schema(),
-				'execute_callback'    => [ __CLASS__, 'execute_get_authorizations' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
 	}
 
 	/**
