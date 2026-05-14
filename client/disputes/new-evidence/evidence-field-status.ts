@@ -1,4 +1,9 @@
 /**
+ * External dependencies
+ */
+import { __ } from '@wordpress/i18n';
+
+/**
  * Internal dependencies
  */
 import type { EvidenceFieldStatus } from './types';
@@ -7,6 +12,11 @@ import { evidenceMatrix } from './evidence-matrix';
 import { DISPUTE_HIGH_IMPACT_FIELDS } from './constants/high-impact-fields';
 import { DISPUTE_TOPICAL_FIELDS } from './constants/topical-fields';
 import { FALLBACK_EVIDENCE_FIELD_LABELS } from './constants/fallback-field-labels';
+
+// Stripe evidence key the WooPayments wizard writes the auto-generated
+// cover letter into; surfaced universally in the Outcome View even though
+// it isn't tracked as high-impact or topical (Catherine, RiskOps).
+const coverLetterFieldKey = 'uncategorized_text';
 
 /**
  * Find a label for `key` across wizard matrix cells that apply to
@@ -120,7 +130,11 @@ const collectMatrixKeys = (
  *   - `DISPUTE_TOPICAL_FIELDS`     -> `optional_missing` when empty
  *   - wizard `evidenceMatrix`      -> `optional_missing` when empty
  *
- * Returns [] for unrecognised reason or product type.
+ * Always appends a synthetic cover-letter row (`uncategorized_text`)
+ * regardless of (reason, productType), since the wizard auto-generates
+ * the cover letter and an empty value is an actionable gap on every
+ * dispute. Unrecognised reason/productType therefore returns just that
+ * single row.
  */
 export const getExpectedFieldStatus = (
 	reason: string,
@@ -155,6 +169,23 @@ export const getExpectedFieldStatus = (
 				: 'expected_missing',
 		} );
 		emitted.add( key );
+	}
+
+	// Cover letter — surfaced on every dispute regardless of
+	// (reason × productType). The wizard auto-generates it into
+	// `uncategorized_text`, so an empty value implies the merchant
+	// deliberately cleared it (an actionable gap, not an oversight).
+	// Placed here so it groups with the high-impact / expected_missing
+	// rows and sits ahead of any topical / matrix optional rows.
+	if ( ! emitted.has( coverLetterFieldKey ) ) {
+		result.push( {
+			key: coverLetterFieldKey,
+			label: __( 'Cover letter', 'woocommerce-payments' ),
+			state: isFieldProvided( evidence, coverLetterFieldKey )
+				? 'provided'
+				: 'expected_missing',
+		} );
+		emitted.add( coverLetterFieldKey );
 	}
 
 	for ( const key of topicalKeys ) {

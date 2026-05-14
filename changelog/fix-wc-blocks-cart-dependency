@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: dependency extraction of @woocommerce/blocks-checkout

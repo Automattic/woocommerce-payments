@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: centralizing BNPL currency limits in payment method definitions
