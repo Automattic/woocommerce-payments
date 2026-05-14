@@ -2159,4 +2159,62 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
 	}
+
+	public function test_has_live_sale_returns_true_when_option_is_set(): void {
+		update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
+
+		$this->assertTrue( $this->order_service->has_live_sale() );
+
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+	}
+
+	public function test_has_live_sale_returns_false_when_no_orders_exist(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$this->assertFalse( $this->order_service->has_live_sale() );
+	}
+
+	public function test_has_live_sale_falls_back_to_query_and_writes_option_for_production_order(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_status( 'completed' );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
+		$order->save();
+
+		$this->assertTrue( $this->order_service->has_live_sale() );
+		$this->assertSame( '1', get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
+
+		$order->delete( true );
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+	}
+
+	public function test_has_live_sale_ignores_test_mode_wcpay_orders(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_status( 'completed' );
+		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$order->save();
+
+		$this->assertFalse( $this->order_service->has_live_sale() );
+		$this->assertFalse( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) );
+
+		$order->delete( true );
+	}
+
+	public function test_has_live_sale_ignores_non_wcpay_orders(): void {
+		delete_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION );
+
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'cheque' );
+		$order->set_status( 'completed' );
+		$order->save();
+
+		$this->assertFalse( $this->order_service->has_live_sale() );
+
+		$order->delete( true );
+	}
 }

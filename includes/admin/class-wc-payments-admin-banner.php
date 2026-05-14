@@ -148,6 +148,13 @@ class WC_Payments_Admin_Banner {
 	private $account;
 
 	/**
+	 * Order service instance.
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * Per-request memo for should_show_post_kyc_activation_notice().
 	 * Same banner instance is reused across admin_enqueue_scripts and
 	 * woocommerce_sections_{$tab}, so a per-request cache is safe.
@@ -176,12 +183,14 @@ class WC_Payments_Admin_Banner {
 	/**
 	 * Constructor.
 	 *
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WCPay Gateway instance.
-	 * @param WC_Payments_Account      $account       Account service instance.
+	 * @param WC_Payment_Gateway_WCPay  $wcpay_gateway WCPay Gateway instance.
+	 * @param WC_Payments_Account       $account       Account service instance.
+	 * @param WC_Payments_Order_Service $order_service Order service instance.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payments_Account $account ) {
+	public function __construct( WC_Payment_Gateway_WCPay $wcpay_gateway, WC_Payments_Account $account, WC_Payments_Order_Service $order_service ) {
 		$this->wcpay_gateway = $wcpay_gateway;
 		$this->account       = $account;
+		$this->order_service = $order_service;
 	}
 
 	/**
@@ -1039,7 +1048,7 @@ class WC_Payments_Admin_Banner {
 			return false;
 		}
 
-		return ! $this->store_has_live_sale();
+		return ! $this->order_service->has_live_sale();
 	}
 
 	/**
@@ -1049,42 +1058,6 @@ class WC_Payments_Admin_Banner {
 	 */
 	public function invalidate_post_kyc_activation_notice_cache(): void {
 		delete_transient( WC_Payments_Account::POST_KYC_ACTIVATION_ELIGIBLE_TRANSIENT );
-	}
-
-	/**
-	 * Returns whether the store has had at least one live (production) WooPayments sale.
-	 *
-	 * Reads a one-way option set by `WC_Payments_Order_Service::maybe_record_first_live_sale()`;
-	 * falls back to a single `wc_get_orders` meta query if the option has not been
-	 * populated yet (e.g., for stores that took their first live sale before this
-	 * feature shipped).
-	 *
-	 * @return bool
-	 */
-	private function store_has_live_sale(): bool {
-		if ( get_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION ) ) {
-			return true;
-		}
-
-		$orders = wc_get_orders(
-			[
-				'payment_method' => 'woocommerce_payments',
-				'limit'          => 1,
-				'return'         => 'ids',
-				'status'         => [ 'wc-completed', 'wc-processing' ],
-				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
-				'meta_key'       => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
-				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
-				'meta_value'     => Order_Mode::PRODUCTION,
-			]
-		);
-
-		if ( ! empty( $orders ) ) {
-			update_option( WC_Payments_Order_Service::HAS_LIVE_SALE_OPTION, '1', true );
-			return true;
-		}
-
-		return false;
 	}
 
 	/**

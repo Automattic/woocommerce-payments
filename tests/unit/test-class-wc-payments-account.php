@@ -4193,8 +4193,48 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	// maybe_record_kyc_completion_date tests
 	// -------------------------------------------------------------------------
 
-	public function test_maybe_record_kyc_completion_date_stores_date_for_eligible_account(): void {
+	public function test_maybe_record_kyc_completion_date_uses_current_time_for_post_launch_merchant(): void {
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		update_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION, time() );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => time() - 90 * DAY_IN_SECONDS,
+			]
+		);
+
+		$completion_date = (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		$this->assertGreaterThan( time() - 60, $completion_date );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+	}
+
+	public function test_maybe_record_kyc_completion_date_falls_back_to_account_created_for_pre_existing_merchant(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
+
+		$account_created = time() - 90 * DAY_IN_SECONDS;
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => $account_created,
+			]
+		);
+
+		$this->assertSame( $account_created, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+	}
+
+	public function test_maybe_record_kyc_completion_date_bails_when_no_submitted_date_and_no_created(): void {
+		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
+		delete_option( WC_Payments_Account::KYC_SUBMITTED_DATE_OPTION );
 
 		$this->wcpay_account->maybe_record_kyc_completion_date(
 			[
@@ -4204,7 +4244,23 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->assertNotFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
+	}
+
+	public function test_maybe_record_kyc_completion_date_preserves_existing_date(): void {
+		$original_date = time() - 10 * DAY_IN_SECONDS;
+		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, $original_date );
+
+		$this->wcpay_account->maybe_record_kyc_completion_date(
+			[
+				'payments_enabled' => true,
+				'is_live'          => true,
+				'is_test_drive'    => false,
+				'created'          => time() - 90 * DAY_IN_SECONDS,
+			]
+		);
+
+		$this->assertSame( $original_date, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
 
 		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
 	}
@@ -4257,22 +4313,5 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertFalse( get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-	}
-
-	public function test_maybe_record_kyc_completion_date_preserves_existing_date(): void {
-		$original_date = time() - 10 * DAY_IN_SECONDS;
-		update_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION, $original_date );
-
-		$this->wcpay_account->maybe_record_kyc_completion_date(
-			[
-				'payments_enabled' => true,
-				'is_live'          => true,
-				'is_test_drive'    => false,
-			]
-		);
-
-		$this->assertSame( $original_date, (int) get_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION ) );
-
-		delete_option( WC_Payments_Account::KYC_COMPLETION_DATE_OPTION );
 	}
 }
