@@ -20,7 +20,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	// Asserting on either action name verifies the wiring; we use the WP-Core
 	// merge names since that's what fires on WP 6.9+ test environments.
 	const CATEGORIES_HOOK = 'wp_abilities_api_categories_init';
-	const ABILITIES_HOOK  = 'wp_abilities_api_init';
 	const FEATURE_FILTER  = 'woocommerce_payments_abilities_enabled';
 
 	/**
@@ -38,13 +37,11 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	public function test_init_is_no_op_when_feature_flag_disabled() {
-		// Remove all four hook variants (both composer-package names and the
-		// WP-Core merge names) — init() hooks all four when enabled, so the
-		// feature-flag no-op test must check that none of them are wired.
+		// Remove both hook variants (composer-package name and the WP-Core merge
+		// name) — init() hooks both when enabled, so the feature-flag no-op test
+		// must check that neither is wired.
 		remove_all_actions( 'abilities_api_categories_init' );
-		remove_all_actions( 'abilities_api_init' );
 		remove_all_actions( self::CATEGORIES_HOOK );
-		remove_all_actions( self::ABILITIES_HOOK );
 		remove_all_filters( self::FEATURE_FILTER );
 
 		AbilitiesRegistrar::init();
@@ -58,24 +55,17 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		);
 		$this->assertFalse(
 			has_action(
-				self::ABILITIES_HOOK,
-				[ AbilitiesRegistrar::class, 'register_abilities' ]
-			),
-			'Expected init() to short-circuit on wp_abilities_api_init when the feature filter is unset.'
-		);
-		$this->assertFalse(
-			has_action(
 				'abilities_api_categories_init',
 				[ AbilitiesRegistrar::class, 'register_category' ]
 			),
 			'Expected init() to also short-circuit on the composer-package categories action variant.'
 		);
 		$this->assertFalse(
-			has_action(
-				'abilities_api_init',
-				[ AbilitiesRegistrar::class, 'register_abilities' ]
+			has_filter(
+				'woocommerce_ability_definition_classes',
+				[ AbilitiesRegistrar::class, 'append_classes' ]
 			),
-			'Expected init() to also short-circuit on the composer-package abilities action variant.'
+			'Expected init() to skip the WC 10.9 filter wire when the feature filter is unset.'
 		);
 	}
 
@@ -109,30 +99,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertTrue(
 			false !== $wp_core_hook || false !== $package_hook,
 			'Expected init() to hook register_category on either `abilities_api_categories_init` or `wp_abilities_api_categories_init`.'
-		);
-	}
-
-	public function test_init_hooks_register_abilities_on_abilities_action() {
-		// See the note on the category-hook test above for why we only assert
-		// hook wiring and deliberately skip the singleton state check.
-		remove_all_actions( 'abilities_api_init' );
-		remove_all_actions( 'wp_abilities_api_init' );
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-
-		AbilitiesRegistrar::init();
-
-		$wp_core_hook = has_action(
-			'wp_abilities_api_init',
-			[ AbilitiesRegistrar::class, 'register_abilities' ]
-		);
-		$package_hook = has_action(
-			'abilities_api_init',
-			[ AbilitiesRegistrar::class, 'register_abilities' ]
-		);
-
-		$this->assertTrue(
-			false !== $wp_core_hook || false !== $package_hook,
-			'Expected init() to hook register_abilities on either `abilities_api_init` or `wp_abilities_api_init`.'
 		);
 	}
 
@@ -248,30 +214,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertFalse(
 			$called,
 			'register_category() with the static flag pre-set must short-circuit before invoking wp_register_ability_category() (which would emit _doing_it_wrong on re-registration).'
-		);
-	}
-
-	public function test_register_abilities_short_circuits_when_static_flag_set() {
-		// Same contract as the category test above: pre-set the static
-		// idempotency flag and verify no `_doing_it_wrong` fires when the
-		// short-circuit guard runs.
-		$this->set_static_flag( 'abilities_registered', true );
-
-		$called = false;
-		$spy    = function () use ( &$called ) {
-			$called = true;
-		};
-		add_action( 'doing_it_wrong_run', $spy );
-
-		try {
-			AbilitiesRegistrar::register_abilities();
-		} finally {
-			remove_action( 'doing_it_wrong_run', $spy );
-		}
-
-		$this->assertFalse(
-			$called,
-			'register_abilities() with the static flag pre-set must short-circuit before invoking wp_register_ability() (which would emit _doing_it_wrong on re-registration).'
 		);
 	}
 
@@ -419,5 +361,89 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		}
 
 		$this->assertInstanceOf( \WP_Error::class, $result );
+	}
+
+	// -------------------------------------------------------------------------
+	// Coordinator-level tests (Phase 8)
+	// -------------------------------------------------------------------------
+
+	public function test_init_wires_filter_when_loader_present_and_feature_enabled() {
+		if ( ! class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
+			$this->markTestSkipped( 'WooCommerce 10.9 AbilitiesLoader required.' );
+		}
+
+		add_filter( self::FEATURE_FILTER, '__return_true' );
+		AbilitiesRegistrar::init();
+
+		$this->assertNotFalse(
+			has_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] )
+		);
+
+		remove_filter( self::FEATURE_FILTER, '__return_true' );
+	}
+
+	public function test_init_does_not_wire_filter_when_loader_absent() {
+		if ( class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
+			$this->markTestSkipped( 'AbilitiesLoader is present; covered by the loader-present test.' );
+		}
+
+		// Capture pre-init state.
+		$pre = has_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] );
+
+		add_filter( self::FEATURE_FILTER, '__return_true' );
+		AbilitiesRegistrar::init();
+
+		$this->assertSame( $pre, has_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] ) );
+
+		remove_filter( self::FEATURE_FILTER, '__return_true' );
+	}
+
+	public function test_append_classes_returns_all_ability_classes() {
+		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
+		$expected   = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
+
+		$this->assertCount( 15, $expected, 'ABILITY_CLASSES should contain all 15 migrated abilities.' );
+
+		// Empty input → returns just the WCPay classes.
+		$result = AbilitiesRegistrar::append_classes( [] );
+		$this->assertSame( $expected, $result );
+
+		// Merging onto a non-empty caller list.
+		$caller = [ '\\Some\\Other\\Class' ];
+		$result = AbilitiesRegistrar::append_classes( $caller );
+		$this->assertSame( '\\Some\\Other\\Class', $result[0] );
+		$this->assertCount( 16, $result );
+	}
+
+	public function test_every_ability_class_implements_ability_definition() {
+		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
+			$this->markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
+		}
+
+		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
+		$classes    = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
+
+		foreach ( $classes as $class ) {
+			$this->assertContains(
+				'Automattic\\WooCommerce\\Abilities\\AbilityDefinition',
+				class_implements( $class ),
+				"$class should implement AbilityDefinition."
+			);
+		}
+	}
+
+	public function test_every_ability_class_has_a_well_formed_slug() {
+		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
+			$this->markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
+		}
+
+		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
+		$classes    = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
+
+		foreach ( $classes as $class ) {
+			$this->assertTrue( method_exists( $class, 'get_name' ), "$class should define get_name()." );
+			$name = $class::get_name();
+			$this->assertStringStartsWith( AbilitiesRegistrar::CATEGORY_SLUG . '/', $name );
+		}
 	}
 }

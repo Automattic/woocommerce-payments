@@ -66,10 +66,9 @@ class AbilitiesRegistrar {
 	/**
 	 * Ability definition classes registered through the WC 10.9 loader.
 	 *
-	 * Filled in incrementally as each ability migrates from inline
-	 * register_*() / execute_*() to a Domain class. Once every ability
-	 * lives in this list, the inline register_abilities() aggregator
-	 * is removed.
+	 * All 15 WooPayments read abilities. The loader iterates this list,
+	 * checks `is_a( $class, AbilityDefinition::class, true )` on each,
+	 * and registers those that pass via wp_register_ability().
 	 *
 	 * @var array<int, class-string>
 	 */
@@ -98,14 +97,6 @@ class AbilitiesRegistrar {
 	 * @var bool
 	 */
 	private static $category_registered = false;
-
-	/**
-	 * Tracks whether the ability set has been registered in this process to
-	 * keep `register_abilities()` idempotent across action variants.
-	 *
-	 * @var bool
-	 */
-	private static $abilities_registered = false;
 
 	/**
 	 * Initialize the abilities registration.
@@ -139,9 +130,7 @@ class AbilitiesRegistrar {
 		}
 
 		// WC 10.9 loader-driven registration path. On WC < 10.9 this
-		// short-circuits; the legacy add_action() path below keeps the
-		// partially-migrated state functional. Once every ability has
-		// moved to a Domain class, the legacy path goes away.
+		// short-circuits and no abilities are registered for this request.
 		if ( self::woo_abilities_loader_available() ) {
 			add_filter( 'woocommerce_ability_definition_classes', [ __CLASS__, 'append_classes' ] );
 		}
@@ -149,12 +138,10 @@ class AbilitiesRegistrar {
 		// The abilities-api composer package fires the non-prefixed action
 		// names; WP Core's merge target uses the `wp_` variants. Hook both
 		// so the registrar works against either version of the API. The
-		// idempotency guards in register_category() / register_abilities()
-		// handle the dual-hook double-fire scenario.
+		// idempotency guard in register_category() handles the dual-hook
+		// double-fire scenario.
 		add_action( 'abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
 		add_action( 'wp_abilities_api_categories_init', [ __CLASS__, 'register_category' ] );
-		add_action( 'abilities_api_init', [ __CLASS__, 'register_abilities' ] );
-		add_action( 'wp_abilities_api_init', [ __CLASS__, 'register_abilities' ] );
 	}
 
 	/**
@@ -201,23 +188,6 @@ class AbilitiesRegistrar {
 	}
 
 	/**
-	 * Register all WooPayments abilities.
-	 *
-	 * Idempotent — guarded by a static flag so the variant action names
-	 * (`abilities_api_init` and the WP-Core merge target `wp_abilities_api_init`)
-	 * don't double-register if both fire in the same process.
-	 *
-	 * @return void
-	 */
-	public static function register_abilities() {
-		if ( self::$abilities_registered ) {
-			return;
-		}
-
-		self::$abilities_registered = true;
-	}
-
-	/**
 	 * Permission callback mirroring WC_Payments_REST_Controller::check_permission().
 	 *
 	 * Used as the `permission_callback` for every WooPayments ability so the
@@ -252,8 +222,7 @@ class AbilitiesRegistrar {
 		if ( ! defined( 'WCPAY_TEST_ENV' ) ) {
 			throw new \Exception( 'AbilitiesRegistrar::reset_for_testing() must not be called outside the PHPUnit test environment.' );
 		}
-		self::$category_registered  = false;
-		self::$abilities_registered = false;
+		self::$category_registered = false;
 	}
 
 	/**
@@ -323,10 +292,7 @@ class AbilitiesRegistrar {
 	 * Whether WooCommerce 10.9's AbilitiesLoader is available.
 	 *
 	 * Used as a hard gate for the WC 10.9 filter-driven registration path.
-	 * On WC < 10.9 the filter wire is skipped; the legacy direct-registration
-	 * path (action hooks on `abilities_api_init` / `wp_abilities_api_init`)
-	 * still handles the abilities that have not yet migrated to Domain
-	 * classes.
+	 * On WC < 10.9 the filter wire is skipped and no abilities are registered.
 	 *
 	 * WC 10.9 also depends on WP 6.9, so wp_register_ability() is implicitly
 	 * available wherever the loader exists.
@@ -335,248 +301,5 @@ class AbilitiesRegistrar {
 	 */
 	private static function woo_abilities_loader_available(): bool {
 		return class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' );
-	}
-
-	/**
-	 * Standard `read` meta used by every read ability registered here.
-	 *
-	 * @return array
-	 */
-	private static function read_meta() {
-		return [
-			'annotations'  => [
-				'readonly'    => true,
-				'destructive' => false,
-				'idempotent'  => true,
-			],
-			'show_in_rest' => true,
-			// `mcp.public` is read by the wordpress/mcp-adapter package
-			// (McpAbilityHelperTrait::is_public_mcp_ability() +
-			// DefaultServerFactory::register_abilities()) to gate MCP
-			// discoverability. The key is the adapter's contract, not a
-			// WP Core convention.
-			'mcp'          => [
-				'public' => true,
-			],
-		];
-	}
-
-	/**
-	 * Empty input schema used by zero-arg abilities.
-	 *
-	 * @return array
-	 */
-	private static function zero_arg_input_schema() {
-		return [
-			'type'                 => 'object',
-			'default'              => (object) [],
-			'properties'           => [],
-			'additionalProperties' => false,
-		];
-	}
-
-	/**
-	 * Input schema for transactions list/summary abilities. Accepts the common
-	 * filters surfaced by the backing controller. `additionalProperties: true`
-	 * because the underlying List_Transactions request supports many more
-	 * filters than are useful to document inline; the controller validates.
-	 *
-	 * @return array
-	 */
-	private static function transactions_list_input_schema() {
-		return [
-			'type'                 => 'object',
-			'default'              => (object) [],
-			'properties'           => [
-				'match'                => [
-					'type'        => 'string',
-					'description' => 'Filter join mode (any|all).',
-				],
-				'date_before'          => [
-					'type'        => 'string',
-					'description' => 'ISO-8601 date upper bound.',
-				],
-				'date_after'           => [
-					'type'        => 'string',
-					'description' => 'ISO-8601 date lower bound.',
-				],
-				'date_between'         => [
-					'type'        => 'array',
-					'items'       => [ 'type' => 'string' ],
-					'description' => 'Two-element ISO date range [start, end].',
-				],
-				'type_is'              => [
-					'type'        => 'string',
-					'description' => 'Transaction type filter (charge|refund|dispute|adjustment|…).',
-				],
-				'source_device_is'     => [ 'type' => 'string' ],
-				'channel_is'           => [ 'type' => 'string' ],
-				'customer_country_is'  => [ 'type' => 'string' ],
-				'risk_level_is'        => [ 'type' => 'string' ],
-				'store_currency_is'    => [ 'type' => 'string' ],
-				'customer_currency_is' => [ 'type' => 'string' ],
-				'search'               => [
-					'type'  => 'array',
-					'items' => [ 'type' => 'string' ],
-				],
-				'page'                 => [
-					'type'    => 'integer',
-					'minimum' => 1,
-				],
-				'per_page'             => [
-					'type'    => 'integer',
-					'minimum' => 1,
-					'maximum' => 100,
-				],
-				'orderby'              => [ 'type' => 'string' ],
-				'order'                => [
-					'type' => 'string',
-					'enum' => [ 'asc', 'desc' ],
-				],
-				'deposit_id'           => [
-					'type'        => 'string',
-					'description' => 'Filter to transactions belonging to a single payout (deposit) ID. Accepted by both the list and the summary endpoints.',
-				],
-			],
-			'additionalProperties' => true,
-		];
-	}
-
-	/**
-	 * Input schema for disputes list/summary abilities.
-	 *
-	 * @return array
-	 */
-	private static function disputes_list_input_schema() {
-		return [
-			'type'                 => 'object',
-			'default'              => (object) [],
-			'properties'           => [
-				'match'             => [ 'type' => 'string' ],
-				'store_currency_is' => [ 'type' => 'string' ],
-				'date_before'       => [ 'type' => 'string' ],
-				'date_after'        => [ 'type' => 'string' ],
-				'date_between'      => [
-					'type'  => 'array',
-					'items' => [ 'type' => 'string' ],
-				],
-				'search'            => [
-					'type'  => 'array',
-					'items' => [ 'type' => 'string' ],
-				],
-				'status_is'         => [
-					'type'        => 'string',
-					'description' => 'Dispute status (warning_needs_response|needs_response|under_review|won|lost|warning_under_review|warning_closed).',
-				],
-				'status_is_not'     => [ 'type' => 'string' ],
-				'page'              => [
-					'type'    => 'integer',
-					'minimum' => 1,
-				],
-				'per_page'          => [
-					'type'    => 'integer',
-					'minimum' => 1,
-					'maximum' => 100,
-				],
-				'orderby'           => [ 'type' => 'string' ],
-				'order'             => [
-					'type' => 'string',
-					'enum' => [ 'asc', 'desc' ],
-				],
-			],
-			'additionalProperties' => true,
-		];
-	}
-
-	/**
-	 * Input schema for deposits (payouts) list/summary abilities.
-	 *
-	 * @return array
-	 */
-	private static function deposits_list_input_schema() {
-		return [
-			'type'                 => 'object',
-			'default'              => (object) [],
-			'properties'           => [
-				'match'             => [ 'type' => 'string' ],
-				'store_currency_is' => [ 'type' => 'string' ],
-				'date_before'       => [ 'type' => 'string' ],
-				'date_after'        => [ 'type' => 'string' ],
-				'date_between'      => [
-					'type'  => 'array',
-					'items' => [ 'type' => 'string' ],
-				],
-				'status_is'         => [
-					'type'        => 'string',
-					'description' => 'Payout status (paid|pending|in_transit|canceled|failed).',
-				],
-				'status_is_not'     => [ 'type' => 'string' ],
-				'page'              => [
-					'type'    => 'integer',
-					'minimum' => 1,
-				],
-				'per_page'          => [
-					'type'    => 'integer',
-					'minimum' => 1,
-					'maximum' => 100,
-				],
-				'orderby'           => [ 'type' => 'string' ],
-				'order'             => [
-					'type' => 'string',
-					'enum' => [ 'asc', 'desc' ],
-				],
-			],
-			'additionalProperties' => true,
-		];
-	}
-
-	/**
-	 * Generic pagination-only input schema for endpoints that take no other filters.
-	 *
-	 * @return array
-	 */
-	private static function pagination_input_schema() {
-		return [
-			'type'                 => 'object',
-			'default'              => (object) [],
-			'properties'           => [
-				'page'     => [
-					'type'    => 'integer',
-					'minimum' => 1,
-				],
-				'per_page' => [
-					'type'    => 'integer',
-					'minimum' => 1,
-					'maximum' => 100,
-				],
-				'orderby'  => [ 'type' => 'string' ],
-				'order'    => [
-					'type' => 'string',
-					'enum' => [ 'asc', 'desc' ],
-				],
-			],
-			// Closed contract — the only consumer of this schema is the
-			// `get-authorizations` ability, whose backing
-			// `List_Authorizations` extends `Paginated` with no extra
-			// filters. Any extra key would silently no-op at the request
-			// layer, so we reject them up front.
-			'additionalProperties' => false,
-		];
-	}
-
-	/**
-	 * Strip pagination and sort properties from a list-style input schema so
-	 * it can be reused for the matching summary ability. Summary endpoints
-	 * don't paginate or sort — keeping the keys in the schema is misleading
-	 * because they would silently no-op.
-	 *
-	 * @param array $list_schema Input schema produced by a `*_list_input_schema()` helper.
-	 * @return array
-	 */
-	private static function filters_only( array $list_schema ): array {
-		foreach ( [ 'page', 'per_page', 'orderby', 'order' ] as $key ) {
-			unset( $list_schema['properties'][ $key ] );
-		}
-		return $list_schema;
 	}
 }
