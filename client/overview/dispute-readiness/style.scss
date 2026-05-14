@@ -135,24 +135,52 @@
 	justify-self: end;
 }
 
-.wcpay-dispute-readiness-card__signal-review {
-	grid-column: 2 / -1;
-	margin-top: 4px;
+.components-modal__frame.wcpay-dispute-readiness-card__statement-descriptor-modal {
+	max-width: 512px;
 
-	p {
-		margin: 0 0 8px;
-		color: #50575e;
+	.components-modal__content {
+		display: flex;
+		flex-direction: column;
+		padding-bottom: $grid-unit-30;
 	}
 }
 
-.wcpay-dispute-readiness-card__signal-review-actions {
+.wcpay-dispute-readiness-card__statement-descriptor-content {
 	display: flex;
-	gap: 12px;
-	align-items: center;
+	flex-direction: column;
+	gap: $gap;
+	color: $gray-900;
+	line-height: 20px;
+
+	p {
+		margin: 0;
+	}
 }
 
-.wcpay-dispute-readiness-card__signal-review-update {
-	text-decoration: none;
+.wcpay-dispute-readiness-card__statement-descriptor-current {
+	padding: $gap-smaller;
+	border: 1px solid $gray-200;
+	border-radius: 2px;
+	background: $gray-0;
+}
+
+.wcpay-dispute-readiness-card__statement-descriptor-current-label {
+	margin-bottom: $gap-smallest;
+	color: $gray-700;
+	font-size: 12px;
+	line-height: 16px;
+}
+
+.wcpay-dispute-readiness-card__statement-descriptor-current-value {
+	font-weight: 600;
+}
+
+.wcpay-dispute-readiness-card__statement-descriptor-separator {
+	margin: $grid-unit-30 -#{$grid-unit-30};
+}
+
+.wcpay-dispute-readiness-card__statement-descriptor-actions {
+	@include modal-footer-buttons;
 }
 
 @media ( max-width: 782px ) {

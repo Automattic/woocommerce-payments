@@ -215,15 +215,16 @@ class DisputeReadinessService {
 		$needs_review  = ! $is_empty && ! $this->looks_like_recognizable_descriptor( $descriptor, $account_data );
 		$is_confirmed  = $needs_review && $this->is_statement_descriptor_confirmed( $descriptor );
 		$status        = ! $is_empty && ( ! $needs_review || $is_confirmed ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
-		$action_label  = $is_empty ? __( 'Update', 'woocommerce-payments' ) : __( 'Review', 'woocommerce-payments' );
+		$action_label  = __( 'Fix', 'woocommerce-payments' );
 		$settings_url  = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' );
 		$review_prompt = null;
 
 		if ( self::STATUS_INCOMPLETE === $status && $needs_review ) {
 			$review_prompt = [
-				'text'         => __( "Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?", 'woocommerce-payments' ),
-				'confirmLabel' => __( 'Looks good', 'woocommerce-payments' ),
-				'updateLabel'  => __( 'Update', 'woocommerce-payments' ),
+				'text'              => __( "Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?", 'woocommerce-payments' ),
+				'currentDescriptor' => $trimmed,
+				'confirmLabel'      => __( 'Looks good', 'woocommerce-payments' ),
+				'updateLabel'       => __( 'Update', 'woocommerce-payments' ),
 			];
 		}
 

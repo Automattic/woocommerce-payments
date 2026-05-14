@@ -152,6 +152,24 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'looks_recognizable', $signal['reason'] );
 	}
 
+	public function test_statement_descriptor_handles_generic_store_name_candidate() {
+		update_option( 'blogname', 'My Store' );
+		$this->mock_account_data(
+			[
+				'statement_descriptor' => 'Fresh Flowers',
+				'business_profile'     => [
+					'support_phone' => '+15555555555',
+				],
+			]
+		);
+
+		$overview = $this->service->get_overview_payload()['overview'];
+		$signal   = $this->get_signal( $overview, 'statement_descriptor' );
+
+		$this->assertSame( 'complete', $signal['status'] );
+		$this->assertSame( 'looks_recognizable', $signal['reason'] );
+	}
+
 	public function test_statement_descriptor_prompts_for_review_when_descriptor_is_generic() {
 		$this->mock_account_data(
 			[
@@ -167,7 +185,9 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'incomplete', $signal['status'] );
 		$this->assertSame( 'needs_review', $signal['reason'] );
+		$this->assertSame( 'Fix', $signal['actionLabel'] );
 		$this->assertSame( "Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?", $signal['reviewPrompt']['text'] );
+		$this->assertSame( 'WOOCOMMERCE PAYMENTS D', $signal['reviewPrompt']['currentDescriptor'] );
 		$this->assertSame( 'Looks good', $signal['reviewPrompt']['confirmLabel'] );
 		$this->assertSame( 'Update', $signal['reviewPrompt']['updateLabel'] );
 	}

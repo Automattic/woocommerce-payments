@@ -10,6 +10,7 @@ export type DisputeReadinessSignalStatus = 'complete' | 'incomplete';
 
 export interface DisputeReadinessSignalReviewPrompt {
 	text: string;
+	currentDescriptor: string;
 	confirmLabel: string;
 	updateLabel: string;
 }

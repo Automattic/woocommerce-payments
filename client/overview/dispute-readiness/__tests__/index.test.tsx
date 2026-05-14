@@ -148,7 +148,7 @@ describe( 'DisputeReadinessCard', () => {
 		expect( dismissDisputeReadinessCard ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'renders and confirms the statement descriptor review prompt', async () => {
+	it( 'opens and confirms the statement descriptor review modal', async () => {
 		renderCard( {
 			disputeReadiness: {
 				overview: {
@@ -168,6 +168,7 @@ describe( 'DisputeReadinessCard', () => {
 								'https://example.test/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments',
 							reviewPrompt: {
 								text: "Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?",
+								currentDescriptor: 'MY STORE',
 								confirmLabel: 'Looks good',
 								updateLabel: 'Update',
 							},
@@ -179,10 +180,21 @@ describe( 'DisputeReadinessCard', () => {
 		} );
 
 		expect(
+			screen.queryByText(
+				"Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?"
+			)
+		).not.toBeInTheDocument();
+
+		await userEvent.click(
+			screen.getAllByRole( 'link', { name: 'Fix →' } )[ 0 ]
+		);
+
+		expect(
 			screen.getByText(
 				"Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?"
 			)
 		).toBeInTheDocument();
+		expect( screen.getByText( 'MY STORE' ) ).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'link', { name: 'Update' } )
 		).toHaveAttribute(

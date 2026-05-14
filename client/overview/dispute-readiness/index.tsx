@@ -3,9 +3,10 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, CardBody, Spinner } from '@wordpress/components';
+import { Button, CardBody, Modal, Spinner } from '@wordpress/components';
+import { HorizontalRule } from '@wordpress/primitives';
 
 /**
  * Internal dependencies
@@ -33,6 +34,8 @@ const DisputeReadinessCard = () => {
 		refreshDisputeReadiness,
 	} = useDisputeReadinessActions();
 	const viewedRef = useRef( false );
+	const [ statementDescriptorSignal, setStatementDescriptorSignal ] =
+		useState< DisputeReadinessSignal | null >( null );
 	const overview = disputeReadiness?.overview;
 
 	useEffect( () => {
@@ -89,6 +92,18 @@ const DisputeReadinessCard = () => {
 		} );
 	};
 
+	const handleSignalActionClick = (
+		event: React.MouseEvent< HTMLAnchorElement >,
+		signal: DisputeReadinessSignal
+	) => {
+		handleCtaClick( signal );
+
+		if ( signal.reviewPrompt ) {
+			event.preventDefault();
+			setStatementDescriptorSignal( signal );
+		}
+	};
+
 	const handleStatementDescriptorConfirm = () => {
 		recordEvent( 'wcpay_dispute_readiness_statement_descriptor_confirmed', {
 			surface: 'overview',
@@ -96,6 +111,7 @@ const DisputeReadinessCard = () => {
 			total: overview.total,
 		} );
 		confirmStatementDescriptor();
+		setStatementDescriptorSignal( null );
 	};
 
 	const progress = overview.total
@@ -106,162 +122,188 @@ const DisputeReadinessCard = () => {
 	} as React.CSSProperties;
 
 	return (
-		<OverviewCard
-			title={
-				<>
-					<span>
-						{ __( 'Dispute Readiness', 'woocommerce-payments' ) }
-					</span>
-					<Button
-						className="wcpay-dispute-readiness-card__dismiss"
-						variant="tertiary"
-						onClick={ handleDismiss }
-						aria-label={ __(
-							'Dismiss dispute readiness card',
-							'woocommerce-payments'
-						) }
-					>
-						×
-					</Button>
-				</>
-			}
-			className="wcpay-dispute-readiness-card"
-			headerClassName="wcpay-dispute-readiness-card__header"
-			isLoading={ false }
-			LoadingState={ () => null }
-		>
-			<CardBody className="wcpay-dispute-readiness-card__body">
-				<p className="wcpay-dispute-readiness-card__description">
-					{ sprintf(
-						/* translators: %d: total number of dispute readiness steps. */
-						__(
-							// eslint-disable-next-line max-len
-							'These %d steps help customers recognize charges, understand your policies, and contact you before opening a dispute.',
-							'woocommerce-payments'
-						),
-						overview.total
-					) }{ ' ' }
-					<a href={ learnMoreUrl } target="_blank" rel="noreferrer">
-						{ __( 'Learn more →', 'woocommerce-payments' ) }
-					</a>
-				</p>
-
-				<div className="wcpay-dispute-readiness-card__content">
-					<div
-						className="wcpay-dispute-readiness-card__progress"
-						style={ progressStyle }
-						aria-label={ sprintf(
-							/* translators: 1: number of completed signals, 2: total number of signals. */
-							__(
-								'%1$d of %2$d complete',
+		<>
+			<OverviewCard
+				title={
+					<>
+						<span>
+							{ __(
+								'Dispute Readiness',
 								'woocommerce-payments'
-							),
-							overview.score,
-							overview.total
-						) }
-					>
-						<span className="wcpay-dispute-readiness-card__progress-score">
-							{ overview.score }
-						</span>
-						<span className="wcpay-dispute-readiness-card__progress-total">
-							{ sprintf(
-								/* translators: %d: total number of signals. */
-								__( 'of %d', 'woocommerce-payments' ),
-								overview.total
 							) }
 						</span>
-					</div>
+						<Button
+							className="wcpay-dispute-readiness-card__dismiss"
+							variant="tertiary"
+							onClick={ handleDismiss }
+							aria-label={ __(
+								'Dismiss dispute readiness card',
+								'woocommerce-payments'
+							) }
+						>
+							×
+						</Button>
+					</>
+				}
+				className="wcpay-dispute-readiness-card"
+				headerClassName="wcpay-dispute-readiness-card__header"
+				isLoading={ false }
+				LoadingState={ () => null }
+			>
+				<CardBody className="wcpay-dispute-readiness-card__body">
+					<p className="wcpay-dispute-readiness-card__description">
+						{ sprintf(
+							/* translators: %d: total number of dispute readiness steps. */
+							__(
+								// eslint-disable-next-line max-len
+								'These %d steps help customers recognize charges, understand your policies, and contact you before opening a dispute.',
+								'woocommerce-payments'
+							),
+							overview.total
+						) }{ ' ' }
+						<a
+							href={ learnMoreUrl }
+							target="_blank"
+							rel="noreferrer"
+						>
+							{ __( 'Learn more →', 'woocommerce-payments' ) }
+						</a>
+					</p>
 
-					<ul className="wcpay-dispute-readiness-card__signals">
-						{ overview.signals.map(
-							( signal: DisputeReadinessSignal ) => {
-								const isComplete = signal.status === 'complete';
-								const hasReviewPrompt =
-									! isComplete && !! signal.reviewPrompt;
+					<div className="wcpay-dispute-readiness-card__content">
+						<div
+							className="wcpay-dispute-readiness-card__progress"
+							style={ progressStyle }
+							aria-label={ sprintf(
+								/* translators: 1: number of completed signals, 2: total number of signals. */
+								__(
+									'%1$d of %2$d complete',
+									'woocommerce-payments'
+								),
+								overview.score,
+								overview.total
+							) }
+						>
+							<span className="wcpay-dispute-readiness-card__progress-score">
+								{ overview.score }
+							</span>
+							<span className="wcpay-dispute-readiness-card__progress-total">
+								{ sprintf(
+									/* translators: %d: total number of signals. */
+									__( 'of %d', 'woocommerce-payments' ),
+									overview.total
+								) }
+							</span>
+						</div>
 
-								return (
-									<li
-										key={ signal.id }
-										className={
-											isComplete
-												? 'is-complete'
-												: 'is-incomplete'
-										}
-									>
-										<span
-											className="wcpay-dispute-readiness-card__signal-icon"
-											aria-hidden="true"
+						<ul className="wcpay-dispute-readiness-card__signals">
+							{ overview.signals.map(
+								( signal: DisputeReadinessSignal ) => {
+									const isComplete =
+										signal.status === 'complete';
+
+									return (
+										<li
+											key={ signal.id }
+											className={
+												isComplete
+													? 'is-complete'
+													: 'is-incomplete'
+											}
 										>
-											{ isComplete ? '✓' : '×' }
-										</span>
-										<span className="wcpay-dispute-readiness-card__signal-label">
-											{ signal.label }
-										</span>
-										{ ! isComplete &&
-											signal.actionUrl &&
-											! hasReviewPrompt && (
-												<a
-													className="wcpay-dispute-readiness-card__signal-action"
-													href={ signal.actionUrl }
-													onClick={ () =>
-														handleCtaClick( signal )
-													}
-												>
-													{ signal.actionLabel ||
-														__(
-															'Fix',
-															'woocommerce-payments'
-														) }{ ' ' }
-													→
-												</a>
-											) }
-										{ hasReviewPrompt && (
-											<div className="wcpay-dispute-readiness-card__signal-review">
-												<p>
-													{
-														signal.reviewPrompt
-															?.text
-													}
-												</p>
-												<div className="wcpay-dispute-readiness-card__signal-review-actions">
-													<Button
-														variant="secondary"
-														onClick={
-															handleStatementDescriptorConfirm
-														}
-													>
-														{
-															signal.reviewPrompt
-																?.confirmLabel
-														}
-													</Button>
+											<span
+												className="wcpay-dispute-readiness-card__signal-icon"
+												aria-hidden="true"
+											>
+												{ isComplete ? '✓' : '×' }
+											</span>
+											<span className="wcpay-dispute-readiness-card__signal-label">
+												{ signal.label }
+											</span>
+											{ ! isComplete &&
+												signal.actionUrl && (
 													<a
-														className="wcpay-dispute-readiness-card__signal-review-update"
+														className="wcpay-dispute-readiness-card__signal-action"
 														href={
 															signal.actionUrl
 														}
-														onClick={ () =>
-															handleCtaClick(
+														onClick={ ( event ) =>
+															handleSignalActionClick(
+																event,
 																signal
 															)
 														}
 													>
-														{
-															signal.reviewPrompt
-																?.updateLabel
-														}
+														{ signal.actionLabel ||
+															__(
+																'Fix',
+																'woocommerce-payments'
+															) }{ ' ' }
+														→
 													</a>
-												</div>
-											</div>
-										) }
-									</li>
-								);
+												) }
+										</li>
+									);
+								}
+							) }
+						</ul>
+					</div>
+				</CardBody>
+			</OverviewCard>
+			{ statementDescriptorSignal?.reviewPrompt && (
+				<Modal
+					title={ __(
+						'Review statement descriptor',
+						'woocommerce-payments'
+					) }
+					className="wcpay-dispute-readiness-card__statement-descriptor-modal"
+					onRequestClose={ () =>
+						setStatementDescriptorSignal( null )
+					}
+				>
+					<div className="wcpay-dispute-readiness-card__statement-descriptor-content">
+						<p>{ statementDescriptorSignal.reviewPrompt.text }</p>
+						<div className="wcpay-dispute-readiness-card__statement-descriptor-current">
+							<div className="wcpay-dispute-readiness-card__statement-descriptor-current-label">
+								{ __(
+									'Current statement descriptor',
+									'woocommerce-payments'
+								) }
+							</div>
+							<div className="wcpay-dispute-readiness-card__statement-descriptor-current-value">
+								{
+									statementDescriptorSignal.reviewPrompt
+										.currentDescriptor
+								}
+							</div>
+						</div>
+					</div>
+					<HorizontalRule className="wcpay-dispute-readiness-card__statement-descriptor-separator" />
+					<div className="wcpay-dispute-readiness-card__statement-descriptor-actions">
+						<Button
+							variant="secondary"
+							onClick={ handleStatementDescriptorConfirm }
+							__next40pxDefaultSize
+						>
+							{
+								statementDescriptorSignal.reviewPrompt
+									.confirmLabel
 							}
-						) }
-					</ul>
-				</div>
-			</CardBody>
-		</OverviewCard>
+						</Button>
+						<Button
+							variant="primary"
+							href={ statementDescriptorSignal.actionUrl }
+							__next40pxDefaultSize
+						>
+							{
+								statementDescriptorSignal.reviewPrompt
+									.updateLabel
+							}
+						</Button>
+					</div>
+				</Modal>
+			) }
+		</>
 	);
 };
 
