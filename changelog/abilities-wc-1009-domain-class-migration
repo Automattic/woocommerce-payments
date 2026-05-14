@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Migrated WooPayments Abilities API registrations to the WC 10.9 AbilityDefinition class shape (one class per ability under src/Internal/Abilities/Domain/). List abilities now return the WC 10.9 paginated output envelope. Feature remains flag-gated via woocommerce_payments_abilities_enabled (default off).
