@@ -157,24 +157,25 @@ class WooPay_Order_Tracking_Sync {
 		// be able to register listeners without also appearing in the
 		// primary chain.
 		//
-		// Iterate both lists, deduplicating by object identity so a
-		// provider that implements BOTH interfaces (and therefore appears
-		// in both default lists) doesn't register its listener twice and
-		// double-fire on hook events.
+		// Iterate both lists, deduplicating by class name. register_persistence_hooks()
+		// is a static method, so two separate instances of the same provider class
+		// (e.g. defaults and a filter both instantiating independently) would still
+		// register the same listener. Dedup-by-class guarantees one call per class
+		// regardless of how many instances exist across the chains.
 		//
 		// Dispatched via call_user_func with a string-class callable so
 		// PHPStan can resolve the static method from the runtime class
 		// instead of the WooPay_Tracking_Provider interface (which
 		// intentionally does not declare this optional method).
-		$seen_provider_ids = [];
+		$seen_provider_classes = [];
 		foreach ( array_merge( self::get_providers(), self::get_overlay_providers() ) as $provider ) {
-			$id = spl_object_id( $provider );
-			if ( isset( $seen_provider_ids[ $id ] ) ) {
+			$class = get_class( $provider );
+			if ( isset( $seen_provider_classes[ $class ] ) ) {
 				continue;
 			}
-			$seen_provider_ids[ $id ] = true;
+			$seen_provider_classes[ $class ] = true;
 			if ( method_exists( $provider, 'register_persistence_hooks' ) ) {
-				call_user_func( [ get_class( $provider ), 'register_persistence_hooks' ] );
+				call_user_func( [ $class, 'register_persistence_hooks' ] );
 			}
 		}
 
