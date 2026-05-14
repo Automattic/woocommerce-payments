@@ -154,10 +154,12 @@ class WooPay_TrackShip_Provider implements WooPay_Tracking_Provider, WooPay_Stat
 	 * via `method_exists( $provider, 'register_persistence_hooks' )` —
 	 * same convention Phase 2 (ShipStation) uses.
 	 *
-	 * Priority 9 matches the Phase 2 ShipStation listener. TrackShip's REST
-	 * controller fires the action before mutating local state, so priority
-	 * order does not matter in practice — but consistency with Phase 2 is
-	 * worth more than the marginal simplification.
+	 * Priority 9 matches the Phase 2 ShipStation listener. Our listener is
+	 * independent of other subscribers on this hook (we read only the action
+	 * args, not shared mutable state), so priority order does not affect
+	 * correctness — consistency with Phase 2 is worth more than picking a
+	 * different value. See the class docblock for the actual ordering
+	 * relationship between the hook firing and TrackShip's own state writes.
 	 */
 	public static function register_persistence_hooks(): void {
 		add_action( self::TRACKING_HOOK, [ __CLASS__, 'persist_tracking_data' ], 9, 4 );
