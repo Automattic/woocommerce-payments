@@ -85,6 +85,7 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\GetPaymentIntent::class,
 		\WCPay\Internal\Abilities\Domain\GetCharge::class,
 		\WCPay\Internal\Abilities\Domain\GetTimeline::class,
+		\WCPay\Internal\Abilities\Domain\GetTransactions::class,
 	];
 
 	/**
@@ -212,7 +213,6 @@ class AbilitiesRegistrar {
 
 		self::$abilities_registered = true;
 
-		self::register_get_transactions_ability();
 		self::register_get_disputes_ability();
 		self::register_get_authorizations_ability();
 		self::register_get_deposits_ability();
@@ -255,16 +255,6 @@ class AbilitiesRegistrar {
 		}
 		self::$category_registered  = false;
 		self::$abilities_registered = false;
-	}
-
-	/**
-	 * Execute callback — `get-transactions`.
-	 *
-	 * @param mixed $input Ability input.
-	 * @return array|\WP_Error
-	 */
-	public static function execute_get_transactions( $input = null ) {
-		return self::delegate_to_rest_controller( 'GET', '/wc/v3/payments/transactions', is_array( $input ) ? $input : [] );
 	}
 
 	/**
@@ -376,26 +366,6 @@ class AbilitiesRegistrar {
 	 */
 	private static function woo_abilities_loader_available(): bool {
 		return class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' );
-	}
-
-	/**
-	 * Register the `woocommerce-payments/get-transactions` ability.
-	 *
-	 * @return void
-	 */
-	private static function register_get_transactions_ability() {
-		wp_register_ability(
-			'woocommerce-payments/get-transactions',
-			[
-				'label'               => __( 'List transactions', 'woocommerce-payments' ),
-				'description'         => __( 'List WooPayments transactions with filters (date range, type, source device, channel, customer country, risk level, currency, search). Answers \'show me transactions where X\'.', 'woocommerce-payments' ),
-				'category'            => self::CATEGORY_SLUG,
-				'input_schema'        => self::transactions_list_input_schema(),
-				'execute_callback'    => [ __CLASS__, 'execute_get_transactions' ],
-				'permission_callback' => [ __CLASS__, 'current_user_can_manage_woocommerce' ],
-				'meta'                => self::read_meta(),
-			]
-		);
 	}
 
 	/**

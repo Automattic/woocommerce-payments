@@ -178,7 +178,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
 	public function provide_expected_abilities(): array {
 		return [
-			[ 'woocommerce-payments/get-transactions' ],
 			[ 'woocommerce-payments/get-disputes' ],
 			[ 'woocommerce-payments/get-authorizations' ],
 			[ 'woocommerce-payments/get-deposits' ],
@@ -228,7 +227,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 
 	public function provide_execute_cases(): array {
 		return [
-			'get-transactions'   => [ 'execute_get_transactions', [ 'per_page' => 5 ], '/wc/v3/payments/transactions' ],
 			'get-disputes'       => [ 'execute_get_disputes', [ 'per_page' => 5 ], '/wc/v3/payments/disputes' ],
 			'get-authorizations' => [ 'execute_get_authorizations', [ 'per_page' => 5 ], '/wc/v3/payments/authorizations' ],
 			'get-deposits'       => [ 'execute_get_deposits', [ 'per_page' => 5 ], '/wc/v3/payments/deposits' ],
@@ -305,6 +303,11 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		// the translation actually reaches the WP_REST_Request — a regression
 		// in the boundary mapping would silently revert list abilities to the
 		// default 25 rows / created-desc regardless of caller input.
+		//
+		// Calls delegate_to_rest_controller() directly (the registrar helper
+		// that all list-ability Domain classes delegate through) so the test
+		// remains meaningful after execute_get_transactions() was removed in
+		// Phase 6 when get-transactions migrated to the Domain class.
 		$captured = null;
 		$filter   = function ( $result, $server, $request ) use ( &$captured ) {
 			if ( $request->get_route() === '/wc/v3/payments/transactions' ) {
@@ -323,7 +326,9 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
 
 		try {
-			AbilitiesRegistrar::execute_get_transactions(
+			AbilitiesRegistrar::delegate_to_rest_controller(
+				'GET',
+				'/wc/v3/payments/transactions',
 				[
 					'per_page' => 5,
 					'orderby'  => 'amount',
@@ -358,7 +363,9 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
 
 		try {
-			AbilitiesRegistrar::execute_get_transactions(
+			AbilitiesRegistrar::delegate_to_rest_controller(
+				'GET',
+				'/wc/v3/payments/transactions',
 				[
 					'per_page' => 5,
 					'pagesize' => 99,
@@ -385,7 +392,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
 
 		try {
-			$result = AbilitiesRegistrar::execute_get_transactions( [ 'per_page' => 5 ] );
+			$result = AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/transactions', [ 'per_page' => 5 ] );
 		} finally {
 			remove_filter( 'rest_pre_dispatch', $filter, 10 );
 		}
@@ -414,7 +421,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
 
 		try {
-			$result = AbilitiesRegistrar::execute_get_transactions( [] );
+			$result = AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/transactions', [] );
 		} finally {
 			remove_filter( 'rest_pre_dispatch', $filter, 10 );
 		}
