@@ -16,7 +16,7 @@ export type FeesFieldId =
 	| 'deposit_date'
 	| 'deposit_id';
 
-export const defaultVisibleFields: FeesFieldId[] = [
+const defaultVisibleFields: FeesFieldId[] = [
 	'date',
 	'payment_method',
 	'type',
