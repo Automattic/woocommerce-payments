@@ -667,14 +667,16 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	// ============ CLUSTER 8b: shipping date (fraudulent + physical only) ============
 	// Parallel to Cluster 8, keyed off `shipping_date` (the field the wizard
 	// collects for physical_product fraudulent disputes) instead of
-	// `service_date`. Gives physical-fraud merchants the same narrative
-	// coaching that digital/service merchants get from Cluster 8.
+	// `service_date`. Two variants only (no Critical): per RiskOps review,
+	// the shipping date doesn't prove the true cardholder made the purchase,
+	// it just ties the order to a verifiable event at the cardholder's
+	// address. Worth surfacing, not worth a Critical.
 	{
 		id: 'c8b-shipping-date-provided',
 		urgency: 'positive',
 		title: __( 'Shipping date on record', 'woocommerce-payments' ),
 		body: __(
-			'Including the shipping date helped tie the transaction to a verifiable event.',
+			"Documenting the shipping date tied this order to a verifiable event at the cardholder's address.",
 			'woocommerce-payments'
 		),
 		when: {
@@ -685,30 +687,30 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		},
 	},
 	{
-		id: 'c8b-shipping-date-include',
-		urgency: 'critical',
-		title: __( 'Include the shipping date', 'woocommerce-payments' ),
+		id: 'c8b-shipping-date-document',
+		urgency: 'tip',
+		title: __( 'Document the shipping date', 'woocommerce-payments' ),
 		body: __(
-			'The shipping date ties the transaction to a verifiable event, which can help defend fraud disputes.',
+			"Including the shipping date ties an order to a verifiable event at the cardholder's address.",
 			'woocommerce-payments'
 		),
 		when: {
-			outcome: 'could_help',
+			outcome: 'keep_doing',
 			reasonIn: [ 'fraudulent' ],
 			productTypeIn: [ 'physical_product' ],
 			requireMissing: { keys: [ 'shipping_date' ] },
 		},
 	},
 	{
-		id: 'c8b-shipping-date-document',
+		id: 'c8b-shipping-date-document-lost',
 		urgency: 'tip',
 		title: __( 'Document the shipping date', 'woocommerce-payments' ),
 		body: __(
-			'Documenting the shipping date helps tie transactions to verifiable events in fraud disputes.',
+			"Including the shipping date ties an order to a verifiable event at the cardholder's address.",
 			'woocommerce-payments'
 		),
 		when: {
-			outcome: 'keep_doing',
+			outcome: 'could_help',
 			reasonIn: [ 'fraudulent' ],
 			productTypeIn: [ 'physical_product' ],
 			requireMissing: { keys: [ 'shipping_date' ] },
@@ -1109,7 +1111,7 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		},
 		link: {
 			label: __( 'Learn how to defend disputes', 'woocommerce-payments' ),
-			href: 'https://woocommerce.com/document/woopayments/fraud-and-disputes/preventing-disputes/#be-prepared',
+			href: 'https://woocommerce.com/document/managing-payment-disputes/',
 		},
 		suppressOtherCriticals: true,
 	},

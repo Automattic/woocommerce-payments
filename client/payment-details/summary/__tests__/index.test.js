@@ -1234,5 +1234,31 @@ describe( 'PaymentDetailsSummary', () => {
 				} )
 			).not.toBeInTheDocument();
 		} );
+
+		test( 'does not render the recommendations card on an accepted lost dispute', () => {
+			// Accept-path: __closed_by_merchant === '1' means the merchant
+			// chose not to challenge. Coaching them to "submit evidence next
+			// time" misreads the choice, so the card suppresses. Per RiskOps
+			// review.
+			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
+
+			const charge = getResolvedCharge( 'lost' );
+			charge.dispute.reason = 'fraudulent';
+			charge.dispute.metadata.__product_type = 'physical_product';
+			charge.dispute.metadata.__closed_by_merchant = '1';
+
+			renderCharge( charge );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /what's working well/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
 	} );
 } );

@@ -23,6 +23,17 @@
 		}
 	}
 
+	// Heading row: section heading with an optional "Learn more" link to
+	// the right. Used on "What could help next time"; positives don't get
+	// the link.
+	&__section-header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: $grid-unit-15;
+		margin-bottom: $grid-unit-10;
+	}
+
 	&__section-heading {
 		// Heading LG, matches transaction-details-dispute-details-title and
 		// the Evidence Submitted section heading style.
@@ -30,7 +41,13 @@
 		font-weight: 500;
 		line-height: 20px;
 		color: $gray-900;
-		margin: 0 0 $grid-unit-10;
+		margin: 0;
+	}
+
+	&__learn-more {
+		font-size: 13px;
+		line-height: 20px;
+		flex-shrink: 0;
 	}
 
 	&__show-more {
@@ -57,6 +74,9 @@
 }
 
 .dispute-recommendations__item {
+	display: flex;
+	align-items: flex-start;
+	gap: $grid-unit-10;
 	padding: $grid-unit-15 0;
 	font-size: 13px;
 	line-height: 20px;
@@ -65,38 +85,42 @@
 		border-top: 1px solid $gray-100;
 	}
 
-	&--critical {
-		.dispute-recommendations__title {
-			color: $alert-red;
-		}
+	// Color lives on the leading icon, not the title. Per RiskOps review:
+	// colored title text competed with the Evidence Submitted card above.
+	&--critical .dispute-recommendations__icon {
+		color: $alert-red;
 	}
 
-	&--tip {
-		.dispute-recommendations__title {
-			color: $alert-yellow;
-		}
+	&--tip .dispute-recommendations__icon {
+		color: $alert-yellow;
 	}
 
-	&--positive {
-		.dispute-recommendations__title {
-			color: $alert-green;
-		}
+	&--positive .dispute-recommendations__icon {
+		color: $alert-green;
 	}
+}
+
+.dispute-recommendations__icon {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	margin-top: 1px;
+}
+
+.dispute-recommendations__text {
+	flex: 1;
+	min-width: 0;
 }
 
 .dispute-recommendations__title {
 	font-size: 14px;
 	font-weight: 600;
 	line-height: 20px;
+	color: $gray-900;
 	margin: 0 0 $grid-unit-05;
 }
 
 .dispute-recommendations__body {
 	color: $gray-700;
 	margin: 0;
-}
-
-.dispute-recommendations__link {
-	display: inline-block;
-	margin-top: $grid-unit-05;
 }

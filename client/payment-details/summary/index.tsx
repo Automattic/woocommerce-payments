@@ -855,13 +855,15 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 	props
 ) => {
 	const dispute = props.charge?.dispute;
-	// Gate on won/lost specifically rather than isOutcomeViewStatus():
-	// DisputeRecommendationsCard has no entries for warning_closed (inquiries
-	// carry no merchant-submitted evidence) and would render nothing there.
+	// Gate on won/lost specifically (DisputeRecommendationsCard has no entries
+	// for warning_closed inquiries) AND suppress when the merchant accepted
+	// the dispute: accepting is a deliberate non-engagement, so coaching them
+	// to "submit evidence next time" misreads the choice. Per RiskOps review.
 	const showRecommendationsCard =
 		!! dispute &&
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
-		( dispute.status === 'won' || dispute.status === 'lost' );
+		( dispute.status === 'won' || dispute.status === 'lost' ) &&
+		dispute.metadata?.__closed_by_merchant !== '1';
 
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>

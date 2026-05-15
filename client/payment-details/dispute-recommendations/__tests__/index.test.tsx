@@ -345,7 +345,10 @@ describe( 'DisputeRecommendationsCard', () => {
 			).toBeInTheDocument();
 		} );
 
-		it( 'fires the shipping_date critical on fraudulent + physical when shipping_date is missing (lost)', () => {
+		it( 'fires the shipping_date tip on fraudulent + physical when shipping_date is missing (lost)', () => {
+			// Cluster 8b ships positive + tip only (no Critical), per RiskOps:
+			// shipping date doesn't prove the cardholder made the purchase, so
+			// it's worth surfacing as a tip, not a critical.
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'fraudulent',
@@ -357,9 +360,15 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			expect(
 				screen.getByRole( 'heading', {
-					name: /include the shipping date/i,
+					name: /document the shipping date/i,
 				} )
 			).toBeInTheDocument();
+			// And there is no longer a Critical "Include the shipping date".
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /include the shipping date/i,
+				} )
+			).not.toBeInTheDocument();
 		} );
 
 		it( 'does not fire shipping_date entries on fraudulent + digital', () => {
@@ -407,42 +416,62 @@ describe( 'DisputeRecommendationsCard', () => {
 	} );
 
 	describe( 'link rendering', () => {
-		it( 'renders an external link when a recommendation has one', () => {
+		// Per RiskOps review: per-rec action links were removed in favor of a
+		// single "Learn more" link next to the "What could help next time"
+		// header, to align with WooPayments admin's restrained vocabulary.
+		it( 'renders a "Learn more" link in the "What could help next time" section header', () => {
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'product_not_received',
 				metadata: { __product_type: 'physical_product' },
-				// receipt provided so c15 does NOT fire (which would suppress
-				// the link-carrying critical).
-				evidence: { receipt: 'r' },
+				evidence: { receipt: 'r' }, // dodge c15 suppression
 			} );
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
-			expect(
-				screen.getByRole( 'link', {
-					name: /set up shipping tracking/i,
-				} )
-			).toBeInTheDocument();
+			const link = screen.getByRole( 'link', { name: /learn more/i } );
+			expect( link ).toBeInTheDocument();
+			expect( link ).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/managing-payment-disputes/'
+			);
 		} );
 
-		it( 'renders wp-admin links as internal links, not external links', () => {
+		it( 'does not render the "Learn more" link in the "What\'s working well" section', () => {
+			// Won dispute that fires positives only: the Learn more link is
+			// scoped to "What could help next time" and shouldn't appear here.
+			render(
+				<DisputeRecommendationsCard
+					dispute={ wonPhysicalFullEvidence() }
+				/>
+			);
+
+			expect(
+				screen.queryByRole( 'link', { name: /learn more/i } )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'does not render per-rec action links', () => {
 			// wonPhysicalShippingProvided fires c1-shipping-evidence-strengthen
-			// (tracking provided, shipping_documentation missing), whose link
-			// points to a wp-admin settings page.
+			// (tip), whose catalog entry carries a "Configure shipping options"
+			// link. Per-rec links are no longer rendered; only the section-
+			// header Learn more is.
 			render(
 				<DisputeRecommendationsCard
 					dispute={ wonPhysicalShippingProvided() }
 				/>
 			);
 
-			const link = screen.getByRole( 'link', {
-				name: /configure shipping options/i,
-			} );
-			// Internal Link sets data-link-type="wp-admin"; ExternalLink does not.
-			expect( link ).toHaveAttribute( 'data-link-type', 'wp-admin' );
-			// And it must not carry the external-link new-tab affordance.
-			expect( link ).not.toHaveAttribute( 'target', '_blank' );
+			expect(
+				screen.queryByRole( 'link', {
+					name: /configure shipping options/i,
+				} )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'link', {
+					name: /set up shipping tracking/i,
+				} )
+			).not.toBeInTheDocument();
 		} );
 	} );
 } );
