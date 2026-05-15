@@ -16,45 +16,12 @@ import { getLastFullCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
 import { useReportsTabReload } from './hooks';
 import type { ReportsTab, ReportsTabStatus } from './types';
-import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
-import { getFeesQuery, hasActiveFeesFilters } from './fees';
 import { recordEvent } from 'tracks';
 import './style.scss';
 
 interface ReportsPageProps {
 	tabStatus?: ReportsTabStatus;
 	now?: Date;
-}
-
-function useDerivedReportsTabStatus(
-	activeTab: ReportsTab,
-	query: ReturnType< typeof getQuery >,
-	feesQuery: ReturnType< typeof getFeesQuery >
-): ReportsTabStatus {
-	const { feesRows, feesError = {}, isLoading } = useReportsFees( feesQuery );
-	const { feesSummary, isLoading: isSummaryLoading } =
-		useReportsFeesSummary( feesQuery );
-
-	if ( activeTab !== 'fees' ) {
-		return 'empty';
-	}
-
-	if ( isLoading || isSummaryLoading ) {
-		return 'loading';
-	}
-
-	if ( Object.keys( feesError ).length > 0 ) {
-		return 'error';
-	}
-
-	if (
-		( feesSummary.count ?? feesRows.length ) === 0 &&
-		! hasActiveFeesFilters( query )
-	) {
-		return 'empty';
-	}
-
-	return 'ready';
 }
 
 export const ReportsPage: React.FC< ReportsPageProps > = ( {
@@ -71,15 +38,8 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 		() => getLastFullCalendarMonthUTC( now ?? new Date() ),
 		[ now ]
 	);
-	const query = getQuery();
-	const feesQuery = getFeesQuery( query, period );
-	const derivedTabStatus = useDerivedReportsTabStatus(
-		activeTab,
-		query,
-		feesQuery
-	);
-	const currentTabStatus = tabStatus ?? derivedTabStatus;
-	const reload = useReportsTabReload( activeTab, period, feesQuery );
+	const currentTabStatus = tabStatus ?? 'ready';
+	const reload = useReportsTabReload( activeTab, period );
 
 	useEffect( () => {
 		recordEvent( 'wcpay_reports_page_viewed' );

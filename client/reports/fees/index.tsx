@@ -24,53 +24,6 @@ import { useFeesData, viewToFeesQuery } from './use-fees-data';
 import { getFeesFields } from './fields';
 import type { ReportsPeriodRange } from '../period-selector';
 
-// ---------------------------------------------------------------------------
-// Legacy compatibility stubs — removed in Task 9 when the parent shell is
-// rewritten to use use-fees-data directly.
-// ---------------------------------------------------------------------------
-
-/** @deprecated Use `viewToFeesQuery` from `./use-fees-data` instead. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const getFeesQuery = ( query: any, period: ReportsPeriodRange ): any => {
-	const dateBetween = [
-		period.start.slice( 0, 10 ),
-		period.end.slice( 0, 10 ),
-	];
-	if (
-		query.filter === 'advanced' ||
-		query.filter === 'all' ||
-		query.date_before ||
-		query.date_after ||
-		query.date_between
-	) {
-		return query;
-	}
-	return { ...query, date_between: dateBetween };
-};
-
-/** @deprecated Will be removed in Task 9. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const hasActiveFeesFilters = ( query: any ): boolean => {
-	const keys = [
-		'date_before',
-		'date_after',
-		'date_between',
-		'payment_method_type',
-		'type',
-		'order_id',
-		'deposit_id',
-		'customer_email',
-		'search',
-		'match',
-	] as const;
-	return keys.some( ( key ) => {
-		const value = query[ key ];
-		return Array.isArray( value ) ? value.length > 0 : Boolean( value );
-	} );
-};
-
-// ---------------------------------------------------------------------------
-
 interface FeesReportProps {
 	period: ReportsPeriodRange;
 	onReload?: () => void;
