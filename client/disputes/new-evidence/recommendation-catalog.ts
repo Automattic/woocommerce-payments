@@ -2,12 +2,10 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
-import { getAdminUrl } from 'wcpay/utils';
 import type { Recommendation } from './types';
 
 /**
@@ -17,18 +15,13 @@ import type { Recommendation } from './types';
  *   - title + body: copy that renders verbatim (voice rules: softer
  *     evidence language, single-sentence bodies, no em-dashes). Wrapped in
  *     `__()` so the strings are translatable.
- *   - urgency: drives title color and section grouping.
+ *   - urgency: drives the leading icon color and section grouping.
  *     `positive` (green) → "What's working well" section.
  *     `critical` (red) + `tip` (orange) → "What could help next time".
  *   - when: predicates the runtime helper checks against the dispute.
  *     `requireProvided` / `requireMissing` are count predicates over a
  *     key set (`min`/`max` inclusive; see `FieldCountPredicate` and
  *     `matchesCount()` for the default semantics, including `max`-only).
- *   - link (optional): inline action link. External destinations are
- *     absolute `https://` URLs; wp-admin destinations are built with
- *     `getAdminUrl()` / `addQueryArgs()` here so they resolve correctly on
- *     subdirectory installs. The component renders the two link kinds
- *     differently (see `dispute-recommendations/index.tsx`).
  *   - suppressOtherCriticals: catch-all "no evidence" entry uses this to
  *     hide other critical entries on the same dispute.
  *
@@ -82,10 +75,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			productTypeIn: [ 'physical_product' ],
 			requireMissing: { keys: [ 'shipping_tracking_number' ] },
 		},
-		link: {
-			label: __( 'Set up shipping tracking', 'woocommerce-payments' ),
-			href: 'https://woocommerce.com/products/shipment-tracking/',
-		},
 	},
 	{
 		id: 'c1-shipping-evidence-strengthen',
@@ -111,10 +100,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 					'shipping_documentation',
 				],
 			},
-		},
-		link: {
-			label: __( 'Configure shipping options', 'woocommerce-payments' ),
-			href: getAdminUrl( { page: 'wc-settings', tab: 'shipping' } ),
 		},
 	},
 
@@ -336,12 +321,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			],
 			requireMissing: { keys: [ 'refund_policy' ] },
 		},
-		link: {
-			// TODO(wiring): deep-link to the refund policy page itself once
-			// the WC settings page id reaches the client.
-			label: __( 'Edit your refund policy page', 'woocommerce-payments' ),
-			href: getAdminUrl( { page: 'wc-settings', tab: 'advanced' } ),
-		},
 	},
 	{
 		id: 'c5-refund-policy-publish-lost',
@@ -360,10 +339,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'subscription_canceled',
 			],
 			requireMissing: { keys: [ 'refund_policy' ] },
-		},
-		link: {
-			label: __( 'Edit your refund policy page', 'woocommerce-payments' ),
-			href: getAdminUrl( { page: 'wc-settings', tab: 'advanced' } ),
 		},
 	},
 
@@ -401,16 +376,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				min: 2,
 			},
 		},
-		link: {
-			label: __(
-				'Configure subscription settings',
-				'woocommerce-payments'
-			),
-			href: getAdminUrl( {
-				page: 'wc-settings',
-				tab: 'subscriptions',
-			} ),
-		},
 	},
 	{
 		id: 'c6-cancellation-add-exactly-one',
@@ -428,16 +393,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				min: 1,
 				max: 1,
 			},
-		},
-		link: {
-			label: __(
-				'Configure subscription settings',
-				'woocommerce-payments'
-			),
-			href: getAdminUrl( {
-				page: 'wc-settings',
-				tab: 'subscriptions',
-			} ),
 		},
 	},
 	{
@@ -457,16 +412,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				max: 1,
 			},
 		},
-		link: {
-			label: __(
-				'Configure subscription settings',
-				'woocommerce-payments'
-			),
-			href: getAdminUrl( {
-				page: 'wc-settings',
-				tab: 'subscriptions',
-			} ),
-		},
 	},
 	{
 		id: 'c6-cancellation-add-none-on-won',
@@ -483,16 +428,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				keys: [ 'cancellation_policy', 'cancellation_rebuttal' ],
 				min: 2,
 			},
-		},
-		link: {
-			label: __(
-				'Configure subscription settings',
-				'woocommerce-payments'
-			),
-			href: getAdminUrl( {
-				page: 'wc-settings',
-				tab: 'subscriptions',
-			} ),
 		},
 	},
 
@@ -882,13 +817,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			productTypeIn: [ 'physical_product' ],
 			requireMissing: { keys: [ 'customer_signature' ] },
 		},
-		link: {
-			label: __(
-				'Set up shipping with delivery confirmation',
-				'woocommerce-payments'
-			),
-			href: 'https://woocommerce.com/products/shipment-tracking/',
-		},
 	},
 	{
 		id: 'c11a-signature-add',
@@ -903,13 +831,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			reasonIn: [ 'product_not_received' ],
 			productTypeIn: [ 'physical_product' ],
 			requireMissing: { keys: [ 'customer_signature' ] },
-		},
-		link: {
-			label: __(
-				'Set up shipping with delivery confirmation',
-				'woocommerce-payments'
-			),
-			href: 'https://woocommerce.com/products/shipment-tracking/',
 		},
 	},
 
@@ -949,13 +870,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			productTypeIn: [ 'physical_product' ],
 			requireMissing: { keys: [ 'customer_signature' ] },
 		},
-		link: {
-			label: __(
-				'Set up shipping with delivery confirmation',
-				'woocommerce-payments'
-			),
-			href: 'https://woocommerce.com/products/shipment-tracking/',
-		},
 	},
 	{
 		id: 'c11b-signature-consider',
@@ -973,13 +887,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 			reasonIn: [ 'credit_not_processed' ],
 			productTypeIn: [ 'physical_product' ],
 			requireMissing: { keys: [ 'customer_signature' ] },
-		},
-		link: {
-			label: __(
-				'Set up shipping with delivery confirmation',
-				'woocommerce-payments'
-			),
-			href: 'https://woocommerce.com/products/shipment-tracking/',
 		},
 	},
 
@@ -1034,15 +941,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'fraudulent' ],
-		},
-		link: {
-			// TODO(wiring): filter to this customer's orders once
-			// dispute.order.customer reaches the component.
-			label: __(
-				"View customer's order history",
-				'woocommerce-payments'
-			),
-			href: addQueryArgs( 'edit.php', { post_type: 'shop_order' } ),
 		},
 	},
 
@@ -1108,10 +1006,6 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				],
 				max: 0,
 			},
-		},
-		link: {
-			label: __( 'Learn how to defend disputes', 'woocommerce-payments' ),
-			href: 'https://woocommerce.com/document/managing-payment-disputes/',
 		},
 		suppressOtherCriticals: true,
 	},

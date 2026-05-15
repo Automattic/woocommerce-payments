@@ -140,24 +140,14 @@ export interface EvidenceFieldStatus {
 export type RecommendationOutcome = 'could_help' | 'keep_doing';
 
 /**
- * Visual urgency of a recommendation. Drives both title color and which
- * card section the entry renders under.
+ * Visual urgency of a recommendation. Drives the leading icon color and
+ * which card section the entry renders under (title text color stays the
+ * same across all urgencies; only the icon and section reflect urgency).
  *   - `critical` (red):   "fix this next time" — high-lift gap on a lost dispute.
  *   - `tip`      (orange): "would have made the case stronger" — soft suggestion.
  *   - `positive` (green): "you did this right" — reinforcement.
  */
 export type RecommendationUrgency = 'critical' | 'positive' | 'tip';
-
-export interface RecommendationLink {
-	label: string;
-	/**
-	 * Destination URL. External destinations are absolute `https://` URLs
-	 * (rendered as `ExternalLink`); wp-admin destinations are built with
-	 * `getAdminUrl()` / `addQueryArgs()` in the catalog so they resolve
-	 * correctly on subdirectory installs (rendered as an internal `Link`).
-	 */
-	href: string;
-}
 
 /**
  * Count-based predicate over a set of evidence field keys. `min` and `max`
@@ -191,7 +181,6 @@ export interface Recommendation {
 	body: string;
 	urgency: RecommendationUrgency;
 	when: RecommendationWhen;
-	link?: RecommendationLink;
 	/**
 	 * Q6 win-rate lift in percentage points, when known. Used to rank
 	 * recommendations within a section when capping (top N by lift).

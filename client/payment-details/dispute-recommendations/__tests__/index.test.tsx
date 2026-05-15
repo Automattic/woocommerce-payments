@@ -450,28 +450,5 @@ describe( 'DisputeRecommendationsCard', () => {
 				screen.queryByRole( 'link', { name: /learn more/i } )
 			).not.toBeInTheDocument();
 		} );
-
-		it( 'does not render per-rec action links', () => {
-			// wonPhysicalShippingProvided fires c1-shipping-evidence-strengthen
-			// (tip), whose catalog entry carries a "Configure shipping options"
-			// link. Per-rec links are no longer rendered; only the section-
-			// header Learn more is.
-			render(
-				<DisputeRecommendationsCard
-					dispute={ wonPhysicalShippingProvided() }
-				/>
-			);
-
-			expect(
-				screen.queryByRole( 'link', {
-					name: /configure shipping options/i,
-				} )
-			).not.toBeInTheDocument();
-			expect(
-				screen.queryByRole( 'link', {
-					name: /set up shipping tracking/i,
-				} )
-			).not.toBeInTheDocument();
-		} );
 	} );
 } );
