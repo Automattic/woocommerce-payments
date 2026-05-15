@@ -3,17 +3,19 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import { CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { recordEvent } from 'wcpay/tracks';
 import type { ChargeDispute } from 'wcpay/types/charges';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import EvidenceSubmittedList from './evidence-submitted-list';
+import { getDisputeOutcomeTracksProperties } from './tracks';
 import './style.scss';
 
 interface DisputeOutcomeViewProps {
@@ -23,6 +25,22 @@ interface DisputeOutcomeViewProps {
 const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 	dispute,
 } ) => {
+	// Ref guard, not effect deps, because React 18 Strict Mode double-invokes
+	// effects in development. Empty deps fires once per real mount; the ref
+	// absorbs the dev-only re-invocation.
+	const viewedRef = useRef( false );
+	useEffect( () => {
+		if ( viewedRef.current ) {
+			return;
+		}
+		recordEvent(
+			'wcpay_dispute_outcome_viewed',
+			getDisputeOutcomeTracksProperties( dispute )
+		);
+		viewedRef.current = true;
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
+
 	// Mirror the wizard's resolution so both look up the same matrix cell.
 	const productType = resolveProductType(
 		dispute.metadata,

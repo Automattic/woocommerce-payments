@@ -11,7 +11,20 @@ import { render, screen } from '@testing-library/react';
  */
 import DisputeOutcomeView from '../index';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
+import { recordEvent } from 'wcpay/tracks';
 import type { ChargeDispute } from 'wcpay/types/charges';
+
+jest.mock( 'wcpay/tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
+
+beforeEach( () => {
+	mockRecordEvent.mockClear();
+} );
 
 const buildDispute = (
 	overrides: Partial< ChargeDispute > = {}
@@ -144,6 +157,57 @@ describe( 'DisputeOutcomeView', () => {
 		const items = screen.getAllByRole( 'listitem' );
 		expect( items ).toHaveLength( 1 );
 		expect( items[ 0 ] ).toHaveTextContent( /Cover letter/ );
+	} );
+
+	describe( 'tracks wcpay_dispute_outcome_viewed', () => {
+		it( 'records once on mount with base dispute properties', () => {
+			render(
+				<DisputeOutcomeView
+					dispute={ buildDispute( {
+						metadata: { __product_type: 'physical_product' },
+					} ) }
+				/>
+			);
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			expect( mockRecordEvent ).toHaveBeenCalledWith(
+				'wcpay_dispute_outcome_viewed',
+				{
+					dispute_id: 'dp_test',
+					dispute_status: 'lost',
+					dispute_reason: 'product_unacceptable',
+					product_type: 'physical_product',
+				}
+			);
+		} );
+
+		it( 'does not re-fire when the component re-renders', () => {
+			const dispute = buildDispute( {
+				metadata: { __product_type: 'physical_product' },
+			} );
+			const { rerender } = render(
+				<DisputeOutcomeView dispute={ dispute } />
+			);
+
+			rerender( <DisputeOutcomeView dispute={ dispute } /> );
+			rerender( <DisputeOutcomeView dispute={ dispute } /> );
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'fires for warning_closed inquiries too', () => {
+			render(
+				<DisputeOutcomeView
+					dispute={ buildDispute( { status: 'warning_closed' } ) }
+				/>
+			);
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			expect( mockRecordEvent ).toHaveBeenCalledWith(
+				'wcpay_dispute_outcome_viewed',
+				expect.objectContaining( { dispute_status: 'warning_closed' } )
+			);
+		} );
 	} );
 
 	describe( 'optional-missing collapse by status', () => {

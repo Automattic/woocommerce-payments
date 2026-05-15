@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add wcpay_dispute_outcome_viewed Tracks event on the dispute Outcome View
