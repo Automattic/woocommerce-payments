@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
 import type { View, ViewTable, Filter } from '@wordpress/dataviews';
@@ -115,6 +115,15 @@ export const useFeesView = (
 
 	void period; // period seeds default `date_between` via use-fees-data, not via the view object
 
+	// Browser back/forward changes the URL without remounting; bump a tick on
+	// popstate so the view re-derives from `getQuery()` instead of going stale.
+	const [ navTick, setNavTick ] = useState( 0 );
+	useEffect( () => {
+		const onPopState = () => setNavTick( ( t ) => t + 1 );
+		window.addEventListener( 'popstate', onPopState );
+		return () => window.removeEventListener( 'popstate', onPopState );
+	}, [] );
+
 	const view: View = useMemo< ViewTable >( () => {
 		const query = getQuery() as Record< string, unknown >;
 		const defaultView = getDefaultFeesView() as ViewTable;
@@ -137,7 +146,10 @@ export const useFeesView = (
 			filters: buildFiltersFromQuery( query ),
 			layout: persisted?.layout ?? defaultView.layout,
 		};
-	}, [ persisted ] );
+		// navTick forces re-derive when the URL changes via popstate even
+		// though it isn't referenced in the body above.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ persisted, navTick ] );
 
 	const setView = useCallback(
 		( next: View ) => {

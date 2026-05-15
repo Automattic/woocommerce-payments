@@ -126,6 +126,24 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
+	it( 're-derives the view when the URL changes via browser back/forward', () => {
+		const { result } = renderHook( () => useFeesView( period ) );
+		expect( result.current[ 0 ].sort?.field ).toBe( 'date' );
+
+		mockGetQuery.mockReturnValue( {
+			orderby: 'amount',
+			order: 'asc',
+		} );
+		act( () => {
+			window.dispatchEvent( new PopStateEvent( 'popstate' ) );
+		} );
+
+		expect( result.current[ 0 ].sort ).toEqual( {
+			field: 'amount',
+			direction: 'asc',
+		} );
+	} );
+
 	it( 'persists fields and perPage changes to user_meta', () => {
 		const { result } = renderHook( () => useFeesView( period ) );
 		act( () => {
