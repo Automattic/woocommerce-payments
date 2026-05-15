@@ -17,7 +17,12 @@ import { useDispatch } from '@wordpress/data';
 import { recordEvent } from 'tracks';
 
 jest.mock( '../fees', () => ( {
-	FeesReport: () => <div>Fees ledger table</div>,
+	FeesReport: ( { onReload }: { onReload?: () => void } ) => (
+		<div>
+			<div>Fees ledger table</div>
+			<button onClick={ onReload }>Reload</button>
+		</div>
+	),
 } ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {

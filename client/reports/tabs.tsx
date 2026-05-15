@@ -45,20 +45,13 @@ export function normalizeReportsTab( tab?: unknown ): ReportsTab {
 	return tab === 'fees' ? 'fees' : 'balance';
 }
 
-function getEmptyContent( tab: ReportsTab ): {
+// `getEmptyContent` / `getPartialContent` / `getErrorTitle` only need to handle
+// `tab === 'balance'` here — the Fees tab owns its own loading/error/empty UI
+// inside `<FeesReport>` and short-circuits before reaching those branches.
+function getEmptyContent(): {
 	title: string;
-	description?: string;
+	description: string;
 } {
-	if ( tab === 'fees' ) {
-		return {
-			title: __( 'No fees yet', 'woocommerce-payments' ),
-			description: __(
-				'Fees will appear here once you start receiving payments.',
-				'woocommerce-payments'
-			),
-		};
-	}
-
 	return {
 		title: __( 'No balance activity', 'woocommerce-payments' ),
 		description: __(
@@ -68,26 +61,10 @@ function getEmptyContent( tab: ReportsTab ): {
 	};
 }
 
-function getErrorTitle( tab: ReportsTab ): string {
-	return tab === 'fees'
-		? __( 'Fees report unavailable', 'woocommerce-payments' )
-		: __( 'Balance unavailable', 'woocommerce-payments' );
-}
-
-function getPartialContent( tab: ReportsTab ): {
+function getPartialContent(): {
 	title: string;
 	description: string;
 } {
-	if ( tab === 'fees' ) {
-		return {
-			title: __( 'Fees report partially loaded', 'woocommerce-payments' ),
-			description: __(
-				'Some fees data is still being prepared.',
-				'woocommerce-payments'
-			),
-		};
-	}
-
 	return {
 		title: __( 'Balance partially loaded', 'woocommerce-payments' ),
 		description: __(
@@ -120,7 +97,7 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 		previousStatusRef.current = status;
 	}, [ status ] );
 
-	if ( tab === 'fees' && status === 'ready' ) {
+	if ( tab === 'fees' ) {
 		return (
 			<FeesReport
 				period={ period ?? getLastFullCalendarMonthUTC() }
@@ -143,7 +120,7 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 	}
 
 	if ( status === 'partial' ) {
-		const { title, description } = getPartialContent( tab );
+		const { title, description } = getPartialContent();
 
 		return (
 			<div
@@ -166,7 +143,7 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 				aria-labelledby={ headingId }
 			>
 				<h2 id={ headingId } ref={ contentHeadingRef } tabIndex={ -1 }>
-					{ getErrorTitle( tab ) }
+					{ __( 'Balance unavailable', 'woocommerce-payments' ) }
 				</h2>
 				<Button variant="secondary" onClick={ onReload }>
 					{ __( 'Reload report', 'woocommerce-payments' ) }
@@ -175,14 +152,14 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 		);
 	}
 
-	const { title, description } = getEmptyContent( tab );
+	const { title, description } = getEmptyContent();
 
 	return (
 		<div className="wcpay-reports-state wcpay-reports-state--empty">
 			<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
 				{ title }
 			</h2>
-			{ description && <p>{ description }</p> }
+			<p>{ description }</p>
 		</div>
 	);
 };

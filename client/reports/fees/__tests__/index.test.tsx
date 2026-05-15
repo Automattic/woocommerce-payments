@@ -14,6 +14,7 @@ const mockUpdateUserPreferences = jest.fn();
 const mockRequestReportExport = jest.fn();
 const mockRecordEvent = jest.fn();
 const mockCreateNotice = jest.fn();
+const mockSpeak = jest.fn();
 
 jest.mock( 'wcpay/data', () => ( {
 	useReportsFees: ( q: unknown ) => mockUseReportsFees( q ),
@@ -43,6 +44,10 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: () => ( { createNotice: mockCreateNotice } ),
 } ) );
 
+jest.mock( '@wordpress/a11y', () => ( {
+	speak: ( message: string ) => mockSpeak( message ),
+} ) );
+
 jest.mock( 'tracks', () => ( {
 	recordEvent: ( event: string, props: unknown ) =>
 		mockRecordEvent( event, props ),
@@ -51,17 +56,6 @@ jest.mock( 'tracks', () => ( {
 jest.mock( 'multi-currency/interface/functions', () => ( {
 	formatExplicitCurrency: ( amount: number, currency: string ) =>
 		`${ currency.toUpperCase() } ${ amount }`,
-} ) );
-
-jest.mock( 'wcpay/components/clickable-cell', () => ( {
-	__esModule: true,
-	default: ( {
-		children,
-		href,
-	}: {
-		children: React.ReactNode;
-		href: string;
-	} ) => <a href={ href }>{ children }</a>,
 } ) );
 
 jest.mock( 'wcpay/components/details-link', () => ( {
@@ -129,6 +123,7 @@ beforeEach( () => {
 	mockRequestReportExport.mockReset();
 	mockRecordEvent.mockReset();
 	mockCreateNotice.mockReset();
+	mockSpeak.mockReset();
 
 	( window as unknown as Record< string, unknown > ).wcpaySettings = {
 		currentUserEmail: 'a@b.test',
@@ -179,7 +174,7 @@ describe( 'FeesReport (DataViews)', () => {
 		expect( items.length ).toBeGreaterThan( 0 );
 	} );
 
-	it( 'renders an error placeholder with reload button when feesError is set', () => {
+	it( 'renders an alert-roled error placeholder with reload button when feesError is set', () => {
 		mockUseReportsFees.mockReturnValue( {
 			feesRows: [],
 			feesError: { code: 'oops' },
@@ -187,11 +182,46 @@ describe( 'FeesReport (DataViews)', () => {
 		} );
 		const onReload = jest.fn();
 		render( <FeesReport period={ period } onReload={ onReload } /> );
+		// `role="alert"` so AT users hear the error without focus management.
+		expect( screen.getByRole( 'alert' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Fees report unavailable' )
 		).toBeInTheDocument();
-		fireEvent.click( screen.getByRole( 'button', { name: /reload/i } ) );
+		fireEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
 		expect( onReload ).toHaveBeenCalled();
+	} );
+
+	it( 'renders the empty state when there are no rows and no active filters', () => {
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: false,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 0, sources: [], types: [] },
+			isLoading: false,
+		} );
+		render( <FeesReport period={ period } /> );
+		expect( screen.getByText( 'No fees yet' ) ).toBeInTheDocument();
+	} );
+
+	it( 'does NOT render the empty state when filters are active (DataViews shows its own no-results UI)', () => {
+		mockGetQuery.mockReturnValue( {
+			payment_method_type: 'card',
+		} );
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: false,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 0, sources: [], types: [] },
+			isLoading: false,
+		} );
+		render( <FeesReport period={ period } /> );
+		expect( screen.queryByText( 'No fees yet' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'fires wcpay_reports_export_click and submits the export request', () => {
@@ -206,5 +236,36 @@ describe( 'FeesReport (DataViews)', () => {
 			} )
 		);
 		expect( mockRequestReportExport ).toHaveBeenCalled();
+	} );
+
+	it( 'announces the report-loaded status when the loading flag flips false', () => {
+		// Start in loading state.
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: true,
+		} );
+		const { rerender } = render( <FeesReport period={ period } /> );
+
+		// Transition to ready with data.
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [ baseRow ],
+			feesError: {},
+			isLoading: false,
+		} );
+		rerender( <FeesReport period={ period } /> );
+
+		expect( mockSpeak ).toHaveBeenCalledWith(
+			expect.stringMatching( /loaded/i )
+		);
+	} );
+
+	it( 'includes the export-celebration emoji in the success notice', () => {
+		render( <FeesReport period={ period } /> );
+		fireEvent.click( screen.getByRole( 'button', { name: /export/i } ) );
+		expect( mockCreateNotice ).toHaveBeenCalledWith(
+			'success',
+			expect.stringContaining( '🎉' )
+		);
 	} );
 } );

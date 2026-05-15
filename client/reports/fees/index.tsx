@@ -3,10 +3,11 @@
 /**
  * External dependencies
  */
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Button } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
+import { speak } from '@wordpress/a11y';
 import { DataViews } from '@wordpress/dataviews';
 
 /**
@@ -20,21 +21,58 @@ import {
 } from 'wcpay/data/reports/resolvers';
 import { recordEvent } from 'tracks';
 import { useFeesView } from './use-fees-view';
-import { useFeesData, viewToFeesQuery } from './use-fees-data';
+import { useFeesData } from './use-fees-data';
 import { getFeesFields } from './fields';
 import type { ReportsPeriodRange } from '../period-selector';
+import type { View, Filter } from '@wordpress/dataviews';
 
 interface FeesReportProps {
 	period: ReportsPeriodRange;
 	onReload?: () => void;
 }
 
+/**
+ * Returns true when the user's visible-fields configuration has changed.
+ * Compared as joined strings — the field list is small and order-significant.
+ */
+const haveFieldsChanged = (
+	prev: ReadonlyArray< string > = [],
+	next: ReadonlyArray< string > = []
+): boolean => prev.join( '|' ) !== next.join( '|' );
+
+const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
+	filters.find( ( f ) => f.field === 'date' );
+
+/**
+ * Returns true when the date filter (operator + value) differs between two
+ * filter arrays. Comparing the date filter only — not the entire `filters`
+ * array — keeps the comparison stable when unrelated filters change.
+ */
+const haveDateFiltersChanged = (
+	prev: Filter[] = [],
+	next: Filter[] = []
+): boolean => {
+	const a = findDateFilter( prev );
+	const b = findDateFilter( next );
+	if ( ! a && ! b ) {
+		return false;
+	}
+	if ( ! a || ! b ) {
+		return true;
+	}
+	return (
+		a.operator !== b.operator ||
+		JSON.stringify( a.value ) !== JSON.stringify( b.value )
+	);
+};
+
 export const FeesReport = ( {
 	period,
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
-	const [ view, setView ] = useFeesView( period );
+	const [ view, setView ] = useFeesView();
 	const {
+		feesQuery,
 		rows,
 		totalItems,
 		totalPages,
@@ -51,15 +89,69 @@ export const FeesReport = ( {
 		[ methodElements, typeElements ]
 	);
 	const hasError = Object.keys( error ).length > 0;
+	const hasFilters = ( view.filters ?? [] ).length > 0 || !! view.search;
+	const isEmpty =
+		! isLoading && ! hasError && rows.length === 0 && ! hasFilters;
+
+	// Move focus to the error region and announce when an error surfaces, so
+	// keyboard/AT users notice the table disappearing. `role="alert"` on the
+	// container takes care of automatic announcement; the focus move handles
+	// keyboard context.
+	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
+	const previousErrorRef = useRef( hasError );
+	useEffect( () => {
+		if ( hasError && ! previousErrorRef.current ) {
+			errorHeadingRef.current?.focus();
+		}
+		previousErrorRef.current = hasError;
+	}, [ hasError ] );
+
+	// Announce "Fees report loaded" to AT users on every loading→ready edge.
+	const previousLoadingRef = useRef( isLoading );
+	useEffect( () => {
+		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+			speak(
+				sprintf(
+					/* translators: %d: number of fees loaded into the report table. */
+					__( '%d fees loaded.', 'woocommerce-payments' ),
+					totalItems
+				)
+			);
+		}
+		previousLoadingRef.current = isLoading;
+	}, [ isLoading, hasError, totalItems ] );
+
+	const handleViewChange = useCallback(
+		( next: View ) => {
+			if ( haveFieldsChanged( view.fields, next.fields ) ) {
+				recordEvent( 'wcpay_reports_view_options_opened', {
+					report: 'fees',
+				} );
+			}
+			if (
+				haveDateFiltersChanged( view.filters ?? [], next.filters ?? [] )
+			) {
+				recordEvent( 'wcpay_reports_date_range_changed', {
+					report: 'fees',
+				} );
+			}
+			setView( next );
+		},
+		[ setView, view.fields, view.filters ]
+	);
 
 	if ( hasError ) {
 		return (
 			<div
 				className="wcpay-reports-state wcpay-reports-state--error"
-				role="group"
+				role="alert"
 				aria-labelledby="wcpay-reports-fees-error"
 			>
-				<h2 id="wcpay-reports-fees-error">
+				<h2
+					id="wcpay-reports-fees-error"
+					ref={ errorHeadingRef }
+					tabIndex={ -1 }
+				>
 					{ __( 'Fees report unavailable', 'woocommerce-payments' ) }
 				</h2>
 				<Button variant="secondary" onClick={ onReload }>
@@ -69,21 +161,19 @@ export const FeesReport = ( {
 		);
 	}
 
-	const handleViewChange = ( next: typeof view ) => {
-		if ( JSON.stringify( next.fields ) !== JSON.stringify( view.fields ) ) {
-			recordEvent( 'wcpay_reports_view_options_opened', {
-				report: 'fees',
-			} );
-		}
-		const prevDate = view.filters?.find( ( f ) => f.field === 'date' );
-		const nextDate = next.filters?.find( ( f ) => f.field === 'date' );
-		if ( JSON.stringify( prevDate ) !== JSON.stringify( nextDate ) ) {
-			recordEvent( 'wcpay_reports_date_range_changed', {
-				report: 'fees',
-			} );
-		}
-		setView( next );
-	};
+	if ( isEmpty ) {
+		return (
+			<div className="wcpay-reports-state wcpay-reports-state--empty">
+				<h2>{ __( 'No fees yet', 'woocommerce-payments' ) }</h2>
+				<p>
+					{ __(
+						'Fees will appear here once you start receiving payments.',
+						'woocommerce-payments'
+					) }
+				</p>
+			</div>
+		);
+	}
 
 	const handleExport = () => {
 		recordEvent( 'wcpay_reports_export_click', {
@@ -93,7 +183,6 @@ export const FeesReport = ( {
 
 		const userEmail = wcpaySettings.currentUserEmail;
 		const locale = wcSettings.locale.userLocale;
-		const feesQuery = viewToFeesQuery( view, period );
 		const exportRequestURL = getReportsFeesCSVRequestURL( {
 			match: feesQuery.match,
 			dateBefore: feesQuery.date_before,
@@ -117,7 +206,6 @@ export const FeesReport = ( {
 			totalItems
 		);
 
-		const hasFilters = ( view.filters ?? [] ).length > 0 || !! view.search;
 		if (
 			hasFilters ||
 			totalItems < confirmThreshold ||
@@ -133,7 +221,7 @@ export const FeesReport = ( {
 				'success',
 				sprintf(
 					__(
-						"We're processing your export. The file will download automatically and be emailed to %s.",
+						"🎉 We're processing your export. The file will download automatically and be emailed to %s.",
 						'woocommerce-payments'
 					),
 					userEmail
