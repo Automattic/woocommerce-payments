@@ -1,8 +1,19 @@
 /** @format */
 
 import type { View, Operator } from '@wordpress/dataviews';
-import { viewToFeesQuery } from '../use-fees-data';
+import { renderHook } from '@testing-library/react-hooks';
 import type { ReportsPeriodRange } from '../../period-selector';
+
+const mockUseReportsFees = jest.fn();
+const mockUseReportsFeesSummary = jest.fn();
+
+jest.mock( 'wcpay/data', () => ( {
+	useReportsFees: ( ...args: unknown[] ) => mockUseReportsFees( ...args ),
+	useReportsFeesSummary: ( ...args: unknown[] ) =>
+		mockUseReportsFeesSummary( ...args ),
+} ) );
+
+import { buildFeesQuery, useFeesData } from '../use-fees-data';
 
 const period: ReportsPeriodRange = {
 	start: '2026-04-01T00:00:00Z',
@@ -21,10 +32,10 @@ const baseView = ( overrides: Partial< View > = {} ): View =>
 		...overrides,
 	} as View );
 
-describe( 'viewToFeesQuery', () => {
+describe( 'buildFeesQuery', () => {
 	it( 'maps pagination and sort', () => {
 		expect(
-			viewToFeesQuery(
+			buildFeesQuery(
 				baseView( {
 					page: 3,
 					perPage: 50,
@@ -41,14 +52,14 @@ describe( 'viewToFeesQuery', () => {
 	} );
 
 	it( 'seeds date_between from period when no date filter is set', () => {
-		expect( viewToFeesQuery( baseView(), period ).date_between ).toEqual( [
+		expect( buildFeesQuery( baseView(), period ).date_between ).toEqual( [
 			'2026-04-01',
 			'2026-04-30',
 		] );
 	} );
 
 	it( 'maps a date "between" filter to date_between and omits period seeding', () => {
-		const result = viewToFeesQuery(
+		const result = buildFeesQuery(
 			baseView( {
 				filters: [
 					{
@@ -66,7 +77,7 @@ describe( 'viewToFeesQuery', () => {
 	} );
 
 	it( 'maps a date "before" filter to date_before', () => {
-		const result = viewToFeesQuery(
+		const result = buildFeesQuery(
 			baseView( {
 				filters: [
 					{
@@ -83,7 +94,7 @@ describe( 'viewToFeesQuery', () => {
 	} );
 
 	it( 'maps payment_method filter (single is)', () => {
-		const result = viewToFeesQuery(
+		const result = buildFeesQuery(
 			baseView( {
 				filters: [
 					{ field: 'payment_method', operator: 'is', value: 'card' },
@@ -95,7 +106,7 @@ describe( 'viewToFeesQuery', () => {
 	} );
 
 	it( 'maps type filter (isAny array)', () => {
-		const result = viewToFeesQuery(
+		const result = buildFeesQuery(
 			baseView( {
 				filters: [
 					{
@@ -112,17 +123,17 @@ describe( 'viewToFeesQuery', () => {
 
 	it( 'wraps search as a single-element array', () => {
 		expect(
-			viewToFeesQuery( baseView( { search: 'txn_abc' } ), period ).search
+			buildFeesQuery( baseView( { search: 'txn_abc' } ), period ).search
 		).toEqual( [ 'txn_abc' ] );
 	} );
 
 	it( 'omits search when empty', () => {
-		expect( viewToFeesQuery( baseView(), period ).search ).toBeUndefined();
+		expect( buildFeesQuery( baseView(), period ).search ).toBeUndefined();
 	} );
 
 	it( 'sets match=advanced when any non-date filter is active', () => {
 		expect(
-			viewToFeesQuery(
+			buildFeesQuery(
 				baseView( {
 					filters: [
 						{
@@ -135,5 +146,136 @@ describe( 'viewToFeesQuery', () => {
 				period
 			).match
 		).toBe( 'advanced' );
+	} );
+} );
+
+describe( 'useFeesData', () => {
+	beforeEach( () => {
+		mockUseReportsFees.mockReset();
+		mockUseReportsFeesSummary.mockReset();
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: false,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 0, sources: [], types: [] },
+			isLoading: false,
+		} );
+	} );
+
+	it( 'derives totalPages from summary count and perPage', () => {
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 47, sources: [], types: [] },
+			isLoading: false,
+		} );
+
+		const { result } = renderHook( () =>
+			useFeesData( baseView( { perPage: 20 } ), period )
+		);
+
+		expect( result.current.totalItems ).toBe( 47 );
+		expect( result.current.totalPages ).toBe( 3 );
+	} );
+
+	it( 'returns at least 1 totalPages even when the summary is empty', () => {
+		const { result } = renderHook( () =>
+			useFeesData( baseView(), period )
+		);
+
+		expect( result.current.totalPages ).toBe( 1 );
+	} );
+
+	it( 'maps payment-method sources to human-readable filter labels', () => {
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: {
+				count: 0,
+				sources: [ 'card', 'bank_transfer' ],
+				types: [],
+			},
+			isLoading: false,
+		} );
+
+		const { result } = renderHook( () =>
+			useFeesData( baseView(), period )
+		);
+
+		// `displayMethod` returns the localized title for known methods and
+		// falls back to the raw value for unknown ones. Asserting label !=
+		// value guarantees the mapping is applied (rather than passing the
+		// raw API string through, as a previous iteration of the code did).
+		expect( result.current.methodElements ).toHaveLength( 2 );
+		const card = result.current.methodElements.find(
+			( e ) => e.value === 'card'
+		);
+		expect( card ).toBeDefined();
+		expect( card?.label ).not.toBe( 'card' );
+	} );
+
+	it( 'maps transaction types to display labels', () => {
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 0, sources: [], types: [ 'charge' ] },
+			isLoading: false,
+		} );
+
+		const { result } = renderHook( () =>
+			useFeesData( baseView(), period )
+		);
+
+		const charge = result.current.typeElements.find(
+			( e ) => e.value === 'charge'
+		);
+		expect( charge ).toBeDefined();
+		expect( charge?.label ).not.toBe( 'charge' );
+	} );
+
+	it( 'merges loading state from rows and summary hooks', () => {
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: false,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 0, sources: [], types: [] },
+			isLoading: true,
+		} );
+
+		const { result } = renderHook( () =>
+			useFeesData( baseView(), period )
+		);
+
+		expect( result.current.isLoading ).toBe( true );
+	} );
+
+	it( 'passes feesError through to the caller', () => {
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: { code: 'rest_forbidden' },
+			isLoading: false,
+		} );
+
+		const { result } = renderHook( () =>
+			useFeesData( baseView(), period )
+		);
+
+		expect( result.current.error ).toEqual( { code: 'rest_forbidden' } );
+	} );
+
+	it( 'returns the memoized feesQuery used for the request', () => {
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: false,
+		} );
+
+		const { result } = renderHook( () =>
+			useFeesData( baseView( { search: 'txn_abc' } ), period )
+		);
+
+		expect( result.current.feesQuery.search ).toEqual( [ 'txn_abc' ] );
+		// The same call passed to useReportsFees.
+		expect( mockUseReportsFees ).toHaveBeenLastCalledWith(
+			result.current.feesQuery
+		);
 	} );
 } );

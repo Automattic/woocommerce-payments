@@ -3,6 +3,7 @@
 /**
  * External dependencies
  */
+import { useMemo } from 'react';
 import type { View, Filter } from '@wordpress/dataviews';
 
 /**
@@ -10,9 +11,11 @@ import type { View, Filter } from '@wordpress/dataviews';
  */
 import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
 import type { ReportsFee } from 'wcpay/data/reports/hooks';
+import { formatStringValue } from 'wcpay/utils';
 import type { ReportsPeriodRange } from '../period-selector';
+import { displayMethod, displayType } from './strings';
 
-export interface FeesQuery {
+interface FeesQuery {
 	paged?: string;
 	per_page?: string;
 	orderby?: string;
@@ -36,7 +39,19 @@ const periodToDateBetween = ( period: ReportsPeriodRange ): string[] => [
 	period.end.slice( 0, 10 ),
 ];
 
-export const viewToFeesQuery = (
+/**
+ * Build a REST query for the Fees endpoint from the DataViews `view` and the
+ * report `period`. `period` supplies the date range when `view` carries no
+ * explicit date filter — without it, the query falls back to the endpoint's
+ * default (potentially all-time) window.
+ *
+ * NOTE: The previous TableCard implementation accepted `order_id`,
+ * `deposit_id`, and `customer_email` filter params, which the PHP controller
+ * still honours. They are intentionally not surfaced from the DataViews UI in
+ * this PR; a follow-up will add purpose-built filter chips for them
+ * (tracked alongside the deferred in-UI date filter chip — RSM-2125).
+ */
+export const buildFeesQuery = (
 	view: View,
 	period: ReportsPeriodRange
 ): FeesQuery => {
@@ -86,6 +101,7 @@ export const viewToFeesQuery = (
 };
 
 interface UseFeesDataResult {
+	feesQuery: FeesQuery;
 	rows: ReportsFee[];
 	totalItems: number;
 	totalPages: number;
@@ -95,11 +111,32 @@ interface UseFeesDataResult {
 	error: Record< string, unknown >;
 }
 
+const buildMethodElements = (
+	sources: string[]
+): Array< { value: string; label: string } > =>
+	sources.map( ( source ) => ( {
+		value: source,
+		label: displayMethod( source ) || source,
+	} ) );
+
+const buildTypeElements = (
+	types: string[]
+): Array< { value: string; label: string } > =>
+	types.map( ( type ) => ( {
+		value: type,
+		label:
+			displayType[ type as keyof typeof displayType ] ||
+			formatStringValue( type ),
+	} ) );
+
 export const useFeesData = (
 	view: View,
 	period: ReportsPeriodRange
 ): UseFeesDataResult => {
-	const feesQuery = viewToFeesQuery( view, period );
+	const feesQuery = useMemo(
+		() => buildFeesQuery( view, period ),
+		[ view, period ]
+	);
 	const { feesRows, feesError = {}, isLoading } = useReportsFees( feesQuery );
 	const { feesSummary, isLoading: isSummaryLoading } =
 		useReportsFeesSummary( feesQuery );
@@ -108,17 +145,21 @@ export const useFeesData = (
 	const perPage = parseInt( feesQuery.per_page ?? '25', 10 );
 	const totalPages = Math.max( 1, Math.ceil( totalItems / perPage ) );
 
-	const methodElements = ( feesSummary.sources ?? [] ).map( ( source ) => ( {
-		value: source,
-		label: source,
-	} ) );
-
-	const typeElements = ( feesSummary.types ?? [] ).map( ( type ) => ( {
-		value: type,
-		label: type,
-	} ) );
+	const sources = feesSummary.sources ?? [];
+	const types = feesSummary.types ?? [];
+	const methodElements = useMemo(
+		() => buildMethodElements( sources ),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[ sources.join( '|' ) ]
+	);
+	const typeElements = useMemo(
+		() => buildTypeElements( types ),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[ types.join( '|' ) ]
+	);
 
 	return {
+		feesQuery,
 		rows: feesRows,
 		totalItems,
 		totalPages,
