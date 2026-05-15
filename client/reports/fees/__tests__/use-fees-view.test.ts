@@ -160,4 +160,26 @@ describe( 'useFeesView', () => {
 			} ),
 		} );
 	} );
+
+	it( 'skips updateUserPreferences when only URL-bound state changes', () => {
+		mockUserPrefs = {
+			wc_payments_reports_fees_view: {
+				fields: [ 'date', 'amount' ],
+				perPage: 25,
+				layout: {},
+			},
+		};
+		const { result } = renderHook( () => useFeesView( period ) );
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				fields: [ 'date', 'amount' ],
+				perPage: 25,
+				sort: { field: 'fees', direction: 'asc' },
+				page: 3,
+			} );
+		} );
+		expect( mockUpdateQueryString ).toHaveBeenCalled();
+		expect( mockUpdateUserPreferences ).not.toHaveBeenCalled();
+	} );
 } );

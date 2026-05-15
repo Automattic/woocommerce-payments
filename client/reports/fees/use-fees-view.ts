@@ -74,6 +74,11 @@ const buildFiltersFromQuery = (
 	return filters;
 };
 
+const isPersistedShapeEqual = (
+	a: PersistedFeesView | undefined,
+	b: PersistedFeesView
+): boolean => a !== undefined && JSON.stringify( a ) === JSON.stringify( b );
+
 const filtersToQueryDelta = (
 	filters: Filter[]
 ): Record< string, unknown > => {
@@ -168,16 +173,19 @@ export const useFeesView = (
 				reportsPath
 			);
 
-			updateUserPreferences( {
-				[ feesViewUserMetaKey ]: {
-					fields: ( next.fields ?? [] ) as FeesFieldId[],
-					perPage: next.perPage,
-					layout: ( next as ViewTable ).layout,
-					density: ( next as ViewTable ).layout?.density,
-				} as PersistedFeesView,
-			} );
+			const nextPersisted: PersistedFeesView = {
+				fields: ( next.fields ?? [] ) as FeesFieldId[],
+				perPage: next.perPage,
+				layout: ( next as ViewTable ).layout,
+			};
+
+			if ( ! isPersistedShapeEqual( persisted, nextPersisted ) ) {
+				updateUserPreferences( {
+					[ feesViewUserMetaKey ]: nextPersisted,
+				} );
+			}
 		},
-		[ updateUserPreferences ]
+		[ persisted, updateUserPreferences ]
 	);
 
 	return [ view, setView ];
