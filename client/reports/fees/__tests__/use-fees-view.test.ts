@@ -23,11 +23,6 @@ jest.mock( '@woocommerce/data', () => ( {
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';
 
-const period = {
-	start: '2026-04-01T00:00:00Z',
-	end: '2026-04-30T23:59:59Z',
-};
-
 beforeEach( () => {
 	mockUpdateQueryString.mockClear();
 	mockUpdateUserPreferences.mockClear();
@@ -37,7 +32,7 @@ beforeEach( () => {
 
 describe( 'useFeesView', () => {
 	it( 'returns the default view when URL and user_meta are empty', () => {
-		const { result } = renderHook( () => useFeesView( period ) );
+		const { result } = renderHook( () => useFeesView() );
 		expect( result.current[ 0 ].sort ).toEqual( {
 			field: 'date',
 			direction: 'desc',
@@ -53,7 +48,7 @@ describe( 'useFeesView', () => {
 			paged: '2',
 			per_page: '50',
 		} );
-		const { result } = renderHook( () => useFeesView( period ) );
+		const { result } = renderHook( () => useFeesView() );
 		expect( result.current[ 0 ].sort ).toEqual( {
 			field: 'amount',
 			direction: 'asc',
@@ -67,7 +62,7 @@ describe( 'useFeesView', () => {
 			payment_method_type: 'card',
 			type: [ 'charge', 'refund' ],
 		} );
-		const { result } = renderHook( () => useFeesView( period ) );
+		const { result } = renderHook( () => useFeesView() );
 		expect( result.current[ 0 ].filters ).toEqual(
 			expect.arrayContaining( [
 				{ field: 'payment_method', operator: 'is', value: 'card' },
@@ -84,7 +79,7 @@ describe( 'useFeesView', () => {
 		mockGetQuery.mockReturnValue( {
 			date_between: [ '2026-03-01', '2026-03-31' ],
 		} );
-		const { result } = renderHook( () => useFeesView( period ) );
+		const { result } = renderHook( () => useFeesView() );
 		expect( result.current[ 0 ].filters ).toEqual(
 			expect.arrayContaining( [
 				{
@@ -103,7 +98,7 @@ describe( 'useFeesView', () => {
 				perPage: 100,
 			},
 		};
-		const { result } = renderHook( () => useFeesView( period ) );
+		const { result } = renderHook( () => useFeesView() );
 		expect( result.current[ 0 ].fields ).toEqual( [
 			'date',
 			'transaction_id',
@@ -113,7 +108,7 @@ describe( 'useFeesView', () => {
 	} );
 
 	it( 'pushes sort changes to URL', () => {
-		const { result } = renderHook( () => useFeesView( period ) );
+		const { result } = renderHook( () => useFeesView() );
 		act( () => {
 			result.current[ 1 ]( {
 				...result.current[ 0 ],
@@ -126,8 +121,31 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
+	it( 're-derives the view after setView pushes URL-only changes', () => {
+		mockUserPrefs = { wc_payments_reports_fees_view: null };
+		const { result } = renderHook( () => useFeesView() );
+		expect( result.current[ 0 ].page ).toBe( 1 );
+
+		act( () => {
+			// Simulate what `updateQueryString` does to the URL state. The
+			// hook reads `getQuery()` on each memo re-derive, so the next
+			// `setView` call needs to see the updated query.
+			mockGetQuery.mockReturnValue( { paged: '2' } );
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				page: 2,
+			} );
+		} );
+
+		// `setView` must bump `navTick` so the view memo re-reads `getQuery()`
+		// and the new page becomes visible to consumers. Without that bump,
+		// pagination, sort, filter, and search interactions silently desync
+		// from the URL.
+		expect( result.current[ 0 ].page ).toBe( 2 );
+	} );
+
 	it( 're-derives the view when the URL changes via browser back/forward', () => {
-		const { result } = renderHook( () => useFeesView( period ) );
+		const { result } = renderHook( () => useFeesView() );
 		expect( result.current[ 0 ].sort?.field ).toBe( 'date' );
 
 		mockGetQuery.mockReturnValue( {
@@ -145,7 +163,9 @@ describe( 'useFeesView', () => {
 	} );
 
 	it( 'persists fields and perPage changes to user_meta', () => {
-		const { result } = renderHook( () => useFeesView( period ) );
+		// Mark prefs as loaded so the write-after-load guard doesn't skip.
+		mockUserPrefs = { wc_payments_reports_fees_view: null };
+		const { result } = renderHook( () => useFeesView() );
 		act( () => {
 			result.current[ 1 ]( {
 				...result.current[ 0 ],
@@ -169,7 +189,7 @@ describe( 'useFeesView', () => {
 				layout: {},
 			},
 		};
-		const { result } = renderHook( () => useFeesView( period ) );
+		const { result } = renderHook( () => useFeesView() );
 		act( () => {
 			result.current[ 1 ]( {
 				...result.current[ 0 ],
@@ -181,5 +201,41 @@ describe( 'useFeesView', () => {
 		} );
 		expect( mockUpdateQueryString ).toHaveBeenCalled();
 		expect( mockUpdateUserPreferences ).not.toHaveBeenCalled();
+	} );
+
+	it( 'skips updateUserPreferences before user_meta has loaded', () => {
+		// `useUserPreferences` returns no `wc_payments_reports_fees_view` key
+		// at all — i.e., the resolver has not finished yet. The hook must NOT
+		// write the default shape to user_meta on the first interaction; that
+		// would overwrite whatever the user previously stored.
+		mockUserPrefs = {};
+		const { result } = renderHook( () => useFeesView() );
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				fields: [ 'date', 'transaction_id' ],
+				perPage: 100,
+			} );
+		} );
+		expect( mockUpdateUserPreferences ).not.toHaveBeenCalled();
+	} );
+
+	it( 'migrates fields from the legacy hidden-columns user_meta key', () => {
+		mockUserPrefs = {
+			wc_payments_reports_fees_view: null,
+			wc_payments_reports_fees_hidden_columns: [
+				'deposit_date',
+				'transaction_currency',
+			],
+		};
+		renderHook( () => useFeesView() );
+		expect( mockUpdateUserPreferences ).toHaveBeenCalledWith( {
+			wc_payments_reports_fees_view: expect.objectContaining( {
+				fields: expect.not.arrayContaining( [
+					'deposit_date',
+					'transaction_currency',
+				] ),
+			} ),
+		} );
 	} );
 } );

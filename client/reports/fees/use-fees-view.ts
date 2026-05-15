@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
 import type { View, ViewTable, Filter } from '@wordpress/dataviews';
@@ -18,13 +18,27 @@ import {
 	PersistedFeesView,
 	FeesFieldId,
 } from './view';
-import type { ReportsPeriodRange } from '../period-selector';
 
 const reportsPath = '/payments/reports';
+const legacyHiddenColumnsKey = 'wc_payments_reports_fees_hidden_columns';
 
 const parseIntOr = ( value: unknown, fallback: number ): number => {
 	const n = parseInt( String( value ?? '' ), 10 );
 	return Number.isNaN( n ) ? fallback : n;
+};
+
+type DateOperator = 'between' | 'before' | 'after';
+
+const dateOperatorByQueryKey: Record< string, DateOperator > = {
+	date_between: 'between',
+	date_before: 'before',
+	date_after: 'after',
+};
+
+const queryKeyByDateOperator: Record< DateOperator, string > = {
+	between: 'date_between',
+	before: 'date_before',
+	after: 'date_after',
 };
 
 const buildFiltersFromQuery = (
@@ -32,24 +46,15 @@ const buildFiltersFromQuery = (
 ): Filter[] => {
 	const filters: Filter[] = [];
 
-	if ( query.date_between ) {
-		filters.push( {
-			field: 'date',
-			operator: 'between' as Filter[ 'operator' ],
-			value: query.date_between as string[],
-		} );
-	} else if ( query.date_before ) {
-		filters.push( {
-			field: 'date',
-			operator: 'before' as Filter[ 'operator' ],
-			value: query.date_before as string,
-		} );
-	} else if ( query.date_after ) {
-		filters.push( {
-			field: 'date',
-			operator: 'after' as Filter[ 'operator' ],
-			value: query.date_after as string,
-		} );
+	for ( const [ key, op ] of Object.entries( dateOperatorByQueryKey ) ) {
+		if ( query[ key ] ) {
+			filters.push( {
+				field: 'date',
+				operator: op as Filter[ 'operator' ],
+				value: query[ key ] as string | string[],
+			} );
+			break;
+		}
 	}
 
 	if ( query.payment_method_type ) {
@@ -79,10 +84,16 @@ const isPersistedShapeEqual = (
 	b: PersistedFeesView
 ): boolean => a !== undefined && JSON.stringify( a ) === JSON.stringify( b );
 
-const filtersToQueryDelta = (
+/**
+ * Translate active filters into a URL-query patch that clears stale date and
+ * filter keys (sets them to `undefined`) and writes only the keys that are
+ * currently active. Always returns a full 5-key object — every key not set by
+ * an active filter is explicitly `undefined` so `updateQueryString` removes it.
+ */
+const buildFilterQueryParams = (
 	filters: Filter[]
 ): Record< string, unknown > => {
-	const delta: Record< string, unknown > = {
+	const params: Record< string, unknown > = {
 		date_between: undefined,
 		date_before: undefined,
 		date_after: undefined,
@@ -92,42 +103,73 @@ const filtersToQueryDelta = (
 
 	for ( const filter of filters ) {
 		const op = filter.operator as string;
-		if ( filter.field === 'date' ) {
-			if ( op === 'between' ) {
-				delta.date_between = filter.value;
-			} else if ( op === 'before' ) {
-				delta.date_before = filter.value;
-			} else if ( op === 'after' ) {
-				delta.date_after = filter.value;
-			}
+		if ( filter.field === 'date' && op in queryKeyByDateOperator ) {
+			params[ queryKeyByDateOperator[ op as DateOperator ] ] =
+				filter.value;
 		} else if ( filter.field === 'payment_method' ) {
-			delta.payment_method_type = filter.value;
+			params.payment_method_type = filter.value;
 		} else if ( filter.field === 'type' ) {
-			delta.type = filter.value;
+			params.type = filter.value;
 		}
 	}
 
-	return delta;
+	return params;
 };
 
-export const useFeesView = (
-	period: ReportsPeriodRange
-): [ View, ( next: View ) => void ] => {
+/**
+ * Hook that owns the Fees report's DataViews `view`, bidirectionally synced
+ * with the URL (sort, page, search, filters) and `user_meta` (fields, layout,
+ * perPage). Returns the current view and a setter.
+ */
+export const useFeesView = (): [ View, ( next: View ) => void ] => {
 	const { updateUserPreferences, ...userPrefs } = useUserPreferences();
-	const persisted = (
-		userPrefs as unknown as Record< string, PersistedFeesView >
-	 )[ feesViewUserMetaKey ];
+	const prefs = userPrefs as unknown as Record< string, unknown >;
+	const persisted = prefs[ feesViewUserMetaKey ] as
+		| PersistedFeesView
+		| undefined;
+	// `undefined` means user_meta hasn't loaded yet; `null`-ish empty string is
+	// what wp-data returns once the resolver finishes with no stored value.
+	const hasLoadedPersisted = feesViewUserMetaKey in prefs;
 
-	void period; // period seeds default `date_between` via use-fees-data, not via the view object
-
-	// Browser back/forward changes the URL without remounting; bump a tick on
-	// popstate so the view re-derives from `getQuery()` instead of going stale.
+	// Browser back/forward — and our own pushState writes — change the URL
+	// without remounting; we bump this tick to force the view memo to re-read
+	// `getQuery()` instead of going stale.
 	const [ navTick, setNavTick ] = useState( 0 );
+	const bumpNavTick = useCallback( () => setNavTick( ( t ) => t + 1 ), [] );
 	useEffect( () => {
-		const onPopState = () => setNavTick( ( t ) => t + 1 );
-		window.addEventListener( 'popstate', onPopState );
-		return () => window.removeEventListener( 'popstate', onPopState );
-	}, [] );
+		window.addEventListener( 'popstate', bumpNavTick );
+		return () => window.removeEventListener( 'popstate', bumpNavTick );
+	}, [ bumpNavTick ] );
+
+	// One-time migration: if the new key isn't set but the legacy
+	// `wc_payments_reports_fees_hidden_columns` exists, derive an initial
+	// `fields` list from the legacy hidden columns and persist under the
+	// new key. Fires once per session at most.
+	const migrationAttemptedRef = useRef( false );
+	useEffect( () => {
+		if ( migrationAttemptedRef.current || ! hasLoadedPersisted ) {
+			return;
+		}
+		migrationAttemptedRef.current = true;
+		if ( persisted ) {
+			return;
+		}
+		const legacy = prefs[ legacyHiddenColumnsKey ];
+		if ( ! Array.isArray( legacy ) || legacy.length === 0 ) {
+			return;
+		}
+		const defaultView = getDefaultFeesView() as ViewTable;
+		const migratedFields = ( defaultView.fields ?? [] ).filter(
+			( field ) => ! legacy.includes( field )
+		) as FeesFieldId[];
+		updateUserPreferences( {
+			[ feesViewUserMetaKey ]: {
+				fields: migratedFields,
+				perPage: defaultPerPage,
+				layout: defaultView.layout,
+			},
+		} );
+	}, [ hasLoadedPersisted, persisted, prefs, updateUserPreferences ] );
 
 	const view: View = useMemo< ViewTable >( () => {
 		const query = getQuery() as Record< string, unknown >;
@@ -151,14 +193,19 @@ export const useFeesView = (
 			filters: buildFiltersFromQuery( query ),
 			layout: persisted?.layout ?? defaultView.layout,
 		};
-		// navTick forces re-derive when the URL changes via popstate even
-		// though it isn't referenced in the body above.
+		// navTick forces re-derive when the URL changes (popstate or our own
+		// pushState writes) even though it isn't referenced in the body above.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ persisted, navTick ] );
 
+	// Search input REST fan-out is kept in check by DataViews 4.15.4's
+	// internal search-input debounce. If we ever pin a DataViews version that
+	// removes that debounce, push every keystroke through a useDebounce here
+	// before calling updateQueryString — and verify `useReportsFees` cancels
+	// stale in-flight requests with an AbortController.
 	const setView = useCallback(
 		( next: View ) => {
-			const filterDelta = filtersToQueryDelta( next.filters ?? [] );
+			const filterParams = buildFilterQueryParams( next.filters ?? [] );
 			const search = next.search ? [ next.search ] : undefined;
 
 			updateQueryString(
@@ -168,10 +215,16 @@ export const useFeesView = (
 					paged: next.page ? String( next.page ) : undefined,
 					per_page: next.perPage ? String( next.perPage ) : undefined,
 					search,
-					...filterDelta,
+					...filterParams,
 				},
 				reportsPath
 			);
+
+			// `updateQueryString` only mutates history; nothing else in this
+			// component subscribes to `pushstate`. Force the view memo to
+			// re-read `getQuery()` on the next render so URL-only changes
+			// (page, sort, search, filters) become visible.
+			bumpNavTick();
 
 			const nextPersisted: PersistedFeesView = {
 				fields: ( next.fields ?? [] ) as FeesFieldId[],
@@ -179,13 +232,19 @@ export const useFeesView = (
 				layout: ( next as ViewTable ).layout,
 			};
 
-			if ( ! isPersistedShapeEqual( persisted, nextPersisted ) ) {
+			// Skip the write until user_meta has actually loaded; otherwise
+			// the first interaction on a fresh page write the default shape
+			// over whatever the user previously stored.
+			if (
+				hasLoadedPersisted &&
+				! isPersistedShapeEqual( persisted, nextPersisted )
+			) {
 				updateUserPreferences( {
 					[ feesViewUserMetaKey ]: nextPersisted,
 				} );
 			}
 		},
-		[ persisted, updateUserPreferences ]
+		[ bumpNavTick, hasLoadedPersisted, persisted, updateUserPreferences ]
 	);
 
 	return [ view, setView ];
