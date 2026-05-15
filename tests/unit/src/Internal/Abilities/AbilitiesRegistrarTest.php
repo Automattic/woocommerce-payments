@@ -18,15 +18,14 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	const FEATURE_FILTER = 'woocommerce_payments_abilities_enabled';
 
 	/**
-	 * Reset filters, current user, and registrar state between tests. The
-	 * upstream WP_Abilities_Registry singleton keeps registrations across
-	 * tests, so ability-presence assertions are suite post-conditions, not
+	 * Reset filters and the current user between tests. The upstream
+	 * `WP_Abilities_Registry` singleton keeps registrations across tests,
+	 * so ability-presence assertions are suite post-conditions, not
 	 * per-test.
 	 */
 	public function tear_down(): void {
 		remove_all_filters( self::FEATURE_FILTER );
 		wp_set_current_user( 0 );
-		AbilitiesRegistrar::reset_for_testing();
 		parent::tear_down();
 	}
 

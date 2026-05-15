@@ -112,21 +112,6 @@ class AbilitiesRegistrar {
 	}
 
 	/**
-	 * Stable hook for tests to reset registrar state. Currently a no-op
-	 * beyond the environment guard.
-	 *
-	 * @internal
-	 *
-	 * @return void
-	 * @throws \Exception When called outside the PHPUnit test environment.
-	 */
-	public static function reset_for_testing() {
-		if ( ! defined( 'WCPAY_TEST_ENV' ) ) {
-			throw new \Exception( 'AbilitiesRegistrar::reset_for_testing() must not be called outside the PHPUnit test environment.' );
-		}
-	}
-
-	/**
 	 * Delegate to a REST route via `rest_do_request()`. Translates
 	 * pagination/sort keys (see `PAGINATION_KEY_MAP`) and unwraps the
 	 * response. Permissions are enforced by the backing route.
