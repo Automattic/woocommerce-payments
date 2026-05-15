@@ -90,6 +90,28 @@ class AbstractWCPayAbilityTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 0, $out['total_pages'] );
 	}
 
+	public function test_wrap_paginated_response_wraps_associative_payload(): void {
+		$response = [
+			'summary' => 'partial',
+			'count'   => 7,
+		];
+		$out      = self::invoke_protected( 'wrap_paginated_response', [ $response, 'rows', 1, 25 ] );
+
+		$this->assertSame( [ $response ], $out['rows'] );
+		$this->assertSame( 1, $out['total_pages'] );
+		$this->assertSame( 1, $out['page'] );
+		$this->assertSame( 25, $out['per_page'] );
+	}
+
+	public function test_wrap_paginated_response_handles_empty_flat_list(): void {
+		$out = self::invoke_protected( 'wrap_paginated_response', [ [], 'rows', 1, 25 ] );
+
+		$this->assertSame( [], $out['rows'] );
+		$this->assertSame( 0, $out['total_pages'] );
+		$this->assertSame( 1, $out['page'] );
+		$this->assertSame( 25, $out['per_page'] );
+	}
+
 	/**
 	 * Invoke a protected static helper via reflection.
 	 *

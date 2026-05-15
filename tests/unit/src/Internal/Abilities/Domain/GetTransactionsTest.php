@@ -16,13 +16,6 @@ use WCPay\Internal\Abilities\Domain\GetTransactions;
  */
 class GetTransactionsTest extends WCPAY_UnitTestCase {
 
-	public static function setUpBeforeClass(): void {
-		parent::setUpBeforeClass();
-
-		if ( ! interface_exists( \Automattic\WooCommerce\Abilities\AbilityDefinition::class ) ) {
-			self::markTestSkipped( 'AbilityDefinition interface not available — requires WooCommerce 10.9+.' );
-		}
-	}
 
 	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-transactions', GetTransactions::get_name() );

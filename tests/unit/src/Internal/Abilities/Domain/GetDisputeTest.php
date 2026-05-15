@@ -16,13 +16,6 @@ use WCPay\Internal\Abilities\Domain\GetDispute;
  */
 class GetDisputeTest extends WCPAY_UnitTestCase {
 
-	public static function setUpBeforeClass(): void {
-		parent::setUpBeforeClass();
-		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
-			self::markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
-		}
-	}
-
 	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-dispute', GetDispute::get_name() );
 	}
@@ -56,5 +49,26 @@ class GetDisputeTest extends WCPAY_UnitTestCase {
 		$result = GetDispute::execute( [ 'dispute_id' => '' ] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
+	}
+
+	public function test_execute_delegates_to_disputes_route(): void {
+		$captured = null;
+		$filter   = function ( $result, $server, $request ) use ( &$captured ) {
+			if ( strpos( $request->get_route(), '/wc/v3/payments/disputes/' ) === 0 ) {
+				$captured = $request->get_route();
+				return new \WP_REST_Response( [ 'id' => 'du_abc' ], 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			$result = GetDispute::execute( [ 'dispute_id' => 'du_abc' ] );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertSame( '/wc/v3/payments/disputes/du_abc', $captured );
+		$this->assertSame( [ 'id' => 'du_abc' ], $result );
 	}
 }

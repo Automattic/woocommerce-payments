@@ -16,13 +16,6 @@ use WCPay\Internal\Abilities\Domain\GetTimeline;
  */
 class GetTimelineTest extends WCPAY_UnitTestCase {
 
-	public static function setUpBeforeClass(): void {
-		parent::setUpBeforeClass();
-		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
-			self::markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
-		}
-	}
-
 	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-timeline', GetTimeline::get_name() );
 	}
@@ -56,5 +49,26 @@ class GetTimelineTest extends WCPAY_UnitTestCase {
 		$result = GetTimeline::execute( [ 'intention_id' => '' ] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_intention_id', $result->get_error_code() );
+	}
+
+	public function test_execute_delegates_to_timeline_route(): void {
+		$captured = null;
+		$filter   = function ( $result, $server, $request ) use ( &$captured ) {
+			if ( strpos( $request->get_route(), '/wc/v3/payments/timeline/' ) === 0 ) {
+				$captured = $request->get_route();
+				return new \WP_REST_Response( [ 'events' => [] ], 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			$result = GetTimeline::execute( [ 'intention_id' => 'pi_abc' ] );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertSame( '/wc/v3/payments/timeline/pi_abc', $captured );
+		$this->assertSame( [ 'events' => [] ], $result );
 	}
 }

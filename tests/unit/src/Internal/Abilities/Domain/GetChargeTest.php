@@ -16,13 +16,6 @@ use WCPay\Internal\Abilities\Domain\GetCharge;
  */
 class GetChargeTest extends WCPAY_UnitTestCase {
 
-	public static function setUpBeforeClass(): void {
-		parent::setUpBeforeClass();
-		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
-			self::markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
-		}
-	}
-
 	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-charge', GetCharge::get_name() );
 	}
@@ -56,5 +49,26 @@ class GetChargeTest extends WCPAY_UnitTestCase {
 		$result = GetCharge::execute( [ 'charge_id' => '' ] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_charge_id', $result->get_error_code() );
+	}
+
+	public function test_execute_delegates_to_charges_route_with_url_encoded_id(): void {
+		$captured = null;
+		$filter   = function ( $result, $server, $request ) use ( &$captured ) {
+			if ( strpos( $request->get_route(), '/wc/v3/payments/charges/' ) === 0 ) {
+				$captured = $request->get_route();
+				return new \WP_REST_Response( [ 'id' => 'ch_abc' ], 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			$result = GetCharge::execute( [ 'charge_id' => 'ch_abc' ] );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertSame( '/wc/v3/payments/charges/ch_abc', $captured );
+		$this->assertSame( [ 'id' => 'ch_abc' ], $result );
 	}
 }

@@ -16,14 +16,6 @@ use WCPay\Internal\Abilities\Domain\GetAccount;
  */
 class GetAccountTest extends WCPAY_UnitTestCase {
 
-	public static function setUpBeforeClass(): void {
-		parent::setUpBeforeClass();
-
-		if ( ! interface_exists( \Automattic\WooCommerce\Abilities\AbilityDefinition::class ) ) {
-			self::markTestSkipped( 'AbilityDefinition interface not available — requires WooCommerce 10.9+.' );
-		}
-	}
-
 	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-account', GetAccount::get_name() );
 	}
@@ -70,5 +62,27 @@ class GetAccountTest extends WCPAY_UnitTestCase {
 			$result->get_error_code(),
 			'execute must surface the wcpay_not_initialized error code so callers using is_wp_error() can detect init failure.'
 		);
+	}
+
+	public function test_execute_returns_account_data_on_success(): void {
+		$account = [
+			'status'  => 'complete',
+			'country' => 'US',
+		];
+		$filter  = function ( $result, $server, $request ) use ( $account ) {
+			if ( $request->get_route() === '/wc/v3/payments/accounts' ) {
+				return new \WP_REST_Response( $account, 200 );
+			}
+			return $result;
+		};
+		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
+
+		try {
+			$result = GetAccount::execute( null );
+		} finally {
+			remove_filter( 'rest_pre_dispatch', $filter, 10 );
+		}
+
+		$this->assertSame( $account, $result );
 	}
 }

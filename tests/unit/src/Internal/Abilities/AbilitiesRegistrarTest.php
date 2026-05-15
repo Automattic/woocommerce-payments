@@ -60,73 +60,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * @dataProvider provide_expected_abilities
-	 */
-	public function test_all_read_abilities_are_registered_with_read_only_shape( string $ability_name ): void {
-		if ( ! function_exists( 'wp_get_ability' ) || ! function_exists( 'wp_get_abilities' ) ) {
-			$this->markTestSkipped( 'Abilities API query functions not available in this WordPress version.' );
-		}
-
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-		AbilitiesRegistrar::init();
-		wp_get_abilities();
-
-		$ability = wp_get_ability( $ability_name );
-		$this->assertNotNull( $ability, $ability_name . ' should be registered.' );
-		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $ability->get_category() );
-
-		$meta = $ability->get_meta();
-		$this->assertTrue( $meta['annotations']['readonly'], $ability_name . ' must be readonly.' );
-		$this->assertFalse( $meta['annotations']['destructive'], $ability_name . ' must not be destructive.' );
-		$this->assertTrue( $meta['annotations']['idempotent'], $ability_name . ' must be idempotent.' );
-		$this->assertTrue( $meta['show_in_rest'] ?? false, $ability_name . ' must opt into show_in_rest.' );
-		$this->assertTrue( $meta['mcp']['public'] ?? false, $ability_name . ' must opt into MCP discovery.' );
-	}
-
-	public function provide_expected_abilities(): array {
-		return [];
-	}
-
-	/**
-	 * Inject a canned `WP_REST_Response` via `rest_pre_dispatch` for the
-	 * expected route and assert the ability returns the unwrapped payload.
-	 * A mis-routed ability misses the filter and surfaces as an unexpected
-	 * `WP_Error`, caught by `assertIsArray` below.
-	 *
-	 * @dataProvider provide_execute_cases
-	 */
-	public function test_execute_callback_routes_to_expected_endpoint( string $method, $input, string $expected_route ): void {
-		$canned = [ 'data' => 'fake-success-' . $method ];
-		$filter = function ( $result, $server, $request ) use ( $expected_route, $canned ) {
-			if ( $request->get_route() === $expected_route ) {
-				return new \WP_REST_Response( $canned, 200 );
-			}
-			return $result;
-		};
-		add_filter( 'rest_pre_dispatch', $filter, 10, 3 );
-
-		try {
-			$result = AbilitiesRegistrar::$method( $input );
-		} finally {
-			remove_filter( 'rest_pre_dispatch', $filter, 10 );
-		}
-
-		$this->assertIsArray(
-			$result,
-			$method . ' must unwrap the WP_REST_Response into an array. Got: ' . ( is_wp_error( $result ) ? 'WP_Error(' . $result->get_error_code() . ')' : gettype( $result ) )
-		);
-		$this->assertSame(
-			$canned,
-			$result,
-			$method . ' must return the canned payload from the injected route ' . $expected_route . '. Mismatch indicates the ability routed to a different REST path than expected.'
-		);
-	}
-
-	public function provide_execute_cases(): array {
-		return [];
-	}
-
-	/**
 	 * Asserts the pagination/sort key translation reaches the dispatched
 	 * `WP_REST_Request`. A regression here would silently revert list
 	 * abilities to the controller's default page size / sort order.
@@ -271,22 +204,6 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertNotFalse(
 			has_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] )
 		);
-
-		remove_filter( self::FEATURE_FILTER, '__return_true' );
-	}
-
-	public function test_init_does_not_wire_filter_when_loader_absent(): void {
-		if ( class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
-			$this->markTestSkipped( 'AbilitiesLoader is present; covered by the loader-present test.' );
-		}
-
-		// Capture pre-init state.
-		$pre = has_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] );
-
-		add_filter( self::FEATURE_FILTER, '__return_true' );
-		AbilitiesRegistrar::init();
-
-		$this->assertSame( $pre, has_filter( 'woocommerce_ability_definition_classes', [ AbilitiesRegistrar::class, 'append_classes' ] ) );
 
 		remove_filter( self::FEATURE_FILTER, '__return_true' );
 	}
