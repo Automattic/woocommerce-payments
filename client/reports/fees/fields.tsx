@@ -12,7 +12,6 @@ import type { Field } from '@wordpress/dataviews';
  * Internal dependencies
  */
 import type { ReportsFee } from 'wcpay/data/reports/hooks';
-import ClickableCell from 'wcpay/components/clickable-cell';
 import { getDetailsURL } from 'wcpay/components/details-link';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { formatStringValue, getAdminUrl } from 'wcpay/utils';
@@ -59,11 +58,11 @@ export const getFeesFields = ( {
 			enableGlobalSearch: false,
 			getValue: ( { item }: { item: ReportsFee } ) => item.date,
 			render: ( { item }: { item: ReportsFee } ) => (
-				<ClickableCell href={ getTransactionURL( item ) }>
+				<>
 					{ formatDateTimeFromString( item.date, {
 						includeTime: true,
 					} ) }
-				</ClickableCell>
+				</>
 			),
 		},
 		{
@@ -87,11 +86,7 @@ export const getFeesFields = ( {
 				const label =
 					displayType[ item.type as keyof typeof displayType ] ||
 					formatStringValue( item.type );
-				return (
-					<ClickableCell href={ getTransactionURL( item ) }>
-						{ label }
-					</ClickableCell>
-				);
+				return <>{ label }</>;
 			},
 		},
 		{
@@ -107,26 +102,32 @@ export const getFeesFields = ( {
 					<>{ EMPTY }</>
 				),
 		},
+		// `transaction_id` is the single keyboard-reachable link per row so
+		// AT users get exactly one entry per row in the rotor/link list.
+		// Other cells render plain text — they are no longer wrapped in
+		// `ClickableCell`, which used `tabIndex="-1"` and therefore removed
+		// them from the tab order anyway.
 		{
 			id: 'transaction_id',
 			label: __( 'Transaction ID', 'woocommerce-payments' ),
 			enableHiding: false,
 			getValue: ( { item }: { item: ReportsFee } ) => item.transaction_id,
 			render: ( { item }: { item: ReportsFee } ) => (
-				<ClickableCell href={ getTransactionURL( item ) }>
+				<Link href={ getTransactionURL( item ) }>
 					{ item.transaction_id }
-				</ClickableCell>
+				</Link>
 			),
 		},
 		{
 			id: 'transaction_currency',
 			label: __( 'Currency', 'woocommerce-payments' ),
 			getValue: ( { item }: { item: ReportsFee } ) =>
-				item.transaction_currency.toUpperCase(),
+				( item.transaction_currency ?? '' ).toUpperCase(),
 			render: ( { item }: { item: ReportsFee } ) => (
-				<ClickableCell href={ getTransactionURL( item ) }>
-					{ item.transaction_currency.toUpperCase() }
-				</ClickableCell>
+				<>
+					{ ( item.transaction_currency ?? '' ).toUpperCase() ||
+						EMPTY }
+				</>
 			),
 		},
 		{
@@ -136,12 +137,12 @@ export const getFeesFields = ( {
 			enableSorting: true,
 			getValue: ( { item }: { item: ReportsFee } ) => item.amount,
 			render: ( { item }: { item: ReportsFee } ) => (
-				<ClickableCell href={ getTransactionURL( item ) }>
+				<>
 					{ formatExplicitCurrency(
 						item.amount,
 						item.deposit_currency
 					) }
-				</ClickableCell>
+				</>
 			),
 		},
 		{
@@ -151,12 +152,12 @@ export const getFeesFields = ( {
 			enableSorting: true,
 			getValue: ( { item }: { item: ReportsFee } ) => item.fees,
 			render: ( { item }: { item: ReportsFee } ) => (
-				<ClickableCell href={ getTransactionURL( item ) }>
+				<>
 					{ formatExplicitCurrency(
 						item.fees,
 						item.deposit_currency
 					) }
-				</ClickableCell>
+				</>
 			),
 		},
 		{

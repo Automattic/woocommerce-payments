@@ -12,17 +12,6 @@ import { render, screen } from '@testing-library/react';
 import { getFeesFields } from '../fields';
 import type { ReportsFee } from 'wcpay/data/reports/hooks';
 
-jest.mock( 'wcpay/components/clickable-cell', () => ( {
-	__esModule: true,
-	default: ( {
-		children,
-		href,
-	}: {
-		children: React.ReactNode;
-		href: string;
-	} ) => <a href={ href }>{ children }</a>,
-} ) );
-
 jest.mock( 'wcpay/components/details-link', () => ( {
 	getDetailsURL: jest.fn(
 		( id: string ) =>
@@ -102,13 +91,24 @@ const renderField = ( fieldId: string, row: ReportsFee ) => {
 };
 
 describe( 'getFeesFields render functions', () => {
-	it( 'renders the date column with a transaction link', () => {
-		renderField( 'date', baseRow );
+	it( 'renders the transaction_id column as the single keyboard-reachable link per row', () => {
+		renderField( 'transaction_id', baseRow );
 		const link = screen.getByRole( 'link' );
 		expect( link ).toHaveAttribute(
 			'href',
 			expect.stringContaining( 'transaction_id=txn_123' )
 		);
+		// No tabIndex="-1" — `transaction_id` is the one focusable link per
+		// row. The DOM should not expose this anchor with `tabIndex="-1"`.
+		expect( link ).not.toHaveAttribute( 'tabIndex', '-1' );
+	} );
+
+	it( 'renders the date column as plain text (not a link)', () => {
+		const { container } = renderField( 'date', baseRow );
+		expect( container.querySelector( 'a' ) ).toBeNull();
+		expect(
+			screen.getByText( 'formatted 2026-05-14T10:00:00Z' )
+		).toBeInTheDocument();
 	} );
 
 	it( 'renders the order_id column as a link to wc-orders when present', () => {
@@ -121,8 +121,9 @@ describe( 'getFeesFields render functions', () => {
 		expect( screen.getByText( '–' ) ).toBeInTheDocument();
 	} );
 
-	it( 'renders the amount column with explicit currency', () => {
-		renderField( 'amount', baseRow );
+	it( 'renders the amount column with explicit currency, no link wrapper', () => {
+		const { container } = renderField( 'amount', baseRow );
+		expect( container.querySelector( 'a' ) ).toBeNull();
 		expect( screen.getByText( /\$10\.00.*USD/ ) ).toBeInTheDocument();
 	} );
 
@@ -131,9 +132,29 @@ describe( 'getFeesFields render functions', () => {
 		expect( screen.getByText( 'USD' ) ).toBeInTheDocument();
 	} );
 
+	it( 'renders an em-dash when transaction_currency is missing', () => {
+		// Cast around the strict type — the REST contract says the field is
+		// always a string, but the render path must survive a null value.
+		renderField( 'transaction_currency', {
+			...baseRow,
+			transaction_currency: null as unknown as string,
+		} );
+		expect( screen.getByText( '–' ) ).toBeInTheDocument();
+	} );
+
 	it( 'renders deposit_date with em-dash fallback', () => {
 		renderField( 'deposit_date', { ...baseRow, deposit_date: null } );
 		expect( screen.getByText( '–' ) ).toBeInTheDocument();
+	} );
+
+	it( 'renders a formatted deposit_date when present', () => {
+		renderField( 'deposit_date', {
+			...baseRow,
+			deposit_date: '2026-06-01',
+		} );
+		expect(
+			screen.getByText( 'formatted 2026-06-01' )
+		).toBeInTheDocument();
 	} );
 } );
 
