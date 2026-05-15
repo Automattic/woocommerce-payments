@@ -75,7 +75,7 @@ class GetDispute implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Disputes_Controller::get_dispute()
 	 *
-	 * @param mixed $input Ability input. Must include `dispute_id`.
+	 * @param array{dispute_id: string} $input Ability input.
 	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {

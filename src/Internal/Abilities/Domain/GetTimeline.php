@@ -77,7 +77,7 @@ class GetTimeline implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Timeline_Controller::get_timeline()
 	 *
-	 * @param mixed $input Ability input. Must include `intention_id`.
+	 * @param array{intention_id: string} $input Ability input.
 	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {

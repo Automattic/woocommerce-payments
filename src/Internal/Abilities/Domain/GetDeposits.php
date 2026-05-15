@@ -101,7 +101,8 @@ class GetDeposits extends AbstractWCPayAbility implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Deposits_Controller::get_deposits()
 	 *
-	 * @param mixed $input Ability input.
+	 * @param array<string, mixed> $input Pagination + filter parameters. See
+	 *                                    `get_registration_args()` for shape.
 	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {

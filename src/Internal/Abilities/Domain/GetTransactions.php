@@ -123,7 +123,8 @@ class GetTransactions extends AbstractWCPayAbility implements AbilityDefinition 
 	 *
 	 * @see \WC_REST_Payments_Transactions_Controller::get_transactions()
 	 *
-	 * @param mixed $input Ability input.
+	 * @param array<string, mixed> $input Pagination + filter parameters. See
+	 *                                    `get_registration_args()` for shape.
 	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {

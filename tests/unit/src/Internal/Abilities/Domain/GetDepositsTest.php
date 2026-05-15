@@ -24,11 +24,11 @@ class GetDepositsTest extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_name() {
+	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-deposits', GetDeposits::get_name() );
 	}
 
-	public function test_registration_args_uses_paginated_input_and_envelope_output() {
+	public function test_registration_args_uses_paginated_input_and_envelope_output(): void {
 		$args = GetDeposits::get_registration_args();
 
 		// Pagination input properties from the base class.
@@ -49,7 +49,7 @@ class GetDepositsTest extends WCPAY_UnitTestCase {
 		$this->assertFalse( $args['output_schema']['additionalProperties'] );
 	}
 
-	public function test_registration_args_has_readonly_meta_and_correct_category() {
+	public function test_registration_args_has_readonly_meta_and_correct_category(): void {
 		$args = GetDeposits::get_registration_args();
 
 		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
@@ -62,11 +62,10 @@ class GetDepositsTest extends WCPAY_UnitTestCase {
 		$this->assertTrue( $args['meta']['mcp']['public'] );
 	}
 
-	public function test_registration_args_includes_filter_properties() {
+	public function test_registration_args_includes_filter_properties(): void {
 		$args       = GetDeposits::get_registration_args();
 		$properties = $args['input_schema']['properties'];
 
-		// Filter properties lifted from deposits_list_input_schema().
 		$this->assertArrayHasKey( 'match', $properties );
 		$this->assertArrayHasKey( 'store_currency_is', $properties );
 		$this->assertArrayHasKey( 'date_before', $properties );
@@ -78,7 +77,7 @@ class GetDepositsTest extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'order', $properties );
 	}
 
-	public function test_execute_defaults_page_and_per_page_when_input_is_empty() {
+	public function test_execute_defaults_page_and_per_page_when_input_is_empty(): void {
 		$fixture = [
 			'data'        => [ [ 'id' => 'po_1' ], [ 'id' => 'po_2' ] ],
 			'total_count' => 53,
@@ -106,7 +105,7 @@ class GetDepositsTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 3, $result['total_pages'] );
 	}
 
-	public function test_execute_uses_provided_pagination() {
+	public function test_execute_uses_provided_pagination(): void {
 		$fixture = [
 			'data'        => [ [ 'id' => 'po_x' ] ],
 			'total_count' => 100,
@@ -137,7 +136,7 @@ class GetDepositsTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 10, $result['total_pages'] );
 	}
 
-	public function test_execute_propagates_wp_error() {
+	public function test_execute_propagates_wp_error(): void {
 		$filter = function ( $result, $server, $request ) {
 			if ( $request->get_route() === '/wc/v3/payments/deposits' ) {
 				return new \WP_REST_Response(

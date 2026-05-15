@@ -24,11 +24,11 @@ class GetTransactionsSummaryTest extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_name() {
+	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-transactions-summary', GetTransactionsSummary::get_name() );
 	}
 
-	public function test_registration_args_shape() {
+	public function test_registration_args_shape(): void {
 		$args = GetTransactionsSummary::get_registration_args();
 
 		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
@@ -40,7 +40,7 @@ class GetTransactionsSummaryTest extends WCPAY_UnitTestCase {
 		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 	}
 
-	public function test_execute_delegates_to_transactions_summary_endpoint() {
+	public function test_execute_delegates_to_transactions_summary_endpoint(): void {
 		$canned = [
 			'count' => 42,
 			'total' => 9999,

@@ -80,7 +80,7 @@ class GetCharge implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Charges_Controller::get_charge()
 	 *
-	 * @param mixed $input Ability input. Must include `charge_id`.
+	 * @param array{charge_id: string} $input Ability input.
 	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {

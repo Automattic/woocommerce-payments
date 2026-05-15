@@ -24,11 +24,11 @@ class GetAccountTest extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_name() {
+	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-account', GetAccount::get_name() );
 	}
 
-	public function test_registration_args_shape() {
+	public function test_registration_args_shape(): void {
 		$args = GetAccount::get_registration_args();
 
 		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
@@ -40,7 +40,7 @@ class GetAccountTest extends WCPAY_UnitTestCase {
 		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 	}
 
-	public function test_execute_returns_wp_error_when_account_data_is_empty_array() {
+	public function test_execute_returns_wp_error_when_account_data_is_empty_array(): void {
 		// Simulate the init-failure path: WC_Payments_Account::get_cached_account_data()
 		// returns false on an API error, the controller wraps it via
 		// rest_ensure_response(false), and delegate_to_rest_controller() unwraps

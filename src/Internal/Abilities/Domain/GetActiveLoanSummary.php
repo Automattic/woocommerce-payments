@@ -69,9 +69,8 @@ class GetActiveLoanSummary implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Capital_Controller::get_active_loan_summary()
 	 *
-	 * @param mixed $input Unused (zero-arg ability); accepted to match the
-	 *                     Abilities API execute_callback signature.
-	 * @return array|\WP_Error Active loan summary array, or WP_Error on failure.
+	 * @param mixed $input Unused (zero-arg ability).
+	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {
 		return AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/capital/active_loan_summary' );

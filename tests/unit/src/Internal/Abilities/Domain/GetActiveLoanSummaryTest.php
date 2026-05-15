@@ -24,11 +24,11 @@ class GetActiveLoanSummaryTest extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_name() {
+	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-active-loan-summary', GetActiveLoanSummary::get_name() );
 	}
 
-	public function test_registration_args_shape() {
+	public function test_registration_args_shape(): void {
 		$args = GetActiveLoanSummary::get_registration_args();
 
 		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
@@ -40,7 +40,7 @@ class GetActiveLoanSummaryTest extends WCPAY_UnitTestCase {
 		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 	}
 
-	public function test_execute_delegates_to_active_loan_summary_endpoint() {
+	public function test_execute_delegates_to_active_loan_summary_endpoint(): void {
 		$canned = [ 'details' => [] ];
 		$filter = function ( $result, $server, $request ) use ( $canned ) {
 			if ( $request->get_route() === '/wc/v3/payments/capital/active_loan_summary' ) {

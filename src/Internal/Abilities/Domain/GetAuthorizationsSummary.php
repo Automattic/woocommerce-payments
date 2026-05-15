@@ -69,9 +69,8 @@ class GetAuthorizationsSummary implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Authorizations_Controller::get_authorizations_summary()
 	 *
-	 * @param mixed $input Unused (zero-arg ability); accepted to match the
-	 *                     Abilities API execute_callback signature.
-	 * @return array|\WP_Error Authorizations summary array, or WP_Error on failure.
+	 * @param mixed $input Unused (zero-arg ability).
+	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {
 		return AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/authorizations/summary' );

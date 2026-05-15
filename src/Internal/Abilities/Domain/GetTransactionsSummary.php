@@ -105,8 +105,9 @@ class GetTransactionsSummary implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Transactions_Controller::get_transactions_summary()
 	 *
-	 * @param mixed $input Ability input (filter parameters).
-	 * @return array|\WP_Error Transactions summary array, or WP_Error on failure.
+	 * @param array<string, mixed> $input Filter parameters. See
+	 *                                    `get_registration_args()` for shape.
+	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {
 		return AbilitiesRegistrar::delegate_to_rest_controller( 'GET', '/wc/v3/payments/transactions/summary', is_array( $input ) ? $input : [] );

@@ -81,7 +81,7 @@ class GetPaymentIntent implements AbilityDefinition {
 	 *
 	 * @see \WC_REST_Payments_Payment_Intents_Controller::get_payment_intent()
 	 *
-	 * @param mixed $input Ability input. Must include `payment_intent_id`.
+	 * @param array{payment_intent_id: string} $input Ability input.
 	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {

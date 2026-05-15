@@ -18,20 +18,19 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	const FEATURE_FILTER = 'woocommerce_payments_abilities_enabled';
 
 	/**
-	 * Tear down — reset filter, hooks, current user, and the registrar's
-	 * static idempotency flags so each test exercises a fresh registration
-	 * path. Note: the upstream WP_Abilities_Registry singleton holds onto
-	 * registrations across tests; assertions about ability presence are a
-	 * post-condition of any test in the suite, not of the test in isolation.
+	 * Reset filters, current user, and registrar state between tests. The
+	 * upstream WP_Abilities_Registry singleton keeps registrations across
+	 * tests, so ability-presence assertions are suite post-conditions, not
+	 * per-test.
 	 */
-	public function tear_down() {
+	public function tear_down(): void {
 		remove_all_filters( self::FEATURE_FILTER );
 		wp_set_current_user( 0 );
 		AbilitiesRegistrar::reset_for_testing();
 		parent::tear_down();
 	}
 
-	public function test_init_is_no_op_when_feature_flag_disabled() {
+	public function test_init_is_no_op_when_feature_flag_disabled(): void {
 		remove_all_filters( self::FEATURE_FILTER );
 
 		AbilitiesRegistrar::init();
@@ -45,7 +44,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_current_user_can_manage_woocommerce_matches_capability() {
+	public function test_current_user_can_manage_woocommerce_matches_capability(): void {
 		$subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
 		wp_set_current_user( $subscriber_id );
 		$this->assertFalse(
@@ -64,7 +63,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider provide_expected_abilities
 	 */
-	public function test_all_read_abilities_are_registered_with_read_only_shape( string $ability_name ) {
+	public function test_all_read_abilities_are_registered_with_read_only_shape( string $ability_name ): void {
 		if ( ! function_exists( 'wp_get_ability' ) || ! function_exists( 'wp_get_abilities' ) ) {
 			$this->markTestSkipped( 'Abilities API query functions not available in this WordPress version.' );
 		}
@@ -90,22 +89,16 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Exercise each ability's `execute_*` callback by injecting a canned
-	 * successful `WP_REST_Response` via `rest_pre_dispatch` for the expected
-	 * route, then assert the ability returns the unwrapped payload as an
-	 * array. This is a real behavioural test: a mis-wired route would fail
-	 * the injection and surface as an unexpected `WP_Error` from the real
-	 * REST router.
+	 * Inject a canned `WP_REST_Response` via `rest_pre_dispatch` for the
+	 * expected route and assert the ability returns the unwrapped payload.
+	 * A mis-routed ability misses the filter and surfaces as an unexpected
+	 * `WP_Error`, caught by `assertIsArray` below.
 	 *
 	 * @dataProvider provide_execute_cases
 	 */
-	public function test_execute_callback_routes_to_expected_endpoint( string $method, $input, string $expected_route ) {
+	public function test_execute_callback_routes_to_expected_endpoint( string $method, $input, string $expected_route ): void {
 		$canned = [ 'data' => 'fake-success-' . $method ];
 		$filter = function ( $result, $server, $request ) use ( $expected_route, $canned ) {
-			// Exact route match — a mis-routed ability (wrong path or wrong
-			// path suffix) would miss this filter and surface as an unexpected
-			// `WP_Error` from the real REST router, which the assertion below
-			// catches via `assertIsArray`.
 			if ( $request->get_route() === $expected_route ) {
 				return new \WP_REST_Response( $canned, 200 );
 			}
@@ -134,18 +127,12 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		return [];
 	}
 
-	public function test_delegate_translates_pagination_keys_at_request_layer() {
-		// PAGINATION_KEY_MAP maps the agent-facing WP-Core REST keys (`per_page`,
-		// `orderby`, `order`) to the names the WooPayments Paginated request
-		// class consumes (`pagesize`, `sort`, `direction`). This test asserts
-		// the translation actually reaches the WP_REST_Request — a regression
-		// in the boundary mapping would silently revert list abilities to the
-		// default 25 rows / created-desc regardless of caller input.
-		//
-		// Calls delegate_to_rest_controller() directly (the registrar helper
-		// that all list-ability Domain classes delegate through) so the test
-		// remains meaningful after execute_get_transactions() was removed in
-		// Phase 6 when get-transactions migrated to the Domain class.
+	/**
+	 * Asserts the pagination/sort key translation reaches the dispatched
+	 * `WP_REST_Request`. A regression here would silently revert list
+	 * abilities to the controller's default page size / sort order.
+	 */
+	public function test_delegate_translates_pagination_keys_at_request_layer(): void {
 		$captured = null;
 		$filter   = function ( $result, $server, $request ) use ( &$captured ) {
 			if ( $request->get_route() === '/wc/v3/payments/transactions' ) {
@@ -186,10 +173,11 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertNull( $captured['order'], 'order must be removed after translation.' );
 	}
 
-	public function test_delegate_preserves_canonical_key_when_caller_supplies_both() {
-		// When the caller supplies both the agent-facing key (`per_page`) and
-		// the canonical Paginated key (`pagesize`), the canonical value wins
-		// — silently overwriting an explicit `pagesize` would be a footgun.
+	/**
+	 * When the caller supplies both the agent-facing key (`per_page`) and
+	 * the canonical Paginated key (`pagesize`), the canonical value wins.
+	 */
+	public function test_delegate_preserves_canonical_key_when_caller_supplies_both(): void {
 		$captured = null;
 		$filter   = function ( $result, $server, $request ) use ( &$captured ) {
 			if ( $request->get_route() === '/wc/v3/payments/transactions' ) {
@@ -216,11 +204,12 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 99, $captured, 'When both `per_page` and `pagesize` are supplied, the canonical `pagesize` must win.' );
 	}
 
-	public function test_delegate_unwraps_successful_wp_rest_response() {
-		// rest_pre_dispatch fires before route dispatch and short-circuits the
-		// pipeline if it returns a non-null value. Returning a WP_REST_Response
-		// here exercises delegate_to_rest_controller's success-unwrap branch
-		// (`get_data()` + `is_array` check) without needing the platform API.
+	/**
+	 * Exercises the success-unwrap branch: a `WP_REST_Response` returned by
+	 * `rest_pre_dispatch` should reach `delegate_to_rest_controller()` and
+	 * be unwrapped to its data array.
+	 */
+	public function test_delegate_unwraps_successful_wp_rest_response(): void {
 		$filter = function ( $result, $server, $request ) {
 			if ( strpos( $request->get_route(), '/wc/v3/payments/transactions' ) === 0 ) {
 				return new \WP_REST_Response( [ 'data' => 'fake-success' ], 200 );
@@ -239,10 +228,11 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'data' => 'fake-success' ], $result );
 	}
 
-	public function test_delegate_returns_wp_error_for_error_wp_rest_response() {
-		// Returning an error-status WP_REST_Response exercises
-		// delegate_to_rest_controller's `$response->is_error()` →
-		// `$response->as_error()` branch.
+	/**
+	 * Error-status `WP_REST_Response` should be converted to `WP_Error` via
+	 * `is_error()` → `as_error()` so callers can use `is_wp_error()`.
+	 */
+	public function test_delegate_returns_wp_error_for_error_wp_rest_response(): void {
 		$filter = function ( $result, $server, $request ) {
 			if ( strpos( $request->get_route(), '/wc/v3/payments/transactions' ) === 0 ) {
 				return new \WP_REST_Response(
@@ -271,7 +261,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 	// Coordinator-level tests (Phase 8)
 	// -------------------------------------------------------------------------
 
-	public function test_init_wires_filter_when_loader_present_and_feature_enabled() {
+	public function test_init_wires_filter_when_loader_present_and_feature_enabled(): void {
 		if ( ! class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
 			$this->markTestSkipped( 'WooCommerce 10.9 AbilitiesLoader required.' );
 		}
@@ -286,7 +276,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		remove_filter( self::FEATURE_FILTER, '__return_true' );
 	}
 
-	public function test_init_does_not_wire_filter_when_loader_absent() {
+	public function test_init_does_not_wire_filter_when_loader_absent(): void {
 		if ( class_exists( '\\Automattic\\WooCommerce\\Internal\\Abilities\\AbilitiesLoader' ) ) {
 			$this->markTestSkipped( 'AbilitiesLoader is present; covered by the loader-present test.' );
 		}
@@ -302,7 +292,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		remove_filter( self::FEATURE_FILTER, '__return_true' );
 	}
 
-	public function test_append_classes_returns_all_ability_classes() {
+	public function test_append_classes_returns_all_ability_classes(): void {
 		$reflection = new \ReflectionClass( AbilitiesRegistrar::class );
 		$expected   = $reflection->getReflectionConstant( 'ABILITY_CLASSES' )->getValue();
 
@@ -319,7 +309,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		$this->assertCount( 16, $result );
 	}
 
-	public function test_every_ability_class_implements_ability_definition() {
+	public function test_every_ability_class_implements_ability_definition(): void {
 		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
 			$this->markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
 		}
@@ -336,7 +326,7 @@ class AbilitiesRegistrarTest extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_every_ability_class_has_a_well_formed_slug() {
+	public function test_every_ability_class_has_a_well_formed_slug(): void {
 		if ( ! interface_exists( '\\Automattic\\WooCommerce\\Abilities\\AbilityDefinition' ) ) {
 			$this->markTestSkipped( 'WooCommerce 10.9 AbilityDefinition interface required.' );
 		}

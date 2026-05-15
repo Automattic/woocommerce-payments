@@ -88,7 +88,8 @@ class GetAuthorizations extends AbstractWCPayAbility implements AbilityDefinitio
 	 *
 	 * @see \WC_REST_Payments_Authorizations_Controller::get_authorizations()
 	 *
-	 * @param mixed $input Ability input.
+	 * @param array<string, mixed> $input Pagination + filter parameters. See
+	 *                                    `get_registration_args()` for shape.
 	 * @return array|\WP_Error
 	 */
 	public static function execute( $input = null ) {

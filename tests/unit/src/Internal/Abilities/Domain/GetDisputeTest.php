@@ -23,11 +23,11 @@ class GetDisputeTest extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_name() {
+	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-dispute', GetDispute::get_name() );
 	}
 
-	public function test_registration_args_shape() {
+	public function test_registration_args_shape(): void {
 		$args = GetDispute::get_registration_args();
 
 		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
@@ -40,19 +40,19 @@ class GetDisputeTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'string', $args['input_schema']['properties']['dispute_id']['type'] );
 	}
 
-	public function test_execute_rejects_missing_id() {
+	public function test_execute_rejects_missing_id(): void {
 		$result = GetDispute::execute( [] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
 	}
 
-	public function test_execute_rejects_non_string_id() {
+	public function test_execute_rejects_non_string_id(): void {
 		$result = GetDispute::execute( [ 'dispute_id' => 123 ] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
 	}
 
-	public function test_execute_rejects_empty_string_id() {
+	public function test_execute_rejects_empty_string_id(): void {
 		$result = GetDispute::execute( [ 'dispute_id' => '' ] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );

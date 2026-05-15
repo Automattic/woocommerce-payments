@@ -24,11 +24,11 @@ class GetDepositsSummaryTest extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_name() {
+	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-deposits-summary', GetDepositsSummary::get_name() );
 	}
 
-	public function test_registration_args_shape() {
+	public function test_registration_args_shape(): void {
 		$args = GetDepositsSummary::get_registration_args();
 
 		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
@@ -40,7 +40,7 @@ class GetDepositsSummaryTest extends WCPAY_UnitTestCase {
 		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 	}
 
-	public function test_execute_delegates_to_deposits_summary_endpoint() {
+	public function test_execute_delegates_to_deposits_summary_endpoint(): void {
 		$canned = [
 			'count'    => 5,
 			'currency' => 'usd',

@@ -23,11 +23,11 @@ class GetChargeTest extends WCPAY_UnitTestCase {
 		}
 	}
 
-	public function test_name() {
+	public function test_name(): void {
 		$this->assertSame( 'woocommerce-payments/get-charge', GetCharge::get_name() );
 	}
 
-	public function test_registration_args_shape() {
+	public function test_registration_args_shape(): void {
 		$args = GetCharge::get_registration_args();
 
 		$this->assertSame( AbilitiesRegistrar::CATEGORY_SLUG, $args['category'] );
@@ -40,19 +40,19 @@ class GetChargeTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'string', $args['input_schema']['properties']['charge_id']['type'] );
 	}
 
-	public function test_execute_rejects_missing_id() {
+	public function test_execute_rejects_missing_id(): void {
 		$result = GetCharge::execute( [] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_charge_id', $result->get_error_code() );
 	}
 
-	public function test_execute_rejects_non_string_id() {
+	public function test_execute_rejects_non_string_id(): void {
 		$result = GetCharge::execute( [ 'charge_id' => 123 ] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_charge_id', $result->get_error_code() );
 	}
 
-	public function test_execute_rejects_empty_string_id() {
+	public function test_execute_rejects_empty_string_id(): void {
 		$result = GetCharge::execute( [ 'charge_id' => '' ] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_charge_id', $result->get_error_code() );
