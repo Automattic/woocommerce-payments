@@ -104,6 +104,7 @@
 		"@woocommerce/explat": "2.4.0",
 		"@woocommerce/number": "2.5.0",
 		"@woocommerce/onboarding": "3.6.0",
+		"@wordpress/dataviews": "4.15.4",
 		"canvas-confetti": "1.9.4",
 		"decimal.js-light": "2.5.1",
 		"intl-tel-input": "17.0.15",
