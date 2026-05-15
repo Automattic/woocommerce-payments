@@ -176,6 +176,10 @@ module.exports = {
 			requestToExternal( request ) {
 				switch ( request ) {
 					case '@wordpress/dataviews':
+						// Force-bundle: returning null prevents externalization
+						// to wp.dataviews, which would resolve against the host
+						// WP version (4.15.4 on WP 6.8, 10.x on 6.9, 14.x on
+						// 7.0+) and break the API contract our code expects.
 						return null;
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
