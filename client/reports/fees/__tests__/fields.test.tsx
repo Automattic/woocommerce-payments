@@ -1,0 +1,171 @@
+/** @format */
+
+/**
+ * External dependencies
+ */
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+
+/**
+ * Internal dependencies
+ */
+import { getFeesFields } from '../fields';
+import type { ReportsFee } from 'wcpay/data/reports/hooks';
+
+jest.mock( 'wcpay/components/clickable-cell', () => ( {
+	__esModule: true,
+	default: ( {
+		children,
+		href,
+	}: {
+		children: React.ReactNode;
+		href: string;
+	} ) => <a href={ href }>{ children }</a>,
+} ) );
+
+jest.mock( 'wcpay/components/details-link', () => ( {
+	getDetailsURL: jest.fn(
+		( id: string ) =>
+			`/admin.php?page=wc-admin&path=/payments/transactions/details&id=${ id }`
+	),
+} ) );
+
+jest.mock( 'wcpay/utils', () => ( {
+	formatStringValue: ( value: string ) => value,
+	getAdminUrl: ( args: Record< string, string | number > ) =>
+		`/admin.php?${ new URLSearchParams(
+			Object.entries( args ).map( ( [ key, value ] ) => [
+				key,
+				String( value ),
+			] )
+		).toString() }`,
+} ) );
+
+jest.mock( 'wcpay/utils/date-time', () => ( {
+	formatDateTimeFromString: ( value: string ) => `formatted ${ value }`,
+} ) );
+
+jest.mock( 'multi-currency/interface/functions', () => ( {
+	formatExplicitCurrency: ( amount: number, currency: string ) =>
+		`$${ ( amount / 100 ).toFixed( 2 ) } ${ currency.toUpperCase() }`,
+} ) );
+
+jest.mock( '@woocommerce/components', () => ( {
+	Link: ( {
+		children,
+		href,
+	}: {
+		children: React.ReactNode;
+		href: string;
+	} ) => <a href={ href }>{ children }</a>,
+} ) );
+
+jest.mock( './strings', () => ( {} ), { virtual: true } );
+
+jest.mock( '../strings', () => ( {
+	displayMethod: jest.fn( ( type: string ) =>
+		type ? `Method: ${ type }` : ''
+	),
+	displayType: {
+		charge: 'Charge',
+		payment: 'Payment',
+	},
+} ) );
+
+const baseRow: ReportsFee = {
+	transaction_id: 'txn_123',
+	date: '2026-05-14T10:00:00Z',
+	type: 'charge',
+	transaction_currency: 'usd',
+	amount: 1000,
+	deposit_currency: 'usd',
+	fees: 30,
+	order_id: 4567,
+	payment_method: { type: 'card' },
+	deposit_date: '2026-05-16',
+	deposit_id: 'po_abc',
+};
+
+const renderField = ( fieldId: string, row: ReportsFee ) => {
+	const field = getFeesFields( {
+		methodElements: [],
+		typeElements: [],
+	} ).find( ( f ) => f.id === fieldId );
+	if ( ! field || ! field.render ) {
+		throw new Error( `No render for ${ fieldId }` );
+	}
+	const Render = field.render as React.FC< {
+		item: ReportsFee;
+		field: typeof field;
+	} >;
+	return render( <Render item={ row } field={ field } /> );
+};
+
+describe( 'getFeesFields render functions', () => {
+	it( 'renders the date column with a transaction link', () => {
+		renderField( 'date', baseRow );
+		const link = screen.getByRole( 'link' );
+		expect( link ).toHaveAttribute(
+			'href',
+			expect.stringContaining( 'transaction_id=txn_123' )
+		);
+	} );
+
+	it( 'renders the order_id column as a link to wc-orders when present', () => {
+		renderField( 'order_id', baseRow );
+		expect( screen.getByRole( 'link' ) ).toHaveTextContent( '4567' );
+	} );
+
+	it( 'renders an em-dash when order_id is missing', () => {
+		renderField( 'order_id', { ...baseRow, order_id: null } );
+		expect( screen.getByText( '–' ) ).toBeInTheDocument();
+	} );
+
+	it( 'renders the amount column with explicit currency', () => {
+		renderField( 'amount', baseRow );
+		expect( screen.getByText( /\$10\.00.*USD/ ) ).toBeInTheDocument();
+	} );
+
+	it( 'renders the transaction_currency in uppercase', () => {
+		renderField( 'transaction_currency', baseRow );
+		expect( screen.getByText( 'USD' ) ).toBeInTheDocument();
+	} );
+
+	it( 'renders deposit_date with em-dash fallback', () => {
+		renderField( 'deposit_date', { ...baseRow, deposit_date: null } );
+		expect( screen.getByText( '–' ) ).toBeInTheDocument();
+	} );
+} );
+
+describe( 'getFeesFields field configuration', () => {
+	it( 'marks transaction_id as not hideable', () => {
+		const field = getFeesFields( {
+			methodElements: [],
+			typeElements: [],
+		} ).find( ( f ) => f.id === 'transaction_id' );
+		expect( field?.enableHiding ).toBe( false );
+	} );
+
+	it( 'marks date, amount, and fees as sortable', () => {
+		const fields = getFeesFields( {
+			methodElements: [],
+			typeElements: [],
+		} );
+		[ 'date', 'amount', 'fees' ].forEach( ( id ) => {
+			expect( fields.find( ( f ) => f.id === id )?.enableSorting ).toBe(
+				true
+			);
+		} );
+	} );
+
+	it( 'wires payment_method elements from input', () => {
+		const fields = getFeesFields( {
+			methodElements: [ { value: 'card', label: 'Card' } ],
+			typeElements: [],
+		} );
+		const field = fields.find( ( f ) => f.id === 'payment_method' );
+		expect( field?.elements ).toEqual( [
+			{ value: 'card', label: 'Card' },
+		] );
+	} );
+} );
