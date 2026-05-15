@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
@@ -46,7 +46,10 @@ export const FeesReport = ( {
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );
 
-	const fields = getFeesFields( { methodElements, typeElements } );
+	const fields = useMemo(
+		() => getFeesFields( { methodElements, typeElements } ),
+		[ methodElements, typeElements ]
+	);
 	const hasError = Object.keys( error ).length > 0;
 
 	if ( hasError ) {

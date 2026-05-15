@@ -19,7 +19,7 @@ import { formatStringValue, getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { displayMethod, displayType } from './strings';
 
-export const EMPTY = '–';
+const EMPTY = '–';
 
 interface FilterElement {
 	value: string;

@@ -27,19 +27,17 @@ export const defaultVisibleFields: FeesFieldId[] = [
 	'fees',
 ];
 
-export const requiredFields: FeesFieldId[] = [ 'transaction_id' ];
-
 export const defaultPerPage = 25;
 
 /**
  * Subset of the View object that we persist to user_meta. Sort/page/search/filters
  * live in the URL; only layout-ish state goes to user_meta so a user's preferred
  * column set and density survive across sessions without polluting bookmarks.
+ * Density is stored inside `layout`, not at the top level.
  */
 export interface PersistedFeesView {
 	fields: FeesFieldId[];
 	layout?: ViewTable[ 'layout' ];
-	density?: 'compact' | 'comfortable';
 	perPage?: number;
 }
 
