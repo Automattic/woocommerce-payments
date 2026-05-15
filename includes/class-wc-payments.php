@@ -1058,6 +1058,7 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
+				'wc_payments_reports_fees_view',
 
 				// WooPayments review prompt user preferences.
 				'wc_payments_review_prompt_dismissed',
