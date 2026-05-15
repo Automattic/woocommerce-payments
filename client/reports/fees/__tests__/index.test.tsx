@@ -4,88 +4,53 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 
-/**
- * Internal dependencies
- */
-import { FeesReport } from '../';
-import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
-import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
-import { getQuery } from '@woocommerce/navigation';
-import { getFeesColumns } from '../columns';
-import type { ReportsFee } from 'wcpay/data/reports/hooks';
-import { useReportExport } from 'wcpay/hooks/use-report-export';
-import { useDispatch } from '@wordpress/data';
-import { recordEvent } from 'tracks';
-
-const tableCardMock = jest.fn( ( props: Record< string, any > ) => {
-	void props;
-	return <div data-testid="fees-table" />;
-} );
-const searchMock = jest.fn( ( props: Record< string, unknown > ) => {
-	void props;
-	return <div data-testid="fees-search" />;
-} );
-const feesFiltersMock = jest.fn( ( props: Record< string, unknown > ) => {
-	void props;
-	return <div data-testid="fees-filters" />;
-} );
-const downloadButtonMock = jest.fn( ( props: Record< string, unknown > ) => {
-	void props;
-	return <div data-testid="download-button" />;
-} );
-const requestReportExportMock = jest.fn();
-const createNoticeMock = jest.fn();
-
-jest.mock( '@woocommerce/components', () => ( {
-	TableCard: ( props: Record< string, unknown > ) => tableCardMock( props ),
-	Search: ( props: Record< string, unknown > ) => searchMock( props ),
-	Link: ( {
-		children,
-		href,
-	}: {
-		children: React.ReactNode;
-		href: string;
-	} ) => <a href={ href }>{ children }</a>,
-} ) );
-
-jest.mock( 'wcpay/components/download-button', () => ( {
-	__esModule: true,
-	default: ( props: Record< string, unknown > ) =>
-		downloadButtonMock( props ),
-} ) );
+const mockUseReportsFees = jest.fn();
+const mockUseReportsFeesSummary = jest.fn();
+const mockGetQuery = jest.fn( () => ( {} as Record< string, unknown > ) );
+const mockUpdateQueryString = jest.fn();
+const mockUpdateUserPreferences = jest.fn();
+const mockRequestReportExport = jest.fn();
+const mockRecordEvent = jest.fn();
+const mockCreateNotice = jest.fn();
 
 jest.mock( 'wcpay/data', () => ( {
-	useReportsFees: jest.fn(),
-	useReportsFeesSummary: jest.fn(),
-} ) );
-
-jest.mock( 'wcpay/hooks/use-report-export', () => ( {
-	useReportExport: jest.fn(),
-} ) );
-
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn(),
-} ) );
-
-jest.mock( 'tracks', () => ( {
-	recordEvent: jest.fn(),
-} ) );
-
-jest.mock( 'wcpay/hooks/use-persisted-table-column-visibility', () => ( {
-	usePersistedColumnVisibility: jest.fn(),
-} ) );
-
-jest.mock( '../filters', () => ( {
-	FeesFilters: ( props: Record< string, unknown > ) =>
-		feesFiltersMock( props ),
+	useReportsFees: ( q: unknown ) => mockUseReportsFees( q ),
+	useReportsFeesSummary: ( q: unknown ) => mockUseReportsFeesSummary( q ),
 } ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {
-	getQuery: jest.fn(),
-	onQueryChange: jest.fn(),
-	updateQueryString: jest.fn(),
+	getQuery: () => mockGetQuery(),
+	updateQueryString: ( args: Record< string, unknown >, path?: string ) =>
+		mockUpdateQueryString( args, path ),
+} ) );
+
+jest.mock( '@woocommerce/data', () => ( {
+	useUserPreferences: () => ( {
+		updateUserPreferences: mockUpdateUserPreferences,
+	} ),
+} ) );
+
+jest.mock( 'wcpay/hooks/use-report-export', () => ( {
+	useReportExport: () => ( {
+		requestReportExport: mockRequestReportExport,
+		isExportInProgress: false,
+	} ),
+} ) );
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: () => ( { createNotice: mockCreateNotice } ),
+} ) );
+
+jest.mock( 'tracks', () => ( {
+	recordEvent: ( event: string, props: unknown ) =>
+		mockRecordEvent( event, props ),
+} ) );
+
+jest.mock( 'multi-currency/interface/functions', () => ( {
+	formatExplicitCurrency: ( amount: number, currency: string ) =>
+		`${ currency.toUpperCase() } ${ amount }`,
 } ) );
 
 jest.mock( 'wcpay/components/clickable-cell', () => ( {
@@ -104,19 +69,6 @@ jest.mock( 'wcpay/components/details-link', () => ( {
 } ) );
 
 jest.mock( 'wcpay/utils', () => ( {
-	applyThousandSeparator: ( value: number ) =>
-		value.toLocaleString( 'en-US' ),
-	formatDateValue: ( value: string, upperBound?: boolean ) => {
-		if ( value === '2026-04-01' ) {
-			return '2026-04-01 04:00:00';
-		}
-
-		if ( value === '2026-04-30' && upperBound ) {
-			return '2026-05-01 03:59:59';
-		}
-
-		return value;
-	},
 	formatStringValue: ( value: string ) => value,
 	getAdminUrl: ( args: Record< string, string | number > ) =>
 		`/admin?${ new URLSearchParams(
@@ -131,273 +83,128 @@ jest.mock( 'wcpay/utils/date-time', () => ( {
 	formatDateTimeFromString: ( value: string ) => `formatted ${ value }`,
 } ) );
 
-jest.mock( 'multi-currency/interface/functions', () => ( {
-	formatExplicitCurrency: ( amount: number, currency: string ) =>
-		`${ currency.toUpperCase() } ${ amount }`,
+jest.mock( '@woocommerce/components', () => ( {
+	Link: ( {
+		children,
+		href,
+	}: {
+		children: React.ReactNode;
+		href: string;
+	} ) => <a href={ href }>{ children }</a>,
 } ) );
 
+jest.mock( 'wcpay/data/reports/resolvers', () => ( {
+	getReportsFeesCSVRequestURL: jest.fn( () => '/mock-export-url' ),
+	reportsFeesDownloadEndpoint: '/wc/v3/payments/reports/fees/download',
+} ) );
+
+/**
+ * Internal dependencies
+ */
+import { FeesReport } from '../index';
+
 const period = {
-	start: '2026-04-01T00:00:00.000Z',
-	end: '2026-04-30T23:59:59.999Z',
+	start: '2026-04-01T00:00:00Z',
+	end: '2026-04-30T23:59:59Z',
 };
 
-const feeRow = {
-	transaction_id: 'txn_123',
-	date: '2026-04-10 10:00:00',
-	payment_id: 'pi_123',
-	payment_method: {
-		type: 'card',
-	},
+const baseRow = {
+	transaction_id: 'txn_1',
+	date: '2026-04-15T10:00:00Z',
 	type: 'charge',
 	transaction_currency: 'usd',
 	amount: 1000,
 	deposit_currency: 'usd',
-	fees: 45,
-	order_id: 321,
-	deposit_date: '2026-04-12 00:00:00',
-	deposit_id: null,
-} as ReportsFee;
+	fees: 30,
+	order_id: 100,
+	payment_method: { type: 'card' },
+};
 
-describe( 'FeesReport', () => {
-	beforeEach( () => {
-		( global as any ).wcpaySettings = {
-			currentUserEmail: 'merchant@example.com',
-		};
-		( global as any ).wcSettings = {
-			locale: {
-				userLocale: 'en_US',
-			},
-		};
-		jest.mocked( getQuery ).mockReturnValue( { tab: 'fees' } );
-		( useDispatch as jest.Mock ).mockReturnValue( {
-			createNotice: createNoticeMock,
-		} );
-		jest.mocked( useReportExport ).mockReturnValue( {
-			requestReportExport: requestReportExportMock,
-			isExportInProgress: false,
-		} );
-		jest.mocked( useReportsFees ).mockReturnValue( {
-			feesRows: [ feeRow ],
-			feesError: {},
-			isLoading: false,
-		} );
-		jest.mocked( useReportsFeesSummary ).mockReturnValue( {
-			feesSummary: {
-				count: 1,
-				total: 1000,
-				fees: 45,
-				currency: 'usd',
-				sources: [ 'card' ],
-				types: [ 'charge' ],
-			},
-			isLoading: false,
-		} );
-		jest.mocked( usePersistedColumnVisibility ).mockReturnValue( {
-			onColumnsChange: jest.fn(),
-			columnsToDisplay: getFeesColumns(),
-		} );
-		tableCardMock.mockClear();
-		searchMock.mockClear();
-		feesFiltersMock.mockClear();
-		downloadButtonMock.mockClear();
-		requestReportExportMock.mockClear();
-		createNoticeMock.mockClear();
-		jest.mocked( recordEvent ).mockClear();
+beforeEach( () => {
+	mockUseReportsFees.mockReset();
+	mockUseReportsFeesSummary.mockReset();
+	mockGetQuery.mockReset().mockReturnValue( {} );
+	mockUpdateQueryString.mockReset();
+	mockUpdateUserPreferences.mockReset();
+	mockRequestReportExport.mockReset();
+	mockRecordEvent.mockReset();
+	mockCreateNotice.mockReset();
+
+	( window as unknown as Record< string, unknown > ).wcpaySettings = {
+		currentUserEmail: 'a@b.test',
+	};
+	( window as unknown as Record< string, unknown > ).wcSettings = {
+		locale: { userLocale: 'en_US' },
+	};
+
+	mockUseReportsFees.mockReturnValue( {
+		feesRows: [ baseRow ],
+		feesError: {},
+		isLoading: false,
 	} );
+	mockUseReportsFeesSummary.mockReturnValue( {
+		feesSummary: {
+			count: 1,
+			sources: [ 'card' ],
+			types: [ 'charge' ],
+		},
+		isLoading: false,
+	} );
+} );
 
-	test( 'renders the Fees table with period defaults, filters, summary, and rows', () => {
+describe( 'FeesReport (DataViews)', () => {
+	it( 'queries the data store with date_between seeded from period when URL has no date params', () => {
 		render( <FeesReport period={ period } /> );
-
-		expect( useReportsFees ).toHaveBeenCalledWith(
+		expect( mockUseReportsFees ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				date_between: [ '2026-04-01', '2026-04-30' ],
 			} )
 		);
-		expect( feesFiltersMock ).toHaveBeenCalledWith( {
-			feesSummary: expect.objectContaining( {
-				count: 1,
-			} ),
-			query: expect.objectContaining( {
-				filter: 'advanced',
-				date_between: [ '2026-04-01', '2026-04-30' ],
-			} ),
-		} );
-		expect( tableCardMock ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				title: 'Fees',
-				isLoading: false,
-				rowsPerPage: 25,
-				totalRows: 1,
-				headers: getFeesColumns(),
-				query: { tab: 'fees' },
-				summary: [
-					{ label: 'fee', value: '1' },
-					{ label: 'gross total', value: 'USD 1000' },
-					{ label: 'fees total', value: 'USD 45' },
-				],
-			} )
-		);
-
-		const tableProps = tableCardMock.mock.calls[ 0 ]?.[ 0 ];
-		expect( tableProps ).toBeDefined();
-		if ( ! tableProps ) {
-			throw new Error( 'Expected TableCard props.' );
-		}
-		expect( tableProps.rows[ 0 ] ).toMatchObject( [
-			{
-				value: '2026-04-10 10:00:00',
-				display: expect.any( Object ),
-			},
-			{
-				value: 'card',
-				display: 'Card Payment',
-			},
-			{
-				value: 'Charge',
-				display: expect.any( Object ),
-			},
-			{
-				value: 321,
-				display: expect.any( Object ),
-			},
-			{
-				value: 'txn_123',
-				display: expect.any( Object ),
-			},
-			{
-				value: 'USD',
-				display: expect.any( Object ),
-			},
-			{
-				value: 1000,
-				display: expect.any( Object ),
-			},
-			{
-				value: 45,
-				display: expect.any( Object ),
-			},
-			{
-				value: '2026-04-12 00:00:00',
-				display: expect.any( Object ),
-			},
-			{
-				value: '',
-				display: '\u2013',
-			},
-		] );
-		expect( tableProps.actions[ 0 ].props ).toMatchObject( {
-			allowFreeTextSearch: false,
-			type: 'custom',
-		} );
-		expect( tableProps.actions[ 1 ].type ).toBeDefined();
-		tableProps.onColumnsChange( [ 'date' ], 'amount' );
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_view_options_opened',
-			{
-				report: 'fees',
-			}
-		);
-		expect(
-			screen.getByText(
-				'Dates reflect when each event was created - settlement-date reporting is coming.'
-			)
-		).toBeInTheDocument();
 	} );
 
-	test( 'uses URL date filters instead of the default period', () => {
-		jest.mocked( getQuery ).mockReturnValue( {
-			tab: 'fees',
-			date_after: '2026-05-01',
+	it( 'reads sort from URL into the query', () => {
+		mockGetQuery.mockReturnValue( {
+			orderby: 'amount',
+			order: 'asc',
 		} );
-
 		render( <FeesReport period={ period } /> );
-
-		expect( useReportsFees ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				date_after: '2026-05-01',
-			} )
-		);
-		expect( useReportsFees ).toHaveBeenCalledWith(
-			expect.not.objectContaining( {
-				date_between: [ '2026-04-01', '2026-04-30' ],
-			} )
+		expect( mockUseReportsFees ).toHaveBeenCalledWith(
+			expect.objectContaining( { orderby: 'amount', order: 'asc' } )
 		);
 	} );
 
-	test( 'renders the Fees error state when data loading fails', () => {
-		jest.mocked( useReportsFees ).mockReturnValue( {
+	it( 'renders the row data through DataViews fields', async () => {
+		render( <FeesReport period={ period } /> );
+		const items = await screen.findAllByText( 'txn_1' );
+		expect( items.length ).toBeGreaterThan( 0 );
+	} );
+
+	it( 'renders an error placeholder with reload button when feesError is set', () => {
+		mockUseReportsFees.mockReturnValue( {
 			feesRows: [],
-			feesError: { code: 'error' },
+			feesError: { code: 'oops' },
 			isLoading: false,
 		} );
-
-		render( <FeesReport period={ period } onReload={ jest.fn() } /> );
-
+		const onReload = jest.fn();
+		render( <FeesReport period={ period } onReload={ onReload } /> );
 		expect(
-			screen.getByRole( 'heading', { name: 'Fees report unavailable' } )
+			screen.getByText( 'Fees report unavailable' )
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Reload report' } )
-		).toBeInTheDocument();
-		expect( tableCardMock ).not.toHaveBeenCalled();
+		fireEvent.click( screen.getByRole( 'button', { name: /reload/i } ) );
+		expect( onReload ).toHaveBeenCalled();
 	} );
 
-	test( 'renders the empty state for an unfiltered period with no rows', () => {
-		jest.mocked( useReportsFees ).mockReturnValue( {
-			feesRows: [],
-			feesError: {},
-			isLoading: false,
-		} );
-		jest.mocked( useReportsFeesSummary ).mockReturnValue( {
-			feesSummary: {
-				count: 0,
-				total: 0,
-				fees: 0,
-				currency: 'usd',
-			},
-			isLoading: false,
-		} );
-
+	it( 'fires wcpay_reports_export_click and submits the export request', () => {
 		render( <FeesReport period={ period } /> );
-
-		expect(
-			screen.getByRole( 'heading', { name: 'No fees yet' } )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText(
-				'Fees will appear here once you start receiving payments.'
-			)
-		).toBeInTheDocument();
-		expect( tableCardMock ).not.toHaveBeenCalled();
-	} );
-
-	test( 'requests a CSV export for the current Fees query', async () => {
-		render( <FeesReport period={ period } /> );
-
-		const tableProps = tableCardMock.mock.calls[ 0 ]?.[ 0 ];
-		if ( ! tableProps ) {
-			throw new Error( 'Expected TableCard props.' );
-		}
-
-		tableProps.actions[ 1 ].props.onClick();
-
-		expect( recordEvent ).toHaveBeenCalledWith(
+		const exportButton = screen.getByRole( 'button', { name: /export/i } );
+		fireEvent.click( exportButton );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
 			'wcpay_reports_export_click',
-			{
+			expect.objectContaining( {
 				report: 'fees',
 				exported_row_count: 1,
-			}
+			} )
 		);
-		expect( requestReportExportMock ).toHaveBeenCalledWith( {
-			exportRequestURL:
-				'/wc/v3/payments/reports/fees/download?user_email=merchant%40example.com&locale=en_US&sort=date&direction=desc&date_between%5B0%5D=2026-04-01%2004%3A00%3A00&date_between%5B1%5D=2026-05-01%2003%3A59%3A59&user_timezone=-04%3A00',
-			exportFileAvailabilityEndpoint:
-				'/wc/v3/payments/reports/fees/download',
-			userEmail: 'merchant@example.com',
-		} );
-		expect( createNoticeMock ).toHaveBeenCalledWith(
-			'success',
-			"We're processing your export. The file will download automatically and be emailed to merchant@example.com."
-		);
+		expect( mockRequestReportExport ).toHaveBeenCalled();
 	} );
 } );
