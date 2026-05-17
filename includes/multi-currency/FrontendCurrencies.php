@@ -140,11 +140,18 @@ class FrontendCurrencies {
 	/**
 	 * Removes 'min_price' and 'max_price' from the URL query parameters.
 	 *
-	 * Clears existing price filters when the currency is changed to prevent inconsistencies.
+	 * Clears existing price filters when the currency is changed to prevent inconsistencies
+	 * during browser navigation. REST requests are excluded because redirecting a Store API
+	 * call (e.g. `/wp-json/wc/store/v1/products?currency=EUR&min_price=...`) would strip the
+	 * caller's filter bounds and break programmatic clients.
 	 *
 	 * @return void
 	 */
 	public function clear_url_price_params() {
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return;
+		}
+
 		if ( isset( $_GET['min_price'] ) || isset( $_GET['max_price'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$url = remove_query_arg( [ 'min_price', 'max_price' ] );
 

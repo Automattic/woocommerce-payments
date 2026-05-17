@@ -476,4 +476,38 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$this->assertEquals( 10.00, $return );
 		$this->assertEquals( null, $this->frontend_currencies->get_order_currency() );
 	}
+
+	/**
+	 * REST clients (e.g. the WC Store API) must not be redirected when the currency
+	 * is switched; a 302 would strip filter bounds from the URL and break the response.
+	 *
+	 * Placed last because `define( 'REST_REQUEST', true )` cannot be undone within
+	 * a PHP process and would leak into any subsequent test in this file.
+	 */
+	public function test_clear_url_price_params_is_noop_on_rest_request() {
+		if ( ! defined( 'REST_REQUEST' ) ) {
+			define( 'REST_REQUEST', true );
+		}
+
+		$_GET['min_price'] = '10';
+		$_GET['max_price'] = '50';
+
+		// If the guard fails, `wp_safe_redirect()` runs followed by `exit;`. Hook the
+		// `wp_redirect` filter to throw so the redirect attempt surfaces as a test
+		// failure instead of terminating the PHPUnit process.
+		add_filter(
+			'wp_redirect',
+			function ( $location ) {
+				throw new Exception( 'Unexpected redirect during REST request to: ' . $location );
+			}
+		);
+
+		try {
+			$this->frontend_currencies->clear_url_price_params();
+			$this->addToAssertionCount( 1 );
+		} finally {
+			remove_all_filters( 'wp_redirect' );
+			unset( $_GET['min_price'], $_GET['max_price'] );
+		}
+	}
 }
