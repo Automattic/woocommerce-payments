@@ -141,14 +141,19 @@ class FrontendCurrencies {
 	 * Removes 'min_price' and 'max_price' from the URL query parameters.
 	 *
 	 * Clears existing price filters when the currency is changed to prevent inconsistencies
-	 * during browser navigation. REST requests are excluded because redirecting a Store API
-	 * call (e.g. `/wp-json/wc/store/v1/products?currency=EUR&min_price=...`) would strip the
-	 * caller's filter bounds and break programmatic clients.
+	 * during browser navigation. REST requests (including the WC Store API) are excluded
+	 * because redirecting a `/wp-json/wc/store/v1/products?currency=EUR&min_price=...` call
+	 * would strip the caller's filter bounds and break programmatic clients.
+	 *
+	 * Detection is URL-based via `WC()->is_rest_api_request()` rather than the `REST_REQUEST`
+	 * constant: this method is invoked from `MultiCurrency::update_selected_currency_by_url()`
+	 * on `init:11`, but `REST_REQUEST` is only defined later on `parse_request` by
+	 * `rest_api_loaded()` — a constant check here would always evaluate false on REST requests.
 	 *
 	 * @return void
 	 */
 	public function clear_url_price_params() {
-		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+		if ( function_exists( 'WC' ) && WC()->is_rest_api_request() ) {
 			return;
 		}
 

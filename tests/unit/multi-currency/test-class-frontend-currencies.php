@@ -481,16 +481,17 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 	 * REST clients (e.g. the WC Store API) must not be redirected when the currency
 	 * is switched; a 302 would strip filter bounds from the URL and break the response.
 	 *
-	 * Placed last because `define( 'REST_REQUEST', true )` cannot be undone within
-	 * a PHP process and would leak into any subsequent test in this file.
+	 * Sets `$_SERVER['REQUEST_URI']` to a Store API path so `WC()->is_rest_api_request()`
+	 * detects the REST context the same way it would in production at `init:11`. The
+	 * earlier version of this test defined `REST_REQUEST` manually, which simulated a
+	 * state that never exists when the bug actually fires (the constant isn't defined
+	 * until `parse_request`, several hooks later).
 	 */
 	public function test_clear_url_price_params_is_noop_on_rest_request() {
-		if ( ! defined( 'REST_REQUEST' ) ) {
-			define( 'REST_REQUEST', true );
-		}
-
-		$_GET['min_price'] = '10';
-		$_GET['max_price'] = '50';
+		$original_request_uri   = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc/store/v1/products?currency=EUR&min_price=10&max_price=50';
+		$_GET['min_price']      = '10';
+		$_GET['max_price']      = '50';
 
 		// If the guard fails, `wp_safe_redirect()` runs followed by `exit;`. Hook the
 		// `wp_redirect` filter to throw so the redirect attempt surfaces as a test
@@ -508,6 +509,11 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		} finally {
 			remove_all_filters( 'wp_redirect' );
 			unset( $_GET['min_price'], $_GET['max_price'] );
+			if ( null === $original_request_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_request_uri;
+			}
 		}
 	}
 }
