@@ -85,30 +85,34 @@
 		justify-content: flex-end;
 	}
 
-	// Date filter renders as a sibling of DataViews and is visually pulled
-	// into the DataViews "view-actions" row (search + filter toggle + gear).
-	// We sit on the LEFT of that row, opposite the search input. The chip
-	// is absolutely positioned against `__main` (relatively positioned) so
-	// it aligns to the same row regardless of DataViews internals.
-	&__main {
-		position: relative;
+	// Hide the funnel "Filter" toggle. Our anchor field (see fees/fields.tsx
+	// `dateFilterAnchorFieldId`) makes the chip row always-visible by
+	// design, so the toggle no longer has a useful job — and leaving it in
+	// would let the user collapse the row and lose access to the Date chip.
+	.dataviews-filters__container-visibility-toggle {
+		display: none;
 	}
 
-	&__date-filter {
-		position: absolute;
-		top: 16px;
-		left: 48px;
-		z-index: 1;
-		display: flex;
+	// Hide the anchor field's chip. The anchor is the only `isPrimary` filter
+	// we register; DataViews' `useFilters` sorts primary filters first, so the
+	// anchor's `<Dropdown>` wrapper (`.components-dropdown`) is always the
+	// FIRST child of the container. Method/Type chips, when added, sit after
+	// it (non-primary), and our portal target lives at the tail of DOM order
+	// while `order: -1` floats it to the visual front. We can't target the
+	// chip by its text content: `normalizeFields` falls back to `field.id`
+	// when `field.label` is empty, so the rendered chip text is the non-empty
+	// anchor id and `:empty` doesn't match.
+	.dataviews-filters__container > .components-dropdown:first-child {
+		display: none;
+	}
+
+	// The portal target lives at the END of the HStack (React reconciliation
+	// is more tolerant of foreign nodes at the tail). `order: -1` floats it
+	// to the visual front of the row, before any DataViews chip.
+	.dataviews-filters__container > .wcpay-date-filter-portal-target {
+		order: -1;
+		display: inline-flex;
 		align-items: center;
-		min-height: 32px;
-	}
-
-	@media ( max-width: 600px ) {
-		&__date-filter {
-			top: 12px;
-			left: 24px;
-		}
 	}
 }
 

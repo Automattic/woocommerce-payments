@@ -30,6 +30,12 @@ interface GetFeesFieldsArgs {
 	typeElements: FilterElement[];
 }
 
+// Sentinel id for the invisible primary-filter anchor that keeps DataViews'
+// chip row rendered even when the user hasn't added Method/Type yet. The
+// real <DateFilter> is portalled into the row in its place. See fees/index.tsx
+// and reports/style.scss (`.dataviews-filters__summary-chip:empty`).
+export const dateFilterAnchorFieldId = '_wcpay_date_filter_anchor';
+
 const getTransactionURL = ( row: ReportsFee ): string => {
 	const detailsURL = getDetailsURL(
 		row.payment_id || row.transaction_id,
@@ -50,6 +56,22 @@ export const getFeesFields = ( {
 	typeElements,
 }: GetFeesFieldsArgs ): Field< ReportsFee >[] =>
 	[
+		// Invisible anchor: forces DataViews' filter row to mount (because a
+		// primary filter is always `isVisible: true`) so we can portal the real
+		// `<DateFilter>` into `.dataviews-filters__container`. The chip itself
+		// is hidden via `.dataviews-filters__summary-chip:empty` since `label`
+		// is empty; it's also excluded from the column toggle and from the
+		// "Add filter" menu (already-visible primary filters never list there).
+		{
+			id: dateFilterAnchorFieldId,
+			label: '',
+			enableHiding: false,
+			enableSorting: false,
+			enableGlobalSearch: false,
+			elements: [ { value: '__anchor__', label: '__anchor__' } ],
+			filterBy: { isPrimary: true, operators: [ 'is' ] },
+			getValue: () => '',
+		},
 		{
 			id: 'date',
 			label: __( 'Date & time', 'woocommerce-payments' ),
