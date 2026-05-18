@@ -18,10 +18,10 @@ export type FeesFieldId =
 
 const defaultVisibleFields: FeesFieldId[] = [
 	'date',
+	'transaction_id',
 	'payment_method',
 	'type',
 	'order_id',
-	'transaction_id',
 	'transaction_currency',
 	'amount',
 	'fees',
@@ -49,6 +49,5 @@ export const getDefaultFeesView = (): View => ( {
 	perPage: defaultPerPage,
 	sort: { field: 'date', direction: 'desc' },
 	fields: defaultVisibleFields,
-	titleField: 'transaction_id',
 	layout: {},
 } );

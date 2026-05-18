@@ -76,6 +76,7 @@ export const FeesReport = ( {
 		rows,
 		totalItems,
 		totalPages,
+		dateElements,
 		methodElements,
 		typeElements,
 		isLoading,
@@ -85,8 +86,8 @@ export const FeesReport = ( {
 	const { createNotice } = useDispatch( 'core/notices' );
 
 	const fields = useMemo(
-		() => getFeesFields( { methodElements, typeElements } ),
-		[ methodElements, typeElements ]
+		() => getFeesFields( { dateElements, methodElements, typeElements } ),
+		[ dateElements, methodElements, typeElements ]
 	);
 	const hasError = Object.keys( error ).length > 0;
 	const hasFilters = ( view.filters ?? [] ).length > 0 || !! view.search;
@@ -184,7 +185,6 @@ export const FeesReport = ( {
 		const userEmail = wcpaySettings.currentUserEmail;
 		const locale = wcSettings.locale.userLocale;
 		const exportRequestURL = getReportsFeesCSVRequestURL( {
-			match: feesQuery.match,
 			dateBefore: feesQuery.date_before,
 			dateAfter: feesQuery.date_after,
 			dateBetween: feesQuery.date_between,
@@ -256,12 +256,6 @@ export const FeesReport = ( {
 				) }
 				getItemId={ ( item ) => item.transaction_id }
 			/>
-			<p className="wcpay-reports-fees__date-basis-note">
-				{ __(
-					'Dates reflect when each event was created - settlement-date reporting is coming.',
-					'woocommerce-payments'
-				) }
-			</p>
 		</div>
 	);
 };

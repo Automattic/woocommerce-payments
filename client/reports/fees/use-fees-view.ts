@@ -46,14 +46,22 @@ const buildFiltersFromQuery = (
 ): Filter[] => {
 	const filters: Filter[] = [];
 
-	for ( const [ key, op ] of Object.entries( dateOperatorByQueryKey ) ) {
-		if ( query[ key ] ) {
-			filters.push( {
-				field: 'date',
-				operator: op as Filter[ 'operator' ],
-				value: query[ key ] as string | string[],
-			} );
-			break;
+	if ( query.date_preset ) {
+		filters.push( {
+			field: 'date',
+			operator: 'is',
+			value: query.date_preset as string,
+		} );
+	} else {
+		for ( const [ key, op ] of Object.entries( dateOperatorByQueryKey ) ) {
+			if ( query[ key ] ) {
+				filters.push( {
+					field: 'date',
+					operator: op as Filter[ 'operator' ],
+					value: query[ key ] as string | string[],
+				} );
+				break;
+			}
 		}
 	}
 
@@ -97,13 +105,16 @@ const buildFilterQueryParams = (
 		date_between: undefined,
 		date_before: undefined,
 		date_after: undefined,
+		date_preset: undefined,
 		payment_method_type: undefined,
 		type: undefined,
 	};
 
 	for ( const filter of filters ) {
 		const op = filter.operator as string;
-		if ( filter.field === 'date' && op in queryKeyByDateOperator ) {
+		if ( filter.field === 'date' && op === 'is' ) {
+			params.date_preset = filter.value;
+		} else if ( filter.field === 'date' && op in queryKeyByDateOperator ) {
 			params[ queryKeyByDateOperator[ op as DateOperator ] ] =
 				filter.value;
 		} else if ( filter.field === 'payment_method' ) {
@@ -171,7 +182,7 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 		} );
 	}, [ hasLoadedPersisted, persisted, prefs, updateUserPreferences ] );
 
-	const view: View = useMemo< ViewTable >( () => {
+	const derivedView: View = useMemo< ViewTable >( () => {
 		const query = getQuery() as Record< string, unknown >;
 		const defaultView = getDefaultFeesView() as ViewTable;
 		return {
@@ -193,10 +204,35 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 			filters: buildFiltersFromQuery( query ),
 			layout: persisted?.layout ?? defaultView.layout,
 		};
-		// navTick forces re-derive when the URL changes (popstate or our own
-		// pushState writes) even though it isn't referenced in the body above.
+		// navTick forces re-derive when the URL changes externally (popstate).
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ persisted, navTick ] );
+
+	// Hold the view in local React state so DataViews can stage in-progress
+	// filters (a method/type filter is added before its value is picked — the
+	// chip needs to live on the page long enough for the user to pick a value
+	// from the popover). The URL is the source of truth for *applied* filters,
+	// but it can't represent a value-less filter chip, so URL-only derivation
+	// would erase the chip on the very next render.
+	const [ localView, setLocalView ] = useState< View >( derivedView );
+
+	// Re-seed local state only on external triggers: a popstate (which bumps
+	// navTick) or the first time persisted user_meta loads. Our own setView
+	// writes call `updateUserPreferences`, which changes `persisted` and thus
+	// the `derivedView` identity — but we must NOT resync from that, otherwise
+	// a value-less filter chip we just staged in local state gets erased on
+	// the same render.
+	const lastNavTickRef = useRef( navTick );
+	const wasLoadedRef = useRef( hasLoadedPersisted );
+	useEffect( () => {
+		const navChanged = lastNavTickRef.current !== navTick;
+		const justLoaded = ! wasLoadedRef.current && hasLoadedPersisted;
+		if ( navChanged || justLoaded ) {
+			lastNavTickRef.current = navTick;
+			wasLoadedRef.current = hasLoadedPersisted;
+			setLocalView( derivedView );
+		}
+	}, [ navTick, hasLoadedPersisted, derivedView ] );
 
 	// Search input REST fan-out is kept in check by DataViews 4.15.4's
 	// internal search-input debounce. If we ever pin a DataViews version that
@@ -205,6 +241,8 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 	// stale in-flight requests with an AbortController.
 	const setView = useCallback(
 		( next: View ) => {
+			setLocalView( next );
+
 			const filterParams = buildFilterQueryParams( next.filters ?? [] );
 			const search = next.search ? [ next.search ] : undefined;
 
@@ -219,12 +257,6 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 				},
 				reportsPath
 			);
-
-			// `updateQueryString` only mutates history; nothing else in this
-			// component subscribes to `pushstate`. Force the view memo to
-			// re-read `getQuery()` on the next render so URL-only changes
-			// (page, sort, search, filters) become visible.
-			bumpNavTick();
 
 			const nextPersisted: PersistedFeesView = {
 				fields: ( next.fields ?? [] ) as FeesFieldId[],
@@ -244,8 +276,10 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 				} );
 			}
 		},
-		[ bumpNavTick, hasLoadedPersisted, persisted, updateUserPreferences ]
+		[ hasLoadedPersisted, persisted, updateUserPreferences ]
 	);
+
+	const view = localView;
 
 	return [ view, setView ];
 };

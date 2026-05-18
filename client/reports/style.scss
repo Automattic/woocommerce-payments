@@ -1,6 +1,9 @@
 /** @format */
 
+@import '@wordpress/dataviews/build-style/style.css';
+
 .wcpay-reports-page {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	width: 100%;
@@ -49,6 +52,38 @@
 		color: $gray-700;
 		font-size: 13px;
 		line-height: 20px;
+	}
+}
+
+.wcpay-reports-fees {
+	background: #fff;
+	border: 1px solid $gray-200;
+	border-radius: 4px;
+	padding: $gap-large;
+	box-shadow: 0 1px 0 rgba( 0, 0, 0, 0.04 );
+
+	// Lift the Export button into the page-header strip — out of the card,
+	// above the tab row, aligned to the right of the page. Positioning is
+	// anchored to `.wcpay-reports-page` (which sets `position: relative`),
+	// matching the Figma layout where Export sits at page level, not card
+	// level.
+	&__toolbar {
+		position: absolute;
+		top: $gap-large;
+		right: $gap-large;
+		z-index: 2;
+		display: flex;
+		align-items: center;
+		margin: 0;
+	}
+
+	// Pin the DataViews view-actions (gear / view options) to the right of
+	// the toolbar row so the layout reads as:
+	//   [search] [filters] ........................... [view options]
+	// 4.15.4 doesn't justify this by default — the row defaults to flex-start
+	// which leaves the gear hugging the search input.
+	.dataviews-wrapper > .dataviews__view-actions {
+		justify-content: flex-end;
 	}
 }
 

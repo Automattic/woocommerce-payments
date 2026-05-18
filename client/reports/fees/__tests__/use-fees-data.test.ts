@@ -51,11 +51,11 @@ describe( 'buildFeesQuery', () => {
 		} );
 	} );
 
-	it( 'seeds date_between from period when no date filter is set', () => {
-		expect( buildFeesQuery( baseView(), period ).date_between ).toEqual( [
-			'2026-04-01',
-			'2026-04-30',
-		] );
+	it( 'omits date params when no date filter is set', () => {
+		const result = buildFeesQuery( baseView(), period );
+		expect( result.date_between ).toBeUndefined();
+		expect( result.date_before ).toBeUndefined();
+		expect( result.date_after ).toBeUndefined();
 	} );
 
 	it( 'maps a date "between" filter to date_between and omits period seeding', () => {
@@ -105,7 +105,7 @@ describe( 'buildFeesQuery', () => {
 		expect( result.payment_method_type ).toBe( 'card' );
 	} );
 
-	it( 'maps type filter (isAny array)', () => {
+	it( 'maps type filter (isAny array) as a comma-separated string', () => {
 		const result = buildFeesQuery(
 			baseView( {
 				filters: [
@@ -118,7 +118,7 @@ describe( 'buildFeesQuery', () => {
 			} ),
 			period
 		);
-		expect( result.type ).toEqual( [ 'charge', 'refund' ] );
+		expect( result.type ).toBe( 'charge,refund' );
 	} );
 
 	it( 'wraps search as a single-element array', () => {
@@ -131,21 +131,23 @@ describe( 'buildFeesQuery', () => {
 		expect( buildFeesQuery( baseView(), period ).search ).toBeUndefined();
 	} );
 
-	it( 'sets match=advanced when any non-date filter is active', () => {
-		expect(
-			buildFeesQuery(
-				baseView( {
-					filters: [
-						{
-							field: 'payment_method',
-							operator: 'is',
-							value: 'card',
-						},
-					],
-				} ),
-				period
-			).match
-		).toBe( 'advanced' );
+	it( 'resolves a date "is" preset filter to date_between', () => {
+		const now = new Date( '2026-05-18T00:00:00Z' );
+		jest.useFakeTimers().setSystemTime( now );
+		const result = buildFeesQuery(
+			baseView( {
+				filters: [
+					{
+						field: 'date',
+						operator: 'is',
+						value: 'this_month',
+					},
+				],
+			} ),
+			period
+		);
+		expect( result.date_between ).toEqual( [ '2026-05-01', '2026-05-18' ] );
+		jest.useRealTimers();
 	} );
 } );
 

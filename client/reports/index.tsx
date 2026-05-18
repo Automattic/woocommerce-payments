@@ -12,7 +12,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import Page from 'components/page';
 import { ReportsHeader } from './header';
-import { getLastFullCalendarMonthUTC } from './period-selector';
+import { getCurrentCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
 import { useReportsTabReload } from './hooks';
 import type { ReportsTab, ReportsTabStatus } from './types';
@@ -35,7 +35,7 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 	const tabPanelWrapperRef = useRef< HTMLDivElement >( null );
 	const previousActiveTabRef = useRef< ReportsTab >( activeTab );
 	const period = useMemo(
-		() => getLastFullCalendarMonthUTC( now ?? new Date() ),
+		() => getCurrentCalendarMonthUTC( now ?? new Date() ),
 		[ now ]
 	);
 	const currentTabStatus = tabStatus ?? 'ready';

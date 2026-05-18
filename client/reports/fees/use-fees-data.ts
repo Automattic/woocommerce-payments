@@ -14,13 +14,30 @@ import type { ReportsFee } from 'wcpay/data/reports/hooks';
 import { formatStringValue } from 'wcpay/utils';
 import type { ReportsPeriodRange } from '../period-selector';
 import { displayMethod, displayType } from './strings';
+import { getFeesDatePresetElements, resolveDatePreset } from './date-presets';
+
+// Default fee-bearing transaction types, mirroring DEFAULT_FEE_BEARING_TYPES in
+// the PHP controller. The summary endpoint exposes `sources` (payment methods
+// seen in the active range) but not `types`, so we hard-code them here. DataViews
+// won't show a field in the "Add filter" menu unless `elements` is non-empty.
+const feeBearingTypes: ReadonlyArray< string > = [
+	'charge',
+	'payment',
+	'payment_failure_refund',
+	'payment_refund',
+	'refund',
+	'refund_failure',
+	'dispute',
+	'dispute_reversal',
+	'fee_refund',
+	'network_costs',
+];
 
 interface FeesQuery {
 	paged?: string;
 	per_page?: string;
 	orderby?: string;
 	order?: 'asc' | 'desc';
-	match?: 'all' | 'advanced';
 	date_before?: string;
 	date_after?: string;
 	date_between?: string[];
@@ -34,26 +51,24 @@ const findFilter = (
 	field: string
 ): Filter | undefined => filters?.find( ( f ) => f.field === field );
 
-const periodToDateBetween = ( period: ReportsPeriodRange ): string[] => [
-	period.start.slice( 0, 10 ),
-	period.end.slice( 0, 10 ),
-];
-
 /**
- * Build a REST query for the Fees endpoint from the DataViews `view` and the
- * report `period`. `period` supplies the date range when `view` carries no
- * explicit date filter — without it, the query falls back to the endpoint's
- * default (potentially all-time) window.
+ * Build a REST query for the Fees endpoint from the DataViews `view`. When no
+ * date filter is active the query carries no date bounds, so the endpoint
+ * returns all available fees.
  *
  * NOTE: The previous TableCard implementation accepted `order_id`,
  * `deposit_id`, and `customer_email` filter params, which the PHP controller
  * still honours. They are intentionally not surfaced from the DataViews UI in
- * this PR; a follow-up will add purpose-built filter chips for them
- * (tracked alongside the deferred in-UI date filter chip — RSM-2125).
+ * this PR; a follow-up will add purpose-built filter chips for them.
+ *
+ * The `period` argument is retained on the signature so callers don't need to
+ * change yet, but it no longer affects the query — date filtering is driven
+ * entirely by the in-table Date filter chip (preset-based).
  */
 export const buildFeesQuery = (
 	view: View,
-	period: ReportsPeriodRange
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	period?: ReportsPeriodRange
 ): FeesQuery => {
 	const query: FeesQuery = {
 		paged: String( view.page ?? 1 ),
@@ -63,38 +78,46 @@ export const buildFeesQuery = (
 	};
 
 	const dateFilter = findFilter( view.filters, 'date' );
-	if ( dateFilter ) {
+	if ( dateFilter && dateFilter.value ) {
 		const op = dateFilter.operator as string;
-		if ( op === 'between' ) {
+		if ( op === 'is' ) {
+			const range = resolveDatePreset( dateFilter.value );
+			if ( range ) {
+				query.date_between = range;
+			}
+		} else if ( op === 'between' ) {
 			query.date_between = dateFilter.value as string[];
 		} else if ( op === 'before' ) {
 			query.date_before = dateFilter.value as string;
 		} else if ( op === 'after' ) {
 			query.date_after = dateFilter.value as string;
 		}
-	} else {
-		query.date_between = periodToDateBetween( period );
 	}
 
 	const methodFilter = findFilter( view.filters, 'payment_method' );
-	if ( methodFilter ) {
+	if ( methodFilter && methodFilter.value ) {
 		query.payment_method_type = methodFilter.value as string;
 	}
 
 	const typeFilter = findFilter( view.filters, 'type' );
-	if ( typeFilter ) {
-		query.type = typeFilter.value as string | string[];
+	if ( typeFilter && typeFilter.value ) {
+		// The Type filter is multi-select (`isAny`), but the REST controller
+		// declares `type` as a single string in its schema; sending `type[]=…`
+		// triggers a 400 (`rest_invalid_param`). The PHP handler accepts a
+		// comma-separated string and splits it into `type_is_in`, so we join
+		// the array client-side. Single selection is sent as a plain string.
+		const value = typeFilter.value;
+		if ( Array.isArray( value ) ) {
+			if ( value.length > 0 ) {
+				query.type = value.join( ',' );
+			}
+		} else {
+			query.type = value as string;
+		}
 	}
 
 	if ( view.search ) {
 		query.search = [ view.search ];
-	}
-
-	const hasNonDateFilter = ( view.filters || [] ).some(
-		( f ) => f.field !== 'date'
-	);
-	if ( hasNonDateFilter ) {
-		query.match = 'advanced';
 	}
 
 	return query;
@@ -105,6 +128,7 @@ interface UseFeesDataResult {
 	rows: ReportsFee[];
 	totalItems: number;
 	totalPages: number;
+	dateElements: Array< { value: string; label: string } >;
 	methodElements: Array< { value: string; label: string } >;
 	typeElements: Array< { value: string; label: string } >;
 	isLoading: boolean;
@@ -112,22 +136,26 @@ interface UseFeesDataResult {
 }
 
 const buildMethodElements = (
-	sources: string[]
+	sources: Array< string | null >
 ): Array< { value: string; label: string } > =>
-	sources.map( ( source ) => ( {
-		value: source,
-		label: displayMethod( source ) || source,
-	} ) );
+	sources
+		.filter( ( source ): source is string => Boolean( source ) )
+		.map( ( source ) => ( {
+			value: source,
+			label: displayMethod( source ) || source,
+		} ) );
 
 const buildTypeElements = (
-	types: string[]
+	types: Array< string | null >
 ): Array< { value: string; label: string } > =>
-	types.map( ( type ) => ( {
-		value: type,
-		label:
-			displayType[ type as keyof typeof displayType ] ||
-			formatStringValue( type ),
-	} ) );
+	types
+		.filter( ( type ): type is string => Boolean( type ) )
+		.map( ( type ) => ( {
+			value: type,
+			label:
+				displayType[ type as keyof typeof displayType ] ||
+				formatStringValue( type ),
+		} ) );
 
 export const useFeesData = (
 	view: View,
@@ -146,23 +174,23 @@ export const useFeesData = (
 	const totalPages = Math.max( 1, Math.ceil( totalItems / perPage ) );
 
 	const sources = feesSummary.sources ?? [];
-	const types = feesSummary.types ?? [];
 	const methodElements = useMemo(
 		() => buildMethodElements( sources ),
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[ sources.join( '|' ) ]
 	);
 	const typeElements = useMemo(
-		() => buildTypeElements( types ),
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ types.join( '|' ) ]
+		() => buildTypeElements( [ ...feeBearingTypes ] ),
+		[]
 	);
+	const dateElements = useMemo( () => getFeesDatePresetElements(), [] );
 
 	return {
 		feesQuery,
 		rows: feesRows,
 		totalItems,
 		totalPages,
+		dateElements,
 		methodElements,
 		typeElements,
 		isLoading: isLoading || isSummaryLoading,
