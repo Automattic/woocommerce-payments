@@ -1,8 +1,9 @@
 /** @format */
 
-import type { View, Operator } from '@wordpress/dataviews';
+import type { View } from '@wordpress/dataviews';
 import { renderHook } from '@testing-library/react-hooks';
 import type { ReportsPeriodRange } from '../../period-selector';
+import type { DateFilterValue } from 'wcpay/reports/date-filter';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
@@ -41,6 +42,7 @@ describe( 'buildFeesQuery', () => {
 					perPage: 50,
 					sort: { field: 'fees', direction: 'asc' },
 				} ),
+				undefined,
 				period
 			)
 		).toMatchObject( {
@@ -52,44 +54,51 @@ describe( 'buildFeesQuery', () => {
 	} );
 
 	it( 'omits date params when no date filter is set', () => {
-		const result = buildFeesQuery( baseView(), period );
+		const result = buildFeesQuery( baseView(), undefined, period );
 		expect( result.date_between ).toBeUndefined();
 		expect( result.date_before ).toBeUndefined();
 		expect( result.date_after ).toBeUndefined();
 	} );
 
-	it( 'maps a date "between" filter to date_between and omits period seeding', () => {
-		const result = buildFeesQuery(
-			baseView( {
-				filters: [
-					{
-						field: 'date',
-						operator: 'between' as Operator,
-						value: [ '2026-03-01', '2026-03-31' ],
-					},
-				],
-			} ),
-			period
-		);
+	it( 'maps a date "between" filter to date_between', () => {
+		const dateFilter: DateFilterValue = {
+			operator: 'between',
+			value: [ '2026-03-01', '2026-03-31' ],
+		};
+		const result = buildFeesQuery( baseView(), dateFilter, period );
 		expect( result.date_between ).toEqual( [ '2026-03-01', '2026-03-31' ] );
 		expect( result.date_before ).toBeUndefined();
 		expect( result.date_after ).toBeUndefined();
 	} );
 
+	it( 'maps a date "on" filter to a same-day date_between', () => {
+		const dateFilter: DateFilterValue = {
+			operator: 'on',
+			value: '2026-05-18',
+		};
+		const result = buildFeesQuery( baseView(), dateFilter, period );
+		expect( result.date_between ).toEqual( [ '2026-05-18', '2026-05-18' ] );
+		expect( result.date_before ).toBeUndefined();
+		expect( result.date_after ).toBeUndefined();
+	} );
+
 	it( 'maps a date "before" filter to date_before', () => {
-		const result = buildFeesQuery(
-			baseView( {
-				filters: [
-					{
-						field: 'date',
-						operator: 'before' as Operator,
-						value: '2026-03-31',
-					},
-				],
-			} ),
-			period
-		);
+		const dateFilter: DateFilterValue = {
+			operator: 'before',
+			value: '2026-03-31',
+		};
+		const result = buildFeesQuery( baseView(), dateFilter, period );
 		expect( result.date_before ).toBe( '2026-03-31' );
+		expect( result.date_between ).toBeUndefined();
+	} );
+
+	it( 'maps a date "after" filter to date_after', () => {
+		const dateFilter: DateFilterValue = {
+			operator: 'after',
+			value: '2026-01-01',
+		};
+		const result = buildFeesQuery( baseView(), dateFilter, period );
+		expect( result.date_after ).toBe( '2026-01-01' );
 		expect( result.date_between ).toBeUndefined();
 	} );
 
@@ -100,6 +109,7 @@ describe( 'buildFeesQuery', () => {
 					{ field: 'payment_method', operator: 'is', value: 'card' },
 				],
 			} ),
+			undefined,
 			period
 		);
 		expect( result.payment_method_type ).toBe( 'card' );
@@ -116,6 +126,7 @@ describe( 'buildFeesQuery', () => {
 					},
 				],
 			} ),
+			undefined,
 			period
 		);
 		expect( result.type ).toBe( 'charge,refund' );
@@ -123,31 +134,18 @@ describe( 'buildFeesQuery', () => {
 
 	it( 'wraps search as a single-element array', () => {
 		expect(
-			buildFeesQuery( baseView( { search: 'txn_abc' } ), period ).search
+			buildFeesQuery(
+				baseView( { search: 'txn_abc' } ),
+				undefined,
+				period
+			).search
 		).toEqual( [ 'txn_abc' ] );
 	} );
 
 	it( 'omits search when empty', () => {
-		expect( buildFeesQuery( baseView(), period ).search ).toBeUndefined();
-	} );
-
-	it( 'resolves a date "is" preset filter to date_between', () => {
-		const now = new Date( '2026-05-18T00:00:00Z' );
-		jest.useFakeTimers().setSystemTime( now );
-		const result = buildFeesQuery(
-			baseView( {
-				filters: [
-					{
-						field: 'date',
-						operator: 'is',
-						value: 'this_month',
-					},
-				],
-			} ),
-			period
-		);
-		expect( result.date_between ).toEqual( [ '2026-05-01', '2026-05-18' ] );
-		jest.useRealTimers();
+		expect(
+			buildFeesQuery( baseView(), undefined, period ).search
+		).toBeUndefined();
 	} );
 } );
 
@@ -173,7 +171,7 @@ describe( 'useFeesData', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useFeesData( baseView( { perPage: 20 } ), period )
+			useFeesData( baseView( { perPage: 20 } ), undefined, period )
 		);
 
 		expect( result.current.totalItems ).toBe( 47 );
@@ -182,7 +180,7 @@ describe( 'useFeesData', () => {
 
 	it( 'returns at least 1 totalPages even when the summary is empty', () => {
 		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
+			useFeesData( baseView(), undefined, period )
 		);
 
 		expect( result.current.totalPages ).toBe( 1 );
@@ -199,7 +197,7 @@ describe( 'useFeesData', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
+			useFeesData( baseView(), undefined, period )
 		);
 
 		// `displayMethod` returns the localized title for known methods and
@@ -221,7 +219,7 @@ describe( 'useFeesData', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
+			useFeesData( baseView(), undefined, period )
 		);
 
 		const charge = result.current.typeElements.find(
@@ -243,7 +241,7 @@ describe( 'useFeesData', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
+			useFeesData( baseView(), undefined, period )
 		);
 
 		expect( result.current.isLoading ).toBe( true );
@@ -257,7 +255,7 @@ describe( 'useFeesData', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
+			useFeesData( baseView(), undefined, period )
 		);
 
 		expect( result.current.error ).toEqual( { code: 'rest_forbidden' } );
@@ -271,7 +269,7 @@ describe( 'useFeesData', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useFeesData( baseView( { search: 'txn_abc' } ), period )
+			useFeesData( baseView( { search: 'txn_abc' } ), undefined, period )
 		);
 
 		expect( result.current.feesQuery.search ).toEqual( [ 'txn_abc' ] );

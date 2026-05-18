@@ -75,20 +75,22 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
-	it( 'reads date_between into a date filter', () => {
+	it( 'does not emit a date filter into view.filters', () => {
+		// Date filtering moved out of view.filters into a dedicated hook
+		// (`useFeesDateFilter`). useFeesView should ignore date_* URL keys
+		// so DataViews never sees a stray date filter chip it can't render.
 		mockGetQuery.mockReturnValue( {
 			date_between: [ '2026-03-01', '2026-03-31' ],
+			date_before: '2026-04-30',
+			date_after: '2026-01-01',
+			date_preset: 'this_month',
 		} );
 		const { result } = renderHook( () => useFeesView() );
-		expect( result.current[ 0 ].filters ).toEqual(
-			expect.arrayContaining( [
-				{
-					field: 'date',
-					operator: 'between',
-					value: [ '2026-03-01', '2026-03-31' ],
-				},
-			] )
-		);
+		expect(
+			( result.current[ 0 ].filters ?? [] ).some(
+				( f ) => f.field === 'date'
+			)
+		).toBe( false );
 	} );
 
 	it( 'reads fields from user_meta', () => {

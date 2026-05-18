@@ -26,7 +26,6 @@ interface FilterElement {
 }
 
 interface GetFeesFieldsArgs {
-	dateElements: FilterElement[];
 	methodElements: FilterElement[];
 	typeElements: FilterElement[];
 }
@@ -47,7 +46,6 @@ const getOrderURL = ( orderId: ReportsFee[ 'order_id' ] ): string =>
 	} );
 
 export const getFeesFields = ( {
-	dateElements,
 	methodElements,
 	typeElements,
 }: GetFeesFieldsArgs ): Field< ReportsFee >[] =>
@@ -57,8 +55,6 @@ export const getFeesFields = ( {
 			label: __( 'Date & time', 'woocommerce-payments' ),
 			enableSorting: true,
 			enableGlobalSearch: false,
-			elements: dateElements,
-			filterBy: { operators: [ 'is' ] },
 			getValue: ( { item }: { item: ReportsFee } ) => item.date,
 			render: ( { item }: { item: ReportsFee } ) => (
 				<>

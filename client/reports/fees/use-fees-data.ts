@@ -12,9 +12,9 @@ import type { View, Filter } from '@wordpress/dataviews';
 import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
 import type { ReportsFee } from 'wcpay/data/reports/hooks';
 import { formatStringValue } from 'wcpay/utils';
+import type { DateFilterValue } from 'wcpay/reports/date-filter';
 import type { ReportsPeriodRange } from '../period-selector';
 import { displayMethod, displayType } from './strings';
-import { getFeesDatePresetElements, resolveDatePreset } from './date-presets';
 
 // Default fee-bearing transaction types, mirroring DEFAULT_FEE_BEARING_TYPES in
 // the PHP controller. The summary endpoint exposes `sources` (payment methods
@@ -52,9 +52,9 @@ const findFilter = (
 ): Filter | undefined => filters?.find( ( f ) => f.field === field );
 
 /**
- * Build a REST query for the Fees endpoint from the DataViews `view`. When no
- * date filter is active the query carries no date bounds, so the endpoint
- * returns all available fees.
+ * Build a REST query for the Fees endpoint from the DataViews `view` and the
+ * standalone date filter. When no date filter is active the query carries no
+ * date bounds, so the endpoint returns all available fees.
  *
  * NOTE: The previous TableCard implementation accepted `order_id`,
  * `deposit_id`, and `customer_email` filter params, which the PHP controller
@@ -63,10 +63,11 @@ const findFilter = (
  *
  * The `period` argument is retained on the signature so callers don't need to
  * change yet, but it no longer affects the query — date filtering is driven
- * entirely by the in-table Date filter chip (preset-based).
+ * entirely by the standalone Date filter component.
  */
 export const buildFeesQuery = (
 	view: View,
+	dateFilter: DateFilterValue | undefined,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	period?: ReportsPeriodRange
 ): FeesQuery => {
@@ -77,20 +78,20 @@ export const buildFeesQuery = (
 		order: ( view.sort?.direction as 'asc' | 'desc' ) || 'desc',
 	};
 
-	const dateFilter = findFilter( view.filters, 'date' );
-	if ( dateFilter && dateFilter.value ) {
-		const op = dateFilter.operator as string;
-		if ( op === 'is' ) {
-			const range = resolveDatePreset( dateFilter.value );
-			if ( range ) {
-				query.date_between = range;
-			}
-		} else if ( op === 'between' ) {
-			query.date_between = dateFilter.value as string[];
-		} else if ( op === 'before' ) {
-			query.date_before = dateFilter.value as string;
-		} else if ( op === 'after' ) {
-			query.date_after = dateFilter.value as string;
+	if ( dateFilter ) {
+		switch ( dateFilter.operator ) {
+			case 'on':
+				query.date_between = [ dateFilter.value, dateFilter.value ];
+				break;
+			case 'between':
+				query.date_between = dateFilter.value;
+				break;
+			case 'before':
+				query.date_before = dateFilter.value;
+				break;
+			case 'after':
+				query.date_after = dateFilter.value;
+				break;
 		}
 	}
 
@@ -128,7 +129,6 @@ interface UseFeesDataResult {
 	rows: ReportsFee[];
 	totalItems: number;
 	totalPages: number;
-	dateElements: Array< { value: string; label: string } >;
 	methodElements: Array< { value: string; label: string } >;
 	typeElements: Array< { value: string; label: string } >;
 	isLoading: boolean;
@@ -159,11 +159,12 @@ const buildTypeElements = (
 
 export const useFeesData = (
 	view: View,
+	dateFilter: DateFilterValue | undefined,
 	period: ReportsPeriodRange
 ): UseFeesDataResult => {
 	const feesQuery = useMemo(
-		() => buildFeesQuery( view, period ),
-		[ view, period ]
+		() => buildFeesQuery( view, dateFilter, period ),
+		[ view, dateFilter, period ]
 	);
 	const { feesRows, feesError = {}, isLoading } = useReportsFees( feesQuery );
 	const { feesSummary, isLoading: isSummaryLoading } =
@@ -183,14 +184,12 @@ export const useFeesData = (
 		() => buildTypeElements( [ ...feeBearingTypes ] ),
 		[]
 	);
-	const dateElements = useMemo( () => getFeesDatePresetElements(), [] );
 
 	return {
 		feesQuery,
 		rows: feesRows,
 		totalItems,
 		totalPages,
-		dateElements,
 		methodElements,
 		typeElements,
 		isLoading: isLoading || isSummaryLoading,

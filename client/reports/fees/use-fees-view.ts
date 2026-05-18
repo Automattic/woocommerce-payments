@@ -27,43 +27,10 @@ const parseIntOr = ( value: unknown, fallback: number ): number => {
 	return Number.isNaN( n ) ? fallback : n;
 };
 
-type DateOperator = 'between' | 'before' | 'after';
-
-const dateOperatorByQueryKey: Record< string, DateOperator > = {
-	date_between: 'between',
-	date_before: 'before',
-	date_after: 'after',
-};
-
-const queryKeyByDateOperator: Record< DateOperator, string > = {
-	between: 'date_between',
-	before: 'date_before',
-	after: 'date_after',
-};
-
 const buildFiltersFromQuery = (
 	query: Record< string, unknown >
 ): Filter[] => {
 	const filters: Filter[] = [];
-
-	if ( query.date_preset ) {
-		filters.push( {
-			field: 'date',
-			operator: 'is',
-			value: query.date_preset as string,
-		} );
-	} else {
-		for ( const [ key, op ] of Object.entries( dateOperatorByQueryKey ) ) {
-			if ( query[ key ] ) {
-				filters.push( {
-					field: 'date',
-					operator: op as Filter[ 'operator' ],
-					value: query[ key ] as string | string[],
-				} );
-				break;
-			}
-		}
-	}
 
 	if ( query.payment_method_type ) {
 		filters.push( {
@@ -93,31 +60,24 @@ const isPersistedShapeEqual = (
 ): boolean => a !== undefined && JSON.stringify( a ) === JSON.stringify( b );
 
 /**
- * Translate active filters into a URL-query patch that clears stale date and
- * filter keys (sets them to `undefined`) and writes only the keys that are
- * currently active. Always returns a full 5-key object — every key not set by
- * an active filter is explicitly `undefined` so `updateQueryString` removes it.
+ * Translate active filters into a URL-query patch that clears stale filter
+ * keys (sets them to `undefined`) and writes only the keys that are currently
+ * active. Always returns a full 2-key object — every key not set by an active
+ * filter is explicitly `undefined` so `updateQueryString` removes it.
+ *
+ * Date filtering is owned by `useFeesDateFilter` and writes its own keys
+ * (`date_between` / `date_before` / `date_after`) separately.
  */
 const buildFilterQueryParams = (
 	filters: Filter[]
 ): Record< string, unknown > => {
 	const params: Record< string, unknown > = {
-		date_between: undefined,
-		date_before: undefined,
-		date_after: undefined,
-		date_preset: undefined,
 		payment_method_type: undefined,
 		type: undefined,
 	};
 
 	for ( const filter of filters ) {
-		const op = filter.operator as string;
-		if ( filter.field === 'date' && op === 'is' ) {
-			params.date_preset = filter.value;
-		} else if ( filter.field === 'date' && op in queryKeyByDateOperator ) {
-			params[ queryKeyByDateOperator[ op as DateOperator ] ] =
-				filter.value;
-		} else if ( filter.field === 'payment_method' ) {
+		if ( filter.field === 'payment_method' ) {
 			params.payment_method_type = filter.value;
 		} else if ( filter.field === 'type' ) {
 			params.type = filter.value;

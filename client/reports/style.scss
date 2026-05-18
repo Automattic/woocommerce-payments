@@ -59,7 +59,6 @@
 	background: #fff;
 	border: 1px solid $gray-200;
 	border-radius: 4px;
-	padding: $gap-large;
 	box-shadow: 0 1px 0 rgba( 0, 0, 0, 0.04 );
 
 	// Lift the Export button into the page-header strip — out of the card,
@@ -84,6 +83,32 @@
 	// which leaves the gear hugging the search input.
 	.dataviews-wrapper > .dataviews__view-actions {
 		justify-content: flex-end;
+	}
+
+	// Date filter renders as a sibling of DataViews and is visually pulled
+	// into the DataViews "view-actions" row (search + filter toggle + gear).
+	// We sit on the LEFT of that row, opposite the search input. The chip
+	// is absolutely positioned against `__main` (relatively positioned) so
+	// it aligns to the same row regardless of DataViews internals.
+	&__main {
+		position: relative;
+	}
+
+	&__date-filter {
+		position: absolute;
+		top: 16px;
+		left: 48px;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		min-height: 32px;
+	}
+
+	@media ( max-width: 600px ) {
+		&__date-filter {
+			top: 12px;
+			left: 24px;
+		}
 	}
 }
 

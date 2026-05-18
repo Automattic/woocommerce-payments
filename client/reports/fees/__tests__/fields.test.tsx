@@ -77,7 +77,6 @@ const baseRow: ReportsFee = {
 
 const renderField = ( fieldId: string, row: ReportsFee ) => {
 	const field = getFeesFields( {
-		dateElements: [],
 		methodElements: [],
 		typeElements: [],
 	} ).find( ( f ) => f.id === fieldId );
@@ -162,7 +161,6 @@ describe( 'getFeesFields render functions', () => {
 describe( 'getFeesFields field configuration', () => {
 	it( 'marks transaction_id as not hideable', () => {
 		const field = getFeesFields( {
-			dateElements: [],
 			methodElements: [],
 			typeElements: [],
 		} ).find( ( f ) => f.id === 'transaction_id' );
@@ -171,7 +169,6 @@ describe( 'getFeesFields field configuration', () => {
 
 	it( 'marks date, amount, and fees as sortable', () => {
 		const fields = getFeesFields( {
-			dateElements: [],
 			methodElements: [],
 			typeElements: [],
 		} );
@@ -184,7 +181,6 @@ describe( 'getFeesFields field configuration', () => {
 
 	it( 'wires payment_method elements from input', () => {
 		const fields = getFeesFields( {
-			dateElements: [],
 			methodElements: [ { value: 'card', label: 'Card' } ],
 			typeElements: [],
 		} );

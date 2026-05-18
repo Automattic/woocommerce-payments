@@ -148,13 +148,47 @@ beforeEach( () => {
 } );
 
 describe( 'FeesReport (DataViews)', () => {
-	it( 'queries the data store with date_between seeded from period when URL has no date params', () => {
+	it( 'queries the data store with no date params when URL has no date filter', () => {
+		render( <FeesReport period={ period } /> );
+		const call = mockUseReportsFees.mock.calls[ 0 ][ 0 ];
+		expect( call.date_between ).toBeUndefined();
+		expect( call.date_before ).toBeUndefined();
+		expect( call.date_after ).toBeUndefined();
+	} );
+
+	it( 'queries date_between from URL when set', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01', '2026-03-31' ],
+		} );
 		render( <FeesReport period={ period } /> );
 		expect( mockUseReportsFees ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				date_between: [ '2026-04-01', '2026-04-30' ],
+				date_between: [ '2026-03-01', '2026-03-31' ],
 			} )
 		);
+	} );
+
+	it( 'queries date_before from URL when set', () => {
+		mockGetQuery.mockReturnValue( {
+			date_before: '2026-03-31',
+		} );
+		render( <FeesReport period={ period } /> );
+		expect( mockUseReportsFees ).toHaveBeenCalledWith(
+			expect.objectContaining( { date_before: '2026-03-31' } )
+		);
+	} );
+
+	it( 'renders the Date filter chip', () => {
+		render( <FeesReport period={ period } /> );
+		// The chip's trigger is a button with aria-haspopup="dialog"; it
+		// uniquely identifies our chip vs other "Date"-labelled controls
+		// from DataViews (e.g. the sortable Date & time column header).
+		const triggers = screen
+			.getAllByRole( 'button', { name: /date/i } )
+			.filter(
+				( el ) => el.getAttribute( 'aria-haspopup' ) === 'dialog'
+			);
+		expect( triggers ).toHaveLength( 1 );
 	} );
 
 	it( 'reads sort from URL into the query', () => {

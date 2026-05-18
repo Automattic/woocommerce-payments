@@ -20,11 +20,14 @@ import {
 	reportsFeesDownloadEndpoint,
 } from 'wcpay/data/reports/resolvers';
 import { recordEvent } from 'tracks';
+import { DateFilter } from 'wcpay/reports/date-filter';
+import type { DateFilterValue } from 'wcpay/reports/date-filter';
 import { useFeesView } from './use-fees-view';
 import { useFeesData } from './use-fees-data';
+import { useFeesDateFilter } from './use-fees-date-filter';
 import { getFeesFields } from './fields';
 import type { ReportsPeriodRange } from '../period-selector';
-import type { View, Filter } from '@wordpress/dataviews';
+import type { View } from '@wordpress/dataviews';
 
 interface FeesReportProps {
 	period: ReportsPeriodRange;
@@ -40,29 +43,23 @@ const haveFieldsChanged = (
 	next: ReadonlyArray< string > = []
 ): boolean => prev.join( '|' ) !== next.join( '|' );
 
-const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
-	filters.find( ( f ) => f.field === 'date' );
-
 /**
- * Returns true when the date filter (operator + value) differs between two
- * filter arrays. Comparing the date filter only — not the entire `filters`
- * array — keeps the comparison stable when unrelated filters change.
+ * Returns true when the standalone date filter (operator + value) differs.
+ * Used to scope the `wcpay_reports_date_range_changed` analytics event.
  */
-const haveDateFiltersChanged = (
-	prev: Filter[] = [],
-	next: Filter[] = []
+const hasDateFilterChanged = (
+	prev: DateFilterValue | undefined,
+	next: DateFilterValue | undefined
 ): boolean => {
-	const a = findDateFilter( prev );
-	const b = findDateFilter( next );
-	if ( ! a && ! b ) {
+	if ( ! prev && ! next ) {
 		return false;
 	}
-	if ( ! a || ! b ) {
+	if ( ! prev || ! next ) {
 		return true;
 	}
 	return (
-		a.operator !== b.operator ||
-		JSON.stringify( a.value ) !== JSON.stringify( b.value )
+		prev.operator !== next.operator ||
+		JSON.stringify( prev.value ) !== JSON.stringify( next.value )
 	);
 };
 
@@ -71,26 +68,27 @@ export const FeesReport = ( {
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
 	const [ view, setView ] = useFeesView();
+	const [ dateFilter, setDateFilter ] = useFeesDateFilter();
 	const {
 		feesQuery,
 		rows,
 		totalItems,
 		totalPages,
-		dateElements,
 		methodElements,
 		typeElements,
 		isLoading,
 		error,
-	} = useFeesData( view, period );
+	} = useFeesData( view, dateFilter, period );
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );
 
 	const fields = useMemo(
-		() => getFeesFields( { dateElements, methodElements, typeElements } ),
-		[ dateElements, methodElements, typeElements ]
+		() => getFeesFields( { methodElements, typeElements } ),
+		[ methodElements, typeElements ]
 	);
 	const hasError = Object.keys( error ).length > 0;
-	const hasFilters = ( view.filters ?? [] ).length > 0 || !! view.search;
+	const hasFilters =
+		( view.filters ?? [] ).length > 0 || !! view.search || !! dateFilter;
 	const isEmpty =
 		! isLoading && ! hasError && rows.length === 0 && ! hasFilters;
 
@@ -129,16 +127,34 @@ export const FeesReport = ( {
 					report: 'fees',
 				} );
 			}
-			if (
-				haveDateFiltersChanged( view.filters ?? [], next.filters ?? [] )
-			) {
+			// DataViews' Reset button calls onChangeView with this exact
+			// shape — `{ ...view, page: 1, search: '', filters: [] }`. The
+			// trio search-cleared + filters-cleared + page-1 only happens on
+			// Reset, so we can use it to mirror "Reset everything" semantics
+			// onto our standalone date chip too.
+			const isReset =
+				( view.filters ?? [] ).length > 0 &&
+				( next.filters ?? [] ).length === 0 &&
+				next.search === '' &&
+				next.page === 1;
+			if ( isReset && dateFilter ) {
+				setDateFilter( undefined );
+			}
+			setView( next );
+		},
+		[ dateFilter, setDateFilter, setView, view.fields, view.filters ]
+	);
+
+	const handleDateFilterChange = useCallback(
+		( next: DateFilterValue | undefined ) => {
+			if ( hasDateFilterChanged( dateFilter, next ) ) {
 				recordEvent( 'wcpay_reports_date_range_changed', {
 					report: 'fees',
 				} );
 			}
-			setView( next );
+			setDateFilter( next );
 		},
-		[ setView, view.fields, view.filters ]
+		[ dateFilter, setDateFilter ]
 	);
 
 	if ( hasError ) {
@@ -241,21 +257,29 @@ export const FeesReport = ( {
 					onClick={ handleExport }
 				/>
 			</div>
-			<DataViews
-				data={ rows }
-				view={ view }
-				onChangeView={ handleViewChange }
-				fields={ fields }
-				paginationInfo={ { totalItems, totalPages } }
-				isLoading={ isLoading }
-				defaultLayouts={ { table: {} } }
-				search
-				searchLabel={ __(
-					'Search by transaction ID, order ID, or payout ID',
-					'woocommerce-payments'
-				) }
-				getItemId={ ( item ) => item.transaction_id }
-			/>
+			<div className="wcpay-reports-fees__main">
+				<div className="wcpay-reports-fees__date-filter">
+					<DateFilter
+						value={ dateFilter }
+						onChange={ handleDateFilterChange }
+					/>
+				</div>
+				<DataViews
+					data={ rows }
+					view={ view }
+					onChangeView={ handleViewChange }
+					fields={ fields }
+					paginationInfo={ { totalItems, totalPages } }
+					isLoading={ isLoading }
+					defaultLayouts={ { table: {} } }
+					search
+					searchLabel={ __(
+						'Search by transaction ID, order ID, or payout ID',
+						'woocommerce-payments'
+					) }
+					getItemId={ ( item ) => item.transaction_id }
+				/>
+			</div>
 		</div>
 	);
 };
