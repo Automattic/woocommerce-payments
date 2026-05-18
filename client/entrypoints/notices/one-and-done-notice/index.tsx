@@ -8,6 +8,7 @@ import { createRoot, Root } from 'react-dom/client';
  * Internal dependencies
  */
 import OneAndDoneNotice from './components/notice';
+import '../style.scss';
 
 const containerId = 'wcpay-one-and-done-notice';
 let mountedContainer: HTMLElement | null = null;
