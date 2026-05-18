@@ -52,7 +52,20 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 		);
 		$mock_account->method( 'get_is_live' )->willReturn( $is_live );
 
-		return new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+		return new WC_Payments_Admin_Banner( $mock_gateway, $mock_account, $this->make_order_service() );
+	}
+
+	/**
+	 * Builds a real WC_Payments_Order_Service with a mocked API client. The
+	 * banner only calls has_live_sale() on it, which reads options and runs
+	 * wc_get_orders — no API surface — so the real implementation runs
+	 * against the same options/orders each test already sets up.
+	 */
+	private function make_order_service(): WC_Payments_Order_Service {
+		$mock_api_client = $this->getMockBuilder( WC_Payments_API_Client::class )
+			->disableOriginalConstructor()
+			->getMock();
+		return new WC_Payments_Order_Service( $mock_api_client );
 	}
 
 	/**
@@ -343,7 +356,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 			->getMock();
 		$mock_gateway->method( 'is_connected' )->willReturn( true );
 
-		$banner = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+		$banner = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account, $this->make_order_service() );
 
 		$banner->should_show_test_to_live_notice();
 		$banner->should_show_test_to_live_notice();
@@ -803,7 +816,7 @@ class WC_Payments_Admin_Banner_Test extends WCPAY_UnitTestCase {
 			->getMock();
 		$mock_gateway->method( 'is_connected' )->willReturn( true );
 
-		$banner = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account );
+		$banner = new WC_Payments_Admin_Banner( $mock_gateway, $mock_account, $this->make_order_service() );
 
 		$banner->should_show_one_and_done_notice();
 		$banner->should_show_one_and_done_notice();

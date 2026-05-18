@@ -41,6 +41,11 @@ function _manually_load_plugin() {
 	// Load the WooCommerce plugin so we can use its classes in our WooPayments plugin.
 	require_once WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 
+	// AbilityDefinition stub for WC < 10.9 test environments. The file's own
+	// `interface_exists()` guard keeps the real interface canonical when WC
+	// 10.9 is around.
+	require_once __DIR__ . '/../../dev/phpstan-abilities-stubs.php';
+
 	// Set a default currency to be used for the multi-currency tests because the default
 	// is not loaded even though it's set during the tests setup.
 	update_option( 'woocommerce_currency', 'USD' );

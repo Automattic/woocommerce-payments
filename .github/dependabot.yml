@@ -7,6 +7,8 @@ updates:
       # Check for updates once a week
       schedule:
         interval: 'weekly'
+      cooldown:
+        default-days: 7
       ignore:
         # For @wordpress dependencies, ignore all updates as most of them need to be synced to the min WP version
         - dependency-name: "@wordpress/*"
@@ -24,6 +26,8 @@ updates:
       # Check for updates once a week
       schedule:
         interval: 'weekly'
+      cooldown:
+        default-days: 7
       # Reviewers for issues created
       reviewers:
         - 'Automattic/gamma'
@@ -36,6 +40,8 @@ updates:
       # Check for updates once a week
       schedule:
           interval: 'weekly'
+      cooldown:
+        default-days: 7
       # Reviewers for issues created
       reviewers:
         - 'Automattic/gamma'
@@ -47,6 +53,8 @@ updates:
       # Check for updates once a week
       schedule:
         interval: 'weekly'
+      cooldown:
+        default-days: 7
       # Reviewers for issues created
       reviewers:
         - 'Automattic/gamma'
