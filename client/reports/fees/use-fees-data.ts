@@ -175,10 +175,37 @@ export const useFeesData = (
 	const totalPages = Math.max( 1, Math.ceil( totalItems / perPage ) );
 
 	const sources = feesSummary.sources ?? [];
+	// The summary endpoint returns `sources` filtered by the active query, so
+	// when the user picks a method (or reloads with a method already in the
+	// URL) `sources` collapses to just that method — or to an empty list when
+	// the filter narrows results to zero rows. DataViews' `FilterText` resolves
+	// the chip label by matching `element.value === filterInView.value`, and
+	// falls back to bare "Method" when no element matches. To keep the chip
+	// stable across fetches, we ensure the currently-active filter value is
+	// always present with a derived label, regardless of what summary returns.
+	const activeMethodValue = useMemo( () => {
+		const f = view.filters?.find(
+			( filter ) => filter.field === 'payment_method'
+		);
+		return typeof f?.value === 'string' ? f.value : undefined;
+	}, [ view.filters ] );
 	const methodElements = useMemo(
-		() => buildMethodElements( sources ),
+		() => {
+			const fromSources = buildMethodElements( sources );
+			if (
+				activeMethodValue &&
+				! fromSources.some( ( el ) => el.value === activeMethodValue )
+			) {
+				fromSources.push( {
+					value: activeMethodValue,
+					label:
+						displayMethod( activeMethodValue ) || activeMethodValue,
+				} );
+			}
+			return fromSources;
+		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[ sources.join( '|' ) ]
+		[ sources.join( '|' ), activeMethodValue ]
 	);
 	const typeElements = useMemo(
 		() => buildTypeElements( [ ...feeBearingTypes ] ),
