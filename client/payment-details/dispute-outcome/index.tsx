@@ -25,6 +25,16 @@ interface DisputeOutcomeViewProps {
 const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 	dispute,
 } ) => {
+	// Resolve once and share with the Tracks payload below, so the matrix
+	// cell the merchant sees and the `product_type` we record can't drift.
+	// Mirrors the wizard's resolution.
+	const productType = resolveProductType(
+		dispute.metadata,
+		dispute.order?.suggested_product_type,
+		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ??
+			false
+	);
+
 	// Ref guard, not effect deps, because React 18 Strict Mode double-invokes
 	// effects in development. Empty deps fires once per real mount; the ref
 	// absorbs the dev-only re-invocation.
@@ -35,19 +45,12 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 		}
 		recordEvent(
 			'wcpay_dispute_outcome_viewed',
-			getDisputeOutcomeTracksProperties( dispute )
+			getDisputeOutcomeTracksProperties( dispute, productType )
 		);
 		viewedRef.current = true;
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [] );
 
-	// Mirror the wizard's resolution so both look up the same matrix cell.
-	const productType = resolveProductType(
-		dispute.metadata,
-		dispute.order?.suggested_product_type,
-		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ??
-			false
-	);
 	const fields = getExpectedFieldStatus(
 		dispute.reason,
 		productType,

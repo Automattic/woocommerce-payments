@@ -208,6 +208,29 @@ describe( 'DisputeOutcomeView', () => {
 				expect.objectContaining( { dispute_status: 'warning_closed' } )
 			);
 		} );
+
+		it( 'passes product_type as undefined when no product type is available, so recordEvent drops it', () => {
+			// Neither metadata.__product_type nor order.suggested_product_type
+			// resolves: resolveProductType returns '', which the helper
+			// collapses to undefined. recordEvent (real impl) strips undefined
+			// properties before sending, so analytics never see a '' bucket.
+			render(
+				<DisputeOutcomeView
+					dispute={ buildDispute( { metadata: {}, order: null } ) }
+				/>
+			);
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			expect( mockRecordEvent ).toHaveBeenCalledWith(
+				'wcpay_dispute_outcome_viewed',
+				{
+					dispute_id: 'dp_test',
+					dispute_status: 'lost',
+					dispute_reason: 'product_unacceptable',
+					product_type: undefined,
+				}
+			);
+		} );
 	} );
 
 	describe( 'optional-missing collapse by status', () => {
