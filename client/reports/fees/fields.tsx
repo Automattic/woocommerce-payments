@@ -99,7 +99,7 @@ export const getFeesFields = ( {
 			getValue: ( { item }: { item: ReportsFee } ) => item.order_id ?? '',
 			render: ( { item }: { item: ReportsFee } ) =>
 				item.order_id ? (
-					<Link href={ getOrderURL( item.order_id ) }>
+					<Link href={ getOrderURL( item.order_id ) } type="external">
 						{ String( item.order_id ) }
 					</Link>
 				) : (

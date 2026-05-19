@@ -43,10 +43,16 @@ jest.mock( '@woocommerce/components', () => ( {
 	Link: ( {
 		children,
 		href,
+		type,
 	}: {
 		children: React.ReactNode;
 		href: string;
-	} ) => <a href={ href }>{ children }</a>,
+		type?: string;
+	} ) => (
+		<a href={ href } data-link-type={ type }>
+			{ children }
+		</a>
+	),
 } ) );
 
 jest.mock( './strings', () => ( {} ), { virtual: true } );
@@ -120,7 +126,13 @@ describe( 'getFeesFields render functions', () => {
 
 	it( 'renders the order_id column as a link to wc-orders when present', () => {
 		renderField( 'order_id', baseRow );
-		expect( screen.getByRole( 'link' ) ).toHaveTextContent( '4567' );
+		const link = screen.getByRole( 'link' );
+		expect( link ).toHaveTextContent( '4567' );
+		expect( link ).toHaveAttribute(
+			'href',
+			'/admin.php?page=wc-orders&action=edit&id=4567'
+		);
+		expect( link ).toHaveAttribute( 'data-link-type', 'external' );
 	} );
 
 	it( 'renders an em-dash when order_id is missing', () => {
