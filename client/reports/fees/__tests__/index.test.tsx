@@ -11,9 +11,7 @@ const mockUseReportsFeesSummary = jest.fn();
 const mockGetQuery = jest.fn( () => ( {} as Record< string, unknown > ) );
 const mockUpdateQueryString = jest.fn();
 const mockUpdateUserPreferences = jest.fn();
-const mockRequestReportExport = jest.fn();
 const mockRecordEvent = jest.fn();
-const mockCreateNotice = jest.fn();
 const mockSpeak = jest.fn();
 
 jest.mock( 'wcpay/data', () => ( {
@@ -31,17 +29,6 @@ jest.mock( '@woocommerce/data', () => ( {
 	useUserPreferences: () => ( {
 		updateUserPreferences: mockUpdateUserPreferences,
 	} ),
-} ) );
-
-jest.mock( 'wcpay/hooks/use-report-export', () => ( {
-	useReportExport: () => ( {
-		requestReportExport: mockRequestReportExport,
-		isExportInProgress: false,
-	} ),
-} ) );
-
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: () => ( { createNotice: mockCreateNotice } ),
 } ) );
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -87,11 +74,6 @@ jest.mock( '@woocommerce/components', () => ( {
 	} ) => <a href={ href }>{ children }</a>,
 } ) );
 
-jest.mock( 'wcpay/data/reports/resolvers', () => ( {
-	getReportsFeesCSVRequestURL: jest.fn( () => '/mock-export-url' ),
-	reportsFeesDownloadEndpoint: '/wc/v3/payments/reports/fees/download',
-} ) );
-
 /**
  * Internal dependencies
  */
@@ -120,9 +102,7 @@ beforeEach( () => {
 	mockGetQuery.mockReset().mockReturnValue( {} );
 	mockUpdateQueryString.mockReset();
 	mockUpdateUserPreferences.mockReset();
-	mockRequestReportExport.mockReset();
 	mockRecordEvent.mockReset();
-	mockCreateNotice.mockReset();
 	mockSpeak.mockReset();
 
 	( window as unknown as Record< string, unknown > ).wcpaySettings = {
@@ -367,18 +347,11 @@ describe( 'FeesReport (DataViews)', () => {
 		expect( screen.getByRole( 'button', { name: 'Reset' } ) ).toBeEnabled();
 	} );
 
-	it( 'fires wcpay_reports_export_click and submits the export request', () => {
+	it( 'does not render the export action in the Fees DataViews controls', () => {
 		render( <FeesReport period={ period } /> );
-		const exportButton = screen.getByRole( 'button', { name: /export/i } );
-		fireEvent.click( exportButton );
-		expect( mockRecordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_export_click',
-			expect.objectContaining( {
-				report: 'fees',
-				exported_row_count: 1,
-			} )
-		);
-		expect( mockRequestReportExport ).toHaveBeenCalled();
+		expect(
+			screen.queryByRole( 'button', { name: /export/i } )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'announces the report-loaded status when the loading flag flips false', () => {
@@ -400,15 +373,6 @@ describe( 'FeesReport (DataViews)', () => {
 
 		expect( mockSpeak ).toHaveBeenCalledWith(
 			expect.stringMatching( /loaded/i )
-		);
-	} );
-
-	it( 'includes the export-celebration emoji in the success notice', () => {
-		render( <FeesReport period={ period } /> );
-		fireEvent.click( screen.getByRole( 'button', { name: /export/i } ) );
-		expect( mockCreateNotice ).toHaveBeenCalledWith(
-			'success',
-			expect.stringContaining( '🎉' )
 		);
 	} );
 } );

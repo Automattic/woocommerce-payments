@@ -2,16 +2,22 @@
 
 @import '@wordpress/dataviews/build-style/style.css';
 
+body.woocommerce-admin-page__payments_reports {
+	background: #fff;
+}
+
 .wcpay-reports-page {
 	position: relative;
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	min-height: calc( 100vh - 32px );
+	background: #fff;
 
 	.components-tab-panel__tabs {
 		box-shadow: inset 0 -1px 0 #ccc;
-		margin-bottom: $gap-large;
+		padding-right: 320px;
+		box-sizing: border-box;
 
 		.components-tab-panel__tabs-item {
 			&.active-tab {
@@ -43,6 +49,10 @@
 	}
 }
 
+.wcpay-reports-tab-panel {
+	position: relative;
+}
+
 .wcpay-reports-header {
 	margin-bottom: $gap-large;
 
@@ -56,30 +66,60 @@
 }
 
 .wcpay-reports-fees {
-	background: #fff;
-	border: 1px solid $gray-200;
-	border-radius: 4px;
-	box-shadow: 0 1px 0 rgba( 0, 0, 0, 0.04 );
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
 
-	// Lift the Export button into the page-header strip — out of the card,
-	// above the tab row, aligned to the right of the page. Positioning is
-	// anchored to `.wcpay-reports-page` (which sets `position: relative`),
-	// matching the Figma layout where Export sits at page level, not card
-	// level.
-	&__toolbar {
+	.dataviews-wrapper {
+		padding-top: $gap-large;
+	}
+
+	.dataviews__view-actions {
 		position: absolute;
-		top: $gap-large;
-		right: $gap-large;
-		z-index: 2;
-		display: flex;
+		top: 0;
+		right: 0;
+		left: 180px;
+		z-index: 1;
+		width: auto;
+		max-width: none;
+		min-height: 48px;
 		align-items: center;
-		margin: 0;
+		justify-content: flex-end;
+		padding: 0;
+		background: transparent;
+		box-sizing: border-box;
+	}
+
+	.dataviews__search {
+		justify-content: flex-end;
 	}
 
 	&__main--filtered-empty {
 		.dataviews-view-table,
 		.dataviews-no-results {
 			display: none;
+		}
+	}
+}
+
+@media screen and ( max-width: 960px ) {
+	.wcpay-reports-page {
+		.components-tab-panel__tabs {
+			padding-right: 0;
+		}
+	}
+
+	.wcpay-reports-fees {
+		.dataviews__view-actions {
+			position: static;
+			width: 100%;
+			max-width: none;
+			min-height: 48px;
+			justify-content: flex-end;
+			padding: $gap-small $gap-large;
+			border-bottom: 1px solid $gray-200;
+			background: #fff;
 		}
 	}
 }
