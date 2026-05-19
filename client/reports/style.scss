@@ -72,7 +72,7 @@ body.woocommerce-admin-page__payments_reports {
 	box-shadow: none;
 
 	.dataviews-wrapper {
-		padding-top: $gap-large;
+		padding-top: 0;
 	}
 
 	.dataviews__view-actions {
@@ -93,6 +93,31 @@ body.woocommerce-admin-page__payments_reports {
 
 	.dataviews__search {
 		justify-content: flex-end;
+	}
+
+	// Override DataViews' default 48px horizontal edge padding so Fees
+	// filters and table edges align flush with the report surface while
+	// the filter row keeps its 16px vertical padding.
+	.dataviews-filters__container {
+		padding: $gap 0;
+	}
+
+	.dataviews-no-results,
+	.dataviews-loading {
+		padding-right: $gap-large;
+		padding-left: $gap-large;
+	}
+
+	.dataviews-view-table tr {
+		td:first-child,
+		th:first-child {
+			padding-left: 0;
+		}
+
+		td:last-child,
+		th:last-child {
+			padding-right: 0;
+		}
 	}
 
 	&__main--filtered-empty {
