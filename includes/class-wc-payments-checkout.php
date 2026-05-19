@@ -221,15 +221,16 @@ class WC_Payments_Checkout {
 
 		$payment_fields = $js_config;
 
-		$payment_fields['gatewayId']                = WC_Payment_Gateway_WCPay::GATEWAY_ID;
-		$payment_fields['isCheckout']               = is_checkout();
-		$payment_fields['paymentMethodsConfig']     = $this->get_enabled_payment_method_config();
-		$payment_fields['testMode']                 = WC_Payments::mode()->is_test();
-		$payment_fields['cartContainsSubscription'] = $this->gateway->is_subscription_item_in_cart();
-		$payment_fields['currency']                 = get_woocommerce_currency();
-		$payment_fields['stylesCacheVersion']       = WC_Payments_Styles_Cache::get_styles_cache_version();
-		$cart_total                                 = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
-		$payment_fields['cartTotal']                = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
+		$payment_fields['gatewayId']                         = WC_Payment_Gateway_WCPay::GATEWAY_ID;
+		$payment_fields['isCheckout']                        = is_checkout();
+		$payment_fields['paymentMethodsConfig']              = $this->get_enabled_payment_method_config();
+		$payment_fields['testMode']                          = WC_Payments::mode()->is_test();
+		$payment_fields['cartContainsSubscription']          = $this->gateway->is_subscription_item_in_cart();
+		$payment_fields['subscriptionRequiresManualRenewal'] = function_exists( 'wcs_is_manual_renewal_required' ) && wcs_is_manual_renewal_required();
+		$payment_fields['currency']                          = get_woocommerce_currency();
+		$payment_fields['stylesCacheVersion']                = WC_Payments_Styles_Cache::get_styles_cache_version();
+		$cart_total                  = ( WC()->cart ? WC()->cart->get_total( '' ) : 0 );
+		$payment_fields['cartTotal'] = WC_Payments_Utils::prepare_amount( $cart_total, get_woocommerce_currency() );
 
 		$enabled_billing_fields = [];
 		foreach ( WC()->checkout()->get_checkout_fields( 'billing' ) as $billing_field => $billing_field_options ) {
