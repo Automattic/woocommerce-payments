@@ -1,14 +1,23 @@
 /** @format */
 
+@import '@wordpress/dataviews/build-style/style.css';
+
+body.woocommerce-admin-page__payments_reports {
+	background: #fff;
+}
+
 .wcpay-reports-page {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	min-height: calc( 100vh - 32px );
+	background: #fff;
 
 	.components-tab-panel__tabs {
 		box-shadow: inset 0 -1px 0 #ccc;
-		margin-bottom: $gap-large;
+		padding-right: 320px;
+		box-sizing: border-box;
 
 		.components-tab-panel__tabs-item {
 			&.active-tab {
@@ -40,6 +49,10 @@
 	}
 }
 
+.wcpay-reports-tab-panel {
+	position: relative;
+}
+
 .wcpay-reports-header {
 	margin-bottom: $gap-large;
 
@@ -49,6 +62,90 @@
 		color: $gray-700;
 		font-size: 13px;
 		line-height: 20px;
+	}
+}
+
+.wcpay-reports-fees {
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+
+	.dataviews-wrapper {
+		padding-top: 0;
+	}
+
+	.dataviews__view-actions {
+		position: absolute;
+		top: 0;
+		right: 0;
+		left: 180px;
+		z-index: 1;
+		width: auto;
+		max-width: none;
+		min-height: 48px;
+		align-items: center;
+		justify-content: flex-end;
+		padding: 0;
+		background: transparent;
+		box-sizing: border-box;
+	}
+
+	.dataviews__search {
+		justify-content: flex-end;
+	}
+
+	// Override DataViews' default 48px horizontal edge padding so Fees
+	// filters and table edges align flush with the report surface while
+	// the filter row keeps its 16px vertical padding.
+	.dataviews-filters__container {
+		padding: $gap 0;
+	}
+
+	.dataviews-no-results,
+	.dataviews-loading {
+		padding-right: $gap-large;
+		padding-left: $gap-large;
+	}
+
+	.dataviews-view-table tr {
+		td:first-child,
+		th:first-child {
+			padding-left: 0;
+		}
+
+		td:last-child,
+		th:last-child {
+			padding-right: 0;
+		}
+	}
+
+	&__main--filtered-empty {
+		.dataviews-view-table,
+		.dataviews-no-results {
+			display: none;
+		}
+	}
+}
+
+@media screen and ( max-width: 960px ) {
+	.wcpay-reports-page {
+		.components-tab-panel__tabs {
+			padding-right: 0;
+		}
+	}
+
+	.wcpay-reports-fees {
+		.dataviews__view-actions {
+			position: static;
+			width: 100%;
+			max-width: none;
+			min-height: 48px;
+			justify-content: flex-end;
+			padding: $gap-small $gap-large;
+			border-bottom: 1px solid $gray-200;
+			background: #fff;
+		}
 	}
 }
 
@@ -75,5 +172,61 @@
 		color: $gray-700;
 		font-size: 13px;
 		line-height: 20px;
+	}
+
+	&--fees-illustrated {
+		align-items: center;
+		justify-content: center;
+		gap: $gap-large;
+		width: 100%;
+		max-width: none;
+		padding: 80px 0 8px;
+		text-align: center;
+
+		.wcpay-reports-state__icon {
+			display: flex;
+			width: 48px;
+			height: 48px;
+			align-items: center;
+			justify-content: center;
+			color: $gray-200;
+
+			svg,
+			path {
+				fill: currentColor;
+			}
+		}
+
+		.wcpay-reports-state__copy {
+			display: flex;
+			flex-direction: column;
+			gap: $gap-smaller;
+			width: 288px;
+			max-width: 544px;
+			align-items: center;
+			overflow-wrap: anywhere;
+		}
+
+		h2,
+		p {
+			width: 100%;
+		}
+
+		h2 {
+			color: $gray-900;
+			font-size: 13px;
+			font-weight: 500;
+		}
+
+		&.wcpay-reports-state--fees-error {
+			.wcpay-reports-state__copy p span {
+				display: block;
+			}
+
+			.components-button {
+				height: 32px;
+				min-height: 32px;
+			}
+		}
 	}
 }

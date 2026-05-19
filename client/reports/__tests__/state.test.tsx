@@ -16,6 +16,11 @@ jest.mock( '../fees', () => ( {
 	FeesReport: () => <div>Fees ledger table</div>,
 } ) );
 
+// The Fees tab owns its own loading/empty/error UI via `<FeesReport>` (see
+// `client/reports/fees/index.tsx`). `ReportsTabPanel` short-circuits to that
+// component for `tab === 'fees'` and never enters its own state branches for
+// the Fees tab. The status-driven branches below therefore only matter for
+// the Balance tab.
 describe( 'Reports tab states', () => {
 	it( 'renders the Balance empty state', () => {
 		const { container } = render(
@@ -24,19 +29,6 @@ describe( 'Reports tab states', () => {
 				status="empty"
 				onReload={ jest.fn() }
 			/>
-		);
-
-		expect( container.firstChild ).toHaveClass(
-			'wcpay-reports-state--empty'
-		);
-		expect(
-			screen.getByRole( 'heading', { level: 2 } )
-		).toBeInTheDocument();
-	} );
-
-	it( 'renders the Fees empty state', () => {
-		const { container } = render(
-			<ReportsTabPanel tab="fees" status="empty" onReload={ jest.fn() } />
 		);
 
 		expect( container.firstChild ).toHaveClass(
@@ -75,12 +67,23 @@ describe( 'Reports tab states', () => {
 		);
 	} );
 
-	it( 'renders the Fees report when the Fees tab is ready', () => {
+	it( 'renders the Fees report when the Fees tab is selected (regardless of status)', () => {
 		render(
 			<ReportsTabPanel tab="fees" status="ready" onReload={ jest.fn() } />
 		);
 
 		expect( screen.getByText( 'Fees ledger table' ) ).toBeInTheDocument();
+	} );
+
+	it( 'still routes to FeesReport when an error status is passed for the Fees tab', () => {
+		// FeesReport surfaces its own error UI internally; the outer panel
+		// must not override or duplicate it.
+		render(
+			<ReportsTabPanel tab="fees" status="error" onReload={ jest.fn() } />
+		);
+
+		expect( screen.getByText( 'Fees ledger table' ) ).toBeInTheDocument();
+		expect( screen.queryByRole( 'group' ) ).not.toBeInTheDocument();
 	} );
 
 	it( 'renders Balance error state with reload action', async () => {
@@ -106,26 +109,7 @@ describe( 'Reports tab states', () => {
 		expect( onReload ).toHaveBeenCalledTimes( 1 );
 	} );
 
-	it( 'renders Fees error state with reload action', async () => {
-		const onReload = jest.fn();
-		render(
-			<ReportsTabPanel tab="fees" status="error" onReload={ onReload } />
-		);
-
-		const group = screen.getByRole( 'group' );
-
-		expect(
-			within( group ).getByRole( 'heading', { level: 2 } )
-		).toBeInTheDocument();
-
-		await userEvent.click(
-			within( group ).getByRole( 'button', { name: /Reload/i } )
-		);
-
-		expect( onReload ).toHaveBeenCalledTimes( 1 );
-	} );
-
-	it( 'moves focus to the error heading after entering an error state', async () => {
+	it( 'moves focus to the Balance error heading after entering an error state', async () => {
 		const onReload = jest.fn();
 		const { rerender } = render(
 			<ReportsTabPanel
@@ -136,7 +120,11 @@ describe( 'Reports tab states', () => {
 		);
 
 		rerender(
-			<ReportsTabPanel tab="fees" status="error" onReload={ onReload } />
+			<ReportsTabPanel
+				tab="balance"
+				status="error"
+				onReload={ onReload }
+			/>
 		);
 
 		await waitFor( () => {

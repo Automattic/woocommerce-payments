@@ -1058,6 +1058,12 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
+				// Reports DataViews per-tab persisted view. Expected shape:
+				// { fields: string[], perPage?: number, layout?: object }.
+				// Stored verbatim via WC Admin's user-data-fields filter, so
+				// any future PHP-side consumer MUST validate this shape
+				// before trusting it (it is user-writable JSON).
+				'wc_payments_reports_fees_view',
 
 				// WooPayments review prompt user preferences.
 				'wc_payments_review_prompt_dismissed',

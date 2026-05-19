@@ -3,54 +3,34 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import { Button } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
-import { __, _n, sprintf } from '@wordpress/i18n';
-import {
-	Link,
-	Search,
-	TableCard,
-	TableCardBodyColumn,
-} from '@woocommerce/components';
-import {
-	getQuery,
-	onQueryChange,
-	updateQueryString,
-} from '@woocommerce/navigation';
-import { uniq } from 'lodash';
+import React, {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
+import { Button, Icon } from '@wordpress/components';
+import { calendar } from '@wordpress/icons';
+import { __, sprintf } from '@wordpress/i18n';
+import { speak } from '@wordpress/a11y';
+import { DataViews } from '@wordpress/dataviews';
+import type { Filter, View } from '@wordpress/dataviews';
 
 /**
  * Internal dependencies
  */
-import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
-import type { ReportsFee } from 'wcpay/data/reports/hooks';
-import ClickableCell from 'wcpay/components/clickable-cell';
-import { getDetailsURL } from 'wcpay/components/details-link';
-import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import {
-	applyThousandSeparator,
-	formatStringValue,
-	getAdminUrl,
-} from 'wcpay/utils';
-import { formatExplicitCurrency } from 'multi-currency/interface/functions';
-import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
-import { useReportExport } from 'wcpay/hooks/use-report-export';
-import DownloadButton from 'wcpay/components/download-button';
 import { recordEvent } from 'tracks';
+import type { DateFilterValue } from 'wcpay/reports/date-filter';
+import { useFeesView } from './use-fees-view';
+import { useFeesData } from './use-fees-data';
+import { getFeesFields } from './fields';
+import { CustomDateFilterPopover } from './custom-date-filter-popover';
 import {
-	getReportsFeesCSVRequestURL,
-	reportsFeesDownloadEndpoint,
-} from 'wcpay/data/reports/resolvers';
-import { FeesFilters } from './filters';
-import {
-	Column,
-	FeesColumnKey,
-	emptyFeesValue,
-	getFeesColumnCell,
-	getFeesColumns,
-} from './columns';
-import { displayMethod, displayType } from './strings';
+	encodeCustomDateFilterValue,
+	resolveFeesDateFilterValue,
+} from './date-filter-values';
 import type { ReportsPeriodRange } from '../period-selector';
 
 interface FeesReportProps {
@@ -58,448 +38,493 @@ interface FeesReportProps {
 	onReload?: () => void;
 }
 
-interface CompletionOption {
-	key: string;
-	label: string;
+interface FeesReportStateProps {
+	title: string;
+	description: React.ReactNode;
+	action?: React.ReactNode;
+	className?: string;
+	descriptionId?: string;
+	headingId?: string;
+	headingRef?: React.Ref< HTMLHeadingElement >;
+	headingTabIndex?: number;
+	role?: string;
 }
 
-type FeesReportQuery = ReturnType< typeof getQuery > & {
-	payment_method_type?: string;
-	type?: string | string[];
-	order_id?: string;
-	deposit_id?: string;
-	customer_email?: string;
-};
-
-const feesFilterKeys: Array< keyof FeesReportQuery > = [
-	'date_before',
-	'date_after',
-	'date_between',
-	'payment_method_type',
-	'type',
-	'order_id',
-	'deposit_id',
-	'customer_email',
-	'search',
-	'match',
-];
-
-const getPeriodDateBetween = ( period: ReportsPeriodRange ): string[] => [
-	period.start.slice( 0, 10 ),
-	period.end.slice( 0, 10 ),
-];
-
-export const getFeesQuery = (
-	query: FeesReportQuery,
-	period: ReportsPeriodRange
-): FeesReportQuery => {
-	if (
-		query.filter === 'advanced' ||
-		query.filter === 'all' ||
-		query.date_before ||
-		query.date_after ||
-		query.date_between
-	) {
-		return query;
-	}
-
-	return {
-		...query,
-		date_between: getPeriodDateBetween( period ),
-	};
-};
-
-export const hasActiveFeesFilters = ( query: FeesReportQuery ): boolean =>
-	feesFilterKeys.some( ( key ) => {
-		const value = query[ key ];
-		return Array.isArray( value ) ? value.length > 0 : Boolean( value );
-	} );
-
-const getFeesFiltersQuery = ( feesQuery: FeesReportQuery ): FeesReportQuery => {
-	if ( ! hasActiveFeesFilters( feesQuery ) ) {
-		return feesQuery;
-	}
-
-	return {
-		...feesQuery,
-		filter: 'advanced',
-	};
-};
-
-const getOrderUrl = ( orderId: ReportsFee[ 'order_id' ] ): string =>
-	getAdminUrl( {
-		page: 'wc-orders',
-		action: 'edit',
-		id: orderId ?? '',
-	} );
-
-const getFeesSearchOptions = ( feesRows: ReportsFee[] ): CompletionOption[] =>
-	uniq(
-		feesRows.flatMap( ( row ) =>
-			[
-				row.transaction_id,
-				row.order_id ? String( row.order_id ) : '',
-				row.deposit_id || '',
-			].filter( Boolean )
-		)
-	).map( ( value ) => ( {
-		key: value,
-		label: value,
-	} ) );
-
-export const getFeesSearchAutocompleter = ( feesRows: ReportsFee[] ) => ( {
-	name: 'fees',
-	className: 'woocommerce-search__fees-result',
-	options( term: string ): Promise< CompletionOption[] > {
-		const options = getFeesSearchOptions( feesRows );
-		const normalizedTerm = term.toLowerCase();
-
-		return Promise.resolve(
-			normalizedTerm
-				? options.filter( ( option ) =>
-						option.label.toLowerCase().includes( normalizedTerm )
-				  )
-				: options
-		);
-	},
-	isDebounced: true,
-	getOptionIdentifier( option: CompletionOption ): string {
-		return option.label;
-	},
-	getOptionKeywords( option: CompletionOption ): string[] {
-		return [ option.label ];
-	},
-	getOptionLabel( option: CompletionOption ): JSX.Element {
-		return (
-			<span
-				key={ option.key }
-				className="woocommerce-search__result-name"
-				aria-label={ option.label }
+const FeesReportState = ( {
+	title,
+	description,
+	action,
+	className,
+	descriptionId,
+	headingId,
+	headingRef,
+	headingTabIndex,
+	role,
+}: FeesReportStateProps ): JSX.Element => (
+	<div
+		className={ [
+			'wcpay-reports-state',
+			'wcpay-reports-state--fees-illustrated',
+			className,
+		]
+			.filter( Boolean )
+			.join( ' ' ) }
+		role={ role }
+		aria-labelledby={ headingId }
+		aria-describedby={ descriptionId }
+	>
+		<span className="wcpay-reports-state__icon" aria-hidden="true">
+			<Icon icon={ calendar } size={ 48 } />
+		</span>
+		<div className="wcpay-reports-state__copy">
+			<h2
+				id={ headingId }
+				ref={ headingRef }
+				tabIndex={ headingTabIndex }
 			>
-				{ option.label }
-			</span>
-		);
-	},
-	getOptionCompletion( option: CompletionOption ): CompletionOption {
-		return {
-			key: option.label,
-			label: option.label,
-		};
-	},
-} );
+				{ title }
+			</h2>
+			<p id={ descriptionId }>{ description }</p>
+		</div>
+		{ action }
+	</div>
+);
 
-const getTransactionURL = ( row: ReportsFee ): string => {
-	const detailsURL = getDetailsURL(
-		row.payment_id || row.transaction_id,
-		'transactions'
+/**
+ * Returns true when the user's visible-fields configuration has changed.
+ * Compared as joined strings — the field list is small and order-significant.
+ */
+const haveFieldsChanged = (
+	prev: ReadonlyArray< string > = [],
+	next: ReadonlyArray< string > = []
+): boolean => prev.join( '|' ) !== next.join( '|' );
+
+/**
+ * Returns true when the DataViews date filter (operator + value) differs.
+ * Used to scope the `wcpay_reports_date_range_changed` analytics event.
+ */
+const hasDateFilterChanged = (
+	prev: DateFilterValue | undefined,
+	next: DateFilterValue | undefined
+): boolean => {
+	if ( ! prev && ! next ) {
+		return false;
+	}
+	if ( ! prev || ! next ) {
+		return true;
+	}
+	return (
+		prev.operator !== next.operator ||
+		JSON.stringify( prev.value ) !== JSON.stringify( next.value )
 	);
-
-	return `${ detailsURL }&transaction_id=${ row.transaction_id }&transaction_type=${ row.type }`;
 };
 
-const getFeesRowContent = (
-	row: ReportsFee
-): Record< FeesColumnKey, TableCardBodyColumn > => {
-	const transactionURL = getTransactionURL( row );
-	const clickable = ( children: React.ReactNode ) => (
-		<ClickableCell href={ transactionURL }>{ children }</ClickableCell>
-	);
-	const paymentMethodType = row.payment_method?.type || '';
-	const rowTypeLabel =
-		displayType[ row.type as keyof typeof displayType ] ||
-		formatStringValue( row.type );
-	const depositCurrency = row.deposit_currency;
-	const formattedDate = formatDateTimeFromString( row.date, {
-		includeTime: true,
-	} );
-	const formattedDepositDate = row.deposit_date
-		? formatDateTimeFromString( row.deposit_date )
-		: emptyFeesValue;
+const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
+	filters.find( ( filter ) => filter.field === 'date' );
 
-	return {
-		date: {
-			value: row.date,
-			display: clickable( formattedDate ),
-		},
-		payment_method: {
-			value: paymentMethodType,
-			display: displayMethod( paymentMethodType ),
-		},
-		type: {
-			value: rowTypeLabel,
-			display: clickable( rowTypeLabel ),
-		},
-		order_id: {
-			value: row.order_id || '',
-			display: row.order_id ? (
-				<Link href={ getOrderUrl( row.order_id ) }>
-					{ row.order_id }
-				</Link>
-			) : (
-				emptyFeesValue
-			),
-		},
-		transaction_id: {
-			value: row.transaction_id,
-			display: clickable( row.transaction_id ),
-		},
-		transaction_currency: {
-			value: row.transaction_currency.toUpperCase(),
-			display: clickable( row.transaction_currency.toUpperCase() ),
-		},
-		amount: {
-			value: row.amount,
-			display: clickable(
-				formatExplicitCurrency( row.amount, depositCurrency )
-			),
-		},
-		fees: {
-			value: row.fees,
-			display: clickable(
-				formatExplicitCurrency( row.fees, depositCurrency )
-			),
-		},
-		deposit_date: {
-			value: row.deposit_date || '',
-			display: row.deposit_date
-				? clickable( formattedDepositDate )
-				: emptyFeesValue,
-		},
-		deposit_id: getFeesColumnCell( row, 'deposit_id' ),
-	};
+const customDatePopoverId = 'wcpay-fees-date-filter-popover';
+
+const getResolvedDateFilter = ( view: View ): DateFilterValue | undefined =>
+	resolveFeesDateFilterValue( findDateFilter( view.filters )?.value );
+
+const findDateFilterAnchor = (
+	container: HTMLElement | null
+): HTMLElement | null => {
+	if ( ! container ) {
+		return null;
+	}
+
+	const chips = Array.from(
+		container.querySelectorAll< HTMLElement >(
+			'.dataviews-filters__summary-chip'
+		)
+	);
+	return (
+		chips.find( ( chip ) =>
+			chip.textContent?.trim().toLowerCase().startsWith( 'date' )
+		) ?? null
+	);
 };
 
-const getFeesRows = (
-	feesRows: ReportsFee[],
-	columnsToDisplay: Column[]
-): TableCardBodyColumn[][] =>
-	feesRows.map( ( row ) => {
-		const data = getFeesRowContent( row );
+const findDateFilterAnchorFromEvent = (
+	target: EventTarget | null,
+	container: HTMLElement | null
+): HTMLElement | null => {
+	if ( ! container || ! ( target instanceof HTMLElement ) ) {
+		return null;
+	}
 
-		return columnsToDisplay.map(
-			( { key } ) => data[ key ] || { display: null }
-		);
-	} );
+	const chip = target.closest< HTMLElement >(
+		'.dataviews-filters__summary-chip'
+	);
+	if ( ! chip || ! container.contains( chip ) ) {
+		return null;
+	}
+
+	return chip.textContent?.trim().toLowerCase().startsWith( 'date' )
+		? chip
+		: null;
+};
+
+const replaceDateFilter = (
+	filters: Filter[] = [],
+	nextDateFilter: Filter | undefined
+): Filter[] => {
+	const withoutDate = filters.filter( ( filter ) => filter.field !== 'date' );
+	return nextDateFilter ? [ ...withoutDate, nextDateFilter ] : withoutDate;
+};
 
 export const FeesReport = ( {
 	period,
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
-	const query = getQuery() as FeesReportQuery;
-	const feesQuery = getFeesQuery( query, period );
-	const { feesRows, feesError = {}, isLoading } = useReportsFees( feesQuery );
-	const { feesSummary, isLoading: isSummaryLoading } =
-		useReportsFeesSummary( feesQuery );
-	const { onColumnsChange, columnsToDisplay } =
-		usePersistedColumnVisibility< Column >(
-			'wc_payments_reports_fees_hidden_columns',
-			getFeesColumns()
-		);
-	const onFeesColumnsChange = ( shownColumns: string[], key?: string ) => {
-		void key;
-		recordEvent( 'wcpay_reports_view_options_opened', {
-			report: 'fees',
-		} );
-		onColumnsChange( shownColumns );
-	};
-	const { requestReportExport, isExportInProgress } = useReportExport();
-	const { createNotice } = useDispatch( 'core/notices' );
+	const [ view, setView ] = useFeesView();
+	const [ dataViewsContainer, setDataViewsContainer ] =
+		useState< HTMLDivElement | null >( null );
+	const [ customDateAnchor, setCustomDateAnchor ] =
+		useState< HTMLElement | null >( null );
+	const [ isCustomDatePopoverOpen, setIsCustomDatePopoverOpen ] =
+		useState( false );
+	const [ customDateInitialValue, setCustomDateInitialValue ] = useState<
+		DateFilterValue | undefined
+	>( undefined );
+	const isCustomDatePopoverOpenRef = useRef( isCustomDatePopoverOpen );
+	const ignoreNextDateFilterClickRef = useRef( false );
+	const {
+		rows,
+		totalItems,
+		totalPages,
+		dateElements,
+		methodElements,
+		typeElements,
+		isLoading,
+		error,
+	} = useFeesData( view, period );
 
-	const totalRows = feesSummary.count || 0;
-	const hasError = Object.keys( feesError ).length > 0;
-	const isEmptyPeriod =
-		! isLoading &&
-		! hasError &&
-		feesRows.length === 0 &&
-		! hasActiveFeesFilters( query );
+	const fields = useMemo(
+		() =>
+			getFeesFields( {
+				dateElements,
+				methodElements,
+				typeElements,
+			} ),
+		[ dateElements, methodElements, typeElements ]
+	);
+	const hasError = Object.keys( error ).length > 0;
+	const hasFilters = ( view.filters ?? [] ).length > 0 || !! view.search;
+	const hasNoRows = ! isLoading && ! hasError && rows.length === 0;
+	const isInitialEmpty = hasNoRows && ! hasFilters;
+	const isFilteredEmpty = hasNoRows && hasFilters;
 
-	if ( hasError ) {
-		return (
-			<div
-				className="wcpay-reports-state wcpay-reports-state--error"
-				role="group"
-				aria-labelledby="wcpay-reports-fees-error"
-			>
-				<h2 id="wcpay-reports-fees-error">
-					{ __( 'Fees report unavailable', 'woocommerce-payments' ) }
-				</h2>
-				<Button variant="secondary" onClick={ onReload }>
-					{ __( 'Reload report', 'woocommerce-payments' ) }
-				</Button>
-			</div>
-		);
-	}
+	useEffect( () => {
+		isCustomDatePopoverOpenRef.current = isCustomDatePopoverOpen;
+	}, [ isCustomDatePopoverOpen ] );
 
-	if ( isEmptyPeriod ) {
-		return (
-			<div className="wcpay-reports-state wcpay-reports-state--empty">
-				<h2>{ __( 'No fees yet', 'woocommerce-payments' ) }</h2>
-				<p>
-					{ __(
-						'Fees will appear here once you start receiving payments.',
-						'woocommerce-payments'
-					) }
-				</p>
-			</div>
-		);
-	}
+	// Move focus to the error region and announce when an error surfaces, so
+	// keyboard/AT users notice the table disappearing. `role="alert"` on the
+	// container takes care of automatic announcement; the focus move handles
+	// keyboard context.
+	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
+	const previousErrorRef = useRef( hasError );
+	useEffect( () => {
+		if ( hasError && ! previousErrorRef.current ) {
+			errorHeadingRef.current?.focus();
+		}
+		previousErrorRef.current = hasError;
+	}, [ hasError ] );
 
-	const rows = getFeesRows( feesRows, columnsToDisplay );
-	const searchedLabels =
-		query.search &&
-		query.search.map( ( value ) => ( {
-			key: value,
-			label: value,
-		} ) );
-	const onSearchChange = ( values: CompletionOption[] ) => {
-		updateQueryString(
-			{
-				search: values.length
-					? uniq( values.map( ( value ) => value.label ) )
-					: undefined,
-			},
-			'/payments/reports'
-		);
-	};
-	const onExport = () => {
-		recordEvent( 'wcpay_reports_export_click', {
-			report: 'fees',
-			exported_row_count: totalRows,
-		} );
-
-		const userEmail = wcpaySettings.currentUserEmail;
-		const locale = wcSettings.locale.userLocale;
-		const exportRequestURL = getReportsFeesCSVRequestURL( {
-			match: feesQuery.match,
-			dateBefore: feesQuery.date_before,
-			dateAfter: feesQuery.date_after,
-			dateBetween: feesQuery.date_between,
-			paymentMethodType: feesQuery.payment_method_type,
-			type: feesQuery.type,
-			orderId: feesQuery.order_id,
-			depositId: feesQuery.deposit_id,
-			customerEmail: feesQuery.customer_email,
-			search: feesQuery.search,
-			orderby: feesQuery.orderby || 'date',
-			order: feesQuery.order || 'desc',
-			userEmail,
-			locale,
-		} );
-		const confirmThreshold = 10000;
-		const confirmMessage = sprintf(
-			__(
-				"You are about to export %d fees. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
-				'woocommerce-payments'
-			),
-			totalRows
-		);
-
-		if (
-			hasActiveFeesFilters( query ) ||
-			totalRows < confirmThreshold ||
-			window.confirm( confirmMessage )
-		) {
-			requestReportExport( {
-				exportRequestURL,
-				exportFileAvailabilityEndpoint: reportsFeesDownloadEndpoint,
-				userEmail,
-			} );
-
-			createNotice(
-				'success',
+	// Announce "Fees report loaded" to AT users on every loading→ready edge.
+	const previousLoadingRef = useRef( isLoading );
+	useEffect( () => {
+		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+			speak(
 				sprintf(
-					__(
-						"We're processing your export. The file will download automatically and be emailed to %s.",
-						'woocommerce-payments'
-					),
-					userEmail
+					/* translators: %d: number of fees loaded into the report table. */
+					__( '%d fees loaded.', 'woocommerce-payments' ),
+					totalItems
 				)
 			);
 		}
-	};
+		previousLoadingRef.current = isLoading;
+	}, [ isLoading, hasError, totalItems ] );
 
-	const summary =
-		feesSummary.count !== undefined && ! isSummaryLoading
-			? [
-					{
-						label: _n(
-							'fee',
-							'fees',
-							feesSummary.count,
-							'woocommerce-payments'
-						),
-						value: `${ applyThousandSeparator(
-							feesSummary.count
-						) }`,
-					},
-					{
-						label: __( 'gross total', 'woocommerce-payments' ),
-						value: `${ formatExplicitCurrency(
-							feesSummary.total ?? 0,
-							feesSummary.currency || ''
-						) }`,
-					},
-					{
-						label: __( 'fees total', 'woocommerce-payments' ),
-						value: `${ formatExplicitCurrency(
-							feesSummary.fees ?? 0,
-							feesSummary.currency || ''
-						) }`,
-					},
-			  ]
-			: undefined;
-	const downloadable = rows.length > 0;
+	useLayoutEffect( () => {
+		if ( isCustomDatePopoverOpen ) {
+			setCustomDateAnchor( findDateFilterAnchor( dataViewsContainer ) );
+		}
+	}, [ dataViewsContainer, isCustomDatePopoverOpen, view.filters ] );
 
-	return (
-		<>
-			<FeesFilters
-				feesSummary={ feesSummary }
-				query={ getFeesFiltersQuery( feesQuery ) }
-			/>
-			<TableCard
-				className="fees-report woocommerce-report-table has-search"
-				title={ __( 'Fees', 'woocommerce-payments' ) }
-				isLoading={ isLoading }
-				rowsPerPage={ parseInt( query.per_page ?? '', 10 ) || 25 }
-				totalRows={ totalRows }
-				headers={ columnsToDisplay }
-				rows={ rows }
-				summary={ summary }
-				query={ query }
-				onQueryChange={ onQueryChange }
-				onColumnsChange={ onFeesColumnsChange }
-				actions={ [
-					<Search
-						allowFreeTextSearch={ false }
-						inlineTags
-						key="search"
-						onChange={ onSearchChange }
-						placeholder={ __(
-							'Search by transaction ID, order ID, or payout ID',
-							'woocommerce-payments'
-						) }
-						selected={ searchedLabels }
-						showClearButton={ true }
-						type="custom"
-						autocompleter={ getFeesSearchAutocompleter( feesRows ) }
-					/>,
-					downloadable && (
-						<DownloadButton
-							key="download"
-							isDisabled={ isLoading || isExportInProgress }
-							isBusy={ isExportInProgress }
-							onClick={ onExport }
-						/>
-					),
-				] }
-			/>
-			<p className="wcpay-reports-fees__date-basis-note">
-				{ __(
-					'Dates reflect when each event was created - settlement-date reporting is coming.',
+	useLayoutEffect( () => {
+		if ( ! customDateAnchor ) {
+			return;
+		}
+
+		customDateAnchor.setAttribute( 'aria-haspopup', 'dialog' );
+		customDateAnchor.setAttribute(
+			'aria-expanded',
+			String( isCustomDatePopoverOpen )
+		);
+
+		if ( isCustomDatePopoverOpen ) {
+			customDateAnchor.setAttribute(
+				'aria-controls',
+				customDatePopoverId
+			);
+			return;
+		}
+
+		customDateAnchor.removeAttribute( 'aria-controls' );
+	}, [ customDateAnchor, isCustomDatePopoverOpen ] );
+
+	const openCustomDatePopover = useCallback(
+		( anchor: HTMLElement | null ) => {
+			setCustomDateAnchor( anchor );
+			setCustomDateInitialValue( getResolvedDateFilter( view ) );
+			isCustomDatePopoverOpenRef.current = true;
+			setIsCustomDatePopoverOpen( true );
+		},
+		[ view ]
+	);
+
+	const closeCustomDatePopoverFromTrigger = useCallback(
+		( anchor: HTMLElement | null ) => {
+			isCustomDatePopoverOpenRef.current = false;
+			setIsCustomDatePopoverOpen( false );
+			setCustomDateInitialValue( undefined );
+			requestAnimationFrame( () => anchor?.focus() );
+		},
+		[]
+	);
+
+	const toggleCustomDatePopover = useCallback(
+		( anchor: HTMLElement ) => {
+			if ( isCustomDatePopoverOpenRef.current ) {
+				closeCustomDatePopoverFromTrigger( anchor );
+				return;
+			}
+
+			openCustomDatePopover( anchor );
+		},
+		[ closeCustomDatePopoverFromTrigger, openCustomDatePopover ]
+	);
+
+	const handleDataViewsPointerDownCapture = useCallback(
+		( event: React.PointerEvent< HTMLDivElement > ) => {
+			const dateFilterAnchor = findDateFilterAnchorFromEvent(
+				event.target,
+				dataViewsContainer
+			);
+			if (
+				! dateFilterAnchor ||
+				( event.button !== 0 && event.button !== undefined )
+			) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+			ignoreNextDateFilterClickRef.current = true;
+			toggleCustomDatePopover( dateFilterAnchor );
+		},
+		[ dataViewsContainer, toggleCustomDatePopover ]
+	);
+
+	const handleDataViewsClickCapture = useCallback(
+		( event: React.MouseEvent< HTMLDivElement > ) => {
+			const dateFilterAnchor = findDateFilterAnchorFromEvent(
+				event.target,
+				dataViewsContainer
+			);
+			if ( ! dateFilterAnchor ) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+			if ( ignoreNextDateFilterClickRef.current ) {
+				ignoreNextDateFilterClickRef.current = false;
+				return;
+			}
+
+			toggleCustomDatePopover( dateFilterAnchor );
+		},
+		[ dataViewsContainer, toggleCustomDatePopover ]
+	);
+
+	const handleDataViewsKeyDownCapture = useCallback(
+		( event: React.KeyboardEvent< HTMLDivElement > ) => {
+			if ( event.key !== 'Enter' && event.key !== ' ' ) {
+				return;
+			}
+
+			const dateFilterAnchor = findDateFilterAnchorFromEvent(
+				event.target,
+				dataViewsContainer
+			);
+			if ( ! dateFilterAnchor ) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+			toggleCustomDatePopover( dateFilterAnchor );
+		},
+		[ dataViewsContainer, toggleCustomDatePopover ]
+	);
+
+	const handleViewChange = useCallback(
+		( next: View ) => {
+			if ( haveFieldsChanged( view.fields, next.fields ) ) {
+				recordEvent( 'wcpay_reports_view_options_opened', {
+					report: 'fees',
+				} );
+			}
+
+			if (
+				hasDateFilterChanged(
+					getResolvedDateFilter( view ),
+					getResolvedDateFilter( next )
+				)
+			) {
+				recordEvent( 'wcpay_reports_date_range_changed', {
+					report: 'fees',
+				} );
+			}
+
+			setView( next );
+		},
+		[ setView, view ]
+	);
+
+	const closeCustomDatePopover = useCallback( () => {
+		isCustomDatePopoverOpenRef.current = false;
+		setIsCustomDatePopoverOpen( false );
+		setCustomDateInitialValue( undefined );
+		const dateFilter = findDateFilter( view.filters );
+		if ( dateFilter && dateFilter.value === undefined ) {
+			setView( {
+				...view,
+				filters: replaceDateFilter( view.filters, undefined ),
+			} );
+		}
+	}, [ setView, view ] );
+
+	const changeCustomDateFilter = useCallback(
+		( nextDateFilter: DateFilterValue ) => {
+			const nextView = {
+				...view,
+				page: 1,
+				filters: replaceDateFilter( view.filters, {
+					field: 'date',
+					operator: 'is',
+					value: encodeCustomDateFilterValue( nextDateFilter ),
+				} ),
+			};
+			handleViewChange( nextView );
+		},
+		[ handleViewChange, view ]
+	);
+
+	if ( hasError ) {
+		return (
+			<FeesReportState
+				title={ __(
+					'Fees report unavailable',
 					'woocommerce-payments'
 				) }
-			</p>
-		</>
+				description={
+					<>
+						<span>
+							{ __(
+								"We couldn't load your fees data.",
+								'woocommerce-payments'
+							) }
+						</span>{ ' ' }
+						<span>
+							{ __(
+								'Try again in a few minutes.',
+								'woocommerce-payments'
+							) }
+						</span>
+					</>
+				}
+				action={
+					<Button variant="secondary" onClick={ onReload }>
+						{ __( 'Reload report', 'woocommerce-payments' ) }
+					</Button>
+				}
+				className="wcpay-reports-state--error wcpay-reports-state--fees-error"
+				descriptionId="wcpay-reports-fees-error-description"
+				headingId="wcpay-reports-fees-error"
+				headingRef={ errorHeadingRef }
+				headingTabIndex={ -1 }
+				role="alert"
+			/>
+		);
+	}
+
+	if ( isInitialEmpty ) {
+		return (
+			<FeesReportState
+				title={ __( 'No fees yet', 'woocommerce-payments' ) }
+				className="wcpay-reports-state--empty wcpay-reports-state--fees-empty"
+				description={ __(
+					'Fees will appear here once you start receiving payments.',
+					'woocommerce-payments'
+				) }
+			/>
+		);
+	}
+
+	return (
+		<div className="wcpay-reports-fees">
+			<div
+				className={
+					isFilteredEmpty
+						? 'wcpay-reports-fees__main wcpay-reports-fees__main--filtered-empty'
+						: 'wcpay-reports-fees__main'
+				}
+				ref={ setDataViewsContainer }
+				onPointerDownCapture={ handleDataViewsPointerDownCapture }
+				onClickCapture={ handleDataViewsClickCapture }
+				onKeyDownCapture={ handleDataViewsKeyDownCapture }
+			>
+				<DataViews
+					data={ rows }
+					view={ view }
+					onChangeView={ handleViewChange }
+					fields={ fields }
+					paginationInfo={ { totalItems, totalPages } }
+					isLoading={ isLoading }
+					defaultLayouts={ { table: {} } }
+					search
+					searchLabel={ __( 'Search', 'woocommerce-payments' ) }
+					getItemId={ ( item ) => item.transaction_id }
+				/>
+				{ isFilteredEmpty && (
+					<FeesReportState
+						title={ __(
+							'No fees to display',
+							'woocommerce-payments'
+						) }
+						className="wcpay-reports-state--empty wcpay-reports-state--fees-empty"
+						description={ __(
+							'Fees will appear here.',
+							'woocommerce-payments'
+						) }
+					/>
+				) }
+				{ isCustomDatePopoverOpen && (
+					<CustomDateFilterPopover
+						anchor={ customDateAnchor }
+						id={ customDatePopoverId }
+						initialValue={ customDateInitialValue }
+						onChange={ changeCustomDateFilter }
+						onClose={ closeCustomDatePopover }
+					/>
+				) }
+			</div>
+		</div>
 	);
 };
 

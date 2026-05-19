@@ -175,12 +175,31 @@ module.exports = {
 			injectPolyfill: true,
 			requestToExternal( request ) {
 				switch ( request ) {
+					case '@wordpress/dataviews':
+						// Force-bundle: returning null prevents externalization
+						// to wp.dataviews, which would resolve against the host
+						// WP version (4.15.4 on WP 6.8, 10.x on 6.9, 14.x on
+						// 7.0+) and break the API contract our code expects.
+						//
+						// NOTE: force-bundling pulls in non-deduped nested
+						// copies of @wordpress/data, @wordpress/element,
+						// @wordpress/compose, @wordpress/deprecated, and
+						// @wordpress/hooks (the top-level versions are still
+						// externalised to wp.* globals). The nested
+						// @wordpress/data instance is the one to watch: any
+						// store DataViews registers internally is invisible
+						// to wp.data on the host page. If a regression
+						// surfaces in DataViews store behaviour, consider
+						// resolve.alias for the nested @wordpress/* imports.
+						return null;
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
 				switch ( request ) {
+					case '@wordpress/dataviews':
+						return null;
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
 				}
