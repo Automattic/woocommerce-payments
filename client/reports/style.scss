@@ -75,6 +75,13 @@
 		align-items: center;
 		margin: 0;
 	}
+
+	&__main--filtered-empty {
+		.dataviews-view-table,
+		.dataviews-no-results {
+			display: none;
+		}
+	}
 }
 
 .wcpay-reports-state {
@@ -100,5 +107,61 @@
 		color: $gray-700;
 		font-size: 13px;
 		line-height: 20px;
+	}
+
+	&--fees-illustrated {
+		align-items: center;
+		justify-content: center;
+		gap: $gap-large;
+		width: 100%;
+		max-width: none;
+		padding: 80px 0 8px;
+		text-align: center;
+
+		.wcpay-reports-state__icon {
+			display: flex;
+			width: 48px;
+			height: 48px;
+			align-items: center;
+			justify-content: center;
+			color: $gray-200;
+
+			svg,
+			path {
+				fill: currentColor;
+			}
+		}
+
+		.wcpay-reports-state__copy {
+			display: flex;
+			flex-direction: column;
+			gap: $gap-smaller;
+			width: 288px;
+			max-width: 544px;
+			align-items: center;
+			overflow-wrap: anywhere;
+		}
+
+		h2,
+		p {
+			width: 100%;
+		}
+
+		h2 {
+			color: $gray-900;
+			font-size: 13px;
+			font-weight: 500;
+		}
+
+		&.wcpay-reports-state--fees-error {
+			.wcpay-reports-state__copy p span {
+				display: block;
+			}
+
+			.components-button {
+				height: 32px;
+				min-height: 32px;
+			}
+		}
 	}
 }

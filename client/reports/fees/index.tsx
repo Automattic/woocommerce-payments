@@ -11,7 +11,8 @@ import React, {
 	useRef,
 	useState,
 } from 'react';
-import { Button } from '@wordpress/components';
+import { Button, Icon } from '@wordpress/components';
+import { calendar } from '@wordpress/icons';
 import { useDispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
@@ -43,6 +44,58 @@ interface FeesReportProps {
 	period: ReportsPeriodRange;
 	onReload?: () => void;
 }
+
+interface FeesReportStateProps {
+	title: string;
+	description: React.ReactNode;
+	action?: React.ReactNode;
+	className?: string;
+	descriptionId?: string;
+	headingId?: string;
+	headingRef?: React.Ref< HTMLHeadingElement >;
+	headingTabIndex?: number;
+	role?: string;
+}
+
+const FeesReportState = ( {
+	title,
+	description,
+	action,
+	className,
+	descriptionId,
+	headingId,
+	headingRef,
+	headingTabIndex,
+	role,
+}: FeesReportStateProps ): JSX.Element => (
+	<div
+		className={ [
+			'wcpay-reports-state',
+			'wcpay-reports-state--fees-illustrated',
+			className,
+		]
+			.filter( Boolean )
+			.join( ' ' ) }
+		role={ role }
+		aria-labelledby={ headingId }
+		aria-describedby={ descriptionId }
+	>
+		<span className="wcpay-reports-state__icon" aria-hidden="true">
+			<Icon icon={ calendar } size={ 48 } />
+		</span>
+		<div className="wcpay-reports-state__copy">
+			<h2
+				id={ headingId }
+				ref={ headingRef }
+				tabIndex={ headingTabIndex }
+			>
+				{ title }
+			</h2>
+			<p id={ descriptionId }>{ description }</p>
+		</div>
+		{ action }
+	</div>
+);
 
 /**
  * Returns true when the user's visible-fields configuration has changed.
@@ -169,8 +222,9 @@ export const FeesReport = ( {
 	);
 	const hasError = Object.keys( error ).length > 0;
 	const hasFilters = ( view.filters ?? [] ).length > 0 || !! view.search;
-	const isEmpty =
-		! isLoading && ! hasError && rows.length === 0 && ! hasFilters;
+	const hasNoRows = ! isLoading && ! hasError && rows.length === 0;
+	const isInitialEmpty = hasNoRows && ! hasFilters;
+	const isFilteredEmpty = hasNoRows && hasFilters;
 
 	useEffect( () => {
 		isCustomDatePopoverOpenRef.current = isCustomDatePopoverOpen;
@@ -383,36 +437,52 @@ export const FeesReport = ( {
 
 	if ( hasError ) {
 		return (
-			<div
-				className="wcpay-reports-state wcpay-reports-state--error"
+			<FeesReportState
+				title={ __(
+					'Fees report unavailable',
+					'woocommerce-payments'
+				) }
+				description={
+					<>
+						<span>
+							{ __(
+								"We couldn't load your fees data.",
+								'woocommerce-payments'
+							) }
+						</span>{ ' ' }
+						<span>
+							{ __(
+								'Try again in a few minutes.',
+								'woocommerce-payments'
+							) }
+						</span>
+					</>
+				}
+				action={
+					<Button variant="secondary" onClick={ onReload }>
+						{ __( 'Reload report', 'woocommerce-payments' ) }
+					</Button>
+				}
+				className="wcpay-reports-state--error wcpay-reports-state--fees-error"
+				descriptionId="wcpay-reports-fees-error-description"
+				headingId="wcpay-reports-fees-error"
+				headingRef={ errorHeadingRef }
+				headingTabIndex={ -1 }
 				role="alert"
-				aria-labelledby="wcpay-reports-fees-error"
-			>
-				<h2
-					id="wcpay-reports-fees-error"
-					ref={ errorHeadingRef }
-					tabIndex={ -1 }
-				>
-					{ __( 'Fees report unavailable', 'woocommerce-payments' ) }
-				</h2>
-				<Button variant="secondary" onClick={ onReload }>
-					{ __( 'Reload report', 'woocommerce-payments' ) }
-				</Button>
-			</div>
+			/>
 		);
 	}
 
-	if ( isEmpty ) {
+	if ( isInitialEmpty ) {
 		return (
-			<div className="wcpay-reports-state wcpay-reports-state--empty">
-				<h2>{ __( 'No fees yet', 'woocommerce-payments' ) }</h2>
-				<p>
-					{ __(
-						'Fees will appear here once you start receiving payments.',
-						'woocommerce-payments'
-					) }
-				</p>
-			</div>
+			<FeesReportState
+				title={ __( 'No fees yet', 'woocommerce-payments' ) }
+				className="wcpay-reports-state--empty wcpay-reports-state--fees-empty"
+				description={ __(
+					'Fees will appear here once you start receiving payments.',
+					'woocommerce-payments'
+				) }
+			/>
 		);
 	}
 
@@ -482,7 +552,11 @@ export const FeesReport = ( {
 				/>
 			</div>
 			<div
-				className="wcpay-reports-fees__main"
+				className={
+					isFilteredEmpty
+						? 'wcpay-reports-fees__main wcpay-reports-fees__main--filtered-empty'
+						: 'wcpay-reports-fees__main'
+				}
 				ref={ setDataViewsContainer }
 				onPointerDownCapture={ handleDataViewsPointerDownCapture }
 				onClickCapture={ handleDataViewsClickCapture }
@@ -500,6 +574,19 @@ export const FeesReport = ( {
 					searchLabel={ __( 'Search', 'woocommerce-payments' ) }
 					getItemId={ ( item ) => item.transaction_id }
 				/>
+				{ isFilteredEmpty && (
+					<FeesReportState
+						title={ __(
+							'No fees to display',
+							'woocommerce-payments'
+						) }
+						className="wcpay-reports-state--empty wcpay-reports-state--fees-empty"
+						description={ __(
+							'Fees will appear here.',
+							'woocommerce-payments'
+						) }
+					/>
+				) }
 				{ isCustomDatePopoverOpen && (
 					<CustomDateFilterPopover
 						anchor={ customDateAnchor }

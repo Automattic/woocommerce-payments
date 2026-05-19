@@ -290,18 +290,34 @@ describe( 'FeesReport (DataViews)', () => {
 		expect( items.length ).toBeGreaterThan( 0 );
 	} );
 
-	it( 'renders an alert-roled error placeholder with reload button when feesError is set', () => {
+	it( 'renders the Figma error state with alert semantics and reload button when feesError is set', () => {
 		mockUseReportsFees.mockReturnValue( {
 			feesRows: [],
 			feesError: { code: 'oops' },
 			isLoading: false,
 		} );
 		const onReload = jest.fn();
-		render( <FeesReport period={ period } onReload={ onReload } /> );
+		const { container } = render(
+			<FeesReport period={ period } onReload={ onReload } />
+		);
 		// `role="alert"` so AT users hear the error without focus management.
 		expect( screen.getByRole( 'alert' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Fees report unavailable' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( /We couldn't load your fees data\./ )
+		).toBeInTheDocument();
+		expect(
+			container.querySelector( '#wcpay-reports-fees-error-description' )
+		).toHaveTextContent(
+			/We couldn't load your fees data\.\s*Try again in a few minutes\./
+		);
+		expect(
+			container.querySelector( '.wcpay-reports-state--fees-error' )
+		).toBeInTheDocument();
+		expect(
+			container.querySelector( '.wcpay-reports-state__icon svg' )
 		).toBeInTheDocument();
 		fireEvent.click(
 			screen.getByRole( 'button', { name: 'Reload report' } )
@@ -319,11 +335,17 @@ describe( 'FeesReport (DataViews)', () => {
 			feesSummary: { count: 0, sources: [], types: [] },
 			isLoading: false,
 		} );
-		render( <FeesReport period={ period } /> );
+		const { container } = render( <FeesReport period={ period } /> );
 		expect( screen.getByText( 'No fees yet' ) ).toBeInTheDocument();
+		expect(
+			container.querySelector( '.wcpay-reports-state--fees-empty' )
+		).toBeInTheDocument();
+		expect(
+			container.querySelector( '.wcpay-reports-state__icon svg' )
+		).toBeInTheDocument();
 	} );
 
-	it( 'does NOT render the empty state when filters are active (DataViews shows its own no-results UI)', () => {
+	it( 'renders the filtered empty state when filters are active', () => {
 		mockGetQuery.mockReturnValue( {
 			payment_method_type: 'card',
 		} );
@@ -338,6 +360,11 @@ describe( 'FeesReport (DataViews)', () => {
 		} );
 		render( <FeesReport period={ period } /> );
 		expect( screen.queryByText( 'No fees yet' ) ).not.toBeInTheDocument();
+		expect( screen.getByText( 'No fees to display' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Fees will appear here.' )
+		).toBeInTheDocument();
+		expect( screen.getByRole( 'button', { name: 'Reset' } ) ).toBeEnabled();
 	} );
 
 	it( 'fires wcpay_reports_export_click and submits the export request', () => {
