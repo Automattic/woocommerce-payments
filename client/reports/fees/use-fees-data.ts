@@ -51,6 +51,22 @@ const findFilter = (
 	field: string
 ): Filter | undefined => filters?.find( ( f ) => f.field === field );
 
+// DataViews column ids that differ from the backend `sort_field` enum
+// (validated against `Transaction::$fields` server-side). Unmapped ids pass
+// through unchanged — they already match the backend column name.
+const sortFieldByColumnId: Record< string, string > = {
+	payment_method: 'source',
+	transaction_currency: 'customer_currency',
+	deposit_date: 'available_on',
+};
+
+const resolveSortField = ( columnId: string | undefined ): string => {
+	if ( ! columnId ) {
+		return 'date';
+	}
+	return sortFieldByColumnId[ columnId ] ?? columnId;
+};
+
 /**
  * Build a REST query for the Fees endpoint from the DataViews `view` and the
  * standalone date filter. When no date filter is active the query carries no
@@ -74,7 +90,7 @@ export const buildFeesQuery = (
 	const query: FeesQuery = {
 		paged: String( view.page ?? 1 ),
 		per_page: String( view.perPage ?? 25 ),
-		orderby: view.sort?.field || 'date',
+		orderby: resolveSortField( view.sort?.field ),
 		order: ( view.sort?.direction as 'asc' | 'desc' ) || 'desc',
 	};
 

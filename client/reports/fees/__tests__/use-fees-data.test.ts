@@ -53,6 +53,46 @@ describe( 'buildFeesQuery', () => {
 		} );
 	} );
 
+	// The backend validates `sort` against `Transaction::$fields`. A handful of
+	// DataViews column ids don't match those backend column names (e.g.
+	// `payment_method` is the UI label for the SQL column `source`). Sending
+	// the raw column id returns a 500 from the upstream platform.
+	it.each( [
+		[ 'payment_method', 'source' ],
+		[ 'transaction_currency', 'customer_currency' ],
+		[ 'deposit_date', 'available_on' ],
+	] )(
+		'maps DataViews column id "%s" to backend sort field "%s"',
+		( columnId, backendField ) => {
+			const result = buildFeesQuery(
+				baseView( {
+					sort: { field: columnId, direction: 'asc' },
+				} ),
+				undefined,
+				period
+			);
+			expect( result.orderby ).toBe( backendField );
+		}
+	);
+
+	it( 'passes column ids that already match backend fields through unchanged', () => {
+		const result = buildFeesQuery(
+			baseView( { sort: { field: 'amount', direction: 'desc' } } ),
+			undefined,
+			period
+		);
+		expect( result.orderby ).toBe( 'amount' );
+	} );
+
+	it( 'defaults orderby to "date" when no sort is set', () => {
+		const result = buildFeesQuery(
+			baseView( { sort: undefined } ),
+			undefined,
+			period
+		);
+		expect( result.orderby ).toBe( 'date' );
+	} );
+
 	it( 'omits date params when no date filter is set', () => {
 		const result = buildFeesQuery( baseView(), undefined, period );
 		expect( result.date_between ).toBeUndefined();
