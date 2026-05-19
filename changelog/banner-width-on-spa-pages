@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Constrain one-and-done and test-to-live recovery banner width on WC Admin SPA pages so they match the narrow content column instead of spanning full width.

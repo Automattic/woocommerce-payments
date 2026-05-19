@@ -87,6 +87,10 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 10.8.0-test-2 - unreleased =
+* Add - Added staged activation emails that nudge WooPayments merchants who've completed KYC but haven't taken their first live sale toward activating live payments.
+* Fix - Constrain one-and-done and test-to-live recovery banner width on WC Admin SPA pages so they match the narrow content column instead of spanning full width.
+
 = 10.8.0 - 2026-05-20 =
 * Add - Add a terminal payment preparation endpoint for single-step Interac and EFTPOS capture flows.
 * Add - Add card brand logo and last 4 digits to the WooPay express checkout button when available
