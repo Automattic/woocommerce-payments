@@ -35,21 +35,22 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 			false
 	);
 
-	// Ref guard, not effect deps, because React 18 Strict Mode double-invokes
-	// effects in development. Empty deps fires once per real mount; the ref
-	// absorbs the dev-only re-invocation.
-	const viewedRef = useRef( false );
+	// Track the last dispute.id we fired a view event for, rather than a
+	// simple "viewed" boolean. This handles two cases at once: React 18
+	// Strict Mode's dev-only double-invocation of effects (same id, skip),
+	// and the SPA case where the parent updates the `dispute` prop in place
+	// without remounting between transactions (different id, fire).
+	const lastTrackedDisputeIdRef = useRef< string | null >( null );
 	useEffect( () => {
-		if ( viewedRef.current ) {
+		if ( lastTrackedDisputeIdRef.current === dispute.id ) {
 			return;
 		}
 		recordEvent(
 			'wcpay_dispute_outcome_viewed',
 			getDisputeOutcomeTracksProperties( dispute, productType )
 		);
-		viewedRef.current = true;
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [] );
+		lastTrackedDisputeIdRef.current = dispute.id;
+	}, [ dispute, productType ] );
 
 	const fields = getExpectedFieldStatus(
 		dispute.reason,

@@ -195,6 +195,48 @@ describe( 'DisputeOutcomeView', () => {
 			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
 		} );
 
+		it( 'fires again when dispute.id changes between renders (SPA in-place swap)', () => {
+			// Simulates the SPA navigating from one transaction to the next
+			// without unmounting DisputeOutcomeView: the parent passes a new
+			// dispute prop in place. The id-keyed ref must allow the event
+			// to fire for the new dispute.
+			const first = buildDispute( {
+				id: 'dp_first',
+				metadata: { __product_type: 'physical_product' },
+			} );
+			const second = buildDispute( {
+				id: 'dp_second',
+				metadata: { __product_type: 'digital_product_or_service' },
+				status: 'won',
+				reason: 'fraudulent',
+			} );
+
+			const { rerender } = render(
+				<DisputeOutcomeView dispute={ first } />
+			);
+			rerender( <DisputeOutcomeView dispute={ second } /> );
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 2 );
+			expect( mockRecordEvent ).toHaveBeenNthCalledWith(
+				1,
+				'wcpay_dispute_outcome_viewed',
+				expect.objectContaining( {
+					dispute_id: 'dp_first',
+					dispute_status: 'lost',
+					product_type: 'physical_product',
+				} )
+			);
+			expect( mockRecordEvent ).toHaveBeenNthCalledWith(
+				2,
+				'wcpay_dispute_outcome_viewed',
+				expect.objectContaining( {
+					dispute_id: 'dp_second',
+					dispute_status: 'won',
+					product_type: 'digital_product_or_service',
+				} )
+			);
+		} );
+
 		it( 'fires for warning_closed inquiries too', () => {
 			render(
 				<DisputeOutcomeView
