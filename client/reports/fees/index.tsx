@@ -11,12 +11,12 @@ import React, {
 	useRef,
 	useState,
 } from 'react';
-import { createPortal } from 'react-dom';
 import { Button } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { DataViews } from '@wordpress/dataviews';
+import type { Filter, View } from '@wordpress/dataviews';
 
 /**
  * Internal dependencies
@@ -28,27 +28,16 @@ import {
 	reportsFeesDownloadEndpoint,
 } from 'wcpay/data/reports/resolvers';
 import { recordEvent } from 'tracks';
-import { DateFilter } from 'wcpay/reports/date-filter';
 import type { DateFilterValue } from 'wcpay/reports/date-filter';
 import { useFeesView } from './use-fees-view';
 import { useFeesData } from './use-fees-data';
-import { useFeesDateFilter } from './use-fees-date-filter';
-import { dateFilterAnchorFieldId, getFeesFields } from './fields';
+import { getFeesFields } from './fields';
+import { CustomDateFilterPopover } from './custom-date-filter-popover';
+import {
+	encodeCustomDateFilterValue,
+	resolveFeesDateFilterValue,
+} from './date-filter-values';
 import type { ReportsPeriodRange } from '../period-selector';
-import type { Filter, View, ViewTable } from '@wordpress/dataviews';
-
-// Synthetic filter entry attached to the anchor field whenever `dateFilter`
-// is set. It carries no real filtering semantics (`useFeesData` / `useFeesView`
-// only read `payment_method` and `type`) — its sole purpose is to flip
-// DataViews' built-in Reset button from disabled to enabled, so Reset can
-// surface naturally (no custom styling, no aria-disabled overrides) and
-// participate in the unified "clear everything" action.
-const dateFilterAnchorValue = '__anchor__';
-const dateAnchorFilter: Filter = {
-	field: dateFilterAnchorFieldId,
-	operator: 'is',
-	value: dateFilterAnchorValue,
-};
 
 interface FeesReportProps {
 	period: ReportsPeriodRange;
@@ -65,7 +54,7 @@ const haveFieldsChanged = (
 ): boolean => prev.join( '|' ) !== next.join( '|' );
 
 /**
- * Returns true when the standalone date filter (operator + value) differs.
+ * Returns true when the DataViews date filter (operator + value) differs.
  * Used to scope the `wcpay_reports_date_range_changed` analytics event.
  */
 const hasDateFilterChanged = (
@@ -84,53 +73,108 @@ const hasDateFilterChanged = (
 	);
 };
 
+const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
+	filters.find( ( filter ) => filter.field === 'date' );
+
+const customDatePopoverId = 'wcpay-fees-date-filter-popover';
+
+const getResolvedDateFilter = ( view: View ): DateFilterValue | undefined =>
+	resolveFeesDateFilterValue( findDateFilter( view.filters )?.value );
+
+const findDateFilterAnchor = (
+	container: HTMLElement | null
+): HTMLElement | null => {
+	if ( ! container ) {
+		return null;
+	}
+
+	const chips = Array.from(
+		container.querySelectorAll< HTMLElement >(
+			'.dataviews-filters__summary-chip'
+		)
+	);
+	return (
+		chips.find( ( chip ) =>
+			chip.textContent?.trim().toLowerCase().startsWith( 'date' )
+		) ?? null
+	);
+};
+
+const findDateFilterAnchorFromEvent = (
+	target: EventTarget | null,
+	container: HTMLElement | null
+): HTMLElement | null => {
+	if ( ! container || ! ( target instanceof HTMLElement ) ) {
+		return null;
+	}
+
+	const chip = target.closest< HTMLElement >(
+		'.dataviews-filters__summary-chip'
+	);
+	if ( ! chip || ! container.contains( chip ) ) {
+		return null;
+	}
+
+	return chip.textContent?.trim().toLowerCase().startsWith( 'date' )
+		? chip
+		: null;
+};
+
+const replaceDateFilter = (
+	filters: Filter[] = [],
+	nextDateFilter: Filter | undefined
+): Filter[] => {
+	const withoutDate = filters.filter( ( filter ) => filter.field !== 'date' );
+	return nextDateFilter ? [ ...withoutDate, nextDateFilter ] : withoutDate;
+};
+
 export const FeesReport = ( {
 	period,
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
 	const [ view, setView ] = useFeesView();
-	const [ dateFilter, setDateFilter ] = useFeesDateFilter();
+	const [ dataViewsContainer, setDataViewsContainer ] =
+		useState< HTMLDivElement | null >( null );
+	const [ customDateAnchor, setCustomDateAnchor ] =
+		useState< HTMLElement | null >( null );
+	const [ isCustomDatePopoverOpen, setIsCustomDatePopoverOpen ] =
+		useState( false );
+	const [ customDateInitialValue, setCustomDateInitialValue ] = useState<
+		DateFilterValue | undefined
+	>( undefined );
+	const isCustomDatePopoverOpenRef = useRef( isCustomDatePopoverOpen );
+	const ignoreNextDateFilterClickRef = useRef( false );
 	const {
 		feesQuery,
 		rows,
 		totalItems,
 		totalPages,
+		dateElements,
 		methodElements,
 		typeElements,
 		isLoading,
 		error,
-	} = useFeesData( view, dateFilter, period );
+	} = useFeesData( view, period );
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );
 
 	const fields = useMemo(
-		() => getFeesFields( { methodElements, typeElements } ),
-		[ methodElements, typeElements ]
+		() =>
+			getFeesFields( {
+				dateElements,
+				methodElements,
+				typeElements,
+			} ),
+		[ dateElements, methodElements, typeElements ]
 	);
-
-	// Pass DataViews an "augmented" view that injects the synthetic anchor
-	// filter whenever `dateFilter` is set. DataViews uses `view.filters` to
-	// decide whether Reset is enabled (it requires at least one filter with a
-	// value or one non-primary filter — see `ResetFilter` in `dataviews-filters`).
-	// Without the synthetic, Reset would be invisible (`opacity: 0`) whenever
-	// only the standalone date filter is active. `handleViewChange` strips the
-	// synthetic back out before persisting to `useFeesView`, so URL/user_meta
-	// never see it.
-	const augmentedView = useMemo< View >( () => {
-		if ( ! dateFilter ) {
-			return view;
-		}
-		const filters = ( view as ViewTable ).filters ?? [];
-		return {
-			...view,
-			filters: [ ...filters, dateAnchorFilter ],
-		};
-	}, [ view, dateFilter ] );
 	const hasError = Object.keys( error ).length > 0;
-	const hasFilters =
-		( view.filters ?? [] ).length > 0 || !! view.search || !! dateFilter;
+	const hasFilters = ( view.filters ?? [] ).length > 0 || !! view.search;
 	const isEmpty =
 		! isLoading && ! hasError && rows.length === 0 && ! hasFilters;
+
+	useEffect( () => {
+		isCustomDatePopoverOpenRef.current = isCustomDatePopoverOpen;
+	}, [ isCustomDatePopoverOpen ] );
 
 	// Move focus to the error region and announce when an error surfaces, so
 	// keyboard/AT users notice the table disappearing. `role="alert"` on the
@@ -160,155 +204,182 @@ export const FeesReport = ( {
 		previousLoadingRef.current = isLoading;
 	}, [ isLoading, hasError, totalItems ] );
 
+	useLayoutEffect( () => {
+		if ( isCustomDatePopoverOpen ) {
+			setCustomDateAnchor( findDateFilterAnchor( dataViewsContainer ) );
+		}
+	}, [ dataViewsContainer, isCustomDatePopoverOpen, view.filters ] );
+
+	useLayoutEffect( () => {
+		if ( ! customDateAnchor ) {
+			return;
+		}
+
+		customDateAnchor.setAttribute( 'aria-haspopup', 'dialog' );
+		customDateAnchor.setAttribute(
+			'aria-expanded',
+			String( isCustomDatePopoverOpen )
+		);
+
+		if ( isCustomDatePopoverOpen ) {
+			customDateAnchor.setAttribute(
+				'aria-controls',
+				customDatePopoverId
+			);
+			return;
+		}
+
+		customDateAnchor.removeAttribute( 'aria-controls' );
+	}, [ customDateAnchor, isCustomDatePopoverOpen ] );
+
+	const openCustomDatePopover = useCallback(
+		( anchor: HTMLElement | null ) => {
+			setCustomDateAnchor( anchor );
+			setCustomDateInitialValue( getResolvedDateFilter( view ) );
+			isCustomDatePopoverOpenRef.current = true;
+			setIsCustomDatePopoverOpen( true );
+		},
+		[ view ]
+	);
+
+	const closeCustomDatePopoverFromTrigger = useCallback(
+		( anchor: HTMLElement | null ) => {
+			isCustomDatePopoverOpenRef.current = false;
+			setIsCustomDatePopoverOpen( false );
+			setCustomDateInitialValue( undefined );
+			requestAnimationFrame( () => anchor?.focus() );
+		},
+		[]
+	);
+
+	const toggleCustomDatePopover = useCallback(
+		( anchor: HTMLElement ) => {
+			if ( isCustomDatePopoverOpenRef.current ) {
+				closeCustomDatePopoverFromTrigger( anchor );
+				return;
+			}
+
+			openCustomDatePopover( anchor );
+		},
+		[ closeCustomDatePopoverFromTrigger, openCustomDatePopover ]
+	);
+
+	const handleDataViewsPointerDownCapture = useCallback(
+		( event: React.PointerEvent< HTMLDivElement > ) => {
+			const dateFilterAnchor = findDateFilterAnchorFromEvent(
+				event.target,
+				dataViewsContainer
+			);
+			if (
+				! dateFilterAnchor ||
+				( event.button !== 0 && event.button !== undefined )
+			) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+			ignoreNextDateFilterClickRef.current = true;
+			toggleCustomDatePopover( dateFilterAnchor );
+		},
+		[ dataViewsContainer, toggleCustomDatePopover ]
+	);
+
+	const handleDataViewsClickCapture = useCallback(
+		( event: React.MouseEvent< HTMLDivElement > ) => {
+			const dateFilterAnchor = findDateFilterAnchorFromEvent(
+				event.target,
+				dataViewsContainer
+			);
+			if ( ! dateFilterAnchor ) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+			if ( ignoreNextDateFilterClickRef.current ) {
+				ignoreNextDateFilterClickRef.current = false;
+				return;
+			}
+
+			toggleCustomDatePopover( dateFilterAnchor );
+		},
+		[ dataViewsContainer, toggleCustomDatePopover ]
+	);
+
+	const handleDataViewsKeyDownCapture = useCallback(
+		( event: React.KeyboardEvent< HTMLDivElement > ) => {
+			if ( event.key !== 'Enter' && event.key !== ' ' ) {
+				return;
+			}
+
+			const dateFilterAnchor = findDateFilterAnchorFromEvent(
+				event.target,
+				dataViewsContainer
+			);
+			if ( ! dateFilterAnchor ) {
+				return;
+			}
+
+			event.preventDefault();
+			event.stopPropagation();
+			toggleCustomDatePopover( dateFilterAnchor );
+		},
+		[ dataViewsContainer, toggleCustomDatePopover ]
+	);
+
 	const handleViewChange = useCallback(
 		( next: View ) => {
-			// Strip the synthetic anchor filter before passing the view back
-			// out — `useFeesView` / `useFeesData` mustn't see it, and Reset's
-			// `filters: []` payload arrives already without it.
-			const strippedFilters = (
-				( next as ViewTable ).filters ?? []
-			).filter( ( f ) => f.field !== dateFilterAnchorFieldId );
-			const stripped: View = {
-				...next,
-				filters: strippedFilters,
-			};
-
-			if ( haveFieldsChanged( view.fields, stripped.fields ) ) {
+			if ( haveFieldsChanged( view.fields, next.fields ) ) {
 				recordEvent( 'wcpay_reports_view_options_opened', {
 					report: 'fees',
 				} );
 			}
-			// DataViews' Reset button calls onChangeView with this exact
-			// shape — `{ ...view, page: 1, search: '', filters: [] }`. The
-			// trio search-cleared + filters-cleared + page-1 only happens on
-			// Reset, so we can use it to mirror "Reset everything" semantics
-			// onto our standalone date chip too. The transition guard fires
-			// whenever ANY of the resettable inputs (search, DataViews filters,
-			// or our standalone date filter) was active beforehand — without
-			// it, a Reset payload received against an already-empty view would
-			// also match the shape and produce a stray dateFilter clear.
-			const isReset =
-				stripped.search === '' &&
-				strippedFilters.length === 0 &&
-				stripped.page === 1 &&
-				( view.search !== '' ||
-					( view.filters ?? [] ).length > 0 ||
-					!! dateFilter );
-			if ( isReset && dateFilter ) {
-				setDateFilter( undefined );
-			}
-			setView( stripped );
-		},
-		[
-			dateFilter,
-			setDateFilter,
-			setView,
-			view.fields,
-			view.filters,
-			view.search,
-		]
-	);
 
-	const handleDateFilterChange = useCallback(
-		( next: DateFilterValue | undefined ) => {
-			if ( hasDateFilterChanged( dateFilter, next ) ) {
+			if (
+				hasDateFilterChanged(
+					getResolvedDateFilter( view ),
+					getResolvedDateFilter( next )
+				)
+			) {
 				recordEvent( 'wcpay_reports_date_range_changed', {
 					report: 'fees',
 				} );
 			}
-			setDateFilter( next );
+
+			setView( next );
 		},
-		[ dateFilter, setDateFilter ]
+		[ setView, view ]
 	);
 
-	// Portal target inside DataViews' `.dataviews-filters__container`. The
-	// container is gated by `<DataViewsFilters />` (rendered when the field
-	// list contains any primary filter — see fees/fields.tsx anchor) AND by
-	// `Filters()` (returns null unless at least one filter is visible). The
-	// anchor field's `isPrimary: true` keeps both gates open. We append the
-	// target at the end of the container's children (React's reconciliation
-	// is more tolerant of foreign nodes at the tail) and let CSS `order: -1`
-	// float the chip to the visual front of the HStack.
-	//
-	// We track the wrapper via state (not useRef) so the `useLayoutEffect`
-	// below re-runs when FeesReport flips from its empty/error placeholder
-	// (which omits the wrapper) into the DataViews path. With a plain ref +
-	// `[]` deps, the effect would fire once at mount with `current === null`
-	// and never recover.
-	const [ dataViewsWrapper, setDataViewsWrapper ] =
-		useState< HTMLDivElement | null >( null );
-	const [ filterPortalTarget, setFilterPortalTarget ] =
-		useState< HTMLElement | null >( null );
-	useLayoutEffect( () => {
-		if ( ! dataViewsWrapper ) {
-			setFilterPortalTarget( null );
-			return;
-		}
-
-		let attached: HTMLDivElement | null = null;
-
-		const ensureAttached = () => {
-			const container = dataViewsWrapper.querySelector< HTMLElement >(
-				'.dataviews-filters__container'
-			);
-			if ( ! container ) {
-				if ( attached ) {
-					attached = null;
-					setFilterPortalTarget( null );
-				}
-				return;
-			}
-			if ( attached && attached.parentNode === container ) {
-				return;
-			}
-			const target = document.createElement( 'div' );
-			target.className = 'wcpay-date-filter-portal-target';
-			container.appendChild( target );
-			attached = target;
-			setFilterPortalTarget( target );
-		};
-
-		ensureAttached();
-
-		const observer = new MutationObserver( ensureAttached );
-		observer.observe( dataViewsWrapper, {
-			childList: true,
-			subtree: true,
-		} );
-
-		// After a Reset click, focus stays on the Reset button. DataViews'
-		// CSS keeps the now-`aria-disabled` button visible while focused
-		// (`.dataviews-filters__reset-button[aria-disabled=true]:focus { opacity: 1 }`),
-		// so the button lingers on screen until the user clicks somewhere
-		// else. Defer a blur to the next frame so it runs *after* React's
-		// reset re-render — without it, the button would remain visibly
-		// focused even though there's nothing left to reset.
-		const handleResetBlur = ( event: Event ) => {
-			const target = event.target as HTMLElement | null;
-			if ( ! target?.closest?.( '.dataviews-filters__reset-button' ) ) {
-				return;
-			}
-			requestAnimationFrame( () => {
-				const active = document.activeElement as HTMLElement | null;
-				if (
-					active?.classList.contains(
-						'dataviews-filters__reset-button'
-					)
-				) {
-					active.blur();
-				}
+	const closeCustomDatePopover = useCallback( () => {
+		isCustomDatePopoverOpenRef.current = false;
+		setIsCustomDatePopoverOpen( false );
+		setCustomDateInitialValue( undefined );
+		const dateFilter = findDateFilter( view.filters );
+		if ( dateFilter && dateFilter.value === undefined ) {
+			setView( {
+				...view,
+				filters: replaceDateFilter( view.filters, undefined ),
 			} );
-		};
-		dataViewsWrapper.addEventListener( 'click', handleResetBlur );
+		}
+	}, [ setView, view ] );
 
-		return () => {
-			observer.disconnect();
-			dataViewsWrapper.removeEventListener( 'click', handleResetBlur );
-			if ( attached?.parentNode ) {
-				attached.parentNode.removeChild( attached );
-			}
-		};
-	}, [ dataViewsWrapper ] );
+	const changeCustomDateFilter = useCallback(
+		( nextDateFilter: DateFilterValue ) => {
+			const nextView = {
+				...view,
+				page: 1,
+				filters: replaceDateFilter( view.filters, {
+					field: 'date',
+					operator: 'is',
+					value: encodeCustomDateFilterValue( nextDateFilter ),
+				} ),
+			};
+			handleViewChange( nextView );
+		},
+		[ handleViewChange, view ]
+	);
 
 	if ( hasError ) {
 		return (
@@ -412,11 +483,14 @@ export const FeesReport = ( {
 			</div>
 			<div
 				className="wcpay-reports-fees__main"
-				ref={ setDataViewsWrapper }
+				ref={ setDataViewsContainer }
+				onPointerDownCapture={ handleDataViewsPointerDownCapture }
+				onClickCapture={ handleDataViewsClickCapture }
+				onKeyDownCapture={ handleDataViewsKeyDownCapture }
 			>
 				<DataViews
 					data={ rows }
-					view={ augmentedView }
+					view={ view }
 					onChangeView={ handleViewChange }
 					fields={ fields }
 					paginationInfo={ { totalItems, totalPages } }
@@ -426,14 +500,15 @@ export const FeesReport = ( {
 					searchLabel={ __( 'Search', 'woocommerce-payments' ) }
 					getItemId={ ( item ) => item.transaction_id }
 				/>
-				{ filterPortalTarget &&
-					createPortal(
-						<DateFilter
-							value={ dateFilter }
-							onChange={ handleDateFilterChange }
-						/>,
-						filterPortalTarget
-					) }
+				{ isCustomDatePopoverOpen && (
+					<CustomDateFilterPopover
+						anchor={ customDateAnchor }
+						id={ customDatePopoverId }
+						initialValue={ customDateInitialValue }
+						onChange={ changeCustomDateFilter }
+						onClose={ closeCustomDatePopover }
+					/>
+				) }
 			</div>
 		</div>
 	);

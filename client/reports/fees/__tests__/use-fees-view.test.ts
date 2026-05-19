@@ -22,6 +22,7 @@ jest.mock( '@woocommerce/data', () => ( {
 
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';
+import { encodeCustomDateFilterValue } from '../date-filter-values';
 
 beforeEach( () => {
 	mockUpdateQueryString.mockClear();
@@ -75,22 +76,39 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
-	it( 'does not emit a date filter into view.filters', () => {
-		// Date filtering moved out of view.filters into a dedicated hook
-		// (`useFeesDateFilter`). useFeesView should ignore date_* URL keys
-		// so DataViews never sees a stray date filter chip it can't render.
+	it( 'reads date_preset from URL into the native Date filter', () => {
 		mockGetQuery.mockReturnValue( {
-			date_between: [ '2026-03-01', '2026-03-31' ],
-			date_before: '2026-04-30',
-			date_after: '2026-01-01',
-			date_preset: 'this_month',
+			date_preset: 'month_to_date',
 		} );
 		const { result } = renderHook( () => useFeesView() );
-		expect(
-			( result.current[ 0 ].filters ?? [] ).some(
-				( f ) => f.field === 'date'
-			)
-		).toBe( false );
+		expect( result.current[ 0 ].filters ).toEqual(
+			expect.arrayContaining( [
+				{
+					field: 'date',
+					operator: 'is',
+					value: 'month_to_date',
+				},
+			] )
+		);
+	} );
+
+	it( 'reads custom date bounds from URL into the native Date filter', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01', '2026-03-31' ],
+		} );
+		const { result } = renderHook( () => useFeesView() );
+		expect( result.current[ 0 ].filters ).toEqual(
+			expect.arrayContaining( [
+				{
+					field: 'date',
+					operator: 'is',
+					value: encodeCustomDateFilterValue( {
+						operator: 'between',
+						value: [ '2026-03-01', '2026-03-31' ],
+					} ),
+				},
+			] )
+		);
 	} );
 
 	it( 'reads fields from user_meta', () => {
@@ -119,6 +137,34 @@ describe( 'useFeesView', () => {
 		} );
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			expect.objectContaining( { orderby: 'fees', order: 'asc' } ),
+			'/payments/reports'
+		);
+	} );
+
+	it( 'pushes native Date filter changes to URL', () => {
+		const { result } = renderHook( () => useFeesView() );
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'date',
+						operator: 'is',
+						value: encodeCustomDateFilterValue( {
+							operator: 'before',
+							value: '2026-03-31',
+						} ),
+					},
+				],
+			} );
+		} );
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				date_preset: undefined,
+				date_between: undefined,
+				date_before: '2026-03-31',
+				date_after: undefined,
+			} ),
 			'/payments/reports'
 		);
 	} );

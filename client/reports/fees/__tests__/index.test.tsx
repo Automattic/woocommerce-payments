@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
@@ -180,15 +180,97 @@ describe( 'FeesReport (DataViews)', () => {
 
 	it( 'renders the Date filter chip', () => {
 		render( <FeesReport period={ period } /> );
-		// The chip's trigger is a button with aria-haspopup="dialog"; it
-		// uniquely identifies our chip vs other "Date"-labelled controls
-		// from DataViews (e.g. the sortable Date & time column header).
-		const triggers = screen
-			.getAllByRole( 'button', { name: /date/i } )
-			.filter(
-				( el ) => el.getAttribute( 'aria-haspopup' ) === 'dialog'
-			);
-		expect( triggers ).toHaveLength( 1 );
+		expect(
+			screen.getByRole( 'button', { name: /^date$/i } )
+		).toBeInTheDocument();
+	} );
+
+	it( 'opens the custom date popover directly from the Date filter chip', async () => {
+		render( <FeesReport period={ period } /> );
+
+		fireEvent.click( screen.getByRole( 'button', { name: /^date$/i } ) );
+
+		expect(
+			await screen.findByRole( 'dialog', {
+				name: 'Custom date filter',
+			} )
+		).toBeInTheDocument();
+		await waitFor( () =>
+			expect(
+				screen.queryByRole( 'option', { name: 'Custom date…' } )
+			).not.toBeInTheDocument()
+		);
+	} );
+
+	it( 'toggles the custom date popover closed from the Date filter chip', async () => {
+		render( <FeesReport period={ period } /> );
+
+		const dateFilterChip = screen.getByRole( 'button', {
+			name: /^date$/i,
+		} );
+		fireEvent.pointerDown( dateFilterChip, { button: 0 } );
+		expect(
+			await screen.findByRole( 'dialog', {
+				name: 'Custom date filter',
+			} )
+		).toBeInTheDocument();
+
+		fireEvent.click( dateFilterChip );
+		expect(
+			screen.getByRole( 'dialog', {
+				name: 'Custom date filter',
+			} )
+		).toBeInTheDocument();
+
+		fireEvent.pointerDown( dateFilterChip, { button: 0 } );
+
+		await waitFor( () =>
+			expect(
+				screen.queryByRole( 'dialog', {
+					name: 'Custom date filter',
+				} )
+			).not.toBeInTheDocument()
+		);
+
+		fireEvent.click( dateFilterChip );
+		expect(
+			screen.queryByRole( 'dialog', {
+				name: 'Custom date filter',
+			} )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'does not expose the internal date-filter anchor text', () => {
+		render( <FeesReport period={ period } /> );
+		expect(
+			screen.queryByText( '_wcpay_date_filter_anchor' )
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'clears search, report filters, and the date filter from the report reset button', () => {
+		mockGetQuery.mockReturnValue( {
+			search: [ 'txn_1' ],
+			payment_method_type: 'card',
+			type: [ 'charge' ],
+			date_before: '2026-03-31',
+		} );
+
+		render( <FeesReport period={ period } /> );
+		fireEvent.click( screen.getByRole( 'button', { name: 'Reset' } ) );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				paged: '1',
+				search: undefined,
+				date_preset: undefined,
+				date_between: undefined,
+				date_before: undefined,
+				date_after: undefined,
+				payment_method_type: undefined,
+				type: undefined,
+			} ),
+			'/payments/reports'
+		);
 	} );
 
 	it( 'reads sort from URL into the query', () => {

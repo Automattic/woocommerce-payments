@@ -12,9 +12,12 @@ import type { View, Filter } from '@wordpress/dataviews';
 import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
 import type { ReportsFee } from 'wcpay/data/reports/hooks';
 import { formatStringValue } from 'wcpay/utils';
-import type { DateFilterValue } from 'wcpay/reports/date-filter';
 import type { ReportsPeriodRange } from '../period-selector';
 import { displayMethod, displayType } from './strings';
+import {
+	buildFeesDateFilterElements,
+	resolveFeesDateFilterValue,
+} from './date-filter-values';
 
 // Default fee-bearing transaction types, mirroring DEFAULT_FEE_BEARING_TYPES in
 // the PHP controller. The summary endpoint exposes `sources` (payment methods
@@ -68,9 +71,9 @@ const resolveSortField = ( columnId: string | undefined ): string => {
 };
 
 /**
- * Build a REST query for the Fees endpoint from the DataViews `view` and the
- * standalone date filter. When no date filter is active the query carries no
- * date bounds, so the endpoint returns all available fees.
+ * Build a REST query for the Fees endpoint from the DataViews `view`. When no
+ * date filter is active the query carries no date bounds, so the endpoint
+ * returns all available fees.
  *
  * NOTE: The previous TableCard implementation accepted `order_id`,
  * `deposit_id`, and `customer_email` filter params, which the PHP controller
@@ -79,11 +82,10 @@ const resolveSortField = ( columnId: string | undefined ): string => {
  *
  * The `period` argument is retained on the signature so callers don't need to
  * change yet, but it no longer affects the query — date filtering is driven
- * entirely by the standalone Date filter component.
+ * by the native DataViews Date filter.
  */
 export const buildFeesQuery = (
 	view: View,
-	dateFilter: DateFilterValue | undefined,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	period?: ReportsPeriodRange
 ): FeesQuery => {
@@ -94,6 +96,9 @@ export const buildFeesQuery = (
 		order: ( view.sort?.direction as 'asc' | 'desc' ) || 'desc',
 	};
 
+	const dateFilter = resolveFeesDateFilterValue(
+		findFilter( view.filters, 'date' )?.value
+	);
 	if ( dateFilter ) {
 		switch ( dateFilter.operator ) {
 			case 'on':
@@ -145,6 +150,7 @@ interface UseFeesDataResult {
 	rows: ReportsFee[];
 	totalItems: number;
 	totalPages: number;
+	dateElements: Array< { value: string; label: string } >;
 	methodElements: Array< { value: string; label: string } >;
 	typeElements: Array< { value: string; label: string } >;
 	isLoading: boolean;
@@ -175,12 +181,11 @@ const buildTypeElements = (
 
 export const useFeesData = (
 	view: View,
-	dateFilter: DateFilterValue | undefined,
 	period: ReportsPeriodRange
 ): UseFeesDataResult => {
 	const feesQuery = useMemo(
-		() => buildFeesQuery( view, dateFilter, period ),
-		[ view, dateFilter, period ]
+		() => buildFeesQuery( view, period ),
+		[ view, period ]
 	);
 	const { feesRows, feesError = {}, isLoading } = useReportsFees( feesQuery );
 	const { feesSummary, isLoading: isSummaryLoading } =
@@ -227,12 +232,20 @@ export const useFeesData = (
 		() => buildTypeElements( [ ...feeBearingTypes ] ),
 		[]
 	);
+	const activeDateValue = view.filters?.find(
+		( filter ) => filter.field === 'date'
+	)?.value;
+	const dateElements = useMemo(
+		() => buildFeesDateFilterElements( activeDateValue ),
+		[ activeDateValue ]
+	);
 
 	return {
 		feesQuery,
 		rows: feesRows,
 		totalItems,
 		totalPages,
+		dateElements,
 		methodElements,
 		typeElements,
 		isLoading: isLoading || isSummaryLoading,

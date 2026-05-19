@@ -18,6 +18,10 @@ import {
 	PersistedFeesView,
 	FeesFieldId,
 } from './view';
+import {
+	parseFeesDateFilterValueFromQuery,
+	serializeFeesDateFilterValueToQuery,
+} from './date-filter-values';
 
 const reportsPath = '/payments/reports';
 const legacyHiddenColumnsKey = 'wc_payments_reports_fees_hidden_columns';
@@ -31,6 +35,15 @@ const buildFiltersFromQuery = (
 	query: Record< string, unknown >
 ): Filter[] => {
 	const filters: Filter[] = [];
+	const dateValue = parseFeesDateFilterValueFromQuery( query );
+
+	if ( dateValue ) {
+		filters.push( {
+			field: 'date',
+			operator: 'is',
+			value: dateValue,
+		} );
+	}
 
 	if ( query.payment_method_type ) {
 		filters.push( {
@@ -62,22 +75,28 @@ const isPersistedShapeEqual = (
 /**
  * Translate active filters into a URL-query patch that clears stale filter
  * keys (sets them to `undefined`) and writes only the keys that are currently
- * active. Always returns a full 2-key object — every key not set by an active
- * filter is explicitly `undefined` so `updateQueryString` removes it.
- *
- * Date filtering is owned by `useFeesDateFilter` and writes its own keys
- * (`date_between` / `date_before` / `date_after`) separately.
+ * active. Always returns the full filter-query object — every key not set by
+ * an active filter is explicitly `undefined` so `updateQueryString` removes it.
  */
 const buildFilterQueryParams = (
 	filters: Filter[]
 ): Record< string, unknown > => {
 	const params: Record< string, unknown > = {
+		date_preset: undefined,
+		date_between: undefined,
+		date_before: undefined,
+		date_after: undefined,
 		payment_method_type: undefined,
 		type: undefined,
 	};
 
 	for ( const filter of filters ) {
-		if ( filter.field === 'payment_method' ) {
+		if ( filter.field === 'date' ) {
+			Object.assign(
+				params,
+				serializeFeesDateFilterValueToQuery( filter.value )
+			);
+		} else if ( filter.field === 'payment_method' ) {
 			params.payment_method_type = filter.value;
 		} else if ( filter.field === 'type' ) {
 			params.type = filter.value;

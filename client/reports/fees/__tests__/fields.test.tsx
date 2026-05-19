@@ -75,11 +75,18 @@ const baseRow: ReportsFee = {
 	deposit_id: 'po_abc',
 };
 
+const getTestFeesFields = () =>
+	getFeesFields( {
+		dateElements: [
+			{ value: 'last_month', label: 'Last month' },
+			{ value: '__custom_date__', label: 'Custom date...' },
+		],
+		methodElements: [ { value: 'card', label: 'Card' } ],
+		typeElements: [ { value: 'charge', label: 'Charge' } ],
+	} );
+
 const renderField = ( fieldId: string, row: ReportsFee ) => {
-	const field = getFeesFields( {
-		methodElements: [],
-		typeElements: [],
-	} ).find( ( f ) => f.id === fieldId );
+	const field = getTestFeesFields().find( ( f ) => f.id === fieldId );
 	if ( ! field || ! field.render ) {
 		throw new Error( `No render for ${ fieldId }` );
 	}
@@ -159,19 +166,22 @@ describe( 'getFeesFields render functions', () => {
 } );
 
 describe( 'getFeesFields field configuration', () => {
+	it( 'does not include an internal date-filter anchor field', () => {
+		const fields = getTestFeesFields();
+		expect(
+			fields.find( ( f ) => f.id === '_wcpay_date_filter_anchor' )
+		).toBeUndefined();
+	} );
+
 	it( 'marks transaction_id as not hideable', () => {
-		const field = getFeesFields( {
-			methodElements: [],
-			typeElements: [],
-		} ).find( ( f ) => f.id === 'transaction_id' );
+		const field = getTestFeesFields().find(
+			( f ) => f.id === 'transaction_id'
+		);
 		expect( field?.enableHiding ).toBe( false );
 	} );
 
 	it( 'marks date, amount, and fees as sortable', () => {
-		const fields = getFeesFields( {
-			methodElements: [],
-			typeElements: [],
-		} );
+		const fields = getTestFeesFields();
 		[ 'date', 'amount', 'fees' ].forEach( ( id ) => {
 			expect( fields.find( ( f ) => f.id === id )?.enableSorting ).toBe(
 				true
@@ -179,14 +189,35 @@ describe( 'getFeesFields field configuration', () => {
 		} );
 	} );
 
-	it( 'wires payment_method elements from input', () => {
-		const fields = getFeesFields( {
-			methodElements: [ { value: 'card', label: 'Card' } ],
-			typeElements: [],
+	it( 'configures Date as the primary native DataViews filter', () => {
+		const field = getTestFeesFields().find( ( f ) => f.id === 'date' );
+		expect( field?.label ).toBe( 'Date' );
+		expect( field?.header ).toBe( 'Date & time' );
+		expect( field?.elements ).toEqual(
+			expect.arrayContaining( [
+				{ value: 'last_month', label: 'Last month' },
+				{ value: '__custom_date__', label: 'Custom date...' },
+			] )
+		);
+		expect( field?.filterBy ).toEqual( {
+			isPrimary: true,
+			operators: [ 'is' ],
 		} );
-		const field = fields.find( ( f ) => f.id === 'payment_method' );
-		expect( field?.elements ).toEqual( [
-			{ value: 'card', label: 'Card' },
-		] );
+	} );
+
+	it( 'configures payment_method and type as native DataViews filters', () => {
+		const fields = getTestFeesFields();
+		expect( fields.find( ( f ) => f.id === 'payment_method' ) ).toEqual(
+			expect.objectContaining( {
+				elements: [ { value: 'card', label: 'Card' } ],
+				filterBy: { operators: [ 'is' ] },
+			} )
+		);
+		expect( fields.find( ( f ) => f.id === 'type' ) ).toEqual(
+			expect.objectContaining( {
+				elements: [ { value: 'charge', label: 'Charge' } ],
+				filterBy: { operators: [ 'isAny' ] },
+			} )
+		);
 	} );
 } );
