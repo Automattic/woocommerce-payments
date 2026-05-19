@@ -14,8 +14,8 @@ import type { ReportsFee } from 'wcpay/data/reports/hooks';
 
 jest.mock( 'wcpay/components/details-link', () => ( {
 	getDetailsURL: jest.fn(
-		( id: string ) =>
-			`/admin.php?page=wc-admin&path=/payments/transactions/details&id=${ id }`
+		( id: string, parentSegment: string ) =>
+			`/admin.php?page=wc-admin&path=/payments/${ parentSegment }/details&id=${ id }`
 	),
 } ) );
 
@@ -104,15 +104,14 @@ const renderField = ( fieldId: string, row: ReportsFee ) => {
 };
 
 describe( 'getFeesFields render functions', () => {
-	it( 'renders the transaction_id column as the single keyboard-reachable link per row', () => {
+	it( 'renders the transaction_id column as a link to the transaction details', () => {
 		renderField( 'transaction_id', baseRow );
 		const link = screen.getByRole( 'link' );
 		expect( link ).toHaveAttribute(
 			'href',
 			expect.stringContaining( 'transaction_id=txn_123' )
 		);
-		// No tabIndex="-1" — `transaction_id` is the one focusable link per
-		// row. The DOM should not expose this anchor with `tabIndex="-1"`.
+		// No tabIndex="-1" — details links should stay keyboard reachable.
 		expect( link ).not.toHaveAttribute( 'tabIndex', '-1' );
 	} );
 
@@ -174,6 +173,21 @@ describe( 'getFeesFields render functions', () => {
 		expect(
 			screen.getByText( 'formatted 2026-06-01' )
 		).toBeInTheDocument();
+	} );
+
+	it( 'renders the deposit_id column as a link to the payout details when present', () => {
+		renderField( 'deposit_id', baseRow );
+		const link = screen.getByRole( 'link' );
+		expect( link ).toHaveTextContent( 'po_abc' );
+		expect( link ).toHaveAttribute(
+			'href',
+			'/admin.php?page=wc-admin&path=/payments/payouts/details&id=po_abc'
+		);
+	} );
+
+	it( 'renders an em-dash when deposit_id is missing', () => {
+		renderField( 'deposit_id', { ...baseRow, deposit_id: null } );
+		expect( screen.getByText( '–' ) ).toBeInTheDocument();
 	} );
 } );
 

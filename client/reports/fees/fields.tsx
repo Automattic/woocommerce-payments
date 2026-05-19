@@ -106,11 +106,9 @@ export const getFeesFields = ( {
 					<>{ EMPTY }</>
 				),
 		},
-		// `transaction_id` is the single keyboard-reachable link per row so
-		// AT users get exactly one entry per row in the rotor/link list.
-		// Other cells render plain text — they are no longer wrapped in
-		// `ClickableCell`, which used `tabIndex="-1"` and therefore removed
-		// them from the tab order anyway.
+		// Link only cells that have a concrete details destination. Other
+		// cells render plain text rather than using the old `ClickableCell`
+		// wrapper, which hid anchors from the tab order with `tabIndex="-1"`.
 		{
 			id: 'transaction_id',
 			label: __( 'Transaction ID', 'woocommerce-payments' ),
@@ -183,8 +181,13 @@ export const getFeesFields = ( {
 			label: __( 'Payout ID', 'woocommerce-payments' ),
 			getValue: ( { item }: { item: ReportsFee } ) =>
 				item.deposit_id ?? '',
-			render: ( { item }: { item: ReportsFee } ) => (
-				<>{ item.deposit_id || EMPTY }</>
-			),
+			render: ( { item }: { item: ReportsFee } ) =>
+				item.deposit_id ? (
+					<Link href={ getDetailsURL( item.deposit_id, 'payouts' ) }>
+						{ item.deposit_id }
+					</Link>
+				) : (
+					<>{ EMPTY }</>
+				),
 		},
 	] as Field< ReportsFee >[];
