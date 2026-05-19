@@ -423,10 +423,7 @@ export const FeesReport = ( {
 					isLoading={ isLoading }
 					defaultLayouts={ { table: {} } }
 					search
-					searchLabel={ __(
-						'Search by transaction ID, order ID, or payout ID',
-						'woocommerce-payments'
-					) }
+					searchLabel={ __( 'Search', 'woocommerce-payments' ) }
 					getItemId={ ( item ) => item.transaction_id }
 				/>
 				{ filterPortalTarget &&
