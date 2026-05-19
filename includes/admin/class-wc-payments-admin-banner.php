@@ -349,7 +349,7 @@ class WC_Payments_Admin_Banner {
 
 	/**
 	 * Output the React mount point for the test-to-live activation nudge. The
-	 * notice itself is rendered client-side from `client/entrypoints/test-to-live-notice/`.
+	 * notice itself is rendered client-side from `client/entrypoints/notices/test-to-live-notice/`.
 	 *
 	 * @return void
 	 */
@@ -584,7 +584,7 @@ class WC_Payments_Admin_Banner {
 
 	/**
 	 * Output the React mount point for the one-and-done recovery nudge. The
-	 * notice itself is rendered client-side from `client/entrypoints/one-and-done-notice/`.
+	 * notice itself is rendered client-side from `client/entrypoints/notices/one-and-done-notice/`.
 	 *
 	 * @return void
 	 */
