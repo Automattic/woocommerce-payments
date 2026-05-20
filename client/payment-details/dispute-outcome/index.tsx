@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { CardDivider } from '@wordpress/components';
 
@@ -15,7 +15,10 @@ import type { ChargeDispute } from 'wcpay/types/charges';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import EvidenceSubmittedList from './evidence-submitted-list';
-import { getDisputeOutcomeTracksProperties } from './tracks';
+import {
+	getDisputeOutcomeTracksProperties,
+	registerOutcomeViewSeen,
+} from './tracks';
 import './style.scss';
 
 interface DisputeOutcomeViewProps {
@@ -34,18 +37,16 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 			false
 	);
 
-	// Re-fires when the SPA swaps the dispute prop in place (no remount),
-	// but skips Strict Mode's dev double-invoke.
-	const lastTrackedDisputeIdRef = useRef< string | null >( null );
+	// De-dup is module-scoped (see registerOutcomeViewSeen): the payment-details
+	// loading lifecycle remounts this component several times per view, so a
+	// per-instance guard can't dedupe.
 	useEffect( () => {
-		if ( lastTrackedDisputeIdRef.current === dispute.id ) {
-			return;
+		if ( registerOutcomeViewSeen( dispute.id ) ) {
+			recordEvent(
+				'wcpay_dispute_outcome_viewed',
+				getDisputeOutcomeTracksProperties( dispute, productType )
+			);
 		}
-		recordEvent(
-			'wcpay_dispute_outcome_viewed',
-			getDisputeOutcomeTracksProperties( dispute, productType )
-		);
-		lastTrackedDisputeIdRef.current = dispute.id;
 	}, [ dispute, productType ] );
 
 	const fields = getExpectedFieldStatus(

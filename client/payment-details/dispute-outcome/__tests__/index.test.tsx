@@ -12,6 +12,7 @@ import { render, screen } from '@testing-library/react';
 import DisputeOutcomeView from '../index';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import { recordEvent } from 'wcpay/tracks';
+import { resetOutcomeViewTrackingForTests } from '../tracks';
 import type { ChargeDispute } from 'wcpay/types/charges';
 
 jest.mock( 'wcpay/tracks', () => ( {
@@ -24,6 +25,8 @@ const mockRecordEvent = recordEvent as jest.MockedFunction<
 
 beforeEach( () => {
 	mockRecordEvent.mockClear();
+	// De-dup memory is module-scoped, so clear it between cases.
+	resetOutcomeViewTrackingForTests();
 } );
 
 const buildDispute = (
@@ -193,6 +196,35 @@ describe( 'DisputeOutcomeView', () => {
 			rerender( <DisputeOutcomeView dispute={ dispute } /> );
 
 			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'does not re-fire when the component remounts for the same dispute', () => {
+			// The payment-details loading lifecycle remounts this component
+			// several times per view. Module-scoped de-dup must survive a full
+			// unmount/remount so the view is recorded once, not once per mount.
+			const dispute = buildDispute( {
+				metadata: { __product_type: 'physical_product' },
+			} );
+
+			const { unmount } = render(
+				<DisputeOutcomeView dispute={ dispute } />
+			);
+			unmount();
+			render( <DisputeOutcomeView dispute={ dispute } /> );
+			unmount();
+			render( <DisputeOutcomeView dispute={ dispute } /> );
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'does not fire when dispute.id is missing', () => {
+			// During loading the component can mount before the id resolves;
+			// a view must never be recorded without a dispute_id.
+			render(
+				<DisputeOutcomeView dispute={ buildDispute( { id: '' } ) } />
+			);
+
+			expect( mockRecordEvent ).not.toHaveBeenCalled();
 		} );
 
 		it( 'fires again when dispute.id changes between renders (SPA in-place swap)', () => {
