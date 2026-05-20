@@ -210,6 +210,45 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $this->get_transactions_list(), $response->get_data() );
 	}
 
+	public function test_get_item_schema_does_not_advertise_customer_field() {
+		$schema = $this->controller->get_item_schema();
+
+		$this->assertIsArray( $schema );
+		$this->assertArrayHasKey( 'properties', $schema );
+		$this->assertArrayNotHasKey( 'customer', $schema['properties'] );
+	}
+
+	public function test_prepare_item_for_response_strips_customer_field() {
+		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/reports/fees' );
+
+		$raw_item = [
+			'transaction_id'    => 'txn_test',
+			'type'              => 'charge',
+			'date'              => '2026-05-01T00:00:00Z',
+			'source'            => 'visa',
+			'customer_name'     => 'Test User',
+			'customer_email'    => 'test@example.com',
+			'customer_country'  => Country_Code::UNITED_STATES,
+			'amount'            => 1000,
+			'net'               => 900,
+			'fees'              => 100,
+			'currency'          => 'usd',
+			'risk_level'        => 0,
+			'deposit_id'        => 'po_mock',
+			'available_on'      => '2026-05-03',
+			'exchange_rate'     => 1.0,
+			'customer_currency' => 'usd',
+			'order_id'          => 123,
+			'channel'           => 'online',
+			'deposit_status'    => 'paid',
+			'payment_intent_id' => 'pi_mock',
+		];
+
+		$response = $this->controller->prepare_item_for_response( $raw_item, $request );
+
+		$this->assertArrayNotHasKey( 'customer', $response->get_data() );
+	}
+
 	public function test_get_fees_summary_forwards_mapped_filters() {
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_param( 'payment_method_type', 'card' );

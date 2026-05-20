@@ -142,6 +142,22 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 	}
 
 	/**
+	 * Returns the response schema for a Fees report row.
+	 *
+	 * Removes the `customer` property inherited from the Transactions schema —
+	 * the Fees endpoint strips customer data from every response, so advertising
+	 * it would mislead schema-discovery consumers.
+	 *
+	 * @return array
+	 */
+	public function get_item_schema() {
+		$schema = parent::get_item_schema();
+		unset( $schema['properties']['customer'] );
+
+		return $schema;
+	}
+
+	/**
 	 * Collection args params.
 	 *
 	 * @return array[]

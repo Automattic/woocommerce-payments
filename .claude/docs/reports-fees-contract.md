@@ -97,7 +97,9 @@ The PHP controller still honors `order_id`, `deposit_id`, `customer_email`, and 
 
 ## Row Contract
 
-The Fees list route uses the typed `List_Transactions` request, applies Fees filters, and prepares each returned transaction through the parent transactions controller response formatter. The Fees controller then removes the inherited `customer` object before returning the collection.
+The Fees list route uses the typed `List_Transactions` request, applies Fees filters, and prepares each returned transaction through the parent transactions controller response formatter. The Fees controller then removes the inherited `customer` object before returning the collection, and overrides `get_item_schema()` to remove the `customer` property so OPTIONS and other schema-discovery consumers don't advertise data the endpoint never returns.
+
+Customer data (name, email, country) is intentionally not returned by this endpoint.
 
 Fields returned to the client:
 
