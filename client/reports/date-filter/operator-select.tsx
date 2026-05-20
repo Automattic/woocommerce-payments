@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -18,30 +17,18 @@ export interface OperatorSelectProps {
 	value: DateOperator;
 	onChange: ( next: DateOperator ) => void;
 	id?: string;
-	/**
-	 * When true, the consumer is providing its own visible <label htmlFor>;
-	 * skip the fallback aria-label so the native label is the accessible
-	 * name and the visible/AT names match.
-	 */
-	hasExternalLabel?: boolean;
 }
 
 export const OperatorSelect: React.FC< OperatorSelectProps > = ( {
 	value,
 	onChange,
 	id,
-	hasExternalLabel = false,
 } ) => (
 	<select
 		id={ id }
 		className="wcpay-date-filter__operator-select"
 		value={ value }
 		onChange={ ( event ) => onChange( event.target.value as DateOperator ) }
-		aria-label={
-			hasExternalLabel
-				? undefined
-				: __( 'Date operator', 'woocommerce-payments' )
-		}
 	>
 		{ operators.map( ( op ) => (
 			<option key={ op } value={ op }>

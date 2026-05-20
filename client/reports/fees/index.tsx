@@ -519,6 +519,9 @@ export const FeesReport = ( {
 
 	if ( isInitialEmpty ) {
 		return (
+			/* role="status" is implicitly aria-live="polite". Safe here because the
+			   empty states do not shift focus — keep this in sync if you add focus
+			   management later. */
 			<FeesReportState
 				title={ __( 'No fees yet', 'woocommerce-payments' ) }
 				className="wcpay-reports-state--empty wcpay-reports-state--fees-empty"
@@ -559,6 +562,9 @@ export const FeesReport = ( {
 					getItemId={ ( item ) => item.transaction_id }
 				/>
 				{ isFilteredEmpty && (
+					/* role="status" is implicitly aria-live="polite". Safe here because the
+					   empty states do not shift focus — keep this in sync if you add focus
+					   management later. */
 					<FeesReportState
 						title={ __(
 							'No fees to display',

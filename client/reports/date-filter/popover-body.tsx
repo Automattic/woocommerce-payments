@@ -141,7 +141,6 @@ export const PopoverBody: React.FC< PopoverBodyProps > = ( {
 				</label>
 				<OperatorSelect
 					id={ operatorSelectId }
-					hasExternalLabel
 					value={ operator }
 					onChange={ onOperatorChange }
 				/>
