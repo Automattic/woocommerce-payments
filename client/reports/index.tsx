@@ -16,7 +16,6 @@ import { getLastFullCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
 import { useReportsTabReload } from './hooks';
 import type { ReportsTab, ReportsTabStatus } from './types';
-import { recordEvent } from 'tracks';
 import './style.scss';
 
 interface ReportsPageProps {
@@ -40,10 +39,6 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 	);
 	const currentTabStatus = tabStatus ?? 'ready';
 	const reload = useReportsTabReload( activeTab, period );
-
-	useEffect( () => {
-		recordEvent( 'wcpay_reports_page_viewed' );
-	}, [] );
 
 	useEffect( () => {
 		const syncActiveTabFromUrl = () => {
@@ -79,9 +74,6 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 		}
 
 		setActiveTab( nextTab );
-		recordEvent( 'wcpay_reports_tab_viewed', {
-			report: nextTab,
-		} );
 		updateQueryString(
 			{
 				tab: nextTab,

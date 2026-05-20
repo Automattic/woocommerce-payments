@@ -21,7 +21,6 @@ import type { Filter, View } from '@wordpress/dataviews';
 /**
  * Internal dependencies
  */
-import { recordEvent } from 'tracks';
 import type { DateFilterValue } from 'wcpay/reports/date-filter';
 import { useFeesView } from './use-fees-view';
 import { useFeesData } from './use-fees-data';
@@ -87,35 +86,6 @@ const FeesReportState = ( {
 		{ action }
 	</div>
 );
-
-/**
- * Returns true when the user's visible-fields configuration has changed.
- * Compared as joined strings — the field list is small and order-significant.
- */
-const haveFieldsChanged = (
-	prev: ReadonlyArray< string > = [],
-	next: ReadonlyArray< string > = []
-): boolean => prev.join( '|' ) !== next.join( '|' );
-
-/**
- * Returns true when the DataViews date filter (operator + value) differs.
- * Used to scope the `wcpay_reports_date_range_changed` analytics event.
- */
-const hasDateFilterChanged = (
-	prev: DateFilterValue | undefined,
-	next: DateFilterValue | undefined
-): boolean => {
-	if ( ! prev && ! next ) {
-		return false;
-	}
-	if ( ! prev || ! next ) {
-		return true;
-	}
-	return (
-		prev.operator !== next.operator ||
-		JSON.stringify( prev.value ) !== JSON.stringify( next.value )
-	);
-};
 
 const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
 	filters.find( ( filter ) => filter.field === 'date' );
@@ -376,26 +346,9 @@ export const FeesReport = ( {
 
 	const handleViewChange = useCallback(
 		( next: View ) => {
-			if ( haveFieldsChanged( view.fields, next.fields ) ) {
-				recordEvent( 'wcpay_reports_view_options_changed', {
-					report: 'fees',
-				} );
-			}
-
-			if (
-				hasDateFilterChanged(
-					getResolvedDateFilter( view ),
-					getResolvedDateFilter( next )
-				)
-			) {
-				recordEvent( 'wcpay_reports_date_range_changed', {
-					report: 'fees',
-				} );
-			}
-
 			setView( next );
 		},
-		[ setView, view ]
+		[ setView ]
 	);
 
 	const closeCustomDatePopover = useCallback( () => {

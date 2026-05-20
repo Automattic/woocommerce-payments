@@ -14,7 +14,6 @@ import { ReportsPage } from '..';
 import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useDispatch } from '@wordpress/data';
-import { recordEvent } from 'tracks';
 
 jest.mock( '../fees', () => ( {
 	FeesReport: ( { onReload }: { onReload?: () => void } ) => (
@@ -28,10 +27,6 @@ jest.mock( '../fees', () => ( {
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn(),
 	updateQueryString: jest.fn(),
-} ) );
-
-jest.mock( 'tracks', () => ( {
-	recordEvent: jest.fn(),
 } ) );
 
 // Explicit, narrow mock of @wordpress/data. We only rely on `useDispatch` in
@@ -96,7 +91,6 @@ describe( 'Reports page tabs', () => {
 		};
 		mockGetQuery.mockReturnValue( {} );
 		mockUpdateQueryString.mockClear();
-		jest.mocked( recordEvent ).mockClear();
 		invalidateResolution.mockClear();
 		invalidateResolutionForStoreSelector.mockClear();
 		mockUseDispatch.mockImplementation( ( storeName ) => {
@@ -133,9 +127,6 @@ describe( 'Reports page tabs', () => {
 		expect(
 			screen.queryByRole( 'navigation', { name: 'Breadcrumb' } )
 		).not.toBeInTheDocument();
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_page_viewed'
-		);
 	} );
 
 	it( 'uses the tab query parameter for direct Fees navigation', async () => {
@@ -198,12 +189,6 @@ describe( 'Reports page tabs', () => {
 			);
 		} );
 		expect( mockUpdateQueryString ).toHaveBeenCalledTimes( 1 );
-		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_reports_tab_viewed',
-			{
-				report: 'fees',
-			}
-		);
 		expect( screen.getByRole( 'tab', { name: 'Fees' } ) ).toHaveFocus();
 	} );
 

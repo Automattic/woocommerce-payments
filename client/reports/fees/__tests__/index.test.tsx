@@ -12,7 +12,6 @@ const mockUseReportsFeesSummary = jest.fn();
 const mockGetQuery = jest.fn( () => ( {} as Record< string, unknown > ) );
 const mockUpdateQueryString = jest.fn();
 const mockUpdateUserPreferences = jest.fn();
-const mockRecordEvent = jest.fn();
 const mockSpeak = jest.fn();
 const i18nTranslateFunction = '__';
 
@@ -41,11 +40,6 @@ jest.mock( '@wordpress/i18n', () => ( {
 	...jest.requireActual( '@wordpress/i18n' ),
 	[ i18nTranslateFunction ]: ( text: string ) =>
 		text === 'Date' ? 'Fecha' : text,
-} ) );
-
-jest.mock( 'tracks', () => ( {
-	recordEvent: ( event: string, props: unknown ) =>
-		mockRecordEvent( event, props ),
 } ) );
 
 jest.mock( 'multi-currency/interface/functions', () => ( {
@@ -105,7 +99,6 @@ beforeEach( () => {
 	mockGetQuery.mockReset().mockReturnValue( {} );
 	mockUpdateQueryString.mockReset();
 	mockUpdateUserPreferences.mockReset();
-	mockRecordEvent.mockReset();
 	mockSpeak.mockReset();
 
 	( window as unknown as Record< string, unknown > ).wcpaySettings = {
