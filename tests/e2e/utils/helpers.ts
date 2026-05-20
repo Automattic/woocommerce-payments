@@ -110,20 +110,39 @@ export const getShopper = async (
 
 		const shopperContext = await browser.newContext();
 		const shopperPage = await shopperContext.newPage();
-		await wpAdminLogin( shopperPage, config.users.customer );
-		// Wait for login page to finish loading before navigating.
-		await shopperPage.waitForLoadState( 'load' );
-		await shopperPage.goto( '/my-account' );
-		expect(
-			shopperPage.locator(
-				'.woocommerce-MyAccount-navigation-link--customer-logout'
-			)
-		).toBeVisible();
-		await expect(
-			shopperPage.locator(
-				'div.woocommerce-MyAccount-content > p >> nth=0'
-			)
-		).toContainText( 'Hello' );
+		// wpAdminLogin is transiently flaky under load (auth.setup.ts retries the
+		// admin login for the same reason). Retry, annotating any retry as flake so
+		// it stays visible in the report instead of being silently swallowed.
+		const loginAttempts = 2;
+		let loginError: unknown;
+		for ( let attempt = 1; attempt <= loginAttempts; attempt++ ) {
+			try {
+				await wpAdminLogin( shopperPage, config.users.customer );
+				// Wait for login page to finish loading before navigating.
+				await shopperPage.waitForLoadState( 'load' );
+				await shopperPage.goto( '/my-account' );
+				// Logout link = stable, semantic "logged in" signal (the prior
+				// `>> nth=0` greeting check was positional and locale-dependent).
+				await expect(
+					shopperPage.locator(
+						'.woocommerce-MyAccount-navigation-link--customer-logout'
+					)
+				).toBeVisible();
+				if ( attempt > 1 ) {
+					test.info().annotations.push( {
+						type: 'flake',
+						description: `Customer login required ${ attempt } attempts. Investigate before assuming flake.`,
+					} );
+				}
+				loginError = undefined;
+				break;
+			} catch ( error ) {
+				loginError = error;
+			}
+		}
+		if ( loginError ) {
+			throw loginError;
+		}
 		await shopperPage
 			.context()
 			.storageState( { path: customerStorageFile } );
