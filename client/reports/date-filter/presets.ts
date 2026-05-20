@@ -31,15 +31,13 @@ export type CustomPreset = 'custom';
 export type DatePreset = SingleDatePreset | RangePreset | CustomPreset;
 
 const toYmd = ( d: Date ): string =>
-	`${ d.getUTCFullYear() }-${ String( d.getUTCMonth() + 1 ).padStart(
+	`${ d.getFullYear() }-${ String( d.getMonth() + 1 ).padStart(
 		2,
 		'0'
-	) }-${ String( d.getUTCDate() ).padStart( 2, '0' ) }`;
+	) }-${ String( d.getDate() ).padStart( 2, '0' ) }`;
 
-const startOfDayUTC = ( now: Date ): Date =>
-	new Date(
-		Date.UTC( now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() )
-	);
+const startOfDay = ( now: Date ): Date =>
+	new Date( now.getFullYear(), now.getMonth(), now.getDate() );
 
 const singleDatePresetLabels = (): Record< SingleDatePreset, string > => ( {
 	today: __( 'Today', 'woocommerce-payments' ),
@@ -89,51 +87,51 @@ const resolveSingleAnchorDate = (
 	preset: SingleDatePreset,
 	now: Date
 ): string => {
-	const today = startOfDayUTC( now );
+	const today = startOfDay( now );
 
 	switch ( preset ) {
 		case 'today':
 			return toYmd( today );
 		case 'yesterday': {
 			const d = new Date( today );
-			d.setUTCDate( d.getUTCDate() - 1 );
+			d.setDate( d.getDate() - 1 );
 			return toYmd( d );
 		}
 		case 'past_week': {
 			const d = new Date( today );
-			d.setUTCDate( d.getUTCDate() - 7 );
+			d.setDate( d.getDate() - 7 );
 			return toYmd( d );
 		}
 		case 'past_month': {
 			const d = new Date( today );
-			d.setUTCMonth( d.getUTCMonth() - 1 );
+			d.setMonth( d.getMonth() - 1 );
 			return toYmd( d );
 		}
 	}
 };
 
 const resolveRange = ( preset: RangePreset, now: Date ): [ string, string ] => {
-	const today = startOfDayUTC( now );
-	const year = today.getUTCFullYear();
-	const month = today.getUTCMonth();
+	const today = startOfDay( now );
+	const year = today.getFullYear();
+	const month = today.getMonth();
 
 	switch ( preset ) {
 		case 'last_month': {
-			const start = new Date( Date.UTC( year, month - 1, 1 ) );
-			const end = new Date( Date.UTC( year, month, 0 ) );
+			const start = new Date( year, month - 1, 1 );
+			const end = new Date( year, month, 0 );
 			return [ toYmd( start ), toYmd( end ) ];
 		}
 		case 'month_to_date': {
-			const start = new Date( Date.UTC( year, month, 1 ) );
+			const start = new Date( year, month, 1 );
 			return [ toYmd( start ), toYmd( today ) ];
 		}
 		case 'last_year': {
-			const start = new Date( Date.UTC( year - 1, 0, 1 ) );
-			const end = new Date( Date.UTC( year - 1, 11, 31 ) );
+			const start = new Date( year - 1, 0, 1 );
+			const end = new Date( year - 1, 11, 31 );
 			return [ toYmd( start ), toYmd( end ) ];
 		}
 		case 'year_to_date': {
-			const start = new Date( Date.UTC( year, 0, 1 ) );
+			const start = new Date( year, 0, 1 );
 			return [ toYmd( start ), toYmd( today ) ];
 		}
 	}
@@ -153,13 +151,11 @@ const rangePresets: RangePreset[] = [
 	'year_to_date',
 ];
 
-export const isSingleDatePreset = (
-	value: unknown
-): value is SingleDatePreset =>
+const isSingleDatePreset = ( value: unknown ): value is SingleDatePreset =>
 	typeof value === 'string' &&
 	singleDatePresets.includes( value as SingleDatePreset );
 
-export const isRangePreset = ( value: unknown ): value is RangePreset =>
+const isRangePreset = ( value: unknown ): value is RangePreset =>
 	typeof value === 'string' && rangePresets.includes( value as RangePreset );
 
 /**

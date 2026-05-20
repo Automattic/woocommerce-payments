@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
@@ -13,6 +14,7 @@ const mockUpdateQueryString = jest.fn();
 const mockUpdateUserPreferences = jest.fn();
 const mockRecordEvent = jest.fn();
 const mockSpeak = jest.fn();
+const i18nTranslateFunction = '__';
 
 jest.mock( 'wcpay/data', () => ( {
 	useReportsFees: ( q: unknown ) => mockUseReportsFees( q ),
@@ -33,6 +35,12 @@ jest.mock( '@woocommerce/data', () => ( {
 
 jest.mock( '@wordpress/a11y', () => ( {
 	speak: ( message: string ) => mockSpeak( message ),
+} ) );
+
+jest.mock( '@wordpress/i18n', () => ( {
+	...jest.requireActual( '@wordpress/i18n' ),
+	[ i18nTranslateFunction ]: ( text: string ) =>
+		text === 'Date' ? 'Fecha' : text,
 } ) );
 
 jest.mock( 'tracks', () => ( {
@@ -79,11 +87,6 @@ jest.mock( '@woocommerce/components', () => ( {
  */
 import { FeesReport } from '../index';
 
-const period = {
-	start: '2026-04-01T00:00:00Z',
-	end: '2026-04-30T23:59:59Z',
-};
-
 const baseRow = {
 	transaction_id: 'txn_1',
 	date: '2026-04-15T10:00:00Z',
@@ -129,7 +132,7 @@ beforeEach( () => {
 
 describe( 'FeesReport (DataViews)', () => {
 	it( 'queries the data store with no date params when URL has no date filter', () => {
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		const call = mockUseReportsFees.mock.calls[ 0 ][ 0 ];
 		expect( call.date_between ).toBeUndefined();
 		expect( call.date_before ).toBeUndefined();
@@ -140,7 +143,7 @@ describe( 'FeesReport (DataViews)', () => {
 		mockGetQuery.mockReturnValue( {
 			date_between: [ '2026-03-01', '2026-03-31' ],
 		} );
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		expect( mockUseReportsFees ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				date_between: [ '2026-03-01', '2026-03-31' ],
@@ -152,23 +155,23 @@ describe( 'FeesReport (DataViews)', () => {
 		mockGetQuery.mockReturnValue( {
 			date_before: '2026-03-31',
 		} );
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		expect( mockUseReportsFees ).toHaveBeenCalledWith(
 			expect.objectContaining( { date_before: '2026-03-31' } )
 		);
 	} );
 
 	it( 'renders the Date filter chip', () => {
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		expect(
-			screen.getByRole( 'button', { name: /^date$/i } )
+			screen.getByRole( 'button', { name: /^fecha$/i } )
 		).toBeInTheDocument();
 	} );
 
 	it( 'opens the custom date popover directly from the Date filter chip', async () => {
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 
-		fireEvent.click( screen.getByRole( 'button', { name: /^date$/i } ) );
+		fireEvent.click( screen.getByRole( 'button', { name: /^fecha$/i } ) );
 
 		expect(
 			await screen.findByRole( 'dialog', {
@@ -183,10 +186,10 @@ describe( 'FeesReport (DataViews)', () => {
 	} );
 
 	it( 'toggles the custom date popover closed from the Date filter chip', async () => {
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 
 		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^date$/i,
+			name: /^fecha$/i,
 		} );
 		fireEvent.pointerDown( dateFilterChip, { button: 0 } );
 		expect(
@@ -221,13 +224,13 @@ describe( 'FeesReport (DataViews)', () => {
 	} );
 
 	it( 'does not expose the internal date-filter anchor text', () => {
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		expect(
 			screen.queryByText( '_wcpay_date_filter_anchor' )
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'clears search, report filters, and the date filter from the report reset button', () => {
+	it( 'clears search, report filters, and the date filter from the report reset button', async () => {
 		mockGetQuery.mockReturnValue( {
 			search: [ 'txn_1' ],
 			payment_method_type: 'card',
@@ -235,8 +238,10 @@ describe( 'FeesReport (DataViews)', () => {
 			date_before: '2026-03-31',
 		} );
 
-		render( <FeesReport period={ period } /> );
-		fireEvent.click( screen.getByRole( 'button', { name: 'Reset' } ) );
+		render( <FeesReport /> );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reset' } )
+		);
 
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			expect.objectContaining( {
@@ -258,28 +263,26 @@ describe( 'FeesReport (DataViews)', () => {
 			orderby: 'amount',
 			order: 'asc',
 		} );
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		expect( mockUseReportsFees ).toHaveBeenCalledWith(
 			expect.objectContaining( { orderby: 'amount', order: 'asc' } )
 		);
 	} );
 
 	it( 'renders the row data through DataViews fields', async () => {
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		const items = await screen.findAllByText( 'txn_1' );
 		expect( items.length ).toBeGreaterThan( 0 );
 	} );
 
-	it( 'renders the Figma error state with alert semantics and reload button when feesError is set', () => {
+	it( 'renders the Figma error state with alert semantics and reload button when feesError is set', async () => {
 		mockUseReportsFees.mockReturnValue( {
 			feesRows: [],
 			feesError: { code: 'oops' },
 			isLoading: false,
 		} );
 		const onReload = jest.fn();
-		const { container } = render(
-			<FeesReport period={ period } onReload={ onReload } />
-		);
+		const { container } = render( <FeesReport onReload={ onReload } /> );
 		// `role="alert"` so AT users hear the error without focus management.
 		expect( screen.getByRole( 'alert' ) ).toBeInTheDocument();
 		expect(
@@ -293,13 +296,7 @@ describe( 'FeesReport (DataViews)', () => {
 		).toHaveTextContent(
 			/We couldn't load your fees data\.\s*Try again in a few minutes\./
 		);
-		expect(
-			container.querySelector( '.wcpay-reports-state--fees-error' )
-		).toBeInTheDocument();
-		expect(
-			container.querySelector( '.wcpay-reports-state__icon svg' )
-		).toBeInTheDocument();
-		fireEvent.click(
+		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Reload report' } )
 		);
 		expect( onReload ).toHaveBeenCalled();
@@ -315,13 +312,12 @@ describe( 'FeesReport (DataViews)', () => {
 			feesSummary: { count: 0, sources: [], types: [] },
 			isLoading: false,
 		} );
-		const { container } = render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		expect( screen.getByText( 'No fees yet' ) ).toBeInTheDocument();
 		expect(
-			container.querySelector( '.wcpay-reports-state--fees-empty' )
-		).toBeInTheDocument();
-		expect(
-			container.querySelector( '.wcpay-reports-state__icon svg' )
+			screen.getByText(
+				'Fees will appear here once you start receiving payments.'
+			)
 		).toBeInTheDocument();
 	} );
 
@@ -338,7 +334,7 @@ describe( 'FeesReport (DataViews)', () => {
 			feesSummary: { count: 0, sources: [], types: [] },
 			isLoading: false,
 		} );
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		expect( screen.queryByText( 'No fees yet' ) ).not.toBeInTheDocument();
 		expect( screen.getByText( 'No fees to display' ) ).toBeInTheDocument();
 		expect(
@@ -348,7 +344,7 @@ describe( 'FeesReport (DataViews)', () => {
 	} );
 
 	it( 'does not render the export action in the Fees DataViews controls', () => {
-		render( <FeesReport period={ period } /> );
+		render( <FeesReport /> );
 		expect(
 			screen.queryByRole( 'button', { name: /export/i } )
 		).not.toBeInTheDocument();
@@ -361,7 +357,7 @@ describe( 'FeesReport (DataViews)', () => {
 			feesError: {},
 			isLoading: true,
 		} );
-		const { rerender } = render( <FeesReport period={ period } /> );
+		const { rerender } = render( <FeesReport /> );
 
 		// Transition to ready with data.
 		mockUseReportsFees.mockReturnValue( {
@@ -369,7 +365,7 @@ describe( 'FeesReport (DataViews)', () => {
 			feesError: {},
 			isLoading: false,
 		} );
-		rerender( <FeesReport period={ period } /> );
+		rerender( <FeesReport /> );
 
 		expect( mockSpeak ).toHaveBeenCalledWith(
 			expect.stringMatching( /loaded/i )

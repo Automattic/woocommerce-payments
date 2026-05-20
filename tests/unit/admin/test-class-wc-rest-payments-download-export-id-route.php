@@ -6,8 +6,8 @@
  */
 
 /**
- * Tests for the export_id route parameter regex used in transactions and
- * disputes download endpoints.
+ * Tests for the export_id route parameter regex used in transaction report
+ * download endpoints.
  *
  * The regex [^/\\%]+ must:
  *  - Allow any valid Stripe export ID (alphanumeric, hyphens, dots, UTF-8).
@@ -17,14 +17,36 @@
 class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase {
 
 	/**
-	 * The regex that the export_id capture group uses in both controllers.
+	 * The regex that the export_id capture group uses in download routes.
 	 * Must stay in sync with the route definitions:
 	 *   - WC_REST_Payments_Transactions_Controller
 	 *   - WC_REST_Payments_Disputes_Controller
+	 *   - WC_REST_Payments_Reports_Fees_Controller
 	 *
 	 * @var string
 	 */
 	private const EXPORT_ID_PATTERN = '/^[^\/\\\\%]+$/';
+
+	public function tear_down() {
+		remove_all_filters( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME );
+
+		global $wp_rest_server;
+		$wp_rest_server = null;
+
+		parent::tear_down();
+	}
+
+	public function test_fees_download_route_uses_secure_export_id_pattern(): void {
+		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
+		$this->setExpectedIncorrectUsage( 'register_rest_route' );
+
+		$controller = new WC_REST_Payments_Reports_Fees_Controller( $this->createMock( WC_Payments_API_Client::class ) );
+		$controller->register_routes();
+
+		$routes = rest_get_server()->get_routes();
+		$this->assertArrayHasKey( '/wc/v3/payments/reports/fees/download/(?P<export_id>[^/\\\\%]+)', $routes );
+		$this->assertArrayNotHasKey( '/wc/v3/payments/reports/fees/download/(?P<export_id>[^/\\%]+)', $routes );
+	}
 
 	/**
 	 * @dataProvider valid_export_id_provider
@@ -80,5 +102,9 @@ class WC_REST_Payments_Download_Export_Id_Route_Test extends WCPAY_UnitTestCase 
 			'percent sign only'                   => [ '%' ],
 			'empty string'                        => [ '' ],
 		];
+	}
+
+	public function return_enabled_flag() {
+		return '1';
 	}
 }

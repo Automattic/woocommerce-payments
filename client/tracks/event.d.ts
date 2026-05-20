@@ -47,7 +47,7 @@ export type MerchantEvent =
 	| 'wcpay_reports_export_click'
 	| 'wcpay_reports_page_viewed'
 	| 'wcpay_reports_tab_viewed'
-	| 'wcpay_reports_view_options_opened'
+	| 'wcpay_reports_view_options_changed'
 	| 'wcpay_deposits_row_click'
 	| 'wcpay_disputes_row_action_click'
 	| 'wcpay_dispute_challenge_clicked'

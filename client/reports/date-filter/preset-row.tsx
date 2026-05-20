@@ -5,6 +5,7 @@
  */
 import React, { useMemo } from 'react';
 import classNames from 'classnames';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -32,7 +33,7 @@ export const PresetRow: React.FC< PresetRowProps > = ( {
 		<div
 			className="wcpay-date-filter__preset-row"
 			role="group"
-			aria-label="Date presets"
+			aria-label={ __( 'Date presets', 'woocommerce-payments' ) }
 		>
 			{ presets.map( ( preset ) => {
 				const isActive = preset.value === activePreset;

@@ -84,7 +84,7 @@ export const getFeesFields = ( {
 			id: 'type',
 			label: __( 'Type', 'woocommerce-payments' ),
 			elements: typeElements,
-			filterBy: { operators: [ 'isAny' ] },
+			filterBy: { operators: [ 'is' ] },
 			getValue: ( { item }: { item: ReportsFee } ) => item.type,
 			render: ( { item }: { item: ReportsFee } ) => {
 				const label =
