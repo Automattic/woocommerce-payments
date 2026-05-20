@@ -13,10 +13,10 @@ import type { ChargeDispute } from 'wcpay/types/charges';
  *
  * `productType` is passed in (rather than resolved here) so callers can
  * share a single `resolveProductType()` result between the Tracks payload
- * and the UI computations driven from the same dispute. An empty string
- * (the "no product type available" case from `resolveProductType`) is
- * collapsed to `undefined` so `recordEvent` drops the property from the
- * payload rather than emitting a `''` bucket for analytics.
+ * and the UI computations driven from the same dispute. When it is empty
+ * (the "no product type available" case from `resolveProductType`) the
+ * `product_type` key is omitted entirely, so analytics never see a `''`
+ * bucket.
  */
 export const getDisputeOutcomeTracksProperties = (
 	dispute: ChargeDispute,
