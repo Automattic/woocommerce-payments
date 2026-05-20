@@ -26,6 +26,7 @@ import {
 const reportsPath = '/payments/reports';
 const legacyHiddenColumnsKey = 'wc_payments_reports_fees_hidden_columns';
 const searchDebounceMs = 500;
+const persistDebounceMs = 750;
 
 const parseIntOr = ( value: unknown, fallback: number ): number => {
 	const n = parseInt( String( value ?? '' ), 10 );
@@ -262,11 +263,21 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 			searchDebounceTimerRef.current = null;
 		}
 	}, [] );
+	const persistDebounceTimerRef = useRef< ReturnType<
+		typeof setTimeout
+	> | null >( null );
+	const clearPendingPersistUpdate = useCallback( () => {
+		if ( persistDebounceTimerRef.current ) {
+			clearTimeout( persistDebounceTimerRef.current );
+			persistDebounceTimerRef.current = null;
+		}
+	}, [] );
 	useEffect(
 		() => () => {
 			clearPendingSearchUpdate();
+			clearPendingPersistUpdate();
 		},
-		[ clearPendingSearchUpdate ]
+		[ clearPendingSearchUpdate, clearPendingPersistUpdate ]
 	);
 
 	const setView = useCallback(
@@ -309,13 +320,21 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 				hasLoadedPersisted &&
 				! isPersistedShapeEqual( persisted, nextPersisted )
 			) {
-				updateUserPreferences( {
-					[ feesViewUserMetaKey ]: nextPersisted,
-				} );
+				// Debounce: a burst of view changes (e.g. toggling several
+				// columns or rapidly changing perPage) collapses into a single
+				// REST write of the final shape.
+				clearPendingPersistUpdate();
+				persistDebounceTimerRef.current = setTimeout( () => {
+					updateUserPreferences( {
+						[ feesViewUserMetaKey ]: nextPersisted,
+					} );
+					persistDebounceTimerRef.current = null;
+				}, persistDebounceMs );
 			}
 		},
 		[
 			clearPendingSearchUpdate,
+			clearPendingPersistUpdate,
 			hasLoadedPersisted,
 			localView,
 			persisted,

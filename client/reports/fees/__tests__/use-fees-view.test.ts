@@ -341,6 +341,7 @@ describe( 'useFeesView', () => {
 	} );
 
 	it( 'persists fields and perPage changes to user_meta', () => {
+		jest.useFakeTimers();
 		// Mark prefs as loaded so the write-after-load guard doesn't skip.
 		mockUserPrefs = { wc_payments_reports_fees_view: null };
 		const { result } = renderHook( () => useFeesView() );
@@ -351,6 +352,12 @@ describe( 'useFeesView', () => {
 				perPage: 100,
 			} );
 		} );
+
+		// Persist writes are debounced — advance past the debounce window.
+		act( () => {
+			jest.advanceTimersByTime( 750 );
+		} );
+
 		expect( mockUpdateUserPreferences ).toHaveBeenCalledWith( {
 			wc_payments_reports_fees_view: expect.objectContaining( {
 				fields: [ 'date', 'transaction_id' ],
@@ -396,6 +403,47 @@ describe( 'useFeesView', () => {
 			} );
 		} );
 		expect( mockUpdateUserPreferences ).not.toHaveBeenCalled();
+	} );
+
+	it( 'debounces persisted-shape changes into a single REST write', () => {
+		jest.useFakeTimers();
+		mockUserPrefs = { wc_payments_reports_fees_view: null };
+		const { result } = renderHook( () => useFeesView() );
+
+		// Three rapid view changes that mutate the persisted shape.
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				perPage: 50,
+			} );
+		} );
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				perPage: 100,
+			} );
+		} );
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				perPage: 25,
+			} );
+		} );
+
+		// Before the debounce fires, no REST write yet.
+		expect( mockUpdateUserPreferences ).not.toHaveBeenCalled();
+
+		// After the debounce window, exactly one write with the final state.
+		act( () => {
+			jest.advanceTimersByTime( 750 );
+		} );
+
+		expect( mockUpdateUserPreferences ).toHaveBeenCalledTimes( 1 );
+		expect( mockUpdateUserPreferences ).toHaveBeenCalledWith( {
+			wc_payments_reports_fees_view: expect.objectContaining( {
+				perPage: 25,
+			} ),
+		} );
 	} );
 
 	it( 'migrates fields from the legacy hidden-columns user_meta key', () => {
