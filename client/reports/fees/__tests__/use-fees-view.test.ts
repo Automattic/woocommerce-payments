@@ -29,6 +29,7 @@ beforeEach( () => {
 	mockUpdateUserPreferences.mockClear();
 	mockGetQuery.mockReturnValue( {} );
 	mockUserPrefs = {};
+	jest.useRealTimers();
 } );
 
 describe( 'useFeesView', () => {
@@ -171,6 +172,103 @@ describe( 'useFeesView', () => {
 			expect.objectContaining( { orderby: 'fees', order: 'asc' } ),
 			'/payments/reports'
 		);
+	} );
+
+	it( 'debounces search changes before pushing them to the URL', () => {
+		jest.useFakeTimers();
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				search: 'txn_1',
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
+
+		act( () => {
+			jest.advanceTimersByTime( 499 );
+		} );
+		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
+
+		act( () => {
+			jest.advanceTimersByTime( 1 );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			expect.objectContaining( { search: [ 'txn_1' ] } ),
+			'/payments/reports'
+		);
+	} );
+
+	it( 'debounces the page reset that accompanies a search change', () => {
+		jest.useFakeTimers();
+		mockGetQuery.mockReturnValue( { paged: '2' } );
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				page: 1,
+				search: 'txn_1',
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
+
+		act( () => {
+			jest.advanceTimersByTime( 500 );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				paged: '1',
+				search: [ 'txn_1' ],
+			} ),
+			'/payments/reports'
+		);
+	} );
+
+	it( 'keeps filter changes immediate while a search update is pending', () => {
+		jest.useFakeTimers();
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				search: 'txn_1',
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				search: 'txn_1',
+				filters: [
+					{
+						field: 'payment_method',
+						operator: 'is',
+						value: 'card',
+					},
+				],
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				search: [ 'txn_1' ],
+				payment_method_type: 'card',
+			} ),
+			'/payments/reports'
+		);
+
+		act( () => {
+			jest.advanceTimersByTime( 500 );
+		} );
+		expect( mockUpdateQueryString ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'pushes native Date filter changes to URL', () => {

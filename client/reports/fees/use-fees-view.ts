@@ -25,6 +25,7 @@ import {
 
 const reportsPath = '/payments/reports';
 const legacyHiddenColumnsKey = 'wc_payments_reports_fees_hidden_columns';
+const searchDebounceMs = 500;
 
 const parseIntOr = ( value: unknown, fallback: number ): number => {
 	const n = parseInt( String( value ?? '' ), 10 );
@@ -119,6 +120,32 @@ const buildFilterQueryParams = (
 	return params;
 };
 
+const buildUrlQueryParams = ( view: View ): Record< string, unknown > => ( {
+	orderby: view.sort?.field,
+	order: view.sort?.direction,
+	paged: view.page ? String( view.page ) : undefined,
+	per_page: view.perPage ? String( view.perPage ) : undefined,
+	search: view.search ? [ view.search ] : undefined,
+	...buildFilterQueryParams( view.filters ?? [] ),
+} );
+
+const withoutSearchParam = (
+	params: Record< string, unknown >,
+	ignoreSearchPageReset = false
+): Record< string, unknown > => {
+	const rest = { ...params };
+	delete rest.search;
+	if ( ignoreSearchPageReset ) {
+		delete rest.paged;
+	}
+	return rest;
+};
+
+const areQueryParamsEqual = (
+	a: Record< string, unknown >,
+	b: Record< string, unknown >
+): boolean => JSON.stringify( a ) === JSON.stringify( b );
+
 /**
  * Hook that owns the Fees report's DataViews `view`, bidirectionally synced
  * with the URL (sort, page, search, filters) and `user_meta` (fields, layout,
@@ -192,7 +219,7 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 					defaultView.sort?.direction ??
 					'desc',
 			},
-			search: ( ( query.search as unknown[] )?.[ 0 ] as string ) ?? '',
+			search: getFirstQueryValue( query.search ) ?? '',
 			filters: buildFiltersFromQuery( query ),
 			layout: persisted?.layout ?? defaultView.layout,
 		};
@@ -226,29 +253,48 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 		}
 	}, [ navTick, hasLoadedPersisted, derivedView ] );
 
-	// Search input REST fan-out is kept in check by DataViews 4.15.4's
-	// internal search-input debounce. If we ever pin a DataViews version that
-	// removes that debounce, push every keystroke through a useDebounce here
-	// before calling updateQueryString — and verify `useReportsFees` cancels
-	// stale in-flight requests with an AbortController.
+	const searchDebounceTimerRef = useRef< ReturnType<
+		typeof setTimeout
+	> | null >( null );
+	const clearPendingSearchUpdate = useCallback( () => {
+		if ( searchDebounceTimerRef.current ) {
+			clearTimeout( searchDebounceTimerRef.current );
+			searchDebounceTimerRef.current = null;
+		}
+	}, [] );
+	useEffect(
+		() => () => {
+			clearPendingSearchUpdate();
+		},
+		[ clearPendingSearchUpdate ]
+	);
+
 	const setView = useCallback(
 		( next: View ) => {
 			setLocalView( next );
 
-			const filterParams = buildFilterQueryParams( next.filters ?? [] );
-			const search = next.search ? [ next.search ] : undefined;
-
-			updateQueryString(
-				{
-					orderby: next.sort?.field,
-					order: next.sort?.direction,
-					paged: next.page ? String( next.page ) : undefined,
-					per_page: next.perPage ? String( next.perPage ) : undefined,
-					search,
-					...filterParams,
-				},
-				reportsPath
+			const currentQueryParams = buildUrlQueryParams( localView );
+			const nextQueryParams = buildUrlQueryParams( next );
+			const hasSearchChange = ! areQueryParamsEqual(
+				{ search: currentQueryParams.search },
+				{ search: nextQueryParams.search }
 			);
+			const isSearchPageReset =
+				hasSearchChange && nextQueryParams.paged === '1';
+			const hasImmediateUrlChange = ! areQueryParamsEqual(
+				withoutSearchParam( currentQueryParams, isSearchPageReset ),
+				withoutSearchParam( nextQueryParams, isSearchPageReset )
+			);
+
+			clearPendingSearchUpdate();
+			if ( hasImmediateUrlChange ) {
+				updateQueryString( nextQueryParams, reportsPath );
+			} else if ( hasSearchChange ) {
+				searchDebounceTimerRef.current = setTimeout( () => {
+					updateQueryString( nextQueryParams, reportsPath );
+					searchDebounceTimerRef.current = null;
+				}, searchDebounceMs );
+			}
 
 			const nextPersisted: PersistedFeesView = {
 				fields: ( next.fields ?? [] ) as FeesFieldId[],
@@ -268,7 +314,13 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 				} );
 			}
 		},
-		[ hasLoadedPersisted, persisted, updateUserPreferences ]
+		[
+			clearPendingSearchUpdate,
+			hasLoadedPersisted,
+			localView,
+			persisted,
+			updateUserPreferences,
+		]
 	);
 
 	const view = localView;
