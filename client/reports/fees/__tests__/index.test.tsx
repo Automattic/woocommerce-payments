@@ -173,6 +173,35 @@ describe( 'FeesReport (DataViews)', () => {
 		expect( dateFilterChip ).not.toHaveAttribute( 'aria-controls' );
 	} );
 
+	it( 'restores Date chip ARIA attributes when DataViews mutates them', async () => {
+		render( <FeesReport /> );
+
+		const dateFilterChip = screen.getByRole( 'button', {
+			name: /^fecha$/i,
+		} );
+
+		expect( dateFilterChip ).toHaveAttribute( 'aria-haspopup', 'dialog' );
+		expect( dateFilterChip ).toHaveAttribute( 'aria-expanded', 'false' );
+
+		// Simulate DataViews' internal Dropdown re-render overwriting the
+		// chip's ARIA attributes (it owns `aria-expanded` and doesn't know
+		// about `aria-haspopup`/`aria-controls`). Our MutationObserver
+		// should restore them.
+		dateFilterChip.removeAttribute( 'aria-haspopup' );
+		dateFilterChip.setAttribute( 'aria-expanded', 'true' );
+
+		await waitFor( () => {
+			expect( dateFilterChip ).toHaveAttribute(
+				'aria-haspopup',
+				'dialog'
+			);
+			expect( dateFilterChip ).toHaveAttribute(
+				'aria-expanded',
+				'false'
+			);
+		} );
+	} );
+
 	it( 'opens the custom date popover directly from the Date filter chip', async () => {
 		render( <FeesReport /> );
 

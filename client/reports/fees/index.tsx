@@ -92,14 +92,26 @@ const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
 
 const customDatePopoverId = 'wcpay-fees-date-filter-popover';
 
+// DataViews does not expose a structural per-field hook on its summary chips
+// (no `data-field-id`, no field-id-keyed `aria-label` — see
+// @wordpress/dataviews dataviews-filters/filter-summary). The chip's leading
+// text content is the field's `name`, which is our own `label`. Comparing
+// against `__('Date', ...)` is locale-robust because both sides resolve to
+// the same translated string. We normalize whitespace and case, and use a
+// word-boundary match so we don't accidentally pick up a chip whose name
+// happens to start with the literal "Date" characters (e.g. "Date range").
+const dateFilterLabelPattern = ( (): RegExp => {
+	const raw = __( 'Date', 'woocommerce-payments' )
+		.trim()
+		.toLowerCase()
+		// Escape regex metacharacters that might appear in translated labels.
+		.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
+	return new RegExp( `^${ raw }(?:\\b|$)` );
+} )();
+
 const isDateFilterAnchor = ( element: HTMLElement ): boolean => {
-	const dateFilterLabel = __( 'Date', 'woocommerce-payments' ).toLowerCase();
-	return (
-		element.textContent
-			?.trim()
-			.toLowerCase()
-			.startsWith( dateFilterLabel ) ?? false
-	);
+	const text = element.textContent?.trim().toLowerCase() ?? '';
+	return dateFilterLabelPattern.test( text );
 };
 
 const getResolvedDateFilter = ( view: View ): DateFilterValue | undefined =>
@@ -231,22 +243,78 @@ export const FeesReport = ( {
 		// DataViews owns the summary-chip markup and does not expose trigger
 		// props for a custom filter popover. Keep the intercepted Date chip's
 		// dialog semantics synchronized with our custom popover state here.
-		customDateAnchor.setAttribute( 'aria-haspopup', 'dialog' );
-		customDateAnchor.setAttribute(
-			'aria-expanded',
-			String( isCustomDatePopoverOpen )
-		);
-
-		if ( isCustomDatePopoverOpen ) {
+		//
+		// React's reconciliation can overwrite `aria-expanded` (and strip
+		// `aria-haspopup`/`aria-controls`) whenever DataViews re-renders the
+		// chip — its own Dropdown writes `aria-expanded` and we don't control
+		// that prop. Re-apply on filter changes (covered by deps) AND watch
+		// the chip for attribute mutations so we restore our values even when
+		// the re-render isn't driven by `view.filters`.
+		const applyAriaAttributes = (): void => {
+			customDateAnchor.setAttribute( 'aria-haspopup', 'dialog' );
 			customDateAnchor.setAttribute(
-				'aria-controls',
-				customDatePopoverId
+				'aria-expanded',
+				String( isCustomDatePopoverOpen )
 			);
-			return;
-		}
+			if ( isCustomDatePopoverOpen ) {
+				customDateAnchor.setAttribute(
+					'aria-controls',
+					customDatePopoverId
+				);
+			} else {
+				customDateAnchor.removeAttribute( 'aria-controls' );
+			}
+		};
 
-		customDateAnchor.removeAttribute( 'aria-controls' );
-	}, [ customDateAnchor, isCustomDatePopoverOpen ] );
+		applyAriaAttributes();
+
+		const observer = new MutationObserver( ( mutations ) => {
+			// Re-apply only when an attribute we care about drifted from
+			// what we want, so we don't fight DataViews on unrelated edits
+			// (e.g. class changes for `has-values`/`has-reset`).
+			const desiredExpanded = String( isCustomDatePopoverOpen );
+			const desiredControls = isCustomDatePopoverOpen
+				? customDatePopoverId
+				: null;
+			const drifted = mutations.some( ( mutation ) => {
+				if ( mutation.type !== 'attributes' ) return false;
+				switch ( mutation.attributeName ) {
+					case 'aria-haspopup':
+						return (
+							customDateAnchor.getAttribute( 'aria-haspopup' ) !==
+							'dialog'
+						);
+					case 'aria-expanded':
+						return (
+							customDateAnchor.getAttribute( 'aria-expanded' ) !==
+							desiredExpanded
+						);
+					case 'aria-controls':
+						return (
+							customDateAnchor.getAttribute( 'aria-controls' ) !==
+							desiredControls
+						);
+					default:
+						return false;
+				}
+			} );
+			if ( drifted ) {
+				applyAriaAttributes();
+			}
+		} );
+		observer.observe( customDateAnchor, {
+			attributes: true,
+			attributeFilter: [
+				'aria-haspopup',
+				'aria-expanded',
+				'aria-controls',
+			],
+		} );
+
+		return () => {
+			observer.disconnect();
+		};
+	}, [ customDateAnchor, isCustomDatePopoverOpen, view.filters ] );
 
 	const openCustomDatePopover = useCallback(
 		( anchor: HTMLElement | null ) => {
