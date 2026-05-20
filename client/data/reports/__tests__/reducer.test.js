@@ -216,5 +216,40 @@ describe( 'Reports reducer tests', () => {
 				code: 'rest_failure',
 			} );
 		} );
+
+		it( 'isolates cache slices across distinct queries', () => {
+			const query1 = { paged: 1 };
+			const query2 = { paged: 2 };
+
+			let state = reducer( undefined, {
+				type: types.SET_REPORTS_FEES,
+				query: query1,
+				data: [ { transaction_id: 'txn_1' } ],
+			} );
+			state = reducer( state, {
+				type: types.SET_REPORTS_FEES,
+				query: query2,
+				data: [ { transaction_id: 'txn_2' } ],
+			} );
+			state = reducer( state, {
+				type: types.SET_ERROR_FOR_REPORTS_FEES,
+				query: query1,
+				error: { code: 'rest_failure' },
+			} );
+
+			const index1 = getResourceId( query1 );
+			const index2 = getResourceId( query2 );
+
+			expect( state[ index1 ].data ).toEqual( [
+				{ transaction_id: 'txn_1' },
+			] );
+			expect( state[ index1 ].error ).toEqual( {
+				code: 'rest_failure',
+			} );
+			expect( state[ index2 ].data ).toEqual( [
+				{ transaction_id: 'txn_2' },
+			] );
+			expect( state[ index2 ].error ).toBeUndefined();
+		} );
 	} );
 } );
