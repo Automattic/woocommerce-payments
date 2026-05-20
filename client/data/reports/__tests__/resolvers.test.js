@@ -80,7 +80,7 @@ describe( 'getReportsFees resolver', () => {
 			)
 		);
 		expect( generator.next().value ).toEqual(
-			updateErrorForReportsFees( query, null, errorResponse )
+			updateErrorForReportsFees( query, errorResponse )
 		);
 	} );
 } );
@@ -124,7 +124,7 @@ describe( 'getReportsFeesSummary resolver', () => {
 			)
 		);
 		expect( generator.next().value ).toEqual(
-			updateErrorForReportsFeesSummary( query, null, errorResponse )
+			updateErrorForReportsFeesSummary( query, errorResponse )
 		);
 	} );
 } );

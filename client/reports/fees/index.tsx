@@ -412,13 +412,6 @@ export const FeesReport = ( {
 		[ dataViewsContainer, toggleCustomDatePopover ]
 	);
 
-	const handleViewChange = useCallback(
-		( next: View ) => {
-			setView( next );
-		},
-		[ setView ]
-	);
-
 	const closeCustomDatePopover = useCallback( () => {
 		isCustomDatePopoverOpenRef.current = false;
 		setIsCustomDatePopoverOpen( false );
@@ -443,9 +436,9 @@ export const FeesReport = ( {
 					value: encodeCustomDateFilterValue( nextDateFilter ),
 				} ),
 			};
-			handleViewChange( nextView );
+			setView( nextView );
 		},
-		[ handleViewChange, view ]
+		[ setView, view ]
 	);
 
 	if ( hasError ) {
@@ -515,13 +508,13 @@ export const FeesReport = ( {
 				<DataViews
 					data={ rows }
 					view={ view }
-					onChangeView={ handleViewChange }
+					onChangeView={ setView }
 					fields={ fields }
 					paginationInfo={ { totalItems, totalPages } }
 					isLoading={ isLoading }
 					defaultLayouts={ { table: {} } }
 					search
-					searchLabel={ __( 'Search', 'woocommerce-payments' ) }
+					searchLabel={ __( 'Search fees', 'woocommerce-payments' ) }
 					getItemId={ ( item ) => item.transaction_id }
 				/>
 				{ isFilteredEmpty && (

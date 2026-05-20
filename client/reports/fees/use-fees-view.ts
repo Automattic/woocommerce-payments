@@ -24,7 +24,6 @@ import {
 } from './date-filter-values';
 
 const reportsPath = '/payments/reports';
-const legacyHiddenColumnsKey = 'wc_payments_reports_fees_hidden_columns';
 const searchDebounceMs = 500;
 const persistDebounceMs = 750;
 
@@ -171,36 +170,6 @@ export const useFeesView = (): [ View, ( next: View ) => void ] => {
 		window.addEventListener( 'popstate', bumpNavTick );
 		return () => window.removeEventListener( 'popstate', bumpNavTick );
 	}, [ bumpNavTick ] );
-
-	// One-time migration: if the new key isn't set but the legacy
-	// `wc_payments_reports_fees_hidden_columns` exists, derive an initial
-	// `fields` list from the legacy hidden columns and persist under the
-	// new key. Fires once per session at most.
-	const migrationAttemptedRef = useRef( false );
-	useEffect( () => {
-		if ( migrationAttemptedRef.current || ! hasLoadedPersisted ) {
-			return;
-		}
-		migrationAttemptedRef.current = true;
-		if ( persisted ) {
-			return;
-		}
-		const legacy = prefs[ legacyHiddenColumnsKey ];
-		if ( ! Array.isArray( legacy ) || legacy.length === 0 ) {
-			return;
-		}
-		const defaultView = getDefaultFeesView() as ViewTable;
-		const migratedFields = ( defaultView.fields ?? [] ).filter(
-			( field ) => ! legacy.includes( field )
-		) as FeesFieldId[];
-		updateUserPreferences( {
-			[ feesViewUserMetaKey ]: {
-				fields: migratedFields,
-				perPage: defaultPerPage,
-				layout: defaultView.layout,
-			},
-		} );
-	}, [ hasLoadedPersisted, persisted, prefs, updateUserPreferences ] );
 
 	const derivedView: View = useMemo< ViewTable >( () => {
 		const query = getQuery() as Record< string, unknown >;

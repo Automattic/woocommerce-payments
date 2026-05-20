@@ -13,11 +13,10 @@ export function updateReportsFees( query, data ) {
 	};
 }
 
-export function updateErrorForReportsFees( query, data, error ) {
+export function updateErrorForReportsFees( query, error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_REPORTS_FEES,
 		query,
-		data,
 		error,
 	};
 }
@@ -30,11 +29,10 @@ export function updateReportsFeesSummary( query, data ) {
 	};
 }
 
-export function updateErrorForReportsFeesSummary( query, data, error ) {
+export function updateErrorForReportsFeesSummary( query, error ) {
 	return {
 		type: TYPES.SET_ERROR_FOR_REPORTS_FEES_SUMMARY,
 		query,
-		data,
 		error,
 	};
 }

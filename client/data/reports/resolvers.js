@@ -20,7 +20,7 @@ import {
 } from './actions';
 import { formatDateValue, getUserTimeZone } from 'utils';
 
-export const formatReportsFeesQuery = ( query ) => ( {
+const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	date_before: formatDateValue( query.dateBefore, true ),
 	date_after: formatDateValue( query.dateAfter ),
@@ -56,7 +56,7 @@ export function* getReportsFees( query ) {
 		per_page: query.perPage,
 		sort: query.orderby,
 		direction: query.order,
-		...formatReportsFeesQuery( query ),
+		...formatQueryFilters( query ),
 	} );
 
 	try {
@@ -68,7 +68,7 @@ export function* getReportsFees( query ) {
 			'createErrorNotice',
 			__( 'Error retrieving fees report.', 'woocommerce-payments' )
 		);
-		yield updateErrorForReportsFees( query, null, e );
+		yield updateErrorForReportsFees( query, e );
 	}
 }
 
@@ -80,7 +80,7 @@ export function* getReportsFees( query ) {
 export function* getReportsFeesSummary( query ) {
 	const path = addQueryArgs(
 		`${ NAMESPACE }/reports/fees/summary`,
-		formatReportsFeesQuery( query )
+		formatQueryFilters( query )
 	);
 
 	try {
@@ -95,6 +95,6 @@ export function* getReportsFeesSummary( query ) {
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForReportsFeesSummary( query, null, e );
+		yield updateErrorForReportsFeesSummary( query, e );
 	}
 }

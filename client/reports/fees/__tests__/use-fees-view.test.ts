@@ -445,23 +445,4 @@ describe( 'useFeesView', () => {
 			} ),
 		} );
 	} );
-
-	it( 'migrates fields from the legacy hidden-columns user_meta key', () => {
-		mockUserPrefs = {
-			wc_payments_reports_fees_view: null,
-			wc_payments_reports_fees_hidden_columns: [
-				'deposit_date',
-				'transaction_currency',
-			],
-		};
-		renderHook( () => useFeesView() );
-		expect( mockUpdateUserPreferences ).toHaveBeenCalledWith( {
-			wc_payments_reports_fees_view: expect.objectContaining( {
-				fields: expect.not.arrayContaining( [
-					'deposit_date',
-					'transaction_currency',
-				] ),
-			} ),
-		} );
-	} );
 } );

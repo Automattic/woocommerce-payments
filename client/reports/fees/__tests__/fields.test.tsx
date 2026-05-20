@@ -55,8 +55,6 @@ jest.mock( '@woocommerce/components', () => ( {
 	),
 } ) );
 
-jest.mock( './strings', () => ( {} ), { virtual: true } );
-
 jest.mock( '../strings', () => ( {
 	displayMethod: jest.fn( ( type: string ) =>
 		type ? `Method: ${ type }` : ''
