@@ -192,7 +192,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_request->expects( $this->once() )
 			->method( 'format_response' )
 			->willReturn( $this->get_transactions_list_from_server() );
-		$mock_request->expects( $this->any() )
+		$mock_request->expects( $this->once() )
 			->method( 'set_filters' )
 			->with(
 				[
