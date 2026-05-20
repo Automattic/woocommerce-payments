@@ -206,12 +206,10 @@ describe( 'DisputeOutcomeView', () => {
 				metadata: { __product_type: 'physical_product' },
 			} );
 
-			const { unmount } = render(
-				<DisputeOutcomeView dispute={ dispute } />
-			);
-			unmount();
-			render( <DisputeOutcomeView dispute={ dispute } /> );
-			unmount();
+			const first = render( <DisputeOutcomeView dispute={ dispute } /> );
+			first.unmount();
+			const second = render( <DisputeOutcomeView dispute={ dispute } /> );
+			second.unmount();
 			render( <DisputeOutcomeView dispute={ dispute } /> );
 
 			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
