@@ -260,7 +260,30 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 				[
 					'source_is'  => 'card',
 					'type_is_in' => [ 'charge' ],
-				]
+				],
+				null
+			)
+			->willReturn( [ 'count' => 1 ] );
+
+		$response = $this->controller->get_fees_summary( $request );
+
+		$this->assertSame( [ 'count' => 1 ], $response->get_data() );
+	}
+
+	public function test_get_fees_summary_passes_deposit_id_as_positional_argument() {
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_param( 'payment_method_type', 'card' );
+		$request->set_param( 'type', 'charge' );
+		$request->set_param( 'deposit_id', 'po_mock' );
+
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'get_transactions_summary' )
+			->with(
+				[
+					'source_is'  => 'card',
+					'type_is_in' => [ 'charge' ],
+				],
+				'po_mock'
 			)
 			->willReturn( [ 'count' => 1 ] );
 

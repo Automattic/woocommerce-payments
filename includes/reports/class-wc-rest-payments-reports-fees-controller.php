@@ -117,9 +117,11 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_fees_summary( $request ) {
-		$filters = $this->get_fees_transaction_filters( $request );
+		$filters    = $this->get_fees_transaction_filters( $request );
+		$deposit_id = $filters['deposit_id'] ?? null;
+		unset( $filters['deposit_id'] );
 
-		return $this->forward_request( 'get_transactions_summary', [ $filters ] );
+		return $this->forward_request( 'get_transactions_summary', [ $filters, $deposit_id ] );
 	}
 
 	/**
