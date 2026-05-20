@@ -251,11 +251,10 @@ describe( 'DisputeOutcomeView', () => {
 			);
 		} );
 
-		it( 'passes product_type as undefined when no product type is available, so recordEvent drops it', () => {
+		it( 'omits product_type when no product type is available', () => {
 			// Neither metadata.__product_type nor order.suggested_product_type
-			// resolves: resolveProductType returns '', which the helper
-			// collapses to undefined. recordEvent (real impl) strips undefined
-			// properties before sending, so analytics never see a '' bucket.
+			// resolves: resolveProductType returns '', so the helper drops the
+			// key entirely rather than emitting a '' (or undefined) value.
 			render(
 				<DisputeOutcomeView
 					dispute={ buildDispute( { metadata: {}, order: null } ) }
@@ -263,15 +262,14 @@ describe( 'DisputeOutcomeView', () => {
 			);
 
 			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
-			expect( mockRecordEvent ).toHaveBeenCalledWith(
-				'wcpay_dispute_outcome_viewed',
-				{
-					dispute_id: 'dp_test',
-					dispute_status: 'lost',
-					dispute_reason: 'product_unacceptable',
-					product_type: undefined,
-				}
-			);
+			const [ eventName, payload ] = mockRecordEvent.mock.calls[ 0 ];
+			expect( eventName ).toBe( 'wcpay_dispute_outcome_viewed' );
+			expect( payload ).not.toHaveProperty( 'product_type' );
+			expect( payload ).toEqual( {
+				dispute_id: 'dp_test',
+				dispute_status: 'lost',
+				dispute_reason: 'product_unacceptable',
+			} );
 		} );
 	} );
 

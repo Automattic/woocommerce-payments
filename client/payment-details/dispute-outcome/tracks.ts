@@ -23,12 +23,15 @@ export const getDisputeOutcomeTracksProperties = (
 	productType: string | undefined
 ): {
 	dispute_id: string;
-	dispute_status: string;
-	dispute_reason: string;
+	dispute_status: ChargeDispute[ 'status' ];
+	dispute_reason: ChargeDispute[ 'reason' ];
 	product_type?: string;
 } => ( {
 	dispute_id: dispute.id,
 	dispute_status: dispute.status,
 	dispute_reason: dispute.reason,
-	product_type: productType || undefined,
+	// Genuinely omit the key when there is no product type, rather than
+	// emitting product_type: undefined. Keeps the payload self-describing
+	// instead of leaning on recordEvent's undefined-stripping.
+	...( productType ? { product_type: productType } : {} ),
 } );
