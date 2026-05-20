@@ -168,16 +168,36 @@ describe( 'FeesReport (DataViews)', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'marks the Date filter chip as a dialog trigger while closed', () => {
+		render( <FeesReport /> );
+
+		const dateFilterChip = screen.getByRole( 'button', {
+			name: /^fecha$/i,
+		} );
+
+		expect( dateFilterChip ).toHaveAttribute( 'aria-haspopup', 'dialog' );
+		expect( dateFilterChip ).toHaveAttribute( 'aria-expanded', 'false' );
+		expect( dateFilterChip ).not.toHaveAttribute( 'aria-controls' );
+	} );
+
 	it( 'opens the custom date popover directly from the Date filter chip', async () => {
 		render( <FeesReport /> );
 
-		fireEvent.click( screen.getByRole( 'button', { name: /^fecha$/i } ) );
+		const dateFilterChip = screen.getByRole( 'button', {
+			name: /^fecha$/i,
+		} );
+		fireEvent.click( dateFilterChip );
 
 		expect(
 			await screen.findByRole( 'dialog', {
 				name: 'Custom date filter',
 			} )
 		).toBeInTheDocument();
+		expect( dateFilterChip ).toHaveAttribute( 'aria-expanded', 'true' );
+		expect( dateFilterChip ).toHaveAttribute(
+			'aria-controls',
+			'wcpay-fees-date-filter-popover'
+		);
 		await waitFor( () =>
 			expect(
 				screen.queryByRole( 'option', { name: 'Custom date…' } )

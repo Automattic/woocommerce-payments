@@ -250,16 +250,17 @@ export const FeesReport = ( {
 	}, [ isLoading, hasError, totalItems ] );
 
 	useLayoutEffect( () => {
-		if ( isCustomDatePopoverOpen ) {
-			setCustomDateAnchor( findDateFilterAnchor( dataViewsContainer ) );
-		}
-	}, [ dataViewsContainer, isCustomDatePopoverOpen, view.filters ] );
+		setCustomDateAnchor( findDateFilterAnchor( dataViewsContainer ) );
+	}, [ dataViewsContainer, view.filters ] );
 
 	useLayoutEffect( () => {
 		if ( ! customDateAnchor ) {
 			return;
 		}
 
+		// DataViews owns the summary-chip markup and does not expose trigger
+		// props for a custom filter popover. Keep the intercepted Date chip's
+		// dialog semantics synchronized with our custom popover state here.
 		customDateAnchor.setAttribute( 'aria-haspopup', 'dialog' );
 		customDateAnchor.setAttribute(
 			'aria-expanded',
