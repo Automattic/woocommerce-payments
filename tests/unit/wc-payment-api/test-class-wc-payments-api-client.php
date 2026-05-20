@@ -735,6 +735,91 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
 
+	public function test_get_reports_fees_summary_maps_order_search_to_charge_id() {
+		$order     = WC_Helper_Order::create_order();
+		$charge_id = 'ch_test_charge';
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $request ) use ( $charge_id ) {
+						$this->assertSame( 'GET', $request['method'] );
+						$this->assertStringContainsString( '/transactions/summary?', $request['url'] );
+
+						parse_str( parse_url( $request['url'], PHP_URL_QUERY ), $query );
+						$this->assertSame( [ $charge_id ], $query['search'] );
+
+						return true;
+					}
+				)
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'count' => 1 ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$this->payments_api_client->get_reports_fees_summary(
+			[
+				'search' => [ 'Order #' . $order->get_id() ],
+			]
+		);
+	}
+
+	public function test_get_reports_fees_export_maps_order_search_to_charge_id() {
+		$order     = WC_Helper_Order::create_order();
+		$charge_id = 'ch_test_charge';
+		$order->update_meta_data( '_charge_id', $charge_id );
+		$order->save();
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $request ) {
+						$this->assertSame( 'POST', $request['method'] );
+						$this->assertStringContainsString( '/transactions/download', $request['url'] );
+
+						return true;
+					}
+				),
+				$this->callback(
+					function ( $body ) use ( $charge_id ) {
+						$decoded = json_decode( $body, true );
+						$this->assertSame( [ $charge_id ], $decoded['search'] );
+
+						return true;
+					}
+				),
+				true,
+				false
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( [ 'export_id' => 'export_mock' ] ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$this->payments_api_client->get_reports_fees_export(
+			[
+				'search' => [ 'Order #' . $order->get_id() ],
+			]
+		);
+	}
+
 	public function test_get_woopay_eligibility_success() {
 		$this->set_http_mock_response(
 			200,

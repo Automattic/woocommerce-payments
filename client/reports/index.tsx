@@ -108,7 +108,6 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 								tab={ tab.name as ReportsTab }
 								status={ currentTabStatus }
 								onReload={ reload }
-								period={ period }
 							/>
 						</div>
 					) }

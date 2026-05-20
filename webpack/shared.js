@@ -184,7 +184,9 @@ module.exports = {
 						// NOTE: force-bundling pulls in non-deduped nested
 						// copies of @wordpress/data, @wordpress/element,
 						// @wordpress/compose, @wordpress/deprecated, and
-						// @wordpress/hooks (the top-level versions are still
+						// @wordpress/hooks. It also carries DataViews'
+						// transitive @wordpress/private-apis dependency.
+						// The top-level versions are still
 						// externalised to wp.* globals). The nested
 						// @wordpress/data instance is the one to watch: any
 						// store DataViews registers internally is invisible

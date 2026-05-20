@@ -11,17 +11,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import type { ReportsTab, ReportsTabStatus } from './types';
-import {
-	getLastFullCalendarMonthUTC,
-	type ReportsPeriodRange,
-} from './period-selector';
 import { FeesReport } from './fees';
 
 interface ReportsTabPanelProps {
 	tab: ReportsTab;
 	status: ReportsTabStatus;
 	onReload: () => void;
-	period?: ReportsPeriodRange;
 }
 
 export const reportsTabs: Array< {
@@ -78,7 +73,6 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 	tab,
 	status,
 	onReload,
-	period,
 } ) => {
 	const contentHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousStatusRef = useRef< ReportsTabStatus >( status );
@@ -98,12 +92,7 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 	}, [ status ] );
 
 	if ( tab === 'fees' ) {
-		return (
-			<FeesReport
-				period={ period ?? getLastFullCalendarMonthUTC() }
-				onReload={ onReload }
-			/>
-		);
+		return <FeesReport onReload={ onReload } />;
 	}
 
 	if ( status === 'loading' ) {

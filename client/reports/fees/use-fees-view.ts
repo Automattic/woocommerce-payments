@@ -31,6 +31,18 @@ const parseIntOr = ( value: unknown, fallback: number ): number => {
 	return Number.isNaN( n ) ? fallback : n;
 };
 
+const getFirstQueryValue = ( value: unknown ): string | undefined => {
+	if ( Array.isArray( value ) ) {
+		return getFirstQueryValue( value[ 0 ] );
+	}
+
+	if ( typeof value !== 'string' || value === '' ) {
+		return undefined;
+	}
+
+	return value.split( ',' )[ 0 ] || undefined;
+};
+
 const buildFiltersFromQuery = (
 	query: Record< string, unknown >
 ): Filter[] => {
@@ -54,12 +66,13 @@ const buildFiltersFromQuery = (
 	}
 
 	if ( query.type ) {
-		const value = Array.isArray( query.type )
-			? query.type
-			: [ query.type as string ];
+		const value = getFirstQueryValue( query.type );
+		if ( ! value ) {
+			return filters;
+		}
 		filters.push( {
 			field: 'type',
-			operator: 'isAny',
+			operator: 'is',
 			value,
 		} );
 	}

@@ -144,6 +144,13 @@ describe( 'getReportsFeesSummary resolver', () => {
 
 	test( 'updates state with the summary error on failure', () => {
 		expect( generator.throw( errorResponse ).value ).toEqual(
+			controls.dispatch(
+				'core/notices',
+				'createErrorNotice',
+				expect.any( String )
+			)
+		);
+		expect( generator.next().value ).toEqual(
 			updateErrorForReportsFeesSummary( query, null, errorResponse )
 		);
 	} );

@@ -61,7 +61,7 @@ describe( 'useFeesView', () => {
 	it( 'reads payment_method_type and type from URL into filters', () => {
 		mockGetQuery.mockReturnValue( {
 			payment_method_type: 'card',
-			type: [ 'charge', 'refund' ],
+			type: 'charge',
 		} );
 		const { result } = renderHook( () => useFeesView() );
 		expect( result.current[ 0 ].filters ).toEqual(
@@ -69,8 +69,40 @@ describe( 'useFeesView', () => {
 				{ field: 'payment_method', operator: 'is', value: 'card' },
 				{
 					field: 'type',
-					operator: 'isAny',
-					value: [ 'charge', 'refund' ],
+					operator: 'is',
+					value: 'charge',
+				},
+			] )
+		);
+	} );
+
+	it( 'uses the first type value from legacy multi-value URLs', () => {
+		mockGetQuery.mockReturnValue( {
+			type: [ 'charge', 'refund' ],
+		} );
+		const { result } = renderHook( () => useFeesView() );
+		expect( result.current[ 0 ].filters ).toEqual(
+			expect.arrayContaining( [
+				{
+					field: 'type',
+					operator: 'is',
+					value: 'charge',
+				},
+			] )
+		);
+	} );
+
+	it( 'uses the first type value from legacy comma-separated URLs', () => {
+		mockGetQuery.mockReturnValue( {
+			type: 'charge,refund',
+		} );
+		const { result } = renderHook( () => useFeesView() );
+		expect( result.current[ 0 ].filters ).toEqual(
+			expect.arrayContaining( [
+				{
+					field: 'type',
+					operator: 'is',
+					value: 'charge',
 				},
 			] )
 		);

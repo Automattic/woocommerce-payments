@@ -23,7 +23,7 @@ const feesDatePresets = [
 
 type FeesDatePreset = ( typeof feesDatePresets )[ number ];
 
-export const isFeesDatePreset = ( value: unknown ): value is FeesDatePreset =>
+const isFeesDatePreset = ( value: unknown ): value is FeesDatePreset =>
 	typeof value === 'string' &&
 	feesDatePresets.includes( value as FeesDatePreset );
 
@@ -51,7 +51,7 @@ export const encodeCustomDateFilterValue = (
 	return `${ customDatePrefix }${ value.operator }:${ value.value }`;
 };
 
-export const decodeCustomDateFilterValue = (
+const decodeCustomDateFilterValue = (
 	value: unknown
 ): DateFilterValue | undefined => {
 	if ( typeof value !== 'string' || ! value.startsWith( customDatePrefix ) ) {

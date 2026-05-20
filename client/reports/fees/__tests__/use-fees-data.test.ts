@@ -2,7 +2,6 @@
 
 import type { View } from '@wordpress/dataviews';
 import { renderHook } from '@testing-library/react-hooks';
-import type { ReportsPeriodRange } from '../../period-selector';
 
 const mockUseReportsFees = jest.fn();
 const mockUseReportsFeesSummary = jest.fn();
@@ -15,11 +14,6 @@ jest.mock( 'wcpay/data', () => ( {
 
 import { buildFeesQuery, useFeesData } from '../use-fees-data';
 import { encodeCustomDateFilterValue } from '../date-filter-values';
-
-const period: ReportsPeriodRange = {
-	start: '2026-04-01T00:00:00Z',
-	end: '2026-04-30T23:59:59Z',
-};
 
 const baseView = ( overrides: Partial< View > = {} ): View =>
 	( {
@@ -41,8 +35,7 @@ describe( 'buildFeesQuery', () => {
 					page: 3,
 					perPage: 50,
 					sort: { field: 'fees', direction: 'asc' },
-				} ),
-				period
+				} )
 			)
 		).toMatchObject( {
 			paged: '3',
@@ -66,8 +59,7 @@ describe( 'buildFeesQuery', () => {
 			const result = buildFeesQuery(
 				baseView( {
 					sort: { field: columnId, direction: 'asc' },
-				} ),
-				period
+				} )
 			);
 			expect( result.orderby ).toBe( backendField );
 		}
@@ -75,22 +67,18 @@ describe( 'buildFeesQuery', () => {
 
 	it( 'passes column ids that already match backend fields through unchanged', () => {
 		const result = buildFeesQuery(
-			baseView( { sort: { field: 'amount', direction: 'desc' } } ),
-			period
+			baseView( { sort: { field: 'amount', direction: 'desc' } } )
 		);
 		expect( result.orderby ).toBe( 'amount' );
 	} );
 
 	it( 'defaults orderby to "date" when no sort is set', () => {
-		const result = buildFeesQuery(
-			baseView( { sort: undefined } ),
-			period
-		);
+		const result = buildFeesQuery( baseView( { sort: undefined } ) );
 		expect( result.orderby ).toBe( 'date' );
 	} );
 
 	it( 'omits date params when no date filter is set', () => {
-		const result = buildFeesQuery( baseView(), period );
+		const result = buildFeesQuery( baseView() );
 		expect( result.date_between ).toBeUndefined();
 		expect( result.date_before ).toBeUndefined();
 		expect( result.date_after ).toBeUndefined();
@@ -109,8 +97,7 @@ describe( 'buildFeesQuery', () => {
 						} ),
 					},
 				],
-			} ),
-			period
+			} )
 		);
 		expect( result.date_between ).toEqual( [ '2026-03-01', '2026-03-31' ] );
 		expect( result.date_before ).toBeUndefined();
@@ -130,8 +117,7 @@ describe( 'buildFeesQuery', () => {
 						} ),
 					},
 				],
-			} ),
-			period
+			} )
 		);
 		expect( result.date_between ).toEqual( [ '2026-05-18', '2026-05-18' ] );
 		expect( result.date_before ).toBeUndefined();
@@ -151,8 +137,7 @@ describe( 'buildFeesQuery', () => {
 						} ),
 					},
 				],
-			} ),
-			period
+			} )
 		);
 		expect( result.date_before ).toBe( '2026-03-31' );
 		expect( result.date_between ).toBeUndefined();
@@ -171,8 +156,7 @@ describe( 'buildFeesQuery', () => {
 						} ),
 					},
 				],
-			} ),
-			period
+			} )
 		);
 		expect( result.date_after ).toBe( '2026-01-01' );
 		expect( result.date_between ).toBeUndefined();
@@ -184,13 +168,27 @@ describe( 'buildFeesQuery', () => {
 				filters: [
 					{ field: 'payment_method', operator: 'is', value: 'card' },
 				],
-			} ),
-			period
+			} )
 		);
 		expect( result.payment_method_type ).toBe( 'card' );
 	} );
 
-	it( 'maps type filter (isAny array) as a comma-separated string', () => {
+	it( 'maps type filter as a single value', () => {
+		const result = buildFeesQuery(
+			baseView( {
+				filters: [
+					{
+						field: 'type',
+						operator: 'is',
+						value: 'charge',
+					},
+				],
+			} )
+		);
+		expect( result.type ).toBe( 'charge' );
+	} );
+
+	it( 'uses the first type value from legacy multi-value filters', () => {
 		const result = buildFeesQuery(
 			baseView( {
 				filters: [
@@ -200,20 +198,34 @@ describe( 'buildFeesQuery', () => {
 						value: [ 'charge', 'refund' ],
 					},
 				],
-			} ),
-			period
+			} )
 		);
-		expect( result.type ).toBe( 'charge,refund' );
+		expect( result.type ).toBe( 'charge' );
+	} );
+
+	it( 'uses the first type value from legacy comma-separated filters', () => {
+		const result = buildFeesQuery(
+			baseView( {
+				filters: [
+					{
+						field: 'type',
+						operator: 'is',
+						value: 'charge,refund',
+					},
+				],
+			} )
+		);
+		expect( result.type ).toBe( 'charge' );
 	} );
 
 	it( 'wraps search as a single-element array', () => {
 		expect(
-			buildFeesQuery( baseView( { search: 'txn_abc' } ), period ).search
+			buildFeesQuery( baseView( { search: 'txn_abc' } ) ).search
 		).toEqual( [ 'txn_abc' ] );
 	} );
 
 	it( 'omits search when empty', () => {
-		expect( buildFeesQuery( baseView(), period ).search ).toBeUndefined();
+		expect( buildFeesQuery( baseView() ).search ).toBeUndefined();
 	} );
 } );
 
@@ -239,7 +251,7 @@ describe( 'useFeesData', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useFeesData( baseView( { perPage: 20 } ), period )
+			useFeesData( baseView( { perPage: 20 } ) )
 		);
 
 		expect( result.current.totalItems ).toBe( 47 );
@@ -247,9 +259,7 @@ describe( 'useFeesData', () => {
 	} );
 
 	it( 'returns at least 1 totalPages even when the summary is empty', () => {
-		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
-		);
+		const { result } = renderHook( () => useFeesData( baseView() ) );
 
 		expect( result.current.totalPages ).toBe( 1 );
 	} );
@@ -264,9 +274,7 @@ describe( 'useFeesData', () => {
 			isLoading: false,
 		} );
 
-		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
-		);
+		const { result } = renderHook( () => useFeesData( baseView() ) );
 
 		// `displayMethod` returns the localized title for known methods and
 		// falls back to the raw value for unknown ones. Asserting label !=
@@ -286,9 +294,7 @@ describe( 'useFeesData', () => {
 			isLoading: false,
 		} );
 
-		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
-		);
+		const { result } = renderHook( () => useFeesData( baseView() ) );
 
 		const charge = result.current.typeElements.find(
 			( e ) => e.value === 'charge'
@@ -308,9 +314,7 @@ describe( 'useFeesData', () => {
 			isLoading: true,
 		} );
 
-		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
-		);
+		const { result } = renderHook( () => useFeesData( baseView() ) );
 
 		expect( result.current.isLoading ).toBe( true );
 	} );
@@ -322,14 +326,26 @@ describe( 'useFeesData', () => {
 			isLoading: false,
 		} );
 
-		const { result } = renderHook( () =>
-			useFeesData( baseView(), period )
-		);
+		const { result } = renderHook( () => useFeesData( baseView() ) );
 
 		expect( result.current.error ).toEqual( { code: 'rest_forbidden' } );
 	} );
 
-	it( 'returns the memoized feesQuery used for the request', () => {
+	it( 'passes feesSummaryError through to the caller', () => {
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: {},
+			feesSummaryError: { code: 'summary_unavailable' },
+			isLoading: false,
+		} );
+
+		const { result } = renderHook( () => useFeesData( baseView() ) );
+
+		expect( result.current.error ).toEqual( {
+			code: 'summary_unavailable',
+		} );
+	} );
+
+	it( 'passes the built query to the rows hook', () => {
 		mockUseReportsFees.mockReturnValue( {
 			feesRows: [],
 			feesError: {},
@@ -337,13 +353,12 @@ describe( 'useFeesData', () => {
 		} );
 
 		const { result } = renderHook( () =>
-			useFeesData( baseView( { search: 'txn_abc' } ), period )
+			useFeesData( baseView( { search: 'txn_abc' } ) )
 		);
 
-		expect( result.current.feesQuery.search ).toEqual( [ 'txn_abc' ] );
-		// The same call passed to useReportsFees.
+		expect( result.current.rows ).toEqual( [] );
 		expect( mockUseReportsFees ).toHaveBeenLastCalledWith(
-			result.current.feesQuery
+			expect.objectContaining( { search: [ 'txn_abc' ] } )
 		);
 	} );
 } );

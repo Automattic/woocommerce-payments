@@ -70,12 +70,13 @@ interface ReportsFeesSummary {
 		sources?: string[];
 		types?: ReportsFeeType[];
 	};
+	feesSummaryError?: Record< string, unknown >;
 	isLoading: boolean;
 }
 
 interface ReportsFeesQuery extends Query {
 	payment_method_type?: string;
-	type?: string | string[];
+	type?: string;
 	order_id?: string;
 	deposit_id?: string;
 	customer_email?: string;
@@ -166,7 +167,11 @@ export const useReportsFeesSummary = ( {
 }: ReportsFeesQuery ): ReportsFeesSummary =>
 	useSelect(
 		( select ) => {
-			const { getReportsFeesSummary, isResolving } = select( STORE_NAME );
+			const {
+				getReportsFeesSummary,
+				getReportsFeesSummaryError,
+				isResolving,
+			} = select( STORE_NAME );
 
 			const query = {
 				match,
@@ -183,6 +188,7 @@ export const useReportsFeesSummary = ( {
 
 			return {
 				feesSummary: getReportsFeesSummary( query ),
+				feesSummaryError: getReportsFeesSummaryError( query ),
 				isLoading: isResolving( 'getReportsFeesSummary', [ query ] ),
 			};
 		},

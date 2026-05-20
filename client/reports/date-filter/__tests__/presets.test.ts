@@ -100,6 +100,28 @@ describe( 'resolvePreset', () => {
 		} );
 	} );
 
+	it( 'resolves today using the browser local date, not UTC', () => {
+		expect(
+			resolvePreset( 'today', 'on', new Date( '2026-12-01T02:30:00Z' ) )
+		).toEqual( {
+			operator: 'on',
+			value: '2026-11-30',
+		} );
+	} );
+
+	it( 'resolves calendar ranges from the browser local date', () => {
+		expect(
+			resolvePreset(
+				'last_month',
+				'between',
+				new Date( '2026-03-01T02:30:00Z' )
+			)
+		).toEqual( {
+			operator: 'between',
+			value: [ '2026-01-01', '2026-01-31' ],
+		} );
+	} );
+
 	it( 'returns undefined for custom', () => {
 		expect( resolvePreset( 'custom', 'between', now ) ).toBeUndefined();
 		expect( resolvePreset( 'custom', 'on', now ) ).toBeUndefined();

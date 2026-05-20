@@ -12,7 +12,6 @@ import type { View, Filter } from '@wordpress/dataviews';
 import { useReportsFees, useReportsFeesSummary } from 'wcpay/data';
 import type { ReportsFee } from 'wcpay/data/reports/hooks';
 import { formatStringValue } from 'wcpay/utils';
-import type { ReportsPeriodRange } from '../period-selector';
 import { displayMethod, displayType } from './strings';
 import {
 	buildFeesDateFilterElements,
@@ -45,7 +44,7 @@ interface FeesQuery {
 	date_after?: string;
 	date_between?: string[];
 	payment_method_type?: string;
-	type?: string | string[];
+	type?: string;
 	search?: string[];
 }
 
@@ -80,15 +79,8 @@ const resolveSortField = ( columnId: string | undefined ): string => {
  * still honours. They are intentionally not surfaced from the DataViews UI in
  * this PR; a follow-up will add purpose-built filter chips for them.
  *
- * The `period` argument is retained on the signature so callers don't need to
- * change yet, but it no longer affects the query — date filtering is driven
- * by the native DataViews Date filter.
  */
-export const buildFeesQuery = (
-	view: View,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	period?: ReportsPeriodRange
-): FeesQuery => {
+export const buildFeesQuery = ( view: View ): FeesQuery => {
 	const query: FeesQuery = {
 		paged: String( view.page ?? 1 ),
 		per_page: String( view.perPage ?? 25 ),
@@ -123,18 +115,13 @@ export const buildFeesQuery = (
 
 	const typeFilter = findFilter( view.filters, 'type' );
 	if ( typeFilter && typeFilter.value ) {
-		// The Type filter is multi-select (`isAny`), but the REST controller
-		// declares `type` as a single string in its schema; sending `type[]=…`
-		// triggers a 400 (`rest_invalid_param`). The PHP handler accepts a
-		// comma-separated string and splits it into `type_is_in`, so we join
-		// the array client-side. Single selection is sent as a plain string.
 		const value = typeFilter.value;
 		if ( Array.isArray( value ) ) {
 			if ( value.length > 0 ) {
-				query.type = value.join( ',' );
+				query.type = value[ 0 ] as string;
 			}
-		} else {
-			query.type = value as string;
+		} else if ( typeof value === 'string' ) {
+			query.type = value.split( ',' )[ 0 ] || undefined;
 		}
 	}
 
@@ -146,7 +133,6 @@ export const buildFeesQuery = (
 };
 
 interface UseFeesDataResult {
-	feesQuery: FeesQuery;
 	rows: ReportsFee[];
 	totalItems: number;
 	totalPages: number;
@@ -179,17 +165,14 @@ const buildTypeElements = (
 				formatStringValue( type ),
 		} ) );
 
-export const useFeesData = (
-	view: View,
-	period: ReportsPeriodRange
-): UseFeesDataResult => {
-	const feesQuery = useMemo(
-		() => buildFeesQuery( view, period ),
-		[ view, period ]
-	);
+export const useFeesData = ( view: View ): UseFeesDataResult => {
+	const feesQuery = useMemo( () => buildFeesQuery( view ), [ view ] );
 	const { feesRows, feesError = {}, isLoading } = useReportsFees( feesQuery );
-	const { feesSummary, isLoading: isSummaryLoading } =
-		useReportsFeesSummary( feesQuery );
+	const {
+		feesSummary,
+		feesSummaryError = {},
+		isLoading: isSummaryLoading,
+	} = useReportsFeesSummary( feesQuery );
 
 	const totalItems = feesSummary.count ?? 0;
 	const perPage = parseInt( feesQuery.per_page ?? '25', 10 );
@@ -241,7 +224,6 @@ export const useFeesData = (
 	);
 
 	return {
-		feesQuery,
 		rows: feesRows,
 		totalItems,
 		totalPages,
@@ -249,6 +231,7 @@ export const useFeesData = (
 		methodElements,
 		typeElements,
 		isLoading: isLoading || isSummaryLoading,
-		error: feesError,
+		error:
+			Object.keys( feesError ).length > 0 ? feesError : feesSummaryError,
 	};
 };

@@ -31,10 +31,8 @@ import {
 	encodeCustomDateFilterValue,
 	resolveFeesDateFilterValue,
 } from './date-filter-values';
-import type { ReportsPeriodRange } from '../period-selector';
 
 interface FeesReportProps {
-	period: ReportsPeriodRange;
 	onReload?: () => void;
 }
 
@@ -124,6 +122,16 @@ const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
 
 const customDatePopoverId = 'wcpay-fees-date-filter-popover';
 
+const isDateFilterAnchor = ( element: HTMLElement ): boolean => {
+	const dateFilterLabel = __( 'Date', 'woocommerce-payments' ).toLowerCase();
+	return (
+		element.textContent
+			?.trim()
+			.toLowerCase()
+			.startsWith( dateFilterLabel ) ?? false
+	);
+};
+
 const getResolvedDateFilter = ( view: View ): DateFilterValue | undefined =>
 	resolveFeesDateFilterValue( findDateFilter( view.filters )?.value );
 
@@ -139,11 +147,7 @@ const findDateFilterAnchor = (
 			'.dataviews-filters__summary-chip'
 		)
 	);
-	return (
-		chips.find( ( chip ) =>
-			chip.textContent?.trim().toLowerCase().startsWith( 'date' )
-		) ?? null
-	);
+	return chips.find( ( chip ) => isDateFilterAnchor( chip ) ) ?? null;
 };
 
 const findDateFilterAnchorFromEvent = (
@@ -161,9 +165,7 @@ const findDateFilterAnchorFromEvent = (
 		return null;
 	}
 
-	return chip.textContent?.trim().toLowerCase().startsWith( 'date' )
-		? chip
-		: null;
+	return isDateFilterAnchor( chip ) ? chip : null;
 };
 
 const replaceDateFilter = (
@@ -175,7 +177,6 @@ const replaceDateFilter = (
 };
 
 export const FeesReport = ( {
-	period,
 	onReload = () => undefined,
 }: FeesReportProps ): JSX.Element => {
 	const [ view, setView ] = useFeesView();
@@ -199,7 +200,7 @@ export const FeesReport = ( {
 		typeElements,
 		isLoading,
 		error,
-	} = useFeesData( view, period );
+	} = useFeesData( view );
 
 	const fields = useMemo(
 		() =>
@@ -375,7 +376,7 @@ export const FeesReport = ( {
 	const handleViewChange = useCallback(
 		( next: View ) => {
 			if ( haveFieldsChanged( view.fields, next.fields ) ) {
-				recordEvent( 'wcpay_reports_view_options_opened', {
+				recordEvent( 'wcpay_reports_view_options_changed', {
 					report: 'fees',
 				} );
 			}

@@ -56,7 +56,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/(?P<id>\w+)', 'GET' );
 		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/summary', 'GET' );
 		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/download', 'POST' );
-		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/download/(?P<export_id>[^/\\%]+)', 'GET' );
+		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/download/(?P<export_id>[^/\\\\%]+)', 'GET' );
 	}
 
 	public function test_register_routes_returns_early_when_reports_area_disabled() {
@@ -71,6 +71,27 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		}
 	}
 
+	public function test_get_collection_params_registers_fees_filters() {
+		$params = $this->controller->get_collection_params();
+
+		$this->assertArrayNotHasKey( 'available_on_after', $params );
+		$this->assertArrayNotHasKey( 'available_on_before', $params );
+		$this->assertArrayNotHasKey( 'available_on_between', $params );
+		$this->assertSame( 'array', $params['search']['type'] );
+		$this->assertSame( 'rest_validate_request_arg', $params['search']['validate_callback'] );
+		$this->assertSame( 'array', $params['type']['type'] );
+		$this->assertSame( 'rest_validate_request_arg', $params['type']['validate_callback'] );
+	}
+
+	public function test_get_collection_params_normalizes_single_value_list_filters() {
+		$params = $this->controller->get_collection_params();
+
+		$this->assertSame( [ 'txn_123' ], $params['search']['sanitize_callback']( 'txn_123' ) );
+		$this->assertSame( [ 'txn_123', 'pi_123' ], $params['search']['sanitize_callback']( [ 'txn_123', 'pi_123' ] ) );
+		$this->assertSame( [ 'payment' ], $params['type']['sanitize_callback']( 'payment' ) );
+		$this->assertSame( [ 'payment', 'refund' ], $params['type']['sanitize_callback']( [ 'payment', 'refund' ] ) );
+	}
+
 	public function test_get_fees_transaction_filters_maps_report_params_to_transaction_filters() {
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_param( 'payment_method_type', 'card' );
@@ -81,27 +102,23 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'date_after', '2026-04-01 00:00:00' );
 		$request->set_param( 'date_before', '2026-04-30 23:59:59' );
 		$request->set_param( 'date_between', [ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ] );
-		$request->set_param( 'available_on_after', '2026-04-02 00:00:00' );
-		$request->set_param( 'available_on_before', '2026-05-01 00:00:00' );
 		$request->set_param( 'match', 'all' );
 		$request->set_param( 'search', [ 'txn_123' ] );
 		$request->set_param( 'user_timezone', '+00:00' );
 
 		$this->assertSame(
 			[
-				'source_is'           => 'card',
-				'type_is'             => 'refund',
-				'order_id_is'         => 123,
-				'customer_email_is'   => 'customer@example.com',
-				'deposit_id'          => 'po_mock',
-				'date_before'         => '2026-04-30 23:59:59',
-				'date_after'          => '2026-04-01 00:00:00',
-				'date_between'        => [ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ],
-				'available_on_before' => '2026-05-01 00:00:00',
-				'available_on_after'  => '2026-04-02 00:00:00',
-				'match'               => 'all',
-				'search'              => [ 'txn_123' ],
-				'user_timezone'       => '+00:00',
+				'source_is'         => 'card',
+				'type_is_in'        => [ 'refund' ],
+				'order_id_is'       => 123,
+				'customer_email_is' => 'customer@example.com',
+				'deposit_id'        => 'po_mock',
+				'date_before'       => '2026-04-30 23:59:59',
+				'date_after'        => '2026-04-01 00:00:00',
+				'date_between'      => [ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ],
+				'match'             => 'all',
+				'search'            => [ 'txn_123' ],
+				'user_timezone'     => '+00:00',
 			],
 			$this->get_fees_transaction_filters_for_test( $request )
 		);
@@ -114,6 +131,18 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame(
 			[
 				'type_is_in' => [ 'payment', 'dispute' ],
+			],
+			$this->get_fees_transaction_filters_for_test( $request )
+		);
+	}
+
+	public function test_get_fees_transaction_filters_maps_single_type_to_type_is_in() {
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_param( 'type', 'payment' );
+
+		$this->assertSame(
+			[
+				'type_is_in' => [ 'payment' ],
 			],
 			$this->get_fees_transaction_filters_for_test( $request )
 		);
@@ -154,22 +183,16 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 			->willReturn( $this->get_transactions_list_from_server() );
 		$mock_request->expects( $this->any() )
 			->method( 'set_filters' )
-			->withConsecutive(
-				[ $this->anything() ],
+			->with(
 				[
-					[
-						'source_is'   => 'card',
-						'type_is'     => 'charge',
-						'order_id_is' => 123,
-					],
+					'source_is'   => 'card',
+					'type_is_in'  => [ 'charge' ],
+					'order_id_is' => 123,
 				]
 			);
-		$mock_request->expects( $this->any() )
+		$mock_request->expects( $this->once() )
 			->method( 'set_page_size' )
-			->withConsecutive(
-				[ $this->anything() ],
-				[ 2 ]
-			);
+			->with( 2 );
 
 		$response = $this->controller->get_transactions( $request );
 
@@ -185,8 +208,8 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'get_reports_fees_summary' )
 			->with(
 				[
-					'source_is' => 'card',
-					'type_is'   => 'charge',
+					'source_is'  => 'card',
+					'type_is_in' => [ 'charge' ],
 				]
 			)
 			->willReturn( [ 'count' => 1 ] );
@@ -207,8 +230,8 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'get_reports_fees_export' )
 			->with(
 				[
-					'source_is' => 'card',
-					'type_is'   => 'charge',
+					'source_is'  => 'card',
+					'type_is_in' => [ 'charge' ],
 				],
 				'merchant@example.com',
 				'en_US'
@@ -302,11 +325,6 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 				'exchange_rate'        => 1.12284,
 				'deposit_currency'     => 'usd',
 				'fees'                 => 157,
-				'customer'             => [
-					'name'    => 'Test Customer',
-					'email'   => 'customer@example.com',
-					'country' => Country_Code::UNITED_STATES,
-				],
 				'net_amount'           => 2426,
 				'order_id'             => 123,
 				'risk_level'           => 0,

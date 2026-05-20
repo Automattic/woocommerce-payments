@@ -242,7 +242,7 @@ describe( 'getFeesFields field configuration', () => {
 		expect( fields.find( ( f ) => f.id === 'type' ) ).toEqual(
 			expect.objectContaining( {
 				elements: [ { value: 'charge', label: 'Charge' } ],
-				filterBy: { operators: [ 'isAny' ] },
+				filterBy: { operators: [ 'is' ] },
 			} )
 		);
 	} );

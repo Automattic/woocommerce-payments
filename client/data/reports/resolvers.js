@@ -7,7 +7,6 @@ import { apiFetch } from '@wordpress/data-controls';
 import { controls } from '@wordpress/data';
 import { addQueryArgs } from '@wordpress/url';
 import { __ } from '@wordpress/i18n';
-import moment from 'moment';
 
 /**
  * Internal dependencies
@@ -19,11 +18,7 @@ import {
 	updateReportsFees,
 	updateReportsFeesSummary,
 } from './actions';
-import { formatDateValue } from 'utils';
-
-function getUserTimeZone() {
-	return moment( new Date() ).format( 'Z' );
-}
+import { formatDateValue, getUserTimeZone } from 'utils';
 
 export const formatReportsFeesQuery = ( query ) => ( {
 	match: query.match,
@@ -104,6 +99,14 @@ export function* getReportsFeesSummary( query ) {
 		const summary = yield apiFetch( { path } );
 		yield updateReportsFeesSummary( query, summary );
 	} catch ( e ) {
+		yield controls.dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving fees report summary.',
+				'woocommerce-payments'
+			)
+		);
 		yield updateErrorForReportsFeesSummary( query, null, e );
 	}
 }
