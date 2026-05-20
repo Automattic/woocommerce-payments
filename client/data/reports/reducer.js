@@ -21,13 +21,16 @@ const receiveReports = (
 			return {
 				...state,
 				[ index ]: {
+					...state[ index ],
 					data,
+					error: undefined,
 				},
 			};
 		case TYPES.SET_ERROR_FOR_REPORTS_FEES:
 			return {
 				...state,
 				[ index ]: {
+					...state[ index ],
 					error,
 				},
 			};
@@ -37,7 +40,9 @@ const receiveReports = (
 				summary: {
 					...state.summary,
 					[ index ]: {
+						...( state.summary && state.summary[ index ] ),
 						data,
+						error: undefined,
 					},
 				},
 			};
@@ -47,6 +52,7 @@ const receiveReports = (
 				summary: {
 					...state.summary,
 					[ index ]: {
+						...( state.summary && state.summary[ index ] ),
 						error,
 					},
 				},

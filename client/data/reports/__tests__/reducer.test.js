@@ -65,6 +65,7 @@ describe( 'Reports reducer tests', () => {
 		expect( reduced ).toStrictEqual( {
 			[ getResourceId( mockQuery ) ]: {
 				data: mockRows,
+				error: undefined,
 			},
 		} );
 	} );
@@ -80,6 +81,7 @@ describe( 'Reports reducer tests', () => {
 			...filledState,
 			[ getResourceId( mockQuery ) ]: {
 				data: newRows,
+				error: undefined,
 			},
 		} );
 	} );
@@ -109,6 +111,7 @@ describe( 'Reports reducer tests', () => {
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
 					data: mockSummary,
+					error: undefined,
 				},
 			},
 		} );
@@ -126,6 +129,7 @@ describe( 'Reports reducer tests', () => {
 			summary: {
 				[ getResourceId( mockQuery ) ]: {
 					data: newSummary,
+					error: undefined,
 				},
 			},
 		} );
@@ -144,6 +148,73 @@ describe( 'Reports reducer tests', () => {
 					error: mockError,
 				},
 			},
+		} );
+	} );
+
+	describe( 'receiveReports — slice preservation', () => {
+		it( 'preserves cached rows when an error arrives after a successful load', () => {
+			const query = { paged: 1 };
+			const loaded = reducer( undefined, {
+				type: types.SET_REPORTS_FEES,
+				query,
+				data: [ { transaction_id: 'txn_1' } ],
+			} );
+
+			const errored = reducer( loaded, {
+				type: types.SET_ERROR_FOR_REPORTS_FEES,
+				query,
+				error: { code: 'rest_failure' },
+			} );
+
+			const index = getResourceId( query );
+			expect( errored[ index ].data ).toEqual( [
+				{ transaction_id: 'txn_1' },
+			] );
+			expect( errored[ index ].error ).toEqual( {
+				code: 'rest_failure',
+			} );
+		} );
+
+		it( 'clears any prior error when fresh rows arrive', () => {
+			const query = { paged: 1 };
+			const errored = reducer( undefined, {
+				type: types.SET_ERROR_FOR_REPORTS_FEES,
+				query,
+				error: { code: 'rest_failure' },
+			} );
+
+			const reloaded = reducer( errored, {
+				type: types.SET_REPORTS_FEES,
+				query,
+				data: [ { transaction_id: 'txn_2' } ],
+			} );
+
+			const index = getResourceId( query );
+			expect( reloaded[ index ].data ).toEqual( [
+				{ transaction_id: 'txn_2' },
+			] );
+			expect( reloaded[ index ].error ).toBeUndefined();
+		} );
+
+		it( 'preserves summary data when summary error arrives after success', () => {
+			const query = { paged: 1 };
+			const loaded = reducer( undefined, {
+				type: types.SET_REPORTS_FEES_SUMMARY,
+				query,
+				data: { count: 42 },
+			} );
+
+			const errored = reducer( loaded, {
+				type: types.SET_ERROR_FOR_REPORTS_FEES_SUMMARY,
+				query,
+				error: { code: 'rest_failure' },
+			} );
+
+			const index = getResourceId( query );
+			expect( errored.summary[ index ].data ).toEqual( { count: 42 } );
+			expect( errored.summary[ index ].error ).toEqual( {
+				code: 'rest_failure',
+			} );
 		} );
 	} );
 } );
