@@ -53,20 +53,6 @@ describe( 'Reports tab states', () => {
 		);
 	} );
 
-	it( 'renders a partial placeholder state', () => {
-		render(
-			<ReportsTabPanel
-				tab="balance"
-				status="partial"
-				onReload={ jest.fn() }
-			/>
-		);
-
-		expect( screen.getByRole( 'status' ) ).toContainElement(
-			screen.getByRole( 'heading', { level: 2 } )
-		);
-	} );
-
 	it( 'renders the Fees report when the Fees tab is selected (regardless of status)', () => {
 		render(
 			<ReportsTabPanel tab="fees" status="ready" onReload={ jest.fn() } />

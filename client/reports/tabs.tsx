@@ -40,9 +40,9 @@ export function normalizeReportsTab( tab?: unknown ): ReportsTab {
 	return tab === 'fees' ? 'fees' : 'balance';
 }
 
-// `getEmptyContent` / `getPartialContent` / `getErrorTitle` only need to handle
-// `tab === 'balance'` here — the Fees tab owns its own loading/error/empty UI
-// inside `<FeesReport>` and short-circuits before reaching those branches.
+// `getEmptyContent` only needs to handle `tab === 'balance'` here — the Fees
+// tab owns its own loading/error/empty UI inside `<FeesReport>` and
+// short-circuits before reaching those branches.
 function getEmptyContent(): {
 	title: string;
 	description: string;
@@ -51,19 +51,6 @@ function getEmptyContent(): {
 		title: __( 'No balance activity', 'woocommerce-payments' ),
 		description: __(
 			"Your Balance summary will appear here once there's enough data to display.",
-			'woocommerce-payments'
-		),
-	};
-}
-
-function getPartialContent(): {
-	title: string;
-	description: string;
-} {
-	return {
-		title: __( 'Balance partially loaded', 'woocommerce-payments' ),
-		description: __(
-			'Some balance data is still being prepared.',
 			'woocommerce-payments'
 		),
 	};
@@ -104,22 +91,6 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 				<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
 					{ __( 'Loading report', 'woocommerce-payments' ) }
 				</h2>
-			</div>
-		);
-	}
-
-	if ( status === 'partial' ) {
-		const { title, description } = getPartialContent();
-
-		return (
-			<div
-				className="wcpay-reports-state wcpay-reports-state--partial"
-				role="status"
-			>
-				<h2 id={ headingId } ref={ contentHeadingRef } tabIndex={ -1 }>
-					{ title }
-				</h2>
-				<p>{ description }</p>
 			</div>
 		);
 	}
