@@ -25,9 +25,8 @@ interface DisputeOutcomeViewProps {
 const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 	dispute,
 } ) => {
-	// Resolve once and share with the Tracks payload below, so the matrix
-	// cell the merchant sees and the `product_type` we record can't drift.
-	// Mirrors the wizard's resolution.
+	// Shared with the Tracks payload below so the recorded product_type
+	// can't drift from the matrix cell shown.
 	const productType = resolveProductType(
 		dispute.metadata,
 		dispute.order?.suggested_product_type,
@@ -35,11 +34,9 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 			false
 	);
 
-	// Track the last dispute.id we fired a view event for, rather than a
-	// simple "viewed" boolean. This handles two cases at once: React 18
-	// Strict Mode's dev-only double-invocation of effects (same id, skip),
-	// and the SPA case where the parent updates the `dispute` prop in place
-	// without remounting between transactions (different id, fire).
+	// Keyed by dispute.id, not a boolean, so the event re-fires when the SPA
+	// swaps the dispute prop in place (no remount) but still skips Strict
+	// Mode's dev double-invoke.
 	const lastTrackedDisputeIdRef = useRef< string | null >( null );
 	useEffect( () => {
 		if ( lastTrackedDisputeIdRef.current === dispute.id ) {

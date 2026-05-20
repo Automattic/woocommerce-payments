@@ -7,16 +7,9 @@ import type { ChargeDispute } from 'wcpay/types/charges';
 
 /**
  * Base property bag shared by every Outcome View Tracks event.
- * Mirrors the getDisputeTracksProperties pattern used elsewhere for
- * dispute Tracks events so event payloads stay consistent across the
- * dispute funnel.
  *
- * `productType` is passed in (rather than resolved here) so callers can
- * share a single `resolveProductType()` result between the Tracks payload
- * and the UI computations driven from the same dispute. When it is empty
- * (the "no product type available" case from `resolveProductType`) the
- * `product_type` key is omitted entirely, so analytics never see a `''`
- * bucket.
+ * `productType` is passed in (not resolved here) so the Tracks payload and
+ * the caller's UI share one resolveProductType() result and can't drift.
  */
 export const getDisputeOutcomeTracksProperties = (
 	dispute: ChargeDispute,
@@ -30,8 +23,6 @@ export const getDisputeOutcomeTracksProperties = (
 	dispute_id: dispute.id,
 	dispute_status: dispute.status,
 	dispute_reason: dispute.reason,
-	// Genuinely omit the key when there is no product type, rather than
-	// emitting product_type: undefined. Keeps the payload self-describing
-	// instead of leaning on recordEvent's undefined-stripping.
+	// Omit the key when unknown so analytics never see a '' bucket.
 	...( productType ? { product_type: productType } : {} ),
 } );

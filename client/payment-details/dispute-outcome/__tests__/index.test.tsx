@@ -196,10 +196,7 @@ describe( 'DisputeOutcomeView', () => {
 		} );
 
 		it( 'fires again when dispute.id changes between renders (SPA in-place swap)', () => {
-			// Simulates the SPA navigating from one transaction to the next
-			// without unmounting DisputeOutcomeView: the parent passes a new
-			// dispute prop in place. The id-keyed ref must allow the event
-			// to fire for the new dispute.
+			// A different dispute.id on an in-place prop swap must re-fire.
 			const first = buildDispute( {
 				id: 'dp_first',
 				metadata: { __product_type: 'physical_product' },
@@ -252,9 +249,7 @@ describe( 'DisputeOutcomeView', () => {
 		} );
 
 		it( 'omits product_type when no product type is available', () => {
-			// Neither metadata.__product_type nor order.suggested_product_type
-			// resolves: resolveProductType returns '', so the helper drops the
-			// key entirely rather than emitting a '' (or undefined) value.
+			// No product type resolves, so the helper drops the key entirely.
 			render(
 				<DisputeOutcomeView
 					dispute={ buildDispute( { metadata: {}, order: null } ) }
