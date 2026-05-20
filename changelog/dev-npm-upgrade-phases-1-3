@@ -1,3 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Staged npm upgrades — Phase 1 (dev tooling: ts-jest, ts-loader, playwright, @wordpress/jest-*, @wordpress/babel-*, @wordpress/browserslist-config), Phase 2 (@testing-library/{react,jest-dom,dom}), Phase 3 partial (@woocommerce/{currency,explat,number}).

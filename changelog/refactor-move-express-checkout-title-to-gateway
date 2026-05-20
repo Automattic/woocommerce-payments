@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-refactor: extract payment method detection to gateway
