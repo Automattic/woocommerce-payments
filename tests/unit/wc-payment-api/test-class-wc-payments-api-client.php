@@ -736,8 +736,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_reports_fees_summary_maps_order_search_to_charge_id() {
-		$order     = WC_Helper_Order::create_order();
-		$charge_id = 'ch_test_charge';
+		$order = wc_create_order();
+		$this->assertInstanceOf( WC_Order::class, $order );
+
+		$charge_id = 'ch_test_summary';
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
@@ -775,8 +777,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_reports_fees_export_maps_order_search_to_charge_id() {
-		$order     = WC_Helper_Order::create_order();
-		$charge_id = 'ch_test_charge';
+		$order = wc_create_order();
+		$this->assertInstanceOf( WC_Order::class, $order );
+
+		$charge_id = 'ch_test_export';
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->save();
 
