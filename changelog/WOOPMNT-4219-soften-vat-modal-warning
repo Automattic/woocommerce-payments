@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Soften and clarify the VAT registration warning in the tax details modal; link to documentation instead of stating region-specific legal requirements.

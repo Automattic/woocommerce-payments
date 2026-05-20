@@ -6,6 +6,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import React, { useContext, useEffect, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
+import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -13,6 +14,7 @@ import apiFetch from '@wordpress/api-fetch';
 import {
 	Button,
 	CheckboxControl,
+	ExternalLink,
 	Notice,
 	TextControl,
 } from '@wordpress/components';
@@ -90,11 +92,21 @@ const getVatTaxIDRequirementHint = () => {
 				'woocommerce-payments'
 			);
 		default:
-			// Note: this message is a little alarming and doesn't provide guidance for confused merchants.
-			// Logged: https://github.com/Automattic/woocommerce-payments/issues/9161.
-			return __(
-				"If your sales exceed the VAT threshold for your country, you're required to register for a VAT Number.",
-				'woocommerce-payments'
+			return createInterpolateElement(
+				__(
+					'Tax registration rules vary by region. <learnMoreLink>Learn more about tax documents</learnMoreLink>.',
+					'woocommerce-payments'
+				),
+				{
+					learnMoreLink: (
+						<ExternalLink href="https://woocommerce.com/document/woopayments/taxes/documents/">
+							{ __(
+								'Learn more about tax documents',
+								'woocommerce-payments'
+							) }
+						</ExternalLink>
+					),
+				}
 			);
 	}
 };
