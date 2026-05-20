@@ -309,26 +309,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Return summary for Fees report transactions.
-	 *
-	 * Uses the transactions summary endpoint with Fees-specific filters. Keep
-	 * search mapping in sync with get_transactions_summary().
-	 *
-	 * @param array $filters The filters to be used in the query.
-	 *
-	 * @return array The Fees report summary.
-	 * @throws API_Exception Exception thrown on request failure.
-	 */
-	public function get_reports_fees_summary( $filters = [] ) {
-		// Map Order # terms to the actual charge id to be used in the server.
-		if ( ! empty( $filters['search'] ) ) {
-			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
-		}
-
-		return $this->request( $filters, self::TRANSACTIONS_API . '/summary', self::GET );
-	}
-
-	/**
 	 * Retrieves transaction list for a given fraud outcome status.
 	 *
 	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.

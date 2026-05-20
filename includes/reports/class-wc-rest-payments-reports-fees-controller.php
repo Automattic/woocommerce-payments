@@ -119,8 +119,7 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 	public function get_fees_summary( $request ) {
 		$filters = $this->get_fees_transaction_filters( $request );
 
-		// Fees summary reuses the transactions summary endpoint as an isolated legacy-pattern exception.
-		return $this->forward_request( 'get_reports_fees_summary', [ $filters ] );
+		return $this->forward_request( 'get_transactions_summary', [ $filters ] );
 	}
 
 	/**

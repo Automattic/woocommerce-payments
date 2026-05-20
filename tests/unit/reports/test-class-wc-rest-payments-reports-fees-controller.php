@@ -255,7 +255,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'type', 'charge' );
 
 		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_reports_fees_summary' )
+			->method( 'get_transactions_summary' )
 			->with(
 				[
 					'source_is'  => 'card',
