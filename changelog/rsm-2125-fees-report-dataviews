@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Migrate the Reports → Fees ledger to use @wordpress/dataviews. Date filtering is URL-only in this iteration; an in-UI date control follows in a separate PR.
