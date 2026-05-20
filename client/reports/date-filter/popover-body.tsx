@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useId, useMemo } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -41,6 +41,8 @@ export const PopoverBody: React.FC< PopoverBodyProps > = ( {
 	onOperatorChange,
 	now,
 } ) => {
+	const operatorSelectId = useId();
+
 	const activePreset = useMemo( () => {
 		if ( ! value || value.operator !== operator ) {
 			return 'custom';
@@ -131,10 +133,15 @@ export const PopoverBody: React.FC< PopoverBodyProps > = ( {
 	return (
 		<div className="wcpay-date-filter__popover-body">
 			<div className="wcpay-date-filter__operator-row">
-				<span className="wcpay-date-filter__operator-label">
+				<label
+					className="wcpay-date-filter__operator-label"
+					htmlFor={ operatorSelectId }
+				>
 					{ __( 'Date', 'woocommerce-payments' ) }
-				</span>
+				</label>
 				<OperatorSelect
+					id={ operatorSelectId }
+					hasExternalLabel
 					value={ operator }
 					onChange={ onOperatorChange }
 				/>

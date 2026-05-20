@@ -47,7 +47,7 @@ describe( 'getReportsFees resolver', () => {
 		'page=1&per_page=25&sort=date&direction=desc' +
 		'&match=all&date_before=2026-04-02%2003%3A59%3A59&date_after=2026-04-30%2004%3A00%3A00' +
 		'&date_between%5B0%5D=2026-04-01%2004%3A00%3A00&date_between%5B1%5D=2026-05-01%2003%3A59%3A59' +
-		'&payment_method_type=card&type=charge&order_id=123&deposit_id=po_123&customer_email=shopper%40example.com' +
+		'&payment_method_type=card&type%5B0%5D=charge&order_id=123&deposit_id=po_123&customer_email=shopper%40example.com' +
 		'&search%5B0%5D=txn_123' +
 		`&user_timezone=${ encodeURIComponent( getUserTimeZone() ) }`;
 	let generator = null;
@@ -91,7 +91,7 @@ describe( 'getReportsFeesSummary resolver', () => {
 	const expectedQueryString =
 		'match=all&date_before=2026-04-02%2003%3A59%3A59&date_after=2026-04-30%2004%3A00%3A00' +
 		'&date_between%5B0%5D=2026-04-01%2004%3A00%3A00&date_between%5B1%5D=2026-05-01%2003%3A59%3A59' +
-		'&payment_method_type=card&type=charge&order_id=123&deposit_id=po_123&customer_email=shopper%40example.com' +
+		'&payment_method_type=card&type%5B0%5D=charge&order_id=123&deposit_id=po_123&customer_email=shopper%40example.com' +
 		'&search%5B0%5D=txn_123' +
 		`&user_timezone=${ encodeURIComponent( getUserTimeZone() ) }`;
 	let generator = null;

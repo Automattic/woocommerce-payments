@@ -4,7 +4,13 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import {
+	act,
+	render,
+	screen,
+	fireEvent,
+	waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mockUseReportsFees = jest.fn();
@@ -210,6 +216,10 @@ describe( 'FeesReport (DataViews)', () => {
 		} );
 
 		// Open the popover so `aria-controls` is expected on the chip.
+		// Use fireEvent (not userEvent): the Date chip click is intercepted
+		// in the capture phase by FeesReport's onPointerDownCapture/
+		// onClickCapture, and userEvent.click does not faithfully replay
+		// those capture-phase events in JSDOM.
 		fireEvent.click( dateFilterChip );
 		expect(
 			await screen.findByRole( 'dialog', {
@@ -239,6 +249,10 @@ describe( 'FeesReport (DataViews)', () => {
 		const dateFilterChip = screen.getByRole( 'button', {
 			name: /^fecha$/i,
 		} );
+		// Use fireEvent (not userEvent): the Date chip click is intercepted
+		// in the capture phase by FeesReport's onPointerDownCapture/
+		// onClickCapture, and userEvent.click does not faithfully replay
+		// those capture-phase events in JSDOM.
 		fireEvent.click( dateFilterChip );
 
 		expect(
@@ -264,6 +278,12 @@ describe( 'FeesReport (DataViews)', () => {
 		const dateFilterChip = screen.getByRole( 'button', {
 			name: /^fecha$/i,
 		} );
+		// Use fireEvent (not userEvent) throughout this test: the Date chip
+		// is intercepted in the capture phase by FeesReport's
+		// onPointerDownCapture/onClickCapture/onKeyDownCapture, and
+		// userEvent does not faithfully replay capture-phase events in
+		// JSDOM. We also need to dispatch pointerdown and click separately
+		// to verify the ignoreNextDateFilterClickRef de-duplication.
 		fireEvent.pointerDown( dateFilterChip, { button: 0 } );
 		expect(
 			await screen.findByRole( 'dialog', {
@@ -423,25 +443,40 @@ describe( 'FeesReport (DataViews)', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'announces the report-loaded status when the loading flag flips false', () => {
-		// Start in loading state.
-		mockUseReportsFees.mockReturnValue( {
-			feesRows: [],
-			feesError: {},
-			isLoading: true,
-		} );
-		const { rerender } = render( <FeesReport /> );
+	it( 'announces the report-loaded status when the loading flag flips false (debounced)', () => {
+		// The speak() announcement is debounced 500ms and de-duplicated to
+		// keep rapid filter changes from spamming AT users — use fake timers
+		// so we can flush the debounce deterministically.
+		jest.useFakeTimers();
+		try {
+			// Start in loading state.
+			mockUseReportsFees.mockReturnValue( {
+				feesRows: [],
+				feesError: {},
+				isLoading: true,
+			} );
+			const { rerender } = render( <FeesReport /> );
 
-		// Transition to ready with data.
-		mockUseReportsFees.mockReturnValue( {
-			feesRows: [ baseRow ],
-			feesError: {},
-			isLoading: false,
-		} );
-		rerender( <FeesReport /> );
+			// Transition to ready with data.
+			mockUseReportsFees.mockReturnValue( {
+				feesRows: [ baseRow ],
+				feesError: {},
+				isLoading: false,
+			} );
+			rerender( <FeesReport /> );
 
-		expect( mockSpeak ).toHaveBeenCalledWith(
-			expect.stringMatching( /loaded/i )
-		);
+			// Pre-flush: debounce timer hasn't elapsed yet.
+			expect( mockSpeak ).not.toHaveBeenCalled();
+
+			act( () => {
+				jest.advanceTimersByTime( 500 );
+			} );
+
+			expect( mockSpeak ).toHaveBeenCalledWith(
+				expect.stringMatching( /loaded/i )
+			);
+		} finally {
+			jest.useRealTimers();
+		}
 	} );
 } );

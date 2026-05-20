@@ -20,6 +20,17 @@ import {
 } from './actions';
 import { formatDateValue, getUserTimeZone } from 'utils';
 
+// The Fees REST schema declares `type` as an array (see Reports controller).
+// URL helpers and DataViews can hand us a scalar string, so normalize at the
+// resolver boundary — sending a string would fall back on WP REST's lenient
+// coercion and may be rejected as the schema tightens.
+const toArrayOrUndefined = ( value ) => {
+	if ( value === undefined || value === null || value === '' ) {
+		return undefined;
+	}
+	return Array.isArray( value ) ? value : [ value ];
+};
+
 const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	date_before: formatDateValue( query.dateBefore, true ),
@@ -29,7 +40,7 @@ const formatQueryFilters = ( query ) => ( {
 		formatDateValue( query.dateBetween[ 1 ], true ),
 	],
 	payment_method_type: query.paymentMethodType,
-	type: query.type,
+	type: toArrayOrUndefined( query.type ),
 	order_id: query.orderId,
 	deposit_id: query.depositId,
 	customer_email: query.customerEmail,

@@ -6,6 +6,7 @@
 import React, {
 	useCallback,
 	useEffect,
+	useId,
 	useLayoutEffect,
 	useMemo,
 	useRef,
@@ -173,6 +174,10 @@ export const FeesReport = ( {
 	>( undefined );
 	const isCustomDatePopoverOpenRef = useRef( isCustomDatePopoverOpen );
 	const ignoreNextDateFilterClickRef = useRef( false );
+	const initialEmptyHeadingId = useId();
+	const initialEmptyDescriptionId = useId();
+	const filteredEmptyHeadingId = useId();
+	const filteredEmptyDescriptionId = useId();
 	const {
 		rows,
 		totalItems,
@@ -217,19 +222,45 @@ export const FeesReport = ( {
 	}, [ hasError ] );
 
 	// Announce "Fees report loaded" to AT users on every loading→ready edge.
+	// Debounced (500ms) and de-duplicated so rapid filter changes — which can
+	// cause loading→ready→loading→ready bursts — collapse into a single
+	// announcement instead of spamming AT users.
 	const previousLoadingRef = useRef( isLoading );
+	const speakTimerRef = useRef< ReturnType< typeof setTimeout > | null >(
+		null
+	);
+	const lastSpokenRef = useRef< string | null >( null );
 	useEffect( () => {
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
-			speak(
-				sprintf(
-					/* translators: %d: number of fees loaded into the report table. */
-					__( '%d fees loaded.', 'woocommerce-payments' ),
-					totalItems
-				)
+			const message = sprintf(
+				/* translators: %d: number of fees loaded into the report table. */
+				__( '%d fees loaded.', 'woocommerce-payments' ),
+				totalItems
 			);
+			if ( speakTimerRef.current ) {
+				clearTimeout( speakTimerRef.current );
+			}
+			speakTimerRef.current = setTimeout( () => {
+				speakTimerRef.current = null;
+				if ( lastSpokenRef.current === message ) {
+					return;
+				}
+				lastSpokenRef.current = message;
+				speak( message );
+			}, 500 );
 		}
 		previousLoadingRef.current = isLoading;
 	}, [ isLoading, hasError, totalItems ] );
+
+	useEffect(
+		() => () => {
+			if ( speakTimerRef.current ) {
+				clearTimeout( speakTimerRef.current );
+				speakTimerRef.current = null;
+			}
+		},
+		[]
+	);
 
 	useLayoutEffect( () => {
 		setCustomDateAnchor( findDateFilterAnchor( dataViewsContainer ) );
@@ -331,7 +362,14 @@ export const FeesReport = ( {
 			isCustomDatePopoverOpenRef.current = false;
 			setIsCustomDatePopoverOpen( false );
 			setCustomDateInitialValue( undefined );
-			requestAnimationFrame( () => anchor?.focus() );
+			// Guard against the anchor having been removed from the DOM by
+			// DataViews between toggle and the next frame (matches the same
+			// pattern used in CustomDateFilterPopover.returnFocus).
+			requestAnimationFrame( () => {
+				if ( anchor && document.contains( anchor ) ) {
+					anchor.focus();
+				}
+			} );
 		},
 		[]
 	);
@@ -488,6 +526,9 @@ export const FeesReport = ( {
 					'Fees will appear here once you start receiving payments.',
 					'woocommerce-payments'
 				) }
+				descriptionId={ initialEmptyDescriptionId }
+				headingId={ initialEmptyHeadingId }
+				role="status"
 			/>
 		);
 	}
@@ -528,6 +569,9 @@ export const FeesReport = ( {
 							'Fees will appear here.',
 							'woocommerce-payments'
 						) }
+						descriptionId={ filteredEmptyDescriptionId }
+						headingId={ filteredEmptyHeadingId }
+						role="status"
 					/>
 				) }
 				{ isCustomDatePopoverOpen && (
