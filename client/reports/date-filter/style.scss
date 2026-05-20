@@ -63,7 +63,8 @@
 	cursor: pointer;
 
 	&:focus-visible {
-		outline: none;
+		outline: 2px solid transparent;
+		outline-offset: 2px;
 	}
 }
 
@@ -119,7 +120,8 @@
 	}
 
 	&:focus-visible {
-		outline: none;
+		outline: 2px solid transparent;
+		outline-offset: 2px;
 		box-shadow: 0 0 0 var( --wp-admin-border-width-focus, 1.5px )
 			var( --wp-admin-theme-color );
 	}
