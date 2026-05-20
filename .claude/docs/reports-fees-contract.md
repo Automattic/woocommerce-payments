@@ -24,7 +24,6 @@ The implementation has two halves:
 When the flag is on, the controller registers:
 
 -   `GET /payments/reports/fees`
--   `GET /payments/reports/fees/(?P<id>\w+)`
 -   `GET /payments/reports/fees/summary`
 
 All routes use `check_permission`.

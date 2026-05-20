@@ -73,19 +73,6 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 				],
 			]
 		);
-
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/(?P<id>\w+)',
-			[
-				[
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_transaction' ],
-					'permission_callback' => [ $this, 'check_permission' ],
-				],
-				'schema' => [ $this, 'get_item_schema' ],
-			]
-		);
 	}
 
 	/**

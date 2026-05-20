@@ -52,8 +52,21 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 
 		$routes = rest_get_server()->get_routes();
 
+		$this->assertSame(
+			[
+				'/wc/v3/payments/reports/fees',
+				'/wc/v3/payments/reports/fees/summary',
+			],
+			array_values(
+				array_filter(
+					array_keys( $routes ),
+					static function ( string $route ): bool {
+						return 0 === strpos( $route, '/wc/v3/payments/reports/fees' );
+					}
+				)
+			)
+		);
 		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees', 'GET' );
-		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/(?P<id>\w+)', 'GET' );
 		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/summary', 'GET' );
 	}
 
