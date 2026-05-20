@@ -55,8 +55,6 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees', 'GET' );
 		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/(?P<id>\w+)', 'GET' );
 		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/summary', 'GET' );
-		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/download', 'POST' );
-		$this->assertFeesRouteRegistered( $routes, '/wc/v3/payments/reports/fees/download/(?P<export_id>[^/\\\\%]+)', 'GET' );
 	}
 
 	public function test_register_routes_returns_early_when_reports_area_disabled() {
@@ -217,44 +215,6 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$response = $this->controller->get_fees_summary( $request );
 
 		$this->assertSame( [ 'count' => 1 ], $response->get_data() );
-	}
-
-	public function test_get_fees_export_forwards_mapped_filters_email_and_locale() {
-		$request = new WP_REST_Request( 'POST' );
-		$request->set_param( 'payment_method_type', 'card' );
-		$request->set_param( 'type', 'charge' );
-		$request->set_param( 'user_email', 'merchant@example.com' );
-		$request->set_param( 'locale', 'en_US' );
-
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_reports_fees_export' )
-			->with(
-				[
-					'source_is'  => 'card',
-					'type_is_in' => [ 'charge' ],
-				],
-				'merchant@example.com',
-				'en_US'
-			)
-			->willReturn( [ 'export_id' => 'export_mock' ] );
-
-		$response = $this->controller->get_fees_export( $request );
-
-		$this->assertSame( [ 'export_id' => 'export_mock' ], $response->get_data() );
-	}
-
-	public function test_get_fees_export_url_forwards_export_id() {
-		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'export_id', 'export_mock' );
-
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_reports_fees_export_url' )
-			->with( 'export_mock' )
-			->willReturn( [ 'url' => 'https://example.com/export.csv' ] );
-
-		$response = $this->controller->get_fees_export_url( $request );
-
-		$this->assertSame( [ 'url' => 'https://example.com/export.csv' ], $response->get_data() );
 	}
 
 	public function return_enabled_flag() {

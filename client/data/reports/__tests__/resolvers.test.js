@@ -15,12 +15,7 @@ import {
 	updateReportsFees,
 	updateReportsFeesSummary,
 } from '../actions';
-import {
-	getReportsFees,
-	getReportsFeesCSVRequestURL,
-	getReportsFeesSummary,
-	reportsFeesDownloadEndpoint,
-} from '../resolvers';
+import { getReportsFees, getReportsFeesSummary } from '../resolvers';
 import { getUserTimeZone } from 'jest-utils/timezone';
 
 const errorResponse = { code: 'error' };
@@ -87,28 +82,6 @@ describe( 'getReportsFees resolver', () => {
 		expect( generator.next().value ).toEqual(
 			updateErrorForReportsFees( query, null, errorResponse )
 		);
-	} );
-} );
-
-describe( 'getReportsFeesCSVRequestURL', () => {
-	test( 'returns the Fees export request URL with filters and email metadata', () => {
-		const expectedQueryString =
-			'user_email=merchant%40example.com&locale=en_US&sort=date&direction=desc' +
-			'&match=all&date_before=2026-04-02%2003%3A59%3A59&date_after=2026-04-30%2004%3A00%3A00' +
-			'&date_between%5B0%5D=2026-04-01%2004%3A00%3A00&date_between%5B1%5D=2026-05-01%2003%3A59%3A59' +
-			'&payment_method_type=card&type=charge&order_id=123&deposit_id=po_123&customer_email=shopper%40example.com' +
-			'&search%5B0%5D=txn_123' +
-			`&user_timezone=${ encodeURIComponent( getUserTimeZone() ) }`;
-
-		expect(
-			getReportsFeesCSVRequestURL( {
-				...filterQuery,
-				orderby: 'date',
-				order: 'desc',
-				userEmail: 'merchant@example.com',
-				locale: 'en_US',
-			} )
-		).toBe( `${ reportsFeesDownloadEndpoint }?${ expectedQueryString }` );
 	} );
 } );
 

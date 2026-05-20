@@ -76,31 +76,6 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/download',
-			[
-				[
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ $this, 'get_fees_export' ],
-					'permission_callback' => [ $this, 'check_permission' ],
-					'args'                => $this->get_collection_params(),
-				],
-			]
-		);
-
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/download/(?P<export_id>[^/\\\\%]+)',
-			[
-				[
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_fees_export_url' ],
-					'permission_callback' => [ $this, 'check_permission' ],
-				],
-			]
-		);
-
-		register_rest_route(
-			$this->namespace,
 			'/' . $this->rest_base . '/(?P<id>\w+)',
 			[
 				[
@@ -159,31 +134,6 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 
 		// Fees summary reuses the transactions summary endpoint as an isolated legacy-pattern exception.
 		return $this->forward_request( 'get_reports_fees_summary', [ $filters ] );
-	}
-
-	/**
-	 * Initiates the Fees report export.
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 */
-	public function get_fees_export( $request ) {
-		$filters    = $this->get_fees_transaction_filters( $request );
-		$user_email = $request->get_param( 'user_email' );
-		$locale     = $request->get_param( 'locale' );
-
-		// Fees export reuses the transactions export endpoint as an isolated legacy-pattern exception.
-		return $this->forward_request( 'get_reports_fees_export', [ $filters, $user_email, $locale ] );
-	}
-
-	/**
-	 * Retrieves the Fees report export URL.
-	 *
-	 * @param WP_REST_Request $request Full data about the request.
-	 */
-	public function get_fees_export_url( $request ) {
-		$export_id = $request->get_param( 'export_id' );
-
-		return $this->forward_request( 'get_reports_fees_export_url', [ $export_id ] );
 	}
 
 	/**

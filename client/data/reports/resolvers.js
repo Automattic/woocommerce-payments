@@ -72,18 +72,6 @@ export function* getReportsFees( query ) {
 	}
 }
 
-export const reportsFeesDownloadEndpoint = `${ NAMESPACE }/reports/fees/download`;
-
-export function getReportsFeesCSVRequestURL( query ) {
-	return addQueryArgs( reportsFeesDownloadEndpoint, {
-		user_email: query.userEmail,
-		locale: query.locale,
-		sort: query.orderby,
-		direction: query.order,
-		...formatReportsFeesQuery( query ),
-	} );
-}
-
 /**
  * Retrieves Fees report summary data.
  *

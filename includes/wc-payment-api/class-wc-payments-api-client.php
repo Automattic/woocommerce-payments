@@ -478,35 +478,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Initiates Fees report export via API.
-	 *
-	 * Uses the transactions export endpoint with Fees-specific filters. Keep
-	 * search mapping in sync with get_transactions_export().
-	 *
-	 * @param array  $filters    The filters to be used in the query.
-	 * @param string $user_email The email to notify.
-	 * @param string $locale     Site locale.
-	 *
-	 * @return array Export summary.
-	 *
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function get_reports_fees_export( $filters = [], $user_email = '', $locale = null ) {
-		// Map Order # terms to the actual charge id to be used in the server.
-		if ( ! empty( $filters['search'] ) ) {
-			$filters['search'] = WC_Payments_Utils::map_search_orders_to_charge_ids( $filters['search'] );
-		}
-		if ( ! empty( $user_email ) ) {
-			$filters['user_email'] = $user_email;
-		}
-		if ( ! empty( $locale ) ) {
-			$filters['locale'] = $locale;
-		}
-
-		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
-	}
-
-	/**
 	 * Get the transactions export URL for a given export ID, if available.
 	 *
 	 * @param string $export_id The export ID.
@@ -515,18 +486,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @throws API_Exception - Exception thrown on request failure.
 	 */
 	public function get_transactions_export_url( string $export_id ): array {
-		return $this->request( [], self::TRANSACTIONS_API . "/download/{$export_id}", self::GET );
-	}
-
-	/**
-	 * Get the Fees report export URL for a given export ID, if available.
-	 *
-	 * @param string $export_id The export ID.
-	 *
-	 * @return array The export URL response.
-	 * @throws API_Exception - Exception thrown on request failure.
-	 */
-	public function get_reports_fees_export_url( string $export_id ): array {
 		return $this->request( [], self::TRANSACTIONS_API . "/download/{$export_id}", self::GET );
 	}
 
