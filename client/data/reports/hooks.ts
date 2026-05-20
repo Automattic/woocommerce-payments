@@ -39,11 +39,6 @@ export interface ReportsFee {
 	exchange_rate?: number;
 	deposit_currency: string;
 	fees: number;
-	customer?: {
-		name?: string;
-		email?: string;
-		country?: string;
-	};
 	net_amount?: number;
 	order_id?: number | string | null;
 	risk_level?: number;
