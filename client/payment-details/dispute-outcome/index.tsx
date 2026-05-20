@@ -34,9 +34,8 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 			false
 	);
 
-	// Keyed by dispute.id, not a boolean, so the event re-fires when the SPA
-	// swaps the dispute prop in place (no remount) but still skips Strict
-	// Mode's dev double-invoke.
+	// Re-fires when the SPA swaps the dispute prop in place (no remount),
+	// but skips Strict Mode's dev double-invoke.
 	const lastTrackedDisputeIdRef = useRef< string | null >( null );
 	useEffect( () => {
 		if ( lastTrackedDisputeIdRef.current === dispute.id ) {
