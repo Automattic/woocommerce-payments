@@ -314,7 +314,7 @@ export const FeesReport = ( {
 		return () => {
 			observer.disconnect();
 		};
-	}, [ customDateAnchor, isCustomDatePopoverOpen, view.filters ] );
+	}, [ customDateAnchor, isCustomDatePopoverOpen ] );
 
 	const openCustomDatePopover = useCallback(
 		( anchor: HTMLElement | null ) => {

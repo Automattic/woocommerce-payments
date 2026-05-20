@@ -202,6 +202,37 @@ describe( 'FeesReport (DataViews)', () => {
 		} );
 	} );
 
+	it( 'restores aria-controls on the Date chip when DataViews strips it while the popover is open', async () => {
+		render( <FeesReport /> );
+
+		const dateFilterChip = screen.getByRole( 'button', {
+			name: /^fecha$/i,
+		} );
+
+		// Open the popover so `aria-controls` is expected on the chip.
+		fireEvent.click( dateFilterChip );
+		expect(
+			await screen.findByRole( 'dialog', {
+				name: 'Custom date filter',
+			} )
+		).toBeInTheDocument();
+		expect( dateFilterChip ).toHaveAttribute(
+			'aria-controls',
+			'wcpay-fees-date-filter-popover'
+		);
+
+		// Simulate DataViews stripping `aria-controls` on a re-render; the
+		// MutationObserver should restore it.
+		dateFilterChip.removeAttribute( 'aria-controls' );
+
+		await waitFor( () => {
+			expect( dateFilterChip ).toHaveAttribute(
+				'aria-controls',
+				'wcpay-fees-date-filter-popover'
+			);
+		} );
+	} );
+
 	it( 'opens the custom date popover directly from the Date filter chip', async () => {
 		render( <FeesReport /> );
 
