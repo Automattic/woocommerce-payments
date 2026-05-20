@@ -100,6 +100,8 @@ export const DateFilter: React.FC< DateFilterProps > = ( {
 			{ isOpen && (
 				<Popover
 					className="wcpay-date-filter__popover"
+					role="dialog"
+					aria-label={ __( 'Date filter', 'woocommerce-payments' ) }
 					anchor={ triggerRef.current ?? undefined }
 					onClose={ handleClose }
 					placement="bottom-start"
