@@ -178,6 +178,12 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 	public function get_collection_params() {
 		$params = parent::get_collection_params();
 
+		// The Fees endpoint strips customer data from every response, so the
+		// matching input filter must be removed too — leaving it advertised
+		// would invite raw REST calls that leak emails to access logs and
+		// forward them to the backend.
+		unset( $params['customer_email'] );
+
 		$params['search'] = [
 			'description'       => __( 'Search transactions by known identifiers.', 'woocommerce-payments' ),
 			'type'              => 'array',
@@ -244,15 +250,14 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 		$filters = array_merge(
 			$filters,
 			[
-				'order_id_is'       => $request->get_param( 'order_id' ),
-				'customer_email_is' => $request->get_param( 'customer_email' ),
-				'deposit_id'        => $request->get_param( 'deposit_id' ),
-				'date_before'       => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ),
-				'date_after'        => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
-				'date_between'      => $date_between_filter,
-				'match'             => $request->get_param( 'match' ),
-				'search'            => $request->get_param( 'search' ),
-				'user_timezone'     => $user_timezone,
+				'order_id_is'   => $request->get_param( 'order_id' ),
+				'deposit_id'    => $request->get_param( 'deposit_id' ),
+				'date_before'   => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_before' ), $user_timezone ),
+				'date_after'    => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
+				'date_between'  => $date_between_filter,
+				'match'         => $request->get_param( 'match' ),
+				'search'        => $request->get_param( 'search' ),
+				'user_timezone' => $user_timezone,
 			]
 		);
 

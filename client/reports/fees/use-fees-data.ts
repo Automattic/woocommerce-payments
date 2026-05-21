@@ -87,10 +87,10 @@ const getSingleStringValue = ( value: unknown ): string | undefined => {
  * date filter is active the query carries no date bounds, so the endpoint
  * returns all available fees.
  *
- * NOTE: The previous TableCard implementation accepted `order_id`,
- * `deposit_id`, and `customer_email` filter params, which the PHP controller
- * still honours. They are intentionally not surfaced from the DataViews UI in
- * this PR; a follow-up will add purpose-built filter chips for them.
+ * NOTE: The previous TableCard implementation accepted `order_id` and
+ * `deposit_id` filter params, which the PHP controller still honours. They
+ * are intentionally not surfaced from the DataViews UI in this PR; a
+ * follow-up will add purpose-built filter chips for them.
  *
  */
 export const buildFeesQuery = ( view: View ): FeesQuery => {

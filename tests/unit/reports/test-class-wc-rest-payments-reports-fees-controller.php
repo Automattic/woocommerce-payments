@@ -92,6 +92,12 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'rest_validate_request_arg', $params['type']['validate_callback'] );
 	}
 
+	public function test_get_collection_params_does_not_advertise_customer_email_filter() {
+		$params = $this->controller->get_collection_params();
+
+		$this->assertArrayNotHasKey( 'customer_email', $params );
+	}
+
 	public function test_get_collection_params_normalizes_single_value_list_filters() {
 		$params = $this->controller->get_collection_params();
 
@@ -106,7 +112,6 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'payment_method_type', 'card' );
 		$request->set_param( 'type', 'refund' );
 		$request->set_param( 'order_id', 123 );
-		$request->set_param( 'customer_email', 'customer@example.com' );
 		$request->set_param( 'deposit_id', 'po_mock' );
 		$request->set_param( 'date_after', '2026-04-01 00:00:00' );
 		$request->set_param( 'date_before', '2026-04-30 23:59:59' );
@@ -117,20 +122,29 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame(
 			[
-				'source_is'         => 'card',
-				'type_is_in'        => [ 'refund' ],
-				'order_id_is'       => 123,
-				'customer_email_is' => 'customer@example.com',
-				'deposit_id'        => 'po_mock',
-				'date_before'       => '2026-04-30 23:59:59',
-				'date_after'        => '2026-04-01 00:00:00',
-				'date_between'      => [ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ],
-				'match'             => 'all',
-				'search'            => [ 'txn_123' ],
-				'user_timezone'     => '+00:00',
+				'source_is'     => 'card',
+				'type_is_in'    => [ 'refund' ],
+				'order_id_is'   => 123,
+				'deposit_id'    => 'po_mock',
+				'date_before'   => '2026-04-30 23:59:59',
+				'date_after'    => '2026-04-01 00:00:00',
+				'date_between'  => [ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ],
+				'match'         => 'all',
+				'search'        => [ 'txn_123' ],
+				'user_timezone' => '+00:00',
 			],
 			$this->get_fees_transaction_filters_for_test( $request )
 		);
+	}
+
+	public function test_get_fees_transaction_filters_drops_customer_email_even_when_request_carries_it() {
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_param( 'customer_email', 'leak@example.com' );
+
+		$filters = $this->get_fees_transaction_filters_for_test( $request );
+
+		$this->assertArrayNotHasKey( 'customer_email_is', $filters );
+		$this->assertArrayNotHasKey( 'customer_email', $filters );
 	}
 
 	public function test_get_fees_transaction_filters_maps_type_list_to_type_is_in() {
