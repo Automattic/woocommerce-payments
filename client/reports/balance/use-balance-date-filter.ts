@@ -77,41 +77,83 @@ const getLatestCompleteDayYmd = ( now: Date ): string =>
 const minYmd = ( first: string, second: string ): string =>
 	first <= second ? first : second;
 
-export const getPeriodForDateFilter = (
-	value: DateFilterValue | undefined,
-	now: Date = new Date()
-): ReportsPeriodRange => {
-	if ( ! value ) {
-		return getLastFullCalendarMonthUTC( now );
-	}
+const capYmdAtLatestCompleteDay = ( ymd: string, now: Date ): string =>
+	minYmd( ymd, getLatestCompleteDayYmd( now ) );
 
-	if ( value.operator === 'on' ) {
-		return {
-			start: toStartOfDayUTC( value.value ),
-			end: toEndOfDayUTC( value.value ),
-		};
+const normalizeDateFilterValue = (
+	value: DateFilterValue | undefined,
+	now: Date
+): DateFilterValue | undefined => {
+	if ( ! value ) {
+		return undefined;
 	}
 
 	if ( value.operator === 'between' ) {
 		return {
-			start: toStartOfDayUTC( value.value[ 0 ] ),
-			end: toEndOfDayUTC( value.value[ 1 ] ),
+			operator: 'between',
+			value: [
+				capYmdAtLatestCompleteDay( value.value[ 0 ], now ),
+				capYmdAtLatestCompleteDay( value.value[ 1 ], now ),
+			],
+		};
+	}
+
+	if ( value.operator === 'on' ) {
+		return {
+			operator: 'on',
+			value: capYmdAtLatestCompleteDay( value.value, now ),
 		};
 	}
 
 	if ( value.operator === 'before' ) {
 		return {
-			start: toStartOfDayUTC( getMonthStartYmd( value.value ) ),
-			end: toEndOfDayUTC( value.value ),
+			operator: 'before',
+			value: capYmdAtLatestCompleteDay( value.value, now ),
+		};
+	}
+
+	return {
+		operator: 'after',
+		value: capYmdAtLatestCompleteDay( value.value, now ),
+	};
+};
+
+export const getPeriodForDateFilter = (
+	value: DateFilterValue | undefined,
+	now: Date = new Date()
+): ReportsPeriodRange => {
+	const normalizedValue = normalizeDateFilterValue( value, now );
+	if ( ! normalizedValue ) {
+		return getLastFullCalendarMonthUTC( now );
+	}
+
+	if ( normalizedValue.operator === 'on' ) {
+		return {
+			start: toStartOfDayUTC( normalizedValue.value ),
+			end: toEndOfDayUTC( normalizedValue.value ),
+		};
+	}
+
+	if ( normalizedValue.operator === 'between' ) {
+		return {
+			start: toStartOfDayUTC( normalizedValue.value[ 0 ] ),
+			end: toEndOfDayUTC( normalizedValue.value[ 1 ] ),
+		};
+	}
+
+	if ( normalizedValue.operator === 'before' ) {
+		return {
+			start: toStartOfDayUTC( getMonthStartYmd( normalizedValue.value ) ),
+			end: toEndOfDayUTC( normalizedValue.value ),
 		};
 	}
 
 	const endYmd = minYmd(
-		getMonthEndYmd( value.value ),
+		getMonthEndYmd( normalizedValue.value ),
 		getLatestCompleteDayYmd( now )
 	);
 	return {
-		start: toStartOfDayUTC( value.value ),
+		start: toStartOfDayUTC( normalizedValue.value ),
 		end: toEndOfDayUTC( endYmd ),
 	};
 };
@@ -133,15 +175,24 @@ export const useBalanceDateFilter = (
 	// `navTick` deliberately forces this render to read the current URL again
 	// after browser navigation or after this hook writes a new query string.
 	void navTick;
-	const value = parseDateFilterFromQuery(
-		getQuery() as Record< string, unknown >
+	const value = normalizeDateFilterValue(
+		parseDateFilterFromQuery( getQuery() as Record< string, unknown > ),
+		now
 	);
 	const period = getPeriodForDateFilter( value, now );
 
-	const setValue = useCallback( ( next: DateFilterValue | undefined ) => {
-		updateQueryString( serializeDateFilterToQuery( next ), reportsPath );
-		setNavTick( ( tick ) => tick + 1 );
-	}, [] );
+	const setValue = useCallback(
+		( next: DateFilterValue | undefined ) => {
+			updateQueryString(
+				serializeDateFilterToQuery(
+					normalizeDateFilterValue( next, now )
+				),
+				reportsPath
+			);
+			setNavTick( ( tick ) => tick + 1 );
+		},
+		[ now ]
+	);
 
 	return {
 		value,

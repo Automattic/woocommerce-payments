@@ -51,6 +51,23 @@ describe( 'useBalanceDateFilter', () => {
 		} );
 	} );
 
+	it( 'caps date_between from the URL at the latest complete UTC day', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-05-01', '2026-05-21' ],
+		} );
+
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		expect( result.current.value ).toEqual( {
+			operator: 'between',
+			value: [ '2026-05-01', '2026-05-20' ],
+		} );
+		expect( result.current.period ).toEqual( {
+			start: '2026-05-01T00:00:00.000Z',
+			end: '2026-05-20T23:59:59.999Z',
+		} );
+	} );
+
 	it( 'updates the report URL when the Date filter changes', () => {
 		const { result } = renderHook( () => useBalanceDateFilter( now ) );
 
@@ -64,6 +81,26 @@ describe( 'useBalanceDateFilter', () => {
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			{
 				date_between: [ '2026-05-01', '2026-05-14' ],
+				date_before: undefined,
+				date_after: undefined,
+			},
+			'/payments/reports'
+		);
+	} );
+
+	it( 'caps date_between before writing the report URL', () => {
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		act( () => {
+			result.current.setValue( {
+				operator: 'between',
+				value: [ '2026-05-01', '2026-05-21' ],
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			{
+				date_between: [ '2026-05-01', '2026-05-20' ],
 				date_before: undefined,
 				date_after: undefined,
 			},
@@ -137,6 +174,18 @@ describe( 'getPeriodForDateFilter', () => {
 			)
 		).toEqual( {
 			start: '2026-05-14T00:00:00.000Z',
+			end: '2026-05-20T23:59:59.999Z',
+		} );
+	} );
+
+	it( 'caps same-day filters at the latest complete UTC day', () => {
+		expect(
+			getPeriodForDateFilter(
+				{ operator: 'on', value: '2026-05-21' },
+				now
+			)
+		).toEqual( {
+			start: '2026-05-20T00:00:00.000Z',
 			end: '2026-05-20T23:59:59.999Z',
 		} );
 	} );
