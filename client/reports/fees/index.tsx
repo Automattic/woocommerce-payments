@@ -3,34 +3,21 @@
 /**
  * External dependencies
  */
-import React, {
-	useCallback,
-	useEffect,
-	useId,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-} from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Button, Icon } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { DataViews } from '@wordpress/dataviews/wp';
-import type { Filter, View } from '@wordpress/dataviews/wp';
 
 /**
  * Internal dependencies
  */
-import type { DateFilterValue } from 'wcpay/reports/date-filter';
 import { useFeesView } from './use-fees-view';
 import { useFeesData } from './use-fees-data';
 import { getFeesFields } from './fields';
 import { CustomDateFilterPopover } from './custom-date-filter-popover';
-import {
-	encodeCustomDateFilterValue,
-	resolveFeesDateFilterValue,
-} from './date-filter-values';
+import { useDateFilterChipInterceptor } from './use-date-filter-chip-interceptor';
 
 interface FeesReportProps {
 	onReload?: () => void;
@@ -88,58 +75,7 @@ const FeesReportState = ( {
 	</div>
 );
 
-const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
-	filters.find( ( filter ) => filter.field === 'date' );
-
 const customDatePopoverId = 'wcpay-fees-date-filter-popover';
-
-const dateFilterChipSelector = '.dataviews-filters__summary-chip';
-const filtersContainerSelector = '.dataviews-filters__container';
-
-const getResolvedDateFilter = ( view: View ): DateFilterValue | undefined =>
-	resolveFeesDateFilterValue( findDateFilter( view.filters )?.value );
-
-const findDateFilterAnchor = (
-	container: HTMLElement | null
-): HTMLElement | null => {
-	if ( ! container ) {
-		return null;
-	}
-
-	// DataViews does not expose a field id or data attribute on summary chips.
-	// It does, however, sort primary filters before secondary filters. The Fees
-	// Date filter is the only primary filter, so the first visible summary chip
-	// is the Date chip without relying on translated text content.
-	return (
-		container
-			.querySelector< HTMLElement >( filtersContainerSelector )
-			?.querySelector< HTMLElement >( dateFilterChipSelector ) ?? null
-	);
-};
-
-const findDateFilterAnchorFromEvent = (
-	target: EventTarget | null,
-	container: HTMLElement | null
-): HTMLElement | null => {
-	if ( ! container || ! ( target instanceof HTMLElement ) ) {
-		return null;
-	}
-
-	const chip = target.closest< HTMLElement >( dateFilterChipSelector );
-	if ( ! chip || ! container.contains( chip ) ) {
-		return null;
-	}
-
-	return chip === findDateFilterAnchor( container ) ? chip : null;
-};
-
-const replaceDateFilter = (
-	filters: Filter[] = [],
-	nextDateFilter: Filter | undefined
-): Filter[] => {
-	const withoutDate = filters.filter( ( filter ) => filter.field !== 'date' );
-	return nextDateFilter ? [ ...withoutDate, nextDateFilter ] : withoutDate;
-};
 
 export const FeesReport = ( {
 	onReload = () => undefined,
@@ -147,15 +83,6 @@ export const FeesReport = ( {
 	const [ view, setView ] = useFeesView();
 	const [ dataViewsContainer, setDataViewsContainer ] =
 		useState< HTMLDivElement | null >( null );
-	const [ customDateAnchor, setCustomDateAnchor ] =
-		useState< HTMLElement | null >( null );
-	const [ isCustomDatePopoverOpen, setIsCustomDatePopoverOpen ] =
-		useState( false );
-	const [ customDateInitialValue, setCustomDateInitialValue ] = useState<
-		DateFilterValue | undefined
-	>( undefined );
-	const isCustomDatePopoverOpenRef = useRef( isCustomDatePopoverOpen );
-	const ignoreNextDateFilterClickRef = useRef( false );
 	const initialEmptyHeadingId = useId();
 	const initialEmptyDescriptionId = useId();
 	const filteredEmptyHeadingId = useId();
@@ -171,6 +98,20 @@ export const FeesReport = ( {
 		error,
 	} = useFeesData( view );
 
+	const {
+		anchor: customDateAnchor,
+		isPopoverOpen: isCustomDatePopoverOpen,
+		initialValue: customDateInitialValue,
+		onPopoverChange: changeCustomDateFilter,
+		onPopoverClose: closeCustomDatePopover,
+		captureHandlers: dateFilterCaptureHandlers,
+	} = useDateFilterChipInterceptor( {
+		container: dataViewsContainer,
+		view,
+		setView,
+		popoverId: customDatePopoverId,
+	} );
+
 	const fields = useMemo(
 		() =>
 			getFeesFields( {
@@ -185,10 +126,6 @@ export const FeesReport = ( {
 	const hasNoRows = ! isLoading && ! hasError && rows.length === 0;
 	const isInitialEmpty = hasNoRows && ! hasFilters;
 	const isFilteredEmpty = hasNoRows && hasFilters;
-
-	useEffect( () => {
-		isCustomDatePopoverOpenRef.current = isCustomDatePopoverOpen;
-	}, [ isCustomDatePopoverOpen ] );
 
 	// Move focus to the error region and announce when an error surfaces, so
 	// keyboard/AT users notice the table disappearing. `role="alert"` on the
@@ -242,223 +179,6 @@ export const FeesReport = ( {
 			}
 		},
 		[]
-	);
-
-	useLayoutEffect( () => {
-		setCustomDateAnchor( findDateFilterAnchor( dataViewsContainer ) );
-	}, [ dataViewsContainer, view.filters ] );
-
-	useLayoutEffect( () => {
-		if ( ! customDateAnchor ) {
-			return;
-		}
-
-		// DataViews owns the summary-chip markup and does not expose trigger
-		// props for a custom filter popover. Keep the intercepted Date chip's
-		// dialog semantics synchronized with our custom popover state here.
-		//
-		// React's reconciliation can overwrite `aria-expanded` (and strip
-		// `aria-haspopup`/`aria-controls`) whenever DataViews re-renders the
-		// chip — its own Dropdown writes `aria-expanded` and we don't control
-		// that prop. Re-apply on filter changes (covered by deps) AND watch
-		// the chip for attribute mutations so we restore our values even when
-		// the re-render isn't driven by `view.filters`.
-		const applyAriaAttributes = (): void => {
-			customDateAnchor.setAttribute( 'aria-haspopup', 'dialog' );
-			customDateAnchor.setAttribute(
-				'aria-expanded',
-				String( isCustomDatePopoverOpen )
-			);
-			if ( isCustomDatePopoverOpen ) {
-				customDateAnchor.setAttribute(
-					'aria-controls',
-					customDatePopoverId
-				);
-			} else {
-				customDateAnchor.removeAttribute( 'aria-controls' );
-			}
-		};
-
-		applyAriaAttributes();
-
-		const observer = new MutationObserver( ( mutations ) => {
-			// Re-apply only when an attribute we care about drifted from
-			// what we want, so we don't fight DataViews on unrelated edits
-			// (e.g. class changes for `has-values`/`has-reset`).
-			const desiredExpanded = String( isCustomDatePopoverOpen );
-			const desiredControls = isCustomDatePopoverOpen
-				? customDatePopoverId
-				: null;
-			const drifted = mutations.some( ( mutation ) => {
-				if ( mutation.type !== 'attributes' ) return false;
-				switch ( mutation.attributeName ) {
-					case 'aria-haspopup':
-						return (
-							customDateAnchor.getAttribute( 'aria-haspopup' ) !==
-							'dialog'
-						);
-					case 'aria-expanded':
-						return (
-							customDateAnchor.getAttribute( 'aria-expanded' ) !==
-							desiredExpanded
-						);
-					case 'aria-controls':
-						return (
-							customDateAnchor.getAttribute( 'aria-controls' ) !==
-							desiredControls
-						);
-					default:
-						return false;
-				}
-			} );
-			if ( drifted ) {
-				applyAriaAttributes();
-			}
-		} );
-		observer.observe( customDateAnchor, {
-			attributes: true,
-			attributeFilter: [
-				'aria-haspopup',
-				'aria-expanded',
-				'aria-controls',
-			],
-		} );
-
-		return () => {
-			observer.disconnect();
-		};
-	}, [ customDateAnchor, isCustomDatePopoverOpen ] );
-
-	const openCustomDatePopover = useCallback(
-		( anchor: HTMLElement | null ) => {
-			setCustomDateAnchor( anchor );
-			setCustomDateInitialValue( getResolvedDateFilter( view ) );
-			isCustomDatePopoverOpenRef.current = true;
-			setIsCustomDatePopoverOpen( true );
-		},
-		[ view ]
-	);
-
-	const closeCustomDatePopoverFromTrigger = useCallback(
-		( anchor: HTMLElement | null ) => {
-			isCustomDatePopoverOpenRef.current = false;
-			setIsCustomDatePopoverOpen( false );
-			setCustomDateInitialValue( undefined );
-			// Guard against the anchor having been removed from the DOM by
-			// DataViews between toggle and the next frame (matches the same
-			// pattern used in CustomDateFilterPopover.returnFocus).
-			requestAnimationFrame( () => {
-				if ( anchor && document.contains( anchor ) ) {
-					anchor.focus();
-				}
-			} );
-		},
-		[]
-	);
-
-	const toggleCustomDatePopover = useCallback(
-		( anchor: HTMLElement ) => {
-			if ( isCustomDatePopoverOpenRef.current ) {
-				closeCustomDatePopoverFromTrigger( anchor );
-				return;
-			}
-
-			openCustomDatePopover( anchor );
-		},
-		[ closeCustomDatePopoverFromTrigger, openCustomDatePopover ]
-	);
-
-	const handleDataViewsPointerDownCapture = useCallback(
-		( event: React.PointerEvent< HTMLDivElement > ) => {
-			const dateFilterAnchor = findDateFilterAnchorFromEvent(
-				event.target,
-				dataViewsContainer
-			);
-			if (
-				! dateFilterAnchor ||
-				( event.button !== 0 && event.button !== undefined )
-			) {
-				return;
-			}
-
-			event.preventDefault();
-			event.stopPropagation();
-			ignoreNextDateFilterClickRef.current = true;
-			toggleCustomDatePopover( dateFilterAnchor );
-		},
-		[ dataViewsContainer, toggleCustomDatePopover ]
-	);
-
-	const handleDataViewsClickCapture = useCallback(
-		( event: React.MouseEvent< HTMLDivElement > ) => {
-			const dateFilterAnchor = findDateFilterAnchorFromEvent(
-				event.target,
-				dataViewsContainer
-			);
-			if ( ! dateFilterAnchor ) {
-				return;
-			}
-
-			event.preventDefault();
-			event.stopPropagation();
-			if ( ignoreNextDateFilterClickRef.current ) {
-				ignoreNextDateFilterClickRef.current = false;
-				return;
-			}
-
-			toggleCustomDatePopover( dateFilterAnchor );
-		},
-		[ dataViewsContainer, toggleCustomDatePopover ]
-	);
-
-	const handleDataViewsKeyDownCapture = useCallback(
-		( event: React.KeyboardEvent< HTMLDivElement > ) => {
-			if ( event.key !== 'Enter' && event.key !== ' ' ) {
-				return;
-			}
-
-			const dateFilterAnchor = findDateFilterAnchorFromEvent(
-				event.target,
-				dataViewsContainer
-			);
-			if ( ! dateFilterAnchor ) {
-				return;
-			}
-
-			event.preventDefault();
-			event.stopPropagation();
-			toggleCustomDatePopover( dateFilterAnchor );
-		},
-		[ dataViewsContainer, toggleCustomDatePopover ]
-	);
-
-	const closeCustomDatePopover = useCallback( () => {
-		isCustomDatePopoverOpenRef.current = false;
-		setIsCustomDatePopoverOpen( false );
-		setCustomDateInitialValue( undefined );
-		const dateFilter = findDateFilter( view.filters );
-		if ( dateFilter && dateFilter.value === undefined ) {
-			setView( {
-				...view,
-				filters: replaceDateFilter( view.filters, undefined ),
-			} );
-		}
-	}, [ setView, view ] );
-
-	const changeCustomDateFilter = useCallback(
-		( nextDateFilter: DateFilterValue ) => {
-			const nextView = {
-				...view,
-				page: 1,
-				filters: replaceDateFilter( view.filters, {
-					field: 'date',
-					operator: 'is',
-					value: encodeCustomDateFilterValue( nextDateFilter ),
-				} ),
-			};
-			setView( nextView );
-		},
-		[ setView, view ]
 	);
 
 	if ( hasError ) {
@@ -528,9 +248,7 @@ export const FeesReport = ( {
 				}
 				ref={ setDataViewsContainer }
 				tabIndex={ -1 }
-				onPointerDownCapture={ handleDataViewsPointerDownCapture }
-				onClickCapture={ handleDataViewsClickCapture }
-				onKeyDownCapture={ handleDataViewsKeyDownCapture }
+				{ ...dateFilterCaptureHandlers }
 			>
 				<DataViews
 					data={ rows }
