@@ -34,6 +34,15 @@ jest.mock( 'wcpay/data/reports/hooks', () => ( {
 	} ),
 } ) );
 
+jest.mock( '../balance', () => ( {
+	BalanceReport: ( { onReload }: { onReload?: () => void } ) => (
+		<div>
+			<div>Balance summary table</div>
+			<button onClick={ onReload }>Reload</button>
+		</div>
+	),
+} ) );
+
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn(),
 	updateQueryString: jest.fn(),
