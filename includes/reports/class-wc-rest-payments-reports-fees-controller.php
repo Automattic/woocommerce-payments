@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Reports
  */
 
+use WCPay\Core\Server\Request\Get_Transactions_Summary;
 use WCPay\Core\Server\Request\List_Transactions;
 use WCPay\Core\Server\Request\Request_Utils;
 
@@ -121,7 +122,18 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 		$deposit_id = $filters['deposit_id'] ?? null;
 		unset( $filters['deposit_id'] );
 
-		return $this->forward_request( 'get_transactions_summary', [ $filters, $deposit_id ] );
+		$wcpay_request = Get_Transactions_Summary::create();
+		$wcpay_request->set_filters( $filters );
+		if ( null !== $deposit_id ) {
+			$wcpay_request->set_deposit_id( (string) $deposit_id );
+		}
+
+		$response = $wcpay_request->handle_rest_request();
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return rest_ensure_response( $response );
 	}
 
 	/**

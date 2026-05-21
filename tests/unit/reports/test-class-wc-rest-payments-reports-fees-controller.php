@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
+use WCPay\Core\Server\Request\Get_Transactions_Summary;
 use WCPay\Core\Server\Request\List_Transactions;
 
 /**
@@ -249,21 +250,26 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayNotHasKey( 'customer', $response->get_data() );
 	}
 
-	public function test_get_fees_summary_forwards_mapped_filters() {
+	public function test_get_fees_summary_uses_typed_request_with_mapped_filters() {
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_param( 'payment_method_type', 'card' );
 		$request->set_param( 'type', 'charge' );
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_transactions_summary' )
+		$mock_request = $this->mock_wcpay_request( Get_Transactions_Summary::class, 1, null, [ 'count' => 1 ] );
+		$mock_request->method( 'get_api' )
+			->willReturn( WC_Payments_API_Client::TRANSACTIONS_API . '/summary' );
+		$mock_request->method( 'get_method' )
+			->willReturn( 'GET' );
+		$mock_request->expects( $this->once() )
+			->method( 'set_filters' )
 			->with(
 				[
 					'source_is'  => 'card',
 					'type_is_in' => [ 'charge' ],
-				],
-				null
-			)
-			->willReturn( [ 'count' => 1 ] );
+				]
+			);
+		$mock_request->expects( $this->never() )
+			->method( 'set_deposit_id' );
 
 		$response = $this->controller->get_fees_summary( $request );
 
@@ -276,16 +282,22 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'type', 'charge' );
 		$request->set_param( 'deposit_id', 'po_mock' );
 
-		$this->mock_api_client->expects( $this->once() )
-			->method( 'get_transactions_summary' )
+		$mock_request = $this->mock_wcpay_request( Get_Transactions_Summary::class, 1, null, [ 'count' => 1 ] );
+		$mock_request->method( 'get_api' )
+			->willReturn( WC_Payments_API_Client::TRANSACTIONS_API . '/summary' );
+		$mock_request->method( 'get_method' )
+			->willReturn( 'GET' );
+		$mock_request->expects( $this->once() )
+			->method( 'set_filters' )
 			->with(
 				[
 					'source_is'  => 'card',
 					'type_is_in' => [ 'charge' ],
-				],
-				'po_mock'
-			)
-			->willReturn( [ 'count' => 1 ] );
+				]
+			);
+		$mock_request->expects( $this->once() )
+			->method( 'set_deposit_id' )
+			->with( 'po_mock' );
 
 		$response = $this->controller->get_fees_summary( $request );
 
