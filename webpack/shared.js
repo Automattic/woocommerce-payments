@@ -180,11 +180,13 @@ module.exports = {
 					// externalizing to wp.dataviews. The host WP version can
 					// differ from the API contract this report expects.
 					//
-					// NOTE: force-bundling still carries DataViews'
-					// transitive @wordpress/private-apis dependency and
-					// non-deduped nested @wordpress packages. This should be
-					// revisited when WooPayments can rely on the host
-					// DataViews version.
+					// NOTE: force-bundling also pulls in DataViews'
+					// transitive @wordpress/private-apis dependency plus a
+					// non-deduped @wordpress/data — the bundled copy runs
+					// as a separate Redux store registry from the host
+					// `wp.data`, so the two don't share state. Smoke-tested
+					// safe today; revisit when WooPayments can rely on the
+					// host DataViews version.
 					return null;
 				}
 
