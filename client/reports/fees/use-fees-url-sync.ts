@@ -129,13 +129,16 @@ const buildUrlQueryParams = ( view: View ): Record< string, unknown > => ( {
 	...buildFilterQueryParams( view.filters ?? [] ),
 } );
 
-const withoutSearchParam = (
+// Strip the params that are debounced or auto-reset by a search transition,
+// so the "do non-search params differ?" comparison upstream isn't fooled by
+// the search field flush or its page=1 side effect.
+const withoutTransientParams = (
 	params: Record< string, unknown >,
-	ignoreSearchPageReset = false
+	dropPagedReset = false
 ): Record< string, unknown > => {
 	const rest = { ...params };
 	delete rest.search;
-	if ( ignoreSearchPageReset ) {
+	if ( dropPagedReset ) {
 		delete rest.paged;
 	}
 	return rest;
@@ -210,8 +213,8 @@ export const useFeesUrlSync = (
 			const isSearchPageReset =
 				hasSearchChange && nextQueryParams.paged === '1';
 			const hasImmediateUrlChange = ! areQueryParamsEqual(
-				withoutSearchParam( currentQueryParams, isSearchPageReset ),
-				withoutSearchParam( nextQueryParams, isSearchPageReset )
+				withoutTransientParams( currentQueryParams, isSearchPageReset ),
+				withoutTransientParams( nextQueryParams, isSearchPageReset )
 			);
 
 			clearPendingSearchUpdate();

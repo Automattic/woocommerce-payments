@@ -87,9 +87,29 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$params = $this->controller->get_collection_params();
 
 		$this->assertSame( 'array', $params['search']['type'] );
-		$this->assertSame( 'rest_validate_request_arg', $params['search']['validate_callback'] );
 		$this->assertSame( 'array', $params['type']['type'] );
-		$this->assertSame( 'rest_validate_request_arg', $params['type']['validate_callback'] );
+
+		$this->assert_validate_callback_accepts_list_and_rejects_non_list( $params, 'search' );
+		$this->assert_validate_callback_accepts_list_and_rejects_non_list( $params, 'type' );
+	}
+
+	/**
+	 * Asserts the configured validate_callback accepts a list and rejects a non-list
+	 * shape for the given collection param — guards the contract without pinning
+	 * the implementation to the literal `'rest_validate_request_arg'` function name.
+	 *
+	 * @param array  $params Collection params from get_collection_params().
+	 * @param string $name   Param name to exercise.
+	 */
+	private function assert_validate_callback_accepts_list_and_rejects_non_list( array $params, string $name ) {
+		$request = new WP_REST_Request();
+		$request->set_attributes( [ 'args' => [ $name => $params[ $name ] ] ] );
+
+		$validate = $params[ $name ]['validate_callback'];
+		$this->assertTrue( is_callable( $validate ) );
+
+		$this->assertTrue( $validate( [ 'txn_123' ], $request, $name ) );
+		$this->assertWPError( $validate( [ 'not' => 'a-list' ], $request, $name ) );
 	}
 
 	public function test_get_collection_params_does_not_advertise_customer_email_filter() {
@@ -267,10 +287,6 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'type', 'charge' );
 
 		$mock_request = $this->mock_wcpay_request( Get_Transactions_Summary::class, 1, null, [ 'count' => 1 ] );
-		$mock_request->method( 'get_api' )
-			->willReturn( WC_Payments_API_Client::TRANSACTIONS_API . '/summary' );
-		$mock_request->method( 'get_method' )
-			->willReturn( 'GET' );
 		$mock_request->expects( $this->once() )
 			->method( 'set_filters' )
 			->with(
@@ -294,10 +310,6 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'deposit_id', 'po_mock' );
 
 		$mock_request = $this->mock_wcpay_request( Get_Transactions_Summary::class, 1, null, [ 'count' => 1 ] );
-		$mock_request->method( 'get_api' )
-			->willReturn( WC_Payments_API_Client::TRANSACTIONS_API . '/summary' );
-		$mock_request->method( 'get_method' )
-			->willReturn( 'GET' );
 		$mock_request->expects( $this->once() )
 			->method( 'set_filters' )
 			->with(
