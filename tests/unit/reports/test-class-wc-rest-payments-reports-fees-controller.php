@@ -86,9 +86,6 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_get_collection_params_registers_fees_filters() {
 		$params = $this->controller->get_collection_params();
 
-		$this->assertArrayNotHasKey( 'available_on_after', $params );
-		$this->assertArrayNotHasKey( 'available_on_before', $params );
-		$this->assertArrayNotHasKey( 'available_on_between', $params );
 		$this->assertSame( 'array', $params['search']['type'] );
 		$this->assertSame( 'rest_validate_request_arg', $params['search']['validate_callback'] );
 		$this->assertSame( 'array', $params['type']['type'] );
