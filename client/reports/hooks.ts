@@ -24,7 +24,7 @@ export function useReportsTabReload(
 ): () => void {
 	const { invalidateResolution, invalidateResolutionForStoreSelector } =
 		useDispatch( WCPAY_STORE_NAME ) as unknown as WCPayResolutionDispatch;
-	const currency = wcpaySettings.accountDefaultCurrency;
+	const currency = wcpaySettings.accountDefaultCurrency.toLowerCase();
 
 	return useCallback( () => {
 		if ( tab === 'fees' ) {

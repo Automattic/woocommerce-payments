@@ -69,6 +69,48 @@ interface ReportsFeesSummary {
 	isLoading: boolean;
 }
 
+export interface ReportsBalanceSummaryRow {
+	amount: number;
+	count?: number;
+}
+
+export interface ReportsBalanceSummary {
+	currency?: string;
+	period?: {
+		start?: string;
+		end?: string;
+	};
+	starting_balance?: ReportsBalanceSummaryRow;
+	total_charges_captured?: ReportsBalanceSummaryRow;
+	fees?: ReportsBalanceSummaryRow;
+	charge_fees?: ReportsBalanceSummaryRow;
+	payout_fees?: ReportsBalanceSummaryRow;
+	reader_fees?: ReportsBalanceSummaryRow;
+	dispute_fees?: ReportsBalanceSummaryRow;
+	fee_refunds?: ReportsBalanceSummaryRow;
+	refunds?: ReportsBalanceSummaryRow;
+	refund_failure?: ReportsBalanceSummaryRow;
+	disputes?: ReportsBalanceSummaryRow;
+	financing_payout?: ReportsBalanceSummaryRow;
+	financing_paydown?: ReportsBalanceSummaryRow;
+	network_costs?: ReportsBalanceSummaryRow;
+	other_adjustments?: ReportsBalanceSummaryRow;
+	net_balance_change_in_the_period?: ReportsBalanceSummaryRow;
+	payouts?: ReportsBalanceSummaryRow;
+	ending_balance?: ReportsBalanceSummaryRow;
+}
+
+interface ReportsBalanceSummaryResult {
+	summary: ReportsBalanceSummary;
+	error?: Record< string, unknown >;
+	isLoading: boolean;
+}
+
+interface ReportsPeriodRange {
+	start: string;
+	end: string;
+}
+
 interface ReportsFeesQuery extends Query {
 	payment_method_type?: string;
 	type?: string;
@@ -147,6 +189,36 @@ export const useReportsFees = ( {
 			JSON.stringify( search ),
 		]
 	);
+
+export const useReportsBalanceSummary = ( {
+	start,
+	end,
+}: ReportsPeriodRange ): ReportsBalanceSummaryResult => {
+	const currency = wcpaySettings.accountDefaultCurrency.toLowerCase();
+
+	return useSelect(
+		( select ) => {
+			const {
+				getReportsBalanceSummary,
+				getReportsBalanceSummaryError,
+				isResolving,
+			} = select( STORE_NAME );
+
+			const query = {
+				dateStart: start,
+				dateEnd: end,
+				currency,
+			};
+
+			return {
+				summary: getReportsBalanceSummary( query ),
+				error: getReportsBalanceSummaryError( query ),
+				isLoading: isResolving( 'getReportsBalanceSummary', [ query ] ),
+			};
+		},
+		[ start, end, currency ]
+	);
+};
 
 export const useReportsFeesSummary = ( {
 	match,
