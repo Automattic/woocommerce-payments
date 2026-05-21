@@ -100,6 +100,11 @@ export const BalanceReport = ( {
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousErrorRef = useRef( hasError );
 	const errorHeadingId = useId();
+	const renderToolbar = () => (
+		<div className="wcpay-reports-balance__toolbar">
+			<DateFilter value={ value } onChange={ setValue } />
+		</div>
+	);
 
 	useEffect( () => {
 		if ( hasError && ! previousErrorRef.current ) {
@@ -110,10 +115,13 @@ export const BalanceReport = ( {
 
 	if ( isLoading ) {
 		return (
-			<LoadingReportState
-				headingRef={ loadingHeadingRef }
-				headingTabIndex={ -1 }
-			/>
+			<div className="wcpay-reports-balance">
+				{ renderToolbar() }
+				<LoadingReportState
+					headingRef={ loadingHeadingRef }
+					headingTabIndex={ -1 }
+				/>
+			</div>
 		);
 	}
 
@@ -154,9 +162,7 @@ export const BalanceReport = ( {
 
 	return (
 		<div className="wcpay-reports-balance">
-			<div className="wcpay-reports-balance__toolbar">
-				<DateFilter value={ value } onChange={ setValue } />
-			</div>
+			{ renderToolbar() }
 			<h2 className="wcpay-reports-balance__heading">
 				{ __( 'Balance summary', 'woocommerce-payments' ) }
 			</h2>

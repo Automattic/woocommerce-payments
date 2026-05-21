@@ -124,6 +124,9 @@ describe( 'BalanceReport', () => {
 		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
 			'Loading report'
 		);
+		expect(
+			screen.getByRole( 'button', { name: 'Date' } )
+		).toBeInTheDocument();
 	} );
 
 	it( 'renders the error state with a reload action', async () => {
