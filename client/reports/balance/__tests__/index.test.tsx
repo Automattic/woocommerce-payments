@@ -144,7 +144,7 @@ describe( 'BalanceReport', () => {
 			screen.getByRole( 'button', { name: 'Reload report' } )
 		);
 
-		expect( onReload ).toHaveBeenCalledTimes( 1 );
+		expect( onReload ).toHaveBeenCalledWith( period );
 	} );
 
 	it( 'renders the empty state when every row is zero', () => {

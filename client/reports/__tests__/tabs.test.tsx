@@ -34,11 +34,22 @@ jest.mock( 'wcpay/data/reports/hooks', () => ( {
 	} ),
 } ) );
 
+const activeBalancePeriod = {
+	start: '2026-05-01T00:00:00.000Z',
+	end: '2026-05-20T23:59:59.999Z',
+};
+
 jest.mock( '../balance', () => ( {
-	BalanceReport: ( { onReload }: { onReload?: () => void } ) => (
+	BalanceReport: ( {
+		onReload,
+	}: {
+		onReload?: ( period?: typeof activeBalancePeriod ) => void;
+	} ) => (
 		<div>
 			<div>Balance summary table</div>
-			<button onClick={ onReload }>Reload</button>
+			<button onClick={ () => onReload?.( activeBalancePeriod ) }>
+				Reload
+			</button>
 		</div>
 	),
 } ) );
@@ -213,7 +224,7 @@ describe( 'Reports page tabs', () => {
 		expect( screen.getByRole( 'tab', { name: 'Fees' } ) ).toHaveFocus();
 	} );
 
-	it( 'reloads the Balance tab in place by invalidating the Balance selector', async () => {
+	it( 'reloads the Balance tab in place by invalidating the active Balance period', async () => {
 		await renderReportsPage( {
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
@@ -226,8 +237,8 @@ describe( 'Reports page tabs', () => {
 			'getReportsBalanceSummary',
 			[
 				{
-					dateStart: '2026-04-01T00:00:00.000Z',
-					dateEnd: '2026-04-30T23:59:59.999Z',
+					dateStart: activeBalancePeriod.start,
+					dateEnd: activeBalancePeriod.end,
 					currency: 'usd',
 				},
 			]

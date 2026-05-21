@@ -21,31 +21,36 @@ interface WCPayResolutionDispatch {
 export function useReportsTabReload(
 	tab: ReportsTab,
 	period: ReportsPeriodRange
-): () => void {
+): ( periodOverride?: ReportsPeriodRange ) => void {
 	const { invalidateResolution, invalidateResolutionForStoreSelector } =
 		useDispatch( WCPAY_STORE_NAME ) as unknown as WCPayResolutionDispatch;
 	const currency = wcpaySettings.accountDefaultCurrency.toLowerCase();
 
-	return useCallback( () => {
-		if ( tab === 'fees' ) {
-			// Invalidate all cached resolutions for the fees selector so
-			// every in-flight or cached query is re-fetched on reload.
-			invalidateResolutionForStoreSelector( 'getReportsFees' );
-			invalidateResolutionForStoreSelector( 'getReportsFeesSummary' );
-		} else {
-			invalidateResolution( 'getReportsBalanceSummary', [
-				{
-					dateStart: period.start,
-					dateEnd: period.end,
-					currency,
-				},
-			] );
-		}
-	}, [
-		currency,
-		invalidateResolution,
-		invalidateResolutionForStoreSelector,
-		period,
-		tab,
-	] );
+	return useCallback(
+		( periodOverride?: ReportsPeriodRange ) => {
+			if ( tab === 'fees' ) {
+				// Invalidate all cached resolutions for the fees selector so
+				// every in-flight or cached query is re-fetched on reload.
+				invalidateResolutionForStoreSelector( 'getReportsFees' );
+				invalidateResolutionForStoreSelector( 'getReportsFeesSummary' );
+			} else {
+				const balancePeriod = periodOverride ?? period;
+
+				invalidateResolution( 'getReportsBalanceSummary', [
+					{
+						dateStart: balancePeriod.start,
+						dateEnd: balancePeriod.end,
+						currency,
+					},
+				] );
+			}
+		},
+		[
+			currency,
+			invalidateResolution,
+			invalidateResolutionForStoreSelector,
+			period,
+			tab,
+		]
+	);
 }

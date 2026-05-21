@@ -20,7 +20,7 @@ import { useBalanceDateFilter } from './use-balance-date-filter';
 import './style.scss';
 
 interface BalanceReportProps {
-	onReload?: () => void;
+	onReload?: ( period: BalancePeriod ) => void;
 }
 
 const hasKeys = ( value: Record< string, unknown > | undefined ): boolean =>
@@ -131,7 +131,10 @@ export const BalanceReport = ( {
 				>
 					{ __( 'Balance unavailable', 'woocommerce-payments' ) }
 				</h2>
-				<Button variant="secondary" onClick={ onReload }>
+				<Button
+					variant="secondary"
+					onClick={ () => onReload( period ) }
+				>
 					{ __( 'Reload report', 'woocommerce-payments' ) }
 				</Button>
 			</div>

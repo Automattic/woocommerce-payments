@@ -12,10 +12,11 @@ import { __ } from '@wordpress/i18n';
 import type { ReportsTab } from './types';
 import { LazyLoadedBalanceReport } from './lazy-balance-report';
 import { LazyLoadedFeesReport } from './lazy-fees-report';
+import type { ReportsPeriodRange } from './period-selector';
 
 interface ReportsTabPanelProps {
 	tab: ReportsTab;
-	onReload: () => void;
+	onReload: ( periodOverride?: ReportsPeriodRange ) => void;
 }
 
 export const reportsTabs: Array< {
