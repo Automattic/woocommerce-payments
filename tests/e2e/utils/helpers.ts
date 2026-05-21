@@ -117,6 +117,9 @@ export const getShopper = async (
 		let loginError: unknown;
 		for ( let attempt = 1; attempt <= loginAttempts; attempt++ ) {
 			try {
+				console.log(
+					`Trying to log-in as customer (attempt ${ attempt }/${ loginAttempts })...`
+				);
 				await wpAdminLogin( shopperPage, config.users.customer );
 				// Wait for login page to finish loading before navigating.
 				await shopperPage.waitForLoadState( 'load' );
@@ -137,6 +140,10 @@ export const getShopper = async (
 				loginError = undefined;
 				break;
 			} catch ( error ) {
+				console.error(
+					`Customer login attempt ${ attempt } failed:`,
+					error
+				);
 				loginError = error;
 			}
 		}
