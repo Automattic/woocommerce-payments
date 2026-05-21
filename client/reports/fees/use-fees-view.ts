@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
-import type { View, ViewTable, Filter } from '@wordpress/dataviews';
+import type { View, ViewTable, Filter } from '@wordpress/dataviews/wp';
 
 /**
  * Internal dependencies
@@ -30,6 +30,19 @@ const persistDebounceMs = 750;
 const parseIntOr = ( value: unknown, fallback: number ): number => {
 	const n = parseInt( String( value ?? '' ), 10 );
 	return Number.isNaN( n ) ? fallback : n;
+};
+
+const getSingleQueryValue = ( value: unknown ): string | undefined => {
+	if ( typeof value !== 'string' || value === '' ) {
+		return undefined;
+	}
+
+	const trimmed = value.trim();
+	if ( trimmed === '' || trimmed.includes( ',' ) ) {
+		return undefined;
+	}
+
+	return trimmed;
 };
 
 const getFirstQueryValue = ( value: unknown ): string | undefined => {
@@ -67,7 +80,7 @@ const buildFiltersFromQuery = (
 	}
 
 	if ( query.type ) {
-		const value = getFirstQueryValue( query.type );
+		const value = getSingleQueryValue( query.type );
 		if ( ! value ) {
 			return filters;
 		}
@@ -113,7 +126,7 @@ const buildFilterQueryParams = (
 		} else if ( filter.field === 'payment_method' ) {
 			params.payment_method_type = filter.value;
 		} else if ( filter.field === 'type' ) {
-			params.type = filter.value;
+			params.type = getSingleQueryValue( filter.value );
 		}
 	}
 

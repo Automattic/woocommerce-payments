@@ -40,38 +40,69 @@ const filterQuery = {
 	search: [ 'txn_123' ],
 };
 
+const expectedFilterParams = {
+	match: 'all',
+	date_before: '2026-04-02 03:59:59',
+	date_after: '2026-04-30 04:00:00',
+	'date_between[0]': '2026-04-01 04:00:00',
+	'date_between[1]': '2026-05-01 03:59:59',
+	payment_method_type: 'card',
+	'type[0]': 'charge',
+	order_id: '123',
+	deposit_id: 'po_123',
+	'search[0]': 'txn_123',
+	user_timezone: getUserTimeZone(),
+};
+
+const expectApiFetchPath = ( control, expectedPath, expectedParams ) => {
+	expect( control ).toEqual(
+		apiFetch( {
+			path: expect.any( String ),
+		} )
+	);
+
+	const url = new URL( control.request.path, 'https://example.test' );
+
+	expect( url.pathname ).toBe( expectedPath );
+	expect( Object.fromEntries( url.searchParams.entries() ) ).toEqual(
+		expectedParams
+	);
+	expect( url.searchParams.has( 'customer_email' ) ).toBe( false );
+};
+
 describe( 'getReportsFees resolver', () => {
 	const successfulResponse = [ { transaction_id: 'txn_123' } ];
 	const query = { ...paginationQuery, ...filterQuery };
-	const expectedQueryString =
-		'page=1&per_page=25&sort=date&direction=desc' +
-		'&match=all&date_before=2026-04-02%2003%3A59%3A59&date_after=2026-04-30%2004%3A00%3A00' +
-		'&date_between%5B0%5D=2026-04-01%2004%3A00%3A00&date_between%5B1%5D=2026-05-01%2003%3A59%3A59' +
-		'&payment_method_type=card&type%5B0%5D=charge&order_id=123&deposit_id=po_123&customer_email=shopper%40example.com' +
-		'&search%5B0%5D=txn_123' +
-		`&user_timezone=${ encodeURIComponent( getUserTimeZone() ) }`;
-	let generator = null;
-
-	beforeEach( () => {
-		generator = getReportsFees( query );
-		expect( generator.next().value ).toEqual(
-			apiFetch( {
-				path: `/wc/v3/payments/reports/fees?${ expectedQueryString }`,
-			} )
-		);
-	} );
-
-	afterEach( () => {
-		expect( generator.next().done ).toStrictEqual( true );
-	} );
+	const expectedParams = {
+		page: '1',
+		per_page: '25',
+		sort: 'date',
+		direction: 'desc',
+		...expectedFilterParams,
+	};
 
 	test( 'updates state with report fee rows on success', () => {
+		const generator = getReportsFees( query );
+
+		expectApiFetchPath(
+			generator.next().value,
+			'/wc/v3/payments/reports/fees',
+			expectedParams
+		);
 		expect( generator.next( successfulResponse ).value ).toEqual(
 			updateReportsFees( query, successfulResponse )
 		);
+		expect( generator.next().done ).toStrictEqual( true );
 	} );
 
 	test( 'updates state with the error on failure', () => {
+		const generator = getReportsFees( query );
+
+		expectApiFetchPath(
+			generator.next().value,
+			'/wc/v3/payments/reports/fees',
+			expectedParams
+		);
 		expect( generator.throw( errorResponse ).value ).toEqual(
 			controls.dispatch(
 				'core/notices',
@@ -82,40 +113,36 @@ describe( 'getReportsFees resolver', () => {
 		expect( generator.next().value ).toEqual(
 			updateErrorForReportsFees( query, errorResponse )
 		);
+		expect( generator.next().done ).toStrictEqual( true );
 	} );
 } );
 
 describe( 'getReportsFeesSummary resolver', () => {
 	const successfulResponse = { count: 1, total: 1000, fees: 120 };
 	const query = filterQuery;
-	const expectedQueryString =
-		'match=all&date_before=2026-04-02%2003%3A59%3A59&date_after=2026-04-30%2004%3A00%3A00' +
-		'&date_between%5B0%5D=2026-04-01%2004%3A00%3A00&date_between%5B1%5D=2026-05-01%2003%3A59%3A59' +
-		'&payment_method_type=card&type%5B0%5D=charge&order_id=123&deposit_id=po_123&customer_email=shopper%40example.com' +
-		'&search%5B0%5D=txn_123' +
-		`&user_timezone=${ encodeURIComponent( getUserTimeZone() ) }`;
-	let generator = null;
-
-	beforeEach( () => {
-		generator = getReportsFeesSummary( query );
-		expect( generator.next().value ).toEqual(
-			apiFetch( {
-				path: `/wc/v3/payments/reports/fees/summary?${ expectedQueryString }`,
-			} )
-		);
-	} );
-
-	afterEach( () => {
-		expect( generator.next().done ).toStrictEqual( true );
-	} );
 
 	test( 'updates state with reports fees summary data on success', () => {
+		const generator = getReportsFeesSummary( query );
+
+		expectApiFetchPath(
+			generator.next().value,
+			'/wc/v3/payments/reports/fees/summary',
+			expectedFilterParams
+		);
 		expect( generator.next( successfulResponse ).value ).toEqual(
 			updateReportsFeesSummary( query, successfulResponse )
 		);
+		expect( generator.next().done ).toStrictEqual( true );
 	} );
 
 	test( 'updates state with the summary error on failure', () => {
+		const generator = getReportsFeesSummary( query );
+
+		expectApiFetchPath(
+			generator.next().value,
+			'/wc/v3/payments/reports/fees/summary',
+			expectedFilterParams
+		);
 		expect( generator.throw( errorResponse ).value ).toEqual(
 			controls.dispatch(
 				'core/notices',
@@ -126,5 +153,6 @@ describe( 'getReportsFeesSummary resolver', () => {
 		expect( generator.next().value ).toEqual(
 			updateErrorForReportsFeesSummary( query, errorResponse )
 		);
+		expect( generator.next().done ).toStrictEqual( true );
 	} );
 } );

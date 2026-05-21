@@ -174,34 +174,31 @@ module.exports = {
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					// Force-bundle DataViews from the package's plugin/theme
+					// entrypoint (`@wordpress/dataviews/wp`) instead of
+					// externalizing to wp.dataviews. The host WP version can
+					// differ from the API contract this report expects.
+					//
+					// NOTE: force-bundling still carries DataViews'
+					// transitive @wordpress/private-apis dependency and
+					// non-deduped nested @wordpress packages. This should be
+					// revisited when WooPayments can rely on the host
+					// DataViews version.
+					return null;
+				}
+
 				switch ( request ) {
-					case '@wordpress/dataviews':
-						// Force-bundle: returning null prevents externalization
-						// to wp.dataviews, which would resolve against the host
-						// WP version (4.15.4 on WP 6.8, 10.x on 6.9, 14.x on
-						// 7.0+) and break the API contract our code expects.
-						//
-						// NOTE: force-bundling pulls in non-deduped nested
-						// copies of @wordpress/data, @wordpress/element,
-						// @wordpress/compose, @wordpress/deprecated, and
-						// @wordpress/hooks. It also carries DataViews'
-						// transitive @wordpress/private-apis dependency.
-						// The top-level versions are still
-						// externalised to wp.* globals). The nested
-						// @wordpress/data instance is the one to watch: any
-						// store DataViews registers internally is invisible
-						// to wp.data on the host page. If a regression
-						// surfaces in DataViews store behaviour, consider
-						// resolve.alias for the nested @wordpress/* imports.
-						return null;
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					return null;
+				}
+
 				switch ( request ) {
-					case '@wordpress/dataviews':
-						return null;
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
 				}

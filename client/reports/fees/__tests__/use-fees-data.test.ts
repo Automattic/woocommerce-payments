@@ -1,6 +1,6 @@
 /** @format */
 
-import type { View } from '@wordpress/dataviews';
+import type { View } from '@wordpress/dataviews/wp';
 import { renderHook } from '@testing-library/react-hooks';
 
 const mockUseReportsFees = jest.fn();
@@ -188,7 +188,7 @@ describe( 'buildFeesQuery', () => {
 		expect( result.type ).toBe( 'charge' );
 	} );
 
-	it( 'uses the first type value from legacy multi-value filters', () => {
+	it( 'omits multi-value type filters instead of truncating them', () => {
 		const result = buildFeesQuery(
 			baseView( {
 				filters: [
@@ -200,10 +200,10 @@ describe( 'buildFeesQuery', () => {
 				],
 			} )
 		);
-		expect( result.type ).toBe( 'charge' );
+		expect( result.type ).toBeUndefined();
 	} );
 
-	it( 'uses the first type value from legacy comma-separated filters', () => {
+	it( 'omits comma-separated type filter values instead of truncating them', () => {
 		const result = buildFeesQuery(
 			baseView( {
 				filters: [
@@ -215,7 +215,7 @@ describe( 'buildFeesQuery', () => {
 				],
 			} )
 		);
-		expect( result.type ).toBe( 'charge' );
+		expect( result.type ).toBeUndefined();
 	} );
 
 	it( 'wraps search as a single-element array', () => {
@@ -342,6 +342,26 @@ describe( 'useFeesData', () => {
 
 		expect( result.current.error ).toEqual( {
 			code: 'summary_unavailable',
+		} );
+	} );
+
+	it( 'merges row and summary errors for callers', () => {
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: { rows: 'rest_forbidden' },
+			isLoading: false,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: {},
+			feesSummaryError: { summary: 'summary_unavailable' },
+			isLoading: false,
+		} );
+
+		const { result } = renderHook( () => useFeesData( baseView() ) );
+
+		expect( result.current.error ).toEqual( {
+			rows: 'rest_forbidden',
+			summary: 'summary_unavailable',
 		} );
 	} );
 

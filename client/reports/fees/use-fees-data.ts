@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { useMemo } from 'react';
-import type { View, Filter } from '@wordpress/dataviews';
+import type { View, Filter } from '@wordpress/dataviews/wp';
 
 /**
  * Internal dependencies
@@ -69,6 +69,19 @@ const resolveSortField = ( columnId: string | undefined ): string => {
 	return sortFieldByColumnId[ columnId ] ?? columnId;
 };
 
+const getSingleStringValue = ( value: unknown ): string | undefined => {
+	if ( typeof value !== 'string' ) {
+		return undefined;
+	}
+
+	const trimmed = value.trim();
+	if ( trimmed === '' || trimmed.includes( ',' ) ) {
+		return undefined;
+	}
+
+	return trimmed;
+};
+
 /**
  * Build a REST query for the Fees endpoint from the DataViews `view`. When no
  * date filter is active the query carries no date bounds, so the endpoint
@@ -115,13 +128,9 @@ export const buildFeesQuery = ( view: View ): FeesQuery => {
 
 	const typeFilter = findFilter( view.filters, 'type' );
 	if ( typeFilter && typeFilter.value ) {
-		const value = typeFilter.value;
-		if ( Array.isArray( value ) ) {
-			if ( value.length > 0 ) {
-				query.type = value[ 0 ] as string;
-			}
-		} else if ( typeof value === 'string' ) {
-			query.type = value.split( ',' )[ 0 ] || undefined;
+		const value = getSingleStringValue( typeFilter.value );
+		if ( value ) {
+			query.type = value;
 		}
 	}
 
@@ -231,7 +240,9 @@ export const useFeesData = ( view: View ): UseFeesDataResult => {
 		methodElements,
 		typeElements,
 		isLoading: isLoading || isSummaryLoading,
-		error:
-			Object.keys( feesError ).length > 0 ? feesError : feesSummaryError,
+		error: {
+			...feesSummaryError,
+			...feesError,
+		},
 	};
 };

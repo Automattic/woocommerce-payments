@@ -77,36 +77,20 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
-	it( 'uses the first type value from legacy multi-value URLs', () => {
+	it( 'rejects multi-value Type URLs instead of truncating them', () => {
 		mockGetQuery.mockReturnValue( {
 			type: [ 'charge', 'refund' ],
 		} );
 		const { result } = renderHook( () => useFeesView() );
-		expect( result.current[ 0 ].filters ).toEqual(
-			expect.arrayContaining( [
-				{
-					field: 'type',
-					operator: 'is',
-					value: 'charge',
-				},
-			] )
-		);
+		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
-	it( 'uses the first type value from legacy comma-separated URLs', () => {
+	it( 'rejects comma-separated Type URLs instead of truncating them', () => {
 		mockGetQuery.mockReturnValue( {
 			type: 'charge,refund',
 		} );
 		const { result } = renderHook( () => useFeesView() );
-		expect( result.current[ 0 ].filters ).toEqual(
-			expect.arrayContaining( [
-				{
-					field: 'type',
-					operator: 'is',
-					value: 'charge',
-				},
-			] )
-		);
+		expect( result.current[ 0 ].filters ).toEqual( [] );
 	} );
 
 	it( 'reads date_preset from URL into the native Date filter', () => {
@@ -297,6 +281,23 @@ describe( 'useFeesView', () => {
 			} ),
 			'/payments/reports'
 		);
+	} );
+
+	it( 'rejects multi-value Type filter changes before writing the URL', () => {
+		const { result } = renderHook( () => useFeesView() );
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'type',
+						operator: 'isAny',
+						value: [ 'charge', 'refund' ],
+					},
+				],
+			} );
+		} );
+		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
 	} );
 
 	it( 're-derives the view after setView pushes URL-only changes', () => {

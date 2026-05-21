@@ -43,7 +43,8 @@ const formatQueryFilters = ( query ) => ( {
 	type: toArrayOrUndefined( query.type ),
 	order_id: query.orderId,
 	deposit_id: query.depositId,
-	customer_email: query.customerEmail,
+	// Keep customer email out of GET query strings; the Fees UI does not expose
+	// this filter, and URLs can be persisted in logs/history.
 	search: query.search,
 	user_timezone: getUserTimeZone(),
 } );

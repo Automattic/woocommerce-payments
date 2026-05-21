@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import type { Option } from '@wordpress/dataviews';
+import type { Option } from '@wordpress/dataviews/wp';
 
 /**
  * Internal dependencies

@@ -1,6 +1,6 @@
 /** @format */
 
-import type { View, ViewTable } from '@wordpress/dataviews';
+import type { View, ViewTable } from '@wordpress/dataviews/wp';
 
 export const feesViewUserMetaKey = 'wc_payments_reports_fees_view';
 

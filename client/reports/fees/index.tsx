@@ -16,8 +16,8 @@ import { Button, Icon } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
-import { DataViews } from '@wordpress/dataviews';
-import type { Filter, View } from '@wordpress/dataviews';
+import { DataViews } from '@wordpress/dataviews/wp';
+import type { Filter, View } from '@wordpress/dataviews/wp';
 
 /**
  * Internal dependencies

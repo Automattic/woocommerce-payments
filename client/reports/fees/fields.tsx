@@ -6,7 +6,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
-import type { Field } from '@wordpress/dataviews';
+import type { Field } from '@wordpress/dataviews/wp';
 
 /**
  * Internal dependencies
