@@ -9,13 +9,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import type { ReportsTab, ReportsTabStatus } from './types';
+import type { ReportsTab } from './types';
 import { LazyLoadedBalanceReport } from './lazy-balance-report';
 import { LazyLoadedFeesReport } from './lazy-fees-report';
 
 interface ReportsTabPanelProps {
 	tab: ReportsTab;
-	status: ReportsTabStatus;
 	onReload: () => void;
 }
 

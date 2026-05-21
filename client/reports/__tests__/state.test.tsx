@@ -21,9 +21,7 @@ jest.mock( '../balance', () => ( {
 
 describe( 'Reports tab states', () => {
 	it( 'renders an accessible loading status while the Fees report chunk loads', async () => {
-		render(
-			<ReportsTabPanel tab="fees" status="ready" onReload={ jest.fn() } />
-		);
+		render( <ReportsTabPanel tab="fees" onReload={ jest.fn() } /> );
 
 		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
 			'Loading report'
@@ -34,13 +32,7 @@ describe( 'Reports tab states', () => {
 	} );
 
 	it( 'renders an accessible loading status while the Balance report chunk loads', async () => {
-		render(
-			<ReportsTabPanel
-				tab="balance"
-				status="ready"
-				onReload={ jest.fn() }
-			/>
-		);
+		render( <ReportsTabPanel tab="balance" onReload={ jest.fn() } /> );
 
 		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
 			'Loading report'
@@ -51,13 +43,7 @@ describe( 'Reports tab states', () => {
 	} );
 
 	it( 'renders the Balance report when the Balance tab is selected regardless of status', async () => {
-		render(
-			<ReportsTabPanel
-				tab="balance"
-				status="error"
-				onReload={ jest.fn() }
-			/>
-		);
+		render( <ReportsTabPanel tab="balance" onReload={ jest.fn() } /> );
 
 		expect(
 			await screen.findByText( 'Balance summary table' )
@@ -66,9 +52,7 @@ describe( 'Reports tab states', () => {
 	} );
 
 	it( 'renders the Fees report when the Fees tab is selected (regardless of status)', async () => {
-		render(
-			<ReportsTabPanel tab="fees" status="ready" onReload={ jest.fn() } />
-		);
+		render( <ReportsTabPanel tab="fees" onReload={ jest.fn() } /> );
 
 		expect(
 			await screen.findByText( 'Fees ledger table' )
@@ -78,9 +62,7 @@ describe( 'Reports tab states', () => {
 	it( 'still routes to FeesReport when an error status is passed for the Fees tab', async () => {
 		// FeesReport surfaces its own error UI internally; the outer panel
 		// must not override or duplicate it.
-		render(
-			<ReportsTabPanel tab="fees" status="error" onReload={ jest.fn() } />
-		);
+		render( <ReportsTabPanel tab="fees" onReload={ jest.fn() } /> );
 
 		expect(
 			await screen.findByText( 'Fees ledger table' )

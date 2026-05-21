@@ -215,7 +215,6 @@ describe( 'Reports page tabs', () => {
 
 	it( 'reloads the Balance tab in place by invalidating the Balance selector', async () => {
 		await renderReportsPage( {
-			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 
@@ -239,7 +238,6 @@ describe( 'Reports page tabs', () => {
 		mockGetQuery.mockReturnValue( { tab: 'fees' } );
 
 		await renderReportsPage( {
-			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 

@@ -15,18 +15,14 @@ import { ReportsHeader } from './header';
 import { getLastFullCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
 import { useReportsTabReload } from './hooks';
-import type { ReportsTab, ReportsTabStatus } from './types';
+import type { ReportsTab } from './types';
 import './style.scss';
 
 interface ReportsPageProps {
-	tabStatus?: ReportsTabStatus;
 	now?: Date;
 }
 
-export const ReportsPage: React.FC< ReportsPageProps > = ( {
-	tabStatus,
-	now,
-} ) => {
+export const ReportsPage: React.FC< ReportsPageProps > = ( { now } ) => {
 	const [ activeTab, setActiveTab ] = useState( () =>
 		normalizeReportsTab( getQuery().tab )
 	);
@@ -37,7 +33,6 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 		() => getLastFullCalendarMonthUTC( now ?? new Date() ),
 		[ now ]
 	);
-	const currentTabStatus = tabStatus ?? 'ready';
 	const reload = useReportsTabReload( activeTab, period );
 
 	useEffect( () => {
@@ -98,7 +93,6 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 						<div className="wcpay-reports-content">
 							<ReportsTabPanel
 								tab={ tab.name as ReportsTab }
-								status={ currentTabStatus }
 								onReload={ reload }
 							/>
 						</div>
