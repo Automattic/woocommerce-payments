@@ -1,0 +1,132 @@
+/** @format */
+
+.wcpay-reports-balance {
+	display: flex;
+	flex-direction: column;
+	gap: $gap-large;
+	padding-top: $gap;
+
+	&__toolbar {
+		display: flex;
+		justify-content: flex-start;
+	}
+
+	&__heading {
+		margin: 0;
+		color: $gray-900;
+		font-size: 20px;
+		font-weight: 500;
+		line-height: 28px;
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+		color: $gray-900;
+		font-size: 13px;
+		line-height: 20px;
+	}
+
+	&__row {
+		border-bottom: 1px solid $gray-200;
+
+		&:hover,
+		&:focus-within {
+			.wcpay-reports-balance__explore a {
+				opacity: 1;
+			}
+		}
+
+		&--indent {
+			.wcpay-reports-balance__label {
+				padding-left: $gap-large;
+				font-weight: 400;
+			}
+		}
+	}
+
+	&__label,
+	&__explore,
+	&__amount {
+		padding: 14px 0;
+		vertical-align: middle;
+	}
+
+	&__label {
+		width: 60%;
+		text-align: left;
+		font-weight: 500;
+	}
+
+	&__count {
+		display: inline-flex;
+		min-width: 20px;
+		height: 20px;
+		align-items: center;
+		justify-content: center;
+		margin-left: $gap-small;
+		padding: 0 6px;
+		border-radius: 10px;
+		background: $gray-100;
+		color: $gray-700;
+		font-size: 11px;
+		font-weight: 500;
+		line-height: 20px;
+	}
+
+	&__explore {
+		width: 120px;
+		text-align: right;
+
+		a {
+			opacity: 0;
+			transition: opacity 120ms ease-in-out;
+
+			&:focus {
+				opacity: 1;
+			}
+		}
+	}
+
+	&__amount {
+		width: 180px;
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+
+		&--negative {
+			color: $alert-red;
+		}
+
+		&--positive {
+			color: $gray-900;
+		}
+	}
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.wcpay-reports-balance__explore a {
+		transition: none;
+	}
+}
+
+@media screen and ( max-width: 782px ) {
+	.wcpay-reports-balance {
+		&__label,
+		&__explore,
+		&__amount {
+			display: block;
+			width: 100%;
+			padding: 8px 0;
+			text-align: left;
+		}
+
+		&__row {
+			display: block;
+			padding: $gap-small 0;
+		}
+
+		&__explore a {
+			opacity: 1;
+		}
+	}
+}
