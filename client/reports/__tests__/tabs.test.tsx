@@ -73,6 +73,7 @@ const mockUseDispatch = useDispatch as jest.Mock;
 
 declare const global: {
 	wcpaySettings: {
+		accountDefaultCurrency: string;
 		featureFlags: Record< string, boolean >;
 		fraudServices: unknown[];
 	};
@@ -96,6 +97,7 @@ describe( 'Reports page tabs', () => {
 
 	beforeEach( () => {
 		global.wcpaySettings = {
+			accountDefaultCurrency: 'USD',
 			featureFlags: {},
 			fraudServices: [],
 		};
@@ -216,8 +218,9 @@ describe( 'Reports page tabs', () => {
 			'getReportsBalanceSummary',
 			[
 				{
-					start: '2026-04-01T00:00:00.000Z',
-					end: '2026-04-30T23:59:59.999Z',
+					dateStart: '2026-04-01T00:00:00.000Z',
+					dateEnd: '2026-04-30T23:59:59.999Z',
+					currency: 'USD',
 				},
 			]
 		);

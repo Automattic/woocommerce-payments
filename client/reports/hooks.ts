@@ -24,6 +24,7 @@ export function useReportsTabReload(
 ): () => void {
 	const { invalidateResolution, invalidateResolutionForStoreSelector } =
 		useDispatch( WCPAY_STORE_NAME ) as unknown as WCPayResolutionDispatch;
+	const currency = wcpaySettings.accountDefaultCurrency;
 
 	return useCallback( () => {
 		if ( tab === 'fees' ) {
@@ -32,9 +33,16 @@ export function useReportsTabReload(
 			invalidateResolutionForStoreSelector( 'getReportsFees' );
 			invalidateResolutionForStoreSelector( 'getReportsFeesSummary' );
 		} else {
-			invalidateResolution( 'getReportsBalanceSummary', [ period ] );
+			invalidateResolution( 'getReportsBalanceSummary', [
+				{
+					dateStart: period.start,
+					dateEnd: period.end,
+					currency,
+				},
+			] );
 		}
 	}, [
+		currency,
 		invalidateResolution,
 		invalidateResolutionForStoreSelector,
 		period,
