@@ -15,7 +15,7 @@ jest.mock( '@wordpress/date', () => ( {
 } ) );
 
 describe( 'getUserTimeZone', () => {
-	it( 'reuses the session timezone offset instead of allocating on every call', () => {
+	it( 'recomputes the offset on every call so DST transitions are reflected', () => {
 		jest.isolateModules( () => {
 			const { getUserTimeZone } = require( '..' );
 
@@ -23,7 +23,7 @@ describe( 'getUserTimeZone', () => {
 			expect( getUserTimeZone() ).toBe( '+02:00' );
 		} );
 
-		expect( mockMoment ).toHaveBeenCalledTimes( 1 );
-		expect( mockFormat ).toHaveBeenCalledTimes( 1 );
+		expect( mockMoment ).toHaveBeenCalledTimes( 2 );
+		expect( mockFormat ).toHaveBeenCalledTimes( 2 );
 	} );
 } );
