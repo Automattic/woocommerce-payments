@@ -18,6 +18,7 @@ import { useFeesData } from './use-fees-data';
 import { getFeesFields } from './fields';
 import { CustomDateFilterPopover } from './custom-date-filter-popover';
 import { useDateFilterChipInterceptor } from './use-date-filter-chip-interceptor';
+import './style.scss';
 
 interface FeesReportProps {
 	onReload?: () => void;

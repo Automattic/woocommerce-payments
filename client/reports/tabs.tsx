@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import type { ReportsTab, ReportsTabStatus } from './types';
-import { FeesReport } from './fees';
+import { LazyLoadedFeesReport, LoadingReportState } from './lazy-fees-report';
 
 interface ReportsTabPanelProps {
 	tab: ReportsTab;
@@ -79,19 +79,15 @@ export const ReportsTabPanel: React.FC< ReportsTabPanelProps > = ( {
 	}, [ status ] );
 
 	if ( tab === 'fees' ) {
-		return <FeesReport onReload={ onReload } />;
+		return <LazyLoadedFeesReport onReload={ onReload } />;
 	}
 
 	if ( status === 'loading' ) {
 		return (
-			<div
-				className="wcpay-reports-state wcpay-reports-state--loading"
-				role="status"
-			>
-				<h2 ref={ contentHeadingRef } tabIndex={ -1 }>
-					{ __( 'Loading report', 'woocommerce-payments' ) }
-				</h2>
-			</div>
+			<LoadingReportState
+				headingRef={ contentHeadingRef }
+				headingTabIndex={ -1 }
+			/>
 		);
 	}
 

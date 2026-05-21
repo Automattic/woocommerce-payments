@@ -53,22 +53,39 @@ describe( 'Reports tab states', () => {
 		);
 	} );
 
-	it( 'renders the Fees report when the Fees tab is selected (regardless of status)', () => {
+	it( 'renders an accessible loading status while the Fees report chunk loads', async () => {
 		render(
 			<ReportsTabPanel tab="fees" status="ready" onReload={ jest.fn() } />
 		);
 
-		expect( screen.getByText( 'Fees ledger table' ) ).toBeInTheDocument();
+		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
+			'Loading report'
+		);
+		expect(
+			await screen.findByText( 'Fees ledger table' )
+		).toBeInTheDocument();
 	} );
 
-	it( 'still routes to FeesReport when an error status is passed for the Fees tab', () => {
+	it( 'renders the Fees report when the Fees tab is selected (regardless of status)', async () => {
+		render(
+			<ReportsTabPanel tab="fees" status="ready" onReload={ jest.fn() } />
+		);
+
+		expect(
+			await screen.findByText( 'Fees ledger table' )
+		).toBeInTheDocument();
+	} );
+
+	it( 'still routes to FeesReport when an error status is passed for the Fees tab', async () => {
 		// FeesReport surfaces its own error UI internally; the outer panel
 		// must not override or duplicate it.
 		render(
 			<ReportsTabPanel tab="fees" status="error" onReload={ jest.fn() } />
 		);
 
-		expect( screen.getByText( 'Fees ledger table' ) ).toBeInTheDocument();
+		expect(
+			await screen.findByText( 'Fees ledger table' )
+		).toBeInTheDocument();
 		expect( screen.queryByRole( 'group' ) ).not.toBeInTheDocument();
 	} );
 
