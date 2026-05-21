@@ -216,7 +216,9 @@ export const getPaymentMethodsUrl = () => {
 export const formatStringValue = ( value ) =>
 	capitalize( value ).replace( /_/g, ' ' );
 
-export const getUserTimeZone = () => moment( new Date() ).format( 'Z' );
+const USER_TIMEZONE = moment( new Date() ).format( 'Z' );
+
+export const getUserTimeZone = () => USER_TIMEZONE;
 
 /**
  * Basic formatting function to convert local date string to UTC.
