@@ -176,12 +176,24 @@ const buildTypeElements = (
 
 export const useFeesData = ( view: View ): UseFeesDataResult => {
 	const feesQuery = useMemo( () => buildFeesQuery( view ), [ view ] );
+	// Summary aggregates (count, total, fees, sources, types) don't change
+	// with pagination or sort, so derive a stable summary query that omits
+	// those params. Without this, paging or re-sorting would invalidate
+	// the summary cache and trigger an unnecessary refetch.
+	const summaryQuery = useMemo( () => {
+		const next: FeesQuery = { ...feesQuery };
+		delete next.paged;
+		delete next.per_page;
+		delete next.orderby;
+		delete next.order;
+		return next;
+	}, [ feesQuery ] );
 	const { feesRows, feesError = {}, isLoading } = useReportsFees( feesQuery );
 	const {
 		feesSummary,
 		feesSummaryError = {},
 		isLoading: isSummaryLoading,
-	} = useReportsFeesSummary( feesQuery );
+	} = useReportsFeesSummary( summaryQuery );
 
 	const totalItems = feesSummary.count ?? 0;
 	const perPage = parseInt( feesQuery.per_page ?? '25', 10 );

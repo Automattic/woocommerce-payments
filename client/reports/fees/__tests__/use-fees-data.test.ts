@@ -381,4 +381,80 @@ describe( 'useFeesData', () => {
 			expect.objectContaining( { search: [ 'txn_abc' ] } )
 		);
 	} );
+
+	// The summary endpoint returns aggregate values (count, total, fees,
+	// sources, types) that do not change with pagination or sort. Sharing
+	// pagination/sort params with the rows query would invalidate the
+	// summary cache on every page/sort change for no reason.
+	it( 'strips pagination and sort params from the summary query', () => {
+		renderHook( () =>
+			useFeesData(
+				baseView( {
+					page: 3,
+					perPage: 50,
+					sort: { field: 'amount', direction: 'asc' },
+					search: 'txn_abc',
+				} )
+			)
+		);
+
+		const summaryQuery = mockUseReportsFeesSummary.mock.calls[ 0 ][ 0 ];
+		expect( summaryQuery.paged ).toBeUndefined();
+		expect( summaryQuery.per_page ).toBeUndefined();
+		expect( summaryQuery.orderby ).toBeUndefined();
+		expect( summaryQuery.order ).toBeUndefined();
+		// Filter / search params still need to flow through so the summary
+		// reflects the currently-applied filter set.
+		expect( summaryQuery.search ).toEqual( [ 'txn_abc' ] );
+	} );
+
+	it( 'keeps filter params on the summary query', () => {
+		renderHook( () =>
+			useFeesData(
+				baseView( {
+					filters: [
+						{
+							field: 'payment_method',
+							operator: 'is',
+							value: 'card',
+						},
+					],
+				} )
+			)
+		);
+
+		expect( mockUseReportsFeesSummary ).toHaveBeenLastCalledWith(
+			expect.objectContaining( { payment_method_type: 'card' } )
+		);
+	} );
+
+	it( 'keeps the summary query stable across pagination and sort changes', () => {
+		const { rerender } = renderHook(
+			( props: { view: View } ) => useFeesData( props.view ),
+			{
+				initialProps: {
+					view: baseView( {
+						page: 1,
+						sort: { field: 'date', direction: 'desc' },
+					} ),
+				},
+			}
+		);
+
+		const firstSummaryQuery =
+			mockUseReportsFeesSummary.mock.calls[ 0 ][ 0 ];
+
+		rerender( {
+			view: baseView( {
+				page: 5,
+				sort: { field: 'amount', direction: 'asc' },
+			} ),
+		} );
+
+		const lastSummaryQuery =
+			mockUseReportsFeesSummary.mock.calls[
+				mockUseReportsFeesSummary.mock.calls.length - 1
+			][ 0 ];
+		expect( lastSummaryQuery ).toEqual( firstSummaryQuery );
+	} );
 } );
