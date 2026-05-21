@@ -16,7 +16,7 @@ import {
 	formatReportsBalanceQuery,
 	getReportsBalanceSummary,
 } from '../resolvers';
-import balanceSummaryFixture from './balance-fixture';
+import balanceSummaryFixture from '../fixtures/balance-summary';
 
 const errorResponse = { code: 'error' };
 

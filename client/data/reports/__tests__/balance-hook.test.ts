@@ -11,7 +11,7 @@ import { useSelect } from '@wordpress/data';
  */
 import { useReportsBalanceSummary } from '../hooks';
 import { STORE_NAME } from '../../constants';
-import balanceSummaryFixture from './balance-fixture';
+import balanceSummaryFixture from '../fixtures/balance-summary';
 
 jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),

@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import balanceSummaryFixture from 'wcpay/data/reports/__tests__/balance-fixture';
+import balanceSummaryFixture from 'wcpay/data/reports/fixtures/balance-summary';
 import { BALANCE_ROWS, getVisibleBalanceRows, isAnchorRow } from '../rows';
 
 jest.mock( 'wcpay/utils', () => ( {

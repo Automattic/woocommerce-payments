@@ -61,7 +61,7 @@ jest.mock( 'wcpay/utils', () => ( {
 /**
  * Internal dependencies
  */
-import balanceSummaryFixture from 'wcpay/data/reports/__tests__/balance-fixture';
+import balanceSummaryFixture from 'wcpay/data/reports/fixtures/balance-summary';
 import { BalanceReport } from '../index';
 
 const period = {

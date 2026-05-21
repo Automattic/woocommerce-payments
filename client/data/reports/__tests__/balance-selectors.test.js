@@ -8,7 +8,7 @@ import {
 	getReportsBalanceSummaryError,
 } from '../selectors';
 import { getResourceId } from 'utils/data';
-import balanceSummaryFixture from './balance-fixture';
+import balanceSummaryFixture from '../fixtures/balance-summary';
 
 const query = {
 	dateStart: '2024-03-01T00:00:00',

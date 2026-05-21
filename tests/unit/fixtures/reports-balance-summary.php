@@ -9,7 +9,7 @@
  * Returns the canonical Balance summary contract fixture.
  *
  * This must mirror PR 218145's response contract. When the endpoint changes,
- * update this file and client/data/reports/__tests__/balance-fixture.ts together.
+ * update this file and client/data/reports/fixtures/balance-summary.ts together.
  *
  * @return array
  */
