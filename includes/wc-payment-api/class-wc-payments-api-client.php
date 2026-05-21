@@ -55,6 +55,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const REFUNDS_API                  = 'refunds';
 	const DEPOSITS_API                 = 'deposits';
 	const TRANSACTIONS_API             = 'transactions';
+	const REPORTING_API                = 'reporting';
 	const DISPUTES_API                 = 'disputes';
 	const FILES_API                    = 'files';
 	const ONBOARDING_API               = 'onboarding';
@@ -306,6 +307,28 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		);
 
 		return $this->request( $query, self::TRANSACTIONS_API . '/summary', self::GET );
+	}
+
+	/**
+	 * Return summary for the Balance report.
+	 *
+	 * @param string $date_start The report period start.
+	 * @param string $date_end   The report period end.
+	 * @param string $currency   The report currency.
+	 *
+	 * @return array The Balance report summary.
+	 * @throws API_Exception Exception thrown on request failure.
+	 */
+	public function get_reports_balance_summary( string $date_start, string $date_end, string $currency ): array {
+		return $this->request(
+			[
+				'date_start' => $date_start,
+				'date_end'   => $date_end,
+				'currency'   => strtolower( $currency ),
+			],
+			self::REPORTING_API . '/balance_summary',
+			self::GET
+		);
 	}
 
 	/**

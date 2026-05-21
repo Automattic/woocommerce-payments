@@ -735,6 +735,54 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
 
+	public function test_get_reports_balance_summary_sends_expected_query() {
+		$expected_response = [
+			'currency' => 'usd',
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $request ) {
+						$this->assertSame( 'GET', $request['method'] );
+
+						$url = str_replace( 'sites/%s', 'sites/test', $request['url'] );
+						$this->assertSame( '/wpcom/v2/sites/test/wcpay/reporting/balance_summary', wp_parse_url( $url, PHP_URL_PATH ) );
+
+						parse_str( wp_parse_url( $url, PHP_URL_QUERY ), $query );
+						$this->assertSame( '2024-03-01T00:00:00', $query['date_start'] );
+						$this->assertSame( '2024-03-31T23:59:59', $query['date_end'] );
+						$this->assertSame( 'usd', $query['currency'] );
+
+						return true;
+					}
+				),
+				null,
+				true,
+				false
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode( $expected_response ),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$this->assertSame(
+			$expected_response,
+			$this->payments_api_client->get_reports_balance_summary(
+				'2024-03-01T00:00:00',
+				'2024-03-31T23:59:59',
+				'USD'
+			)
+		);
+	}
+
 	public function test_get_woopay_eligibility_success() {
 		$this->set_http_mock_response(
 			200,
