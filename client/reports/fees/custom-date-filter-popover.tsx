@@ -20,6 +20,7 @@ import '../date-filter/style.scss';
 
 interface CustomDateFilterPopoverProps {
 	anchor: HTMLElement | null;
+	fallbackFocus?: HTMLElement | null;
 	id?: string;
 	initialValue: DateFilterValue | undefined;
 	onChange: ( next: DateFilterValue ) => void;
@@ -51,7 +52,7 @@ const getDefaultDateValue = (
 
 export const CustomDateFilterPopover: React.FC<
 	CustomDateFilterPopoverProps
-> = ( { anchor, id, initialValue, onChange, onClose } ) => {
+> = ( { anchor, fallbackFocus, id, initialValue, onChange, onClose } ) => {
 	const now = useMemo( () => new Date(), [] );
 	const [ operator, setOperator ] = useState< DateOperator >(
 		initialValue?.operator ?? 'between'
@@ -64,9 +65,11 @@ export const CustomDateFilterPopover: React.FC<
 		window.requestAnimationFrame( () => {
 			if ( anchor && document.contains( anchor ) ) {
 				anchor.focus();
+			} else if ( fallbackFocus && document.contains( fallbackFocus ) ) {
+				fallbackFocus.focus();
 			}
 		} );
-	}, [ anchor ] );
+	}, [ anchor, fallbackFocus ] );
 
 	const handleClose = useCallback( () => {
 		onClose();

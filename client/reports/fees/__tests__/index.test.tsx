@@ -4,13 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import {
-	act,
-	render,
-	screen,
-	fireEvent,
-	waitFor,
-} from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 const mockUseReportsFees = jest.fn();
@@ -19,7 +13,6 @@ const mockGetQuery = jest.fn( () => ( {} as Record< string, unknown > ) );
 const mockUpdateQueryString = jest.fn();
 const mockUpdateUserPreferences = jest.fn();
 const mockSpeak = jest.fn();
-const i18nTranslateFunction = '__';
 
 jest.mock( 'wcpay/data', () => ( {
 	useReportsFees: ( q: unknown ) => mockUseReportsFees( q ),
@@ -40,12 +33,6 @@ jest.mock( '@woocommerce/data', () => ( {
 
 jest.mock( '@wordpress/a11y', () => ( {
 	speak: ( message: string ) => mockSpeak( message ),
-} ) );
-
-jest.mock( '@wordpress/i18n', () => ( {
-	...jest.requireActual( '@wordpress/i18n' ),
-	[ i18nTranslateFunction ]: ( text: string ) =>
-		text === 'Date' ? 'Fecha' : text,
 } ) );
 
 jest.mock( 'multi-currency/interface/functions', () => ( {
@@ -163,7 +150,7 @@ describe( 'FeesReport (DataViews)', () => {
 	it( 'renders the Date filter chip', () => {
 		render( <FeesReport /> );
 		expect(
-			screen.getByRole( 'button', { name: /^fecha$/i } )
+			screen.getByRole( 'button', { name: /^date$/i } )
 		).toBeInTheDocument();
 	} );
 
@@ -171,7 +158,7 @@ describe( 'FeesReport (DataViews)', () => {
 		render( <FeesReport /> );
 
 		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^fecha$/i,
+			name: /^date$/i,
 		} );
 
 		expect( dateFilterChip ).toHaveAttribute( 'aria-haspopup', 'dialog' );
@@ -183,7 +170,7 @@ describe( 'FeesReport (DataViews)', () => {
 		render( <FeesReport /> );
 
 		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^fecha$/i,
+			name: /^date$/i,
 		} );
 
 		expect( dateFilterChip ).toHaveAttribute( 'aria-haspopup', 'dialog' );
@@ -212,15 +199,10 @@ describe( 'FeesReport (DataViews)', () => {
 		render( <FeesReport /> );
 
 		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^fecha$/i,
+			name: /^date$/i,
 		} );
 
-		// Open the popover so `aria-controls` is expected on the chip.
-		// Use fireEvent (not userEvent): the Date chip click is intercepted
-		// in the capture phase by FeesReport's onPointerDownCapture/
-		// onClickCapture, and userEvent.click does not faithfully replay
-		// those capture-phase events in JSDOM.
-		fireEvent.click( dateFilterChip );
+		await userEvent.click( dateFilterChip );
 		expect(
 			await screen.findByRole( 'dialog', {
 				name: 'Custom date filter',
@@ -247,13 +229,9 @@ describe( 'FeesReport (DataViews)', () => {
 		render( <FeesReport /> );
 
 		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^fecha$/i,
+			name: /^date$/i,
 		} );
-		// Use fireEvent (not userEvent): the Date chip click is intercepted
-		// in the capture phase by FeesReport's onPointerDownCapture/
-		// onClickCapture, and userEvent.click does not faithfully replay
-		// those capture-phase events in JSDOM.
-		fireEvent.click( dateFilterChip );
+		await userEvent.click( dateFilterChip );
 
 		expect(
 			await screen.findByRole( 'dialog', {
@@ -272,33 +250,37 @@ describe( 'FeesReport (DataViews)', () => {
 		);
 	} );
 
+	it( 'opens the custom date popover by chip position, not chip text', async () => {
+		render( <FeesReport /> );
+
+		const dateFilterChip = screen.getByRole( 'button', {
+			name: /^date$/i,
+		} );
+		dateFilterChip.textContent = 'Localized label with different grammar';
+
+		await userEvent.click( dateFilterChip );
+
+		expect(
+			await screen.findByRole( 'dialog', {
+				name: 'Custom date filter',
+			} )
+		).toBeInTheDocument();
+	} );
+
 	it( 'toggles the custom date popover closed from the Date filter chip', async () => {
 		render( <FeesReport /> );
 
 		const dateFilterChip = screen.getByRole( 'button', {
-			name: /^fecha$/i,
+			name: /^date$/i,
 		} );
-		// Use fireEvent (not userEvent) throughout this test: the Date chip
-		// is intercepted in the capture phase by FeesReport's
-		// onPointerDownCapture/onClickCapture/onKeyDownCapture, and
-		// userEvent does not faithfully replay capture-phase events in
-		// JSDOM. We also need to dispatch pointerdown and click separately
-		// to verify the ignoreNextDateFilterClickRef de-duplication.
-		fireEvent.pointerDown( dateFilterChip, { button: 0 } );
+		await userEvent.click( dateFilterChip );
 		expect(
 			await screen.findByRole( 'dialog', {
 				name: 'Custom date filter',
 			} )
 		).toBeInTheDocument();
 
-		fireEvent.click( dateFilterChip );
-		expect(
-			screen.getByRole( 'dialog', {
-				name: 'Custom date filter',
-			} )
-		).toBeInTheDocument();
-
-		fireEvent.pointerDown( dateFilterChip, { button: 0 } );
+		await userEvent.click( dateFilterChip );
 
 		await waitFor( () =>
 			expect(
@@ -307,13 +289,6 @@ describe( 'FeesReport (DataViews)', () => {
 				} )
 			).not.toBeInTheDocument()
 		);
-
-		fireEvent.click( dateFilterChip );
-		expect(
-			screen.queryByRole( 'dialog', {
-				name: 'Custom date filter',
-			} )
-		).not.toBeInTheDocument();
 	} );
 
 	it( 'does not expose the internal date-filter anchor text', () => {

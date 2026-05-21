@@ -93,32 +93,8 @@ const findDateFilter = ( filters: Filter[] = [] ): Filter | undefined =>
 
 const customDatePopoverId = 'wcpay-fees-date-filter-popover';
 
-// DataViews does not expose a structural per-field hook on its summary chips
-// (no `data-field-id`, no field-id-keyed `aria-label` — see
-// @wordpress/dataviews dataviews-filters/filter-summary). The chip's leading
-// text content is the field's `name`, which is our own `label`. Comparing
-// against `__('Date', ...)` is locale-robust because both sides resolve to
-// the same translated string. We normalize whitespace and case, and require
-// the label to be followed by a non-word character (or end-of-string) so we
-// don't accidentally pick up a chip whose name happens to start with the
-// literal label (e.g. "Date range"). We use `\W` instead of `\b` because
-// `\b` is ASCII-only in JS regex — in CJK locales the label (e.g. `日付`)
-// contains no `\w` characters, so `\b` would never match. `\W` works in both
-// cases: it accepts whitespace/punctuation after the label and still rejects
-// adjacent word characters.
-const dateFilterLabelPattern = ( (): RegExp => {
-	const raw = __( 'Date', 'woocommerce-payments' )
-		.trim()
-		.toLowerCase()
-		// Escape regex metacharacters that might appear in translated labels.
-		.replace( /[.*+?^${}()|[\]\\]/g, '\\$&' );
-	return new RegExp( `^${ raw }(?:\\W|$)` );
-} )();
-
-const isDateFilterAnchor = ( element: HTMLElement ): boolean => {
-	const text = element.textContent?.trim().toLowerCase() ?? '';
-	return dateFilterLabelPattern.test( text );
-};
+const dateFilterChipSelector = '.dataviews-filters__summary-chip';
+const filtersContainerSelector = '.dataviews-filters__container';
 
 const getResolvedDateFilter = ( view: View ): DateFilterValue | undefined =>
 	resolveFeesDateFilterValue( findDateFilter( view.filters )?.value );
@@ -130,12 +106,15 @@ const findDateFilterAnchor = (
 		return null;
 	}
 
-	const chips = Array.from(
-		container.querySelectorAll< HTMLElement >(
-			'.dataviews-filters__summary-chip'
-		)
+	// DataViews does not expose a field id or data attribute on summary chips.
+	// It does, however, sort primary filters before secondary filters. The Fees
+	// Date filter is the only primary filter, so the first visible summary chip
+	// is the Date chip without relying on translated text content.
+	return (
+		container
+			.querySelector< HTMLElement >( filtersContainerSelector )
+			?.querySelector< HTMLElement >( dateFilterChipSelector ) ?? null
 	);
-	return chips.find( ( chip ) => isDateFilterAnchor( chip ) ) ?? null;
 };
 
 const findDateFilterAnchorFromEvent = (
@@ -146,14 +125,12 @@ const findDateFilterAnchorFromEvent = (
 		return null;
 	}
 
-	const chip = target.closest< HTMLElement >(
-		'.dataviews-filters__summary-chip'
-	);
+	const chip = target.closest< HTMLElement >( dateFilterChipSelector );
 	if ( ! chip || ! container.contains( chip ) ) {
 		return null;
 	}
 
-	return isDateFilterAnchor( chip ) ? chip : null;
+	return chip === findDateFilterAnchor( container ) ? chip : null;
 };
 
 const replaceDateFilter = (
@@ -550,6 +527,7 @@ export const FeesReport = ( {
 						: 'wcpay-reports-fees__main'
 				}
 				ref={ setDataViewsContainer }
+				tabIndex={ -1 }
 				onPointerDownCapture={ handleDataViewsPointerDownCapture }
 				onClickCapture={ handleDataViewsClickCapture }
 				onKeyDownCapture={ handleDataViewsKeyDownCapture }
@@ -588,6 +566,7 @@ export const FeesReport = ( {
 				{ isCustomDatePopoverOpen && (
 					<CustomDateFilterPopover
 						anchor={ customDateAnchor }
+						fallbackFocus={ dataViewsContainer }
 						id={ customDatePopoverId }
 						initialValue={ customDateInitialValue }
 						onChange={ changeCustomDateFilter }
