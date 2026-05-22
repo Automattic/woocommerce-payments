@@ -192,9 +192,14 @@ const BalancePrintReport = ( {
 			/>
 			<div className="wcpay-reports-balance-print__business">
 				<p>{ __( 'WooPayments', 'woocommerce-payments' ) }</p>
-				<p>Automattic Inc.</p>
-				<p>60 29th Street #343</p>
-				<p>San Francisco, CA, 94110, US</p>
+				<p>{ __( 'Automattic Inc.', 'woocommerce-payments' ) }</p>
+				<p>{ __( '60 29th Street #343', 'woocommerce-payments' ) }</p>
+				<p>
+					{ __(
+						'San Francisco, CA, 94110, US',
+						'woocommerce-payments'
+					) }
+				</p>
 			</div>
 		</header>
 		<table className="wcpay-reports-balance-print__table">
@@ -274,7 +279,8 @@ export const BalanceReport = ( {
 				} )
 			);
 		} catch ( exportError ) {
-			void exportError;
+			// eslint-disable-next-line no-console
+			console.error( 'Balance CSV export failed:', exportError );
 			createNotice(
 				'error',
 				__(
@@ -354,7 +360,7 @@ export const BalanceReport = ( {
 					<Icon icon={ calendar } size={ 48 } />
 				</span>
 				<div className="wcpay-reports-state__copy">
-					<h2 id={ errorHeadingId } tabIndex={ -1 }>
+					<h2 id={ errorHeadingId }>
 						{ __( 'Balance unavailable', 'woocommerce-payments' ) }
 					</h2>
 					<p id={ errorDescriptionId }>

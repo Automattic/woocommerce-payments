@@ -48,14 +48,15 @@ describe( 'useReportsBalanceSummary', () => {
 		getReportsBalanceSummaryError.mockReset();
 		isResolving.mockReset();
 		mockUseSelect.mockImplementation( ( mapSelect ) =>
-			mapSelect( ( storeName: string ) => {
-				expect( storeName ).toBe( STORE_NAME );
-				return {
-					getReportsBalanceSummary,
-					getReportsBalanceSummaryError,
-					isResolving,
-				};
-			} )
+			mapSelect( ( storeName: string ) =>
+				storeName === STORE_NAME
+					? {
+							getReportsBalanceSummary,
+							getReportsBalanceSummaryError,
+							isResolving,
+					  }
+					: {}
+			)
 		);
 	} );
 

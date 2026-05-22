@@ -9,6 +9,7 @@ const mockCreateNotice = jest.fn();
 const mockSpeak = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
 const mockUseBalanceDateFilter = jest.fn();
+let consoleErrorSpy: jest.SpyInstance;
 
 jest.mock( '@wordpress/a11y', () => ( {
 	speak: ( message: string, politeness?: string ) =>
@@ -128,6 +129,9 @@ beforeEach( () => {
 	mockSpeak.mockReset();
 	mockDownloadCSVFile.mockReset();
 	mockUseReportsBalanceSummary.mockReset();
+	consoleErrorSpy = jest
+		.spyOn( console, 'error' )
+		.mockImplementation( () => undefined );
 	mockUseBalanceDateFilter.mockReturnValue( {
 		value: undefined,
 		period,
@@ -146,6 +150,7 @@ afterEach( () => {
 	document.documentElement.classList.remove(
 		'wcpay-reports-balance-print-context'
 	);
+	jest.restoreAllMocks();
 } );
 
 describe( 'BalanceReport', () => {
@@ -385,13 +390,21 @@ describe( 'BalanceReport', () => {
 		const chargesRow = screen.getByRole( 'row', {
 			name: /Total charges captured/,
 		} );
+		expect(
+			screen.getByRole( 'row', {
+				name: /Total charges captured 8 items/,
+			} )
+		).toBe( chargesRow );
 		expect( within( chargesRow ).getByText( '8' ) ).toHaveAttribute(
 			'aria-hidden',
 			'true'
 		);
-		expect( within( chargesRow ).getByText( '8 items' ) ).toHaveClass(
-			'screen-reader-text'
-		);
+		expect(
+			within( chargesRow ).queryByRole( 'generic', { name: '8' } )
+		).not.toBeInTheDocument();
+		expect(
+			within( chargesRow ).getByText( '8 items' )
+		).toBeInTheDocument();
 	} );
 
 	it( 'downloads a machine-readable CSV for the selected UTC range', async () => {
@@ -437,8 +450,9 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'surfaces a notice when CSV generation fails', async () => {
+		const error = new Error( 'download failed' );
 		mockDownloadCSVFile.mockImplementationOnce( () => {
-			throw new Error( 'download failed' );
+			throw error;
 		} );
 
 		render( <BalanceReport onReload={ jest.fn() } /> );
@@ -450,6 +464,10 @@ describe( 'BalanceReport', () => {
 		expect( mockCreateNotice ).toHaveBeenCalledWith(
 			'error',
 			expect.stringContaining( 'problem generating' )
+		);
+		expect( consoleErrorSpy ).toHaveBeenCalledWith(
+			'Balance CSV export failed:',
+			error
 		);
 	} );
 
@@ -554,6 +572,8 @@ describe( 'BalanceReport', () => {
 			'href',
 			expect.stringContaining( 'date_between%5B0%5D=2024-03-01' )
 		);
-		expect( chargesLink ).toHaveTextContent( 'Explore ->' );
+		expect(
+			within( chargesLink ).getByText( 'Explore' )
+		).toBeInTheDocument();
 	} );
 } );

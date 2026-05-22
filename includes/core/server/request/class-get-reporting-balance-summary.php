@@ -16,11 +16,11 @@ use WCPay\Core\Server\Request;
  */
 class Get_Reporting_Balance_Summary extends Request {
 	/**
-	 * Lowercase ISO-4217 currency code pattern.
+	 * ISO-4217 currency code pattern.
 	 *
 	 * @var string
 	 */
-	const CURRENCY_CODE_PATTERN = '/^[a-z]{3}$/';
+	const CURRENCY_CODE_PATTERN = '/^[a-z]{3}$/i';
 
 	/**
 	 * Required request parameters.
@@ -38,7 +38,7 @@ class Get_Reporting_Balance_Summary extends Request {
 	 *
 	 * @var string
 	 */
-	protected $hook = 'wcpay_get_reports_balance_summary_request';
+	protected $hook = 'wcpay_get_reporting_balance_summary_request';
 
 	/**
 	 * Gets the API URI.
@@ -111,7 +111,7 @@ class Get_Reporting_Balance_Summary extends Request {
 	}
 
 	/**
-	 * Validates a lowercase ISO-4217 currency code format.
+	 * Validates an ISO-4217 currency code format.
 	 *
 	 * @param mixed $currency Currency value.
 	 *
@@ -122,7 +122,7 @@ class Get_Reporting_Balance_Summary extends Request {
 	}
 
 	/**
-	 * Formats the response as a raw array.
+	 * Returns the raw server response without transformation.
 	 *
 	 * @param mixed $response The response from `WC_Payments_API_Client::request`.
 	 *

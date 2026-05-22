@@ -271,6 +271,13 @@ describe( 'useBalanceDateFilter', () => {
 } );
 
 describe( 'getPeriodForDateFilter', () => {
+	it( 'falls back to the last full calendar month when no value is provided', () => {
+		expect( getPeriodForDateFilter( undefined, now ) ).toEqual( {
+			start: '2026-04-01T00:00:00.000Z',
+			end: '2026-04-30T23:59:59.999Z',
+		} );
+	} );
+
 	it( 'maps a same-day Date filter to a closed UTC day', () => {
 		expect(
 			getPeriodForDateFilter(

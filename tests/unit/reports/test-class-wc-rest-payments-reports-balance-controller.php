@@ -25,6 +25,13 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 	 */
 	private $mock_api_client;
 
+	/**
+	 * Filter callback registered by a test and removed in tear down.
+	 *
+	 * @var callable|null
+	 */
+	private $create_request_filter;
+
 	public function set_up() {
 		parent::set_up();
 
@@ -39,6 +46,10 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 
 	public function tear_down() {
 		remove_all_filters( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME );
+		if ( null !== $this->create_request_filter ) {
+			remove_filter( 'wcpay_create_request', $this->create_request_filter );
+			$this->create_request_filter = null;
+		}
 
 		global $wp_rest_server;
 		$wp_rest_server = null;
@@ -75,16 +86,19 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$this->assertSame( 'string', $params['date_start']['type'] );
 		$this->assertSame( 'date-time', $params['date_start']['format'] );
 		$this->assertTrue( $params['date_start']['required'] );
-		$this->assertSame( 'sanitize_text_field', $params['date_start']['sanitize_callback'] );
+		$this->assertSame( '2024-03-01T00:00:00.000Z', $params['date_start']['sanitize_callback']( ' 2024-03-01T00:00:00.000Z ' ) );
 
 		$this->assertSame( 'string', $params['date_end']['type'] );
 		$this->assertSame( 'date-time', $params['date_end']['format'] );
 		$this->assertTrue( $params['date_end']['required'] );
-		$this->assertSame( 'sanitize_text_field', $params['date_end']['sanitize_callback'] );
+		$this->assertSame( '2024-03-31T23:59:59.999Z', $params['date_end']['sanitize_callback']( ' 2024-03-31T23:59:59.999Z ' ) );
 
 		$this->assertSame( 'string', $params['currency']['type'] );
 		$this->assertTrue( $params['currency']['required'] );
-		$this->assertSame( [ Get_Reporting_Balance_Summary::class, 'is_valid_currency_code' ], $params['currency']['validate_callback'] );
+		$this->assertSame( 'usd', $params['currency']['sanitize_callback']( ' USD ' ) );
+		$this->assertTrue( $params['currency']['validate_callback']( 'usd' ) );
+		$this->assertTrue( $params['currency']['validate_callback']( 'USD' ) );
+		$this->assertFalse( $params['currency']['validate_callback']( 'usd1' ) );
 	}
 
 	/**
@@ -127,13 +141,6 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 					'date_end'   => '2024-03-31T23:59:59',
 				],
 			],
-			'uppercase currency' => [
-				[
-					'date_start' => '2024-03-01T00:00:00',
-					'date_end'   => '2024-03-31T23:59:59',
-					'currency'   => 'USD',
-				],
-			],
 		];
 	}
 
@@ -150,7 +157,7 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 
 		$response = rest_get_server()->dispatch( $request );
 
-		$this->assertContains( $response->get_status(), [ 401, 403 ], true );
+		$this->assertContains( $response->get_status(), [ 401, 403 ] );
 	}
 
 	public function test_get_balance_summary_uses_typed_request_and_dispatches_verbatim_response() {
@@ -163,7 +170,7 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/reports/balance' );
 		$request->set_param( 'date_start', '2024-03-01T00:00:00.000Z' );
 		$request->set_param( 'date_end', '2024-03-31T23:59:59.999Z' );
-		$request->set_param( 'currency', 'usd' );
+		$request->set_param( 'currency', 'USD' );
 
 		$mock_request = $this->mock_wcpay_request( Get_Reporting_Balance_Summary::class, 1, null, $fixture );
 		$mock_request
@@ -199,7 +206,7 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$http_client   = $this->createMock( WC_Payments_Http::class );
 		$wcpay_request = new Get_Reporting_Balance_Summary( $api_client, $http_client );
 
-		$create_request_filter = function ( $existing_request, $class_name ) use ( $wcpay_request, &$create_request_filter ) {
+		$create_request_filter       = function ( $existing_request, $class_name ) use ( $wcpay_request, &$create_request_filter ) {
 			if ( Get_Reporting_Balance_Summary::class !== $class_name ) {
 				return $existing_request;
 			}
@@ -207,7 +214,8 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 			remove_filter( 'wcpay_create_request', $create_request_filter );
 			return $wcpay_request;
 		};
-		add_filter( 'wcpay_create_request', $create_request_filter, 10, 2 );
+		$this->create_request_filter = $create_request_filter;
+		add_filter( 'wcpay_create_request', $this->create_request_filter, 10, 2 );
 
 		$response = $this->controller->get_balance_summary( $request );
 

@@ -90,7 +90,9 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 				'description'       => __( 'Balance report currency.', 'woocommerce-payments' ),
 				'type'              => 'string',
 				'required'          => true,
-				'sanitize_callback' => 'sanitize_text_field',
+				'sanitize_callback' => static function ( $currency ) {
+					return strtolower( sanitize_text_field( $currency ) );
+				},
 				'validate_callback' => [ Get_Reporting_Balance_Summary::class, 'is_valid_currency_code' ],
 			],
 		];

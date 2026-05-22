@@ -43,7 +43,7 @@ class Get_Reporting_Balance_Summary_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'GET', $request->get_method() );
 		$this->assertSame( WC_Payments_API_Client::REPORTING_API . '/balance_summary', $request->get_api() );
-		$this->assertSame( 'wcpay_get_reports_balance_summary_request', $request->get_hook() );
+		$this->assertSame( 'wcpay_get_reporting_balance_summary_request', $request->get_hook() );
 	}
 
 	public function test_get_reporting_balance_summary_request_sets_query_params() {

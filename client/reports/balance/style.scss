@@ -86,16 +86,6 @@
 	&__explore {
 		width: 120px;
 		text-align: right;
-
-		a {
-			opacity: 0.72;
-			transition: opacity 120ms ease-in-out;
-
-			&:hover,
-			&:focus {
-				opacity: 1;
-			}
-		}
 	}
 
 	&__amount {
@@ -110,12 +100,6 @@
 		&--positive {
 			color: $gray-900;
 		}
-	}
-}
-
-@media ( prefers-reduced-motion: reduce ) {
-	.wcpay-reports-balance__explore a {
-		transition: none;
 	}
 }
 
