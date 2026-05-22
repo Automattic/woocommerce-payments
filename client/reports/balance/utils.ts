@@ -9,6 +9,7 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import type { ReportsBalanceSummary } from 'wcpay/data/reports/hooks';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import type { BalanceRow } from './rows';
 
@@ -17,6 +18,27 @@ export const printContextClass = 'wcpay-reports-balance-print-context';
 export const hasKeys = (
 	value: Record< string, unknown > | undefined
 ): boolean => Object.keys( value ?? {} ).length > 0;
+
+export const isBalanceSummaryValid = (
+	summary: ReportsBalanceSummary
+): boolean =>
+	Boolean( summary.currency && summary.period?.start && summary.period?.end );
+
+export const isBalanceSummaryMalformed = ( {
+	summary,
+	hasDateFilterValue,
+	isLoading,
+	hasStoreError,
+}: {
+	summary: ReportsBalanceSummary;
+	hasDateFilterValue: boolean;
+	isLoading: boolean;
+	hasStoreError: boolean;
+} ): boolean =>
+	hasDateFilterValue &&
+	! isLoading &&
+	! hasStoreError &&
+	! isBalanceSummaryValid( summary );
 
 export const hasBalanceActivity = (
 	visibleRows: BalanceRow[],

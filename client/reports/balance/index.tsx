@@ -21,7 +21,12 @@ import { useBalanceDateFilter } from './use-balance-date-filter';
 import { BalanceSummaryTable } from './summary-table';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
-import { getRowLabel, hasBalanceActivity, hasKeys } from './utils';
+import {
+	getRowLabel,
+	hasBalanceActivity,
+	hasKeys,
+	isBalanceSummaryMalformed,
+} from './utils';
 import WooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
 
@@ -152,14 +157,12 @@ export const BalanceReport = ( {
 		wcpaySettings.accountDefaultCurrency || ''
 	);
 	const hasStoreError = hasKeys( error );
-	const hasValidSummary = Boolean(
-		summary.currency && summary.period?.start && summary.period?.end
-	);
-	const hasMalformedSummary =
-		hasDateFilterValue &&
-		! isLoading &&
-		! hasStoreError &&
-		! hasValidSummary;
+	const hasMalformedSummary = isBalanceSummaryMalformed( {
+		summary,
+		hasDateFilterValue,
+		isLoading,
+		hasStoreError,
+	} );
 	const hasError = hasStoreError || hasMalformedSummary;
 	const containerRef = useRef< HTMLDivElement >( null );
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );

@@ -23,6 +23,7 @@ import {
 	getRowLabel,
 	hasBalanceActivity,
 	hasKeys,
+	isBalanceSummaryMalformed,
 	printContextClass,
 } from './utils';
 
@@ -94,14 +95,15 @@ export const BalanceActions = (): JSX.Element => {
 		hasDateFilterValue ? period : undefined,
 		wcpaySettings.accountDefaultCurrency || ''
 	);
-	const hasError = hasKeys( error );
+	const hasStoreError = hasKeys( error );
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
-	const hasValidSummary = Boolean(
-		summary.currency && summary.period?.start && summary.period?.end
-	);
-	const hasMalformedSummary =
-		hasDateFilterValue && ! isLoading && ! hasError && ! hasValidSummary;
+	const hasMalformedSummary = isBalanceSummaryMalformed( {
+		summary,
+		hasDateFilterValue,
+		isLoading,
+		hasStoreError,
+	} );
 	const displayPeriod = {
 		start: summary.period?.start ?? period.start,
 		end: summary.period?.end ?? period.end,
@@ -110,7 +112,7 @@ export const BalanceActions = (): JSX.Element => {
 	const actionsDisabled =
 		! hasDateFilterValue ||
 		isLoading ||
-		hasError ||
+		hasStoreError ||
 		hasMalformedSummary ||
 		! hasActivity;
 
