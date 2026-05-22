@@ -91,19 +91,8 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 				'type'              => 'string',
 				'required'          => true,
 				'sanitize_callback' => 'sanitize_text_field',
-				'validate_callback' => [ self::class, 'validate_currency_code' ],
+				'validate_callback' => [ Get_Reporting_Balance_Summary::class, 'is_valid_currency_code' ],
 			],
 		];
-	}
-
-	/**
-	 * Validate a lowercase ISO-4217 currency code.
-	 *
-	 * @param mixed $value Currency value.
-	 *
-	 * @return bool
-	 */
-	public static function validate_currency_code( $value ): bool {
-		return is_string( $value ) && 1 === preg_match( '/^[a-z]{3}$/', $value );
 	}
 }

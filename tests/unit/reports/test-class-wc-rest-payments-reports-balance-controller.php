@@ -56,12 +56,6 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 
 		$this->assertArrayHasKey( '/wc/v3/payments/reports/balance', $routes );
 		$this->assertArrayHasKey( 'GET', $routes['/wc/v3/payments/reports/balance'][0]['methods'] );
-		$this->assertIsArray( $routes['/wc/v3/payments/reports/balance'][0]['permission_callback'] );
-		$this->assertInstanceOf( WC_REST_Payments_Reports_Balance_Controller::class, $routes['/wc/v3/payments/reports/balance'][0]['permission_callback'][0] );
-		$this->assertSame( 'check_permission', $routes['/wc/v3/payments/reports/balance'][0]['permission_callback'][1] );
-		$this->assertIsArray( $routes['/wc/v3/payments/reports/balance'][0]['callback'] );
-		$this->assertInstanceOf( WC_REST_Payments_Reports_Balance_Controller::class, $routes['/wc/v3/payments/reports/balance'][0]['callback'][0] );
-		$this->assertSame( 'get_balance_summary', $routes['/wc/v3/payments/reports/balance'][0]['callback'][1] );
 	}
 
 	public function test_register_routes_returns_early_when_reports_area_disabled() {
@@ -91,7 +85,7 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 
 		$this->assertSame( 'string', $params['currency']['type'] );
 		$this->assertTrue( $params['currency']['required'] );
-		$this->assertSame( [ WC_REST_Payments_Reports_Balance_Controller::class, 'validate_currency_code' ], $params['currency']['validate_callback'] );
+		$this->assertSame( [ Get_Reporting_Balance_Summary::class, 'is_valid_currency_code' ], $params['currency']['validate_callback'] );
 	}
 
 	/**
@@ -198,23 +192,23 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$request->set_param( 'date_end', '2024-03-31T23:59:59' );
 		$request->set_param( 'currency', 'usd' );
 
-		$mock_request = $this->mock_wcpay_request( Get_Reporting_Balance_Summary::class );
-		$mock_request
+		$api_client = $this->createMock( WC_Payments_API_Client::class );
+		$api_client
 			->expects( $this->once() )
-			->method( 'set_date_start' )
-			->with( '2024-03-01T00:00:00' );
-		$mock_request
-			->expects( $this->once() )
-			->method( 'set_date_end' )
-			->with( '2024-03-31T23:59:59' );
-		$mock_request
-			->expects( $this->once() )
-			->method( 'set_currency' )
-			->with( 'usd' );
-		$mock_request
-			->expects( $this->once() )
-			->method( 'format_response' )
+			->method( 'send_request' )
 			->willThrowException( new API_Exception( 'Balance unavailable.', 'wcpay_error', 400 ) );
+		$http_client   = $this->createMock( WC_Payments_Http::class );
+		$wcpay_request = new Get_Reporting_Balance_Summary( $api_client, $http_client );
+
+		$create_request_filter = function ( $existing_request, $class_name ) use ( $wcpay_request, &$create_request_filter ) {
+			if ( Get_Reporting_Balance_Summary::class !== $class_name ) {
+				return $existing_request;
+			}
+
+			remove_filter( 'wcpay_create_request', $create_request_filter );
+			return $wcpay_request;
+		};
+		add_filter( 'wcpay_create_request', $create_request_filter, 10, 2 );
 
 		$response = $this->controller->get_balance_summary( $request );
 

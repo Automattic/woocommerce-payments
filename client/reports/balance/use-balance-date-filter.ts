@@ -24,6 +24,7 @@ const reportsPath = '/payments/reports';
 interface UseBalanceDateFilterResult {
 	value: DateFilterValue | undefined;
 	period: ReportsPeriodRange;
+	isDateFilterActive: boolean;
 	setValue: ( next: DateFilterValue | undefined ) => void;
 }
 
@@ -218,6 +219,7 @@ export const useBalanceDateFilter = (
 		? localValue.value
 		: readUrlValue() ?? getLastFullCalendarMonthDateFilter( stableNow );
 	const period = getPeriodForDateFilter( value, stableNow );
+	const isDateFilterActive = value !== undefined;
 
 	const setValue = useCallback(
 		( next: DateFilterValue | undefined ) => {
@@ -235,6 +237,7 @@ export const useBalanceDateFilter = (
 	return {
 		value,
 		period,
+		isDateFilterActive,
 		setValue,
 	};
 };

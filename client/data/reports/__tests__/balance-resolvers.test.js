@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
+import { controls } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -96,6 +97,13 @@ describe( 'getReportsBalanceSummary resolver', () => {
 			}
 		);
 		expect( generator.throw( errorResponse ).value ).toEqual(
+			controls.dispatch(
+				'core/notices',
+				'createErrorNotice',
+				expect.any( String )
+			)
+		);
+		expect( generator.next().value ).toEqual(
 			updateErrorForReportsBalanceSummary( query, errorResponse )
 		);
 		expect( generator.next().done ).toStrictEqual( true );

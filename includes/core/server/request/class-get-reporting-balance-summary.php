@@ -16,6 +16,13 @@ use WCPay\Core\Server\Request;
  */
 class Get_Reporting_Balance_Summary extends Request {
 	/**
+	 * Lowercase ISO-4217 currency code pattern.
+	 *
+	 * @var string
+	 */
+	const CURRENCY_CODE_PATTERN = '/^[a-z]{3}$/';
+
+	/**
 	 * Required request parameters.
 	 *
 	 * @var string[]
@@ -87,7 +94,7 @@ class Get_Reporting_Balance_Summary extends Request {
 	 */
 	public function set_currency( string $currency ) {
 		$currency = strtolower( $currency );
-		if ( 1 !== preg_match( '/^[a-z]{3}$/', $currency ) ) {
+		if ( ! self::is_valid_currency_code( $currency ) ) {
 			throw new Invalid_Request_Parameter_Exception(
 				esc_html(
 					sprintf(
@@ -104,6 +111,17 @@ class Get_Reporting_Balance_Summary extends Request {
 	}
 
 	/**
+	 * Validates a lowercase ISO-4217 currency code format.
+	 *
+	 * @param mixed $currency Currency value.
+	 *
+	 * @return bool
+	 */
+	public static function is_valid_currency_code( $currency ): bool {
+		return is_string( $currency ) && 1 === preg_match( self::CURRENCY_CODE_PATTERN, $currency );
+	}
+
+	/**
 	 * Formats the response as a raw array.
 	 *
 	 * @param mixed $response The response from `WC_Payments_API_Client::request`.
@@ -112,30 +130,5 @@ class Get_Reporting_Balance_Summary extends Request {
 	 */
 	public function format_response( $response ) {
 		return $response;
-	}
-
-	/**
-	 * Validates a REST date-time value.
-	 *
-	 * @param string $date_time Date-time value.
-	 *
-	 * @return void
-	 * @throws Invalid_Request_Parameter_Exception When the date-time value is invalid.
-	 */
-	private function validate_rest_date_time( string $date_time ) {
-		if ( false !== rest_parse_date( $date_time ) ) {
-			return;
-		}
-
-		throw new Invalid_Request_Parameter_Exception(
-			esc_html(
-				sprintf(
-					// Translators: %s is a date-time string.
-					__( '%s is not a valid date-time value.', 'woocommerce-payments' ),
-					$date_time
-				)
-			),
-			'wcpay_core_invalid_request_parameter_invalid_date_time'
-		);
 	}
 }

@@ -139,7 +139,7 @@ export const BALANCE_ROWS: BalanceRow[] = [
 	},
 	{
 		key: 'dispute_fees',
-		label: __( 'Disputes fees', 'woocommerce-payments' ),
+		label: __( 'Dispute fees', 'woocommerce-payments' ),
 		indent: true,
 		getAmount: getAmount( 'dispute_fees' ),
 	},

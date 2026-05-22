@@ -36,6 +36,9 @@ const period = {
 const renderBalanceHook = () =>
 	renderHook( () => useReportsBalanceSummary( period ) );
 
+const renderSkippedBalanceHook = () =>
+	renderHook( () => useReportsBalanceSummary( undefined ) );
+
 describe( 'useReportsBalanceSummary', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
@@ -84,6 +87,21 @@ describe( 'useReportsBalanceSummary', () => {
 		} );
 	} );
 
+	it( 'returns Balance summary errors from the store', () => {
+		const error = { code: 'rest_failure' };
+		getReportsBalanceSummary.mockReturnValue( {} );
+		getReportsBalanceSummaryError.mockReturnValue( error );
+		isResolving.mockReturnValue( false );
+
+		const { result } = renderBalanceHook();
+
+		expect( result.current ).toEqual( {
+			summary: {},
+			error,
+			isLoading: false,
+		} );
+	} );
+
 	it( 'uses the account default currency in the resolver query', () => {
 		getReportsBalanceSummary.mockReturnValue( balanceSummaryFixture );
 		getReportsBalanceSummaryError.mockReturnValue( {} );
@@ -106,5 +124,18 @@ describe( 'useReportsBalanceSummary', () => {
 			'getReportsBalanceSummary',
 			[ expectedQuery ]
 		);
+	} );
+
+	it( 'skips Balance summary resolution when no period is active', () => {
+		const { result } = renderSkippedBalanceHook();
+
+		expect( result.current ).toEqual( {
+			summary: {},
+			error: {},
+			isLoading: false,
+		} );
+		expect( getReportsBalanceSummary ).not.toHaveBeenCalled();
+		expect( getReportsBalanceSummaryError ).not.toHaveBeenCalled();
+		expect( isResolving ).not.toHaveBeenCalled();
 	} );
 } );

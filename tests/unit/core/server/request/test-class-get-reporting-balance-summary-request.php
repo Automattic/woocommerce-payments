@@ -71,11 +71,23 @@ class Get_Reporting_Balance_Summary_Test extends WCPAY_UnitTestCase {
 		$request->set_currency( 'usd1' );
 	}
 
-	public function test_get_reporting_balance_summary_request_rejects_invalid_dates() {
+	/**
+	 * @dataProvider invalid_date_setter_provider
+	 *
+	 * @param string $setter Setter method.
+	 */
+	public function test_get_reporting_balance_summary_request_rejects_invalid_dates( string $setter ) {
 		$request = new Get_Reporting_Balance_Summary( $this->mock_api_client, $this->mock_wc_payments_http_client );
 
 		$this->expectException( Invalid_Request_Parameter_Exception::class );
 
-		$request->set_date_start( 'March 1, 2024' );
+		$request->{$setter}( 'March 1, 2024' );
+	}
+
+	public function invalid_date_setter_provider(): array {
+		return [
+			'date_start' => [ 'set_date_start' ],
+			'date_end'   => [ 'set_date_end' ],
+		];
 	}
 }

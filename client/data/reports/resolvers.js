@@ -166,6 +166,14 @@ export function* getReportsBalanceSummary( query ) {
 		const summary = yield apiFetch( { path } );
 		yield updateReportsBalanceSummary( query, summary );
 	} catch ( e ) {
+		yield controls.dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving balance report summary.',
+				'woocommerce-payments'
+			)
+		);
 		yield updateErrorForReportsBalanceSummary( query, e );
 	}
 }

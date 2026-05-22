@@ -107,6 +107,14 @@ interface ReportsBalanceSummaryResult {
 	isLoading: boolean;
 }
 
+const emptyReportsBalanceSummary: ReportsBalanceSummary = {};
+const emptyReportsBalanceSummaryError: Record< string, unknown > = {};
+const skippedReportsBalanceSummaryResult: ReportsBalanceSummaryResult = {
+	summary: emptyReportsBalanceSummary,
+	error: emptyReportsBalanceSummaryError,
+	isLoading: false,
+};
+
 interface ReportsFeesQuery extends Query {
 	payment_method_type?: string;
 	type?: string;
@@ -186,14 +194,17 @@ export const useReportsFees = ( {
 		]
 	);
 
-export const useReportsBalanceSummary = ( {
-	start,
-	end,
-}: ReportsPeriodRange ): ReportsBalanceSummaryResult => {
+export const useReportsBalanceSummary = (
+	period?: ReportsPeriodRange
+): ReportsBalanceSummaryResult => {
 	const currency = wcpaySettings.accountDefaultCurrency.toLowerCase();
 
 	return useSelect(
 		( select ) => {
+			if ( ! period ) {
+				return skippedReportsBalanceSummaryResult;
+			}
+
 			const {
 				getReportsBalanceSummary,
 				getReportsBalanceSummaryError,
@@ -201,8 +212,8 @@ export const useReportsBalanceSummary = ( {
 			} = select( STORE_NAME );
 
 			const query = {
-				dateStart: start,
-				dateEnd: end,
+				dateStart: period.start,
+				dateEnd: period.end,
 				currency,
 			};
 
@@ -212,7 +223,7 @@ export const useReportsBalanceSummary = ( {
 				isLoading: isResolving( 'getReportsBalanceSummary', [ query ] ),
 			};
 		},
-		[ start, end, currency ]
+		[ period?.start, period?.end, currency ]
 	);
 };
 

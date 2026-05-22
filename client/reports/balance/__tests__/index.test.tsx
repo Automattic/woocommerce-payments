@@ -127,9 +127,11 @@ beforeEach( () => {
 	mockCreateNotice.mockReset();
 	mockSpeak.mockReset();
 	mockDownloadCSVFile.mockReset();
+	mockUseReportsBalanceSummary.mockReset();
 	mockUseBalanceDateFilter.mockReturnValue( {
 		value: undefined,
 		period,
+		isDateFilterActive: true,
 		setValue: jest.fn(),
 	} );
 	mockUseReportsBalanceSummary.mockReturnValue( {
@@ -151,6 +153,27 @@ describe( 'BalanceReport', () => {
 		render( <BalanceReport onReload={ jest.fn() } /> );
 
 		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith( period );
+	} );
+
+	it( 'keeps focus on the Date filter when a refresh transitions to an error', () => {
+		mockUseReportsBalanceSummary
+			.mockReturnValueOnce( {
+				summary: balanceSummaryFixture,
+				error: {},
+				isLoading: false,
+			} )
+			.mockReturnValueOnce( {
+				summary: {},
+				error: { code: 'server_error' },
+				isLoading: false,
+			} );
+
+		const { rerender } = render( <BalanceReport onReload={ jest.fn() } /> );
+		screen.getByRole( 'button', { name: 'Date' } ).focus();
+
+		rerender( <BalanceReport onReload={ jest.fn() } /> );
+
+		expect( screen.getByRole( 'button', { name: 'Date' } ) ).toHaveFocus();
 	} );
 
 	it( 'renders the loading state with disabled export and print actions', () => {
@@ -282,6 +305,33 @@ describe( 'BalanceReport', () => {
 		).toBeDisabled();
 	} );
 
+	it( 'renders the empty state without requesting data when the Date filter is inactive', () => {
+		mockUseBalanceDateFilter.mockReturnValue( {
+			value: undefined,
+			period,
+			isDateFilterActive: false,
+			setValue: jest.fn(),
+		} );
+
+		render( <BalanceReport onReload={ jest.fn() } /> );
+
+		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith(
+			undefined
+		);
+		expect(
+			screen.getByRole( 'heading', { name: 'No balance activity' } )
+		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'table', { name: 'Balance summary' } )
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Export' } )
+		).toBeDisabled();
+		expect(
+			screen.getByRole( 'button', { name: 'Print' } )
+		).toBeDisabled();
+	} );
+
 	it( 'renders the canonical Balance summary rows', () => {
 		render( <BalanceReport onReload={ jest.fn() } /> );
 
@@ -300,7 +350,7 @@ describe( 'BalanceReport', () => {
 			'Charge fees',
 			'Payout fees',
 			'Reader fees',
-			'Disputes fees',
+			'Dispute fees',
 			'Fee refunds',
 			'Refunds',
 			'Refund failures',
@@ -331,6 +381,20 @@ describe( 'BalanceReport', () => {
 					element.classList.contains( 'wcpay-reports-balance__count' )
 				)
 		).toBeInTheDocument();
+		expect(
+			screen
+				.getAllByText( '8' )
+				.find( ( element ) =>
+					element.classList.contains( 'wcpay-reports-balance__count' )
+				)
+		).toHaveAttribute( 'aria-hidden', 'true' );
+		expect(
+			within(
+				screen.getByRole( 'row', {
+					name: /Total charges captured/,
+				} )
+			).getByText( '8 items' )
+		).toHaveClass( 'screen-reader-text' );
 	} );
 
 	it( 'downloads a machine-readable CSV for the selected UTC range', async () => {
@@ -364,6 +428,13 @@ describe( 'BalanceReport', () => {
 		);
 		expect( csv ).toContain(
 			'total_charges_captured,"Total charges captured",162672,8,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain( 'fees,Fees,-6064,,usd,2026-05-01,2026-05-14' );
+		expect( csv ).toContain(
+			'refunds,Refunds,-21500,3,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'ending_balance,"Ending balance - formatted 2026-05-14 UTC",0,,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).not.toContain( 'This Balance report summarizes' );
 	} );
@@ -415,12 +486,11 @@ describe( 'BalanceReport', () => {
 		expect(
 			printReport.querySelector( 'img[alt="WooPayments"]' )
 		).toBeInTheDocument();
-		expect( printReport ).toHaveTextContent( 'WooPayments' );
-		expect( printReport ).toHaveTextContent( 'Automattic Inc.' );
-		expect( printReport ).toHaveTextContent( '60 29th Street #343' );
-		expect( printReport ).toHaveTextContent(
-			'San Francisco, CA, 94110, US'
-		);
+		expect(
+			printReport.querySelector(
+				'.wcpay-reports-balance-print__business'
+			)
+		).toBeInTheDocument();
 		expect( printReport ).not.toHaveTextContent(
 			'This Balance report summarizes WooPayments balance activity for the selected UTC date range.'
 		);
@@ -476,7 +546,7 @@ describe( 'BalanceReport', () => {
 			name: /Total charges captured/,
 		} );
 		const chargesLink = within( chargesRow ).getByRole( 'link', {
-			name: 'Explore ->',
+			name: 'Explore Total charges captured',
 		} );
 
 		expect( chargesLink ).toHaveAttribute(
@@ -487,5 +557,6 @@ describe( 'BalanceReport', () => {
 			'href',
 			expect.stringContaining( 'date_between%5B0%5D=2024-03-01' )
 		);
+		expect( chargesLink ).toHaveTextContent( 'Explore ->' );
 	} );
 } );

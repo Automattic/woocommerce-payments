@@ -810,6 +810,31 @@ abstract class Request {
 	}
 
 	/**
+	 * Validates a REST API date-time value.
+	 *
+	 * @param string $date_time Date-time value.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception When the date-time value is invalid.
+	 */
+	public function validate_rest_date_time( string $date_time ) {
+		if ( false !== rest_parse_date( $date_time ) ) {
+			return;
+		}
+
+		throw new Invalid_Request_Parameter_Exception(
+			esc_html(
+				sprintf(
+				// Translators: %s is a date-time string.
+					__( '%s is not a valid date-time value.', 'woocommerce-payments' ),
+					$date_time
+				)
+			),
+			'wcpay_core_invalid_request_parameter_invalid_date_time'
+		);
+	}
+
+	/**
 	 * Validate a redirect URL in the allowed_redirect_hosts filter.
 	 *
 	 * @param  string $redirect_url The provided redirect URL.

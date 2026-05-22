@@ -31,6 +31,7 @@ describe( 'useBalanceDateFilter', () => {
 			operator: 'between',
 			value: [ '2026-04-01', '2026-04-30' ],
 		} );
+		expect( result.current.isDateFilterActive ).toBe( true );
 		expect( result.current.period ).toEqual( {
 			start: '2026-04-01T00:00:00.000Z',
 			end: '2026-04-30T23:59:59.999Z',
@@ -108,6 +109,25 @@ describe( 'useBalanceDateFilter', () => {
 		);
 	} );
 
+	it( 'marks the Date filter inactive when it is explicitly cleared', () => {
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		act( () => {
+			result.current.setValue( undefined );
+		} );
+
+		expect( result.current.value ).toBeUndefined();
+		expect( result.current.isDateFilterActive ).toBe( false );
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			{
+				date_between: undefined,
+				date_before: undefined,
+				date_after: undefined,
+			},
+			'/payments/reports'
+		);
+	} );
+
 	it( 'caps date_between before writing the report URL', () => {
 		const { result } = renderHook( () => useBalanceDateFilter( now ) );
 
@@ -147,6 +167,51 @@ describe( 'useBalanceDateFilter', () => {
 			'/payments/reports'
 		);
 	} );
+
+	it.each( [
+		[
+			'on',
+			{ operator: 'on', value: '2026-05-14' },
+			{
+				date_between: [ '2026-05-14', '2026-05-14' ],
+				date_before: undefined,
+				date_after: undefined,
+			},
+		],
+		[
+			'before',
+			{ operator: 'before', value: '2026-05-14' },
+			{
+				date_before: '2026-05-14',
+				date_between: undefined,
+				date_after: undefined,
+			},
+		],
+		[
+			'after',
+			{ operator: 'after', value: '2026-05-14' },
+			{
+				date_after: '2026-05-14',
+				date_between: undefined,
+				date_before: undefined,
+			},
+		],
+	] as const )(
+		'writes %s Date filters to the report URL',
+		( operator, value, expectedQuery ) => {
+			void operator;
+			const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+			act( () => {
+				result.current.setValue( value );
+			} );
+
+			expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+				expectedQuery,
+				'/payments/reports'
+			);
+		}
+	);
 
 	it( 'keeps a same-day between selection in between mode after writing the report URL', () => {
 		mockUpdateQueryString.mockImplementationOnce( ( args ) => {
