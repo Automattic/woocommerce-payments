@@ -13,10 +13,18 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { useReportExport } from 'wcpay/hooks/use-report-export';
+import { useReportsFeesSummary } from 'wcpay/data';
 import {
 	feesDownloadEndpoint,
 	getFeesCSVRequestURL,
 } from 'wcpay/data/reports/resolvers';
+
+/**
+ * Threshold above which an unfiltered export prompts the merchant for
+ * confirmation. Matches the Transactions list threshold — Fees rows are
+ * 1:1 with transactions, so the same row count is the right peer.
+ */
+const confirmThreshold = 10000;
 
 /**
  * Triggers a Fees CSV export for the current URL-synced filter state.
@@ -29,11 +37,42 @@ import {
 export const FeesExportButton: React.FC = () => {
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );
+	const { feesSummary } = useReportsFeesSummary(
+		getQuery() as Parameters< typeof useReportsFeesSummary >[ 0 ]
+	);
+	const totalRows = feesSummary?.count ?? 0;
 
 	const onClick = () => {
 		const userEmail = wcpaySettings.currentUserEmail;
 		const locale = wcSettings.locale.userLocale;
 		const query = getQuery() as Record< string, unknown >;
+
+		const isFiltered =
+			!! query.date_after ||
+			!! query.date_before ||
+			!! query.date_between ||
+			!! query.payment_method_type ||
+			!! query.type ||
+			!! query.order_id ||
+			!! query.deposit_id ||
+			!! query.search;
+
+		if (
+			! isFiltered &&
+			totalRows >= confirmThreshold &&
+			! window.confirm(
+				sprintf(
+					/* translators: %d: number of fees to be exported. */
+					__(
+						"You are about to export %d fees. If you'd like to reduce the size of your export, you can use one or more filters. Would you like to continue?",
+						'woocommerce-payments'
+					),
+					totalRows
+				)
+			)
+		) {
+			return;
+		}
 
 		const exportRequestURL = getFeesCSVRequestURL( {
 			userEmail,

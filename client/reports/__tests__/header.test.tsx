@@ -14,6 +14,8 @@ import { ReportsHeader } from '../header';
 
 const requestReportExport = jest.fn();
 const createNotice = jest.fn();
+const mockGetQuery = jest.fn();
+const mockUseReportsFeesSummary = jest.fn();
 
 jest.mock( 'wcpay/hooks/use-report-export', () => ( {
 	useReportExport: () => ( {
@@ -22,20 +24,16 @@ jest.mock( 'wcpay/hooks/use-report-export', () => ( {
 	} ),
 } ) );
 
+jest.mock( 'wcpay/data', () => ( {
+	useReportsFeesSummary: ( q: unknown ) => mockUseReportsFeesSummary( q ),
+} ) );
+
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: () => ( { createNotice } ),
 } ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {
-	getQuery: () => ( {
-		tab: 'fees',
-		payment_method_type: 'card',
-		// Plain local-time strings match how date filters land in `getQuery()`
-		// from the date-range picker. The forced America/New_York TZ in
-		// jest-global-setup makes the start/end-of-day → UTC math deterministic.
-		date_after: '2026-01-15 12:00:00',
-		date_before: '2026-01-15 12:00:00',
-	} ),
+	getQuery: () => mockGetQuery(),
 } ) );
 
 declare const global: {
@@ -43,9 +41,24 @@ declare const global: {
 };
 
 describe( 'ReportsHeader', () => {
+	const filteredQuery = {
+		tab: 'fees',
+		payment_method_type: 'card',
+		// Plain local-time strings match how date filters land in `getQuery()`
+		// from the date-range picker. The forced America/New_York TZ in
+		// jest-global-setup makes the start/end-of-day → UTC math deterministic.
+		date_after: '2026-01-15 12:00:00',
+		date_before: '2026-01-15 12:00:00',
+	};
+
 	beforeEach( () => {
 		requestReportExport.mockClear();
 		createNotice.mockClear();
+		mockGetQuery.mockReturnValue( filteredQuery );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 42 },
+			isLoading: false,
+		} );
 		global.wcpaySettings = {
 			...( global.wcpaySettings ?? {} ),
 			currentUserEmail: 'merchant@example.com',
@@ -112,5 +125,96 @@ describe( 'ReportsHeader', () => {
 			'success',
 			expect.stringContaining( 'merchant@example.com' )
 		);
+	} );
+
+	describe( 'large-export confirmation guard', () => {
+		// Match the threshold in `FeesExportButton`. Aligns with Transactions
+		// (which Fees data is 1:1 with) — see confirmThreshold in
+		// client/reports/fees-export-button.tsx.
+		const confirmThreshold = 10000;
+		const originalConfirm = window.confirm;
+		let confirmMock: jest.Mock;
+
+		beforeEach( () => {
+			confirmMock = jest.fn();
+			window.confirm = confirmMock;
+		} );
+
+		afterEach( () => {
+			window.confirm = originalConfirm;
+		} );
+
+		it( 'does not prompt for confirmation when total rows are under the threshold', async () => {
+			mockGetQuery.mockReturnValue( { tab: 'fees' } );
+			mockUseReportsFeesSummary.mockReturnValue( {
+				feesSummary: { count: confirmThreshold - 1 },
+				isLoading: false,
+			} );
+
+			render( <ReportsHeader activeTab="fees" /> );
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /export/i } )
+			);
+
+			expect( confirmMock ).not.toHaveBeenCalled();
+			expect( requestReportExport ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'does not prompt for confirmation when any filter is active', async () => {
+			mockGetQuery.mockReturnValue( {
+				tab: 'fees',
+				date_after: '2026-01-01 00:00:00',
+			} );
+			mockUseReportsFeesSummary.mockReturnValue( {
+				feesSummary: { count: confirmThreshold + 50000 },
+				isLoading: false,
+			} );
+
+			render( <ReportsHeader activeTab="fees" /> );
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /export/i } )
+			);
+
+			expect( confirmMock ).not.toHaveBeenCalled();
+			expect( requestReportExport ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'prompts and exports when the merchant confirms an unfiltered large export', async () => {
+			mockGetQuery.mockReturnValue( { tab: 'fees' } );
+			mockUseReportsFeesSummary.mockReturnValue( {
+				feesSummary: { count: 25000 },
+				isLoading: false,
+			} );
+			confirmMock.mockReturnValue( true );
+
+			render( <ReportsHeader activeTab="fees" /> );
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /export/i } )
+			);
+
+			expect( confirmMock ).toHaveBeenCalledTimes( 1 );
+			expect( confirmMock ).toHaveBeenCalledWith(
+				expect.stringContaining( '25000' )
+			);
+			expect( requestReportExport ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'prompts and aborts when the merchant cancels an unfiltered large export', async () => {
+			mockGetQuery.mockReturnValue( { tab: 'fees' } );
+			mockUseReportsFeesSummary.mockReturnValue( {
+				feesSummary: { count: 25000 },
+				isLoading: false,
+			} );
+			confirmMock.mockReturnValue( false );
+
+			render( <ReportsHeader activeTab="fees" /> );
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /export/i } )
+			);
+
+			expect( confirmMock ).toHaveBeenCalledTimes( 1 );
+			expect( requestReportExport ).not.toHaveBeenCalled();
+			expect( createNotice ).not.toHaveBeenCalled();
+		} );
 	} );
 } );
