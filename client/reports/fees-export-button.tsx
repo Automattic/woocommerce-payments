@@ -16,7 +16,7 @@ import { useReportExport } from 'wcpay/hooks/use-report-export';
 import {
 	feesDownloadEndpoint,
 	getFeesCSVRequestURL,
-} from 'wcpay/data/reports/download';
+} from 'wcpay/data/reports/resolvers';
 
 declare const wcpaySettings: { currentUserEmail: string };
 

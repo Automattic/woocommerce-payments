@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { feesDownloadEndpoint, getFeesCSVRequestURL } from '../download';
+import { feesDownloadEndpoint, getFeesCSVRequestURL } from '../resolvers';
 
 // Match the resolver's user_timezone helper so the test is deterministic.
 jest.mock( 'utils', () => ( {
