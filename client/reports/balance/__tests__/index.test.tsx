@@ -672,6 +672,23 @@ describe( 'BalanceReport', () => {
 		);
 		expect( csv ).toContain( 'fees,Fees,-6064,,usd,2026-05-01,2026-05-14' );
 		expect( csv ).toContain(
+			'charge_fees,"Charge fees",-5958,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'dispute_fees,"Dispute fees",-1500,,usd,2026-05-01,2026-05-14'
+		);
+		// `fee_refunds` is positive in the fixture — pins the sign convention
+		// for the one sub-row that diverges from the negative fee siblings.
+		expect( csv ).toContain(
+			'fee_refunds,"Fee refunds",1644,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'payout_fees,"Payout fees",-100,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'reader_fees,"Reader costs",-150,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
 			'refunds,Refunds,-21500,3,usd,2026-05-01,2026-05-14'
 		);
 		expect( csv ).toContain(
