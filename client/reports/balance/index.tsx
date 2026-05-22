@@ -220,13 +220,32 @@ export const BalanceReport = ( {
 		// click handler instead. The cached error persists alongside
 		// `isLoading=true` after invalidateResolution, but the loading
 		// skeleton still renders because `isLoading` wins in the content
-		// branch — so gate on `isLoading` alone here.
+		// branch — so gate on `isLoading` alone here. The ref is consumed
+		// only at the terminal state (success below or the error branch
+		// above) so we can also restore focus to the toolbar on
+		// Reload → success.
 		if ( reloadRequestedRef.current && isLoading ) {
 			loadingHeadingRef.current?.focus();
-			reloadRequestedRef.current = false;
+		}
+
+		// Each loading cycle is its own announcement context. Resetting the
+		// de-dupe ref on the loading edge keeps duplicate-suppression within
+		// a single cycle while letting subsequent successful loads (date
+		// filter change, Reload from error) announce again.
+		if ( isLoading && ! previousLoadingRef.current ) {
+			lastSpokenRef.current = null;
 		}
 
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+			if ( reloadRequestedRef.current ) {
+				toolbarRef.current
+					?.querySelector< HTMLButtonElement >(
+						'.wcpay-date-filter__chip-trigger'
+					)
+					?.focus();
+				reloadRequestedRef.current = false;
+			}
+
 			const message = __(
 				'Balance report loaded.',
 				'woocommerce-payments'
@@ -243,6 +262,13 @@ export const BalanceReport = ( {
 				speak( message );
 			}, 500 );
 		}
+
+		// Consume the ref on the error terminal too, so a subsequent
+		// non-Reload error doesn't inherit the previous click's intent.
+		if ( hasError && ! previousErrorRef.current ) {
+			reloadRequestedRef.current = false;
+		}
+
 		previousLoadingRef.current = isLoading;
 		previousErrorRef.current = hasError;
 	}, [ hasError, isLoading ] );
