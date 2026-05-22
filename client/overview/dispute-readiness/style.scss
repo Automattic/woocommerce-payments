@@ -49,12 +49,21 @@
 			background: transparent;
 		}
 
-		&.level-1 .gridicons-notice-outline {
-			fill: #f0b849;
-		}
+		&[data-status='incomplete'] .woocommerce-task__icon {
+			position: relative;
+			border: 2px solid #f0b849;
 
-		.components-popover {
-			display: none;
+			&::after {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				color: #f0b849;
+				font-size: 20px;
+				font-weight: 600;
+				line-height: 1;
+				content: '!';
+				transform: translate( -50%, -50% );
+			}
 		}
 
 		.woocommerce-task-list__item-title {

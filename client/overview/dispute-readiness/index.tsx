@@ -197,12 +197,13 @@ const DisputeReadinessCard = () => {
 								<TaskItem
 									key={ signal.id }
 									data-key={ `dispute-readiness-${ signal.id }` }
+									data-status={ signal.status }
 									title={ signal.label }
 									completed={ isComplete }
 									content={ signal.description || '' }
 									expanded
 									showActionButton={ hasAction }
-									level={ isComplete ? 3 : 1 }
+									level={ 3 }
 									action={ ( event ) =>
 										handleSignalActionClick( event, signal )
 									}
