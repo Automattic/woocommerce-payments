@@ -431,6 +431,24 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	public function test_get_export_url_forwards_empty_string_when_export_id_missing() {
+		// The route regex (`(?P<export_id>[\w-]+)`) rejects empty IDs at the
+		// router layer today, but if that pattern ever loosens we want the
+		// method-level behavior pinned: missing param coerces to '' and the
+		// backend, not the controller, is responsible for the rejection.
+		$request = new WP_REST_Request( 'GET' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_transactions_export_url' )
+			->with( '' )
+			->willReturn( [ 'status' => 'pending' ] );
+
+		$response = $this->controller->get_export_url( $request );
+
+		$this->assertSame( [ 'status' => 'pending' ], $response->get_data() );
+	}
+
 	public function test_get_fees_export_returns_wp_error_when_api_throws() {
 		$request = new WP_REST_Request( 'POST' );
 
