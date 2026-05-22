@@ -6,14 +6,12 @@
 import { BALANCE_ROWS, getVisibleBalanceRows } from '../rows';
 
 describe( 'Balance report rows', () => {
-	it( 'defines the Balance rows in endpoint contract order', () => {
+	it( 'defines the Balance rows in display order', () => {
 		expect( BALANCE_ROWS.map( ( row ) => row.key ) ).toEqual( [
 			'starting_balance',
 			'total_charges_captured',
 			'fees',
 			'charge_fees',
-			'payout_fees',
-			'reader_fees',
 			'dispute_fees',
 			'fee_refunds',
 			'refunds',
@@ -21,6 +19,8 @@ describe( 'Balance report rows', () => {
 			'disputes',
 			'financing_payout',
 			'financing_paydown',
+			'payout_fees',
+			'reader_fees',
 			'network_costs',
 			'other_adjustments',
 			'net_balance_change_in_the_period',

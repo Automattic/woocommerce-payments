@@ -42,7 +42,7 @@ export type BalancePeriod = ReportsPeriodRange;
  * `0` — top-level totals (Starting balance, Total charges captured, Net balance
  * change, Ending balance).
  * `1` — group rows (Fees, Refunds, Disputes, Payouts).
- * `2` — sub-rows nested inside a group (Charge fees, Payout fees, etc.).
+ * `2` — sub-rows nested inside a group (Charge fees, Dispute fees, etc.).
  */
 export type BalanceRowDepth = 0 | 1 | 2;
 
@@ -110,18 +110,6 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		getAmount: getAmount( 'charge_fees' ),
 	},
 	{
-		key: 'payout_fees',
-		label: __( 'Payout fees', 'woocommerce-payments' ),
-		depth: 2,
-		getAmount: getAmount( 'payout_fees' ),
-	},
-	{
-		key: 'reader_fees',
-		label: __( 'Reader fees', 'woocommerce-payments' ),
-		depth: 2,
-		getAmount: getAmount( 'reader_fees' ),
-	},
-	{
 		key: 'dispute_fees',
 		label: __( 'Dispute fees', 'woocommerce-payments' ),
 		depth: 2,
@@ -167,6 +155,18 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		depth: 1,
 		getAmount: getAmount( 'financing_paydown' ),
 		getCount: getCount( 'financing_paydown' ),
+	},
+	{
+		key: 'payout_fees',
+		label: __( 'Payout fees', 'woocommerce-payments' ),
+		depth: 1,
+		getAmount: getAmount( 'payout_fees' ),
+	},
+	{
+		key: 'reader_fees',
+		label: __( 'Reader costs', 'woocommerce-payments' ),
+		depth: 1,
+		getAmount: getAmount( 'reader_fees' ),
 	},
 	{
 		key: 'network_costs',

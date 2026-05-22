@@ -432,7 +432,7 @@ describe( 'BalanceReport', () => {
 			'Fees',
 			'Charge fees',
 			'Payout fees',
-			'Reader fees',
+			'Reader costs',
 			'Dispute fees',
 			'Fee refunds',
 			'Refunds',

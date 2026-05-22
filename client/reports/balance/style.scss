@@ -95,7 +95,7 @@
 	// Refunds / Disputes / Payouts group-row exception: the four group rows
 	// keep label semibold, only the sub-rows step down to regular.
 
-	// Depth 2 — sub-rows (Charge fees / Payout fees / Disputes fees).
+	// Depth 2 — sub-rows (Charge fees / Dispute fees / Fee refunds).
 	&__row--depth-2 {
 		.wcpay-reports-balance__label {
 			padding-left: 48px;
