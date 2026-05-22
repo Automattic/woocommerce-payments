@@ -1284,6 +1284,18 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-session-controller.php';
 		$woopay_session_controller = new WC_REST_WooPay_Session_Controller();
 		$woopay_session_controller->register_routes();
+
+		// Dev-mode-only marketplace bridge — emits this merchant's
+		// store + products in WooPay's slim projection shape so
+		// WooPay-dev can hydrate a real merchant's catalog ahead of
+		// the live ES results when testing surfaces against a
+		// not-yet-indexed merchant. Permission callback inside the
+		// controller gates on `WC_Payments::mode()->is_dev()`; the
+		// route still registers in test/live so callers see a 401
+		// instead of a 404 (less ambiguous when debugging).
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-dev-marketplace-bridge-controller.php';
+		$woopay_dev_marketplace_bridge_controller = new WC_REST_WooPay_Dev_Marketplace_Bridge_Controller();
+		$woopay_dev_marketplace_bridge_controller->register_routes();
 	}
 
 	/**
