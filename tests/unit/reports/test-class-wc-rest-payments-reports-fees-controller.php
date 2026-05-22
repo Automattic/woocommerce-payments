@@ -404,7 +404,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->get_fees_export( $request );
 	}
 
-	public function test_get_fees_export_url_forwards_export_id_to_api_client() {
+	public function test_get_export_url_forwards_export_id_to_api_client() {
 		$request = new WP_REST_Request( 'GET' );
 		$request->set_param( 'export_id', 'exp_xyz' );
 
@@ -419,7 +419,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
-		$response = $this->controller->get_fees_export_url( $request );
+		$response = $this->controller->get_export_url( $request );
 
 		$this->assertSame(
 			[

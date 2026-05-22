@@ -93,7 +93,7 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 			[
 				[
 					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_fees_export_url' ],
+					'callback'            => [ $this, 'get_export_url' ],
 					'permission_callback' => [ $this, 'check_permission' ],
 				],
 			]
@@ -183,7 +183,7 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 	 * @param WP_REST_Request $request Full data about the request.
 	 * @return WP_REST_Response|WP_Error Backend response, typically `{ status, download_url }`, or a WP_Error on API failure.
 	 */
-	public function get_fees_export_url( $request ) {
+	public function get_export_url( $request ) {
 		$export_id = (string) $request->get_param( 'export_id' );
 
 		return $this->forward_request( 'get_transactions_export_url', [ $export_id ] );
