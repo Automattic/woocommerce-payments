@@ -54,6 +54,12 @@ describe( 'Fees report CSV download helpers', () => {
 		} );
 
 		expect( url ).toContain( feesDownloadEndpoint );
+		// Positive assertion: the always-passed `user_email` MUST still appear
+		// when every other filter is empty. Without this, a regression that
+		// accidentally gated `user_email` on another filter being present
+		// would pass — and a Fees export without a recipient address fails
+		// silently on the backend.
+		expect( url ).toContain( 'user_email=merchant%40example.com' );
 		expect( url ).not.toContain( 'date_after' );
 		expect( url ).not.toContain( 'type' );
 		expect( url ).not.toContain( 'payment_method_type' );
