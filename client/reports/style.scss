@@ -118,6 +118,14 @@ body.woocommerce-admin-page__payments_reports {
 		justify-content: flex-end;
 	}
 
+	.dataviews-search.components-search-control:not( :focus-within ) {
+		--wp-components-color-background: #fff;
+
+		.components-input-control__backdrop {
+			border-color: $gray-600;
+		}
+	}
+
 	// Override DataViews' default 48px horizontal edge padding so Fees
 	// filters and table edges align flush with the report surface while
 	// the filter row keeps its 16px vertical padding.
