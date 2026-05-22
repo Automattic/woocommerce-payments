@@ -434,9 +434,21 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 	public function test_get_fees_export_returns_wp_error_when_api_throws() {
 		$request = new WP_REST_Request( 'POST' );
 
+		// Pin the argument shape on the failure path too so a regression that
+		// builds wrong filters but happens to throw downstream is still caught.
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_transactions_export' )
+			->with(
+				$this->equalTo(
+					[
+						'type_is_in' => WC_REST_Payments_Reports_Fees_Controller::DEFAULT_FEE_BEARING_TYPES,
+					]
+				),
+				'',
+				null,
+				null
+			)
 			->willThrowException(
 				new API_Exception(
 					'Backend exploded.',
@@ -458,6 +470,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_transactions_export_url' )
+			->with( 'exp_xyz' )
 			->willThrowException(
 				new API_Exception(
 					'Signed URL unavailable.',
