@@ -161,6 +161,7 @@ export const BALANCE_ROWS: BalanceRow[] = [
 	},
 	{
 		key: 'reader_fees',
+		// "Reader costs" is the intentional UI label; `reader_fees` is the upstream API key.
 		label: __( 'Reader costs', 'woocommerce-payments' ),
 		depth: 1,
 		getAmount: getAmount( 'reader_fees' ),

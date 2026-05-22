@@ -5,7 +5,7 @@
  */
 import React, { useEffect, useId, useRef } from 'react';
 import { Button } from '@wordpress/components';
-import { __, _n, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { calendar } from '@wordpress/icons';
 
@@ -14,11 +14,12 @@ import { calendar } from '@wordpress/icons';
  */
 import { useReportsBalanceSummary } from 'wcpay/data';
 import DateFilter from 'wcpay/reports/date-filter';
-import { LoadingReportState } from '../loading-report-state';
 import { ReportState } from '../report-state';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import { BalanceRow, BalanceRowDepth, getVisibleBalanceRows } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
+import { BalanceSummaryTable } from './summary-table';
+import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
 import { getRowLabel, hasBalanceActivity, hasKeys } from './utils';
 import WooPaymentsLogo from 'assets/images/woopayments.svg?asset';
@@ -29,23 +30,13 @@ interface BalanceReportProps {
 }
 
 const woopaymentsBusinessDetails = [
-	'WooPayments',
-	'Automattic Inc.',
-	'60 29th Street #343',
-	'San Francisco, CA, 94110, US',
+	__( 'WooPayments', 'woocommerce-payments' ),
+	__( 'Automattic Inc.', 'woocommerce-payments' ),
+	__( '60 29th Street #343', 'woocommerce-payments' ),
+	__( 'San Francisco, CA, 94110, US', 'woocommerce-payments' ),
 ];
 
 const getRowDepth = ( row: BalanceRow ): BalanceRowDepth => row.depth ?? 0;
-
-const getDisplayedAmount = ( row: BalanceRow, amount: number ): number => {
-	// Payouts and friends are always shown as a deduction from the running
-	// balance even when the data stores them as a positive magnitude.
-	if ( row.displayNegative && amount !== 0 ) {
-		return -Math.abs( amount );
-	}
-
-	return amount;
-};
 
 const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
 	const depth = getRowDepth( row );
@@ -57,6 +48,16 @@ const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
 	const rowClassName = classNames.filter( Boolean ).join( ' ' );
 
 	return rowClassName || undefined;
+};
+
+const getPrintDisplayedAmount = ( row: BalanceRow, amount: number ): number => {
+	// Payouts and friends are always shown as a deduction from the running
+	// balance even when the data stores them as a positive magnitude.
+	if ( row.displayNegative && amount !== 0 ) {
+		return -Math.abs( amount );
+	}
+
+	return amount;
 };
 
 const BalanceEmptyState = (): JSX.Element => (
@@ -106,7 +107,7 @@ const BalancePrintReport = ( {
 			</thead>
 			<tbody>
 				{ visibleRows.map( ( row ) => {
-					const amount = getDisplayedAmount(
+					const amount = getPrintDisplayedAmount(
 						row,
 						row.getAmount( summary )
 					);
@@ -157,6 +158,7 @@ export const BalanceReport = ( {
 		! hasStoreError &&
 		! hasValidSummary;
 	const hasError = hasStoreError || hasMalformedSummary;
+	const containerRef = useRef< HTMLDivElement >( null );
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const toolbarRef = useRef< HTMLDivElement >( null );
@@ -196,11 +198,14 @@ export const BalanceReport = ( {
 	);
 
 	useEffect( () => {
-		if ( isLoading && ! previousLoadingRef.current ) {
-			loadingHeadingRef.current?.focus();
-		}
-
-		if ( hasError && ! previousErrorRef.current ) {
+		if (
+			hasError &&
+			! previousErrorRef.current &&
+			( containerRef.current?.contains(
+				containerRef.current.ownerDocument.activeElement
+			) ??
+				false )
+		) {
 			errorHeadingRef.current?.focus();
 		}
 
@@ -219,23 +224,6 @@ export const BalanceReport = ( {
 				}
 				lastSpokenRef.current = message;
 				speak( message );
-			}, 500 );
-		} else if ( hasError && ! previousErrorRef.current ) {
-			const message = __(
-				'Balance report failed to load.',
-				'woocommerce-payments'
-			);
-			const spokenKey = `assertive:${ message }`;
-			if ( speakTimerRef.current ) {
-				clearTimeout( speakTimerRef.current );
-			}
-			speakTimerRef.current = setTimeout( () => {
-				speakTimerRef.current = null;
-				if ( lastSpokenRef.current === spokenKey ) {
-					return;
-				}
-				lastSpokenRef.current = spokenKey;
-				speak( message, 'assertive' );
 			}, 500 );
 		}
 		previousLoadingRef.current = isLoading;
@@ -258,12 +246,10 @@ export const BalanceReport = ( {
 		content = <BalanceEmptyState />;
 	} else if ( isLoading ) {
 		content = (
-			<>
-				<LoadingReportState
-					headingRef={ loadingHeadingRef }
-					headingTabIndex={ -1 }
-				/>
-			</>
+			<BalanceLoadingSkeleton
+				headingRef={ loadingHeadingRef }
+				headingTabIndex={ -1 }
+			/>
 		);
 	} else if ( hasError ) {
 		content = (
@@ -307,93 +293,12 @@ export const BalanceReport = ( {
 	} else {
 		content = (
 			<>
-				<div className="wcpay-reports-balance__card">
-					<table className="wcpay-reports-balance__table">
-						<caption className="wcpay-reports-balance__caption">
-							{ __( 'Balance summary', 'woocommerce-payments' ) }
-						</caption>
-						<thead className="screen-reader-text">
-							<tr>
-								<th scope="col">
-									{ __(
-										'Balance row',
-										'woocommerce-payments'
-									) }
-								</th>
-								<th scope="col">
-									{ __( 'Amount', 'woocommerce-payments' ) }
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							{ visibleRows.map( ( row ) => {
-								const amount = getDisplayedAmount(
-									row,
-									row.getAmount( summary )
-								);
-								const count = row.getCount?.( summary );
-								const countLabel =
-									typeof count === 'number'
-										? sprintf(
-												/* translators: %d: number of ledger entries included in this Balance row. */
-												_n(
-													'%d item',
-													'%d items',
-													count,
-													'woocommerce-payments'
-												),
-												count
-										  )
-										: undefined;
-								const rowLabel = getRowLabel(
-									row,
-									displayPeriod
-								);
-								const depth = getRowDepth( row );
-
-								return (
-									<tr
-										key={ row.key }
-										className={ [
-											'wcpay-reports-balance__row',
-											`wcpay-reports-balance__row--depth-${ depth }`,
-										].join( ' ' ) }
-									>
-										<th
-											scope="row"
-											className="wcpay-reports-balance__label"
-										>
-											<div className="wcpay-reports-balance__label-inner">
-												<span className="wcpay-reports-balance__label-text">
-													{ rowLabel }
-												</span>
-												{ typeof count === 'number' && (
-													<>
-														<span
-															className="wcpay-reports-balance__count"
-															aria-hidden="true"
-														>
-															{ count }
-														</span>
-														<span className="screen-reader-text">
-															{ countLabel }
-														</span>
-													</>
-												) }
-											</div>
-										</th>
-										<td className="wcpay-reports-balance__amount">
-											{ formatBalanceAmount(
-												amount,
-												currency
-											) }
-										</td>
-									</tr>
-								);
-							} ) }
-						</tbody>
-					</table>
-				</div>
+				<BalanceSummaryTable
+					visibleRows={ visibleRows }
+					summary={ summary }
+					displayPeriod={ displayPeriod }
+					currency={ currency }
+				/>
 				<BalancePrintReport
 					visibleRows={ visibleRows }
 					summary={ summary }
@@ -405,7 +310,7 @@ export const BalanceReport = ( {
 	}
 
 	return (
-		<div className="wcpay-reports-balance">
+		<div className="wcpay-reports-balance" ref={ containerRef }>
 			{ toolbar }
 			{ content }
 		</div>

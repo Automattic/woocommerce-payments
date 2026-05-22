@@ -77,10 +77,7 @@ export interface ReportsBalanceSummaryRow {
 
 export interface ReportsBalanceSummary {
 	currency?: string;
-	period?: {
-		start?: string;
-		end?: string;
-	};
+	period?: Partial< ReportsPeriodRange >;
 	starting_balance?: ReportsBalanceSummaryRow;
 	total_charges_captured?: ReportsBalanceSummaryRow;
 	fees?: ReportsBalanceSummaryRow;

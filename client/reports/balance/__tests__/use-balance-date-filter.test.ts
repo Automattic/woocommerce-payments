@@ -1,5 +1,6 @@
 /** @format */
 
+import React from 'react';
 import { act, renderHook } from '@testing-library/react-hooks';
 
 const mockUpdateQueryString = jest.fn();
@@ -12,6 +13,7 @@ jest.mock( '@woocommerce/navigation', () => ( {
 } ) );
 
 import {
+	BalanceDateFilterNowContext,
 	getPeriodForDateFilter,
 	useBalanceDateFilter,
 } from '../use-balance-date-filter';
@@ -265,6 +267,27 @@ describe( 'useBalanceDateFilter', () => {
 		rerender();
 
 		expect( result.current.setValue ).toBe( firstSetValue );
+	} );
+
+	it( 'uses a shared current time from context across hook instances', () => {
+		const sharedNow = new Date( '2026-06-01T12:00:00.000Z' );
+		const wrapper = ( { children }: { children?: React.ReactNode } ) =>
+			React.createElement(
+				BalanceDateFilterNowContext.Provider,
+				{ value: sharedNow },
+				children
+			);
+
+		const first = renderHook( () => useBalanceDateFilter(), { wrapper } );
+		const second = renderHook( () => useBalanceDateFilter(), { wrapper } );
+
+		expect( first.result.current.period ).toEqual( {
+			start: '2026-05-01T00:00:00.000Z',
+			end: '2026-05-31T23:59:59.999Z',
+		} );
+		expect( second.result.current.period ).toEqual(
+			first.result.current.period
+		);
 	} );
 
 	it( 're-derives from URL changes via browser back and forward', () => {

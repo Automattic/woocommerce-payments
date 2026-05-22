@@ -174,6 +174,11 @@ export function* getReportsBalanceSummary( query ) {
 				'woocommerce-payments'
 			)
 		);
+		// eslint-disable-next-line no-console
+		console.error( 'Balance summary resolver failed:', {
+			query,
+			error: e,
+		} );
 		yield updateErrorForReportsBalanceSummary( query, e );
 	}
 }

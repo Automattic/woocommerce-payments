@@ -3,7 +3,14 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -21,7 +28,10 @@ import {
 
 const reportsPath = '/payments/reports';
 const balanceDateFilterChangeEvent = 'wcpay-balance-date-filter-change';
-let isUpdatingBalanceDateFilterUrl = false;
+
+export const BalanceDateFilterNowContext = createContext< Date | undefined >(
+	undefined
+);
 
 interface UseBalanceDateFilterResult {
 	value: DateFilterValue | undefined;
@@ -182,7 +192,9 @@ export const getPeriodForDateFilter = (
 export const useBalanceDateFilter = (
 	now?: Date
 ): UseBalanceDateFilterResult => {
-	const stableNow = useRef( now ?? new Date() ).current;
+	const contextNow = useContext( BalanceDateFilterNowContext );
+	const stableNow = useRef( now ?? contextNow ?? new Date() ).current;
+	const isUpdatingUrlRef = useRef( false );
 	const [ navTick, setNavTick ] = useState( 0 );
 	const [ localValue, setLocalValue ] = useState<
 		LocalDateFilterValue | undefined
@@ -211,7 +223,7 @@ export const useBalanceDateFilter = (
 		[ bumpNavTick ]
 	);
 	const handleHistoryChange = useCallback( () => {
-		if ( ! isUpdatingBalanceDateFilterUrl ) {
+		if ( ! isUpdatingUrlRef.current ) {
 			setLocalValue( undefined );
 		}
 		bumpNavTick();
@@ -251,21 +263,21 @@ export const useBalanceDateFilter = (
 	const setValue = useCallback(
 		( next: DateFilterValue | undefined ) => {
 			const normalizedValue = normalizeDateFilterValue( next, stableNow );
-			window.dispatchEvent(
-				new CustomEvent< LocalDateFilterValue >(
-					balanceDateFilterChangeEvent,
-					{ detail: { value: normalizedValue } }
-				)
-			);
-			isUpdatingBalanceDateFilterUrl = true;
+			isUpdatingUrlRef.current = true;
 			try {
 				updateQueryString(
 					serializeDateFilterToQuery( normalizedValue ),
 					reportsPath
 				);
 			} finally {
-				isUpdatingBalanceDateFilterUrl = false;
+				isUpdatingUrlRef.current = false;
 			}
+			window.dispatchEvent(
+				new CustomEvent< LocalDateFilterValue >(
+					balanceDateFilterChangeEvent,
+					{ detail: { value: normalizedValue } }
+				)
+			);
 			setNavTick( ( tick ) => tick + 1 );
 		},
 		[ stableNow ]

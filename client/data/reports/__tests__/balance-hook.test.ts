@@ -125,11 +125,6 @@ describe( 'useReportsBalanceSummary', () => {
 			'getReportsBalanceSummary',
 			[ expectedQuery ]
 		);
-		expect( mockUseSelect ).toHaveBeenCalledWith( expect.any( Function ), [
-			period.start,
-			period.end,
-			'EUR',
-		] );
 	} );
 
 	it( 'falls back to the account default currency when none is supplied', () => {

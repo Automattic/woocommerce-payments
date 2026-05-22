@@ -27,7 +27,7 @@ jest.mock( '../fees', () => ( {
 // Stub the Fees + Balance summary hooks so the Export / Print actions in the
 // Reports header render without exercising the real @wordpress/data
 // selectors (this test only cares about tab navigation behavior).
-jest.mock( 'wcpay/data/reports/hooks', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useReportsFeesSummary: () => ( {
 		feesSummary: { count: 0 },
 		isLoading: false,
@@ -39,8 +39,18 @@ jest.mock( 'wcpay/data/reports/hooks', () => ( {
 	} ),
 } ) );
 
+jest.mock( 'wcpay/data/reports/hooks', () => ( {
+	useReportsFeesSummary: () => ( {
+		feesSummary: { count: 0 },
+		isLoading: false,
+	} ),
+} ) );
+
 // BalanceActions reads the Date filter via its own hook.
 jest.mock( '../balance/use-balance-date-filter', () => ( {
+	BalanceDateFilterNowContext: jest
+		.requireActual( 'react' )
+		.createContext( undefined ),
 	useBalanceDateFilter: () => ( {
 		value: undefined,
 		period: { start: '', end: '' },

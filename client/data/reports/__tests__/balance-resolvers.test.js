@@ -66,6 +66,18 @@ describe( 'formatReportsBalanceQuery', () => {
 } );
 
 describe( 'getReportsBalanceSummary resolver', () => {
+	let consoleErrorSpy;
+
+	beforeEach( () => {
+		consoleErrorSpy = jest
+			.spyOn( console, 'error' )
+			.mockImplementation( () => undefined );
+	} );
+
+	afterEach( () => {
+		consoleErrorSpy.mockRestore();
+	} );
+
 	it( 'updates state with Balance summary data on success', () => {
 		const generator = getReportsBalanceSummary( query );
 
@@ -103,7 +115,13 @@ describe( 'getReportsBalanceSummary resolver', () => {
 				expect.any( String )
 			)
 		);
-		expect( generator.next().value ).toEqual(
+		const errorUpdate = generator.next().value;
+
+		expect( consoleErrorSpy ).toHaveBeenCalledWith(
+			'Balance summary resolver failed:',
+			{ query, error: errorResponse }
+		);
+		expect( errorUpdate ).toEqual(
 			updateErrorForReportsBalanceSummary( query, errorResponse )
 		);
 		expect( generator.next().done ).toStrictEqual( true );

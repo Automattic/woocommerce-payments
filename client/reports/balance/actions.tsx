@@ -15,7 +15,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useReportsBalanceSummary } from 'wcpay/data/reports/hooks';
+import { useReportsBalanceSummary } from 'wcpay/data';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import { getVisibleBalanceRows, type BalanceRow } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
@@ -100,6 +100,8 @@ export const BalanceActions = (): JSX.Element => {
 	const hasValidSummary = Boolean(
 		summary.currency && summary.period?.start && summary.period?.end
 	);
+	const hasMalformedSummary =
+		hasDateFilterValue && ! isLoading && ! hasError && ! hasValidSummary;
 	const displayPeriod = {
 		start: summary.period?.start ?? period.start,
 		end: summary.period?.end ?? period.end,
@@ -109,8 +111,8 @@ export const BalanceActions = (): JSX.Element => {
 		! hasDateFilterValue ||
 		isLoading ||
 		hasError ||
-		! hasActivity ||
-		! hasValidSummary;
+		hasMalformedSummary ||
+		! hasActivity;
 
 	useEffect( () => {
 		if ( actionsDisabled ) {

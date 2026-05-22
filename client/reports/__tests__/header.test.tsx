@@ -24,7 +24,7 @@ jest.mock( 'wcpay/hooks/use-report-export', () => ( {
 	} ),
 } ) );
 
-jest.mock( 'wcpay/data/reports/hooks', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useReportsFeesSummary: ( q: unknown ) => mockUseReportsFeesSummary( q ),
 	// BalanceActions renders inside the header on the Balance tab and
 	// subscribes to the Balance summary; the header test only exercises
@@ -34,6 +34,10 @@ jest.mock( 'wcpay/data/reports/hooks', () => ( {
 		error: {},
 		isLoading: false,
 	} ),
+} ) );
+
+jest.mock( 'wcpay/data/reports/hooks', () => ( {
+	useReportsFeesSummary: ( q: unknown ) => mockUseReportsFeesSummary( q ),
 } ) );
 
 // BalanceActions also reads the Date filter via this hook.

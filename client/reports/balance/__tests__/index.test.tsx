@@ -36,14 +36,6 @@ jest.mock( 'wcpay/data', () => ( {
 		mockUseReportsBalanceSummary( period, currency ),
 } ) );
 
-// `BalanceActions` uses the specific hooks path so non-balance test files
-// (e.g. tabs.test.tsx) that mock 'wcpay/data/reports/hooks' don't crash on
-// the unmocked store init. Mirror that mock here.
-jest.mock( 'wcpay/data/reports/hooks', () => ( {
-	useReportsBalanceSummary: ( period: unknown, currency?: string ) =>
-		mockUseReportsBalanceSummary( period, currency ),
-} ) );
-
 jest.mock( '../use-balance-date-filter', () => ( {
 	useBalanceDateFilter: () => mockUseBalanceDateFilter(),
 } ) );
@@ -258,6 +250,39 @@ describe( 'BalanceReport', () => {
 		).toHaveFocus();
 	} );
 
+	it( 'does not move focus to the error heading when focus is outside the report', () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: balanceSummaryFixture,
+			error: {},
+			isLoading: false,
+		} );
+
+		const { rerender } = render(
+			<>
+				<button type="button">Outside report</button>
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+		screen.getByRole( 'button', { name: 'Outside report' } ).focus();
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<button type="button">Outside report</button>
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect(
+			screen.getByRole( 'button', { name: 'Outside report' } )
+		).toHaveFocus();
+	} );
+
 	it( 'renders the loading state with disabled export and print actions', () => {
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
@@ -268,8 +293,13 @@ describe( 'BalanceReport', () => {
 		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
-			'Loading report'
+			'Loading balance report'
 		);
+		expect(
+			screen
+				.getByRole( 'status' )
+				.closest( '.wcpay-reports-balance__skeleton' )
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Date' } )
 		).toBeInTheDocument();
@@ -337,7 +367,7 @@ describe( 'BalanceReport', () => {
 		expect( onReload ).toHaveBeenCalledWith( period );
 	} );
 
-	it( 'moves focus to the loading heading after Reload starts a refresh', async () => {
+	it( 'does not move focus to the loading heading after Reload starts a refresh', async () => {
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
 			error: { code: 'server_error' },
@@ -362,8 +392,8 @@ describe( 'BalanceReport', () => {
 		);
 
 		expect(
-			screen.getByRole( 'heading', { name: 'Loading report' } )
-		).toHaveFocus();
+			screen.getByRole( 'heading', { name: 'Loading balance report' } )
+		).not.toHaveFocus();
 	} );
 
 	it( 'moves focus to the error heading when loading fails', () => {
@@ -373,6 +403,7 @@ describe( 'BalanceReport', () => {
 			isLoading: true,
 		} );
 		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+		screen.getByRole( 'button', { name: 'Date' } ).focus();
 
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
@@ -428,7 +459,7 @@ describe( 'BalanceReport', () => {
 		);
 	} );
 
-	it( 'announces when Balance data fails to load', () => {
+	it( 'does not duplicate the alert announcement when Balance data fails to load', () => {
 		jest.useFakeTimers();
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
@@ -457,10 +488,7 @@ describe( 'BalanceReport', () => {
 			jest.advanceTimersByTime( 500 );
 		} );
 
-		expect( mockSpeak ).toHaveBeenCalledWith(
-			'Balance report failed to load.',
-			'assertive'
-		);
+		expect( mockSpeak ).not.toHaveBeenCalled();
 	} );
 
 	it( 'scopes print styles while Balance actions are available', () => {
@@ -713,11 +741,6 @@ describe( 'BalanceReport', () => {
 		expect( printReport ).toHaveAttribute( 'aria-hidden', 'true' );
 		expect(
 			printReport.querySelector( 'img[alt="WooPayments"]' )
-		).toBeInTheDocument();
-		expect(
-			printReport.querySelector(
-				'.wcpay-reports-balance-print__business'
-			)
 		).toBeInTheDocument();
 		expect( printReport ).toHaveTextContent( 'Automattic Inc.' );
 		expect( printReport ).toHaveTextContent( '60 29th Street #343' );
