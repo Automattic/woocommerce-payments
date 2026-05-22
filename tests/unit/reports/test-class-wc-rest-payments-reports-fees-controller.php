@@ -382,11 +382,18 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_param( 'deposit_id', 'po_abc' );
 
+		// Assert the exact filter shape (not anything()) so the test catches
+		// the double-send regression class — i.e. deposit_id leaking back into
+		// the filters array while also being passed positionally.
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_transactions_export' )
 			->with(
-				$this->anything(),
+				$this->equalTo(
+					[
+						'type_is_in' => WC_REST_Payments_Reports_Fees_Controller::DEFAULT_FEE_BEARING_TYPES,
+					]
+				),
 				'',
 				'po_abc',
 				null
