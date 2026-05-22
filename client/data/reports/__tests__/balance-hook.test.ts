@@ -124,6 +124,10 @@ describe( 'useReportsBalanceSummary', () => {
 			'getReportsBalanceSummary',
 			[ expectedQuery ]
 		);
+		expect( mockUseSelect ).toHaveBeenCalledWith( expect.any( Function ), [
+			period.start,
+			period.end,
+		] );
 	} );
 
 	it( 'skips Balance summary resolution when no period is active', () => {

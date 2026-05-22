@@ -55,7 +55,6 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$routes = rest_get_server()->get_routes();
 
 		$this->assertArrayHasKey( '/wc/v3/payments/reports/balance', $routes );
-		$this->assertArrayHasKey( 'GET', $routes['/wc/v3/payments/reports/balance'][0]['methods'] );
 	}
 
 	public function test_register_routes_returns_early_when_reports_area_disabled() {

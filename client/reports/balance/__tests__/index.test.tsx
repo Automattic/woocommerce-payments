@@ -374,27 +374,16 @@ describe( 'BalanceReport', () => {
 		expect(
 			within( getVisibleBalanceTable() ).getByText( 'usd 1101608' )
 		).toBeInTheDocument();
-		expect(
-			screen
-				.getAllByText( '8' )
-				.find( ( element ) =>
-					element.classList.contains( 'wcpay-reports-balance__count' )
-				)
-		).toBeInTheDocument();
-		expect(
-			screen
-				.getAllByText( '8' )
-				.find( ( element ) =>
-					element.classList.contains( 'wcpay-reports-balance__count' )
-				)
-		).toHaveAttribute( 'aria-hidden', 'true' );
-		expect(
-			within(
-				screen.getByRole( 'row', {
-					name: /Total charges captured/,
-				} )
-			).getByText( '8 items' )
-		).toHaveClass( 'screen-reader-text' );
+		const chargesRow = screen.getByRole( 'row', {
+			name: /Total charges captured/,
+		} );
+		expect( within( chargesRow ).getByText( '8' ) ).toHaveAttribute(
+			'aria-hidden',
+			'true'
+		);
+		expect( within( chargesRow ).getByText( '8 items' ) ).toHaveClass(
+			'screen-reader-text'
+		);
 	} );
 
 	it( 'downloads a machine-readable CSV for the selected UTC range', async () => {
