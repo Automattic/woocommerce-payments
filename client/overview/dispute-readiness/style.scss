@@ -11,128 +11,69 @@
 	}
 }
 
-.wcpay-dispute-readiness-card__header {
+.wcpay-dispute-readiness-card__header.components-flex.components-card__header {
+	align-items: flex-start;
 	justify-content: space-between;
+	padding: 16px 24px;
 }
 
-.wcpay-dispute-readiness-card__dismiss.components-button.is-tertiary {
-	min-width: 24px;
-	height: 24px;
-	padding: 0;
-	color: #50575e;
-	font-size: 24px;
-	line-height: 24px;
-	text-decoration: none;
+.wcpay-dispute-readiness-card__header-text {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
 
-	&:hover,
-	&:focus {
-		color: #1e1e1e;
-	}
-
-	&:focus,
-	&:focus-visible {
-		outline: 2px solid var( --wp-admin-theme-color, #3858e9 );
-		outline-offset: 2px;
-		box-shadow: none;
-	}
+.wcpay-dispute-readiness-card__title {
+	color: $gray-900;
+	font-size: 20px;
+	line-height: 28px;
 }
 
 .wcpay-dispute-readiness-card__description {
-	max-width: calc( 100% - 32px );
 	margin: 0;
-	color: #50575e;
+	color: $gray-700;
 	font-size: 13px;
-	line-height: 20px;
-}
-
-.wcpay-dispute-readiness-card__content {
-	display: grid;
-	grid-template-columns: 120px minmax( 0, 1fr );
-	gap: 28px;
-	align-items: center;
-	margin-top: 32px;
-}
-
-.wcpay-dispute-readiness-card__progress {
-	--wcpay-dispute-readiness-progress: 0%;
-
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	width: 88px;
-	height: 88px;
-	border-radius: 50%;
-	background: conic-gradient(
-		#3858e9 var( --wcpay-dispute-readiness-progress ),
-		#e0e0e0 0
-	);
-
-	&::before {
-		position: absolute;
-		inset: 8px;
-		border-radius: 50%;
-		background: #fff;
-		content: '';
-	}
-}
-
-.wcpay-dispute-readiness-card__progress-score,
-.wcpay-dispute-readiness-card__progress-total {
-	position: relative;
-	z-index: 1;
-}
-
-.wcpay-dispute-readiness-card__progress-score {
-	font-size: 24px;
-	line-height: 28px;
-	font-weight: 600;
-}
-
-.wcpay-dispute-readiness-card__progress-total {
-	font-size: 13px;
-	line-height: 18px;
-	color: #50575e;
-}
-
-.wcpay-dispute-readiness-card__signals {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	font-size: 13px;
-	line-height: 20px;
-
-	li {
-		display: grid;
-		grid-template-columns: 20px minmax( 0, max-content ) 1fr;
-		gap: 8px;
-		align-items: center;
-		margin: 0;
-		color: #50575e;
-	}
-}
-
-.wcpay-dispute-readiness-card__signal-icon {
-	font-size: 16px;
 	line-height: 16px;
-	font-weight: 600;
-	text-align: center;
 }
 
-.is-complete .wcpay-dispute-readiness-card__signal-icon {
-	color: #4ab866;
+.wcpay-dispute-readiness-card__actions.components-dropdown-menu {
+	flex-shrink: 0;
 }
 
-.is-incomplete .wcpay-dispute-readiness-card__signal-icon {
-	color: #cc1818;
-}
+.wcpay-dispute-readiness-card__task-list.woocommerce-experimental-list {
+	.woocommerce-task-list__item {
+		grid-template-columns: 72px minmax( 0, 1fr ) 24px;
 
-.wcpay-dispute-readiness-card__signal-action {
-	justify-self: end;
+		&::before {
+			background: transparent;
+		}
+
+		&.level-1 .gridicons-notice-outline {
+			fill: #f0b849;
+		}
+
+		.components-popover {
+			display: none;
+		}
+
+		.woocommerce-task-list__item-title {
+			color: var( --wp-admin-theme-color );
+		}
+
+		&.complete .woocommerce-task-list__item-title {
+			color: var( --wp-admin-theme-color );
+		}
+
+		&.complete .woocommerce-task-list__item-expandable-content {
+			display: block;
+		}
+
+		.woocommerce-task-list__item-expandable-content {
+			max-width: 449px;
+			line-height: 16px;
+		}
+	}
 }
 
 .components-modal__frame.wcpay-dispute-readiness-card__statement-descriptor-modal {
@@ -181,14 +122,4 @@
 
 .wcpay-dispute-readiness-card__statement-descriptor-actions {
 	@include modal-footer-buttons;
-}
-
-@media ( max-width: 782px ) {
-	.wcpay-dispute-readiness-card__content {
-		grid-template-columns: 1fr;
-	}
-
-	.wcpay-dispute-readiness-card__signals li {
-		grid-template-columns: 20px minmax( 0, 1fr ) auto;
-	}
 }

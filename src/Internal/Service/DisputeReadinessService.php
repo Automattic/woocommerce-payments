@@ -179,7 +179,8 @@ class DisputeReadinessService {
 			'id'          => self::SIGNAL_REFUND_POLICY,
 			'status'      => $status,
 			'label'       => __( 'Refund policy page published', 'woocommerce-payments' ),
-			'actionLabel' => __( 'Fix', 'woocommerce-payments' ),
+			'description' => __( 'Publish a refund policy so customers can resolve issues with you before filing a dispute.', 'woocommerce-payments' ),
+			'actionLabel' => __( 'Fix it', 'woocommerce-payments' ),
 			'actionUrl'   => $this->get_page_action_url( $page_id ),
 		];
 	}
@@ -197,7 +198,8 @@ class DisputeReadinessService {
 			'id'          => self::SIGNAL_TERMS_AND_CONDITIONS,
 			'status'      => $status,
 			'label'       => __( 'Terms & conditions linked at checkout', 'woocommerce-payments' ),
-			'actionLabel' => __( 'Fix', 'woocommerce-payments' ),
+			'description' => __( 'Add a T&C link at checkout so customers acknowledge your policies before completing a purchase.', 'woocommerce-payments' ),
+			'actionLabel' => __( 'Fix it', 'woocommerce-payments' ),
 			'actionUrl'   => $this->get_woocommerce_advanced_settings_url(),
 		];
 	}
@@ -215,7 +217,7 @@ class DisputeReadinessService {
 		$needs_review  = ! $is_empty && ! $this->looks_like_recognizable_descriptor( $descriptor, $account_data );
 		$is_confirmed  = $needs_review && $this->is_statement_descriptor_confirmed( $descriptor );
 		$status        = ! $is_empty && ( ! $needs_review || $is_confirmed ) ? self::STATUS_COMPLETE : self::STATUS_INCOMPLETE;
-		$action_label  = __( 'Fix', 'woocommerce-payments' );
+		$action_label  = __( 'Fix it', 'woocommerce-payments' );
 		$settings_url  = admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' );
 		$review_prompt = null;
 
@@ -232,6 +234,7 @@ class DisputeReadinessService {
 			'id'          => self::SIGNAL_STATEMENT_DESCRIPTOR,
 			'status'      => $status,
 			'label'       => __( 'Recognizable statement descriptor', 'woocommerce-payments' ),
+			'description' => __( 'Make sure your business name appears clearly on customer bank statements to prevent confusion.', 'woocommerce-payments' ),
 			'actionLabel' => $action_label,
 			'actionUrl'   => $settings_url,
 			'reason'      => $this->get_statement_descriptor_reason( $descriptor, $needs_review, $is_confirmed ),
@@ -260,7 +263,8 @@ class DisputeReadinessService {
 			'id'          => self::SIGNAL_SUPPORT_CONTACT,
 			'status'      => $status,
 			'label'       => __( 'Customer support contact linked in order emails', 'woocommerce-payments' ),
-			'actionLabel' => __( 'Review', 'woocommerce-payments' ),
+			'description' => __( 'Give customers a direct way to reach you from their order emails to handle issues quickly.', 'woocommerce-payments' ),
+			'actionLabel' => __( 'Fix it', 'woocommerce-payments' ),
 			'actionUrl'   => admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments' ),
 		];
 	}

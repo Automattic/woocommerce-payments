@@ -19,6 +19,7 @@ export interface DisputeReadinessSignal {
 	id: string;
 	status: DisputeReadinessSignalStatus;
 	label: string;
+	description?: string;
 	actionLabel?: string;
 	actionUrl?: string;
 	reason?: string;

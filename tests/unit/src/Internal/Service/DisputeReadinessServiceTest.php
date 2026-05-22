@@ -185,7 +185,8 @@ class DisputeReadinessServiceTest extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'incomplete', $signal['status'] );
 		$this->assertSame( 'needs_review', $signal['reason'] );
-		$this->assertSame( 'Fix', $signal['actionLabel'] );
+		$this->assertSame( 'Fix it', $signal['actionLabel'] );
+		$this->assertSame( 'Make sure your business name appears clearly on customer bank statements to prevent confusion.', $signal['description'] );
 		$this->assertSame( "Your statement descriptor will show up on your customers' bank statements. Does it clearly identify your store?", $signal['reviewPrompt']['text'] );
 		$this->assertSame( 'WOOCOMMERCE PAYMENTS D', $signal['reviewPrompt']['currentDescriptor'] );
 		$this->assertSame( 'Looks good', $signal['reviewPrompt']['confirmLabel'] );

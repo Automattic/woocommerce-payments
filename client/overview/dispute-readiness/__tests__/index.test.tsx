@@ -6,6 +6,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { CollapsibleList, TaskItem } from '@woocommerce/experimental';
 
 /**
  * Internal dependencies
@@ -16,6 +17,11 @@ import { useDisputeReadiness, useDisputeReadinessActions } from 'data';
 jest.mock( 'data', () => ( {
 	useDisputeReadiness: jest.fn(),
 	useDisputeReadinessActions: jest.fn(),
+} ) );
+
+jest.mock( '@woocommerce/experimental', () => ( {
+	CollapsibleList: jest.fn(),
+	TaskItem: jest.fn(),
 } ) );
 
 jest.mock( 'wcpay/tracks', () => ( {
@@ -45,22 +51,30 @@ const readinessPayload = {
 				id: 'statement_descriptor',
 				status: 'complete',
 				label: 'Recognizable statement descriptor',
+				description:
+					'Make sure your business name appears clearly on customer bank statements to prevent confusion.',
 			},
 			{
 				id: 'refund_policy',
 				status: 'complete',
 				label: 'Refund policy page published',
+				description:
+					'Publish a refund policy so customers can resolve issues with you before filing a dispute.',
 			},
 			{
 				id: 'support_contact',
 				status: 'complete',
 				label: 'Customer support contact linked in order emails',
+				description:
+					'Give customers a direct way to reach you from their order emails to handle issues quickly.',
 			},
 			{
 				id: 'terms_and_conditions',
 				status: 'incomplete',
 				label: 'Terms & conditions linked at checkout',
-				actionLabel: 'Fix',
+				description:
+					'Add a T&C link at checkout so customers acknowledge your policies before completing a purchase.',
+				actionLabel: 'Fix it',
 				actionUrl:
 					'https://example.test/wp-admin/admin.php?page=wc-settings&tab=advanced',
 			},
@@ -70,6 +84,8 @@ const readinessPayload = {
 
 const mockUseDisputeReadiness = useDisputeReadiness as jest.Mock;
 const mockUseDisputeReadinessActions = useDisputeReadinessActions as jest.Mock;
+const mockCollapsibleList = CollapsibleList as jest.Mock;
+const mockTaskItem = TaskItem as jest.Mock;
 
 const renderCard = ( overrides = {} ) => {
 	mockUseDisputeReadiness.mockReturnValue( {
@@ -85,6 +101,20 @@ const renderCard = ( overrides = {} ) => {
 describe( 'DisputeReadinessCard', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
+		mockCollapsibleList.mockImplementation( ( { children } ) => (
+			<div>{ children }</div>
+		) );
+		mockTaskItem.mockImplementation(
+			( { title, content, showActionButton, action, actionLabel } ) => (
+				<div>
+					<div>{ title }</div>
+					<div>{ content }</div>
+					{ showActionButton && (
+						<button onClick={ action }>{ actionLabel }</button>
+					) }
+				</div>
+			)
+		);
 		mockUseDisputeReadinessActions.mockReturnValue( {
 			dismissDisputeReadinessCard,
 			confirmStatementDescriptor,
@@ -118,31 +148,51 @@ describe( 'DisputeReadinessCard', () => {
 		expect( container ).toBeEmptyDOMElement();
 	} );
 
-	it( 'renders score and checklist rows', () => {
+	it( 'renders design copy and task rows', () => {
 		renderCard();
 
-		expect( screen.getByText( 'Dispute Readiness' ) ).toBeInTheDocument();
-		expect( screen.getByText( '3' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'of 4' ) ).toBeInTheDocument();
+		expect( screen.getByText( 'Dispute readiness' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'These 4 steps help customers recognize charges, understand your policies, and contact you before opening a dispute.'
+			)
+		).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Recognizable statement descriptor' )
 		).toBeInTheDocument();
 		expect(
+			screen.getByText(
+				'Make sure your business name appears clearly on customer bank statements to prevent confusion.'
+			)
+		).toBeInTheDocument();
+		expect(
 			screen.getByText( 'Terms & conditions linked at checkout' )
 		).toBeInTheDocument();
-		expect( screen.getByRole( 'link', { name: 'Fix →' } ) ).toHaveAttribute(
-			'href',
-			'https://example.test/wp-admin/admin.php?page=wc-settings&tab=advanced'
-		);
+		expect(
+			screen.getByText(
+				'Add a T&C link at checkout so customers acknowledge your policies before completing a purchase.'
+			)
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Fix it' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', {
+				name: 'Dispute readiness actions',
+			} )
+		).toBeInTheDocument();
 	} );
 
-	it( 'dismisses the card when clicking dismiss', async () => {
+	it( 'dismisses the card from the actions menu', async () => {
 		renderCard();
 
 		await userEvent.click(
 			screen.getByRole( 'button', {
-				name: 'Dismiss dispute readiness card',
+				name: 'Dispute readiness actions',
 			} )
+		);
+		await userEvent.click(
+			screen.getByRole( 'menuitem', { name: 'Dismiss' } )
 		);
 
 		expect( dismissDisputeReadinessCard ).toHaveBeenCalledTimes( 1 );
@@ -186,7 +236,7 @@ describe( 'DisputeReadinessCard', () => {
 		).not.toBeInTheDocument();
 
 		await userEvent.click(
-			screen.getAllByRole( 'link', { name: 'Fix →' } )[ 0 ]
+			screen.getAllByRole( 'button', { name: 'Fix it' } )[ 0 ]
 		);
 
 		expect(
