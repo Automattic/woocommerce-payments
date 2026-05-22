@@ -24,7 +24,7 @@ jest.mock( 'wcpay/hooks/use-report-export', () => ( {
 	} ),
 } ) );
 
-jest.mock( 'wcpay/data', () => ( {
+jest.mock( 'wcpay/data/reports/hooks', () => ( {
 	useReportsFeesSummary: ( q: unknown ) => mockUseReportsFeesSummary( q ),
 } ) );
 

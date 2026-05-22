@@ -13,7 +13,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { useReportExport } from 'wcpay/hooks/use-report-export';
-import { useReportsFeesSummary } from 'wcpay/data';
+import { useReportsFeesSummary } from 'wcpay/data/reports/hooks';
 import {
 	feesDownloadEndpoint,
 	getFeesCSVRequestURL,

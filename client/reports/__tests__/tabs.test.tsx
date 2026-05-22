@@ -24,6 +24,16 @@ jest.mock( '../fees', () => ( {
 	),
 } ) );
 
+// Stub the Fees summary hook so the Export button in the Reports header
+// renders without exercising the real @wordpress/data selectors (this test
+// only cares about tab navigation behavior).
+jest.mock( 'wcpay/data/reports/hooks', () => ( {
+	useReportsFeesSummary: () => ( {
+		feesSummary: { count: 0 },
+		isLoading: false,
+	} ),
+} ) );
+
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn(),
 	updateQueryString: jest.fn(),
