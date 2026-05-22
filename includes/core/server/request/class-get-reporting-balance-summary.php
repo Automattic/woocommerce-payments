@@ -111,7 +111,9 @@ class Get_Reporting_Balance_Summary extends Request {
 	}
 
 	/**
-	 * Validates an ISO-4217 currency code format.
+	 * Validates ISO-4217 format only. Unlike Request::validate_currency_code(),
+	 * this does not check account-supported currencies - reporting data may
+	 * include historical currencies no longer active on the account.
 	 *
 	 * @param mixed $currency Currency value.
 	 *

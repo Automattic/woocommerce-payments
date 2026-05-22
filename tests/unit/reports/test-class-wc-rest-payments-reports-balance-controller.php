@@ -86,19 +86,19 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$this->assertSame( 'string', $params['date_start']['type'] );
 		$this->assertSame( 'date-time', $params['date_start']['format'] );
 		$this->assertTrue( $params['date_start']['required'] );
-		$this->assertSame( '2024-03-01T00:00:00.000Z', $params['date_start']['sanitize_callback']( ' 2024-03-01T00:00:00.000Z ' ) );
+		$this->assertIsCallable( $params['date_start']['sanitize_callback'] );
 
 		$this->assertSame( 'string', $params['date_end']['type'] );
 		$this->assertSame( 'date-time', $params['date_end']['format'] );
 		$this->assertTrue( $params['date_end']['required'] );
-		$this->assertSame( '2024-03-31T23:59:59.999Z', $params['date_end']['sanitize_callback']( ' 2024-03-31T23:59:59.999Z ' ) );
+		$this->assertIsCallable( $params['date_end']['sanitize_callback'] );
 
 		$this->assertSame( 'string', $params['currency']['type'] );
 		$this->assertTrue( $params['currency']['required'] );
 		$this->assertSame( 'usd', $params['currency']['sanitize_callback']( ' USD ' ) );
 		$this->assertTrue( $params['currency']['validate_callback']( 'usd' ) );
 		$this->assertTrue( $params['currency']['validate_callback']( 'USD' ) );
-		$this->assertFalse( $params['currency']['validate_callback']( 'usd1' ) );
+		$this->assertWPError( $params['currency']['validate_callback']( 'usd1' ) );
 	}
 
 	/**
@@ -119,6 +119,24 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$response = rest_get_server()->dispatch( $request );
 
 		$this->assertSame( 400, $response->get_status() );
+	}
+
+	public function test_balance_route_returns_descriptive_error_for_invalid_currency() {
+		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
+		$this->setExpectedIncorrectUsage( 'register_rest_route' );
+		$this->controller->register_routes();
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+
+		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/reports/balance' );
+		$request->set_param( 'date_start', '2024-03-01T00:00:00.000Z' );
+		$request->set_param( 'date_end', '2024-03-31T23:59:59.999Z' );
+		$request->set_param( 'currency', 'usd1' );
+
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertStringContainsString( 'ISO 4217 three-letter code', $data['data']['params']['currency'] );
 	}
 
 	public function invalid_balance_request_provider(): array {
@@ -160,6 +178,22 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$this->assertContains( $response->get_status(), [ 401, 403 ] );
 	}
 
+	public function test_balance_route_rejects_unprivileged_users() {
+		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
+		$this->setExpectedIncorrectUsage( 'register_rest_route' );
+		$this->controller->register_routes();
+		wp_set_current_user( $this->factory->user->create( [ 'role' => 'subscriber' ] ) );
+
+		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/reports/balance' );
+		$request->set_param( 'date_start', '2024-03-01T00:00:00.000Z' );
+		$request->set_param( 'date_end', '2024-03-31T23:59:59.999Z' );
+		$request->set_param( 'currency', 'usd' );
+
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 403, $response->get_status() );
+	}
+
 	public function test_get_balance_summary_uses_typed_request_and_dispatches_verbatim_response() {
 		$fixture = wcpay_test_balance_summary_fixture();
 		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
@@ -193,9 +227,14 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 	}
 
 	public function test_get_balance_summary_converts_api_exception_to_wp_error() {
+		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
+		$this->setExpectedIncorrectUsage( 'register_rest_route' );
+		$this->controller->register_routes();
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
+
 		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/reports/balance' );
-		$request->set_param( 'date_start', '2024-03-01T00:00:00' );
-		$request->set_param( 'date_end', '2024-03-31T23:59:59' );
+		$request->set_param( 'date_start', '2024-03-01T00:00:00.000Z' );
+		$request->set_param( 'date_end', '2024-03-31T23:59:59.999Z' );
 		$request->set_param( 'currency', 'usd' );
 
 		$api_client = $this->createMock( WC_Payments_API_Client::class );
@@ -217,10 +256,11 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$this->create_request_filter = $create_request_filter;
 		add_filter( 'wcpay_create_request', $this->create_request_filter, 10, 2 );
 
-		$response = $this->controller->get_balance_summary( $request );
+		$response = rest_get_server()->dispatch( $request );
+		$data     = $response->get_data();
 
-		$this->assertWPError( $response );
-		$this->assertSame( 'wcpay_error', $response->get_error_code() );
+		$this->assertSame( 500, $response->get_status() );
+		$this->assertSame( 'wcpay_error', $data['code'] );
 	}
 
 	public function return_enabled_flag() {

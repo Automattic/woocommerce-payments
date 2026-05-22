@@ -24,7 +24,9 @@ export function useReportsTabReload(
 ): ( periodOverride?: ReportsPeriodRange ) => void {
 	const { invalidateResolution, invalidateResolutionForStoreSelector } =
 		useDispatch( WCPAY_STORE_NAME ) as unknown as WCPayResolutionDispatch;
-	const currency = wcpaySettings.accountDefaultCurrency.toLowerCase();
+	const currency = (
+		wcpaySettings.accountDefaultCurrency || ''
+	).toLowerCase();
 
 	return useCallback(
 		( periodOverride?: ReportsPeriodRange ) => {

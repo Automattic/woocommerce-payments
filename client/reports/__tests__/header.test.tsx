@@ -41,7 +41,7 @@ jest.mock( '../balance/use-balance-date-filter', () => ( {
 	useBalanceDateFilter: () => ( {
 		value: undefined,
 		period: { start: '', end: '' },
-		isDateFilterActive: false,
+		hasDateFilterValue: false,
 		setValue: jest.fn(),
 	} ),
 } ) );
@@ -83,13 +83,13 @@ describe( 'ReportsHeader', () => {
 		};
 	} );
 
-	it( 'renders the Export and Print actions when the Balance tab is active', () => {
+	it( 'renders the Export and Print actions when the Balance tab is active', async () => {
 		render( <ReportsHeader activeTab="balance" /> );
 
 		// Balance tab gets its own pair of header actions (Print + Export)
 		// driven by the Balance summary state, mirroring the Fees layout.
 		expect(
-			screen.getByRole( 'button', { name: /export/i } )
+			await screen.findByRole( 'button', { name: /export/i } )
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: /print/i } )

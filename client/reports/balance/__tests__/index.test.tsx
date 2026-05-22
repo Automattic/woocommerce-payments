@@ -1,7 +1,7 @@
 /** @format */
 
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 
@@ -10,7 +10,7 @@ const mockSpeak = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
 const mockUseBalanceDateFilter = jest.fn();
 const mockSetBalanceDateFilterValue = jest.fn();
-let consoleErrorSpy: jest.SpyInstance;
+let consoleErrorSpy: jest.SpyInstance | undefined;
 
 jest.mock( '@wordpress/a11y', () => ( {
 	speak: ( message: string, politeness?: string ) =>
@@ -32,16 +32,16 @@ jest.mock( '@woocommerce/csv-export', () => {
 } );
 
 jest.mock( 'wcpay/data', () => ( {
-	useReportsBalanceSummary: ( period: unknown ) =>
-		mockUseReportsBalanceSummary( period ),
+	useReportsBalanceSummary: ( period: unknown, currency?: string ) =>
+		mockUseReportsBalanceSummary( period, currency ),
 } ) );
 
 // `BalanceActions` uses the specific hooks path so non-balance test files
 // (e.g. tabs.test.tsx) that mock 'wcpay/data/reports/hooks' don't crash on
 // the unmocked store init. Mirror that mock here.
 jest.mock( 'wcpay/data/reports/hooks', () => ( {
-	useReportsBalanceSummary: ( period: unknown ) =>
-		mockUseReportsBalanceSummary( period ),
+	useReportsBalanceSummary: ( period: unknown, currency?: string ) =>
+		mockUseReportsBalanceSummary( period, currency ),
 } ) );
 
 jest.mock( '../use-balance-date-filter', () => ( {
@@ -157,19 +157,28 @@ const expectBalanceText = ( text: string ) =>
 		within( getVisibleBalanceTable() ).getByText( text )
 	).toBeInTheDocument();
 
+const expectActionButtonUnavailable = ( name: string ) => {
+	const button = screen.getByRole( 'button', { name } );
+
+	expect( button ).toHaveAttribute( 'aria-disabled', 'true' );
+	expect( button ).not.toBeDisabled();
+	act( () => {
+		button.focus();
+	} );
+	expect( button ).toHaveFocus();
+};
+
 beforeEach( () => {
 	mockCreateNotice.mockReset();
 	mockSpeak.mockReset();
 	mockDownloadCSVFile.mockReset();
 	mockUseReportsBalanceSummary.mockReset();
 	mockSetBalanceDateFilterValue.mockReset();
-	consoleErrorSpy = jest
-		.spyOn( console, 'error' )
-		.mockImplementation( () => undefined );
+	consoleErrorSpy = undefined;
 	mockUseBalanceDateFilter.mockReturnValue( {
 		value: undefined,
 		period,
-		isDateFilterActive: true,
+		hasDateFilterValue: true,
 		setValue: mockSetBalanceDateFilterValue,
 	} );
 	mockUseReportsBalanceSummary.mockReturnValue( {
@@ -184,6 +193,7 @@ afterEach( () => {
 	document.documentElement.classList.remove(
 		'wcpay-reports-balance-print-context'
 	);
+	jest.useRealTimers();
 	jest.restoreAllMocks();
 } );
 
@@ -191,7 +201,10 @@ describe( 'BalanceReport', () => {
 	it( 'requests Balance summary data for the active date-filter period', () => {
 		renderBalanceReport( { onReload: jest.fn() } );
 
-		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith( period );
+		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith(
+			period,
+			expect.any( String )
+		);
 	} );
 
 	it( 'clears the active Date filter from the toolbar Reset button', async () => {
@@ -214,7 +227,7 @@ describe( 'BalanceReport', () => {
 		);
 	} );
 
-	it( 'keeps focus on the Date filter when a refresh transitions to an error', () => {
+	it( 'moves focus from the Date filter to the error heading when a refresh fails', () => {
 		// Use mockReturnValue (not Once) so both BalanceActions and
 		// BalanceReport — which each call the hook in production — see the
 		// same state on every render.
@@ -240,7 +253,9 @@ describe( 'BalanceReport', () => {
 			</>
 		);
 
-		expect( screen.getByRole( 'button', { name: 'Date' } ) ).toHaveFocus();
+		expect(
+			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
+		).toHaveFocus();
 	} );
 
 	it( 'renders the loading state with disabled export and print actions', () => {
@@ -258,12 +273,8 @@ describe( 'BalanceReport', () => {
 		expect(
 			screen.getByRole( 'button', { name: 'Date' } )
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Export' } )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'button', { name: 'Print' } )
-		).toBeDisabled();
+		expectActionButtonUnavailable( 'Export' );
+		expectActionButtonUnavailable( 'Print' );
 	} );
 
 	it( 'renders the error state with a reload action', async () => {
@@ -281,24 +292,14 @@ describe( 'BalanceReport', () => {
 		expect( alert ).toContainElement(
 			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
 		);
-		expect(
-			alert.querySelector( '.wcpay-reports-state__icon' )
-		).toBeInTheDocument();
 		expect( alert ).toHaveTextContent(
 			/We couldn't load your balance data\.\s*Try again in a few minutes\./
 		);
 		expect(
-			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
-		).toBeInTheDocument();
-		expect(
 			screen.getByRole( 'button', { name: 'Date' } )
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Export' } )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'button', { name: 'Print' } )
-		).toBeDisabled();
+		expectActionButtonUnavailable( 'Export' );
+		expectActionButtonUnavailable( 'Print' );
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Reload report' } )
@@ -307,7 +308,91 @@ describe( 'BalanceReport', () => {
 		expect( onReload ).toHaveBeenCalledWith( period );
 	} );
 
+	it( 'treats Balance summaries missing required metadata as unavailable', async () => {
+		const onReload = jest.fn();
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {
+				...balanceSummaryFixture,
+				currency: undefined,
+			},
+			error: {},
+			isLoading: false,
+		} );
+
+		renderBalanceReport( { onReload } );
+
+		expect(
+			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
+		).toBeInTheDocument();
+		expectActionButtonUnavailable( 'Export' );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Export' } )
+		);
+		expect( mockDownloadCSVFile ).not.toHaveBeenCalled();
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+		expect( onReload ).toHaveBeenCalledWith( period );
+	} );
+
+	it( 'moves focus to the loading heading after Reload starts a refresh', async () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect(
+			screen.getByRole( 'heading', { name: 'Loading report' } )
+		).toHaveFocus();
+	} );
+
+	it( 'moves focus to the error heading when loading fails', () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect(
+			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
+		).toHaveFocus();
+	} );
+
 	it( 'announces when Balance data finishes loading', () => {
+		jest.useFakeTimers();
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
 			error: {},
@@ -331,13 +416,54 @@ describe( 'BalanceReport', () => {
 			</>
 		);
 
+		expect( mockSpeak ).not.toHaveBeenCalled();
+
+		act( () => {
+			jest.advanceTimersByTime( 500 );
+		} );
+
 		expect( mockSpeak ).toHaveBeenCalledWith(
 			'Balance report loaded.',
-			'polite'
+			undefined
 		);
 	} );
 
-	it( 'scopes print styles while the Balance report is mounted', () => {
+	it( 'announces when Balance data fails to load', () => {
+		jest.useFakeTimers();
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect( mockSpeak ).not.toHaveBeenCalled();
+
+		act( () => {
+			jest.advanceTimersByTime( 500 );
+		} );
+
+		expect( mockSpeak ).toHaveBeenCalledWith(
+			'Balance report failed to load.',
+			'assertive'
+		);
+	} );
+
+	it( 'scopes print styles while Balance actions are available', () => {
 		const { unmount } = renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( document.body ).toHaveClass(
@@ -348,6 +474,23 @@ describe( 'BalanceReport', () => {
 		);
 
 		unmount();
+
+		expect( document.body ).not.toHaveClass(
+			'wcpay-reports-balance-print-context'
+		);
+		expect( document.documentElement ).not.toHaveClass(
+			'wcpay-reports-balance-print-context'
+		);
+	} );
+
+	it( 'does not scope print styles while Balance actions are unavailable', () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( document.body ).not.toHaveClass(
 			'wcpay-reports-balance-print-context'
@@ -377,26 +520,23 @@ describe( 'BalanceReport', () => {
 		expect(
 			screen.getByRole( 'button', { name: 'Date' } )
 		).toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Export' } )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'button', { name: 'Print' } )
-		).toBeDisabled();
+		expectActionButtonUnavailable( 'Export' );
+		expectActionButtonUnavailable( 'Print' );
 	} );
 
 	it( 'renders the empty state without requesting data when the Date filter is inactive', () => {
 		mockUseBalanceDateFilter.mockReturnValue( {
 			value: undefined,
 			period,
-			isDateFilterActive: false,
+			hasDateFilterValue: false,
 			setValue: jest.fn(),
 		} );
 
 		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith(
-			undefined
+			undefined,
+			expect.any( String )
 		);
 		expect(
 			screen.getByRole( 'heading', { name: 'No balance activity' } )
@@ -404,12 +544,8 @@ describe( 'BalanceReport', () => {
 		expect(
 			screen.queryByRole( 'table', { name: 'Balance summary' } )
 		).not.toBeInTheDocument();
-		expect(
-			screen.getByRole( 'button', { name: 'Export' } )
-		).toBeDisabled();
-		expect(
-			screen.getByRole( 'button', { name: 'Print' } )
-		).toBeDisabled();
+		expectActionButtonUnavailable( 'Export' );
+		expectActionButtonUnavailable( 'Print' );
 	} );
 
 	it( 'renders the canonical Balance summary rows', () => {
@@ -518,10 +654,15 @@ describe( 'BalanceReport', () => {
 		expect( csv ).toContain(
 			'ending_balance,"Ending balance - formatted 2026-05-14 UTC",0,,usd,2026-05-01,2026-05-14'
 		);
-		expect( csv ).not.toContain( 'This Balance report summarizes' );
+		expect( csv ).not.toContain(
+			'This report is provided for informational reconciliation purposes only.'
+		);
 	} );
 
 	it( 'surfaces a notice when CSV generation fails', async () => {
+		consoleErrorSpy = jest
+			.spyOn( console, 'error' )
+			.mockImplementation( () => undefined );
 		const error = new Error( 'download failed' );
 		mockDownloadCSVFile.mockImplementationOnce( () => {
 			throw error;
@@ -578,10 +719,11 @@ describe( 'BalanceReport', () => {
 				'.wcpay-reports-balance-print__business'
 			)
 		).toBeInTheDocument();
-		expect( printReport ).not.toHaveTextContent(
-			'This Balance report summarizes WooPayments balance activity for the selected UTC date range.'
+		expect( printReport ).toHaveTextContent( 'Automattic Inc.' );
+		expect( printReport ).toHaveTextContent( '60 29th Street #343' );
+		expect( printReport ).toHaveTextContent(
+			'San Francisco, CA, 94110, US'
 		);
-		expect( printReport ).not.toHaveTextContent( 'UTC date range:' );
 		expect( printReport ).toHaveTextContent(
 			'This report is provided for informational reconciliation purposes only.'
 		);

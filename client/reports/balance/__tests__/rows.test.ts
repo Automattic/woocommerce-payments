@@ -7,6 +7,8 @@ import { BALANCE_ROWS, getVisibleBalanceRows } from '../rows';
 
 describe( 'Balance report rows', () => {
 	it( 'defines the Balance rows in display order', () => {
+		// The UI row order mirrors the endpoint contract documented in
+		// includes/core/server/request/class-get-reporting-balance-summary.md.
 		expect( BALANCE_ROWS.map( ( row ) => row.key ) ).toEqual( [
 			'starting_balance',
 			'total_charges_captured',

@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useEffect, useId, useRef } from 'react';
-import { Button, Icon } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { calendar } from '@wordpress/icons';
@@ -15,36 +15,25 @@ import { calendar } from '@wordpress/icons';
 import { useReportsBalanceSummary } from 'wcpay/data';
 import DateFilter from 'wcpay/reports/date-filter';
 import { LoadingReportState } from '../loading-report-state';
-import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import {
-	BalancePeriod,
-	BalanceRow,
-	BalanceRowDepth,
-	getVisibleBalanceRows,
-} from './rows';
+import { ReportState } from '../report-state';
+import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
+import { BalanceRow, BalanceRowDepth, getVisibleBalanceRows } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
 import { formatBalanceAmount } from './format';
+import { getRowLabel, hasBalanceActivity, hasKeys } from './utils';
 import WooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
 
 interface BalanceReportProps {
-	onReload?: ( period: BalancePeriod ) => void;
+	onReload?: ( period: ReportsPeriodRange ) => void;
 }
 
-const printContextClass = 'wcpay-reports-balance-print-context';
-
-const hasKeys = ( value: Record< string, unknown > | undefined ): boolean =>
-	Object.keys( value ?? {} ).length > 0;
-
-const hasBalanceActivity = (
-	visibleRows: BalanceRow[],
-	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ]
-): boolean =>
-	visibleRows.some(
-		( row ) =>
-			row.getAmount( summary ) !== 0 ||
-			( row.getCount?.( summary ) ?? 0 ) !== 0
-	);
+const woopaymentsBusinessDetails = [
+	'WooPayments',
+	'Automattic Inc.',
+	'60 29th Street #343',
+	'San Francisco, CA, 94110, US',
+];
 
 const getRowDepth = ( row: BalanceRow ): BalanceRowDepth => row.depth ?? 0;
 
@@ -58,13 +47,6 @@ const getDisplayedAmount = ( row: BalanceRow, amount: number ): number => {
 	return amount;
 };
 
-const formatUtcDate = ( value: string ): string =>
-	sprintf(
-		/* translators: %s: date rendered in the site's date format. */
-		__( '%s UTC', 'woocommerce-payments' ),
-		formatDateTimeFromString( value, { timezone: 'UTC' } )
-	);
-
 const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
 	const depth = getRowDepth( row );
 	const classNames = [
@@ -77,44 +59,17 @@ const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
 	return rowClassName || undefined;
 };
 
-const getRowLabel = ( row: BalanceRow, period: BalancePeriod ): string => {
-	if ( row.key === 'starting_balance' ) {
-		return sprintf(
-			/* translators: %s: period start date. */
-			__( 'Starting balance - %s', 'woocommerce-payments' ),
-			formatUtcDate( period.start )
-		);
-	}
-
-	if ( row.key === 'ending_balance' ) {
-		return sprintf(
-			/* translators: %s: period end date. */
-			__( 'Ending balance - %s', 'woocommerce-payments' ),
-			formatUtcDate( period.end )
-		);
-	}
-
-	return row.label;
-};
-
 const BalanceEmptyState = (): JSX.Element => (
-	<div
-		className="wcpay-reports-state wcpay-reports-state--empty wcpay-reports-state--illustrated"
+	<ReportState
+		title={ __( 'No balance activity', 'woocommerce-payments' ) }
+		description={ __(
+			"Your Balance summary will appear here once there's enough data to display.",
+			'woocommerce-payments'
+		) }
+		icon={ calendar }
+		className="wcpay-reports-state--empty"
 		role="status"
-	>
-		<span className="wcpay-reports-state__icon" aria-hidden="true">
-			<Icon icon={ calendar } size={ 48 } />
-		</span>
-		<div className="wcpay-reports-state__copy">
-			<h2>{ __( 'No balance activity', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ __(
-					"Your Balance summary will appear here once there's enough data to display.",
-					'woocommerce-payments'
-				) }
-			</p>
-		</div>
-	</div>
+	/>
 );
 
 const BalancePrintReport = ( {
@@ -125,7 +80,7 @@ const BalancePrintReport = ( {
 }: {
 	visibleRows: BalanceRow[];
 	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
-	displayPeriod: BalancePeriod;
+	displayPeriod: ReportsPeriodRange;
 	currency: string;
 } ): JSX.Element => (
 	<section className="wcpay-reports-balance-print" aria-hidden="true">
@@ -136,15 +91,9 @@ const BalancePrintReport = ( {
 				alt={ __( 'WooPayments', 'woocommerce-payments' ) }
 			/>
 			<div className="wcpay-reports-balance-print__business">
-				<p>{ __( 'WooPayments', 'woocommerce-payments' ) }</p>
-				<p>{ __( 'Automattic Inc.', 'woocommerce-payments' ) }</p>
-				<p>{ __( '60 29th Street #343', 'woocommerce-payments' ) }</p>
-				<p>
-					{ __(
-						'San Francisco, CA, 94110, US',
-						'woocommerce-payments'
-					) }
-				</p>
+				{ woopaymentsBusinessDetails.map( ( line ) => (
+					<p key={ line }>{ line }</p>
+				) ) }
 			</div>
 		</header>
 		<table className="wcpay-reports-balance-print__table">
@@ -188,17 +137,35 @@ const BalancePrintReport = ( {
 export const BalanceReport = ( {
 	onReload = () => undefined,
 }: BalanceReportProps ): JSX.Element => {
-	const { value, period, isDateFilterActive, setValue } =
+	const { value, period, hasDateFilterValue, setValue } =
 		useBalanceDateFilter();
 	const {
 		summary,
 		error = {},
 		isLoading,
-	} = useReportsBalanceSummary( isDateFilterActive ? period : undefined );
-	const hasError = hasKeys( error );
+	} = useReportsBalanceSummary(
+		hasDateFilterValue ? period : undefined,
+		wcpaySettings.accountDefaultCurrency || ''
+	);
+	const hasStoreError = hasKeys( error );
+	const hasValidSummary = Boolean(
+		summary.currency && summary.period?.start && summary.period?.end
+	);
+	const hasMalformedSummary =
+		hasDateFilterValue &&
+		! isLoading &&
+		! hasStoreError &&
+		! hasValidSummary;
+	const hasError = hasStoreError || hasMalformedSummary;
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
+	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const toolbarRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
+	const previousErrorRef = useRef( hasError );
+	const speakTimerRef = useRef< ReturnType< typeof setTimeout > | null >(
+		null
+	);
+	const lastSpokenRef = useRef< string | null >( null );
 	const errorHeadingId = useId();
 	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
@@ -220,7 +187,7 @@ export const BalanceReport = ( {
 	const toolbar = (
 		<div className="wcpay-reports-balance__toolbar" ref={ toolbarRef }>
 			<DateFilter value={ value } onChange={ setValue } />
-			{ isDateFilterActive && (
+			{ hasDateFilterValue && (
 				<Button variant="tertiary" onClick={ resetDateFilter }>
 					{ __( 'Reset', 'woocommerce-payments' ) }
 				</Button>
@@ -229,28 +196,65 @@ export const BalanceReport = ( {
 	);
 
 	useEffect( () => {
+		if ( isLoading && ! previousLoadingRef.current ) {
+			loadingHeadingRef.current?.focus();
+		}
+
+		if ( hasError && ! previousErrorRef.current ) {
+			errorHeadingRef.current?.focus();
+		}
+
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
-			speak(
-				__( 'Balance report loaded.', 'woocommerce-payments' ),
-				'polite'
+			const message = __(
+				'Balance report loaded.',
+				'woocommerce-payments'
 			);
+			if ( speakTimerRef.current ) {
+				clearTimeout( speakTimerRef.current );
+			}
+			speakTimerRef.current = setTimeout( () => {
+				speakTimerRef.current = null;
+				if ( lastSpokenRef.current === message ) {
+					return;
+				}
+				lastSpokenRef.current = message;
+				speak( message );
+			}, 500 );
+		} else if ( hasError && ! previousErrorRef.current ) {
+			const message = __(
+				'Balance report failed to load.',
+				'woocommerce-payments'
+			);
+			const spokenKey = `assertive:${ message }`;
+			if ( speakTimerRef.current ) {
+				clearTimeout( speakTimerRef.current );
+			}
+			speakTimerRef.current = setTimeout( () => {
+				speakTimerRef.current = null;
+				if ( lastSpokenRef.current === spokenKey ) {
+					return;
+				}
+				lastSpokenRef.current = spokenKey;
+				speak( message, 'assertive' );
+			}, 500 );
 		}
 		previousLoadingRef.current = isLoading;
+		previousErrorRef.current = hasError;
 	}, [ hasError, isLoading ] );
 
-	useEffect( () => {
-		document.body.classList.add( printContextClass );
-		document.documentElement.classList.add( printContextClass );
-
-		return () => {
-			document.body.classList.remove( printContextClass );
-			document.documentElement.classList.remove( printContextClass );
-		};
-	}, [] );
+	useEffect(
+		() => () => {
+			if ( speakTimerRef.current ) {
+				clearTimeout( speakTimerRef.current );
+				speakTimerRef.current = null;
+			}
+		},
+		[]
+	);
 
 	let content: JSX.Element;
 
-	if ( ! isDateFilterActive ) {
+	if ( ! hasDateFilterValue ) {
 		content = <BalanceEmptyState />;
 	} else if ( isLoading ) {
 		content = (
@@ -263,20 +267,10 @@ export const BalanceReport = ( {
 		);
 	} else if ( hasError ) {
 		content = (
-			<div
-				className="wcpay-reports-state wcpay-reports-state--error wcpay-reports-state--illustrated wcpay-reports-state--balance-error"
-				role="alert"
-				aria-labelledby={ errorHeadingId }
-				aria-describedby={ errorDescriptionId }
-			>
-				<span className="wcpay-reports-state__icon" aria-hidden="true">
-					<Icon icon={ calendar } size={ 48 } />
-				</span>
-				<div className="wcpay-reports-state__copy">
-					<h2 id={ errorHeadingId }>
-						{ __( 'Balance unavailable', 'woocommerce-payments' ) }
-					</h2>
-					<p id={ errorDescriptionId }>
+			<ReportState
+				title={ __( 'Balance unavailable', 'woocommerce-payments' ) }
+				description={
+					<>
 						<span>
 							{ __(
 								"We couldn't load your balance data.",
@@ -289,15 +283,24 @@ export const BalanceReport = ( {
 								'woocommerce-payments'
 							) }
 						</span>
-					</p>
-				</div>
-				<Button
-					variant="secondary"
-					onClick={ () => onReload( period ) }
-				>
-					{ __( 'Reload report', 'woocommerce-payments' ) }
-				</Button>
-			</div>
+					</>
+				}
+				action={
+					<Button
+						variant="secondary"
+						onClick={ () => onReload( period ) }
+					>
+						{ __( 'Reload report', 'woocommerce-payments' ) }
+					</Button>
+				}
+				icon={ calendar }
+				className="wcpay-reports-state--error wcpay-reports-state--balance-error"
+				descriptionId={ errorDescriptionId }
+				headingId={ errorHeadingId }
+				headingRef={ errorHeadingRef }
+				headingTabIndex={ -1 }
+				role="alert"
+			/>
 		);
 	} else if ( ! hasActivity ) {
 		content = <BalanceEmptyState />;
@@ -305,13 +308,7 @@ export const BalanceReport = ( {
 		content = (
 			<>
 				<div className="wcpay-reports-balance__card">
-					<table
-						className="wcpay-reports-balance__table"
-						aria-label={ __(
-							'Balance summary',
-							'woocommerce-payments'
-						) }
-					>
+					<table className="wcpay-reports-balance__table">
 						<caption className="wcpay-reports-balance__caption">
 							{ __( 'Balance summary', 'woocommerce-payments' ) }
 						</caption>

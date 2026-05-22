@@ -24,7 +24,7 @@ const isResolving = jest.fn();
 
 declare const global: {
 	wcpaySettings: {
-		accountDefaultCurrency: string;
+		accountDefaultCurrency?: string;
 	};
 };
 
@@ -33,8 +33,8 @@ const period = {
 	end: '2024-03-31T23:59:59',
 };
 
-const renderBalanceHook = () =>
-	renderHook( () => useReportsBalanceSummary( period ) );
+const renderBalanceHook = ( currency?: string ) =>
+	renderHook( () => useReportsBalanceSummary( period, currency ) );
 
 const renderSkippedBalanceHook = () =>
 	renderHook( () => useReportsBalanceSummary( undefined ) );
@@ -103,17 +103,17 @@ describe( 'useReportsBalanceSummary', () => {
 		} );
 	} );
 
-	it( 'uses the account default currency in the resolver query', () => {
+	it( 'uses the caller-supplied currency in the resolver query', () => {
 		getReportsBalanceSummary.mockReturnValue( balanceSummaryFixture );
 		getReportsBalanceSummaryError.mockReturnValue( {} );
 		isResolving.mockReturnValue( false );
 
-		renderBalanceHook();
+		renderBalanceHook( 'EUR' );
 
 		const expectedQuery = {
 			dateStart: '2024-03-01T00:00:00',
 			dateEnd: '2024-03-31T23:59:59',
-			currency: 'usd',
+			currency: 'eur',
 		};
 		expect( getReportsBalanceSummary ).toHaveBeenCalledWith(
 			expectedQuery
@@ -128,7 +128,40 @@ describe( 'useReportsBalanceSummary', () => {
 		expect( mockUseSelect ).toHaveBeenCalledWith( expect.any( Function ), [
 			period.start,
 			period.end,
+			'EUR',
 		] );
+	} );
+
+	it( 'falls back to the account default currency when none is supplied', () => {
+		getReportsBalanceSummary.mockReturnValue( balanceSummaryFixture );
+		getReportsBalanceSummaryError.mockReturnValue( {} );
+		isResolving.mockReturnValue( false );
+
+		renderBalanceHook();
+
+		const expectedQuery = {
+			dateStart: '2024-03-01T00:00:00',
+			dateEnd: '2024-03-31T23:59:59',
+			currency: 'usd',
+		};
+		expect( getReportsBalanceSummary ).toHaveBeenCalledWith(
+			expectedQuery
+		);
+	} );
+
+	it( 'does not throw when the account default currency is missing', () => {
+		global.wcpaySettings = {};
+		getReportsBalanceSummary.mockReturnValue( balanceSummaryFixture );
+		getReportsBalanceSummaryError.mockReturnValue( {} );
+		isResolving.mockReturnValue( false );
+
+		expect( () => renderBalanceHook() ).not.toThrow();
+
+		expect( getReportsBalanceSummary ).toHaveBeenCalledWith( {
+			dateStart: '2024-03-01T00:00:00',
+			dateEnd: '2024-03-31T23:59:59',
+			currency: '',
+		} );
 	} );
 
 	it( 'skips Balance summary resolution when no period is active', () => {

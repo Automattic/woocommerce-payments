@@ -44,7 +44,7 @@ jest.mock( '../balance/use-balance-date-filter', () => ( {
 	useBalanceDateFilter: () => ( {
 		value: undefined,
 		period: { start: '', end: '' },
-		isDateFilterActive: false,
+		hasDateFilterValue: false,
 		setValue: jest.fn(),
 	} ),
 } ) );
@@ -108,7 +108,7 @@ const mockUseDispatch = useDispatch as jest.Mock;
 
 declare const global: {
 	wcpaySettings: {
-		accountDefaultCurrency: string;
+		accountDefaultCurrency?: string;
 		featureFlags: Record< string, boolean >;
 		fraudServices: unknown[];
 	};
@@ -255,6 +255,29 @@ describe( 'Reports page tabs', () => {
 					dateStart: activeBalancePeriod.start,
 					dateEnd: activeBalancePeriod.end,
 					currency: 'usd',
+				},
+			]
+		);
+	} );
+
+	it( 'does not crash the Reports page when the account default currency is missing', async () => {
+		global.wcpaySettings.accountDefaultCurrency = undefined;
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Reload/i } )
+		);
+
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getReportsBalanceSummary',
+			[
+				{
+					dateStart: activeBalancePeriod.start,
+					dateEnd: activeBalancePeriod.end,
+					currency: '',
 				},
 			]
 		);

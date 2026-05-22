@@ -20,11 +20,13 @@ import {
 } from 'wcpay/reports/period-selector';
 
 const reportsPath = '/payments/reports';
+const balanceDateFilterChangeEvent = 'wcpay-balance-date-filter-change';
+let isUpdatingBalanceDateFilterUrl = false;
 
 interface UseBalanceDateFilterResult {
 	value: DateFilterValue | undefined;
 	period: ReportsPeriodRange;
-	isDateFilterActive: boolean;
+	hasDateFilterValue: boolean;
 	setValue: ( next: DateFilterValue | undefined ) => void;
 }
 
@@ -199,15 +201,40 @@ export const useBalanceDateFilter = (
 			),
 		[ stableNow ]
 	);
-	const handlePopState = useCallback( () => {
-		setLocalValue( undefined );
+	const handleLocalDateFilterChange = useCallback(
+		( event: Event ) => {
+			setLocalValue(
+				( event as CustomEvent< LocalDateFilterValue > ).detail
+			);
+			bumpNavTick();
+		},
+		[ bumpNavTick ]
+	);
+	const handleHistoryChange = useCallback( () => {
+		if ( ! isUpdatingBalanceDateFilterUrl ) {
+			setLocalValue( undefined );
+		}
 		bumpNavTick();
 	}, [ bumpNavTick ] );
 
 	useEffect( () => {
-		window.addEventListener( 'popstate', handlePopState );
-		return () => window.removeEventListener( 'popstate', handlePopState );
-	}, [ handlePopState ] );
+		window.addEventListener(
+			balanceDateFilterChangeEvent,
+			handleLocalDateFilterChange
+		);
+		window.addEventListener( 'popstate', handleHistoryChange );
+		window.addEventListener( 'pushstate', handleHistoryChange );
+		window.addEventListener( 'replacestate', handleHistoryChange );
+		return () => {
+			window.removeEventListener(
+				balanceDateFilterChangeEvent,
+				handleLocalDateFilterChange
+			);
+			window.removeEventListener( 'popstate', handleHistoryChange );
+			window.removeEventListener( 'pushstate', handleHistoryChange );
+			window.removeEventListener( 'replacestate', handleHistoryChange );
+		};
+	}, [ handleHistoryChange, handleLocalDateFilterChange ] );
 
 	// `navTick` deliberately forces this render to read the current URL again
 	// after browser navigation or after this hook writes a new query string.
@@ -219,16 +246,26 @@ export const useBalanceDateFilter = (
 		? localValue.value
 		: readUrlValue() ?? getLastFullCalendarMonthDateFilter( stableNow );
 	const period = getPeriodForDateFilter( value, stableNow );
-	const isDateFilterActive = value !== undefined;
+	const hasDateFilterValue = value !== undefined;
 
 	const setValue = useCallback(
 		( next: DateFilterValue | undefined ) => {
 			const normalizedValue = normalizeDateFilterValue( next, stableNow );
-			setLocalValue( { value: normalizedValue } );
-			updateQueryString(
-				serializeDateFilterToQuery( normalizedValue ),
-				reportsPath
+			window.dispatchEvent(
+				new CustomEvent< LocalDateFilterValue >(
+					balanceDateFilterChangeEvent,
+					{ detail: { value: normalizedValue } }
+				)
 			);
+			isUpdatingBalanceDateFilterUrl = true;
+			try {
+				updateQueryString(
+					serializeDateFilterToQuery( normalizedValue ),
+					reportsPath
+				);
+			} finally {
+				isUpdatingBalanceDateFilterUrl = false;
+			}
 			setNavTick( ( tick ) => tick + 1 );
 		},
 		[ stableNow ]
@@ -237,7 +274,7 @@ export const useBalanceDateFilter = (
 	return {
 		value,
 		period,
-		isDateFilterActive,
+		hasDateFilterValue,
 		setValue,
 	};
 };

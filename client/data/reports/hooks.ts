@@ -195,7 +195,8 @@ export const useReportsFees = ( {
 	);
 
 export const useReportsBalanceSummary = (
-	period?: ReportsPeriodRange
+	period?: ReportsPeriodRange,
+	currency = wcpaySettings.accountDefaultCurrency || ''
 ): ReportsBalanceSummaryResult => {
 	return useSelect(
 		( select ) => {
@@ -209,11 +210,10 @@ export const useReportsBalanceSummary = (
 				isResolving,
 			} = select( STORE_NAME );
 
-			const currency = wcpaySettings.accountDefaultCurrency.toLowerCase();
 			const query = {
 				dateStart: period.start,
 				dateEnd: period.end,
-				currency,
+				currency: currency.toLowerCase(),
 			};
 
 			return {
@@ -222,7 +222,7 @@ export const useReportsBalanceSummary = (
 				isLoading: isResolving( 'getReportsBalanceSummary', [ query ] ),
 			};
 		},
-		[ period?.start, period?.end ]
+		[ period?.start, period?.end, currency ]
 	);
 };
 

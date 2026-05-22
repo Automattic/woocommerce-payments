@@ -12,7 +12,6 @@ import type {
 	ReportsBalanceSummary,
 	ReportsBalanceSummaryRow,
 } from 'wcpay/data/reports/hooks';
-import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 
 export type BalanceRowKey =
 	| 'starting_balance'
@@ -33,8 +32,6 @@ export type BalanceRowKey =
 	| 'net_balance_change_in_the_period'
 	| 'payouts'
 	| 'ending_balance';
-
-export type BalancePeriod = ReportsPeriodRange;
 
 /**
  * Indent depth for a Balance summary row.

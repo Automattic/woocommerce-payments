@@ -93,7 +93,16 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 				'sanitize_callback' => static function ( $currency ) {
 					return strtolower( sanitize_text_field( $currency ) );
 				},
-				'validate_callback' => [ Get_Reporting_Balance_Summary::class, 'is_valid_currency_code' ],
+				'validate_callback' => static function ( $currency ) {
+					if ( Get_Reporting_Balance_Summary::is_valid_currency_code( $currency ) ) {
+						return true;
+					}
+
+					return new WP_Error(
+						'rest_invalid_param',
+						__( 'Currency must be an ISO 4217 three-letter code.', 'woocommerce-payments' )
+					);
+				},
 			],
 		];
 	}

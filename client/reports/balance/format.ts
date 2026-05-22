@@ -25,8 +25,8 @@ export const formatBalanceAmount = (
 	const absoluteAmount = isNegative ? -amount : amount;
 
 	// `skipSymbol = true` removes the leading `$` (etc.) while keeping the
-	// currency utility's locale-aware number formatting (thousand/decimal
-	// separators), and the trailing ISO code is appended by the helper.
+	// currency utility's locale-aware number formatting. Depending on explicit
+	// pricing settings, the helper may also append a trailing ISO code.
 	const formatted = formatExplicitCurrency( absoluteAmount, upperCode, true );
 
 	// `formatExplicitCurrency` returns the value in one of two shapes depending

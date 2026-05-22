@@ -31,7 +31,7 @@ describe( 'useBalanceDateFilter', () => {
 			operator: 'between',
 			value: [ '2026-04-01', '2026-04-30' ],
 		} );
-		expect( result.current.isDateFilterActive ).toBe( true );
+		expect( result.current.hasDateFilterValue ).toBe( true );
 		expect( result.current.period ).toEqual( {
 			start: '2026-04-01T00:00:00.000Z',
 			end: '2026-04-30T23:59:59.999Z',
@@ -117,7 +117,7 @@ describe( 'useBalanceDateFilter', () => {
 		} );
 
 		expect( result.current.value ).toBeUndefined();
-		expect( result.current.isDateFilterActive ).toBe( false );
+		expect( result.current.hasDateFilterValue ).toBe( false );
 		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			{
 				date_between: undefined,
@@ -126,6 +126,24 @@ describe( 'useBalanceDateFilter', () => {
 			},
 			'/payments/reports'
 		);
+	} );
+
+	it( 'keeps explicit clears synchronized across mounted hook instances when the URL update emits pushstate', () => {
+		mockUpdateQueryString.mockImplementationOnce( ( args ) => {
+			mockGetQuery.mockReturnValue( args );
+			window.dispatchEvent( new Event( 'pushstate' ) );
+		} );
+		const first = renderHook( () => useBalanceDateFilter( now ) );
+		const second = renderHook( () => useBalanceDateFilter( now ) );
+
+		act( () => {
+			first.result.current.setValue( undefined );
+		} );
+
+		expect( first.result.current.value ).toBeUndefined();
+		expect( first.result.current.hasDateFilterValue ).toBe( false );
+		expect( second.result.current.value ).toBeUndefined();
+		expect( second.result.current.hasDateFilterValue ).toBe( false );
 	} );
 
 	it( 'caps date_between before writing the report URL', () => {
@@ -268,6 +286,29 @@ describe( 'useBalanceDateFilter', () => {
 			end: '2026-03-31T23:59:59.999Z',
 		} );
 	} );
+
+	it.each( [ 'pushstate', 'replacestate' ] )(
+		're-derives from URL changes via %s events',
+		( eventName ) => {
+			const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+			expect( result.current.period.start ).toBe(
+				'2026-04-01T00:00:00.000Z'
+			);
+
+			mockGetQuery.mockReturnValue( {
+				date_between: [ '2026-02-01', '2026-02-28' ],
+			} );
+			act( () => {
+				window.dispatchEvent( new Event( eventName ) );
+			} );
+
+			expect( result.current.period ).toEqual( {
+				start: '2026-02-01T00:00:00.000Z',
+				end: '2026-02-28T23:59:59.999Z',
+			} );
+		}
+	);
 } );
 
 describe( 'getPeriodForDateFilter', () => {

@@ -3,53 +3,32 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import {
 	downloadCSVFile,
 	generateCSVDataFromTable,
 } from '@woocommerce/csv-export';
-import { __, sprintf } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
 import { useReportsBalanceSummary } from 'wcpay/data/reports/hooks';
-import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import { BalancePeriod, BalanceRow, getVisibleBalanceRows } from './rows';
+import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
+import { getVisibleBalanceRows, type BalanceRow } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
+import {
+	getRowLabel,
+	hasBalanceActivity,
+	hasKeys,
+	printContextClass,
+} from './utils';
 
 const formatYmdUTC = ( value: string ): string => value.slice( 0, 10 );
 
-const formatUtcDate = ( value: string ): string =>
-	sprintf(
-		/* translators: %s: date rendered in the site's date format. */
-		__( '%s UTC', 'woocommerce-payments' ),
-		formatDateTimeFromString( value, { timezone: 'UTC' } )
-	);
-
-const getRowLabel = ( row: BalanceRow, period: BalancePeriod ): string => {
-	if ( row.key === 'starting_balance' ) {
-		return sprintf(
-			/* translators: %s: period start date. */
-			__( 'Starting balance - %s', 'woocommerce-payments' ),
-			formatUtcDate( period.start )
-		);
-	}
-
-	if ( row.key === 'ending_balance' ) {
-		return sprintf(
-			/* translators: %s: period end date. */
-			__( 'Ending balance - %s', 'woocommerce-payments' ),
-			formatUtcDate( period.end )
-		);
-	}
-
-	return row.label;
-};
-
-const getBalanceExportFileName = ( period: BalancePeriod ): string =>
+const getBalanceExportFileName = ( period: ReportsPeriodRange ): string =>
 	`wcpay-balance-${ formatYmdUTC( period.start ) }_${ formatYmdUTC(
 		period.end
 	) }.csv`;
@@ -62,7 +41,7 @@ const getBalanceCSV = ( {
 }: {
 	visibleRows: BalanceRow[];
 	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
-	displayPeriod: BalancePeriod;
+	displayPeriod: ReportsPeriodRange;
 	currency: string;
 } ): string => {
 	const periodStart = formatYmdUTC( displayPeriod.start );
@@ -104,41 +83,53 @@ const getBalanceCSV = ( {
 	);
 };
 
-const hasKeys = ( value: Record< string, unknown > | undefined ): boolean =>
-	Object.keys( value ?? {} ).length > 0;
-
-const hasBalanceActivity = (
-	visibleRows: BalanceRow[],
-	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ]
-): boolean =>
-	visibleRows.some(
-		( row ) =>
-			row.getAmount( summary ) !== 0 ||
-			( row.getCount?.( summary ) ?? 0 ) !== 0
-	);
-
 export const BalanceActions = (): JSX.Element => {
-	const { period, isDateFilterActive } = useBalanceDateFilter();
+	const { period, hasDateFilterValue } = useBalanceDateFilter();
 	const { createNotice } = useDispatch( 'core/notices' );
-	const [ isExporting, setIsExporting ] = useState( false );
 	const {
 		summary,
 		error = {},
 		isLoading,
-	} = useReportsBalanceSummary( isDateFilterActive ? period : undefined );
+	} = useReportsBalanceSummary(
+		hasDateFilterValue ? period : undefined,
+		wcpaySettings.accountDefaultCurrency || ''
+	);
 	const hasError = hasKeys( error );
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
+	const hasValidSummary = Boolean(
+		summary.currency && summary.period?.start && summary.period?.end
+	);
 	const displayPeriod = {
 		start: summary.period?.start ?? period.start,
 		end: summary.period?.end ?? period.end,
 	};
 	const currency = summary.currency ?? '';
 	const actionsDisabled =
-		! isDateFilterActive || isLoading || hasError || ! hasActivity;
+		! hasDateFilterValue ||
+		isLoading ||
+		hasError ||
+		! hasActivity ||
+		! hasValidSummary;
+
+	useEffect( () => {
+		if ( actionsDisabled ) {
+			return;
+		}
+
+		document.body.classList.add( printContextClass );
+		document.documentElement.classList.add( printContextClass );
+
+		return () => {
+			document.body.classList.remove( printContextClass );
+			document.documentElement.classList.remove( printContextClass );
+		};
+	}, [ actionsDisabled ] );
 
 	const onExport = () => {
-		setIsExporting( true );
+		if ( actionsDisabled ) {
+			return;
+		}
 
 		try {
 			downloadCSVFile(
@@ -160,18 +151,23 @@ export const BalanceActions = (): JSX.Element => {
 					'woocommerce-payments'
 				)
 			);
-		} finally {
-			setIsExporting( false );
 		}
 	};
 
-	const onPrint = () => window.print();
+	const onPrint = () => {
+		if ( actionsDisabled ) {
+			return;
+		}
+
+		window.print();
+	};
 
 	return (
 		<div className="wcpay-reports-balance-actions">
 			<Button
 				variant="secondary"
 				disabled={ actionsDisabled }
+				accessibleWhenDisabled
 				onClick={ onPrint }
 				__next40pxDefaultSize
 			>
@@ -179,8 +175,8 @@ export const BalanceActions = (): JSX.Element => {
 			</Button>
 			<Button
 				variant="primary"
-				disabled={ actionsDisabled || isExporting }
-				isBusy={ isExporting }
+				disabled={ actionsDisabled }
+				accessibleWhenDisabled
 				onClick={ onExport }
 				__next40pxDefaultSize
 			>

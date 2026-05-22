@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { Button, Icon } from '@wordpress/components';
+import { Button } from '@wordpress/components';
 import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
@@ -18,63 +18,12 @@ import { useFeesData } from './use-fees-data';
 import { getFeesFields } from './fields';
 import { CustomDateFilterPopover } from './custom-date-filter-popover';
 import { useDateFilterChipInterceptor } from './use-date-filter-chip-interceptor';
+import { ReportState } from '../report-state';
 import './style.scss';
 
 interface FeesReportProps {
 	onReload?: () => void;
 }
-
-interface FeesReportStateProps {
-	title: string;
-	description: React.ReactNode;
-	action?: React.ReactNode;
-	className?: string;
-	descriptionId?: string;
-	headingId?: string;
-	headingRef?: React.Ref< HTMLHeadingElement >;
-	headingTabIndex?: number;
-	role?: string;
-}
-
-const FeesReportState = ( {
-	title,
-	description,
-	action,
-	className,
-	descriptionId,
-	headingId,
-	headingRef,
-	headingTabIndex,
-	role,
-}: FeesReportStateProps ): JSX.Element => (
-	<div
-		className={ [
-			'wcpay-reports-state',
-			'wcpay-reports-state--fees-illustrated',
-			className,
-		]
-			.filter( Boolean )
-			.join( ' ' ) }
-		role={ role }
-		aria-labelledby={ headingId }
-		aria-describedby={ descriptionId }
-	>
-		<span className="wcpay-reports-state__icon" aria-hidden="true">
-			<Icon icon={ calendar } size={ 48 } />
-		</span>
-		<div className="wcpay-reports-state__copy">
-			<h2
-				id={ headingId }
-				ref={ headingRef }
-				tabIndex={ headingTabIndex }
-			>
-				{ title }
-			</h2>
-			<p id={ descriptionId }>{ description }</p>
-		</div>
-		{ action }
-	</div>
-);
 
 const customDatePopoverId = 'wcpay-fees-date-filter-popover';
 
@@ -184,7 +133,7 @@ export const FeesReport = ( {
 
 	if ( hasError ) {
 		return (
-			<FeesReportState
+			<ReportState
 				title={ __(
 					'Fees report unavailable',
 					'woocommerce-payments'
@@ -210,6 +159,7 @@ export const FeesReport = ( {
 						{ __( 'Reload report', 'woocommerce-payments' ) }
 					</Button>
 				}
+				icon={ calendar }
 				className="wcpay-reports-state--error wcpay-reports-state--fees-error"
 				descriptionId="wcpay-reports-fees-error-description"
 				headingId="wcpay-reports-fees-error"
@@ -225,13 +175,14 @@ export const FeesReport = ( {
 			/* role="status" is implicitly aria-live="polite". Safe here because the
 			   empty states do not shift focus — keep this in sync if you add focus
 			   management later. */
-			<FeesReportState
+			<ReportState
 				title={ __( 'No fees yet', 'woocommerce-payments' ) }
 				className="wcpay-reports-state--empty wcpay-reports-state--fees-empty"
 				description={ __(
 					'Fees will appear here once you start receiving payments.',
 					'woocommerce-payments'
 				) }
+				icon={ calendar }
 				descriptionId={ initialEmptyDescriptionId }
 				headingId={ initialEmptyHeadingId }
 				role="status"
@@ -267,7 +218,7 @@ export const FeesReport = ( {
 					/* role="status" is implicitly aria-live="polite". Safe here because the
 					   empty states do not shift focus — keep this in sync if you add focus
 					   management later. */
-					<FeesReportState
+					<ReportState
 						title={ __(
 							'No fees to display',
 							'woocommerce-payments'
@@ -277,6 +228,7 @@ export const FeesReport = ( {
 							'Fees will appear here.',
 							'woocommerce-payments'
 						) }
+						icon={ calendar }
 						descriptionId={ filteredEmptyDescriptionId }
 						headingId={ filteredEmptyHeadingId }
 						role="status"
