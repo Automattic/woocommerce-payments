@@ -109,6 +109,7 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
 		$this->setExpectedIncorrectUsage( 'register_rest_route' );
 		$this->controller->register_routes();
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'administrator' ] ) );
 
 		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/reports/balance' );
 		foreach ( $params as $key => $value ) {
