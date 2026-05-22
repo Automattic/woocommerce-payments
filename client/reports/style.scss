@@ -2,6 +2,19 @@
 
 body.woocommerce-admin-page__payments_reports {
 	background: #fff;
+
+	// Scope these WC layout overrides to the Reports section only so the
+	// Balance / Fees tabs flush against the left edge of the content area
+	// while still leaving room at the bottom for the WC footer.
+	.woocommerce-layout__primary {
+		margin: 0 0 128px var( --large-gap );
+	}
+
+	// The right-rail activity panel competes with the wider report tables
+	// and is not part of the reconciliation flow — hide it here.
+	.woocommerce-layout__activity-panel {
+		display: none;
+	}
 }
 
 .wcpay-reports-page {
@@ -56,7 +69,7 @@ body.woocommerce-admin-page__payments_reports {
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 16px;
-	margin-bottom: $gap-large;
+	margin-bottom: 4px;
 
 	&__intro {
 		flex: 1;
