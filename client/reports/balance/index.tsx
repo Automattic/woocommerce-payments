@@ -171,6 +171,10 @@ export const BalanceReport = ( {
 	const toolbarRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const previousErrorRef = useRef( hasError );
+	// Marks that the user just pressed Reload, so the next error→loading
+	// transition should restore focus to the loading heading (the Reload
+	// button itself unmounts before the useEffect runs).
+	const reloadRequestedRef = useRef( false );
 	const speakTimerRef = useRef< ReturnType< typeof setTimeout > | null >(
 		null
 	);
@@ -216,6 +220,17 @@ export const BalanceReport = ( {
 				false )
 		) {
 			errorHeadingRef.current?.focus();
+		}
+
+		// The Reload button is unmounted by the time this effect runs, so we
+		// can't read its focus state — `reloadRequestedRef` was set during the
+		// click handler instead. The cached error persists alongside
+		// `isLoading=true` after invalidateResolution, but the loading
+		// skeleton still renders because `isLoading` wins in the content
+		// branch — so gate on `isLoading` alone here.
+		if ( reloadRequestedRef.current && isLoading ) {
+			loadingHeadingRef.current?.focus();
+			reloadRequestedRef.current = false;
 		}
 
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
@@ -297,7 +312,10 @@ export const BalanceReport = ( {
 				action={
 					<Button
 						variant="secondary"
-						onClick={ () => onReload( period ) }
+						onClick={ () => {
+							reloadRequestedRef.current = true;
+							onReload( period );
+						} }
 					>
 						{ __( 'Reload report', 'woocommerce-payments' ) }
 					</Button>

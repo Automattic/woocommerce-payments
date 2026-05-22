@@ -367,7 +367,7 @@ describe( 'BalanceReport', () => {
 		expect( onReload ).toHaveBeenCalledWith( period );
 	} );
 
-	it( 'does not move focus to the loading heading after Reload starts a refresh', async () => {
+	it( 'moves focus to the loading heading after Reload starts a refresh', async () => {
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
 			error: { code: 'server_error' },
@@ -393,7 +393,7 @@ describe( 'BalanceReport', () => {
 
 		expect(
 			screen.getByRole( 'heading', { name: 'Loading balance report' } )
-		).not.toHaveFocus();
+		).toHaveFocus();
 	} );
 
 	it( 'moves focus to the error heading when loading fails', () => {
