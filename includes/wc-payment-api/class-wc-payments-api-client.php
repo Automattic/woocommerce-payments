@@ -310,28 +310,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Return summary for the Balance report.
-	 *
-	 * @param string $date_start The report period start.
-	 * @param string $date_end   The report period end.
-	 * @param string $currency   The report currency.
-	 *
-	 * @return array The Balance report summary.
-	 * @throws API_Exception Exception thrown on request failure.
-	 */
-	public function get_reports_balance_summary( string $date_start, string $date_end, string $currency ): array {
-		return $this->request(
-			[
-				'date_start' => $date_start,
-				'date_end'   => $date_end,
-				'currency'   => strtolower( $currency ),
-			],
-			self::REPORTING_API . '/balance_summary',
-			self::GET
-		);
-	}
-
-	/**
 	 * Retrieves transaction list for a given fraud outcome status.
 	 *
 	 * @param List_Fraud_Outcome_Transactions $request Fraud outcome transactions request.

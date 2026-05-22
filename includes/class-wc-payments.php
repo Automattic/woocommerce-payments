@@ -433,6 +433,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-paginated.php';
 		include_once __DIR__ . '/core/server/request/class-list-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-get-transactions-summary.php';
+		include_once __DIR__ . '/core/server/request/class-get-reporting-balance-summary.php';
 		include_once __DIR__ . '/core/server/request/class-list-fraud-outcome-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-list-disputes.php';
 		include_once __DIR__ . '/core/server/request/class-list-deposits.php';

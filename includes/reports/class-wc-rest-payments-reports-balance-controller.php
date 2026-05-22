@@ -5,6 +5,8 @@
  * @package WooCommerce\Payments\Reports
  */
 
+use WCPay\Core\Server\Request\Get_Reporting_Balance_Summary;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -48,14 +50,17 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 	 * @return WP_Error|WP_REST_Response
 	 */
 	public function get_balance_summary( $request ) {
-		return $this->forward_request(
-			'get_reports_balance_summary',
-			[
-				$request->get_param( 'date_start' ),
-				$request->get_param( 'date_end' ),
-				$request->get_param( 'currency' ),
-			]
-		);
+		$wcpay_request = Get_Reporting_Balance_Summary::create();
+		$wcpay_request->set_date_start( (string) $request->get_param( 'date_start' ) );
+		$wcpay_request->set_date_end( (string) $request->get_param( 'date_end' ) );
+		$wcpay_request->set_currency( (string) $request->get_param( 'currency' ) );
+
+		$response = $wcpay_request->handle_rest_request();
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -70,6 +75,7 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 				'type'              => 'string',
 				'format'            => 'date-time',
 				'required'          => true,
+				'sanitize_callback' => 'sanitize_text_field',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'date_end'   => [
@@ -77,6 +83,7 @@ class WC_REST_Payments_Reports_Balance_Controller extends WC_Payments_REST_Contr
 				'type'              => 'string',
 				'format'            => 'date-time',
 				'required'          => true,
+				'sanitize_callback' => 'sanitize_text_field',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
 			'currency'   => [

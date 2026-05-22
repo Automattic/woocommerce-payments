@@ -142,6 +142,7 @@ abstract class Request {
 		WC_Payments_API_Client::REFUNDS_API                => 'refunds',
 		WC_Payments_API_Client::DEPOSITS_API               => 'deposits',
 		WC_Payments_API_Client::TRANSACTIONS_API           => 'transactions',
+		WC_Payments_API_Client::REPORTING_API              => 'reporting',
 		WC_Payments_API_Client::DISPUTES_API               => 'disputes',
 		WC_Payments_API_Client::FILES_API                  => 'files',
 		WC_Payments_API_Client::ONBOARDING_API             => 'onboarding',
