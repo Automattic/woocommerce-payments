@@ -9,7 +9,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { BalanceRow, BalanceRowDepth } from './rows';
+import { BalanceRow, getDisplayedAmount, getRowDepth } from './rows';
 import { formatBalanceAmount } from './format';
 import { getRowLabel } from './utils';
 import type { ReportsBalanceSummary } from 'wcpay/data/reports/hooks';
@@ -23,16 +23,6 @@ interface BalanceSummaryTableProps {
 	className?: string;
 	ariaHidden?: boolean;
 }
-
-const getRowDepth = ( row: BalanceRow ): BalanceRowDepth => row.depth ?? 0;
-
-const getDisplayedAmount = ( row: BalanceRow, amount: number ): number => {
-	if ( row.displayNegative && amount !== 0 ) {
-		return -Math.abs( amount );
-	}
-
-	return amount;
-};
 
 export const BalanceSummaryTable = ( {
 	visibleRows,

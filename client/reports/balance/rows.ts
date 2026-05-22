@@ -60,6 +60,28 @@ export interface BalanceRow {
 	getCount?: ( summary: ReportsBalanceSummary ) => number | undefined;
 }
 
+export const getRowDepth = ( row: BalanceRow ): BalanceRowDepth =>
+	row.depth ?? 0;
+
+/**
+ * Applies the row-level `displayNegative` contract to a raw amount: outflow
+ * rows (e.g. Payouts) render with a leading minus even when the underlying
+ * datum is stored as a positive magnitude. Zero amounts pass through unchanged
+ * so reconciliation reports don't pin a misleading sign onto an empty line.
+ * The CSV export uses the raw value — only the on-screen and print tables
+ * apply this transform.
+ */
+export const getDisplayedAmount = (
+	row: BalanceRow,
+	amount: number
+): number => {
+	if ( row.displayNegative && amount !== 0 ) {
+		return -Math.abs( amount );
+	}
+
+	return amount;
+};
+
 const getRow = (
 	summary: ReportsBalanceSummary,
 	key: BalanceRowKey

@@ -16,7 +16,12 @@ import { useReportsBalanceSummary } from 'wcpay/data';
 import DateFilter from 'wcpay/reports/date-filter';
 import { ReportState } from '../report-state';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
-import { BalanceRow, BalanceRowDepth, getVisibleBalanceRows } from './rows';
+import {
+	BalanceRow,
+	getDisplayedAmount,
+	getRowDepth,
+	getVisibleBalanceRows,
+} from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
 import { BalanceSummaryTable } from './summary-table';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
@@ -45,8 +50,6 @@ const woopaymentsBusinessDetails = [
 	'San Francisco, CA, 94110, US',
 ];
 
-const getRowDepth = ( row: BalanceRow ): BalanceRowDepth => row.depth ?? 0;
-
 const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
 	const depth = getRowDepth( row );
 	const classNames = [
@@ -57,16 +60,6 @@ const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
 	const rowClassName = classNames.filter( Boolean ).join( ' ' );
 
 	return rowClassName || undefined;
-};
-
-const getPrintDisplayedAmount = ( row: BalanceRow, amount: number ): number => {
-	// Payouts and friends are always shown as a deduction from the running
-	// balance even when the data stores them as a positive magnitude.
-	if ( row.displayNegative && amount !== 0 ) {
-		return -Math.abs( amount );
-	}
-
-	return amount;
 };
 
 const BalanceEmptyState = (): JSX.Element => (
@@ -116,7 +109,7 @@ const BalancePrintReport = ( {
 			</thead>
 			<tbody>
 				{ visibleRows.map( ( row ) => {
-					const amount = getPrintDisplayedAmount(
+					const amount = getDisplayedAmount(
 						row,
 						row.getAmount( summary )
 					);
