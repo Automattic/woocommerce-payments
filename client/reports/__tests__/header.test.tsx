@@ -4,7 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -67,10 +68,12 @@ describe( 'ReportsHeader', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'requests an export with Fees download URLs on click', () => {
+	it( 'requests an export with Fees download URLs on click', async () => {
 		render( <ReportsHeader activeTab="fees" /> );
 
-		fireEvent.click( screen.getByRole( 'button', { name: /export/i } ) );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /export/i } )
+		);
 
 		expect( requestReportExport ).toHaveBeenCalledTimes( 1 );
 		const args = requestReportExport.mock.calls[ 0 ][ 0 ];
@@ -98,10 +101,12 @@ describe( 'ReportsHeader', () => {
 		expect( args.userEmail ).toBe( 'merchant@example.com' );
 	} );
 
-	it( 'shows a success notice on click', () => {
+	it( 'shows a success notice on click', async () => {
 		render( <ReportsHeader activeTab="fees" /> );
 
-		fireEvent.click( screen.getByRole( 'button', { name: /export/i } ) );
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /export/i } )
+		);
 
 		expect( createNotice ).toHaveBeenCalledWith(
 			'success',
