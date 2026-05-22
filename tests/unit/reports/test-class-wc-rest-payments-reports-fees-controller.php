@@ -142,7 +142,7 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'date_before', '2026-04-30 23:59:59' );
 		$request->set_param( 'date_between', [ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ] );
 		$request->set_param( 'match', 'all' );
-		$request->set_param( 'search', [ 'txn_123' ] );
+		$request->set_param( 'search', [ 'ch_123' ] );
 		$request->set_param( 'user_timezone', '+00:00' );
 
 		$this->assertSame(
@@ -155,11 +155,33 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 				'date_after'    => '2026-04-01 00:00:00',
 				'date_between'  => [ '2026-04-01 00:00:00', '2026-04-30 23:59:59' ],
 				'match'         => 'all',
-				'search'        => [ 'txn_123' ],
+				'search'        => [ 'ch_123' ],
 				'user_timezone' => '+00:00',
 			],
 			$this->get_fees_transaction_filters_for_test( $request )
 		);
+	}
+
+	public function test_get_fees_transaction_filters_maps_payout_id_search_to_deposit_filter() {
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_param( 'search', [ 'po_1TWRT9JbIuFWiDNFsTVj8XPN' ] );
+
+		$filters = $this->get_fees_transaction_filters_for_test( $request );
+
+		$this->assertArrayHasKey( 'deposit_id', $filters );
+		$this->assertSame( 'po_1TWRT9JbIuFWiDNFsTVj8XPN', $filters['deposit_id'] );
+		$this->assertArrayNotHasKey( 'search', $filters );
+	}
+
+	public function test_get_fees_transaction_filters_maps_transaction_id_search_to_transaction_filter() {
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_param( 'search', [ 'txn_1TWLynJbIuFWiDNFWgCJ6OWO' ] );
+
+		$filters = $this->get_fees_transaction_filters_for_test( $request );
+
+		$this->assertArrayHasKey( 'transaction_id_is', $filters );
+		$this->assertSame( 'txn_1TWLynJbIuFWiDNFWgCJ6OWO', $filters['transaction_id_is'] );
+		$this->assertArrayNotHasKey( 'search', $filters );
 	}
 
 	public function test_get_fees_transaction_filters_drops_customer_email_even_when_request_carries_it() {

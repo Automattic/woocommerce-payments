@@ -275,6 +275,8 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 	protected function get_fees_transaction_filters( $request ): array {
 		$user_timezone       = $request->get_param( 'user_timezone' );
 		$date_between_filter = $request->get_param( 'date_between' );
+		$search              = $request->get_param( 'search' );
+		$identifier_filters  = self::get_identifier_filters_from_search( $search );
 
 		if ( is_array( $date_between_filter ) ) {
 			$date_between_filter = array_map(
@@ -309,10 +311,11 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 				'date_after'    => Request_Utils::format_transaction_date_by_timezone( $request->get_param( 'date_after' ), $user_timezone ),
 				'date_between'  => $date_between_filter,
 				'match'         => $request->get_param( 'match' ),
-				'search'        => $request->get_param( 'search' ),
+				'search'        => [] === $identifier_filters ? $search : null,
 				'user_timezone' => $user_timezone,
 			]
 		);
+		$filters = array_merge( $filters, $identifier_filters );
 
 		return array_filter(
 			$filters,
@@ -320,6 +323,34 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 				return null !== $filter && '' !== $filter && [] !== $filter;
 			}
 		);
+	}
+
+	/**
+	 * Maps supported identifier search terms to explicit transaction filters.
+	 *
+	 * @param mixed $search Raw REST search value.
+	 *
+	 * @return array
+	 */
+	private static function get_identifier_filters_from_search( $search ): array {
+		if ( ! is_array( $search ) || 1 !== count( $search ) ) {
+			return [];
+		}
+
+		$term = reset( $search );
+		if ( ! is_string( $term ) ) {
+			return [];
+		}
+
+		if ( 1 === preg_match( '/^po_\w+$/', $term ) ) {
+			return [ 'deposit_id' => $term ];
+		}
+
+		if ( 1 === preg_match( '/^txn_\w+$/', $term ) ) {
+			return [ 'transaction_id_is' => $term ];
+		}
+
+		return [];
 	}
 
 	/**
