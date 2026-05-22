@@ -52,7 +52,19 @@ body.woocommerce-admin-page__payments_reports {
 }
 
 .wcpay-reports-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
 	margin-bottom: $gap-large;
+
+	&__intro {
+		flex: 1;
+	}
+
+	&__actions {
+		flex-shrink: 0;
+	}
 
 	p {
 		max-width: 660px;

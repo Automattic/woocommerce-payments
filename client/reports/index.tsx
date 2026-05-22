@@ -84,7 +84,7 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 
 	return (
 		<Page className="wcpay-reports-page">
-			<ReportsHeader />
+			<ReportsHeader activeTab={ activeTab } />
 			<div ref={ tabPanelWrapperRef }>
 				<TabPanel
 					key={ tabPanelKey }
