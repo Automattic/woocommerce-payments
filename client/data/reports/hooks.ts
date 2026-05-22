@@ -12,6 +12,7 @@ import type { Query } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 
 export type ReportsFeeType =
 	| 'charge'
@@ -104,11 +105,6 @@ interface ReportsBalanceSummaryResult {
 	summary: ReportsBalanceSummary;
 	error?: Record< string, unknown >;
 	isLoading: boolean;
-}
-
-interface ReportsPeriodRange {
-	start: string;
-	end: string;
 }
 
 interface ReportsFeesQuery extends Query {

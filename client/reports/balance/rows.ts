@@ -12,6 +12,7 @@ import type {
 	ReportsBalanceSummary,
 	ReportsBalanceSummaryRow,
 } from 'wcpay/data/reports/hooks';
+import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import { getAdminUrl } from 'wcpay/utils';
 
 export type BalanceRowKey =
@@ -34,10 +35,7 @@ export type BalanceRowKey =
 	| 'payouts'
 	| 'ending_balance';
 
-export interface BalancePeriod {
-	start: string;
-	end: string;
-}
+export type BalancePeriod = ReportsPeriodRange;
 
 export interface BalanceRow {
 	key: BalanceRowKey;
@@ -218,9 +216,6 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		getAmount: getAmount( 'ending_balance' ),
 	},
 ];
-
-export const isAnchorRow = ( row: BalanceRow ): boolean =>
-	row.alwaysVisible === true;
 
 export const getVisibleBalanceRows = (
 	summary: ReportsBalanceSummary

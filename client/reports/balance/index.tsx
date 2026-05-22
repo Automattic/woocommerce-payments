@@ -11,6 +11,7 @@ import {
 import { Button } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { __, _n, sprintf } from '@wordpress/i18n';
+import { speak } from '@wordpress/a11y';
 
 /**
  * Internal dependencies
@@ -18,7 +19,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { useReportsBalanceSummary } from 'wcpay/data';
 import DateFilter from 'wcpay/reports/date-filter';
 import DownloadButton from 'components/download-button';
-import { LoadingReportState } from '../lazy-fees-report';
+import { LoadingReportState } from '../loading-report-state';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { BalancePeriod, BalanceRow, getVisibleBalanceRows } from './rows';
@@ -29,6 +30,8 @@ import './style.scss';
 interface BalanceReportProps {
 	onReload?: ( period: BalancePeriod ) => void;
 }
+
+const printContextClass = 'wcpay-reports-balance-print-context';
 
 const hasKeys = ( value: Record< string, unknown > | undefined ): boolean =>
 	Object.keys( value ?? {} ).length > 0;
@@ -177,14 +180,9 @@ const BalancePrintReport = ( {
 			/>
 			<div className="wcpay-reports-balance-print__business">
 				<p>{ __( 'WooPayments', 'woocommerce-payments' ) }</p>
-				<p>{ __( 'Automattic Inc.', 'woocommerce-payments' ) }</p>
-				<p>{ __( '60 29th Street #343', 'woocommerce-payments' ) }</p>
-				<p>
-					{ __(
-						'San Francisco, CA, 94110, US',
-						'woocommerce-payments'
-					) }
-				</p>
+				<p>Automattic Inc.</p>
+				<p>60 29th Street #343</p>
+				<p>San Francisco, CA, 94110, US</p>
 			</div>
 		</header>
 		<table className="wcpay-reports-balance-print__table">
@@ -239,6 +237,7 @@ export const BalanceReport = ( {
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousErrorRef = useRef( hasError );
+	const previousLoadingRef = useRef( isLoading );
 	const errorHeadingId = useId();
 	const renderToolbar = ( {
 		actionsDisabled = false,
@@ -276,6 +275,26 @@ export const BalanceReport = ( {
 		previousErrorRef.current = hasError;
 	}, [ hasError ] );
 
+	useEffect( () => {
+		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+			speak(
+				__( 'Balance report loaded.', 'woocommerce-payments' ),
+				'polite'
+			);
+		}
+		previousLoadingRef.current = isLoading;
+	}, [ hasError, isLoading ] );
+
+	useEffect( () => {
+		document.body.classList.add( printContextClass );
+		document.documentElement.classList.add( printContextClass );
+
+		return () => {
+			document.body.classList.remove( printContextClass );
+			document.documentElement.classList.remove( printContextClass );
+		};
+	}, [] );
+
 	if ( isLoading ) {
 		return (
 			<div className="wcpay-reports-balance">
@@ -290,30 +309,38 @@ export const BalanceReport = ( {
 
 	if ( hasError ) {
 		return (
-			<div
-				className="wcpay-reports-state wcpay-reports-state--error"
-				role="group"
-				aria-labelledby={ errorHeadingId }
-			>
-				<h2
-					id={ errorHeadingId }
-					ref={ errorHeadingRef }
-					tabIndex={ -1 }
+			<div className="wcpay-reports-balance">
+				{ renderToolbar( { actionsDisabled: true } ) }
+				<div
+					className="wcpay-reports-state wcpay-reports-state--error"
+					role="alert"
+					aria-labelledby={ errorHeadingId }
 				>
-					{ __( 'Balance unavailable', 'woocommerce-payments' ) }
-				</h2>
-				<Button
-					variant="secondary"
-					onClick={ () => onReload( period ) }
-				>
-					{ __( 'Reload report', 'woocommerce-payments' ) }
-				</Button>
+					<h2
+						id={ errorHeadingId }
+						ref={ errorHeadingRef }
+						tabIndex={ -1 }
+					>
+						{ __( 'Balance unavailable', 'woocommerce-payments' ) }
+					</h2>
+					<Button
+						variant="secondary"
+						onClick={ () => onReload( period ) }
+					>
+						{ __( 'Reload report', 'woocommerce-payments' ) }
+					</Button>
+				</div>
 			</div>
 		);
 	}
 
 	if ( ! hasBalanceActivity( summary ) ) {
-		return <BalanceEmptyState />;
+		return (
+			<div className="wcpay-reports-balance">
+				{ renderToolbar( { actionsDisabled: true } ) }
+				<BalanceEmptyState />
+			</div>
+		);
 	}
 
 	const displayPeriod = {

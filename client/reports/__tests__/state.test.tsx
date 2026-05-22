@@ -59,7 +59,7 @@ describe( 'Reports tab states', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'still routes to FeesReport when an error status is passed for the Fees tab', async () => {
+	it( 'lets FeesReport surface its own state UI', async () => {
 		// FeesReport surfaces its own error UI internally; the outer panel
 		// must not override or duplicate it.
 		render( <ReportsTabPanel tab="fees" onReload={ jest.fn() } /> );

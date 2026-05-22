@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import balanceSummaryFixture from 'wcpay/data/reports/fixtures/balance-summary';
-import { BALANCE_ROWS, getVisibleBalanceRows, isAnchorRow } from '../rows';
+import { BALANCE_ROWS, getVisibleBalanceRows } from '../rows';
 
 jest.mock( 'wcpay/utils', () => ( {
 	getAdminUrl: ( args: Record< string, unknown > ) => {
@@ -55,7 +55,9 @@ describe( 'Balance report rows', () => {
 
 	it( 'marks only the required anchor rows as always visible', () => {
 		expect(
-			BALANCE_ROWS.filter( isAnchorRow ).map( ( row ) => row.key )
+			BALANCE_ROWS.filter( ( row ) => row.alwaysVisible === true ).map(
+				( row ) => row.key
+			)
 		).toEqual( [
 			'starting_balance',
 			'total_charges_captured',

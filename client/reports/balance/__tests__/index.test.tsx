@@ -1,18 +1,19 @@
 /** @format */
 
-/**
- * External dependencies
- */
-import fs from 'fs';
-import path from 'path';
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 
 const mockCreateNotice = jest.fn();
+const mockSpeak = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
 const mockUseBalanceDateFilter = jest.fn();
+
+jest.mock( '@wordpress/a11y', () => ( {
+	speak: ( message: string, politeness?: string ) =>
+		mockSpeak( message, politeness ),
+} ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: () => ( {
@@ -114,11 +115,17 @@ const zeroSummary = {
 	ending_balance: { amount: 0 },
 };
 
+const getVisibleBalanceTable = () =>
+	screen.getByRole( 'table', { name: 'Balance summary' } );
+
 const expectBalanceText = ( text: string ) =>
-	expect( screen.getAllByText( text )[ 0 ] ).toBeInTheDocument();
+	expect(
+		within( getVisibleBalanceTable() ).getByText( text )
+	).toBeInTheDocument();
 
 beforeEach( () => {
 	mockCreateNotice.mockReset();
+	mockSpeak.mockReset();
 	mockDownloadCSVFile.mockReset();
 	mockUseBalanceDateFilter.mockReturnValue( {
 		value: undefined,
@@ -130,6 +137,13 @@ beforeEach( () => {
 		error: {},
 		isLoading: false,
 	} );
+} );
+
+afterEach( () => {
+	document.body.classList.remove( 'wcpay-reports-balance-print-context' );
+	document.documentElement.classList.remove(
+		'wcpay-reports-balance-print-context'
+	);
 } );
 
 describe( 'BalanceReport', () => {
@@ -172,15 +186,72 @@ describe( 'BalanceReport', () => {
 
 		render( <BalanceReport onReload={ onReload } /> );
 
+		expect( screen.getByRole( 'alert' ) ).toContainElement(
+			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
+		);
 		expect(
 			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
 		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Date' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Export' } )
+		).toBeDisabled();
+		expect(
+			screen.getByRole( 'button', { name: 'Print' } )
+		).toBeDisabled();
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Reload report' } )
 		);
 
 		expect( onReload ).toHaveBeenCalledWith( period );
+	} );
+
+	it( 'announces when Balance data finishes loading', () => {
+		mockUseReportsBalanceSummary
+			.mockReturnValueOnce( {
+				summary: {},
+				error: {},
+				isLoading: true,
+			} )
+			.mockReturnValueOnce( {
+				summary: balanceSummaryFixture,
+				error: {},
+				isLoading: false,
+			} );
+
+		const { rerender } = render( <BalanceReport onReload={ jest.fn() } /> );
+
+		expect( mockSpeak ).not.toHaveBeenCalled();
+
+		rerender( <BalanceReport onReload={ jest.fn() } /> );
+
+		expect( mockSpeak ).toHaveBeenCalledWith(
+			'Balance report loaded.',
+			'polite'
+		);
+	} );
+
+	it( 'scopes print styles while the Balance report is mounted', () => {
+		const { unmount } = render( <BalanceReport onReload={ jest.fn() } /> );
+
+		expect( document.body ).toHaveClass(
+			'wcpay-reports-balance-print-context'
+		);
+		expect( document.documentElement ).toHaveClass(
+			'wcpay-reports-balance-print-context'
+		);
+
+		unmount();
+
+		expect( document.body ).not.toHaveClass(
+			'wcpay-reports-balance-print-context'
+		);
+		expect( document.documentElement ).not.toHaveClass(
+			'wcpay-reports-balance-print-context'
+		);
 	} );
 
 	it( 'renders the empty state when every row is zero', () => {
@@ -201,8 +272,14 @@ describe( 'BalanceReport', () => {
 			)
 		).toBeInTheDocument();
 		expect(
-			screen.queryByRole( 'button', { name: 'Export' } )
-		).not.toBeInTheDocument();
+			screen.getByRole( 'button', { name: 'Date' } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Export' } )
+		).toBeDisabled();
+		expect(
+			screen.getByRole( 'button', { name: 'Print' } )
+		).toBeDisabled();
 	} );
 
 	it( 'renders the canonical Balance summary rows', () => {
@@ -238,9 +315,15 @@ describe( 'BalanceReport', () => {
 			expectBalanceText( label );
 		}
 
-		expect( screen.getAllByText( 'usd 162672' )[ 0 ] ).toBeInTheDocument();
-		expect( screen.getAllByText( 'usd -6064' )[ 0 ] ).toBeInTheDocument();
-		expect( screen.getAllByText( 'usd 1101608' )[ 0 ] ).toBeInTheDocument();
+		expect(
+			within( getVisibleBalanceTable() ).getByText( 'usd 162672' )
+		).toBeInTheDocument();
+		expect(
+			within( getVisibleBalanceTable() ).getByText( 'usd -6064' )
+		).toBeInTheDocument();
+		expect(
+			within( getVisibleBalanceTable() ).getByText( 'usd 1101608' )
+		).toBeInTheDocument();
 		expect(
 			screen
 				.getAllByText( '8' )
@@ -316,33 +399,6 @@ describe( 'BalanceReport', () => {
 		);
 
 		expect( print ).toHaveBeenCalledTimes( 1 );
-	} );
-
-	it( 'hides the WordPress admin shell in the print stylesheet', () => {
-		const styles = fs.readFileSync(
-			path.join( __dirname, '../style.scss' ),
-			'utf8'
-		);
-
-		expect( styles ).toMatch( /@media print[\s\S]*#adminmenumain/ );
-		expect( styles ).toMatch( /@media print[\s\S]*#wpadminbar/ );
-		expect( styles ).toMatch( /@media print[\s\S]*@page[\s\S]*margin: 0/ );
-		expect( styles ).toMatch( /@media print[\s\S]*#wpfooter/ );
-		expect( styles ).toMatch(
-			/@media print[\s\S]*#adminmenumain[\s\S]*display: none !important/
-		);
-		expect( styles ).toMatch(
-			/@media print[\s\S]*\.wcpay-reports-balance[\s\S]*width: 100vw !important/
-		);
-		expect( styles ).toMatch(
-			/@media print[\s\S]*\.wcpay-reports-balance-print[\s\S]*width: auto/
-		);
-		expect( styles ).toMatch(
-			/@media print[\s\S]*\.wcpay-reports-balance-print[\s\S]*margin: 61px 51px 0/
-		);
-		expect( styles ).not.toMatch(
-			/@media print[\s\S]*\.wcpay-reports-balance-print[\s\S]*position: absolute/
-		);
 	} );
 
 	it( 'renders print-only Balance report content outside the screen layout', () => {

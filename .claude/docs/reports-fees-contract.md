@@ -1,6 +1,6 @@
 # WooPayments Reports - Fees Contract
 
-**Last updated:** 2026-05-20
+**Last updated:** 2026-05-22
 
 ## Scope
 
@@ -213,7 +213,7 @@ Fees-specific behavior lives in `client/reports/fees/date-filter-values.ts` and 
 -   URL serialization clears stale date keys and writes only the active date shape.
 -   Because DataViews owns the visible filter chip markup, Fees intercepts clicks and keyboard activation on the DataViews Date chip and anchors `CustomDateFilterPopover` to that chip.
 
-The standalone `DateFilter` wrapper is not used by the Fees tab. It remains relevant as a reusable primitive for the planned non-DataViews Balance tab, where WooPayments will own the filter bar directly. Before using it for Balance, confirm whether the displayed range label should be `Between` or `Between (inc)`.
+The standalone `DateFilter` wrapper is not used by the Fees tab. The Balance tab uses it directly because WooPayments owns that filter bar instead of delegating the visible filter chip to DataViews. Balance normalizes the selected range before requesting its summary endpoint, including capping ranges to the latest complete UTC day.
 
 ## Summary Contract
 

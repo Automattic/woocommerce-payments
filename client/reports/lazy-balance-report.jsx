@@ -8,7 +8,7 @@ import React, { lazy, Suspense } from 'react';
 /**
  * Internal dependencies
  */
-import { LoadingReportState } from './lazy-fees-report';
+import { LoadingReportState } from './loading-report-state';
 
 const LazyBalanceReport = lazy( () =>
 	import( /* webpackChunkName: "reports-balance" */ './balance' ).then(
