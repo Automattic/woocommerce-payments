@@ -341,15 +341,10 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_transactions_export' )
 			->with(
-				$this->callback(
-					function ( $filters ) {
-						$this->assertArrayHasKey( 'type_is_in', $filters );
-						$this->assertSame(
-							WC_REST_Payments_Reports_Fees_Controller::DEFAULT_FEE_BEARING_TYPES,
-							$filters['type_is_in']
-						);
-						return true;
-					}
+				$this->equalTo(
+					[
+						'type_is_in' => WC_REST_Payments_Reports_Fees_Controller::DEFAULT_FEE_BEARING_TYPES,
+					]
 				),
 				'merchant@example.com',
 				null,
@@ -371,19 +366,16 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'get_transactions_export' )
 			->with(
-				$this->callback(
-					function ( $filters ) {
-						$this->assertSame( [ 'dispute' ], $filters['type_is_in'] );
-						return true;
-					}
-				),
+				$this->equalTo( [ 'type_is_in' => [ 'dispute' ] ] ),
 				'',
 				null,
 				null
 			)
 			->willReturn( [ 'export_id' => 'exp_456' ] );
 
-		$this->controller->get_fees_export( $request );
+		$response = $this->controller->get_fees_export( $request );
+
+		$this->assertSame( [ 'export_id' => 'exp_456' ], $response->get_data() );
 	}
 
 	public function test_get_fees_export_passes_deposit_id_through() {
@@ -401,7 +393,9 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 			)
 			->willReturn( [ 'export_id' => 'exp_789' ] );
 
-		$this->controller->get_fees_export( $request );
+		$response = $this->controller->get_fees_export( $request );
+
+		$this->assertSame( [ 'export_id' => 'exp_789' ], $response->get_data() );
 	}
 
 	public function test_get_export_url_forwards_export_id_to_api_client() {
@@ -448,6 +442,27 @@ class WC_REST_Payments_Reports_Fees_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertInstanceOf( WP_Error::class, $response );
 		$this->assertSame( 'wcpay_export_failed', $response->get_error_code() );
+	}
+
+	public function test_get_export_url_returns_wp_error_when_api_throws() {
+		$request = new WP_REST_Request( 'GET' );
+		$request->set_param( 'export_id', 'exp_xyz' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'get_transactions_export_url' )
+			->willThrowException(
+				new API_Exception(
+					'Signed URL unavailable.',
+					'wcpay_export_url_failed',
+					500
+				)
+			);
+
+		$response = $this->controller->get_export_url( $request );
+
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_export_url_failed', $response->get_error_code() );
 	}
 
 	public function return_enabled_flag() {
