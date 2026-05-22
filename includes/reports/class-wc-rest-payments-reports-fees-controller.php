@@ -74,6 +74,30 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 				],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/download',
+			[
+				[
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => [ $this, 'get_fees_export' ],
+					'permission_callback' => [ $this, 'check_permission' ],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/download/(?P<export_id>[^/\\\\%]+)',
+			[
+				[
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => [ $this, 'get_fees_export_url' ],
+					'permission_callback' => [ $this, 'check_permission' ],
+				],
+			]
+		);
 	}
 
 	/**
@@ -134,6 +158,35 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 		}
 
 		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Initiates a Fees CSV export via the transactions/download backend.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Backend response, typically `{ export_id: string }`, or a WP_Error on API failure.
+	 */
+	public function get_fees_export( $request ) {
+		$filters    = $this->get_fees_transaction_filters( $request );
+		$deposit_id = $filters['deposit_id'] ?? null;
+		unset( $filters['deposit_id'] );
+
+		$user_email = (string) ( $request->get_param( 'user_email' ) ?? '' );
+		$locale     = $request->get_param( 'locale' );
+
+		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id, $locale ] );
+	}
+
+	/**
+	 * Returns the signed download URL for a previously requested Fees export.
+	 *
+	 * @param WP_REST_Request $request Full data about the request.
+	 * @return WP_REST_Response|WP_Error Backend response, typically `{ status, download_url }`, or a WP_Error on API failure.
+	 */
+	public function get_fees_export_url( $request ) {
+		$export_id = (string) $request->get_param( 'export_id' );
+
+		return $this->forward_request( 'get_transactions_export_url', [ $export_id ] );
 	}
 
 	/**
