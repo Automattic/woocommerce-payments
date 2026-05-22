@@ -238,6 +238,42 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Returns whether the store has had at least one live (production) WooPayments sale.
+	 *
+	 * Reads the one-way `HAS_LIVE_SALE_OPTION` flag set by `maybe_record_first_live_sale()`;
+	 * falls back to a single `wc_get_orders` meta query when the option hasn't been
+	 * populated yet (e.g., for stores that took their first live sale before this
+	 * feature shipped). Writes the option on hit so subsequent reads short-circuit.
+	 *
+	 * @return bool
+	 */
+	public function has_live_sale(): bool {
+		if ( get_option( self::HAS_LIVE_SALE_OPTION ) ) {
+			return true;
+		}
+
+		$orders = wc_get_orders(
+			[
+				'payment_method' => 'woocommerce_payments',
+				'limit'          => 1,
+				'return'         => 'ids',
+				'status'         => [ 'wc-completed', 'wc-processing' ],
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+				'meta_key'       => self::WCPAY_MODE_META_KEY,
+				// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+				'meta_value'     => Order_Mode::PRODUCTION,
+			]
+		);
+
+		if ( ! empty( $orders ) ) {
+			update_option( self::HAS_LIVE_SALE_OPTION, '1', true );
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Parse the payment intent data and add any necessary notes to the order and update the order status accordingly.
 	 *
 	 * @param WC_Order                           $order   The order to update.

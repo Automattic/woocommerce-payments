@@ -43,6 +43,22 @@ describe( 'getExpectedFieldStatus', () => {
 		expect( refundPolicy?.state ).toBe( 'optional_missing' );
 	} );
 
+	it( 'tracks shipping_date (not service_date) as the fulfilment date for fraudulent + physical_product', () => {
+		// Regression: wizard collects `shipping_date`, not `service_date`, for physical_product.
+		const result = getExpectedFieldStatus(
+			'fraudulent',
+			'physical_product',
+			{
+				shipping_date: '2026-04-15',
+			}
+		);
+		expect( result.some( ( f ) => f.key === 'service_date' ) ).toBe(
+			false
+		);
+		const shippingDate = result.find( ( f ) => f.key === 'shipping_date' );
+		expect( shippingDate?.state ).toBe( 'provided' );
+	} );
+
 	it.each( [ '', '   ' ] )( 'treats %j as not provided', ( value ) => {
 		const result = getExpectedFieldStatus(
 			'product_not_received',
@@ -79,13 +95,23 @@ describe( 'getExpectedFieldStatus', () => {
 		expect( shippingAddress?.state ).toBe( 'provided' );
 	} );
 
-	it( 'returns an empty array for a reason with no high-impact list and no matrix entry', () => {
+	it( 'returns just the cover letter row for a reason with no high-impact list and no matrix entry', () => {
 		const result = getExpectedFieldStatus(
 			'bank_cannot_process',
 			'physical_product',
 			{}
 		);
-		expect( result ).toEqual( [] );
+		// `bank_cannot_process × physical_product` has empty entries in
+		// every map, so the only row left is the universally-surfaced
+		// cover letter (expected_missing when `uncategorized_text` is
+		// empty).
+		expect( result ).toEqual( [
+			{
+				key: 'uncategorized_text',
+				label: 'Cover letter',
+				state: 'expected_missing',
+			},
+		] );
 	} );
 
 	it( 'surfaces matrix-only fields as optional_missing for a cell with empty high-impact list', () => {
@@ -94,30 +120,49 @@ describe( 'getExpectedFieldStatus', () => {
 			'event',
 			{}
 		);
-		expect( result.some( ( f ) => f.state === 'expected_missing' ) ).toBe(
-			false
+		// Excluding the universally-surfaced cover letter, the only
+		// expected_missing-state rows would come from the (empty)
+		// high-impact list; the rest are optional_missing from the
+		// matrix.
+		const nonCoverLetter = result.filter(
+			( f ) => f.key !== 'uncategorized_text'
 		);
-		expect( result.some( ( f ) => f.state === 'optional_missing' ) ).toBe(
-			true
-		);
+		expect(
+			nonCoverLetter.some( ( f ) => f.state === 'expected_missing' )
+		).toBe( false );
+		expect(
+			nonCoverLetter.some( ( f ) => f.state === 'optional_missing' )
+		).toBe( true );
 	} );
 
-	it( 'returns an empty array for an unrecognised reason string', () => {
+	it( 'returns just the cover letter row for an unrecognised reason string', () => {
 		const result = getExpectedFieldStatus(
 			'not_a_real_reason',
 			'physical_product',
 			{}
 		);
-		expect( result ).toEqual( [] );
+		expect( result ).toEqual( [
+			{
+				key: 'uncategorized_text',
+				label: 'Cover letter',
+				state: 'expected_missing',
+			},
+		] );
 	} );
 
-	it( 'returns an empty array for an unrecognised product type string', () => {
+	it( 'returns just the cover letter row for an unrecognised product type string', () => {
 		const result = getExpectedFieldStatus(
 			'product_not_received',
 			'not_a_real_product_type',
 			{}
 		);
-		expect( result ).toEqual( [] );
+		expect( result ).toEqual( [
+			{
+				key: 'uncategorized_text',
+				label: 'Cover letter',
+				state: 'expected_missing',
+			},
+		] );
 	} );
 
 	it( 'narrows expected_missing rows to the product type cell', () => {
@@ -287,7 +332,11 @@ describe( 'getExpectedFieldStatus', () => {
 			'physical_product',
 			{}
 		);
-		expect( result ).toHaveLength( 0 );
+		// Only the universal cover letter row survives; the base-field
+		// merge for customer_communication is gated on a matching cell.
+		expect(
+			result.find( ( f ) => f.key === 'customer_communication' )
+		).toBeUndefined();
 	} );
 } );
 
@@ -347,6 +396,73 @@ describe( 'composite-key label collision handling', () => {
 		);
 		const row = result.find( ( f ) => f.key === 'customer_communication' );
 		expect( row?.label ).toBe( 'Customer communication' );
+	} );
+} );
+
+describe( 'cover letter row', () => {
+	it( 'renders as provided when uncategorized_text has content', () => {
+		const result = getExpectedFieldStatus(
+			'fraudulent',
+			'physical_product',
+			{ uncategorized_text: 'Dear bank, ...' }
+		);
+		const row = result.find( ( f ) => f.key === 'uncategorized_text' );
+		expect( row ).toBeDefined();
+		expect( row?.state ).toBe( 'provided' );
+		expect( row?.label ).toBe( 'Cover letter' );
+	} );
+
+	it( 'renders as expected_missing when uncategorized_text is empty', () => {
+		const result = getExpectedFieldStatus(
+			'fraudulent',
+			'physical_product',
+			{ uncategorized_text: '' }
+		);
+		const row = result.find( ( f ) => f.key === 'uncategorized_text' );
+		expect( row?.state ).toBe( 'expected_missing' );
+	} );
+
+	it( 'renders as expected_missing when uncategorized_text is absent', () => {
+		const result = getExpectedFieldStatus(
+			'fraudulent',
+			'physical_product',
+			{}
+		);
+		const row = result.find( ( f ) => f.key === 'uncategorized_text' );
+		expect( row?.state ).toBe( 'expected_missing' );
+	} );
+
+	it( 'surfaces the cover letter row for reasons with no high-impact entries', () => {
+		// `bank_cannot_process` is an empty cell in every map; the cover
+		// letter row is still emitted.
+		const result = getExpectedFieldStatus(
+			'bank_cannot_process',
+			'physical_product',
+			{}
+		);
+		expect(
+			result.find( ( f ) => f.key === 'uncategorized_text' )
+		).toBeDefined();
+	} );
+
+	it( 'positions the cover letter row before the optional_missing block', () => {
+		// On a cell mixing expected_missing + optional_missing rows, the
+		// cover letter should sit ahead of the optional ones so the
+		// inline / disclosure split in the UI groups it with the other
+		// "expected" entries.
+		const result = getExpectedFieldStatus(
+			'fraudulent',
+			'physical_product',
+			{}
+		);
+		const coverLetterIdx = result.findIndex(
+			( f ) => f.key === 'uncategorized_text'
+		);
+		const firstOptionalIdx = result.findIndex(
+			( f ) => f.state === 'optional_missing'
+		);
+		expect( coverLetterIdx ).toBeGreaterThanOrEqual( 0 );
+		expect( firstOptionalIdx ).toBeGreaterThan( coverLetterIdx );
 	} );
 } );
 

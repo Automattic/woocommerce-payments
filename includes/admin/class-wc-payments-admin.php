@@ -366,6 +366,19 @@ class WC_Payments_Admin {
 			],
 		];
 
+		if ( WC_Payments_Features::is_reports_area_enabled() ) {
+			$this->admin_child_pages['wc-payments-reports'] = [
+				'id'       => 'wc-payments-reports',
+				'title'    => __( 'Reports', 'woocommerce-payments' ),
+				'parent'   => 'wc-payments',
+				'path'     => '/payments/reports',
+				'nav_args' => [
+					'parent' => 'wc-payments',
+					'order'  => 35,
+				],
+			];
+		}
+
 		try {
 			// Render full payments menu with sub-items only if:
 			// - we have working WPCOM/Jetpack connection;
