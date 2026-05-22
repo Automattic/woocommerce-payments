@@ -229,7 +229,8 @@ body.woocommerce-admin-page__payments_reports {
 			font-weight: 500;
 		}
 
-		&.wcpay-reports-state--fees-error {
+		&.wcpay-reports-state--fees-error,
+		&.wcpay-reports-state--balance-error {
 			.wcpay-reports-state__copy p span {
 				display: block;
 			}

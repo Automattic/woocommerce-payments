@@ -250,6 +250,7 @@ export const BalanceReport = ( {
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const errorHeadingId = useId();
+	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
 	const displayPeriod = {
@@ -344,13 +345,33 @@ export const BalanceReport = ( {
 	} else if ( hasError ) {
 		content = (
 			<div
-				className="wcpay-reports-state wcpay-reports-state--error"
+				className="wcpay-reports-state wcpay-reports-state--error wcpay-reports-state--illustrated wcpay-reports-state--balance-error"
 				role="alert"
 				aria-labelledby={ errorHeadingId }
+				aria-describedby={ errorDescriptionId }
 			>
-				<h2 id={ errorHeadingId } tabIndex={ -1 }>
-					{ __( 'Balance unavailable', 'woocommerce-payments' ) }
-				</h2>
+				<span className="wcpay-reports-state__icon" aria-hidden="true">
+					<Icon icon={ calendar } size={ 48 } />
+				</span>
+				<div className="wcpay-reports-state__copy">
+					<h2 id={ errorHeadingId } tabIndex={ -1 }>
+						{ __( 'Balance unavailable', 'woocommerce-payments' ) }
+					</h2>
+					<p id={ errorDescriptionId }>
+						<span>
+							{ __(
+								"We couldn't load your balance data.",
+								'woocommerce-payments'
+							) }
+						</span>{ ' ' }
+						<span>
+							{ __(
+								'Try again in a few minutes.',
+								'woocommerce-payments'
+							) }
+						</span>
+					</p>
+				</div>
 				<Button
 					variant="secondary"
 					onClick={ () => onReload( period ) }

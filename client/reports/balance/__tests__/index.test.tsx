@@ -209,8 +209,16 @@ describe( 'BalanceReport', () => {
 
 		render( <BalanceReport onReload={ onReload } /> );
 
-		expect( screen.getByRole( 'alert' ) ).toContainElement(
+		const alert = screen.getByRole( 'alert' );
+
+		expect( alert ).toContainElement(
 			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
+		);
+		expect(
+			alert.querySelector( '.wcpay-reports-state__icon' )
+		).toBeInTheDocument();
+		expect( alert ).toHaveTextContent(
+			/We couldn't load your balance data\.\s*Try again in a few minutes\./
 		);
 		expect(
 			screen.getByRole( 'heading', { name: 'Balance unavailable' } )
