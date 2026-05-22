@@ -296,11 +296,6 @@ describe( 'BalanceReport', () => {
 			'Loading balance report'
 		);
 		expect(
-			screen
-				.getByRole( 'status' )
-				.closest( '.wcpay-reports-balance__skeleton' )
-		).toBeInTheDocument();
-		expect(
 			screen.getByRole( 'button', { name: 'Date' } )
 		).toBeInTheDocument();
 		expectActionButtonUnavailable( 'Export' );

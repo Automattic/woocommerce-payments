@@ -188,50 +188,65 @@ describe( 'useBalanceDateFilter', () => {
 		);
 	} );
 
-	it.each( [
-		[
-			'on',
-			{ operator: 'on', value: '2026-05-14' },
+	it( 'writes on Date filters to the report URL', () => {
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		act( () => {
+			result.current.setValue( {
+				operator: 'on',
+				value: '2026-05-14',
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			{
 				date_between: [ '2026-05-14', '2026-05-14' ],
 				date_before: undefined,
 				date_after: undefined,
 			},
-		],
-		[
-			'before',
-			{ operator: 'before', value: '2026-05-14' },
+			'/payments/reports'
+		);
+	} );
+
+	it( 'writes before Date filters to the report URL', () => {
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		act( () => {
+			result.current.setValue( {
+				operator: 'before',
+				value: '2026-05-14',
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			{
 				date_before: '2026-05-14',
 				date_between: undefined,
 				date_after: undefined,
 			},
-		],
-		[
-			'after',
-			{ operator: 'after', value: '2026-05-14' },
+			'/payments/reports'
+		);
+	} );
+
+	it( 'writes after Date filters to the report URL', () => {
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		act( () => {
+			result.current.setValue( {
+				operator: 'after',
+				value: '2026-05-14',
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
 			{
 				date_after: '2026-05-14',
 				date_between: undefined,
 				date_before: undefined,
 			},
-		],
-	] as const )(
-		'writes %s Date filters to the report URL',
-		( operator, value, expectedQuery ) => {
-			void operator;
-			const { result } = renderHook( () => useBalanceDateFilter( now ) );
-
-			act( () => {
-				result.current.setValue( value );
-			} );
-
-			expect( mockUpdateQueryString ).toHaveBeenCalledWith(
-				expectedQuery,
-				'/payments/reports'
-			);
-		}
-	);
+			'/payments/reports'
+		);
+	} );
 
 	it( 'keeps a same-day between selection in between mode after writing the report URL', () => {
 		mockUpdateQueryString.mockImplementationOnce( ( args ) => {
