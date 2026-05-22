@@ -31,9 +31,12 @@ interface BalanceReportProps {
 
 const woopaymentsBusinessDetails = [
 	__( 'WooPayments', 'woocommerce-payments' ),
-	__( 'Automattic Inc.', 'woocommerce-payments' ),
-	__( '60 29th Street #343', 'woocommerce-payments' ),
-	__( 'San Francisco, CA, 94110, US', 'woocommerce-payments' ),
+	// Postal address lines below are deliberately not wrapped in __():
+	// localizing a legal entity address would produce non-deliverable text on
+	// the printed reconciliation report.
+	'Automattic Inc.',
+	'60 29th Street #343',
+	'San Francisco, CA, 94110, US',
 ];
 
 const getRowDepth = ( row: BalanceRow ): BalanceRowDepth => row.depth ?? 0;
