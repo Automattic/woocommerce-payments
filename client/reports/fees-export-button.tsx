@@ -75,6 +75,8 @@ export const FeesExportButton: React.FC = () => {
 			variant="primary"
 			onClick={ onClick }
 			disabled={ isExportInProgress }
+			accessibleWhenDisabled
+			aria-busy={ isExportInProgress }
 			isBusy={ isExportInProgress }
 			__next40pxDefaultSize
 		>
