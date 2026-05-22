@@ -14,11 +14,11 @@ The `WCPay\Core\Server\Request\Get_Reporting_Balance_Summary` class is used to c
 | `date_end`   | `set_date_end( string $date_end )`     |     -     |   Yes    |       -       |
 | `currency`   | `set_currency( string $currency )`     |     -     |   Yes    |       -       |
 
-`date_start` and `date_end` must be valid REST API date-time values. `currency` must be a lowercase ISO-4217 currency code.
+`date_start` and `date_end` must be valid REST API date-time values. `currency` must be an ISO-4217 currency code and is normalized to lowercase.
 
 ## Filter
 
--   Name: `wcpay_get_reports_balance_summary_request`
+-   Name: `wcpay_get_reporting_balance_summary_request`
 -   Arguments: `$request`
 
 ## Example
