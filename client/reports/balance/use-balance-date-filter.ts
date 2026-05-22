@@ -127,6 +127,15 @@ const normalizeDateFilterValue = (
 	};
 };
 
+const getLastFullCalendarMonthDateFilter = ( now: Date ): DateFilterValue => {
+	const range = getLastFullCalendarMonthUTC( now );
+
+	return {
+		operator: 'between',
+		value: [ range.start.slice( 0, 10 ), range.end.slice( 0, 10 ) ],
+	};
+};
+
 export const getPeriodForDateFilter = (
 	value: DateFilterValue | undefined,
 	now: Date = new Date()
@@ -205,7 +214,9 @@ export const useBalanceDateFilter = (
 	// Keep local writes authoritative during an open interaction. The URL parser
 	// collapses same-day `date_between` values to `on`, which would interrupt
 	// in-progress range selection after the first calendar click.
-	const value = localValue ? localValue.value : readUrlValue();
+	const value = localValue
+		? localValue.value
+		: readUrlValue() ?? getLastFullCalendarMonthDateFilter( stableNow );
 	const period = getPeriodForDateFilter( value, stableNow );
 
 	const setValue = useCallback(

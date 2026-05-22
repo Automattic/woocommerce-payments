@@ -24,10 +24,13 @@ beforeEach( () => {
 } );
 
 describe( 'useBalanceDateFilter', () => {
-	it( 'falls back to the last full calendar month when the URL has no Date filter', () => {
+	it( 'uses the last full calendar month as the active Date filter when the URL has no Date filter', () => {
 		const { result } = renderHook( () => useBalanceDateFilter( now ) );
 
-		expect( result.current.value ).toBeUndefined();
+		expect( result.current.value ).toEqual( {
+			operator: 'between',
+			value: [ '2026-04-01', '2026-04-30' ],
+		} );
 		expect( result.current.period ).toEqual( {
 			start: '2026-04-01T00:00:00.000Z',
 			end: '2026-04-30T23:59:59.999Z',
