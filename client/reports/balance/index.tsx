@@ -26,6 +26,7 @@ import {
 	hasBalanceActivity,
 	hasKeys,
 	isBalanceSummaryMalformed,
+	printContextClass,
 } from './utils';
 import WooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
@@ -178,6 +179,8 @@ export const BalanceReport = ( {
 	const errorDescriptionId = useId();
 	const visibleRows = getVisibleBalanceRows( summary );
 	const hasActivity = hasBalanceActivity( visibleRows, summary );
+	const printScopeActive =
+		hasDateFilterValue && ! isLoading && ! hasError && hasActivity;
 	const displayPeriod = {
 		start: summary.period?.start ?? period.start,
 		end: summary.period?.end ?? period.end,
@@ -235,6 +238,20 @@ export const BalanceReport = ( {
 		previousLoadingRef.current = isLoading;
 		previousErrorRef.current = hasError;
 	}, [ hasError, isLoading ] );
+
+	useEffect( () => {
+		if ( ! printScopeActive ) {
+			return;
+		}
+
+		document.body.classList.add( printContextClass );
+		document.documentElement.classList.add( printContextClass );
+
+		return () => {
+			document.body.classList.remove( printContextClass );
+			document.documentElement.classList.remove( printContextClass );
+		};
+	}, [ printScopeActive ] );
 
 	useEffect(
 		() => () => {

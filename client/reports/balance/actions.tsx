@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import {
@@ -24,7 +24,6 @@ import {
 	hasBalanceActivity,
 	hasKeys,
 	isBalanceSummaryMalformed,
-	printContextClass,
 } from './utils';
 
 const formatYmdUTC = ( value: string ): string => value.slice( 0, 10 );
@@ -115,20 +114,6 @@ export const BalanceActions = (): JSX.Element => {
 		hasStoreError ||
 		hasMalformedSummary ||
 		! hasActivity;
-
-	useEffect( () => {
-		if ( actionsDisabled ) {
-			return;
-		}
-
-		document.body.classList.add( printContextClass );
-		document.documentElement.classList.add( printContextClass );
-
-		return () => {
-			document.body.classList.remove( printContextClass );
-			document.documentElement.classList.remove( printContextClass );
-		};
-	}, [ actionsDisabled ] );
 
 	const onExport = () => {
 		if ( actionsDisabled ) {
