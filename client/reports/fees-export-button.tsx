@@ -18,8 +18,6 @@ import {
 	getFeesCSVRequestURL,
 } from 'wcpay/data/reports/resolvers';
 
-declare const wcpaySettings: { currentUserEmail: string };
-
 /**
  * Triggers a Fees CSV export for the current URL-synced filter state.
  *
