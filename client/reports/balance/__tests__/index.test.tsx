@@ -3,12 +3,30 @@
 /**
  * External dependencies
  */
+import fs from 'fs';
+import path from 'path';
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { downloadCSVFile } from '@woocommerce/csv-export';
 
+const mockCreateNotice = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
 const mockUseBalanceDateFilter = jest.fn();
+
+jest.mock( '@wordpress/data', () => ( {
+	useDispatch: () => ( {
+		createNotice: mockCreateNotice,
+	} ),
+} ) );
+
+jest.mock( '@woocommerce/csv-export', () => {
+	const actual = jest.requireActual( '@woocommerce/csv-export' );
+	return {
+		...actual,
+		downloadCSVFile: jest.fn(),
+	};
+} );
 
 jest.mock( 'wcpay/data', () => ( {
 	useReportsBalanceSummary: ( period: unknown ) =>
@@ -64,6 +82,10 @@ jest.mock( 'wcpay/utils', () => ( {
 import balanceSummaryFixture from 'wcpay/data/reports/fixtures/balance-summary';
 import { BalanceReport } from '../index';
 
+const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
+	typeof downloadCSVFile
+>;
+
 const period = {
 	start: '2026-05-01T00:00:00.000Z',
 	end: '2026-05-14T23:59:59.999Z',
@@ -92,7 +114,12 @@ const zeroSummary = {
 	ending_balance: { amount: 0 },
 };
 
+const expectBalanceText = ( text: string ) =>
+	expect( screen.getAllByText( text )[ 0 ] ).toBeInTheDocument();
+
 beforeEach( () => {
+	mockCreateNotice.mockReset();
+	mockDownloadCSVFile.mockReset();
 	mockUseBalanceDateFilter.mockReturnValue( {
 		value: undefined,
 		period,
@@ -112,7 +139,7 @@ describe( 'BalanceReport', () => {
 		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith( period );
 	} );
 
-	it( 'renders the loading state', () => {
+	it( 'renders the loading state with disabled export and print actions', () => {
 		mockUseReportsBalanceSummary.mockReturnValue( {
 			summary: {},
 			error: {},
@@ -127,6 +154,12 @@ describe( 'BalanceReport', () => {
 		expect(
 			screen.getByRole( 'button', { name: 'Date' } )
 		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: 'Export' } )
+		).toBeDisabled();
+		expect(
+			screen.getByRole( 'button', { name: 'Print' } )
+		).toBeDisabled();
 	} );
 
 	it( 'renders the error state with a reload action', async () => {
@@ -167,6 +200,9 @@ describe( 'BalanceReport', () => {
 				"Your Balance summary will appear here once there's enough data to display."
 			)
 		).toBeInTheDocument();
+		expect(
+			screen.queryByRole( 'button', { name: 'Export' } )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'renders the canonical Balance summary rows', () => {
@@ -178,12 +214,8 @@ describe( 'BalanceReport', () => {
 		expect(
 			screen.getByRole( 'button', { name: 'Date' } )
 		).toBeInTheDocument();
-		expect(
-			screen.getByText( 'Starting balance - formatted 2024-03-01 UTC' )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText( 'Ending balance - formatted 2024-03-31 UTC' )
-		).toBeInTheDocument();
+		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
+		expectBalanceText( 'Ending balance - formatted 2024-03-31 UTC' );
 
 		for ( const label of [
 			'Total charges captured',
@@ -203,15 +235,162 @@ describe( 'BalanceReport', () => {
 			'Net balance change in the period',
 			'Payouts',
 		] ) {
-			expect( screen.getByText( label ) ).toBeInTheDocument();
+			expectBalanceText( label );
 		}
 
-		expect( screen.getByText( 'usd 162672' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'usd -6064' ) ).toBeInTheDocument();
-		expect( screen.getByText( 'usd 1101608' ) ).toBeInTheDocument();
-		expect( screen.getAllByText( '8' )[ 0 ] ).toHaveClass(
-			'wcpay-reports-balance__count'
+		expect( screen.getAllByText( 'usd 162672' )[ 0 ] ).toBeInTheDocument();
+		expect( screen.getAllByText( 'usd -6064' )[ 0 ] ).toBeInTheDocument();
+		expect( screen.getAllByText( 'usd 1101608' )[ 0 ] ).toBeInTheDocument();
+		expect(
+			screen
+				.getAllByText( '8' )
+				.find( ( element ) =>
+					element.classList.contains( 'wcpay-reports-balance__count' )
+				)
+		).toBeInTheDocument();
+	} );
+
+	it( 'downloads a machine-readable CSV for the selected UTC range', async () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {
+				...balanceSummaryFixture,
+				period,
+			},
+			error: {},
+			isLoading: false,
+		} );
+
+		render( <BalanceReport onReload={ jest.fn() } /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Export' } )
 		);
+
+		expect( mockDownloadCSVFile ).toHaveBeenCalledTimes( 1 );
+		expect( mockDownloadCSVFile ).toHaveBeenCalledWith(
+			'wcpay-balance-2026-05-01_2026-05-14.csv',
+			expect.any( String )
+		);
+
+		const csv = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ] as string;
+		expect( csv ).toMatch(
+			/^row_key,label,amount,count,currency,period_start,period_end\n/
+		);
+		expect( csv ).toContain(
+			'starting_balance,"Starting balance - formatted 2026-05-01 UTC",1000,,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).toContain(
+			'total_charges_captured,"Total charges captured",162672,8,usd,2026-05-01,2026-05-14'
+		);
+		expect( csv ).not.toContain( 'This Balance report summarizes' );
+	} );
+
+	it( 'surfaces a notice when CSV generation fails', async () => {
+		mockDownloadCSVFile.mockImplementationOnce( () => {
+			throw new Error( 'download failed' );
+		} );
+
+		render( <BalanceReport onReload={ jest.fn() } /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Export' } )
+		);
+
+		expect( mockCreateNotice ).toHaveBeenCalledWith(
+			'error',
+			expect.stringContaining( 'problem generating' )
+		);
+	} );
+
+	it( 'invokes the browser print preview from the Print button', async () => {
+		const print = jest.fn();
+		Object.defineProperty( window, 'print', {
+			configurable: true,
+			value: print,
+		} );
+
+		render( <BalanceReport onReload={ jest.fn() } /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Print' } )
+		);
+
+		expect( print ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'hides the WordPress admin shell in the print stylesheet', () => {
+		const styles = fs.readFileSync(
+			path.join( __dirname, '../style.scss' ),
+			'utf8'
+		);
+
+		expect( styles ).toMatch( /@media print[\s\S]*#adminmenumain/ );
+		expect( styles ).toMatch( /@media print[\s\S]*#wpadminbar/ );
+		expect( styles ).toMatch( /@media print[\s\S]*@page[\s\S]*margin: 0/ );
+		expect( styles ).toMatch( /@media print[\s\S]*#wpfooter/ );
+		expect( styles ).toMatch(
+			/@media print[\s\S]*#adminmenumain[\s\S]*display: none !important/
+		);
+		expect( styles ).toMatch(
+			/@media print[\s\S]*\.wcpay-reports-balance[\s\S]*width: 100vw !important/
+		);
+		expect( styles ).toMatch(
+			/@media print[\s\S]*\.wcpay-reports-balance-print[\s\S]*width: auto/
+		);
+		expect( styles ).toMatch(
+			/@media print[\s\S]*\.wcpay-reports-balance-print[\s\S]*margin: 61px 51px 0/
+		);
+		expect( styles ).not.toMatch(
+			/@media print[\s\S]*\.wcpay-reports-balance-print[\s\S]*position: absolute/
+		);
+	} );
+
+	it( 'renders print-only Balance report content outside the screen layout', () => {
+		const { container } = render(
+			<BalanceReport onReload={ jest.fn() } />
+		);
+
+		const printReport = container.querySelector(
+			'.wcpay-reports-balance-print'
+		) as HTMLElement;
+
+		expect( printReport ).toBeInTheDocument();
+		expect( printReport ).toHaveAttribute( 'aria-hidden', 'true' );
+		expect(
+			printReport.querySelector( 'img[alt="WooPayments"]' )
+		).toBeInTheDocument();
+		expect( printReport ).toHaveTextContent( 'WooPayments' );
+		expect( printReport ).toHaveTextContent( 'Automattic Inc.' );
+		expect( printReport ).toHaveTextContent( '60 29th Street #343' );
+		expect( printReport ).toHaveTextContent(
+			'San Francisco, CA, 94110, US'
+		);
+		expect( printReport ).not.toHaveTextContent(
+			'This Balance report summarizes WooPayments balance activity for the selected UTC date range.'
+		);
+		expect( printReport ).not.toHaveTextContent( 'UTC date range:' );
+		expect( printReport ).toHaveTextContent(
+			'This report is provided for informational reconciliation purposes only.'
+		);
+		expect( printReport ).toHaveTextContent(
+			'It is not an IRS form, tax statement, bank statement, legal document, or formal financial statement.'
+		);
+		const table = printReport.querySelector(
+			'.wcpay-reports-balance-print__table'
+		) as HTMLElement;
+		expect( table ).toBeInTheDocument();
+		expect(
+			within( table ).getByRole( 'columnheader', {
+				name: 'Balance summary',
+				hidden: true,
+			} )
+		).toHaveAttribute( 'colspan', '2' );
+		expect(
+			within( table ).queryByRole( 'columnheader', {
+				name: 'Balance row',
+				hidden: true,
+			} )
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'hides optional rows when their amount and count are zero', () => {
@@ -231,9 +410,7 @@ describe( 'BalanceReport', () => {
 		expect(
 			screen.queryByText( 'Other adjustments' )
 		).not.toBeInTheDocument();
-		expect(
-			screen.getByText( 'Starting balance - formatted 2024-03-01 UTC' )
-		).toBeInTheDocument();
+		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
 	} );
 
 	it( 'renders Explore links for supported rows', () => {

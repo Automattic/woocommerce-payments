@@ -3,8 +3,13 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
+import {
+	downloadCSVFile,
+	generateCSVDataFromTable,
+} from '@woocommerce/csv-export';
 import { Button } from '@wordpress/components';
+import { useDispatch } from '@wordpress/data';
 import { __, _n, sprintf } from '@wordpress/i18n';
 
 /**
@@ -12,11 +17,13 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  */
 import { useReportsBalanceSummary } from 'wcpay/data';
 import DateFilter from 'wcpay/reports/date-filter';
+import DownloadButton from 'components/download-button';
 import { LoadingReportState } from '../lazy-fees-report';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { BalancePeriod, BalanceRow, getVisibleBalanceRows } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
+import WooPaymentsLogo from 'assets/images/woopayments.svg?asset';
 import './style.scss';
 
 interface BalanceReportProps {
@@ -51,6 +58,25 @@ const formatUtcDate = ( value: string ): string =>
 		formatDateTimeFromString( value, { timezone: 'UTC' } )
 	);
 
+const formatYmdUTC = ( value: string ): string => value.slice( 0, 10 );
+
+const getBalanceExportFileName = ( period: BalancePeriod ): string =>
+	`wcpay-balance-${ formatYmdUTC( period.start ) }_${ formatYmdUTC(
+		period.end
+	) }.csv`;
+
+const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
+	const classNames = [
+		row.indent && 'wcpay-reports-balance-print__row--indent',
+		[ 'fees', 'refunds', 'disputes', 'payouts' ].includes( row.key ) &&
+			'wcpay-reports-balance-print__row--group',
+	];
+
+	const rowClassName = classNames.filter( Boolean ).join( ' ' );
+
+	return rowClassName || undefined;
+};
+
 const getRowLabel = ( row: BalanceRow, period: BalancePeriod ): string => {
 	if ( row.key === 'starting_balance' ) {
 		return sprintf(
@@ -71,6 +97,51 @@ const getRowLabel = ( row: BalanceRow, period: BalancePeriod ): string => {
 	return row.label;
 };
 
+const getBalanceCSV = ( {
+	visibleRows,
+	summary,
+	displayPeriod,
+	currency,
+}: {
+	visibleRows: BalanceRow[];
+	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
+	displayPeriod: BalancePeriod;
+	currency: string;
+} ): string =>
+	generateCSVDataFromTable(
+		[
+			{ key: 'row_key', label: 'row_key' },
+			{ key: 'label', label: 'label' },
+			{ key: 'amount', label: 'amount' },
+			{ key: 'count', label: 'count' },
+			{ key: 'currency', label: 'currency' },
+			{ key: 'period_start', label: 'period_start' },
+			{ key: 'period_end', label: 'period_end' },
+		],
+		visibleRows.map( ( row ) => {
+			const count = row.getCount?.( summary );
+
+			return [
+				{ value: row.key, display: row.key },
+				{
+					value: getRowLabel( row, displayPeriod ),
+					display: getRowLabel( row, displayPeriod ),
+				},
+				{ value: row.getAmount( summary ), display: '' },
+				{ value: count ?? '', display: '' },
+				{ value: currency, display: currency },
+				{
+					value: formatYmdUTC( displayPeriod.start ),
+					display: formatYmdUTC( displayPeriod.start ),
+				},
+				{
+					value: formatYmdUTC( displayPeriod.end ),
+					display: formatYmdUTC( displayPeriod.end ),
+				},
+			];
+		} )
+	);
+
 const BalanceEmptyState = (): JSX.Element => (
 	<div
 		className="wcpay-reports-state wcpay-reports-state--empty"
@@ -86,10 +157,79 @@ const BalanceEmptyState = (): JSX.Element => (
 	</div>
 );
 
+const BalancePrintReport = ( {
+	visibleRows,
+	summary,
+	displayPeriod,
+	currency,
+}: {
+	visibleRows: BalanceRow[];
+	summary: Parameters< BalanceRow[ 'getAmount' ] >[ 0 ];
+	displayPeriod: BalancePeriod;
+	currency: string;
+} ): JSX.Element => (
+	<section className="wcpay-reports-balance-print" aria-hidden="true">
+		<header className="wcpay-reports-balance-print__header">
+			<img
+				className="wcpay-reports-balance-print__logo"
+				src={ WooPaymentsLogo }
+				alt={ __( 'WooPayments', 'woocommerce-payments' ) }
+			/>
+			<div className="wcpay-reports-balance-print__business">
+				<p>{ __( 'WooPayments', 'woocommerce-payments' ) }</p>
+				<p>{ __( 'Automattic Inc.', 'woocommerce-payments' ) }</p>
+				<p>{ __( '60 29th Street #343', 'woocommerce-payments' ) }</p>
+				<p>
+					{ __(
+						'San Francisco, CA, 94110, US',
+						'woocommerce-payments'
+					) }
+				</p>
+			</div>
+		</header>
+		<table className="wcpay-reports-balance-print__table">
+			<thead>
+				<tr>
+					<th scope="colgroup" colSpan={ 2 }>
+						{ __( 'Balance summary', 'woocommerce-payments' ) }
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				{ visibleRows.map( ( row ) => {
+					const amount = row.getAmount( summary );
+
+					return (
+						<tr
+							key={ row.key }
+							className={ getPrintRowClassName( row ) }
+						>
+							<th scope="row">
+								{ getRowLabel( row, displayPeriod ) }
+							</th>
+							<td className={ getAmountClassName( amount ) }>
+								{ formatExplicitCurrency( amount, currency ) }
+							</td>
+						</tr>
+					);
+				} ) }
+			</tbody>
+		</table>
+		<p className="wcpay-reports-balance-print__disclaimer">
+			{ __(
+				'This report is provided for informational reconciliation purposes only. It is not an IRS form, tax statement, bank statement, legal document, or formal financial statement.',
+				'woocommerce-payments'
+			) }
+		</p>
+	</section>
+);
+
 export const BalanceReport = ( {
 	onReload = () => undefined,
 }: BalanceReportProps ): JSX.Element => {
 	const { value, period, setValue } = useBalanceDateFilter();
+	const { createNotice } = useDispatch( 'core/notices' );
+	const [ isExporting, setIsExporting ] = useState( false );
 	const {
 		summary,
 		error = {},
@@ -100,9 +240,32 @@ export const BalanceReport = ( {
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousErrorRef = useRef( hasError );
 	const errorHeadingId = useId();
-	const renderToolbar = () => (
+	const renderToolbar = ( {
+		actionsDisabled = false,
+		onExport = () => undefined,
+		onPrint = () => undefined,
+	}: {
+		actionsDisabled?: boolean;
+		onExport?: () => void;
+		onPrint?: () => void;
+	} = {} ) => (
 		<div className="wcpay-reports-balance__toolbar">
 			<DateFilter value={ value } onChange={ setValue } />
+			<div className="wcpay-reports-balance__toolbar-actions">
+				<DownloadButton
+					isDisabled={ actionsDisabled || isExporting }
+					isBusy={ isExporting }
+					onClick={ onExport }
+				/>
+				<Button
+					variant="secondary"
+					disabled={ actionsDisabled }
+					onClick={ onPrint }
+					__next40pxDefaultSize
+				>
+					{ __( 'Print', 'woocommerce-payments' ) }
+				</Button>
+			</div>
 		</div>
 	);
 
@@ -116,7 +279,7 @@ export const BalanceReport = ( {
 	if ( isLoading ) {
 		return (
 			<div className="wcpay-reports-balance">
-				{ renderToolbar() }
+				{ renderToolbar( { actionsDisabled: true } ) }
 				<LoadingReportState
 					headingRef={ loadingHeadingRef }
 					headingTabIndex={ -1 }
@@ -159,10 +322,37 @@ export const BalanceReport = ( {
 	};
 	const visibleRows = getVisibleBalanceRows( summary );
 	const currency = summary.currency ?? '';
+	const onExport = () => {
+		setIsExporting( true );
+
+		try {
+			downloadCSVFile(
+				getBalanceExportFileName( displayPeriod ),
+				getBalanceCSV( {
+					visibleRows,
+					summary,
+					displayPeriod,
+					currency,
+				} )
+			);
+		} catch ( exportError ) {
+			void exportError;
+			createNotice(
+				'error',
+				__(
+					'There was a problem generating your export.',
+					'woocommerce-payments'
+				)
+			);
+		} finally {
+			setIsExporting( false );
+		}
+	};
+	const onPrint = () => window.print();
 
 	return (
 		<div className="wcpay-reports-balance">
-			{ renderToolbar() }
+			{ renderToolbar( { onExport, onPrint } ) }
 			<h2 className="wcpay-reports-balance__heading">
 				{ __( 'Balance summary', 'woocommerce-payments' ) }
 			</h2>
@@ -249,6 +439,12 @@ export const BalanceReport = ( {
 					} ) }
 				</tbody>
 			</table>
+			<BalancePrintReport
+				visibleRows={ visibleRows }
+				summary={ summary }
+				displayPeriod={ displayPeriod }
+				currency={ currency }
+			/>
 		</div>
 	);
 };
