@@ -625,27 +625,4 @@ describe( 'BalanceReport', () => {
 		).not.toBeInTheDocument();
 		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
 	} );
-
-	it( 'renders Explore links for supported rows', () => {
-		renderBalanceReport( { onReload: jest.fn() } );
-
-		const chargesRow = screen.getByRole( 'row', {
-			name: /Total charges captured/,
-		} );
-		const chargesLink = within( chargesRow ).getByRole( 'link', {
-			name: 'Explore Total charges captured',
-		} );
-
-		expect( chargesLink ).toHaveAttribute(
-			'href',
-			expect.stringContaining( 'type_is_in%5B0%5D=charge' )
-		);
-		expect( chargesLink ).toHaveAttribute(
-			'href',
-			expect.stringContaining( 'date_between%5B0%5D=2024-03-01' )
-		);
-		expect(
-			within( chargesLink ).getByText( 'Explore' )
-		).toBeInTheDocument();
-	} );
 } );

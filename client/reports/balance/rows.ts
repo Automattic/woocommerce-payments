@@ -13,7 +13,6 @@ import type {
 	ReportsBalanceSummaryRow,
 } from 'wcpay/data/reports/hooks';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
-import { getAdminUrl } from 'wcpay/utils';
 
 export type BalanceRowKey =
 	| 'starting_balance'
@@ -62,18 +61,7 @@ export interface BalanceRow {
 	displayNegative?: boolean;
 	getAmount: ( summary: ReportsBalanceSummary ) => number;
 	getCount?: ( summary: ReportsBalanceSummary ) => number | undefined;
-	exploreLink?: (
-		summary: ReportsBalanceSummary,
-		period: BalancePeriod
-	) => string;
 }
-
-const toDateFilterValue = ( value: string ): string => value.slice( 0, 10 );
-
-const getDateBetween = ( period: BalancePeriod ): string[] => [
-	toDateFilterValue( period.start ),
-	toDateFilterValue( period.end ),
-];
 
 const getRow = (
 	summary: ReportsBalanceSummary,
@@ -91,22 +79,6 @@ const getCount =
 	( summary: ReportsBalanceSummary ): number | undefined =>
 		getRow( summary, key )?.count;
 
-const getExploreUrl =
-	(
-		path: string,
-		query: Record< string, unknown > = {}
-	): NonNullable< BalanceRow[ 'exploreLink' ] > =>
-	( summary, period ) => {
-		void summary;
-		return getAdminUrl( {
-			page: 'wc-admin',
-			path,
-			filter: 'advanced',
-			date_between: getDateBetween( period ),
-			...query,
-		} );
-	};
-
 // The plan and tests intentionally pin this export name as the row-contract
 // constant used by the Balance UI.
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -123,9 +95,6 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		alwaysVisible: true,
 		getAmount: getAmount( 'total_charges_captured' ),
 		getCount: getCount( 'total_charges_captured' ),
-		exploreLink: getExploreUrl( '/payments/transactions', {
-			type_is_in: [ 'charge', 'payment' ],
-		} ),
 	},
 	{
 		key: 'fees',
@@ -139,10 +108,6 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		label: __( 'Charge fees', 'woocommerce-payments' ),
 		depth: 2,
 		getAmount: getAmount( 'charge_fees' ),
-		exploreLink: getExploreUrl( '/payments/reports', {
-			tab: 'fees',
-			filter: undefined,
-		} ),
 	},
 	{
 		key: 'payout_fees',
@@ -174,9 +139,6 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		depth: 1,
 		getAmount: getAmount( 'refunds' ),
 		getCount: getCount( 'refunds' ),
-		exploreLink: getExploreUrl( '/payments/transactions', {
-			type_is_in: [ 'refund', 'payment_refund' ],
-		} ),
 	},
 	{
 		key: 'refund_failure',
@@ -191,7 +153,6 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		depth: 1,
 		getAmount: getAmount( 'disputes' ),
 		getCount: getCount( 'disputes' ),
-		exploreLink: getExploreUrl( '/payments/disputes' ),
 	},
 	{
 		key: 'financing_payout',
@@ -235,7 +196,6 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		displayNegative: true,
 		getAmount: getAmount( 'payouts' ),
 		getCount: getCount( 'payouts' ),
-		exploreLink: getExploreUrl( '/payments/payouts' ),
 	},
 	{
 		key: 'ending_balance',

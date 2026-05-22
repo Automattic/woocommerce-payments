@@ -3,31 +3,7 @@
 /**
  * Internal dependencies
  */
-import balanceSummaryFixture from 'wcpay/data/reports/fixtures/balance-summary';
 import { BALANCE_ROWS, getVisibleBalanceRows } from '../rows';
-
-jest.mock( 'wcpay/utils', () => ( {
-	getAdminUrl: ( args: Record< string, unknown > ) => {
-		const params = new URLSearchParams();
-		Object.entries( args ).forEach( ( [ key, value ] ) => {
-			if ( Array.isArray( value ) ) {
-				value.forEach( ( item, index ) => {
-					params.append( `${ key }[${ index }]`, String( item ) );
-				} );
-				return;
-			}
-			if ( value !== undefined ) {
-				params.append( key, String( value ) );
-			}
-		} );
-		return `admin.php?${ params.toString() }`;
-	},
-} ) );
-
-const period = {
-	start: '2026-05-01T00:00:00.000Z',
-	end: '2026-05-14T23:59:59.999Z',
-};
 
 describe( 'Balance report rows', () => {
 	it( 'defines the Balance rows in endpoint contract order', () => {
@@ -109,62 +85,5 @@ describe( 'Balance report rows', () => {
 				( row ) => row.key
 			)
 		).toContain( 'network_costs' );
-	} );
-
-	it( 'builds Explore links for supported rows', () => {
-		const links = Object.fromEntries(
-			BALANCE_ROWS.map( ( row ) => [
-				row.key,
-				row.exploreLink?.( balanceSummaryFixture, period ),
-			] )
-		);
-
-		expect( links.total_charges_captured ).toContain(
-			'path=%2Fpayments%2Ftransactions'
-		);
-		expect( links.total_charges_captured ).toContain(
-			'type_is_in%5B0%5D=charge'
-		);
-		expect( links.total_charges_captured ).toContain(
-			'type_is_in%5B1%5D=payment'
-		);
-		expect( links.refunds ).toContain( 'type_is_in%5B0%5D=refund' );
-		expect( links.refunds ).toContain( 'type_is_in%5B1%5D=payment_refund' );
-		expect( links.disputes ).toContain( 'path=%2Fpayments%2Fdisputes' );
-		expect( links.payouts ).toContain( 'path=%2Fpayments%2Fpayouts' );
-		expect( links.charge_fees ).toContain( 'path=%2Fpayments%2Freports' );
-		expect( links.charge_fees ).toContain( 'tab=fees' );
-
-		for ( const key of [
-			'total_charges_captured',
-			'refunds',
-			'disputes',
-			'payouts',
-			'charge_fees',
-		] ) {
-			expect( links[ key ] ).toContain(
-				'date_between%5B0%5D=2026-05-01'
-			);
-			expect( links[ key ] ).toContain(
-				'date_between%5B1%5D=2026-05-14'
-			);
-		}
-	} );
-
-	it( 'does not build Explore links for unsupported rows', () => {
-		const unsupported = BALANCE_ROWS.filter(
-			( row ) =>
-				! [
-					'total_charges_captured',
-					'refunds',
-					'disputes',
-					'payouts',
-					'charge_fees',
-				].includes( row.key )
-		);
-
-		for ( const row of unsupported ) {
-			expect( row.exploreLink ).toBeUndefined();
-		}
 	} );
 } );

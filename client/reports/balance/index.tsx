@@ -352,10 +352,6 @@ export const BalanceReport = ( {
 									row,
 									displayPeriod
 								);
-								const exploreLink = row.exploreLink?.(
-									summary,
-									displayPeriod
-								);
 								const depth = getRowDepth( row );
 
 								return (
@@ -386,28 +382,6 @@ export const BalanceReport = ( {
 															{ countLabel }
 														</span>
 													</>
-												) }
-												{ exploreLink && (
-													<a
-														className="wcpay-reports-balance__explore"
-														href={ exploreLink }
-														aria-label={ sprintf(
-															/* translators: %s: Balance report row label. */
-															__(
-																'Explore %s',
-																'woocommerce-payments'
-															),
-															rowLabel
-														) }
-													>
-														{ __(
-															'Explore',
-															'woocommerce-payments'
-														) }{ ' ' }
-														<span aria-hidden="true">
-															&rarr;
-														</span>
-													</a>
 												) }
 											</div>
 										</th>
