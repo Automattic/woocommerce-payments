@@ -31,7 +31,7 @@ const toArrayOrUndefined = ( value ) => {
 	return Array.isArray( value ) ? value : [ value ];
 };
 
-const formatQueryFilters = ( query ) => ( {
+export const formatQueryFilters = ( query ) => ( {
 	match: query.match,
 	date_before: formatDateValue( query.dateBefore, true ),
 	date_after: formatDateValue( query.dateAfter ),
