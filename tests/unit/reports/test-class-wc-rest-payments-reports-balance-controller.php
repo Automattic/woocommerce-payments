@@ -83,17 +83,16 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 	public function test_get_collection_params_requires_balance_query_args() {
 		$params = $this->controller->get_collection_params();
 
-		$this->assertSame( 'string', $params['date_start']['type'] );
-		$this->assertSame( 'date-time', $params['date_start']['format'] );
+		// Only assert behaviors that aren't already covered by the
+		// full-stack REST dispatch tests below: the `required` booleans
+		// (which determine 400 vs. null for missing params) and the
+		// endpoint-specific currency callbacks.
 		$this->assertTrue( $params['date_start']['required'] );
 		$this->assertIsCallable( $params['date_start']['sanitize_callback'] );
 
-		$this->assertSame( 'string', $params['date_end']['type'] );
-		$this->assertSame( 'date-time', $params['date_end']['format'] );
 		$this->assertTrue( $params['date_end']['required'] );
 		$this->assertIsCallable( $params['date_end']['sanitize_callback'] );
 
-		$this->assertSame( 'string', $params['currency']['type'] );
 		$this->assertTrue( $params['currency']['required'] );
 		$this->assertSame( 'usd', $params['currency']['sanitize_callback']( ' USD ' ) );
 		$this->assertTrue( $params['currency']['validate_callback']( 'usd' ) );
@@ -259,6 +258,11 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		$response = rest_get_server()->dispatch( $request );
 		$data     = $response->get_data();
 
+		// API_Exception carried HTTP 400, but Request::handle_rest_request wraps
+		// it as a WP_Error without a `status` data field. WP_REST_Server then
+		// defaults the response status to 500. If the controller is ever
+		// changed to forward the upstream HTTP status, update this assertion
+		// to match.
 		$this->assertSame( 500, $response->get_status() );
 		$this->assertSame( 'wcpay_error', $data['code'] );
 	}
