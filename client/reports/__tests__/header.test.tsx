@@ -160,6 +160,25 @@ describe( 'ReportsHeader', () => {
 			expect( requestReportExport ).toHaveBeenCalledTimes( 1 );
 		} );
 
+		it( 'prompts for confirmation at the threshold boundary', async () => {
+			// Pin the `>=` semantics of the guard: an off-by-one regression
+			// (`>=` → `>`) would let exactly-threshold exports through silently.
+			mockGetQuery.mockReturnValue( { tab: 'fees' } );
+			mockUseReportsFeesSummary.mockReturnValue( {
+				feesSummary: { count: confirmThreshold },
+				isLoading: false,
+			} );
+			confirmMock.mockReturnValue( true );
+
+			render( <ReportsHeader activeTab="fees" /> );
+			await userEvent.click(
+				screen.getByRole( 'button', { name: /export/i } )
+			);
+
+			expect( confirmMock ).toHaveBeenCalledTimes( 1 );
+			expect( requestReportExport ).toHaveBeenCalledTimes( 1 );
+		} );
+
 		it( 'does not prompt for confirmation when any filter is active', async () => {
 			mockGetQuery.mockReturnValue( {
 				tab: 'fees',
