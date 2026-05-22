@@ -1296,6 +1296,15 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-dev-marketplace-bridge-controller.php';
 		$woopay_dev_marketplace_bridge_controller = new WC_REST_WooPay_Dev_Marketplace_Bridge_Controller();
 		$woopay_dev_marketplace_bridge_controller->register_routes();
+
+		// Dev-mode-only WSN→WooPay checkout handoff — accepts the
+		// SPA's cart items, populates the merchant's WC cart, then
+		// runs the same init-session machinery `ajax_init_woopay`
+		// uses to obtain a WooPay redirect URL. Same dev-mode gate
+		// as the marketplace bridge above.
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-woopay-wsn-checkout-controller.php';
+		$woopay_wsn_checkout_controller = new WC_REST_WooPay_WSN_Checkout_Controller();
+		$woopay_wsn_checkout_controller->register_routes();
 	}
 
 	/**
