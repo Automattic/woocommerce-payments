@@ -3,14 +3,7 @@
 /**
  * External dependencies
  */
-import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useRef,
-	useState,
-} from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -25,13 +18,12 @@ import {
 	getLastFullCalendarMonthUTC,
 	type ReportsPeriodRange,
 } from 'wcpay/reports/period-selector';
+import { BalanceDateFilterNowContext } from './context';
+
+export { BalanceDateFilterNowContext };
 
 const reportsPath = '/payments/reports';
 const balanceDateFilterChangeEvent = 'wcpay-balance-date-filter-change';
-
-export const BalanceDateFilterNowContext = createContext< Date | undefined >(
-	undefined
-);
 
 interface UseBalanceDateFilterResult {
 	value: DateFilterValue | undefined;

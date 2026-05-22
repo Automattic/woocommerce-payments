@@ -15,7 +15,7 @@ import { ReportsHeader } from './header';
 import { getLastFullCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
 import { useReportsTabReload } from './hooks';
-import { BalanceDateFilterNowContext } from './balance/use-balance-date-filter';
+import { BalanceDateFilterNowContext } from './balance/context';
 import type { ReportsTab } from './types';
 import './style.scss';
 
