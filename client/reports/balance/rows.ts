@@ -37,11 +37,29 @@ export type BalanceRowKey =
 
 export type BalancePeriod = ReportsPeriodRange;
 
+/**
+ * Indent depth for a Balance summary row.
+ *
+ * `0` — top-level totals (Starting balance, Total charges captured, Net balance
+ * change, Ending balance).
+ * `1` — group rows (Fees, Refunds, Disputes, Payouts).
+ * `2` — sub-rows nested inside a group (Charge fees, Payout fees, etc.).
+ */
+export type BalanceRowDepth = 0 | 1 | 2;
+
 export interface BalanceRow {
 	key: BalanceRowKey;
 	label: string;
-	indent?: boolean;
+	depth?: BalanceRowDepth;
 	alwaysVisible?: boolean;
+	/**
+	 * Force the displayed amount to render with a leading minus sign even when
+	 * the raw value is positive. Used for rows that always represent an outflow
+	 * (e.g. Payouts), so the visual sign communicates direction-of-flow rather
+	 * than the storage sign of the underlying datum. Zero amounts are still
+	 * rendered without a sign. The CSV export uses the raw value.
+	 */
+	displayNegative?: boolean;
 	getAmount: ( summary: ReportsBalanceSummary ) => number;
 	getCount?: ( summary: ReportsBalanceSummary ) => number | undefined;
 	exploreLink?: (
@@ -113,12 +131,13 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		key: 'fees',
 		label: __( 'Fees', 'woocommerce-payments' ),
 		alwaysVisible: true,
+		depth: 1,
 		getAmount: getAmount( 'fees' ),
 	},
 	{
 		key: 'charge_fees',
 		label: __( 'Charge fees', 'woocommerce-payments' ),
-		indent: true,
+		depth: 2,
 		getAmount: getAmount( 'charge_fees' ),
 		exploreLink: getExploreUrl( '/payments/reports', {
 			tab: 'fees',
@@ -128,30 +147,31 @@ export const BALANCE_ROWS: BalanceRow[] = [
 	{
 		key: 'payout_fees',
 		label: __( 'Payout fees', 'woocommerce-payments' ),
-		indent: true,
+		depth: 2,
 		getAmount: getAmount( 'payout_fees' ),
 	},
 	{
 		key: 'reader_fees',
 		label: __( 'Reader fees', 'woocommerce-payments' ),
-		indent: true,
+		depth: 2,
 		getAmount: getAmount( 'reader_fees' ),
 	},
 	{
 		key: 'dispute_fees',
 		label: __( 'Dispute fees', 'woocommerce-payments' ),
-		indent: true,
+		depth: 2,
 		getAmount: getAmount( 'dispute_fees' ),
 	},
 	{
 		key: 'fee_refunds',
 		label: __( 'Fee refunds', 'woocommerce-payments' ),
-		indent: true,
+		depth: 2,
 		getAmount: getAmount( 'fee_refunds' ),
 	},
 	{
 		key: 'refunds',
 		label: __( 'Refunds', 'woocommerce-payments' ),
+		depth: 1,
 		getAmount: getAmount( 'refunds' ),
 		getCount: getCount( 'refunds' ),
 		exploreLink: getExploreUrl( '/payments/transactions', {
@@ -161,12 +181,14 @@ export const BALANCE_ROWS: BalanceRow[] = [
 	{
 		key: 'refund_failure',
 		label: __( 'Refund failures', 'woocommerce-payments' ),
+		depth: 1,
 		getAmount: getAmount( 'refund_failure' ),
 		getCount: getCount( 'refund_failure' ),
 	},
 	{
 		key: 'disputes',
 		label: __( 'Disputes', 'woocommerce-payments' ),
+		depth: 1,
 		getAmount: getAmount( 'disputes' ),
 		getCount: getCount( 'disputes' ),
 		exploreLink: getExploreUrl( '/payments/disputes' ),
@@ -174,24 +196,28 @@ export const BALANCE_ROWS: BalanceRow[] = [
 	{
 		key: 'financing_payout',
 		label: __( 'Financing payout', 'woocommerce-payments' ),
+		depth: 1,
 		getAmount: getAmount( 'financing_payout' ),
 		getCount: getCount( 'financing_payout' ),
 	},
 	{
 		key: 'financing_paydown',
 		label: __( 'Financing paydown', 'woocommerce-payments' ),
+		depth: 1,
 		getAmount: getAmount( 'financing_paydown' ),
 		getCount: getCount( 'financing_paydown' ),
 	},
 	{
 		key: 'network_costs',
 		label: __( 'Network costs', 'woocommerce-payments' ),
+		depth: 1,
 		getAmount: getAmount( 'network_costs' ),
 		getCount: getCount( 'network_costs' ),
 	},
 	{
 		key: 'other_adjustments',
 		label: __( 'Other adjustments', 'woocommerce-payments' ),
+		depth: 1,
 		getAmount: getAmount( 'other_adjustments' ),
 		getCount: getCount( 'other_adjustments' ),
 	},
@@ -205,6 +231,8 @@ export const BALANCE_ROWS: BalanceRow[] = [
 		key: 'payouts',
 		label: __( 'Payouts', 'woocommerce-payments' ),
 		alwaysVisible: true,
+		depth: 1,
+		displayNegative: true,
 		getAmount: getAmount( 'payouts' ),
 		getCount: getCount( 'payouts' ),
 		exploreLink: getExploreUrl( '/payments/payouts' ),

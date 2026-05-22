@@ -35,6 +35,14 @@ jest.mock( 'wcpay/data', () => ( {
 		mockUseReportsBalanceSummary( period ),
 } ) );
 
+// `BalanceActions` uses the specific hooks path so non-balance test files
+// (e.g. tabs.test.tsx) that mock 'wcpay/data/reports/hooks' don't crash on
+// the unmocked store init. Mirror that mock here.
+jest.mock( 'wcpay/data/reports/hooks', () => ( {
+	useReportsBalanceSummary: ( period: unknown ) =>
+		mockUseReportsBalanceSummary( period ),
+} ) );
+
 jest.mock( '../use-balance-date-filter', () => ( {
 	useBalanceDateFilter: () => mockUseBalanceDateFilter(),
 } ) );
@@ -50,9 +58,17 @@ jest.mock( 'wcpay/reports/date-filter', () => ( {
 	} ) => <button type="button">{ label ?? 'Date' }</button>,
 } ) );
 
+// Mirror the production helper's contract: `skipSymbol = true` returns the
+// formatted amount followed by the ISO code (no `$`). `formatBalanceAmount`
+// then strips the trailing code and prepends `±USD ` for the code-first layout
+// the Figma uses.
 jest.mock( 'multi-currency/interface/functions', () => ( {
-	formatExplicitCurrency: ( amount: number, currency: string ) =>
-		`${ currency } ${ amount }`,
+	formatExplicitCurrency: (
+		amount: number,
+		currency: string,
+		skipSymbol?: boolean
+	) =>
+		skipSymbol ? `${ amount } ${ currency }` : `${ currency } ${ amount }`,
 } ) );
 
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -83,10 +99,26 @@ jest.mock( 'wcpay/utils', () => ( {
  */
 import balanceSummaryFixture from 'wcpay/data/reports/fixtures/balance-summary';
 import { BalanceReport } from '../index';
+import { BalanceActions } from '../actions';
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
 >;
+
+// In production, the Print/Export actions live in the page header so they
+// stay visible across loading / error / empty states without re-rendering
+// the body. Tests render them as siblings to make the same buttons
+// queryable from a single test render — both components subscribe to the
+// same date-filter + summary mocks, so behaviour matches production.
+const renderBalanceReport = (
+	props: Parameters< typeof BalanceReport >[ 0 ] = {}
+) =>
+	render(
+		<>
+			<BalanceActions />
+			<BalanceReport { ...props } />
+		</>
+	);
 
 const period = {
 	start: '2026-05-01T00:00:00.000Z',
@@ -155,28 +187,36 @@ afterEach( () => {
 
 describe( 'BalanceReport', () => {
 	it( 'requests Balance summary data for the active date-filter period', () => {
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith( period );
 	} );
 
 	it( 'keeps focus on the Date filter when a refresh transitions to an error', () => {
-		mockUseReportsBalanceSummary
-			.mockReturnValueOnce( {
-				summary: balanceSummaryFixture,
-				error: {},
-				isLoading: false,
-			} )
-			.mockReturnValueOnce( {
-				summary: {},
-				error: { code: 'server_error' },
-				isLoading: false,
-			} );
+		// Use mockReturnValue (not Once) so both BalanceActions and
+		// BalanceReport — which each call the hook in production — see the
+		// same state on every render.
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: balanceSummaryFixture,
+			error: {},
+			isLoading: false,
+		} );
 
-		const { rerender } = render( <BalanceReport onReload={ jest.fn() } /> );
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
 		screen.getByRole( 'button', { name: 'Date' } ).focus();
 
-		rerender( <BalanceReport onReload={ jest.fn() } /> );
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
 
 		expect( screen.getByRole( 'button', { name: 'Date' } ) ).toHaveFocus();
 	} );
@@ -188,7 +228,7 @@ describe( 'BalanceReport', () => {
 			isLoading: true,
 		} );
 
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( screen.getByRole( 'status' ) ).toHaveTextContent(
 			'Loading report'
@@ -212,7 +252,7 @@ describe( 'BalanceReport', () => {
 			isLoading: false,
 		} );
 
-		render( <BalanceReport onReload={ onReload } /> );
+		renderBalanceReport( { onReload } );
 
 		const alert = screen.getByRole( 'alert' );
 
@@ -246,23 +286,28 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'announces when Balance data finishes loading', () => {
-		mockUseReportsBalanceSummary
-			.mockReturnValueOnce( {
-				summary: {},
-				error: {},
-				isLoading: true,
-			} )
-			.mockReturnValueOnce( {
-				summary: balanceSummaryFixture,
-				error: {},
-				isLoading: false,
-			} );
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
 
-		const { rerender } = render( <BalanceReport onReload={ jest.fn() } /> );
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( mockSpeak ).not.toHaveBeenCalled();
 
-		rerender( <BalanceReport onReload={ jest.fn() } /> );
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: balanceSummaryFixture,
+			error: {},
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
 
 		expect( mockSpeak ).toHaveBeenCalledWith(
 			'Balance report loaded.',
@@ -271,7 +316,7 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'scopes print styles while the Balance report is mounted', () => {
-		const { unmount } = render( <BalanceReport onReload={ jest.fn() } /> );
+		const { unmount } = renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( document.body ).toHaveClass(
 			'wcpay-reports-balance-print-context'
@@ -297,7 +342,7 @@ describe( 'BalanceReport', () => {
 			isLoading: false,
 		} );
 
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect(
 			screen.getByRole( 'heading', { name: 'No balance activity' } )
@@ -326,7 +371,7 @@ describe( 'BalanceReport', () => {
 			setValue: jest.fn(),
 		} );
 
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith(
 			undefined
@@ -346,10 +391,13 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'renders the canonical Balance summary rows', () => {
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
+		// "Balance summary" is the table's <caption>, not a separate heading
+		// — assert it via the table's accessible name + visible caption text.
+		expect( getVisibleBalanceTable() ).toBeInTheDocument();
 		expect(
-			screen.getByRole( 'heading', { name: 'Balance summary' } )
+			within( getVisibleBalanceTable() ).getByText( 'Balance summary' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByRole( 'button', { name: 'Date' } )
@@ -378,14 +426,16 @@ describe( 'BalanceReport', () => {
 			expectBalanceText( label );
 		}
 
+		// formatBalanceAmount renders sign + code + space + amount.
 		expect(
-			within( getVisibleBalanceTable() ).getByText( 'usd 162672' )
+			within( getVisibleBalanceTable() ).getByText( '+USD 162672' )
 		).toBeInTheDocument();
 		expect(
-			within( getVisibleBalanceTable() ).getByText( 'usd -6064' )
+			within( getVisibleBalanceTable() ).getByText( '-USD 6064' )
 		).toBeInTheDocument();
+		// Payouts is forced negative even when the raw value is positive.
 		expect(
-			within( getVisibleBalanceTable() ).getByText( 'usd 1101608' )
+			within( getVisibleBalanceTable() ).getByText( '-USD 1102608' )
 		).toBeInTheDocument();
 		const chargesRow = screen.getByRole( 'row', {
 			name: /Total charges captured/,
@@ -417,7 +467,7 @@ describe( 'BalanceReport', () => {
 			isLoading: false,
 		} );
 
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Export' } )
@@ -455,7 +505,7 @@ describe( 'BalanceReport', () => {
 			throw error;
 		} );
 
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Export' } )
@@ -478,7 +528,7 @@ describe( 'BalanceReport', () => {
 			value: print,
 		} );
 
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		await userEvent.click(
 			screen.getByRole( 'button', { name: 'Print' } )
@@ -545,7 +595,7 @@ describe( 'BalanceReport', () => {
 			isLoading: false,
 		} );
 
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( screen.queryByText( 'Network costs' ) ).not.toBeInTheDocument();
 		expect(
@@ -555,7 +605,7 @@ describe( 'BalanceReport', () => {
 	} );
 
 	it( 'renders Explore links for supported rows', () => {
-		render( <BalanceReport onReload={ jest.fn() } /> );
+		renderBalanceReport( { onReload: jest.fn() } );
 
 		const chargesRow = screen.getByRole( 'row', {
 			name: /Total charges captured/,
