@@ -9,6 +9,7 @@ import {
 	StripeConnectInstance,
 } from '@stripe/connect-js';
 import {
+	ConnectAccountManagement,
 	ConnectAccountOnboarding,
 	ConnectComponentsProvider,
 	ConnectNotificationBanner,
@@ -216,6 +217,48 @@ export const EmbeddedConnectNotificationBanner: React.FC<
 						collectionOptions={ {
 							fields: 'eventually_due',
 							futureRequirements: 'omit',
+						} }
+					/>
+				</ConnectComponentsProvider>
+			) }
+		</>
+	);
+};
+
+/**
+ * Embedded Stripe Account Management Component.
+ *
+ * @param onLoaderStart - Callback when Stripe component starts rendering.
+ * @param onLoadError - Callback when Stripe component load error occurs.
+ *
+ * @return Rendered Account Management component.
+ */
+export const EmbeddedAccountManagement: React.FC< EmbeddedComponentProps > = ( {
+	onLoaderStart,
+	onLoadError,
+} ) => {
+	const { stripeConnectInstance, initializationError } = useInitializeStripe(
+		false,
+		null
+	);
+
+	return (
+		<>
+			{ initializationError && (
+				<BannerNotice status="error">
+					{ initializationError }
+				</BannerNotice>
+			) }
+			{ stripeConnectInstance && (
+				<ConnectComponentsProvider
+					connectInstance={ stripeConnectInstance }
+				>
+					<ConnectAccountManagement
+						onLoaderStart={ onLoaderStart }
+						onLoadError={ onLoadError }
+						collectionOptions={ {
+							fields: 'eventually_due',
+							futureRequirements: 'include',
 						} }
 					/>
 				</ConnectComponentsProvider>
