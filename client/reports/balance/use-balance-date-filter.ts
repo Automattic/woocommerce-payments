@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -25,6 +25,10 @@ interface UseBalanceDateFilterResult {
 	value: DateFilterValue | undefined;
 	period: ReportsPeriodRange;
 	setValue: ( next: DateFilterValue | undefined ) => void;
+}
+
+interface LocalDateFilterValue {
+	value: DateFilterValue | undefined;
 }
 
 const parseYmd = ( ymd: string ): [ number, number, number ] => {
@@ -80,6 +84,9 @@ const minYmd = ( first: string, second: string ): string =>
 const capYmdAtLatestCompleteDay = ( ymd: string, now: Date ): string =>
 	minYmd( ymd, getLatestCompleteDayYmd( now ) );
 
+const sortYmdRange = ( start: string, end: string ): [ string, string ] =>
+	start <= end ? [ start, end ] : [ end, start ];
+
 const normalizeDateFilterValue = (
 	value: DateFilterValue | undefined,
 	now: Date
@@ -89,12 +96,14 @@ const normalizeDateFilterValue = (
 	}
 
 	if ( value.operator === 'between' ) {
+		const [ start, end ] = sortYmdRange(
+			capYmdAtLatestCompleteDay( value.value[ 0 ], now ),
+			capYmdAtLatestCompleteDay( value.value[ 1 ], now )
+		);
+
 		return {
 			operator: 'between',
-			value: [
-				capYmdAtLatestCompleteDay( value.value[ 0 ], now ),
-				capYmdAtLatestCompleteDay( value.value[ 1 ], now ),
-			],
+			value: [ start, end ],
 		};
 	}
 
@@ -159,39 +168,57 @@ export const getPeriodForDateFilter = (
 };
 
 export const useBalanceDateFilter = (
-	now: Date = new Date()
+	now?: Date
 ): UseBalanceDateFilterResult => {
+	const stableNow = useRef( now ?? new Date() ).current;
 	const [ navTick, setNavTick ] = useState( 0 );
+	const [ localValue, setLocalValue ] = useState<
+		LocalDateFilterValue | undefined
+	>();
 	const bumpNavTick = useCallback(
 		() => setNavTick( ( tick ) => tick + 1 ),
 		[]
 	);
+	const readUrlValue = useCallback(
+		() =>
+			normalizeDateFilterValue(
+				parseDateFilterFromQuery(
+					getQuery() as Record< string, unknown >
+				),
+				stableNow
+			),
+		[ stableNow ]
+	);
+	const handlePopState = useCallback( () => {
+		setLocalValue( undefined );
+		bumpNavTick();
+	}, [ bumpNavTick ] );
 
 	useEffect( () => {
-		window.addEventListener( 'popstate', bumpNavTick );
-		return () => window.removeEventListener( 'popstate', bumpNavTick );
-	}, [ bumpNavTick ] );
+		window.addEventListener( 'popstate', handlePopState );
+		return () => window.removeEventListener( 'popstate', handlePopState );
+	}, [ handlePopState ] );
 
 	// `navTick` deliberately forces this render to read the current URL again
 	// after browser navigation or after this hook writes a new query string.
 	void navTick;
-	const value = normalizeDateFilterValue(
-		parseDateFilterFromQuery( getQuery() as Record< string, unknown > ),
-		now
-	);
-	const period = getPeriodForDateFilter( value, now );
+	// Keep local writes authoritative during an open interaction. The URL parser
+	// collapses same-day `date_between` values to `on`, which would interrupt
+	// in-progress range selection after the first calendar click.
+	const value = localValue ? localValue.value : readUrlValue();
+	const period = getPeriodForDateFilter( value, stableNow );
 
 	const setValue = useCallback(
 		( next: DateFilterValue | undefined ) => {
+			const normalizedValue = normalizeDateFilterValue( next, stableNow );
+			setLocalValue( { value: normalizedValue } );
 			updateQueryString(
-				serializeDateFilterToQuery(
-					normalizeDateFilterValue( next, now )
-				),
+				serializeDateFilterToQuery( normalizedValue ),
 				reportsPath
 			);
 			setNavTick( ( tick ) => tick + 1 );
 		},
-		[ now ]
+		[ stableNow ]
 	);
 
 	return {

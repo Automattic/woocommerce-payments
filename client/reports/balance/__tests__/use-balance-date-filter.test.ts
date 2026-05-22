@@ -68,6 +68,23 @@ describe( 'useBalanceDateFilter', () => {
 		} );
 	} );
 
+	it( 'normalizes inverted date_between from the URL', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-05-14', '2026-05-01' ],
+		} );
+
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		expect( result.current.value ).toEqual( {
+			operator: 'between',
+			value: [ '2026-05-01', '2026-05-14' ],
+		} );
+		expect( result.current.period ).toEqual( {
+			start: '2026-05-01T00:00:00.000Z',
+			end: '2026-05-14T23:59:59.999Z',
+		} );
+	} );
+
 	it( 'updates the report URL when the Date filter changes', () => {
 		const { result } = renderHook( () => useBalanceDateFilter( now ) );
 
@@ -106,6 +123,62 @@ describe( 'useBalanceDateFilter', () => {
 			},
 			'/payments/reports'
 		);
+	} );
+
+	it( 'normalizes inverted date_between before writing the report URL', () => {
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		act( () => {
+			result.current.setValue( {
+				operator: 'between',
+				value: [ '2026-05-14', '2026-05-01' ],
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			{
+				date_between: [ '2026-05-01', '2026-05-14' ],
+				date_before: undefined,
+				date_after: undefined,
+			},
+			'/payments/reports'
+		);
+	} );
+
+	it( 'keeps a same-day between selection in between mode after writing the report URL', () => {
+		mockUpdateQueryString.mockImplementationOnce( ( args ) => {
+			mockGetQuery.mockReturnValue( args );
+		} );
+		const { result } = renderHook( () => useBalanceDateFilter( now ) );
+
+		act( () => {
+			result.current.setValue( {
+				operator: 'between',
+				value: [ '2026-05-14', '2026-05-14' ],
+			} );
+		} );
+
+		expect( mockUpdateQueryString ).toHaveBeenCalledWith(
+			{
+				date_between: [ '2026-05-14', '2026-05-14' ],
+				date_before: undefined,
+				date_after: undefined,
+			},
+			'/payments/reports'
+		);
+		expect( result.current.value ).toEqual( {
+			operator: 'between',
+			value: [ '2026-05-14', '2026-05-14' ],
+		} );
+	} );
+
+	it( 'keeps setValue stable when using the default current time', () => {
+		const { result, rerender } = renderHook( () => useBalanceDateFilter() );
+		const firstSetValue = result.current.setValue;
+
+		rerender();
+
+		expect( result.current.setValue ).toBe( firstSetValue );
 	} );
 
 	it( 're-derives from URL changes via browser back and forward', () => {
