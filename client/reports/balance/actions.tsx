@@ -67,6 +67,35 @@ export const BalanceActions = (): JSX.Element => {
 		hasStoreError ||
 		hasMalformedSummary ||
 		! hasActivity;
+	const disabledHelpId = useId();
+	const getDisabledHelpText = (): string => {
+		if ( ! hasDateFilterValue ) {
+			return __(
+				'Select a date range to enable Print and Export.',
+				'woocommerce-payments'
+			);
+		}
+		if ( isLoading ) {
+			return __(
+				'Print and Export are available once the Balance report finishes loading.',
+				'woocommerce-payments'
+			);
+		}
+		if ( hasStoreError || hasMalformedSummary ) {
+			return __(
+				'Print and Export are unavailable while the Balance report is unavailable.',
+				'woocommerce-payments'
+			);
+		}
+		if ( ! hasActivity ) {
+			return __(
+				'Print and Export are unavailable when the selected range has no Balance activity.',
+				'woocommerce-payments'
+			);
+		}
+		return '';
+	};
+	const disabledHelpText = getDisabledHelpText();
 
 	const onExport = () => {
 		if ( actionsDisabled ) {
@@ -106,11 +135,19 @@ export const BalanceActions = (): JSX.Element => {
 
 	return (
 		<div className="wcpay-reports-balance-actions">
+			{ actionsDisabled && (
+				<span id={ disabledHelpId } className="screen-reader-text">
+					{ disabledHelpText }
+				</span>
+			) }
 			<Button
 				variant="secondary"
 				disabled={ actionsDisabled }
 				accessibleWhenDisabled
 				onClick={ onPrint }
+				aria-describedby={
+					actionsDisabled ? disabledHelpId : undefined
+				}
 				__next40pxDefaultSize
 			>
 				{ __( 'Print', 'woocommerce-payments' ) }
@@ -120,6 +157,9 @@ export const BalanceActions = (): JSX.Element => {
 				disabled={ actionsDisabled }
 				accessibleWhenDisabled
 				onClick={ onExport }
+				aria-describedby={
+					actionsDisabled ? disabledHelpId : undefined
+				}
 				__next40pxDefaultSize
 			>
 				{ __( 'Export', 'woocommerce-payments' ) }
