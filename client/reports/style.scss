@@ -64,6 +64,70 @@ body.woocommerce-admin-page__payments_reports {
 	position: relative;
 }
 
+.wcpay-reports-balance__skeleton {
+	position: relative;
+	pointer-events: none;
+
+	.wcpay-reports-balance__card {
+		filter: blur( 4px );
+		opacity: 0.6;
+		user-select: none;
+	}
+
+	&-shimmer {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		border-radius: 8px;
+		background: linear-gradient(
+			90deg,
+			rgba( 255, 255, 255, 0 ) 0%,
+			rgba( 255, 255, 255, 0.6 ) 50%,
+			rgba( 255, 255, 255, 0 ) 100%
+		);
+		background-size: 200% 100%;
+		animation: wcpay-reports-balance-skeleton-shimmer 1.6s ease-in-out
+			infinite;
+	}
+
+	&-status {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate( -50%, -50% );
+		padding: 8px 16px;
+		border-radius: 4px;
+		background: rgba( 255, 255, 255, 0.92 );
+		color: $gray-900;
+		font-size: 13px;
+		font-weight: 500;
+		box-shadow: 0 1px 2px rgba( 0, 0, 0, 0.08 );
+
+		h2 {
+			margin: 0;
+			font-size: inherit;
+			font-weight: inherit;
+			line-height: 20px;
+		}
+	}
+}
+
+@keyframes wcpay-reports-balance-skeleton-shimmer {
+	0% {
+		background-position: 200% 0;
+	}
+
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.wcpay-reports-balance__skeleton-shimmer {
+		animation: none;
+	}
+}
+
 .wcpay-reports-header {
 	display: flex;
 	align-items: flex-start;
