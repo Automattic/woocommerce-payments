@@ -9,6 +9,7 @@ const mockCreateNotice = jest.fn();
 const mockSpeak = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
 const mockUseBalanceDateFilter = jest.fn();
+const mockSetBalanceDateFilterValue = jest.fn();
 let consoleErrorSpy: jest.SpyInstance;
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -161,6 +162,7 @@ beforeEach( () => {
 	mockSpeak.mockReset();
 	mockDownloadCSVFile.mockReset();
 	mockUseReportsBalanceSummary.mockReset();
+	mockSetBalanceDateFilterValue.mockReset();
 	consoleErrorSpy = jest
 		.spyOn( console, 'error' )
 		.mockImplementation( () => undefined );
@@ -168,7 +170,7 @@ beforeEach( () => {
 		value: undefined,
 		period,
 		isDateFilterActive: true,
-		setValue: jest.fn(),
+		setValue: mockSetBalanceDateFilterValue,
 	} );
 	mockUseReportsBalanceSummary.mockReturnValue( {
 		summary: balanceSummaryFixture,
@@ -190,6 +192,26 @@ describe( 'BalanceReport', () => {
 		renderBalanceReport( { onReload: jest.fn() } );
 
 		expect( mockUseReportsBalanceSummary ).toHaveBeenCalledWith( period );
+	} );
+
+	it( 'clears the active Date filter from the toolbar Reset button', async () => {
+		const { container } = renderBalanceReport( { onReload: jest.fn() } );
+		const toolbar = container.querySelector(
+			'.wcpay-reports-balance__toolbar'
+		) as HTMLElement;
+
+		expect(
+			within( toolbar ).getByRole( 'button', { name: 'Date' } )
+		).toBeInTheDocument();
+		const resetButton = within( toolbar ).getByRole( 'button', {
+			name: 'Reset',
+		} );
+
+		await userEvent.click( resetButton );
+
+		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+			undefined
+		);
 	} );
 
 	it( 'keeps focus on the Date filter when a refresh transitions to an error', () => {

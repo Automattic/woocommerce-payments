@@ -197,6 +197,7 @@ export const BalanceReport = ( {
 	} = useReportsBalanceSummary( isDateFilterActive ? period : undefined );
 	const hasError = hasKeys( error );
 	const loadingHeadingRef = useRef< HTMLHeadingElement >( null );
+	const toolbarRef = useRef< HTMLDivElement >( null );
 	const previousLoadingRef = useRef( isLoading );
 	const errorHeadingId = useId();
 	const errorDescriptionId = useId();
@@ -207,10 +208,23 @@ export const BalanceReport = ( {
 		end: summary.period?.end ?? period.end,
 	};
 	const currency = summary.currency ?? '';
+	const resetDateFilter = () => {
+		toolbarRef.current
+			?.querySelector< HTMLButtonElement >(
+				'.wcpay-date-filter__chip-trigger'
+			)
+			?.focus();
+		setValue( undefined );
+	};
 
 	const toolbar = (
-		<div className="wcpay-reports-balance__toolbar">
+		<div className="wcpay-reports-balance__toolbar" ref={ toolbarRef }>
 			<DateFilter value={ value } onChange={ setValue } />
+			{ isDateFilterActive && (
+				<Button variant="tertiary" onClick={ resetDateFilter }>
+					{ __( 'Reset', 'woocommerce-payments' ) }
+				</Button>
+			) }
 		</div>
 	);
 
