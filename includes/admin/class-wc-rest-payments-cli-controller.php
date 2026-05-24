@@ -40,6 +40,7 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 	 */
 	public static function init_admin_hooks(): void {
 		add_action( 'admin_post_wcpay_cli_authorize', [ __CLASS__, 'handle_admin_authorize' ] );
+		add_action( 'admin_post_nopriv_wcpay_cli_authorize', [ __CLASS__, 'redirect_admin_authorize_to_login' ] );
 	}
 
 	/**
@@ -102,13 +103,7 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 
 		return rest_ensure_response(
 			[
-				'authorize_url' => add_query_arg(
-					[
-						'action'  => 'wcpay_cli_authorize',
-						'auth_id' => rawurlencode( $auth_id ),
-					],
-					admin_url( 'admin-post.php' )
-				),
+				'authorize_url' => self::get_authorize_login_url( $auth_id ),
 				'expires_at'    => gmdate( 'Y-m-d\TH:i:s\Z', $record['expires_at'] ),
 			]
 		);
@@ -165,6 +160,15 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 	}
 
 	/**
+	 * Redirect unauthenticated browser approval attempts through WordPress login.
+	 */
+	public static function redirect_admin_authorize_to_login(): void {
+		$auth_id = isset( $_REQUEST['auth_id'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['auth_id'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
+		wp_safe_redirect( self::get_authorize_login_url( $auth_id ) );
+		exit;
+	}
+
+	/**
 	 * Handle browser approval or denial.
 	 */
 	public static function handle_admin_authorize(): void {
@@ -217,6 +221,32 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 		}
 
 		self::render_approval_screen( $record );
+	}
+
+	/**
+	 * Get the admin approval URL.
+	 *
+	 * @param string $auth_id Authorization ID.
+	 * @return string
+	 */
+	private static function get_authorize_url( string $auth_id ): string {
+		return add_query_arg(
+			[
+				'action'  => 'wcpay_cli_authorize',
+				'auth_id' => rawurlencode( $auth_id ),
+			],
+			admin_url( 'admin-post.php' )
+		);
+	}
+
+	/**
+	 * Get the admin approval URL wrapped in the WordPress login flow.
+	 *
+	 * @param string $auth_id Authorization ID.
+	 * @return string
+	 */
+	private static function get_authorize_login_url( string $auth_id ): string {
+		return wp_login_url( self::get_authorize_url( $auth_id ) );
 	}
 
 	/**

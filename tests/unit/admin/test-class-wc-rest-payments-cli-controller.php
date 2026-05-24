@@ -106,14 +106,22 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_cli_invalid_state', $response->get_error_code() );
 	}
 
-	public function test_authorize_returns_authorize_url_for_valid_input(): void {
+	public function test_authorize_returns_login_wrapped_authorize_url_for_valid_input(): void {
 		$response = $this->controller->authorize( $this->create_authorize_request() );
 		$data     = $response->get_data();
 
-		$this->assertStringContainsString( admin_url( 'admin-post.php' ), $data['authorize_url'] );
-		$this->assertStringContainsString( 'action=wcpay_cli_authorize', $data['authorize_url'] );
+		$this->assertStringStartsWith( wp_login_url(), $data['authorize_url'] );
+		$this->assertStringContainsString( rawurlencode( admin_url( 'admin-post.php' ) ), $data['authorize_url'] );
+		$this->assertStringContainsString( rawurlencode( 'action=wcpay_cli_authorize' ), $data['authorize_url'] );
 		$this->assertNotEmpty( $data['expires_at'] );
 		$this->assertCount( 1, get_option( 'wcpay_cli_authorizations', [] ) );
+	}
+
+	public function test_init_admin_hooks_registers_authenticated_and_unauthenticated_authorize_handlers(): void {
+		WC_REST_Payments_CLI_Controller::init_admin_hooks();
+
+		$this->assertNotFalse( has_action( 'admin_post_wcpay_cli_authorize', [ WC_REST_Payments_CLI_Controller::class, 'handle_admin_authorize' ] ) );
+		$this->assertNotFalse( has_action( 'admin_post_nopriv_wcpay_cli_authorize', [ WC_REST_Payments_CLI_Controller::class, 'redirect_admin_authorize_to_login' ] ) );
 	}
 
 	public function test_admin_approval_requires_manage_woocommerce(): void {
