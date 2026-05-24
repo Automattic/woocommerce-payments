@@ -821,6 +821,9 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_update_stripe_billing_deprecation_note' ] );
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-cli-controller.php';
+		WC_REST_Payments_CLI_Controller::init_admin_hooks();
+
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
 
@@ -1162,6 +1165,10 @@ class WC_Payments {
 
 		include_once WCPAY_ABSPATH . 'includes/exceptions/class-rest-request-exception.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-cli-controller.php';
+		$cli_controller = new WC_REST_Payments_CLI_Controller();
+		$cli_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
 		$accounts_controller = new WC_REST_Payments_Accounts_Controller( self::$api_client );
