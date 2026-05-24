@@ -240,26 +240,8 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 				<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Match WooCommerce auth template output. ?>
 				<link rel="stylesheet" href="<?php echo esc_url( str_replace( [ 'http:', 'https:' ], '', WC()->plugin_url() ) . '/assets/css/auth.css' ); ?>" type="text/css" />
 			<?php endif; ?>
-			<style>
-				body.wc-auth { box-sizing: border-box; max-width: 760px; margin-top: 56px; color: #1e1e1e; background: #fff; border: 1px solid #c3c4c7; font-size: 14px; }
-				#wc-logo { margin: 0 0 28px; text-align: center; }
-				#wc-logo img { width: 145px; max-width: 145px; min-height: 0; }
-				.wc-auth-content { box-sizing: border-box; max-width: none; margin: 0; padding-top: 28px; border: 0; box-shadow: none; }
-				.wc-auth-content h1 { margin-bottom: 20px; color: #1e1e1e; font-size: 20px; font-weight: 500; line-height: 28px; }
-				.wc-auth-content p,
-				.wc-auth-content ul { margin-bottom: 20px; color: #50575e; font-size: 14px; line-height: 20px; }
-				.wc-auth-permissions { list-style-position: outside; padding-left: 20px; }
-				.wc-auth-permissions li { margin-bottom: 8px; font-size: 14px; line-height: 20px; }
-				.wc-auth-content .wcpay-cli-auth__detail { margin: 20px 0; padding: 12px 16px; background: #f6f7f7; border-left: 4px solid #674399; }
-				.wc-auth-content .wcpay-cli-auth__detail p { margin: 0; }
-				.wc-auth-logged-in-as { margin-bottom: 20px; }
-				.wc-auth .wc-auth-actions { display: flex; gap: 12px; padding: 0 0 24px; }
-				.wc-auth-actions form { display: flex; gap: 12px; }
-				.wc-auth .wc-auth-actions .button { float: none; width: auto; min-height: 36px; padding: 8px 16px; font-size: 14px; line-height: 18px; }
-				.wc-auth .wc-auth-actions .wc-auth-approve,
-				.wc-auth .wc-auth-actions .wc-auth-deny { float: none; margin: 0; }
-				.wc-auth-actions .wcpay-cli-auth__deny { color: #50575e; background: #f6f7f7; border-color: #8c8f94; }
-			</style>
+			<?php // phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- Standalone admin-post auth page. ?>
+			<link rel="stylesheet" href="<?php echo esc_url( plugins_url( 'assets/css/wcpay-cli-auth.css', WCPAY_PLUGIN_FILE ) ); ?>" type="text/css" />
 		</head>
 		<body class="wc-auth wp-core-ui">
 			<div class="wc-auth-content">
