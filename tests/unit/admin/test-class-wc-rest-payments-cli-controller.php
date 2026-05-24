@@ -17,6 +17,8 @@ require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-cli-controll
  * WC_REST_Payments_CLI_Controller unit tests.
  */
 class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
+	private const VALID_STATE = 'valid-random-state-1234567890abcdef';
+
 	/**
 	 * Controller under test.
 	 *
@@ -40,6 +42,7 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		delete_option( 'wcpay_cli_authorizations' );
+		delete_option( 'wcpay_cli_authorization_lock_' . hash( 'sha256', 'auth-id' ) );
 		wp_set_current_user( $this->previous_user_id );
 		parent::tear_down();
 	}
@@ -106,6 +109,67 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_cli_invalid_state', $response->get_error_code() );
 	}
 
+	public function test_authorize_rejects_low_variation_state(): void {
+		$response = $this->controller->authorize(
+			$this->create_authorize_request(
+				[
+					'state' => str_repeat( 'a', 32 ),
+				]
+			)
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_cli_invalid_state', $response->get_error_code() );
+	}
+
+	public function test_authorize_rejects_callback_url_with_credentials(): void {
+		$response = $this->controller->authorize(
+			$this->create_authorize_request(
+				[
+					'callback_url' => 'http://user:pass@127.0.0.1:3456/callback',
+				]
+			)
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_cli_invalid_callback_url', $response->get_error_code() );
+	}
+
+	public function test_authorize_rejects_callback_url_with_fragment(): void {
+		$response = $this->controller->authorize(
+			$this->create_authorize_request(
+				[
+					'callback_url' => 'http://127.0.0.1:3456/callback#fragment',
+				]
+			)
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_cli_invalid_callback_url', $response->get_error_code() );
+	}
+
+	public function test_authorize_prunes_oldest_records_to_keep_option_bounded(): void {
+		$records = [];
+		for ( $i = 0; $i < 100; $i++ ) {
+			$records[ 'auth-' . $i ] = [
+				'id'         => 'auth-' . $i,
+				'created_at' => time() - 200 + $i,
+				'expires_at' => time() + 300,
+			];
+		}
+		update_option( 'wcpay_cli_authorizations', $records );
+
+		$response = $this->controller->authorize( $this->create_authorize_request() );
+		$this->assertNotInstanceOf( WP_Error::class, $response );
+
+		$records = get_option( 'wcpay_cli_authorizations', [] );
+		$this->assertCount( 100, $records );
+		$this->assertArrayNotHasKey( 'auth-0', $records );
+		$this->assertNotFalse(
+			array_search( self::VALID_STATE, array_column( $records, 'state' ), true )
+		);
+	}
+
 	public function test_authorize_returns_login_wrapped_authorize_url_for_valid_input(): void {
 		$response = $this->controller->authorize( $this->create_authorize_request() );
 		$data     = $response->get_data();
@@ -132,7 +196,7 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_token_rejects_invalid_code(): void {
-		$response = $this->controller->token( $this->create_token_request( 'invalid-code', 'valid-random-state' ) );
+		$response = $this->controller->token( $this->create_token_request( 'invalid-code', self::VALID_STATE ) );
 
 		$this->assertInstanceOf( WP_Error::class, $response );
 		$this->assertSame( 'wcpay_cli_invalid_code', $response->get_error_code() );
@@ -147,7 +211,7 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$response = $this->controller->token( $this->create_token_request( 'valid-code', 'valid-random-state' ) );
+		$response = $this->controller->token( $this->create_token_request( 'valid-code', self::VALID_STATE ) );
 
 		$this->assertInstanceOf( WP_Error::class, $response );
 		$this->assertSame( 'wcpay_cli_code_expired', $response->get_error_code() );
@@ -163,7 +227,17 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$response = $this->controller->token( $this->create_token_request( 'valid-code', 'valid-random-state' ) );
+		$response = $this->controller->token( $this->create_token_request( 'valid-code', self::VALID_STATE ) );
+
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_cli_code_used', $response->get_error_code() );
+	}
+
+	public function test_token_rejects_locked_code(): void {
+		$this->store_authorized_record( 'auth-id', 'valid-code' );
+		add_option( 'wcpay_cli_authorization_lock_' . hash( 'sha256', 'auth-id' ), time(), '', false );
+
+		$response = $this->controller->token( $this->create_token_request( 'valid-code', self::VALID_STATE ) );
 
 		$this->assertInstanceOf( WP_Error::class, $response );
 		$this->assertSame( 'wcpay_cli_code_used', $response->get_error_code() );
@@ -188,7 +262,7 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$response = $this->controller->token( $this->create_token_request( 'valid-code', 'valid-random-state' ) );
+		$response = $this->controller->token( $this->create_token_request( 'valid-code', self::VALID_STATE ) );
 		$data     = $response->get_data();
 
 		$this->assertStringStartsWith( 'ck_', $data['consumer_key'] );
@@ -220,10 +294,10 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$first_response = $this->controller->token( $this->create_token_request( 'valid-code', 'valid-random-state' ) );
+		$first_response = $this->controller->token( $this->create_token_request( 'valid-code', self::VALID_STATE ) );
 		$this->assertNotInstanceOf( WP_Error::class, $first_response );
 
-		$second_response = $this->controller->token( $this->create_token_request( 'valid-code', 'valid-random-state' ) );
+		$second_response = $this->controller->token( $this->create_token_request( 'valid-code', self::VALID_STATE ) );
 		$this->assertInstanceOf( WP_Error::class, $second_response );
 		$this->assertSame( 'wcpay_cli_invalid_code', $second_response->get_error_code() );
 	}
@@ -235,7 +309,7 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 				[
 					'app_name'     => 'WooPayments CLI',
 					'scope'        => 'read_write',
-					'state'        => 'valid-random-state',
+					'state'        => self::VALID_STATE,
 					'callback_url' => 'http://127.0.0.1:3456/callback',
 				],
 				$overrides
@@ -266,7 +340,7 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 						'id'           => $auth_id,
 						'app_name'     => 'WooPayments CLI',
 						'scope'        => 'read_write',
-						'state'        => 'valid-random-state',
+						'state'        => self::VALID_STATE,
 						'callback_url' => 'http://127.0.0.1:3456/callback',
 						'created_at'   => time(),
 						'expires_at'   => time() + 300,

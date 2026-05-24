@@ -36,6 +36,31 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 	private const TTL = 5 * MINUTE_IN_SECONDS;
 
 	/**
+	 * Maximum pending authorization records to retain.
+	 */
+	private const MAX_RECORDS = 100;
+
+	/**
+	 * Minimum state length.
+	 */
+	private const MIN_STATE_LENGTH = 32;
+
+	/**
+	 * Maximum state length.
+	 */
+	private const MAX_STATE_LENGTH = 200;
+
+	/**
+	 * Authorization exchange lock option prefix.
+	 */
+	private const LOCK_OPTION_PREFIX = 'wcpay_cli_authorization_lock_';
+
+	/**
+	 * Authorization exchange lock TTL in seconds.
+	 */
+	private const LOCK_TTL = MINUTE_IN_SECONDS;
+
+	/**
 	 * Initialize admin-post hooks for browser approval.
 	 */
 	public static function init_admin_hooks(): void {
@@ -81,6 +106,8 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 		if ( is_wp_error( $validation ) ) {
 			return $validation;
 		}
+
+		self::prune_records_to_limit( self::MAX_RECORDS - 1 );
 
 		$now     = time();
 		$auth_id = self::generate_random_token();
@@ -129,31 +156,47 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 				continue;
 			}
 
-			if ( ! hash_equals( (string) $record['state'], $state ) ) {
-				return self::rest_error( 'state_mismatch', __( 'The authorization state does not match.', 'woocommerce-payments' ) );
-			}
-
-			if ( self::is_expired( $record ) ) {
-				unset( $records[ $auth_id ] );
-				self::save_records( $records );
-				return self::rest_error( 'code_expired', __( 'The authorization code has expired.', 'woocommerce-payments' ) );
-			}
-
-			if ( ! empty( $record['used_at'] ) || 'approved' !== ( $record['status'] ?? '' ) ) {
+			if ( ! self::acquire_record_lock( (string) $auth_id ) ) {
 				return self::rest_error( 'code_used', __( 'The authorization code has already been used.', 'woocommerce-payments' ) );
 			}
 
-			$credentials = self::create_api_key( $record );
-			if ( is_wp_error( $credentials ) ) {
-				return $credentials;
+			try {
+				$records = self::get_records();
+				if ( ! isset( $records[ $auth_id ] ) || ! is_array( $records[ $auth_id ] ) ) {
+					return self::rest_error( 'code_used', __( 'The authorization code has already been used.', 'woocommerce-payments' ) );
+				}
+
+				$record = $records[ $auth_id ];
+				if ( empty( $record['code_hash'] ) || ! wp_check_password( $code, $record['code_hash'] ) ) {
+					return self::rest_error( 'invalid_code', __( 'The authorization code is invalid.', 'woocommerce-payments' ) );
+				}
+
+				if ( ! hash_equals( (string) $record['state'], $state ) ) {
+					return self::rest_error( 'state_mismatch', __( 'The authorization state does not match.', 'woocommerce-payments' ) );
+				}
+
+				if ( self::is_expired( $record ) ) {
+					unset( $records[ $auth_id ] );
+					self::save_records( $records );
+					return self::rest_error( 'code_expired', __( 'The authorization code has expired.', 'woocommerce-payments' ) );
+				}
+
+				if ( ! empty( $record['used_at'] ) || 'approved' !== ( $record['status'] ?? '' ) ) {
+					return self::rest_error( 'code_used', __( 'The authorization code has already been used.', 'woocommerce-payments' ) );
+				}
+
+				$credentials = self::create_api_key( $record );
+				if ( is_wp_error( $credentials ) ) {
+					return $credentials;
+				}
+
+				unset( $records[ $auth_id ] );
+				self::save_records( $records );
+
+				return rest_ensure_response( $credentials );
+			} finally {
+				self::release_record_lock( (string) $auth_id );
 			}
-
-			$record['used_at'] = time();
-			$record['status']  = 'used';
-			unset( $records[ $auth_id ] );
-			self::save_records( $records );
-
-			return rest_ensure_response( $credentials );
 		}
 
 		return self::rest_error( 'invalid_code', __( 'The authorization code is invalid.', 'woocommerce-payments' ) );
@@ -355,8 +398,8 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 			return self::rest_error( 'invalid_scope', __( 'The scope parameter must be read, write, or read_write.', 'woocommerce-payments' ) );
 		}
 
-		if ( strlen( $state ) < 16 ) {
-			return self::rest_error( 'invalid_state', __( 'The state parameter must be at least 16 characters.', 'woocommerce-payments' ) );
+		if ( ! self::is_valid_state( $state ) ) {
+			return self::rest_error( 'invalid_state', __( 'The state parameter must be 32-200 URL-safe characters and include enough variation.', 'woocommerce-payments' ) );
 		}
 
 		if ( ! self::is_localhost_callback_url( $callback_url ) ) {
@@ -364,6 +407,25 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check whether a state value is sufficiently random-looking.
+	 *
+	 * @param string $state State value.
+	 * @return bool
+	 */
+	private static function is_valid_state( string $state ): bool {
+		$state_length = strlen( $state );
+		if ( $state_length < self::MIN_STATE_LENGTH || $state_length > self::MAX_STATE_LENGTH ) {
+			return false;
+		}
+
+		if ( 1 !== preg_match( '/\A[A-Za-z0-9._~-]+\z/', $state ) ) {
+			return false;
+		}
+
+		return strlen( count_chars( $state, 3 ) ) >= 8;
 	}
 
 	/**
@@ -381,6 +443,10 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 		$scheme = strtolower( (string) ( $parts['scheme'] ?? '' ) );
 		$host   = strtolower( trim( (string) ( $parts['host'] ?? '' ), '[]' ) );
 		$port   = $parts['port'] ?? 0;
+
+		if ( isset( $parts['user'] ) || isset( $parts['pass'] ) || isset( $parts['fragment'] ) ) {
+			return false;
+		}
 
 		return 'http' === $scheme
 			&& in_array( $host, [ '127.0.0.1', 'localhost', '::1' ], true )
@@ -499,6 +565,81 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 			}
 		}
 		self::save_records( $records );
+	}
+
+	/**
+	 * Prune oldest authorization records to keep option size bounded.
+	 *
+	 * @param int $max_records Maximum records to keep.
+	 */
+	private static function prune_records_to_limit( int $max_records ): void {
+		$records = self::get_records();
+		if ( count( $records ) <= $max_records ) {
+			return;
+		}
+
+		uasort(
+			$records,
+			function ( array $a, array $b ): int {
+				$created_comparison = (int) ( $a['created_at'] ?? 0 ) <=> (int) ( $b['created_at'] ?? 0 );
+				if ( 0 !== $created_comparison ) {
+					return $created_comparison;
+				}
+
+				return (int) ( $a['expires_at'] ?? 0 ) <=> (int) ( $b['expires_at'] ?? 0 );
+			}
+		);
+
+		$records_count = count( $records );
+		while ( $records_count > $max_records ) {
+			$oldest_auth_id = array_key_first( $records );
+			unset( $records[ $oldest_auth_id ] );
+			--$records_count;
+		}
+
+		self::save_records( $records );
+	}
+
+	/**
+	 * Acquire a short-lived lock for an authorization record.
+	 *
+	 * @param string $auth_id Authorization ID.
+	 * @return bool Whether the lock was acquired.
+	 */
+	private static function acquire_record_lock( string $auth_id ): bool {
+		$lock_option = self::get_lock_option_name( $auth_id );
+		$now         = time();
+
+		if ( add_option( $lock_option, $now, '', false ) ) {
+			return true;
+		}
+
+		$locked_at = (int) get_option( $lock_option, 0 );
+		if ( $locked_at && $locked_at < ( $now - self::LOCK_TTL ) ) {
+			delete_option( $lock_option );
+			return add_option( $lock_option, $now, '', false );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Release an authorization record lock.
+	 *
+	 * @param string $auth_id Authorization ID.
+	 */
+	private static function release_record_lock( string $auth_id ): void {
+		delete_option( self::get_lock_option_name( $auth_id ) );
+	}
+
+	/**
+	 * Get a lock option name for an authorization record.
+	 *
+	 * @param string $auth_id Authorization ID.
+	 * @return string
+	 */
+	private static function get_lock_option_name( string $auth_id ): string {
+		return self::LOCK_OPTION_PREFIX . hash( 'sha256', $auth_id );
 	}
 
 	/**
