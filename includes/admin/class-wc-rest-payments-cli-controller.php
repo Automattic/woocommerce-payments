@@ -206,7 +206,7 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 			$record['expires_at']  = time() + self::TTL;
 			self::save_record( $auth_id, $record );
 
-			// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- Callback URL is validated before it is stored.
+			// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- Callback URL is validated to localhost before it is stored.
 			wp_redirect(
 				add_query_arg(
 					[
@@ -359,27 +359,20 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 			return self::rest_error( 'invalid_state', __( 'The state parameter must be at least 16 characters.', 'woocommerce-payments' ) );
 		}
 
-		if ( ! self::is_allowed_callback_url( $callback_url ) ) {
-			return self::rest_error( 'invalid_callback_url', __( 'The callback_url must be a valid HTTPS URL, or an HTTP localhost URL with an explicit port.', 'woocommerce-payments' ) );
+		if ( ! self::is_localhost_callback_url( $callback_url ) ) {
+			return self::rest_error( 'invalid_callback_url', __( 'The callback_url must be an HTTP localhost URL with an explicit port.', 'woocommerce-payments' ) );
 		}
 
 		return true;
 	}
 
 	/**
-	 * Check whether a callback URL is allowed.
-	 *
-	 * External callbacks must use HTTPS. HTTP is only allowed for local CLI loopback
-	 * callbacks with an explicit port.
+	 * Check whether a callback URL is an allowed localhost URL.
 	 *
 	 * @param string $url Callback URL.
 	 * @return bool
 	 */
-	private static function is_allowed_callback_url( string $url ): bool {
-		if ( false === filter_var( $url, FILTER_VALIDATE_URL ) ) {
-			return false;
-		}
-
+	private static function is_localhost_callback_url( string $url ): bool {
 		$parts = wp_parse_url( $url );
 		if ( ! is_array( $parts ) ) {
 			return false;
@@ -388,10 +381,6 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 		$scheme = strtolower( (string) ( $parts['scheme'] ?? '' ) );
 		$host   = strtolower( trim( (string) ( $parts['host'] ?? '' ), '[]' ) );
 		$port   = $parts['port'] ?? 0;
-
-		if ( 'https' === $scheme ) {
-			return '' !== $host;
-		}
 
 		return 'http' === $scheme
 			&& in_array( $host, [ '127.0.0.1', 'localhost', '::1' ], true )
@@ -453,7 +442,7 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 	 * @param string $description Human-readable description.
 	 */
 	private static function redirect_error( array $record, string $code, string $description ): void {
-		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- Callback URL is validated before it is stored.
+		// phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect -- Callback URL is validated to localhost before it is stored.
 		wp_redirect(
 			add_query_arg(
 				[

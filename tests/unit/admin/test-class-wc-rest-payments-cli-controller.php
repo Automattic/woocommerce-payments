@@ -67,7 +67,7 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'wcpay_cli_invalid_callback_url', $response->get_error_code() );
 	}
 
-	public function test_authorize_allows_https_callback_url(): void {
+	public function test_authorize_rejects_https_callback_url(): void {
 		$response = $this->controller->authorize(
 			$this->create_authorize_request(
 				[
@@ -76,8 +76,8 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 			)
 		);
 
-		$this->assertNotInstanceOf( WP_Error::class, $response );
-		$this->assertArrayHasKey( 'authorize_url', $response->get_data() );
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_cli_invalid_callback_url', $response->get_error_code() );
 	}
 
 	public function test_authorize_rejects_invalid_scope(): void {
