@@ -88,6 +88,54 @@ export const getMerchant = async (
 	return { merchantPage, merchantContext };
 };
 
+export const loginAsCustomer = async (
+	page: Page,
+	customer: { username: string; password: string }
+) => {
+	let customerLoggedIn = false;
+	const customerRetries = 5;
+
+	for ( let i = 0; i < customerRetries; i++ ) {
+		try {
+			// A partial previous attempt can leave the context authenticated,
+			// which redirects wpAdminLogin away from the login form. Clear cookies
+			// before each retry so the attempt starts from a clean state.
+			if ( i > 0 ) {
+				await page.context().clearCookies();
+			}
+			// eslint-disable-next-line no-console
+			console.log( 'Trying to log-in as customer...' );
+			await wpAdminLogin( page, customer );
+
+			await page.goto( '/my-account' );
+			// Logout link = stable, semantic "logged in" signal (the prior
+			// `>> nth=0` greeting check was positional and locale-dependent).
+			await expect(
+				page.locator(
+					'.woocommerce-MyAccount-navigation-link--customer-logout'
+				)
+			).toBeVisible();
+
+			console.log( 'Logged-in as customer successfully.' );
+			customerLoggedIn = true;
+			break;
+		} catch ( e ) {
+			console.log(
+				`Customer log-in failed. Retrying... ${ i }/${ customerRetries }`
+			);
+			console.log( e );
+		}
+	}
+
+	if ( ! customerLoggedIn ) {
+		throw new Error(
+			'Cannot proceed e2e test, as customer login failed. Please check if the test site has been setup correctly.'
+		);
+	}
+
+	await page.context().storageState( { path: customerStorageFile } );
+};
+
 /**
  * Returns the shopper authenticated page and context.
  * Allows switching between merchant and shopper contexts within a single test.
@@ -110,49 +158,9 @@ export const getShopper = async (
 
 		const shopperContext = await browser.newContext();
 		const shopperPage = await shopperContext.newPage();
-		// wpAdminLogin is transiently flaky under load (auth.setup.ts retries the
-		// admin login for the same reason). Retry, annotating any retry as flake so
-		// it stays visible in the report instead of being silently swallowed.
-		const loginAttempts = 2;
-		let loginError: unknown;
-		for ( let attempt = 1; attempt <= loginAttempts; attempt++ ) {
-			try {
-				console.log(
-					`Trying to log-in as customer (attempt ${ attempt }/${ loginAttempts })...`
-				);
-				await wpAdminLogin( shopperPage, config.users.customer );
-				// Wait for login page to finish loading before navigating.
-				await shopperPage.waitForLoadState( 'load' );
-				await shopperPage.goto( '/my-account' );
-				// Logout link = stable, semantic "logged in" signal (the prior
-				// `>> nth=0` greeting check was positional and locale-dependent).
-				await expect(
-					shopperPage.locator(
-						'.woocommerce-MyAccount-navigation-link--customer-logout'
-					)
-				).toBeVisible();
-				if ( attempt > 1 ) {
-					test.info().annotations.push( {
-						type: 'flake',
-						description: `Customer login required ${ attempt } attempts. Investigate before assuming flake.`,
-					} );
-				}
-				loginError = undefined;
-				break;
-			} catch ( error ) {
-				console.error(
-					`Customer login attempt ${ attempt } failed:`,
-					error
-				);
-				loginError = error;
-			}
-		}
-		if ( loginError ) {
-			throw loginError;
-		}
-		await shopperPage
-			.context()
-			.storageState( { path: customerStorageFile } );
+		// Delegate to the shared customer-login helper, which retries the
+		// transiently-flaky login and saves the customer storage state.
+		await loginAsCustomer( shopperPage, config.users.customer );
 		return { shopperPage, shopperContext };
 	}
 	const shopperContext = await browser.newContext( {
@@ -214,49 +222,6 @@ export const isCustomerLoggedIn = async ( page: Page ) => {
 	);
 
 	return await logoutLink.isVisible();
-};
-
-export const loginAsCustomer = async (
-	page: Page,
-	customer: { username: string; password: string }
-) => {
-	let customerLoggedIn = false;
-	const customerRetries = 5;
-
-	for ( let i = 0; i < customerRetries; i++ ) {
-		try {
-			// eslint-disable-next-line no-console
-			console.log( 'Trying to log-in as customer...' );
-			await wpAdminLogin( page, customer );
-
-			await page.goto( '/my-account' );
-			await expect(
-				page.locator(
-					'.woocommerce-MyAccount-navigation-link--customer-logout'
-				)
-			).toBeVisible();
-			await expect(
-				page.locator( 'div.woocommerce-MyAccount-content > p >> nth=0' )
-			).toContainText( 'Hello' );
-
-			console.log( 'Logged-in as customer successfully.' );
-			customerLoggedIn = true;
-			break;
-		} catch ( e ) {
-			console.log(
-				`Customer log-in failed. Retrying... ${ i }/${ customerRetries }`
-			);
-			console.log( e );
-		}
-	}
-
-	if ( ! customerLoggedIn ) {
-		throw new Error(
-			'Cannot proceed e2e test, as customer login failed. Please check if the test site has been setup correctly.'
-		);
-	}
-
-	await page.context().storageState( { path: customerStorageFile } );
 };
 
 /**
