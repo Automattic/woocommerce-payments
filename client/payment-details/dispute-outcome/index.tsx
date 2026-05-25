@@ -10,15 +10,11 @@ import { CardDivider } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { recordEvent } from 'wcpay/tracks';
 import type { ChargeDispute } from 'wcpay/types/charges';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import EvidenceSubmittedList from './evidence-submitted-list';
-import {
-	getDisputeOutcomeTracksProperties,
-	registerOutcomeViewSeen,
-} from './tracks';
+import { recordOutcomeViewOnce } from './tracks';
 import './style.scss';
 
 interface DisputeOutcomeViewProps {
@@ -37,16 +33,10 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 			false
 	);
 
-	// De-dup is module-scoped (see registerOutcomeViewSeen): the payment-details
-	// loading lifecycle remounts this component several times per view, so a
-	// per-instance guard can't dedupe.
+	// Fires once per dispute per page session; see recordOutcomeViewOnce for
+	// why de-dup is module-scoped rather than a per-instance guard.
 	useEffect( () => {
-		if ( registerOutcomeViewSeen( dispute.id ) ) {
-			recordEvent(
-				'wcpay_dispute_outcome_viewed',
-				getDisputeOutcomeTracksProperties( dispute, productType )
-			);
-		}
+		recordOutcomeViewOnce( dispute, productType );
 	}, [ dispute, productType ] );
 
 	const fields = getExpectedFieldStatus(
