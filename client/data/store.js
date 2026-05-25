@@ -21,6 +21,7 @@ import * as paymentIntents from './payment-intents';
 import * as authorizations from './authorizations';
 import * as files from './files';
 import * as pmPromotions from './pm-promotions';
+import * as reports from './reports';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -39,6 +40,7 @@ export const initStore = () =>
 			authorizations: authorizations.reducer,
 			files: files.reducer,
 			pmPromotions: pmPromotions.reducer,
+			reports: reports.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -54,6 +56,7 @@ export const initStore = () =>
 			...authorizations.actions,
 			...files.actions,
 			...pmPromotions.actions,
+			...reports.actions,
 		},
 		controls,
 		selectors: {
@@ -70,6 +73,7 @@ export const initStore = () =>
 			...authorizations.selectors,
 			...files.selectors,
 			...pmPromotions.selectors,
+			...reports.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -85,5 +89,6 @@ export const initStore = () =>
 			...authorizations.resolvers,
 			...files.resolvers,
 			...pmPromotions.resolvers,
+			...reports.resolvers,
 		},
 	} );
