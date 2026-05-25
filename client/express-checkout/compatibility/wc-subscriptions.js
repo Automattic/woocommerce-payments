@@ -15,6 +15,21 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { transformPrice } from '../transformers/wc-to-stripe';
 
 /**
+ * Checks if the cart contains any subscription schedule (trial or recurring).
+ * Detects every cart shape that triggers `setup_future_usage=off_session` on
+ * the PaymentIntent backend-side: initial subscription purchase, trial with
+ * sign-up fee, renewal, resubscribe, and switch carts all populate
+ * `cartData.extensions.subscriptions`.
+ *
+ * @param {Object} cartData Cart data from Store API.
+ * @return {boolean} True if cart contains any subscription schedule.
+ */
+export const cartHasAnySubscription = ( cartData ) => {
+	const subscriptions = cartData?.extensions?.subscriptions;
+	return Array.isArray( subscriptions ) && subscriptions.length > 0;
+};
+
+/**
  * Checks if a cart item is a subscription with a free trial.
  *
  * @param {Object} item Cart item from Store API.

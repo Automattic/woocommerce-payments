@@ -11,10 +11,15 @@ describe( 'Express checkout event handlers', () => {
 	let cartApiUpdateCustomerMock;
 	let cartApiPlaceOrderMock;
 	let cartApiSelectShippingRateMock;
+	let cartApiGetCartMock;
 	beforeEach( () => {
 		cartApiUpdateCustomerMock = jest.fn();
 		cartApiPlaceOrderMock = jest.fn();
 		cartApiSelectShippingRateMock = jest.fn();
+		cartApiGetCartMock = jest.fn().mockResolvedValue( {
+			items: [],
+			extensions: {},
+		} );
 		global.window.wcpayFraudPreventionToken = 'token123';
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.checkout = {
@@ -26,11 +31,13 @@ describe( 'Express checkout event handlers', () => {
 		global.wcpayExpressCheckoutParams.enabled_methods = [
 			'payment_request',
 		];
+		global.wcpayExpressCheckoutParams.has_subscription = false;
 
 		setCartApiHandler( {
 			updateCustomer: cartApiUpdateCustomerMock,
 			selectShippingRate: cartApiSelectShippingRateMock,
 			placeOrder: cartApiPlaceOrderMock,
+			getCart: cartApiGetCartMock,
 		} );
 	} );
 
@@ -490,6 +497,152 @@ describe( 'Express checkout event handlers', () => {
 				expect( abortPayment ).toHaveBeenCalledWith(
 					'Confirmation token error'
 				);
+			} );
+
+			describe( 'subscription cart guard', () => {
+				// `lastCartData` inside event-handlers is module-scoped and only set
+				// by shipping handlers. Pre-populate it deterministically here so the
+				// guard reads our intended cart shape instead of stale state from
+				// earlier tests.
+				const seedLastCartData = async ( cartData ) => {
+					const shippingElements = {
+						update: jest.fn().mockResolvedValue( undefined ),
+					};
+					cartApiUpdateCustomerMock.mockResolvedValue( cartData );
+					await shippingAddressChangeHandler(
+						{
+							name: 'John Doe',
+							address: {
+								country: 'US',
+								postal_code: '10001',
+							},
+							resolve: jest.fn(),
+							reject: jest.fn(),
+						},
+						shippingElements
+					);
+				};
+
+				const subscriptionCartShape = {
+					items: [],
+					shipping_rates: [
+						{
+							package_id: 0,
+							shipping_rates: [
+								{
+									rate_id: 'flat_rate:1',
+									name: 'Flat rate',
+									price: '500',
+									taxes: '0',
+									selected: true,
+									meta_data: [],
+								},
+							],
+						},
+					],
+					totals: { total_price: '1999', total_refund: '0' },
+					extensions: {
+						subscriptions: [
+							{
+								billing_period: 'month',
+								billing_interval: 1,
+								totals: { total_price: '1999' },
+							},
+						],
+					},
+				};
+
+				const regularCartShape = {
+					items: [],
+					shipping_rates: [
+						{
+							package_id: 0,
+							shipping_rates: [
+								{
+									rate_id: 'flat_rate:1',
+									name: 'Flat rate',
+									price: '500',
+									taxes: '0',
+									selected: true,
+									meta_data: [],
+								},
+							],
+						},
+					],
+					totals: { total_price: '1999', total_refund: '0' },
+					extensions: { subscriptions: [] },
+				};
+
+				it( 'aborts when cart has a subscription but has_subscription flag was false at mount', async () => {
+					global.wcpayExpressCheckoutParams.has_subscription = false;
+					await seedLastCartData( subscriptionCartShape );
+
+					await onConfirmHandler(
+						api,
+						stripe,
+						elements,
+						completePayment,
+						abortPayment,
+						event
+					);
+
+					expect(
+						stripe.createConfirmationToken
+					).not.toHaveBeenCalled();
+					expect( cartApiPlaceOrderMock ).not.toHaveBeenCalled();
+					expect( completePayment ).not.toHaveBeenCalled();
+					expect( abortPayment ).toHaveBeenCalledWith(
+						expect.stringContaining( 'subscription' )
+					);
+				} );
+
+				it( 'proceeds normally when has_subscription flag is true (guard skipped)', async () => {
+					global.wcpayExpressCheckoutParams.has_subscription = true;
+					await seedLastCartData( subscriptionCartShape );
+					cartApiPlaceOrderMock.mockResolvedValue( {
+						payment_result: {
+							payment_status: 'success',
+							redirect_url: 'https://example.com/success',
+						},
+					} );
+					api.confirmIntent.mockReturnValue( true );
+
+					await onConfirmHandler(
+						api,
+						stripe,
+						elements,
+						completePayment,
+						abortPayment,
+						event
+					);
+
+					expect( stripe.createConfirmationToken ).toHaveBeenCalled();
+					expect( abortPayment ).not.toHaveBeenCalled();
+				} );
+
+				it( 'proceeds when flag is false and cart has no subscription', async () => {
+					global.wcpayExpressCheckoutParams.has_subscription = false;
+					await seedLastCartData( regularCartShape );
+					cartApiPlaceOrderMock.mockResolvedValue( {
+						payment_result: {
+							payment_status: 'success',
+							redirect_url: 'https://example.com/success',
+						},
+					} );
+					api.confirmIntent.mockReturnValue( true );
+
+					await onConfirmHandler(
+						api,
+						stripe,
+						elements,
+						completePayment,
+						abortPayment,
+						event
+					);
+
+					expect( stripe.createConfirmationToken ).toHaveBeenCalled();
+					expect( abortPayment ).not.toHaveBeenCalled();
+				} );
 			} );
 		} );
 
