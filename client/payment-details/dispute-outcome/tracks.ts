@@ -11,14 +11,12 @@ const seenDisputeIds = new Set< string >();
 /**
  * Records the Outcome View event once per dispute per page session.
  *
- * De-dup is module-scoped, not a component ref, because the payment-details
- * loading lifecycle mounts DisputeOutcomeView several times per view (and
- * before the id resolves); a per-instance ref resets on each mount and would
- * let the event fire 2-6x. The absent-id case is skipped so a view is never
- * recorded without a dispute_id.
+ * De-dup is module-scoped, not a component ref: the payment-details loading
+ * lifecycle remounts DisputeOutcomeView several times per view, so a
+ * per-instance ref would reset and re-fire.
  *
- * `productType` is passed in (not resolved here) so the Tracks payload and the
- * caller's UI share one resolveProductType() result and can't drift.
+ * productType is passed in (not resolved here) so it can't drift from the
+ * value the caller renders.
  */
 export const recordOutcomeViewOnce = (
 	dispute: ChargeDispute,
@@ -38,7 +36,7 @@ export const recordOutcomeViewOnce = (
 };
 
 /**
- * Test-only: clears the de-dup memory between cases.
+ * Test-only: clears the de-dup memory.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const _resetOutcomeViewTrackingForTests = (): void => {

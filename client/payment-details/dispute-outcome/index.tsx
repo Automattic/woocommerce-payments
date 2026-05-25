@@ -24,8 +24,7 @@ interface DisputeOutcomeViewProps {
 const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 	dispute,
 } ) => {
-	// Shared with the Tracks payload below so the recorded product_type
-	// can't drift from the matrix cell shown.
+	// Computed once so the Tracks payload and the matrix UI use the same result.
 	const productType = resolveProductType(
 		dispute.metadata,
 		dispute.order?.suggested_product_type,
@@ -33,8 +32,6 @@ const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 			false
 	);
 
-	// Fires once per dispute per page session; see recordOutcomeViewOnce for
-	// why de-dup is module-scoped rather than a per-instance guard.
 	useEffect( () => {
 		recordOutcomeViewOnce( dispute, productType );
 	}, [ dispute, productType ] );
