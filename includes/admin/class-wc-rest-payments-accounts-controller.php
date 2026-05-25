@@ -47,6 +47,8 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Get account details via API.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetAccount
+	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_account_data() {

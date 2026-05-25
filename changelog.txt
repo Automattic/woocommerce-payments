@@ -1,5 +1,72 @@
 *** WooPayments Changelog ***
 
+= 10.8.0 - 2026-05-20 =
+* Add - Add a terminal payment preparation endpoint for single-step Interac and EFTPOS capture flows.
+* Add - Add card brand logo and last 4 digits to the WooPay express checkout button when available
+* Add - Add Dev Mode row to WooPayments system status report showing whether dev mode is active and which condition(s) triggered it
+* Add - Added a banner that nudges WooPayments merchants who've been in test mode for at least 7 days to switch to live payments.
+* Add - Added a banner that nudges WooPayments merchants who've taken exactly one live transaction toward Marketing tools 7 days after that transaction.
+* Add - Added staged activation emails that nudge WooPayments merchants who've completed KYC but haven't taken their first live sale toward activating live payments.
+* Add - Add EFTPOS and Cartes Bancaires card brand artwork for terminal payment details and receipts.
+* Add - Display new transaction type 'network_costs' on the Transactions list.
+* Add - Enable dispute additional evidence types feature by default
+* Fix - Add client-side email format validation to Support email and Notifications email fields in settings
+* Fix - Add missing display components to show payment information based on the payment intent data.
+* Fix - Address remaining paths where payment method change for subscription could reduce stock amounts
+* Fix - Allow rejected and under-review merchants to access Disputes and Transactions pages.
+* Fix - Clear cached account data when Jetpack site is disconnected
+* Fix - Constrain one-and-done and test-to-live recovery banner width on WC Admin SPA pages so they match the narrow content column instead of spanning full width.
+* Fix - Don't mark an order as Failed when a third-party plugin throws after the payment intent has already succeeded
+* Fix - fix: dependency extraction of @woocommerce/blocks-checkout
+* Fix - fix: express checkout to show recurring subscription info for free trial subscriptions with sign-up fees, not just pure $0 free trials
+* Fix - fix: failing qit-tests
+* Fix - fix: normalize Amazon Pay address when line1 is empty but line2 contains the street address
+* Fix - fix: prevent tooltip from rendering outside the viewport horizontally on narrow breakpoints
+* Fix - Fix Express Checkout (Apple Pay / Google Pay) wallet sheet amounts for Stripe special-case currencies (TWD, HUF, ISK, UGX) on the blocks-based cart and checkout.
+* Fix - Fix Express Checkout 403 nonce error on shortcode checkout when Apple Pay/Google Pay sheet selects an address
+* Fix - Fix transactions search box placeholder text being clipped on mobile viewports.
+* Fix - Fix WooPay express button outline being clipped on block cart and checkout.
+* Fix - Fix WooPay input background matching page background on block themes that don't define explicit input element styles
+* Fix - Fix WooPay preview logo rendering at full intrinsic size on some themes.
+* Fix - Fix WooPay themed checkout header color not applied when template part is nested inside a wrapper block
+* Fix - Harden postMessage origin validation in WooPay iframe communication
+* Fix - Hide the Loan advanced filter on the Transactions page when the merchant has no Stripe Capital loans.
+* Fix - Override transitive deps to address npm audit critical/high vulnerabilities
+* Fix - Prevent duplicate `wcpay_track_new_order` and `wcpay_track_update_order` actions being scheduled when `woocommerce_update_order` fires multiple times before ActionScheduler initializes.
+* Update - Bump lodash from 4.17.21 to 4.18.1 (security: prototype pollution in _.unset/_.omit, code injection in _.template) and @types/lodash to 4.17.24
+* Update - Client-side account cache now backs off progressively (2/5/10/15 min) after repeated errors, reducing retry storms during upstream slowness.
+* Update - Enrich 'Accept dispute' tracks events with dispute ID and reason so merchant intent can be distinguished from inaction.
+* Update - feat: add fee breakdown in timeline, to aid for Amazon Pay release
+* Update - feat: ensure server-side validation of ECE payment methods list
+* Update - refactor: centralizing BNPL currency limits in payment method definitions
+* Update - refactor: extract payment method detection to gateway
+* Update - refactor: overview page loading states to remove inconsistently rendered values.
+* Update - Show the Amazon Pay wallet icon, funding card brand, and last four digits on the admin transaction details, matching the Apple Pay and Google Pay treatment.
+* Update - Show the funding card brand and last four digits on saved Amazon Pay payment methods, and keep Amazon Pay subscriptions on the correct gateway for renewals.
+* Update - Show the funding card last four digits on the order received page for Amazon Pay transactions, matching Apple Pay and Google Pay.
+* Update - update: Affirm minimum amount from 50 to 35
+* Update - Update Klarna inquiry UI: per-reason banner copy, conditional return steps, inquiry-specific info notice, and disabled Challenge button with tooltip
+* Update - Update Stripe JS libraries: @stripe/stripe-js to 9.2.0 and @stripe/react-stripe-js to 6.2.0.
+* Dev - Add .claude/docs/capital-flow.md reference for Stripe Capital offer acceptance flow
+* Dev - Add accelerated-onboarding ExPlat experiment that routes Payments-task clicks straight into the WooPayments onboarding modal for merchants with incomplete KYC
+* Dev - Add agent-first release CLI: bump-version.sh, validate-release-branch.sh, release-status.sh, idempotent post-release workflow, Gutenberg version constants action, and --json modes for QIT security and phpstan wrappers.
+* Dev - Add checkout evidence to unit test order fixtures for WooCommerce beta compatibility.
+* Dev - Add DISPUTE_HIGH_IMPACT_FIELDS and DISPUTE_TOPICAL_FIELDS maps (both keyed by reason and product type) and getExpectedFieldStatus helper to support the dispute outcome view evidence importance rendering.
+* Dev - Add EvidenceSubmittedList presentational component for the Dispute Outcome View (behind feature flag).
+* Dev - Add _wcpay_feature_dispute_outcome_view flag and scaffolding for the dispute outcome view.
+* Dev - Bump rtlcss from 4.1.1 to 4.3.0
+* Dev - Bump the WP and WC tested up to versions.
+* Dev - chore: e2e tests simplifications
+* Dev - Clean up deprecated npm dependencies: remove @types/testing-library__jest-dom and @types/wordpress__data stub types, bump core-js to 3.49.0, replace stylelint-config-wordpress with @wordpress/stylelint-config, and drop @woocommerce/settings in favour of a local helper wrapping window.wc.wcSettings.
+* Dev - Decouple the Documents list from search-related CSS: drop the misleading has-search className and the dead responsive rules in its stylesheet
+* Dev - Drop deprecated @woocommerce/api E2E dep in favor of axios, bringing the axios version up to date
+* Dev - Improve dispute type definitions for charge and dispute responses
+* Dev - Pin GitHub Actions (checkout, cache, setup-node, upload-artifact, download-artifact) to full-length commit SHAs and add the github-actions ecosystem to Dependabot so SHA pins stay current.
+* Dev - refactor: rename express-checkout/blocks to block-buttons and co-locate SCSS with shortcode entry point
+* Dev - Remove expired 2025 WordPress.org review campaign prompt code.
+* Dev - Update react-refresh package to 0.18.0
+* Dev - Wire dispute Outcome View placeholder to render the Evidence Submitted section behind the existing feature flag; optional-missing rows collapse behind a disclosure on won and warning_closed outcomes
+
 = 10.7.1 - 2026-04-16 =
 * Fix - Fix changelog entries for 10.7.0 release.
 

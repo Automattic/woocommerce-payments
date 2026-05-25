@@ -216,6 +216,8 @@ export const getPaymentMethodsUrl = () => {
 export const formatStringValue = ( value ) =>
 	capitalize( value ).replace( /_/g, ' ' );
 
+export const getUserTimeZone = () => moment( new Date() ).format( 'Z' );
+
 /**
  * Basic formatting function to convert local date string to UTC.
  *

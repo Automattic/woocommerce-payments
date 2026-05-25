@@ -55,11 +55,11 @@ module.exports = {
 			'wc-payments-review-prompt':
 				'./client/wc-payments-review-prompt.tsx',
 			'wc-payments-test-to-live-notice':
-				'./client/entrypoints/test-to-live-notice/index.tsx',
+				'./client/entrypoints/notices/test-to-live-notice/index.tsx',
 			'wc-payments-post-kyc-activation-notice':
-				'./client/entrypoints/post-kyc-activation-notice/index.tsx',
+				'./client/entrypoints/notices/post-kyc-activation-notice/index.tsx',
 			'wc-payments-one-and-done-notice':
-				'./client/entrypoints/one-and-done-notice/index.tsx',
+				'./client/entrypoints/notices/one-and-done-notice/index.tsx',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -174,12 +174,32 @@ module.exports = {
 		new WooCommerceDependencyExtractionWebpackPlugin( {
 			injectPolyfill: true,
 			requestToExternal( request ) {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					// Force-bundle DataViews from the package's plugin/theme
+					// entrypoint (`@wordpress/dataviews/wp`) instead of
+					// externalizing to wp.dataviews. The host WP version can
+					// differ from the API contract this report expects.
+					//
+					// NOTE: force-bundling also pulls in DataViews'
+					// transitive @wordpress/private-apis dependency plus a
+					// non-deduped @wordpress/data — the bundled copy runs
+					// as a separate Redux store registry from the host
+					// `wp.data`, so the two don't share state. Smoke-tested
+					// safe today; revisit when WooPayments can rely on the
+					// host DataViews version.
+					return null;
+				}
+
 				switch ( request ) {
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
+				if ( request.startsWith( '@wordpress/dataviews' ) ) {
+					return null;
+				}
+
 				switch ( request ) {
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';

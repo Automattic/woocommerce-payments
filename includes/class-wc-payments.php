@@ -25,6 +25,7 @@ use WCPay\WooPay\Service\Checkout_Service;
 use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Internal\Abilities\AbilitiesRegistrar;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
@@ -334,6 +335,13 @@ class WC_Payments {
 	private static $fee_remediation;
 
 	/**
+	 * Instance of WC_Payments_Post_Kyc_Activation_Email_Service, created in init function
+	 *
+	 * @var WC_Payments_Post_Kyc_Activation_Email_Service
+	 */
+	private static $post_kyc_activation_email_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -424,6 +432,8 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-paginated.php';
 		include_once __DIR__ . '/core/server/request/class-list-transactions.php';
+		include_once __DIR__ . '/core/server/request/class-get-transactions-summary.php';
+		include_once __DIR__ . '/core/server/request/class-get-reporting-balance-summary.php';
 		include_once __DIR__ . '/core/server/request/class-list-fraud-outcome-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-list-disputes.php';
 		include_once __DIR__ . '/core/server/request/class-list-deposits.php';
@@ -446,6 +456,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-session-service.php';
 		include_once __DIR__ . '/class-wc-payments-redirect-service.php';
 		include_once __DIR__ . '/class-wc-payments-account.php';
+		include_once __DIR__ . '/class-wc-payments-post-kyc-activation-email-service.php';
 		include_once __DIR__ . '/class-wc-payments-customer-service.php';
 		include_once __DIR__ . '/class-logger.php';
 		include_once __DIR__ . '/class-logger-context.php';
@@ -547,6 +558,9 @@ class WC_Payments {
 		// Init the email template for In Person payment receipt email. We need to do it before passing the mailer to the service.
 		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_ipp_emails' ], 10 );
 
+		// Register the post-KYC activation reminder email.
+		add_filter( 'woocommerce_email_classes', [ __CLASS__, 'add_post_kyc_activation_email' ], 10 );
+
 		// Always load tracker to avoid class not found errors.
 		include_once WCPAY_ABSPATH . 'includes/admin/tracks/class-tracker.php';
 
@@ -630,6 +644,9 @@ class WC_Payments {
 
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
+
+		self::$post_kyc_activation_email_service = new WC_Payments_Post_Kyc_Activation_Email_Service( self::$account, self::$card_gateway, self::$order_service );
+		self::$post_kyc_activation_email_service->init_hooks();
 
 		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$database_cache, self::$onboarding_service, self::$token_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
@@ -736,6 +753,8 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/class-wc-payments-explicit-price-formatter.php';
 		WC_Payments_Explicit_Price_Formatter::init();
 
+		AbilitiesRegistrar::init();
+
 		include_once WCPAY_ABSPATH . 'includes/class-wc-payments-captured-event-note.php';
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-settings.php';
 		include_once WCPAY_ABSPATH . 'includes/fraud-prevention/class-order-fraud-and-risk-meta-box.php';
@@ -751,7 +770,7 @@ class WC_Payments {
 		// (both non-admin contexts). Admin-only hooks are registered separately
 		// further below, gated on is_admin() && manage_woocommerce.
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin-banner.php';
-		$admin_banner = new WC_Payments_Admin_Banner( self::get_gateway(), self::$account );
+		$admin_banner = new WC_Payments_Admin_Banner( self::get_gateway(), self::$account, self::$order_service );
 		$admin_banner->init_global_hooks();
 
 		if ( is_admin() && current_user_can( 'manage_woocommerce' ) ) {
@@ -833,6 +852,17 @@ class WC_Payments {
 	 */
 	public static function add_ipp_emails( array $email_classes ): array {
 		$email_classes['WC_Payments_Email_IPP_Receipt'] = include __DIR__ . '/emails/class-wc-payments-email-ipp-receipt.php';
+		return $email_classes;
+	}
+
+	/**
+	 * Adds the post-KYC activation reminder email to WooCommerce emails.
+	 *
+	 * @param array $email_classes the email classes.
+	 * @return array
+	 */
+	public static function add_post_kyc_activation_email( array $email_classes ): array {
+		$email_classes['WC_Payments_Email_Post_Kyc_Activation'] = include __DIR__ . '/emails/class-wc-payments-email-post-kyc-activation.php';
 		return $email_classes;
 	}
 
@@ -1033,6 +1063,12 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
+				// Reports DataViews per-tab persisted view. Expected shape:
+				// { fields: string[], perPage?: number, layout?: object }.
+				// Stored verbatim via WC Admin's user-data-fields filter, so
+				// any future PHP-side consumer MUST validate this shape
+				// before trusting it (it is user-writable JSON).
+				'wc_payments_reports_fees_view',
 
 				// WooPayments review prompt user preferences.
 				'wc_payments_review_prompt_dismissed',
@@ -1237,6 +1273,14 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
 		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
 		$reports_transactions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
+		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
+		$reports_fees_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
+		$reports_balance_controller = new WC_REST_Payments_Reports_Balance_Controller( self::$api_client );
+		$reports_balance_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );

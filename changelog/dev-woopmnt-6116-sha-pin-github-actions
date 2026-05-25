@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Pin GitHub Actions (checkout, cache, setup-node, upload-artifact, download-artifact) to full-length commit SHAs and add the github-actions ecosystem to Dependabot so SHA pins stay current.
