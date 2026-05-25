@@ -91,6 +91,16 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 				'permission_callback' => '__return_true',
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/revoke',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'revoke' ],
+				'permission_callback' => '__return_true',
+			]
+		);
 	}
 
 	/**
@@ -200,6 +210,43 @@ class WC_REST_Payments_CLI_Controller extends WP_REST_Controller {
 		}
 
 		return self::rest_error( 'invalid_code', __( 'The authorization code is invalid.', 'woocommerce-payments' ) );
+	}
+
+	/**
+	 * Revoke a WooCommerce REST API key using exact credential proof.
+	 *
+	 * @param WP_REST_Request $request REST request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function revoke( WP_REST_Request $request ) {
+		global $wpdb;
+
+		$key_id          = absint( $request->get_param( 'key_id' ) );
+		$consumer_key    = (string) $request->get_param( 'consumer_key' );
+		$consumer_secret = (string) $request->get_param( 'consumer_secret' );
+
+		if ( ! $key_id || '' === $consumer_key || '' === $consumer_secret ) {
+			return self::rest_error( 'missing_revoke_parameter', __( 'The key_id, consumer_key, and consumer_secret parameters are required.', 'woocommerce-payments' ) );
+		}
+
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT key_id, consumer_key, consumer_secret FROM {$wpdb->prefix}woocommerce_api_keys WHERE key_id = %d",
+				$key_id
+			),
+			ARRAY_A
+		);
+
+		if ( ! $row || ! hash_equals( (string) $row['consumer_key'], wc_api_hash( $consumer_key ) ) || ! hash_equals( (string) $row['consumer_secret'], $consumer_secret ) ) {
+			return self::rest_error( 'invalid_revoke_credentials', __( 'The WooCommerce REST API key could not be verified for revocation.', 'woocommerce-payments' ), 403 );
+		}
+
+		$deleted = $wpdb->delete( $wpdb->prefix . 'woocommerce_api_keys', [ 'key_id' => $key_id ], [ '%d' ] );
+		if ( false === $deleted ) {
+			return self::rest_error( 'revoke_failed', __( 'Unable to revoke WooCommerce REST API credentials.', 'woocommerce-payments' ), 500 );
+		}
+
+		return rest_ensure_response( [ 'revoked' => true ] );
 	}
 
 	/**

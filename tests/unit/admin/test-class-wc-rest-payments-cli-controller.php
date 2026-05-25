@@ -55,6 +55,7 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->assertArrayHasKey( '/wc/v3/payments/cli/authorize', $routes );
 		$this->assertArrayHasKey( '/wc/v3/payments/cli/token', $routes );
+		$this->assertArrayHasKey( '/wc/v3/payments/cli/revoke', $routes );
 	}
 
 	public function test_authorize_rejects_insecure_non_local_callback_url(): void {
@@ -284,6 +285,35 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $data['consumer_secret'], $row['consumer_secret'] );
 	}
 
+	public function test_revoke_deletes_matching_key(): void {
+		$key = $this->create_api_key_record();
+
+		$response = $this->controller->revoke( $this->create_revoke_request( $key ) );
+		$data     = $response->get_data();
+
+		$this->assertTrue( $data['revoked'] );
+
+		global $wpdb;
+		$this->assertSame(
+			'0',
+			$wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$wpdb->prefix}woocommerce_api_keys WHERE key_id = %d",
+					$key['key_id']
+				)
+			)
+		);
+	}
+
+	public function test_revoke_rejects_mismatched_secret(): void {
+		$key                    = $this->create_api_key_record();
+		$key['consumer_secret'] = 'cs_wrong';
+		$response               = $this->controller->revoke( $this->create_revoke_request( $key ) );
+
+		$this->assertInstanceOf( WP_Error::class, $response );
+		$this->assertSame( 'wcpay_cli_invalid_revoke_credentials', $response->get_error_code() );
+	}
+
 	public function test_token_cannot_be_reused(): void {
 		$admin_id = self::factory()->user->create( [ 'role' => 'administrator' ] );
 		$this->store_authorized_record(
@@ -329,6 +359,44 @@ class WC_REST_Payments_CLI_Controller_Test extends WCPAY_UnitTestCase {
 		);
 
 		return $request;
+	}
+
+	private function create_revoke_request( array $key ): WP_REST_Request {
+		$request = new WP_REST_Request( 'POST', '/wc/v3/payments/cli/revoke' );
+		$request->set_body_params(
+			[
+				'key_id'          => $key['key_id'],
+				'consumer_key'    => $key['consumer_key'],
+				'consumer_secret' => $key['consumer_secret'],
+			]
+		);
+
+		return $request;
+	}
+
+	private function create_api_key_record(): array {
+		global $wpdb;
+
+		$consumer_key    = 'ck_' . wc_rand_hash();
+		$consumer_secret = 'cs_' . wc_rand_hash();
+		$wpdb->insert(
+			$wpdb->prefix . 'woocommerce_api_keys',
+			[
+				'user_id'         => self::factory()->user->create( [ 'role' => 'administrator' ] ),
+				'description'     => 'WooPayments CLI revoke test',
+				'permissions'     => 'read',
+				'consumer_key'    => wc_api_hash( $consumer_key ),
+				'consumer_secret' => $consumer_secret,
+				'truncated_key'   => substr( $consumer_key, -7 ),
+			],
+			[ '%d', '%s', '%s', '%s', '%s', '%s' ]
+		);
+
+		return [
+			'key_id'          => (string) $wpdb->insert_id,
+			'consumer_key'    => $consumer_key,
+			'consumer_secret' => $consumer_secret,
+		];
 	}
 
 	private function store_authorized_record( string $auth_id, string $code, array $overrides = [] ): void {
