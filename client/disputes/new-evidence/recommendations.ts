@@ -65,6 +65,11 @@ export const getRecommendations = (
 	catalog: Recommendation[]
 ): Recommendation[] => {
 	const matched = catalog.filter( ( entry ) => {
+		// Tombstoned entries stay in the catalog for id stability but never render.
+		if ( entry.retired ) {
+			return false;
+		}
+
 		const { when } = entry;
 
 		if ( when.outcome !== context.outcome ) {

@@ -25,6 +25,11 @@ import type { Recommendation } from './types';
  *   - suppressOtherCriticals: catch-all "no evidence" entry uses this to
  *     hide other critical entries on the same dispute.
  *
+ * Ids are append-only: they are Tracks join keys, so never rename or reuse one.
+ * Retire an entry with `retired: true` instead of deleting it, and add new ids
+ * to recommendation-ids.snapshot.json in the same PR. recommendation-ids-snapshot.test.ts
+ * fails CI on any rename, removal, or unrecorded id.
+ *
  * Clusters 13 (response-time timing) is intentionally deferred until
  * `dispute.evidence_details.submitted_at` reaches the client.
  *

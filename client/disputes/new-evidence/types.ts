@@ -194,6 +194,11 @@ export interface Recommendation {
 	 * "missing X" entries.
 	 */
 	suppressOtherCriticals?: boolean;
+	/**
+	 * Tombstone: retired entries stay in the catalog (so the id is never
+	 * reused as a Tracks join key) but are dropped from runtime results.
+	 */
+	retired?: boolean;
 }
 
 export interface RecommendationContext {
