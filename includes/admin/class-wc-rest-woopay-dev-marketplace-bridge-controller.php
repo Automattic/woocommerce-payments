@@ -423,6 +423,10 @@ class WC_REST_WooPay_Dev_Marketplace_Bridge_Controller extends WP_REST_Controlle
 				continue;
 			}
 			$out[] = [
+				// WC variation post id — surfaced so the WSN→WooPay
+				// handoff can call `WC()->cart->add_to_cart` with the
+				// exact variation rather than guessing from attributes.
+				'variation_id'  => (int) $variation->get_id(),
 				'sku'           => sanitize_text_field( (string) $variation->get_sku() ),
 				'price'         => $this->price_or_null( $variation->get_price() ),
 				'regular_price' => $this->price_or_null( $variation->get_regular_price() ),

@@ -78,21 +78,26 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 							'items'    => [
 								'type'       => 'object',
 								'properties' => [
-									'slug'       => [
+									'slug'         => [
 										'type'     => 'string',
 										'required' => false,
 										'sanitize_callback' => 'sanitize_title',
 									],
-									'product_id' => [
+									'product_id'   => [
 										'type'     => 'integer',
 										'required' => false,
 										'sanitize_callback' => 'absint',
 									],
-									'quantity'   => [
+									'quantity'     => [
 										'type'     => 'integer',
 										'required' => false,
 										'default'  => 1,
 										'minimum'  => 1,
+										'sanitize_callback' => 'absint',
+									],
+									'variation_id' => [
+										'type'     => 'integer',
+										'required' => false,
 										'sanitize_callback' => 'absint',
 									],
 								],
@@ -159,43 +164,73 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Resolve a `{ slug, product_id, quantity }` payload to the WC
-	 * product and quantity to add to the cart. Returns null when
-	 * no product can be resolved — caller skips the line silently
-	 * so a partial cart still hands off cleanly.
+	 * Resolve an item payload to a `WC_Product` plus the quantity and
+	 * variation context needed for `WC()->cart->add_to_cart`. Returns
+	 * null when no product can be resolved — caller skips the line
+	 * silently so a partial cart still hands off cleanly.
+	 *
+	 * Variable products: the WSN side sends `variation_id` (surfaced by
+	 * the dev-bridge projection); we hydrate the WC_Product_Variation
+	 * here and read its WC-shape attribute map off the post directly so
+	 * the WSN doesn't need to know whether each key is taxonomy
+	 * (`attribute_pa_color`) or custom (`attribute_color`).
 	 *
 	 * @param array $item Single item payload from the SPA.
-	 * @return array{product: WC_Product, quantity: int}|null
+	 * @return array{product: WC_Product, quantity: int, variation_id: int, variation: array}|null
 	 */
 	private function resolve_item( array $item ): ?array {
 		$quantity = isset( $item['quantity'] ) ? max( 1, (int) $item['quantity'] ) : 1;
 
+		$product    = null;
 		$product_id = isset( $item['product_id'] ) ? (int) $item['product_id'] : 0;
 		if ( $product_id > 0 ) {
-			$product = wc_get_product( $product_id );
-			if ( $product instanceof WC_Product ) {
-				return [
-					'product'  => $product,
-					'quantity' => $quantity,
-				];
+			$candidate = wc_get_product( $product_id );
+			if ( $candidate instanceof WC_Product ) {
+				$product = $candidate;
 			}
 		}
 
-		$slug = isset( $item['slug'] ) ? sanitize_title( (string) $item['slug'] ) : '';
-		if ( '' !== $slug ) {
-			$post = get_page_by_path( $slug, OBJECT, 'product' );
-			if ( $post instanceof WP_Post ) {
-				$product = wc_get_product( $post->ID );
-				if ( $product instanceof WC_Product ) {
-					return [
-						'product'  => $product,
-						'quantity' => $quantity,
-					];
+		if ( ! $product ) {
+			$slug = isset( $item['slug'] ) ? sanitize_title( (string) $item['slug'] ) : '';
+			if ( '' !== $slug ) {
+				$post = get_page_by_path( $slug, OBJECT, 'product' );
+				if ( $post instanceof WP_Post ) {
+					$candidate = wc_get_product( $post->ID );
+					if ( $candidate instanceof WC_Product ) {
+						$product = $candidate;
+					}
 				}
 			}
 		}
 
-		return null;
+		if ( ! $product ) {
+			return null;
+		}
+
+		// Variable-product context. The WSN side hands off just the
+		// `variation_id`; we hydrate the WC_Product_Variation here and
+		// pull its attribute map straight off the post, which already
+		// has the merchant's exact taxonomy-vs-custom shape baked in.
+		// That avoids the WSN needing to know whether each attribute
+		// key is `attribute_pa_color` (taxonomy) or `attribute_color`
+		// (custom) — info that depends on the merchant's WC config.
+		$variation    = [];
+		$variation_id = isset( $item['variation_id'] ) ? (int) $item['variation_id'] : 0;
+		if ( $variation_id > 0 ) {
+			$variation_product = wc_get_product( $variation_id );
+			if ( $variation_product instanceof WC_Product_Variation ) {
+				foreach ( (array) $variation_product->get_variation_attributes() as $attr_key => $attr_value ) {
+					$variation[ (string) $attr_key ] = sanitize_text_field( (string) $attr_value );
+				}
+			}
+		}
+
+		return [
+			'product'      => $product,
+			'quantity'     => $quantity,
+			'variation_id' => $variation_id,
+			'variation'    => $variation,
+		];
 	}
 
 	/**
@@ -252,7 +287,9 @@ class WC_REST_WooPay_WSN_Checkout_Controller extends WP_REST_Controller {
 			}
 			$result = WC()->cart->add_to_cart(
 				$resolved['product']->get_id(),
-				$resolved['quantity']
+				$resolved['quantity'],
+				$resolved['variation_id'],
+				$resolved['variation']
 			);
 			if ( $result ) {
 				++$added;
