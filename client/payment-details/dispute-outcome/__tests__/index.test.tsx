@@ -12,7 +12,7 @@ import { render, screen } from '@testing-library/react';
 import DisputeOutcomeView from '../index';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import { recordEvent } from 'wcpay/tracks';
-import { resetOutcomeViewTrackingForTests } from '../tracks';
+import { _resetOutcomeViewTrackingForTests } from '../tracks';
 import type { ChargeDispute } from 'wcpay/types/charges';
 
 jest.mock( 'wcpay/tracks', () => ( {
@@ -26,7 +26,7 @@ const mockRecordEvent = recordEvent as jest.MockedFunction<
 beforeEach( () => {
 	mockRecordEvent.mockClear();
 	// De-dup memory is module-scoped, so clear it between cases.
-	resetOutcomeViewTrackingForTests();
+	_resetOutcomeViewTrackingForTests();
 } );
 
 const buildDispute = (
@@ -194,6 +194,26 @@ describe( 'DisputeOutcomeView', () => {
 
 			rerender( <DisputeOutcomeView dispute={ dispute } /> );
 			rerender( <DisputeOutcomeView dispute={ dispute } /> );
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'does not re-fire when a new dispute object has the same id', () => {
+			// The effect depends on the `dispute` object reference, so a new
+			// object with the same id (as the loading lifecycle produces)
+			// re-invokes it. The module-scoped Set keyed by id, not React's
+			// reference check, is what keeps this to a single event.
+			const first = buildDispute( {
+				metadata: { __product_type: 'physical_product' },
+			} );
+			const second = buildDispute( {
+				metadata: { __product_type: 'physical_product' },
+			} );
+
+			const { rerender } = render(
+				<DisputeOutcomeView dispute={ first } />
+			);
+			rerender( <DisputeOutcomeView dispute={ second } /> );
 
 			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
 		} );

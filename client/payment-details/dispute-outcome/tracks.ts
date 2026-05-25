@@ -49,6 +49,7 @@ export const registerOutcomeViewSeen = ( disputeId?: string ): boolean => {
 /**
  * Test-only: clears the de-dup memory between cases.
  */
-export const resetOutcomeViewTrackingForTests = (): void => {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export const _resetOutcomeViewTrackingForTests = (): void => {
 	seenDisputeIds.clear();
 };
