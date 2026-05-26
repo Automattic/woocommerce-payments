@@ -15,6 +15,70 @@ import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useDispatch } from '@wordpress/data';
 
+jest.mock( '../fees', () => ( {
+	FeesReport: ( { onReload }: { onReload?: () => void } ) => (
+		<div>
+			<div>Fees ledger table</div>
+			<button onClick={ onReload }>Reload</button>
+		</div>
+	),
+} ) );
+
+// Stub the Fees + Balance summary hooks so the Export / Print actions in the
+// Reports header render without exercising the real @wordpress/data
+// selectors (this test only cares about tab navigation behavior).
+jest.mock( 'wcpay/data', () => ( {
+	useReportsFeesSummary: () => ( {
+		feesSummary: { count: 0 },
+		isLoading: false,
+	} ),
+	useReportsBalanceSummary: () => ( {
+		summary: {},
+		error: {},
+		isLoading: false,
+	} ),
+} ) );
+
+jest.mock( 'wcpay/data/reports/hooks', () => ( {
+	useReportsFeesSummary: () => ( {
+		feesSummary: { count: 0 },
+		isLoading: false,
+	} ),
+} ) );
+
+// BalanceActions reads the Date filter via its own hook.
+jest.mock( '../balance/use-balance-date-filter', () => ( {
+	BalanceDateFilterNowContext: jest
+		.requireActual( 'react' )
+		.createContext( undefined ),
+	useBalanceDateFilter: () => ( {
+		value: undefined,
+		period: { start: '', end: '' },
+		hasDateFilterValue: false,
+		setValue: jest.fn(),
+	} ),
+} ) );
+
+const activeBalancePeriod = {
+	start: '2026-05-01T00:00:00.000Z',
+	end: '2026-05-20T23:59:59.999Z',
+};
+
+jest.mock( '../balance', () => ( {
+	BalanceReport: ( {
+		onReload,
+	}: {
+		onReload?: ( period?: typeof activeBalancePeriod ) => void;
+	} ) => (
+		<div>
+			<div>Balance summary table</div>
+			<button onClick={ () => onReload?.( activeBalancePeriod ) }>
+				Reload
+			</button>
+		</div>
+	),
+} ) );
+
 jest.mock( '@woocommerce/navigation', () => ( {
 	getQuery: jest.fn(),
 	updateQueryString: jest.fn(),
@@ -54,6 +118,7 @@ const mockUseDispatch = useDispatch as jest.Mock;
 
 declare const global: {
 	wcpaySettings: {
+		accountDefaultCurrency?: string;
 		featureFlags: Record< string, boolean >;
 		fraudServices: unknown[];
 	};
@@ -61,6 +126,7 @@ declare const global: {
 
 describe( 'Reports page tabs', () => {
 	const invalidateResolution = jest.fn();
+	const invalidateResolutionForStoreSelector = jest.fn();
 
 	const renderReportsPage = async ( props = {} ) => {
 		const result = render( <ReportsPage { ...props } /> );
@@ -76,15 +142,20 @@ describe( 'Reports page tabs', () => {
 
 	beforeEach( () => {
 		global.wcpaySettings = {
+			accountDefaultCurrency: 'USD',
 			featureFlags: {},
 			fraudServices: [],
 		};
 		mockGetQuery.mockReturnValue( {} );
 		mockUpdateQueryString.mockClear();
 		invalidateResolution.mockClear();
+		invalidateResolutionForStoreSelector.mockClear();
 		mockUseDispatch.mockImplementation( ( storeName ) => {
 			if ( WCPAY_STORE_NAME === storeName ) {
-				return { invalidateResolution };
+				return {
+					invalidateResolution,
+					invalidateResolutionForStoreSelector,
+				};
 			}
 			return {};
 		} );
@@ -178,9 +249,8 @@ describe( 'Reports page tabs', () => {
 		expect( screen.getByRole( 'tab', { name: 'Fees' } ) ).toHaveFocus();
 	} );
 
-	it( 'reloads the active tab in place by invalidating the placeholder resolver', async () => {
+	it( 'reloads the Balance tab in place by invalidating the active Balance period', async () => {
 		await renderReportsPage( {
-			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 
@@ -189,21 +259,21 @@ describe( 'Reports page tabs', () => {
 		);
 
 		expect( invalidateResolution ).toHaveBeenCalledWith(
-			expect.any( String ),
+			'getReportsBalanceSummary',
 			[
 				{
-					start: '2026-04-01T00:00:00.000Z',
-					end: '2026-04-30T23:59:59.999Z',
+					dateStart: activeBalancePeriod.start,
+					dateEnd: activeBalancePeriod.end,
+					currency: 'usd',
 				},
 			]
 		);
 	} );
 
-	it( 'reloads the Fees tab with the current period range', async () => {
-		mockGetQuery.mockReturnValue( { tab: 'fees' } );
+	it( 'does not crash the Reports page when the account default currency is missing', async () => {
+		global.wcpaySettings.accountDefaultCurrency = undefined;
 
 		await renderReportsPage( {
-			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 
@@ -212,13 +282,43 @@ describe( 'Reports page tabs', () => {
 		);
 
 		expect( invalidateResolution ).toHaveBeenCalledWith(
-			expect.any( String ),
+			'getReportsBalanceSummary',
 			[
 				{
-					start: '2026-04-01T00:00:00.000Z',
-					end: '2026-04-30T23:59:59.999Z',
+					dateStart: activeBalancePeriod.start,
+					dateEnd: activeBalancePeriod.end,
+					currency: '',
 				},
 			]
 		);
+	} );
+
+	it( 'reloads the Fees tab by invalidating all Fees selector resolutions', async () => {
+		mockGetQuery.mockReturnValue( { tab: 'fees' } );
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Reload/i } )
+		);
+
+		expect( invalidateResolutionForStoreSelector ).toHaveBeenCalledWith(
+			'getReportsFees'
+		);
+		expect( invalidateResolutionForStoreSelector ).toHaveBeenCalledWith(
+			'getReportsFeesSummary'
+		);
+	} );
+
+	it( 'renders the Fees report when Fees tab is active', async () => {
+		mockGetQuery.mockReturnValue( { tab: 'fees' } );
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		expect( screen.getByText( 'Fees ledger table' ) ).toBeInTheDocument();
 	} );
 } );

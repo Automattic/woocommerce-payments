@@ -11,7 +11,23 @@ import { render, screen } from '@testing-library/react';
  */
 import DisputeOutcomeView from '../index';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
+import { recordEvent } from 'wcpay/tracks';
+import { _resetOutcomeViewTrackingForTests } from '../tracks';
 import type { ChargeDispute } from 'wcpay/types/charges';
+
+jest.mock( 'wcpay/tracks', () => ( {
+	recordEvent: jest.fn(),
+} ) );
+
+const mockRecordEvent = recordEvent as jest.MockedFunction<
+	typeof recordEvent
+>;
+
+beforeEach( () => {
+	mockRecordEvent.mockClear();
+	// De-dup memory is module-scoped, so clear it between cases.
+	_resetOutcomeViewTrackingForTests();
+} );
 
 const buildDispute = (
 	overrides: Partial< ChargeDispute > = {}
@@ -144,6 +160,162 @@ describe( 'DisputeOutcomeView', () => {
 		const items = screen.getAllByRole( 'listitem' );
 		expect( items ).toHaveLength( 1 );
 		expect( items[ 0 ] ).toHaveTextContent( /Cover letter/ );
+	} );
+
+	describe( 'tracks wcpay_dispute_outcome_viewed', () => {
+		it( 'records once on mount with base dispute properties', () => {
+			render(
+				<DisputeOutcomeView
+					dispute={ buildDispute( {
+						metadata: { __product_type: 'physical_product' },
+					} ) }
+				/>
+			);
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			expect( mockRecordEvent ).toHaveBeenCalledWith(
+				'wcpay_dispute_outcome_viewed',
+				{
+					dispute_id: 'dp_test',
+					dispute_status: 'lost',
+					dispute_reason: 'product_unacceptable',
+					product_type: 'physical_product',
+				}
+			);
+		} );
+
+		it( 'does not re-fire when the component re-renders', () => {
+			const dispute = buildDispute( {
+				metadata: { __product_type: 'physical_product' },
+			} );
+			const { rerender } = render(
+				<DisputeOutcomeView dispute={ dispute } />
+			);
+
+			rerender( <DisputeOutcomeView dispute={ dispute } /> );
+			rerender( <DisputeOutcomeView dispute={ dispute } /> );
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'does not re-fire when a new dispute object has the same id', () => {
+			// The effect depends on the `dispute` object reference, so a new
+			// object with the same id (as the loading lifecycle produces)
+			// re-invokes it. The module-scoped Set keyed by id, not React's
+			// reference check, is what keeps this to a single event.
+			const first = buildDispute( {
+				metadata: { __product_type: 'physical_product' },
+			} );
+			const second = buildDispute( {
+				metadata: { __product_type: 'physical_product' },
+			} );
+
+			const { rerender } = render(
+				<DisputeOutcomeView dispute={ first } />
+			);
+			rerender( <DisputeOutcomeView dispute={ second } /> );
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'does not re-fire when the component remounts for the same dispute', () => {
+			// The payment-details loading lifecycle remounts this component
+			// several times per view. Module-scoped de-dup must survive a full
+			// unmount/remount so the view is recorded once, not once per mount.
+			const dispute = buildDispute( {
+				metadata: { __product_type: 'physical_product' },
+			} );
+
+			const first = render( <DisputeOutcomeView dispute={ dispute } /> );
+			first.unmount();
+			const second = render( <DisputeOutcomeView dispute={ dispute } /> );
+			second.unmount();
+			render( <DisputeOutcomeView dispute={ dispute } /> );
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		it( 'does not fire when dispute.id is missing', () => {
+			// During loading the component can mount before the id resolves;
+			// a view must never be recorded without a dispute_id.
+			render(
+				<DisputeOutcomeView dispute={ buildDispute( { id: '' } ) } />
+			);
+
+			expect( mockRecordEvent ).not.toHaveBeenCalled();
+		} );
+
+		it( 'fires again when dispute.id changes between renders (SPA in-place swap)', () => {
+			// A different dispute.id on an in-place prop swap must re-fire.
+			const first = buildDispute( {
+				id: 'dp_first',
+				metadata: { __product_type: 'physical_product' },
+			} );
+			const second = buildDispute( {
+				id: 'dp_second',
+				metadata: { __product_type: 'digital_product_or_service' },
+				status: 'won',
+				reason: 'fraudulent',
+			} );
+
+			const { rerender } = render(
+				<DisputeOutcomeView dispute={ first } />
+			);
+			rerender( <DisputeOutcomeView dispute={ second } /> );
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 2 );
+			expect( mockRecordEvent ).toHaveBeenNthCalledWith(
+				1,
+				'wcpay_dispute_outcome_viewed',
+				expect.objectContaining( {
+					dispute_id: 'dp_first',
+					dispute_status: 'lost',
+					product_type: 'physical_product',
+				} )
+			);
+			expect( mockRecordEvent ).toHaveBeenNthCalledWith(
+				2,
+				'wcpay_dispute_outcome_viewed',
+				expect.objectContaining( {
+					dispute_id: 'dp_second',
+					dispute_status: 'won',
+					product_type: 'digital_product_or_service',
+				} )
+			);
+		} );
+
+		it( 'fires for warning_closed inquiries too', () => {
+			render(
+				<DisputeOutcomeView
+					dispute={ buildDispute( { status: 'warning_closed' } ) }
+				/>
+			);
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			expect( mockRecordEvent ).toHaveBeenCalledWith(
+				'wcpay_dispute_outcome_viewed',
+				expect.objectContaining( { dispute_status: 'warning_closed' } )
+			);
+		} );
+
+		it( 'omits product_type when no product type is available', () => {
+			// No product type resolves, so the helper drops the key entirely.
+			render(
+				<DisputeOutcomeView
+					dispute={ buildDispute( { metadata: {}, order: null } ) }
+				/>
+			);
+
+			expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+			const [ eventName, payload ] = mockRecordEvent.mock.calls[ 0 ];
+			expect( eventName ).toBe( 'wcpay_dispute_outcome_viewed' );
+			expect( payload ).not.toHaveProperty( 'product_type' );
+			expect( payload ).toEqual( {
+				dispute_id: 'dp_test',
+				dispute_status: 'lost',
+				dispute_reason: 'product_unacceptable',
+			} );
+		} );
 	} );
 
 	describe( 'optional-missing collapse by status', () => {

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { CardDivider } from '@wordpress/components';
 
@@ -14,6 +14,7 @@ import type { ChargeDispute } from 'wcpay/types/charges';
 import { getExpectedFieldStatus } from 'wcpay/disputes/new-evidence/evidence-field-status';
 import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import EvidenceSubmittedList from './evidence-submitted-list';
+import { recordOutcomeViewOnce } from './tracks';
 import './style.scss';
 
 interface DisputeOutcomeViewProps {
@@ -23,13 +24,18 @@ interface DisputeOutcomeViewProps {
 const DisputeOutcomeView: React.FC< DisputeOutcomeViewProps > = ( {
 	dispute,
 } ) => {
-	// Mirror the wizard's resolution so both look up the same matrix cell.
+	// Computed once so the Tracks payload and the matrix UI use the same result.
 	const productType = resolveProductType(
 		dispute.metadata,
 		dispute.order?.suggested_product_type,
 		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ??
 			false
 	);
+
+	useEffect( () => {
+		recordOutcomeViewOnce( dispute, productType );
+	}, [ dispute, productType ] );
+
 	const fields = getExpectedFieldStatus(
 		dispute.reason,
 		productType,

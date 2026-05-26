@@ -1,0 +1,342 @@
+/** @format */
+
+.wcpay-reports-balance {
+	display: flex;
+	flex-direction: column;
+	gap: $gap-large;
+	padding-top: $gap;
+
+	&__toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+		gap: $gap;
+		flex-wrap: wrap;
+	}
+
+	&__card {
+		background: #fff;
+		border: 1px solid $gray-200;
+		border-radius: 8px;
+		padding: 16px 24px 24px;
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+		color: $gray-900;
+		font-size: 13px;
+		line-height: 20px;
+	}
+
+	&__caption {
+		caption-side: top;
+		padding: 12px 0 16px;
+		color: $gray-900;
+		font-size: 15px;
+		font-weight: 500;
+		line-height: 20px;
+		text-align: left;
+		border-bottom: 1px solid $gray-100;
+	}
+
+	&__row {
+		height: 40px;
+		border-bottom: 1px solid $gray-100;
+
+		&:last-child {
+			border-bottom: 0;
+		}
+	}
+
+	&__label,
+	&__amount {
+		// Setting `display: flex` directly on a <th>/<td> breaks the table-cell
+		// role and snaps content to the top of the row in some browsers. Keep
+		// the cells as regular table cells (vertical-align: middle is the
+		// default) and let the inner wrapper own the flex layout / gap.
+		padding: 0;
+		vertical-align: middle;
+		color: $gray-800;
+	}
+
+	&__label {
+		text-align: left;
+		font-weight: 500;
+	}
+
+	&__label-inner {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	&__amount {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+		font-weight: 500;
+		white-space: nowrap;
+	}
+
+	// Depth 0 — top-level totals (Starting / Total / Net / Ending).
+	// Default label/amount styling already matches.
+
+	// Depth 1 — group rows (Fees, Refunds, Disputes, Payouts).
+	&__row--depth-1 {
+		.wcpay-reports-balance__label {
+			padding-left: 24px;
+		}
+
+		.wcpay-reports-balance__amount {
+			font-weight: 400;
+		}
+	}
+
+	// Refunds / Disputes / Payouts group-row exception: the four group rows
+	// keep label semibold, only the sub-rows step down to regular.
+
+	// Depth 2 — sub-rows (Charge fees / Dispute fees / Fee refunds).
+	&__row--depth-2 {
+		.wcpay-reports-balance__label {
+			padding-left: 48px;
+			font-weight: 400;
+			color: $gray-700;
+		}
+
+		.wcpay-reports-balance__amount {
+			font-weight: 400;
+			color: $gray-700;
+		}
+	}
+
+	&__count {
+		display: inline-flex;
+		min-width: 20px;
+		height: 20px;
+		align-items: center;
+		justify-content: center;
+		padding: 0 6px;
+		border-radius: 10px;
+		background: $gray-100;
+		color: $gray-700;
+		font-size: 11px;
+		font-weight: 500;
+		line-height: 20px;
+	}
+}
+
+@media screen and ( max-width: 782px ) {
+	.wcpay-reports-balance {
+		&__card {
+			padding: 12px 16px 16px;
+		}
+
+		&__row {
+			display: block;
+			height: auto;
+		}
+
+		&__label,
+		&__amount {
+			display: block;
+			width: 100%;
+			padding: 8px 0;
+			text-align: left;
+		}
+	}
+}
+
+.wcpay-reports-balance-actions {
+	display: flex;
+	gap: $gap-small;
+	align-items: center;
+}
+
+.wcpay-reports-balance-print {
+	display: none;
+}
+
+$print-context: '.wcpay-reports-balance-print-context';
+
+@media print {
+	@page {
+		size: A4;
+		margin: 0;
+	}
+
+	body#{$print-context}.wp-admin {
+		background: #fff !important;
+	}
+
+	html#{$print-context}.wp-toolbar {
+		padding-top: 0 !important;
+	}
+
+	#{$print-context} {
+		#adminmenumain,
+		#wpadminbar,
+		#wpfooter,
+		#screen-meta,
+		#screen-meta-links,
+		#adminmenuback,
+		#adminmenuwrap,
+		.woocommerce-layout__header,
+		.woocommerce-layout__activity-panel,
+		.woocommerce-layout__activity-panel-tabs,
+		.woocommerce-layout__activity-panel-wrapper,
+		.wcpay-reports-header,
+		.wcpay-reports-balance-actions,
+		.wcpay-reports-tab-panel .components-tab-panel__tabs {
+			display: none !important;
+		}
+
+		#wpwrap,
+		#wpcontent,
+		#wpbody,
+		#wpbody-content,
+		#root,
+		.wrap,
+		.woocommerce-layout,
+		.woocommerce-layout__primary,
+		.woocommerce-layout__main,
+		.wcpay-reports-page,
+		.wcpay-reports-tab-panel,
+		.wcpay-reports-content {
+			width: auto !important;
+			height: auto !important;
+			min-height: 0 !important;
+			max-width: none !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			overflow: visible !important;
+			background: #fff !important;
+		}
+
+		#wpbody-content {
+			float: none !important;
+		}
+
+		.wcpay-reports-balance {
+			display: block;
+			width: 100vw !important;
+			height: auto !important;
+			min-height: 0 !important;
+			padding-top: 0;
+			overflow: visible !important;
+
+			> .wcpay-reports-balance__toolbar,
+			> .wcpay-reports-balance__card {
+				display: none !important;
+			}
+		}
+
+		// Figma A4 frame is 1334 × 1888 px (≈ 160 DPI for a true A4 sheet).
+		// Convert design pixels to physical millimetres so print matches Figma
+		// regardless of the browser's print "Scale" setting:
+		//   61 px / 160 DPI ≈ 9.7 mm (top)
+		//   51 px / 160 DPI ≈ 8.1 mm (left/right)
+		//   24 px / 160 DPI ≈ 3.8 mm (table card horizontal padding)
+		.wcpay-reports-balance-print {
+			display: block !important;
+			box-sizing: border-box;
+			width: auto;
+			max-width: none;
+			margin: 9.7mm 8.1mm 0;
+			color: $gray-900;
+			background: #fff;
+			font-size: 13px;
+			line-height: 20px;
+
+			&__header {
+				display: flex;
+				flex-direction: column;
+				gap: $gap;
+				margin-bottom: 79px;
+			}
+
+			&__logo {
+				width: 260px;
+				height: 40px;
+				object-fit: contain;
+				object-position: left center;
+			}
+
+			&__business {
+				max-width: 185px;
+				color: $gray-800;
+				font-weight: 500;
+
+				p {
+					margin: 0;
+				}
+			}
+
+			&__table {
+				width: 100%;
+				margin: 0 0 $gap-large;
+				border: 1px solid $gray-200;
+				border-radius: 8px;
+				border-collapse: separate;
+				border-spacing: 0;
+				color: $gray-900;
+				font-size: 13px;
+				line-height: 20px;
+				overflow: hidden;
+
+				th,
+				td {
+					height: 40px;
+					padding: 0 3.8mm;
+					border-bottom: 1px solid $gray-100;
+					vertical-align: middle;
+				}
+
+				thead th {
+					color: $gray-900;
+					font-size: 15px;
+					font-weight: 500;
+					text-align: left;
+				}
+
+				tbody th {
+					color: $gray-800;
+					font-weight: 500;
+					text-align: left;
+				}
+
+				tbody td {
+					color: $gray-800;
+					font-weight: 400;
+					text-align: right;
+					font-variant-numeric: tabular-nums;
+				}
+
+				tr:last-child th,
+				tr:last-child td {
+					border-bottom: 0;
+				}
+			}
+
+			&__row--group th {
+				padding-left: 7.6mm;
+			}
+
+			&__row--indent th,
+			&__row--indent td {
+				color: $gray-700;
+				font-weight: 400;
+			}
+
+			&__row--indent th {
+				padding-left: 11.4mm;
+			}
+
+			&__disclaimer {
+				max-width: 520px;
+				margin: 0;
+				color: $gray-900;
+				font-weight: 500;
+			}
+		}
+	}
+}
