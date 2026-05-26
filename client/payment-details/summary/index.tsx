@@ -855,10 +855,11 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 	props
 ) => {
 	const dispute = props.charge?.dispute;
-	// Gate on won/lost specifically (DisputeRecommendationsCard has no entries
-	// for warning_closed inquiries) AND suppress when the merchant accepted
-	// the dispute: accepting is a deliberate non-engagement, so coaching them
-	// to "submit evidence next time" misreads the choice. Per RiskOps review.
+	// Gate on won/lost specifically: DisputeRecommendationsCard has no entries
+	// for warning_* inquiries (warning_closed is the one that reaches here, since
+	// the Outcome View admits it). AND suppress when the merchant accepted the
+	// dispute: accepting is a deliberate non-engagement, so coaching them to
+	// "submit evidence next time" misreads the choice. Per RiskOps review.
 	const showRecommendationsCard =
 		!! dispute &&
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&

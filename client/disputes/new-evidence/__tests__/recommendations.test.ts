@@ -329,6 +329,58 @@ describe( 'getRecommendations', () => {
 		} );
 	} );
 
+	describe( 'empty-string and whitespace-only values count as missing', () => {
+		// hasMeaningfulValue trims before measuring, so a field the merchant
+		// cleared (server returns '' or '   ') reads as absent for both
+		// requireProvided and requireMissing predicates.
+		const provided = buildEntry( {
+			id: 'provided',
+			when: {
+				outcome: 'keep_doing',
+				reasonIn: [ 'product_not_received' ],
+				requireProvided: { keys: [ 'shipping_tracking_number' ] },
+			},
+		} );
+		const missing = buildEntry( {
+			id: 'missing',
+			when: {
+				outcome: 'could_help',
+				reasonIn: [ 'product_not_received' ],
+				requireMissing: { keys: [ 'shipping_tracking_number' ] },
+			},
+		} );
+
+		it.each( [ '', '   ' ] )(
+			'treats %j as not provided (requireProvided does not fire)',
+			( value ) => {
+				expect(
+					getRecommendations(
+						baseContext( {
+							outcome: 'keep_doing',
+							evidence: { shipping_tracking_number: value },
+						} ),
+						[ provided ]
+					)
+				).toEqual( [] );
+			}
+		);
+
+		it.each( [ '', '   ' ] )(
+			'treats %j as missing (requireMissing fires)',
+			( value ) => {
+				expect(
+					getRecommendations(
+						baseContext( {
+							outcome: 'could_help',
+							evidence: { shipping_tracking_number: value },
+						} ),
+						[ missing ]
+					).map( ( r ) => r.id )
+				).toEqual( [ 'missing' ] );
+			}
+		);
+	} );
+
 	it( 'ANDs all when-clauses together (failing one clause drops the entry)', () => {
 		const strictEntry = buildEntry( {
 			id: 'strict',

@@ -11,6 +11,7 @@ import {
 	ExternalLink,
 	VisuallyHidden,
 } from '@wordpress/components';
+import { Icon, published, error, info } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -43,7 +44,7 @@ const LEARN_MORE_HREF =
 	'https://woocommerce.com/document/managing-payment-disputes/';
 
 // Map dispute status to the outcome framing used for catalog matching.
-// warning_closed has no entry: inquiries carry no merchant-submitted
+// warning_* statuses have no entry: inquiries carry no merchant-submitted
 // evidence, so neither outcome's recommendations have a behavioral hook.
 const outcomeByStatus: Partial<
 	Record< ChargeDispute[ 'status' ], RecommendationOutcome >
@@ -68,62 +69,15 @@ const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
 	return b.lift - a.lift;
 };
 
-// Urgency icons sit before each rec title. SVGs use `stroke="currentColor"`
-// so the color is controlled by the parent `.dispute-recommendations__icon`
-// class via the urgency modifier (see style.scss). Per RiskOps review: color
-// lives in the icon, not in the title, to align with WooPayments admin's
-// restrained color vocabulary.
+// Urgency icons sit before each rec title. @wordpress/icons render in
+// `currentColor`, so the color is controlled by the parent
+// `.dispute-recommendations__icon` class via the urgency modifier (see
+// style.scss). Per RiskOps review: color lives in the icon, not in the
+// title, to align with WooPayments admin's restrained color vocabulary.
 const urgencyIcons: Record< RecommendationUrgency, JSX.Element > = {
-	positive: (
-		<svg
-			width="18"
-			height="18"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="9" />
-			<path d="m9 12 2 2 4-4" />
-		</svg>
-	),
-	critical: (
-		<svg
-			width="18"
-			height="18"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<path d="M12 9v4" />
-			<path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z" />
-			<path d="M12 16h.01" />
-		</svg>
-	),
-	tip: (
-		<svg
-			width="18"
-			height="18"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="9" />
-			<path d="M12 8v4" />
-			<path d="M12 16h.01" />
-		</svg>
-	),
+	positive: <Icon icon={ published } size={ 18 } />,
+	critical: <Icon icon={ error } size={ 18 } />,
+	tip: <Icon icon={ info } size={ 18 } />,
 };
 
 // Severity qualifiers for screen readers. Sighted users get severity from
@@ -187,6 +141,10 @@ const renderSection = (
 					<ExternalLink
 						className="dispute-recommendations-card__learn-more"
 						href={ learnMoreHref }
+						aria-label={ __(
+							'Learn more about managing payment disputes',
+							'woocommerce-payments'
+						) }
 					>
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
@@ -199,7 +157,7 @@ const renderSection = (
 						{ sprintf(
 							/* translators: %d is the number of additional recommendations hidden by default. */
 							_n(
-								'Show %d more',
+								'Show 1 more',
 								'Show %d more',
 								hidden.length,
 								'woocommerce-payments'

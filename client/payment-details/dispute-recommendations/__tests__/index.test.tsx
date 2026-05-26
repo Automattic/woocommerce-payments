@@ -220,13 +220,19 @@ describe( 'DisputeRecommendationsCard', () => {
 	} );
 
 	describe( 'capping at 3 per section with show-more', () => {
-		it( 'shows at most 3 entries inline per section', () => {
-			// Lost + PNR + physical, no evidence at all: many criticals fire.
+		it( 'caps inline entries at exactly 3 per section', () => {
+			// Lost + PNR + physical with only `receipt` provided dodges Cluster
+			// 15 suppression and yields four "What could help next time" entries
+			// (three criticals + one tip). With VISIBLE_PER_SECTION = 3, exactly
+			// three render inline and the fourth overflows into the disclosure,
+			// so this stresses the cap rather than passing trivially. (Using
+			// `evidence: {}` would let Cluster 15 suppress down to two entries,
+			// never exercising the cap at all.)
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'product_not_received',
 				metadata: { __product_type: 'physical_product' },
-				evidence: {},
+				evidence: { receipt: 'r' },
 			} );
 
 			const { container } = render(
@@ -242,7 +248,7 @@ describe( 'DisputeRecommendationsCard', () => {
 			const inlineItems = section?.querySelectorAll(
 				':scope > .dispute-recommendations__item'
 			);
-			expect( inlineItems?.length ).toBeLessThanOrEqual( 3 );
+			expect( inlineItems?.length ).toBe( 3 );
 		} );
 
 		it( 'wraps overflow entries beyond 3 in a <details> show-more disclosure', () => {

@@ -105,6 +105,12 @@
 	display: inline-flex;
 	align-items: center;
 	margin-top: 1px;
+
+	// @wordpress/icons are fill-based and default to black; route the fill
+	// through `currentColor` so the urgency `color` above tints them.
+	svg {
+		fill: currentColor;
+	}
 }
 
 .dispute-recommendations__text {
