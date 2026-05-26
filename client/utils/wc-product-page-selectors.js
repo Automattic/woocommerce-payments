@@ -76,12 +76,10 @@ export const isIAPIBlock = () => {
  *
  * @return {number|null} The variation ID, or null if not resolved.
  */
-export const getVariationId = () => {
-	// Try the IAPI block first, then fall back to the classic hidden input.
-	const input =
-		document.querySelector(
-			'.wp-block-add-to-cart-with-options input[name="variation_id"]'
-		) || document.querySelector( 'input.variation_id' );
+export const getIAPIVariationId = () => {
+	const input = document.querySelector(
+		'.wp-block-add-to-cart-with-options input[name="variation_id"]'
+	);
 
 	const value = parseInt( input?.value, 10 );
 	return value > 0 ? value : null;

@@ -12,7 +12,7 @@ import { addFilter, doAction } from '@wordpress/hooks';
 import { getExpressCheckoutData } from 'wcpay/express-checkout/utils';
 import {
 	isIAPIBlock,
-	getVariationId,
+	getIAPIVariationId,
 } from 'wcpay/utils/wc-product-page-selectors';
 
 jQuery( ( $ ) => {
@@ -76,7 +76,7 @@ addFilter(
 			// attribute key/value pairs (and the brittle label-matching they
 			// require). This is the same approach WooCommerce core uses when
 			// submitting the IAPI form.
-			const variationId = getVariationId();
+			const variationId = getIAPIVariationId();
 			if ( variationId ) {
 				return {
 					...productData,

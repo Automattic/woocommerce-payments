@@ -6,7 +6,7 @@ import {
 	getProductId,
 	getQuantity,
 	isIAPIBlock,
-	getVariationId,
+	getIAPIVariationId,
 } from '../wc-product-page-selectors';
 
 describe( 'wc-product-page-selectors', () => {
@@ -113,13 +113,7 @@ describe( 'wc-product-page-selectors', () => {
 				'  <input type="hidden" name="variation_id" value="263" />',
 				'</form>',
 			].join( '' );
-			expect( getVariationId() ).toBe( 263 );
-		} );
-
-		it( 'returns variation ID from the classic variation_id input', () => {
-			document.body.innerHTML =
-				'<input type="hidden" class="variation_id" name="variation_id" value="42" />';
-			expect( getVariationId() ).toBe( 42 );
+			expect( getIAPIVariationId() ).toBe( 263 );
 		} );
 
 		it( 'returns null when variation_id is empty', () => {
@@ -128,7 +122,7 @@ describe( 'wc-product-page-selectors', () => {
 				'  <input type="hidden" name="variation_id" value="" />',
 				'</form>',
 			].join( '' );
-			expect( getVariationId() ).toBeNull();
+			expect( getIAPIVariationId() ).toBeNull();
 		} );
 
 		it( 'returns null when variation_id is 0', () => {
@@ -137,11 +131,11 @@ describe( 'wc-product-page-selectors', () => {
 				'  <input type="hidden" name="variation_id" value="0" />',
 				'</form>',
 			].join( '' );
-			expect( getVariationId() ).toBeNull();
+			expect( getIAPIVariationId() ).toBeNull();
 		} );
 
 		it( 'returns null when no variation input exists', () => {
-			expect( getVariationId() ).toBeNull();
+			expect( getIAPIVariationId() ).toBeNull();
 		} );
 
 		it( 'prefers the IAPI block input over the classic input', () => {
@@ -151,7 +145,7 @@ describe( 'wc-product-page-selectors', () => {
 				'</form>',
 				'<input type="hidden" class="variation_id" name="variation_id" value="42" />',
 			].join( '' );
-			expect( getVariationId() ).toBe( 500 );
+			expect( getIAPIVariationId() ).toBe( 500 );
 		} );
 	} );
 } );
