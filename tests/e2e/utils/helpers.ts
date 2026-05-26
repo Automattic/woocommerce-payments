@@ -98,14 +98,18 @@ export const loginAsCustomer = async (
 	for ( let i = 0; i < customerRetries; i++ ) {
 		try {
 			// A partial previous attempt can leave the context authenticated,
-			// which redirects wpAdminLogin away from the login form. Clear cookies
-			// before each retry so the attempt starts from a clean state.
+			// which redirects wpAdminLogin away from the login form. Clear only
+			// the `wordpress*` auth cookies (not all cookies) so the Atomic
+			// support-session cookie set before login survives the retry.
 			if ( i > 0 ) {
-				await page.context().clearCookies();
+				await page.context().clearCookies( { name: /^wordpress/ } );
 			}
 			// eslint-disable-next-line no-console
 			console.log( 'Trying to log-in as customer...' );
 			await wpAdminLogin( page, customer );
+			// Let the login navigation settle so the goto() below can't interrupt
+			// it (matches the admin path in auth.setup.ts).
+			await page.waitForLoadState( 'domcontentloaded' );
 
 			await page.goto( '/my-account' );
 			// Logout link = stable, semantic "logged in" signal (the prior
@@ -121,7 +125,9 @@ export const loginAsCustomer = async (
 			break;
 		} catch ( e ) {
 			console.log(
-				`Customer log-in failed. Retrying... ${ i }/${ customerRetries }`
+				`Customer log-in failed. Retrying... ${
+					i + 1
+				}/${ customerRetries }`
 			);
 			console.log( e );
 		}
