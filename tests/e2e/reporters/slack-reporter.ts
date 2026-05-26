@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable no-console */
 
 /**
  * External dependencies
  */
 import { writeFileSync, readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { resolve } from 'path';
 import type {
 	Reporter,
 	FullConfig,
@@ -60,7 +61,7 @@ interface RerunState {
 function getStateFilePath(): string {
 	return (
 		E2E_SLACK_STATE_FILE ||
-		join( process.cwd(), 'tests/e2e/.slack-thread-state.json' )
+		resolve( __dirname, '../.slack-thread-state.json' )
 	);
 }
 
@@ -70,7 +71,6 @@ function writeRerunState( state: RerunState ): void {
 	} catch ( error ) {
 		// Non-fatal: a missing state file just means phase 2 falls back to
 		// its default behavior.
-		// eslint-disable-next-line no-console
 		console.log( 'Failed to write Slack re-run state', error );
 	}
 }
@@ -81,10 +81,18 @@ function readRerunState(): RerunState | undefined {
 		if ( ! existsSync( filePath ) ) {
 			return undefined;
 		}
-		return JSON.parse( readFileSync( filePath, 'utf8' ) ) as RerunState;
+		const parsed = JSON.parse( readFileSync( filePath, 'utf8' ) );
+		// Guard against a parseable-but-malformed file so reconciliation
+		// can't later throw on a non-iterable failedTestIds.
+		if (
+			typeof parsed?.threadTs !== 'string' ||
+			! Array.isArray( parsed?.failedTestIds )
+		) {
+			return undefined;
+		}
+		return parsed as RerunState;
 	} catch ( error ) {
 		// Non-fatal: treat a corrupt/unreadable state file as "no state".
-		// eslint-disable-next-line no-console
 		console.log( 'Failed to read Slack re-run state', error );
 		return undefined;
 	}
@@ -379,7 +387,6 @@ class SlackReporter implements Reporter {
 			} else {
 				// Re-run requested but no phase-1 state to adopt: fall back to
 				// posting a fresh thread (pre-reconciliation behavior).
-				// eslint-disable-next-line no-console
 				console.log(
 					'Slack re-run requested but no phase-1 state found; ' +
 						'falling back to a new thread.'
@@ -584,12 +591,27 @@ class SlackReporter implements Reporter {
 			return;
 		}
 
+		const phase1Failures = new Set( state.failedTestIds );
 		let recovered = 0;
 		let stillFailing = 0;
-		for ( const id of state.failedTestIds ) {
+		for ( const id of phase1Failures ) {
 			if ( this.phase2Status.get( id ) === 'passed' ) {
 				recovered++;
 			} else {
+				stillFailing++;
+			}
+		}
+
+		// Phase 2 re-runs whole spec files, so it can surface a test that
+		// passed in phase 1 but fails now. Those make the job red under
+		// `set -e`, so count them too — otherwise the reconciled message
+		// could look greener than the actual job outcome.
+		for ( const [ id, status ] of this.phase2Status ) {
+			if (
+				! phase1Failures.has( id ) &&
+				status !== 'passed' &&
+				status !== 'skipped'
+			) {
 				stillFailing++;
 			}
 		}
