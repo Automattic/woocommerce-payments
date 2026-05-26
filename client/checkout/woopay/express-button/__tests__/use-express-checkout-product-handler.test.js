@@ -144,3 +144,71 @@ describe( 'validateGiftCardFields', () => {
 		);
 	} );
 } );
+
+describe( 'getProductData — IAPI block (Add to Cart + Options)', () => {
+	beforeEach( () => {
+		jest.resetModules();
+	} );
+
+	afterEach( () => {
+		document.body.innerHTML = '';
+	} );
+
+	const setupIAPIBlock = ( { parentId = '42', variationId = '0' } = {} ) => {
+		const form = document.createElement( 'form' );
+		form.classList.add( 'wp-block-add-to-cart-with-options' );
+
+		const addToCart = document.createElement( 'input' );
+		addToCart.type = 'hidden';
+		addToCart.name = 'add-to-cart';
+		addToCart.value = parentId;
+		form.appendChild( addToCart );
+
+		const productIdInput = document.createElement( 'input' );
+		productIdInput.type = 'hidden';
+		productIdInput.name = 'product_id';
+		productIdInput.value = parentId;
+		form.appendChild( productIdInput );
+
+		const variationInput = document.createElement( 'input' );
+		variationInput.type = 'hidden';
+		variationInput.name = 'variation_id';
+		variationInput.value = variationId;
+		form.appendChild( variationInput );
+
+		const qtyWrapper = document.createElement( 'div' );
+		qtyWrapper.classList.add( 'quantity' );
+		const qtyInput = document.createElement( 'input' );
+		qtyInput.classList.add( 'qty' );
+		qtyInput.value = '1';
+		qtyWrapper.appendChild( qtyInput );
+		form.appendChild( qtyWrapper );
+
+		const submit = document.createElement( 'button' );
+		submit.type = 'submit';
+		form.appendChild( submit );
+
+		document.body.appendChild( form );
+	};
+
+	const getProductDataFromHook = () => {
+		const handler =
+			require( '../use-express-checkout-product-handler' ).default;
+		const { getProductData } = handler( {} );
+		return getProductData;
+	};
+
+	it( 'uses the resolved variation ID as product_id and omits attributes', () => {
+		setupIAPIBlock( { parentId: '42', variationId: '99' } );
+		const result = getProductDataFromHook()();
+		expect( result.product_id ).toBe( 99 );
+		expect( result.attributes ).toBeUndefined();
+	} );
+
+	it( 'falls back to FormData when no variation is resolved', () => {
+		setupIAPIBlock( { parentId: '42', variationId: '0' } );
+		const result = getProductDataFromHook()();
+		// FormData branch spreads form fields; parent product_id is preserved.
+		expect( result.product_id ).toBe( '42' );
+	} );
+} );

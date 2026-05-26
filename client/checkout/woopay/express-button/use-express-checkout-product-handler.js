@@ -9,6 +9,8 @@ import { __ } from '@wordpress/i18n';
 import {
 	getProductId,
 	getQuantity,
+	isIAPIBlock,
+	getIAPIVariationId,
 } from 'wcpay/utils/wc-product-page-selectors';
 import { isEmail } from 'wcpay/utils/email-validation';
 
@@ -110,13 +112,22 @@ const useExpressCheckoutProductHandler = ( api ) => {
 		const bundleForm = document.querySelector( '.bundle_form' );
 		// Check if product is a variable product.
 		const variation = document.querySelector( '.single_variation_wrap' );
+		// IAPI block (Add to Cart + Options) exposes the resolved variation ID
+		// via a hidden input instead of `.single_variation_wrap`.
+		const iapiVariationId =
+			isIAPIBlock() && ! bundleForm ? getIAPIVariationId() : null;
 
 		let data = {
 			product_id: productId,
 			quantity: getQuantity(),
 		};
 
-		if ( variation && ! bundleForm ) {
+		if ( iapiVariationId ) {
+			// WC AJAX `add_to_cart` accepts a variation ID as `product_id`,
+			// so no `attributes` are needed — the variation is already
+			// fully resolved.
+			data.product_id = iapiVariationId;
+		} else if ( variation && ! bundleForm ) {
 			data.product_id = variation.querySelector(
 				'input[name="product_id"]'
 			).value;
