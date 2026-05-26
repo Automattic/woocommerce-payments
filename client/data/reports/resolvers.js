@@ -15,8 +15,10 @@ import { NAMESPACE } from '../constants';
 import {
 	updateErrorForReportsFees,
 	updateErrorForReportsFeesSummary,
+	updateErrorForReportsBalanceSummary,
 	updateReportsFees,
 	updateReportsFeesSummary,
+	updateReportsBalanceSummary,
 } from './actions';
 import { formatDateValue, getUserTimeZone } from 'utils';
 
@@ -56,6 +58,16 @@ const getReportsFeesRows = ( results ) => {
 
 	return results?.data || [];
 };
+
+export const formatReportsBalanceQuery = ( {
+	dateStart,
+	dateEnd,
+	currency,
+} ) => ( {
+	date_start: dateStart,
+	date_end: dateEnd,
+	currency: ( currency || '' ).toLowerCase(),
+} );
 
 /**
  * Retrieves Fees report rows.
@@ -136,5 +148,37 @@ export function* getReportsFeesSummary( query ) {
 			)
 		);
 		yield updateErrorForReportsFeesSummary( query, e );
+	}
+}
+
+/**
+ * Retrieves Balance report summary data.
+ *
+ * @param {Object} query Data on which to parameterize the selection.
+ */
+export function* getReportsBalanceSummary( query ) {
+	const path = addQueryArgs(
+		`${ NAMESPACE }/reports/balance`,
+		formatReportsBalanceQuery( query )
+	);
+
+	try {
+		const summary = yield apiFetch( { path } );
+		yield updateReportsBalanceSummary( query, summary );
+	} catch ( e ) {
+		yield controls.dispatch(
+			'core/notices',
+			'createErrorNotice',
+			__(
+				'Error retrieving balance report summary.',
+				'woocommerce-payments'
+			)
+		);
+		// eslint-disable-next-line no-console
+		console.error( 'Balance summary resolver failed:', {
+			query,
+			error: e,
+		} );
+		yield updateErrorForReportsBalanceSummary( query, e );
 	}
 }

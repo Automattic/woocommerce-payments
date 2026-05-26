@@ -24,14 +24,59 @@ jest.mock( '../fees', () => ( {
 	),
 } ) );
 
-// Stub the Fees summary hook so the Export button in the Reports header
-// renders without exercising the real @wordpress/data selectors (this test
-// only cares about tab navigation behavior).
+// Stub the Fees + Balance summary hooks so the Export / Print actions in the
+// Reports header render without exercising the real @wordpress/data
+// selectors (this test only cares about tab navigation behavior).
+jest.mock( 'wcpay/data', () => ( {
+	useReportsFeesSummary: () => ( {
+		feesSummary: { count: 0 },
+		isLoading: false,
+	} ),
+	useReportsBalanceSummary: () => ( {
+		summary: {},
+		error: {},
+		isLoading: false,
+	} ),
+} ) );
+
 jest.mock( 'wcpay/data/reports/hooks', () => ( {
 	useReportsFeesSummary: () => ( {
 		feesSummary: { count: 0 },
 		isLoading: false,
 	} ),
+} ) );
+
+// BalanceActions reads the Date filter via its own hook.
+jest.mock( '../balance/use-balance-date-filter', () => ( {
+	BalanceDateFilterNowContext: jest
+		.requireActual( 'react' )
+		.createContext( undefined ),
+	useBalanceDateFilter: () => ( {
+		value: undefined,
+		period: { start: '', end: '' },
+		hasDateFilterValue: false,
+		setValue: jest.fn(),
+	} ),
+} ) );
+
+const activeBalancePeriod = {
+	start: '2026-05-01T00:00:00.000Z',
+	end: '2026-05-20T23:59:59.999Z',
+};
+
+jest.mock( '../balance', () => ( {
+	BalanceReport: ( {
+		onReload,
+	}: {
+		onReload?: ( period?: typeof activeBalancePeriod ) => void;
+	} ) => (
+		<div>
+			<div>Balance summary table</div>
+			<button onClick={ () => onReload?.( activeBalancePeriod ) }>
+				Reload
+			</button>
+		</div>
+	),
 } ) );
 
 jest.mock( '@woocommerce/navigation', () => ( {
@@ -73,6 +118,7 @@ const mockUseDispatch = useDispatch as jest.Mock;
 
 declare const global: {
 	wcpaySettings: {
+		accountDefaultCurrency?: string;
 		featureFlags: Record< string, boolean >;
 		fraudServices: unknown[];
 	};
@@ -96,6 +142,7 @@ describe( 'Reports page tabs', () => {
 
 	beforeEach( () => {
 		global.wcpaySettings = {
+			accountDefaultCurrency: 'USD',
 			featureFlags: {},
 			fraudServices: [],
 		};
@@ -202,9 +249,8 @@ describe( 'Reports page tabs', () => {
 		expect( screen.getByRole( 'tab', { name: 'Fees' } ) ).toHaveFocus();
 	} );
 
-	it( 'reloads the Balance tab in place by invalidating the Balance selector', async () => {
+	it( 'reloads the Balance tab in place by invalidating the active Balance period', async () => {
 		await renderReportsPage( {
-			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 
@@ -216,8 +262,32 @@ describe( 'Reports page tabs', () => {
 			'getReportsBalanceSummary',
 			[
 				{
-					start: '2026-04-01T00:00:00.000Z',
-					end: '2026-04-30T23:59:59.999Z',
+					dateStart: activeBalancePeriod.start,
+					dateEnd: activeBalancePeriod.end,
+					currency: 'usd',
+				},
+			]
+		);
+	} );
+
+	it( 'does not crash the Reports page when the account default currency is missing', async () => {
+		global.wcpaySettings.accountDefaultCurrency = undefined;
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Reload/i } )
+		);
+
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getReportsBalanceSummary',
+			[
+				{
+					dateStart: activeBalancePeriod.start,
+					dateEnd: activeBalancePeriod.end,
+					currency: '',
 				},
 			]
 		);
@@ -227,7 +297,6 @@ describe( 'Reports page tabs', () => {
 		mockGetQuery.mockReturnValue( { tab: 'fees' } );
 
 		await renderReportsPage( {
-			tabStatus: 'error',
 			now: new Date( '2026-05-06T12:00:00Z' ),
 		} );
 

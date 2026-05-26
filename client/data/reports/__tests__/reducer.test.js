@@ -27,6 +27,21 @@ describe( 'Reports reducer tests', () => {
 		total: 3000,
 		fees: 150,
 	};
+	const mockBalanceSummary = {
+		currency: 'usd',
+		starting_balance: {
+			amount: 1000,
+		},
+		ending_balance: {
+			amount: 0,
+		},
+	};
+	const newBalanceSummary = {
+		...mockBalanceSummary,
+		ending_balance: {
+			amount: 500,
+		},
+	};
 	const newSummary = {
 		count: 4,
 		total: 6000,
@@ -42,6 +57,11 @@ describe( 'Reports reducer tests', () => {
 		summary: {
 			[ getResourceId( mockQuery ) ]: {
 				data: mockSummary,
+			},
+		},
+		balanceSummary: {
+			[ getResourceId( mockQuery ) ]: {
+				data: mockBalanceSummary,
 			},
 		},
 	};
@@ -151,6 +171,57 @@ describe( 'Reports reducer tests', () => {
 		} );
 	} );
 
+	test( 'stores report balance summaries by query resource id', () => {
+		const reduced = reducer( emptyState, {
+			type: types.SET_REPORTS_BALANCE_SUMMARY,
+			data: mockBalanceSummary,
+			query: mockQuery,
+		} );
+
+		expect( reduced ).toStrictEqual( {
+			balanceSummary: {
+				[ getResourceId( mockQuery ) ]: {
+					data: mockBalanceSummary,
+					error: undefined,
+				},
+			},
+		} );
+	} );
+
+	test( 'updates report balance summaries for an existing query resource id', () => {
+		const reduced = reducer( filledState, {
+			type: types.SET_REPORTS_BALANCE_SUMMARY,
+			data: newBalanceSummary,
+			query: mockQuery,
+		} );
+
+		expect( reduced ).toStrictEqual( {
+			...filledState,
+			balanceSummary: {
+				[ getResourceId( mockQuery ) ]: {
+					data: newBalanceSummary,
+					error: undefined,
+				},
+			},
+		} );
+	} );
+
+	test( 'stores report balance summary errors by query resource id', () => {
+		const reduced = reducer( emptyState, {
+			type: types.SET_ERROR_FOR_REPORTS_BALANCE_SUMMARY,
+			error: mockError,
+			query: mockQuery,
+		} );
+
+		expect( reduced ).toStrictEqual( {
+			balanceSummary: {
+				[ getResourceId( mockQuery ) ]: {
+					error: mockError,
+				},
+			},
+		} );
+	} );
+
 	describe( 'receiveReports — slice preservation', () => {
 		it( 'preserves cached rows when an error arrives after a successful load', () => {
 			const query = { paged: 1 };
@@ -213,6 +284,33 @@ describe( 'Reports reducer tests', () => {
 			const index = getResourceId( query );
 			expect( errored.summary[ index ].data ).toEqual( { count: 42 } );
 			expect( errored.summary[ index ].error ).toEqual( {
+				code: 'rest_failure',
+			} );
+		} );
+
+		it( 'preserves Balance summary data when summary error arrives after success', () => {
+			const query = {
+				dateStart: '2024-03-01T00:00:00',
+				dateEnd: '2024-03-31T23:59:59',
+				currency: 'usd',
+			};
+			const loaded = reducer( undefined, {
+				type: types.SET_REPORTS_BALANCE_SUMMARY,
+				query,
+				data: mockBalanceSummary,
+			} );
+
+			const errored = reducer( loaded, {
+				type: types.SET_ERROR_FOR_REPORTS_BALANCE_SUMMARY,
+				query,
+				error: { code: 'rest_failure' },
+			} );
+
+			const index = getResourceId( query );
+			expect( errored.balanceSummary[ index ].data ).toEqual(
+				mockBalanceSummary
+			);
+			expect( errored.balanceSummary[ index ].error ).toEqual( {
 				code: 'rest_failure',
 			} );
 		} );

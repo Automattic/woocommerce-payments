@@ -24,8 +24,30 @@ jest.mock( 'wcpay/hooks/use-report-export', () => ( {
 	} ),
 } ) );
 
+jest.mock( 'wcpay/data', () => ( {
+	useReportsFeesSummary: ( q: unknown ) => mockUseReportsFeesSummary( q ),
+	// BalanceActions renders inside the header on the Balance tab and
+	// subscribes to the Balance summary; the header test only exercises
+	// existence/absence, so this stub is enough.
+	useReportsBalanceSummary: () => ( {
+		summary: {},
+		error: {},
+		isLoading: false,
+	} ),
+} ) );
+
 jest.mock( 'wcpay/data/reports/hooks', () => ( {
 	useReportsFeesSummary: ( q: unknown ) => mockUseReportsFeesSummary( q ),
+} ) );
+
+// BalanceActions also reads the Date filter via this hook.
+jest.mock( '../balance/use-balance-date-filter', () => ( {
+	useBalanceDateFilter: () => ( {
+		value: undefined,
+		period: { start: '', end: '' },
+		hasDateFilterValue: false,
+		setValue: jest.fn(),
+	} ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
@@ -65,12 +87,17 @@ describe( 'ReportsHeader', () => {
 		};
 	} );
 
-	it( 'does not render the Export button when the Balance tab is active', () => {
+	it( 'renders the Export and Print actions when the Balance tab is active', async () => {
 		render( <ReportsHeader activeTab="balance" /> );
 
+		// Balance tab gets its own pair of header actions (Print + Export)
+		// driven by the Balance summary state, mirroring the Fees layout.
 		expect(
-			screen.queryByRole( 'button', { name: /export/i } )
-		).not.toBeInTheDocument();
+			await screen.findByRole( 'button', { name: /export/i } )
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole( 'button', { name: /print/i } )
+		).toBeInTheDocument();
 	} );
 
 	it( 'renders the Export button when the Fees tab is active', () => {

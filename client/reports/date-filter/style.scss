@@ -286,11 +286,13 @@
 		top: 0;
 		left: 0;
 		right: 0;
+		z-index: 1;
 		height: 32px;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		padding: 0;
+		pointer-events: none;
 	}
 
 	.rdp-month_caption {
@@ -320,6 +322,7 @@
 		border: 0;
 		border-radius: 2px;
 		cursor: pointer;
+		pointer-events: auto;
 	}
 
 	.rdp-day,

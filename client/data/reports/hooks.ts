@@ -12,6 +12,7 @@ import type { Query } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
+import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 
 export type ReportsFeeType =
 	| 'charge'
@@ -68,6 +69,48 @@ interface ReportsFeesSummary {
 	feesSummaryError?: Record< string, unknown >;
 	isLoading: boolean;
 }
+
+export interface ReportsBalanceSummaryRow {
+	amount: number;
+	count?: number;
+}
+
+export interface ReportsBalanceSummary {
+	currency?: string;
+	period?: Partial< ReportsPeriodRange >;
+	starting_balance?: ReportsBalanceSummaryRow;
+	total_charges_captured?: ReportsBalanceSummaryRow;
+	fees?: ReportsBalanceSummaryRow;
+	charge_fees?: ReportsBalanceSummaryRow;
+	payout_fees?: ReportsBalanceSummaryRow;
+	reader_fees?: ReportsBalanceSummaryRow;
+	dispute_fees?: ReportsBalanceSummaryRow;
+	fee_refunds?: ReportsBalanceSummaryRow;
+	refunds?: ReportsBalanceSummaryRow;
+	refund_failure?: ReportsBalanceSummaryRow;
+	disputes?: ReportsBalanceSummaryRow;
+	financing_payout?: ReportsBalanceSummaryRow;
+	financing_paydown?: ReportsBalanceSummaryRow;
+	network_costs?: ReportsBalanceSummaryRow;
+	other_adjustments?: ReportsBalanceSummaryRow;
+	net_balance_change_in_the_period?: ReportsBalanceSummaryRow;
+	payouts?: ReportsBalanceSummaryRow;
+	ending_balance?: ReportsBalanceSummaryRow;
+}
+
+interface ReportsBalanceSummaryResult {
+	summary: ReportsBalanceSummary;
+	error?: Record< string, unknown >;
+	isLoading: boolean;
+}
+
+const emptyReportsBalanceSummary: ReportsBalanceSummary = {};
+const emptyReportsBalanceSummaryError: Record< string, unknown > = {};
+const skippedReportsBalanceSummaryResult: ReportsBalanceSummaryResult = {
+	summary: emptyReportsBalanceSummary,
+	error: emptyReportsBalanceSummaryError,
+	isLoading: false,
+};
 
 interface ReportsFeesQuery extends Query {
 	payment_method_type?: string;
@@ -147,6 +190,38 @@ export const useReportsFees = ( {
 			JSON.stringify( search ),
 		]
 	);
+
+export const useReportsBalanceSummary = (
+	period?: ReportsPeriodRange,
+	currency = wcpaySettings.accountDefaultCurrency || ''
+): ReportsBalanceSummaryResult => {
+	return useSelect(
+		( select ) => {
+			if ( ! period ) {
+				return skippedReportsBalanceSummaryResult;
+			}
+
+			const {
+				getReportsBalanceSummary,
+				getReportsBalanceSummaryError,
+				isResolving,
+			} = select( STORE_NAME );
+
+			const query = {
+				dateStart: period.start,
+				dateEnd: period.end,
+				currency: currency.toLowerCase(),
+			};
+
+			return {
+				summary: getReportsBalanceSummary( query ),
+				error: getReportsBalanceSummaryError( query ),
+				isLoading: isResolving( 'getReportsBalanceSummary', [ query ] ),
+			};
+		},
+		[ period?.start, period?.end, currency ]
+	);
+};
 
 export const useReportsFeesSummary = ( {
 	match,

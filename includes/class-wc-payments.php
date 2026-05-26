@@ -434,6 +434,7 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-paginated.php';
 		include_once __DIR__ . '/core/server/request/class-list-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-get-transactions-summary.php';
+		include_once __DIR__ . '/core/server/request/class-get-reporting-balance-summary.php';
 		include_once __DIR__ . '/core/server/request/class-list-fraud-outcome-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-list-disputes.php';
 		include_once __DIR__ . '/core/server/request/class-list-deposits.php';
@@ -1281,6 +1282,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
 		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
 		$reports_fees_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
+		$reports_balance_controller = new WC_REST_Payments_Reports_Balance_Controller( self::$api_client );
+		$reports_balance_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );

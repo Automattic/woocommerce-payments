@@ -15,29 +15,26 @@ import { ReportsHeader } from './header';
 import { getLastFullCalendarMonthUTC } from './period-selector';
 import { reportsTabs, ReportsTabPanel, normalizeReportsTab } from './tabs';
 import { useReportsTabReload } from './hooks';
-import type { ReportsTab, ReportsTabStatus } from './types';
+import { BalanceDateFilterNowContext } from './balance/context';
+import type { ReportsTab } from './types';
 import './style.scss';
 
 interface ReportsPageProps {
-	tabStatus?: ReportsTabStatus;
 	now?: Date;
 }
 
-export const ReportsPage: React.FC< ReportsPageProps > = ( {
-	tabStatus,
-	now,
-} ) => {
+export const ReportsPage: React.FC< ReportsPageProps > = ( { now } ) => {
 	const [ activeTab, setActiveTab ] = useState( () =>
 		normalizeReportsTab( getQuery().tab )
 	);
 	const [ tabPanelKey, setTabPanelKey ] = useState( 0 );
+	const dateFilterNow = useRef( now ?? new Date() ).current;
 	const tabPanelWrapperRef = useRef< HTMLDivElement >( null );
 	const previousActiveTabRef = useRef< ReportsTab >( activeTab );
 	const period = useMemo(
-		() => getLastFullCalendarMonthUTC( now ?? new Date() ),
-		[ now ]
+		() => getLastFullCalendarMonthUTC( dateFilterNow ),
+		[ dateFilterNow ]
 	);
-	const currentTabStatus = tabStatus ?? 'ready';
 	const reload = useReportsTabReload( activeTab, period );
 
 	useEffect( () => {
@@ -84,27 +81,28 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( {
 
 	return (
 		<Page className="wcpay-reports-page">
-			<ReportsHeader activeTab={ activeTab } />
-			<div ref={ tabPanelWrapperRef }>
-				<TabPanel
-					key={ tabPanelKey }
-					className="wcpay-reports-tab-panel"
-					activeClass="active-tab"
-					onSelect={ onTabSelected }
-					initialTabName={ activeTab }
-					tabs={ reportsTabs }
-				>
-					{ ( tab ) => (
-						<div className="wcpay-reports-content">
-							<ReportsTabPanel
-								tab={ tab.name as ReportsTab }
-								status={ currentTabStatus }
-								onReload={ reload }
-							/>
-						</div>
-					) }
-				</TabPanel>
-			</div>
+			<BalanceDateFilterNowContext.Provider value={ dateFilterNow }>
+				<ReportsHeader activeTab={ activeTab } />
+				<div ref={ tabPanelWrapperRef }>
+					<TabPanel
+						key={ tabPanelKey }
+						className="wcpay-reports-tab-panel"
+						activeClass="active-tab"
+						onSelect={ onTabSelected }
+						initialTabName={ activeTab }
+						tabs={ reportsTabs }
+					>
+						{ ( tab ) => (
+							<div className="wcpay-reports-content">
+								<ReportsTabPanel
+									tab={ tab.name as ReportsTab }
+									onReload={ reload }
+								/>
+							</div>
+						) }
+					</TabPanel>
+				</div>
+			</BalanceDateFilterNowContext.Provider>
 		</Page>
 	);
 };

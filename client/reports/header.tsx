@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 
 import type { ReportsTab } from './types';
 import { FeesExportButton } from './fees-export-button';
+import { LazyLoadedBalanceActions } from './lazy-balance-actions';
 
 interface ReportsHeaderProps {
 	activeTab: ReportsTab;
@@ -29,6 +30,11 @@ export const ReportsHeader: React.FC< ReportsHeaderProps > = ( {
 			{ activeTab === 'fees' && (
 				<div className="wcpay-reports-header__actions">
 					<FeesExportButton />
+				</div>
+			) }
+			{ activeTab === 'balance' && (
+				<div className="wcpay-reports-header__actions">
+					<LazyLoadedBalanceActions />
 				</div>
 			) }
 		</div>
