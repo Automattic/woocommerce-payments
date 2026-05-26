@@ -22,18 +22,26 @@ jQuery( ( $ ) => {
 	} );
 
 	// IAPI block: the new block doesn't fire the legacy jQuery event.
-	// Watch the hidden variation_id input for value changes via MutationObserver
-	// (the Interactivity API sets value through data-wp-bind--value).
+	// Listen for native option changes inside the block to keep button data in sync.
 	if ( isIAPIBlock() ) {
-		const variationInput = document.querySelector(
-			'.wp-block-add-to-cart-with-options input[name="variation_id"]'
+		const updateButtonData = debounce( 250, () => {
+			doAction( 'wcpay.express-checkout.update-button-data' );
+		} );
+
+		const blockRoot = document.querySelector(
+			'.wp-block-add-to-cart-with-options'
+		);
+		if ( blockRoot ) {
+			blockRoot.addEventListener( 'change', updateButtonData, true );
+			blockRoot.addEventListener( 'input', updateButtonData, true );
+		}
+
+		// Also observe attribute updates for cases where the value is set via setAttribute.
+		const variationInput = blockRoot?.querySelector(
+			'input[name="variation_id"]'
 		);
 		if ( variationInput ) {
-			const observer = new MutationObserver(
-				debounce( 250, () => {
-					doAction( 'wcpay.express-checkout.update-button-data' );
-				} )
-			);
+			const observer = new MutationObserver( updateButtonData );
 			observer.observe( variationInput, {
 				attributes: true,
 				attributeFilter: [ 'value' ],
