@@ -71,16 +71,6 @@
 			font-weight: 600;
 		}
 
-		&.complete
-			.woocommerce-task-list__item-before
-			.woocommerce-task__icon
-			svg {
-			top: 7px;
-			left: 7px;
-			width: 18px;
-			height: 18px;
-		}
-
 		&.complete .woocommerce-task-list__item-title {
 			color: var( --wp-admin-theme-color );
 		}
