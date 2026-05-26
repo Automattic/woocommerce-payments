@@ -97,13 +97,6 @@ export const loginAsCustomer = async (
 
 	for ( let i = 0; i < customerRetries; i++ ) {
 		try {
-			// A partial previous attempt can leave the context authenticated,
-			// which redirects wpAdminLogin away from the login form. Clear only
-			// the `wordpress*` auth cookies (not all cookies) so the Atomic
-			// support-session cookie set before login survives the retry.
-			if ( i > 0 ) {
-				await page.context().clearCookies( { name: /^wordpress/ } );
-			}
 			// eslint-disable-next-line no-console
 			console.log( 'Trying to log-in as customer...' );
 			await wpAdminLogin( page, customer );
