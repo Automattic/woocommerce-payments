@@ -56,3 +56,33 @@ export const getQuantity = () => {
 	const qty = document.querySelector( '.quantity .qty' );
 	return qty ? parseInt( qty.value, 10 ) || 1 : 1;
 };
+
+/**
+ * Detect whether the page is using the new Add to Cart + Options block
+ * (Interactivity API mode) instead of the legacy shortcode form.
+ *
+ * @return {boolean} True when the IAPI block form is present.
+ */
+export const isIAPIBlock = () => {
+	return !! document.querySelector( '.wp-block-add-to-cart-with-options' );
+};
+
+/**
+ * Get the resolved variation ID from the IAPI block's hidden input.
+ *
+ * The new block binds the variation ID via `data-wp-bind--value` onto
+ * `<input name="variation_id">` inside `.single_variation_wrap`.
+ * A non-empty, non-zero value means a variation has been fully resolved.
+ *
+ * @return {number|null} The variation ID, or null if not resolved.
+ */
+export const getVariationId = () => {
+	// Try the IAPI block first, then fall back to the classic hidden input.
+	const input =
+		document.querySelector(
+			'.wp-block-add-to-cart-with-options input[name="variation_id"]'
+		) || document.querySelector( 'input.variation_id' );
+
+	const value = parseInt( input?.value, 10 );
+	return value > 0 ? value : null;
+};

@@ -5,6 +5,8 @@ import {
 	getAddToCartButtonElement,
 	getProductId,
 	getQuantity,
+	isIAPIBlock,
+	getVariationId,
 } from '../wc-product-page-selectors';
 
 describe( 'wc-product-page-selectors', () => {
@@ -83,6 +85,73 @@ describe( 'wc-product-page-selectors', () => {
 			document.body.innerHTML =
 				'<div class="quantity"><input class="qty" value="" /></div>';
 			expect( getQuantity() ).toBe( 1 );
+		} );
+	} );
+
+	describe( 'isIAPIBlock', () => {
+		it( 'returns true when the IAPI block form is present', () => {
+			document.body.innerHTML =
+				'<form class="wp-block-add-to-cart-with-options"></form>';
+			expect( isIAPIBlock() ).toBe( true );
+		} );
+
+		it( 'returns false when only the classic form is present', () => {
+			document.body.innerHTML =
+				'<form class="variations_form cart"></form>';
+			expect( isIAPIBlock() ).toBe( false );
+		} );
+
+		it( 'returns false when no form is present', () => {
+			expect( isIAPIBlock() ).toBe( false );
+		} );
+	} );
+
+	describe( 'getVariationId', () => {
+		it( 'returns variation ID from the IAPI block hidden input', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				'  <input type="hidden" name="variation_id" value="263" />',
+				'</form>',
+			].join( '' );
+			expect( getVariationId() ).toBe( 263 );
+		} );
+
+		it( 'returns variation ID from the classic variation_id input', () => {
+			document.body.innerHTML =
+				'<input type="hidden" class="variation_id" name="variation_id" value="42" />';
+			expect( getVariationId() ).toBe( 42 );
+		} );
+
+		it( 'returns null when variation_id is empty', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				'  <input type="hidden" name="variation_id" value="" />',
+				'</form>',
+			].join( '' );
+			expect( getVariationId() ).toBeNull();
+		} );
+
+		it( 'returns null when variation_id is 0', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				'  <input type="hidden" name="variation_id" value="0" />',
+				'</form>',
+			].join( '' );
+			expect( getVariationId() ).toBeNull();
+		} );
+
+		it( 'returns null when no variation input exists', () => {
+			expect( getVariationId() ).toBeNull();
+		} );
+
+		it( 'prefers the IAPI block input over the classic input', () => {
+			document.body.innerHTML = [
+				'<form class="wp-block-add-to-cart-with-options">',
+				'  <input type="hidden" name="variation_id" value="500" />',
+				'</form>',
+				'<input type="hidden" class="variation_id" name="variation_id" value="42" />',
+			].join( '' );
+			expect( getVariationId() ).toBe( 500 );
 		} );
 	} );
 } );
