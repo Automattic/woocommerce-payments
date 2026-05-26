@@ -106,7 +106,7 @@ describe( 'wc-product-page-selectors', () => {
 		} );
 	} );
 
-	describe( 'getVariationId', () => {
+	describe( 'getIAPIVariationId', () => {
 		it( 'returns variation ID from the IAPI block hidden input', () => {
 			document.body.innerHTML = [
 				'<form class="wp-block-add-to-cart-with-options">',
