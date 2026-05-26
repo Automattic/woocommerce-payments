@@ -23,30 +23,16 @@ jQuery( ( $ ) => {
 
 	// IAPI block: the new block doesn't fire the legacy jQuery event.
 	// Listen for native option changes inside the block to keep button data in sync.
-	if ( isIAPIBlock() ) {
+	const blockRoot = document.querySelector(
+		'.wp-block-add-to-cart-with-options'
+	);
+	if ( blockRoot ) {
 		const updateButtonData = debounce( 250, () => {
 			doAction( 'wcpay.express-checkout.update-button-data' );
 		} );
 
-		const blockRoot = document.querySelector(
-			'.wp-block-add-to-cart-with-options'
-		);
-		if ( blockRoot ) {
-			blockRoot.addEventListener( 'change', updateButtonData, true );
-			blockRoot.addEventListener( 'input', updateButtonData, true );
-		}
-
-		// Also observe attribute updates for cases where the value is set via setAttribute.
-		const variationInput = blockRoot?.querySelector(
-			'input[name="variation_id"]'
-		);
-		if ( variationInput ) {
-			const observer = new MutationObserver( updateButtonData );
-			observer.observe( variationInput, {
-				attributes: true,
-				attributeFilter: [ 'value' ],
-			} );
-		}
+		blockRoot.addEventListener( 'change', updateButtonData, true );
+		blockRoot.addEventListener( 'input', updateButtonData, true );
 	}
 } );
 
@@ -83,23 +69,6 @@ addFilter(
 	'wcpay.express-checkout.cart-add-item',
 	'automattic/wcpay/express-checkout',
 	( productData ) => {
-		// --- Classic shortcode path (unchanged) ---
-		const variationInformation = document.querySelector(
-			'.single_variation_wrap'
-		);
-		if ( variationInformation && ! isIAPIBlock() ) {
-			const productIdInput = variationInformation.querySelector(
-				'input[name="product_id"]'
-			);
-			if ( productIdInput ) {
-				return {
-					...productData,
-					id: parseInt( productIdInput.value, 10 ),
-				};
-			}
-		}
-
-		// --- IAPI block path ---
 		if ( isIAPIBlock() ) {
 			// When a variation is fully resolved, send the variation ID as the
 			// cart item `id`. The Store API treats a variation ID as a valid
@@ -132,6 +101,20 @@ addFilter(
 			}
 		}
 
+		const variationInformation = document.querySelector(
+			'.single_variation_wrap'
+		);
+		if ( variationInformation && ! isIAPIBlock() ) {
+			const productIdInput = variationInformation.querySelector(
+				'input[name="product_id"]'
+			);
+			if ( productIdInput ) {
+				return {
+					...productData,
+					id: parseInt( productIdInput.value, 10 ),
+				};
+			}
+		}
 		return productData;
 	}
 );
