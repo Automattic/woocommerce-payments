@@ -2,9 +2,12 @@
 
 .dispute-recommendations-card {
 	// The accordion shell (.wcpay-accordion) supplies the card border, radius
-	// and padding; the section heading is now the accordion header. This just
-	// spaces the card from the summary card above it.
-	margin-top: $grid-unit-20;
+	// and padding; the section heading is now the accordion header. It is not a
+	// .components-card, so it misses the 24px inter-card gap that
+	// `.woocommerce-payments-page .components-card` applies — add it back so the
+	// card sits clear of the Timeline below. The gap above comes from the
+	// preceding summary card's own margin-bottom.
+	margin-bottom: $grid-unit-30;
 
 	&__section {
 		// Trim the outer padding on the first and last items in the section.
