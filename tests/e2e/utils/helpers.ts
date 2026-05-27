@@ -93,7 +93,7 @@ export const loginAsCustomer = async (
 	customer: { username: string; password: string }
 ) => {
 	let customerLoggedIn = false;
-	const customerRetries = 5;
+	const customerRetries = 3;
 
 	for ( let i = 0; i < customerRetries; i++ ) {
 		try {
