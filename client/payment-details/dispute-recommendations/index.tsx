@@ -6,7 +6,7 @@
 import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { ExternalLink, VisuallyHidden } from '@wordpress/components';
-import { Icon, info } from '@wordpress/icons';
+import { Icon, caution } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -91,7 +91,7 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 		     green (strength) or amber (coaching), no red, via currentColor.
 		     See style.scss. Design review 2026-05-26. */ }
 		<span className="dispute-recommendations__icon" aria-hidden="true">
-			<Icon icon={ info } size={ 18 } />
+			<Icon icon={ caution } size={ 18 } />
 		</span>
 		<div className="dispute-recommendations__text">
 			<h4 className="dispute-recommendations__title">
