@@ -13,6 +13,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { transformPrice } from '../transformers/wc-to-stripe';
+import { getExpressCheckoutData, shouldUseConfirmationTokens } from '../utils';
 
 /**
  * Checks if the cart contains any subscription schedule (trial or recurring).
@@ -49,6 +50,34 @@ export const cartHasAnySubscription = ( cartData ) => {
 		( item ) => item?.extensions?.subscriptions !== undefined
 	);
 };
+
+/**
+ * Checks if the current cart has become incompatible with the Elements options
+ * that were set at page load.
+ *
+ * @param {Object} cartData Cart data from Store API.
+ * @return {boolean} True if ECE should abort before creating a payment credential.
+ */
+export const shouldAbortForSubscriptionSetupFutureUsageMismatch = (
+	cartData
+) => {
+	return (
+		shouldUseConfirmationTokens() &&
+		! ( getExpressCheckoutData( 'has_subscription' ) ?? false ) &&
+		cartHasAnySubscription( cartData )
+	);
+};
+
+/**
+ * Returns the user-facing message for stale subscription cart data.
+ *
+ * @return {string} Error message.
+ */
+export const getSubscriptionSetupFutureUsageMismatchMessage = () =>
+	__(
+		'This cart contains a subscription. Please complete your purchase from the standard checkout to set up your payment method for future renewals.', // eslint-disable-line max-len
+		'woocommerce-payments'
+	);
 
 /**
  * Checks if a cart item is a subscription with a free trial.

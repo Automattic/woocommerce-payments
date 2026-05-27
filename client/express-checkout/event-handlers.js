@@ -29,6 +29,10 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
+import {
+	getSubscriptionSetupFutureUsageMismatchMessage,
+	shouldAbortForSubscriptionSetupFutureUsageMismatch,
+} from './compatibility/wc-subscriptions';
 
 let lastSelectedAddress = null;
 let lastCartData = null;
@@ -144,6 +148,36 @@ export const onConfirmHandler = async (
 	}
 
 	const useConfirmationTokens = shouldUseConfirmationTokens();
+	if (
+		useConfirmationTokens &&
+		! ( getExpressCheckoutData( 'has_subscription' ) ?? false )
+	) {
+		let cartData;
+
+		try {
+			cartData = await cartApi.getCart();
+		} catch ( e ) {
+			if ( e.json ) {
+				e = await Promise.resolve( e.json() );
+			}
+
+			return abortPayment(
+				getErrorMessageFromNotice(
+					e.message ||
+						__(
+							'There was a problem processing the order.',
+							'woocommerce-payments'
+						)
+				)
+			);
+		}
+
+		if ( shouldAbortForSubscriptionSetupFutureUsageMismatch( cartData ) ) {
+			return abortPayment(
+				getSubscriptionSetupFutureUsageMismatchMessage()
+			);
+		}
+	}
 
 	let credentialId;
 	try {

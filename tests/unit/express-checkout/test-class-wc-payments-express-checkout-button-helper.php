@@ -101,6 +101,9 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 	public function tear_down() {
 		WC_Subscriptions_Cart::set_cart_contains_subscription( false );
+		WC_Subscriptions::wcs_cart_contains_renewal( null );
+		WC_Subscriptions::wcs_cart_contains_resubscribe( null );
+		WC_Subscriptions::wcs_cart_contains_switches( null );
 		WC_Subscriptions_Product::$is_subscription = true;
 		WC_Subscriptions_Product::$trial_length    = 0;
 		WC()->cart->empty_cart();

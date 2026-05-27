@@ -36,6 +36,7 @@ const jQueryMock = ( selector ) => {
 	};
 };
 jQueryMock.blockUI = () => null;
+jQueryMock.unblockUI = () => null;
 
 window.wcpayExpressCheckoutParams = {};
 window.wcpayExpressCheckoutParams.checkout = {};
@@ -92,6 +93,10 @@ describe( 'useExpressCheckout', () => {
 		window.wcpayExpressCheckoutParams.checkout = {
 			stripe_minor_unit: 2,
 		};
+		window.wcpayExpressCheckoutParams.flags = {
+			isEceUsingConfirmationTokens: true,
+		};
+		window.wcpayExpressCheckoutParams.has_subscription = false;
 		mockCartData = buildCartData();
 	} );
 
@@ -572,6 +577,57 @@ describe( 'useExpressCheckout', () => {
 			expect.objectContaining( {
 				lineItems: [],
 			} )
+		);
+	} );
+
+	it( 'should abort when the cart gained a subscription after page load', () => {
+		const event = {
+			resolve: jest.fn(),
+			expressPaymentType: 'google_pay',
+		};
+		const onClickMock = jest.fn();
+		const setExpressPaymentErrorMock = jest.fn();
+
+		mockCartData = buildCartData( {
+			extensions: {
+				subscriptions: [
+					{
+						billing_period: 'month',
+						billing_interval: 1,
+						totals: { total_price: '1999' },
+					},
+				],
+			},
+		} );
+
+		const { result } = renderHook( () =>
+			useExpressCheckout( {
+				billing: {
+					cartTotalItems: [],
+					cartTotal: {
+						label: 'Total',
+						value: 1999,
+					},
+					currency: {
+						minorUnit: 2,
+					},
+				},
+				shippingData: {
+					needsShipping: false,
+					shippingRates: [],
+				},
+				onClick: onClickMock,
+				onClose: {},
+				setExpressPaymentError: setExpressPaymentErrorMock,
+			} )
+		);
+
+		result.current.onButtonClick( event );
+
+		expect( event.resolve ).not.toHaveBeenCalled();
+		expect( onClickMock ).not.toHaveBeenCalled();
+		expect( setExpressPaymentErrorMock ).toHaveBeenCalledWith(
+			expect.stringMatching( /subscription/i )
 		);
 	} );
 } );

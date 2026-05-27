@@ -14,7 +14,6 @@ import {
 	displayLoginConfirmation,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
-	shouldUseConfirmationTokens,
 } from '../../utils';
 import {
 	onAbortPaymentHandler,
@@ -24,7 +23,10 @@ import {
 	onConfirmHandler,
 	onReadyHandler,
 } from '../../event-handlers';
-import { cartHasAnySubscription } from '../../compatibility/wc-subscriptions';
+import {
+	getSubscriptionSetupFutureUsageMismatchMessage,
+	shouldAbortForSubscriptionSetupFutureUsageMismatch,
+} from '../../compatibility/wc-subscriptions';
 import {
 	transformCartDataForDisplayItems,
 	transformPrice,
@@ -87,15 +89,10 @@ export const useExpressCheckout = ( {
 			// changes after load), bail out here — before resolving the click
 			// event — so the wallet popup never opens.
 			if (
-				shouldUseConfirmationTokens() &&
-				! ( getExpressCheckoutData( 'has_subscription' ) ?? false ) &&
-				cartHasAnySubscription( cartData )
+				shouldAbortForSubscriptionSetupFutureUsageMismatch( cartData )
 			) {
 				abortPayment(
-					__(
-						'This cart contains a subscription. Please complete your purchase from the standard checkout to set up your payment method for future renewals.', // eslint-disable-line max-len
-						'woocommerce-payments'
-					)
+					getSubscriptionSetupFutureUsageMismatchMessage()
 				);
 				return;
 			}

@@ -498,6 +498,38 @@ describe( 'Express checkout event handlers', () => {
 					'Confirmation token error'
 				);
 			} );
+
+			it( 'should abort before creating a confirmation token when the cart gained a subscription after page load', async () => {
+				cartApiGetCartMock.mockResolvedValue( {
+					items: [],
+					extensions: {
+						subscriptions: [
+							{
+								billing_period: 'month',
+								billing_interval: 1,
+								totals: { total_price: '1999' },
+							},
+						],
+					},
+				} );
+
+				await onConfirmHandler(
+					api,
+					stripe,
+					elements,
+					completePayment,
+					abortPayment,
+					event
+				);
+
+				expect( cartApiGetCartMock ).toHaveBeenCalled();
+				expect( stripe.createConfirmationToken ).not.toHaveBeenCalled();
+				expect( cartApiPlaceOrderMock ).not.toHaveBeenCalled();
+				expect( completePayment ).not.toHaveBeenCalled();
+				expect( abortPayment ).toHaveBeenCalledWith(
+					expect.stringMatching( /subscription/i )
+				);
+			} );
 		} );
 
 		describe( 'paymentMethodTypes parameter', () => {
