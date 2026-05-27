@@ -42,6 +42,10 @@ runs:
     - name: Re-try Failed E2E Files
       if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
       shell: bash
+      env:
+        # Signals the Slack reporter to reconcile the phase-1 message
+        # (recover/downgrade it) instead of posting a duplicate.
+        E2E_SLACK_RERUN: 'true'
       run: |
         set -e
         RESULTS_JSON="${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}"

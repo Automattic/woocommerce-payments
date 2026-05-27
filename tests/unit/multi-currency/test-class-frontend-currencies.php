@@ -476,4 +476,125 @@ class WCPay_Multi_Currency_Frontend_Currencies_Tests extends WCPAY_UnitTestCase 
 		$this->assertEquals( 10.00, $return );
 		$this->assertEquals( null, $this->frontend_currencies->get_order_currency() );
 	}
+
+	/**
+	 * REST clients (e.g. the WC Store API) must not be redirected when the currency
+	 * is switched; a 302 would strip filter bounds from the URL and break the response.
+	 *
+	 * Sets `$_SERVER['REQUEST_URI']` to a Store API path so `WC()->is_rest_api_request()`
+	 * detects the REST context the same way it would in production at `init:11`. The
+	 * earlier version of this test defined `REST_REQUEST` manually, which simulated a
+	 * state that never exists when the bug actually fires (the constant isn't defined
+	 * until `parse_request`, several hooks later).
+	 */
+	public function test_clear_url_price_params_is_noop_on_rest_request() {
+		$original_request_uri   = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/wp-json/wc/store/v1/products?currency=EUR&min_price=10&max_price=50';
+		$_GET['min_price']      = '10';
+		$_GET['max_price']      = '50';
+
+		// If the guard fails, `wp_safe_redirect()` runs followed by `exit;`. Hook the
+		// `wp_redirect` filter to throw so the redirect attempt surfaces as a test
+		// failure instead of terminating the PHPUnit process.
+		add_filter(
+			'wp_redirect',
+			function ( $location ) {
+				throw new Exception( 'Unexpected redirect during REST request to: ' . $location );
+			}
+		);
+
+		try {
+			$this->frontend_currencies->clear_url_price_params();
+			$this->addToAssertionCount( 1 );
+		} finally {
+			remove_all_filters( 'wp_redirect' );
+			unset( $_GET['min_price'], $_GET['max_price'] );
+			if ( null === $original_request_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_request_uri;
+			}
+		}
+	}
+
+	/**
+	 * The `?rest_route=` URL shape is used by WordPress when pretty permalinks are
+	 * disabled. `WC()->is_rest_api_request()` only matches `wp-json/` in REQUEST_URI,
+	 * so the guard must also recognize `$_GET['rest_route']` to cover this case.
+	 */
+	public function test_clear_url_price_params_is_noop_on_rest_route_query_request() {
+		$original_request_uri   = $_SERVER['REQUEST_URI'] ?? null;
+		$original_rest_route    = $_GET['rest_route'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/?rest_route=/wc/store/v1/products&currency=EUR&min_price=10&max_price=50';
+		$_GET['rest_route']     = '/wc/store/v1/products';
+		$_GET['min_price']      = '10';
+		$_GET['max_price']      = '50';
+
+		add_filter(
+			'wp_redirect',
+			function ( $location ) {
+				throw new Exception( 'Unexpected redirect during ?rest_route= REST request to: ' . $location );
+			}
+		);
+
+		try {
+			$this->frontend_currencies->clear_url_price_params();
+			$this->addToAssertionCount( 1 );
+		} finally {
+			remove_all_filters( 'wp_redirect' );
+			unset( $_GET['min_price'], $_GET['max_price'] );
+			if ( null === $original_rest_route ) {
+				unset( $_GET['rest_route'] );
+			} else {
+				$_GET['rest_route'] = $original_rest_route;
+			}
+			if ( null === $original_request_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_request_uri;
+			}
+		}
+	}
+
+	/**
+	 * Browser navigation (non-REST request) MUST still redirect to strip stale
+	 * `min_price`/`max_price` query params after a currency switch. Captures the
+	 * intended Location header via the `wp_redirect` filter, then throws to escape
+	 * the `exit;` that follows `wp_safe_redirect()` in `clear_url_price_params()`.
+	 */
+	public function test_clear_url_price_params_redirects_on_browser_request() {
+		$original_request_uri   = $_SERVER['REQUEST_URI'] ?? null;
+		$_SERVER['REQUEST_URI'] = '/shop/?currency=EUR&min_price=10&max_price=50';
+		$_GET['min_price']      = '10';
+		$_GET['max_price']      = '50';
+
+		$captured_url = null;
+
+		add_filter(
+			'wp_redirect',
+			function ( $location ) use ( &$captured_url ) {
+				$captured_url = $location;
+				throw new Exception( 'redirect captured' );
+			}
+		);
+
+		try {
+			$this->frontend_currencies->clear_url_price_params();
+			$this->fail( 'Expected clear_url_price_params() to issue a redirect on a browser request.' );
+		} catch ( Exception $e ) {
+			$this->assertSame( 'redirect captured', $e->getMessage(), 'Unexpected exception thrown.' );
+			$this->assertIsString( $captured_url, 'Expected a redirect URL to be captured.' );
+			$this->assertStringNotContainsString( 'min_price', $captured_url, 'min_price should have been stripped.' );
+			$this->assertStringNotContainsString( 'max_price', $captured_url, 'max_price should have been stripped.' );
+			$this->assertStringContainsString( 'currency=EUR', $captured_url, 'Other query args (currency) should be preserved.' );
+		} finally {
+			remove_all_filters( 'wp_redirect' );
+			unset( $_GET['min_price'], $_GET['max_price'] );
+			if ( null === $original_request_uri ) {
+				unset( $_SERVER['REQUEST_URI'] );
+			} else {
+				$_SERVER['REQUEST_URI'] = $original_request_uri;
+			}
+		}
+	}
 }

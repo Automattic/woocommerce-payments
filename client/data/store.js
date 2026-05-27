@@ -21,6 +21,7 @@ import * as paymentIntents from './payment-intents';
 import * as authorizations from './authorizations';
 import * as files from './files';
 import * as pmPromotions from './pm-promotions';
+import * as disputeReadiness from './dispute-readiness';
 import * as reports from './reports';
 
 // Extracted into wrapper function to facilitate testing.
@@ -40,6 +41,7 @@ export const initStore = () =>
 			authorizations: authorizations.reducer,
 			files: files.reducer,
 			pmPromotions: pmPromotions.reducer,
+			disputeReadiness: disputeReadiness.reducer,
 			reports: reports.reducer,
 		} ),
 		actions: {
@@ -56,6 +58,7 @@ export const initStore = () =>
 			...authorizations.actions,
 			...files.actions,
 			...pmPromotions.actions,
+			...disputeReadiness.actions,
 			...reports.actions,
 		},
 		controls,
@@ -73,6 +76,7 @@ export const initStore = () =>
 			...authorizations.selectors,
 			...files.selectors,
 			...pmPromotions.selectors,
+			...disputeReadiness.selectors,
 			...reports.selectors,
 		},
 		resolvers: {
@@ -89,6 +93,7 @@ export const initStore = () =>
 			...authorizations.resolvers,
 			...files.resolvers,
 			...pmPromotions.resolvers,
+			...disputeReadiness.resolvers,
 			...reports.resolvers,
 		},
 	} );
