@@ -106,9 +106,9 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 );
 
 // Each non-empty section is its own expanded-by-default AccordionBody, reusing
-// the "Steps you can take" accordion. Rendering sections independently (rather
-// than forcing one) keeps both the won-strengths and coaching framings possible
-// regardless of outcome, which the design either/or hasn't yet settled.
+// the "Steps you can take" accordion. Sections render independently, not forced
+// one-per-outcome: per the 2026-05-27 design decision both the won-strengths and
+// coaching framings can show regardless of outcome, driven by which recs fire.
 const renderSection = (
 	heading: string,
 	items: Recommendation[],
