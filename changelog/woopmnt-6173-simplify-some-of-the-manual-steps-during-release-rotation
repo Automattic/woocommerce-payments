@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Notify Product Ambassadors in code freeze Slack message with a compare link to what changed
