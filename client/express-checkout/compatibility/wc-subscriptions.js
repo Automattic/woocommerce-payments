@@ -16,17 +16,38 @@ import { transformPrice } from '../transformers/wc-to-stripe';
 
 /**
  * Checks if the cart contains any subscription schedule (trial or recurring).
- * Detects every cart shape that triggers `setup_future_usage=off_session` on
- * the PaymentIntent backend-side: initial subscription purchase, trial with
- * sign-up fee, renewal, resubscribe, and switch carts all populate
- * `cartData.extensions.subscriptions`.
+ * Detects every cart shape that should trigger `setup_future_usage=off_session`
+ * on the PaymentIntent backend-side: initial subscription purchase, trial with
+ * sign-up fee, renewal, resubscribe, and switch carts.
+ *
+ * WC Subscriptions exposes subscription data on the Store API response in two
+ * places, and which one is populated depends on the cart shape:
+ *   - `cartData.extensions.subscriptions` — populated for initial subscription
+ *     purchases (one entry per recurring schedule). Empty for renewal carts.
+ *   - `cartData.items[].extensions.subscriptions` — populated on each cart item
+ *     that *is* a subscription product, including renewals/resubscribes/switches
+ *     where the item is the existing subscription line item.
+ *
+ * Checking both keeps the detection robust across WC Subscriptions versions and
+ * cart shapes.
  *
  * @param {Object} cartData Cart data from Store API.
  * @return {boolean} True if cart contains any subscription schedule.
  */
 export const cartHasAnySubscription = ( cartData ) => {
-	const subscriptions = cartData?.extensions?.subscriptions;
-	return Array.isArray( subscriptions ) && subscriptions.length > 0;
+	const schedules = cartData?.extensions?.subscriptions;
+	if ( Array.isArray( schedules ) && schedules.length > 0 ) {
+		return true;
+	}
+
+	const items = cartData?.items;
+	if ( ! Array.isArray( items ) ) {
+		return false;
+	}
+
+	return items.some(
+		( item ) => item?.extensions?.subscriptions !== undefined
+	);
 };
 
 /**

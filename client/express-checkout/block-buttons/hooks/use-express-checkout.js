@@ -14,6 +14,7 @@ import {
 	displayLoginConfirmation,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
+	shouldUseConfirmationTokens,
 } from '../../utils';
 import {
 	onAbortPaymentHandler,
@@ -23,6 +24,7 @@ import {
 	onConfirmHandler,
 	onReadyHandler,
 } from '../../event-handlers';
+import { cartHasAnySubscription } from '../../compatibility/wc-subscriptions';
 import {
 	transformCartDataForDisplayItems,
 	transformPrice,
@@ -54,10 +56,13 @@ export const useExpressCheckout = ( {
 		window.location = redirectUrl;
 	};
 
-	const abortPayment = ( message ) => {
-		setExpressPaymentError( message );
-		onAbortPaymentHandler();
-	};
+	const abortPayment = useCallback(
+		( message ) => {
+			setExpressPaymentError( message );
+			onAbortPaymentHandler();
+		},
+		[ setExpressPaymentError ]
+	);
 
 	const onButtonClick = useCallback(
 		( event ) => {
@@ -71,6 +76,29 @@ export const useExpressCheckout = ( {
 
 			// Get cart data with extensions for subscription handling
 			const cartData = select( WC_STORE_CART )?.getCartData();
+
+			// When using confirmation tokens, Stripe rejects PaymentIntent
+			// confirmation if the token's collected `setup_future_usage` consent
+			// doesn't match the intent's `setup_future_usage`. The backend forces
+			// `off_session` for any subscription order, so Elements must have been
+			// mounted with `setupFutureUsage: 'off_session'` (gated on
+			// `has_subscription` at page load). If the cart now contains a
+			// subscription but the page-load flag was false (stale due to cart
+			// changes after load), bail out here — before resolving the click
+			// event — so the wallet popup never opens.
+			if (
+				shouldUseConfirmationTokens() &&
+				! ( getExpressCheckoutData( 'has_subscription' ) ?? false ) &&
+				cartHasAnySubscription( cartData )
+			) {
+				abortPayment(
+					__(
+						'This cart contains a subscription. Please complete your purchase from the standard checkout to set up your payment method for future renewals.', // eslint-disable-line max-len
+						'woocommerce-payments'
+					)
+				);
+				return;
+			}
 
 			let shippingRates;
 			if ( shippingAddressRequired ) {
@@ -145,6 +173,7 @@ export const useExpressCheckout = ( {
 			shippingData.needsShipping,
 			shippingData.shippingRates,
 			billing.currency.minorUnit,
+			abortPayment,
 		]
 	);
 

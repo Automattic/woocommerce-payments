@@ -14,13 +14,14 @@ import './compatibility/wc-deposits';
 import '../compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
 import './compatibility/wc-product-bundles';
-import '../compatibility/wc-subscriptions';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	displayLoginConfirmation,
+	shouldUseConfirmationTokens,
 } from '../utils';
+import { cartHasAnySubscription } from '../compatibility/wc-subscriptions';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -268,6 +269,32 @@ jQuery( ( $ ) => {
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( getExpressCheckoutData( 'login_confirmation' ) ) {
 					displayLoginConfirmation( event.expressPaymentType );
+					return;
+				}
+
+				// When using confirmation tokens, Stripe rejects PaymentIntent
+				// confirmation if the token's collected `setup_future_usage`
+				// consent doesn't match the intent's `setup_future_usage`. The
+				// backend forces `off_session` for any subscription order, so
+				// Elements must have been mounted with
+				// `setupFutureUsage: 'off_session'` (gated on `has_subscription`
+				// at page load). If the cart now contains a subscription but
+				// the page-load flag was false (stale due to variation switch,
+				// cross-sell add, etc.), bail out here — before resolving the
+				// click event — so the wallet popup never opens.
+				if (
+					shouldUseConfirmationTokens() &&
+					! (
+						getExpressCheckoutData( 'has_subscription' ) ?? false
+					) &&
+					cartHasAnySubscription( cachedCartData )
+				) {
+					wcpayECE.abortPayment(
+						__(
+							'This cart contains a subscription. Please complete your purchase from the standard checkout to set up your payment method for future renewals.', // eslint-disable-line max-len
+							'woocommerce-payments'
+						)
+					);
 					return;
 				}
 

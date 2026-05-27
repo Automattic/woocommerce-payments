@@ -29,7 +29,6 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
-import { cartHasAnySubscription } from './compatibility/wc-subscriptions';
 
 let lastSelectedAddress = null;
 let lastCartData = null;
@@ -145,37 +144,6 @@ export const onConfirmHandler = async (
 	}
 
 	const useConfirmationTokens = shouldUseConfirmationTokens();
-
-	// When using confirmation tokens, Stripe rejects PaymentIntent confirmation
-	// if the token's collected `setup_future_usage` consent doesn't match the
-	// intent's `setup_future_usage`. The backend forces `off_session` for any
-	// subscription order, so Elements must have been mounted with
-	// `setupFutureUsage: 'off_session'` (gated on `has_subscription` at page
-	// load). If the cart now contains a subscription but the page-load flag
-	// was false (stale due to variation switch, cross-sell add, etc.), bail
-	// out visibly rather than producing a token Stripe will reject.
-	if ( useConfirmationTokens ) {
-		const hasSubscriptionFlag =
-			getExpressCheckoutData( 'has_subscription' ) ?? false;
-		if ( ! hasSubscriptionFlag ) {
-			let cartData = lastCartData;
-			if ( ! cartData ) {
-				try {
-					cartData = await cartApi.getCart();
-				} catch ( cartError ) {
-					return abortPayment( cartError.message );
-				}
-			}
-			if ( cartHasAnySubscription( cartData ) ) {
-				return abortPayment(
-					__(
-						'This cart contains a subscription. Please complete your purchase from the standard checkout to set up your payment method for future renewals.', // eslint-disable-line max-len
-						'woocommerce-payments'
-					)
-				);
-			}
-		}
-	}
 
 	let credentialId;
 	try {

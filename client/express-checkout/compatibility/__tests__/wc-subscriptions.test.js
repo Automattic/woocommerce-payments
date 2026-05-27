@@ -172,6 +172,22 @@ describe( 'cartHasAnySubscription', () => {
 			} )
 		).toBe( true );
 	} );
+
+	it( 'returns true when only an item carries the subscriptions extension (e.g. cart-level schedule missing)', () => {
+		// Renewal / resubscribe / switch carts often don't populate
+		// `extensions.subscriptions` at the cart level. Per-item extension is
+		// still present on the subscription line item itself.
+		expect(
+			cartHasAnySubscription( {
+				items: [ buildTrialSubscriptionItem() ],
+				extensions: {},
+			} )
+		).toBe( true );
+	} );
+
+	it( 'returns false for a regular cart whose items have no subscriptions extension', () => {
+		expect( cartHasAnySubscription( regularCart ) ).toBe( false );
+	} );
 } );
 
 describe( 'ECE WC Subscriptions compatibility', () => {
