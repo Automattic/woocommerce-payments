@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed Store API price filter being stripped when switching currencies in multi-currency mode.
