@@ -1079,58 +1079,40 @@ describe( 'PaymentDetailsSummary', () => {
 			).toBeInTheDocument();
 		} );
 
-		// Returns the `.dispute-outcome-view` section wrapping the
-		// Evidence Submitted heading, so list-item assertions don't
-		// accidentally count `<li>` elements from other parts of the
-		// PaymentDetailsSummary page (e.g. the meta row).
-		const getOutcomeViewSection = () => {
-			const heading = screen.getByRole( 'heading', {
-				name: 'Evidence Submitted',
-			} );
-			const section = heading.closest( '.dispute-outcome-view' );
-			expect( section ).not.toBeNull();
-			return section;
-		};
-
-		test( 'renders the Outcome View Evidence Submitted section for a won dispute when the flag is on', () => {
+		// The Outcome View no longer replaces the resolution banner with an
+		// Evidence Submitted list; design folded that section away (2026-05-26
+		// review), so the banner renders for won/lost as it does with the flag
+		// off, alongside the separate recommendations card.
+		test( 'renders the resolution banner and no Evidence Submitted section for a won dispute when the flag is on', () => {
 			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
 
 			renderCharge( getResolvedCharge( 'won' ) );
 
 			expect(
-				screen.queryByText( /Good news/i, {
+				screen.getByText( /Good news/i, {
 					ignore: '.a11y-speak-region',
 				} )
-			).not.toBeInTheDocument();
-			const section = getOutcomeViewSection();
-			// Real-data path: the fixture sets product type + matching
-			// evidence, so the helper produces a non-empty list and at
-			// least one provided row makes it to the DOM.
-			expect(
-				within( section ).getAllByRole( 'listitem' ).length
-			).toBeGreaterThan( 0 );
-			expect(
-				within( section ).getByText( /Customer communication/i )
 			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', { name: 'Evidence Submitted' } )
+			).not.toBeInTheDocument();
 		} );
 
-		test( 'renders the Outcome View Evidence Submitted section for a lost dispute when the flag is on', () => {
+		test( 'renders the resolution banner and no Evidence Submitted section for a lost dispute when the flag is on', () => {
 			global.wcpaySettings.featureFlags.isDisputeOutcomeViewEnabled = true;
 
 			renderCharge( getResolvedCharge( 'lost' ) );
 
+			// The fixture submits no evidence, so the footer renders the
+			// non-response copy; the point is that the banner is present.
 			expect(
-				screen.queryByText( /you've lost this dispute/i, {
+				screen.getByText( /This dispute was lost/i, {
 					ignore: '.a11y-speak-region',
 				} )
-			).not.toBeInTheDocument();
-			const section = getOutcomeViewSection();
-			expect(
-				within( section ).getAllByRole( 'listitem' ).length
-			).toBeGreaterThan( 0 );
-			expect(
-				within( section ).getByText( /Customer communication/i )
 			).toBeInTheDocument();
+			expect(
+				screen.queryByRole( 'heading', { name: 'Evidence Submitted' } )
+			).not.toBeInTheDocument();
 		} );
 
 		test( 'still renders DisputeResolutionFooter for an under_review dispute when the flag is on', () => {

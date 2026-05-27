@@ -1,19 +1,16 @@
 /** @format */
 
 .dispute-recommendations-card {
-	&__section {
-		& + & {
-			margin-top: $grid-unit-20;
-			padding-top: $grid-unit-20;
-			border-top: 1px solid $gray-100;
-		}
+	// The accordion shell (.wcpay-accordion) supplies the card border, radius
+	// and padding; the section heading is now the accordion header. This just
+	// spaces the card from the summary card above it.
+	margin-top: $grid-unit-20;
 
-		// Trim the outer padding on the first and last items sitting
-		// directly in the section. `:first-child` / `:last-child` would
-		// miss them: the heading is always the first child, and the
-		// show-more <details> (when present) is the last. The `> ...
-		// :*-of-type` form targets the first/last direct-child item
-		// without reaching into the items nested inside the disclosure.
+	&__section {
+		// Trim the outer padding on the first and last items in the section.
+		// `:first-child` / `:last-child` would miss them: the "Learn more"
+		// link can be the first child and the show-more <details> the last,
+		// so target the first/last direct-child item by type instead.
 		> .dispute-recommendations__item:first-of-type {
 			padding-top: 0;
 		}
@@ -23,31 +20,14 @@
 		}
 	}
 
-	// Heading row: section heading with an optional "Learn more" link to
-	// the right. Used on "What could help next time"; positives don't get
-	// the link.
-	&__section-header {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: $grid-unit-15;
-		margin-bottom: $grid-unit-10;
-	}
-
-	&__section-heading {
-		// Heading LG, matches transaction-details-dispute-details-title and
-		// the Evidence Submitted section heading style.
-		font-size: 15px;
-		font-weight: 500;
-		line-height: 20px;
-		color: $gray-900;
-		margin: 0;
-	}
-
+	// Single "Learn more" link at the top of the "What could help next time"
+	// section body (the accordion header is the collapse toggle, so a link
+	// can't live there). Positives don't get the link.
 	&__learn-more {
+		display: inline-block;
 		font-size: 13px;
 		line-height: 20px;
-		flex-shrink: 0;
+		margin-bottom: $grid-unit-10;
 	}
 
 	&__show-more {
@@ -85,18 +65,16 @@
 		border-top: 1px solid $gray-100;
 	}
 
-	// Color lives on the leading icon, not the title. Per RiskOps review:
-	// colored title text competed with the Evidence Submitted card above.
-	&--critical .dispute-recommendations__icon {
-		color: $alert-red;
-	}
-
-	&--tip .dispute-recommendations__icon {
-		color: $alert-yellow;
-	}
-
+	// Color lives on the leading icon, not the title. No red: recommendations
+	// coach, they don't flag errors (design review 2026-05-26). Strengths are
+	// green; all coaching (critical + tip) is amber.
 	&--positive .dispute-recommendations__icon {
 		color: $alert-green;
+	}
+
+	&--critical .dispute-recommendations__icon,
+	&--tip .dispute-recommendations__icon {
+		color: $alert-yellow;
 	}
 }
 
