@@ -33,6 +33,7 @@ declare global {
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isDisputeAdditionalEvidenceTypesEnabled: boolean;
 			isDisputeOutcomeViewEnabled: boolean;
+			isDisputeReadinessOverviewEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;

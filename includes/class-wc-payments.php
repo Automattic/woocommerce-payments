@@ -26,6 +26,7 @@ use WCPay\Core\WC_Payments_Customer_Service_API;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Internal\Abilities\AbilitiesRegistrar;
+use WCPay\Internal\Service\DisputeReadinessService;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\WooPay\WooPay_Scheduler;
@@ -432,6 +433,8 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-woopay-create-and-confirm-setup-intention.php';
 		include_once __DIR__ . '/core/server/request/class-paginated.php';
 		include_once __DIR__ . '/core/server/request/class-list-transactions.php';
+		include_once __DIR__ . '/core/server/request/class-get-transactions-summary.php';
+		include_once __DIR__ . '/core/server/request/class-get-reporting-balance-summary.php';
 		include_once __DIR__ . '/core/server/request/class-list-fraud-outcome-transactions.php';
 		include_once __DIR__ . '/core/server/request/class-list-disputes.php';
 		include_once __DIR__ . '/core/server/request/class-list-deposits.php';
@@ -1061,6 +1064,12 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
+				// Reports DataViews per-tab persisted view. Expected shape:
+				// { fields: string[], perPage?: number, layout?: object }.
+				// Stored verbatim via WC Admin's user-data-fields filter, so
+				// any future PHP-side consumer MUST validate this shape
+				// before trusting it (it is user-writable JSON).
+				'wc_payments_reports_fees_view',
 
 				// WooPayments review prompt user preferences.
 				'wc_payments_review_prompt_dismissed',
@@ -1171,6 +1180,10 @@ class WC_Payments {
 		$disputes_controller = new WC_REST_Payments_Disputes_Controller( self::$api_client );
 		$disputes_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-dispute-readiness-controller.php';
+		$dispute_readiness_controller = new WC_REST_Payments_Dispute_Readiness_Controller( self::$api_client, wcpay_get_container()->get( DisputeReadinessService::class ) );
+		$dispute_readiness_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-charges-controller.php';
 		$charges_controller = new WC_REST_Payments_Charges_Controller( self::$api_client );
 		$charges_controller->register_routes();
@@ -1265,6 +1278,14 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-transactions-controller.php';
 		$reports_transactions_controller = new WC_REST_Payments_Reports_Transactions_Controller( self::$api_client );
 		$reports_transactions_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-fees-controller.php';
+		$reports_fees_controller = new WC_REST_Payments_Reports_Fees_Controller( self::$api_client );
+		$reports_fees_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-balance-controller.php';
+		$reports_balance_controller = new WC_REST_Payments_Reports_Balance_Controller( self::$api_client );
+		$reports_balance_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/reports/class-wc-rest-payments-reports-authorizations-controller.php';
 		$reports_authorizations_controller = new WC_REST_Payments_Reports_Authorizations_Controller( self::$api_client );

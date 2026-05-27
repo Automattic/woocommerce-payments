@@ -13,26 +13,46 @@ import { STORE_NAME as WCPAY_STORE_NAME } from 'wcpay/data/constants';
 import type { ReportsPeriodRange } from './period-selector';
 import type { ReportsTab } from './types';
 
-// Shell placeholder — replaced once real selectors land. Until then, reload
-// no-ops on unregistered resolvers (invalidateResolution is safe in that case).
-const reportsPlaceholderSelectors: Record< ReportsTab, string > = {
-	balance: 'getReportsBalanceSummary',
-	fees: 'getReportsFees',
-};
-
 interface WCPayResolutionDispatch {
 	invalidateResolution: ( selectorName: string, args: unknown[] ) => void;
+	invalidateResolutionForStoreSelector: ( selectorName: string ) => void;
 }
 
 export function useReportsTabReload(
 	tab: ReportsTab,
 	period: ReportsPeriodRange
-): () => void {
-	const { invalidateResolution } = useDispatch(
-		WCPAY_STORE_NAME
-	) as unknown as WCPayResolutionDispatch;
+): ( periodOverride?: ReportsPeriodRange ) => void {
+	const { invalidateResolution, invalidateResolutionForStoreSelector } =
+		useDispatch( WCPAY_STORE_NAME ) as unknown as WCPayResolutionDispatch;
+	const currency = (
+		wcpaySettings.accountDefaultCurrency || ''
+	).toLowerCase();
 
-	return useCallback( () => {
-		invalidateResolution( reportsPlaceholderSelectors[ tab ], [ period ] );
-	}, [ invalidateResolution, period, tab ] );
+	return useCallback(
+		( periodOverride?: ReportsPeriodRange ) => {
+			if ( tab === 'fees' ) {
+				// Invalidate all cached resolutions for the fees selector so
+				// every in-flight or cached query is re-fetched on reload.
+				invalidateResolutionForStoreSelector( 'getReportsFees' );
+				invalidateResolutionForStoreSelector( 'getReportsFeesSummary' );
+			} else {
+				const balancePeriod = periodOverride ?? period;
+
+				invalidateResolution( 'getReportsBalanceSummary', [
+					{
+						dateStart: balancePeriod.start,
+						dateEnd: balancePeriod.end,
+						currency,
+					},
+				] );
+			}
+		},
+		[
+			currency,
+			invalidateResolution,
+			invalidateResolutionForStoreSelector,
+			period,
+			tab,
+		]
+	);
 }

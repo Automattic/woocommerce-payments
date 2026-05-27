@@ -71,6 +71,7 @@ module.exports = {
 		[
 			'node_modules/(?!',
 			'(@woocommerce/.+)',
+			'|@wordpress/dataviews/',
 			'|gridicons',
 			'|@automattic/components/',
 			'|@automattic/material-design-icons/',
