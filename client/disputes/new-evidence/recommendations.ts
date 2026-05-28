@@ -6,26 +6,7 @@ import type {
 	Recommendation,
 	RecommendationContext,
 } from './types';
-
-/**
- * True when a value is non-null, non-empty, and (for nested objects) has at
- * least one meaningful leaf. Mirrors `hasMeaningfulValue` in
- * evidence-field-status.ts; kept local to avoid coupling.
- */
-const hasMeaningfulValue = ( value: unknown ): boolean => {
-	if ( value === undefined || value === null ) {
-		return false;
-	}
-	if ( typeof value === 'string' ) {
-		return value.trim().length > 0;
-	}
-	if ( typeof value === 'object' ) {
-		return Object.values( value as Record< string, unknown > ).some(
-			hasMeaningfulValue
-		);
-	}
-	return Boolean( value );
-};
+import { hasMeaningfulValue } from './utils';
 
 const isProvided = (
 	evidence: Record< string, unknown >,
