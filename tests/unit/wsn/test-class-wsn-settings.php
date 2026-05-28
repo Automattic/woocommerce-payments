@@ -58,15 +58,18 @@ class WSN_Settings_Test extends WCPAY_UnitTestCase {
 	public function test_set_enabled_writes_with_autoload_false() {
 		WSN_Settings::set_enabled( true );
 
-		global $wpdb;
-		$autoload = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT autoload FROM {$wpdb->options} WHERE option_name = %s",
-				WSN_Settings::OPTION_ENABLED
-			)
+		// Use the wp_load_alloptions() membership check instead of inspecting the raw
+		// `autoload` column. WP 6.6+ introduced new autoload enum values
+		// (`auto-on`/`auto-off`/`on`/`off`) replacing the legacy `yes`/`no`, so a
+		// literal string comparison breaks across WP versions. Membership in
+		// alloptions is the version-agnostic contract: if the option is autoloaded,
+		// it's in the list; if not, it isn't.
+		$alloptions = wp_load_alloptions();
+		$this->assertArrayNotHasKey(
+			WSN_Settings::OPTION_ENABLED,
+			$alloptions,
+			'WSN options must be written with autoload=false (Hub is feature-flagged off by default, no reason to autoload on every WP request).'
 		);
-		// 'no' is the WP-internal representation for autoload=false.
-		$this->assertSame( 'no', $autoload );
 	}
 
 	public function test_get_visibility_mode_defaults_to_all_when_unset() {
