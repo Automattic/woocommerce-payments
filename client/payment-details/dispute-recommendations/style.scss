@@ -1,13 +1,5 @@
 /** @format */
 
-// Higher-contrast tints for the urgency icons. The icon shape is the sole
-// non-text differentiator of section type, so the color must satisfy WCAG
-// 1.4.11 (3:1 against background). The WP base-styles defaults fall below
-// that on white: `$alert-green` (#4ab866) ≈ 2.24:1, `$alert-yellow`
-// (#f0b849) ≈ 1.76:1. These darker variants land safely above 3:1.
-$rec-strength-color: #007017; // ≈ 5.5:1 on white
-$rec-coaching-color: #9a6700; // ≈ 4.6:1 on white
-
 .dispute-recommendations-card {
 	// The accordion shell (.wcpay-accordion) supplies the card border, radius
 	// and padding; the section heading is now the accordion header. It is not a
@@ -120,15 +112,18 @@ $rec-coaching-color: #9a6700; // ≈ 4.6:1 on white
 
 	// Color lives on the leading icon, not the title. No red: recommendations
 	// coach, they don't flag errors (design review 2026-05-26). Strengths are
-	// green; all coaching (critical + tip) is amber. Tints are file-local
-	// high-contrast variants (see top-of-file rationale).
+	// green; all coaching (critical + tip) is amber. Tints are the WP design-
+	// system alert tones used in the Figma; they fall below WCAG 1.4.11 3:1
+	// on white (≈ 2.24:1 green, ≈ 1.76:1 amber), but the icon shape carries
+	// the meaning (published checkmark vs caution `!`) so color is reinforce-
+	// ment, not the sole differentiator. Per Miguel / design, 2026-05-28.
 	&--positive .dispute-recommendations__icon {
-		color: $rec-strength-color;
+		color: $alert-green;
 	}
 
 	&--critical .dispute-recommendations__icon,
 	&--tip .dispute-recommendations__icon {
-		color: $rec-coaching-color;
+		color: $alert-yellow;
 	}
 }
 
