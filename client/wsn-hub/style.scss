@@ -6,52 +6,26 @@
  * styles can't express: focus-visible states, media queries, and tab-nav chrome.
  */
 
-// Full-bleed treatment for the WSN Hub admin page.
+// Visual treatment for the WSN Hub admin page.
 //
-// WP admin's default chrome wraps page content in several layers (#wpbody,
-// #wpbody-content, .wrap), each with margins/padding tuned for a "card on
-// gray gutter" aesthetic. For a branded immersive surface we want the white
-// content to bleed edge-to-edge against the WP sidebar and to sit flush
-// against the admin bar with notices butting directly into the header strip.
-//
-// Body-scoped via :has() so other admin pages keep their default chrome.
-body:has( .wcpay-wsn-hub ) {
-	// Paint the entire content shell white so any residual sliver from
-	// internal WP padding shows white instead of the default admin gray.
-	#wpbody,
-	#wpbody-content {
-		background: #fff;
-		padding: 0;
-	}
-
-	.wrap {
-		margin: 0;
-		padding: 0;
-	}
-
-	// Notices ship with `margin: 5px 0 15px` by default which creates a
-	// visible gutter between the notice strip and our PageHeader. Collapse
-	// that so the notice butts directly against the header (matches the
-	// AI Storefront live look the user referenced).
-	.notice,
-	div.notice {
-		margin: 0;
-	}
-}
+// Matches AI Storefront's pattern exactly: NO overrides on WP admin's
+// default chrome (.wrap / #wpbody / #wpbody-content / .notice). The
+// PageHeader's `margin: 0 -20px` is the only mechanism that bleeds the
+// branded chrome out to the content-area edges (negating .wrap's default
+// 20px right padding). Anything more aggressive than this introduces
+// visual artifacts that don't appear in AI Storefront's live UI.
 
 .wcpay-wsn-hub {
 	background: #fff;
-	min-height: calc( 100vh - 32px ); // 32px = WP admin bar height
-	box-sizing: border-box;
 
-	// TabPanel chrome: flatten WP admin's default borders + reset top spacing
-	// so the tab strip sits directly under the PageHeader with no gap. The
-	// 32px padding aligns with the PageHeader's 32px text-block padding so the
-	// tab text and the header title line up at the same x-coordinate.
+	// TabPanel chrome: flatten WP admin's default borders so the tab nav
+	// reads as part of the page header strip. Matches AI Storefront's
+	// inline <style> block at settings-page.js:175-184.
 	.components-tab-panel__tabs {
+		background: #fff;
 		border-bottom: 1px solid #e0e0e0;
 		padding: 0 32px;
-		margin: 0;
+		margin: 0 -20px;
 	}
 
 	.components-tab-panel__tabs-item {
