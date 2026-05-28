@@ -236,6 +236,12 @@ class WSN_Hub {
 			return false;
 		} catch ( \Throwable $e ) {
 			// Reflection failed (e.g., closure rebound to a missing class). Keep the callback.
+			// Surface the failure in WP_DEBUG so a developer chasing missing notices
+			// has a breadcrumb; in production we silently keep the callback.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+				error_log( 'WSN_Hub: notice callback reflection failed — keeping callback. ' . $e->getMessage() );
+			}
 			return true;
 		}
 	}
