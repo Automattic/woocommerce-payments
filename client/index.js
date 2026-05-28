@@ -30,7 +30,6 @@ import DocumentsPage from 'documents';
 import ReportsPage from 'reports';
 import OnboardingPage from 'onboarding';
 import OnboardingKycPage from 'onboarding/kyc';
-import WsnHubPage from 'wsn-hub';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 import { maybeAddReportsPage } from 'reports/page-config';
@@ -211,27 +210,12 @@ addFilter(
 			rootLink,
 		} );
 
-		// Woo Shopping Network Hub — feature-flagged off by default. The corresponding
-		// menu entry lives in WSN_Hub::register_admin_menu() (registered under
-		// WooCommerce, alongside Orders/Products — NOT under the WooPayments sub-menu).
-		// The REST surface is registered by WSN_Hub::register_rest_controllers().
-		// See RSM-2470 for the scaffolding plan and parent epic RSM-3930.
-		if ( wcpaySettings.featureFlags?.wsnHub ) {
-			pages.push( {
-				container: WsnHubPage,
-				path: '/shopping-network',
-				// wpOpenMenu intentionally NOT set: the WooCommerce top-level menu
-				// is the implicit parent (matches the PHP-side parent: 'woocommerce').
-				breadcrumbs: [
-					__( 'WooCommerce', 'woocommerce-payments' ),
-					__( 'Shopping Network', 'woocommerce-payments' ),
-				],
-				navArgs: {
-					id: 'wc-shopping-network',
-				},
-				capability: 'manage_woocommerce',
-			} );
-		}
+		// Woo Shopping Network Hub is intentionally NOT registered via
+		// woocommerce_admin_pages_list — it's a vanilla WP submenu page under
+		// WooCommerce, with its own dedicated webpack bundle (`wsn-hub`) and own
+		// React mount handled by WSN_Hub::render_admin_page() in PHP. See
+		// includes/wsn/class-wsn-hub.php for the rationale (avoiding WC Admin
+		// layout chrome).
 
 		pages.push( {
 			container: MultiCurrencySetupPage,
