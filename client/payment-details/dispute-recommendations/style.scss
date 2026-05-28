@@ -10,10 +10,17 @@
 	margin-bottom: $grid-unit-30;
 
 	&__section {
+		// When both sections render inside the umbrella accordion, separate
+		// them with a top rule + padding so each reads as its own block.
+		& + & {
+			margin-top: $grid-unit-20;
+			padding-top: $grid-unit-20;
+			border-top: 1px solid $gray-100;
+		}
+
 		// Trim the outer padding on the first and last items in the section.
-		// `:first-child` / `:last-child` would miss them: the "Learn more"
-		// link can be the first child and the show-more <details> the last,
-		// so target the first/last direct-child item by type instead.
+		// `:first-child` / `:last-child` would miss them: the section header
+		// is always the first child and the show-more <details> can be last.
 		> .dispute-recommendations__item:first-of-type {
 			padding-top: 0;
 		}
@@ -23,14 +30,29 @@
 		}
 	}
 
-	// Single "Learn more" link at the top of the "What could help next time"
-	// section body (the accordion header is the collapse toggle, so a link
-	// can't live there). Positives don't get the link.
+	// Section header row: h3 heading on the left, optional "Learn more" link
+	// on the right. Only the coaching section gets the link.
+	&__section-header {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: $grid-unit-15;
+		margin-bottom: $grid-unit-10;
+	}
+
+	&__section-heading {
+		// Heading MD — one step below the accordion title above (LG/15px).
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 20px;
+		color: $gray-900;
+		margin: 0;
+	}
+
 	&__learn-more {
-		display: inline-block;
 		font-size: 13px;
 		line-height: 20px;
-		margin-bottom: $grid-unit-10;
+		flex-shrink: 0;
 	}
 
 	&__show-more {

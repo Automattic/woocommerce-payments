@@ -108,10 +108,11 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	</article>
 );
 
-// Each non-empty section is its own expanded-by-default AccordionBody, reusing
-// the "Steps you can take" accordion. Sections render independently, not forced
-// one-per-outcome: per the 2026-05-27 design decision both the won-strengths and
-// coaching framings can show regardless of outcome, driven by which recs fire.
+// Both sections sit inside ONE expanded-by-default AccordionBody (single
+// chevron), reusing the "Steps you can take" accordion. Per the 2026-05-27
+// design decision, the won-strengths and coaching framings can both show
+// regardless of outcome, driven by which recs fire. Section headings are h3
+// sub-headings inside the body rather than the accordion header.
 const renderSection = (
 	heading: string,
 	items: Recommendation[],
@@ -126,8 +127,11 @@ const renderSection = (
 	const hidden = sorted.slice( VISIBLE_PER_SECTION );
 
 	return (
-		<AccordionBody title={ heading } lg>
-			<div className="dispute-recommendations-card__section">
+		<section className="dispute-recommendations-card__section">
+			<div className="dispute-recommendations-card__section-header">
+				<h3 className="dispute-recommendations-card__section-heading">
+					{ heading }
+				</h3>
 				{ learnMoreHref && (
 					<ExternalLink
 						className="dispute-recommendations-card__learn-more"
@@ -140,26 +144,26 @@ const renderSection = (
 						{ __( 'Learn more', 'woocommerce-payments' ) }
 					</ExternalLink>
 				) }
-				{ visible.map( renderItem ) }
-				{ hidden.length > 0 && (
-					<details className="dispute-recommendations-card__show-more">
-						<summary>
-							{ sprintf(
-								/* translators: %d is the number of additional recommendations hidden by default. */
-								_n(
-									'Show 1 more',
-									'Show %d more',
-									hidden.length,
-									'woocommerce-payments'
-								),
-								hidden.length
-							) }
-						</summary>
-						{ hidden.map( renderItem ) }
-					</details>
-				) }
 			</div>
-		</AccordionBody>
+			{ visible.map( renderItem ) }
+			{ hidden.length > 0 && (
+				<details className="dispute-recommendations-card__show-more">
+					<summary>
+						{ sprintf(
+							/* translators: %d is the number of additional recommendations hidden by default. */
+							_n(
+								'Show 1 more',
+								'Show %d more',
+								hidden.length,
+								'woocommerce-payments'
+							),
+							hidden.length
+						) }
+					</summary>
+					{ hidden.map( renderItem ) }
+				</details>
+			) }
+		</section>
 	);
 };
 
@@ -199,15 +203,20 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 
 	return (
 		<Accordion defaultExpanded className="dispute-recommendations-card">
-			{ renderSection(
-				__( "What's working well", 'woocommerce-payments' ),
-				positives
-			) }
-			{ renderSection(
-				__( 'What could help next time', 'woocommerce-payments' ),
-				criticalsAndTips,
-				LEARN_MORE_HREF
-			) }
+			<AccordionBody
+				title={ __( 'Recommendations', 'woocommerce-payments' ) }
+				lg
+			>
+				{ renderSection(
+					__( "What's working well", 'woocommerce-payments' ),
+					positives
+				) }
+				{ renderSection(
+					__( 'What could help next time', 'woocommerce-payments' ),
+					criticalsAndTips,
+					LEARN_MORE_HREF
+				) }
+			</AccordionBody>
 		</Accordion>
 	);
 };
