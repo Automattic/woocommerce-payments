@@ -176,7 +176,7 @@ describe( 'DisputeRecommendationsCard', () => {
 				container.querySelectorAll(
 					'.dispute-recommendations__item--positive'
 				).length
-			).toBeGreaterThan( 0 );
+			).toBe( 3 );
 		} );
 
 		it( 'applies the critical modifier class on Critical entries', () => {
@@ -195,7 +195,7 @@ describe( 'DisputeRecommendationsCard', () => {
 				container.querySelectorAll(
 					'.dispute-recommendations__item--critical'
 				).length
-			).toBeGreaterThan( 0 );
+			).toBe( 3 );
 		} );
 
 		it( 'applies the tip modifier class on Tip entries', () => {
@@ -215,7 +215,7 @@ describe( 'DisputeRecommendationsCard', () => {
 				container.querySelectorAll(
 					'.dispute-recommendations__item--tip'
 				).length
-			).toBeGreaterThan( 0 );
+			).toBe( 2 );
 		} );
 	} );
 
