@@ -17,11 +17,6 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	const ROUTE = '/wc/v3/payments/wsn/settings';
 
 	/**
-	 * @var WC_REST_Payments_WSN_Settings_Controller
-	 */
-	private $controller;
-
-	/**
 	 * @var int Count of `wcpay_wsn_profile_changed` fires during the current test.
 	 */
 	private $profile_changed_fire_count = 0;
@@ -29,8 +24,17 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->controller = new WC_REST_Payments_WSN_Settings_Controller();
-		$this->controller->register_routes();
+		// Routes MUST be registered on the `rest_api_init` action (WP enforces this
+		// via _doing_it_wrong since 5.1). Hook the registration onto that action and
+		// trigger it; rest_get_server() also triggers `rest_api_init` internally on
+		// first call, so this both registers the route AND warms the server.
+		add_action(
+			'rest_api_init',
+			function () {
+				( new WC_REST_Payments_WSN_Settings_Controller() )->register_routes();
+			}
+		);
+		do_action( 'rest_api_init' );
 
 		$this->profile_changed_fire_count = 0;
 		add_action(
@@ -154,11 +158,14 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( WSN_Settings::is_enabled() );
 		// The rejected field did NOT persist.
 		$this->assertSame( [], WSN_Settings::get_visibility_product_ids() );
-		// The 422 body carries field-level error details.
-		$data = $response->get_error_data();
-		$this->assertArrayHasKey( 'body', $data );
-		$this->assertArrayHasKey( 'errors', $data['body'] );
-		$this->assertArrayHasKey( 'visibility_product_ids', $data['body']['errors'] );
+		// The handler returned a WP_Error which the REST server formats into a
+		// WP_REST_Response body containing the standard {code, message, data}
+		// shape — our 422-with-errors map lives at $data['data']['body']['errors'].
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'data', $data );
+		$this->assertArrayHasKey( 'body', $data['data'] );
+		$this->assertArrayHasKey( 'errors', $data['data']['body'] );
+		$this->assertArrayHasKey( 'visibility_product_ids', $data['data']['body']['errors'] );
 	}
 
 	public function test_put_fires_profile_changed_when_profile_field_changes() {
