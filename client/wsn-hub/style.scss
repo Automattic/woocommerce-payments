@@ -8,21 +8,34 @@
 
 // Full-bleed treatment for the WSN Hub admin page.
 //
-// WP admin's default chrome puts the page content inside `.wrap` which carries
-// `margin: 10px 20px 0 2px` plus #wpbody-content's `padding-bottom: 65px`. On a
-// branded immersive surface that creates a visible gray "gutter" around the
-// content — fine for traditional settings pages but it makes the WSN Hub look
-// like a card floating inside the admin area instead of taking it over.
+// WP admin's default chrome wraps page content in several layers (#wpbody,
+// #wpbody-content, .wrap), each with margins/padding tuned for a "card on
+// gray gutter" aesthetic. For a branded immersive surface we want the white
+// content to bleed edge-to-edge against the WP sidebar and to sit flush
+// against the admin bar with notices butting directly into the header strip.
 //
 // Body-scoped via :has() so other admin pages keep their default chrome.
 body:has( .wcpay-wsn-hub ) {
+	// Paint the entire content shell white so any residual sliver from
+	// internal WP padding shows white instead of the default admin gray.
+	#wpbody,
 	#wpbody-content {
-		padding-bottom: 0;
+		background: #fff;
+		padding: 0;
 	}
 
 	.wrap {
 		margin: 0;
 		padding: 0;
+	}
+
+	// Notices ship with `margin: 5px 0 15px` by default which creates a
+	// visible gutter between the notice strip and our PageHeader. Collapse
+	// that so the notice butts directly against the header (matches the
+	// AI Storefront live look the user referenced).
+	.notice,
+	div.notice {
+		margin: 0;
 	}
 }
 
