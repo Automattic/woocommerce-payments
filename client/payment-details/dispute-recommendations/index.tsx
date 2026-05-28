@@ -6,7 +6,7 @@
 import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { ExternalLink, VisuallyHidden } from '@wordpress/components';
-import { Icon, caution } from '@wordpress/icons';
+import { Icon, caution, published } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -87,11 +87,14 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 		key={ rec.id }
 		className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
 	>
-		{ /* One shape for every urgency; the --{urgency} modifier tints it
-		     green (strength) or amber (coaching), no red, via currentColor.
-		     See style.scss. Design review 2026-05-26. */ }
+		{ /* Two shapes: `published` (check) for strengths, `caution` (!) for
+		     coaching. Color via the --{urgency} modifier (green / amber, no
+		     red), routed through currentColor. See style.scss. Design 2026-05-27. */ }
 		<span className="dispute-recommendations__icon" aria-hidden="true">
-			<Icon icon={ caution } size={ 18 } />
+			<Icon
+				icon={ rec.urgency === 'positive' ? published : caution }
+				size={ 18 }
+			/>
 		</span>
 		<div className="dispute-recommendations__text">
 			<h4 className="dispute-recommendations__title">
