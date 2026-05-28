@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add Woo Shopping Network Hub scaffolding under WooPayments admin (behind feature flag).

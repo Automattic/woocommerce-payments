@@ -30,6 +30,7 @@ import DocumentsPage from 'documents';
 import ReportsPage from 'reports';
 import OnboardingPage from 'onboarding';
 import OnboardingKycPage from 'onboarding/kyc';
+import WsnHubPage from 'wsn-hub';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
 import { maybeAddReportsPage } from 'reports/page-config';
@@ -209,6 +210,26 @@ addFilter(
 			menuID,
 			rootLink,
 		} );
+
+		// Woo Shopping Network Hub — feature-flagged off by default. The corresponding
+		// menu entry lives in WC_Payments_Admin::add_payments_menu(); the REST surface
+		// is registered by WSN_Hub::register_rest_controllers(). See RSM-2470 for the
+		// scaffolding plan and the parent epic RSM-3930 for the broader architecture.
+		if ( wcpaySettings.featureFlags?.wsnHub ) {
+			pages.push( {
+				container: WsnHubPage,
+				path: '/payments/shopping-network',
+				wpOpenMenu: menuID,
+				breadcrumbs: [
+					rootLink,
+					__( 'Shopping Network', 'woocommerce-payments' ),
+				],
+				navArgs: {
+					id: 'wc-payments-wsn-hub',
+				},
+				capability: 'manage_woocommerce',
+			} );
+		}
 
 		pages.push( {
 			container: MultiCurrencySetupPage,

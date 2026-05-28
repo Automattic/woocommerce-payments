@@ -1,0 +1,62 @@
+/**
+ * Top-level styles for the Woo Shopping Network Hub.
+ *
+ * Most per-component styling is inline (matches AI Storefront's convention —
+ * see tokens.js for the design system). This file is reserved for things inline
+ * styles can't express: focus-visible states, media queries, and tab-nav chrome.
+ */
+
+.wcpay-wsn-hub {
+	background: #fff;
+
+	// TabPanel chrome: WP admin gives <TabPanel> default borders we want to
+	// flatten so the tab nav reads as part of the page header strip rather
+	// than a separate card.
+	.components-tab-panel__tabs {
+		border-bottom: 1px solid #e0e0e0;
+		padding: 0 32px;
+		margin: 0 -20px;
+	}
+
+	.components-tab-panel__tabs-item {
+		font-size: 13px;
+		font-weight: 500;
+
+		&:focus-visible {
+			// Make keyboard focus visible against the white tab strip.
+			outline: 2px solid #2271b1;
+			outline-offset: -2px;
+		}
+	}
+
+	// Stub blocks for unfinished tabs. Replaced when each tab's real content
+	// ships in its own sub-issue.
+	&__tab-stub {
+		padding: 24px;
+		color: #50575e;
+		font-style: italic;
+	}
+}
+
+// Two-tier responsive breakpoints mirror AI Storefront's matchMedia behavior.
+@media ( max-width: 781px ) {
+	.wcpay-wsn-hub {
+		// Tab nav can run wider than viewport on narrow screens; let it scroll.
+		.components-tab-panel__tabs {
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.components-tab-panel__tabs-item {
+			white-space: nowrap;
+		}
+	}
+}
+
+@media ( max-width: 600px ) {
+	.wcpay-wsn-hub {
+		.components-tab-panel__tabs {
+			padding: 0 16px;
+		}
+	}
+}
