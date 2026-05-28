@@ -4,11 +4,10 @@
  *
  * Bootstrap for the Woo Shopping Network Hub.
  *
- * Wires up the REST surface that the admin React app at /payments/shopping-network
- * consumes. The admin menu entry itself lives in WC_Payments_Admin::add_payments_menu()
- * (centralized menu registration is the existing WCPay convention) and the React app
- * is registered by client/index.js via the woocommerce_admin_pages_list filter, so
- * there is no per-page render callback or asset enqueue here.
+ * Wires up the admin menu entry (under WooCommerce, alongside Orders / Products /
+ * Customers — NOT under the WooPayments sub-menu) and the REST surface that the
+ * admin React app at /shopping-network consumes. The React app itself is registered
+ * by client/index.js via the woocommerce_admin_pages_list filter.
  *
  * This class is only instantiated when WC_Payments_Features::is_wsn_hub_enabled()
  * returns true — see class-wc-payments.php::init().
@@ -27,7 +26,35 @@ class WSN_Hub {
 	 * Wires up WordPress hooks. Called from WC_Payments::init() when the feature flag is on.
 	 */
 	public function init_hooks(): void {
+		add_action( 'admin_menu', [ $this, 'register_admin_menu' ] );
 		add_action( 'rest_api_init', [ $this, 'register_rest_controllers' ] );
+	}
+
+	/**
+	 * Registers the "Shopping Network" entry under the WooCommerce admin menu.
+	 *
+	 * Placement: top-level WooCommerce sub-item, alongside Home / Orders / Customers /
+	 * Reports / Settings — NOT under the WooPayments sub-menu. Path `/shopping-network`
+	 * is a wc-admin path (`wc-admin&path=/shopping-network`), so the React app
+	 * registered by client/index.js handles rendering.
+	 */
+	public function register_admin_menu(): void {
+		if ( ! function_exists( 'wc_admin_register_page' ) ) {
+			return;
+		}
+
+		wc_admin_register_page(
+			[
+				'id'       => 'wc-shopping-network',
+				'title'    => __( 'Shopping Network', 'woocommerce-payments' ),
+				'parent'   => 'woocommerce',
+				'path'     => '/shopping-network',
+				'nav_args' => [
+					'parent' => 'woocommerce',
+					'order'  => 15,
+				],
+			]
+		);
 	}
 
 	/**

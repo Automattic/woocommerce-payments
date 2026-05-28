@@ -379,19 +379,6 @@ class WC_Payments_Admin {
 			];
 		}
 
-		if ( WC_Payments_Features::is_wsn_hub_enabled() ) {
-			$this->admin_child_pages['wc-payments-wsn-hub'] = [
-				'id'       => 'wc-payments-wsn-hub',
-				'title'    => __( 'Shopping Network', 'woocommerce-payments' ),
-				'parent'   => 'wc-payments',
-				'path'     => '/payments/shopping-network',
-				'nav_args' => [
-					'parent' => 'wc-payments',
-					'order'  => 50,
-				],
-			];
-		}
-
 		try {
 			// Render full payments menu with sub-items only if:
 			// - we have working WPCOM/Jetpack connection;

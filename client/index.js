@@ -212,20 +212,22 @@ addFilter(
 		} );
 
 		// Woo Shopping Network Hub — feature-flagged off by default. The corresponding
-		// menu entry lives in WC_Payments_Admin::add_payments_menu(); the REST surface
-		// is registered by WSN_Hub::register_rest_controllers(). See RSM-2470 for the
-		// scaffolding plan and the parent epic RSM-3930 for the broader architecture.
+		// menu entry lives in WSN_Hub::register_admin_menu() (registered under
+		// WooCommerce, alongside Orders/Products — NOT under the WooPayments sub-menu).
+		// The REST surface is registered by WSN_Hub::register_rest_controllers().
+		// See RSM-2470 for the scaffolding plan and parent epic RSM-3930.
 		if ( wcpaySettings.featureFlags?.wsnHub ) {
 			pages.push( {
 				container: WsnHubPage,
-				path: '/payments/shopping-network',
-				wpOpenMenu: menuID,
+				path: '/shopping-network',
+				// wpOpenMenu intentionally NOT set: the WooCommerce top-level menu
+				// is the implicit parent (matches the PHP-side parent: 'woocommerce').
 				breadcrumbs: [
-					rootLink,
+					__( 'WooCommerce', 'woocommerce-payments' ),
 					__( 'Shopping Network', 'woocommerce-payments' ),
 				],
 				navArgs: {
-					id: 'wc-payments-wsn-hub',
+					id: 'wc-shopping-network',
 				},
 				capability: 'manage_woocommerce',
 			} );
