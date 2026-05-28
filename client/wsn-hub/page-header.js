@@ -10,7 +10,7 @@
  */
 
 import { __ } from '@wordpress/i18n';
-import { colors, typography } from './tokens';
+import { colors, typography, radii } from './tokens';
 
 // SVG path data for the WSN purple wordmark, extracted to a constant so the JSX
 // can stay readable. The string is a single SVG token and can't be broken without
@@ -73,6 +73,22 @@ const PageHeader = () => (
 			>
 				{ __( 'Woo Shopping Network', 'woocommerce-payments' ) }
 			</h2>
+			{ /* Beta pill: subtle uppercase chip set merchant
+			     expectations during active admin use. Remove this
+			     entire <span> when the feature reaches GA. */ }
+			<span
+				style={ {
+					...typography.eyebrowLabel,
+					background: colors.surfaceMuted,
+					color: colors.textSecondary,
+					padding: '2px 8px',
+					borderRadius: radii.sm,
+					lineHeight: 1.2,
+					letterSpacing: '0.06em',
+				} }
+			>
+				{ __( 'Beta', 'woocommerce-payments' ) }
+			</span>
 		</div>
 	</header>
 );
