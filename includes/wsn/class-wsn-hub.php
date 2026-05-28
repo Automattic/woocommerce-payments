@@ -53,6 +53,10 @@ class WSN_Hub {
 		add_action( 'admin_menu', [ $this, 'register_admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
 		add_action( 'rest_api_init', [ $this, 'register_rest_controllers' ] );
+
+		// `in_admin_header` fires immediately before `admin_notices` + `all_admin_notices`,
+		// which is the last safe moment to strip third-party callbacks before they render.
+		add_action( 'in_admin_header', [ $this, 'suppress_third_party_admin_notices' ], 0 );
 	}
 
 	/**
@@ -140,6 +144,113 @@ class WSN_Hub {
 			'window.wcpaySettings = window.wcpaySettings || { featureFlags: { wsnHub: true } };',
 			'before'
 		);
+	}
+
+	/**
+	 * Suppresses third-party admin notices on the WSN admin page only.
+	 *
+	 * Walks $wp_filter['admin_notices'] + $wp_filter['all_admin_notices'] and removes
+	 * any callback whose source file lives outside WordPress core, WooCommerce core, or
+	 * WooPayments itself. The merchant still sees WP / WC / WCPay-originated notices —
+	 * they're typically actionable (security warnings, plugin updates) and shouldn't be
+	 * hidden. Third-party plugin marketing notices (TrackShip "Connect Store", etc.) get
+	 * removed so the branded Hub UI isn't pushed below the fold by unrelated chrome.
+	 *
+	 * Other admin pages are unaffected — this only runs when the current screen is the
+	 * WSN Hub admin page.
+	 */
+	public function suppress_third_party_admin_notices(): void {
+		global $wp_filter, $hook_suffix;
+
+		if ( 'woocommerce_page_' . self::MENU_SLUG !== $hook_suffix ) {
+			return;
+		}
+
+		foreach ( [ 'admin_notices', 'all_admin_notices', 'user_admin_notices', 'network_admin_notices' ] as $hook ) {
+			if ( empty( $wp_filter[ $hook ] ) ) {
+				continue;
+			}
+			foreach ( $wp_filter[ $hook ]->callbacks as $priority => $callbacks ) {
+				foreach ( $callbacks as $id => $callback_data ) {
+					if ( ! $this->is_first_party_notice_callback( $callback_data['function'] ?? null ) ) {
+						unset( $wp_filter[ $hook ]->callbacks[ $priority ][ $id ] );
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Determines whether a notice callback originates from WP core, WC core, or WCPay.
+	 *
+	 * Uses Reflection to resolve the callback's defining file, then checks that path
+	 * against an allowlist of known-first-party plugin/core directories. Any Reflection
+	 * failure errs on the side of KEEPING the callback (better to show a noisy notice
+	 * than hide one that might be important).
+	 *
+	 * @param mixed $callback The hook callback (string function, [class, method], or Closure).
+	 * @return bool True if the callback should be kept, false to remove it.
+	 */
+	private function is_first_party_notice_callback( $callback ): bool {
+		if ( null === $callback ) {
+			return true;
+		}
+
+		try {
+			if ( is_array( $callback ) && 2 === count( $callback ) ) {
+				$reflection = new ReflectionMethod( $callback[0], $callback[1] );
+			} elseif ( $callback instanceof Closure || ( is_string( $callback ) && function_exists( $callback ) ) ) {
+				$reflection = new ReflectionFunction( $callback );
+			} else {
+				// Unknown shape — keep it.
+				return true;
+			}
+
+			$file = $reflection->getFileName();
+			if ( ! $file ) {
+				// Internal PHP function or otherwise un-resolvable — keep it.
+				return true;
+			}
+
+			$normalized = wp_normalize_path( $file );
+
+			foreach ( $this->first_party_path_roots() as $root ) {
+				if ( '' !== $root && 0 === strpos( $normalized, $root ) ) {
+					return true;
+				}
+			}
+
+			return false;
+		} catch ( \Throwable $e ) {
+			// Reflection failed (e.g., closure rebound to a missing class). Keep the callback.
+			return true;
+		}
+	}
+
+	/**
+	 * Allowlist of filesystem path roots that count as "first-party" sources.
+	 *
+	 * Anything matching one of these prefixes is allowed to render notices on the WSN
+	 * Hub admin page. The list is intentionally conservative — WP core, WC core, and
+	 * WooPayments. Other Automattic plugins (Jetpack, WooCommerce.com helpers) are
+	 * excluded; if their notices ever need to surface here we can extend this.
+	 *
+	 * @return string[]
+	 */
+	private function first_party_path_roots(): array {
+		$roots = [
+			wp_normalize_path( ABSPATH . 'wp-admin' ),
+			wp_normalize_path( ABSPATH . WPINC ),
+			wp_normalize_path( WP_PLUGIN_DIR . '/woocommerce/' ),
+			wp_normalize_path( dirname( WCPAY_PLUGIN_FILE ) ),
+		];
+
+		// MU plugins also count as "core-equivalent" — site operators trust them.
+		if ( defined( 'WPMU_PLUGIN_DIR' ) ) {
+			$roots[] = wp_normalize_path( WPMU_PLUGIN_DIR );
+		}
+
+		return array_filter( $roots );
 	}
 
 	/**
