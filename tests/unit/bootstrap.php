@@ -108,6 +108,13 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-customer-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-refunds-controller.php';
 
+	// WSN Hub source files. In production these are lazy-loaded by WSN_Hub::register_rest_controllers()
+	// only when the feature flag is on; the bootstrap loads them unconditionally so tests can
+	// instantiate the classes directly without first enabling the flag.
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-settings.php';
+	require_once $_plugin_dir . 'includes/wsn/class-wsn-hub.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
+
 	// Load currency helper class early to ensure its implementation is used over the one resolved during further test initialization.
 	require_once __DIR__ . '/helpers/class-wc-helper-site-currency.php';
 

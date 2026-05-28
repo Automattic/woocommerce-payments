@@ -270,9 +270,12 @@ class WSN_Hub {
 	 * @return string[]
 	 */
 	private function first_party_path_roots(): array {
+		// String literal 'wp-includes' (rather than the WPINC constant) keeps PHPStan
+		// happy — WPINC is a WordPress runtime constant, not visible to static analysis.
+		// The constant is hard-coded to 'wp-includes' in WP core and has been since 2.6.
 		$roots = [
 			wp_normalize_path( ABSPATH . 'wp-admin' ),
-			wp_normalize_path( ABSPATH . WPINC ),
+			wp_normalize_path( ABSPATH . 'wp-includes' ),
 			wp_normalize_path( WP_PLUGIN_DIR . '/woocommerce/' ),
 			wp_normalize_path( dirname( WCPAY_PLUGIN_FILE ) ),
 		];
