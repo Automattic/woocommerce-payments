@@ -35,8 +35,13 @@ class WSN_Hub {
 	 *
 	 * Currently only the settings controller. Sibling controllers (taxonomy, pages,
 	 * products-search, orders) ship with their per-tab issues (RSM-2480/2481/2493).
+	 *
+	 * WSN_Settings is required here (not lazily by the controller itself) because the
+	 * controller's route-registration code path consumes `WSN_Settings::valid_visibility_modes()`
+	 * for the schema enum — by the time register_routes() runs, the class must already exist.
 	 */
 	public function register_rest_controllers(): void {
+		require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-settings.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
 
 		$settings_controller = new WC_REST_Payments_WSN_Settings_Controller();
