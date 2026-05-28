@@ -115,6 +115,7 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 // sub-headings inside the body rather than the accordion header.
 const renderSection = (
 	heading: string,
+	description: string,
 	items: Recommendation[],
 	learnMoreHref?: string
 ): JSX.Element | null => {
@@ -128,29 +129,35 @@ const renderSection = (
 
 	return (
 		<section className="dispute-recommendations-card__section">
-			<div className="dispute-recommendations-card__section-header">
-				<h3 className="dispute-recommendations-card__section-heading">
-					{ heading }
-				</h3>
+			<h3 className="dispute-recommendations-card__section-heading">
+				{ heading }
+			</h3>
+			{ /* div, not <p>: ExternalLink renders a <div> wrapper internally
+			     which would be invalid nested inside a <p>. */ }
+			<div className="dispute-recommendations-card__section-description">
+				{ description }
 				{ learnMoreHref && (
-					<ExternalLink
-						className="dispute-recommendations-card__learn-more"
-						href={ learnMoreHref }
-					>
-						{ __( 'Learn more', 'woocommerce-payments' ) }
-						{ /* SR-only context. Setting `aria-label` would
-						     override the whole accessible name and drop
-						     ExternalLink's built-in "(opens in a new tab)"
-						     suffix; adding a VisuallyHidden child instead
-						     keeps both. */ }
-						<VisuallyHidden>
-							{ ' ' +
-								__(
-									'about managing payment disputes',
-									'woocommerce-payments'
-								) }
-						</VisuallyHidden>
-					</ExternalLink>
+					<>
+						{ ' ' }
+						<ExternalLink
+							className="dispute-recommendations-card__learn-more"
+							href={ learnMoreHref }
+						>
+							{ __( 'Learn more', 'woocommerce-payments' ) }
+							{ /* SR-only context. Setting `aria-label` would
+							     override the whole accessible name and drop
+							     ExternalLink's built-in "(opens in a new tab)"
+							     suffix; adding a VisuallyHidden child instead
+							     keeps both. */ }
+							<VisuallyHidden>
+								{ ' ' +
+									__(
+										'about managing payment disputes',
+										'woocommerce-payments'
+									) }
+							</VisuallyHidden>
+						</ExternalLink>
+					</>
 				) }
 			</div>
 			{ visible.map( renderItem ) }
@@ -217,10 +224,18 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 			>
 				{ renderSection(
 					__( "What's working well", 'woocommerce-payments' ),
+					__(
+						'These are the evidence strengths that supported your dispute response.',
+						'woocommerce-payments'
+					),
 					positives
 				) }
 				{ renderSection(
 					__( 'What could help next time', 'woocommerce-payments' ),
+					__(
+						'Strengthen future dispute responses by adding these details to your evidence before submitting.',
+						'woocommerce-payments'
+					),
 					criticalsAndTips,
 					LEARN_MORE_HREF
 				) }
