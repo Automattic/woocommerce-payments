@@ -136,6 +136,19 @@ class WSN_Hub {
 			);
 		}
 
+		// Paint the WP admin content shell white so the branded white surface
+		// extends edge-to-edge against the sidebar and to the viewport bottom.
+		// `body.woocommerce_page_<menu-slug>` is the body class auto-generated
+		// by add_submenu_page(); scoping there means other admin pages keep
+		// the default gray. Mirrors the AI Storefront plugin's pattern at
+		// woocommerce-ai-storefront/includes/class-wc-ai-storefront.php:473.
+		wp_add_inline_style(
+			'wp-components',
+			'body.woocommerce_page_' . self::MENU_SLUG . ',
+			 body.woocommerce_page_' . self::MENU_SLUG . ' #wpcontent,
+			 body.woocommerce_page_' . self::MENU_SLUG . ' #wpbody-content { background: #fff; }'
+		);
+
 		// Expose the feature flag value (and any other settings the React app needs)
 		// via the existing wcpaySettings global. The Hub reads wcpaySettings.featureFlags
 		// at render time to gate rendering — defensive even though the menu is gated.
