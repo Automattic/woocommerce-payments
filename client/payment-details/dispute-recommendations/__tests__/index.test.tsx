@@ -420,6 +420,27 @@ describe( 'DisputeRecommendationsCard', () => {
 				} )
 			).not.toBeInTheDocument();
 		} );
+
+		it( 'does not also surface the c12 cover-letter tip when no evidence is submitted', () => {
+			// c15's `suppressOtherCriticals` only hides criticals, not tips, so
+			// without c12's `requireProvided` guard the cover-letter tip would
+			// render alongside c15's "submit evidence" message and read as
+			// redundant. Verify c12 stays silent on the truly-empty path.
+			const dispute = buildDispute( {
+				status: 'lost',
+				reason: 'product_not_received',
+				metadata: { __product_type: 'physical_product' },
+				evidence: {}, // truly empty → c15 fires, c12 must not
+			} );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			expect(
+				screen.queryByRole( 'heading', {
+					name: /include a cover letter with your evidence/i,
+				} )
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	describe( 'link rendering', () => {

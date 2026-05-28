@@ -42,6 +42,45 @@ import type { Recommendation } from './types';
  * widen this cluster back to three fields.
  */
 
+// Every evidence key the response wizard can collect. Used by c15 ("no
+// evidence at all" — fires only when ALL of these are missing) and c12
+// ("you have evidence but no cover letter" — fires only when at least
+// one non-cover-letter key is provided). Must stay in sync with the
+// wizard's actual collectable fields; an unlisted field can make c15
+// fire (and suppress criticals) while real evidence sits in it.
+// eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
+const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
+	'customer_communication',
+	'receipt',
+	'shipping_documentation',
+	'shipping_tracking_number',
+	'shipping_carrier',
+	'shipping_date',
+	'shipping_address',
+	'service_documentation',
+	'service_date',
+	'access_activity_log',
+	'duplicate_charge_documentation',
+	'duplicate_charge_explanation',
+	'refund_policy',
+	'refund_refusal_explanation',
+	'cancellation_policy',
+	'cancellation_rebuttal',
+	'customer_signature',
+	'customer_purchase_ip',
+	'uncategorized_file',
+	'uncategorized_text',
+];
+
+// Subset for c12: every wizard key EXCEPT the cover letter. c12 needs
+// "at least one non-cover-letter key was provided" so it only coaches
+// merchants who submitted some evidence — when nothing was submitted,
+// c15's broader "submit evidence" message fires alone.
+// eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
+const NON_COVER_LETTER_EVIDENCE_KEYS = WIZARD_SUBMITTABLE_EVIDENCE_KEYS.filter(
+	( key ) => key !== 'uncategorized_text'
+);
+
 // eslint-disable-next-line @typescript-eslint/naming-convention -- This is a constant object.
 export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	// ============ CLUSTER 1: shipping evidence ============
@@ -924,6 +963,12 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'subscription_canceled',
 				'general',
 			],
+			// Only fires when the merchant has put together SOME evidence but
+			// not the cover letter — otherwise c15's "submit evidence" message
+			// covers the no-evidence case alone (suppressOtherCriticals doesn't
+			// reach tips, so without this guard c12 would render next to c15
+			// and read as repetitive advice).
+			requireProvided: { keys: NON_COVER_LETTER_EVIDENCE_KEYS },
 			requireMissing: { keys: [ 'uncategorized_text' ] },
 		},
 	},
@@ -983,35 +1028,12 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'noncompliant',
 				'unrecognized',
 			],
-			// Predicate: at least one wizard-submittable evidence field is
-			// provided. When ALL are missing, the entry fires (max:0) and its
-			// suppression rule hides every other critical entry on the dispute.
-			// The key set must cover every field the response wizard can
-			// collect — otherwise the entry can fire (and suppress criticals)
-			// while meaningful evidence sits in an unlisted field.
+			// Fires when EVERY wizard-submittable key is missing (max:0).
+			// `suppressOtherCriticals` then hides other critical entries on
+			// the dispute, leaving one clear message. See the constant's
+			// docblock for the key-set maintenance contract.
 			requireProvided: {
-				keys: [
-					'customer_communication',
-					'receipt',
-					'shipping_documentation',
-					'shipping_tracking_number',
-					'shipping_carrier',
-					'shipping_date',
-					'shipping_address',
-					'service_documentation',
-					'service_date',
-					'access_activity_log',
-					'duplicate_charge_documentation',
-					'duplicate_charge_explanation',
-					'refund_policy',
-					'refund_refusal_explanation',
-					'cancellation_policy',
-					'cancellation_rebuttal',
-					'customer_signature',
-					'customer_purchase_ip',
-					'uncategorized_file',
-					'uncategorized_text',
-				],
+				keys: WIZARD_SUBMITTABLE_EVIDENCE_KEYS,
 				max: 0,
 			},
 		},
