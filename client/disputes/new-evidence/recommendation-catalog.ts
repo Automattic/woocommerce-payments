@@ -347,7 +347,10 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 		},
 	},
 
-	// ============ CLUSTER 6: cancellation policy (2 of 2 fields; see header note) ============
+	// ============ CLUSTER 6: cancellation policy ============
+	// Predicates here check both `cancellation_policy` and `cancellation_rebuttal`
+	// with `min: 2` — i.e. both fields must satisfy the underlying state
+	// (provided or missing) for the entry to fire.
 	{
 		id: 'c6-cancellation-provided',
 		urgency: 'positive',

@@ -140,12 +140,14 @@ export interface EvidenceFieldStatus {
 export type RecommendationOutcome = 'could_help' | 'keep_doing';
 
 /**
- * Visual urgency of a recommendation. Drives the leading icon color and
- * which card section the entry renders under (title text color stays the
+ * Visual urgency of a recommendation. Drives the leading icon (shape + color)
+ * and which card section the entry renders under (title text color stays the
  * same across all urgencies; only the icon and section reflect urgency).
- *   - `critical` (red):   "fix this next time" — high-lift gap on a lost dispute.
- *   - `tip`      (orange): "would have made the case stronger" — soft suggestion.
- *   - `positive` (green): "you did this right" — reinforcement.
+ *   - `critical` (amber, `caution`):   "fix this next time" — high-lift gap on a lost dispute.
+ *   - `tip`      (amber, `caution`):   "would have made the case stronger" — soft suggestion.
+ *   - `positive` (green, `published`): "you did this right" — reinforcement.
+ *
+ * No red: recommendations coach, they don't flag errors (design 2026-05-26).
  */
 export type RecommendationUrgency = 'critical' | 'positive' | 'tip';
 

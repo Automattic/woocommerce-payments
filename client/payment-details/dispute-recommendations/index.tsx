@@ -136,12 +136,20 @@ const renderSection = (
 					<ExternalLink
 						className="dispute-recommendations-card__learn-more"
 						href={ learnMoreHref }
-						aria-label={ __(
-							'Learn more about managing payment disputes',
-							'woocommerce-payments'
-						) }
 					>
 						{ __( 'Learn more', 'woocommerce-payments' ) }
+						{ /* SR-only context. Setting `aria-label` would
+						     override the whole accessible name and drop
+						     ExternalLink's built-in "(opens in a new tab)"
+						     suffix; adding a VisuallyHidden child instead
+						     keeps both. */ }
+						<VisuallyHidden>
+							{ ' ' +
+								__(
+									'about managing payment disputes',
+									'woocommerce-payments'
+								) }
+						</VisuallyHidden>
 					</ExternalLink>
 				) }
 			</div>

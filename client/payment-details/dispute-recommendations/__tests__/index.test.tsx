@@ -235,20 +235,21 @@ describe( 'DisputeRecommendationsCard', () => {
 				evidence: { receipt: 'r' },
 			} );
 
-			const { container } = render(
-				<DisputeRecommendationsCard dispute={ dispute } />
-			);
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
-			const section = container.querySelector(
-				'.dispute-recommendations-card__section'
-			);
+			// Each recommendation renders as an <article>; <details> wraps the
+			// overflow. Count articles outside any <details> to assert the cap
+			// without binding to private BEM class names or :scope direct-
+			// child structure.
+			const heading = screen.getByRole( 'heading', {
+				name: /what could help next time/i,
+			} );
+			const section = heading.closest( 'section' );
 			expect( section ).not.toBeNull();
-			// Direct children of the section that are recommendation items
-			// (excludes the <details> show-more, which wraps the rest).
-			const inlineItems = section?.querySelectorAll(
-				':scope > .dispute-recommendations__item'
-			);
-			expect( inlineItems?.length ).toBe( 3 );
+			const inlineItems = within( section as HTMLElement )
+				.getAllByRole( 'article' )
+				.filter( ( el ) => ! el.closest( 'details' ) );
+			expect( inlineItems ).toHaveLength( 3 );
 		} );
 
 		it( 'wraps overflow entries beyond 3 in a <details> show-more disclosure', () => {

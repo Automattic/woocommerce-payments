@@ -1,5 +1,13 @@
 /** @format */
 
+// Higher-contrast tints for the urgency icons. The icon shape is the sole
+// non-text differentiator of section type, so the color must satisfy WCAG
+// 1.4.11 (3:1 against background). The WP base-styles defaults fall below
+// that on white: `$alert-green` (#4ab866) ≈ 2.24:1, `$alert-yellow`
+// (#f0b849) ≈ 1.76:1. These darker variants land safely above 3:1.
+$rec-strength-color: #007017; // ≈ 5.5:1 on white
+$rec-coaching-color: #9a6700; // ≈ 4.6:1 on white
+
 .dispute-recommendations-card {
 	// The accordion shell (.wcpay-accordion) supplies the card border, radius
 	// and padding; the section heading is now the accordion header. It is not a
@@ -66,14 +74,34 @@
 			color: $studio-blue-50;
 			user-select: none;
 			list-style: none;
+			display: inline-flex;
+			align-items: center;
+			gap: $grid-unit-05;
 
 			&::-webkit-details-marker {
 				display: none;
 			}
 
+			// CSS chevron so sighted users can read this as a toggle, not a
+			// navigation link. Rotates 180° on open.
+			&::before {
+				content: '';
+				display: inline-block;
+				width: 0;
+				height: 0;
+				border-left: 4px solid transparent;
+				border-right: 4px solid transparent;
+				border-top: 5px solid currentColor;
+				transition: transform 0.15s ease;
+			}
+
 			&:hover {
 				color: $studio-blue-60;
 			}
+		}
+
+		&[open] > summary::before {
+			transform: rotate( -180deg );
 		}
 	}
 }
@@ -92,14 +120,15 @@
 
 	// Color lives on the leading icon, not the title. No red: recommendations
 	// coach, they don't flag errors (design review 2026-05-26). Strengths are
-	// green; all coaching (critical + tip) is amber.
+	// green; all coaching (critical + tip) is amber. Tints are file-local
+	// high-contrast variants (see top-of-file rationale).
 	&--positive .dispute-recommendations__icon {
-		color: $alert-green;
+		color: $rec-strength-color;
 	}
 
 	&--critical .dispute-recommendations__icon,
 	&--tip .dispute-recommendations__icon {
-		color: $alert-yellow;
+		color: $rec-coaching-color;
 	}
 }
 
