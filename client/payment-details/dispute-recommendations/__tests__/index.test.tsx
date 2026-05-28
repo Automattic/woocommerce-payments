@@ -10,6 +10,8 @@ import { render, screen, within } from '@testing-library/react';
  * Internal dependencies
  */
 import DisputeRecommendationsCard from '../index';
+import { getRecommendations } from 'wcpay/disputes/new-evidence/recommendations';
+import { RECOMMENDATIONS_CATALOG } from 'wcpay/disputes/new-evidence/recommendation-catalog';
 import type { ChargeDispute } from 'wcpay/types/charges';
 
 const buildDispute = (
@@ -116,11 +118,27 @@ describe( 'DisputeRecommendationsCard', () => {
 			// Won + PNR + physical with every applicable field provided:
 			// positives fire, but every Tip's `requireMissing` clause fails →
 			// only the "What's working well" section renders.
-			render(
-				<DisputeRecommendationsCard
-					dispute={ wonPhysicalFullEvidence() }
-				/>
-			);
+			const dispute = wonPhysicalFullEvidence();
+
+			// Invariant guard: the rest of this test depends on the fixture
+			// satisfying every requireMissing clause for won/PNR/physical.
+			// If a new catalog entry introduces a key the fixture doesn't
+			// cover, fail here with the offending ids — clearer than the
+			// "unexpected heading" failure below.
+			const unexpected = getRecommendations(
+				{
+					reason: dispute.reason,
+					productType: 'physical_product',
+					outcome: 'keep_doing',
+					evidence: dispute.evidence,
+				},
+				RECOMMENDATIONS_CATALOG
+			)
+				.filter( ( r ) => r.urgency !== 'positive' )
+				.map( ( r ) => r.id );
+			expect( unexpected ).toEqual( [] );
+
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
 			expect(
 				screen.getByRole( 'heading', {
