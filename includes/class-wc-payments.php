@@ -608,6 +608,15 @@ class WC_Payments {
 		self::$token_service->init_hooks();
 		self::$fee_remediation->init();
 
+		// Woo Shopping Network Hub — feature-flagged off by default. Registers REST
+		// controllers under wc/v3/payments/wsn/*. The admin menu entry lives in
+		// WC_Payments_Admin::add_payments_menu() and the React app is registered by
+		// client/index.js via the woocommerce_admin_pages_list filter.
+		if ( WC_Payments_Features::is_wsn_hub_enabled() ) {
+			require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-hub.php';
+			( new WSN_Hub() )->init_hooks();
+		}
+
 		$payment_methods = [];
 
 		$registry = PaymentMethodDefinitionRegistry::instance();

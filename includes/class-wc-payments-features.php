@@ -34,6 +34,7 @@ class WC_Payments_Features {
 	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 	const MC_CACHE_OPTIMIZED_FLAG_NAME                        = '_wcpay_feature_mc_cache_optimized';
 	const REPORTS_AREA_FLAG_NAME                              = '_wcpay_feature_reports_area';
+	const WSN_HUB_FLAG_NAME                                   = '_wcpay_feature_wsn_hub';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -360,6 +361,22 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Woo Shopping Network Hub is enabled. Disabled by default.
+	 *
+	 * The merchant-facing settings surface at wp-admin → WooPayments → Shopping Network.
+	 *
+	 * Default-value rule: option is intentionally left UNSET on plugin activation. Unset
+	 * means "merchant has never visited the Hub" (eligible for onboarding nudges); '0'
+	 * means "merchant explicitly opted out" (leave alone). The distinction matters for
+	 * re-engagement surfaces. Pattern mirrors is_fraud_protection_welcome_tour_dismissed().
+	 *
+	 * @return bool
+	 */
+	public static function is_wsn_hub_enabled(): bool {
+		return '1' === get_option( self::WSN_HUB_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
 	 *
 	 * @return bool
@@ -439,6 +456,7 @@ class WC_Payments_Features {
 				'amazonPay'                                => self::is_amazon_pay_enabled(),
 				'isEceUsingConfirmationTokens'             => self::is_ece_confirmation_tokens_enabled(),
 				'reportsArea'                              => self::is_reports_area_enabled(),
+				'wsnHub'                                   => self::is_wsn_hub_enabled(),
 			]
 		);
 	}
