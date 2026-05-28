@@ -179,13 +179,19 @@ class WSN_Hub {
 			return;
 		}
 
+		// Hoist the path-root allowlist out of the per-callback loop. A typical WP
+		// admin page has 20–30 admin_notices callbacks; without this hoist we'd
+		// rebuild the same normalized-path array (and run wp_normalize_path() 4–5
+		// times) on every iteration.
+		$path_roots = $this->first_party_path_roots();
+
 		foreach ( [ 'admin_notices', 'all_admin_notices', 'user_admin_notices', 'network_admin_notices' ] as $hook ) {
 			if ( empty( $wp_filter[ $hook ] ) ) {
 				continue;
 			}
 			foreach ( $wp_filter[ $hook ]->callbacks as $priority => $callbacks ) {
 				foreach ( $callbacks as $id => $callback_data ) {
-					if ( ! $this->is_first_party_notice_callback( $callback_data['function'] ?? null ) ) {
+					if ( ! $this->is_first_party_notice_callback( $callback_data['function'] ?? null, $path_roots ) ) {
 						unset( $wp_filter[ $hook ]->callbacks[ $priority ][ $id ] );
 					}
 				}
@@ -201,12 +207,19 @@ class WSN_Hub {
 	 * failure errs on the side of KEEPING the callback (better to show a noisy notice
 	 * than hide one that might be important).
 	 *
-	 * @param mixed $callback The hook callback (string function, [class, method], or Closure).
+	 * @param mixed         $callback   The hook callback (string function, [class, method], or Closure).
+	 * @param string[]|null $path_roots Pre-computed allowlist of normalized path-root prefixes.
+	 *                                  Pass from the caller to avoid rebuilding per callback.
+	 *                                  Defaults to first_party_path_roots() for backwards-compatible direct calls.
 	 * @return bool True if the callback should be kept, false to remove it.
 	 */
-	private function is_first_party_notice_callback( $callback ): bool {
+	private function is_first_party_notice_callback( $callback, ?array $path_roots = null ): bool {
 		if ( null === $callback ) {
 			return true;
+		}
+
+		if ( null === $path_roots ) {
+			$path_roots = $this->first_party_path_roots();
 		}
 
 		try {
@@ -227,7 +240,7 @@ class WSN_Hub {
 
 			$normalized = wp_normalize_path( $file );
 
-			foreach ( $this->first_party_path_roots() as $root ) {
+			foreach ( $path_roots as $root ) {
 				if ( '' !== $root && 0 === strpos( $normalized, $root ) ) {
 					return true;
 				}

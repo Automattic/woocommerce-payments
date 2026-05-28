@@ -158,14 +158,26 @@ class WSN_Settings {
 	/**
 	 * Sets (or clears) the hero banner attachment ID.
 	 *
+	 * Validates that the input ID resolves to an image attachment (post_type=attachment
+	 * with an image/* mime type). Non-image IDs are rejected without persisting — this
+	 * prevents a manage_woocommerce user from storing arbitrary post IDs (private
+	 * pages, drafts) which would then leak through the `wcpay_wsn_profile_changed`
+	 * action payload and the GET /settings response. Mirrors the validation pattern
+	 * in set_refund_page_id().
+	 *
 	 * @param int|null $attachment_id Attachment ID, or null to clear.
+	 * @return bool True if accepted (or cleared), false if the ID didn't resolve to an image attachment.
 	 */
-	public static function set_hero_image_id( ?int $attachment_id ): void {
+	public static function set_hero_image_id( ?int $attachment_id ): bool {
 		if ( null === $attachment_id || $attachment_id <= 0 ) {
 			delete_option( self::OPTION_HERO_IMAGE_ID );
-			return;
+			return true;
+		}
+		if ( ! wp_attachment_is_image( $attachment_id ) ) {
+			return false;
 		}
 		update_option( self::OPTION_HERO_IMAGE_ID, $attachment_id, false );
+		return true;
 	}
 
 	/**
@@ -185,16 +197,23 @@ class WSN_Settings {
 	/**
 	 * Sets (or clears) the logo override.
 	 *
-	 * Null deletes the option, restoring the default site-logo behavior.
+	 * Null deletes the option, restoring the default site-logo behavior. Non-null
+	 * IDs must resolve to image attachments — see set_hero_image_id() for the
+	 * security rationale.
 	 *
 	 * @param int|null $attachment_id Attachment ID, or null to revert to the site logo.
+	 * @return bool True if accepted (or cleared), false if the ID didn't resolve to an image attachment.
 	 */
-	public static function set_logo_override_id( ?int $attachment_id ): void {
+	public static function set_logo_override_id( ?int $attachment_id ): bool {
 		if ( null === $attachment_id || $attachment_id <= 0 ) {
 			delete_option( self::OPTION_LOGO_OVERRIDE_ID );
-			return;
+			return true;
+		}
+		if ( ! wp_attachment_is_image( $attachment_id ) ) {
+			return false;
 		}
 		update_option( self::OPTION_LOGO_OVERRIDE_ID, $attachment_id, false );
+		return true;
 	}
 
 	/**

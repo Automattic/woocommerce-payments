@@ -197,6 +197,74 @@ class WSN_Settings_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( WSN_Settings::get_refund_page_id() );
 	}
 
+	public function test_set_hero_image_id_rejects_post_that_is_not_an_attachment() {
+		$page_id = $this->factory->post->create(
+			[
+				'post_type'   => 'page',
+				'post_status' => 'publish',
+			]
+		);
+		$this->assertFalse( WSN_Settings::set_hero_image_id( $page_id ) );
+		$this->assertNull( WSN_Settings::get_hero_image_id() );
+	}
+
+	public function test_set_hero_image_id_rejects_non_image_attachment() {
+		// Attachments that aren't images (e.g., PDF) must also be rejected.
+		$pdf_attachment = $this->factory->attachment->create_object(
+			[
+				'file'           => 'fake.pdf',
+				'post_mime_type' => 'application/pdf',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		$this->assertFalse( WSN_Settings::set_hero_image_id( $pdf_attachment ) );
+		$this->assertNull( WSN_Settings::get_hero_image_id() );
+	}
+
+	public function test_set_hero_image_id_accepts_image_attachment() {
+		$image_attachment = $this->factory->attachment->create_object(
+			[
+				'file'           => 'fake.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		$this->assertTrue( WSN_Settings::set_hero_image_id( $image_attachment ) );
+		$this->assertSame( $image_attachment, WSN_Settings::get_hero_image_id() );
+	}
+
+	public function test_set_hero_image_id_with_null_clears_option() {
+		$image_attachment = $this->factory->attachment->create_object(
+			[
+				'file'           => 'fake.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		WSN_Settings::set_hero_image_id( $image_attachment );
+		$this->assertTrue( WSN_Settings::set_hero_image_id( null ) );
+		$this->assertNull( WSN_Settings::get_hero_image_id() );
+	}
+
+	public function test_set_logo_override_id_rejects_non_image_attachment() {
+		// set_logo_override_id shares its validation with set_hero_image_id — one
+		// representative test covers the contract; per-shape coverage of attachment
+		// vs page vs PDF is exercised on set_hero_image_id above.
+		$pdf_attachment = $this->factory->attachment->create_object(
+			[
+				'file'           => 'fake.pdf',
+				'post_mime_type' => 'application/pdf',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		$this->assertFalse( WSN_Settings::set_logo_override_id( $pdf_attachment ) );
+		$this->assertNull( WSN_Settings::get_logo_override_id() );
+	}
+
 	public function test_get_all_returns_expected_shape_when_everything_is_unset() {
 		$all = WSN_Settings::get_all();
 		$this->assertSame(

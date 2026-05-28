@@ -18,10 +18,21 @@ defined( 'ABSPATH' ) || exit;
  * operations are local wp_options reads/writes — there's no WC_Payments_API_Client
  * dependency to inject.
  *
- * PUT semantics: accepts any subset of the settings keys. Each key is independently
- * validated; one invalid value does NOT block sibling updates. After persisting,
- * if any Profile-tab field changed, fires the `wcpay_wsn_profile_changed` action so
- * the outbound emitter (RSM-3945) can react.
+ * PUT semantics: accepts any subset of the settings keys. Validation runs in two tiers:
+ *
+ * 1. WP REST's `args` schema (enum/format/type) runs `rest_validate_request_arg` BEFORE
+ *    the callback executes. Failures here return 400 and reject the entire request —
+ *    sibling fields are NOT persisted. Fields validated at this tier: `visibility_mode`
+ *    (enum), `contact_email` (format=email), and all type declarations.
+ *
+ * 2. Setter-level rejections inside the callback (e.g., `visibility_product_ids` over
+ *    cap, `refund_page_id` not pointing to a published page, `hero_image_id` /
+ *    `logo_override_id` not resolving to image attachments) collect errors per-field
+ *    and return 422 — sibling fields that succeeded ARE persisted, and the response
+ *    body's `errors` map carries per-field detail.
+ *
+ * After persisting, if any Profile-tab field changed, fires the `wcpay_wsn_profile_changed`
+ * action so the outbound emitter (RSM-3945) can react.
  */
 class WC_REST_Payments_WSN_Settings_Controller extends WP_REST_Controller {
 
@@ -150,12 +161,16 @@ class WC_REST_Payments_WSN_Settings_Controller extends WP_REST_Controller {
 
 		if ( $request->has_param( 'hero_image_id' ) ) {
 			$hero_id = $request->get_param( 'hero_image_id' );
-			WSN_Settings::set_hero_image_id( null === $hero_id ? null : (int) $hero_id );
+			if ( ! WSN_Settings::set_hero_image_id( null === $hero_id ? null : (int) $hero_id ) ) {
+				$errors['hero_image_id'] = __( 'Hero image must reference an image attachment.', 'woocommerce-payments' );
+			}
 		}
 
 		if ( $request->has_param( 'logo_override_id' ) ) {
 			$logo_id = $request->get_param( 'logo_override_id' );
-			WSN_Settings::set_logo_override_id( null === $logo_id ? null : (int) $logo_id );
+			if ( ! WSN_Settings::set_logo_override_id( null === $logo_id ? null : (int) $logo_id ) ) {
+				$errors['logo_override_id'] = __( 'Logo override must reference an image attachment.', 'woocommerce-payments' );
+			}
 		}
 
 		if ( $request->has_param( 'contact_email' ) ) {

@@ -112,19 +112,53 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $response->get_data()['settings']['enabled'] );
 	}
 
-	public function test_put_validation_failure_returns_422_with_partial_writes_applied() {
+	public function test_put_schema_enum_rejection_blocks_entire_request_with_400() {
 		$this->authenticate_as_shop_manager();
+
+		// Validation in this controller is two-tier: WP REST's `args` schema runs
+		// `rest_validate_request_arg` BEFORE our callback. Fields with `enum` (like
+		// visibility_mode) and `format` (like contact_email) are rejected at the
+		// schema layer with a 400 — the callback never executes, so sibling fields
+		// in the same request don't get written. The 422 partial-write path
+		// (defined in update_settings()) is only reachable for setter-level
+		// rejections; see test_put_setter_rejection_returns_422_with_partial_writes
+		// below for that contract.
+		$request = new WP_REST_Request( 'PUT', self::ROUTE );
+		$request->set_param( 'enabled', true );
+		$request->set_param( 'visibility_mode', 'rubbish' ); // Invalid enum value.
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 400, $response->get_status() );
+		// `enabled` was NOT written because the whole request rejected at schema time.
+		$this->assertFalse( WSN_Settings::is_enabled() );
+	}
+
+	public function test_put_setter_rejection_returns_422_with_partial_writes() {
+		$this->authenticate_as_shop_manager();
+
+		// visibility_product_ids has no schema-level cap; the cap is enforced inside
+		// the setter (WSN_Settings::MAX_SPECIFIC_PRODUCT_IDS). When the setter
+		// rejects, the callback returns 422 — sibling fields that succeeded ARE
+		// persisted. This is the partial-write contract the controller docblock
+		// promises and that the 422 branch in update_settings() implements.
+		$over_cap = range( 1, WSN_Settings::MAX_SPECIFIC_PRODUCT_IDS + 1 );
 
 		$request = new WP_REST_Request( 'PUT', self::ROUTE );
 		$request->set_param( 'enabled', true );
-		$request->set_param( 'visibility_mode', 'rubbish' ); // Invalid — schema enum check rejects pre-callback.
+		$request->set_param( 'visibility_product_ids', $over_cap );
 		$response = rest_get_server()->dispatch( $request );
 
-		// rest_validate_request_arg fires before our callback, so this is rejected as 400 by the schema layer.
-		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 422, $response->get_status() );
 
-		// Schema rejection should NOT have written `enabled` either (single rejected param fails the whole PUT).
-		$this->assertFalse( WSN_Settings::is_enabled() );
+		// The sibling field DID persist (partial-write contract).
+		$this->assertTrue( WSN_Settings::is_enabled() );
+		// The rejected field did NOT persist.
+		$this->assertSame( [], WSN_Settings::get_visibility_product_ids() );
+		// The 422 body carries field-level error details.
+		$data = $response->get_error_data();
+		$this->assertArrayHasKey( 'body', $data );
+		$this->assertArrayHasKey( 'errors', $data['body'] );
+		$this->assertArrayHasKey( 'visibility_product_ids', $data['body']['errors'] );
 	}
 
 	public function test_put_fires_profile_changed_when_profile_field_changes() {
