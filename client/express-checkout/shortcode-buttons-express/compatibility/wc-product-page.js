@@ -28,6 +28,7 @@ jQuery( ( $ ) => {
 	);
 	if ( blockRoot ) {
 		const updateButtonData = debounce( 250, () => {
+			console.log( ' >>> updateButtonData ' );
 			doAction( 'wcpay.express-checkout.update-button-data' );
 		} );
 

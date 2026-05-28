@@ -128,9 +128,10 @@ const useExpressCheckoutProductHandler = ( api ) => {
 			// fully resolved.
 			data.product_id = iapiVariationId;
 		} else if ( variation && ! bundleForm ) {
-			data.product_id = variation.querySelector(
-				'input[name="product_id"]'
-			).value;
+			data.product_id = parseInt(
+				variation.querySelector( 'input[name="product_id"]' ).value,
+				10
+			);
 			data.attributes = document.querySelector( '.variations_form' )
 				? getAttributes()
 				: [];
