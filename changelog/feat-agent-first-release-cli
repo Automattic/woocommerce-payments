@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Add agent-first release CLI: bump-version.sh, validate-release-branch.sh, release-status.sh, idempotent post-release workflow, Gutenberg version constants action, and --json modes for QIT security and phpstan wrappers.

@@ -130,8 +130,9 @@ WooPayments integrates with WooCommerce core via hooks, filters, and APIs.
 ```bash
 npm install                         # Install dependencies
 npm start                           # Watch JS changes (alias: npm run watch)
+npm run watch                       # Rebuild assets while developing locally
 npm run hmr                         # Hot module replacement server
-npm run up                          # Start Docker environment
+npm run up                          # Start Docker environment at http://localhost:8082
 npm run dev                         # Start Docker + watch mode
 ```
 
@@ -258,8 +259,10 @@ git -C /path/to/main/repo merge worktree-feat/branch-name
 | MySQL | `localhost:5678` |
 
 - First-time: `npm run up:recreate`
-- Subsequent: `npm run up`
+- Subsequent: `npm run up` brings the local WordPress server up at `http://localhost:8082` by default.
+- When testing local frontend/admin UI changes, run `npm run watch` so built assets are regenerated.
 - Xdebug ready (requires IDE path mapping)
+- Local WP admin credentials are `admin` / `admin`. Do **not** change the local admin password with `wp user update admin --user_pass=...` unless explicitly requested. If browser/MCP login fails, ask before resetting credentials.
 
 ## Jurassic Tube (SSH Tunnels)
 
@@ -371,7 +374,10 @@ Skip persisting trivial lookups, single-file reads, simple Q&A.
 
 - Prefer editing existing files over creating new ones
 - Check both `src/` and `includes/` when searching for PHP code
+- New PHP code in `src/` must follow PSR-4 class/file naming and existing folder conventions. Prefer `WCPay\Internal\Service\PascalCaseService` in `src/Internal/Service/`, register services in the appropriate `src/Internal/DependencyManagement/ServiceProvider/*ServiceProvider.php`, resolve them through `wcpay_get_container()` from legacy `includes/` code, and place matching tests under `tests/unit/src/...` with namespaced PascalCase test classes.
 - React components follow WordPress patterns (@wordpress packages)
+- Prefer TypeScript for new client code where possible (`.ts`/`.tsx` over `.js`/`.jsx`), especially for new React components and shared data/types.
+- For client UI changes, reuse existing WooPayments/WooCommerce components, typography, spacing, colors, and interaction patterns where appropriate; check nearby screens/components before introducing custom styles so new UI remains visually consistent with the rest of the client.
 - PHP tests require Docker — ensure it's running before executing
 - Always push only current branch: `git push origin HEAD`
 - Always pull with rebase: `git pull origin $(git branch --show-current) --rebase`

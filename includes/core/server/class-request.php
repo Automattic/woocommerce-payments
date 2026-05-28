@@ -142,6 +142,7 @@ abstract class Request {
 		WC_Payments_API_Client::REFUNDS_API                => 'refunds',
 		WC_Payments_API_Client::DEPOSITS_API               => 'deposits',
 		WC_Payments_API_Client::TRANSACTIONS_API           => 'transactions',
+		WC_Payments_API_Client::REPORTING_API              => 'reporting',
 		WC_Payments_API_Client::DISPUTES_API               => 'disputes',
 		WC_Payments_API_Client::FILES_API                  => 'files',
 		WC_Payments_API_Client::ONBOARDING_API             => 'onboarding',
@@ -806,6 +807,31 @@ abstract class Request {
 				'wcpay_core_invalid_request_parameter_invalid_date'
 			);
 		}
+	}
+
+	/**
+	 * Validates a REST API date-time value.
+	 *
+	 * @param string $date_time Date-time value.
+	 *
+	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception When the date-time value is invalid.
+	 */
+	public function validate_rest_date_time( string $date_time ) {
+		if ( false !== rest_parse_date( $date_time ) ) {
+			return;
+		}
+
+		throw new Invalid_Request_Parameter_Exception(
+			esc_html(
+				sprintf(
+				// Translators: %s is a date-time string.
+					__( '%s is not a valid date-time value.', 'woocommerce-payments' ),
+					$date_time
+				)
+			),
+			'wcpay_core_invalid_request_parameter_invalid_date_time'
+		);
 	}
 
 	/**

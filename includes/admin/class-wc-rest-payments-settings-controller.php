@@ -913,7 +913,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			delete_option( 'wcpay_next_deposit_notice_dismissed' );
 		}
 
-		return $this->wcpay_gateway->update_account_settings( $updated_fields );
+		$result = $this->wcpay_gateway->update_account_settings( $updated_fields );
+
+		if ( is_wp_error( $result ) || empty( $result ) || ! is_array( $result ) ) {
+			return $result;
+		}
+
+		foreach ( $result as $account_key => $value ) {
+			$this->wcpay_gateway->update_cached_account_data( $account_key, $value );
+		}
+
+		if ( array_key_exists( 'statement_descriptor', $result ) ) {
+			delete_option( \WCPay\Internal\Service\DisputeReadinessService::STATEMENT_DESCRIPTOR_CONFIRMATION_OPTION );
+		}
+
+		return $result;
 	}
 
 	/**

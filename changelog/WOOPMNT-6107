@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix WooPay input background matching page background on block themes that don't define explicit input element styles

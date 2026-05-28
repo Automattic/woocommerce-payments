@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Add DISPUTE_HIGH_IMPACT_FIELDS and DISPUTE_TOPICAL_FIELDS maps (both keyed by reason and product type) and getExpectedFieldStatus helper to support the dispute outcome view evidence importance rendering.

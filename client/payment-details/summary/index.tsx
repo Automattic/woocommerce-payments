@@ -6,7 +6,7 @@
 import { __ } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
@@ -65,6 +65,8 @@ import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-noti
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import DisputeRecommendationsCard from '../dispute-recommendations';
+import { recordOutcomeViewOnce } from '../dispute-outcome/tracks';
+import { resolveProductType } from 'wcpay/disputes/new-evidence/resolve-product-type';
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import {
@@ -854,6 +856,34 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
 		( dispute.status === 'won' || dispute.status === 'lost' ) &&
 		dispute.metadata?.__closed_by_merchant !== '1';
+
+	// Outcome View Tracks event: fires once per dispute per page session.
+	// Gating matches the original DisputeOutcomeView path (won/lost/
+	// warning_closed + flag), so the analytics signal stays stable even
+	// though the standalone component is gone. Dedup is module-scoped in
+	// `recordOutcomeViewOnce`.
+	const isOutcomeViewStatus =
+		dispute?.status === 'won' ||
+		dispute?.status === 'lost' ||
+		dispute?.status === 'warning_closed';
+	const shouldRecordOutcomeView =
+		!! dispute &&
+		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
+		isOutcomeViewStatus;
+	const productType = dispute
+		? resolveProductType(
+				dispute.metadata,
+				dispute.order?.suggested_product_type,
+				wcpaySettings?.featureFlags
+					?.isDisputeAdditionalEvidenceTypesEnabled ?? false
+		  )
+		: undefined;
+
+	useEffect( () => {
+		if ( shouldRecordOutcomeView && dispute ) {
+			recordOutcomeViewOnce( dispute, productType );
+		}
+	}, [ shouldRecordOutcomeView, dispute, productType ] );
 
 	return (
 		<WCPaySettingsContext.Provider value={ window.wcpaySettings }>
