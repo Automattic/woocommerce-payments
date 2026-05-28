@@ -6,16 +6,38 @@
  * styles can't express: focus-visible states, media queries, and tab-nav chrome.
  */
 
+// Full-bleed treatment for the WSN Hub admin page.
+//
+// WP admin's default chrome puts the page content inside `.wrap` which carries
+// `margin: 10px 20px 0 2px` plus #wpbody-content's `padding-bottom: 65px`. On a
+// branded immersive surface that creates a visible gray "gutter" around the
+// content — fine for traditional settings pages but it makes the WSN Hub look
+// like a card floating inside the admin area instead of taking it over.
+//
+// Body-scoped via :has() so other admin pages keep their default chrome.
+body:has( .wcpay-wsn-hub ) {
+	#wpbody-content {
+		padding-bottom: 0;
+	}
+
+	.wrap {
+		margin: 0;
+		padding: 0;
+	}
+}
+
 .wcpay-wsn-hub {
 	background: #fff;
+	min-height: calc( 100vh - 32px ); // 32px = WP admin bar height
+	box-sizing: border-box;
 
-	// TabPanel chrome: WP admin gives <TabPanel> default borders we want to
-	// flatten so the tab nav reads as part of the page header strip rather
-	// than a separate card.
+	// TabPanel chrome: flatten WP admin's default borders so the tab nav reads
+	// as part of the page header strip rather than a separate card. No negative
+	// horizontal margin here — .wrap no longer has 20px padding to bleed
+	// against, so the tab strip already fills the content area edge-to-edge.
 	.components-tab-panel__tabs {
 		border-bottom: 1px solid #e0e0e0;
 		padding: 0 32px;
-		margin: 0 -20px;
 	}
 
 	.components-tab-panel__tabs-item {
