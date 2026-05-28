@@ -31,13 +31,14 @@ body:has( .wcpay-wsn-hub ) {
 	min-height: calc( 100vh - 32px ); // 32px = WP admin bar height
 	box-sizing: border-box;
 
-	// TabPanel chrome: flatten WP admin's default borders so the tab nav reads
-	// as part of the page header strip rather than a separate card. No negative
-	// horizontal margin here — .wrap no longer has 20px padding to bleed
-	// against, so the tab strip already fills the content area edge-to-edge.
+	// TabPanel chrome: flatten WP admin's default borders + reset top spacing
+	// so the tab strip sits directly under the PageHeader with no gap. The
+	// 32px padding aligns with the PageHeader's 32px text-block padding so the
+	// tab text and the header title line up at the same x-coordinate.
 	.components-tab-panel__tabs {
 		border-bottom: 1px solid #e0e0e0;
 		padding: 0 32px;
+		margin: 0;
 	}
 
 	.components-tab-panel__tabs-item {

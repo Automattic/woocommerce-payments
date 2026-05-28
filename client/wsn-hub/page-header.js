@@ -40,14 +40,19 @@ const WsnLogo = () => (
 	</svg>
 );
 
+// The header sits flush within its containing .wrap (which we reset to zero
+// margin/padding via style.scss — see the body:has(.wcpay-wsn-hub) rules).
+// No negative horizontal margin is needed here because there's no .wrap
+// padding to bleed against; the header already fills the content area
+// edge-to-edge. borderBottom='none' because the TabPanel strip below
+// owns the divider line (matches AI Storefront's `withNavSlot` treatment).
 const PageHeader = () => (
 	<header
 		className="wcpay-wsn-hub__page-header"
 		style={ {
 			padding: '8px 32px 19px',
-			margin: '0 -20px',
 			background: colors.surface,
-			borderBottom: `1px solid ${ colors.borderSubtle }`,
+			borderBottom: 'none',
 		} }
 		aria-hidden="true"
 	>
