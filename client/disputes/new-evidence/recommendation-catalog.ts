@@ -15,9 +15,12 @@ import type { Recommendation } from './types';
  *   - title + body: copy that renders verbatim (voice rules: softer
  *     evidence language, single-sentence bodies, no em-dashes). Wrapped in
  *     `__()` so the strings are translatable.
- *   - urgency: drives the leading icon color and section grouping.
- *     `positive` (green) → "What's working well" section.
- *     `critical` (red) + `tip` (orange) → "What could help next time".
+ *   - urgency: drives the leading icon and section grouping.
+ *     `positive` (green `published` checkmark) → "What's working well".
+ *     `critical` + `tip` (amber `caution`) → "What could help next time".
+ *     `critical` and `tip` render identically; the split exists so the
+ *     runtime/snapshot can still distinguish lift-bearing recommendations
+ *     from softer tips for analytics and ordering.
  *   - when: predicates the runtime helper checks against the dispute.
  *     `requireProvided` / `requireMissing` are count predicates over a
  *     key set (`min`/`max` inclusive; see `FieldCountPredicate` and
