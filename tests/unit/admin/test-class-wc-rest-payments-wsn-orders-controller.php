@@ -29,6 +29,13 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Clear any transient cache the previous test's tear_down may have
+		// missed (defense-in-depth — PHPUnit fixture lifecycles can be
+		// affected by test isolation modes and a persistent object cache
+		// can outlive a single tear_down). Doing the clear in both set_up
+		// AND tear_down ensures every test starts with a cold cache.
+		$this->flush_transient_cache();
+
 		// Register routes via the rest_api_init hook — WP 6.0+ throws _doing_it_wrong
 		// for any direct register_rest_route() call outside that hook.
 		add_action( 'rest_api_init', [ $this, 'register_routes_for_test' ] );
@@ -49,14 +56,20 @@ class WC_REST_Payments_WSN_Orders_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		remove_action( 'rest_api_init', [ $this, 'register_routes_for_test' ] );
 		wp_set_current_user( 0 );
-		// Flush the orders-controller transient cache between tests so each
-		// scenario sees a fresh query path.
+		$this->flush_transient_cache();
+		parent::tear_down();
+	}
+
+	/**
+	 * Delete every period-keyed orders transient. Called from BOTH set_up
+	 * and tear_down so a leaked cache can't pollute the next test.
+	 */
+	private function flush_transient_cache(): void {
 		foreach ( array_keys( WC_REST_Payments_WSN_Orders_Controller::PERIOD_SECONDS ) as $period ) {
 			delete_transient(
 				WC_REST_Payments_WSN_Orders_Controller::TRANSIENT_KEY_PREFIX . $period
 			);
 		}
-		parent::tear_down();
 	}
 
 	public function test_get_requires_manage_woocommerce_capability() {

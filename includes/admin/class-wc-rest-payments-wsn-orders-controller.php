@@ -211,35 +211,19 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 	 * `network_orders` stat would be capped at RECENT_ORDERS_LIMIT and misreport
 	 * the merchant's real network attribution volume.
 	 *
-	 * Uses `'return' => 'ids'` + `'limit' => -1` because:
-	 *   - `'paginate' => true` triggers a separate `SQL_CALC_FOUND_ROWS` query
-	 *     plus a hydrated rowset we don't need;
-	 *   - `'return' => 'ids'` skips order hydration entirely (no `WC_Order`
-	 *     objects, no item-cache priming) — much cheaper for a count.
+	 * Reuses fetch_marketplace_orders() with limit=-1 to guarantee identical
+	 * query semantics with the recent-orders fetch. An earlier `'return' => 'ids'`
+	 * variant was correct in principle but tripped a wc_get_orders + meta_query
+	 * filtering edge case in the legacy-CPT (HPOS-disabled) code path. Hydrating
+	 * orders has a perf cost; for MVP it's bounded because no marketplace orders
+	 * exist yet (the expected state for months until WooPay-side Cohort A/B
+	 * tagging ships). Revisit if/when the order volume warrants optimization.
 	 *
 	 * @param int $since Unix timestamp lower bound for `date_created`.
 	 * @return int
 	 */
 	private function count_marketplace_orders( int $since ): int {
-		if ( ! function_exists( 'wc_get_orders' ) ) {
-			return 0;
-		}
-
-		$ids = wc_get_orders(
-			[
-				'limit'        => -1,
-				'return'       => 'ids',
-				'date_created' => '>=' . $since,
-				'meta_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					[
-						'key'     => self::META_IS_MARKETPLACE,
-						'compare' => 'EXISTS',
-					],
-				],
-			]
-		);
-
-		return is_array( $ids ) ? count( $ids ) : 0;
+		return count( $this->fetch_marketplace_orders( $since, -1 ) );
 	}
 
 	/**
