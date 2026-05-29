@@ -20,11 +20,18 @@ const isSubscriptionData = (
 		return subscriptionData.length > 0;
 	}
 
+	if ( typeof subscriptionData !== 'object' || subscriptionData === null ) {
+		return false;
+	}
+
+	const billingPeriod = subscriptionData.billing_period;
+	const billingInterval = subscriptionData.billing_interval;
+
 	return (
-		typeof subscriptionData === 'object' &&
-		subscriptionData !== null &&
-		'billing_period' in subscriptionData &&
-		'billing_interval' in subscriptionData
+		typeof billingPeriod === 'string' &&
+		billingPeriod.length > 0 &&
+		typeof billingInterval === 'number' &&
+		billingInterval > 0
 	);
 };
 

@@ -149,6 +149,26 @@ describe( 'cartHasAnySubscription', () => {
 		).toBe( false );
 	} );
 
+	it( 'returns false when a regular item carries an all-null subscriptions extension', () => {
+		expect(
+			cartHasAnySubscription( {
+				items: [
+					{
+						name: 'Regular Product',
+						extensions: {
+							subscriptions: {
+								billing_period: null,
+								billing_interval: null,
+								trial_length: null,
+							},
+						},
+					},
+				],
+				extensions: {},
+			} )
+		).toBe( false );
+	} );
+
 	it( 'returns false for a regular cart whose items have no subscriptions extension', () => {
 		expect( cartHasAnySubscription( regularCart ) ).toBe( false );
 	} );
