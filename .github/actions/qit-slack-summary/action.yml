@@ -19,7 +19,7 @@ runs:
       env:
         SLACK_TOKEN: ${{ inputs.slack-token }}
         CHANNEL_ID: ${{ inputs.channel-id }}
-        # Reads this run's jobs; the default workflow token has actions:read.
+        # Default token has actions:read for the jobs API.
         GH_TOKEN: ${{ github.token }}
         REPO: ${{ github.repository }}
         RUN_ID: ${{ github.run_id }}
@@ -40,18 +40,15 @@ runs:
         COMMIT_URL="$SERVER_URL/$REPO/commit/$SHA"
         SHORT_SHA="${SHA:0:7}"
 
-        # Fetch the run's jobs. Capture separately rather than piping straight
-        # into the loop: a `gh api` failure inside a process substitution is not
-        # caught by `set -e`/`pipefail`, which would leave COUNT=0 and post a
-        # misleading "0 failures" message during a real failure event.
+        # Capture separately, not `< <(gh api ...)`: a failure inside a process
+        # substitution escapes set -e and would post a bogus "0 failures".
         JOBS_JSON=$(gh api --paginate "repos/$REPO/actions/runs/$RUN_ID/jobs") || {
           echo "::error::Failed to fetch run jobs from the GitHub API; cannot build the failure list."
           exit 1
         }
 
-        # Collect the failed matrix cells (jobs concluding "failure"). @tsv keeps
-        # names with spaces intact; the in-progress summary job has a null
-        # conclusion so it is naturally excluded.
+        # Failed cells only. The summary job's own conclusion is still null, so
+        # it is excluded.
         FAILED_LINES=""
         COUNT=0
         while IFS=$'\t' read -r name url; do
@@ -64,8 +61,7 @@ runs:
         FAILED_LINES="${FAILED_LINES%$'\n'}"
         NOUN=$([ "$COUNT" -eq 1 ] && echo "failure" || echo "failures")
 
-        # Assemble the message body in jq to avoid bash quoting of backticks and
-        # newlines; jq then encodes the real newlines as \n in the payload.
+        # Assemble in jq to avoid bash-quoting backticks/newlines (jq encodes them).
         TEXT=$(jq -n -r \
           --arg wf "$WORKFLOW" --arg count "$COUNT" --arg noun "$NOUN" \
           --arg runurl "$RUN_URL" --arg branch "$BRANCH" \
@@ -74,7 +70,7 @@ runs:
           '":red_circle: *\($wf) — \($count) \($noun)* | <\($runurl)|run>\n`\($branch)` | <\($commiturl)|`\($sha)`>"
            + (if $failed != "" then "\n" + $failed else "" end)')
 
-        # Best-effort join so the bot can post even if it is not yet a member.
+        # Join in case the bot isn't a channel member yet.
         curl -sS -X POST https://slack.com/api/conversations.join \
           -H "Authorization: Bearer $SLACK_TOKEN" \
           -H "Content-type: application/json; charset=utf-8" \
