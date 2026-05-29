@@ -13,6 +13,21 @@ type CartData = {
 	[ key: string ]: unknown;
 };
 
+const isSubscriptionData = (
+	subscriptionData: SubscriptionExtensions[ 'subscriptions' ]
+): boolean => {
+	if ( Array.isArray( subscriptionData ) ) {
+		return subscriptionData.length > 0;
+	}
+
+	return (
+		typeof subscriptionData === 'object' &&
+		subscriptionData !== null &&
+		'billing_period' in subscriptionData &&
+		'billing_interval' in subscriptionData
+	);
+};
+
 /**
  * Checks if the cart contains any subscription schedule (trial or recurring).
  * Detects every cart shape that should trigger `setup_future_usage=off_session`
@@ -44,8 +59,8 @@ export const cartHasAnySubscription = ( cartData?: CartData ): boolean => {
 		return false;
 	}
 
-	return items.some(
-		( item ) => item?.extensions?.subscriptions !== undefined
+	return items.some( ( item ) =>
+		isSubscriptionData( item?.extensions?.subscriptions )
 	);
 };
 

@@ -133,6 +133,22 @@ describe( 'cartHasAnySubscription', () => {
 		).toBe( true );
 	} );
 
+	it( 'returns false when a regular item carries an empty subscriptions extension', () => {
+		expect(
+			cartHasAnySubscription( {
+				items: [
+					{
+						name: 'Regular Product',
+						extensions: {
+							subscriptions: {},
+						},
+					},
+				],
+				extensions: {},
+			} )
+		).toBe( false );
+	} );
+
 	it( 'returns false for a regular cart whose items have no subscriptions extension', () => {
 		expect( cartHasAnySubscription( regularCart ) ).toBe( false );
 	} );
