@@ -239,12 +239,9 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 		).not.toBeVisible();
 	} );
 
-	it( 'should abort the click (not open the wallet) when the cart gained a subscription after page load', async () => {
+	it( 'should initialize Elements with setupFutureUsage when the current cart contains a subscription', async () => {
 		global.wcpayExpressCheckoutParams.has_subscription = false;
 
-		// Cart now contains a subscription (e.g., a variation was switched
-		// after page load), but page-load `has_subscription` was false, so
-		// Elements was mounted without `setupFutureUsage: 'off_session'`.
 		const cartWithSubscription = {
 			...cartWithItemsMock,
 			extensions: {
@@ -272,22 +269,10 @@ describe( 'Tokenized Express Checkout Element - Shortcode checkout page logic', 
 
 		await waitFor( () => expect( global.Stripe ).toHaveBeenCalled() );
 
-		const clickEventResolveMock = jest.fn();
-		stripeElementMock.__getRegisteredEvent( 'click' )( {
-			resolve: clickEventResolveMock,
-			expressPaymentType: 'google_pay',
-		} );
-
-		// The wallet popup must not open.
-		expect( clickEventResolveMock ).not.toHaveBeenCalled();
-
-		// The shopper sees an explanation in the notices wrapper.
-		await waitFor( () =>
-			expect(
-				document.querySelector(
-					'.woocommerce-notices-wrapper .woocommerce-error'
-				)
-			).toHaveTextContent( /subscription/i )
+		expect( stripeInstance.elements ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				setupFutureUsage: 'off_session',
+			} )
 		);
 	} );
 } );

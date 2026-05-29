@@ -24,10 +24,6 @@ import {
 	onReadyHandler,
 } from '../../event-handlers';
 import {
-	getSubscriptionSetupFutureUsageMismatchMessage,
-	shouldAbortForSubscriptionSetupFutureUsageMismatch,
-} from '../../compatibility/wc-subscriptions';
-import {
 	transformCartDataForDisplayItems,
 	transformPrice,
 } from '../../transformers/wc-to-stripe';
@@ -78,24 +74,6 @@ export const useExpressCheckout = ( {
 
 			// Get cart data with extensions for subscription handling
 			const cartData = select( WC_STORE_CART )?.getCartData();
-
-			// When using confirmation tokens, Stripe rejects PaymentIntent
-			// confirmation if the token's collected `setup_future_usage` consent
-			// doesn't match the intent's `setup_future_usage`. The backend forces
-			// `off_session` for any subscription order, so Elements must have been
-			// mounted with `setupFutureUsage: 'off_session'` (gated on
-			// `has_subscription` at page load). If the cart now contains a
-			// subscription but the page-load flag was false (stale due to cart
-			// changes after load), bail out here — before resolving the click
-			// event — so the wallet popup never opens.
-			if (
-				shouldAbortForSubscriptionSetupFutureUsageMismatch( cartData )
-			) {
-				abortPayment(
-					getSubscriptionSetupFutureUsageMismatchMessage()
-				);
-				return;
-			}
 
 			let shippingRates;
 			if ( shippingAddressRequired ) {
@@ -170,7 +148,6 @@ export const useExpressCheckout = ( {
 			shippingData.needsShipping,
 			shippingData.shippingRates,
 			billing.currency.minorUnit,
-			abortPayment,
 		]
 	);
 

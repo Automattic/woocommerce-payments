@@ -14,16 +14,14 @@ import './compatibility/wc-deposits';
 import '../compatibility/wc-order-attribution';
 import './compatibility/wc-product-page';
 import './compatibility/wc-product-bundles';
+import '../compatibility/wc-subscriptions';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	displayLoginConfirmation,
 } from '../utils';
-import {
-	getSubscriptionSetupFutureUsageMismatchMessage,
-	shouldAbortForSubscriptionSetupFutureUsageMismatch,
-} from '../compatibility/wc-subscriptions';
+import { getSetupFutureUsageForCart } from '../utils/subscriptions';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -225,6 +223,15 @@ jQuery( ( $ ) => {
 				getExpressCheckoutData( 'is_manual_capture' ) ?? false;
 			const hasSubscription =
 				getExpressCheckoutData( 'has_subscription' ) ?? false;
+			let setupFutureUsage = hasSubscription ? 'off_session' : null;
+			if (
+				Object.prototype.hasOwnProperty.call(
+					creationOptions,
+					'setupFutureUsage'
+				)
+			) {
+				setupFutureUsage = creationOptions.setupFutureUsage;
+			}
 
 			// Build the payment method types array based on enabled methods.
 			// This array is sent to the server to ensure PaymentIntent uses matching types.
@@ -246,8 +253,8 @@ jQuery( ( $ ) => {
 				...( useConfirmationToken && isManualCaptureEnabled
 					? { captureMethod: 'manual' }
 					: {} ),
-				...( useConfirmationToken && hasSubscription
-					? { setupFutureUsage: 'off_session' }
+				...( useConfirmationToken && setupFutureUsage
+					? { setupFutureUsage }
 					: {} ),
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
@@ -271,27 +278,6 @@ jQuery( ( $ ) => {
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( getExpressCheckoutData( 'login_confirmation' ) ) {
 					displayLoginConfirmation( event.expressPaymentType );
-					return;
-				}
-
-				// When using confirmation tokens, Stripe rejects PaymentIntent
-				// confirmation if the token's collected `setup_future_usage`
-				// consent doesn't match the intent's `setup_future_usage`. The
-				// backend forces `off_session` for any subscription order, so
-				// Elements must have been mounted with
-				// `setupFutureUsage: 'off_session'` (gated on `has_subscription`
-				// at page load). If the cart now contains a subscription but
-				// the page-load flag was false (stale due to variation switch,
-				// cross-sell add, etc.), bail out here — before resolving the
-				// click event — so the wallet popup never opens.
-				if (
-					shouldAbortForSubscriptionSetupFutureUsageMismatch(
-						cachedCartData
-					)
-				) {
-					wcpayECE.abortPayment(
-						getSubscriptionSetupFutureUsageMismatchMessage()
-					);
 					return;
 				}
 
@@ -516,6 +502,8 @@ jQuery( ( $ ) => {
 				await wcpayECE.startExpressCheckoutElement( {
 					total,
 					currency: cachedCartData.totals.currency_code.toLowerCase(),
+					setupFutureUsage:
+						getSetupFutureUsageForCart( cachedCartData ),
 				} );
 			} else if (
 				getExpressCheckoutData( 'button_context' ) === 'product' &&
@@ -570,10 +558,28 @@ jQuery( ( $ ) => {
 						// since the "total" is part of the initialization of the Stripe elements (and not part of the ECE button),
 						// if the totals change, we might need to update it on the element itself.
 						const newTotal = getTotalAmount();
+						const useConfirmationToken =
+							getExpressCheckoutData( 'flags' )
+								?.isEceUsingConfirmationTokens ?? true;
+						const elementsUpdateOptions = {
+							...( useConfirmationToken
+								? {
+										setupFutureUsage:
+											getSetupFutureUsageForCart(
+												cachedCartData
+											),
+								  }
+								: {} ),
+							...( newTotal !== prevTotal && newTotal > 0
+								? { amount: newTotal }
+								: {} ),
+						};
 						if ( ! elements ) {
 							wcpayECE.init();
-						} else if ( newTotal !== prevTotal && newTotal > 0 ) {
-							await elements.update( { amount: newTotal } );
+						} else if (
+							Object.keys( elementsUpdateOptions ).length
+						) {
+							await elements.update( elementsUpdateOptions );
 						}
 
 						// Check if cart is eligible (filter allows extensions to override)

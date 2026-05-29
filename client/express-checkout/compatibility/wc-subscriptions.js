@@ -4,6 +4,11 @@
 import { addFilter } from '@wordpress/hooks';
 import { __, _n, sprintf } from '@wordpress/i18n';
 
+// This module is a side-effect file that registers WC Subscriptions compatibility
+// filters at import time. Do not export generic utilities from here; place pure
+// helpers in `client/express-checkout/utils/` so importing them does not also
+// register these filters.
+//
 // This module is imported by both the shortcode entry point (express-checkout/index.js)
 // and the blocks entry point (express-checkout/blocks/index.js). Because addFilter
 // with the same namespace replaces any previously registered callback, the filters
@@ -13,71 +18,6 @@ import { __, _n, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { transformPrice } from '../transformers/wc-to-stripe';
-import { getExpressCheckoutData, shouldUseConfirmationTokens } from '../utils';
-
-/**
- * Checks if the cart contains any subscription schedule (trial or recurring).
- * Detects every cart shape that should trigger `setup_future_usage=off_session`
- * on the PaymentIntent backend-side: initial subscription purchase, trial with
- * sign-up fee, renewal, resubscribe, and switch carts.
- *
- * WC Subscriptions exposes subscription data on the Store API response in two
- * places, and which one is populated depends on the cart shape:
- *   - `cartData.extensions.subscriptions` — populated for initial subscription
- *     purchases (one entry per recurring schedule). Empty for renewal carts.
- *   - `cartData.items[].extensions.subscriptions` — populated on each cart item
- *     that *is* a subscription product, including renewals/resubscribes/switches
- *     where the item is the existing subscription line item.
- *
- * Checking both keeps the detection robust across WC Subscriptions versions and
- * cart shapes.
- *
- * @param {Object} cartData Cart data from Store API.
- * @return {boolean} True if cart contains any subscription schedule.
- */
-export const cartHasAnySubscription = ( cartData ) => {
-	const schedules = cartData?.extensions?.subscriptions;
-	if ( Array.isArray( schedules ) && schedules.length > 0 ) {
-		return true;
-	}
-
-	const items = cartData?.items;
-	if ( ! Array.isArray( items ) ) {
-		return false;
-	}
-
-	return items.some(
-		( item ) => item?.extensions?.subscriptions !== undefined
-	);
-};
-
-/**
- * Checks if the current cart has become incompatible with the Elements options
- * that were set at page load.
- *
- * @param {Object} cartData Cart data from Store API.
- * @return {boolean} True if ECE should abort before creating a payment credential.
- */
-export const shouldAbortForSubscriptionSetupFutureUsageMismatch = (
-	cartData
-) => {
-	return (
-		shouldUseConfirmationTokens() &&
-		! ( getExpressCheckoutData( 'has_subscription' ) ?? false ) &&
-		cartHasAnySubscription( cartData )
-	);
-};
-
-/**
- * Returns the user-facing message for stale subscription cart data.
- *
- * @return {string} Error message.
- */
-export const getSubscriptionSetupFutureUsageMismatchMessage = () =>
-	__(
-		'This cart contains a subscription. Please complete your purchase from the standard checkout to set up your payment method for future renewals.', // eslint-disable-line max-len
-		'woocommerce-payments'
-	);
 
 /**
  * Checks if a cart item is a subscription with a free trial.

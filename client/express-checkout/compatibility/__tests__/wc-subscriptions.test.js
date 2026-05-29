@@ -6,7 +6,7 @@ import { applyFilters } from '@wordpress/hooks';
 /**
  * Internal dependencies
  */
-import { cartHasAnySubscription } from '../wc-subscriptions';
+import '../wc-subscriptions';
 
 // Required by transformPrice, which the total-amount filter calls.
 global.wcpayExpressCheckoutParams = {
@@ -105,90 +105,6 @@ const regularCart = {
 	},
 	extensions: {},
 };
-
-describe( 'cartHasAnySubscription', () => {
-	it( 'returns false when cartData is undefined', () => {
-		expect( cartHasAnySubscription( undefined ) ).toBe( false );
-	} );
-
-	it( 'returns false when extensions is missing', () => {
-		expect( cartHasAnySubscription( { items: [] } ) ).toBe( false );
-	} );
-
-	it( 'returns false when extensions.subscriptions is missing', () => {
-		expect( cartHasAnySubscription( { items: [], extensions: {} } ) ).toBe(
-			false
-		);
-	} );
-
-	it( 'returns false when extensions.subscriptions is an empty array', () => {
-		expect(
-			cartHasAnySubscription( {
-				items: [],
-				extensions: { subscriptions: [] },
-			} )
-		).toBe( false );
-	} );
-
-	it( 'returns true when cart contains a single trial subscription schedule', () => {
-		expect(
-			cartHasAnySubscription( {
-				items: [],
-				extensions: {
-					subscriptions: [ buildSubscriptionSchedule() ],
-				},
-			} )
-		).toBe( true );
-	} );
-
-	it( 'returns true when cart contains a non-trial recurring subscription', () => {
-		expect(
-			cartHasAnySubscription( {
-				items: [],
-				extensions: {
-					subscriptions: [
-						{
-							billing_period: 'month',
-							billing_interval: 1,
-							trial_length: 0,
-							totals: { total_price: '1999' },
-						},
-					],
-				},
-			} )
-		).toBe( true );
-	} );
-
-	it( 'returns true when cart contains multiple subscription schedules', () => {
-		expect(
-			cartHasAnySubscription( {
-				items: [],
-				extensions: {
-					subscriptions: [
-						buildSubscriptionSchedule(),
-						buildSubscriptionSchedule( { billingPeriod: 'year' } ),
-					],
-				},
-			} )
-		).toBe( true );
-	} );
-
-	it( 'returns true when only an item carries the subscriptions extension (e.g. cart-level schedule missing)', () => {
-		// Renewal / resubscribe / switch carts often don't populate
-		// `extensions.subscriptions` at the cart level. Per-item extension is
-		// still present on the subscription line item itself.
-		expect(
-			cartHasAnySubscription( {
-				items: [ buildTrialSubscriptionItem() ],
-				extensions: {},
-			} )
-		).toBe( true );
-	} );
-
-	it( 'returns false for a regular cart whose items have no subscriptions extension', () => {
-		expect( cartHasAnySubscription( regularCart ) ).toBe( false );
-	} );
-} );
 
 describe( 'ECE WC Subscriptions compatibility', () => {
 	it( 'all filters pass through for regular (non-subscription) carts', () => {

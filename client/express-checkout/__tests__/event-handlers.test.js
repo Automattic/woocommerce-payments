@@ -11,15 +11,10 @@ describe( 'Express checkout event handlers', () => {
 	let cartApiUpdateCustomerMock;
 	let cartApiPlaceOrderMock;
 	let cartApiSelectShippingRateMock;
-	let cartApiGetCartMock;
 	beforeEach( () => {
 		cartApiUpdateCustomerMock = jest.fn();
 		cartApiPlaceOrderMock = jest.fn();
 		cartApiSelectShippingRateMock = jest.fn();
-		cartApiGetCartMock = jest.fn().mockResolvedValue( {
-			items: [],
-			extensions: {},
-		} );
 		global.window.wcpayFraudPreventionToken = 'token123';
 		global.wcpayExpressCheckoutParams = {};
 		global.wcpayExpressCheckoutParams.checkout = {
@@ -37,7 +32,6 @@ describe( 'Express checkout event handlers', () => {
 			updateCustomer: cartApiUpdateCustomerMock,
 			selectShippingRate: cartApiSelectShippingRateMock,
 			placeOrder: cartApiPlaceOrderMock,
-			getCart: cartApiGetCartMock,
 		} );
 	} );
 
@@ -138,7 +132,10 @@ describe( 'Express checkout event handlers', () => {
 				} ),
 			} );
 
-			expect( elements.update ).toHaveBeenCalledWith( { amount: 1000 } );
+			expect( elements.update ).toHaveBeenCalledWith( {
+				amount: 1000,
+				setupFutureUsage: null,
+			} );
 			expect( event.resolve ).toHaveBeenCalledWith( {
 				shippingRates: [
 					expect.objectContaining( {
@@ -151,6 +148,53 @@ describe( 'Express checkout event handlers', () => {
 				lineItems: [],
 			} );
 			expect( event.reject ).not.toHaveBeenCalled();
+		} );
+
+		it( 'should update setupFutureUsage when cart contains a subscription', async () => {
+			cartApiUpdateCustomerMock.mockResolvedValue( {
+				items: [],
+				extensions: {
+					subscriptions: [
+						{
+							billing_period: 'month',
+							billing_interval: 1,
+							totals: { total_price: '1000' },
+						},
+					],
+				},
+				shipping_rates: [
+					{
+						package_id: 0,
+						name: 'Shipment 1',
+						destination: {},
+						items: [],
+						shipping_rates: [
+							{
+								rate_id: 'flat_rate:14',
+								name: 'Standard Shipping',
+								description: '',
+								delivery_time: '',
+								price: '1000',
+								taxes: '0',
+								meta_data: [],
+								selected: true,
+								currency_minor_unit: 2,
+							},
+						],
+					},
+				],
+				totals: {
+					total_price: 1000,
+					currency_minor_unit: 2,
+				},
+			} );
+
+			await shippingAddressChangeHandler( event, elements );
+
+			expect( elements.update ).toHaveBeenCalledWith( {
+				amount: 1000,
+				setupFutureUsage: 'off_session',
+			} );
 		} );
 
 		it( 'should handle displaying prices inclusive of tax', async () => {
@@ -226,7 +270,10 @@ describe( 'Express checkout event handlers', () => {
 				} ),
 			} );
 
-			expect( elements.update ).toHaveBeenCalledWith( { amount: 1000 } );
+			expect( elements.update ).toHaveBeenCalledWith( {
+				amount: 1000,
+				setupFutureUsage: null,
+			} );
 			expect( event.resolve ).toHaveBeenCalledWith( {
 				shippingRates: [
 					expect.objectContaining( {
@@ -496,38 +543,6 @@ describe( 'Express checkout event handlers', () => {
 				expect( stripe.createPaymentMethod ).not.toHaveBeenCalled();
 				expect( abortPayment ).toHaveBeenCalledWith(
 					'Confirmation token error'
-				);
-			} );
-
-			it( 'should abort before creating a confirmation token when the cart gained a subscription after page load', async () => {
-				cartApiGetCartMock.mockResolvedValue( {
-					items: [],
-					extensions: {
-						subscriptions: [
-							{
-								billing_period: 'month',
-								billing_interval: 1,
-								totals: { total_price: '1999' },
-							},
-						],
-					},
-				} );
-
-				await onConfirmHandler(
-					api,
-					stripe,
-					elements,
-					completePayment,
-					abortPayment,
-					event
-				);
-
-				expect( cartApiGetCartMock ).toHaveBeenCalled();
-				expect( stripe.createConfirmationToken ).not.toHaveBeenCalled();
-				expect( cartApiPlaceOrderMock ).not.toHaveBeenCalled();
-				expect( completePayment ).not.toHaveBeenCalled();
-				expect( abortPayment ).toHaveBeenCalledWith(
-					expect.stringMatching( /subscription/i )
 				);
 			} );
 		} );

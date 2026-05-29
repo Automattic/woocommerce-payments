@@ -29,16 +29,29 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
-import {
-	getSubscriptionSetupFutureUsageMismatchMessage,
-	shouldAbortForSubscriptionSetupFutureUsageMismatch,
-} from './compatibility/wc-subscriptions';
+import { getSetupFutureUsageForCart } from './utils/subscriptions';
 
 let lastSelectedAddress = null;
 let lastCartData = null;
 let cartApi = new ExpressCheckoutCartApi();
 export const setCartApiHandler = ( handler ) => ( cartApi = handler );
 export const getCartApiHandler = () => cartApi;
+
+const getElementsUpdateOptionsForCart = ( cartData ) => ( {
+	// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
+	amount: applyFilters(
+		'wcpay.express-checkout.total-amount',
+		transformPrice(
+			parseInt( cartData.totals.total_price, 10 ) -
+				parseInt( cartData.totals.total_refund || 0, 10 ),
+			cartData.totals
+		),
+		cartData
+	),
+	...( shouldUseConfirmationTokens()
+		? { setupFutureUsage: getSetupFutureUsageForCart( cartData ) }
+		: {} ),
+} );
 
 export const shippingAddressChangeHandler = async ( event, elements ) => {
 	lastSelectedAddress = event.address;
@@ -63,18 +76,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			return;
 		}
 
-		await elements.update( {
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				),
-				cartData
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 
 		lastCartData = cartData;
 
@@ -113,18 +115,7 @@ export const shippingRateChangeHandler = async (
 
 		lastCartData = cartData;
 
-		await elements.update( {
-			// Apply filter to allow modifications (e.g., for trial subscriptions with $0 initial payment)
-			amount: applyFilters(
-				'wcpay.express-checkout.total-amount',
-				transformPrice(
-					parseInt( cartData.totals.total_price, 10 ) -
-						parseInt( cartData.totals.total_refund || 0, 10 ),
-					cartData.totals
-				),
-				cartData
-			),
-		} );
+		await elements.update( getElementsUpdateOptionsForCart( cartData ) );
 		event.resolve( {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
@@ -148,36 +139,6 @@ export const onConfirmHandler = async (
 	}
 
 	const useConfirmationTokens = shouldUseConfirmationTokens();
-	if (
-		useConfirmationTokens &&
-		! ( getExpressCheckoutData( 'has_subscription' ) ?? false )
-	) {
-		let cartData;
-
-		try {
-			cartData = await cartApi.getCart();
-		} catch ( e ) {
-			if ( e.json ) {
-				e = await Promise.resolve( e.json() );
-			}
-
-			return abortPayment(
-				getErrorMessageFromNotice(
-					e.message ||
-						__(
-							'There was a problem processing the order.',
-							'woocommerce-payments'
-						)
-				)
-			);
-		}
-
-		if ( shouldAbortForSubscriptionSetupFutureUsageMismatch( cartData ) ) {
-			return abortPayment(
-				getSubscriptionSetupFutureUsageMismatchMessage()
-			);
-		}
-	}
 
 	let credentialId;
 	try {
