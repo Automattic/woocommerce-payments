@@ -114,6 +114,7 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-settings.php';
 	require_once $_plugin_dir . 'includes/wsn/class-wsn-hub.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
+	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-wsn-orders-controller.php';
 
 	// Load currency helper class early to ensure its implementation is used over the one resolved during further test initialization.
 	require_once __DIR__ . '/helpers/class-wc-helper-site-currency.php';

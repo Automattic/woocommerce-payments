@@ -149,12 +149,23 @@ class WSN_Hub {
 			 body.woocommerce_page_' . self::MENU_SLUG . ' #wpbody-content { background: #fff; }'
 		);
 
-		// Expose the feature flag value (and any other settings the React app needs)
-		// via the existing wcpaySettings global. The Hub reads wcpaySettings.featureFlags
-		// at render time to gate rendering — defensive even though the menu is gated.
+		// Lazy-require WSN_Settings before reading it. The class is loaded by
+		// register_rest_controllers() on rest_api_init, but admin_enqueue_scripts
+		// fires earlier in the request lifecycle and on different request types,
+		// so the class isn't guaranteed loaded yet. require_once is idempotent.
+		require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-settings.php';
+
+		// Expose the feature flag value + the enable-state under the existing
+		// wcpaySettings global. The React app gates pre-enable vs. post-enable
+		// rendering on `wcpaySettings.wsn.enabled` so it can paint the right
+		// view immediately on mount without waiting for an API round-trip.
+		$bootstrap = [
+			'featureFlags' => [ 'wsnHub' => true ],
+			'wsn'          => [ 'enabled' => WSN_Settings::is_enabled() ],
+		];
 		wp_add_inline_script(
 			self::SCRIPT_HANDLE,
-			'window.wcpaySettings = window.wcpaySettings || { featureFlags: { wsnHub: true } };',
+			'window.wcpaySettings = Object.assign( window.wcpaySettings || {}, ' . wp_json_encode( $bootstrap ) . ' );',
 			'before'
 		);
 	}
@@ -301,8 +312,12 @@ class WSN_Hub {
 	public function register_rest_controllers(): void {
 		require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-settings.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
+		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-orders-controller.php';
 
 		$settings_controller = new WC_REST_Payments_WSN_Settings_Controller();
 		$settings_controller->register_routes();
+
+		$orders_controller = new WC_REST_Payments_WSN_Orders_Controller();
+		$orders_controller->register_routes();
 	}
 }

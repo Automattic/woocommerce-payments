@@ -2,16 +2,16 @@
  * WsnHubApp — the top-level component for the Woo Shopping Network Hub page.
  *
  * Hosts the 3-tab framework (Overview / Visibility / Profile) using @wordpress/components'
- * <TabPanel> with hash-based deep-linking so /payments/shopping-network#visibility lands
- * on the Visibility tab directly.
+ * <TabPanel> with hash-based deep-linking so /shopping-network#visibility lands on the
+ * Visibility tab directly.
  *
- * Tab content for each tab is a stub at this stage — real content ships in
- * RSM-2493 (Overview), RSM-2480 (Visibility), and RSM-2481 (Profile).
+ * Pre-enable state (RSM-2493): when `wcpaySettings.wsn?.enabled` is falsy, the tab nav
+ * is hidden and only the Overview tab's PreEnableHero renders, taking over the full
+ * page. The merchant clicks "Enable Woo Shopping Network" on the hero, which flips
+ * the option via the settings PUT endpoint. On success, OverviewTab calls
+ * `onEnabledChange(true)` which re-renders this shell with the tab nav visible.
  *
- * Note on the v2 mockup's "tabs hidden when disabled" rule: the mockup pre-enable
- * hero is owned by the Overview tab (RSM-2493) and the enable/disable transition
- * is wired there. This scaffolding renders the framework as if always enabled, so
- * the tab nav is always visible. RSM-2493 will reintroduce the conditional hide.
+ * Visibility and Profile tab content lands in RSM-2480 and RSM-2481 respectively.
  *
  * @format
  */
@@ -42,10 +42,18 @@ const getInitialTabName = () => {
 	return TAB_NAMES.includes( hash ) ? hash : TABS[ 0 ].name;
 };
 
+const getInitialEnabled = () => {
+	if ( typeof window === 'undefined' ) {
+		return false;
+	}
+	return Boolean( window.wcpaySettings?.wsn?.enabled );
+};
+
 const WsnHubApp = () => {
 	// useState seeds from the hash on first render; subsequent hash changes update via
 	// the effect below so back/forward navigation works.
 	const [ currentTab, setCurrentTab ] = useState( getInitialTabName );
+	const [ isEnabled, setIsEnabled ] = useState( getInitialEnabled );
 
 	useEffect( () => {
 		const handler = () => setCurrentTab( getInitialTabName() );
@@ -59,6 +67,39 @@ const WsnHubApp = () => {
 			window.location.hash = tabName;
 		}
 	};
+
+	const handleEnabledChange = ( nextEnabled ) => {
+		setIsEnabled( nextEnabled );
+		// On disable, snap back to Overview so a future re-enable doesn't drop
+		// the merchant on a hidden tab.
+		if ( ! nextEnabled ) {
+			setCurrentTab( 'overview' );
+			if ( typeof window !== 'undefined' ) {
+				window.location.hash = 'overview';
+			}
+		}
+	};
+
+	// Pre-enable: hide the tab nav entirely and render only the Overview tab's
+	// PreEnableHero. The hero IS the page in this state.
+	if ( ! isEnabled ) {
+		return (
+			<div className="wcpay-wsn-hub">
+				<PageHeader />
+				<div
+					style={ {
+						padding: `${ spacing.s4 } ${ spacing.s3 } 0`,
+						background: colors.surface,
+					} }
+				>
+					<OverviewTab
+						isEnabled={ false }
+						onEnabledChange={ handleEnabledChange }
+					/>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="wcpay-wsn-hub">
@@ -76,7 +117,12 @@ const WsnHubApp = () => {
 							background: colors.surface,
 						} }
 					>
-						{ tab.name === 'overview' && <OverviewTab /> }
+						{ tab.name === 'overview' && (
+							<OverviewTab
+								isEnabled={ true }
+								onEnabledChange={ handleEnabledChange }
+							/>
+						) }
 						{ tab.name === 'visibility' && <VisibilityTab /> }
 						{ tab.name === 'profile' && <ProfileTab /> }
 					</div>
