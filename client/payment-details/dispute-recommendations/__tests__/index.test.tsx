@@ -256,15 +256,15 @@ describe( 'DisputeRecommendationsCard', () => {
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
 			// Each recommendation renders as an <article>; <details> wraps the
-			// overflow. Count articles outside any <details> to assert the cap
-			// without binding to private BEM class names or :scope direct-
-			// child structure.
-			const heading = screen.getByRole( 'heading', {
-				name: /what could help next time/i,
-			} );
-			const section = heading.closest( 'section' );
-			expect( section ).not.toBeNull();
-			const inlineItems = within( section as HTMLElement )
+			// overflow. This fixture renders only the coaching section, so
+			// counting articles outside any <details> globally is enough to
+			// assert the cap.
+			expect(
+				screen.getByRole( 'heading', {
+					name: /what could help next time/i,
+				} )
+			).toBeInTheDocument();
+			const inlineItems = screen
 				.getAllByRole( 'article' )
 				.filter( ( el ) => ! el.closest( 'details' ) );
 			expect( inlineItems ).toHaveLength( 3 );

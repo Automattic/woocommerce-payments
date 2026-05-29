@@ -10,17 +10,9 @@
 	margin-bottom: $grid-unit-30;
 
 	&__section {
-		// When both sections render inside the umbrella accordion, separate
-		// them with a top rule + padding so each reads as its own block.
-		& + & {
-			margin-top: $grid-unit-20;
-			padding-top: $grid-unit-20;
-			border-top: 1px solid $gray-100;
-		}
-
 		// Trim the outer padding on the first and last items in the section.
-		// `:first-child` / `:last-child` would miss them: the section header
-		// is always the first child and the show-more <details> can be last.
+		// `:first-child` / `:last-child` would miss them: the description is
+		// always the first child and the show-more <details> can be last.
 		> .dispute-recommendations__item:first-of-type {
 			padding-top: 0;
 		}
@@ -30,17 +22,10 @@
 		}
 	}
 
-	&__section-heading {
-		// Heading MD — one step below the accordion title above (LG/15px).
-		font-size: 14px;
-		font-weight: 600;
-		line-height: 20px;
-		color: $gray-900;
-		margin: 0 0 $grid-unit-05;
-	}
-
-	// Sub-heading description sentence, with the optional "Learn more" link
-	// appended inline (only the coaching section gets the link).
+	// Description sentence under the accordion header, with the optional
+	// "Learn more" link appended inline. Only the coaching section gets the
+	// link. Sits inside the AccordionBody body since the title slot is a
+	// button and can't host nested interactive content.
 	&__section-description {
 		font-size: 13px;
 		line-height: 20px;

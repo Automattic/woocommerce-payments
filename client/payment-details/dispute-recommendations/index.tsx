@@ -108,11 +108,12 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	</article>
 );
 
-// Both sections sit inside ONE expanded-by-default AccordionBody (single
-// chevron), reusing the "Steps you can take" accordion. Per the 2026-05-27
-// design decision, the won-strengths and coaching framings can both show
-// regardless of outcome, driven by which recs fire. Section headings are h3
-// sub-headings inside the body rather than the accordion header.
+// Each non-empty section is its own expanded-by-default AccordionBody (one
+// chevron per section), reusing the "Steps you can take" accordion. The
+// section heading is the AccordionBody title; the descriptive sentence and
+// optional Learn more link sit inside the body, since the title slot is a
+// button (nested interactive content like a link would be invalid). Sections
+// render independently so both can appear regardless of outcome.
 const renderSection = (
 	heading: string,
 	description: string,
@@ -128,57 +129,56 @@ const renderSection = (
 	const hidden = sorted.slice( VISIBLE_PER_SECTION );
 
 	return (
-		<section className="dispute-recommendations-card__section">
-			<h3 className="dispute-recommendations-card__section-heading">
-				{ heading }
-			</h3>
-			{ /* div, not <p>: ExternalLink renders a <div> wrapper internally
-			     which would be invalid nested inside a <p>. */ }
-			<div className="dispute-recommendations-card__section-description">
-				{ description }
-				{ learnMoreHref && (
-					<>
-						{ ' ' }
-						<ExternalLink
-							className="dispute-recommendations-card__learn-more"
-							href={ learnMoreHref }
-						>
-							{ __( 'Learn more', 'woocommerce-payments' ) }
-							{ /* SR-only context. Setting `aria-label` would
-							     override the whole accessible name and drop
-							     ExternalLink's built-in "(opens in a new tab)"
-							     suffix; adding a VisuallyHidden child instead
-							     keeps both. */ }
-							<VisuallyHidden>
-								{ ' ' +
-									__(
-										'about managing payment disputes',
-										'woocommerce-payments'
-									) }
-							</VisuallyHidden>
-						</ExternalLink>
-					</>
+		<AccordionBody title={ heading } lg>
+			<div className="dispute-recommendations-card__section">
+				{ /* div, not <p>: ExternalLink renders a <div> wrapper internally
+				     which would be invalid nested inside a <p>. */ }
+				<div className="dispute-recommendations-card__section-description">
+					{ description }
+					{ learnMoreHref && (
+						<>
+							{ ' ' }
+							<ExternalLink
+								className="dispute-recommendations-card__learn-more"
+								href={ learnMoreHref }
+							>
+								{ __( 'Learn more', 'woocommerce-payments' ) }
+								{ /* SR-only context. Setting `aria-label` would
+								     override the whole accessible name and drop
+								     ExternalLink's built-in "(opens in a new tab)"
+								     suffix; adding a VisuallyHidden child instead
+								     keeps both. */ }
+								<VisuallyHidden>
+									{ ' ' +
+										__(
+											'about managing payment disputes',
+											'woocommerce-payments'
+										) }
+								</VisuallyHidden>
+							</ExternalLink>
+						</>
+					) }
+				</div>
+				{ visible.map( renderItem ) }
+				{ hidden.length > 0 && (
+					<details className="dispute-recommendations-card__show-more">
+						<summary>
+							{ sprintf(
+								/* translators: %d is the number of additional recommendations hidden by default. */
+								_n(
+									'Show 1 more',
+									'Show %d more',
+									hidden.length,
+									'woocommerce-payments'
+								),
+								hidden.length
+							) }
+						</summary>
+						{ hidden.map( renderItem ) }
+					</details>
 				) }
 			</div>
-			{ visible.map( renderItem ) }
-			{ hidden.length > 0 && (
-				<details className="dispute-recommendations-card__show-more">
-					<summary>
-						{ sprintf(
-							/* translators: %d is the number of additional recommendations hidden by default. */
-							_n(
-								'Show 1 more',
-								'Show %d more',
-								hidden.length,
-								'woocommerce-payments'
-							),
-							hidden.length
-						) }
-					</summary>
-					{ hidden.map( renderItem ) }
-				</details>
-			) }
-		</section>
+		</AccordionBody>
 	);
 };
 
@@ -218,28 +218,23 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 
 	return (
 		<Accordion defaultExpanded className="dispute-recommendations-card">
-			<AccordionBody
-				title={ __( 'Recommendations', 'woocommerce-payments' ) }
-				lg
-			>
-				{ renderSection(
-					__( "What's working well", 'woocommerce-payments' ),
-					__(
-						'These are the evidence strengths that supported your dispute response.',
-						'woocommerce-payments'
-					),
-					positives
-				) }
-				{ renderSection(
-					__( 'What could help next time', 'woocommerce-payments' ),
-					__(
-						'Strengthen future dispute responses by adding these details to your evidence before submitting.',
-						'woocommerce-payments'
-					),
-					criticalsAndTips,
-					LEARN_MORE_HREF
-				) }
-			</AccordionBody>
+			{ renderSection(
+				__( "What's working well", 'woocommerce-payments' ),
+				__(
+					'These are the evidence strengths that supported your dispute response.',
+					'woocommerce-payments'
+				),
+				positives
+			) }
+			{ renderSection(
+				__( 'What could help next time', 'woocommerce-payments' ),
+				__(
+					'Strengthen future dispute responses by adding these details to your evidence before submitting.',
+					'woocommerce-payments'
+				),
+				criticalsAndTips,
+				LEARN_MORE_HREF
+			) }
 		</Accordion>
 	);
 };
