@@ -34,17 +34,10 @@ defined( 'ABSPATH' ) || exit;
  * After persisting, if any Profile-tab field changed, fires the `wcpay_wsn_profile_changed`
  * action so the outbound emitter (RSM-3945) can react.
  */
-class WC_REST_Payments_WSN_Settings_Controller extends WP_REST_Controller {
+class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controller {
 
 	/**
-	 * Endpoint namespace.
-	 *
-	 * @var string
-	 */
-	protected $namespace = 'wc/v3';
-
-	/**
-	 * Endpoint path under the namespace.
+	 * Endpoint path under the namespace. ($namespace is inherited from the base class.)
 	 *
 	 * @var string
 	 */
@@ -87,15 +80,6 @@ class WC_REST_Payments_WSN_Settings_Controller extends WP_REST_Controller {
 				'schema' => [ $this, 'get_public_item_schema' ],
 			]
 		);
-	}
-
-	/**
-	 * Capability check. WSN Hub configuration is a merchant-admin action.
-	 *
-	 * @return bool
-	 */
-	public function check_permission() {
-		return current_user_can( 'manage_woocommerce' );
 	}
 
 	/**

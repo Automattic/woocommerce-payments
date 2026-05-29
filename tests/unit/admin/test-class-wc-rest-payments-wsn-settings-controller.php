@@ -28,10 +28,15 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		// via _doing_it_wrong since 5.1). Hook the registration onto that action and
 		// trigger it; rest_get_server() also triggers `rest_api_init` internally on
 		// first call, so this both registers the route AND warms the server.
+		// Inject a mock API client. The settings controller extends
+		// WC_Payments_REST_Controller (whose constructor requires the client)
+		// for shared base-class behavior but never actually calls the client —
+		// the controller's whole flow is local wp_options reads/writes.
+		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 		add_action(
 			'rest_api_init',
-			function () {
-				( new WC_REST_Payments_WSN_Settings_Controller() )->register_routes();
+			function () use ( $mock_api_client ) {
+				( new WC_REST_Payments_WSN_Settings_Controller( $mock_api_client ) )->register_routes();
 			}
 		);
 		do_action( 'rest_api_init' );

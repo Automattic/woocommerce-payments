@@ -149,11 +149,11 @@ class WSN_Hub {
 			 body.woocommerce_page_' . self::MENU_SLUG . ' #wpbody-content { background: #fff; }'
 		);
 
-		// Lazy-require WSN_Settings before reading it. The class is loaded by
-		// register_rest_controllers() on rest_api_init, but admin_enqueue_scripts
-		// fires earlier in the request lifecycle and on different request types,
-		// so the class isn't guaranteed loaded yet. require_once is idempotent.
-		require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-settings.php';
+		// WSN_Settings is loaded once in class-wc-payments.php::init() so all WSN
+		// callbacks (admin_enqueue_scripts here, rest_api_init in
+		// register_rest_controllers(), in_admin_header in
+		// suppress_third_party_admin_notices()) can safely call its statics
+		// regardless of which hook fires first for a given request type.
 
 		// Expose the feature flag value + the enable-state under the existing
 		// wcpaySettings global. The React app gates pre-enable vs. post-enable
@@ -233,6 +233,18 @@ class WSN_Hub {
 			$path_roots = $this->first_party_path_roots();
 		}
 
+		// Per-request memoization keyed on the callback's stable identity. Reflection
+		// is ~0.1-0.2ms per instantiation on a warm OPcache; a typical admin install
+		// has 20-40 admin_notices callbacks, so even though this runs only on the WSN
+		// Hub admin page (not other admin pages), caching means subsequent same-page
+		// renders within a PHP-FPM worker get the classification for free.
+		static $classification_cache = [];
+
+		$cache_key = $this->callback_cache_key( $callback );
+		if ( null !== $cache_key && array_key_exists( $cache_key, $classification_cache ) ) {
+			return $classification_cache[ $cache_key ];
+		}
+
 		try {
 			if ( is_array( $callback ) && 2 === count( $callback ) ) {
 				$reflection = new ReflectionMethod( $callback[0], $callback[1] );
@@ -240,24 +252,24 @@ class WSN_Hub {
 				$reflection = new ReflectionFunction( $callback );
 			} else {
 				// Unknown shape — keep it.
-				return true;
+				return $this->cache_classification( $classification_cache, $cache_key, true );
 			}
 
 			$file = $reflection->getFileName();
 			if ( ! $file ) {
 				// Internal PHP function or otherwise un-resolvable — keep it.
-				return true;
+				return $this->cache_classification( $classification_cache, $cache_key, true );
 			}
 
 			$normalized = wp_normalize_path( $file );
 
 			foreach ( $path_roots as $root ) {
 				if ( '' !== $root && 0 === strpos( $normalized, $root ) ) {
-					return true;
+					return $this->cache_classification( $classification_cache, $cache_key, true );
 				}
 			}
 
-			return false;
+			return $this->cache_classification( $classification_cache, $cache_key, false );
 		} catch ( \Throwable $e ) {
 			// Reflection failed (e.g., closure rebound to a missing class). Keep the callback.
 			// Surface the failure in WP_DEBUG so a developer chasing missing notices
@@ -266,8 +278,52 @@ class WSN_Hub {
 				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 				error_log( 'WSN_Hub: notice callback reflection failed — keeping callback. ' . $e->getMessage() );
 			}
-			return true;
+			return $this->cache_classification( $classification_cache, $cache_key, true );
 		}
+	}
+
+	/**
+	 * Produce a stable cache key for a hook callback. Returns null when the
+	 * callback shape can't be uniquely identified (in which case the caller
+	 * skips caching and re-classifies on every call — correct fallback).
+	 *
+	 * @param mixed $callback The hook callback.
+	 * @return string|null
+	 */
+	private function callback_cache_key( $callback ): ?string {
+		if ( is_string( $callback ) ) {
+			return 'fn:' . $callback;
+		}
+		if ( $callback instanceof Closure ) {
+			return 'closure:' . spl_object_hash( $callback );
+		}
+		if ( is_array( $callback ) && 2 === count( $callback ) ) {
+			$class_or_instance = $callback[0];
+			$method            = (string) $callback[1];
+			if ( is_object( $class_or_instance ) ) {
+				return 'method:' . spl_object_hash( $class_or_instance ) . '::' . $method;
+			}
+			if ( is_string( $class_or_instance ) ) {
+				return 'static:' . $class_or_instance . '::' . $method;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Helper that writes into the static classification cache and returns the
+	 * passed-in classification. Skips writing when $cache_key is null.
+	 *
+	 * @param array       $cache         Reference to the per-request cache.
+	 * @param string|null $cache_key     Stable key for this callback, or null.
+	 * @param bool        $classification The classification to store + return.
+	 * @return bool
+	 */
+	private function cache_classification( array &$cache, ?string $cache_key, bool $classification ): bool {
+		if ( null !== $cache_key ) {
+			$cache[ $cache_key ] = $classification;
+		}
+		return $classification;
 	}
 
 	/**
@@ -302,22 +358,23 @@ class WSN_Hub {
 	/**
 	 * Registers all REST controllers under the WSN namespace.
 	 *
-	 * Currently only the settings controller. Sibling controllers (taxonomy, pages,
-	 * products-search, orders) ship with their per-tab issues (RSM-2480/2481/2493).
-	 *
-	 * WSN_Settings is required here (not lazily by the controller itself) because the
-	 * controller's route-registration code path consumes `WSN_Settings::valid_visibility_modes()`
-	 * for the schema enum — by the time register_routes() runs, the class must already exist.
+	 * Controllers extend `WC_Payments_REST_Controller`, which requires the API client
+	 * to be injected at construction. The WSN controllers don't actually call the API
+	 * (they're pure local wp_options + wc_get_orders queries), but extending the
+	 * shared base class gets us inherited `check_permission()` + `$namespace`
+	 * defaults plus any future cross-cutting behavior the base accrues — at the cost
+	 * of carrying an unused dependency.
 	 */
 	public function register_rest_controllers(): void {
-		require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-settings.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-orders-controller.php';
 
-		$settings_controller = new WC_REST_Payments_WSN_Settings_Controller();
+		$api_client = WC_Payments::get_payments_api_client();
+
+		$settings_controller = new WC_REST_Payments_WSN_Settings_Controller( $api_client );
 		$settings_controller->register_routes();
 
-		$orders_controller = new WC_REST_Payments_WSN_Orders_Controller();
+		$orders_controller = new WC_REST_Payments_WSN_Orders_Controller( $api_client );
 		$orders_controller->register_routes();
 	}
 }

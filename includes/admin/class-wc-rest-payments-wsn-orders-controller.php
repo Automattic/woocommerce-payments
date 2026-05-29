@@ -35,17 +35,10 @@ defined( 'ABSPATH' ) || exit;
  * (without the meta filter) and can be expensive on busy stores. Deferred — the
  * `reference` field on each StatCard renders empty when null.
  */
-class WC_REST_Payments_WSN_Orders_Controller extends WP_REST_Controller {
+class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller {
 
 	/**
-	 * Endpoint namespace.
-	 *
-	 * @var string
-	 */
-	protected $namespace = 'wc/v3';
-
-	/**
-	 * Endpoint path under the namespace.
+	 * Endpoint path under the namespace. ($namespace is inherited from the base class.)
 	 *
 	 * @var string
 	 */
@@ -78,6 +71,24 @@ class WC_REST_Payments_WSN_Orders_Controller extends WP_REST_Controller {
 	];
 
 	/**
+	 * Transient cache TTL for the orders payload. Bounded short because the data
+	 * is dashboard-facing (merchants expect "live") but a 60-second window
+	 * absorbs the cost of rapid period-chip clicks and Overview tab re-mounts
+	 * when no marketplace orders exist yet (the expected state for months until
+	 * WooPay-side Cohort A/B tagging ships).
+	 *
+	 * @var int
+	 */
+	const TRANSIENT_TTL_SECONDS = 60;
+
+	/**
+	 * Transient cache key prefix. Periods are appended to produce per-period keys.
+	 *
+	 * @var string
+	 */
+	const TRANSIENT_KEY_PREFIX = 'wcpay_wsn_orders_';
+
+	/**
 	 * Registers REST routes.
 	 */
 	public function register_routes() {
@@ -104,15 +115,6 @@ class WC_REST_Payments_WSN_Orders_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Capability check. WSN Hub data exposure is a merchant-admin action.
-	 *
-	 * @return bool
-	 */
-	public function check_permission() {
-		return current_user_can( 'manage_woocommerce' );
-	}
-
-	/**
 	 * GET handler — returns `{ period, is_empty, stats, orders }`.
 	 *
 	 * @param WP_REST_Request $request The REST request.
@@ -120,16 +122,31 @@ class WC_REST_Payments_WSN_Orders_Controller extends WP_REST_Controller {
 	 */
 	public function get_orders( WP_REST_Request $request ) {
 		$period = (string) $request->get_param( 'period' );
-		$since  = $this->get_since_timestamp( $period );
 
-		$orders = $this->fetch_marketplace_orders( $since, self::RECENT_ORDERS_LIMIT );
+		// Short-lived transient cache. Keyed on the period only because the
+		// payload is the same for any merchant-admin caller within the window.
+		// Invalidated implicitly by TTL; explicit invalidation on order writes
+		// would be ideal but requires hooking woocommerce_new_order/save_post
+		// which adds coupling for marginal benefit during the months until
+		// real marketplace orders exist.
+		$cache_key = self::TRANSIENT_KEY_PREFIX . $period;
+		$cached    = get_transient( $cache_key );
+		if ( false !== $cached && is_array( $cached ) ) {
+			return rest_ensure_response( $cached );
+		}
+
+		$since          = $this->get_since_timestamp( $period );
+		$recent_orders  = $this->fetch_marketplace_orders( $since, self::RECENT_ORDERS_LIMIT );
+		$network_orders = $this->count_marketplace_orders( $since );
 
 		$payload = [
 			'period'   => $period,
-			'is_empty' => empty( $orders ),
-			'stats'    => $this->compute_stats( $orders ),
-			'orders'   => array_map( [ $this, 'format_order' ], $orders ),
+			'is_empty' => 0 === $network_orders,
+			'stats'    => $this->compute_stats( $recent_orders, $network_orders ),
+			'orders'   => array_map( [ $this, 'format_order' ], $recent_orders ),
 		];
+
+		set_transient( $cache_key, $payload, self::TRANSIENT_TTL_SECONDS );
 
 		return rest_ensure_response( $payload );
 	}
@@ -189,23 +206,71 @@ class WC_REST_Payments_WSN_Orders_Controller extends WP_REST_Controller {
 	}
 
 	/**
+	 * Count ALL marketplace-tagged orders in the period — independently from the
+	 * limited fetch used to render the recent-orders table. Without this, the
+	 * `network_orders` stat would be capped at RECENT_ORDERS_LIMIT and misreport
+	 * the merchant's real network attribution volume.
+	 *
+	 * Uses `'return' => 'ids'` + `'limit' => -1` because:
+	 *   - `'paginate' => true` triggers a separate `SQL_CALC_FOUND_ROWS` query
+	 *     plus a hydrated rowset we don't need;
+	 *   - `'return' => 'ids'` skips order hydration entirely (no `WC_Order`
+	 *     objects, no item-cache priming) — much cheaper for a count.
+	 *
+	 * @param int $since Unix timestamp lower bound for `date_created`.
+	 * @return int
+	 */
+	private function count_marketplace_orders( int $since ): int {
+		if ( ! function_exists( 'wc_get_orders' ) ) {
+			return 0;
+		}
+
+		$ids = wc_get_orders(
+			[
+				'limit'        => -1,
+				'return'       => 'ids',
+				'date_created' => '>=' . $since,
+				'meta_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+					[
+						'key'     => self::META_IS_MARKETPLACE,
+						'compare' => 'EXISTS',
+					],
+				],
+			]
+		);
+
+		return is_array( $ids ) ? count( $ids ) : 0;
+	}
+
+	/**
 	 * Aggregate stats from the fetched orders. Only computes the metrics derivable
 	 * from order data alone — telemetry-dependent fields (Products Viewed, Top
 	 * Discovery Source) remain null and the UI renders them as `—`.
 	 *
-	 * @param WC_Order[] $orders Marketplace-tagged orders aggregated for the dashboard.
+	 * Revenue + AOV are aggregated from the LIMIT-bounded recent-orders sample.
+	 * For the current MVP scope (counts up to RECENT_ORDERS_LIMIT) that's fine;
+	 * if the count is at the cap, revenue is a lower-bound. A follow-up issue
+	 * can aggregate revenue across the full period if/when the cap matters.
+	 *
+	 * Formatted price fields are stripped to plain strings via
+	 * `wp_strip_all_tags( wc_price( ... ) )` because `wc_price()` returns HTML
+	 * markup (`<span class="...">$50.00</span>`) and our JSON consumer renders
+	 * values as React text nodes — escaped HTML would surface to the merchant
+	 * as visible markup, not as a formatted price.
+	 *
+	 * @param WC_Order[] $recent_orders   Most recent marketplace-tagged orders (capped at RECENT_ORDERS_LIMIT).
+	 * @param int        $network_orders  Total marketplace-tagged orders in the period (NOT capped).
 	 * @return array
 	 */
-	private function compute_stats( array $orders ): array {
-		if ( empty( $orders ) ) {
+	private function compute_stats( array $recent_orders, int $network_orders ): array {
+		if ( 0 === $network_orders ) {
 			return [];
 		}
 
-		$network_count   = count( $orders );
 		$network_revenue = 0.0;
 		$source_buckets  = [];
 
-		foreach ( $orders as $order ) {
+		foreach ( $recent_orders as $order ) {
 			$network_revenue += (float) $order->get_total();
 
 			// Source tagging (e.g., 'favorites', 'browse', 'recommendations') is a
@@ -217,21 +282,29 @@ class WC_REST_Payments_WSN_Orders_Controller extends WP_REST_Controller {
 			}
 		}
 
-		$network_aov = $network_count > 0 ? $network_revenue / $network_count : 0.0;
+		$recent_count = count( $recent_orders );
+		$network_aov  = $recent_count > 0 ? $network_revenue / $recent_count : 0.0;
 
 		$top_source = null;
 		$top_share  = null;
 		if ( ! empty( $source_buckets ) ) {
+			// Sort by count desc, then by source name asc, so equal-count
+			// buckets resolve deterministically (alphabetical winner) instead
+			// of relying on PHP's undefined iteration order on tied arsort()
+			// keys. Critical for the Overview dashboard: an unstable "Top
+			// Source" value that flips between page loads erodes merchant
+			// trust in the metric.
+			ksort( $source_buckets );
 			arsort( $source_buckets );
 			$top_source    = (string) array_key_first( $source_buckets );
-			$top_share_pct = ( $source_buckets[ $top_source ] / $network_count ) * 100;
+			$top_share_pct = ( $source_buckets[ $top_source ] / $recent_count ) * 100;
 			$top_share     = sprintf( '%.1f%%', $top_share_pct );
 		}
 
 		return [
-			'network_orders'            => $network_count,
-			'network_revenue_formatted' => wc_price( $network_revenue ),
-			'network_aov_formatted'     => wc_price( $network_aov ),
+			'network_orders'            => $network_orders,
+			'network_revenue_formatted' => wp_strip_all_tags( wc_price( $network_revenue ) ),
+			'network_aov_formatted'     => wp_strip_all_tags( wc_price( $network_aov ) ),
 			'top_source'                => $top_source,
 			'top_source_share'          => $top_share,
 			// Intentionally omitted (rendered as `—` by StatCard):
@@ -280,7 +353,7 @@ class WC_REST_Payments_WSN_Orders_Controller extends WP_REST_Controller {
 			),
 			'source'          => $this->meta_string_or_null( $order, self::META_COHORT ),
 			'storefront_slug' => $this->meta_string_or_null( $order, self::META_STOREFRONT_SLUG ),
-			'total_formatted' => wc_price( $order->get_total() ),
+			'total_formatted' => wp_strip_all_tags( wc_price( $order->get_total() ) ),
 			'edit_url'        => function_exists( 'wc_get_order_admin_edit_url' )
 				? wc_get_order_admin_edit_url( $order->get_id() )
 				: admin_url( 'post.php?post=' . $order->get_id() . '&action=edit' ),

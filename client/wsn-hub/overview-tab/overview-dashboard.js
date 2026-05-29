@@ -19,13 +19,24 @@
  * @format
  */
 
-import { useEffect, useState } from '@wordpress/element';
+import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
+// `__experimentalConfirmDialog` has been the de-facto WP-components confirm
+// pattern since WP 6.1 and is widely used across WP core/Gutenberg admin
+// surfaces. Stable enough to depend on here; revisit when WP promotes it.
+// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+import { __experimentalConfirmDialog as ConfirmDialog } from '@wordpress/components';
 
 import StatCard from './stat-card';
 import OrdersTable from './orders-table';
 import { colors, typography, spacing, radii } from '../tokens';
+
+// Debounce window for the period selector. The cancelled-flag pattern in the
+// fetch effect already prevents stale state updates, but rapid period-chip
+// clicks would still fire N server calls before the first completes. 300ms
+// gives a user time to scrub through periods without flooding the controller.
+const PERIOD_DEBOUNCE_MS = 300;
 
 const PERIODS = [
 	{ value: 'today', label: __( 'Today', 'woocommerce-payments' ) },
@@ -62,10 +73,30 @@ const PeriodChip = ( { value, label, isActive, onClick } ) => (
  * @param {Function} props.onDisable Called after the disable request succeeds.
  */
 const OverviewDashboard = ( { onDisable } ) => {
-	const [ period, setPeriod ] = useState( '30d' );
+	const [ period, setPeriodImmediate ] = useState( '30d' );
 	const [ data, setData ] = useState( null );
 	const [ isLoading, setIsLoading ] = useState( true );
 	const [ isDisabling, setIsDisabling ] = useState( false );
+	const [ isConfirmingDisable, setIsConfirmingDisable ] = useState( false );
+
+	// Debounced setPeriod. useRef so the timeout id persists across renders;
+	// cleared if the user clicks another chip before the window elapses.
+	const periodTimerRef = useRef( null );
+	const setPeriod = ( nextPeriod ) => {
+		if ( periodTimerRef.current ) {
+			clearTimeout( periodTimerRef.current );
+		}
+		periodTimerRef.current = setTimeout( () => {
+			setPeriodImmediate( nextPeriod );
+		}, PERIOD_DEBOUNCE_MS );
+	};
+	useEffect( () => {
+		return () => {
+			if ( periodTimerRef.current ) {
+				clearTimeout( periodTimerRef.current );
+			}
+		};
+	}, [] );
 
 	useEffect( () => {
 		let cancelled = false;
@@ -94,17 +125,15 @@ const OverviewDashboard = ( { onDisable } ) => {
 		};
 	}, [ period ] );
 
-	const handleDisable = async () => {
-		if (
-			! window.confirm(
-				__(
-					'Stop your storefront from appearing in the Woo Shopping Network? Your settings will be preserved.',
-					'woocommerce-payments'
-				)
-			)
-		) {
-			return;
-		}
+	// Two-step disable: clicking "Remove" opens a styled <ConfirmDialog>, the
+	// merchant confirms there, and only then do we PUT. Using the
+	// @wordpress/components dialog (rather than window.confirm) is what WCPay
+	// uses for other destructive actions — testable, styleable, and not
+	// suppressed in cross-origin iframes.
+	const handleDisableRequest = () => setIsConfirmingDisable( true );
+	const handleDisableCancel = () => setIsConfirmingDisable( false );
+	const handleDisableConfirm = async () => {
+		setIsConfirmingDisable( false );
 		setIsDisabling( true );
 		try {
 			await apiFetch( {
@@ -276,7 +305,7 @@ const OverviewDashboard = ( { onDisable } ) => {
 				</div>
 				<button
 					type="button"
-					onClick={ handleDisable }
+					onClick={ handleDisableRequest }
 					disabled={ isDisabling }
 					style={ {
 						background: colors.surface,
@@ -297,6 +326,19 @@ const OverviewDashboard = ( { onDisable } ) => {
 						: __( 'Remove', 'woocommerce-payments' ) }
 				</button>
 			</div>
+
+			<ConfirmDialog
+				isOpen={ isConfirmingDisable }
+				onConfirm={ handleDisableConfirm }
+				onCancel={ handleDisableCancel }
+				confirmButtonText={ __( 'Remove', 'woocommerce-payments' ) }
+				cancelButtonText={ __( 'Cancel', 'woocommerce-payments' ) }
+			>
+				{ __(
+					'Stop your storefront from appearing in the Woo Shopping Network? Your settings will be preserved.',
+					'woocommerce-payments'
+				) }
+			</ConfirmDialog>
 		</div>
 	);
 };
