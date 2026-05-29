@@ -40,6 +40,15 @@ runs:
         COMMIT_URL="$SERVER_URL/$REPO/commit/$SHA"
         SHORT_SHA="${SHA:0:7}"
 
+        # Fetch the run's jobs. Capture separately rather than piping straight
+        # into the loop: a `gh api` failure inside a process substitution is not
+        # caught by `set -e`/`pipefail`, which would leave COUNT=0 and post a
+        # misleading "0 failures" message during a real failure event.
+        JOBS_JSON=$(gh api --paginate "repos/$REPO/actions/runs/$RUN_ID/jobs") || {
+          echo "::error::Failed to fetch run jobs from the GitHub API; cannot build the failure list."
+          exit 1
+        }
+
         # Collect the failed matrix cells (jobs concluding "failure"). @tsv keeps
         # names with spaces intact; the in-progress summary job has a null
         # conclusion so it is naturally excluded.
@@ -49,8 +58,8 @@ runs:
           [ -z "$name" ] && continue
           FAILED_LINES+="• <${url}|${name}>"$'\n'
           COUNT=$((COUNT + 1))
-        done < <(gh api --paginate "repos/$REPO/actions/runs/$RUN_ID/jobs" \
-          --jq '.jobs[] | select(.conclusion == "failure") | [.name, .html_url] | @tsv')
+        done < <(printf '%s' "$JOBS_JSON" \
+          | jq -r '.jobs[] | select(.conclusion == "failure") | [.name, .html_url] | @tsv')
 
         FAILED_LINES="${FAILED_LINES%$'\n'}"
         NOUN=$([ "$COUNT" -eq 1 ] && echo "failure" || echo "failures")
