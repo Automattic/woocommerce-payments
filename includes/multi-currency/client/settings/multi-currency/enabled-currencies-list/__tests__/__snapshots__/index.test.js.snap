@@ -43,22 +43,6 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-.emotion-8 {
-  box-sizing: border-box;
-  height: auto;
-  max-height: 100%;
-}
-
-.emotion-8:first-of-type {
-  border-top-left-radius: calc(8px - 1px);
-  border-top-right-radius: calc(8px - 1px);
-}
-
-.emotion-8:last-of-type {
-  border-bottom-left-radius: calc(8px - 1px);
-  border-bottom-right-radius: calc(8px - 1px);
-}
-
 .emotion-14 {
   background: transparent;
   display: block;
@@ -147,7 +131,7 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
             role="separator"
           />
           <div
-            class="components-card__body components-card-body emotion-8 emotion-1"
+            class="components-card__body components-card-body wcpay-multi-currency__enabled-currencies-list-body emotion-4 emotion-1"
             data-wp-c16t="true"
             data-wp-component="CardBody"
           >
