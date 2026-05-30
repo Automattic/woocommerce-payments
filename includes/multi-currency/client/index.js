@@ -16,7 +16,7 @@ import MultiCurrencySettings from './settings/multi-currency';
 import SingleCurrencySettings from './settings/single-currency';
 import MultiCurrencySettingsContext from './context';
 
-export const MultiCurrencySettingsPage = () => {
+const MultiCurrencySettingsPage = () => {
 	const [ currencyCodeToShowSettingsFor, setCurrencyCode ] = useState(
 		() => getQuery().currency || null
 	);
