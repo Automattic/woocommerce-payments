@@ -107,6 +107,12 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 							'enum'              => array_keys( self::PERIOD_SECONDS ),
 							'default'           => '30d',
 							'sanitize_callback' => 'sanitize_text_field',
+							// Explicit validate_callback so WP REST runs the
+							// enum check before the callback. Without it,
+							// some WP versions silently substitute `default`
+							// for invalid values and the request reaches the
+							// handler instead of 400-ing as it should.
+							'validate_callback' => 'rest_validate_request_arg',
 						],
 					],
 				],
@@ -163,14 +169,38 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
+	 * Candidate-fetch ceiling for the in-memory marketplace filter. The date
+	 * window already narrows the result set; this is a defense-in-depth cap so
+	 * a store with millions of orders never pulls the full table into memory.
+	 *
+	 * For a real-world store with at most low-thousands of orders/day, 1000
+	 * easily covers a 30-day window. Once WSN ships and marketplace orders
+	 * become non-trivial, a dedicated indexed query (custom `$wpdb` against
+	 * `wp_wc_orders_meta`) is the future-proof upgrade.
+	 *
+	 * @var int
+	 */
+	const CANDIDATE_FETCH_CEILING = 1000;
+
+	/**
 	 * Fetch WC orders carrying the marketplace meta keys, created since $since.
 	 *
-	 * Uses `wc_get_orders()` rather than raw `WP_Query` so it works against either
-	 * HPOS (`wp_wc_orders` + `wp_wc_orders_meta`) or the legacy CPT (`wp_posts` +
-	 * `wp_postmeta`) — WC's data store abstracts the difference.
+	 * WC 9.2+ raises `wc_doing_it_wrong` when `meta_query` is passed to
+	 * `wc_get_orders()` against an HPOS-enabled store — the new
+	 * `wp_wc_orders_meta` table isn't joined by WC's default query path. To
+	 * stay correct on BOTH HPOS and the legacy CPT, this method:
+	 *
+	 *   1. Fetches a date-windowed candidate batch via `wc_get_orders()`
+	 *      (HPOS-native — no meta filter, just `date_created`).
+	 *   2. PHP-filters the result by the marketplace meta key.
+	 *   3. Truncates to the caller's `$limit`.
+	 *
+	 * The over-pull cost is bounded: the date window narrows the set, and
+	 * CANDIDATE_FETCH_CEILING caps it absolutely. Once WSN order volume warrants
+	 * the perf upgrade we can build an HPOS-native indexed-meta query.
 	 *
 	 * @param int $since Unix timestamp lower bound for `date_created`.
-	 * @param int $limit Maximum number of orders to return.
+	 * @param int $limit Maximum number of orders to return. Use -1 for "all in window".
 	 * @return WC_Order[]
 	 */
 	private function fetch_marketplace_orders( int $since, int $limit ): array {
@@ -178,18 +208,14 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 			return [];
 		}
 
+		$candidate_limit = $limit > 0 ? min( max( $limit * 5, 100 ), self::CANDIDATE_FETCH_CEILING ) : self::CANDIDATE_FETCH_CEILING;
+
 		$orders = wc_get_orders(
 			[
-				'limit'        => $limit,
+				'limit'        => $candidate_limit,
 				'orderby'      => 'date',
 				'order'        => 'DESC',
 				'date_created' => '>=' . $since,
-				'meta_query'   => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
-					[
-						'key'     => self::META_IS_MARKETPLACE,
-						'compare' => 'EXISTS',
-					],
-				],
 			]
 		);
 
@@ -199,10 +225,17 @@ class WC_REST_Payments_WSN_Orders_Controller extends WC_Payments_REST_Controller
 			return [];
 		}
 
-		return array_filter(
-			$orders,
-			static fn( $order ) => $order instanceof WC_Order
+		$marketplace_orders = array_values(
+			array_filter(
+				$orders,
+				static function ( $order ) {
+					return $order instanceof WC_Order
+						&& ! empty( $order->get_meta( self::META_IS_MARKETPLACE, true ) );
+				}
+			)
 		);
+
+		return $limit > 0 ? array_slice( $marketplace_orders, 0, $limit ) : $marketplace_orders;
 	}
 
 	/**
