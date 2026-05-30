@@ -366,8 +366,10 @@ class WSN_Hub {
 	 * of carrying an unused dependency.
 	 */
 	public function register_rest_controllers(): void {
+		require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-orders-controller.php';
+		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-pages-controller.php';
 
 		$api_client = WC_Payments::get_payments_api_client();
 
@@ -376,5 +378,8 @@ class WSN_Hub {
 
 		$orders_controller = new WC_REST_Payments_WSN_Orders_Controller( $api_client );
 		$orders_controller->register_routes();
+
+		$pages_controller = new WC_REST_Payments_WSN_Pages_Controller( $api_client );
+		$pages_controller->register_routes();
 	}
 }

@@ -83,7 +83,11 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 	}
 
 	/**
-	 * GET handler — returns the full settings blob plus the feature flag state.
+	 * GET handler — returns the full settings blob plus the feature flag state
+	 * AND resolved derivations the Profile tab UI needs (logo URL, hero URL,
+	 * synced shop name/tagline, shipping regions, free-shipping summary, refund
+	 * page label). Bundling derivations into the same response avoids two
+	 * round-trips at Profile tab mount time.
 	 *
 	 * @param WP_REST_Request $request The REST request.
 	 * @return WP_REST_Response
@@ -95,8 +99,109 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 			[
 				'settings'        => WSN_Settings::get_all(),
 				'feature_enabled' => WC_Payments_Features::is_wsn_hub_enabled(),
+				'derivations'     => $this->compute_derivations(),
 			]
 		);
+	}
+
+	/**
+	 * Compute the values the Profile tab needs that aren't stored as WSN
+	 * options — they're derived from WC core options, the WP site identity,
+	 * the active theme, the shipping zone configuration, or the resolved
+	 * attachment URLs.
+	 *
+	 * Returns null for any field that doesn't resolve so the React UI can
+	 * render a placeholder. Never throws — degrades silently when WC isn't
+	 * fully loaded.
+	 *
+	 * @return array
+	 */
+	private function compute_derivations(): array {
+		// Image URLs resolve through wp_get_attachment_url which returns false
+		// when the attachment is missing — coerce to null for a cleaner JSON
+		// contract on the client.
+		$resolve_attachment_url = static function ( ?int $attachment_id ): ?string {
+			if ( null === $attachment_id || $attachment_id <= 0 ) {
+				return null;
+			}
+			$url = wp_get_attachment_url( $attachment_id );
+			return is_string( $url ) ? $url : null;
+		};
+
+		$logo_override_id = WSN_Settings::get_logo_override_id();
+		$site_logo_id     = (int) get_theme_mod( 'custom_logo' );
+
+		$logo_url = $resolve_attachment_url( $logo_override_id );
+		if ( null === $logo_url && $site_logo_id > 0 ) {
+			$logo_url = $resolve_attachment_url( $site_logo_id );
+		}
+
+		$refund_page_id    = WSN_Settings::get_refund_page_id();
+		$refund_page_label = null;
+		$refund_page_url   = null;
+		if ( null !== $refund_page_id && $refund_page_id > 0 ) {
+			$post = get_post( $refund_page_id );
+			if ( $post instanceof WP_Post && 'publish' === $post->post_status ) {
+				$refund_page_label = get_the_title( $post );
+				$refund_page_url   = (string) get_permalink( $post );
+			}
+		}
+
+		// Synced-from-WC fields render readonly in the Profile UI — the merchant
+		// edits them at their source (WC > General for shop name/tagline,
+		// WC > Shipping for zones). Sending them in this payload prevents the
+		// Profile tab from needing additional REST calls.
+		$shop_name = (string) get_bloginfo( 'name' );
+		$tagline   = (string) get_bloginfo( 'description' );
+
+		$shipping_regions = $this->collect_shipping_region_names();
+
+		return [
+			'logo_url'          => $logo_url,
+			'logo_source'       => null !== $logo_override_id ? 'override' : 'site_logo',
+			'hero_image_url'    => $resolve_attachment_url( WSN_Settings::get_hero_image_id() ),
+			'shop_name'         => $shop_name,
+			'tagline'           => $tagline,
+			'shipping_regions'  => $shipping_regions,
+			'free_shipping'     => $this->compute_free_shipping(),
+			'refund_page_label' => $refund_page_label,
+			'refund_page_url'   => $refund_page_url,
+			'theme_type'        => function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ? 'block' : 'classic',
+		];
+	}
+
+	/**
+	 * Collect human-readable zone names — what the Profile tab shows in the
+	 * readonly "Shipping regions" field.
+	 *
+	 * @return string[]
+	 */
+	private function collect_shipping_region_names(): array {
+		if ( ! function_exists( 'WC' ) || ! WC()->shipping() ) {
+			return [];
+		}
+
+		$names = [];
+		foreach ( WC()->shipping->get_shipping_zones() as $zone_data ) {
+			if ( isset( $zone_data['zone_name'] ) && '' !== $zone_data['zone_name'] ) {
+				$names[] = (string) $zone_data['zone_name'];
+			}
+		}
+		return $names;
+	}
+
+	/**
+	 * Compute the free-shipping summary structure. Returns null when the
+	 * summarizer class isn't loaded — defensive against future autoload
+	 * changes.
+	 *
+	 * @return array|null
+	 */
+	private function compute_free_shipping(): ?array {
+		if ( ! class_exists( 'WSN_Free_Shipping_Summarizer' ) ) {
+			return null;
+		}
+		return WSN_Free_Shipping_Summarizer::summarize();
 	}
 
 	/**

@@ -7,17 +7,58 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-// Mock @wordpress/api-fetch so the OverviewDashboard's mount-time fetch doesn't
-// trip MSW's "no unhandled requests" guard in tests/js/jest-msw-setup.js. Every
-// post-enable render mounts OverviewDashboard, which immediately calls
-// apiFetch('/wc/v3/payments/wsn/orders?period=30d'). Returning the empty-state
-// payload keeps the dashboard happy without coupling these shell tests to the
-// orders endpoint's contract — that's covered by orders-table.test.js.
+// Mock @wordpress/media-utils — the Profile tab's LogoWithOverride +
+// HeroBannerPicker import MediaUpload/MediaUploadCheck, which depend on
+// wp.media (not in jest). Just rendering the wrapped children is enough for
+// the shell tests; per-tab tests cover the picker UX in detail.
+jest.mock( '@wordpress/media-utils', () => ( {
+	__esModule: true,
+	MediaUpload: ( { render: renderProp } ) =>
+		renderProp ? renderProp( { open: jest.fn() } ) : null,
+	MediaUploadCheck: ( { children } ) => <>{ children }</>,
+} ) );
+
+// Mock @wordpress/api-fetch so the OverviewDashboard's + ProfileTab's
+// mount-time fetches don't trip MSW's "no unhandled requests" guard. Returns
+// a path-aware payload so each tab gets a shape it can render without
+// crashing — the per-tab tests cover the data contracts in detail.
 jest.mock( '@wordpress/api-fetch', () => ( {
 	__esModule: true,
-	default: jest.fn( () =>
-		Promise.resolve( { is_empty: true, stats: {}, orders: [] } )
-	),
+	default: jest.fn( ( { path } ) => {
+		if ( path && path.startsWith( '/wc/v3/payments/wsn/orders' ) ) {
+			return Promise.resolve( {
+				is_empty: true,
+				stats: {},
+				orders: [],
+			} );
+		}
+		if ( path === '/wc/v3/payments/wsn/settings' ) {
+			return Promise.resolve( {
+				settings: {},
+				feature_enabled: true,
+				derivations: {
+					logo_url: null,
+					logo_source: 'site_logo',
+					hero_image_url: null,
+					shop_name: '',
+					tagline: '',
+					shipping_regions: [],
+					free_shipping: {
+						has_free_shipping: false,
+						human_summary: '',
+						zones: [],
+					},
+					refund_page_label: null,
+					refund_page_url: null,
+					theme_type: 'block',
+				},
+			} );
+		}
+		if ( path === '/wc/v3/payments/wsn/pages' ) {
+			return Promise.resolve( { policy_pages: [], other_pages: [] } );
+		}
+		return Promise.resolve( {} );
+	} ),
 } ) );
 
 /**
@@ -130,9 +171,15 @@ describe( 'WsnHubApp', () => {
 			await waitFor( () => {
 				expect( window.location.hash ).toBe( '#profile' );
 			} );
-			expect(
-				screen.getByText( /Profile content lands in RSM-2481/i )
-			).toBeInTheDocument();
+			// Profile tab renders its own heading once mounted — confirms the
+			// click reached the ProfileTab component (not just the tab button).
+			await waitFor( () =>
+				expect(
+					screen.getByRole( 'heading', {
+						name: /Storefront Profile/i,
+					} )
+				).toBeInTheDocument()
+			);
 		} );
 
 		it( 'ignores an unknown hash and falls back to Overview', async () => {
