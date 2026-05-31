@@ -24,7 +24,10 @@ import { colors, typography, spacing, radii } from '../tokens';
  * @param {Function} props.onChange    Called with `{ key, value }` to update a single setting locally.
  */
 const BrandingCard = ( { settings, derivations, onChange } ) => {
-	const wcGeneralEditUrl = '/wp-admin/admin.php?page=wc-settings&tab=general';
+	// Shop name + tagline come from WP's blogname/blogdescription
+	// (get_bloginfo('name')/get_bloginfo('description') on the PHP side),
+	// which are edited in WP > Settings > General — NOT WC > General.
+	const wpGeneralEditUrl = '/wp-admin/options-general.php';
 
 	return (
 		<div
@@ -55,16 +58,24 @@ const BrandingCard = ( { settings, derivations, onChange } ) => {
 				overrideId={ settings.logo_override_id ?? null }
 				resolvedUrl={ derivations.logo_url ?? null }
 				logoSource={ derivations.logo_source ?? 'site_logo' }
-				onChange={ ( value ) =>
-					onChange( { key: 'logo_override_id', value } )
+				onChange={ ( value, previewUrl ) =>
+					onChange( {
+						key: 'logo_override_id',
+						value,
+						previewUrl,
+					} )
 				}
 			/>
 
 			<HeroBannerPicker
 				attachmentId={ settings.hero_image_id ?? null }
 				resolvedUrl={ derivations.hero_image_url ?? null }
-				onChange={ ( value ) =>
-					onChange( { key: 'hero_image_id', value } )
+				onChange={ ( value, previewUrl ) =>
+					onChange( {
+						key: 'hero_image_id',
+						value,
+						previewUrl,
+					} )
 				}
 			/>
 
@@ -79,19 +90,19 @@ const BrandingCard = ( { settings, derivations, onChange } ) => {
 					label={ __( 'Shop name', 'woocommerce-payments' ) }
 					value={ derivations.shop_name ?? null }
 					syncedFrom={ __(
-						'WooCommerce › General › Store name',
+						'Settings › General › Site Title',
 						'woocommerce-payments'
 					) }
-					editUrl={ wcGeneralEditUrl }
+					editUrl={ wpGeneralEditUrl }
 				/>
 				<ReadonlySyncedField
 					label={ __( 'Tagline', 'woocommerce-payments' ) }
 					value={ derivations.tagline ?? null }
 					syncedFrom={ __(
-						'WooCommerce › General › Store tagline',
+						'Settings › General › Tagline',
 						'woocommerce-payments'
 					) }
-					editUrl={ wcGeneralEditUrl }
+					editUrl={ wpGeneralEditUrl }
 				/>
 			</div>
 

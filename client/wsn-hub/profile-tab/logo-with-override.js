@@ -13,16 +13,54 @@
  * WC admin uses for media pickers. We store ONLY the attachment ID; the URL
  * is resolved server-side by the settings GET derivations.
  *
+ * The MediaUploadCheck capability gate (`upload_files`) is omitted because
+ * this page is already gated to `manage_woocommerce`, and importing
+ * MediaUploadCheck from @wordpress/media-utils throws at runtime (it only
+ * lives in @wordpress/block-editor; the named export is undefined here).
+ *
  * Owned by RSM-2481.
  *
  * @format
  */
 
-import { MediaUpload, MediaUploadCheck } from '@wordpress/media-utils';
+import { MediaUpload } from '@wordpress/media-utils';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 import { colors, spacing, radii } from '../tokens';
+
+/**
+ * Belt-and-suspenders guard around MediaUpload's `open` callback.
+ *
+ * The load-time fix is calling wp_enqueue_media() server-side from
+ * WSN_Hub so wp.media is always present when this component renders.
+ * This wrapper is defensive: if a future change ever breaks the
+ * enqueue order (e.g., script handle renamed, dependency dropped,
+ * page hook changed), invoking open() would throw and take down the
+ * whole tab. We swallow the error, log a diagnostic that points at
+ * the actual root cause, and leave the UI usable.
+ *
+ * @param {Function} openFn The `open` callback from MediaUpload's render prop.
+ * @return {Function} An onClick handler safe to attach to a button.
+ */
+const safeOpenMediaModal = ( openFn ) => () => {
+	if (
+		typeof window?.wp?.media !== 'function' ||
+		! window?.wp?.media?.view
+	) {
+		// eslint-disable-next-line no-console -- intentional diagnostic
+		console.error(
+			'[WSN] wp.media is not loaded; check wp_enqueue_media() in WSN_Hub'
+		);
+		return;
+	}
+	try {
+		openFn();
+	} catch ( err ) {
+		// eslint-disable-next-line no-console -- intentional diagnostic
+		console.error( '[WSN] MediaUpload open() threw:', err );
+	}
+};
 
 /**
  * @param {Object}                 props              Component props.
@@ -39,6 +77,7 @@ const LogoWithOverride = ( {
 } ) => {
 	const hasOverride = overrideId !== null && overrideId !== undefined;
 	const usingSiteLogo = logoSource === 'site_logo' && resolvedUrl;
+	const usingSiteIcon = logoSource === 'site_icon' && resolvedUrl;
 	const hasNothing = ! resolvedUrl;
 
 	return (
@@ -94,10 +133,14 @@ const LogoWithOverride = ( {
 			</div>
 
 			<div style={ { paddingTop: '4px', flex: 1, minWidth: 0 } }>
-				{ /* Source attribution dot + copy. Only shown when site logo
-				     is the active source — when override is set, the
-				     attribution is implicit ("you uploaded this"). */ }
-				{ usingSiteLogo && (
+				{ /* Source attribution dot + copy. Only shown when a default
+				     (site logo or site icon) is the active source — when
+				     override is set, the attribution is implicit
+				     ("you uploaded this"). Copy varies by source so the
+				     merchant knows what they're seeing: a proper site
+				     logo is a normal state; falling back to the site icon
+				     (favicon) means they should set a real logo. */ }
+				{ ( usingSiteLogo || usingSiteIcon ) && (
 					<div
 						style={ {
 							display: 'flex',
@@ -114,14 +157,21 @@ const LogoWithOverride = ( {
 								width: '6px',
 								height: '6px',
 								borderRadius: '50%',
-								background: colors.successText,
+								background: usingSiteLogo
+									? colors.successText
+									: colors.textMuted,
 								flexShrink: 0,
 							} }
 						/>
-						{ __(
-							'Using your site logo — pulled from Site Identity',
-							'woocommerce-payments'
-						) }
+						{ usingSiteLogo
+							? __(
+									'Using your site logo — pulled from Site Identity',
+									'woocommerce-payments'
+							  )
+							: __(
+									'Using your site icon — set a proper site logo for better quality',
+									'woocommerce-payments'
+							  ) }
 					</div>
 				) }
 
@@ -148,32 +198,44 @@ const LogoWithOverride = ( {
 						alignItems: 'center',
 					} }
 				>
-					<MediaUploadCheck>
-						<MediaUpload
-							onSelect={ ( media ) =>
-								onChange( media?.id ?? null )
-							}
-							allowedTypes={ [ 'image' ] }
-							value={ overrideId ?? undefined }
-							render={ ( { open } ) => (
-								<Button
-									variant="link"
-									onClick={ open }
-									style={ { fontSize: '12px', padding: 0 } }
-								>
-									{ hasOverride
-										? __(
-												'Choose a different image…',
-												'woocommerce-payments'
-										  )
-										: __(
-												'Replace with custom logo…',
-												'woocommerce-payments'
-										  ) }
-								</Button>
-							) }
-						/>
-					</MediaUploadCheck>
+					<MediaUpload
+						onSelect={ ( media ) =>
+							onChange(
+								media?.id ?? null,
+								// Forward `media.url` (NOT sizes.full.url)
+								// so the optimistic preview matches the
+								// URL the server will return from
+								// wp_get_attachment_url() on the next
+								// fetch. For images >2560px WP uploads
+								// a scaled version — media.url returns
+								// the scaled URL, sizes.full.url returns
+								// the original. Picking one and the
+								// server returning the other makes the
+								// preview shift visibly when save-success
+								// replaces the overlay.
+								media?.url ?? null
+							)
+						}
+						allowedTypes={ [ 'image' ] }
+						value={ overrideId ?? undefined }
+						render={ ( { open } ) => (
+							<Button
+								variant="link"
+								onClick={ safeOpenMediaModal( open ) }
+								style={ { fontSize: '12px', padding: 0 } }
+							>
+								{ hasOverride
+									? __(
+											'Choose a different image…',
+											'woocommerce-payments'
+									  )
+									: __(
+											'Replace with custom logo…',
+											'woocommerce-payments'
+									  ) }
+							</Button>
+						) }
+					/>
 
 					{ hasOverride && (
 						<>
@@ -185,7 +247,7 @@ const LogoWithOverride = ( {
 							</span>
 							<Button
 								variant="link"
-								onClick={ () => onChange( null ) }
+								onClick={ () => onChange( null, null ) }
 								style={ {
 									fontSize: '12px',
 									padding: 0,

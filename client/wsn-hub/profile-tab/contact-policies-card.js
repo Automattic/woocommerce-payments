@@ -11,6 +11,7 @@
 
 import { __ } from '@wordpress/i18n';
 
+import ContactEmailField from './contact-email-field';
 import ReadonlySyncedField from './readonly-synced-field';
 import RefundPagePicker from './refund-page-picker';
 import { colors, spacing, radii } from '../tokens';
@@ -66,49 +67,15 @@ const ContactPoliciesCard = ( { settings, derivations, onChange } ) => {
 					gap: spacing.s4,
 				} }
 			>
-				<div
-					style={ {
-						display: 'flex',
-						flexDirection: 'column',
-						gap: spacing.s1,
-					} }
-				>
-					<label
-						htmlFor="wcpay-wsn-contact-email"
-						style={ {
-							fontSize: '11px',
-							fontWeight: 600,
-							textTransform: 'uppercase',
-							letterSpacing: '0.04em',
-							color: colors.textMuted,
-						} }
-					>
-						{ __( 'Contact email', 'woocommerce-payments' ) }
-					</label>
-					<input
-						id="wcpay-wsn-contact-email"
-						type="email"
-						value={ settings.contact_email ?? '' }
-						onChange={ ( e ) =>
-							onChange( {
-								key: 'contact_email',
-								value: e.target.value || null,
-							} )
-						}
-						placeholder={ __(
-							'hello@example.com',
-							'woocommerce-payments'
-						) }
-						style={ {
-							border: `1px solid ${ colors.borderStrong }`,
-							borderRadius: radii.sm,
-							padding: '7px 10px',
-							fontSize: '13px',
-							color: colors.textPrimary,
-							background: colors.surface,
-						} }
-					/>
-				</div>
+				<ContactEmailField
+					contactEmail={ settings.contact_email }
+					defaultContactEmail={
+						derivations.default_contact_email ?? null
+					}
+					onChange={ ( value ) =>
+						onChange( { key: 'contact_email', value } )
+					}
+				/>
 
 				<RefundPagePicker
 					pageId={ settings.refund_page_id ?? null }

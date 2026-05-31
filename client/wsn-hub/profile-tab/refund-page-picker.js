@@ -24,6 +24,7 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 
 import { colors, spacing, radii } from '../tokens';
+import { formatApiError } from '../utils/format-api-error';
 
 /**
  * @param {Object}      props
@@ -35,6 +36,7 @@ const RefundPagePicker = ( { pageId, editUrl, onChange } ) => {
 	const [ policyPages, setPolicyPages ] = useState( [] );
 	const [ otherPages, setOtherPages ] = useState( [] );
 	const [ isLoading, setIsLoading ] = useState( true );
+	const [ loadError, setLoadError ] = useState( null );
 
 	useEffect( () => {
 		let cancelled = false;
@@ -45,8 +47,10 @@ const RefundPagePicker = ( { pageId, editUrl, onChange } ) => {
 				setOtherPages( payload?.other_pages ?? [] );
 				setIsLoading( false );
 			} )
-			.catch( () => {
-				if ( ! cancelled ) setIsLoading( false );
+			.catch( ( e ) => {
+				if ( cancelled ) return;
+				setLoadError( formatApiError( e ) );
+				setIsLoading( false );
 			} );
 		return () => {
 			cancelled = true;
@@ -57,6 +61,38 @@ const RefundPagePicker = ( { pageId, editUrl, onChange } ) => {
 		const raw = e.target.value;
 		onChange( raw === '' ? null : Number( raw ) );
 	};
+
+	// Render the helper-text content beneath the dropdown. Three mutually
+	// exclusive states (error / selected page / empty hint) — pulled out
+	// of the JSX to avoid a nested ternary in the render tree.
+	let helperContent;
+	if ( loadError ) {
+		helperContent = (
+			<>
+				{ ! colors.errorText && '⚠ ' }
+				{ loadError }
+			</>
+		);
+	} else if ( pageId && editUrl ) {
+		helperContent = (
+			<>
+				{ __(
+					'Shown to shoppers from your Shopping Network storefront.',
+					'woocommerce-payments'
+				) }{ ' ' }
+				<a href={ editUrl } style={ { color: colors.infoBorder } }>
+					{ __( 'Edit page', 'woocommerce-payments' ) }
+				</a>
+			</>
+		);
+	} else {
+		helperContent = __(
+			'Pick a published page that explains your refund and ' +
+				'returns policy. Functional WooCommerce pages (cart, ' +
+				'checkout) are excluded.',
+			'woocommerce-payments'
+		);
+	}
 
 	return (
 		<div
@@ -82,14 +118,25 @@ const RefundPagePicker = ( { pageId, editUrl, onChange } ) => {
 				id="wcpay-wsn-refund-page-picker"
 				value={ pageId ?? '' }
 				onChange={ handleChange }
-				disabled={ isLoading }
+				disabled={ isLoading || !! loadError }
 				style={ {
 					border: `1px solid ${ colors.borderStrong }`,
 					borderRadius: radii.sm,
-					padding: '7px 28px 7px 10px',
+					padding: '7px 32px 7px 10px',
 					fontSize: '13px',
 					color: colors.textPrimary,
-					background: colors.surface,
+					// `appearance: none` strips the browser-native dropdown
+					// arrow. Restore an affordance via an inline SVG
+					// background-image (data URL, no extra HTTP request) so
+					// the field reads as "dropdown" rather than "text input".
+					// Color hex matches colors.textMuted; if that token
+					// changes, update the SVG fill below.
+					background:
+						`${ colors.surface } url("data:image/svg+xml;utf8,` +
+						"<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'>" +
+						"<path d='M1 1l4 4 4-4' fill='none' stroke='%23687078' " +
+						"stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>" +
+						'</svg>") no-repeat right 12px center',
 					cursor: 'pointer',
 					appearance: 'none',
 				} }
@@ -126,31 +173,13 @@ const RefundPagePicker = ( { pageId, editUrl, onChange } ) => {
 			<span
 				style={ {
 					fontSize: '11px',
-					color: colors.textMuted,
+					color: loadError
+						? colors.errorText || colors.textSecondary
+						: colors.textMuted,
 					marginTop: '3px',
 				} }
 			>
-				{ pageId && editUrl ? (
-					<>
-						{ __(
-							'Shown to shoppers from your Shopping Network storefront.',
-							'woocommerce-payments'
-						) }{ ' ' }
-						<a
-							href={ editUrl }
-							style={ { color: colors.infoBorder } }
-						>
-							{ __( 'Edit page', 'woocommerce-payments' ) }
-						</a>
-					</>
-				) : (
-					__(
-						'Pick a published page that explains your refund and ' +
-							'returns policy. Functional WooCommerce pages (cart, ' +
-							'checkout) are excluded.',
-						'woocommerce-payments'
-					)
-				) }
+				{ helperContent }
 			</span>
 		</div>
 	);

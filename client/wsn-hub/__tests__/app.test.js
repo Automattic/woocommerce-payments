@@ -8,14 +8,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Mock @wordpress/media-utils — the Profile tab's LogoWithOverride +
-// HeroBannerPicker import MediaUpload/MediaUploadCheck, which depend on
-// wp.media (not in jest). Just rendering the wrapped children is enough for
-// the shell tests; per-tab tests cover the picker UX in detail.
+// HeroBannerPicker import MediaUpload, which depends on wp.media (not in
+// jest). Just rendering via the render prop is enough for the shell tests;
+// per-tab tests cover the picker UX in detail.
 jest.mock( '@wordpress/media-utils', () => ( {
 	__esModule: true,
 	MediaUpload: ( { render: renderProp } ) =>
 		renderProp ? renderProp( { open: jest.fn() } ) : null,
-	MediaUploadCheck: ( { children } ) => <>{ children }</>,
 } ) );
 
 // Mock @wordpress/api-fetch so the OverviewDashboard's + ProfileTab's

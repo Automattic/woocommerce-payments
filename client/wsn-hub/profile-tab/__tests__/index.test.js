@@ -14,7 +14,6 @@ jest.mock( '@wordpress/media-utils', () => ( {
 	__esModule: true,
 	MediaUpload: ( { render: renderProp } ) =>
 		renderProp ? renderProp( { open: jest.fn() } ) : null,
-	MediaUploadCheck: ( { children } ) => <>{ children }</>,
 } ) );
 
 // Stub apiFetch so the Profile tab's mount-time + pages-controller fetches

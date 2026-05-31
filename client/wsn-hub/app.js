@@ -25,6 +25,7 @@ import OverviewTab from './overview-tab';
 import VisibilityTab from './visibility-tab';
 import ProfileTab from './profile-tab';
 import { colors, spacing } from './tokens';
+import { TabErrorBoundary } from './utils/error-boundary';
 
 const TABS = [
 	{ name: 'overview', title: __( 'Overview', 'woocommerce-payments' ) },
@@ -111,21 +112,25 @@ const WsnHubApp = () => {
 				onSelect={ onSelect }
 			>
 				{ ( tab ) => (
-					<div
-						style={ {
-							padding: `${ spacing.s4 } ${ spacing.s3 } 0`,
-							background: colors.surface,
-						} }
-					>
-						{ tab.name === 'overview' && (
-							<OverviewTab
-								isEnabled={ true }
-								onEnabledChange={ handleEnabledChange }
-							/>
-						) }
-						{ tab.name === 'visibility' && <VisibilityTab /> }
-						{ tab.name === 'profile' && <ProfileTab /> }
-					</div>
+					// Wrap tab content in TabErrorBoundary so an uncaught
+					// throw inside any single tab can't blank the entire hub.
+					<TabErrorBoundary>
+						<div
+							style={ {
+								padding: `${ spacing.s4 } ${ spacing.s3 } 0`,
+								background: colors.surface,
+							} }
+						>
+							{ tab.name === 'overview' && (
+								<OverviewTab
+									isEnabled={ true }
+									onEnabledChange={ handleEnabledChange }
+								/>
+							) }
+							{ tab.name === 'visibility' && <VisibilityTab /> }
+							{ tab.name === 'profile' && <ProfileTab /> }
+						</div>
+					</TabErrorBoundary>
 				) }
 			</TabPanel>
 		</div>
