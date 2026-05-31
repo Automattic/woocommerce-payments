@@ -129,12 +129,44 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 		};
 
 		$logo_override_id = WSN_Settings::get_logo_override_id();
-		$site_logo_id     = (int) get_theme_mod( 'custom_logo' );
 
-		$logo_url = $resolve_attachment_url( $logo_override_id );
-		if ( null === $logo_url && $site_logo_id > 0 ) {
-			$logo_url = $resolve_attachment_url( $site_logo_id );
+		// Build the fallback chain that determines what shows when the
+		// merchant hasn't set a WSN override:
+		//
+		// 1. Site logo — `theme_mod custom_logo` (classic themes) OR
+		// `option site_logo` (block / FSE themes set via the Site
+		// Editor). Block themes never populate `custom_logo`, so
+		// checking only one path silently misses half of installs.
+		// Prefer custom_logo when both are set.
+		// 2. Site icon (favicon) — many small-store merchants have only
+		// a favicon and no proper site logo; using it as a brand
+		// mark in WSN is better than rendering "No logo".
+		//
+		// `default_logo_*` exposes both the URL and the source-of-truth
+		// so the editor UI can tell the merchant which fallback is in
+		// use ('Using your site logo' vs. 'Using your site icon — set a
+		// proper site logo in the Site Editor').
+		$site_logo_id = (int) get_theme_mod( 'custom_logo' );
+		if ( $site_logo_id <= 0 ) {
+			$site_logo_id = (int) get_option( 'site_logo', 0 );
 		}
+
+		$default_logo_url    = null;
+		$default_logo_source = 'none';
+		if ( $site_logo_id > 0 ) {
+			$default_logo_url    = $resolve_attachment_url( $site_logo_id );
+			$default_logo_source = null === $default_logo_url ? 'none' : 'site_logo';
+		}
+		if ( null === $default_logo_url ) {
+			$site_icon_id = (int) get_option( 'site_icon', 0 );
+			if ( $site_icon_id > 0 ) {
+				$default_logo_url    = $resolve_attachment_url( $site_icon_id );
+				$default_logo_source = null === $default_logo_url ? 'none' : 'site_icon';
+			}
+		}
+
+		$override_logo_url = $resolve_attachment_url( $logo_override_id );
+		$logo_url          = $override_logo_url ?? $default_logo_url;
 
 		$refund_page_id    = WSN_Settings::get_refund_page_id();
 		$refund_page_label = null;
@@ -147,26 +179,37 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 			}
 		}
 
-		// Synced-from-WC fields render readonly in the Profile UI — the merchant
-		// edits them at their source (WC > General for shop name/tagline,
-		// WC > Shipping for zones). Sending them in this payload prevents the
-		// Profile tab from needing additional REST calls.
+		// Synced-from-source fields render readonly in the Profile UI — the
+		// merchant edits them at their source (WP Settings > General for the
+		// site title + tagline via blogname/blogdescription, WC > Shipping for
+		// zones). Sending them in this payload prevents the Profile tab from
+		// needing additional REST calls.
 		$shop_name = (string) get_bloginfo( 'name' );
 		$tagline   = (string) get_bloginfo( 'description' );
 
 		$shipping_regions = $this->collect_shipping_region_names();
 
 		return [
-			'logo_url'          => $logo_url,
-			'logo_source'       => null !== $logo_override_id ? 'override' : 'site_logo',
-			'hero_image_url'    => $resolve_attachment_url( WSN_Settings::get_hero_image_id() ),
-			'shop_name'         => $shop_name,
-			'tagline'           => $tagline,
-			'shipping_regions'  => $shipping_regions,
-			'free_shipping'     => $this->compute_free_shipping(),
-			'refund_page_label' => $refund_page_label,
-			'refund_page_url'   => $refund_page_url,
-			'theme_type'        => function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ? 'block' : 'classic',
+			'logo_url'              => $logo_url,
+			// `default_logo_url` is what shows when the merchant clears
+			// the override — could be the site logo OR the site icon.
+			// `default_logo_source` tells the editor which one so the
+			// "Synced from …" copy can be accurate ('site_logo' vs
+			// 'site_icon' vs 'none').
+			'default_logo_url'      => $default_logo_url,
+			'default_logo_source'   => $default_logo_source,
+			'logo_source'           => null !== $logo_override_id && null !== $override_logo_url
+				? 'override'
+				: $default_logo_source,
+			'hero_image_url'        => $resolve_attachment_url( WSN_Settings::get_hero_image_id() ),
+			'shop_name'             => $shop_name,
+			'tagline'               => $tagline,
+			'default_contact_email' => WSN_Settings::resolve_default_contact_email(),
+			'shipping_regions'      => $shipping_regions,
+			'free_shipping'         => $this->compute_free_shipping(),
+			'refund_page_label'     => $refund_page_label,
+			'refund_page_url'       => $refund_page_url,
+			'theme_type'            => function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ? 'block' : 'classic',
 		];
 	}
 
@@ -177,12 +220,15 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 	 * @return string[]
 	 */
 	private function collect_shipping_region_names(): array {
-		if ( ! function_exists( 'WC' ) || ! WC()->shipping() ) {
+		// Use the data-store class directly: `WC()->shipping()` returns
+		// WC_Shipping (the singleton), which does NOT have a get_shipping_zones
+		// method — that lives on WC_Shipping_Zones (the data class).
+		if ( ! class_exists( 'WC_Shipping_Zones' ) ) {
 			return [];
 		}
 
 		$names = [];
-		foreach ( WC()->shipping->get_shipping_zones() as $zone_data ) {
+		foreach ( WC_Shipping_Zones::get_zones() as $zone_data ) {
 			if ( isset( $zone_data['zone_name'] ) && '' !== $zone_data['zone_name'] ) {
 				$names[] = (string) $zone_data['zone_name'];
 			}
@@ -278,9 +324,17 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 
 		$this->maybe_fire_profile_changed( $before_profile );
 
+		// Include derivations in the PUT response so the client can replace
+		// its overlay state (pendingMediaUrls / pre-save settings) with the
+		// server's authoritative resolved values. Without this, save-success
+		// handlers that null-out their overlays would render NO image because
+		// derivations.{logo,hero}_url would be undefined post-save until the
+		// next GET — the merchant sees the preview vanish then reappear on
+		// refresh. Shape must mirror get_settings().
 		$response_body = [
 			'settings'        => WSN_Settings::get_all(),
 			'feature_enabled' => WC_Payments_Features::is_wsn_hub_enabled(),
+			'derivations'     => $this->compute_derivations(),
 		];
 
 		if ( ! empty( $errors ) ) {
@@ -375,9 +429,14 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 				'type'        => [ 'integer', 'null' ],
 			],
 			'contact_email'          => [
-				'description' => __( 'Merchant-curated contact email.', 'woocommerce-payments' ),
+				// Three-state, matching WSN_Settings::set_contact_email:
+				// null = clear override, fall back to default_contact_email derivation
+				// ""   = explicit "no contact email" (preserved as override)
+				// email = explicit override, validated by sanitize_email in the setter
+				// `format=email` would reject "" outright, so it's omitted here
+				// and the setter does the final sanitize_email() validation.
+				'description' => __( 'Merchant contact email override. Null = use WC-derived default, empty string = explicit "no contact", otherwise an email address.', 'woocommerce-payments' ),
 				'type'        => [ 'string', 'null' ],
-				'format'      => 'email',
 			],
 			'refund_page_id'         => [
 				'description' => __( 'Page ID of the published refund policy page.', 'woocommerce-payments' ),

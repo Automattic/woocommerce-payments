@@ -125,6 +125,15 @@ class WSN_Hub {
 			true
 		);
 
+		// `@wordpress/media-utils` MediaUpload opens the WP Media Library modal
+		// via `wp.media.view` — which is NOT bundled with media-utils. Without
+		// wp_enqueue_media(), `wp.media` is undefined and clicking "Replace
+		// logo" or the hero dropzone throws "Cannot read properties of
+		// undefined (reading 'view')". wp_enqueue_media() loads the legacy WP
+		// Media JS stack (media-models, media-views, media-editor) that the
+		// modal depends on.
+		wp_enqueue_media();
+
 		// Webpack emits the SCSS as wsn-hub.css alongside the JS.
 		$css_path = WCPAY_ABSPATH . 'dist/wsn-hub.css';
 		if ( file_exists( $css_path ) ) {
@@ -159,9 +168,28 @@ class WSN_Hub {
 		// wcpaySettings global. The React app gates pre-enable vs. post-enable
 		// rendering on `wcpaySettings.wsn.enabled` so it can paint the right
 		// view immediately on mount without waiting for an API round-trip.
+		//
+		// The `restNonce` is REQUIRED for wp.apiFetch to authenticate against
+		// the WP REST API. Listing `wp-api-fetch` as an asset dependency does
+		// NOT cause WP to localize `window.wpApiSettings` — that only happens
+		// for scripts depending on the older `wp-api` umbrella. Without an
+		// explicit nonce here, the React app's first apiFetch call ships with
+		// no `X-WP-Nonce` header, WP's `rest_cookie_check_errors` rejects it
+		// at 401 `rest_forbidden` (cookie alone is insufficient — REST cookie
+		// auth requires both the auth cookie AND a valid nonce), and the
+		// React tab's useEffect-driven retries multiply the failure into a
+		// visible loop. The JS entry must call
+		// `apiFetch.use( apiFetch.createNonceMiddleware( nonce ) )` BEFORE
+		// any apiFetch fires so the very first request carries the header.
+		// `restNonceEndpoint` lets the middleware self-heal on rotation.
 		$bootstrap = [
 			'featureFlags' => [ 'wsnHub' => true ],
-			'wsn'          => [ 'enabled' => WSN_Settings::is_enabled() ],
+			'wsn'          => [
+				'enabled'           => WSN_Settings::is_enabled(),
+				'restNonce'         => wp_create_nonce( 'wp_rest' ),
+				'restUrl'           => esc_url_raw( rest_url() ),
+				'restNonceEndpoint' => esc_url_raw( admin_url( 'admin-ajax.php?action=rest-nonce' ) ),
+			],
 		];
 		wp_add_inline_script(
 			self::SCRIPT_HANDLE,
@@ -366,6 +394,14 @@ class WSN_Hub {
 	 * of carrying an unused dependency.
 	 */
 	public function register_rest_controllers(): void {
+		// Load the base controller BEFORE the WSN subclasses. WC-Admin (and
+		// Jetpack) preload REST endpoints during admin page render, which
+		// fires `rest_api_init` before WCPay's autoloader has touched
+		// WC_Payments_REST_Controller. Without this explicit require, the
+		// first `extends WC_Payments_REST_Controller` in any subclass file
+		// fatals with "Class not found".
+		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-rest-controller.php';
+
 		require_once WCPAY_ABSPATH . 'includes/wsn/class-wsn-free-shipping-summarizer.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-settings-controller.php';
 		require_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-wsn-orders-controller.php';

@@ -117,20 +117,50 @@ function wcpay_jetpack_init() {
 		array_merge_recursive(
 			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
 			[
-				'jetpack_sync_modules'           =>
+				'jetpack_sync_modules'            =>
 					[
 						'Automattic\Jetpack\Sync\Modules\Full_Sync_Immediately',
 						'Automattic\Jetpack\Sync\Modules\Options',
 						'Automattic\Jetpack\Sync\Modules\Posts',
 						'Automattic\Jetpack\Sync\Modules\Meta',
 					],
-				'jetpack_sync_options_whitelist' =>
+				'jetpack_sync_options_whitelist'  =>
 					[
 						'active_plugins',
 						'blogdescription',
 						'blogname',
 						'timezone_string',
 						'gmt_offset',
+						// `site_logo` (block-theme Site Editor logo) and
+						// `site_icon` (favicon) are needed on the WooPay
+						// side for store-card / indexer surfaces that
+						// don't go through the WSN Profile push (which
+						// only fires for WSN-opted-in merchants). The
+						// WSN storefront still gets the resolved logo_url
+						// via the Profile push; this whitelist entry is
+						// for the broader marketplace + non-WSN use cases.
+						// Classic themes (~85% of sites) store the logo
+						// in `theme_mod custom_logo` instead — covered
+						// by the callable whitelist below.
+						'site_logo',
+						'site_icon',
+					],
+				'jetpack_sync_callable_whitelist' =>
+					[
+						// Classic-theme site logos live in
+						// `theme_mod custom_logo` (a serialized array
+						// inside `theme_mods_<theme>`), which the options
+						// whitelist can't sync — Jetpack mirrors callable
+						// return values instead. WooPay-side store-card /
+						// indexer code reads BOTH `site_logo` (block
+						// themes, above) AND `wcpay_custom_logo_attachment_id`
+						// (this callable) and falls back the same way
+						// WCPay's own compute_derivations() does.
+						// Returns 0 when no custom_logo is set so the
+						// WooPay-side check is a simple `> 0`.
+						'wcpay_custom_logo_attachment_id' => static function () {
+							return (int) get_theme_mod( 'custom_logo' );
+						},
 					],
 			]
 		)

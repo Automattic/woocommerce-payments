@@ -103,8 +103,8 @@ class WC_REST_Payments_WSN_Pages_Controller extends WC_Payments_REST_Controller 
 
 		return rest_ensure_response(
 			[
-				'policy_pages' => array_values( $policy_pages ),
-				'other_pages'  => array_values( $other_pages ),
+				'policy_pages' => $policy_pages,
+				'other_pages'  => $other_pages,
 			]
 		);
 	}
@@ -190,7 +190,7 @@ class WC_REST_Payments_WSN_Pages_Controller extends WC_Payments_REST_Controller 
 			return $policy_ids[ $page_id ];
 		}
 
-		$title = (string) get_the_title( $page_id );
+		$title = html_entity_decode( (string) get_the_title( $page_id ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		$lower = strtolower( $title );
 
 		// Word-bounded matches so e.g. "Returnees Profile" doesn't trigger.
@@ -214,7 +214,7 @@ class WC_REST_Payments_WSN_Pages_Controller extends WC_Payments_REST_Controller 
 	private function format_page( WP_Post $page, ?string $category ): array {
 		$row = [
 			'id'       => (int) $page->ID,
-			'title'    => (string) get_the_title( $page->ID ),
+			'title'    => html_entity_decode( (string) get_the_title( $page->ID ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ),
 			'edit_url' => (string) get_edit_post_link( $page->ID, 'raw' ),
 		];
 		if ( null !== $category ) {

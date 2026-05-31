@@ -218,8 +218,18 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$request->set_param( 'contact_email', 'not-an-email' );
 		$response = rest_get_server()->dispatch( $request );
 
-		// The schema declares `format=email`, which WP validates pre-callback → 400 from the schema layer.
-		$this->assertSame( 400, $response->get_status() );
+		// `contact_email` is intentionally a 3-state field (null / "" / email), so
+		// the schema cannot declare `format=email` (it would reject ""). Validation
+		// runs in the setter (WSN_Settings::set_contact_email → sanitize_email),
+		// and a falsy setter return becomes a 422 with a per-field error map — the
+		// same partial-write contract as test_put_setter_rejection_returns_422_*.
+		$this->assertSame( 422, $response->get_status() );
 		$this->assertNull( WSN_Settings::get_contact_email() );
+
+		$data = $response->get_data();
+		$this->assertArrayHasKey( 'data', $data );
+		$this->assertArrayHasKey( 'body', $data['data'] );
+		$this->assertArrayHasKey( 'errors', $data['data']['body'] );
+		$this->assertArrayHasKey( 'contact_email', $data['data']['body']['errors'] );
 	}
 }

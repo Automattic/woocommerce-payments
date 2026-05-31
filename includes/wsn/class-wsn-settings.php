@@ -217,27 +217,51 @@ class WSN_Settings {
 	}
 
 	/**
-	 * Returns the merchant-curated contact email shown on the WSN storefront, or null if unset.
+	 * Returns the merchant's contact-email preference: null = no override
+	 * (use WC-derived default), '' = explicit "no contact email", or an
+	 * email string for an explicit override.
+	 *
+	 * Three-state: a missing option means the merchant hasn't expressed a
+	 * preference and the composer should fall back to the WC-derived default
+	 * (`woocommerce_email_reply_to_address` when reply-to is configured,
+	 * else `woocommerce_email_from_address`). An empty string is a deliberate
+	 * "I do not want a contact email shown" choice and MUST be preserved
+	 * — the composer treats that as "no contact" rather than re-pulling
+	 * the default.
 	 *
 	 * @return string|null
 	 */
 	public static function get_contact_email(): ?string {
 		$email = get_option( self::OPTION_CONTACT_EMAIL, null );
-		return is_string( $email ) && '' !== $email ? $email : null;
+		// `get_option` returns the literal default (`null`) when the row is
+		// absent from the options table, and the stored value (which can be
+		// `''` after an explicit-empty save) otherwise. `false` only appears
+		// when something else passed `false` as the default — defend against
+		// that by treating it as "unset" too.
+		if ( null === $email || false === $email ) {
+			return null;
+		}
+		return (string) $email;
 	}
 
 	/**
-	 * Sets (or clears) the contact email after sanitization.
+	 * Records the merchant's contact-email preference.
 	 *
-	 * Returns false if the input fails sanitize_email validation (the option is NOT written
-	 * in that case).
+	 *   - `null` clears the override entirely (composer falls back to default).
+	 *   - `''` records "explicit empty" (composer shows no contact email).
+	 *   - A non-empty string is sanitized as an email; invalid input returns
+	 *     false and the previous stored value is preserved.
 	 *
-	 * @param string|null $email Email address, or null to clear.
-	 * @return bool True if accepted, false if the input was a non-empty non-email string.
+	 * @param string|null $email Email address, '' for explicit-empty, or null to clear.
+	 * @return bool True if accepted (including null/empty), false if a non-empty input failed sanitize_email.
 	 */
 	public static function set_contact_email( ?string $email ): bool {
-		if ( null === $email || '' === $email ) {
+		if ( null === $email ) {
 			delete_option( self::OPTION_CONTACT_EMAIL );
+			return true;
+		}
+		if ( '' === $email ) {
+			update_option( self::OPTION_CONTACT_EMAIL, '', false );
 			return true;
 		}
 		$sanitized = sanitize_email( $email );
@@ -246,6 +270,44 @@ class WSN_Settings {
 		}
 		update_option( self::OPTION_CONTACT_EMAIL, $sanitized, false );
 		return true;
+	}
+
+	/**
+	 * Resolves the WC-derived default contact email — what the WSN
+	 * storefront uses when the merchant has not set their own override
+	 * (`get_contact_email() === null`).
+	 *
+	 * Precedence (matches what shoppers see when they reply to WC emails):
+	 *   1. `woocommerce_email_reply_to_address` when `woocommerce_email_reply_to_name`
+	 *      is non-empty (signals merchant has configured Reply-To).
+	 *   2. `woocommerce_email_from_address` (always-present WC From).
+	 *
+	 * Returns null when neither resolves to a valid email — caller treats
+	 * that as "no default available, leave contact empty".
+	 *
+	 * @return string|null
+	 */
+	public static function resolve_default_contact_email(): ?string {
+		$reply_to_name = trim( (string) get_option( 'woocommerce_email_reply_to_name', '' ) );
+		if ( '' !== $reply_to_name ) {
+			$reply_to_addr = trim( (string) get_option( 'woocommerce_email_reply_to_address', '' ) );
+			if ( '' !== $reply_to_addr ) {
+				$sanitized = sanitize_email( $reply_to_addr );
+				if ( '' !== $sanitized ) {
+					return $sanitized;
+				}
+			}
+		}
+
+		$from_addr = trim( (string) get_option( 'woocommerce_email_from_address', '' ) );
+		if ( '' !== $from_addr ) {
+			$sanitized = sanitize_email( $from_addr );
+			if ( '' !== $sanitized ) {
+				return $sanitized;
+			}
+		}
+
+		return null;
 	}
 
 	/**

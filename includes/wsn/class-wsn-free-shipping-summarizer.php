@@ -77,7 +77,7 @@ class WSN_Free_Shipping_Summarizer {
 			'zones'             => [],
 		];
 
-		if ( ! function_exists( 'WC' ) || ! WC()->shipping() ) {
+		if ( ! class_exists( 'WC_Shipping_Zones' ) || ! class_exists( 'WC_Shipping_Zone' ) ) {
 			return $empty;
 		}
 
@@ -108,28 +108,30 @@ class WSN_Free_Shipping_Summarizer {
 	}
 
 	/**
-	 * Collect every zone (including the "Rest of the world" zone, which
-	 * `WC()->shipping->get_shipping_zones()` excludes — that's zone 0,
-	 * accessible via the `WC_Shipping_Zone` constructor).
+	 * Collect every shipping zone (including zone 0 = "Locations not covered
+	 * by your other zones", which `WC_Shipping_Zones::get_zones()` excludes).
+	 *
+	 * Note: `WC_Shipping_Zones::get_zones()` lives on the DATA class, not on
+	 * the WC_Shipping singleton — an easy method-name mix-up.
+	 * `WC()->shipping->get_shipping_zones()` does NOT exist; that path
+	 * fatals with "Call to undefined method".
 	 *
 	 * @return WC_Shipping_Zone[]
 	 */
 	private static function collect_zones(): array {
 		$zones = [];
 
-		foreach ( WC()->shipping->get_shipping_zones() as $zone_data ) {
-			$zone = wc_get_shipping_zone( $zone_data );
-			if ( $zone instanceof WC_Shipping_Zone ) {
-				$zones[] = $zone;
-			}
+		foreach ( WC_Shipping_Zones::get_zones() as $zone_data ) {
+			// Re-instantiate by zone_id because WC_Shipping_Zone's
+			// constructor only accepts numeric IDs or objects with a
+			// zone_id property — NOT the raw arrays get_zones() returns.
+			$zone    = new WC_Shipping_Zone( (int) $zone_data['zone_id'] );
+			$zones[] = $zone;
 		}
 
 		// Zone id 0 = "Locations not covered by your other zones". WC excludes
-		// it from get_shipping_zones() — fetch explicitly.
-		$rest_of_world = new WC_Shipping_Zone( 0 );
-		if ( $rest_of_world instanceof WC_Shipping_Zone ) {
-			$zones[] = $rest_of_world;
-		}
+		// it from get_zones() — fetch explicitly.
+		$zones[] = new WC_Shipping_Zone( 0 );
 
 		return $zones;
 	}
@@ -163,10 +165,16 @@ class WSN_Free_Shipping_Summarizer {
 				continue;
 			}
 
+			// Normalize `either` (min_amount OR coupon) to `min_amount` in the
+			// response: the coupon arm is unreachable for the WSN shopper, so
+			// the only path that matters downstream is the merchant minimum.
+			// Keeping `either` would force every consumer to re-derive this.
+			$normalized_requires = ( 'either' === $requires ) ? 'min_amount' : (string) $requires;
+
 			$candidate = [
 				'zone_name'  => $zone->get_zone_name(),
 				'min_amount' => $min_amount,
-				'requires'   => (string) $requires,
+				'requires'   => $normalized_requires,
 			];
 
 			// If multiple free-shipping instances are configured in a single
