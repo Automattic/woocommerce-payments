@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Update WSN Profile sync architecture doc to reflect Option B (locked 2026-05-31): storefront /wsn/v1/stores/{host} handler merges the Profile table onto the ES store object; ES projection stays unchanged.

@@ -94,19 +94,27 @@ Composed payload is ~5–20 KB serialized.
 │       ▼                                                      │
 │  wp_wsn_merchant_profile (custom InnoDB table, PK blog_id)   │
 │       │                                                      │
-│       │  (read path)                                         │
+│       │  (read path — Option B, LOCKED 2026-05-31)           │
 │       ▼                                                      │
-│  StoresHandler::handle_by_url($host)                         │
-│       │  L1: wp_cache_get → DataStore::get_by_blog_id        │
-│       │  Lazy-fetch fallback on cache+DB miss                │
+│  /wsn/v1/stores/{host} handler                               │
+│       │  1. Read ES store doc (EsSource::project_store_full) │
+│       │     unchanged — projects basic store fields          │
+│       │  2. Read WSN Profile table by blog_id                │
+│       │     L1: wp_cache_get → DataStore::get_by_blog_id     │
+│       │     Lazy-fetch fallback on cache+DB miss             │
+│       │  3. Merge Profile fields onto the store object       │
+│       │     (logo_url, description, contact_email,           │
+│       │      return_policy, shipping_promise, …)             │
 │       ▼                                                      │
-│  EsSource::project_store_full($es_doc, $wsn_profile)         │
-│       │  Merges flat fields + JSON blobs                     │
+│  marketplaceStoreByUrlToStorefront — store.* → shop.*        │
+│       │  (unchanged adapter)                                 │
 │       ▼                                                      │
 │  Storefront render (Photon-proxied logo/hero, inline thumb)  │
 │                                                              │
 └──────────────────────────────────────────────────────────────┘
 ```
+
+> **Architecture note — Option B (LOCKED 2026-05-31):** The Profile pipeline does NOT go through the ES `woo-product-catalog` index. That index is **visibility-only** — it carries `wcpay_wsn_enabled` (RSM-3946) so the marketplace knows which merchants to include. Profile data flows via outbound POST → WooPay-server table → handler-side merge onto the ES store object. This is "Option B" in the handoff at `.claude/tmp/artifacts/wsn-profile-storefront-handoff.md`. The earlier draft of this doc described an EsSource-side merge — that path was rejected; the storefront `/wsn/v1/stores/{host}` handler does the merge instead. ES projection stays simple; the WSN Profile read path is bolted on at the handler layer.
 
 ## Sync flow
 
@@ -208,7 +216,7 @@ End-to-end budget: trigger → DB write ≈ 60s (debounce) + ~500ms (POST round-
 
 ## Storefront contract reconciliation
 
-The WSN storefront on the WooPay side **already has consumer code wired** — the hero reads a merchant logo and a 4-column policies footer (About / Shipping / Returns / Contact) reads merchant policy fields. They render null today because `src/Shop/Marketplace/EsSource.php` hardcodes those fields (e.g. `logo_url => null`). The Profile push is what lights them up. The composer payload is ~90% aligned with the storefront's `store.*` contract; the deltas below close the gap.
+The WSN storefront on the WooPay side **already has consumer code wired** — the hero reads a merchant logo and a 4-column policies footer (About / Shipping / Returns / Contact) reads merchant policy fields. They render null today because the values aren't populated anywhere — the ES projection (`src/Shop/Marketplace/EsSource.php`) intentionally returns null for these fields, and per Option B (LOCKED 2026-05-31) it stays that way. The Profile push lights them up via the storefront `/wsn/v1/stores/{host}` handler, which reads the Profile table AFTER ES and merges the fields onto the store object. The composer payload is ~90% aligned with the storefront's `store.*` contract; the deltas below close the gap.
 
 > **Source:** the field-by-field mapping was authored by the WooPay-side Claude Code session and lives at `.claude/tmp/artifacts/wsn-profile-storefront-handoff.md` (gitignored — local-only; reference but don't link from public docs). The on-wire references it points at: `client/shop/utils/marketplace-adapters.js::marketplaceStoreByUrlToStorefront`, `client/shop/components/shop-policies/index.js`, `client/shop/pages/storefront/index.js`, and `src/Shop/Marketplace/EsSource.php` — all in the woopay repo.
 
@@ -377,13 +385,18 @@ CREATE TABLE wp_wsn_merchant_profile (
 Hot path: `/shop/<host>` storefront render.
 
 ```
-GET /shop/northernpizzaequipment.com
+GET /shop/northernpizzaequipment.com → /wsn/v1/stores/{host} handler
 
-1. StoresHandler::handle_by_url($host)
-   └── Get blog_id for host
-         (existing ES indexer carries this; ~5-15ms cold, ~0.2ms cached)
+1. Resolve host → blog_id
+   (existing ES indexer carries this; ~5-15ms cold, ~0.2ms cached)
 
-2. WsnMerchantProfileDataStore::get_by_blog_id($blog_id)
+2. Read ES store object via EsSource::project_store_full()
+   (UNCHANGED — projection still returns null for logo_url / contact_email /
+    return_policy / shipping_promise / etc. — see comments
+    "❌ not indexed — pending Merchant Hub sync". ES is visibility-only;
+    those fields are filled by step 4 below, not by editing this projection.)
+
+3. WsnMerchantProfileDataStore::get_by_blog_id($blog_id)
    ├── L1: wp_cache_get("wsn_merchant_profile:{$blog_id}", 'wsn')
    │       HIT (~99% expected): return cached row. ~0.2ms. DONE.
    └── MISS:
@@ -392,11 +405,14 @@ GET /shop/northernpizzaequipment.com
        ├── wp_cache_set(..., HOUR_IN_SECONDS)
        └── Return row
 
-3. EsSource::project_store_full($es_doc, $wsn_profile)
-   ├── Today returns null for logo_url/cover/accent/contact_email/...
-   │   (commented "❌ not indexed — pending Merchant Hub sync")
-   └── After: merge $wsn_profile fields when present; null otherwise
-         (lazy-fetch fallback handles never-pushed merchants — see below)
+4. Merge Profile row onto the store object
+   (handler-side, NOT inside EsSource. Apply the field renames from the
+    Storefront contract reconciliation: profile.tagline → store.description,
+    profile.shipping_promise → store.shipping_promise, profile.return_policy
+    → store.return_policy, profile.logo_url → store.logo_url, etc.)
+
+5. marketplaceStoreByUrlToStorefront(store) → shop
+   (unchanged adapter; receives the merged store object)
 ```
 
 **Cache invalidation (write path):** the controller's upsert fires `wp_cache_delete` on both keys (`wsn_merchant_profile:{blog_id}` and `wsn_merchant_profile_by_host:{host}`) immediately on successful write.
@@ -506,8 +522,8 @@ The reconciliation cron also runs the same schema validator on every GET respons
 
 **WooPay-side (modifications):**
 
-- `src/Shop/Marketplace/EsSource.php::project_store_full()` — merge `WsnMerchantProfileDataStore::get_by_blog_id` results, replacing the current `null` fields
-- `src/Shop/Marketplace/StoresHandler.php` — call DataStore in the storefront render path
+- `src/Shop/Marketplace/StoresHandler.php` (or the `/wsn/v1/stores/{host}` handler equivalent) — call `WsnMerchantProfileDataStore::get_by_blog_id` AFTER `EsSource::project_store_full()` returns, then merge the Profile row's fields onto the store object (`logo_url`, `description`, `contact_email`, `return_policy`, `shipping_promise`, etc.). The field-rename mapping from "Storefront contract reconciliation" is applied here.
+- `src/Shop/Marketplace/EsSource.php::project_store_full()` — UNCHANGED. Per Option B the ES projection stays simple (still returns `null` for the Profile-owned fields); the handler-side merge is what fills them. Earlier draft of this doc described editing project_store_full — that path was superseded 2026-05-31.
 
 **Rollout sequence:**
 
@@ -593,7 +609,10 @@ That woopay-repo doc should be edited or marked superseded by whoever owns it. T
   - `src/Favorites/Init.php` — table install pattern
   - `src/RESTUtils.php::is_valid_request_signature_within_acceptance_window` — auth pattern
   - `src/User/UserExistsRestController.php` — existing Jetpack-signed inbound endpoint reference
-  - `src/Shop/Marketplace/EsSource.php::project_store_full` — storefront read merge point
+  - `client/shop/utils/marketplace-adapters.js::marketplaceStoreByUrlToStorefront` — store.* → shop.* adapter (consumer of the merged store object)
+  - `client/shop/components/shop-policies/index.js` — footer policies render (consumes description, contact_email, return_policy, shipping_promise)
+  - `client/shop/pages/storefront/index.js` — hero render (consumes shop.logo from store.logo_url)
+  - `src/Shop/Marketplace/EsSource.php::project_store_full` — ES projection (UNCHANGED under Option B; Profile data is merged at the storefront handler, NOT here)
 - **External:**
   - `docs/wsn/merchant-appearance-sync.md` (woopay repo) — partially superseded by this doc
   - `docs/wsn/api-contract.md` (woopay repo) — §1 (auth) needs revision
