@@ -1,7 +1,6 @@
 # WSN Profile Sync Architecture
 
 **Last updated:** 2026-05-30
-
 How WSN Profile data flows from each WCPay merchant site to a new WooPay-server table keyed by `blog_id`, optimized for read-heavy shopper-facing access. Owned by RSM-3945 (Profile emitter) and the WooPay-side companion work (table + controller + storefront read-path merge).
 
 This doc supersedes the contradicted parts of WooPay's `docs/wsn/merchant-appearance-sync.md` (which has both a `wp_options`-per-blog and a `host`-keyed-custom-table version) and resolves the open questions flagged in `.claude/tmp/artifacts/RSM-3930/plan.md`.
@@ -134,7 +133,26 @@ Composed payload is ~5–20 KB serialized.
        blog_id: <recoverable from Jetpack but included for completeness>,
        host: parse_url(home_url(), PHP_URL_HOST),
        settings: WSN_Settings::get_all(),
-       derivations: $controller->compute_derivations(),
+       derivations: {
+         // Key names pre-aligned to the storefront contract — see
+         // "Storefront contract reconciliation" below for the why.
+         shop_name: ...,
+         description: ...,           // RENAMED from `tagline` (footer reads store.description)
+         logo_url: ...,              // passthrough to store.logo_url (closes WOOPAY-458)
+         logo_width: ...,            // for wordmark-swap aspect-ratio/resolution gate
+         logo_height: ...,
+         logo_source: ...,
+         hero_image_url: ...,
+         contact_email: ...,
+         shipping_promise: ...,      // FLATTENED from free_shipping.human_summary (string)
+         return_policy: {            // grouped: URL + label; footer needs linkification (RSM-3945)
+           url: ...,
+           label: ...,
+         },
+         theme_type: ...,
+         shipping_regions: ...,
+         free_shipping: ...,         // full object retained for non-footer consumers
+       },
        appearance: WC_Payments_Styles_Cache::get_woopay_appearance(),
        font_rules: ...,
        extracted_brand: ...,
@@ -187,6 +205,52 @@ Composed payload is ~5–20 KB serialized.
 ```
 
 End-to-end budget: trigger → DB write ≈ 60s (debounce) + ~500ms (POST round-trip).
+
+## Storefront contract reconciliation
+
+The WSN storefront on the WooPay side **already has consumer code wired** — the hero reads a merchant logo and a 4-column policies footer (About / Shipping / Returns / Contact) reads merchant policy fields. They render null today because `src/Shop/Marketplace/EsSource.php` hardcodes those fields (e.g. `logo_url => null`). The Profile push is what lights them up. The composer payload is ~90% aligned with the storefront's `store.*` contract; the deltas below close the gap.
+
+> **Source:** the field-by-field mapping was authored by the WooPay-side Claude Code session and lives at `.claude/tmp/artifacts/wsn-profile-storefront-handoff.md` (gitignored — local-only; reference but don't link from public docs). The on-wire references it points at: `client/shop/utils/marketplace-adapters.js::marketplaceStoreByUrlToStorefront`, `client/shop/components/shop-policies/index.js`, `client/shop/pages/storefront/index.js`, and `src/Shop/Marketplace/EsSource.php` — all in the woopay repo.
+
+**The storefront contract** (`store.*` fields consumed by the adapter → UI):
+
+| `store.*` field | Rendered by | Shape |
+|---|---|---|
+| `store.logo_url` | hero logo (`shop.logo`) | image URL |
+| `store.description` | footer "About" | plain-text tagline |
+| `store.contact_email` | footer "Contact" | email string (`mailto:`) |
+| `store.return_policy` | footer "Returns" | **plain text today** (needs link upgrade — see below) |
+| `store.shipping_promise` | footer "Shipping" | **flat string** |
+| `store.extracted_brand` | PDP/storefront brand tint (`--m-bg` / accent) | object (already consumed) |
+
+The `ShopPolicies` footer returns `null` when all four policy fields are empty — which is why most storefronts show no footer at all today.
+
+### The 4 reconciliations (composer payload → storefront contract)
+
+| # | Composer field today | Storefront expects | Change | Linear |
+|---|---|---|---|---|
+| 1 | `derivations.logo_url` computed but null on the index | `store.logo_url` (string) | **Passthrough** as `store.logo_url`. Also carry `logo_width` + `logo_height` — storefront wants to gate a wordmark-swap on aspect ratio + min resolution. | WOOPAY-458 |
+| 2 | `derivations.tagline` | `store.description` | **Rename to `description`** in composer output (footer reads `store.description`, not `store.tagline`). | — |
+| 3 | `derivations.free_shipping.human_summary` (nested) | `store.shipping_promise` (flat string) | **Flatten to `shipping_promise`** at the top level of `derivations`. Keep the full `free_shipping` object for non-footer consumers; the storefront just wants the summarizer string at the surface. | — |
+| 4 | `derivations.refund_page_url` + `derivations.refund_page_label` | `store.return_policy` | **Carry BOTH** as `return_policy: { url, label }`. See decision callout below. | RSM-3945 |
+
+### Decision: `return_policy` carries URL + label (linkification required)
+
+**The user must be able to read the URL.** Plain-text rendering of a long refund-policy URL is unreadable and untrustworthy. The footer renders `return_policy` as plain text today (`<p>{text}</p>`), so emitting either field alone is wrong:
+
+- **Label only** → user can't navigate or verify destination.
+- **URL only as text** → unreadable; user can't tell if it's the merchant's site.
+
+**Resolution:** composer carries **both** the URL and the label. The WooPay-side footer needs a linkification update so `return_policy` renders as a clickable `<a href={url}>{label || url}</a>`, not raw text. **This is RSM-3945 work that requires coordinated WooPay-side change** — the merchant-side composer payload alone doesn't fix the UI. See "Cross-repo decisions" below.
+
+### Anti-patterns (from the handoff — enforce in this path)
+
+- **No name-search / fuzzy resolution fallback** anywhere in this Profile path. Resolving merchant/store data by approximate name match on a payments surface risks binding the wrong store's data — documented WSN no-go. Use `blog_id` exclusively. See WOOPAY-454.
+- **No address PII** — never emit `woocommerce_store_address*` or `woocommerce_store_postcode`. Country / region / city only. Already documented under "Privacy invariants" and enforced 3× (composer allowlist, controller schema, unit tests).
+
+### Cross-repo decisions (open)
+
+- **`return_policy` footer linkification** — the composer change in this repo (carry `url` + `label`) is necessary but not sufficient. The WooPay-side `client/shop/components/shop-policies/index.js` needs to render an `<a>` for `return_policy` instead of `<p>{text}</p>`. Flag on RSM-3945; coordinate with WooPay engineering before flipping the storefront read flag in Phase 3 of the rollout. Without the WooPay-side change, shipping the new composer payload renders a raw URL string in the footer — worse than today's null-collapse-to-no-footer behavior.
 
 ## Table schema
 
@@ -515,6 +579,8 @@ That woopay-repo doc should be edited or marked superseded by whoever owns it. T
   - [RSM-3945](https://linear.app/a8c/issue/RSM-3945) — Profile emitter (this work)
   - [RSM-3946](https://linear.app/a8c/issue/RSM-3946) — Jetpack Sync visibility whitelist (separate path)
   - [RSM-2481](https://linear.app/a8c/issue/RSM-2481) — Profile tab UI (already shipped in the umbrella PR)
+  - [WOOPAY-458](https://linear.app/a8c/issue/WOOPAY-458) — Storefront logo path: Hub's resolved `logo_url` → `store.logo_url` (closed by composer passthrough)
+  - [WOOPAY-454](https://linear.app/a8c/issue/WOOPAY-454) — No name-search / fuzzy resolution on payments surfaces (enforce blog_id-only lookups in this Profile path)
 - **WCPay code:**
   - [class-wsn-settings.php](../../includes/wsn/class-wsn-settings.php) — option storage
   - [class-wc-rest-payments-wsn-settings-controller.php](../../includes/admin/class-wc-rest-payments-wsn-settings-controller.php) — `compute_derivations()` is the canonical payload shape

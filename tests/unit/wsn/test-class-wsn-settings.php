@@ -22,6 +22,11 @@ class WSN_Settings_Test extends WCPAY_UnitTestCase {
 		delete_option( WSN_Settings::OPTION_LOGO_OVERRIDE_ID );
 		delete_option( WSN_Settings::OPTION_CONTACT_EMAIL );
 		delete_option( WSN_Settings::OPTION_REFUND_PAGE_ID );
+		// WC email options touched by resolve_default_contact_email() tests — clean here
+		// too so a failing test that bails before its inline cleanup doesn't pollute siblings.
+		delete_option( 'woocommerce_email_reply_to_name' );
+		delete_option( 'woocommerce_email_reply_to_address' );
+		delete_option( 'woocommerce_email_from_address' );
 		parent::tear_down();
 	}
 
@@ -140,10 +145,65 @@ class WSN_Settings_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( WSN_Settings::get_contact_email() );
 	}
 
-	public function test_set_contact_email_with_null_or_empty_clears_option() {
+	public function test_set_contact_email_with_null_clears_option() {
 		WSN_Settings::set_contact_email( 'hello@example.com' );
 		$this->assertTrue( WSN_Settings::set_contact_email( null ) );
 		$this->assertNull( WSN_Settings::get_contact_email() );
+	}
+
+	/**
+	 * Locks in the 3-state contract for contact_email: null (unset), '' (explicit empty),
+	 * and a valid email are all distinct states. Without this test, one careless
+	 * `empty( $email )` swap inside set_contact_email() silently reverts a merchant's
+	 * choice to "no contact email" back to "fall back to WC defaults" — invisibly.
+	 */
+	public function test_set_contact_email_with_empty_string_persists_explicit_empty() {
+		$this->assertTrue( WSN_Settings::set_contact_email( '' ) );
+		// Option row exists with empty value (not deleted) — pass `null` default so we
+		// can distinguish "missing row" from "row with empty string".
+		$this->assertSame( '', get_option( WSN_Settings::OPTION_CONTACT_EMAIL, null ) );
+		$this->assertSame( '', WSN_Settings::get_contact_email() );
+	}
+
+	public function test_resolve_default_contact_email_uses_reply_to_when_reply_to_name_is_set() {
+		update_option( 'woocommerce_email_reply_to_name', 'Store Support' );
+		update_option( 'woocommerce_email_reply_to_address', 'support@example.com' );
+		update_option( 'woocommerce_email_from_address', 'wordpress@example.com' );
+
+		$this->assertSame( 'support@example.com', WSN_Settings::resolve_default_contact_email() );
+
+		delete_option( 'woocommerce_email_reply_to_name' );
+		delete_option( 'woocommerce_email_reply_to_address' );
+		delete_option( 'woocommerce_email_from_address' );
+	}
+
+	public function test_resolve_default_contact_email_falls_back_to_from_when_no_reply_to_name() {
+		delete_option( 'woocommerce_email_reply_to_name' );
+		update_option( 'woocommerce_email_from_address', 'wordpress@example.com' );
+
+		$this->assertSame( 'wordpress@example.com', WSN_Settings::resolve_default_contact_email() );
+
+		delete_option( 'woocommerce_email_from_address' );
+	}
+
+	public function test_resolve_default_contact_email_returns_null_when_neither_set() {
+		delete_option( 'woocommerce_email_reply_to_name' );
+		delete_option( 'woocommerce_email_reply_to_address' );
+		delete_option( 'woocommerce_email_from_address' );
+
+		$this->assertNull( WSN_Settings::resolve_default_contact_email() );
+	}
+
+	public function test_resolve_default_contact_email_skips_invalid_reply_to_and_falls_through() {
+		update_option( 'woocommerce_email_reply_to_name', 'Store' );
+		update_option( 'woocommerce_email_reply_to_address', 'not-an-email' );
+		update_option( 'woocommerce_email_from_address', 'valid@example.com' );
+
+		$this->assertSame( 'valid@example.com', WSN_Settings::resolve_default_contact_email() );
+
+		delete_option( 'woocommerce_email_reply_to_name' );
+		delete_option( 'woocommerce_email_reply_to_address' );
+		delete_option( 'woocommerce_email_from_address' );
 	}
 
 	public function test_set_refund_page_id_rejects_when_page_not_published() {
