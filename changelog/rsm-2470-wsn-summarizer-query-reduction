@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Eliminate redundant shipping-zone DB queries in WSN_Free_Shipping_Summarizer by reusing data already loaded by WC_Shipping_Zones::get_zones() (was 2N+2 extra queries per Hub Profile load).

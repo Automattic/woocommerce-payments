@@ -81,13 +81,13 @@ class WSN_Free_Shipping_Summarizer {
 			return $empty;
 		}
 
-		$zone_objects = self::collect_zones();
-		if ( empty( $zone_objects ) ) {
+		$zones = self::collect_zones();
+		if ( empty( $zones ) ) {
 			return $empty;
 		}
 
 		$zone_summaries = [];
-		foreach ( $zone_objects as $zone ) {
+		foreach ( $zones as $zone ) {
 			$summary = self::summarize_zone( $zone );
 			if ( null !== $summary ) {
 				$zone_summaries[] = $summary;
@@ -109,29 +109,52 @@ class WSN_Free_Shipping_Summarizer {
 
 	/**
 	 * Collect every shipping zone (including zone 0 = "Locations not covered
-	 * by your other zones", which `WC_Shipping_Zones::get_zones()` excludes).
+	 * by your other zones", which `WC_Shipping_Zones::get_zones()` excludes)
+	 * as a normalized `[ 'zone_name' => string, 'shipping_methods' => WC_Shipping_Method[] ]`
+	 * shape.
 	 *
 	 * Note: `WC_Shipping_Zones::get_zones()` lives on the DATA class, not on
 	 * the WC_Shipping singleton — an easy method-name mix-up.
 	 * `WC()->shipping->get_shipping_zones()` does NOT exist; that path
 	 * fatals with "Call to undefined method".
 	 *
-	 * @return WC_Shipping_Zone[]
+	 * Performance: `WC_Shipping_Zones::get_zones()` already returns the
+	 * shipping methods batched into each zone_data entry (see WC core —
+	 * `get_data() + 'shipping_methods' => $zone_object->get_shipping_methods( false, 'admin' )`).
+	 * Reusing them avoids 2N+2 extra DB queries per call (one zone read
+	 * and one methods read per zone) — relevant because this runs on
+	 * every GET/PUT /wsn/settings request.
+	 *
+	 * Zone 0 is the only zone that still requires a fresh
+	 * `new WC_Shipping_Zone( 0 )` + `get_shipping_methods()` pair: WC
+	 * deliberately excludes it from `get_zones()` and offers no batched
+	 * alternative. It's a single zone, so the extra two queries are
+	 * acceptable.
+	 *
+	 * @return array<array{zone_name: string, shipping_methods: array}> Each entry has
+	 *   `zone_name` (string) and `shipping_methods` (array of WC_Shipping_Method,
+	 *   may include disabled methods — filter in the caller).
 	 */
 	private static function collect_zones(): array {
 		$zones = [];
 
 		foreach ( WC_Shipping_Zones::get_zones() as $zone_data ) {
-			// Re-instantiate by zone_id because WC_Shipping_Zone's
-			// constructor only accepts numeric IDs or objects with a
-			// zone_id property — NOT the raw arrays get_zones() returns.
-			$zone    = new WC_Shipping_Zone( (int) $zone_data['zone_id'] );
-			$zones[] = $zone;
+			$zones[] = [
+				'zone_name'        => (string) $zone_data['zone_name'],
+				'shipping_methods' => isset( $zone_data['shipping_methods'] ) && is_array( $zone_data['shipping_methods'] )
+					? $zone_data['shipping_methods']
+					: [],
+			];
 		}
 
 		// Zone id 0 = "Locations not covered by your other zones". WC excludes
-		// it from get_zones() — fetch explicitly.
-		$zones[] = new WC_Shipping_Zone( 0 );
+		// it from get_zones() — fetch explicitly. Normalize into the same shape
+		// so summarize_zone() only sees one structure.
+		$rest_of_world = new WC_Shipping_Zone( 0 );
+		$zones[]       = [
+			'zone_name'        => $rest_of_world->get_zone_name(),
+			'shipping_methods' => $rest_of_world->get_shipping_methods( false ),
+		];
 
 		return $zones;
 	}
@@ -141,11 +164,16 @@ class WSN_Free_Shipping_Summarizer {
 	 *
 	 * Returns null when the zone has none — caller skips silently.
 	 *
-	 * @param WC_Shipping_Zone $zone Zone to inspect.
+	 * Accepts the normalized shape produced by `collect_zones()` rather than
+	 * a `WC_Shipping_Zone` so we don't trigger an extra DB read for the
+	 * methods that `WC_Shipping_Zones::get_zones()` already loaded.
+	 *
+	 * @param array{zone_name: string, shipping_methods: array} $zone Normalized zone shape.
+	 *   `shipping_methods` may include disabled methods — they're filtered out here.
 	 * @return array|null
 	 */
-	private static function summarize_zone( WC_Shipping_Zone $zone ): ?array {
-		$methods = $zone->get_shipping_methods( true ); // true = enabled only.
+	private static function summarize_zone( array $zone ): ?array {
+		$methods = $zone['shipping_methods'];
 		if ( empty( $methods ) ) {
 			return null;
 		}
@@ -154,6 +182,12 @@ class WSN_Free_Shipping_Summarizer {
 
 		foreach ( $methods as $method ) {
 			if ( 'free_shipping' !== $method->id ) {
+				continue;
+			}
+
+			// `get_zones()` returns enabled + disabled; mirror the previous
+			// `get_shipping_methods( true )` behavior by skipping disabled.
+			if ( ! $method->is_enabled() ) {
 				continue;
 			}
 
@@ -172,7 +206,7 @@ class WSN_Free_Shipping_Summarizer {
 			$normalized_requires = ( 'either' === $requires ) ? 'min_amount' : (string) $requires;
 
 			$candidate = [
-				'zone_name'  => $zone->get_zone_name(),
+				'zone_name'  => $zone['zone_name'],
 				'min_amount' => $min_amount,
 				'requires'   => $normalized_requires,
 			];
