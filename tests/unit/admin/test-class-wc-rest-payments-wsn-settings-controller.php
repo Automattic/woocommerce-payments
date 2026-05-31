@@ -62,6 +62,12 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		delete_option( WSN_Settings::OPTION_CONTACT_EMAIL );
 		delete_option( WSN_Settings::OPTION_REFUND_PAGE_ID );
 
+		// The logo-derivation tests poke site identity options + theme mods;
+		// reset them defensively so test order doesn't matter.
+		remove_theme_mod( 'custom_logo' );
+		delete_option( 'site_logo' );
+		delete_option( 'site_icon' );
+
 		wp_set_current_user( 0 );
 		parent::tear_down();
 	}
@@ -228,8 +234,198 @@ class WC_REST_Payments_WSN_Settings_Controller_Test extends WCPAY_UnitTestCase {
 
 		$data = $response->get_data();
 		$this->assertArrayHasKey( 'data', $data );
-		$this->assertArrayHasKey( 'body', $data['data'] );
-		$this->assertArrayHasKey( 'errors', $data['data']['body'] );
-		$this->assertArrayHasKey( 'contact_email', $data['data']['body']['errors'] );
+		// Per-field detail must live at the canonical WP-REST validation envelope
+		// location (`data.params`) — that's where the client-side `formatApiError`
+		// reads it. The map is keyed by field name.
+		$this->assertArrayHasKey( 'params', $data['data'] );
+		$this->assertIsArray( $data['data']['params'] );
+		$this->assertArrayHasKey( 'contact_email', $data['data']['params'] );
+		$this->assertIsString( $data['data']['params']['contact_email'] );
+	}
+
+	public function test_put_response_includes_derivations_after_successful_save() {
+		// Regression guard for the optimistic-preview reconciliation path: the
+		// PUT response MUST mirror the GET shape (`settings` + `feature_enabled`
+		// + `derivations`) so the client can replace its pending-overlay state
+		// with the server's authoritative resolved URLs the instant a save
+		// succeeds. Without this, save-success handlers null out their overlays
+		// and the preview vanishes until the next GET.
+		$this->authenticate_as_shop_manager();
+
+		$request = new WP_REST_Request( 'PUT', self::ROUTE );
+		$request->set_param( 'contact_email', 'hello@example.com' );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+
+		$body = $response->get_data();
+		$this->assertArrayHasKey( 'derivations', $body );
+
+		$expected_keys = [
+			'logo_url',
+			'default_logo_url',
+			'default_logo_source',
+			'hero_image_url',
+			'shop_name',
+			'tagline',
+			'default_contact_email',
+			'shipping_regions',
+			'free_shipping',
+			'refund_page_label',
+			'refund_page_url',
+			'theme_type',
+		];
+		foreach ( $expected_keys as $key ) {
+			$this->assertArrayHasKey(
+				$key,
+				$body['derivations'],
+				sprintf( 'PUT derivations payload missing expected key: %s', $key )
+			);
+		}
+	}
+
+	public function test_compute_derivations_logo_fallback_uses_custom_logo_when_set() {
+		$this->authenticate_as_shop_manager();
+
+		$attachment_id = $this->factory->attachment->create_object(
+			[
+				'file'           => 'custom-logo.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		set_theme_mod( 'custom_logo', $attachment_id );
+
+		$request  = new WP_REST_Request( 'GET', self::ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$body = $response->get_data();
+
+		$this->assertSame( wp_get_attachment_url( $attachment_id ), $body['derivations']['logo_url'] );
+		// No override is set, so logo_source resolves to the default chain.
+		$this->assertSame( 'site_logo', $body['derivations']['logo_source'] );
+		$this->assertSame( 'site_logo', $body['derivations']['default_logo_source'] );
+
+		remove_theme_mod( 'custom_logo' );
+	}
+
+	public function test_compute_derivations_logo_fallback_uses_site_logo_when_no_custom_logo() {
+		$this->authenticate_as_shop_manager();
+
+		// Block / FSE themes write the site logo to `option site_logo` and never
+		// touch `theme_mod custom_logo` — the derivation must read both paths.
+		remove_theme_mod( 'custom_logo' );
+		$attachment_id = $this->factory->attachment->create_object(
+			[
+				'file'           => 'site-logo.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		update_option( 'site_logo', $attachment_id );
+
+		$request  = new WP_REST_Request( 'GET', self::ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$body = $response->get_data();
+
+		$this->assertSame( wp_get_attachment_url( $attachment_id ), $body['derivations']['logo_url'] );
+		$this->assertSame( 'site_logo', $body['derivations']['default_logo_source'] );
+
+		delete_option( 'site_logo' );
+	}
+
+	public function test_compute_derivations_logo_fallback_uses_site_icon_when_no_proper_logo() {
+		// Load-bearing for block-theme merchants who configured only a favicon
+		// and no proper site logo — using the favicon as a brand mark is far
+		// better than rendering "No logo" in the WSN preview.
+		$this->authenticate_as_shop_manager();
+
+		remove_theme_mod( 'custom_logo' );
+		delete_option( 'site_logo' );
+
+		$attachment_id = $this->factory->attachment->create_object(
+			[
+				'file'           => 'favicon.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		update_option( 'site_icon', $attachment_id );
+
+		$request  = new WP_REST_Request( 'GET', self::ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$body = $response->get_data();
+
+		$this->assertSame( wp_get_attachment_url( $attachment_id ), $body['derivations']['logo_url'] );
+		$this->assertSame( 'site_icon', $body['derivations']['default_logo_source'] );
+
+		delete_option( 'site_icon' );
+	}
+
+	public function test_compute_derivations_logo_source_is_none_when_nothing_set() {
+		$this->authenticate_as_shop_manager();
+
+		remove_theme_mod( 'custom_logo' );
+		delete_option( 'site_logo' );
+		delete_option( 'site_icon' );
+
+		$request  = new WP_REST_Request( 'GET', self::ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$body = $response->get_data();
+
+		$this->assertNull( $body['derivations']['logo_url'] );
+		$this->assertNull( $body['derivations']['default_logo_url'] );
+		$this->assertSame( 'none', $body['derivations']['default_logo_source'] );
+		$this->assertSame( 'none', $body['derivations']['logo_source'] );
+	}
+
+	public function test_compute_derivations_logo_source_is_override_when_merchant_set_override() {
+		$this->authenticate_as_shop_manager();
+
+		$site_logo_id = $this->factory->attachment->create_object(
+			[
+				'file'           => 'site-logo.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		update_option( 'site_logo', $site_logo_id );
+
+		$override_id = $this->factory->attachment->create_object(
+			[
+				'file'           => 'override.png',
+				'post_mime_type' => 'image/png',
+				'post_type'      => 'attachment',
+				'post_status'    => 'inherit',
+			]
+		);
+		WSN_Settings::set_logo_override_id( $override_id );
+
+		$request  = new WP_REST_Request( 'GET', self::ROUTE );
+		$response = rest_get_server()->dispatch( $request );
+
+		$this->assertSame( 200, $response->get_status() );
+		$body = $response->get_data();
+
+		// Override wins over the site logo fallback chain.
+		$this->assertSame( wp_get_attachment_url( $override_id ), $body['derivations']['logo_url'] );
+		$this->assertSame( 'override', $body['derivations']['logo_source'] );
+		// `default_logo_*` still reflects what would show if the override
+		// were cleared — the site logo in this case.
+		$this->assertSame( wp_get_attachment_url( $site_logo_id ), $body['derivations']['default_logo_url'] );
+		$this->assertSame( 'site_logo', $body['derivations']['default_logo_source'] );
+
+		delete_option( 'site_logo' );
 	}
 }

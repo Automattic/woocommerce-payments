@@ -14,9 +14,12 @@ defined( 'ABSPATH' ) || exit;
  *   GET  /wp-json/wc/v3/payments/wsn/settings  — full settings blob
  *   PUT  /wp-json/wc/v3/payments/wsn/settings  — partial updates accepted
  *
- * Extends WP_REST_Controller directly (not WC_Payments_REST_Controller) because all
- * operations are local wp_options reads/writes — there's no WC_Payments_API_Client
- * dependency to inject.
+ * Extends WC_Payments_REST_Controller to inherit `check_permission()` and the
+ * shared `$namespace` default (plus any future cross-cutting behavior the base
+ * accrues). The base class requires a WC_Payments_API_Client at construction;
+ * this controller never invokes the client at runtime — its whole flow is local
+ * wp_options reads/writes — but the dependency is injected to satisfy the base
+ * contract. See `WSN_Hub::register_rest_controllers()` for the matching rationale.
  *
  * PUT semantics: accepts any subset of the settings keys. Validation runs in two tiers:
  *
@@ -339,11 +342,18 @@ class WC_REST_Payments_WSN_Settings_Controller extends WC_Payments_REST_Controll
 
 		if ( ! empty( $errors ) ) {
 			$response_body['errors'] = $errors;
+			// `params` is the standard WP-REST validation envelope location —
+			// the client-side `formatApiError` reads `error.data.params` to
+			// surface per-field detail. Without this key, field-level errors
+			// are silently dropped at the boundary. `body` is kept too because
+			// callers that read the partial-write echo (settings + derivations)
+			// for state reconciliation still rely on that shape.
 			return new WP_Error(
 				'wcpay_wsn_validation_failed',
 				__( 'Some fields could not be saved.', 'woocommerce-payments' ),
 				[
 					'status' => 422,
+					'params' => $errors,
 					'body'   => $response_body,
 				]
 			);
