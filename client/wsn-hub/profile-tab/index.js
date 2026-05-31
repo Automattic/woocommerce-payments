@@ -1,15 +1,21 @@
 /**
  * ProfileTab — orchestrator for the Profile tab.
  *
- * Mounts: fetches GET /wc/v3/payments/wsn/settings to get both the current
- * settings AND the resolved derivations the BrandingCard + ContactPoliciesCard
- * need (logo URL, hero URL, shop name, tagline, shipping regions, free shipping
- * summary, refund page label, theme type).
+ * Receives settings + derivations as props from the WsnHubApp shell, which
+ * fetches GET /wc/v3/payments/wsn/settings once on its own mount. ProfileTab
+ * no longer fetches on tab-visit, so switching between Overview and Profile
+ * doesn't re-hit the endpoint.
  *
- * Edits live in `localSettings`. The Save button is disabled when nothing
- * differs from `savedSettings`. On save, sends the changed keys via PUT and
- * resyncs both state slots from the response (so derivations stay current
- * even though the server might have rejected individual fields with a 422).
+ * Edits live in `localSettings` (a dirty buffer). `savedSettings` is derived
+ * from `props.settings`. The Save button is disabled when nothing differs
+ * from `savedSettings`. On save, sends the changed keys via PUT and then
+ * calls `props.refreshSettings()` so the shell re-reads settings AND
+ * derivations from the server (derivations may have shifted even if the
+ * server rejected individual fields with a 422).
+ *
+ * When `props.settings` changes reference (after refreshSettings completes,
+ * or if the parent ever swaps the underlying payload), the localSettings
+ * buffer is reset via a useEffect so the UI reflects the new server state.
  *
  * Owned by RSM-2481.
  *
@@ -79,11 +85,43 @@ const profilesEqual = ( a, b ) => {
 	return true;
 };
 
-const ProfileTab = () => {
-	const [ localSettings, setLocalSettings ] = useState( null );
-	const [ savedSettings, setSavedSettings ] = useState( null );
-	const [ derivations, setDerivations ] = useState( {} );
-	const [ isLoading, setIsLoading ] = useState( true );
+const ProfileTab = ( {
+	settings,
+	derivations = {},
+	isLoading = false,
+	loadError = null,
+	onRetry,
+	refreshSettings,
+} ) => {
+	// `savedSettings` is DERIVED from props (not state) — the shell owns the
+	// authoritative settings blob, ProfileTab just narrows it to the
+	// Profile-relevant fields for dirty tracking.
+	const savedSettings =
+		settings !== null && settings !== undefined
+			? pickProfileFields( settings )
+			: null;
+
+	// `localSettings` is the dirty buffer. Initialized from props on first
+	// render, then reset via a useEffect whenever `props.settings` changes
+	// reference (e.g. after refreshSettings() returns a fresh payload). The
+	// initializer form avoids a "loading flash" of `null` between mount and
+	// the first sync effect.
+	const [ localSettings, setLocalSettings ] = useState( () =>
+		settings !== null && settings !== undefined
+			? pickProfileFields( settings )
+			: null
+	);
+
+	// Sync localSettings whenever the shell hands us a new settings reference
+	// (post-save refresh, retry-after-error, etc.). This is the intentional
+	// "props-as-source-of-truth" pattern — the shell is canonical, the local
+	// buffer just shadows it while edits are in flight.
+	useEffect( () => {
+		if ( settings !== null && settings !== undefined ) {
+			setLocalSettings( pickProfileFields( settings ) );
+		}
+	}, [ settings ] );
+
 	const [ isSaving, setIsSaving ] = useState( false );
 	const [ saveNotice, setSaveNotice ] = useState( null );
 
@@ -98,41 +136,6 @@ const ProfileTab = () => {
 	// hero_image_id). Cleared on save-success because derivations then
 	// authoritatively reflects the saved IDs.
 	const [ pendingMediaUrls, setPendingMediaUrls ] = useState( {} );
-
-	const loadProfile = () => {
-		setIsLoading( true );
-		setSaveNotice( null );
-		return apiFetch( { path: '/wc/v3/payments/wsn/settings' } )
-			.then( ( payload ) => {
-				const profile = pickProfileFields( payload?.settings ?? {} );
-				setLocalSettings( profile );
-				setSavedSettings( profile );
-				setDerivations( payload?.derivations ?? {} );
-				setIsLoading( false );
-			} )
-			.catch( () => {
-				// Populate localSettings + derivations with safe empty
-				// defaults so the early-return loading guard releases and
-				// the Notice (with Retry) can render. Without this, the
-				// `! localSettings` guard wins forever and the page is
-				// stuck at "Loading Profile…".
-				setLocalSettings( pickProfileFields( {} ) );
-				setDerivations( {} );
-				setIsLoading( false );
-				setSaveNotice( {
-					status: 'error',
-					message: __(
-						'Could not load Profile settings. Try refreshing the page.',
-						'woocommerce-payments'
-					),
-				} );
-			} );
-	};
-
-	useEffect( () => {
-		loadProfile();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [] );
 
 	const isDirty =
 		localSettings !== null &&
@@ -159,15 +162,19 @@ const ProfileTab = () => {
 		setIsSaving( true );
 		setSaveNotice( null );
 		try {
-			const payload = await apiFetch( {
+			await apiFetch( {
 				path: '/wc/v3/payments/wsn/settings',
 				method: 'PUT',
 				data: localSettings,
 			} );
-			const profile = pickProfileFields( payload?.settings ?? {} );
-			setSavedSettings( profile );
-			setLocalSettings( profile );
-			setDerivations( payload?.derivations ?? {} );
+			// Ask the shell to re-fetch /wsn/settings so derivations stay
+			// authoritative (logo URL / hero URL / refund page label may have
+			// changed even if the server rejected individual fields with a
+			// 422). The useEffect above will then sync localSettings from the
+			// fresh props.settings reference.
+			if ( typeof refreshSettings === 'function' ) {
+				await refreshSettings();
+			}
 			// Server-resolved derivation URLs now authoritative — drop the
 			// transient pick-time URLs so we read the canonical resolved
 			// values (handles WP regenerating thumbnails, CDN rewrites,
@@ -188,6 +195,35 @@ const ProfileTab = () => {
 	};
 
 	if ( isLoading || ! localSettings ) {
+		// Surface the shell-level load error with a Retry button. The early
+		// return on `! localSettings` also handles the case where the shell
+		// hasn't yet supplied a settings payload (initial mount).
+		if ( loadError ) {
+			return (
+				<div style={ { padding: spacing.s5 } }>
+					<Notice status="error" isDismissible={ false }>
+						{ __(
+							'Could not load Profile settings. Try refreshing the page.',
+							'woocommerce-payments'
+						) }
+						{ typeof onRetry === 'function' && (
+							<div style={ { marginTop: spacing.s2 } }>
+								<Button
+									variant="secondary"
+									onClick={ onRetry }
+									disabled={ isLoading }
+								>
+									{ __(
+										'Try again',
+										'woocommerce-payments'
+									) }
+								</Button>
+							</div>
+						) }
+					</Notice>
+				</div>
+			);
+		}
 		return (
 			<div
 				style={ {
@@ -237,21 +273,6 @@ const ProfileTab = () => {
 						isDismissible
 					>
 						{ saveNotice.message }
-						{ saveNotice.status === 'error' &&
-							savedSettings === null && (
-								<div style={ { marginTop: spacing.s2 } }>
-									<Button
-										variant="secondary"
-										onClick={ loadProfile }
-										disabled={ isLoading }
-									>
-										{ __(
-											'Try again',
-											'woocommerce-payments'
-										) }
-									</Button>
-								</div>
-							) }
 					</Notice>
 				</div>
 			) }

@@ -17,13 +17,22 @@ jest.mock( '@wordpress/media-utils', () => ( {
 		renderProp ? renderProp( { open: jest.fn() } ) : null,
 } ) );
 
-// Mock @wordpress/api-fetch so the OverviewDashboard's + ProfileTab's
+// Mock @wordpress/api-fetch so the OverviewDashboard's + WsnHubApp shell's
 // mount-time fetches don't trip MSW's "no unhandled requests" guard. Returns
 // a path-aware payload so each tab gets a shape it can render without
 // crashing — the per-tab tests cover the data contracts in detail.
+//
+// The shell now owns the /wsn/settings fetch (lifted from ProfileTab), so
+// this mock is the single source of truth for settings during shell tests.
+const mockApiFetch = jest.fn();
 jest.mock( '@wordpress/api-fetch', () => ( {
 	__esModule: true,
-	default: jest.fn( ( { path } ) => {
+	default: ( ...args ) => mockApiFetch( ...args ),
+} ) );
+
+beforeEach( () => {
+	mockApiFetch.mockReset();
+	mockApiFetch.mockImplementation( ( { path } ) => {
 		if ( path && path.startsWith( '/wc/v3/payments/wsn/orders' ) ) {
 			return Promise.resolve( {
 				is_empty: true,
@@ -57,8 +66,8 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 			return Promise.resolve( { policy_pages: [], other_pages: [] } );
 		}
 		return Promise.resolve( {} );
-	} ),
-} ) );
+	} );
+} );
 
 /**
  * Internal dependencies
@@ -192,6 +201,56 @@ describe( 'WsnHubApp', () => {
 					name: /Shopping Network traffic and orders/i,
 				} )
 			).toBeInTheDocument();
+		} );
+
+		it( 'fetches /wsn/settings exactly once across mount + tab switches', async () => {
+			await renderEnabled();
+
+			// Wait for the shell's mount-time settings fetch to land.
+			await waitFor( () =>
+				expect(
+					mockApiFetch.mock.calls.some(
+						( call ) =>
+							call[ 0 ].path === '/wc/v3/payments/wsn/settings'
+					)
+				).toBe( true )
+			);
+
+			// Switch into Profile tab — the legacy behavior would have fired a
+			// second GET here. With the lifted fetch, the shell-owned state is
+			// reused and no new call is made.
+			userEvent.click( screen.getByRole( 'tab', { name: 'Profile' } ) );
+			await waitFor( () =>
+				expect(
+					screen.getByRole( 'heading', {
+						name: /Storefront Profile/i,
+					} )
+				).toBeInTheDocument()
+			);
+
+			// Switch back to Overview, then back to Profile again — still no
+			// additional /wsn/settings GETs.
+			userEvent.click( screen.getByRole( 'tab', { name: 'Overview' } ) );
+			await waitFor( () =>
+				expect(
+					screen.getByRole( 'heading', {
+						name: /Shopping Network traffic and orders/i,
+					} )
+				).toBeInTheDocument()
+			);
+			userEvent.click( screen.getByRole( 'tab', { name: 'Profile' } ) );
+			await waitFor( () =>
+				expect(
+					screen.getByRole( 'heading', {
+						name: /Storefront Profile/i,
+					} )
+				).toBeInTheDocument()
+			);
+
+			const settingsCalls = mockApiFetch.mock.calls.filter(
+				( call ) => call[ 0 ].path === '/wc/v3/payments/wsn/settings'
+			);
+			expect( settingsCalls ).toHaveLength( 1 );
 		} );
 	} );
 } );

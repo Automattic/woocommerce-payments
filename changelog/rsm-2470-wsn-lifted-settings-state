@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Lift WSN /wsn/settings fetch from ProfileTab up to the Hub shell so the merchant does not re-fetch on every Profile-tab visit.

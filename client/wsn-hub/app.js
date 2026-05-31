@@ -11,14 +11,19 @@
  * the option via the settings PUT endpoint. On success, OverviewTab calls
  * `onEnabledChange(true)` which re-renders this shell with the tab nav visible.
  *
- * Visibility and Profile tab content lands in RSM-2480 and RSM-2481 respectively.
+ * Owns the /wsn/settings fetch: the shell loads settings + derivations once on
+ * mount and passes both down to ProfileTab. Switching between Overview and
+ * Profile no longer re-fetches — ProfileTab consumes shell-owned state and
+ * calls `refreshSettings` after a successful save so the shell re-reads the
+ * server-resolved derivations.
  *
  * @format
  */
 
-import { useEffect, useState } from '@wordpress/element';
+import { useCallback, useEffect, useState } from '@wordpress/element';
 import { TabPanel } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
+import apiFetch from '@wordpress/api-fetch';
 
 import PageHeader from './page-header';
 import OverviewTab from './overview-tab';
@@ -26,6 +31,7 @@ import VisibilityTab from './visibility-tab';
 import ProfileTab from './profile-tab';
 import { colors, spacing } from './tokens';
 import { TabErrorBoundary } from './utils/error-boundary';
+import { formatApiError } from './utils/format-api-error';
 
 const TABS = [
 	{ name: 'overview', title: __( 'Overview', 'woocommerce-payments' ) },
@@ -55,6 +61,46 @@ const WsnHubApp = () => {
 	// the effect below so back/forward navigation works.
 	const [ currentTab, setCurrentTab ] = useState( getInitialTabName );
 	const [ isEnabled, setIsEnabled ] = useState( getInitialEnabled );
+
+	// Shell-owned /wsn/settings state. Loaded once on mount and passed down to
+	// ProfileTab as props so switching tabs doesn't re-fetch. ProfileTab calls
+	// `refreshSettings` after a successful save to pull the freshly resolved
+	// derivations (logo URL, hero URL, refund page label, etc.).
+	const [ settings, setSettings ] = useState( null );
+	const [ derivations, setDerivations ] = useState( {} );
+	const [ isLoadingSettings, setIsLoadingSettings ] = useState( true );
+	const [ settingsError, setSettingsError ] = useState( null );
+
+	const loadSettings = useCallback( async () => {
+		setIsLoadingSettings( true );
+		setSettingsError( null );
+		try {
+			const payload = await apiFetch( {
+				path: '/wc/v3/payments/wsn/settings',
+			} );
+			setSettings( payload?.settings ?? {} );
+			setDerivations( payload?.derivations ?? {} );
+			setIsLoadingSettings( false );
+		} catch ( e ) {
+			setSettingsError( formatApiError( e ) );
+			// Populate with safe empty defaults so ProfileTab's loading guard
+			// releases and the error Notice can render with a Retry button.
+			setSettings( {} );
+			setDerivations( {} );
+			setIsLoadingSettings( false );
+		}
+	}, [] );
+
+	// Only fetch /wsn/settings once WSN is enabled. In the pre-enable state
+	// the tab nav is hidden and ProfileTab never mounts, so the settings +
+	// derivations payload is dead weight there. This also keeps the
+	// pre-enable hero render fully synchronous (no async state updates after
+	// the initial render).
+	useEffect( () => {
+		if ( isEnabled ) {
+			loadSettings();
+		}
+	}, [ isEnabled, loadSettings ] );
 
 	useEffect( () => {
 		const handler = () => setCurrentTab( getInitialTabName() );
@@ -128,7 +174,16 @@ const WsnHubApp = () => {
 								/>
 							) }
 							{ tab.name === 'visibility' && <VisibilityTab /> }
-							{ tab.name === 'profile' && <ProfileTab /> }
+							{ tab.name === 'profile' && (
+								<ProfileTab
+									settings={ settings }
+									derivations={ derivations }
+									isLoading={ isLoadingSettings }
+									loadError={ settingsError }
+									onRetry={ loadSettings }
+									refreshSettings={ loadSettings }
+								/>
+							) }
 						</div>
 					</TabErrorBoundary>
 				) }

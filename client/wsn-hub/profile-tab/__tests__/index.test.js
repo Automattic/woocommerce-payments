@@ -16,8 +16,12 @@ jest.mock( '@wordpress/media-utils', () => ( {
 		renderProp ? renderProp( { open: jest.fn() } ) : null,
 } ) );
 
-// Stub apiFetch so the Profile tab's mount-time + pages-controller fetches
-// don't trip MSW's "no unhandled requests" guard.
+// apiFetch is still stubbed because:
+//   - the PUT-on-save flow goes through apiFetch
+//   - the ContactPoliciesCard's pages-controller fetch (/wsn/pages) still
+//     happens inside this tab
+// The /wsn/settings GET, however, is now the SHELL's responsibility — this
+// test passes settings/derivations directly as props instead.
 const mockApiFetch = jest.fn();
 jest.mock( '@wordpress/api-fetch', () => ( {
 	__esModule: true,
@@ -29,30 +33,28 @@ jest.mock( '@wordpress/api-fetch', () => ( {
  */
 import ProfileTab from '../index';
 
-const SETTINGS_PAYLOAD = {
-	settings: {
-		hero_image_id: null,
-		logo_override_id: null,
-		contact_email: 'hello@example.com',
-		refund_page_id: null,
+const SETTINGS = {
+	hero_image_id: null,
+	logo_override_id: null,
+	contact_email: 'hello@example.com',
+	refund_page_id: null,
+};
+
+const DERIVATIONS = {
+	logo_url: 'https://example.test/logo.png',
+	logo_source: 'site_logo',
+	hero_image_url: null,
+	shop_name: 'Midcentury Manila',
+	tagline: 'Mid-century furniture',
+	shipping_regions: [ 'United States', 'Canada' ],
+	free_shipping: {
+		has_free_shipping: true,
+		human_summary: 'Orders over $50 (US) · Orders over $75 (CA)',
+		zones: [],
 	},
-	feature_enabled: true,
-	derivations: {
-		logo_url: 'https://example.test/logo.png',
-		logo_source: 'site_logo',
-		hero_image_url: null,
-		shop_name: 'Midcentury Manila',
-		tagline: 'Mid-century furniture',
-		shipping_regions: [ 'United States', 'Canada' ],
-		free_shipping: {
-			has_free_shipping: true,
-			human_summary: 'Orders over $50 (US) · Orders over $75 (CA)',
-			zones: [],
-		},
-		refund_page_label: null,
-		refund_page_url: null,
-		theme_type: 'block',
-	},
+	refund_page_label: null,
+	refund_page_url: null,
+	theme_type: 'block',
 };
 
 const PAGES_PAYLOAD = {
@@ -67,24 +69,35 @@ const PAGES_PAYLOAD = {
 	other_pages: [ { id: 14, title: 'About Us', edit_url: '#' } ],
 };
 
+const renderProfile = ( overrides = {} ) => {
+	const props = {
+		settings: SETTINGS,
+		derivations: DERIVATIONS,
+		isLoading: false,
+		loadError: null,
+		onRetry: jest.fn(),
+		refreshSettings: jest.fn().mockResolvedValue( undefined ),
+		...overrides,
+	};
+	return { ...render( <ProfileTab { ...props } /> ), props };
+};
+
 beforeEach( () => {
 	mockApiFetch.mockReset();
 	mockApiFetch.mockImplementation( ( { path } ) => {
-		if ( path === '/wc/v3/payments/wsn/settings' ) {
-			return Promise.resolve( SETTINGS_PAYLOAD );
-		}
 		if ( path === '/wc/v3/payments/wsn/pages' ) {
 			return Promise.resolve( PAGES_PAYLOAD );
 		}
+		// Any PUT (or other request) lands here — return empty so the
+		// dirty-aware save flow can complete; the shell's refreshSettings
+		// callback (a spy) is what we observe instead of a follow-up GET.
 		return Promise.resolve( {} );
 	} );
 } );
 
 describe( 'ProfileTab', () => {
-	it( 'shows a loading state, then renders both cards from the GET response', async () => {
-		render( <ProfileTab /> );
-
-		expect( screen.getByText( /Loading Profile/i ) ).toBeInTheDocument();
+	it( 'renders both cards from the supplied props (no mount-time fetch)', async () => {
+		renderProfile();
 
 		await waitFor( () =>
 			expect(
@@ -104,10 +117,42 @@ describe( 'ProfileTab', () => {
 		expect(
 			screen.getByDisplayValue( 'hello@example.com' )
 		).toBeInTheDocument();
+
+		// ProfileTab MUST NOT issue its own /wsn/settings GET — that fetch
+		// now lives in the WsnHubApp shell.
+		const settingsCalls = mockApiFetch.mock.calls.filter(
+			( call ) => call[ 0 ].path === '/wc/v3/payments/wsn/settings'
+		);
+		expect( settingsCalls ).toHaveLength( 0 );
+	} );
+
+	it( 'shows the loading state when isLoading prop is true', () => {
+		renderProfile( { settings: null, isLoading: true } );
+		expect( screen.getByText( /Loading Profile/i ) ).toBeInTheDocument();
+	} );
+
+	it( 'renders the load-error Notice with a Retry button bound to onRetry', () => {
+		const onRetry = jest.fn();
+		// In real usage the shell sets isLoading=false in its catch branch
+		// alongside loadError — so the merchant can interact with Retry.
+		renderProfile( {
+			settings: null,
+			isLoading: false,
+			loadError: 'Network down',
+			onRetry,
+		} );
+
+		// Notice copy renders both inside the component AND inside a11y-speak,
+		// so use getAllByText and assert at least one match exists.
+		expect(
+			screen.getAllByText( /Could not load Profile settings/i ).length
+		).toBeGreaterThan( 0 );
+		userEvent.click( screen.getByRole( 'button', { name: /Try again/i } ) );
+		expect( onRetry ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'renders the readonly free-shipping summary from derivations', async () => {
-		render( <ProfileTab /> );
+		renderProfile();
 
 		await waitFor( () =>
 			expect(
@@ -119,7 +164,7 @@ describe( 'ProfileTab', () => {
 	} );
 
 	it( 'renders the readonly shipping regions joined with commas', async () => {
-		render( <ProfileTab /> );
+		renderProfile();
 
 		await waitFor( () =>
 			expect(
@@ -129,7 +174,7 @@ describe( 'ProfileTab', () => {
 	} );
 
 	it( 'disables Save until the merchant edits something', async () => {
-		render( <ProfileTab /> );
+		renderProfile();
 
 		await waitFor( () =>
 			expect(
@@ -149,8 +194,9 @@ describe( 'ProfileTab', () => {
 		);
 	} );
 
-	it( 'PUTs only the Profile-relevant fields when Save is clicked', async () => {
-		render( <ProfileTab /> );
+	it( 'PUTs only the Profile-relevant fields when Save is clicked, then calls refreshSettings', async () => {
+		const refreshSettings = jest.fn().mockResolvedValue( undefined );
+		renderProfile( { refreshSettings } );
 
 		await waitFor( () =>
 			expect(
@@ -193,5 +239,11 @@ describe( 'ProfileTab', () => {
 			'refund_page_id',
 		] );
 		expect( payload.contact_email ).toBe( 'new@example.com' );
+
+		// After a successful PUT the tab delegates the refresh to the shell —
+		// no second GET issued from inside the tab.
+		await waitFor( () =>
+			expect( refreshSettings ).toHaveBeenCalledTimes( 1 )
+		);
 	} );
 } );
