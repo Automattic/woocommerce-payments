@@ -25,12 +25,16 @@ import apiFetch from '@wordpress/api-fetch';
 // `__experimentalConfirmDialog` has been the de-facto WP-components confirm
 // pattern since WP 6.1 and is widely used across WP core/Gutenberg admin
 // surfaces. Stable enough to depend on here; revisit when WP promotes it.
-// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-import { __experimentalConfirmDialog as ConfirmDialog } from '@wordpress/components';
+// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- intentional, WCPay-wide pattern
+import {
+	__experimentalConfirmDialog as ConfirmDialog,
+	Notice,
+} from '@wordpress/components';
 
 import StatCard from './stat-card';
 import OrdersTable from './orders-table';
 import { colors, typography, spacing, radii } from '../tokens';
+import { formatApiError } from '../utils/format-api-error';
 
 // Debounce window for the period selector. The cancelled-flag pattern in the
 // fetch effect already prevents stale state updates, but rapid period-chip
@@ -78,6 +82,14 @@ const OverviewDashboard = ( { onDisable } ) => {
 	const [ isLoading, setIsLoading ] = useState( true );
 	const [ isDisabling, setIsDisabling ] = useState( false );
 	const [ isConfirmingDisable, setIsConfirmingDisable ] = useState( false );
+	// Surface errors for the destructive "Remove" action — silent failures
+	// here made the button look successful when it wasn't.
+	const [ disableError, setDisableError ] = useState( null );
+	// Distinguish a fetch failure from the legitimate `is_empty: true` empty
+	// state. The empty-state cards still render (we want the layout intact),
+	// but we display an inline error chip so merchants know the dashboard is
+	// stale rather than genuinely empty.
+	const [ fetchError, setFetchError ] = useState( null );
 
 	// Debounced setPeriod. useRef so the timeout id persists across renders;
 	// cleared if the user clicks another chip before the window elapses.
@@ -101,6 +113,11 @@ const OverviewDashboard = ( { onDisable } ) => {
 	useEffect( () => {
 		let cancelled = false;
 		setIsLoading( true );
+		// Clear any prior fetch error at the start of every period fetch so
+		// the chip only reflects the *current* request's outcome. Setter is
+		// deliberately *not* added to the dep array — including it would
+		// re-run the effect on every clear and create a render loop.
+		setFetchError( null );
 		apiFetch( {
 			path: `/wc/v3/payments/wsn/orders?period=${ encodeURIComponent(
 				period
@@ -112,11 +129,14 @@ const OverviewDashboard = ( { onDisable } ) => {
 					setIsLoading( false );
 				}
 			} )
-			.catch( () => {
+			.catch( ( e ) => {
 				if ( ! cancelled ) {
-					// Show empty state on fetch error rather than crashing —
-					// stats render as `—` and orders table shows empty-row.
+					// Keep showing the empty-state cards so layout stays
+					// intact; the chip rendered above the grid is how the
+					// merchant learns the data is stale rather than genuinely
+					// empty.
 					setData( { is_empty: true, stats: {}, orders: [] } );
+					setFetchError( formatApiError( e ) );
 					setIsLoading( false );
 				}
 			} );
@@ -135,6 +155,9 @@ const OverviewDashboard = ( { onDisable } ) => {
 	const handleDisableConfirm = async () => {
 		setIsConfirmingDisable( false );
 		setIsDisabling( true );
+		// Clear any prior disable error so a retry doesn't briefly show the
+		// old message before the new request resolves.
+		setDisableError( null );
 		try {
 			await apiFetch( {
 				path: '/wc/v3/payments/wsn/settings',
@@ -143,6 +166,7 @@ const OverviewDashboard = ( { onDisable } ) => {
 			} );
 			onDisable();
 		} catch ( e ) {
+			setDisableError( formatApiError( e ) );
 			setIsDisabling( false );
 		}
 	};
@@ -196,6 +220,30 @@ const OverviewDashboard = ( { onDisable } ) => {
 					/>
 				) ) }
 			</div>
+
+			{ fetchError && (
+				<div
+					role="status"
+					style={ {
+						display: 'inline-flex',
+						alignItems: 'center',
+						gap: '6px',
+						background: colors.dangerBg,
+						border: `1px solid ${ colors.dangerText }`,
+						borderRadius: radii.sm,
+						color: colors.dangerText,
+						padding: '4px 10px',
+						fontSize: '12px',
+						lineHeight: 1.4,
+						marginBottom: spacing.s3,
+					} }
+				>
+					{ __(
+						'Could not load stats — refresh to try again.',
+						'woocommerce-payments'
+					) }
+				</div>
+			) }
 
 			<div
 				style={ {
@@ -263,6 +311,18 @@ const OverviewDashboard = ( { onDisable } ) => {
 			<div style={ { marginBottom: spacing.s6 } }>
 				<OrdersTable orders={ data?.orders ?? [] } />
 			</div>
+
+			{ disableError && (
+				<div style={ { marginTop: spacing.s2 } }>
+					<Notice
+						status="error"
+						isDismissible
+						onRemove={ () => setDisableError( null ) }
+					>
+						{ disableError }
+					</Notice>
+				</div>
+			) }
 
 			{ /* Footer disable affordance — paired with the table per v2 mockup */ }
 			<div

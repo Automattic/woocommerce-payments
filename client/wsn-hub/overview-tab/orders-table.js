@@ -189,12 +189,20 @@ const OrdersTable = ( { orders } ) => {
 							orders.map( ( order ) => (
 								<tr key={ order.id }>
 									<td style={ BODY_CELL_STYLE }>
-										<a
-											href={ order.edit_url }
-											style={ LINK_STYLE }
-										>
-											{ `#${ order.number }` }
-										</a>
+										{ order.edit_url ? (
+											<a
+												href={ order.edit_url }
+												style={ LINK_STYLE }
+											>
+												{ '#' +
+													( order.number ?? '—' ) }
+											</a>
+										) : (
+											<span style={ BODY_CELL_STYLE }>
+												{ '#' +
+													( order.number ?? '—' ) }
+											</span>
+										) }
 									</td>
 									<td style={ BODY_CELL_STYLE }>
 										{ order.customer_name || '—' }

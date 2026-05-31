@@ -17,6 +17,7 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 
 import { colors, typography, spacing, radii } from '../tokens';
+import { formatApiError } from '../utils/format-api-error';
 
 const IconUsers = () => (
 	<svg
@@ -123,13 +124,7 @@ const PreEnableHero = ( { onEnabled } ) => {
 			} );
 			onEnabled();
 		} catch ( e ) {
-			setError(
-				e?.message ??
-					__(
-						'Could not enable the Shopping Network. Please try again.',
-						'woocommerce-payments'
-					)
-			);
+			setError( formatApiError( e ) );
 			setIsEnabling( false );
 		}
 	};
