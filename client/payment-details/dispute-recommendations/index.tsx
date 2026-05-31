@@ -30,10 +30,7 @@ interface Props {
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level numeric constant
 const VISIBLE_PER_SECTION = 3;
 
-// Single "Learn more" destination for the "What could help next time"
-// section, per RiskOps review (per-rec action links were too noisy). Same
-// target as Cluster 15's link by design: a merchant looking at this section
-// needs the dispute-response docs, not the prevention ones.
+// Single "Learn more" destination for the coaching card, per RiskOps review.
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level URL constant
 const LEARN_MORE_HREF =
 	'https://woocommerce.com/document/managing-payment-disputes/';
@@ -87,15 +84,15 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 		key={ rec.id }
 		className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
 	>
-		{ /* Two shapes: `published` (check) for strengths, `caution` (!) for
-		     coaching. Color via the --{urgency} modifier (green / amber, no
-		     red), routed through currentColor. See style.scss. Design 2026-05-27. */ }
-		<span className="dispute-recommendations__icon" aria-hidden="true">
+		{ /* Icon container mirrors `.dispute-steps__item-icon`: 44x44, 1px
+		     gray border, centered. Urgency tint sits on the SVG via
+		     currentColor (green for strengths, amber for coaching). */ }
+		<div className="dispute-recommendations__icon" aria-hidden="true">
 			<Icon
 				icon={ rec.urgency === 'positive' ? published : caution }
-				size={ 18 }
+				size={ 24 }
 			/>
-		</span>
+		</div>
 		<div className="dispute-recommendations__text">
 			<h4 className="dispute-recommendations__title">
 				<VisuallyHidden>
@@ -108,13 +105,13 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	</article>
 );
 
-// Each non-empty section is its own expanded-by-default AccordionBody (one
-// chevron per section), reusing the "Steps you can take" accordion. The
-// section heading is the AccordionBody title; the descriptive sentence and
-// optional Learn more link sit inside the body, since the title slot is a
-// button (nested interactive content like a link would be invalid). Sections
-// render independently so both can appear regardless of outcome.
-const renderSection = (
+// Each non-empty section renders as its own expanded-by-default Accordion
+// card (per Lucy review 2026-05-29 — separate cards, not a shared shell).
+// Description sits in the AccordionBody's `subtitle` slot so it hugs the
+// heading the way "Steps you can take" does. The coaching card's "Learn
+// more" link is rendered inside the body (subtitle is a plain-string slot
+// inside the title's <button>, so it cannot host an <a>).
+const renderCard = (
 	heading: string,
 	description: string,
 	items: Recommendation[],
@@ -129,36 +126,8 @@ const renderSection = (
 	const hidden = sorted.slice( VISIBLE_PER_SECTION );
 
 	return (
-		<AccordionBody title={ heading } lg>
-			<div className="dispute-recommendations-card__section">
-				{ /* div, not <p>: ExternalLink renders a <div> wrapper internally
-				     which would be invalid nested inside a <p>. */ }
-				<div className="dispute-recommendations-card__section-description">
-					{ description }
-					{ learnMoreHref && (
-						<>
-							{ ' ' }
-							<ExternalLink
-								className="dispute-recommendations-card__learn-more"
-								href={ learnMoreHref }
-							>
-								{ __( 'Learn more', 'woocommerce-payments' ) }
-								{ /* SR-only context. Setting `aria-label` would
-								     override the whole accessible name and drop
-								     ExternalLink's built-in "(opens in a new tab)"
-								     suffix; adding a VisuallyHidden child instead
-								     keeps both. */ }
-								<VisuallyHidden>
-									{ ' ' +
-										__(
-											'about managing payment disputes',
-											'woocommerce-payments'
-										) }
-								</VisuallyHidden>
-							</ExternalLink>
-						</>
-					) }
-				</div>
+		<Accordion defaultExpanded className="dispute-recommendations-card">
+			<AccordionBody title={ heading } subtitle={ description } lg>
 				{ visible.map( renderItem ) }
 				{ hidden.length > 0 && (
 					<details className="dispute-recommendations-card__show-more">
@@ -177,8 +146,28 @@ const renderSection = (
 						{ hidden.map( renderItem ) }
 					</details>
 				) }
-			</div>
-		</AccordionBody>
+				{ learnMoreHref && (
+					// div, not <p>: ExternalLink renders a <div> wrapper
+					// internally which would be invalid nested inside <p>.
+					<div className="dispute-recommendations-card__learn-more">
+						<ExternalLink href={ learnMoreHref }>
+							{ __( 'Learn more', 'woocommerce-payments' ) }
+							{ /* SR-only context. Setting aria-label would
+							     override the whole accessible name and drop
+							     ExternalLink's built-in "(opens in a new tab)"
+							     suffix; a VisuallyHidden child keeps both. */ }
+							<VisuallyHidden>
+								{ ' ' +
+									__(
+										'about managing payment disputes',
+										'woocommerce-payments'
+									) }
+							</VisuallyHidden>
+						</ExternalLink>
+					</div>
+				) }
+			</AccordionBody>
+		</Accordion>
 	);
 };
 
@@ -217,8 +206,8 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 	);
 
 	return (
-		<Accordion defaultExpanded className="dispute-recommendations-card">
-			{ renderSection(
+		<>
+			{ renderCard(
 				__( "What's working well", 'woocommerce-payments' ),
 				__(
 					'These are the evidence strengths that supported your dispute response.',
@@ -226,7 +215,7 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 				),
 				positives
 			) }
-			{ renderSection(
+			{ renderCard(
 				__( 'What could help next time', 'woocommerce-payments' ),
 				__(
 					'Strengthen future dispute responses by adding these details to your evidence before submitting.',
@@ -235,7 +224,7 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 				criticalsAndTips,
 				LEARN_MORE_HREF
 			) }
-		</Accordion>
+		</>
 	);
 };
 

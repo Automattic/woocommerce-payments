@@ -1,42 +1,13 @@
 /** @format */
 
 .dispute-recommendations-card {
-	// The accordion shell (.wcpay-accordion) supplies the card border, radius
-	// and padding; the section heading is now the accordion header. It is not a
-	// .components-card, so it misses the 24px inter-card gap that
-	// `.woocommerce-payments-page .components-card` applies — add it back so the
-	// card sits clear of the Timeline below. The gap above comes from the
-	// preceding summary card's own margin-bottom.
+	// Each section is its own Accordion card (Lucy review 2026-05-29). The
+	// Accordion shell (.wcpay-accordion) supplies the card border, radius
+	// and padding. It is not a .components-card, so it misses the 24px
+	// inter-card gap that `.woocommerce-payments-page .components-card`
+	// applies; add it back so successive cards sit clear of each other and
+	// of the Timeline below.
 	margin-bottom: $grid-unit-30;
-
-	&__section {
-		// Trim the outer padding on the first and last items in the section.
-		// `:first-child` / `:last-child` would miss them: the description is
-		// always the first child and the show-more <details> can be last.
-		> .dispute-recommendations__item:first-of-type {
-			padding-top: 0;
-		}
-
-		> .dispute-recommendations__item:last-of-type {
-			padding-bottom: 0;
-		}
-	}
-
-	// Description sentence under the accordion header, with the optional
-	// "Learn more" link appended inline. Only the coaching section gets the
-	// link. Sits inside the AccordionBody body since the title slot is a
-	// button and can't host nested interactive content.
-	&__section-description {
-		font-size: 13px;
-		line-height: 20px;
-		color: $gray-700;
-		margin: 0 0 $grid-unit-10;
-	}
-
-	&__learn-more {
-		font-size: 13px;
-		line-height: 20px;
-	}
 
 	&__show-more {
 		// Disclosure for items beyond the per-section cap.
@@ -57,7 +28,7 @@
 				display: none;
 			}
 
-			// CSS chevron so sighted users can read this as a toggle, not a
+			// CSS chevron so sighted users read this as a toggle, not a
 			// navigation link. Rotates 180° on open.
 			&::before {
 				content: '';
@@ -79,46 +50,81 @@
 			transform: rotate( -180deg );
 		}
 	}
+
+	&__learn-more {
+		// Footer link on the coaching card. ExternalLink can't live inside
+		// the AccordionBody subtitle (subtitle renders inside the title
+		// <button>), so the link sits at the bottom of the body instead.
+		font-size: 13px;
+		line-height: 20px;
+		margin: $grid-unit-15 0 0;
+	}
 }
 
+// Item row geometry mirrors `.dispute-steps__item` so the card reads
+// identically to "Steps you can take" (Lucy review 2026-05-29).
 .dispute-recommendations__item {
 	display: flex;
-	align-items: flex-start;
-	gap: $grid-unit-10;
-	padding: $grid-unit-15 0;
-	font-size: 13px;
-	line-height: 20px;
+	align-items: center;
+	padding: 16px 0;
+	border-bottom: 1px solid $gray-100;
 
-	& + & {
-		border-top: 1px solid $gray-100;
+	&:first-child {
+		padding: 12px 0 16px;
 	}
 
-	// Color lives on the leading icon, not the title. No red: recommendations
-	// coach, they don't flag errors (design review 2026-05-26). Strengths are
-	// green; all coaching (critical + tip) is amber. Tints are the WP design-
-	// system alert tones used in the Figma; they fall below WCAG 1.4.11 3:1
-	// on white (≈ 2.24:1 green, ≈ 1.76:1 amber), but the icon shape carries
-	// the meaning (published checkmark vs caution `!`) so color is reinforce-
-	// ment, not the sole differentiator. Per Miguel / design, 2026-05-28.
-	&--positive .dispute-recommendations__icon {
+	&:last-child {
+		border-bottom: none;
+		padding-bottom: 28px;
+	}
+
+	@media screen and ( max-width: $break-small ) {
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 16px 0;
+		gap: 12px;
+	}
+
+	// Color lives on the icon SVG, not the title. No red: recommendations
+	// coach, they don't flag errors (design review 2026-05-26). Strengths
+	// get the green `published` checkmark; coaching (critical + tip) gets
+	// the amber `caution` `!`. Tints are the WP design-system alert tones
+	// from Lucy's Figma; they fall below WCAG 1.4.11 3:1 on white but the
+	// icon shape carries the meaning, so color is reinforcement, not the
+	// sole differentiator.
+	&--positive .dispute-recommendations__icon svg {
 		color: $alert-green;
 	}
 
-	&--critical .dispute-recommendations__icon,
-	&--tip .dispute-recommendations__icon {
+	&--critical .dispute-recommendations__icon svg,
+	&--tip .dispute-recommendations__icon svg {
 		color: $alert-yellow;
 	}
 }
 
+// Icon container mirrors `.dispute-steps__item-icon` (Lucy review
+// 2026-05-29): 44x44, 2px radius, 10px padding, 1px gray border, centered.
+// The SVG inside picks up the urgency tint via currentColor; the border
+// stays neutral gray, matching Steps you can take.
 .dispute-recommendations__icon {
-	flex-shrink: 0;
-	display: inline-flex;
+	display: flex;
 	align-items: center;
-	margin-top: 1px;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 44px;
+	height: 44px;
+	border-radius: var( --radius-s, 2px );
+	padding: 10px;
+	border: 1px solid $gray-200;
+	margin-right: 12px;
 
-	// @wordpress/icons are fill-based and default to black; route the fill
-	// through `currentColor` so the urgency `color` above tints them.
+	@media screen and ( max-width: $break-small ) {
+		display: none;
+	}
+
 	svg {
+		width: 24px;
+		height: 24px;
 		fill: currentColor;
 	}
 }
@@ -126,17 +132,27 @@
 .dispute-recommendations__text {
 	flex: 1;
 	min-width: 0;
+
+	@media screen and ( max-width: $break-small ) {
+		width: 100%;
+	}
 }
 
 .dispute-recommendations__title {
-	font-size: 14px;
-	font-weight: 600;
-	line-height: 20px;
-	color: $gray-900;
-	margin: 0 0 $grid-unit-05;
+	margin: 0 0 4px;
+	color: var( --Scales-Grays-gray-900, #1e1e1e );
+	letter-spacing: 0.01em;
+	font-size: var( --m, 13px );
+	font-style: normal;
+	font-weight: var( --Medium, 500 );
+	line-height: var( --s, 20px );
 }
 
 .dispute-recommendations__body {
-	color: $gray-700;
+	color: var( --Scales-Grays-gray-700, #757575 );
 	margin: 0;
+	font-size: var( --m, 13px );
+	font-style: normal;
+	font-weight: var( --Regular, 400 );
+	line-height: var( --s, 20px );
 }
