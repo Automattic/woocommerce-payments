@@ -54,8 +54,19 @@ class DisputeService {
 	public function submit_evidence( string $dispute_id, array $evidence, bool $submit, array $metadata = [] ) {
 		try {
 			// May return a WP_Error without throwing (e.g. internal prefetch failure) — passed through to the caller.
-			return $this->api_client->update_dispute( $dispute_id, $evidence, $submit, $metadata );
+			$result = $this->api_client->update_dispute( $dispute_id, $evidence, $submit, $metadata );
+			if ( is_wp_error( $result ) ) {
+				wc_get_logger()->error(
+					sprintf( 'Dispute evidence submission returned an error for %s: %s', $dispute_id, $result->get_error_message() ),
+					[ 'source' => 'woopayments-abilities' ]
+				);
+			}
+			return $result;
 		} catch ( \Throwable $e ) {
+			wc_get_logger()->error(
+				sprintf( 'Dispute evidence submission failed for %s: %s', $dispute_id, $e->getMessage() ),
+				[ 'source' => 'woopayments-abilities' ]
+			);
 			return new \WP_Error( 'wcpay_dispute_evidence_failed', $e->getMessage(), [ 'exception' => $e ] );
 		}
 	}
@@ -71,8 +82,19 @@ class DisputeService {
 	public function accept( string $dispute_id ) {
 		try {
 			// May return a WP_Error without throwing (e.g. internal prefetch failure) — passed through to the caller.
-			return $this->api_client->close_dispute( $dispute_id );
+			$result = $this->api_client->close_dispute( $dispute_id );
+			if ( is_wp_error( $result ) ) {
+				wc_get_logger()->error(
+					sprintf( 'Dispute close returned an error for %s: %s', $dispute_id, $result->get_error_message() ),
+					[ 'source' => 'woopayments-abilities' ]
+				);
+			}
+			return $result;
 		} catch ( \Throwable $e ) {
+			wc_get_logger()->error(
+				sprintf( 'Dispute close failed for %s: %s', $dispute_id, $e->getMessage() ),
+				[ 'source' => 'woopayments-abilities' ]
+			);
 			return new \WP_Error( 'wcpay_dispute_close_failed', $e->getMessage(), [ 'exception' => $e ] );
 		}
 	}

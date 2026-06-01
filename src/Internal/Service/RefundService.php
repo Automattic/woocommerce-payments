@@ -47,6 +47,10 @@ class RefundService {
 
 			return $request->send();
 		} catch ( \Throwable $e ) {
+			wc_get_logger()->error(
+				sprintf( 'Refund failed for charge %s: %s', $charge_id, $e->getMessage() ),
+				[ 'source' => 'woopayments-abilities' ]
+			);
 			return new \WP_Error( 'wcpay_refund_failed', $e->getMessage(), [ 'exception' => $e ] );
 		}
 	}
