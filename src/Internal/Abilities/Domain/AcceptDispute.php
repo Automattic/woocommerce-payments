@@ -1,0 +1,101 @@
+<?php
+/**
+ * Accept Dispute ability definition.
+ *
+ * @package WooCommerce\Payments
+ */
+
+// @phan-file-suppress PhanUndeclaredClassMethod, PhanUndeclaredFunction @phan-suppress-current-line UnusedSuppression -- Abilities API + AbilityDefinition added in WC 10.9; suppression covers older-WC compat runs where this class never loads.
+
+namespace WCPay\Internal\Abilities\Domain;
+
+use Automattic\WooCommerce\Abilities\AbilityDefinition;
+use WCPay\Internal\Abilities\AbilitiesRegistrar;
+use WCPay\Internal\Service\DisputeService;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Registers the `woocommerce-payments/accept-dispute` ability.
+ *
+ * Accepting a dispute concedes it: the funds are refunded to the cardholder
+ * and forfeited permanently. Irreversible (reversibility 0.0) and
+ * destructive. mcp.public is false — never auto-invocable; the caller's policy
+ * layer must gate this behind explicit operator approval.
+ *
+ * @internal Only loaded when WooCommerce 10.9+ is active.
+ *
+ * @see \WCPay\Internal\Service\DisputeService::accept()
+ */
+class AcceptDispute extends AbstractWCPayAbility implements AbilityDefinition {
+
+	/**
+	 * Return the ability name.
+	 *
+	 * @return string
+	 */
+	public static function get_name(): string {
+		return 'woocommerce-payments/accept-dispute';
+	}
+
+	/**
+	 * Return registration args for this ability.
+	 *
+	 * @return array
+	 */
+	public static function get_registration_args(): array {
+		return [
+			'label'               => __( 'Accept a dispute', 'woocommerce-payments' ),
+			'description'         => __( 'Accept (concede) a dispute. The disputed funds are forfeited to the cardholder permanently. This cannot be undone.', 'woocommerce-payments' ),
+			'category'            => AbilitiesRegistrar::CATEGORY_SLUG,
+			'input_schema'        => [
+				'type'                 => 'object',
+				'required'             => [ 'dispute_id' ],
+				'properties'           => [
+					'dispute_id' => [
+						'type'        => 'string',
+						'pattern'     => '^dp_',
+						'description' => __( 'Dispute ID (dp_…) to accept.', 'woocommerce-payments' ),
+					],
+				],
+				'additionalProperties' => false,
+			],
+			'execute_callback'    => [ self::class, 'execute' ],
+			'permission_callback' => [ AbilitiesRegistrar::class, 'current_user_can_manage_woocommerce' ],
+			'meta'                => [
+				'annotations'  => [
+					'readonly'      => false,
+					'destructive'   => true,
+					'idempotent'    => false,
+					'reversibility' => 0.0,
+				],
+				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => false,
+				],
+			],
+		];
+	}
+
+	/**
+	 * Execute the accept-dispute ability.
+	 *
+	 * @param array<string,mixed> $input Must contain `dispute_id`.
+	 * @return array|\WP_Error
+	 */
+	public static function execute( $input = null ) {
+		if ( ! is_array( $input ) || ! isset( $input['dispute_id'] ) || ! is_string( $input['dispute_id'] ) || '' === $input['dispute_id'] ) {
+			return new \WP_Error(
+				'wcpay_missing_dispute_id',
+				__( 'A dispute_id is required to accept a dispute.', 'woocommerce-payments' )
+			);
+		}
+
+		$container = \wcpay_get_container();
+		if ( ! $container->has( DisputeService::class ) ) {
+			return new \WP_Error( 'wcpay_not_initialized', __( 'WooPayments is not initialized.', 'woocommerce-payments' ) );
+		}
+
+		return $container->get( DisputeService::class )->accept( $input['dispute_id'] );
+	}
+}
