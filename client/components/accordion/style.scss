@@ -130,8 +130,15 @@
 //     subtitle's natural sibling position is below the h2, ~15px lower
 //     than the title text bottom — negative margin-top closes that gap
 //     to ~4px, matching the in-button subtitle's gap.
+//
+// Longhand on purpose: the four-value `margin: -$a -$b 0 -$b` shorthand
+// reads as arithmetic to SCSS (`-$a -$b` → subtraction) and collapses
+// into a wrong two-value shorthand.
 .wcpay-accordion__subtitle--external {
-	margin: -$grid-unit-15 -$grid-unit-20 0;
+	margin-top: -$grid-unit-15;
+	margin-right: -$grid-unit-20;
+	margin-bottom: 0;
+	margin-left: -$grid-unit-20;
 	padding: 0 $grid-unit-60 $grid-unit-10 $grid-unit-20;
 }
 
