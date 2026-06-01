@@ -72,6 +72,7 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\AcceptDispute::class,
 		\WCPay\Internal\Abilities\Domain\GetBalance::class,
 		\WCPay\Internal\Abilities\Domain\GetFraudOutcomes::class,
+		\WCPay\Internal\Abilities\Domain\GetFeesSummary::class,
 	];
 
 	/**
