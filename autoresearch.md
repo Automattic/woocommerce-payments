@@ -51,4 +51,6 @@ NODE_ENV=production npm run build:client
 Webpack already emits async chunks for existing `React.lazy` usage inside reports. The production config does not enable initial `splitChunks`, so the initial WooPayments admin entry is effectively `dist/index.js` plus `dist/index.css` today.
 
 ## What's Been Tried
-- Session setup only. No optimization experiments have been run yet.
+- Baseline: `admin_initial_gzip_kb=182.734`, `index_raw_kb=702.751`. `client/index.js` eagerly imported every route container.
+- ✅ Large win: replaced eager route container imports in `client/index.js` with a shared `React.lazy`/`Suspense` `lazyRoute` wrapper. Route registration remains synchronous because containers are wrapper components; route modules load only when rendered. `admin_initial_gzip_kb` dropped to ~18.2 KB and `index_raw_kb` to ~63.3 KB. This increased `total_dist_gzip_kb` because page code moved into separately named async chunks with some duplication/overhead.
+- ❌ Formatting-only dead end: the first lazy-route attempt built successfully with the same metric but failed `npm run lint:js` on Prettier wrapping. The formatted version passed.
