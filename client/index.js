@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import { createElement, lazy, Suspense } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { addFilter } from '@wordpress/hooks';
 // Create a dependency on wp-mediaelement. Necessary to prevent a type of JS error.
@@ -18,12 +18,12 @@ import { getTasks } from 'overview/task-list/tasks';
 import { maybeAddReportsPage } from 'reports/page-config';
 
 const lazyRoute = ( importer ) => {
-	const LazyComponent = React.lazy( importer );
+	const LazyComponent = lazy( importer );
 	return ( props ) =>
-		React.createElement(
-			React.Suspense,
+		createElement(
+			Suspense,
 			{ fallback: null },
-			React.createElement( LazyComponent, props )
+			createElement( LazyComponent, props )
 		);
 };
 
