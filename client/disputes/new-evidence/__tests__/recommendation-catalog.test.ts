@@ -111,14 +111,14 @@ describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 		// Every critical gates on `outcome: could_help`, so none should appear
 		// for a won dispute. Assert the invariant against the real catalog.
 		it( 'returns zero criticals for any keep_doing context', () => {
+			// Every reason any entry gates on, sourced from the catalog so a
+			// future entry on a new reason is covered automatically.
 			const reasons = [
-				'product_not_received',
-				'fraudulent',
-				'product_unacceptable',
-				'credit_not_processed',
-				'duplicate',
-				'subscription_canceled',
-				'general',
+				...new Set(
+					RECOMMENDATIONS_CATALOG.flatMap(
+						( entry ) => entry.when.reasonIn
+					)
+				),
 			];
 			reasons.forEach( ( reason ) => {
 				expect(
