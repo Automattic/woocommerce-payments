@@ -126,16 +126,19 @@
 //   - body has 20px padding; pull the subtitle to the card edges via
 //     negative left/right margin so its own left padding lines the text
 //     up with the title text.
-//   - the title h2 sits with margin-top -20px (pulled to card top); the
-//     subtitle's natural sibling position is below the h2, ~15px lower
-//     than the title text bottom — negative margin-top closes that gap
-//     to ~4px, matching the in-button subtitle's gap.
+//   - vertical position: sit naturally below the toggle button, with
+//     no negative pull-up. An earlier iteration used `margin-top:
+//     -12px` to tighten the gap to the Figma's ~4px, but that pulled
+//     the subtitle into the toggle button's focus-ring band (the
+//     inset box-shadow at the button's bottom edge), and the focus
+//     state visibly crossed the subtitle text on click. Wider gap is
+//     the right trade.
 //
-// Longhand on purpose: the four-value `margin: -$a -$b 0 -$b` shorthand
+// Longhand on purpose: the four-value `margin: 0 -$a 0 -$a` shorthand
 // reads as arithmetic to SCSS (`-$a -$b` → subtraction) and collapses
 // into a wrong two-value shorthand.
 .wcpay-accordion__subtitle--external {
-	margin-top: -$grid-unit-15;
+	margin-top: 0;
 	margin-right: -$grid-unit-20;
 	margin-bottom: 0;
 	margin-left: -$grid-unit-20;
