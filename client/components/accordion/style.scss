@@ -119,6 +119,24 @@
 	line-height: 20px;
 }
 
+// Sibling-to-the-toggle variant. Use when the subtitle hosts interactive
+// content (e.g. an inline link) that can't legally nest inside the title
+// <button>. Positioned to read as part of the title block: indented to
+// align with the title text and pulled up so the gap to the title matches
+// the in-button subtitle.
+.wcpay-accordion__subtitle--external {
+	padding: 0 $grid-unit-60 $grid-unit-10 $grid-unit-20;
+	margin-top: -$grid-unit-15;
+}
+
+// When the body is opened, its 20px padding insets siblings of the title.
+// Pull the external subtitle back to the card edges so its own left padding
+// stays in lockstep with the title text alignment.
+.wcpay-accordion__body.is-opened > .wcpay-accordion__subtitle--external {
+	margin-right: -$grid-unit-20;
+	margin-left: -$grid-unit-20;
+}
+
 .wcpay-accordion__icon {
 	color: $gray-700;
 	margin: -2px 0 -2px 6px;

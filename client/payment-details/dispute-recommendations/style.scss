@@ -50,15 +50,6 @@
 			transform: rotate( -180deg );
 		}
 	}
-
-	&__learn-more {
-		// Footer link on the coaching card. ExternalLink can't live inside
-		// the AccordionBody subtitle (subtitle renders inside the title
-		// <button>), so the link sits at the bottom of the body instead.
-		font-size: 13px;
-		line-height: 20px;
-		margin: $grid-unit-15 0 0;
-	}
 }
 
 // Urgency tint sits on the icon SVG via currentColor. No red: recommendations

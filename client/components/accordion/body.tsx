@@ -40,6 +40,7 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 			opened,
 			title,
 			subtitle,
+			subtitleNode,
 			md = true,
 			lg = false,
 			scrollAfterOpen = true,
@@ -95,11 +96,19 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 					isOpened={ Boolean( isOpened ) }
 					onClick={ handleOnToggle }
 					title={ title }
-					subtitle={ subtitle }
+					// When the caller provides JSX via `subtitleNode`, the
+					// subtitle slot inside the toggle button stays empty —
+					// the rich subtitle renders as a sibling below.
+					subtitle={ subtitleNode ? undefined : subtitle }
 					md={ md }
 					lg={ lg }
 					{ ...( buttonProps && { ...buttonProps, ref: undefined } ) }
 				/>
+				{ subtitleNode && (
+					<div className="wcpay-accordion__subtitle wcpay-accordion__subtitle--external">
+						{ subtitleNode }
+					</div>
+				) }
 				{ typeof children === 'function'
 					? children( { opened: Boolean( isOpened ) } )
 					: isOpened && children }

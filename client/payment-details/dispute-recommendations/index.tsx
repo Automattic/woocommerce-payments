@@ -105,11 +105,12 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 );
 
 // Each non-empty section renders as its own expanded-by-default Accordion
-// card (per Lucy review 2026-05-29 — separate cards, not a shared shell).
-// Description sits in the AccordionBody's `subtitle` slot so it hugs the
-// heading the way "Steps you can take" does. The coaching card's "Learn
-// more" link is rendered inside the body (subtitle is a plain-string slot
-// inside the title's <button>, so it cannot host an <a>).
+// card (Lucy review 2026-05-29 — separate cards, not a shared shell). The
+// description sits in the AccordionBody's subtitle slot so it hugs the
+// heading the way "Steps you can take" does. The coaching card passes its
+// "Learn more" link via `subtitleNode`, which renders the subtitle as a
+// sibling to the toggle button so the inline <a> stays out of the button's
+// accessible name (Lucy review 2026-06-01).
 const renderCard = (
 	heading: string,
 	description: string,
@@ -124,9 +125,37 @@ const renderCard = (
 	const visible = sorted.slice( 0, VISIBLE_PER_SECTION );
 	const hidden = sorted.slice( VISIBLE_PER_SECTION );
 
+	const subtitleNode = learnMoreHref ? (
+		<>
+			{ description }{ ' ' }
+			<ExternalLink href={ learnMoreHref }>
+				{ __( 'Learn more', 'woocommerce-payments' ) }
+				{ /* SR-only context. Setting aria-label would override the
+				     whole accessible name and drop ExternalLink's built-in
+				     "(opens in a new tab)" suffix; a VisuallyHidden child
+				     keeps both. */ }
+				<VisuallyHidden>
+					{ ' ' +
+						__(
+							'about managing payment disputes',
+							'woocommerce-payments'
+						) }
+				</VisuallyHidden>
+			</ExternalLink>
+		</>
+	) : undefined;
+
 	return (
 		<Accordion defaultExpanded className="dispute-recommendations-card">
-			<AccordionBody title={ heading } subtitle={ description } lg>
+			<AccordionBody
+				title={ heading }
+				// Use `subtitle` (string, inside the toggle button) when there
+				// is no link to embed; use `subtitleNode` (rich, sibling of
+				// the toggle) when the description carries an inline link.
+				subtitle={ subtitleNode ? undefined : description }
+				subtitleNode={ subtitleNode }
+				lg
+			>
 				{ visible.map( renderItem ) }
 				{ hidden.length > 0 && (
 					<details className="dispute-recommendations-card__show-more">
@@ -144,26 +173,6 @@ const renderCard = (
 						</summary>
 						{ hidden.map( renderItem ) }
 					</details>
-				) }
-				{ learnMoreHref && (
-					// div, not <p>: ExternalLink renders a <div> wrapper
-					// internally which would be invalid nested inside <p>.
-					<div className="dispute-recommendations-card__learn-more">
-						<ExternalLink href={ learnMoreHref }>
-							{ __( 'Learn more', 'woocommerce-payments' ) }
-							{ /* SR-only context. Setting aria-label would
-							     override the whole accessible name and drop
-							     ExternalLink's built-in "(opens in a new tab)"
-							     suffix; a VisuallyHidden child keeps both. */ }
-							<VisuallyHidden>
-								{ ' ' +
-									__(
-										'about managing payment disputes',
-										'woocommerce-payments'
-									) }
-							</VisuallyHidden>
-						</ExternalLink>
-					</div>
 				) }
 			</AccordionBody>
 		</Accordion>
