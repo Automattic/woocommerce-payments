@@ -19,11 +19,12 @@ import { maybeAddReportsPage } from 'reports/page-config';
 
 const lazyRoute = ( importer ) => {
 	const LazyComponent = lazy( importer );
-	return ( props ) => (
-		<Suspense fallback={ null }>
-			<LazyComponent { ...props } />
-		</Suspense>
-	);
+	return ( props ) =>
+		React.createElement(
+			Suspense,
+			{ fallback: null },
+			React.createElement( LazyComponent, props )
+		);
 };
 
 const ConnectAccountPage = lazyRoute( () =>
