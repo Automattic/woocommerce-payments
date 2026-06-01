@@ -191,6 +191,17 @@ module.exports = {
 				}
 
 				switch ( request ) {
+					// Under React 19, `react-dom/client` carries the full
+					// client renderer (~56KB) rather than being a thin
+					// re-export, so leaving it bundled bloats every
+					// entrypoint that mounts a root. The bundled
+					// dependency-extraction plugin (wp 3.7.0) only
+					// externalizes the bare `react-dom` request; WordPress
+					// exposes `createRoot` on the `react-dom` (`ReactDOM`)
+					// handle for both React 18 and 19, so externalize it
+					// there too — matching newer plugin versions.
+					case 'react-dom/client':
+						return 'ReactDOM';
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
@@ -201,6 +212,8 @@ module.exports = {
 				}
 
 				switch ( request ) {
+					case 'react-dom/client':
+						return 'react-dom';
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
 				}
