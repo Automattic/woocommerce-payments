@@ -52,8 +52,7 @@ class AcceptDispute extends AbstractWCPayAbility implements AbilityDefinition {
 				'properties'           => [
 					'dispute_id' => [
 						'type'        => 'string',
-						'pattern'     => '^dp_',
-						'description' => __( 'Dispute ID (dp_…) to accept.', 'woocommerce-payments' ),
+						'description' => __( 'Stripe dispute ID (typically `du_…` or legacy `dp_…`). Stripe ID prefixes are not contractually stable, so this field is not pattern-validated.', 'woocommerce-payments' ),
 					],
 				],
 				'additionalProperties' => false,
