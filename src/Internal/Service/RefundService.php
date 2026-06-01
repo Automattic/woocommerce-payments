@@ -22,6 +22,8 @@ class RefundService {
 	/**
 	 * Refund a charge by its Stripe charge/payout ID.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\RefundCharge
+	 *
 	 * @param string      $charge_id       Stripe charge (`ch_…`/`py_…`) ID.
 	 * @param int|null    $amount          Amount in minor units; null for a full refund.
 	 * @param string|null $reason          Refund reason (duplicate|fraudulent|requested_by_customer).

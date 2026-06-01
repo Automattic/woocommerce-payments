@@ -43,6 +43,8 @@ class DisputeService {
 	/**
 	 * Submit (or stage as draft) dispute evidence.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence
+	 *
 	 * @param string $dispute_id Dispute ID (`dp_…`).
 	 * @param array  $evidence   Evidence field map.
 	 * @param bool   $submit     True submits to the card network (irreversible); false stages a draft.
@@ -60,6 +62,8 @@ class DisputeService {
 
 	/**
 	 * Accept (close) a dispute — concedes the dispute and forfeits the funds.
+	 *
+	 * @see \WCPay\Internal\Abilities\Domain\AcceptDispute
 	 *
 	 * @param string $dispute_id Dispute ID (`dp_…`).
 	 * @return array|\WP_Error

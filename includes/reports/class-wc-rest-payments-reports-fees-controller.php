@@ -139,6 +139,8 @@ class WC_REST_Payments_Reports_Fees_Controller extends WC_REST_Payments_Reports_
 	/**
 	 * Retrieves the Fees report summary.
 	 *
+	 * @see \WCPay\Internal\Abilities\Domain\GetFeesSummary
+	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_fees_summary( $request ) {
