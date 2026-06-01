@@ -45,12 +45,18 @@ import type { Recommendation } from './types';
  * widen this cluster back to three fields.
  */
 
-// Every evidence key the response wizard can collect. Used by c15 ("no
-// evidence at all" — fires only when ALL of these are missing) and c12
-// ("you have evidence but no cover letter" — fires only when at least
-// one non-cover-letter key is provided). Must stay in sync with the
-// wizard's actual collectable fields; an unlisted field can make c15
-// fire (and suppress criticals) while real evidence sits in it.
+// Every evidence key the response wizard collects from the merchant. Used
+// by c15 ("no evidence at all": fires only when ALL of these are missing)
+// and c12 ("you have evidence but no cover letter": fires only when at
+// least one non-cover-letter key is provided). Must stay in sync with the
+// wizard's actual collectable fields; an unlisted field can make c15 fire
+// (and suppress criticals) while real evidence sits in it.
+//
+// Auto-populated fields (customer_purchase_ip, customer_name,
+// customer_email_address, billing_address) are deliberately excluded: the
+// merchant cannot fill them in, so an always-present value would keep c15
+// from ever firing. This mirrors the same exclusion in
+// constants/high-impact-fields.ts.
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
 const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'customer_communication',
@@ -70,7 +76,6 @@ const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'cancellation_policy',
 	'cancellation_rebuttal',
 	'customer_signature',
-	'customer_purchase_ip',
 	'uncategorized_file',
 	'uncategorized_text',
 ];
