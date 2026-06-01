@@ -1,0 +1,1 @@
+{"type":"config","name":"Reduce WooPayments admin initial bundle size","metricName":"admin_initial_gzip_kb","metricUnit":"kb","bestDirection":"lower"}
