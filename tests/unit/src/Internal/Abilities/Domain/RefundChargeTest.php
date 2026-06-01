@@ -31,6 +31,7 @@ class RefundChargeTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 0.2, $args['meta']['annotations']['reversibility'] );
 		$this->assertFalse( $args['meta']['mcp']['public'] );
 		$this->assertContains( 'charge_id', $args['input_schema']['required'] );
+		$this->assertContains( 'idempotency_key', $args['input_schema']['required'] );
 		$this->assertFalse( $args['input_schema']['additionalProperties'] );
 	}
 
@@ -44,5 +45,11 @@ class RefundChargeTest extends WCPAY_UnitTestCase {
 		$result = RefundCharge::execute( [ 'charge_id' => 123 ] );
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_charge_id', $result->get_error_code() );
+	}
+
+	public function test_execute_returns_error_when_idempotency_key_missing(): void {
+		$result = RefundCharge::execute( [ 'charge_id' => 'ch_1' ] );
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'wcpay_missing_idempotency_key', $result->get_error_code() );
 	}
 }

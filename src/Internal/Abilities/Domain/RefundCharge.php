@@ -17,9 +17,10 @@ defined( 'ABSPATH' ) || exit;
  * Registers the `woocommerce-payments/refund-charge` ability.
  *
  * Creates a full or partial refund on a Stripe charge. Destructive (moves
- * money back to the cardholder). Idempotent ONLY when the caller supplies a
- * stable `idempotency_key`; without one the platform generates a fresh key and
- * a duplicate call creates a second refund.
+ * money back to the cardholder). Idempotent because `idempotency_key` is
+ * REQUIRED: an identical key returns the original refund, so a blind retry
+ * cannot create a second refund. (Without a key the platform would generate a
+ * fresh one and a duplicate call would double-refund — hence the requirement.)
  *
  * @internal Only loaded when WooCommerce 10.9+ is active.
  *
@@ -48,7 +49,7 @@ class RefundCharge extends AbstractWCPayAbility implements AbilityDefinition {
 			'category'            => AbilitiesRegistrar::CATEGORY_SLUG,
 			'input_schema'        => [
 				'type'                 => 'object',
-				'required'             => [ 'charge_id' ],
+				'required'             => [ 'charge_id', 'idempotency_key' ],
 				'properties'           => [
 					'charge_id'       => [
 						'type'        => 'string',
@@ -67,7 +68,7 @@ class RefundCharge extends AbstractWCPayAbility implements AbilityDefinition {
 					],
 					'idempotency_key' => [
 						'type'        => 'string',
-						'description' => __( 'Caller-supplied key so duplicate retries dedupe to the original refund.', 'woocommerce-payments' ),
+						'description' => __( 'Required. A stable, caller-unique key so duplicate retries dedupe to the original refund instead of creating a second one. Reuse the exact same key when retrying the same logical refund.', 'woocommerce-payments' ),
 					],
 				],
 				'additionalProperties' => false,
@@ -100,6 +101,13 @@ class RefundCharge extends AbstractWCPayAbility implements AbilityDefinition {
 			return new \WP_Error(
 				'wcpay_missing_charge_id',
 				__( 'A charge_id is required to create a refund.', 'woocommerce-payments' )
+			);
+		}
+
+		if ( ! isset( $input['idempotency_key'] ) || ! is_string( $input['idempotency_key'] ) || '' === $input['idempotency_key'] ) {
+			return new \WP_Error(
+				'wcpay_missing_idempotency_key',
+				__( 'An idempotency_key is required so refund retries are safe.', 'woocommerce-payments' )
 			);
 		}
 
