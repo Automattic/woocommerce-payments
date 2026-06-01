@@ -15,6 +15,7 @@ use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
 use WCPay\Internal\Service\ExampleService;
 use WCPay\Internal\Service\ExampleServiceWithDependencies;
+use WCPay\Internal\Service\RefundService;
 use WCPay\Internal\Service\SessionService;
 
 /**
@@ -30,6 +31,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 		ExampleService::class,
 		ExampleServiceWithDependencies::class,
 		DuplicatePaymentPreventionService::class,
+		RefundService::class,
 	];
 
 	/**
@@ -48,5 +50,7 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 			->addArgument( ExampleService::class )
 			->addArgument( Mode::class )
 			->addArgument( PluginUtil::class );
+
+		$container->addShared( RefundService::class );
 	}
 }
