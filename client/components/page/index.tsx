@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
  */
 import enqueueFraudScripts from 'fraud-scripts';
 import ErrorBoundary from '../error-boundary';
+import '../../style.scss';
 import './style.scss';
 
 interface PageProps {
