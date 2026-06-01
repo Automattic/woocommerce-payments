@@ -141,6 +141,13 @@ describe( 'Grouped Select Control', () => {
 		await userEvent.type( input, 'z' );
 		expect( screen.queryByText( 'Option 1' ) ).not.toBeInTheDocument();
 		expect( screen.getByText( 'Option 5' ) ).toBeInTheDocument();
+
+		// Revealing an item from a previously-collapsed group makes React 19
+		// emit a dev-only "component suspended inside act" warning from
+		// downshift's internals. The component is fully synchronous and the
+		// behaviour is correct; acknowledge the expected console output so
+		// @wordpress/jest-console does not fail the test on it.
+		expect( console ).toHaveErrored();
 	} );
 
 	it( 'restores visibility state after clearing search', async () => {

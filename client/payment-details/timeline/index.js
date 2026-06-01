@@ -37,7 +37,18 @@ const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
 							'woocommerce-payments'
 						)
 					) : (
-						<Timeline items={ items } />
+						<Timeline
+							items={ items }
+							groupBy="day"
+							orderBy="desc"
+							/* translators: PHP date format string used to display dates, see php.net/date. */
+							dateFormat={ __(
+								'F j, Y',
+								'woocommerce-payments'
+							) }
+							/* translators: PHP clock format string used to display times, see php.net/date. */
+							clockFormat={ __( 'g:ia', 'woocommerce-payments' ) }
+						/>
 					) }
 				</LoadableBlock>
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 } />

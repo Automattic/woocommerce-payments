@@ -14,7 +14,7 @@ import { getVisibleBalanceRows } from './rows';
 import type { ReportsBalanceSummary } from 'wcpay/data/reports/hooks';
 
 interface BalanceLoadingSkeletonProps {
-	headingRef?: RefObject< HTMLHeadingElement >;
+	headingRef?: RefObject< HTMLHeadingElement | null >;
 	headingTabIndex?: number;
 }
 

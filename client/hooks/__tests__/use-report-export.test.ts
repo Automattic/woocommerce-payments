@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
 
@@ -28,6 +28,10 @@ describe( 'useReportExport', () => {
 		userEmail: 'test@example.com',
 	};
 
+	// Capture the native implementation once, before any spy is installed, so
+	// the per-test spy can delegate non-anchor elements without recursing.
+	const realCreateElement = document.createElement.bind( document );
+
 	beforeEach( () => {
 		// Reset all mocks before each test
 		jest.clearAllMocks();
@@ -38,17 +42,22 @@ describe( 'useReportExport', () => {
 			createNotice: mockCreateNotice,
 		} );
 
-		// Mock document.createElement
+		// Mock the download anchor only; delegate other elements (e.g. the
+		// container Testing Library's renderHook creates) to the real DOM.
 		const mockLink = {
 			href: '',
 			click: jest.fn(),
 		};
-		jest.spyOn( document, 'createElement' ).mockReturnValue(
-			mockLink as any
+		jest.spyOn( document, 'createElement' ).mockImplementation(
+			( tagName: string, options?: ElementCreationOptions ) =>
+				tagName === 'a'
+					? ( mockLink as any )
+					: realCreateElement( tagName, options )
 		);
 	} );
 
 	afterEach( () => {
+		jest.restoreAllMocks();
 		jest.useRealTimers();
 	} );
 

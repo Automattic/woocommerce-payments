@@ -76,7 +76,6 @@ describe( 'Documents filters', () => {
 			expect( console ).toHaveWarnedWith(
 				'wp.date.__experimentalGetSettings is deprecated since version 6.1. Please use wp.date.getSettings instead.'
 			);
-			expect( console ).toHaveErrored();
 		} );
 
 		test( 'should filter by after', async () => {
