@@ -20,7 +20,9 @@ import type { Recommendation } from './types';
  *     `critical` + `tip` (amber `caution`) → "What could help next time".
  *     `critical` and `tip` render identically; the split exists so the
  *     runtime/snapshot can still distinguish lift-bearing recommendations
- *     from softer tips for analytics and ordering.
+ *     from softer tips for analytics and suppression (only `critical`
+ *     entries are dropped by the c15 catch-all). The matcher does not
+ *     order results.
  *   - when: predicates the runtime helper checks against the dispute.
  *     `requireProvided` / `requireMissing` are count predicates over a
  *     key set (`min`/`max` inclusive; see `FieldCountPredicate` and
@@ -56,9 +58,10 @@ import type { Recommendation } from './types';
 // customer_email_address, billing_address) are deliberately excluded: the
 // merchant cannot fill them in, so an always-present value would keep c15
 // from ever firing. This mirrors the same exclusion in
-// constants/high-impact-fields.ts.
+// constants/high-impact-fields.ts. Exported so recommendation-catalog.test.ts
+// can guard that no auto-populated field creeps back in.
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
-const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
+export const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'customer_communication',
 	'receipt',
 	'shipping_documentation',
@@ -395,9 +398,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 6: cancellation policy ============
-	// Predicates here check both `cancellation_policy` and `cancellation_rebuttal`
-	// with `min: 2` — i.e. both fields must satisfy the underlying state
-	// (provided or missing) for the entry to fire.
+	// Two predicate shapes over `cancellation_policy` and `cancellation_rebuttal`:
+	// the "both fields" entries (provided, document, add-none-on-won) use `min: 2`,
+	// so both fields must satisfy the underlying state (provided or missing) to
+	// fire; the "exactly-one" tips use `min: 1, max: 1` on `requireProvided`, firing
+	// when exactly one of the two fields is present.
 	{
 		id: 'c6-cancellation-provided',
 		urgency: 'positive',

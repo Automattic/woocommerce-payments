@@ -462,6 +462,34 @@ describe( 'getRecommendations', () => {
 		] );
 	} );
 
+	it( 'excludes retired entries even when every clause matches', () => {
+		// The retired guard is the first filter step and the runtime half of
+		// the append-only id contract: a tombstoned id stays in the catalog
+		// but must never render.
+		const live = buildEntry( {
+			id: 'live',
+			when: {
+				outcome: 'could_help',
+				reasonIn: [ 'product_not_received' ],
+			},
+		} );
+		const tombstoned = buildEntry( {
+			id: 'tombstoned',
+			retired: true,
+			when: {
+				outcome: 'could_help',
+				reasonIn: [ 'product_not_received' ],
+			},
+		} );
+
+		const result = getRecommendations(
+			baseContext( { outcome: 'could_help' } ),
+			[ live, tombstoned ]
+		);
+
+		expect( result.map( ( r ) => r.id ) ).toEqual( [ 'live' ] );
+	} );
+
 	describe( 'suppression', () => {
 		it( 'suppresses other critical entries when an entry with suppressOtherCriticals fires', () => {
 			const catchAll = buildEntry( {
@@ -498,6 +526,40 @@ describe( 'getRecommendations', () => {
 			expect( result.map( ( r ) => r.id ).sort() ).toEqual( [
 				'a-tip',
 				'catch-all',
+			] );
+		} );
+
+		it( 'keeps a non-critical suppressor while still dropping other criticals', () => {
+			// The suppressor survives regardless of its own urgency: the
+			// `entry === suppressor` short-circuit runs before the urgency
+			// check. The current catalog's only suppressor (c15) is critical,
+			// but the type permits suppressOtherCriticals on any urgency, so
+			// pin the tip-urgency path too.
+			const tipSuppressor = buildEntry( {
+				id: 'tip-suppressor',
+				urgency: 'tip',
+				suppressOtherCriticals: true,
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+			const otherCritical = buildEntry( {
+				id: 'other-critical',
+				urgency: 'critical',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+
+			const result = getRecommendations(
+				baseContext( { outcome: 'could_help' } ),
+				[ tipSuppressor, otherCritical ]
+			);
+
+			expect( result.map( ( r ) => r.id ) ).toEqual( [
+				'tip-suppressor',
 			] );
 		} );
 

@@ -184,9 +184,9 @@ export interface Recommendation {
 	urgency: RecommendationUrgency;
 	when: RecommendationWhen;
 	/**
-	 * Q6 win-rate lift in percentage points, when known. Used to rank
-	 * recommendations within a section when capping (top N by lift).
-	 * Entries without a measured lift sort to the bottom.
+	 * Q6 win-rate lift in percentage points, when known. Reserved for
+	 * future lift-based capping in the UI consumer (#11703): the matcher
+	 * does not read or sort by it today.
 	 */
 	lift?: number;
 	/**

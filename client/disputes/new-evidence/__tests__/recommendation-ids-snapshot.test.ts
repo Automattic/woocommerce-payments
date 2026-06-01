@@ -42,4 +42,14 @@ describe( 'recommendation id stability', () => {
 		);
 		expect( duplicates ).toEqual( [] );
 	} );
+
+	it( 'has no duplicate ids in the snapshot ledger itself', () => {
+		// The ledger is the source of truth for append-only enforcement, so a
+		// duplicate sneaking in (e.g. from a rebase conflict) would pass the
+		// parity checks above while corrupting the contract. Guard it directly.
+		const duplicates = snapshotIds.filter(
+			( id, index ) => snapshotIds.indexOf( id ) !== index
+		);
+		expect( duplicates ).toEqual( [] );
+	} );
 } );
