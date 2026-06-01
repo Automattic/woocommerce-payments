@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Make WooPay save-info supporting copy use the checkout x-small text size.
