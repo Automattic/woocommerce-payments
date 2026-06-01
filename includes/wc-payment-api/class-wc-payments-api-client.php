@@ -2566,6 +2566,10 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Send the request to the WooCommerce Payment API
 	 *
+	 * Note: `idempotency_key` is a reserved transport-layer param key. When present
+	 * in $params it is lifted into the `Idempotency-Key` header and stripped from
+	 * the body — it is never sent to the server as request data.
+	 *
 	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
 	 * @param string $api              - The API endpoint to call.
 	 * @param string $method           - The HTTP method to make the request with.
@@ -2588,6 +2592,19 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		);
 
 		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
+
+		// Honor a caller-supplied idempotency key (e.g. from an agent-driven
+		// ability) so duplicate retries dedupe to the original result. Lift it out
+		// of the body params either way — it is a transport-layer header, never
+		// request data sent to the server. The (string) cast guards against a
+		// non-string value injected via the wcpay_api_request_params filter. For
+		// GET/DELETE the key is stripped from the params here but intentionally
+		// not added as a header (those methods build a query string, not a body).
+		$caller_idempotency_key = '';
+		if ( is_array( $params ) && isset( $params['idempotency_key'] ) ) {
+			$caller_idempotency_key = (string) $params['idempotency_key'];
+			unset( $params['idempotency_key'] );
+		}
 
 		// Build the URL we want to send the request to.
 		$url = self::ENDPOINT_BASE;
@@ -2613,7 +2630,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			$headers['Idempotency-Key'] = $this->uuid();
+			$headers['Idempotency-Key'] = '' !== $caller_idempotency_key ? $caller_idempotency_key : $this->uuid();
 			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new API_Exception(
