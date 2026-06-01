@@ -1,0 +1,3 @@
+- Investigate webpack `splitChunks`/MiniCssExtract settings for a single async WooPayments page CSS chunk after moving `client/style.scss` into `components/page`; current primary win increases `total_dist_gzip_kb` by duplicating CSS across async chunks.
+- Investigate whether WooCommerceDependencyExtractionWebpackPlugin can avoid listing externals used only by async route chunks in `index.asset.php`; current benchmark excludes those dependencies, but real WordPress enqueue behavior may still load many externals up front.
+- Add focused Jest coverage for `overview/task-list/admin-tasks.tsx`, which now mirrors the subset of `getTasks` used by the WooCommerce Admin onboarding task filter.
