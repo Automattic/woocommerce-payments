@@ -70,6 +70,7 @@ class AbilitiesRegistrar {
 		\WCPay\Internal\Abilities\Domain\RefundCharge::class,
 		\WCPay\Internal\Abilities\Domain\SubmitDisputeEvidence::class,
 		\WCPay\Internal\Abilities\Domain\AcceptDispute::class,
+		\WCPay\Internal\Abilities\Domain\GetBalance::class,
 	];
 
 	/**
