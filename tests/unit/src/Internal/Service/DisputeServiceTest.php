@@ -106,4 +106,30 @@ class DisputeServiceTest extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_dispute_close_failed', $result->get_error_code() );
 	}
+
+	public function test_submit_evidence_passes_through_wp_error_from_api_client(): void {
+		$wp_error = new \WP_Error( 'wcpay_prefetch_failed', 'prefetch failed' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'update_dispute' )
+			->willReturn( $wp_error );
+
+		$result = $this->sut->submit_evidence( 'dp_1', [ 'customer_communication' => 'file_1' ], true );
+
+		$this->assertSame( $wp_error, $result );
+	}
+
+	public function test_accept_passes_through_wp_error_from_api_client(): void {
+		$wp_error = new \WP_Error( 'wcpay_prefetch_failed', 'prefetch failed' );
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'close_dispute' )
+			->willReturn( $wp_error );
+
+		$result = $this->sut->accept( 'dp_2' );
+
+		$this->assertSame( $wp_error, $result );
+	}
 }

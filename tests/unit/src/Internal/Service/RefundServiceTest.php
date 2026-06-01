@@ -53,4 +53,29 @@ class RefundServiceTest extends WCPAY_UnitTestCase {
 
 		$this->assertSame( [ 'id' => 're_2' ], $result );
 	}
+
+	public function test_refund_charge_skips_idempotency_key_when_empty_string(): void {
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )->method( 'set_charge' )->with( 'ch_3' );
+		$request->expects( $this->never() )->method( 'set_idempotency_key' );
+		$request->expects( $this->once() )->method( 'set_source' )->with( 'woopayments_ability' );
+		$request->expects( $this->once() )->method( 'format_response' )->willReturn( [ 'id' => 're_3' ] );
+
+		$result = $this->sut->refund_charge( 'ch_3', null, null, '' );
+
+		$this->assertSame( [ 'id' => 're_3' ], $result );
+	}
+
+	public function test_refund_charge_returns_wp_error_when_request_throws(): void {
+		$request = $this->mock_wcpay_request( Refund_Charge::class );
+		$request->expects( $this->once() )->method( 'set_charge' )->with( 'ch_4' );
+		$request->expects( $this->once() )->method( 'set_source' )->with( 'woopayments_ability' );
+		$request->expects( $this->once() )->method( 'format_response' )
+			->willThrowException( new \WCPay\Exceptions\API_Exception( 'boom', 'test_err', 500 ) );
+
+		$result = $this->sut->refund_charge( 'ch_4', null, null, 'ik_4' );
+
+		$this->assertInstanceOf( \WP_Error::class, $result );
+		$this->assertSame( 'wcpay_refund_failed', $result->get_error_code() );
+	}
 }

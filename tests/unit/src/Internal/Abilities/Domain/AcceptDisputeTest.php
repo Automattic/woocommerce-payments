@@ -42,4 +42,18 @@ class AcceptDisputeTest extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
 	}
+
+	public function test_execute_delegates_to_dispute_service(): void {
+		$mock_service = $this->createMock( \WCPay\Internal\Service\DisputeService::class );
+		$mock_service->expects( $this->once() )->method( 'accept' )
+			->with( 'du_1' )
+			->willReturn( [ 'id' => 'du_1' ] );
+		wcpay_get_test_container()->replace( \WCPay\Internal\Service\DisputeService::class, $mock_service );
+		try {
+			$result = AcceptDispute::execute( [ 'dispute_id' => 'du_1' ] );
+		} finally {
+			wcpay_get_test_container()->reset_all_replacements();
+		}
+		$this->assertSame( [ 'id' => 'du_1' ], $result );
+	}
 }

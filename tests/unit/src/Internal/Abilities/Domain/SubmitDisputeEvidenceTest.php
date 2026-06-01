@@ -43,4 +43,27 @@ class SubmitDisputeEvidenceTest extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( \WP_Error::class, $result );
 		$this->assertSame( 'wcpay_missing_dispute_id', $result->get_error_code() );
 	}
+
+	public function test_execute_delegates_to_dispute_service(): void {
+		$evidence     = [ 'customer_communication' => 'file_1' ];
+		$metadata     = [ 'k' => 'v' ];
+		$mock_service = $this->createMock( \WCPay\Internal\Service\DisputeService::class );
+		$mock_service->expects( $this->once() )->method( 'submit_evidence' )
+			->with( 'du_1', $evidence, true, $metadata )
+			->willReturn( [ 'id' => 'du_1' ] );
+		wcpay_get_test_container()->replace( \WCPay\Internal\Service\DisputeService::class, $mock_service );
+		try {
+			$result = SubmitDisputeEvidence::execute(
+				[
+					'dispute_id' => 'du_1',
+					'evidence'   => $evidence,
+					'submit'     => true,
+					'metadata'   => $metadata,
+				]
+			);
+		} finally {
+			wcpay_get_test_container()->reset_all_replacements();
+		}
+		$this->assertSame( [ 'id' => 'du_1' ], $result );
+	}
 }
