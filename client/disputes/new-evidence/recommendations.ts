@@ -57,17 +57,15 @@ export const getRecommendations = (
 			return false;
 		}
 		// `reasonIn` / `productTypeIn` are strongly typed in the catalog;
-		// the context carries raw server values (typed `string`), so widen
-		// the catalog arrays for the membership check.
-		if (
-			! ( when.reasonIn as readonly string[] ).includes( context.reason )
-		) {
+		// the context carries raw server values (typed `string`). Compare by
+		// value so the catalog arrays keep their union types (no widening cast).
+		if ( ! when.reasonIn.some( ( reason ) => reason === context.reason ) ) {
 			return false;
 		}
 		if (
 			when.productTypeIn &&
-			! ( when.productTypeIn as readonly string[] ).includes(
-				context.productType
+			! when.productTypeIn.some(
+				( productType ) => productType === context.productType
 			)
 		) {
 			return false;
