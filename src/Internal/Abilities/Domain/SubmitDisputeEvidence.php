@@ -142,11 +142,15 @@ class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefin
 		$submit     = ! empty( $input['submit'] );
 		$metadata   = ( isset( $input['metadata'] ) && is_array( $input['metadata'] ) ) ? $input['metadata'] : [];
 
-		$container = \wcpay_get_container();
-		if ( ! $container->has( DisputeService::class ) ) {
-			return new \WP_Error( 'wcpay_not_initialized', __( 'WooPayments is not initialized.', 'woocommerce-payments' ) );
-		}
+		return self::get_dispute_service()->submit_evidence( $dispute_id, $evidence, $submit, $metadata );
+	}
 
-		return $container->get( DisputeService::class )->submit_evidence( $dispute_id, $evidence, $submit, $metadata );
+	/**
+	 * Resolve the shared dispute service from the container.
+	 *
+	 * @return DisputeService
+	 */
+	private static function get_dispute_service(): DisputeService {
+		return \wcpay_get_container()->get( DisputeService::class );
 	}
 }

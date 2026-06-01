@@ -116,11 +116,15 @@ class RefundCharge extends AbstractWCPayAbility implements AbilityDefinition {
 		$reason          = isset( $input['reason'] ) && is_string( $input['reason'] ) ? $input['reason'] : null;
 		$idempotency_key = isset( $input['idempotency_key'] ) && is_string( $input['idempotency_key'] ) ? $input['idempotency_key'] : null;
 
-		$container = \wcpay_get_container();
-		if ( ! $container->has( RefundService::class ) ) {
-			return new \WP_Error( 'wcpay_not_initialized', __( 'WooPayments is not initialized.', 'woocommerce-payments' ) );
-		}
+		return self::get_refund_service()->refund_charge( $charge_id, $amount, $reason, $idempotency_key );
+	}
 
-		return $container->get( RefundService::class )->refund_charge( $charge_id, $amount, $reason, $idempotency_key );
+	/**
+	 * Resolve the shared refund service from the container.
+	 *
+	 * @return RefundService
+	 */
+	private static function get_refund_service(): RefundService {
+		return \wcpay_get_container()->get( RefundService::class );
 	}
 }
