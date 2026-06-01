@@ -54,12 +54,16 @@ import type { Recommendation } from './types';
 // wizard's actual collectable fields; an unlisted field can make c15 fire
 // (and suppress criticals) while real evidence sits in it.
 //
-// Auto-populated fields (customer_purchase_ip, customer_name,
-// customer_email_address, billing_address) are deliberately excluded: the
-// merchant cannot fill them in, so an always-present value would keep c15
-// from ever firing. This mirrors the same exclusion in
-// constants/high-impact-fields.ts. Exported so recommendation-catalog.test.ts
-// can guard that no auto-populated field creeps back in.
+// Two kinds of always-present fields are deliberately excluded so they
+// cannot keep c15 from firing:
+//   - Auto-populated fields (customer_purchase_ip, customer_name,
+//     customer_email_address, billing_address): the merchant cannot fill
+//     them in, so they are set on every submission.
+//   - product_description: the wizard pre-fills it from the order's product
+//     names, so it is almost always present and is not a signal that the
+//     merchant actually submitted evidence.
+// Both exclusions mirror constants/high-impact-fields.ts. Exported so
+// recommendation-catalog.test.ts can guard that no excluded field creeps back in.
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
 export const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'customer_communication',

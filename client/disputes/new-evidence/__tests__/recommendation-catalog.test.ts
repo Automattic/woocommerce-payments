@@ -145,17 +145,21 @@ describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 // the specific failure mode that bit us: an auto-populated field that the
 // merchant cannot fill in slipping into the list and defeating c15.
 describe( 'WIZARD_SUBMITTABLE_EVIDENCE_KEYS hygiene', () => {
-	// Mirrors the exclusion list documented in constants/high-impact-fields.ts.
-	const autoPopulatedFields = [
+	// Fields that are effectively always present (auto-populated, or
+	// placeholder-defaulted like product_description) must stay out of the key
+	// set, or c15 never fires. Mirrors the exclusions documented in
+	// constants/high-impact-fields.ts.
+	const alwaysPresentFields = [
 		'customer_purchase_ip',
 		'customer_name',
 		'customer_email_address',
 		'billing_address',
+		'product_description',
 	];
 
-	it( 'contains no auto-populated fields', () => {
+	it( 'contains no always-present (auto-populated or defaulted) fields', () => {
 		const leaked = WIZARD_SUBMITTABLE_EVIDENCE_KEYS.filter( ( key ) =>
-			autoPopulatedFields.includes( key )
+			alwaysPresentFields.includes( key )
 		);
 		expect( leaked ).toEqual( [] );
 	} );
