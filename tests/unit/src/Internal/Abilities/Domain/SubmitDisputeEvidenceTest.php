@@ -20,11 +20,11 @@ class SubmitDisputeEvidenceTest extends WCPAY_UnitTestCase {
 		$this->assertSame( 'woocommerce-payments/submit-dispute-evidence', SubmitDisputeEvidence::get_name() );
 	}
 
-	public function test_registration_args_has_additive_write_annotations(): void {
+	public function test_registration_args_has_destructive_write_annotations(): void {
 		$args = SubmitDisputeEvidence::get_registration_args();
 
 		$this->assertFalse( $args['meta']['annotations']['readonly'] );
-		$this->assertFalse( $args['meta']['annotations']['destructive'] );
+		$this->assertTrue( $args['meta']['annotations']['destructive'] );
 		$this->assertFalse( $args['meta']['annotations']['idempotent'] );
 		$this->assertSame( 0.2, $args['meta']['annotations']['reversibility'] );
 		$this->assertFalse( $args['meta']['mcp']['public'] );

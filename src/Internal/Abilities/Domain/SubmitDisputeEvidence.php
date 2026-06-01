@@ -19,7 +19,9 @@ defined( 'ABSPATH' ) || exit;
  * Two-phase: with `submit=false` (the default) evidence is staged as a draft
  * and can be revised; with `submit=true` the evidence is sent to the card
  * network and CANNOT be changed afterward. Not idempotent — each submit is a
- * fresh submission.
+ * fresh submission. Annotated `destructive=true`: a policy layer must reason
+ * about the most-dangerous mode, and the `submit=true` path is irreversible
+ * (matching accept-dispute).
  *
  * @internal Only loaded when WooCommerce 10.9+ is active.
  *
@@ -109,7 +111,7 @@ class SubmitDisputeEvidence extends AbstractWCPayAbility implements AbilityDefin
 			'meta'                => [
 				'annotations'  => [
 					'readonly'      => false,
-					'destructive'   => false,
+					'destructive'   => true,
 					'idempotent'    => false,
 					'reversibility' => 0.2,
 				],
