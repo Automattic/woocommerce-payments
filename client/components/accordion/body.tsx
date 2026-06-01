@@ -104,7 +104,13 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 					lg={ lg }
 					{ ...( buttonProps && { ...buttonProps, ref: undefined } ) }
 				/>
-				{ subtitleNode && (
+				{ subtitleNode && isOpened && (
+					// Unlike the in-button `subtitle` prop (which is always
+					// visible because the toggle button is), `subtitleNode`
+					// renders below the toggle as a sibling. Treating it as
+					// body content — visible only when expanded — gives a
+					// clean closed state (just title + chevron) and avoids
+					// two-state positioning math against the body's border.
 					<div className="wcpay-accordion__subtitle wcpay-accordion__subtitle--external">
 						{ subtitleNode }
 					</div>
