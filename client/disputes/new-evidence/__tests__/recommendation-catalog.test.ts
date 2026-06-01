@@ -26,10 +26,9 @@ const criticalIds = ( ctx: RecommendationContext ): string[] =>
 		.filter( ( r ) => r.urgency === 'critical' )
 		.map( ( r ) => r.id );
 
-// Smoke coverage for the real RECOMMENDATIONS_CATALOG. The matcher's own unit
-// tests use synthetic fixtures; these exercise the actual `when` predicates so a
-// catalog authoring error (wrong reason, inverted predicate, a stray key in
-// WIZARD_SUBMITTABLE_EVIDENCE_KEYS) fails CI instead of shipping silently.
+// Smoke coverage for the real RECOMMENDATIONS_CATALOG. The matcher's unit tests
+// use fixtures, so these exercise the actual `when` predicates and fail CI on a
+// catalog authoring error.
 describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 	describe( 'cluster 15 "no evidence" catch-all', () => {
 		it( 'fires and is the only critical when no evidence is provided', () => {
@@ -48,11 +47,9 @@ describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 		} );
 
 		it( 'still fires when only the auto-populated customer IP is present', () => {
-			// Regression guard: `customer_purchase_ip` is auto-set from the
-			// order IP, not merchant-entered, so it must not count as evidence
-			// for the catch-all. If it leaks back into
-			// WIZARD_SUBMITTABLE_EVIDENCE_KEYS, c15's `max: 0` gate stops
-			// firing and the merchant loses the "submit evidence" message.
+			// Regression guard: customer_purchase_ip is auto-set from the order
+			// IP, so if it leaks into WIZARD_SUBMITTABLE_EVIDENCE_KEYS, c15's
+			// `max: 0` gate stops firing.
 			const ctx = context( {
 				outcome: 'could_help',
 				reason: 'product_not_received',
@@ -111,9 +108,8 @@ describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 	} );
 
 	describe( 'no critical recommendation ever renders for a won dispute', () => {
-		// Criticals are coaching for lost disputes only; the catalog encodes
-		// this by gating every critical on `outcome: could_help`. Assert the
-		// invariant holds across the real catalog rather than trusting it.
+		// Every critical gates on `outcome: could_help`, so none should appear
+		// for a won dispute. Assert the invariant against the real catalog.
 		it( 'returns zero criticals for any keep_doing context', () => {
 			const reasons = [
 				'product_not_received',
@@ -139,16 +135,13 @@ describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 	} );
 } );
 
-// Hygiene guards for the hand-maintained key set that gates the c15 catch-all.
-// There is no single static source of truth for "wizard-submittable fields" in
-// the codebase (the wizard builds its evidence object dynamically), so we guard
-// the specific failure mode that bit us: an auto-populated field that the
-// merchant cannot fill in slipping into the list and defeating c15.
+// Hygiene guards for the hand-maintained key set behind c15. The wizard builds
+// its evidence object dynamically, so there's no static source of truth to
+// cross-check; instead guard the failure mode that bit us: an always-present
+// field slipping into the list and defeating c15.
 describe( 'WIZARD_SUBMITTABLE_EVIDENCE_KEYS hygiene', () => {
-	// Fields that are effectively always present (auto-populated, or
-	// placeholder-defaulted like product_description) must stay out of the key
-	// set, or c15 never fires. Mirrors the exclusions documented in
-	// constants/high-impact-fields.ts.
+	// Always-present fields (auto-populated, or placeholder-defaulted like
+	// product_description) must stay out of the key set or c15 never fires.
 	const alwaysPresentFields = [
 		'customer_purchase_ip',
 		'customer_name',

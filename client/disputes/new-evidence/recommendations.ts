@@ -14,13 +14,9 @@ const isProvided = (
 ): boolean => hasMeaningfulValue( evidence[ key ] );
 
 /**
- * Counts how many keys satisfy `condition` and tests against the count
- * predicate's `min`/`max` (inclusive). Defaults:
- *   - `max` unset → `keys.length` (no upper bound)
- *   - `min` unset:
- *       - if `max` is also unset → 1 (OR semantics — at least one satisfies)
- *       - if `max` is set       → 0 (the caller specified an upper bound only,
- *                                    so the lower bound should not constrain)
+ * True when the count of `keys` satisfying `condition` falls in `[min, max]`
+ * (inclusive). Defaults: `max` → keys.length; `min` → 1, or 0 when only `max`
+ * is set (so a `max`-only predicate like c15's `max: 0` stays satisfiable).
  */
 const matchesCount = (
 	predicate: FieldCountPredicate,
@@ -34,19 +30,16 @@ const matchesCount = (
 };
 
 /**
- * Returns the catalog entries that apply to this dispute. AND across `when`
- * clauses. Catalog is passed in (not imported) so tests can supply fixtures.
- *
- * Applies Cluster 15-style suppression after matching: when any matching
- * entry carries `suppressOtherCriticals: true`, all other `critical`
- * entries are dropped from the result.
+ * Returns the catalog entries that apply to this dispute (AND across `when`
+ * clauses). Catalog is injected so tests can pass fixtures. After matching, a
+ * `suppressOtherCriticals` entry drops all other `critical` entries (c15).
  */
 export const getRecommendations = (
 	context: RecommendationContext,
 	catalog: Recommendation[]
 ): Recommendation[] => {
 	const matched = catalog.filter( ( entry ) => {
-		// Tombstoned entries stay in the catalog for id stability but never render.
+		// Retired entries stay for id stability but never render.
 		if ( entry.retired ) {
 			return false;
 		}
@@ -56,9 +49,8 @@ export const getRecommendations = (
 		if ( when.outcome !== context.outcome ) {
 			return false;
 		}
-		// `reasonIn` / `productTypeIn` are strongly typed in the catalog;
-		// the context carries raw server values (typed `string`). Compare by
-		// value so the catalog arrays keep their union types (no widening cast).
+		// Compare by value: the context carries raw server strings, so this
+		// keeps the catalog's union types without a widening cast.
 		if ( ! when.reasonIn.some( ( reason ) => reason === context.reason ) ) {
 			return false;
 		}
@@ -91,8 +83,7 @@ export const getRecommendations = (
 		return true;
 	} );
 
-	// Suppression: when any matching entry says so, drop other critical
-	// entries. The suppressing entry itself stays.
+	// Drop other criticals when a matching entry asks; the suppressor stays.
 	const suppressor = matched.find(
 		( entry ) => entry.suppressOtherCriticals
 	);

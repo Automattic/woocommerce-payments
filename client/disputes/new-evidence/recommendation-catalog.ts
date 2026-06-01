@@ -10,60 +10,34 @@ import type { Recommendation } from './types';
 
 /**
  * Catalog of merchant-facing recommendations for the Dispute Outcome View.
+ * RiskOps-authored. Each entry:
+ *   - title/body: copy rendered verbatim, `__()`-wrapped for i18n.
+ *   - urgency: `positive` → "What's working well"; `critical`/`tip` →
+ *     "What could help next time". The two render identically; the split
+ *     only lets the matcher suppress criticals (see c15) and keeps the
+ *     analytics distinction. No ordering.
+ *   - when: predicates the matcher checks; see `matchesCount()` for the
+ *     `min`/`max` count semantics.
+ *   - suppressOtherCriticals: c15 uses it to hide other criticals.
  *
- * Authored by RiskOps. Each entry has:
- *   - title + body: copy that renders verbatim (voice rules: softer
- *     evidence language, single-sentence bodies, no em-dashes). Wrapped in
- *     `__()` so the strings are translatable.
- *   - urgency: drives the leading icon and section grouping.
- *     `positive` (green `published` checkmark) → "What's working well".
- *     `critical` + `tip` (amber `caution`) → "What could help next time".
- *     `critical` and `tip` render identically; the split exists so the
- *     runtime/snapshot can still distinguish lift-bearing recommendations
- *     from softer tips for analytics and suppression (only `critical`
- *     entries are dropped by the c15 catch-all). The matcher does not
- *     order results.
- *   - when: predicates the runtime helper checks against the dispute.
- *     `requireProvided` / `requireMissing` are count predicates over a
- *     key set (`min`/`max` inclusive; see `FieldCountPredicate` and
- *     `matchesCount()` for the default semantics, including `max`-only).
- *   - suppressOtherCriticals: catch-all "no evidence" entry uses this to
- *     hide other critical entries on the same dispute.
+ * Ids are Tracks join keys, so append-only: never rename or reuse one,
+ * retire with `retired: true` instead of deleting, and record new ids in
+ * recommendation-ids.snapshot.json (enforced by recommendation-ids-snapshot.test.ts).
  *
- * Ids are append-only: they are Tracks join keys, so never rename or reuse one.
- * Retire an entry with `retired: true` instead of deleting it, and add new ids
- * to recommendation-ids.snapshot.json in the same PR. recommendation-ids-snapshot.test.ts
- * fails CI on any rename, removal, or unrecorded id.
- *
- * Clusters 13 (response-time timing) is intentionally deferred until
- * `dispute.evidence_details.submitted_at` reaches the client.
- *
- * Cluster 6 references two cancellation fields rather than three. The
- * RiskOps catalog originally listed `cancellation_policy_disclosure`
- * alongside `cancellation_policy` and `cancellation_rebuttal`, but the
- * dispute response wizard surfaces only the latter two — so coaching the
- * merchant on a field they can't actually provide creates confusion.
- * Follow-up: add `cancellation_policy_disclosure` to the wizard, then
- * widen this cluster back to three fields.
+ * Cluster 13 (response-time timing) is deferred until `submitted_at` reaches
+ * the client. Cluster 6 covers 2 of 3 cancellation fields: the wizard does
+ * not yet surface `cancellation_policy_disclosure`.
  */
 
-// Every evidence key the response wizard collects from the merchant. Used
-// by c15 ("no evidence at all": fires only when ALL of these are missing)
-// and c12 ("you have evidence but no cover letter": fires only when at
-// least one non-cover-letter key is provided). Must stay in sync with the
-// wizard's actual collectable fields; an unlisted field can make c15 fire
-// (and suppress criticals) while real evidence sits in it.
+// Every evidence key the wizard collects from the merchant. c15 fires when
+// ALL are missing; c12 when at least one non-cover-letter key is set. Keep
+// in sync with the wizard or c15 misfires.
 //
-// Two kinds of always-present fields are deliberately excluded so they
-// cannot keep c15 from firing:
-//   - Auto-populated fields (customer_purchase_ip, customer_name,
-//     customer_email_address, billing_address): the merchant cannot fill
-//     them in, so they are set on every submission.
-//   - product_description: the wizard pre-fills it from the order's product
-//     names, so it is almost always present and is not a signal that the
-//     merchant actually submitted evidence.
-// Both exclusions mirror constants/high-impact-fields.ts. Exported so
-// recommendation-catalog.test.ts can guard that no excluded field creeps back in.
+// Excludes always-present fields that would otherwise stop c15 from firing:
+// auto-populated ones (customer_purchase_ip, customer_name,
+// customer_email_address, billing_address) and product_description (wizard
+// pre-fills it). Mirrors constants/high-impact-fields.ts; guarded in
+// recommendation-catalog.test.ts.
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
 export const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'customer_communication',
@@ -87,10 +61,8 @@ export const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'uncategorized_text',
 ];
 
-// Subset for c12: every wizard key EXCEPT the cover letter. c12 needs
-// "at least one non-cover-letter key was provided" so it only coaches
-// merchants who submitted some evidence — when nothing was submitted,
-// c15's broader "submit evidence" message fires alone.
+// Subset for c12: every wizard key except the cover letter, so c12 only
+// coaches merchants who submitted some evidence (else c15 fires alone).
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
 const NON_COVER_LETTER_EVIDENCE_KEYS = WIZARD_SUBMITTABLE_EVIDENCE_KEYS.filter(
 	( key ) => key !== 'uncategorized_text'
@@ -402,11 +374,8 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 6: cancellation policy ============
-	// Two predicate shapes over `cancellation_policy` and `cancellation_rebuttal`:
-	// the "both fields" entries (provided, document, add-none-on-won) use `min: 2`,
-	// so both fields must satisfy the underlying state (provided or missing) to
-	// fire; the "exactly-one" tips use `min: 1, max: 1` on `requireProvided`, firing
-	// when exactly one of the two fields is present.
+	// `min: 2` entries need both cancellation_policy and cancellation_rebuttal
+	// in the same state; the "exactly-one" tips use `min: 1, max: 1`.
 	{
 		id: 'c6-cancellation-provided',
 		urgency: 'positive',
@@ -589,13 +558,10 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 8: service date (non-physical only) ============
-	// Scoped to non-physical product types because the wizard collects
-	// `shipping_date` (not `service_date`) for physical_product fraudulent
-	// disputes. Coaching a physical-product merchant on `service_date` asks
-	// them to populate a field the wizard never surfaces for their type.
-	// Mirrors DISPUTE_HIGH_IMPACT_FIELDS, which already encodes the same
-	// distinction for fraudulent. Follow-up: separate shipping_date
-	// coaching for fraudulent + physical_product if RiskOps wants it.
+	// Non-physical only: the wizard collects `shipping_date` (not
+	// `service_date`) for physical fraudulent disputes, so coaching
+	// service_date there asks for a field that doesn't exist. Cluster 8b
+	// covers physical. Mirrors DISPUTE_HIGH_IMPACT_FIELDS.
 	{
 		id: 'c8-service-date-provided',
 		urgency: 'positive',
@@ -664,12 +630,9 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 8b: shipping date (fraudulent + physical only) ============
-	// Parallel to Cluster 8, keyed off `shipping_date` (the field the wizard
-	// collects for physical_product fraudulent disputes) instead of
-	// `service_date`. Two variants only (no Critical): per RiskOps review,
-	// the shipping date doesn't prove the true cardholder made the purchase,
-	// it just ties the order to a verifiable event at the cardholder's
-	// address. Worth surfacing, not worth a Critical.
+	// Parallel to Cluster 8 but keyed on `shipping_date` (physical fraudulent).
+	// No Critical: per RiskOps, the shipping date ties the order to the
+	// cardholder's address but doesn't prove who made the purchase.
 	{
 		id: 'c8b-shipping-date-provided',
 		urgency: 'positive',
@@ -955,9 +918,8 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 12: cover letter (Tip only) ============
-	// Fires when the merchant cleared the auto-generated cover letter.
-	// Detection here is "uncategorized_text empty" — the slice-4 follow-up
-	// surfaces the same gap in the Evidence Submitted list.
+	// Fires when the merchant cleared the auto-generated cover letter
+	// (uncategorized_text empty).
 	{
 		id: 'c12-cover-letter-include',
 		urgency: 'tip',
@@ -980,21 +942,16 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'subscription_canceled',
 				'general',
 			],
-			// Only fires when the merchant has put together SOME evidence but
-			// not the cover letter — otherwise c15's "submit evidence" message
-			// covers the no-evidence case alone (suppressOtherCriticals doesn't
-			// reach tips, so without this guard c12 would render next to c15
-			// and read as repetitive advice).
+			// Guard so c12 fires only when SOME evidence exists; else it would
+			// render next to c15's "submit evidence" (suppression skips tips).
 			requireProvided: { keys: NON_COVER_LETTER_EVIDENCE_KEYS },
 			requireMissing: { keys: [ 'uncategorized_text' ] },
 		},
 	},
 
 	// ============ CLUSTER 13: response-time timing ============
-	// Deferred until `dispute.evidence_details.submitted_at` reaches the
-	// client. Two entries (positive on quick responses, tip on slow ones)
-	// add back when the predicate language gains a timing clause and the
-	// backend exposes the field.
+	// Deferred until `submitted_at` reaches the client: a positive (quick
+	// response) and a tip (slow) join once the predicate language gains timing.
 
 	// ============ CLUSTER 14: prior good history (Tip only) ============
 	{
@@ -1045,10 +1002,8 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'noncompliant',
 				'unrecognized',
 			],
-			// Fires when EVERY wizard-submittable key is missing (max:0).
-			// `suppressOtherCriticals` then hides other critical entries on
-			// the dispute, leaving one clear message. See the constant's
-			// docblock for the key-set maintenance contract.
+			// Fires when every wizard key is missing (max:0);
+			// suppressOtherCriticals then leaves one clear message.
 			requireProvided: {
 				keys: WIZARD_SUBMITTABLE_EVIDENCE_KEYS,
 				max: 0,
