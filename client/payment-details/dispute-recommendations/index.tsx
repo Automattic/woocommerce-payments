@@ -12,6 +12,7 @@ import { Icon, caution, published } from '@wordpress/icons';
  * Internal dependencies
  */
 import { Accordion, AccordionBody } from 'wcpay/components/accordion';
+import DisputeStepItem from 'wcpay/components/dispute-step-item';
 import type { ChargeDispute } from 'wcpay/types/charges';
 import type {
 	Recommendation,
@@ -80,29 +81,27 @@ const urgencyLabel = ( urgency: RecommendationUrgency ): string => {
 };
 
 const renderItem = ( rec: Recommendation ): JSX.Element => (
-	<article
+	// Reuses the shared `DisputeStepItem` row from "Steps you can take" so the
+	// geometry (44x44 bordered icon, 16px padding, gray-100 hairline, mobile
+	// collapse) stays in lockstep with that pattern. The urgency BEM hooks
+	// `dispute-recommendations__item--{urgency}` ride on the root and drive
+	// the icon tint in `style.scss`; the shared component itself stays
+	// urgency-agnostic.
+	<DisputeStepItem
 		key={ rec.id }
+		as="article"
+		titleAs="h4"
 		className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
-	>
-		{ /* Icon container mirrors `.dispute-steps__item-icon`: 44x44, 1px
-		     gray border, centered. Urgency tint sits on the SVG via
-		     currentColor (green for strengths, amber for coaching). */ }
-		<div className="dispute-recommendations__icon" aria-hidden="true">
+		icon={
 			<Icon
 				icon={ rec.urgency === 'positive' ? published : caution }
 				size={ 24 }
 			/>
-		</div>
-		<div className="dispute-recommendations__text">
-			<h4 className="dispute-recommendations__title">
-				<VisuallyHidden>
-					{ urgencyLabel( rec.urgency ) + ' ' }
-				</VisuallyHidden>
-				{ rec.title }
-			</h4>
-			<p className="dispute-recommendations__body">{ rec.body }</p>
-		</div>
-	</article>
+		}
+		titleSrPrefix={ urgencyLabel( rec.urgency ) }
+		title={ rec.title }
+		description={ rec.body }
+	/>
 );
 
 // Each non-empty section renders as its own expanded-by-default Accordion

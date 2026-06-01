@@ -61,98 +61,21 @@
 	}
 }
 
-// Item row geometry mirrors `.dispute-steps__item` so the card reads
-// identically to "Steps you can take" (Lucy review 2026-05-29).
+// Urgency tint sits on the icon SVG via currentColor. No red: recommendations
+// coach, they don't flag errors (design review 2026-05-26). Strengths get the
+// green `published` checkmark; coaching (critical + tip) gets the amber
+// `caution` `!`. Tints are the WP design-system alert tones from Lucy's Figma;
+// they fall below WCAG 1.4.11 3:1 on white but the icon shape carries the
+// meaning, so color is reinforcement, not the sole differentiator. The
+// container border and row geometry live in the shared `DisputeStepItem`
+// stylesheet (`client/components/dispute-step-item/style.scss`).
 .dispute-recommendations__item {
-	display: flex;
-	align-items: center;
-	padding: 16px 0;
-	border-bottom: 1px solid $gray-100;
-
-	&:first-child {
-		padding: 12px 0 16px;
-	}
-
-	&:last-child {
-		border-bottom: none;
-		padding-bottom: 28px;
-	}
-
-	@media screen and ( max-width: $break-small ) {
-		flex-direction: column;
-		align-items: flex-start;
-		padding: 16px 0;
-		gap: 12px;
-	}
-
-	// Color lives on the icon SVG, not the title. No red: recommendations
-	// coach, they don't flag errors (design review 2026-05-26). Strengths
-	// get the green `published` checkmark; coaching (critical + tip) gets
-	// the amber `caution` `!`. Tints are the WP design-system alert tones
-	// from Lucy's Figma; they fall below WCAG 1.4.11 3:1 on white but the
-	// icon shape carries the meaning, so color is reinforcement, not the
-	// sole differentiator.
-	&--positive .dispute-recommendations__icon svg {
+	&--positive .dispute-step-item__icon svg {
 		color: $alert-green;
 	}
 
-	&--critical .dispute-recommendations__icon svg,
-	&--tip .dispute-recommendations__icon svg {
+	&--critical .dispute-step-item__icon svg,
+	&--tip .dispute-step-item__icon svg {
 		color: $alert-yellow;
 	}
-}
-
-// Icon container mirrors `.dispute-steps__item-icon` (Lucy review
-// 2026-05-29): 44x44, 2px radius, 10px padding, 1px gray border, centered.
-// The SVG inside picks up the urgency tint via currentColor; the border
-// stays neutral gray, matching Steps you can take.
-.dispute-recommendations__icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	width: 44px;
-	height: 44px;
-	border-radius: var( --radius-s, 2px );
-	padding: 10px;
-	border: 1px solid $gray-200;
-	margin-right: 12px;
-
-	@media screen and ( max-width: $break-small ) {
-		display: none;
-	}
-
-	svg {
-		width: 24px;
-		height: 24px;
-		fill: currentColor;
-	}
-}
-
-.dispute-recommendations__text {
-	flex: 1;
-	min-width: 0;
-
-	@media screen and ( max-width: $break-small ) {
-		width: 100%;
-	}
-}
-
-.dispute-recommendations__title {
-	margin: 0 0 4px;
-	color: var( --Scales-Grays-gray-900, #1e1e1e );
-	letter-spacing: 0.01em;
-	font-size: var( --m, 13px );
-	font-style: normal;
-	font-weight: var( --Medium, 500 );
-	line-height: var( --s, 20px );
-}
-
-.dispute-recommendations__body {
-	color: var( --Scales-Grays-gray-700, #757575 );
-	margin: 0;
-	font-size: var( --m, 13px );
-	font-style: normal;
-	font-weight: var( --Regular, 400 );
-	line-height: var( --s, 20px );
 }

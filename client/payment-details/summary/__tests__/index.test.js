@@ -420,27 +420,27 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		screen.getByText( /Contact your customer/i, {
-			selector: '.dispute-steps__item-name',
+			selector: '.dispute-step-item__name',
 		} );
 		screen.getByText( /Ask for the dispute to be withdrawn/i, {
-			selector: '.dispute-steps__item-name',
+			selector: '.dispute-step-item__name',
 		} );
 		screen.getByText( /Challenge or accept the dispute/i, {
-			selector: '.dispute-steps__item-name',
+			selector: '.dispute-step-item__name',
 		} );
 
 		screen.getByText(
 			/Identify the issue and work towards a resolution where possible\./i,
-			{ selector: '.dispute-steps__item-description' }
+			{ selector: '.dispute-step-item__description' }
 		);
 		screen.getByText(
 			/If you've managed to resolve the issue with your customer, help them with the withdrawal of their dispute\./i,
-			{ selector: '.dispute-steps__item-description' }
+			{ selector: '.dispute-step-item__description' }
 		);
 		screen.getByText(
 			// eslint-disable-next-line max-len
 			/Disagree with the dispute\? You can challenge it with the customer's bank\. Otherwise, accept it to close the case — the order amount and dispute fee won't be refunded\./i,
-			{ selector: '.dispute-steps__item-description' }
+			{ selector: '.dispute-step-item__description' }
 		);
 		screen.getByRole( 'link', { name: /Email customer/i } );
 		expect(
