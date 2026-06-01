@@ -129,7 +129,9 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	const { saveSettings, isLoading, isSaving } = useSettings();
 
-	const cardObserver = useRef< IntersectionObserver >();
+	const cardObserver = useRef< IntersectionObserver | undefined >(
+		undefined
+	);
 
 	const [ currentProtectionLevel, updateProtectionLevel ] =
 		useCurrentProtectionLevel();

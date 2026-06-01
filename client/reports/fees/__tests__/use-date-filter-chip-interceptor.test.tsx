@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react';
 import type { View } from '@wordpress/dataviews/wp';
 
 /**

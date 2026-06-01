@@ -127,7 +127,7 @@ const PaymentMethods = [
 	},
 ];
 
-export const WooPaymentsMethodsLogos: React.VFC< {
+export const WooPaymentsMethodsLogos: React.FC< {
 	maxElements: number;
 	isWooPayEligible: boolean;
 } > = ( {
@@ -141,7 +141,7 @@ export const WooPaymentsMethodsLogos: React.VFC< {
 	const totalPaymentMethods = 20;
 	const [ maxShownElements, setMaxShownElements ] = useState( maxElements );
 	const [ isPopoverVisible, setIsPopoverVisible ] = useState( false );
-	const popoverTimeoutRef = useRef< NodeJS.Timeout >();
+	const popoverTimeoutRef = useRef< NodeJS.Timeout | undefined >( undefined );
 
 	// Reduce the total number of payment methods by one if the store is not eligible for WooPay.
 	const maxSupportedPaymentMethods = isWooPayEligible

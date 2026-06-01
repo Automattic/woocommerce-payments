@@ -191,6 +191,27 @@ module.exports = {
 				}
 
 				switch ( request ) {
+					// Under React 19, `react-dom/client` carries the full
+					// client renderer (~56KB) rather than being a thin
+					// re-export, so leaving it bundled bloats every
+					// entrypoint that mounts a root. The bundled
+					// dependency-extraction plugin (wp 3.7.0) only
+					// externalizes the bare `react-dom` request; WordPress
+					// exposes `createRoot` on the `react-dom` (`ReactDOM`)
+					// handle for both React 18 and 19, so externalize it
+					// there too — matching newer plugin versions.
+					case 'react-dom/client':
+						return 'ReactDOM';
+					// The automatic JSX runtime imports `jsx`/`jsxs` from
+					// `react/jsx-runtime`. The old plugin bundles it, which
+					// embeds the build-time React (19) element factory; when
+					// the host runs React 18 those elements carry an
+					// unrecognized `$$typeof` and React 18's react-dom throws
+					// "Objects are not valid as a React child". Externalize
+					// to the host's `react-jsx-runtime` (WP 6.6+) so element
+					// creation always matches the host's react-dom.
+					case 'react/jsx-runtime':
+						return 'ReactJSXRuntime';
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
@@ -201,6 +222,10 @@ module.exports = {
 				}
 
 				switch ( request ) {
+					case 'react-dom/client':
+						return 'react-dom';
+					case 'react/jsx-runtime':
+						return 'react-jsx-runtime';
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
 				}
