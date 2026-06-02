@@ -1,6 +1,7 @@
 @import './stylesheets/abstracts/colors';
 @import './stylesheets/abstracts/mixins';
 @import './stylesheets/abstracts/breakpoints';
+@import '@woocommerce/experimental/build-style/style.css';
 
 /* Fix top padding when layout breaks at 782px */
 .woocommerce-layout .woocommerce-layout__main {
