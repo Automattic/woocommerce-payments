@@ -6,6 +6,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { TabPanel } from '@wordpress/components';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
@@ -56,6 +57,15 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( { now } ) => {
 	}, [] );
 
 	useEffect( () => {
+		recordEvent( 'page_view', {
+			path: 'payments_reports',
+			tab: activeTab,
+		} );
+		// Mount-only — subsequent tab switches use wcpay_reports_tab_change.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [] );
+
+	useEffect( () => {
 		if ( previousActiveTabRef.current !== activeTab ) {
 			tabPanelWrapperRef.current
 				?.querySelector< HTMLElement >(
@@ -73,6 +83,11 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( { now } ) => {
 		if ( nextTab === activeTab ) {
 			return;
 		}
+
+		recordEvent( 'wcpay_reports_tab_change', {
+			from_tab: activeTab,
+			to_tab: nextTab,
+		} );
 
 		setActiveTab( nextTab );
 		updateQueryString(
