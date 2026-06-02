@@ -698,6 +698,57 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $this->wcpay_gateway->display_save_payment_method_checkbox( true ) );
 	}
 
+	public function test_is_payment_recurring_returns_true_for_renewal_order() {
+		// A renewal order is not matched by wcs_order_contains_subscription()'s default order
+		// types ('parent', 'resubscribe', 'switch'), but a customer manually paying it through
+		// the checkout must still be treated as recurring so the card is saved. See WOOPMNT-2882.
+		$_GET = [];
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return false;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return true;
+			}
+		);
+
+		$this->assertTrue( $this->wcpay_gateway->is_payment_recurring( 123 ) );
+	}
+
+	public function test_is_payment_recurring_returns_true_for_subscription_order() {
+		$_GET = [];
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return true;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return false;
+			}
+		);
+
+		$this->assertTrue( $this->wcpay_gateway->is_payment_recurring( 123 ) );
+	}
+
+	public function test_is_payment_recurring_returns_false_for_regular_order() {
+		$_GET = [];
+		WC_Subscriptions::set_wcs_order_contains_subscription(
+			function () {
+				return false;
+			}
+		);
+		WC_Subscriptions::wcs_order_contains_renewal(
+			function () {
+				return false;
+			}
+		);
+
+		$this->assertFalse( $this->wcpay_gateway->is_payment_recurring( 123 ) );
+	}
+
 	public function test_add_subscription_payment_meta_adds_active_token() {
 		$subscription = WC_Helper_Order::create_order( self::USER_ID );
 
