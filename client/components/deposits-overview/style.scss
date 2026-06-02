@@ -1,4 +1,10 @@
 .wcpay-deposits-overview {
+	> .components-card__header {
+		font-size: 26px;
+		font-weight: 400;
+		line-height: 32px;
+	}
+
 	&__heading {
 		display: flex;
 		flex-direction: column;
