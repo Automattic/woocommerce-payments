@@ -1,9 +1,12 @@
 /** @format */
 
 /**
- * SPIKE: render the Balance summary through DataViews so the native DataViews
- * date filter can replace the custom <DateFilter>. The summary is not a list,
- * so this is an exploratory fit — see WOOPMNT follow-up.
+ * SPIKE: render the Balance summary through DataViews using the composition
+ * API — pass children so DataViews renders only the pieces we want
+ * (the native date Filters + the rows Layout) and omits the Search box,
+ * View-options gear, Pagination and Footer. Styling is done with inline
+ * style props on the field renders (no custom CSS), per the all-DataViews
+ * constraint. See WOOPMNT follow-up.
  *
  * External dependencies
  */
@@ -21,6 +24,18 @@ import { getRowLabel } from './utils';
 import type { ReportsBalanceSummary } from 'wcpay/data/reports/hooks';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import type { DateFilterValue } from 'wcpay/reports/date-filter';
+
+// DataViews exposes its building blocks as statics on the component; the
+// public types don't declare them yet, so reach them through a narrow cast.
+const DataViewsComposed = DataViews as unknown as React.ComponentType<
+	Record< string, unknown > & { children?: React.ReactNode }
+>;
+const dataViewsStatics = DataViews as unknown as Record<
+	string,
+	React.ComponentType
+>;
+const DataViewsFilters = dataViewsStatics.Filters;
+const DataViewsLayout = dataViewsStatics.Layout;
 
 interface BalanceItem {
 	id: string;
@@ -72,9 +87,6 @@ export const BalanceDataView = ( {
 					id: 'date',
 					label: __( 'Date', 'woocommerce-payments' ),
 					type: 'date',
-					// Filter-only: there is no per-row date on a summary line, so
-					// the field exists purely to surface the native date filter.
-					// Period selection is handled server-side via onDateChange.
 					enableHiding: false,
 					enableSorting: false,
 					filterBy: {
@@ -90,11 +102,30 @@ export const BalanceDataView = ( {
 					getValue: ( { item }: { item: BalanceItem } ) => item.label,
 					render: ( { item }: { item: BalanceItem } ) => (
 						<span
-							className={ `wcpay-reports-balance-dv__label wcpay-reports-balance-dv__label--depth-${ item.depth }` }
+							style={ {
+								display: 'inline-flex',
+								alignItems: 'center',
+								gap: '8px',
+								paddingLeft: `${ item.depth * 16 }px`,
+							} }
 						>
 							{ item.label }
 							{ typeof item.count === 'number' && (
-								<span className="wcpay-reports-balance-dv__count">
+								<span
+									style={ {
+										display: 'inline-flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										minWidth: '20px',
+										height: '20px',
+										padding: '0 6px',
+										borderRadius: '10px',
+										background: '#f0f0f0',
+										color: '#1e1e1e',
+										fontSize: '11px',
+										lineHeight: '20px',
+									} }
+								>
 									{ item.count }
 								</span>
 							) }
@@ -108,7 +139,11 @@ export const BalanceDataView = ( {
 					getValue: ( { item }: { item: BalanceItem } ) =>
 						item.amount,
 					render: ( { item }: { item: BalanceItem } ) => (
-						<>{ formatBalanceAmount( item.amount, currency ) }</>
+						<span
+							style={ { display: 'block', textAlign: 'right' } }
+						>
+							{ formatBalanceAmount( item.amount, currency ) }
+						</span>
 					),
 				},
 			] as Field< BalanceItem >[],
@@ -150,19 +185,20 @@ export const BalanceDataView = ( {
 
 	return (
 		<div className="wcpay-reports-balance-dv">
-			<DataViews
+			<DataViewsComposed
 				data={ items }
 				view={ view }
 				onChangeView={ onChangeView }
 				fields={ fields }
-				search={ false }
-				paginationInfo={ {
-					totalItems: items.length,
-					totalPages: 1,
-				} }
+				paginationInfo={ { totalItems: items.length, totalPages: 1 } }
 				defaultLayouts={ { table: {} } }
-				getItemId={ ( item ) => item.id }
-			/>
+				getItemId={ ( item: BalanceItem ) => item.id }
+			>
+				{ /* Compose only the native date filter + the rows — no
+				   Search, View-options gear, Pagination or Footer. */ }
+				<DataViewsFilters />
+				<DataViewsLayout />
+			</DataViewsComposed>
 		</div>
 	);
 };
