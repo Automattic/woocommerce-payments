@@ -124,10 +124,8 @@ test.describe( 'Multi-currency on-boarding', { tag: '@critical' }, () => {
 
 		test( 'should display suggested currencies at the beginning of the list', async () => {
 			await expect(
-				(
-					await page.getByTestId( 'recommended-currency' ).all()
-				 ).length
-			).toBeGreaterThan( 0 );
+				page.getByTestId( 'recommended-currency' ).first()
+			).toBeVisible();
 		} );
 
 		test( 'selected currencies are enabled after onboarding', async () => {
