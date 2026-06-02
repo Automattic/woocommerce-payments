@@ -105,8 +105,10 @@ export const BalanceDataView = ( {
 							style={ {
 								display: 'inline-flex',
 								alignItems: 'center',
-								gap: '8px',
-								paddingLeft: `${ item.depth * 16 }px`,
+								gap: '12px',
+								paddingLeft: `${ item.depth * 24 }px`,
+								fontWeight: item.depth === 2 ? 400 : 500,
+								color: item.depth === 2 ? '#757575' : 'inherit',
 							} }
 						>
 							{ item.label }
@@ -121,8 +123,9 @@ export const BalanceDataView = ( {
 										padding: '0 6px',
 										borderRadius: '10px',
 										background: '#f0f0f0',
-										color: '#1e1e1e',
+										color: '#757575',
 										fontSize: '11px',
+										fontWeight: 500,
 										lineHeight: '20px',
 									} }
 								>
@@ -141,7 +144,15 @@ export const BalanceDataView = ( {
 					render: ( { item }: { item: BalanceItem } ) => (
 						// DataViews wraps cell content in a flex container, so
 						// grow to fill it before right-aligning the text.
-						<span style={ { flexGrow: 1, textAlign: 'right' } }>
+						<span
+							style={ {
+								flexGrow: 1,
+								textAlign: 'right',
+								fontVariantNumeric: 'tabular-nums',
+								fontWeight: item.depth >= 1 ? 400 : 500,
+								color: item.depth === 2 ? '#757575' : 'inherit',
+							} }
+						>
 							{ formatBalanceAmount( item.amount, currency ) }
 						</span>
 					),
@@ -197,7 +208,17 @@ export const BalanceDataView = ( {
 				{ /* Compose only the native date filter + the rows — no
 				   Search, View-options gear, Pagination or Footer. */ }
 				<DataViewsFilters />
-				<DataViewsLayout />
+				<div
+					style={ {
+						background: '#fff',
+						border: '1px solid #e0e0e0',
+						borderRadius: '8px',
+						padding: '16px 24px 24px',
+						marginTop: '16px',
+					} }
+				>
+					<DataViewsLayout />
+				</div>
 			</DataViewsComposed>
 		</div>
 	);
