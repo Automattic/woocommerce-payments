@@ -63,6 +63,25 @@ describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 			] );
 		} );
 
+		it( 'still fires when only the auto-generated cover letter is present', () => {
+			// Regression guard: the wizard auto-generates and submits the cover
+			// letter (uncategorized_text) by default, so c15 must ignore it or it
+			// never fires for a merchant who sent no real evidence.
+			const ctx = context( {
+				outcome: 'could_help',
+				reason: 'product_not_received',
+				productType: 'physical_product',
+				evidence: {
+					uncategorized_text: 'Dear Dispute Resolution Team, ...',
+				},
+			} );
+
+			expect( ids( ctx ) ).toContain( 'c15-no-evidence-submit' );
+			expect( criticalIds( ctx ) ).toEqual( [
+				'c15-no-evidence-submit',
+			] );
+		} );
+
 		it( 'does not fire once real evidence is present', () => {
 			const ctx = context( {
 				outcome: 'could_help',
