@@ -155,6 +155,7 @@ export const BalanceDataView = ( {
 				view={ view }
 				onChangeView={ onChangeView }
 				fields={ fields }
+				search={ false }
 				paginationInfo={ {
 					totalItems: items.length,
 					totalPages: 1,

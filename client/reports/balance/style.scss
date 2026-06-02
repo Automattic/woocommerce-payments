@@ -340,3 +340,45 @@ $print-context: '.wcpay-reports-balance-print-context';
 		}
 	}
 }
+
+// SPIKE: tighten the DataViews-rendered Balance summary so a fixed
+// reconciliation list reads less like a spreadsheet.
+.wcpay-reports-balance-dv {
+	// No column header on a fixed summary.
+	.dataviews-view-table thead {
+		display: none;
+	}
+
+	// Right-align the amount column.
+	.dataviews-view-table tbody td:last-child {
+		text-align: right;
+	}
+
+	&__label {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+
+		&--depth-1 {
+			padding-left: 16px;
+		}
+
+		&--depth-2 {
+			padding-left: 32px;
+		}
+	}
+
+	&__count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 20px;
+		height: 20px;
+		padding: 0 6px;
+		border-radius: 10px;
+		background: #f0f0f0;
+		color: #1e1e1e;
+		font-size: 11px;
+		line-height: 20px;
+	}
+}
