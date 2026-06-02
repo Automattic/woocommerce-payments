@@ -139,9 +139,9 @@ export const BalanceDataView = ( {
 					getValue: ( { item }: { item: BalanceItem } ) =>
 						item.amount,
 					render: ( { item }: { item: BalanceItem } ) => (
-						<span
-							style={ { display: 'block', textAlign: 'right' } }
-						>
+						// DataViews wraps cell content in a flex container, so
+						// grow to fill it before right-aligning the text.
+						<span style={ { flexGrow: 1, textAlign: 'right' } }>
 							{ formatBalanceAmount( item.amount, currency ) }
 						</span>
 					),
