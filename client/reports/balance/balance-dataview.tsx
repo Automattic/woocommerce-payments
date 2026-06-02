@@ -152,11 +152,13 @@ export const BalanceDataView = ( {
 
 	const view = useMemo< View >(
 		() => ( {
-			type: 'table',
+			type: 'list',
 			search: '',
 			page: 1,
 			perPage: 100,
-			fields: [ 'label', 'amount' ],
+			titleField: 'label',
+			descriptionField: 'amount',
+			fields: [ 'amount' ],
 			filters: dateValue
 				? [
 						{
@@ -191,7 +193,7 @@ export const BalanceDataView = ( {
 				onChangeView={ onChangeView }
 				fields={ fields }
 				paginationInfo={ { totalItems: items.length, totalPages: 1 } }
-				defaultLayouts={ { table: {} } }
+				defaultLayouts={ { list: {} } }
 				getItemId={ ( item: BalanceItem ) => item.id }
 			>
 				{ /* Compose only the native date filter + the rows — no
