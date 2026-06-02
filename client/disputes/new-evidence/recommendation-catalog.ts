@@ -24,9 +24,11 @@ import type { Recommendation } from './types';
  * retire with `retired: true` instead of deleting, and record new ids in
  * recommendation-ids.snapshot.json (enforced by recommendation-ids-snapshot.test.ts).
  *
- * Cluster 13 (response-time timing) is deferred until `submitted_at` reaches
- * the client. Cluster 6 covers 2 of 3 cancellation fields: the wizard does
- * not yet surface `cancellation_policy_disclosure`.
+ * Deferred until the wizard collects the field: cluster 4 (refund refusal
+ * explanation) and cluster 8 (service date). Cluster 13 (response-time
+ * timing) is deferred until `submitted_at` reaches the client. Cluster 6
+ * covers 2 of 3 cancellation fields: the wizard does not yet surface
+ * `cancellation_policy_disclosure`.
  */
 
 // Every evidence key the wizard collects from the merchant. c15/c12 gate on
@@ -38,6 +40,10 @@ import type { Recommendation } from './types';
 // customer_email_address, billing_address) and product_description (wizard
 // pre-fills it). Mirrors constants/high-impact-fields.ts; guarded in
 // recommendation-catalog.test.ts.
+//
+// Also omits fields the wizard does not collect yet: service_date and
+// refund_refusal_explanation (clusters 8 and 4 are deferred), and
+// duplicate_charge_explanation (cluster 7 gates on the documentation instead).
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
 export const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'customer_communication',
@@ -48,12 +54,9 @@ export const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'shipping_date',
 	'shipping_address',
 	'service_documentation',
-	'service_date',
 	'access_activity_log',
 	'duplicate_charge_documentation',
-	'duplicate_charge_explanation',
 	'refund_policy',
-	'refund_refusal_explanation',
 	'cancellation_policy',
 	'cancellation_rebuttal',
 	'customer_signature',
@@ -266,54 +269,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 4: refund refusal explanation ============
-	{
-		id: 'c4-refund-refusal-provided',
-		urgency: 'positive',
-		title: __(
-			'Clear explanation for the refund decision',
-			'woocommerce-payments'
-		),
-		body: __(
-			"Your written explanation of why the refund wasn't owed gave context for your decision.",
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
-			requireProvided: { keys: [ 'refund_refusal_explanation' ] },
-		},
-	},
-	{
-		id: 'c4-refund-refusal-explain',
-		urgency: 'critical',
-		title: __( 'Explain the refund decision', 'woocommerce-payments' ),
-		body: __(
-			"A written explanation of why the refund wasn't owed helps clarify your reasoning on refund-related disputes.",
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'could_help',
-			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
-			requireMissing: { keys: [ 'refund_refusal_explanation' ] },
-		},
-	},
-	{
-		id: 'c4-refund-refusal-add',
-		urgency: 'tip',
-		title: __(
-			'Add an explanation for refund decisions',
-			'woocommerce-payments'
-		),
-		body: __(
-			'Adding a written explanation for refund decisions tends to round out the evidence on refund disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
-			requireMissing: { keys: [ 'refund_refusal_explanation' ] },
-		},
-	},
+	// Deferred: the wizard has no `refund_refusal_explanation` input, so a
+	// positive could never fire and the missing-field coaching would always
+	// dead-end. Restore the provided/critical/tip entries once the wizard
+	// collects the field; refund_policy (cluster 5) covers these disputes
+	// in the meantime.
 
 	// ============ CLUSTER 5: refund policy ============
 	{
@@ -466,169 +426,45 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 7: duplicate charge ============
+	// Gated on `duplicate_charge_documentation` only: the wizard does not
+	// collect `duplicate_charge_explanation`, so the copy coaches on the
+	// documentation the merchant can actually attach.
 	{
 		id: 'c7-duplicate-charge-explained',
 		urgency: 'positive',
-		title: __( 'Two charges, clearly explained', 'woocommerce-payments' ),
+		title: __( 'Two charges, clearly documented', 'woocommerce-payments' ),
 		body: __(
-			'An explanation alongside documentation made the two charges easier to distinguish.',
+			'Documentation distinguishing the two charges helped make your case.',
 			'woocommerce-payments'
 		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'duplicate' ],
-			requireProvided: {
-				keys: [
-					'duplicate_charge_explanation',
-					'duplicate_charge_documentation',
-				],
-				min: 2,
-			},
+			requireProvided: { keys: [ 'duplicate_charge_documentation' ] },
 		},
 	},
 	{
 		id: 'c7-duplicate-charge-explain',
 		urgency: 'critical',
-		title: __(
-			'Explain and document the duplicate charge',
-			'woocommerce-payments'
-		),
+		title: __( 'Document the duplicate charge', 'woocommerce-payments' ),
 		body: __(
-			'A clear explanation alongside documentation distinguishing the charges is central evidence for duplicate disputes.',
+			'Documentation distinguishing the two charges is central evidence for duplicate disputes.',
 			'woocommerce-payments'
 		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'duplicate' ],
-			requireMissing: {
-				keys: [
-					'duplicate_charge_explanation',
-					'duplicate_charge_documentation',
-				],
-				min: 2,
-			},
-		},
-	},
-	{
-		id: 'c7-duplicate-charge-missing-piece-won',
-		urgency: 'tip',
-		title: __(
-			'Add the missing duplicate-charge piece',
-			'woocommerce-payments'
-		),
-		body: __(
-			'An explanation and documentation together help build out the defense for duplicate disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'duplicate' ],
-			requireProvided: {
-				keys: [
-					'duplicate_charge_explanation',
-					'duplicate_charge_documentation',
-				],
-				min: 1,
-				max: 1,
-			},
-		},
-	},
-	{
-		id: 'c7-duplicate-charge-missing-piece-lost',
-		urgency: 'tip',
-		title: __(
-			'Add the missing duplicate-charge piece',
-			'woocommerce-payments'
-		),
-		body: __(
-			'An explanation and documentation together help build out the defense for duplicate disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'could_help',
-			reasonIn: [ 'duplicate' ],
-			requireProvided: {
-				keys: [
-					'duplicate_charge_explanation',
-					'duplicate_charge_documentation',
-				],
-				min: 1,
-				max: 1,
-			},
+			requireMissing: { keys: [ 'duplicate_charge_documentation' ] },
 		},
 	},
 
 	// ============ CLUSTER 8: service date (non-physical only) ============
-	// Non-physical only: the wizard collects `shipping_date` (not
-	// `service_date`) for physical fraudulent disputes, so coaching
-	// service_date there asks for a field that doesn't exist. Cluster 8b
-	// covers physical. Mirrors DISPUTE_HIGH_IMPACT_FIELDS.
-	{
-		id: 'c8-service-date-provided',
-		urgency: 'positive',
-		title: __( 'Service date on record', 'woocommerce-payments' ),
-		body: __(
-			'Including the service date helped tie the transaction to a verifiable event.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'fraudulent' ],
-			productTypeIn: [
-				'digital_product_or_service',
-				'offline_service',
-				'event',
-				'booking_reservation',
-				'multiple',
-				'other',
-			],
-			requireProvided: { keys: [ 'service_date' ] },
-		},
-	},
-	{
-		id: 'c8-service-date-include',
-		urgency: 'critical',
-		title: __( 'Include the service date', 'woocommerce-payments' ),
-		body: __(
-			'The service date ties the transaction to a verifiable event, which can help defend fraud disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'could_help',
-			reasonIn: [ 'fraudulent' ],
-			productTypeIn: [
-				'digital_product_or_service',
-				'offline_service',
-				'event',
-				'booking_reservation',
-				'multiple',
-				'other',
-			],
-			requireMissing: { keys: [ 'service_date' ] },
-		},
-	},
-	{
-		id: 'c8-service-date-document',
-		urgency: 'tip',
-		title: __( 'Document the service date', 'woocommerce-payments' ),
-		body: __(
-			'Documenting the service date helps tie transactions to verifiable events in fraud disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'fraudulent' ],
-			productTypeIn: [
-				'digital_product_or_service',
-				'offline_service',
-				'event',
-				'booking_reservation',
-				'multiple',
-				'other',
-			],
-			requireMissing: { keys: [ 'service_date' ] },
-		},
-	},
+	// Deferred: the wizard has no `service_date` input. It collects
+	// `shipping_date` for physical fraudulent disputes (cluster 8b), but
+	// non-physical fraud has no fulfilment-date field, so a positive could
+	// never fire and the missing-field coaching would always dead-end.
+	// Restore once the wizard collects `service_date`. Mirrors
+	// DISPUTE_HIGH_IMPACT_FIELDS.
 
 	// ============ CLUSTER 8b: shipping date (fraudulent + physical only) ============
 	// Parallel to Cluster 8 but keyed on `shipping_date` (physical fraudulent).
