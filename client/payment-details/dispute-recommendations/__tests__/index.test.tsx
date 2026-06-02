@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import { render, screen, within } from '@testing-library/react';
+import user from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -80,6 +81,13 @@ const wonPhysicalFullEvidence = (): ChargeDispute =>
 			customer_communication: 'thread',
 		},
 	} );
+
+// Cards collapse by default (Lucy review 2026-06-02), so item-level
+// content, modifier classes, the show-more `<details>`, and the
+// "Learn more" link only enter the DOM after the matching section's
+// toggle is clicked.
+const expandSection = ( name: RegExp ) =>
+	user.click( screen.getByRole( 'button', { name } ) );
 
 describe( 'DisputeRecommendationsCard', () => {
 	describe( 'section rendering', () => {
@@ -183,12 +191,14 @@ describe( 'DisputeRecommendationsCard', () => {
 	} );
 
 	describe( 'urgency styling', () => {
-		it( 'applies the positive modifier class on Keep Doing entries', () => {
+		it( 'applies the positive modifier class on Keep Doing entries', async () => {
 			const { container } = render(
 				<DisputeRecommendationsCard
 					dispute={ wonPhysicalShippingProvided() }
 				/>
 			);
+
+			await expandSection( /what's working well/i );
 
 			expect(
 				container.querySelectorAll(
@@ -197,7 +207,7 @@ describe( 'DisputeRecommendationsCard', () => {
 			).toBe( 3 );
 		} );
 
-		it( 'applies the critical modifier class on Critical entries', () => {
+		it( 'applies the critical modifier class on Critical entries', async () => {
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'product_not_received',
@@ -209,6 +219,8 @@ describe( 'DisputeRecommendationsCard', () => {
 				<DisputeRecommendationsCard dispute={ dispute } />
 			);
 
+			await expandSection( /what could help next time/i );
+
 			expect(
 				container.querySelectorAll(
 					'.dispute-recommendations__item--critical'
@@ -216,7 +228,7 @@ describe( 'DisputeRecommendationsCard', () => {
 			).toBe( 3 );
 		} );
 
-		it( 'applies the tip modifier class on Tip entries', () => {
+		it( 'applies the tip modifier class on Tip entries', async () => {
 			const dispute = buildDispute( {
 				status: 'won',
 				reason: 'fraudulent',
@@ -229,6 +241,8 @@ describe( 'DisputeRecommendationsCard', () => {
 				<DisputeRecommendationsCard dispute={ dispute } />
 			);
 
+			await expandSection( /what could help next time/i );
+
 			expect(
 				container.querySelectorAll(
 					'.dispute-recommendations__item--tip'
@@ -238,7 +252,7 @@ describe( 'DisputeRecommendationsCard', () => {
 	} );
 
 	describe( 'capping at 3 per section with show-more', () => {
-		it( 'caps inline entries at exactly 3 per section', () => {
+		it( 'caps inline entries at exactly 3 per section', async () => {
 			// Lost + PNR + physical with only `receipt` provided dodges Cluster
 			// 15 suppression and yields four "What could help next time" entries
 			// (three criticals + one tip). With VISIBLE_PER_SECTION = 3, exactly
@@ -255,6 +269,8 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
+			await expandSection( /what could help next time/i );
+
 			// Each recommendation renders as an <article>; <details> wraps the
 			// overflow. This fixture renders only the coaching section, so
 			// counting articles outside any <details> globally is enough to
@@ -270,7 +286,7 @@ describe( 'DisputeRecommendationsCard', () => {
 			expect( inlineItems ).toHaveLength( 3 );
 		} );
 
-		it( 'wraps overflow entries beyond 3 in a <details> show-more disclosure', () => {
+		it( 'wraps overflow entries beyond 3 in a <details> show-more disclosure', async () => {
 			// Lost + PNR + physical with only `receipt` provided. `receipt`
 			// dodges Cluster 15 suppression, so "What could help next time"
 			// gets four entries in catalog order: three criticals (c1 shipping
@@ -287,6 +303,8 @@ describe( 'DisputeRecommendationsCard', () => {
 			const { container } = render(
 				<DisputeRecommendationsCard dispute={ dispute } />
 			);
+
+			await expandSection( /what could help next time/i );
 
 			const details = container.querySelector(
 				'.dispute-recommendations-card__show-more'
@@ -314,7 +332,12 @@ describe( 'DisputeRecommendationsCard', () => {
 		// (not `service_date`) for physical, so the recommendation coached
 		// merchants on a field they could not reach. Cluster 8b mirrors
 		// Cluster 8 for physical, keyed off shipping_date.
-		it( 'does not fire the service_date tip on fraudulent + physical_product', () => {
+		it( 'does not fire the service_date tip on fraudulent + physical_product', async () => {
+			// Won on this fixture: fires the shipping_date positive in the
+			// strengths section, and the c5-refund-policy-publish-won tip in
+			// the coaching section. Expand the coaching card so the
+			// service_date absence assertion isn't trivially true from being
+			// collapsed.
 			const dispute = buildDispute( {
 				status: 'won',
 				reason: 'fraudulent',
@@ -323,6 +346,8 @@ describe( 'DisputeRecommendationsCard', () => {
 			} );
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			await expandSection( /what could help next time/i );
 
 			expect(
 				screen.queryByRole( 'heading', {
@@ -336,7 +361,7 @@ describe( 'DisputeRecommendationsCard', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		it( 'still fires service_date entries on fraudulent + digital_product_or_service', () => {
+		it( 'still fires service_date entries on fraudulent + digital_product_or_service', async () => {
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'fraudulent',
@@ -346,6 +371,8 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
+			await expandSection( /what could help next time/i );
+
 			expect(
 				screen.getByRole( 'heading', {
 					name: /include the service date/i,
@@ -353,7 +380,7 @@ describe( 'DisputeRecommendationsCard', () => {
 			).toBeInTheDocument();
 		} );
 
-		it( 'fires the shipping_date positive on fraudulent + physical when shipping_date is provided (won)', () => {
+		it( 'fires the shipping_date positive on fraudulent + physical when shipping_date is provided (won)', async () => {
 			const dispute = buildDispute( {
 				status: 'won',
 				reason: 'fraudulent',
@@ -363,6 +390,8 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
+			await expandSection( /what's working well/i );
+
 			expect(
 				screen.getByRole( 'heading', {
 					name: /shipping date on record/i,
@@ -370,7 +399,7 @@ describe( 'DisputeRecommendationsCard', () => {
 			).toBeInTheDocument();
 		} );
 
-		it( 'fires the shipping_date tip on fraudulent + physical when shipping_date is missing (lost)', () => {
+		it( 'fires the shipping_date tip on fraudulent + physical when shipping_date is missing (lost)', async () => {
 			// Cluster 8b ships positive + tip only (no Critical), per RiskOps:
 			// shipping date doesn't prove the cardholder made the purchase, so
 			// it's worth surfacing as a tip, not a critical.
@@ -382,6 +411,8 @@ describe( 'DisputeRecommendationsCard', () => {
 			} );
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			await expandSection( /what could help next time/i );
 
 			expect(
 				screen.getByRole( 'heading', {
@@ -396,7 +427,10 @@ describe( 'DisputeRecommendationsCard', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		it( 'does not fire shipping_date entries on fraudulent + digital', () => {
+		it( 'does not fire shipping_date entries on fraudulent + digital', async () => {
+			// Won on this fixture: c5-refund-policy-publish-won fires as a tip
+			// in the coaching section. Expand it so the shipping_date absence
+			// check isn't trivially true from the section being collapsed.
 			const dispute = buildDispute( {
 				status: 'won',
 				reason: 'fraudulent',
@@ -405,6 +439,8 @@ describe( 'DisputeRecommendationsCard', () => {
 			} );
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			await expandSection( /what could help next time/i );
 
 			expect(
 				screen.queryByRole( 'heading', {
@@ -415,7 +451,7 @@ describe( 'DisputeRecommendationsCard', () => {
 	} );
 
 	describe( 'Cluster 15 suppression', () => {
-		it( 'shows the catch-all critical and suppresses other criticals when no evidence is submitted', () => {
+		it( 'shows the catch-all critical and suppresses other criticals when no evidence is submitted', async () => {
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'product_not_received',
@@ -424,6 +460,8 @@ describe( 'DisputeRecommendationsCard', () => {
 			} );
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
+
+			await expandSection( /what could help next time/i );
 
 			// c15 title visible
 			expect(
@@ -439,7 +477,7 @@ describe( 'DisputeRecommendationsCard', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		it( 'does not also surface the c12 cover-letter tip when no evidence is submitted', () => {
+		it( 'does not also surface the c12 cover-letter tip when no evidence is submitted', async () => {
 			// c15's `suppressOtherCriticals` only hides criticals, not tips, so
 			// without c12's `requireProvided` guard the cover-letter tip would
 			// render alongside c15's "submit evidence" message and read as
@@ -453,6 +491,8 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
+			await expandSection( /what could help next time/i );
+
 			expect(
 				screen.queryByRole( 'heading', {
 					name: /include a cover letter with your evidence/i,
@@ -465,7 +505,7 @@ describe( 'DisputeRecommendationsCard', () => {
 		// Per RiskOps review: per-rec action links were removed in favor of a
 		// single "Learn more" link next to the "What could help next time"
 		// header, to align with WooPayments admin's restrained vocabulary.
-		it( 'renders a "Learn more" link in the "What could help next time" section header', () => {
+		it( 'renders a "Learn more" link in the "What could help next time" section header', async () => {
 			const dispute = buildDispute( {
 				status: 'lost',
 				reason: 'product_not_received',
@@ -475,6 +515,8 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
+			await expandSection( /what could help next time/i );
+
 			const link = screen.getByRole( 'link', { name: /learn more/i } );
 			expect( link ).toBeInTheDocument();
 			expect( link ).toHaveAttribute(
@@ -483,14 +525,18 @@ describe( 'DisputeRecommendationsCard', () => {
 			);
 		} );
 
-		it( 'does not render the "Learn more" link in the "What\'s working well" section', () => {
+		it( 'does not render the "Learn more" link in the "What\'s working well" section', async () => {
 			// Won dispute that fires positives only: the Learn more link is
 			// scoped to "What could help next time" and shouldn't appear here.
+			// Expand the strengths card so the absence check isn't trivially
+			// satisfied by the section being collapsed.
 			render(
 				<DisputeRecommendationsCard
 					dispute={ wonPhysicalFullEvidence() }
 				/>
 			);
+
+			await expandSection( /what's working well/i );
 
 			expect(
 				screen.queryByRole( 'link', { name: /learn more/i } )

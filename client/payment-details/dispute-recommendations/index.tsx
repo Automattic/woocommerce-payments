@@ -104,16 +104,15 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	/>
 );
 
-// Each non-empty section renders as its own expanded-by-default Accordion
-// card (Lucy review 2026-05-29 — separate cards, not a shared shell).
-// Both cards route their description through `subtitleNode` so the two
-// sections share a single layout (Lucy review 2026-06-01): collapsed
-// state shows just the title + chevron, expanded state reveals the
-// description (with the coaching card's "Learn more" link inlined) and
-// the items. Using `subtitleNode` for the strengths card too — even
-// though it has no link — keeps the two cards behaviorally identical;
-// using plain `subtitle` for one and `subtitleNode` for the other made
-// the closed state inconsistent.
+// Each non-empty section renders as its own Accordion card, collapsed
+// by default (Lucy review 2026-06-02). Both cards route their
+// description through `subtitleNode` so the two sections share a single
+// layout: collapsed state shows just the title + chevron, expanded
+// state reveals the description (with the coaching card's "Learn more"
+// link inlined) and the items. Using `subtitleNode` for the strengths
+// card too — even though it has no link — keeps the two cards
+// behaviorally identical; using plain `subtitle` for one and
+// `subtitleNode` for the other made the closed state inconsistent.
 const renderCard = (
 	heading: string,
 	description: string,
@@ -154,7 +153,7 @@ const renderCard = (
 	);
 
 	return (
-		<Accordion defaultExpanded className="dispute-recommendations-card">
+		<Accordion className="dispute-recommendations-card">
 			<AccordionBody title={ heading } subtitleNode={ subtitleNode } lg>
 				{ visible.map( renderItem ) }
 				{ hidden.length > 0 && (
