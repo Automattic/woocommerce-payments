@@ -14,6 +14,7 @@ body {
 
 		&.woocommerce-payments-checkout-section,
 		&.woocommerce_page_wc-settings-wcpay_multi_currency {
+			#mainform,
 			.woocommerce-layout__header {
 				background: #fff;
 			}
