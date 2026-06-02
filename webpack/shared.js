@@ -167,7 +167,12 @@ module.exports = {
 		new ProvidePlugin( {
 			process: 'process/browser.js',
 		} ),
-		new MiniCssExtractPlugin( { filename: '[name].css' } ),
+		new MiniCssExtractPlugin( {
+			filename: '[name].css',
+			// Lazy admin route chunks can share CSS modules in different orders.
+			// Keep emitting the CSS, but avoid noisy order warnings during watch builds.
+			ignoreOrder: true,
+		} ),
 		new WebpackRTLPlugin( {
 			filenameSuffix: '-rtl.css',
 		} ),
