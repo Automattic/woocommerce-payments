@@ -124,6 +124,29 @@ describe( 'RECOMMENDATIONS_CATALOG runtime behavior', () => {
 
 			expect( ids( ctx ) ).toContain( 'c6-cancellation-document' );
 		} );
+
+		it( 'coaches documenting the duplicate charge when the doc is missing', () => {
+			const ctx = context( {
+				outcome: 'could_help',
+				reason: 'duplicate',
+				productType: 'physical_product',
+				// A non-duplicate field keeps c15 from firing so c7 is observable.
+				evidence: { receipt: 'receipt.pdf' },
+			} );
+
+			expect( ids( ctx ) ).toContain( 'c7-duplicate-charge-explain' );
+		} );
+
+		it( 'surfaces the duplicate-charge positive when documentation is present on a won dispute', () => {
+			const ctx = context( {
+				outcome: 'keep_doing',
+				reason: 'duplicate',
+				productType: 'physical_product',
+				evidence: { duplicate_charge_documentation: 'doc.pdf' },
+			} );
+
+			expect( ids( ctx ) ).toContain( 'c7-duplicate-charge-explained' );
+		} );
 	} );
 
 	describe( 'no critical recommendation ever renders for a won dispute', () => {
