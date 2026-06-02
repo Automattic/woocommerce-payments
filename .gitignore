@@ -118,3 +118,8 @@ bin/jurassictube/
 
 # Local MCP configuration
 .mcp.json
+
+# Local autoresearch artifacts
+autoresearch*.sh
+autoresearch*.md
+autoresearch*.jsonl
