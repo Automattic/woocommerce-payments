@@ -1,8 +1,7 @@
 /**
- * True when a value is non-null, non-empty, and (for nested objects) has at
- * least one meaningful leaf. Used by both `recommendations.ts` and
- * `evidence-field-status.ts` to decide whether an evidence field is "provided"
- * vs. "missing"; keeping it here ensures the two callers stay in sync.
+ * True when a value is non-empty (and, for objects, has a meaningful leaf).
+ * Shared by recommendations.ts and evidence-field-status.ts so "provided vs
+ * missing" stays consistent.
  */
 export const hasMeaningfulValue = ( value: unknown ): boolean => {
 	if ( value === undefined || value === null ) {

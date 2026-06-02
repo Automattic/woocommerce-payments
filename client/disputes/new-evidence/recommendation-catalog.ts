@@ -10,49 +10,42 @@ import type { Recommendation } from './types';
 
 /**
  * Catalog of merchant-facing recommendations for the Dispute Outcome View.
+ * RiskOps-authored. Each entry:
+ *   - title/body: copy rendered verbatim, `__()`-wrapped for i18n.
+ *   - urgency: `positive` → "What's working well"; `critical`/`tip` →
+ *     "What could help next time". The two render identically; the split
+ *     only lets the matcher suppress criticals (see c15) and keeps the
+ *     analytics distinction. No ordering.
+ *   - when: predicates the matcher checks; see `matchesCount()` for the
+ *     `min`/`max` count semantics.
+ *   - suppressOtherCriticals: c15 uses it to hide other criticals.
  *
- * Authored by RiskOps. Each entry has:
- *   - title + body: copy that renders verbatim (voice rules: softer
- *     evidence language, single-sentence bodies, no em-dashes). Wrapped in
- *     `__()` so the strings are translatable.
- *   - urgency: drives the leading icon and section grouping.
- *     `positive` (green `published` checkmark) → "What's working well".
- *     `critical` + `tip` (amber `caution`) → "What could help next time".
- *     `critical` and `tip` render identically; the split exists so the
- *     runtime/snapshot can still distinguish lift-bearing recommendations
- *     from softer tips for analytics and ordering.
- *   - when: predicates the runtime helper checks against the dispute.
- *     `requireProvided` / `requireMissing` are count predicates over a
- *     key set (`min`/`max` inclusive; see `FieldCountPredicate` and
- *     `matchesCount()` for the default semantics, including `max`-only).
- *   - suppressOtherCriticals: catch-all "no evidence" entry uses this to
- *     hide other critical entries on the same dispute.
+ * Ids are Tracks join keys, so append-only: never rename or reuse one,
+ * retire with `retired: true` instead of deleting, and record new ids in
+ * recommendation-ids.snapshot.json (enforced by recommendation-ids-snapshot.test.ts).
  *
- * Ids are append-only: they are Tracks join keys, so never rename or reuse one.
- * Retire an entry with `retired: true` instead of deleting it, and add new ids
- * to recommendation-ids.snapshot.json in the same PR. recommendation-ids-snapshot.test.ts
- * fails CI on any rename, removal, or unrecorded id.
- *
- * Clusters 13 (response-time timing) is intentionally deferred until
- * `dispute.evidence_details.submitted_at` reaches the client.
- *
- * Cluster 6 references two cancellation fields rather than three. The
- * RiskOps catalog originally listed `cancellation_policy_disclosure`
- * alongside `cancellation_policy` and `cancellation_rebuttal`, but the
- * dispute response wizard surfaces only the latter two — so coaching the
- * merchant on a field they can't actually provide creates confusion.
- * Follow-up: add `cancellation_policy_disclosure` to the wizard, then
- * widen this cluster back to three fields.
+ * Deferred until the wizard collects the field: cluster 4 (refund refusal
+ * explanation) and cluster 8 (service date). Cluster 13 (response-time
+ * timing) is deferred until `submitted_at` reaches the client. Cluster 6
+ * covers 2 of 3 cancellation fields: the wizard does not yet surface
+ * `cancellation_policy_disclosure`.
  */
 
-// Every evidence key the response wizard can collect. Used by c15 ("no
-// evidence at all" — fires only when ALL of these are missing) and c12
-// ("you have evidence but no cover letter" — fires only when at least
-// one non-cover-letter key is provided). Must stay in sync with the
-// wizard's actual collectable fields; an unlisted field can make c15
-// fire (and suppress criticals) while real evidence sits in it.
+// Every evidence key the wizard collects from the merchant. c15/c12 gate on
+// NON_COVER_LETTER_EVIDENCE_KEYS (derived below); keep this in sync with the
+// wizard or they misfire.
+//
+// Excludes always-present fields that would otherwise stop c15 from firing:
+// auto-populated ones (customer_purchase_ip, customer_name,
+// customer_email_address, billing_address) and product_description (wizard
+// pre-fills it). Mirrors constants/high-impact-fields.ts; guarded in
+// recommendation-catalog.test.ts.
+//
+// Also omits fields the wizard does not collect yet: service_date and
+// refund_refusal_explanation (clusters 8 and 4 are deferred), and
+// duplicate_charge_explanation (cluster 7 gates on the documentation instead).
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
-const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
+export const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'customer_communication',
 	'receipt',
 	'shipping_documentation',
@@ -61,24 +54,19 @@ const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'shipping_date',
 	'shipping_address',
 	'service_documentation',
-	'service_date',
 	'access_activity_log',
 	'duplicate_charge_documentation',
-	'duplicate_charge_explanation',
 	'refund_policy',
-	'refund_refusal_explanation',
 	'cancellation_policy',
 	'cancellation_rebuttal',
 	'customer_signature',
-	'customer_purchase_ip',
 	'uncategorized_file',
 	'uncategorized_text',
 ];
 
-// Subset for c12: every wizard key EXCEPT the cover letter. c12 needs
-// "at least one non-cover-letter key was provided" so it only coaches
-// merchants who submitted some evidence — when nothing was submitted,
-// c15's broader "submit evidence" message fires alone.
+// Every wizard key except the auto-generated cover letter. c12 uses it to
+// coach merchants who submitted some evidence; c15 uses it so the default
+// cover letter doesn't mask a no-evidence submission.
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
 const NON_COVER_LETTER_EVIDENCE_KEYS = WIZARD_SUBMITTABLE_EVIDENCE_KEYS.filter(
 	( key ) => key !== 'uncategorized_text'
@@ -281,54 +269,11 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 4: refund refusal explanation ============
-	{
-		id: 'c4-refund-refusal-provided',
-		urgency: 'positive',
-		title: __(
-			'Clear explanation for the refund decision',
-			'woocommerce-payments'
-		),
-		body: __(
-			"Your written explanation of why the refund wasn't owed gave context for your decision.",
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
-			requireProvided: { keys: [ 'refund_refusal_explanation' ] },
-		},
-	},
-	{
-		id: 'c4-refund-refusal-explain',
-		urgency: 'critical',
-		title: __( 'Explain the refund decision', 'woocommerce-payments' ),
-		body: __(
-			"A written explanation of why the refund wasn't owed helps clarify your reasoning on refund-related disputes.",
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'could_help',
-			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
-			requireMissing: { keys: [ 'refund_refusal_explanation' ] },
-		},
-	},
-	{
-		id: 'c4-refund-refusal-add',
-		urgency: 'tip',
-		title: __(
-			'Add an explanation for refund decisions',
-			'woocommerce-payments'
-		),
-		body: __(
-			'Adding a written explanation for refund decisions tends to round out the evidence on refund disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'product_unacceptable', 'credit_not_processed' ],
-			requireMissing: { keys: [ 'refund_refusal_explanation' ] },
-		},
-	},
+	// Deferred: the wizard has no `refund_refusal_explanation` input, so a
+	// positive could never fire and the missing-field coaching would always
+	// dead-end. Restore the provided/critical/tip entries once the wizard
+	// collects the field; refund_policy (cluster 5) covers these disputes
+	// in the meantime.
 
 	// ============ CLUSTER 5: refund policy ============
 	{
@@ -390,9 +335,8 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 6: cancellation policy ============
-	// Predicates here check both `cancellation_policy` and `cancellation_rebuttal`
-	// with `min: 2` — i.e. both fields must satisfy the underlying state
-	// (provided or missing) for the entry to fire.
+	// `min: 2` entries need both cancellation_policy and cancellation_rebuttal
+	// in the same state; the "exactly-one" tips use `min: 1, max: 1`.
 	{
 		id: 'c6-cancellation-provided',
 		urgency: 'positive',
@@ -482,180 +426,50 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 7: duplicate charge ============
+	// Gated on `duplicate_charge_documentation` only: the wizard does not
+	// collect `duplicate_charge_explanation`, so the copy coaches on the
+	// documentation the merchant can actually attach.
 	{
 		id: 'c7-duplicate-charge-explained',
 		urgency: 'positive',
-		title: __( 'Two charges, clearly explained', 'woocommerce-payments' ),
+		title: __( 'Two charges, clearly documented', 'woocommerce-payments' ),
 		body: __(
-			'An explanation alongside documentation made the two charges easier to distinguish.',
+			'Documentation distinguishing the two charges helped make your case.',
 			'woocommerce-payments'
 		),
 		when: {
 			outcome: 'keep_doing',
 			reasonIn: [ 'duplicate' ],
-			requireProvided: {
-				keys: [
-					'duplicate_charge_explanation',
-					'duplicate_charge_documentation',
-				],
-				min: 2,
-			},
+			requireProvided: { keys: [ 'duplicate_charge_documentation' ] },
 		},
 	},
 	{
 		id: 'c7-duplicate-charge-explain',
 		urgency: 'critical',
-		title: __(
-			'Explain and document the duplicate charge',
-			'woocommerce-payments'
-		),
+		title: __( 'Document the duplicate charge', 'woocommerce-payments' ),
 		body: __(
-			'A clear explanation alongside documentation distinguishing the charges is central evidence for duplicate disputes.',
+			'Documentation distinguishing the two charges is central evidence for duplicate disputes.',
 			'woocommerce-payments'
 		),
 		when: {
 			outcome: 'could_help',
 			reasonIn: [ 'duplicate' ],
-			requireMissing: {
-				keys: [
-					'duplicate_charge_explanation',
-					'duplicate_charge_documentation',
-				],
-				min: 2,
-			},
-		},
-	},
-	{
-		id: 'c7-duplicate-charge-missing-piece-won',
-		urgency: 'tip',
-		title: __(
-			'Add the missing duplicate-charge piece',
-			'woocommerce-payments'
-		),
-		body: __(
-			'An explanation and documentation together help build out the defense for duplicate disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'duplicate' ],
-			requireProvided: {
-				keys: [
-					'duplicate_charge_explanation',
-					'duplicate_charge_documentation',
-				],
-				min: 1,
-				max: 1,
-			},
-		},
-	},
-	{
-		id: 'c7-duplicate-charge-missing-piece-lost',
-		urgency: 'tip',
-		title: __(
-			'Add the missing duplicate-charge piece',
-			'woocommerce-payments'
-		),
-		body: __(
-			'An explanation and documentation together help build out the defense for duplicate disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'could_help',
-			reasonIn: [ 'duplicate' ],
-			requireProvided: {
-				keys: [
-					'duplicate_charge_explanation',
-					'duplicate_charge_documentation',
-				],
-				min: 1,
-				max: 1,
-			},
+			requireMissing: { keys: [ 'duplicate_charge_documentation' ] },
 		},
 	},
 
 	// ============ CLUSTER 8: service date (non-physical only) ============
-	// Scoped to non-physical product types because the wizard collects
-	// `shipping_date` (not `service_date`) for physical_product fraudulent
-	// disputes. Coaching a physical-product merchant on `service_date` asks
-	// them to populate a field the wizard never surfaces for their type.
-	// Mirrors DISPUTE_HIGH_IMPACT_FIELDS, which already encodes the same
-	// distinction for fraudulent. Follow-up: separate shipping_date
-	// coaching for fraudulent + physical_product if RiskOps wants it.
-	{
-		id: 'c8-service-date-provided',
-		urgency: 'positive',
-		title: __( 'Service date on record', 'woocommerce-payments' ),
-		body: __(
-			'Including the service date helped tie the transaction to a verifiable event.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'fraudulent' ],
-			productTypeIn: [
-				'digital_product_or_service',
-				'offline_service',
-				'event',
-				'booking_reservation',
-				'multiple',
-				'other',
-			],
-			requireProvided: { keys: [ 'service_date' ] },
-		},
-	},
-	{
-		id: 'c8-service-date-include',
-		urgency: 'critical',
-		title: __( 'Include the service date', 'woocommerce-payments' ),
-		body: __(
-			'The service date ties the transaction to a verifiable event, which can help defend fraud disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'could_help',
-			reasonIn: [ 'fraudulent' ],
-			productTypeIn: [
-				'digital_product_or_service',
-				'offline_service',
-				'event',
-				'booking_reservation',
-				'multiple',
-				'other',
-			],
-			requireMissing: { keys: [ 'service_date' ] },
-		},
-	},
-	{
-		id: 'c8-service-date-document',
-		urgency: 'tip',
-		title: __( 'Document the service date', 'woocommerce-payments' ),
-		body: __(
-			'Documenting the service date helps tie transactions to verifiable events in fraud disputes.',
-			'woocommerce-payments'
-		),
-		when: {
-			outcome: 'keep_doing',
-			reasonIn: [ 'fraudulent' ],
-			productTypeIn: [
-				'digital_product_or_service',
-				'offline_service',
-				'event',
-				'booking_reservation',
-				'multiple',
-				'other',
-			],
-			requireMissing: { keys: [ 'service_date' ] },
-		},
-	},
+	// Deferred: the wizard has no `service_date` input. It collects
+	// `shipping_date` for physical fraudulent disputes (cluster 8b), but
+	// non-physical fraud has no fulfilment-date field, so a positive could
+	// never fire and the missing-field coaching would always dead-end.
+	// Restore once the wizard collects `service_date`. Mirrors
+	// DISPUTE_HIGH_IMPACT_FIELDS.
 
 	// ============ CLUSTER 8b: shipping date (fraudulent + physical only) ============
-	// Parallel to Cluster 8, keyed off `shipping_date` (the field the wizard
-	// collects for physical_product fraudulent disputes) instead of
-	// `service_date`. Two variants only (no Critical): per RiskOps review,
-	// the shipping date doesn't prove the true cardholder made the purchase,
-	// it just ties the order to a verifiable event at the cardholder's
-	// address. Worth surfacing, not worth a Critical.
+	// Parallel to Cluster 8 but keyed on `shipping_date` (physical fraudulent).
+	// No Critical: per RiskOps, the shipping date ties the order to the
+	// cardholder's address but doesn't prove who made the purchase.
 	{
 		id: 'c8b-shipping-date-provided',
 		urgency: 'positive',
@@ -941,9 +755,8 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 	},
 
 	// ============ CLUSTER 12: cover letter (Tip only) ============
-	// Fires when the merchant cleared the auto-generated cover letter.
-	// Detection here is "uncategorized_text empty" — the slice-4 follow-up
-	// surfaces the same gap in the Evidence Submitted list.
+	// Fires when the merchant cleared the auto-generated cover letter
+	// (uncategorized_text empty).
 	{
 		id: 'c12-cover-letter-include',
 		urgency: 'tip',
@@ -966,21 +779,16 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'subscription_canceled',
 				'general',
 			],
-			// Only fires when the merchant has put together SOME evidence but
-			// not the cover letter — otherwise c15's "submit evidence" message
-			// covers the no-evidence case alone (suppressOtherCriticals doesn't
-			// reach tips, so without this guard c12 would render next to c15
-			// and read as repetitive advice).
+			// Guard so c12 fires only when SOME evidence exists; else it would
+			// render next to c15's "submit evidence" (suppression skips tips).
 			requireProvided: { keys: NON_COVER_LETTER_EVIDENCE_KEYS },
 			requireMissing: { keys: [ 'uncategorized_text' ] },
 		},
 	},
 
 	// ============ CLUSTER 13: response-time timing ============
-	// Deferred until `dispute.evidence_details.submitted_at` reaches the
-	// client. Two entries (positive on quick responses, tip on slow ones)
-	// add back when the predicate language gains a timing clause and the
-	// backend exposes the field.
+	// Deferred until `submitted_at` reaches the client: a positive (quick
+	// response) and a tip (slow) join once the predicate language gains timing.
 
 	// ============ CLUSTER 14: prior good history (Tip only) ============
 	{
@@ -1031,12 +839,12 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'noncompliant',
 				'unrecognized',
 			],
-			// Fires when EVERY wizard-submittable key is missing (max:0).
-			// `suppressOtherCriticals` then hides other critical entries on
-			// the dispute, leaving one clear message. See the constant's
-			// docblock for the key-set maintenance contract.
+			// Fires when every non-cover-letter wizard key is missing. The
+			// cover letter is auto-generated and submitted by default
+			// (index.tsx), so counting it would stop c15 firing for a merchant
+			// who sent no real evidence. suppressOtherCriticals leaves one message.
 			requireProvided: {
-				keys: WIZARD_SUBMITTABLE_EVIDENCE_KEYS,
+				keys: NON_COVER_LETTER_EVIDENCE_KEYS,
 				max: 0,
 			},
 		},

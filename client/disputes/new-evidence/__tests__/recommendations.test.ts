@@ -185,9 +185,8 @@ describe( 'getRecommendations', () => {
 		} );
 
 		it( 'defaults min to 0 when only max is set (max-only predicate)', () => {
-			// Mirrors the Cluster 15 "no evidence" entry: `max: 0` with `min`
-			// omitted must mean "zero of the listed keys are provided", not
-			// "min defaults to 1" (which would make the predicate unsatisfiable).
+			// Mirrors c15: `max: 0` with `min` omitted means "zero provided",
+			// not "min defaults to 1" (which would be unsatisfiable).
 			const noneProvided = buildEntry( {
 				id: 'none-provided',
 				when: {
@@ -330,9 +329,8 @@ describe( 'getRecommendations', () => {
 	} );
 
 	describe( 'empty-string and whitespace-only values count as missing', () => {
-		// hasMeaningfulValue trims before measuring, so a field the merchant
-		// cleared (server returns '' or '   ') reads as absent for both
-		// requireProvided and requireMissing predicates.
+		// hasMeaningfulValue trims, so a cleared field ('' or '   ') reads as
+		// absent for both predicates.
 		const provided = buildEntry( {
 			id: 'provided',
 			when: {
@@ -462,6 +460,33 @@ describe( 'getRecommendations', () => {
 		] );
 	} );
 
+	it( 'excludes retired entries even when every clause matches', () => {
+		// The retired guard is the runtime half of the append-only id
+		// contract: a tombstoned id stays in the catalog but never renders.
+		const live = buildEntry( {
+			id: 'live',
+			when: {
+				outcome: 'could_help',
+				reasonIn: [ 'product_not_received' ],
+			},
+		} );
+		const tombstoned = buildEntry( {
+			id: 'tombstoned',
+			retired: true,
+			when: {
+				outcome: 'could_help',
+				reasonIn: [ 'product_not_received' ],
+			},
+		} );
+
+		const result = getRecommendations(
+			baseContext( { outcome: 'could_help' } ),
+			[ live, tombstoned ]
+		);
+
+		expect( result.map( ( r ) => r.id ) ).toEqual( [ 'live' ] );
+	} );
+
 	describe( 'suppression', () => {
 		it( 'suppresses other critical entries when an entry with suppressOtherCriticals fires', () => {
 			const catchAll = buildEntry( {
@@ -498,6 +523,38 @@ describe( 'getRecommendations', () => {
 			expect( result.map( ( r ) => r.id ).sort() ).toEqual( [
 				'a-tip',
 				'catch-all',
+			] );
+		} );
+
+		it( 'keeps a non-critical suppressor while still dropping other criticals', () => {
+			// The suppressor survives regardless of its urgency (the
+			// `=== suppressor` check short-circuits). c15 is critical, but the
+			// type allows any urgency, so pin the tip path too.
+			const tipSuppressor = buildEntry( {
+				id: 'tip-suppressor',
+				urgency: 'tip',
+				suppressOtherCriticals: true,
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+			const otherCritical = buildEntry( {
+				id: 'other-critical',
+				urgency: 'critical',
+				when: {
+					outcome: 'could_help',
+					reasonIn: [ 'product_not_received' ],
+				},
+			} );
+
+			const result = getRecommendations(
+				baseContext( { outcome: 'could_help' } ),
+				[ tipSuppressor, otherCritical ]
+			);
+
+			expect( result.map( ( r ) => r.id ) ).toEqual( [
+				'tip-suppressor',
 			] );
 		} );
 

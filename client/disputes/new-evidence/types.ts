@@ -133,31 +133,24 @@ export interface EvidenceFieldStatus {
 }
 
 /**
- * Outcome framing carried over from the dispute status. Used to gate which
- * catalog entries fire. The component's two visual sections (Positives vs
- * Critical+Tip) are driven by urgency, not by outcome.
+ * Gates which catalog entries fire. The card's two sections are driven by
+ * urgency, not outcome.
  */
 export type RecommendationOutcome = 'could_help' | 'keep_doing';
 
 /**
- * Visual urgency of a recommendation. Drives the leading icon (shape + color)
- * and which card section the entry renders under (title text color stays the
- * same across all urgencies; only the icon and section reflect urgency).
- *   - `critical` (amber, `caution`):   "fix this next time" — high-lift gap on a lost dispute.
- *   - `tip`      (amber, `caution`):   "would have made the case stronger" — soft suggestion.
- *   - `positive` (green, `published`): "you did this right" — reinforcement.
- *
- * No red: recommendations coach, they don't flag errors (design 2026-05-26).
+ * Drives the leading icon and which card section the entry renders under:
+ *   - `critical` (amber `caution`): "fix this next time".
+ *   - `tip`      (amber `caution`): softer suggestion.
+ *   - `positive` (green `published`): reinforcement.
+ * No red: recommendations coach, they don't flag errors.
  */
 export type RecommendationUrgency = 'critical' | 'positive' | 'tip';
 
 /**
- * Count-based predicate over a set of evidence field keys. `min` and `max`
- * (inclusive) cap how many of the listed keys must satisfy the underlying
- * condition (provided or missing). Defaults are applied by `matchesCount()`
- * in recommendations.ts: `max` = keys.length; `min` = 1, or 0 when `max` is
- * set explicitly (so a `max`-only predicate such as Cluster 15's `max: 0`
- * stays satisfiable). See that function for the authoritative rule.
+ * Count predicate over evidence keys: how many must satisfy the condition
+ * (provided or missing), bounded by `min`/`max` (inclusive). See
+ * `matchesCount()` for the default rules.
  */
 export interface FieldCountPredicate {
 	keys: string[];
@@ -184,21 +177,19 @@ export interface Recommendation {
 	urgency: RecommendationUrgency;
 	when: RecommendationWhen;
 	/**
-	 * Q6 win-rate lift in percentage points, when known. Used to rank
-	 * recommendations within a section when capping (top N by lift).
-	 * Entries without a measured lift sort to the bottom.
+	 * Q6 win-rate lift in percentage points, when known. Reserved for
+	 * future lift-based capping in the UI consumer (#11703): the matcher
+	 * does not read or sort by it today.
 	 */
 	lift?: number;
 	/**
-	 * When this entry fires, hide all other `critical` entries on the same
-	 * dispute. Used by the catch-all no-evidence recommendation so a
-	 * disengaged merchant sees one clear message rather than a stack of
-	 * "missing X" entries.
+	 * Hide all other `critical` entries when this one fires, so a no-evidence
+	 * dispute shows one clear message instead of a stack. Used by c15.
 	 */
 	suppressOtherCriticals?: boolean;
 	/**
-	 * Tombstone: retired entries stay in the catalog (so the id is never
-	 * reused as a Tracks join key) but are dropped from runtime results.
+	 * Tombstone: kept so the id is never reused as a Tracks join key, but
+	 * dropped from runtime results.
 	 */
 	retired?: boolean;
 }

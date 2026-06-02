@@ -326,60 +326,11 @@ describe( 'DisputeRecommendationsCard', () => {
 		} );
 	} );
 
-	describe( 'Cluster 8 / 8b product-type scoping', () => {
-		// Regression for a bug where Cluster 8 (service_date) entries fired on
-		// fraudulent + physical_product. The wizard collects `shipping_date`
-		// (not `service_date`) for physical, so the recommendation coached
-		// merchants on a field they could not reach. Cluster 8b mirrors
-		// Cluster 8 for physical, keyed off shipping_date.
-		it( 'does not fire the service_date tip on fraudulent + physical_product', async () => {
-			// Won on this fixture: fires the shipping_date positive in the
-			// strengths section, and the c5-refund-policy-publish-won tip in
-			// the coaching section. Expand the coaching card so the
-			// service_date absence assertion isn't trivially true from being
-			// collapsed.
-			const dispute = buildDispute( {
-				status: 'won',
-				reason: 'fraudulent',
-				metadata: { __product_type: 'physical_product' },
-				evidence: { shipping_date: '2026-04-15' },
-			} );
-
-			render( <DisputeRecommendationsCard dispute={ dispute } /> );
-
-			await expandSection( /what could help next time/i );
-
-			expect(
-				screen.queryByRole( 'heading', {
-					name: /document the service date/i,
-				} )
-			).not.toBeInTheDocument();
-			expect(
-				screen.queryByRole( 'heading', {
-					name: /include the service date/i,
-				} )
-			).not.toBeInTheDocument();
-		} );
-
-		it( 'still fires service_date entries on fraudulent + digital_product_or_service', async () => {
-			const dispute = buildDispute( {
-				status: 'lost',
-				reason: 'fraudulent',
-				metadata: { __product_type: 'digital_product_or_service' },
-				evidence: { receipt: 'r' }, // dodge c15 suppression
-			} );
-
-			render( <DisputeRecommendationsCard dispute={ dispute } /> );
-
-			await expandSection( /what could help next time/i );
-
-			expect(
-				screen.getByRole( 'heading', {
-					name: /include the service date/i,
-				} )
-			).toBeInTheDocument();
-		} );
-
+	describe( 'Cluster 8b shipping_date product-type scoping', () => {
+		// Cluster 8b coaches on shipping_date for physical + fraudulent, keyed
+		// off the field the wizard actually collects. The sibling Cluster 8
+		// (service_date) is deferred upstream until the wizard collects it, so
+		// the previous service_date regression tests live on the catalog side.
 		it( 'fires the shipping_date positive on fraudulent + physical when shipping_date is provided (won)', async () => {
 			const dispute = buildDispute( {
 				status: 'won',
