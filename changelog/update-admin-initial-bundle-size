@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Reduced the initial WooPayments admin bundle size by lazy-loading admin route code.
