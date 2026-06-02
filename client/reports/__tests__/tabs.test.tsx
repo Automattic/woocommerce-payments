@@ -270,6 +270,27 @@ describe( 'Reports page tabs', () => {
 		);
 	} );
 
+	it( 'reloads the Balance tab with the currency the caller passed in', async () => {
+		global.wcpaySettings.accountDefaultCurrency = 'EUR';
+
+		await renderReportsPage( {
+			now: new Date( '2026-05-06T12:00:00Z' ),
+		} );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: /Reload/i } )
+		);
+
+		expect( invalidateResolution ).toHaveBeenCalledWith(
+			'getReportsBalanceSummary',
+			[
+				expect.objectContaining( {
+					currency: 'eur',
+				} ),
+			]
+		);
+	} );
+
 	it( 'does not crash the Reports page when the account default currency is missing', async () => {
 		global.wcpaySettings.accountDefaultCurrency = undefined;
 

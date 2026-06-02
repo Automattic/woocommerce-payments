@@ -35,7 +35,11 @@ export const ReportsPage: React.FC< ReportsPageProps > = ( { now } ) => {
 		() => getLastFullCalendarMonthUTC( dateFilterNow ),
 		[ dateFilterNow ]
 	);
-	const reload = useReportsTabReload( activeTab, period );
+	const reload = useReportsTabReload(
+		activeTab,
+		period,
+		wcpaySettings.accountDefaultCurrency || ''
+	);
 
 	useEffect( () => {
 		const syncActiveTabFromUrl = () => {

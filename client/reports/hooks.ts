@@ -20,13 +20,12 @@ interface WCPayResolutionDispatch {
 
 export function useReportsTabReload(
 	tab: ReportsTab,
-	period: ReportsPeriodRange
+	period: ReportsPeriodRange,
+	currency: string
 ): ( periodOverride?: ReportsPeriodRange ) => void {
 	const { invalidateResolution, invalidateResolutionForStoreSelector } =
 		useDispatch( WCPAY_STORE_NAME ) as unknown as WCPayResolutionDispatch;
-	const currency = (
-		wcpaySettings.accountDefaultCurrency || ''
-	).toLowerCase();
+	const normalizedCurrency = currency.toLowerCase();
 
 	return useCallback(
 		( periodOverride?: ReportsPeriodRange ) => {
@@ -42,15 +41,15 @@ export function useReportsTabReload(
 					{
 						dateStart: balancePeriod.start,
 						dateEnd: balancePeriod.end,
-						currency,
+						currency: normalizedCurrency,
 					},
 				] );
 			}
 		},
 		[
-			currency,
 			invalidateResolution,
 			invalidateResolutionForStoreSelector,
+			normalizedCurrency,
 			period,
 			tab,
 		]
