@@ -1,22 +1,25 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import type { ReactElement } from 'react';
+import { createElement } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { render } from '@wordpress/element';
-import { addQueryArgs } from '@wordpress/url';
+import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies
  */
 import type { TaskItemProps } from '../types';
-import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-details';
-import { recordEvent } from 'wcpay/tracks';
-import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
-import { getAdminUrl } from 'utils';
+import { LazyUpdateBusinessDetailsTaskDescription } from './lazy-update-business-details-task-description';
+import { runUpdateBusinessDetailsTaskAction } from './update-business-details-task-action-loader';
 
-export const getUpdateBusinessDetailsTask = (
-	errorMessages: string[],
+interface RequirementError {
+	code: string;
+	reason: string;
+}
+
+const getUpdateBusinessDetailsTask = (
+	requirementErrors: RequirementError[],
 	status: string,
 	accountLink: string,
 	currentDeadline: number | null,
@@ -25,17 +28,9 @@ export const getUpdateBusinessDetailsTask = (
 ): TaskItemProps | null => {
 	const accountRestrictedSoon = status === 'restricted_soon';
 	const accountDetailsPastDue = status === 'restricted' && pastDue;
-	const hasMultipleErrors = errorMessages.length > 1;
-	const hasSingleError = errorMessages.length === 1;
-	const accountLinkWithSource = accountLink
-		? addQueryArgs( accountLink, {
-				from: 'WCPAY_OVERVIEW',
-				source: 'wcpay-update-business-details-task',
-		  } )
-		: '';
-
-	let accountDetailsTaskDescription: React.ReactElement | string = '',
-		errorMessageDescription,
+	const hasMultipleErrors = requirementErrors.length > 1;
+	const hasSingleError = requirementErrors.length === 1;
+	let accountDetailsTaskDescription: ReactElement | string = '',
 		accountDetailsUpdateByDescription;
 
 	if ( accountRestrictedSoon && currentDeadline ) {
@@ -45,25 +40,31 @@ export const getUpdateBusinessDetailsTask = (
 				'Update by %s to avoid a disruption in payouts.',
 				'woocommerce-payments'
 			),
-			formatDateTimeFromTimestamp( currentDeadline, {
-				customFormat: 'ga M j, Y',
-			} )
+			dateI18n(
+				'ga M j, Y',
+				new Date( currentDeadline * 1000 ).toISOString()
+			)
 		);
 
 		if ( hasSingleError ) {
-			errorMessageDescription = errorMessages[ 0 ];
-			accountDetailsTaskDescription = (
-				<>
-					{ errorMessageDescription }{ ' ' }
-					{ accountDetailsUpdateByDescription }
-				</>
+			accountDetailsTaskDescription = createElement(
+				LazyUpdateBusinessDetailsTaskDescription,
+				{
+					error: requirementErrors[ 0 ],
+					updateByDescription: accountDetailsUpdateByDescription,
+				}
 			);
 		} else {
 			accountDetailsTaskDescription = accountDetailsUpdateByDescription;
 		}
 	} else if ( accountDetailsPastDue ) {
 		if ( hasSingleError ) {
-			accountDetailsTaskDescription = errorMessages[ 0 ];
+			accountDetailsTaskDescription = createElement(
+				LazyUpdateBusinessDetailsTaskDescription,
+				{
+					error: requirementErrors[ 0 ],
+				}
+			);
 		} else if ( ! detailsSubmitted ) {
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
@@ -81,58 +82,15 @@ export const getUpdateBusinessDetailsTask = (
 		}
 	}
 
-	const renderModal = () => {
-		let container = document.querySelector(
-			'#wcpay-update-business-details-container'
-		);
-
-		if ( ! container ) {
-			container = document.createElement( 'div' );
-			container.id = 'wcpay-update-business-details-container';
-			document.body.appendChild( container );
-		}
-
-		render(
-			<UpdateBusinessDetailsModal
-				key={ Date.now() }
-				errorMessages={ errorMessages }
-				accountStatus={ status }
-				accountLink={ accountLink }
-				currentDeadline={ currentDeadline }
-			/>,
-			container
-		);
-	};
-
 	const handleClick = () => {
-		if ( status === 'complete' || status === 'enabled' ) {
-			return;
-		}
-
-		if ( hasMultipleErrors ) {
-			renderModal();
-		} else {
-			let source = 'wcpay-update-business-details-task';
-			if ( ! detailsSubmitted ) {
-				source = 'wcpay-finish-setup-task';
-			}
-			recordEvent( 'wcpay_account_details_link_clicked', {
-				source,
-			} );
-
-			// If the onboarding isn't complete redirect to the NOX onboarding page.
-			if ( ! detailsSubmitted ) {
-				window.location.href = getAdminUrl( {
-					page: 'wc-settings',
-					tab: 'checkout',
-					path: '/woopayments/onboarding',
-					source: 'wcpay-finish-setup-task',
-					from: 'WCPAY_OVERVIEW',
-				} );
-			} else {
-				window.open( accountLinkWithSource, '_blank' );
-			}
-		}
+		runUpdateBusinessDetailsTaskAction( {
+			status,
+			hasMultipleErrors,
+			detailsSubmitted,
+			accountLink,
+			requirementErrors,
+			currentDeadline,
+		} );
 	};
 
 	let actionLabel;
@@ -169,3 +127,5 @@ export const getUpdateBusinessDetailsTask = (
 		showActionButton: true,
 	};
 };
+
+export default getUpdateBusinessDetailsTask;

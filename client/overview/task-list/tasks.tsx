@@ -7,17 +7,18 @@
 /**
  * Internal dependencies.
  */
-import strings from './strings';
 import {
 	getDisputeResolutionTask,
 	getDisputesDueWithinDays,
 } from './tasks/dispute-task';
-import { getReconnectWpcomTask } from './tasks/reconnect-task';
-import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-task';
+import getReconnectWpcomTask from './tasks/reconnect-task';
+import getUpdateBusinessDetailsTask from './tasks/update-business-details-task';
 import { CachedDispute } from 'wcpay/types/disputes';
 import { TaskItemProps } from './types';
-import { getGoLiveTask } from './tasks/go-live-task';
-import { isInTestModeOnboarding } from 'wcpay/utils';
+import getGoLiveTask from './tasks/go-live-task';
+
+const isInTestModeOnboarding = ( fallback = false ): boolean =>
+	!! wcpaySettings?.testModeOnboarding || fallback;
 
 // Requirements we don't want to show to the user because they are too generic/not useful. These refer to Stripe error codes.
 const requirementBlacklist = [ 'invalid_value_other' ];
@@ -44,27 +45,10 @@ export const getTasks = ( {
 		detailsSubmitted,
 	} = wcpaySettings.accountStatus;
 
-	const getErrorMessagesFromRequirements = (): any => {
-		// strings.errors contains a mixture of strings and React elements built using createInterpolateElement.
-		const errors = strings.errors as {
-			[ key: string ]: string | React.ReactElement;
-		};
-
-		// Filter out requirements that we don't want to show to the user.
-		const filteredErrors = requirements?.errors?.filter(
-			( error ) => ! requirementBlacklist.includes( error.code )
-		);
-
-		// Map the error codes to the error messages.
-		const errorMessages = filteredErrors?.map(
-			( error ) => errors[ error.code ] || error.reason
-		);
-
-		// Remove duplicates.
-		return Array.from( new Set( errorMessages || [] ) );
-	};
-
-	const errorMessages = getErrorMessagesFromRequirements();
+	// Filter out requirements that we don't want to show to the user.
+	const requirementErrors = requirements?.errors?.filter(
+		( error ) => ! requirementBlacklist.includes( error.code )
+	);
 
 	const isUpdateDetailsTaskVisible = showUpdateDetailsTask;
 
@@ -81,7 +65,7 @@ export const getTasks = ( {
 	return [
 		isUpdateDetailsTaskVisible &&
 			getUpdateBusinessDetailsTask(
-				errorMessages,
+				requirementErrors ?? [],
 				status ?? '',
 				accountLink ?? '',
 				Number( currentDeadline ) ?? null,

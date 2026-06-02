@@ -15,7 +15,7 @@ import 'wp-mediaelement';
  * Internal dependencies
  */
 import './style.scss';
-import { getTasks } from 'overview/task-list/tasks';
+import getAdminOnboardingTasks from 'overview/task-list/admin-tasks';
 import { maybeAddReportsPage } from 'reports/page-config';
 
 const lazyRoute = ( importer ) => {
@@ -316,7 +316,7 @@ addFilter(
 	( tasks ) => {
 		const { showUpdateDetailsTask, wpcomReconnectUrl } = wcpaySettings;
 
-		const wcPayTasks = getTasks( {
+		const wcPayTasks = getAdminOnboardingTasks( {
 			showUpdateDetailsTask: showUpdateDetailsTask,
 			wpcomReconnectUrl: wpcomReconnectUrl,
 			showGoLiveTask: true,

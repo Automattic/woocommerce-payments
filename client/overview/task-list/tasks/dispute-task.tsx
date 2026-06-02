@@ -4,17 +4,136 @@
 import { __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
 import { getHistory } from '@woocommerce/navigation';
+import { addQueryArgs } from '@wordpress/url';
+import Currency from '@woocommerce/currency';
 
 /**
  * Internal dependencies
  */
 import type { TaskItemProps } from '../types';
 import type { CachedDispute } from 'wcpay/types/disputes';
-import { formatCurrency } from 'multi-currency/interface/functions';
-import { getAdminUrl } from 'wcpay/utils';
-import { recordEvent } from 'tracks';
-import { isDueWithin } from 'wcpay/disputes/utils';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { recordTaskEvent } from './record-task-event';
+
+type CurrencySettings = typeof wcpaySettings & {
+	currencyData?: Record< string, any >;
+	zeroDecimalCurrencies?: string[];
+};
+
+const getAdminUrl = ( args: Record< string, string > ): string =>
+	addQueryArgs( 'admin.php', args );
+
+const htmlDecode = ( input: string ): string =>
+	new DOMParser().parseFromString( input, 'text/html' ).documentElement
+		.textContent ?? input;
+
+const getCurrencySettings = (): CurrencySettings =>
+	wcpaySettings as CurrencySettings;
+
+const getCurrency = ( currencyCode: string ) => {
+	const settings = getCurrencySettings();
+	const currencyData = settings.currencyData || {};
+	const country = settings.connect?.country || 'US';
+	const currency = Object.values( currencyData ).find(
+		( entry: any ) => entry?.code === currencyCode.toUpperCase()
+	);
+
+	if ( ! currency ) {
+		return null;
+	}
+
+	const baseCurrency = currencyData[ country ];
+
+	return Currency(
+		baseCurrency
+			? {
+					...( currency as Record< string, unknown > ),
+					decimalSeparator: baseCurrency.decimalSeparator,
+					thousandSeparator: baseCurrency.thousandSeparator,
+					symbolPosition: baseCurrency.symbolPosition,
+			  }
+			: currency
+	);
+};
+
+const composeFallbackCurrency = (
+	amount: number,
+	currencyCode: string,
+	isZeroDecimal: boolean
+): string => {
+	try {
+		return amount.toLocaleString( undefined, {
+			style: 'currency',
+			currency: currencyCode,
+			currencyDisplay: 'narrowSymbol',
+		} );
+	} catch ( error ) {
+		return isZeroDecimal
+			? `${ currencyCode.toUpperCase() } ${ Math.round( amount ) }`
+			: `${ currencyCode.toUpperCase() } ${ amount.toFixed( 2 ) }`;
+	}
+};
+
+const formatCurrency = ( amount: number, currencyCode = 'USD' ): string => {
+	const settings = getCurrencySettings();
+	const isZeroDecimal = !! settings.zeroDecimalCurrencies?.includes(
+		currencyCode.toLowerCase()
+	);
+	const normalizedAmount = isZeroDecimal ? amount : amount / 100;
+	const isNegative = normalizedAmount < 0;
+	const positiveAmount = Math.abs( normalizedAmount );
+	const prefix = isNegative ? '-' : '';
+	const currency = getCurrency( currencyCode );
+
+	if ( currency === null ) {
+		return (
+			prefix +
+			composeFallbackCurrency(
+				positiveAmount,
+				currencyCode,
+				isZeroDecimal
+			)
+		);
+	}
+
+	try {
+		return prefix + htmlDecode( currency.formatAmount( positiveAmount ) );
+	} catch ( error ) {
+		return (
+			prefix +
+			htmlDecode(
+				composeFallbackCurrency(
+					positiveAmount,
+					currencyCode,
+					isZeroDecimal
+				)
+			)
+		);
+	}
+};
+
+const isDueWithin = ( {
+	dueBy,
+	days,
+}: {
+	dueBy: CachedDispute[ 'due_by' ];
+	days: number;
+} ): boolean => {
+	if ( ! dueBy ) {
+		return false;
+	}
+
+	const dueByMoment = moment.utc( dueBy, true );
+
+	if ( ! dueByMoment.isValid() ) {
+		return false;
+	}
+
+	const now = moment().utc();
+	const isWithinDays = dueByMoment.diff( now, 'days', true ) <= days;
+	const isPastDue = now.isAfter( dueByMoment );
+	return isWithinDays && ! isPastDue;
+};
 
 /**
  * Returns an array of disputes that are due within the specified number of days.
@@ -50,7 +169,7 @@ export const getDisputeResolutionTask = (
 	}
 
 	const handleClick = () => {
-		recordEvent( 'wcpay_overview_task_click', {
+		recordTaskEvent( 'wcpay_overview_task_click', {
 			task: 'dispute-resolution-task',
 			active_dispute_count: activeDisputeCount,
 		} );

@@ -7,22 +7,13 @@ import { __, sprintf } from '@wordpress/i18n';
  * Internal dependencies
  */
 import type { TaskItemProps } from '../types';
-import { recordEvent } from 'wcpay/tracks';
-import { addQueryArgs } from '@wordpress/url';
+import { runReconnectWpcomTaskAction } from './reconnect-task-action-loader';
 
-export const getReconnectWpcomTask = (
+const getReconnectWpcomTask = (
 	wpcomReconnectUrl: string
 ): TaskItemProps | null => {
 	const handleClick = () => {
-		recordEvent( 'wcpay_overview_task_click', {
-			task: 'reconnect-wpcom',
-			source: 'wcpay-reconnect-wpcom-task',
-		} );
-
-		window.location.href = addQueryArgs( wpcomReconnectUrl, {
-			from: 'WCPAY_OVERVIEW',
-			source: 'wcpay-reconnect-wpcom-user-task',
-		} );
+		runReconnectWpcomTaskAction( wpcomReconnectUrl );
 	};
 
 	return {
@@ -51,3 +42,5 @@ export const getReconnectWpcomTask = (
 		showActionButton: true,
 	};
 };
+
+export default getReconnectWpcomTask;
