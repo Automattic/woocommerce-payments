@@ -13,7 +13,6 @@ import { calendar } from '@wordpress/icons';
  * Internal dependencies
  */
 import { useReportsBalanceSummary } from 'wcpay/data';
-import DateFilter from 'wcpay/reports/date-filter';
 import { ReportState } from '../report-state';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import {
@@ -23,7 +22,7 @@ import {
 	getVisibleBalanceRows,
 } from './rows';
 import { useBalanceDateFilter } from './use-balance-date-filter';
-import { BalanceSummaryTable } from './summary-table';
+import { BalanceDataView } from './balance-dataview';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
 import {
@@ -183,26 +182,6 @@ export const BalanceReport = ( {
 		end: summary.period?.end ?? period.end,
 	};
 	const currency = summary.currency ?? '';
-	const resetDateFilter = () => {
-		toolbarRef.current
-			?.querySelector< HTMLButtonElement >(
-				'.wcpay-date-filter__chip-trigger'
-			)
-			?.focus();
-		setValue( undefined );
-	};
-
-	const toolbar = (
-		<div className="wcpay-reports-balance__toolbar" ref={ toolbarRef }>
-			<DateFilter value={ value } onChange={ setValue } />
-			{ hasDateFilterValue && (
-				<Button variant="tertiary" onClick={ resetDateFilter }>
-					{ __( 'Reset', 'woocommerce-payments' ) }
-				</Button>
-			) }
-		</div>
-	);
-
 	useEffect( () => {
 		if (
 			hasError &&
@@ -348,16 +327,16 @@ export const BalanceReport = ( {
 				role="alert"
 			/>
 		);
-	} else if ( ! hasActivity ) {
-		content = <BalanceEmptyState />;
 	} else {
 		content = (
 			<>
-				<BalanceSummaryTable
+				<BalanceDataView
 					visibleRows={ visibleRows }
 					summary={ summary }
 					displayPeriod={ displayPeriod }
 					currency={ currency }
+					dateValue={ value }
+					onDateChange={ setValue }
 				/>
 				<BalancePrintReport
 					visibleRows={ visibleRows }
@@ -371,7 +350,6 @@ export const BalanceReport = ( {
 
 	return (
 		<div className="wcpay-reports-balance" ref={ containerRef }>
-			{ toolbar }
 			{ content }
 		</div>
 	);
