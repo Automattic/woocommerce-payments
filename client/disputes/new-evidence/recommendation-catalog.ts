@@ -29,9 +29,9 @@ import type { Recommendation } from './types';
  * not yet surface `cancellation_policy_disclosure`.
  */
 
-// Every evidence key the wizard collects from the merchant. c15 fires when
-// ALL are missing; c12 when at least one non-cover-letter key is set. Keep
-// in sync with the wizard or c15 misfires.
+// Every evidence key the wizard collects from the merchant. c15/c12 gate on
+// NON_COVER_LETTER_EVIDENCE_KEYS (derived below); keep this in sync with the
+// wizard or they misfire.
 //
 // Excludes always-present fields that would otherwise stop c15 from firing:
 // auto-populated ones (customer_purchase_ip, customer_name,
@@ -61,8 +61,9 @@ export const WIZARD_SUBMITTABLE_EVIDENCE_KEYS = [
 	'uncategorized_text',
 ];
 
-// Subset for c12: every wizard key except the cover letter, so c12 only
-// coaches merchants who submitted some evidence (else c15 fires alone).
+// Every wizard key except the auto-generated cover letter. c12 uses it to
+// coach merchants who submitted some evidence; c15 uses it so the default
+// cover letter doesn't mask a no-evidence submission.
 // eslint-disable-next-line @typescript-eslint/naming-convention -- module-level key set
 const NON_COVER_LETTER_EVIDENCE_KEYS = WIZARD_SUBMITTABLE_EVIDENCE_KEYS.filter(
 	( key ) => key !== 'uncategorized_text'
@@ -1002,10 +1003,12 @@ export const RECOMMENDATIONS_CATALOG: Recommendation[] = [
 				'noncompliant',
 				'unrecognized',
 			],
-			// Fires when every wizard key is missing (max:0);
-			// suppressOtherCriticals then leaves one clear message.
+			// Fires when every non-cover-letter wizard key is missing. The
+			// cover letter is auto-generated and submitted by default
+			// (index.tsx), so counting it would stop c15 firing for a merchant
+			// who sent no real evidence. suppressOtherCriticals leaves one message.
 			requireProvided: {
-				keys: WIZARD_SUBMITTABLE_EVIDENCE_KEYS,
+				keys: NON_COVER_LETTER_EVIDENCE_KEYS,
 				max: 0,
 			},
 		},
