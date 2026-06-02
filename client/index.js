@@ -14,6 +14,7 @@ import 'wp-mediaelement';
 /**
  * Internal dependencies
  */
+import './style.scss';
 import { getTasks } from 'overview/task-list/tasks';
 import { maybeAddReportsPage } from 'reports/page-config';
 
