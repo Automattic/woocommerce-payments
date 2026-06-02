@@ -7,7 +7,13 @@ body {
 			.settings-content,
 			#wpbody-content,
 			#wpcontent,
-			#mainform,
+			#mainform {
+				background: #fff;
+			}
+		}
+
+		&.woocommerce-payments-checkout-section,
+		&.woocommerce_page_wc-settings-wcpay_multi_currency {
 			.woocommerce-layout__header {
 				background: #fff;
 			}
