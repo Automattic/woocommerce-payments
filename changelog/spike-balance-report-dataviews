@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Spike: render the Balance report via the DataViews composition API with the native date filter
