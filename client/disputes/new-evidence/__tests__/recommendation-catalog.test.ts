@@ -206,4 +206,25 @@ describe( 'WIZARD_SUBMITTABLE_EVIDENCE_KEYS hygiene', () => {
 		);
 		expect( duplicates ).toEqual( [] );
 	} );
+
+	// Keys a predicate may reference even though the wizard does not persist
+	// them. Empty today; add a key here (with a reason) only if a recommendation
+	// must gate on a field collected outside the response wizard.
+	const allowedNonWizardKeys = new Set< string >( [] );
+
+	it( 'gates every predicate on a key the wizard can persist', () => {
+		const predicateKeys = RECOMMENDATIONS_CATALOG.flatMap( ( entry ) => [
+			...( entry.when.requireProvided?.keys ?? [] ),
+			...( entry.when.requireMissing?.keys ?? [] ),
+		] );
+		const unpersistable = [ ...new Set( predicateKeys ) ].filter(
+			( key ) =>
+				! WIZARD_SUBMITTABLE_EVIDENCE_KEYS.includes( key ) &&
+				! allowedNonWizardKeys.has( key )
+		);
+		// A non-empty list means a recommendation gates on a field the wizard
+		// never saves. Add it to the wizard's save path, or to
+		// allowedNonWizardKeys above if it is intentionally collected elsewhere.
+		expect( unpersistable ).toEqual( [] );
+	} );
 } );
