@@ -182,7 +182,7 @@ class WC_REST_Payments_Reports_Balance_Controller_Test extends WCPAY_UnitTestCas
 		add_filter( 'pre_option_' . WC_Payments_Features::REPORTS_AREA_FLAG_NAME, [ $this, 'return_enabled_flag' ] );
 		$this->setExpectedIncorrectUsage( 'register_rest_route' );
 		$this->controller->register_routes();
-		wp_set_current_user( $this->factory->user->create( [ 'role' => 'subscriber' ] ) );
+		wp_set_current_user( self::factory()->user->create( [ 'role' => 'subscriber' ] ) );
 
 		$request = new WP_REST_Request( 'GET', '/wc/v3/payments/reports/balance' );
 		$request->set_param( 'date_start', '2024-03-01T00:00:00.000Z' );
