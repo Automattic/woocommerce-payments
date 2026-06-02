@@ -104,7 +104,7 @@
 		"@woocommerce/explat": "2.4.0",
 		"@woocommerce/number": "2.5.0",
 		"@woocommerce/onboarding": "3.6.0",
-		"@wordpress/dataviews": "4.15.4",
+		"@wordpress/dataviews": "14.3.0",
 		"canvas-confetti": "1.9.4",
 		"decimal.js-light": "2.5.1",
 		"intl-tel-input": "17.0.15",
@@ -237,6 +237,19 @@
 		"@woocommerce/components": {
 			"@woocommerce/csv-export": "1.10.0",
 			"@woocommerce/currency": "5.0.0"
+		},
+		"@wordpress/dataviews": {
+			"@wordpress/data": "10.46.0",
+			"@wordpress/element": "6.46.0",
+			"@wordpress/compose": "7.46.0",
+			"@wordpress/primitives": "4.46.0",
+			"@wordpress/keycodes": "4.46.0",
+			"@wordpress/deprecated": "4.46.0",
+			"@wordpress/warning": "3.46.0",
+			"@wordpress/date": "5.46.0",
+			"@wordpress/private-apis": "1.46.0",
+			"@wordpress/icons": "13.1.0",
+			"@wordpress/rich-text": "7.46.0"
 		},
 		"@wordpress/scripts": {
 			"@wordpress/eslint-plugin": "15.1.0"
