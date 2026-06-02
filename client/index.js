@@ -23,72 +23,30 @@ const lazyRoute = ( importer ) => {
 		createElement( Suspense, null, createElement( LazyComponent, props ) );
 };
 
-const ConnectAccountPage = lazyRoute( () =>
-	import(
-		/* webpackChunkName: "wcpay-admin-connect-account" */ 'connect-account-page'
-	)
-);
-const DepositsPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-deposits" */ 'deposits' )
-);
-const DepositDetailsPage = lazyRoute( () =>
-	import(
-		/* webpackChunkName: "wcpay-admin-deposit-details" */ 'deposits/details'
-	)
-);
-const TransactionsPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-transactions" */ 'transactions' )
-);
-const PaymentDetailsPage = lazyRoute( () =>
-	import(
-		/* webpackChunkName: "wcpay-admin-payment-details" */ 'payment-details'
-	)
-);
-const DisputesPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-disputes" */ 'disputes' )
-);
+const ConnectAccountPage = lazyRoute( () => import( 'connect-account-page' ) );
+const DepositsPage = lazyRoute( () => import( 'deposits' ) );
+const DepositDetailsPage = lazyRoute( () => import( 'deposits/details' ) );
+const TransactionsPage = lazyRoute( () => import( 'transactions' ) );
+const PaymentDetailsPage = lazyRoute( () => import( 'payment-details' ) );
+const DisputesPage = lazyRoute( () => import( 'disputes' ) );
 const RedirectToTransactionDetails = lazyRoute( () =>
-	import(
-		/* webpackChunkName: "wcpay-admin-dispute-redirect" */ 'disputes/redirect-to-transaction-details'
-	)
+	import( 'disputes/redirect-to-transaction-details' )
 );
 const DisputeNewEvidencePage = lazyRoute( () =>
-	import(
-		/* webpackChunkName: "wcpay-admin-dispute-new-evidence" */ 'wcpay/disputes/new-evidence'
-	)
+	import( 'wcpay/disputes/new-evidence' )
 );
 const MultiCurrencySetupPage = lazyRoute( () =>
-	import(
-		/* webpackChunkName: "wcpay-admin-multi-currency-setup" */ 'multi-currency/setup'
-	)
+	import( 'multi-currency/setup' )
 );
-const CardReadersPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-card-readers" */ 'card-readers' )
-);
-const CapitalPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-capital" */ 'capital' )
-);
-const OverviewPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-overview" */ 'overview' )
-);
-const DocumentsPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-documents" */ 'documents' )
-);
-const ReportsPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-reports" */ 'reports' )
-);
-const OnboardingPage = lazyRoute( () =>
-	import( /* webpackChunkName: "wcpay-admin-onboarding" */ 'onboarding' )
-);
-const OnboardingKycPage = lazyRoute( () =>
-	import(
-		/* webpackChunkName: "wcpay-admin-onboarding-kyc" */ 'onboarding/kyc'
-	)
-);
+const CardReadersPage = lazyRoute( () => import( 'card-readers' ) );
+const CapitalPage = lazyRoute( () => import( 'capital' ) );
+const OverviewPage = lazyRoute( () => import( 'overview' ) );
+const DocumentsPage = lazyRoute( () => import( 'documents' ) );
+const ReportsPage = lazyRoute( () => import( 'reports' ) );
+const OnboardingPage = lazyRoute( () => import( 'onboarding' ) );
+const OnboardingKycPage = lazyRoute( () => import( 'onboarding/kyc' ) );
 const FraudProtectionAdvancedSettingsPage = lazyRoute( () =>
-	import(
-		/* webpackChunkName: "wcpay-admin-fraud-protection" */ './settings/fraud-protection/advanced-settings'
-	)
+	import( './settings/fraud-protection/advanced-settings' )
 );
 
 addFilter(
