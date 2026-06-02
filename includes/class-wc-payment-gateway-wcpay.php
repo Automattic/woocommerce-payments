@@ -1929,6 +1929,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$token->update_meta_data( 'is_attached_to_subscription', '1' );
 					$token->save_meta_data();
 				}
+			} elseif ( $save_payment_method_to_store && ! $intent_failed && ! is_null( $payment_information->get_payment_token() ) ) {
+				// A new card was entered and saved during this payment (e.g. paying a failed/pending
+				// subscription renewal). The token was just created on the user above, but it is not yet
+				// linked to the order. Attach it so the WCS failing-renewal hook chain
+				// (woocommerce_subscriptions_paid_for_failed_renewal_order -> change_failing_payment_method
+				// -> update_failing_payment_method -> get_payment_token( $renewal_order )) can find the new
+				// token and copy it onto the subscription, and so maybe_schedule_subscription_order_tracking()
+				// does not overwrite _payment_method_id back to the previously-stored card. See WOOPMNT-2882.
+				$this->add_token_to_order( $order, $payment_information->get_payment_token() );
 			}
 
 			$needs_frontend_confirmation = (
@@ -3972,6 +3981,42 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			if ( Intent_Status::SUCCEEDED === $status ) {
 				$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 			}
+
+			// Determine whether the payment method should be saved for this order. Subscriptions and
+			// subscription renewals must always save it so the subscription can be charged off-session
+			// for future renewals. wcs_order_contains_subscription()'s default order types exclude
+			// renewals, so we check for renewals explicitly. See WOOPMNT-2882.
+			$is_subscription            = function_exists( 'wcs_order_contains_subscription' )
+				&& ( wcs_order_contains_subscription( $order )
+					|| ( function_exists( 'wcs_order_contains_renewal' ) && wcs_order_contains_renewal( $order ) ) );
+			$should_save_payment_method = $is_subscription || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			// Save and attach the payment token BEFORE updating the order status. Updating the status
+			// fires WCS' woocommerce_subscriptions_paid_for_failed_renewal_order hook, which runs
+			// update_failing_payment_method() -> get_payment_token( $renewal_order ) to copy the token
+			// onto the subscription. If the token were attached afterwards (as it was previously), the
+			// subscription would keep the old failing card. Attaching it first also prevents
+			// maybe_schedule_subscription_order_tracking() from overwriting _payment_method_id back to
+			// the previously-stored card when the order status save fires. See WOOPMNT-2882.
+			$token = null;
+			if ( $intent->is_authorized() && $should_save_payment_method && ! empty( $payment_method_id ) ) {
+				try {
+					$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
+					$this->add_token_to_order( $order, $token );
+				} catch ( Exception $e ) {
+					Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
+
+					// For subscription orders, token creation failure is critical - renewals will fail.
+					// Re-throw the exception so the customer sees an error instead of a successful
+					// checkout that will fail on the first renewal.
+					if ( $is_subscription ) {
+						throw new Exception(
+							__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
+						);
+					}
+				}
+			}
+
 			if ( $is_subscription_payment_method_change ) {
 				$this->with_stock_reduction_disabled(
 					function () use ( $order, $intent ) {
@@ -3988,29 +4033,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					WC()->cart->empty_cart();
 				}
 
-				$is_subscription            = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order );
-				$should_save_payment_method = $is_subscription || ( isset( $_POST['should_save_payment_method'] ) && 'true' === $_POST['should_save_payment_method'] );
-				if ( $should_save_payment_method && ! empty( $payment_method_id ) ) {
-					try {
-						$token = $this->token_service->add_payment_method_to_user( $payment_method_id, wp_get_current_user() );
-						$this->add_token_to_order( $order, $token );
-
-						if ( ! empty( $token ) ) {
-							$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
-							$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
-						}
-					} catch ( Exception $e ) {
-						Logger::log( 'Error when saving payment method: ' . $e->getMessage() );
-
-						// For subscription orders, token creation failure is critical - renewals will fail.
-						// Re-throw the exception so the customer sees an error instead of a successful
-						// checkout that will fail on the first renewal.
-						if ( $is_subscription ) {
-							throw new Exception(
-								__( 'Unable to save payment method for subscription. Please try again or use a different payment method.', 'woocommerce-payments' )
-							);
-						}
-					}
+				// The token was saved and attached above (before the status update). Set the order's
+				// payment method title from it here.
+				if ( ! empty( $token ) ) {
+					$payment_method_type = $this->get_payment_method_type_for_setup_intent( $intent, $token );
+					$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 				}
 
 				$return_url = $this->get_return_url( $order );
