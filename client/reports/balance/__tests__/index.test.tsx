@@ -77,6 +77,9 @@ jest.mock( 'wcpay/reports/date-filter', () => ( {
 				>
 					Apply custom date
 				</button>
+				<button type="button" onClick={ () => onChange( undefined ) }>
+					Clear incompatible date shape
+				</button>
 			</>
 		);
 	},
@@ -1125,6 +1128,21 @@ describe( 'BalanceReport Tracks', () => {
 				is_initial_apply: false,
 			} )
 		);
+		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+			undefined
+		);
+	} );
+
+	it( 'does not record reset telemetry when DateFilter clears an incompatible date shape', async () => {
+		renderBalanceReport( { onReload: jest.fn() } );
+
+		await userEvent.click(
+			screen.getByRole( 'button', {
+				name: 'Clear incompatible date shape',
+			} )
+		);
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
 		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
 			undefined
 		);

@@ -204,18 +204,9 @@ export const BalanceReport = ( {
 	};
 	const currency = summary.currency ?? '';
 	const recordDateFilterChange = (
-		next: DateFilterValue | undefined,
+		next: DateFilterValue,
 		isInitialApply: boolean
 	) => {
-		if ( ! next ) {
-			recordEvent( 'wcpay_reports_balance_date_filter_change', {
-				preset: 'reset',
-				range_days: null,
-				is_initial_apply: false,
-			} );
-			return;
-		}
-
 		const nextPeriod = getPeriodForDateFilter( next, stableDateFilterNow );
 		recordEvent( 'wcpay_reports_balance_date_filter_change', {
 			preset: matchPreset( next, stableDateFilterNow ),
@@ -224,7 +215,9 @@ export const BalanceReport = ( {
 		} );
 	};
 	const onDateFilterChange = ( next: DateFilterValue | undefined ) => {
-		recordDateFilterChange( next, ! hasDateFilterValue && !! next );
+		if ( next ) {
+			recordDateFilterChange( next, ! hasDateFilterValue );
+		}
 		setValue( next );
 	};
 	const resetDateFilter = () => {
@@ -233,7 +226,11 @@ export const BalanceReport = ( {
 				'.wcpay-date-filter__chip-trigger'
 			)
 			?.focus();
-		recordDateFilterChange( undefined, false );
+		recordEvent( 'wcpay_reports_balance_date_filter_change', {
+			preset: 'reset',
+			range_days: null,
+			is_initial_apply: false,
+		} );
 		setValue( undefined );
 	};
 
