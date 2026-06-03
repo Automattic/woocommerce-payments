@@ -870,6 +870,12 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 		!! dispute &&
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
 		isOutcomeViewStatus;
+	// COUPLED: DisputeRecommendationsCard derives `productType` from the same
+	// inputs for its catalog lookup. The Tracks dimension recorded here must
+	// match what the card uses to filter recommendations, or analytics will
+	// describe a different bucket than the merchant actually saw. If you
+	// change the arguments to `resolveProductType` here, update the matching
+	// call in `dispute-recommendations/index.tsx` in lockstep.
 	const productType = dispute
 		? resolveProductType(
 				dispute.metadata,

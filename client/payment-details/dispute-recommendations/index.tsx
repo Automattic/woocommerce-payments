@@ -187,6 +187,13 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 		return null;
 	}
 
+	// COUPLED: PaymentDetailsSummaryWrapper derives `productType` from the
+	// same inputs for the `wcpay_dispute_outcome_viewed` Tracks event. The
+	// catalog filter applied here must match the analytics dimension, or
+	// the recorded bucket will describe a different rendering than the
+	// merchant actually saw. If you change the arguments to
+	// `resolveProductType` here, update the matching call in
+	// `payment-details/summary/index.tsx` in lockstep.
 	const productType = resolveProductType(
 		dispute.metadata,
 		dispute.order?.suggested_product_type,
