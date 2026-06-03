@@ -10,6 +10,12 @@ const mockSpeak = jest.fn();
 const mockUseReportsBalanceSummary = jest.fn();
 const mockUseBalanceDateFilter = jest.fn();
 const mockSetBalanceDateFilterValue = jest.fn();
+const mockRecordEvent = jest.fn();
+const mockDateFilterProps = jest.fn();
+const mockAppliedDateFilterValue = {
+	operator: 'between',
+	value: [ '2026-04-01', '2026-04-30' ],
+};
 let consoleErrorSpy: jest.SpyInstance | undefined;
 
 jest.mock( '@wordpress/a11y', () => ( {
@@ -36,19 +42,44 @@ jest.mock( 'wcpay/data', () => ( {
 		mockUseReportsBalanceSummary( period, currency ),
 } ) );
 
-jest.mock( '../use-balance-date-filter', () => ( {
-	useBalanceDateFilter: () => mockUseBalanceDateFilter(),
+jest.mock( 'tracks', () => ( {
+	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
 } ) );
+
+jest.mock( '../use-balance-date-filter', () => {
+	const actual = jest.requireActual( '../use-balance-date-filter' );
+	return {
+		...actual,
+		useBalanceDateFilter: ( now?: Date ) => mockUseBalanceDateFilter( now ),
+	};
+} );
 
 jest.mock( 'wcpay/reports/date-filter', () => ( {
 	__esModule: true,
 	default: ( {
 		label,
+		now,
+		onChange,
+		value,
 	}: {
 		label?: string;
-		value?: unknown;
+		now?: Date;
 		onChange: ( next: unknown ) => void;
-	} ) => <button type="button">{ label ?? 'Date' }</button>,
+		value?: unknown;
+	} ) => {
+		mockDateFilterProps( { now, value } );
+		return (
+			<>
+				<button type="button">{ label ?? 'Date' }</button>
+				<button
+					type="button"
+					onClick={ () => onChange( mockAppliedDateFilterValue ) }
+				>
+					Apply custom date
+				</button>
+			</>
+		);
+	},
 } ) );
 
 // Mirror the production helper's contract: `skipSymbol = true` returns the
@@ -93,6 +124,7 @@ jest.mock( 'wcpay/utils', () => ( {
 import balanceSummaryFixture from 'wcpay/data/reports/fixtures/balance-summary';
 import { BalanceReport } from '../index';
 import { BalanceActions } from '../actions';
+import { BalanceDateFilterNowContext } from '../context';
 
 const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
 	typeof downloadCSVFile
@@ -166,6 +198,8 @@ beforeEach( () => {
 	mockDownloadCSVFile.mockReset();
 	mockUseReportsBalanceSummary.mockReset();
 	mockSetBalanceDateFilterValue.mockReset();
+	mockRecordEvent.mockReset();
+	mockDateFilterProps.mockReset();
 	consoleErrorSpy = undefined;
 	mockUseBalanceDateFilter.mockReturnValue( {
 		value: undefined,
@@ -801,5 +835,298 @@ describe( 'BalanceReport', () => {
 			screen.queryByText( 'Other adjustments' )
 		).not.toBeInTheDocument();
 		expectBalanceText( 'Starting balance - formatted 2024-03-01 UTC' );
+	} );
+} );
+
+describe( 'BalanceReport Tracks', () => {
+	it( 'records load success when Balance summary data finishes loading', () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: balanceSummaryFixture,
+			error: {},
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_balance_load_success',
+			expect.objectContaining( {
+				currency: 'usd',
+				has_activity: true,
+				visible_row_count: expect.any( Number ),
+				range_days: 31,
+			} )
+		);
+	} );
+
+	it( 'records load error when Balance summary data resolves with a store error', () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: {},
+			isLoading: true,
+		} );
+
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_balance_load_error',
+			expect.objectContaining( {
+				error_type: 'store',
+				range_days: 14,
+			} )
+		);
+	} );
+
+	it( 'records reload clicks from the Balance summary error state', async () => {
+		const onReload = jest.fn();
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		renderBalanceReport( { onReload } );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_balance_reload_click',
+			expect.objectContaining( {
+				range_days: 14,
+			} )
+		);
+		expect( onReload ).toHaveBeenCalledWith( period );
+	} );
+
+	it( 'records load error when a reload finishes in the cached error state', async () => {
+		const onReload = jest.fn();
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		const { rerender } = renderBalanceReport( { onReload } );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
+		expect( onReload ).toHaveBeenCalledWith( period );
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenNthCalledWith(
+			1,
+			'wcpay_reports_balance_reload_click',
+			expect.objectContaining( {
+				range_days: 14,
+			} )
+		);
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: true,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ onReload } />
+			</>
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ onReload } />
+			</>
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 2 );
+		expect( mockRecordEvent ).toHaveBeenNthCalledWith(
+			2,
+			'wcpay_reports_balance_load_error',
+			expect.objectContaining( {
+				error_type: 'store',
+				range_days: 14,
+			} )
+		);
+	} );
+
+	it( 'does not record load error while cached errors are still loading', () => {
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: true,
+		} );
+
+		const { rerender } = renderBalanceReport( { onReload: jest.fn() } );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockUseReportsBalanceSummary.mockReturnValue( {
+			summary: {},
+			error: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		rerender(
+			<>
+				<BalanceActions />
+				<BalanceReport onReload={ jest.fn() } />
+			</>
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_balance_load_error',
+			expect.objectContaining( {
+				error_type: 'store',
+				range_days: 14,
+			} )
+		);
+	} );
+
+	it( 'records initial date filter applies with the stable Balance date-filter reference date', async () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+		const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
+		mockUseBalanceDateFilter.mockReturnValue( {
+			value: undefined,
+			period,
+			hasDateFilterValue: false,
+			setValue: mockSetBalanceDateFilterValue,
+		} );
+
+		render(
+			<BalanceDateFilterNowContext.Provider value={ stableNow }>
+				<BalanceReport onReload={ jest.fn() } />
+			</BalanceDateFilterNowContext.Provider>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Apply custom date' } )
+		);
+
+		expect( mockUseBalanceDateFilter ).toHaveBeenCalledWith( stableNow );
+		expect( mockDateFilterProps ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				now: stableNow,
+			} )
+		);
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_balance_date_filter_change',
+			expect.objectContaining( {
+				preset: 'last_month',
+				range_days: 30,
+				is_initial_apply: true,
+			} )
+		);
+		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+			mockAppliedDateFilterValue
+		);
+	} );
+
+	it( 'records subsequent date filter applies as non-initial changes', async () => {
+		jest.useFakeTimers();
+		jest.setSystemTime( new Date( '2026-06-15T12:00:00.000Z' ) );
+		const stableNow = new Date( '2026-05-15T12:00:00.000Z' );
+
+		render(
+			<BalanceDateFilterNowContext.Provider value={ stableNow }>
+				<BalanceReport onReload={ jest.fn() } />
+			</BalanceDateFilterNowContext.Provider>
+		);
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Apply custom date' } )
+		);
+
+		expect( mockUseBalanceDateFilter ).toHaveBeenCalledWith( stableNow );
+		expect( mockDateFilterProps ).toHaveBeenCalledWith(
+			expect.objectContaining( {
+				now: stableNow,
+			} )
+		);
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_balance_date_filter_change',
+			expect.objectContaining( {
+				preset: 'last_month',
+				range_days: 30,
+				is_initial_apply: false,
+			} )
+		);
+		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+			mockAppliedDateFilterValue
+		);
+	} );
+
+	it( 'records reset date filter changes from the toolbar Reset button', async () => {
+		const { container } = renderBalanceReport( { onReload: jest.fn() } );
+		const toolbar = container.querySelector(
+			'.wcpay-reports-balance__toolbar'
+		) as HTMLElement;
+
+		await userEvent.click(
+			within( toolbar ).getByRole( 'button', { name: 'Reset' } )
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_balance_date_filter_change',
+			expect.objectContaining( {
+				preset: 'reset',
+				range_days: null,
+				is_initial_apply: false,
+			} )
+		);
+		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+			undefined
+		);
 	} );
 } );

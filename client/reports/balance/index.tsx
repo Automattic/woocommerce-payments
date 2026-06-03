@@ -3,17 +3,19 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useContext, useEffect, useId, useRef } from 'react';
 import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { calendar } from '@wordpress/icons';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
  */
 import { useReportsBalanceSummary } from 'wcpay/data';
-import DateFilter from 'wcpay/reports/date-filter';
+import DateFilter, { type DateFilterValue } from 'wcpay/reports/date-filter';
+import { matchPreset } from 'wcpay/reports/date-filter/presets';
 import { ReportState } from '../report-state';
 import type { ReportsPeriodRange } from 'wcpay/reports/period-selector';
 import {
@@ -22,10 +24,14 @@ import {
 	getRowDepth,
 	getVisibleBalanceRows,
 } from './rows';
-import { useBalanceDateFilter } from './use-balance-date-filter';
+import {
+	getPeriodForDateFilter,
+	useBalanceDateFilter,
+} from './use-balance-date-filter';
 import { BalanceSummaryTable } from './summary-table';
 import { BalanceLoadingSkeleton } from './loading-skeleton';
 import { formatBalanceAmount } from './format';
+import { BalanceDateFilterNowContext } from './context';
 import {
 	getRowLabel,
 	hasBalanceActivity,
@@ -49,6 +55,16 @@ const woopaymentsBusinessDetails = [
 	'60 29th Street #343',
 	'San Francisco, CA, 94110, US',
 ];
+
+const getRangeDays = ( start?: string, end?: string ): number | null => {
+	if ( ! start || ! end ) {
+		return null;
+	}
+
+	return Math.round(
+		( new Date( end ).getTime() - new Date( start ).getTime() ) / 86400000
+	);
+};
 
 const getPrintRowClassName = ( row: BalanceRow ): string | undefined => {
 	const depth = getRowDepth( row );
@@ -140,8 +156,12 @@ const BalancePrintReport = ( {
 export const BalanceReport = ( {
 	onReload = () => undefined,
 }: BalanceReportProps ): JSX.Element => {
+	const contextDateFilterNow = useContext( BalanceDateFilterNowContext );
+	const stableDateFilterNow = useRef(
+		contextDateFilterNow ?? new Date()
+	).current;
 	const { value, period, hasDateFilterValue, setValue } =
-		useBalanceDateFilter();
+		useBalanceDateFilter( stableDateFilterNow );
 	const {
 		summary,
 		error = {},
@@ -183,18 +203,47 @@ export const BalanceReport = ( {
 		end: summary.period?.end ?? period.end,
 	};
 	const currency = summary.currency ?? '';
+	const recordDateFilterChange = (
+		next: DateFilterValue | undefined,
+		isInitialApply: boolean
+	) => {
+		if ( ! next ) {
+			recordEvent( 'wcpay_reports_balance_date_filter_change', {
+				preset: 'reset',
+				range_days: null,
+				is_initial_apply: false,
+			} );
+			return;
+		}
+
+		const nextPeriod = getPeriodForDateFilter( next, stableDateFilterNow );
+		recordEvent( 'wcpay_reports_balance_date_filter_change', {
+			preset: matchPreset( next, stableDateFilterNow ),
+			range_days: getRangeDays( nextPeriod.start, nextPeriod.end ),
+			is_initial_apply: isInitialApply,
+		} );
+	};
+	const onDateFilterChange = ( next: DateFilterValue | undefined ) => {
+		recordDateFilterChange( next, ! hasDateFilterValue && !! next );
+		setValue( next );
+	};
 	const resetDateFilter = () => {
 		toolbarRef.current
 			?.querySelector< HTMLButtonElement >(
 				'.wcpay-date-filter__chip-trigger'
 			)
 			?.focus();
+		recordDateFilterChange( undefined, false );
 		setValue( undefined );
 	};
 
 	const toolbar = (
 		<div className="wcpay-reports-balance__toolbar" ref={ toolbarRef }>
-			<DateFilter value={ value } onChange={ setValue } />
+			<DateFilter
+				value={ value }
+				onChange={ onDateFilterChange }
+				now={ stableDateFilterNow }
+			/>
 			{ hasDateFilterValue && (
 				<Button variant="tertiary" onClick={ resetDateFilter }>
 					{ __( 'Reset', 'woocommerce-payments' ) }
@@ -237,6 +286,16 @@ export const BalanceReport = ( {
 		}
 
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+			recordEvent( 'wcpay_reports_balance_load_success', {
+				currency,
+				has_activity: hasActivity,
+				visible_row_count: visibleRows.length,
+				range_days: getRangeDays(
+					displayPeriod.start,
+					displayPeriod.end
+				),
+			} );
+
 			if ( reloadRequestedRef.current ) {
 				toolbarRef.current
 					?.querySelector< HTMLButtonElement >(
@@ -263,15 +322,34 @@ export const BalanceReport = ( {
 			}, 500 );
 		}
 
+		const reachedErrorTerminal =
+			hasError &&
+			! isLoading &&
+			( ! previousErrorRef.current || previousLoadingRef.current );
 		// Consume the ref on the error terminal too, so a subsequent
 		// non-Reload error doesn't inherit the previous click's intent.
-		if ( hasError && ! previousErrorRef.current ) {
+		if ( reachedErrorTerminal ) {
+			recordEvent( 'wcpay_reports_balance_load_error', {
+				error_type: hasStoreError ? 'store' : 'malformed',
+				range_days: getRangeDays( period.start, period.end ),
+			} );
 			reloadRequestedRef.current = false;
 		}
 
 		previousLoadingRef.current = isLoading;
 		previousErrorRef.current = hasError;
-	}, [ hasError, isLoading ] );
+	}, [
+		currency,
+		displayPeriod.end,
+		displayPeriod.start,
+		hasActivity,
+		hasError,
+		hasStoreError,
+		isLoading,
+		period.end,
+		period.start,
+		visibleRows.length,
+	] );
 
 	useEffect( () => {
 		if ( ! printScopeActive ) {
@@ -332,6 +410,12 @@ export const BalanceReport = ( {
 					<Button
 						variant="secondary"
 						onClick={ () => {
+							recordEvent( 'wcpay_reports_balance_reload_click', {
+								range_days: getRangeDays(
+									period.start,
+									period.end
+								),
+							} );
 							reloadRequestedRef.current = true;
 							onReload( period );
 						} }
