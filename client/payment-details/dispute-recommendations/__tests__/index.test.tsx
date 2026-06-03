@@ -82,10 +82,8 @@ const wonPhysicalFullEvidence = (): ChargeDispute =>
 		},
 	} );
 
-// Cards collapse by default (Lucy review 2026-06-02), so item-level
-// content, modifier classes, the show-more `<details>`, and the
-// "Learn more" link only enter the DOM after the matching section's
-// toggle is clicked.
+// Cards collapse by default; items, modifiers, and the "Learn more" link
+// only enter the DOM after the toggle is clicked.
 const expandSection = ( name: RegExp ) =>
 	user.click( screen.getByRole( 'button', { name } ) );
 
@@ -191,12 +189,9 @@ describe( 'DisputeRecommendationsCard', () => {
 	} );
 
 	describe( 'urgency styling', () => {
-		// Target a stable known item by its title rather than counting matches:
-		// item counts are a function of the live catalog and shift whenever a
-		// cluster is added or refined. The behavior under test is "the right
-		// BEM modifier class lands on items of this urgency", which a single
-		// well-chosen targeting per urgency proves without depending on the
-		// total firing count.
+		// Target a stable known item per urgency rather than counting matches:
+		// counts shift as the catalog grows; the modifier class is the
+		// behavior under test.
 
 		it( 'applies the positive modifier class on Keep Doing entries', async () => {
 			render(

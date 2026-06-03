@@ -1249,16 +1249,9 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		// Lifecycle-level coverage for the Tracks dedup. The function-level
-		// guard inside `recordOutcomeViewOnce` is covered by its own unit
-		// test; the regression this defends in production is
-		// `PaymentDetailsSummaryWrapper` remounting several times per view
-		// and re-running its `useEffect`. A misconfigured dep-array, an
-		// accidental double-mount, or a future refactor to
-		// `shouldRecordOutcomeView` could silently re-introduce the
-		// remount-fires-twice bug without anything catching it. These tests
-		// exercise the full component path and assert the event fires
-		// exactly once per dispute id across the wrapper's lifecycle.
+		// Wrapper-lifecycle coverage for the Tracks dedup. The function-level
+		// guard is unit-tested in `dispute-outcome/__tests__/tracks.test.ts`;
+		// these tests cover the remount path the dedup actually defends.
 		describe( 'Tracks dedup across the wrapper lifecycle', () => {
 			beforeEach( () => {
 				recordEvent.mockClear();
@@ -1274,9 +1267,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 
-				// Fresh object reference, same dispute id -- the useEffect
-				// dep array would treat this as a change and re-fire if the
-				// module-scoped Set didn't catch it.
+				// Fresh object, same id: useEffect deps change; the Set catches it.
 				const second = getResolvedCharge( 'won' );
 				rerender( <PaymentDetailsSummary charge={ second } /> );
 
@@ -1291,10 +1282,8 @@ describe( 'PaymentDetailsSummary', () => {
 
 				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 
-				// This is the production regression: PaymentDetailsSummary
-				// remounts as the loading state resolves, and a per-instance
-				// ref would reset and re-fire. The module-scoped Set must
-				// survive the unmount.
+				// Production regression: per-instance refs reset on unmount;
+				// the module-scoped Set must survive it.
 				unmount();
 				render( <PaymentDetailsSummary charge={ charge } /> );
 
@@ -1308,9 +1297,7 @@ describe( 'PaymentDetailsSummary', () => {
 				);
 				expect( recordEvent ).toHaveBeenCalledTimes( 1 );
 
-				// Regression guard: dedup must be keyed by dispute id, not
-				// global "have we ever fired" state. A separate dispute
-				// reaching the wrapper later should still record.
+				// Dedup keyed by dispute id, not "have we ever fired".
 				unmount();
 				const second = getResolvedCharge( 'lost' );
 				second.dispute.id = 'dp_2';

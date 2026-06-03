@@ -857,11 +857,9 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 		( dispute.status === 'won' || dispute.status === 'lost' ) &&
 		dispute.metadata?.__closed_by_merchant !== '1';
 
-	// Outcome View Tracks event: fires once per dispute per page session.
-	// Gating matches the original DisputeOutcomeView path (won/lost/
-	// warning_closed + flag), so the analytics signal stays stable even
-	// though the standalone component is gone. Dedup is module-scoped in
-	// `recordOutcomeViewOnce`.
+	// Outcome View Tracks: gating mirrors the original DisputeOutcomeView
+	// path (won/lost/warning_closed + flag) so the signal stays stable
+	// across the component refactor. Dedup is in `recordOutcomeViewOnce`.
 	const isOutcomeViewStatus =
 		dispute?.status === 'won' ||
 		dispute?.status === 'lost' ||
@@ -870,12 +868,8 @@ const PaymentDetailsSummaryWrapper: React.FC< PaymentDetailsSummaryProps > = (
 		!! dispute &&
 		!! wcpaySettings?.featureFlags?.isDisputeOutcomeViewEnabled &&
 		isOutcomeViewStatus;
-	// COUPLED: DisputeRecommendationsCard derives `productType` from the same
-	// inputs for its catalog lookup. The Tracks dimension recorded here must
-	// match what the card uses to filter recommendations, or analytics will
-	// describe a different bucket than the merchant actually saw. If you
-	// change the arguments to `resolveProductType` here, update the matching
-	// call in `dispute-recommendations/index.tsx` in lockstep.
+	// COUPLED with dispute-recommendations/index.tsx: the card filters its
+	// catalog by this same productType. Keep both call sites in lockstep.
 	const productType = dispute
 		? resolveProductType(
 				dispute.metadata,

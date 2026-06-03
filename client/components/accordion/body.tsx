@@ -96,21 +96,17 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 					isOpened={ Boolean( isOpened ) }
 					onClick={ handleOnToggle }
 					title={ title }
-					// When the caller provides JSX via `subtitleNode`, the
-					// subtitle slot inside the toggle button stays empty —
-					// the rich subtitle renders as a sibling below.
+					// `subtitleNode` renders below as a sibling, so the
+					// in-button slot stays empty when both are passed.
 					subtitle={ subtitleNode ? undefined : subtitle }
 					md={ md }
 					lg={ lg }
 					{ ...( buttonProps && { ...buttonProps, ref: undefined } ) }
 				/>
 				{ subtitleNode && isOpened && (
-					// Unlike the in-button `subtitle` prop (which is always
-					// visible because the toggle button is), `subtitleNode`
-					// renders below the toggle as a sibling. Treating it as
-					// body content — visible only when expanded — gives a
-					// clean closed state (just title + chevron) and avoids
-					// two-state positioning math against the body's border.
+					// Sibling render, expanded-only: keeps the closed state
+					// clean and avoids two-state positioning against the
+					// body's border.
 					<div className="wcpay-accordion__subtitle wcpay-accordion__subtitle--external">
 						{ subtitleNode }
 					</div>

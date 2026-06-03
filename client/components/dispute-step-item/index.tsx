@@ -13,57 +13,32 @@ import { VisuallyHidden } from '@wordpress/components';
 import './style.scss';
 
 interface Props {
-	/**
-	 * Leading icon (typically a `<Icon icon={...} size={24} />` from
-	 * `@wordpress/icons`). Rendered inside the 44x44 bordered container.
-	 */
+	/** Rendered inside the 44x44 icon container. */
 	icon: JSX.Element;
 	title: string;
 	description: string;
 	/**
 	 * Optional right-aligned action (button, link). On small screens the
-	 * action reflows to full-width below the item content; the icon is
-	 * hidden instead.
+	 * action reflows to full-width; the icon is hidden instead.
 	 */
 	action?: React.ReactNode;
-	/**
-	 * Extra class names appended to the root. Use this to attach caller-
-	 * specific modifiers (urgency tints, original BEM contracts) without
-	 * the shared component knowing about them.
-	 */
+	/** Caller-specific modifiers (e.g. urgency tints). */
 	className?: string;
-	/**
-	 * Root element tag. Use `article` when the item is an independent unit
-	 * within a list (e.g. a catalog entry exposed as a separate landmark);
-	 * `div` is the default and the right choice for action-step rows.
-	 */
+	/** `article` when the item is a list landmark; `div` for action-step rows. */
 	as?: 'div' | 'article';
 	/**
-	 * Heading element used for the item title. Default `div` preserves the
-	 * existing non-heading semantics in "Steps you can take". Pass `h3`/
-	 * `h4`/etc. when the item should be navigable as a heading (e.g.
-	 * recommendations nested inside an `h2` accordion title).
+	 * Default `div` preserves "Steps you can take" non-heading semantics;
+	 * pass a heading tag when items should be navigable.
 	 */
 	titleAs?: 'div' | 'h3' | 'h4' | 'h5' | 'h6';
-	/**
-	 * Screen-reader-only prefix prepended to the title (e.g. "Important:",
-	 * "Tip:"). Used to qualify items whose severity is conveyed visually
-	 * via icon color/shape but needs a textual cue for SR users.
-	 */
+	/** SR-only severity prefix; the icon is aria-hidden. */
 	titleSrPrefix?: string;
 }
 
 /**
- * Shared row used by the "Steps you can take" accordion and the dispute
- * outcome recommendations card. Owns the row geometry — 44x44 icon
- * container with a 1px gray-200 outline stroke, 16px vertical padding,
- * gray-100 hairline between items, and a mobile collapse. Variant
- * styling (icon color, urgency BEM hooks, semantic root tag) is up to
- * the caller via `className`, `as`, and `titleAs`.
- *
- * Lucy review on PR #11703 (2026-06-01): the recommendations card should
- * literally reuse the Steps you can take row, not just visually match. This
- * is that shared row.
+ * Shared row used by "Steps you can take" and the dispute recommendations
+ * card. Owns row geometry; callers attach urgency tints, semantic root
+ * tag, and heading level via `className`, `as`, and `titleAs`.
  */
 const DisputeStepItem: React.FC< Props > = ( {
 	icon,

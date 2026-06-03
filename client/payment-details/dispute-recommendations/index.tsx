@@ -46,9 +46,7 @@ const outcomeByStatus: Partial<
 	won: 'keep_doing',
 };
 
-// Higher lift first; entries without a measured lift sort to the bottom.
-// Ties (including both-unmeasured) return 0, so the stable sort preserves
-// catalog order within a bucket.
+// Higher lift first; unmeasured entries fall to the bottom in catalog order.
 const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
 	if ( typeof a.lift !== 'number' && typeof b.lift !== 'number' ) {
 		return 0;
@@ -62,9 +60,8 @@ const sortByLift = ( a: Recommendation, b: Recommendation ): number => {
 	return b.lift - a.lift;
 };
 
-// Severity qualifiers for screen readers. Sighted users get severity from
-// the icon shape and color; SR users need a textual cue since the icon is
-// aria-hidden.
+// SR-only severity qualifier; the icon is aria-hidden, so sighted-only cues
+// need a textual equivalent.
 const urgencyLabel = ( urgency: RecommendationUrgency ): string => {
 	switch ( urgency ) {
 		case 'critical':
@@ -81,18 +78,13 @@ const urgencyLabel = ( urgency: RecommendationUrgency ): string => {
 };
 
 const renderItem = ( rec: Recommendation ): JSX.Element => (
-	// Reuses the shared `DisputeStepItem` row from "Steps you can take" so the
-	// geometry (44x44 bordered icon, 16px padding, gray-100 hairline, mobile
-	// collapse) stays in lockstep with that pattern. The urgency BEM hooks
-	// `dispute-recommendations__item--{urgency}` ride on the root and drive
-	// the icon tint in `style.scss`; the shared component itself stays
-	// urgency-agnostic.
+	// Reuses the shared row from "Steps you can take". Urgency BEM hooks on
+	// the root drive the icon tint via style.scss; the shared component
+	// stays urgency-agnostic.
 	<DisputeStepItem
 		key={ rec.id }
 		as="article"
-		// h3 keeps the outline monotonic against the AccordionTitle (h2)
-		// that wraps each card -- no level-skip, which screen readers
-		// otherwise read as a missing intermediate heading.
+		// h3 keeps the outline monotonic under the card's h2 title.
 		titleAs="h3"
 		className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
 		icon={
@@ -107,15 +99,9 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	/>
 );
 
-// Each non-empty section renders as its own Accordion card, collapsed
-// by default (Lucy review 2026-06-02). Both cards route their
-// description through `subtitleNode` so the two sections share a single
-// layout: collapsed state shows just the title + chevron, expanded
-// state reveals the description (with the coaching card's "Learn more"
-// link inlined) and the items. Using `subtitleNode` for the strengths
-// card too — even though it has no link — keeps the two cards
-// behaviorally identical; using plain `subtitle` for one and
-// `subtitleNode` for the other made the closed state inconsistent.
+// Both cards route their description through `subtitleNode` so the closed
+// state stays consistent: using `subtitle` for one and `subtitleNode` for
+// the other diverges the layout.
 const renderCard = (
 	heading: string,
 	description: string,
@@ -187,13 +173,8 @@ const DisputeRecommendationsCard: React.FC< Props > = ( { dispute } ) => {
 		return null;
 	}
 
-	// COUPLED: PaymentDetailsSummaryWrapper derives `productType` from the
-	// same inputs for the `wcpay_dispute_outcome_viewed` Tracks event. The
-	// catalog filter applied here must match the analytics dimension, or
-	// the recorded bucket will describe a different rendering than the
-	// merchant actually saw. If you change the arguments to
-	// `resolveProductType` here, update the matching call in
-	// `payment-details/summary/index.tsx` in lockstep.
+	// COUPLED with summary/index.tsx: the Tracks event records this same
+	// productType. Keep both call sites in lockstep.
 	const productType = resolveProductType(
 		dispute.metadata,
 		dispute.order?.suggested_product_type,
