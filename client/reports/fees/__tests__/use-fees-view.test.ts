@@ -5,6 +5,7 @@ import { renderHook, act } from '@testing-library/react-hooks';
 const mockUpdateQueryString = jest.fn();
 const mockGetQuery = jest.fn( () => ( {} ) );
 const mockUpdateUserPreferences = jest.fn();
+const mockRecordEvent = jest.fn();
 let mockUserPrefs: Record< string, unknown > = {};
 
 jest.mock( '@woocommerce/navigation', () => ( {
@@ -20,6 +21,10 @@ jest.mock( '@woocommerce/data', () => ( {
 	} ),
 } ) );
 
+jest.mock( 'tracks', () => ( {
+	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
+} ) );
+
 import { useFeesView } from '../use-fees-view';
 import { defaultPerPage } from '../view';
 import { encodeCustomDateFilterValue } from '../date-filter-values';
@@ -27,6 +32,7 @@ import { encodeCustomDateFilterValue } from '../date-filter-values';
 beforeEach( () => {
 	mockUpdateQueryString.mockClear();
 	mockUpdateUserPreferences.mockClear();
+	mockRecordEvent.mockClear();
 	mockGetQuery.mockReturnValue( {} );
 	mockUserPrefs = {};
 	jest.useRealTimers();
@@ -283,6 +289,183 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
+	it( 'records non-date filter additions', () => {
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'payment_method',
+						operator: 'is',
+						value: 'card',
+					},
+				],
+			} );
+		} );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_filter_change',
+			{
+				filter_field: 'payment_method_type',
+				had_previous_value: false,
+			}
+		);
+	} );
+
+	it( 'records non-date filter changes with previous value context', () => {
+		mockGetQuery.mockReturnValue( {
+			payment_method_type: 'card',
+		} );
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'payment_method',
+						operator: 'is',
+						value: 'link',
+					},
+				],
+			} );
+		} );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_filter_change',
+			{
+				filter_field: 'payment_method_type',
+				had_previous_value: true,
+			}
+		);
+	} );
+
+	it( 'does not record date filters as generic filter changes', () => {
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'date',
+						operator: 'is',
+						value: encodeCustomDateFilterValue( {
+							operator: 'before',
+							value: '2026-03-31',
+						} ),
+					},
+				],
+			} );
+		} );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_filter_change',
+			expect.anything()
+		);
+	} );
+
+	it( 'does not record duplicate filter changes for equivalent structured values', () => {
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'type',
+						operator: 'isAny',
+						value: [ 'charge', 'refund' ],
+					},
+				],
+			} );
+		} );
+		mockRecordEvent.mockClear();
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'type',
+						operator: 'isAny',
+						value: [ 'charge', 'refund' ],
+					},
+				],
+			} );
+		} );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_filter_change',
+			expect.anything()
+		);
+	} );
+
+	it( 'does not record comma-separated Type filter changes', () => {
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'type',
+						operator: 'is',
+						value: 'charge,refund',
+					},
+				],
+			} );
+		} );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_filter_change',
+			expect.anything()
+		);
+	} );
+
+	it( 'records search length without the raw search term', () => {
+		const searchTerm = 'txn_secret_123';
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				search: searchTerm,
+			} );
+		} );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_search',
+			{
+				search_length: searchTerm.length,
+			}
+		);
+		expect( JSON.stringify( mockRecordEvent.mock.calls ) ).not.toContain(
+			searchTerm
+		);
+	} );
+
+	it( 'does not record search when clearing the search term', () => {
+		mockGetQuery.mockReturnValue( {
+			search: [ 'txn_1' ],
+		} );
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				search: '',
+			} );
+		} );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_search',
+			expect.anything()
+		);
+	} );
+
 	it( 'rejects multi-value Type filter changes before writing the URL', () => {
 		const { result } = renderHook( () => useFeesView() );
 		act( () => {
@@ -298,6 +481,10 @@ describe( 'useFeesView', () => {
 			} );
 		} );
 		expect( mockUpdateQueryString ).not.toHaveBeenCalled();
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_filter_change',
+			expect.anything()
+		);
 	} );
 
 	it( 're-derives the view after setView pushes URL-only changes', () => {

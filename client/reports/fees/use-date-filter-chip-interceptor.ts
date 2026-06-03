@@ -5,15 +5,19 @@
  */
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { Filter, View } from '@wordpress/dataviews/wp';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
  */
 import type { DateFilterValue } from 'wcpay/reports/date-filter';
+import { matchPreset } from 'wcpay/reports/date-filter/presets';
 import {
 	encodeCustomDateFilterValue,
 	resolveFeesDateFilterValue,
 } from './date-filter-values';
+
+const millisecondsPerDay = 86400000;
 
 // DataViews does not expose a field id or data attribute on summary chips.
 // It does, however, sort primary filters before secondary filters. The Fees
@@ -68,6 +72,16 @@ const replaceDateFilter = (
 
 const getResolvedDateFilter = ( view: View ): DateFilterValue | undefined =>
 	resolveFeesDateFilterValue( findDateFilter( view.filters )?.value );
+
+const getDateRangeDays = ( value: DateFilterValue ): number | null => {
+	if ( value.operator !== 'between' ) {
+		return null;
+	}
+
+	const start = new Date( value.value[ 0 ] ).getTime();
+	const end = new Date( value.value[ 1 ] ).getTime();
+	return Math.round( ( end - start ) / millisecondsPerDay );
+};
 
 export interface UseDateFilterChipInterceptorOptions {
 	container: HTMLElement | null;
@@ -305,6 +319,15 @@ export const useDateFilterChipInterceptor = ( {
 
 	const onPopoverChange = useCallback(
 		( nextDateFilter: DateFilterValue ) => {
+			const hadPreviousDate =
+				findDateFilter( view.filters )?.value !== undefined;
+
+			recordEvent( 'wcpay_reports_fees_date_filter_change', {
+				preset: matchPreset( nextDateFilter ),
+				range_days: getDateRangeDays( nextDateFilter ),
+				is_initial_apply: ! hadPreviousDate,
+			} );
+
 			setView( {
 				...view,
 				page: 1,

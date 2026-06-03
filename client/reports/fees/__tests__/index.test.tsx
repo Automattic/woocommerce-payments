@@ -13,6 +13,7 @@ const mockGetQuery = jest.fn( () => ( {} as Record< string, unknown > ) );
 const mockUpdateQueryString = jest.fn();
 const mockUpdateUserPreferences = jest.fn();
 const mockSpeak = jest.fn();
+const mockRecordEvent = jest.fn();
 
 jest.mock( 'wcpay/data', () => ( {
 	useReportsFees: ( q: unknown ) => mockUseReportsFees( q ),
@@ -33,6 +34,10 @@ jest.mock( '@woocommerce/data', () => ( {
 
 jest.mock( '@wordpress/a11y', () => ( {
 	speak: ( message: string ) => mockSpeak( message ),
+} ) );
+
+jest.mock( 'tracks', () => ( {
+	recordEvent: ( ...args: unknown[] ) => mockRecordEvent( ...args ),
 } ) );
 
 jest.mock( 'multi-currency/interface/functions', () => ( {
@@ -93,6 +98,7 @@ beforeEach( () => {
 	mockUpdateQueryString.mockReset();
 	mockUpdateUserPreferences.mockReset();
 	mockSpeak.mockReset();
+	mockRecordEvent.mockReset();
 
 	( window as unknown as Record< string, unknown > ).wcpaySettings = {
 		currentUserEmail: 'a@b.test',
@@ -117,6 +123,97 @@ beforeEach( () => {
 } );
 
 describe( 'FeesReport (DataViews)', () => {
+	it( 'records load success when fees data finishes loading', () => {
+		mockGetQuery.mockReturnValue( {
+			payment_method_type: 'card',
+		} );
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: true,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 0, sources: [], types: [] },
+			isLoading: true,
+		} );
+
+		const { rerender } = render( <FeesReport /> );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: false,
+		} );
+		mockUseReportsFeesSummary.mockReturnValue( {
+			feesSummary: { count: 0, sources: [], types: [] },
+			isLoading: false,
+		} );
+
+		rerender( <FeesReport /> );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_load_success',
+			{
+				total_items: 0,
+				has_filters: true,
+				is_initial_empty: false,
+				is_filtered_empty: true,
+			}
+		);
+	} );
+
+	it( 'records load error when fees data resolves with an error', () => {
+		mockGetQuery.mockReturnValue( {
+			payment_method_type: 'card',
+		} );
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: {},
+			isLoading: false,
+		} );
+		const { rerender } = render( <FeesReport /> );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalled();
+
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		rerender( <FeesReport /> );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_load_error',
+			{
+				has_filters: true,
+			}
+		);
+	} );
+
+	it( 'records reload clicks from the Fees error state', async () => {
+		const onReload = jest.fn();
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		render( <FeesReport onReload={ onReload } /> );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Reload report' } )
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_reload_click',
+			{}
+		);
+		expect( onReload ).toHaveBeenCalled();
+	} );
+
 	it( 'queries the data store with no date params when URL has no date filter', () => {
 		render( <FeesReport /> );
 		const call = mockUseReportsFees.mock.calls[ 0 ][ 0 ];

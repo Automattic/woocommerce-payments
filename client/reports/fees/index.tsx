@@ -9,6 +9,7 @@ import { calendar } from '@wordpress/icons';
 import { __, sprintf } from '@wordpress/i18n';
 import { speak } from '@wordpress/a11y';
 import { DataViews } from '@wordpress/dataviews/wp';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
@@ -85,10 +86,13 @@ export const FeesReport = ( {
 	const previousErrorRef = useRef( hasError );
 	useEffect( () => {
 		if ( hasError && ! previousErrorRef.current ) {
+			recordEvent( 'wcpay_reports_fees_load_error', {
+				has_filters: hasFilters,
+			} );
 			errorHeadingRef.current?.focus();
 		}
 		previousErrorRef.current = hasError;
-	}, [ hasError ] );
+	}, [ hasError, hasFilters ] );
 
 	// Announce "Fees report loaded" to AT users on every loading→ready edge.
 	// Debounced (500ms) and de-duplicated so rapid filter changes — which can
@@ -101,6 +105,13 @@ export const FeesReport = ( {
 	const lastSpokenRef = useRef< string | null >( null );
 	useEffect( () => {
 		if ( previousLoadingRef.current && ! isLoading && ! hasError ) {
+			recordEvent( 'wcpay_reports_fees_load_success', {
+				total_items: totalItems,
+				has_filters: hasFilters,
+				is_initial_empty: isInitialEmpty,
+				is_filtered_empty: isFilteredEmpty,
+			} );
+
 			const message = sprintf(
 				/* translators: %d: number of fees loaded into the report table. */
 				__( '%d fees loaded.', 'woocommerce-payments' ),
@@ -119,7 +130,14 @@ export const FeesReport = ( {
 			}, 500 );
 		}
 		previousLoadingRef.current = isLoading;
-	}, [ isLoading, hasError, totalItems ] );
+	}, [
+		hasError,
+		hasFilters,
+		isFilteredEmpty,
+		isInitialEmpty,
+		isLoading,
+		totalItems,
+	] );
 
 	useEffect(
 		() => () => {
@@ -155,7 +173,16 @@ export const FeesReport = ( {
 					</>
 				}
 				action={
-					<Button variant="secondary" onClick={ onReload }>
+					<Button
+						variant="secondary"
+						onClick={ () => {
+							recordEvent(
+								'wcpay_reports_fees_reload_click',
+								{}
+							);
+							onReload();
+						} }
+					>
 						{ __( 'Reload report', 'woocommerce-payments' ) }
 					</Button>
 				}
