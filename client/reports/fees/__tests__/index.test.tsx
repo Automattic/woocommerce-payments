@@ -238,6 +238,49 @@ describe( 'FeesReport (DataViews)', () => {
 		expect( onReload ).toHaveBeenCalled();
 	} );
 
+	it( 'records load error when reloading from an existing Fees error fails again', () => {
+		mockGetQuery.mockReturnValue( {
+			date_between: [ '2026-03-01', '2026-03-31' ],
+			payment_method_type: 'card',
+		} );
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		const { rerender } = render( <FeesReport /> );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_load_error',
+			expect.anything()
+		);
+
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+			isLoading: true,
+		} );
+
+		rerender( <FeesReport /> );
+
+		mockUseReportsFees.mockReturnValue( {
+			feesRows: [],
+			feesError: { code: 'server_error' },
+			isLoading: false,
+		} );
+
+		rerender( <FeesReport /> );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_load_error',
+			{
+				has_filters: true,
+				range_days: 30,
+			}
+		);
+	} );
+
 	it( 'records all-time load success telemetry with a null range', () => {
 		mockEmptyFeesResponse( true );
 

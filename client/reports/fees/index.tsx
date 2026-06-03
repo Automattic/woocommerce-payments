@@ -103,22 +103,31 @@ export const FeesReport = ( {
 	// keyboard context.
 	const errorHeadingRef = useRef< HTMLHeadingElement >( null );
 	const previousErrorRef = useRef( hasError );
+	const previousLoadingRef = useRef( isLoading );
 	useEffect( () => {
-		if ( hasError && ! previousErrorRef.current ) {
+		const reachedErrorTerminal =
+			hasError &&
+			! isLoading &&
+			( ! previousErrorRef.current || previousLoadingRef.current );
+
+		if ( reachedErrorTerminal ) {
 			recordEvent( 'wcpay_reports_fees_load_error', {
 				has_filters: hasFilters,
 				range_days: rangeDays,
 			} );
+		}
+
+		if ( hasError && ! previousErrorRef.current ) {
 			errorHeadingRef.current?.focus();
 		}
+
 		previousErrorRef.current = hasError;
-	}, [ hasError, hasFilters, rangeDays ] );
+	}, [ hasError, hasFilters, isLoading, rangeDays ] );
 
 	// Announce "Fees report loaded" to AT users on every loading→ready edge.
 	// Debounced (500ms) and de-duplicated so rapid filter changes — which can
 	// cause loading→ready→loading→ready bursts — collapse into a single
 	// announcement instead of spamming AT users.
-	const previousLoadingRef = useRef( isLoading );
 	const speakTimerRef = useRef< ReturnType< typeof setTimeout > | null >(
 		null
 	);
