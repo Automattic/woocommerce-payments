@@ -76,7 +76,7 @@ jobs:
 
       - name: Run Plan Agent
         id: plan
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@36a69b6a90b850823f86de06fdfd56264772ad98 # v1.0.134
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           model: ${{ inputs.model }}
