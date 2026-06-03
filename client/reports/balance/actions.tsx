@@ -8,6 +8,7 @@ import { Button } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { downloadCSVFile } from '@woocommerce/csv-export';
 import { __ } from '@wordpress/i18n';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
@@ -21,6 +22,28 @@ import {
 	hasKeys,
 	isBalanceSummaryMalformed,
 } from './utils';
+
+const getActionEventPayload = (
+	period: { start: string; end: string },
+	currency: string,
+	visibleRowCount: number
+) => ( {
+	currency,
+	visible_row_count: visibleRowCount,
+	range_days: Math.round(
+		( new Date( period.end ).getTime() -
+			new Date( period.start ).getTime() ) /
+			86400000
+	),
+} );
+
+const getExportErrorMessage = ( exportError: unknown ): string => {
+	if ( ! ( exportError instanceof Error ) ) {
+		return 'unknown';
+	}
+
+	return exportError.message.slice( 0, 200 );
+};
 
 /**
  * Toolbar component for the Balance report.
@@ -97,13 +120,21 @@ export const BalanceActions = (): JSX.Element => {
 	};
 	const disabledHelpText = getDisabledHelpText();
 
-	const onExport = () => {
+	const onExport = async () => {
 		if ( actionsDisabled ) {
 			return;
 		}
 
+		const payload = getActionEventPayload(
+			displayPeriod,
+			currency,
+			visibleRows.length
+		);
+
+		recordEvent( 'wcpay_reports_balance_export_click', payload );
+
 		try {
-			downloadCSVFile(
+			await downloadCSVFile(
 				getBalanceExportFileName( displayPeriod ),
 				getBalanceCSV( {
 					visibleRows,
@@ -112,7 +143,12 @@ export const BalanceActions = (): JSX.Element => {
 					currency,
 				} )
 			);
+			recordEvent( 'wcpay_reports_balance_export_success', payload );
 		} catch ( exportError ) {
+			recordEvent( 'wcpay_reports_balance_export_error', {
+				...payload,
+				error_message: getExportErrorMessage( exportError ),
+			} );
 			// eslint-disable-next-line no-console
 			console.error( 'Balance CSV export failed:', exportError );
 			createNotice(
@@ -129,6 +165,11 @@ export const BalanceActions = (): JSX.Element => {
 		if ( actionsDisabled ) {
 			return;
 		}
+
+		recordEvent(
+			'wcpay_reports_balance_print_click',
+			getActionEventPayload( displayPeriod, currency, visibleRows.length )
+		);
 
 		window.print();
 	};
