@@ -90,7 +90,10 @@ const renderItem = ( rec: Recommendation ): JSX.Element => (
 	<DisputeStepItem
 		key={ rec.id }
 		as="article"
-		titleAs="h4"
+		// h3 keeps the outline monotonic against the AccordionTitle (h2)
+		// that wraps each card -- no level-skip, which screen readers
+		// otherwise read as a missing intermediate heading.
+		titleAs="h3"
 		className={ `dispute-recommendations__item dispute-recommendations__item--${ rec.urgency }` }
 		icon={
 			<Icon
