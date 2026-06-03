@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -218,7 +218,7 @@ describe( 'Single currency settings screen', () => {
 		);
 	} );
 
-	test( 'Settings work correctly', () => {
+	test( 'Settings work correctly', async () => {
 		getContainer();
 		expect(
 			screen.queryByText( /Currency Settings/i )
@@ -281,12 +281,14 @@ describe( 'Single currency settings screen', () => {
 			'€17.45'
 		);
 
-		// Submit settings test.
+		// the save handler is async now, so flush it inside act()
 		const { submitCurrencySettings } = useCurrencySettings();
 
-		fireEvent.click(
-			screen.getByRole( 'button', { name: /Save Changes/i } )
-		);
+		await act( async () => {
+			fireEvent.click(
+				screen.getByRole( 'button', { name: /Save Changes/i } )
+			);
+		} );
 
 		expect( submitCurrencySettings ).toHaveBeenCalledWith( 'EUR', {
 			exchange_rate_type: 'manual',

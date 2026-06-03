@@ -22,6 +22,7 @@ import {
 	SettingsSection,
 } from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
+import FormBusyState from 'wcpay/components/form-busy-state';
 
 const StoreSettingsDescription = () => (
 	<>
@@ -64,7 +65,7 @@ const StoreSettings = () => {
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
 	return (
-		<>
+		<FormBusyState isBusy={ isSaving }>
 			<SettingsSection
 				description={ StoreSettingsDescription }
 				className="multi-currency-settings-store-settings-section"
@@ -198,7 +199,7 @@ const StoreSettings = () => {
 					{ __( 'Save changes', 'woocommerce-payments' ) }
 				</Button>
 			</SettingsSection>
-		</>
+		</FormBusyState>
 	);
 };
 
