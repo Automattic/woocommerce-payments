@@ -8,6 +8,7 @@ import { Button } from '@wordpress/components';
 import { useDispatch } from '@wordpress/data';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
+import { recordEvent } from 'tracks';
 
 /**
  * Internal dependencies
@@ -74,6 +75,12 @@ export const FeesExportButton: React.FC = () => {
 			return;
 		}
 
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'fees_report',
+			source: 'payments_reports',
+			exported_row_count: totalRows,
+		} );
+
 		const exportRequestURL = getFeesCSVRequestURL( {
 			userEmail,
 			locale,
@@ -92,6 +99,14 @@ export const FeesExportButton: React.FC = () => {
 			exportRequestURL,
 			exportFileAvailabilityEndpoint: feesDownloadEndpoint,
 			userEmail,
+			onSuccess: () =>
+				recordEvent( 'wcpay_reports_fees_export_success', {
+					exported_row_count: totalRows,
+				} ),
+			onError: ( { reason }: { reason: 'request' | 'timeout' } ) =>
+				recordEvent( 'wcpay_reports_fees_export_error', {
+					error_type: reason,
+				} ),
 		} );
 
 		createNotice(
