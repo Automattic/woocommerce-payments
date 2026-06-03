@@ -239,6 +239,7 @@ export const BalanceReport = ( {
 			<DateFilter
 				value={ value }
 				onChange={ onDateFilterChange }
+				onClear={ resetDateFilter }
 				now={ stableDateFilterNow }
 			/>
 			{ hasDateFilterValue && (

@@ -60,11 +60,13 @@ jest.mock( 'wcpay/reports/date-filter', () => ( {
 		label,
 		now,
 		onChange,
+		onClear,
 		value,
 	}: {
 		label?: string;
 		now?: Date;
 		onChange: ( next: unknown ) => void;
+		onClear?: () => void;
 		value?: unknown;
 	} ) => {
 		mockDateFilterProps( { now, value } );
@@ -79,6 +81,9 @@ jest.mock( 'wcpay/reports/date-filter', () => ( {
 				</button>
 				<button type="button" onClick={ () => onChange( undefined ) }>
 					Clear incompatible date shape
+				</button>
+				<button type="button" onClick={ () => onClear?.() }>
+					Clear Date filter
 				</button>
 			</>
 		);
@@ -1117,6 +1122,27 @@ describe( 'BalanceReport Tracks', () => {
 
 		await userEvent.click(
 			within( toolbar ).getByRole( 'button', { name: 'Reset' } )
+		);
+
+		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_balance_date_filter_change',
+			expect.objectContaining( {
+				preset: 'reset',
+				range_days: null,
+				is_initial_apply: false,
+			} )
+		);
+		expect( mockSetBalanceDateFilterValue ).toHaveBeenCalledWith(
+			undefined
+		);
+	} );
+
+	it( 'records reset date filter changes from the DateFilter chip clear button', async () => {
+		renderBalanceReport( { onReload: jest.fn() } );
+
+		await userEvent.click(
+			screen.getByRole( 'button', { name: 'Clear Date filter' } )
 		);
 
 		expect( mockRecordEvent ).toHaveBeenCalledTimes( 1 );

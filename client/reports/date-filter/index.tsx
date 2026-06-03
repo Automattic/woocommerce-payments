@@ -25,6 +25,7 @@ export { parseDateFilterFromQuery, serializeDateFilterToQuery } from './url';
 export interface DateFilterProps {
 	value: DateFilterValue | undefined;
 	onChange: ( next: DateFilterValue | undefined ) => void;
+	onClear?: () => void;
 	label?: string;
 	defaultOperator?: DateOperator;
 	now?: Date;
@@ -33,6 +34,7 @@ export interface DateFilterProps {
 export const DateFilter: React.FC< DateFilterProps > = ( {
 	value,
 	onChange,
+	onClear,
 	label,
 	defaultOperator = 'between',
 	now,
@@ -64,9 +66,13 @@ export const DateFilter: React.FC< DateFilterProps > = ( {
 	}, [] );
 
 	const handleClear = useCallback( () => {
-		onChange( undefined );
+		if ( onClear ) {
+			onClear();
+		} else {
+			onChange( undefined );
+		}
 		setIsOpen( false );
-	}, [ onChange ] );
+	}, [ onChange, onClear ] );
 
 	const handleOperatorChange = useCallback(
 		( next: DateOperator ) => {
