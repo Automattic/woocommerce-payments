@@ -21,8 +21,9 @@ interface Props {
 	title: string;
 	description: string;
 	/**
-	 * Optional right-aligned action (button, link). Hidden on small screens
-	 * by the parent layout when used inline with text.
+	 * Optional right-aligned action (button, link). On small screens the
+	 * action reflows to full-width below the item content; the icon is
+	 * hidden instead.
 	 */
 	action?: React.ReactNode;
 	/**
