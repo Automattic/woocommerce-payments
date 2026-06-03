@@ -191,8 +191,15 @@ describe( 'DisputeRecommendationsCard', () => {
 	} );
 
 	describe( 'urgency styling', () => {
+		// Target a stable known item by its title rather than counting matches:
+		// item counts are a function of the live catalog and shift whenever a
+		// cluster is added or refined. The behavior under test is "the right
+		// BEM modifier class lands on items of this urgency", which a single
+		// well-chosen targeting per urgency proves without depending on the
+		// total firing count.
+
 		it( 'applies the positive modifier class on Keep Doing entries', async () => {
-			const { container } = render(
+			render(
 				<DisputeRecommendationsCard
 					dispute={ wonPhysicalShippingProvided() }
 				/>
@@ -200,11 +207,15 @@ describe( 'DisputeRecommendationsCard', () => {
 
 			await expandSection( /what's working well/i );
 
+			// c1-shipping-tracking-positive fires on this fixture (shipping
+			// tracking number + carrier are both provided).
 			expect(
-				container.querySelectorAll(
-					'.dispute-recommendations__item--positive'
-				).length
-			).toBe( 3 );
+				screen
+					.getByRole( 'heading', {
+						name: /strong shipping evidence/i,
+					} )
+					.closest( 'article' )
+			).toHaveClass( 'dispute-recommendations__item--positive' );
 		} );
 
 		it( 'applies the critical modifier class on Critical entries', async () => {
@@ -212,20 +223,22 @@ describe( 'DisputeRecommendationsCard', () => {
 				status: 'lost',
 				reason: 'product_not_received',
 				metadata: { __product_type: 'physical_product' },
-				evidence: { receipt: 'receipt-url' }, // limit firing to leave some criticals
+				evidence: { receipt: 'receipt-url' }, // dodge c15 suppression
 			} );
 
-			const { container } = render(
-				<DisputeRecommendationsCard dispute={ dispute } />
-			);
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
 			await expandSection( /what could help next time/i );
 
+			// c1-shipping-tracking-critical fires on this fixture (shipping
+			// tracking number is missing for a physical PNR dispute).
 			expect(
-				container.querySelectorAll(
-					'.dispute-recommendations__item--critical'
-				).length
-			).toBe( 3 );
+				screen
+					.getByRole( 'heading', {
+						name: /add shipping tracking for every order/i,
+					} )
+					.closest( 'article' )
+			).toHaveClass( 'dispute-recommendations__item--critical' );
 		} );
 
 		it( 'applies the tip modifier class on Tip entries', async () => {
@@ -233,23 +246,24 @@ describe( 'DisputeRecommendationsCard', () => {
 				status: 'won',
 				reason: 'fraudulent',
 				metadata: { __product_type: 'physical_product' },
-				// Two tips fire: c3-communication-consider (no customer_communication)
-				// and c8b-shipping-date-document (no shipping_date for physical +
-				// fraudulent). c5 is excluded by its reasonIn list.
+				// c3-communication-consider (no customer_communication) and
+				// c8b-shipping-date-document (no shipping_date for physical +
+				// fraudulent) both fire as tips. c5 is excluded by its
+				// reasonIn list.
 				evidence: { service_date: '2026-04-15' },
 			} );
 
-			const { container } = render(
-				<DisputeRecommendationsCard dispute={ dispute } />
-			);
+			render( <DisputeRecommendationsCard dispute={ dispute } /> );
 
 			await expandSection( /what could help next time/i );
 
 			expect(
-				container.querySelectorAll(
-					'.dispute-recommendations__item--tip'
-				).length
-			).toBe( 2 );
+				screen
+					.getByRole( 'heading', {
+						name: /document the shipping date/i,
+					} )
+					.closest( 'article' )
+			).toHaveClass( 'dispute-recommendations__item--tip' );
 		} );
 	} );
 
