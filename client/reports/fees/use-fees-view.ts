@@ -18,10 +18,15 @@ const searchTrackingDebounceMs = 500;
 const getTrackedFilterField = ( field: string ): string =>
 	field === 'payment_method' ? 'payment_method_type' : field;
 
+const dateFilterField = 'date';
+
 const findFilterByField = (
 	filters: Filter[] | undefined,
 	field: string
 ): Filter | undefined => filters?.find( ( filter ) => filter.field === field );
+
+const hasFilterValue = ( filter: Filter | undefined ): boolean =>
+	filter?.value !== undefined;
 
 const stringifyFilterValue = ( value: unknown ): string | undefined => {
 	try {
@@ -84,6 +89,22 @@ const trackViewChange = (
 		if ( nextSearch ) {
 			scheduleSearchTracking( nextSearch );
 		}
+	}
+
+	const previousDateFilter = findFilterByField(
+		previous.filters,
+		dateFilterField
+	);
+	const nextDateFilter = findFilterByField( next.filters, dateFilterField );
+	if (
+		hasFilterValue( previousDateFilter ) &&
+		! hasFilterValue( nextDateFilter )
+	) {
+		recordEvent( 'wcpay_reports_fees_date_filter_change', {
+			preset: 'reset',
+			range_days: null,
+			is_initial_apply: false,
+		} );
 	}
 
 	( next.filters ?? [] ).forEach( ( filter ) => {

@@ -367,6 +367,65 @@ describe( 'useFeesView', () => {
 		);
 	} );
 
+	it( 'records a date filter reset when an applied date filter is removed', () => {
+		mockGetQuery.mockReturnValue( {
+			date_preset: 'month_to_date',
+		} );
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [],
+			} );
+		} );
+
+		expect( mockRecordEvent ).toHaveBeenCalledWith(
+			'wcpay_reports_fees_date_filter_change',
+			{
+				preset: 'reset',
+				range_days: null,
+				is_initial_apply: false,
+			}
+		);
+		expect(
+			mockRecordEvent.mock.calls.filter(
+				( [ eventName ] ) =>
+					eventName === 'wcpay_reports_fees_date_filter_change'
+			)
+		).toHaveLength( 1 );
+	} );
+
+	it( 'does not record a date filter reset when a value-less staged date filter is removed', () => {
+		const { result } = renderHook( () => useFeesView() );
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [
+					{
+						field: 'date',
+						operator: 'is',
+						value: undefined,
+					},
+				],
+			} );
+		} );
+		mockRecordEvent.mockClear();
+
+		act( () => {
+			result.current[ 1 ]( {
+				...result.current[ 0 ],
+				filters: [],
+			} );
+		} );
+
+		expect( mockRecordEvent ).not.toHaveBeenCalledWith(
+			'wcpay_reports_fees_date_filter_change',
+			expect.anything()
+		);
+	} );
+
 	it( 'does not record duplicate filter changes for equivalent structured values', () => {
 		const { result } = renderHook( () => useFeesView() );
 
