@@ -1470,7 +1470,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
 			// Create a new customer.
 			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		} else {
+		} elseif ( empty( $options['is_changing_payment_method_for_subscription'] ) ) {
+			// A subscription carries the billing details from when it was created, which can be years
+			// behind whatever the customer last gave us elsewhere. Swapping the payment method isn't a
+			// signal that those details changed, so refreshing from them here risks overwriting fresher
+			// data with stale data — we leave the existing customer untouched in that case.
+
 			/**
 			 * Update customer data asynchronously via shutdown hook to avoid blocking the payment response.
 			 *
@@ -1555,7 +1560,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$metadata = $this->get_metadata_from_order( $order, $payment_information->get_payment_type() );
 
 		$customer_details_options = [
-			'is_woopay' => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			'is_woopay'                                   => filter_var( $metadata['paid_on_woopay'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			'is_changing_payment_method_for_subscription' => $is_changing_payment_method_for_subscription,
 		];
 
 		if ( $payment_information->get_customer_id() ) {
