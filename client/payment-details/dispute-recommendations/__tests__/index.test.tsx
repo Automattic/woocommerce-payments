@@ -233,7 +233,9 @@ describe( 'DisputeRecommendationsCard', () => {
 				status: 'won',
 				reason: 'fraudulent',
 				metadata: { __product_type: 'physical_product' },
-				// refund_policy missing → c5-refund-policy-publish-won tip fires.
+				// Two tips fire: c3-communication-consider (no customer_communication)
+				// and c8b-shipping-date-document (no shipping_date for physical +
+				// fraudulent). c5 is excluded by its reasonIn list.
 				evidence: { service_date: '2026-04-15' },
 			} );
 
@@ -379,9 +381,10 @@ describe( 'DisputeRecommendationsCard', () => {
 		} );
 
 		it( 'does not fire shipping_date entries on fraudulent + digital', async () => {
-			// Won on this fixture: c5-refund-policy-publish-won fires as a tip
-			// in the coaching section. Expand it so the shipping_date absence
-			// check isn't trivially true from the section being collapsed.
+			// Won on this fixture: c3-communication-consider and
+			// c10-access-log-add fire as tips in the coaching section. Expand
+			// it so the shipping_date absence check isn't trivially true from
+			// the section being collapsed.
 			const dispute = buildDispute( {
 				status: 'won',
 				reason: 'fraudulent',
